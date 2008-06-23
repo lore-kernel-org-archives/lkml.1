@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbYFWPqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758413AbYFWPyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758866AbYFWPqz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 11:46:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbYFWPqr
+	id S1758413AbYFWPyb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 11:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbYFWPyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 11:46:47 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:42192 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754939AbYFWPqq (ORCPT
+	Mon, 23 Jun 2008 11:54:23 -0400
+Received: from cluster-d.mailcontrol.com ([217.69.20.190]:54542 "EHLO
+	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754825AbYFWPyW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 11:46:46 -0400
-Date: Mon, 23 Jun 2008 08:46:43 -0700
-From: Adam Williamson <awilliamson@mandriva.com>
-Subject: Re: [Bug #10868] Oops on loading ipaq module since 2.6.26,
-	prevents use of device
-In-reply-to: <200806230948.03027.oliver@neukum.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@redhat.com>, bugme-daemon@bugzilla.kernel.org
-Message-id: <1214236003.6054.6.camel@lenovo.local.net>
-Organization: Mandriva
-MIME-version: 1.0
-X-Mailer: Evolution 2.22.2-3mdv2009.0
-Content-type: text/plain
-Content-transfer-encoding: 7bit
-References: <RzbtSgMztjP.A.jRD._spXIB@albercik>
- <20080622211734.GE20122@cs181140183.pp.htv.fi>
- <20080622233720.731f696f@lxorguk.ukuu.org.uk>
- <200806230948.03027.oliver@neukum.org>
+	Mon, 23 Jun 2008 11:54:22 -0400
+X-Greylist: delayed 4057 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Jun 2008 11:54:22 EDT
+Message-ID: <485FB730.2010705@csr.com>
+Date: Mon, 23 Jun 2008 15:46:08 +0100
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Kernel development list <linux-kernel@vger.kernel.org>,
+       AntonioLin <antonio.lin@alcormicro.com>, linux-usb@vger.kernel.org,
+       "Perez-Gonzalez, Inaky" <inaky.perez-gonzalez@intel.com>
+Subject: Re: Scatter-gather list constraints
+References: <Pine.LNX.4.44L0.0806201623080.2133-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0806201623080.2133-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Jun 2008 14:46:08.0922 (UTC) FILETIME=[DF7CE7A0:01C8D53F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-23 at 09:48 +0200, Oliver Neukum wrote:
-> Am Montag 23 Juni 2008 00:37:20 schrieb Alan Cox:
-> > > > btw this also shows that this isn't a 2.6.25 regression... 
-> > > 
-> > > That hardly shows it.
-> > > 
-> > > And Adam said quite explicitely that 2.6.25 worked for him.
-> > 
-> > Nothing much I can do to help. The URB is assigned in setup and is NULL
-> > later. Nothing else I can find touches it.
+Alan Stern wrote:
+> Is there any way to express the constraint that for a particular 
+> request queue, all members of a scatter-gather list (except the last) 
+> must be a multiple of a particular length?
 > 
-> We need this oops replicated with debug enabled in the usb serial core.
+> This question arises in connection with wireless USB mass-storage
+> devices.  The controller driver requires that all DMA segments
+> in a transfer, other than the last one, have a multiple of 1024 bytes.  
+> But we're sometimes getting s-g lists where an element contains an odd
+> number of 512-byte sectors, and of course it doesn't work.
 
-Is that just a kernel build option? (As I mentioned earlier, I'm not
-much of a kernel hacker, I usually just run packaged kernels).
+Note that this 1024 byte multiple is for one particular WUSB mass
+storage device.  The WUSB standard permits max packet sizes of up 3584
+(in multiples of 512), but I suspect WUSB mass storage devices will only
+use 512, 1024, or 2048.
+
+For a solution, we may be able to do something if the HWA host
+controller is passed a single URB with an s-g list (rather than one URB
+per s-g list entry) and was careful about how it segmented the URB into
+transfers to the rpipe.
+
+Inaky, you know more about WAs that me.  Could you comment on this?
+
+A similar solution for WHCI host controllers would require a revision of
+the WHCI spec to support full scatter-gather DMA.
+
+David
 -- 
-adamw
-
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
