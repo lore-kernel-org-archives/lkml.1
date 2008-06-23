@@ -1,133 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756540AbYFWAJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbYFWAVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756540AbYFWAJV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 20:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbYFWAJM
+	id S1755363AbYFWAVV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 20:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbYFWAVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 20:09:12 -0400
-Received: from nonada.if.usp.br ([143.107.131.169]:44118 "EHLO
-	nonada.if.usp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753421AbYFWAJL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 20:09:11 -0400
-X-Greylist: delayed 2273 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Jun 2008 20:09:11 EDT
-From: Joao Luis Meloni Assirati <assirati@nonada.if.usp.br>
-To: linux-kernel@vger.kernel.org
-Subject: Kernel messages (failure) with MV6121 controler
-Date: Sun, 22 Jun 2008 20:30:50 -0300
-User-Agent: KMail/1.9.5
+	Sun, 22 Jun 2008 20:21:10 -0400
+Received: from ns2.suse.de ([195.135.220.15]:58461 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752779AbYFWAVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 20:21:09 -0400
+From: Neil Brown <neilb@suse.de>
+To: Jeff Layton <jlayton@redhat.com>
+Date: Mon, 23 Jun 2008 10:20:59 +1000
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806222030.50663.assirati@nonada.if.usp.br>
+Message-ID: <18526.60523.584503.68076@notabene.brown>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH - take 2] knfsd: nfsd: Handle ERESTARTSYS from syscalls.
+In-Reply-To: message from Jeff Layton on Thursday June 19
+References: <20080619101025.24263.patches@notabene>
+	<1080619001109.24338@suse.de>
+	<20080618210947.2110a541@tleilax.poochiereds.net>
+	<18521.50300.572838.123366@notabene.brown>
+	<20080619063824.00ca6381@tleilax.poochiereds.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thursday June 19, jlayton@redhat.com wrote:
+> > 
+> > I wonder why we have all this mucking about this signal masks anyway.
+> > Anyone have any ideas about what it actually achieves?
+> > 
+> 
+> HCH asked me the same question when I did the conversion to kthreads.
+> My interpretation (based on guesswork here) was that we wanted to
+> distinguish between SIGKILL and other allowed signals. A SIGKILL is
+> allowed to interrupt the underlying I/O, but other signals should not.
 
-With an MV6121 and Linux 2.6.25.3 I get the following messages that end up 
-kicking off a drive (hda2) from a raid 5 software array:
+Yes, that seems to be the intent of the code, but does it really make
+any sense?
+Traditionally, filesystem IO is immune to signals so any signal
+arriving while nfsd is doing filesystem IO is irrelevant.
+I guess network IO can be interrupted, and nfsd is expected to write
+to the network during this time when all-but-SIGKILL is ignored.  So
+maybe the intent was to allow e.g. SIGINT to shut down cleanly, and
+SIGKILL to kill more promptly even if the network was sluggish...
 
-ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata1.00: cmd b0/d0:01:00:4f:c2/00:00:00:00:00/00 tag 0 pio 512 in
-         res 40/00:00:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata1.00: status: { DRDY }
-ata1: hard resetting link
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata1.00: configured for UDMA/133
-ata1: EH complete
-sd 0:0:0:0: [sda] 625142448 512-byte hardware sectors (320073 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support 
-DPO
- or FUA
-ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata1.00: cmd b0/d0:01:00:4f:c2/00:00:00:00:00/00 tag 0 pio 512 in
-         res 40/00:00:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata1.00: status: { DRDY }
-ata1: hard resetting link
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata1.00: configured for UDMA/133
-ata1: EH complete
-sd 0:0:0:0: [sda] 625142448 512-byte hardware sectors (320073 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support 
-DPO
- or FUA
-ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata1.00: cmd c8/00:08:64:94:5b/00:00:00:00:00/e1 tag 0 dma 4096 in
-         res 40/00:00:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata1.00: status: { DRDY }
-ata1: hard resetting link
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata1.00: qc timeout (cmd 0xec)
-ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
-ata1.00: revalidation failed (errno=-5)
-ata1: failed to recover some devices, retrying in 5 secs
-ata1: hard resetting link
-ata1: failed to reset engine (errno=-5)
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata1.00: qc timeout (cmd 0xec)
-ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
-ata1.00: revalidation failed (errno=-5)
-ata1: failed to recover some devices, retrying in 5 secs
-ata1: hard resetting link
-ata1: failed to reset engine (errno=-5)
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata1.00: qc timeout (cmd 0xec)
-ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
-ata1.00: revalidation failed (errno=-5)
-ata1.00: disabled
-ata1: hard resetting link
-ata1: failed to reset engine (errno=-5)
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata1: EH complete
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 22778980
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 620263884
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 620263900
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 622967180
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 622967212
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 622967228
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 619887980
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 619895436
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 620034972
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 624180540
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 13693836
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 14874036
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 16707964
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 16970916
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 22273532
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 22273604
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 22273644
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 22273684
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 22275884
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 44494092
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 619887988
-sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
-end_request: I/O error, dev sda, sector 248332
+However I don't think we ever blocked on network write.  And currently
+we try very hard to ensure that there is enough memory to hold a reply
+before we start on a request, so it should definitely never block.
+
+So until OCFS2 came along, the distinction seems to have been
+meaningless, which is why I questioned it.
+
+Even with OCFS2 I'm not sure it makes much sense.
+
+Any time that we shut down NFSD, we really want it to shut down
+promptly.  If SIGINT isn't certain to achieve that, we should just be
+sending SIGKILL.
+Conversely, if it does make sense to keep the two signals, we should
+be educating init.d scripts to make use of them. e.g.
+
+  killall -2 nfsd
+  sleep 0.1
+  if [ `cat /proc/fs/nfsd/threads` -gt 0 ]
+  then sleep 5
+       killall -9 nfsd
+  fi
+
+or something more clever.
+
+I think my leaning is just to remove the distinction.  About the worst
+that can happen if the filesystem decides to respond to the signal is
+that you get a short write or a short read, both of which should be
+correctly handled by the client.
+
+
+This brings up an interesting issue for your kthread conversion.
+The new code uses kthread_stop instead of sending a signal.  That
+means it will block until the threads have completed a request and
+exited.
+If some thread is in a filesystem that is waiting on network IO and
+expects to get a signal if it needs to stop in a hurry, then the
+shutdown could block for a long time.  That might not be what we
+want.
+
+Particularly as if we are blocked in kthread_stop, then no-one else can
+do a kthread stop....
+
+I think there are issues here that don't yet have obvious answers.
+Other opinions most welcome.
+
+
+> 
+> The question to answer here, I suppose, is whether masking a pending
+> signal is sufficient to make signal_pending() return false. If I'm
+> looking correctly then the answer should be "yes". So I don't think we
+> have a race here after all. I suspect that if SuSE used a different
+> signal here, that would prevent this from happening. For the record,
+> both RHEL and Fedora's init scripts use SIGINT for this.
+
+Yep.  Using SIGINT or "rpc.nfsd 0" would avoid the problem.
+So does mounted the OCFS2 filesystem with -o nointr.
+
+NeilBrown
