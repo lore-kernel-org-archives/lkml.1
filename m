@@ -1,108 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757853AbYFWQkO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757855AbYFWQn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757853AbYFWQkO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 12:40:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbYFWQkC
+	id S1757855AbYFWQn0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 12:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbYFWQnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 12:40:02 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:44689 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1755512AbYFWQkA (ORCPT
+	Mon, 23 Jun 2008 12:43:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56323 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753018AbYFWQnR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 12:40:00 -0400
-Date: Mon, 23 Jun 2008 19:39:34 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: "Ryan Hope" <rmh3093@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH -mm] .gitignore for mm-sources is missing critical files
-Message-ID: <20080623193934.6d74ac71@linux360.ro>
-In-Reply-To: <48f7fe350806230610y224892e3ob34952b2d8b214a9@mail.gmail.com>
-References: <48f7fe350806230610y224892e3ob34952b2d8b214a9@mail.gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jun 2008 12:43:17 -0400
+Date: Mon, 23 Jun 2008 09:39:49 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+cc: Jeff Chua <jeff.chua.linux@gmail.com>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Oleg Nesterov <oleg@tv-sign.ru>, Nick Piggin <npiggin@suse.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>
+Subject: Re: [patch 2/5] Reinstate ZERO_PAGE optimization in get_user_pages()
+ and fix XIP
+In-Reply-To: <Pine.LNX.4.64.0806231650190.13651@blonde.site>
+Message-ID: <alpine.LFD.1.10.0806230928140.2926@woody.linux-foundation.org>
+References: <20080622185327.348377223@mini.kroah.org>  <20080622190140.GD20141@suse.de>  <alpine.LFD.1.10.0806221220530.2926@woody.linux-foundation.org>  <20080622202950.GB20800@suse.de> <b6a2187b0806230832j10e8be28vc0b05fea233437fa@mail.gmail.com>
+ <Pine.LNX.4.64.0806231650190.13651@blonde.site>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jun 2008 09:10:11 -0400
-"Ryan Hope" <rmh3093@gmail.com> wrote:
 
-> The .gitignore file in the 2.6.26-rc5-mm3 tar ball is incomplete, it
-> causes many important files to not get added to a git repo. The
-> patches below fix the issue (sorry they are not all in one diff, it
-> took me a few try to figure out all the files needed):
 
-Hi,
- 
-> diff --git a/f07e4d701ff1fa13f98c21d875f252dc13fa2a42:.gitignore
-> b/83ad1010c278a37bcd901dde0f7d2b6981f64f6a:.gitignore
-> index
-> d24ad506e799a5740d19913a333fc9d64261d9c7..9bb1cb6d825d540bc92dfe5c34343438b860b009
-> 100644 --- a/f07e4d701ff1fa13f98c21d875f252dc13fa2a42:.gitignore
-> +++ b/83ad1010c278a37bcd901dde0f7d2b6981f64f6a:.gitignore
-> @@ -26,6 +26,7 @@ tags
->  TAGS
->  vmlinux*
->  !vmlinux.lds.S
-> +!vmlinux.lds.h
->  System.map
->  Module.markers
->  Module.symvers
+On Mon, 23 Jun 2008, Hugh Dickins wrote:
 
-Check v2.6.26-rc7, I submitted a patch a few days ago and it's already
-in. Well, just this hunk.
- 
-> diff --git a/5ec607502ef909acab4ebe886097523ab4e4e3f5:.gitignore
-> b/118a64bfe9c4db302820b83a03cc0388f5d620e5:.gitignore
-> index
-> 9bb1cb6d825d540bc92dfe5c34343438b860b009..71379c18ff4218ba56fd95baf30ac079590ac587
-> 100644 --- a/5ec607502ef909acab4ebe886097523ab4e4e3f5:.gitignore
-> +++ b/118a64bfe9c4db302820b83a03cc0388f5d620e5:.gitignore
-> @@ -22,11 +22,15 @@
->  #
->  # Top-level generic files
->  #
-> +!.mailmap
->  tags
->  TAGS
->  vmlinux*
->  !vmlinux.lds.S
->  !vmlinux.lds.h
-> +!vmlinux_32.lds.S
-> +!vmlinux_64.lds.S
-> +!vmlinux.scr
->  System.map
->  Module.markers
->  Module.symvers
+> On Mon, 23 Jun 2008, Jeff Chua wrote:
+> > 
+> > I can confirm that the 2nd patch from Linus fixed the problem.
+> > 
+> >                http://lkml.org/lkml/2008/6/22/107
 > 
-> diff --git a/118a64bfe9c4db302820b83a03cc0388f5d620e5:.gitignore
-> b/20c660fa39c48b936c3268dbdf179ff84dbbe365:.gitignore
-> index
-> 71379c18ff4218ba56fd95baf30ac079590ac587..c50ecc6f3c223b51b856c96009f1b9b6539e163d
-> 100644 --- a/118a64bfe9c4db302820b83a03cc0388f5d620e5:.gitignore
-> +++ b/20c660fa39c48b936c3268dbdf179ff84dbbe365:.gitignore
-> @@ -35,6 +35,7 @@ System.map
->  Module.markers
->  Module.symvers
->  !.gitignore
-> +!*.lds
-> 
->  #
->  # Generated include files
+> But I'm afraid you've pushed me into taking another look at that
+> patch, and I see a problem with it.  To be honest, I've lost the
+> plot on this issue, and didn't really get what your problem is,
+> nor how Linus expected to be fixing it.
 
-I'd suggest finding a nice regexp/wildcard to unmask these or to fix
-the "vmlinux*" line (likely better). Running 'find . -name vmlinux\*'
-shows a few more things that may be prone to exclusion to that rule and
-shouldn't.
+The problem is that the old code said:
 
-I already feel bad I didn't fix this more thoroughly when I had the
-chance :-). Then again, I stumbled on this while working on another
-project and I didn't feel like dwelling on other problems. Go ahead and
-save the day :P.
+ - we can use FOLL_ANON, assuming that the vma has no vm_ops, or has no 
+   "fault" callback.
 
+That was funcamentally broken. Because you can have a "nopfn" callback. 
+But it's hard to notice, since the whole FOLL_ANON code only _used_ to 
+trigger if a whole page table was missing.
 
-	Cheers,
-	Eduard
+The VM_LOCKED test was just crazy, but I doubt it was the cause of the 
+bug.
+
+> The problem is that "insane" VM_LOCKED test which he has removed.
+> I've remembered now what that's about: it's for make_pages_present.
+
+That's still crazy. make_pages_present() already does:
+
+	write = (vma->vm_flags & VM_WRITE) != 0;
+
+and passes that in to "get_user_pages()". So for a writable mapping, we'll 
+elide the FOLL_ANON case anyway, and for a read-only mapping we should 
+have used ZERO_PAGE. Damn. Oh, well.
+
+We can certainly re-instate the insane behaviour for mlock(). Not that we 
+historically used to - we used to just map in ZERO_PAGE.
+
+> So I think Linus needs to factor that into the final patch,
+> whilst at the same time solving whatever is the vmware breakage.
+
+So here's a third patch to test. It removes the VM_SHARED thing just to 
+get us closer to the original code (and because do_no_page() didn't do it 
+historically, so let's not do it either), and it re-instates the insane 
+VM_LOCKED test with a comment.
+
+Jeff, does this still work with vmware?
+
+		Linus
+
+---
+ mm/memory.c |   20 ++++++++++++++++++--
+ 1 files changed, 18 insertions(+), 2 deletions(-)
+
+diff --git a/mm/memory.c b/mm/memory.c
+index 9aefaae..a2ce28d 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1045,6 +1045,23 @@ no_page_table:
+ 	return page;
+ }
+ 
++/* Can we do the FOLL_ANON optimization? */
++static inline int use_zero_page(struct vm_area_struct *vma)
++{
++	/*
++	 * We don't want to optimize FOLL_ANON for make_pages_present()
++	 * when it tries to page in a VM_LOCKED region.
++	 */
++	if (vma->vm_flags & VM_LOCKED)
++		return 0;
++	/*
++	 * And if we have a fault or a nopfn routine, it's not an
++	 * anonymous region.
++	 */
++	return !vma->vm_ops ||
++		(!vma->vm_ops->fault && !vma->vm_ops->nopfn);
++}
++
+ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 		unsigned long start, int len, int write, int force,
+ 		struct page **pages, struct vm_area_struct **vmas)
+@@ -1119,8 +1136,7 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 		foll_flags = FOLL_TOUCH;
+ 		if (pages)
+ 			foll_flags |= FOLL_GET;
+-		if (!write && !(vma->vm_flags & VM_LOCKED) &&
+-		    (!vma->vm_ops || !vma->vm_ops->fault))
++		if (!write && use_zero_page(vma))
+ 			foll_flags |= FOLL_ANON;
+ 
+ 		do {
