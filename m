@@ -1,152 +1,357 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761360AbYFWRtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760870AbYFWRuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761360AbYFWRtJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 13:49:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbYFWRsy
+	id S1760870AbYFWRuY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 13:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbYFWRuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 13:48:54 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:57526 "EHLO smtp6.pp.htv.fi"
+	Mon, 23 Jun 2008 13:50:09 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:48356 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751695AbYFWRsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 13:48:53 -0400
-Date: Mon, 23 Jun 2008 20:46:57 +0300
+	id S1752289AbYFWRuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 13:50:06 -0400
+Date: Mon, 23 Jun 2008 20:48:09 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: paulus@samba.org, geert@linux-m68k.org, zippel@linux-m68k.org,
-       linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [2.6 patch] drivers/macintosh/: possible cleanups
-Message-ID: <20080623174657.GC4756@cs181140183.pp.htv.fi>
-References: <20080609222312.GM1987@cs181133002.pp.htv.fi> <20080610102125.2816c9e3.sfr@canb.auug.org.au>
+To: Roland McGrath <roland@redhat.com>
+Cc: linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk, cooloney@kernel.org,
+       dev-etrax@axis.com, dhowells@redhat.com, gerg@uclinux.org,
+       yasutake.koichi@jp.panasonic.com, linux-parisc@vger.kernel.org,
+       paulus@samba.org, linuxppc-dev@ozlabs.org, linux-sh@vger.kernel.org,
+       chris@zankel.net, linux-mips@linux-mips.org, ysato@users.sourceforge.jp,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] asm/ptrace.h userspace headers cleanup
+Message-ID: <20080623174809.GE4756@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080610102125.2816c9e3.sfr@canb.auug.org.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 10:21:25AM +1000, Stephen Rothwell wrote:
-> Hi Adrian,
-> 
-> On Tue, 10 Jun 2008 01:23:12 +0300 Adrian Bunk <bunk@kernel.org> wrote:
-> >
-> > +++ b/drivers/macintosh/adbhid.c
-> > @@ -75,7 +75,7 @@ static struct notifier_block adbhid_adb_notifier = {
-> >  #define ADB_KEY_POWER_OLD	0x7e
-> >  #define ADB_KEY_POWER		0x7f
-> >  
-> > -u16 adb_to_linux_keycodes[128] = {
-> > +static u16 adb_to_linux_keycodes[128] = {
-> 
-> This could be const as well.
-
-Updated patch below.
-
-cu
-Adrian
-
-
-<--  snip  -->
-
-
-This patch contains the following possible cleanups:
-- make the following needlessly global code static:
-  - adb.c: adb_controller
-  - adb.c: adb_init()
-  - adbhid.c: adb_to_linux_keycodes[]  (also make it const)
-  - via-pmu68k.c: backlight_level
-  - via-pmu68k.c: backlight_enabled
-- remove the following unused code:
-  - via-pmu68k.c: sleep_notifier_list
+This patch contains the following cleanups for the asm/ptrace.h 
+userspace headers:
+- include/asm-generic/Kbuild.asm already lists ptrace.h, remove
+  the superfluous listings in the Kbuild files of the following
+  architectures:
+  - cris
+  - frv
+  - powerpc
+  - x86
+- don't expose function prototypes and macros to userspace:
+  - arm
+  - blackfin
+  - cris
+  - mn10300
+  - parisc
+- remove #ifdef CONFIG_'s around #define's:
+  - blackfin
+  - m68knommu
+- sh: AFAIK __SH5__ should work in both kernel and userspace,
+      no need to leak CONFIG_SUPERH64 to userspace
+- xtensa: cosmetical change to remove empty
+            #ifndef __ASSEMBLY__ #else #endif
+          from the userspace headers
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/macintosh/adb.c        |    5 ++---
- drivers/macintosh/adbhid.c     |    2 +-
- drivers/macintosh/via-pmu68k.c |    5 ++---
- include/linux/adb.h            |    1 -
- 4 files changed, 5 insertions(+), 8 deletions(-)
+Not changed by this patch is the fact that the following architectures 
+have a different struct pt_regs depending on CONFIG_ variables:
+- h8300
+- m68knommu
+- mips
 
-45413fb42fb4215d80bb15f50a5bdc869465e9a1 diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
-index dbaad39..61b62a6 100644
---- a/drivers/macintosh/adb.c
-+++ b/drivers/macintosh/adb.c
-@@ -46,7 +46,6 @@
+This does not work in userspace.
+
+
+ include/asm-arm/ptrace.h           |    6 ++----
+ include/asm-blackfin/ptrace.h      |    6 ++++--
+ include/asm-cris/arch-v10/Kbuild   |    1 -
+ include/asm-cris/arch-v10/ptrace.h |    4 ++++
+ include/asm-cris/arch-v32/Kbuild   |    1 -
+ include/asm-cris/arch-v32/ptrace.h |    4 ++++
+ include/asm-cris/ptrace.h          |    4 +++-
+ include/asm-frv/Kbuild             |    1 -
+ include/asm-m68knommu/ptrace.h     |    2 --
+ include/asm-mn10300/ptrace.h       |    8 ++++++--
+ include/asm-parisc/ptrace.h        |    4 +++-
+ include/asm-powerpc/Kbuild         |    1 -
+ include/asm-sh/ptrace.h            |    2 +-
+ include/asm-x86/Kbuild             |    1 -
+ include/asm-xtensa/ptrace.h        |   10 +++++-----
+ 15 files changed, 32 insertions(+), 23 deletions(-)
+
+fc14755b77cff7af5ff00e938a4c493a669e25cd diff --git a/include/asm-arm/ptrace.h b/include/asm-arm/ptrace.h
+index 7aaa206..8382b75 100644
+--- a/include/asm-arm/ptrace.h
++++ b/include/asm-arm/ptrace.h
+@@ -139,8 +139,6 @@ static inline int valid_user_regs(struct pt_regs *regs)
+ 	return 0;
+ }
+ 
+-#endif	/* __KERNEL__ */
+-
+ #define pc_pointer(v) \
+ 	((v) & ~PCMASK)
+ 
+@@ -153,10 +151,10 @@ extern unsigned long profile_pc(struct pt_regs *regs);
+ #define profile_pc(regs) instruction_pointer(regs)
  #endif
  
+-#ifdef __KERNEL__
+ #define predicate(x)		((x) & 0xf0000000)
+ #define PREDICATE_ALWAYS	0xe0000000
+-#endif
++
++#endif /* __KERNEL__ */
  
--EXPORT_SYMBOL(adb_controller);
- EXPORT_SYMBOL(adb_client_list);
+ #endif /* __ASSEMBLY__ */
  
- extern struct adb_driver via_macii_driver;
-@@ -80,7 +79,7 @@ static struct adb_driver *adb_driver_list[] = {
+diff --git a/include/asm-blackfin/ptrace.h b/include/asm-blackfin/ptrace.h
+index b8346cd..a45a80e 100644
+--- a/include/asm-blackfin/ptrace.h
++++ b/include/asm-blackfin/ptrace.h
+@@ -83,14 +83,14 @@ struct pt_regs {
+ #define PTRACE_GETREGS            12
+ #define PTRACE_SETREGS            13	/* ptrace signal  */
  
- static struct class *adb_dev_class;
+-#ifdef CONFIG_BINFMT_ELF_FDPIC
+ #define PTRACE_GETFDPIC           31
+ #define PTRACE_GETFDPIC_EXEC      0
+ #define PTRACE_GETFDPIC_INTERP    1
+-#endif
  
--struct adb_driver *adb_controller;
-+static struct adb_driver *adb_controller;
- BLOCKING_NOTIFIER_HEAD(adb_client_list);
- static int adb_got_sleep;
- static int adb_inited;
-@@ -290,7 +289,7 @@ static int adb_resume(struct platform_device *dev)
- }
- #endif /* CONFIG_PM */
+ #define PS_S  (0x0002)
  
--int __init adb_init(void)
-+static int __init adb_init(void)
- {
- 	struct adb_driver *driver;
- 	int i;
-diff --git a/drivers/macintosh/adbhid.c b/drivers/macintosh/adbhid.c
-index ef4c117..af72f97 100644
---- a/drivers/macintosh/adbhid.c
-+++ b/drivers/macintosh/adbhid.c
-@@ -75,7 +75,7 @@ static struct notifier_block adbhid_adb_notifier = {
- #define ADB_KEY_POWER_OLD	0x7e
- #define ADB_KEY_POWER		0x7f
++#ifdef __KERNEL__
++
+ /* user_mode returns true if only one bit is set in IPEND, other than the
+    master interrupt enable.  */
+ #define user_mode(regs) (!(((regs)->ipend & ~0x10) & (((regs)->ipend & ~0x10) - 1)))
+@@ -98,6 +98,8 @@ struct pt_regs {
+ #define profile_pc(regs) instruction_pointer(regs)
+ extern void show_regs(struct pt_regs *);
  
--u16 adb_to_linux_keycodes[128] = {
-+static const u16 adb_to_linux_keycodes[128] = {
- 	/* 0x00 */ KEY_A, 		/*  30 */
- 	/* 0x01 */ KEY_S, 		/*  31 */
- 	/* 0x02 */ KEY_D,		/*  32 */
-diff --git a/drivers/macintosh/via-pmu68k.c b/drivers/macintosh/via-pmu68k.c
-index e2f84da..b64741c 100644
---- a/drivers/macintosh/via-pmu68k.c
-+++ b/drivers/macintosh/via-pmu68k.c
-@@ -101,7 +101,6 @@ static int pmu_kind = PMU_UNKNOWN;
- static int pmu_fully_inited;
++#endif  /*  __KERNEL__  */
++
+ #endif				/* __ASSEMBLY__ */
  
- int asleep;
--BLOCKING_NOTIFIER_HEAD(sleep_notifier_list);
- 
- static int pmu_probe(void);
- static int pmu_init(void);
-@@ -741,8 +740,8 @@ pmu_handle_data(unsigned char *data, int len)
- 	}
- }
- 
--int backlight_level = -1;
--int backlight_enabled = 0;
-+static int backlight_level = -1;
-+static int backlight_enabled = 0;
- 
- #define LEVEL_TO_BRIGHT(lev)	((lev) < 1? 0x7f: 0x4a - ((lev) << 1))
- 
-diff --git a/include/linux/adb.h b/include/linux/adb.h
-index 64d8878..63bca50 100644
---- a/include/linux/adb.h
-+++ b/include/linux/adb.h
-@@ -84,7 +84,6 @@ enum adb_message {
-     ADB_MSG_PRE_RESET,	/* Called before resetting the bus */
-     ADB_MSG_POST_RESET	/* Called after resetting the bus (re-do init & register) */
+ /*
+diff --git a/include/asm-cris/arch-v10/Kbuild b/include/asm-cris/arch-v10/Kbuild
+index 60e7e1b..7a192e1 100644
+--- a/include/asm-cris/arch-v10/Kbuild
++++ b/include/asm-cris/arch-v10/Kbuild
+@@ -1,4 +1,3 @@
+-header-y += ptrace.h
+ header-y += user.h
+ header-y += svinto.h
+ header-y += sv_addr_ag.h
+diff --git a/include/asm-cris/arch-v10/ptrace.h b/include/asm-cris/arch-v10/ptrace.h
+index fb14c5e..2f464ea 100644
+--- a/include/asm-cris/arch-v10/ptrace.h
++++ b/include/asm-cris/arch-v10/ptrace.h
+@@ -106,10 +106,14 @@ struct switch_stack {
+ 	unsigned long return_ip; /* ip that _resume will return to */
  };
--extern struct adb_driver *adb_controller;
- extern struct blocking_notifier_head adb_client_list;
  
- int adb_request(struct adb_request *req, void (*done)(struct adb_request *),
++#ifdef __KERNEL__
++
+ /* bit 8 is user-mode flag */
+ #define user_mode(regs) (((regs)->dccr & 0x100) != 0)
+ #define instruction_pointer(regs) ((regs)->irp)
+ #define profile_pc(regs) instruction_pointer(regs)
+ extern void show_regs(struct pt_regs *);
+ 
++#endif  /*  __KERNEL__  */
++
+ #endif
+diff --git a/include/asm-cris/arch-v32/Kbuild b/include/asm-cris/arch-v32/Kbuild
+index a0ec545..35f2fc4 100644
+--- a/include/asm-cris/arch-v32/Kbuild
++++ b/include/asm-cris/arch-v32/Kbuild
+@@ -1,3 +1,2 @@
+-header-y += ptrace.h
+ header-y += user.h
+ header-y += cryptocop.h
+diff --git a/include/asm-cris/arch-v32/ptrace.h b/include/asm-cris/arch-v32/ptrace.h
+index 516cc70..41f4e86 100644
+--- a/include/asm-cris/arch-v32/ptrace.h
++++ b/include/asm-cris/arch-v32/ptrace.h
+@@ -106,9 +106,13 @@ struct switch_stack {
+ 	unsigned long return_ip; /* ip that _resume will return to */
+ };
+ 
++#ifdef __KERNEL__
++
+ #define user_mode(regs) (((regs)->ccs & (1 << (U_CCS_BITNR + CCS_SHIFT))) != 0)
+ #define instruction_pointer(regs) ((regs)->erp)
+ extern void show_regs(struct pt_regs *);
+ #define profile_pc(regs) instruction_pointer(regs)
+ 
++#endif  /*  __KERNEL__  */
++
+ #endif
+diff --git a/include/asm-cris/ptrace.h b/include/asm-cris/ptrace.h
+index 1ec69a7..d910925 100644
+--- a/include/asm-cris/ptrace.h
++++ b/include/asm-cris/ptrace.h
+@@ -4,11 +4,13 @@
+ #include <asm/arch/ptrace.h>
+ 
+ #ifdef __KERNEL__
++
+ /* Arbitrarily choose the same ptrace numbers as used by the Sparc code. */
+ #define PTRACE_GETREGS            12
+ #define PTRACE_SETREGS            13
+-#endif
+ 
+ #define profile_pc(regs) instruction_pointer(regs)
+ 
++#endif /* __KERNEL__ */
++
+ #endif /* _CRIS_PTRACE_H */
+diff --git a/include/asm-frv/Kbuild b/include/asm-frv/Kbuild
+index bc3f12c..0f8956d 100644
+--- a/include/asm-frv/Kbuild
++++ b/include/asm-frv/Kbuild
+@@ -3,4 +3,3 @@ include include/asm-generic/Kbuild.asm
+ header-y += registers.h
+ 
+ unifdef-y += termios.h
+-unifdef-y += ptrace.h
+diff --git a/include/asm-m68knommu/ptrace.h b/include/asm-m68knommu/ptrace.h
+index 47258e8..8c9194b 100644
+--- a/include/asm-m68knommu/ptrace.h
++++ b/include/asm-m68knommu/ptrace.h
+@@ -68,10 +68,8 @@ struct switch_stack {
+ /* Arbitrarily choose the same ptrace numbers as used by the Sparc code. */
+ #define PTRACE_GETREGS            12
+ #define PTRACE_SETREGS            13
+-#ifdef CONFIG_FPU
+ #define PTRACE_GETFPREGS          14
+ #define PTRACE_SETFPREGS          15
+-#endif
+ 
+ #ifdef __KERNEL__
+ 
+diff --git a/include/asm-mn10300/ptrace.h b/include/asm-mn10300/ptrace.h
+index b368468..7b06cc6 100644
+--- a/include/asm-mn10300/ptrace.h
++++ b/include/asm-mn10300/ptrace.h
+@@ -88,12 +88,16 @@ extern struct pt_regs *__frame; /* current frame pointer */
+ /* options set using PTRACE_SETOPTIONS */
+ #define PTRACE_O_TRACESYSGOOD     0x00000001
+ 
+-#if defined(__KERNEL__) && !defined(__ASSEMBLY__)
++#if defined(__KERNEL__)
++
++#if !defined(__ASSEMBLY__)
+ #define user_mode(regs)			(((regs)->epsw & EPSW_nSL) == EPSW_nSL)
+ #define instruction_pointer(regs)	((regs)->pc)
+ extern void show_regs(struct pt_regs *);
+-#endif
++#endif  /*  !__ASSEMBLY  */
+ 
+ #define profile_pc(regs) ((regs)->pc)
+ 
++#endif  /*  __KERNEL__  */
++
+ #endif /* _ASM_PTRACE_H */
+diff --git a/include/asm-parisc/ptrace.h b/include/asm-parisc/ptrace.h
+index 93f990e..3e94c5d 100644
+--- a/include/asm-parisc/ptrace.h
++++ b/include/asm-parisc/ptrace.h
+@@ -33,7 +33,6 @@ struct pt_regs {
+ 	unsigned long ipsw;	/* CR22 */
+ };
+ 
+-#define task_regs(task) ((struct pt_regs *) ((char *)(task) + TASK_REGS))
+ /*
+  * The numbers chosen here are somewhat arbitrary but absolutely MUST
+  * not overlap with any of the number assigned in <linux/ptrace.h>.
+@@ -43,8 +42,11 @@ struct pt_regs {
+  * since we have taken branch traps too)
+  */
+ #define PTRACE_SINGLEBLOCK	12	/* resume execution until next branch */
++
+ #ifdef __KERNEL__
+ 
++#define task_regs(task) ((struct pt_regs *) ((char *)(task) + TASK_REGS))
++
+ /* XXX should we use iaoq[1] or iaoq[0] ? */
+ #define user_mode(regs)			(((regs)->iaoq[0] & 3) ? 1 : 0)
+ #define user_space(regs)		(((regs)->iasq[1] != 0) ? 1 : 0)
+diff --git a/include/asm-powerpc/Kbuild b/include/asm-powerpc/Kbuild
+index 7381916..6920904 100644
+--- a/include/asm-powerpc/Kbuild
++++ b/include/asm-powerpc/Kbuild
+@@ -32,7 +32,6 @@ unifdef-y += elf.h
+ unifdef-y += nvram.h
+ unifdef-y += param.h
+ unifdef-y += posix_types.h
+-unifdef-y += ptrace.h
+ unifdef-y += seccomp.h
+ unifdef-y += signal.h
+ unifdef-y += spu_info.h
+diff --git a/include/asm-sh/ptrace.h b/include/asm-sh/ptrace.h
+index 8d6c92b..7d36dc3 100644
+--- a/include/asm-sh/ptrace.h
++++ b/include/asm-sh/ptrace.h
+@@ -5,7 +5,7 @@
+  * Copyright (C) 1999, 2000  Niibe Yutaka
+  *
+  */
+-#if defined(__SH5__) || defined(CONFIG_SUPERH64)
++#if defined(__SH5__)
+ struct pt_regs {
+ 	unsigned long long pc;
+ 	unsigned long long sr;
+diff --git a/include/asm-x86/Kbuild b/include/asm-x86/Kbuild
+index 1e35545..00473f7 100644
+--- a/include/asm-x86/Kbuild
++++ b/include/asm-x86/Kbuild
+@@ -19,7 +19,6 @@ unifdef-y += msr.h
+ unifdef-y += mtrr.h
+ unifdef-y += posix_types_32.h
+ unifdef-y += posix_types_64.h
+-unifdef-y += ptrace.h
+ unifdef-y += unistd_32.h
+ unifdef-y += unistd_64.h
+ unifdef-y += vm86.h
+diff --git a/include/asm-xtensa/ptrace.h b/include/asm-xtensa/ptrace.h
+index 422c73e..089b0db 100644
+--- a/include/asm-xtensa/ptrace.h
++++ b/include/asm-xtensa/ptrace.h
+@@ -73,10 +73,10 @@
+ #define PTRACE_GETXTREGS	18
+ #define PTRACE_SETXTREGS	19
+ 
+-#ifndef __ASSEMBLY__
+-
+ #ifdef __KERNEL__
+ 
++#ifndef __ASSEMBLY__
++
+ /*
+  * This struct defines the way the registers are stored on the
+  * kernel stack during a system call or other kernel entry.
+@@ -122,14 +122,14 @@ extern void show_regs(struct pt_regs *);
+ # ifndef CONFIG_SMP
+ #  define profile_pc(regs) instruction_pointer(regs)
+ # endif
+-#endif /* __KERNEL__ */
+ 
+ #else	/* __ASSEMBLY__ */
+ 
+-#ifdef __KERNEL__
+ # include <asm/asm-offsets.h>
+ #define PT_REGS_OFFSET	  (KERNEL_STACK_SIZE - PT_USER_SIZE)
+-#endif
+ 
+ #endif	/* !__ASSEMBLY__ */
++
++#endif  /* __KERNEL__ */
++
+ #endif	/* _XTENSA_PTRACE_H */
 
