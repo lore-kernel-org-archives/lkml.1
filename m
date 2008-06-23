@@ -1,104 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756092AbYFWLPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbYFWLTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756092AbYFWLPt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 07:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbYFWLPk
+	id S1754486AbYFWLTZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 07:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbYFWLTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 07:15:40 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42415 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752514AbYFWLPj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 07:15:39 -0400
-Date: Mon, 23 Jun 2008 20:21:11 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [bad page] memcg: another bad page at page migration
- (2.6.26-rc5-mm3 + patch collection)
-Message-Id: <20080623202111.f2c54e21.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080623150817.628aef9f.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080623145341.0a365c67.nishimura@mxp.nes.nec.co.jp>
-	<20080623150817.628aef9f.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jun 2008 07:19:17 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:48058 "EHLO pardus.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751484AbYFWLTQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 07:19:16 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [patch 0/5] 2.6.25-stable review
+Date: Mon, 23 Jun 2008 14:19:05 +0300
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+References: <20080622190111.GA20141@suse.de>
+In-Reply-To: <20080622190111.GA20141@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200806231419.08436.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jun 2008 15:08:17 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Hi Greg and -stable team;
 
-> On Mon, 23 Jun 2008 14:53:41 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> 
-> > Hi.
-> > 
-> > It seems the current -mm has been gradually stabilized,
-> > but I encounter another bad page problem in my test(*1)
-> > on 2.6.26-rc5-mm3 + patch collection(*2).
-> > 
-> > Compared to previous probrems fixed by the patch collection,
-> > the frequency is law.
-> > 
-> > - 1 time in 1 hour running(1'st one was seen after 30 minutes)
-> > - 3 times in 16 hours running(1'st one was seen after 4 hours)
-> > - 10 times in 70 hours running(1'st one was seen after 8 hours)
-> > 
-> > All bad pages show similar message like below:
-> > 
-> Thank you. I'll dig this.
-> 
-> 
-Here is one possibilty. But if your test doesn't migrate any shmem, 
-I'll have to dig more ;)
-Anyway, I'll schedule this patch.
+22 Haz 2008 Paz tarihinde, Greg KH şunları yazmıştı: 
+> Responses should be made by Tuesday, June 24, 18:00:00 UTC.  Anything
+> received after that time might be too late.
 
--Kame
-=
-mem_cgroup_uncharge() against old page is done after radix-tree-replacement.
-And there were special handling to ingore swap-cache page. But, shmem can
-be swap-cache and file-cache at the same time. Chekcing PageSwapCache() is
-not correct here. Check PageAnon() instead.
+Please consider following commit for -stable also, it definetly fixes a boot failure caused by reported opps
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+commit 1f6ef2342972dc7fd623f360f84006e2304eb935
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Fri Jun 20 12:19:28 2008 -0700
 
----
- mm/migrate.c |   11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+    [watchdog] hpwdt: fix use of inline assembly
 
-Index: test2-2.6.26-rc5-mm3/mm/migrate.c
-===================================================================
---- test2-2.6.26-rc5-mm3.orig/mm/migrate.c
-+++ test2-2.6.26-rc5-mm3/mm/migrate.c
-@@ -330,7 +330,13 @@ static int migrate_page_move_mapping(str
- 	__inc_zone_page_state(newpage, NR_FILE_PAGES);
- 
- 	spin_unlock_irq(&mapping->tree_lock);
--	if (!PageSwapCache(newpage))
-+
-+	/*
-+	 * The page is removed from radix-tree implicitly.
-+	 * We uncharge it here but swap cache of anonymous page should be
-+	 * uncharged by mem_cgroup_ucharge_page().
-+	 */
-+	if (!PageAnon(newpage))
- 		mem_cgroup_uncharge_cache_page(page);
- 
- 	return 0;
-@@ -379,7 +385,8 @@ static void migrate_page_copy(struct pag
- 		/*
- 		 * SwapCache is removed implicitly. Uncharge against swapcache
- 		 * should be called after ClearPageSwapCache() because
--		 * mem_cgroup_uncharge_page checks the flag.
-+		 * mem_cgroup_uncharge_page checks the flag. shmem's swap cache
-+		 * is uncharged before here.
- 		 */
- 		mem_cgroup_uncharge_page(page);
- 	}
+    The inline assembly in drivers/watchdog/hpwdt.c was incredibly broken,
+    and included all the function prologue and epilogue stuff, even though
+    it was itself then inside a C function where the compiler would add its
+    own prologue and epilogue on top of it all.
 
+    This then just _happened_ to work if you had exactly the right compiler
+    version and exactly the right compiler flags, so that gcc just happened
+    to not create any prologue at all (the gcc-generated epilogue wouldn't
+    matter, since it would never be reached).
+
+    But the more proper way to fix it is to simply not do this.  Move the
+    inline asm to the top level, with no surrounding function at all (the
+    better alternative would be to remove the prologue and make it actually
+    use proper description of the arguments to the inline asm, but that's a
+    bigger change than the one I'm willing to make right now).
+
+    Tested-by: S.Çağlar Onur <caglar@pardus.org.tr>
+    Acked-by: Thomas Mingarelli <Thomas.Mingarelli@hp.com>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+
+Cheers
+-- 
+S.Çağlar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
