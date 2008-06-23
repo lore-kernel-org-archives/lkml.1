@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbYFWFGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbYFWFPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755146AbYFWFGq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 01:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbYFWFGh
+	id S1755175AbYFWFPj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 01:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYFWFP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 01:06:37 -0400
-Received: from mga14.intel.com ([143.182.124.37]:22832 "EHLO mga14.intel.com"
+	Mon, 23 Jun 2008 01:15:29 -0400
+Received: from smtp1.versatel.nl ([62.58.50.88]:36111 "EHLO smtp1.versatel.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751274AbYFWFGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 01:06:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,687,1204531200"; 
-   d="scan'208";a="1166667"
-Subject: Re: [2.6.26-rc5] iwlwifi 4965 not working - last on 2.6.23
-From: Zhu Yi <yi.zhu@intel.com>
-To: =?UTF-8?Q?Micha=C5=82_Kud=C5=82a?= <michal.kudla@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <200806230530.44283.Michal.Kudla@gmail.com>
-References: <200806060039.48488.m1k0@wp.pl>
-	 <200806162021.37105.Michal.Kudla@gmail.com>
-	 <1213665088.2533.24.camel@debian.sh.intel.com>
-	 <200806230530.44283.Michal.Kudla@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Organization: Intel Corp.
-Date: Mon, 23 Jun 2008 13:05:51 +0800
-Message-Id: <1214197551.14590.148.camel@debian.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 8bit
+	id S1751429AbYFWFP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 01:15:27 -0400
+Message-ID: <485F32C0.9060401@hhs.nl>
+Date: Mon, 23 Jun 2008 07:21:04 +0200
+From: Hans de Goede <j.w.r.degoede@hhs.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080315)
+MIME-Version: 1.0
+To: Zhang Rui <rui.zhang@intel.com>
+CC: Rene Herman <rene.herman@keyaccess.nl>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [lm-sensors] [REGRESSION, ABI] Re:  LMSENSORS: 2.6.26-rc,	enabling
+ ACPI Termal Zone support costs sensors
+References: <485DA11C.7050906@keyaccess.nl> <485DFF35.6080008@hhs.nl>	<485E505F.8010306@keyaccess.nl> <485E61DE.6020202@hhs.nl>	<485E6F12.4010307@keyaccess.nl> <485E94ED.10602@hhs.nl>	<485E992B.8010101@keyaccess.nl>  <485ECB23.4010305@keyaccess.nl> <1214185482.3001.45.camel@rzhang-dt.sh.intel.com>
+In-Reply-To: <1214185482.3001.45.camel@rzhang-dt.sh.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-23 at 05:30 +0200, Michał Kudła wrote:
-> >ZY Your radio is disabled by the software rf_kill switch. Please do a
-> >ZY $ echo 0 > /sys/bus/pci/drivers/iwl4965/<dev id>/rfkill
-> \:rfkill0/state
+Zhang Rui wrote:
+> On Mon, 2008-06-23 at 05:58 +0800, Rene Herman wrote:
+>> On 22-06-08 20:25, Rene Herman wrote:
+>>
+>>> Another way to solve it _could_ be to just make up a device link if
+>>> something generic is available so that sensors doesn't trip over it
+>>> in the first place but I don't know if that's a good option. You
+>>> might.
+>> This also works for me and, if correct, is ofcourse better than the
+>> CONFIG option. Wants a comment from the thermal_zone side (for which
+>> Zhang Rui seems the correct CC?) though.
+> Hi, Rene and Hans,
 > 
-> Still don't work
+> Thank you for your efforts on this issue and sorry for the late
+> response, I did not check my email during the whole weekend.
+> 
+> About the hwmon ABI, after the device symbol link is created, are there
+> any other ABIs required in the device node? 
 
-Oops, you should echo 1 instead.
+Not that I know of, Jean ?
 
-Thanks,
--yi
+Regards,
 
+Hans
