@@ -1,113 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbYFWAVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbYFWAY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755363AbYFWAVV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 20:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbYFWAVK
+	id S1753550AbYFWAY1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 20:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbYFWAYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 20:21:10 -0400
-Received: from ns2.suse.de ([195.135.220.15]:58461 "EHLO mx2.suse.de"
+	Sun, 22 Jun 2008 20:24:19 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:53190 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752779AbYFWAVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 20:21:09 -0400
-From: Neil Brown <neilb@suse.de>
-To: Jeff Layton <jlayton@redhat.com>
-Date: Mon, 23 Jun 2008 10:20:59 +1000
+	id S1750979AbYFWAYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 20:24:18 -0400
+Date: Mon, 23 Jun 2008 01:24:15 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Daniel J Blueman <daniel.blueman@gmail.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+Subject: Re: [2.6.26-rc7] shrink_icache from pagefault locking (nee: nfsd hangs for a few sec)...
+Message-ID: <20080623002415.GB21597@csn.ul.ie>
+References: <6278d2220806220256g674304ectb945c14e7e09fede@mail.gmail.com> <6278d2220806220258p28de00c1x615ad7b2f708e3f8@mail.gmail.com> <20080622221930.GA11558@disturbed>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18526.60523.584503.68076@notabene.brown>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH - take 2] knfsd: nfsd: Handle ERESTARTSYS from syscalls.
-In-Reply-To: message from Jeff Layton on Thursday June 19
-References: <20080619101025.24263.patches@notabene>
-	<1080619001109.24338@suse.de>
-	<20080618210947.2110a541@tleilax.poochiereds.net>
-	<18521.50300.572838.123366@notabene.brown>
-	<20080619063824.00ca6381@tleilax.poochiereds.net>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080622221930.GA11558@disturbed>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday June 19, jlayton@redhat.com wrote:
-> > 
-> > I wonder why we have all this mucking about this signal masks anyway.
-> > Anyone have any ideas about what it actually achieves?
-> > 
+On (23/06/08 08:19), Dave Chinner didst pronounce:
+> [added xfs@oss.sgi.com to cc]
 > 
-> HCH asked me the same question when I did the conversion to kthreads.
-> My interpretation (based on guesswork here) was that we wanted to
-> distinguish between SIGKILL and other allowed signals. A SIGKILL is
-> allowed to interrupt the underlying I/O, but other signals should not.
-
-Yes, that seems to be the intent of the code, but does it really make
-any sense?
-Traditionally, filesystem IO is immune to signals so any signal
-arriving while nfsd is doing filesystem IO is irrelevant.
-I guess network IO can be interrupted, and nfsd is expected to write
-to the network during this time when all-but-SIGKILL is ignored.  So
-maybe the intent was to allow e.g. SIGINT to shut down cleanly, and
-SIGKILL to kill more promptly even if the network was sluggish...
-
-However I don't think we ever blocked on network write.  And currently
-we try very hard to ensure that there is enough memory to hold a reply
-before we start on a request, so it should definitely never block.
-
-So until OCFS2 came along, the distinction seems to have been
-meaningless, which is why I questioned it.
-
-Even with OCFS2 I'm not sure it makes much sense.
-
-Any time that we shut down NFSD, we really want it to shut down
-promptly.  If SIGINT isn't certain to achieve that, we should just be
-sending SIGKILL.
-Conversely, if it does make sense to keep the two signals, we should
-be educating init.d scripts to make use of them. e.g.
-
-  killall -2 nfsd
-  sleep 0.1
-  if [ `cat /proc/fs/nfsd/threads` -gt 0 ]
-  then sleep 5
-       killall -9 nfsd
-  fi
-
-or something more clever.
-
-I think my leaning is just to remove the distinction.  About the worst
-that can happen if the filesystem decides to respond to the signal is
-that you get a short write or a short read, both of which should be
-correctly handled by the client.
-
-
-This brings up an interesting issue for your kthread conversion.
-The new code uses kthread_stop instead of sending a signal.  That
-means it will block until the threads have completed a request and
-exited.
-If some thread is in a filesystem that is waiting on network IO and
-expects to get a signal if it needs to stop in a hurry, then the
-shutdown could block for a long time.  That might not be what we
-want.
-
-Particularly as if we are blocked in kthread_stop, then no-one else can
-do a kthread stop....
-
-I think there are issues here that don't yet have obvious answers.
-Other opinions most welcome.
-
-
+> On Sun, Jun 22, 2008 at 10:58:56AM +0100, Daniel J Blueman wrote:
+> > I'm seeing a similar issue [2] to what was recently reported [1] by
+> > Alexander, but with another workload involving XFS and memory
+> > pressure.
+> > 
+> > SLUB allocator is in use and config is at http://quora.org/config-client-debug .
+> > 
+> > Let me know if you'd like more details/vmlinux objdump etc.
+> > 
+> > Thanks,
+> >  Daniel
+> > 
+> > --- [1]
+> > 
+> > http://groups.google.com/group/fa.linux.kernel/browse_thread/thread/e673c9173d45a735/db9213ef39e4e11c
+> > 
+> > --- [2]
+> > 
+> > =======================================================
+> > [ INFO: possible circular locking dependency detected ]
+> > 2.6.26-rc7-210c #2
+> > -------------------------------------------------------
+> > AutopanoPro/4470 is trying to acquire lock:
+> >  (iprune_mutex){--..}, at: [<ffffffff802d94fd>] shrink_icache_memory+0x7d/0x290
+> > 
+> > but task is already holding lock:
+> >  (&mm->mmap_sem){----}, at: [<ffffffff805e3e15>] do_page_fault+0x255/0x890
+> > 
+> > which lock already depends on the new lock.
+> > 
+> > 
+> > the existing dependency chain (in reverse order) is:
+> > 
+> > -> #2 (&mm->mmap_sem){----}:
+> >       [<ffffffff80278f4d>] __lock_acquire+0xbdd/0x1020
+> >       [<ffffffff802793f5>] lock_acquire+0x65/0x90
+> >       [<ffffffff805df5ab>] down_read+0x3b/0x70
+> >       [<ffffffff805e3e3c>] do_page_fault+0x27c/0x890
+> >       [<ffffffff805e16cd>] error_exit+0x0/0xa9
+> >       [<ffffffffffffffff>] 0xffffffffffffffff
+> > 
+> > -> #1 (&(&ip->i_iolock)->mr_lock){----}:
+> >       [<ffffffff80278f4d>] __lock_acquire+0xbdd/0x1020
+> >       [<ffffffff802793f5>] lock_acquire+0x65/0x90
+> >       [<ffffffff8026d746>] down_write_nested+0x46/0x80
+> >       [<ffffffff8039df29>] xfs_ilock+0x99/0xa0
+> >       [<ffffffff8039e0cf>] xfs_ireclaim+0x3f/0x90
+> >       [<ffffffff803ba889>] xfs_finish_reclaim+0x59/0x1a0
+> >       [<ffffffff803bc199>] xfs_reclaim+0x109/0x110
+> >       [<ffffffff803c9541>] xfs_fs_clear_inode+0xe1/0x110
+> >       [<ffffffff802d906d>] clear_inode+0x7d/0x110
+> >       [<ffffffff802d93aa>] dispose_list+0x2a/0x100
+> >       [<ffffffff802d96af>] shrink_icache_memory+0x22f/0x290
+> >       [<ffffffff8029d868>] shrink_slab+0x168/0x1d0
+> >       [<ffffffff8029e0b6>] kswapd+0x3b6/0x560
+> >       [<ffffffff8026921d>] kthread+0x4d/0x80
+> >       [<ffffffff80227428>] child_rip+0xa/0x12
+> >       [<ffffffffffffffff>] 0xffffffffffffffff
 > 
-> The question to answer here, I suppose, is whether masking a pending
-> signal is sufficient to make signal_pending() return false. If I'm
-> looking correctly then the answer should be "yes". So I don't think we
-> have a race here after all. I suspect that if SuSE used a different
-> signal here, that would prevent this from happening. For the record,
-> both RHEL and Fedora's init scripts use SIGINT for this.
+> You may as well ignore anything invlving this path in XFS until
+> lockdep gets fixed. The kswapd reclaim path is inverted over the
+> synchronous reclaim path that is xfs_ilock -> run out of memory ->
+> prune_icache and then potentially another -> xfs_ilock.
+> 
 
-Yep.  Using SIGINT or "rpc.nfsd 0" would avoid the problem.
-So does mounted the OCFS2 filesystem with -o nointr.
+In that case, have you any theory as to why this circular dependency is
+being reported now but wasn't before 2.6.26-rc1? I'm beginning to wonder
+if the bisecting fingering the zonelist modifiation is just a
+co-incidence.
 
-NeilBrown
+Also, do you think the stalls were happening before but just not being noticed?
+
+> In this case, XFS can *never* deadlock because the second xfs_ilock
+> is on a different, unreferenced, unlocked inode, but without turning
+> off lockdep there is nothing in XFS that can be done to prevent
+> this warning.
+> 
+> Therxp eis a similar bug in the VM w.r.t the mmap_sem in that the
+> mmap_sem is held across a call to put_filp() which can result in
+> inversions between the xfs_ilock and mmap_sem.
+> 
+> Both of these cases cannot be solved by changing XFS - lockdep
+> needs to be made aware of paths that can invert normal locking
+> order (like prune_icache) so it doesn't give false positives
+> like this.
+> 
+> > -> #0 (iprune_mutex){--..}:
+> >       [<ffffffff80278db7>] __lock_acquire+0xa47/0x1020
+> >       [<ffffffff802793f5>] lock_acquire+0x65/0x90
+> >       [<ffffffff805dedd5>] mutex_lock_nested+0xb5/0x300
+> >       [<ffffffff802d94fd>] shrink_icache_memory+0x7d/0x290
+> >       [<ffffffff8029d868>] shrink_slab+0x168/0x1d0
+> >       [<ffffffff8029db38>] try_to_free_pages+0x268/0x3a0
+> >       [<ffffffff802979d6>] __alloc_pages_internal+0x206/0x4b0
+> >       [<ffffffff80297c89>] __alloc_pages_nodemask+0x9/0x10
+> >       [<ffffffff802b2bc2>] alloc_page_vma+0x72/0x1b0
+> >       [<ffffffff802a3642>] handle_mm_fault+0x462/0x7b0
+> >       [<ffffffff805e3ecc>] do_page_fault+0x30c/0x890
+> >       [<ffffffff805e16cd>] error_exit+0x0/0xa9
+> >       [<ffffffffffffffff>] 0xffffffffffffffff
+> 
+> This case is different in that it ??s complaining about mmap_sem vs
+> iprune_mutex, so I think that we can pretty much ignore the XFS side
+> of things here - the problem is higher level code....
+> 
+> >  [<ffffffff8029db38>] try_to_free_pages+0x268/0x3a0
+> >  [<ffffffff8029c240>] ? isolate_pages_global+0x0/0x40
+> >  [<ffffffff802979d6>] __alloc_pages_internal+0x206/0x4b0
+> >  [<ffffffff80297c89>] __alloc_pages_nodemask+0x9/0x10
+> >  [<ffffffff802b2bc2>] alloc_page_vma+0x72/0x1b0
+> >  [<ffffffff802a3642>] handle_mm_fault+0x462/0x7b0
+> 
+> FWIW, should page allocation in a page fault be allowed to recurse
+> into the filesystem? If I follow the spaghetti of inline and
+> compiler inlined functions correctly, this is a GFP_HIGHUSER_MOVABLE
+> allocation, right? Should we be allowing shrink_icache_memory()
+> to be called at all in the page fault path?
+> 
+
+Well, the page fault path is able to go to sleep and can enter direct
+reclaim under low memory situations. Right now, I'm failing to see why a
+page fault should not be allowed to reclaim pages in use by a
+filesystem. It was allowed before so the question still is why the
+circular lock warning appears now but didn't before.
+
+> Cheers,
+> 
+> Dave.
+> -- 
+> Dave Chinner
+> david@fromorbit.com
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
