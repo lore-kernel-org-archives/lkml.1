@@ -1,123 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758140AbYFWSFM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758891AbYFWSH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758140AbYFWSFM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 14:05:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbYFWSE7
+	id S1758891AbYFWSH1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 14:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbYFWSHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 14:04:59 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:46251 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752567AbYFWSE6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 14:04:58 -0400
-Message-ID: <485FE5C9.3050305@sgi.com>
-Date: Mon, 23 Jun 2008 11:04:57 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com>	<485947A8.8060801@goop.org> <4859511E.5050605@sgi.com>	<48596315.6020104@goop.org> <48596893.4040908@sgi.com>	<485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org>	<485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>	<485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com>	<485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com>	<485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>	<485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com> <m1skv7onvh.fsf@frodo.ebiederm.org> <485FD56B.1090303@sgi.com> <485FDE80.1010700@goop.org>
-In-Reply-To: <485FDE80.1010700@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 23 Jun 2008 14:07:18 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54001 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755224AbYFWSHR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 14:07:17 -0400
+Date: Mon, 23 Jun 2008 11:07:06 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Darren Hart <dvhltc@us.ibm.com>
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       josh@freedesktop.org, niv@us.ibm.com, dino@in.ibm.com,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       vegard.nossum@gmail.com, adobriyan@gmail.com, oleg@tv-sign.ru,
+       bunk@kernel.org, rjw@sisk.pl
+Subject: Re: [PATCH -tip-rcu] Make rcutorture more vicious: make quiescent
+ rcutorture less power-hungry
+Message-ID: <20080623110706.197f25b1@infradead.org>
+In-Reply-To: <1214243649.4440.10.camel@Aeon>
+References: <20080618122144.GA27143@linux.vnet.ibm.com>
+	<20080618162649.GA18326@linux.vnet.ibm.com>
+	<20080622200638.GA25328@linux.vnet.ibm.com>
+	<20080622131712.54ba732c@infradead.org>
+	<1214243649.4440.10.camel@Aeon>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Mike Travis wrote:
->> Eric W. Biederman wrote:
->>  
->>> Mike Travis <travis@sgi.com> writes:
->>>
->>>    
->>>> Jeremy Fitzhardinge wrote:
->>>>      
->>>>> BTW, I think __per_cpu_load will cause trouble if you make a
->>>>> relocatable
->>>>> kernel, being an absolute symbol.  But I have relocation off at the
->>>>> moment.
->>>>>
->>>>>         
->>>> ...
->>>> Here's where it's defined (in include/asm-generic/vmlinux.lds.h):
->>>>
->>>> #ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
->>>> #define
->>>> PERCPU(align)                                                   \
->>>>         . =
->>>> ALIGN(align);                                               \
->>>>         percpu : { }
->>>> :percpu                                            \
->>>>         __per_cpu_load =
->>>> .;                                             \
->>>>         .data.percpu 0 : AT(__per_cpu_load - LOAD_OFFSET)
->>>> {             \
->>>>                
->>>> *(.data.percpu.first)                                   \
->>>>                
->>>> *(.data.percpu.shared_aligned)                          \
->>>>                
->>>> *(.data.percpu)                                         \
->>>>                
->>>> *(.data.percpu.page_aligned)                            \
->>>>                 ____per_cpu_size =
->>>> .;                                   \
->>>>        
->>>> }                                                               \
->>>>         . = __per_cpu_load +
->>>> ____per_cpu_size;                          \
->>>>         data : { } :data
->>>> #else
->>>>
->>>> Can we generate a new symbol which would account for LOAD_OFFSET?
->>>>       
->>> Ouch.  Absolute symbols indeed.  On the 32bit kernel that may play havoc
->>> with the relocatable kernel, although we have had similar absolute logic
->>> for the last year. With __per_cpu_start and __per_cpu_end so it may
->>> not be a problem.
->>>
->>> To initialize the percpu data you do want to talk to the virtual address
->>> at __per_coup_load.  But it is absolute Ugh. 
->>> It might be worth saying something like.
->>> .data.percpu.start : AT(.data.percpu.dummy - LOAD_OFFSET) {
->>>     DATA(0)                       . = ALIGN(align);
->>>         __per_cpu_load = . ;                   }
->>> To make __per_cpu_load a relative symbol. ld has a bad habit of taking
->>> symbols out of empty sections and making them absolute.  Which is why
->>> I added the DATA(0).
->>>
->>> Still I don't think that would be the 64bit problem.
->>>
->>> Eric
->>>     
->>
->> I'm not sure I understand the linker lingo enough to fill in the rest
->> of the blanks... I've tried various versions around this framework and
->> none have been accepted yet.
->>
->> #ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
->> #define PERCPU(align)                                                   \
->>         .data.percpu.start : AT(.data.percpu.dummy - LOAD_OFFSET) {     \
->>                 DATA(0)                                                 \
->>                 . = ALIGN(align);                                       \
->>                 __per_cpu_load = .;                                     \
->>                 *(.data.percpu.first)                                   \
->>                 *(.data.percpu.shared_aligned)                          \
->>                 *(.data.percpu)                                         \
->>                 *(.data.percpu.page_aligned)                            \
->>                 ____per_cpu_size = . - __per_cpu_load                   \
->>         }                                                               \
->> #else
->>   
-> 
-> That looks OK to me.  Does it work?
-> 
->    J
+On Mon, 23 Jun 2008 17:54:09 +0000
+Darren Hart <dvhltc@us.ibm.com> wrote:
 
-Nope, fighting undefines and/or syntax errors in the linker.
+> I'm a little concerned about how this will affect real-time
+> performance, as queueing up lots of timers all at once can lead to
+> long running timer expiration handlers.  If just a schedule_timeout,
+> I suppose we are only looking at a process wakeup, as opposed to a
+> softirq context callback function?
+
+in reality, the time it takes to deliver the interrupt (including
+waking the CPU up etc), is likely to be an order or two of magnitude
+higher than this kind of code loop.... 
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
