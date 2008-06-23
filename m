@@ -1,33 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbYFWL51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbYFWMDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756569AbYFWL51 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 07:57:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYFWL5R
+	id S1755165AbYFWMDn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 08:03:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYFWMDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 07:57:17 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:28091 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753043AbYFWL5Q (ORCPT
+	Mon, 23 Jun 2008 08:03:35 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52903 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752188AbYFWMDf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 07:57:16 -0400
-Date: Mon, 23 Jun 2008 13:57:04 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Hans de Goede <j.w.r.degoede@hhs.nl>, linux-acpi@vger.kernel.org,
-       Zhang Rui <rui.zhang@intel.com>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-Subject: Re: LMSENSORS: 2.6.26-rc,  enabling ACPI Termal Zone support costs
-  sensors
-Message-ID: <20080623135704.2980078c@hyperion.delvare>
-In-Reply-To: <485F79C6.20507@keyaccess.nl>
-References: <485DA11C.7050906@keyaccess.nl>
-	<485DFF35.6080008@hhs.nl>
-	<485E505F.8010306@keyaccess.nl>
-	<485E61DE.6020202@hhs.nl>
-	<20080623120844.5f722aa6@hyperion.delvare>
-	<485F79C6.20507@keyaccess.nl>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Mon, 23 Jun 2008 08:03:35 -0400
+Date: Mon, 23 Jun 2008 07:02:23 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Gautham R Shenoy <ego@in.ibm.com>
+Cc: kosaki.motohiro@jp.fujitsu.com, vegard.nossum@gmail.com, menage@google.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       maxk@qualcomm.com
+Subject: Re: v2.6.26-rc7/cgroups: circular locking dependency
+Message-Id: <20080623070223.eaa8e130.pj@sgi.com>
+In-Reply-To: <1214149823.3223.313.camel@lappy.programming.kicks-ass.net>
+References: <20080621173859.GA6846@damson.getinternet.no>
+	<2f11576a0806220834m3572ee80i72229cb9a1613558@mail.gmail.com>
+	<1214149823.3223.313.camel@lappy.programming.kicks-ass.net>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -35,50 +31,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rene,
+CC'd Gautham R Shenoy <ego@in.ibm.com>.
 
-On Mon, 23 Jun 2008 12:24:06 +0200, Rene Herman wrote:
-> On 23-06-08 12:08, Jean Delvare wrote:
-> > No, the kernel does the right thing and does not need to be modified
-> > at all.
-> 
-> No Jean, this is totally unacceptable. No matter how you want to call 
-> things, 2.6.26 is going to break important functionality on millions of 
-> systems and you simply do not get to do that.
+I believe that we had the locking relation between what had been
+cgroup_lock (global cgroup lock which can be held over large stretches
+of non-performance critical code) and callback_mutex (global cpuset
+specific lock which is held over shorter stretches of more performance
+critical code - though still not on really hot code paths.)  One can
+nest callback_mutex inside cgroup_lock, but not vice versa.
 
-No, it's not going to be the end of the world that you predict. Please
-stop being alarmist, it really doesn't help.
+The callback_mutex guarded some CPU masks and Node masks, which might
+be multi-word and hence don't change atomically.  Any low level code
+that needs to read these these cpuset CPU and Node masks, needs to
+hold callback_mutex briefly, to keep that mask from changing while
+being read.
 
-We are going to break hardware monitoring for users who upgrade to
-kernel 2.6.26 by themselves and have enabled option "THERMAL" and are
-using lm-sensors <= 2.10.6. I suspect this is a relatively small number
-of users, and these are also the ones who are presumably skilled enough
-to go to http://www.lm-sensors.org/, find the patch they need, and
-apply it to libsensors themselves. 
+There is even a comment in kernel/cpuset.c, explaining how an ABBA
+deadlock must be avoided when calling rebuild_sched_domains():
 
-We are not going to break any system using a distribution kernel
-because distributions test their kernel at least to some extent before
-they release it, and that kind of breakage can't go unnoticed. So,
-distributions which haven't completely switched to lm-sensors 3.x yet,
-will see the breakage and patch their libsensors 2.10.6 to fix it. For
-what it's worth, the patch in question is in openSuse since March 17th.
+/*
+ * rebuild_sched_domains()
+ *
+ * ...
+ *
+ * Call with cgroup_mutex held.  May take callback_mutex during
+ * call due to the kfifo_alloc() and kmalloc() calls.  May nest
+ * a call to the get_online_cpus()/put_online_cpus() pair.
+ * Must not be called holding callback_mutex, because we must not
+ * call get_online_cpus() while holding callback_mutex.  Elsewhere
+ * the kernel nests callback_mutex inside get_online_cpus() calls.
+ * So the reverse nesting would risk an ABBA deadlock.
 
-For distributions who have good maintainers, there should never be any
-problem anyway. We maintain and publish a list of recommended patches.
-A distribution with all these patches applied should avoid all known
-problems, compatibility or otherwise.
+This went into the kernel sometime around 2.6.18.
 
-Please also realize that I personally keep the maintainers of the
-Fedora, openSuse and Debian lm-sensors packages informed when I update
-the list of recommended patches. If I should forget to do so and they
-hit a problem, they know where to find me.
+Then in October and November of 2007, Gautham R Shenoy submitted
+"Refcount Based Cpu Hotplug" (http://lkml.org/lkml/2007/11/15/239)
 
-> Can you comment on the last patch posted? It's trivial:
-> 
-> http://lkml.org/lkml/2008/6/22/243
+This added cpu_hotplug.lock, which at first glance seems to fit into
+the locking hierarchy about where callback_mutex did before, such as
+being invocable from rebuild_sched_domains().
 
-It's trivial and wrong, so thanks but no thanks. The bug is in
-libsensors, we fix it in libsensors.
+However ... the kernel/cpuset.c comments were not updated to describe
+the intended locking hierarchy as it relates to cpu_hotplug.lock, and
+it looks as if cpu_hotplug.lock can also be taken while invoking the
+hotplug callbacks, such as the one here that is handling a CPU down
+event for cpusets.
+
+Gautham ... you there?
 
 -- 
-Jean Delvare
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
