@@ -1,109 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbYFWMQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbYFWMRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756213AbYFWMQp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 08:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbYFWMQW
+	id S1755009AbYFWMRV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 08:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756409AbYFWMQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 08:16:22 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:42013 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753010AbYFWMQV (ORCPT
+	Mon, 23 Jun 2008 08:16:48 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:55700 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756346AbYFWMQq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 08:16:21 -0400
-From: Louis Rilling <louis.rilling@kerlabs.com>
-To: Joel.Becker@oracle.com
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       Louis Rilling <louis.rilling@kerlabs.com>
-Subject: [PATCH 1/2] configfs: Fix symlink() to a removing item
-Date: Mon, 23 Jun 2008 14:16:17 +0200
-Message-Id: <1214223378-14203-2-git-send-email-louis.rilling@kerlabs.com>
-X-Mailer: git-send-email 1.5.5.3
-In-Reply-To: <1214223378-14203-1-git-send-email-louis.rilling@kerlabs.com>
-References: <1214223378-14203-1-git-send-email-louis.rilling@kerlabs.com>
+	Mon, 23 Jun 2008 08:16:46 -0400
+Date: Mon, 23 Jun 2008 09:16:31 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: steve.miller@st.com, jaswinder@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpia2: use request_firmware()
+Message-ID: <20080623091631.1e80a784@gaivota>
+In-Reply-To: <1214219013.27974.17.camel@shinybook.infradead.org>
+References: <1214219013.27974.17.camel@shinybook.infradead.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The rule for configfs symlinks is that symlinks always point to valid
-config_items, and prevent the target from being removed. However,
-configfs_symlink() only checks that it can grab a reference on the target item,
-without ensuring that it remains alive until the symlink is correctly attached.
+Hi David,
 
-This patch makes configfs_symlink() fail whenever the target is being removed,
-using the CONFIGFS_USET_DROPPING flag set by configfs_detach_prep() and
-protected by configfs_dirent_lock.
+On Mon, 23 Jun 2008 12:03:33 +0100
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-This patch introduces a similar (weird?) behavior as with mkdir failures making
-rmdir fail: if symlink() races with rmdir() of the parent directory (or its
-youngest user-created ancestor if parent is a default group) or rmdir() of the
-target directory, and then fails in configfs_create(), this can make the racing
-rmdir() fail despite the concerned directory having no user-created entry (resp.
-no symlink pointing to it or one of its default groups) in the end.
-This behavior is fixed in later patches.
+> diff --git a/drivers/media/video/cpia2/Kconfig b/drivers/media/video/cpia2/Kconfig
+> index e39a961..64d9866 100644
+> --- a/drivers/media/video/cpia2/Kconfig
+> +++ b/drivers/media/video/cpia2/Kconfig
+> @@ -1,9 +1,17 @@
+>  config VIDEO_CPIA2
+>  	tristate "CPiA2 Video For Linux"
+>  	depends on VIDEO_DEV && USB && VIDEO_V4L1
+> +	select FW_LOADER
 
-Signed-off-by: Louis Rilling <louis.rilling@kerlabs.com>
----
- fs/configfs/dir.c     |   14 +++++++-------
- fs/configfs/symlink.c |    6 ++++++
- 2 files changed, 13 insertions(+), 7 deletions(-)
+Since select doesn't check for dependencies, on all places you select
+FW_LOADER, you also need to add "depends on HOTPLUG" since FW_LOADER is
+defined as(at drivers/base/Kconfig):
 
-diff --git a/fs/configfs/dir.c b/fs/configfs/dir.c
-index 614e382..f2a12d0 100644
---- a/fs/configfs/dir.c
-+++ b/fs/configfs/dir.c
-@@ -370,6 +370,9 @@ static int configfs_detach_prep(struct dentry *dentry, struct mutex **wait_mutex
- 	struct configfs_dirent *sd;
- 	int ret;
- 
-+	/* Mark that we're trying to drop the group */
-+	parent_sd->s_type |= CONFIGFS_USET_DROPPING;
-+
- 	ret = -EBUSY;
- 	if (!list_empty(&parent_sd->s_links))
- 		goto out;
-@@ -385,8 +388,6 @@ static int configfs_detach_prep(struct dentry *dentry, struct mutex **wait_mutex
- 					*wait_mutex = &sd->s_dentry->d_inode->i_mutex;
- 				return -EAGAIN;
- 			}
--			/* Mark that we're trying to drop the group */
--			sd->s_type |= CONFIGFS_USET_DROPPING;
- 
- 			/*
- 			 * Yup, recursive.  If there's a problem, blame
-@@ -414,12 +415,11 @@ static void configfs_detach_rollback(struct dentry *dentry)
- 	struct configfs_dirent *parent_sd = dentry->d_fsdata;
- 	struct configfs_dirent *sd;
- 
--	list_for_each_entry(sd, &parent_sd->s_children, s_sibling) {
--		if (sd->s_type & CONFIGFS_USET_DEFAULT) {
-+	parent_sd->s_type &= ~CONFIGFS_USET_DROPPING;
-+
-+	list_for_each_entry(sd, &parent_sd->s_children, s_sibling)
-+		if (sd->s_type & CONFIGFS_USET_DEFAULT)
- 			configfs_detach_rollback(sd->s_dentry);
--			sd->s_type &= ~CONFIGFS_USET_DROPPING;
--		}
--	}
- }
- 
- static void detach_attrs(struct config_item * item)
-diff --git a/fs/configfs/symlink.c b/fs/configfs/symlink.c
-index faeb441..b66908d 100644
---- a/fs/configfs/symlink.c
-+++ b/fs/configfs/symlink.c
-@@ -78,6 +78,12 @@ static int create_link(struct config_item *parent_item,
- 	if (sl) {
- 		sl->sl_target = config_item_get(item);
- 		spin_lock(&configfs_dirent_lock);
-+		if (target_sd->s_type & CONFIGFS_USET_DROPPING) {
-+			spin_unlock(&configfs_dirent_lock);
-+			config_item_put(item);
-+			kfree(sl);
-+			return -ENOENT;
-+		}
- 		list_add(&sl->sl_list, &target_sd->s_links);
- 		spin_unlock(&configfs_dirent_lock);
- 		ret = configfs_create_link(sl, parent_item->ci_dentry,
--- 
-1.5.5.3
+config FW_LOADER
+        tristate "Userspace firmware loading support"
+        depends on HOTPLUG
 
+Cheers,
+Mauro
