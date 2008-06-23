@@ -1,158 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758441AbYFWJYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758295AbYFWJZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758441AbYFWJYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 05:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758219AbYFWJX4
+	id S1758295AbYFWJZx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 05:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058AbYFWJZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 05:23:56 -0400
-Received: from bu3sch.de ([62.75.166.246]:48994 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753310AbYFWJXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 05:23:55 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH/RFC] remove irqs_disabled warning from local_bh_enable
-Date: Mon, 23 Jun 2008 11:22:40 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       David Ellingsworth <david@identd.dyndns.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org
-References: <1213739834.3803.137.camel@johannes.berg> <200806201818.34904.mb@bu3sch.de> <20080623084123.GA32688@elte.hu>
-In-Reply-To: <20080623084123.GA32688@elte.hu>
+	Mon, 23 Jun 2008 05:25:44 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43459 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753717AbYFWJZn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 05:25:43 -0400
+Date: Mon, 23 Jun 2008 11:26:38 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Tejun Heo <tj@kernel.org>, Andreas Schwab <schwab@suse.de>,
+       kernel list <linux-kernel@vger.kernel.org>, jgarzik@pobox.com,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Trivial patch monkey <trivial@kernel.org>
+Subject: Re: sata_svw data corruption, strange problems
+Message-ID: <20080623092638.GH1850@elf.ucw.cz>
+References: <20080617093602.GA28140@elf.ucw.cz> <485EF061.3010601@kernel.org> <20080623082055.GB1850@elf.ucw.cz> <je63s0sfxv.fsf@sykes.suse.de> <20080623085338.GE1850@elf.ucw.cz> <485F6540.6000907@kernel.org> <20080623090130.GF1850@elf.ucw.cz> <1214211859.8011.250.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806231122.40934.mb@bu3sch.de>
+In-Reply-To: <1214211859.8011.250.camel@pasglop>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 June 2008 10:41:23 Ingo Molnar wrote:
-> ---------------------->
-> commit 24a5454d9f7863b00143760197f0ec29c8234289
-> Author: Michael Buesch <mb@bu3sch.de>
-> Date:   Fri Jun 20 18:18:34 2008 +0200
+On Mon 2008-06-23 19:04:19, Benjamin Herrenschmidt wrote:
+> On Mon, 2008-06-23 at 11:01 +0200, Pavel Machek wrote:
+> > On Mon 2008-06-23 17:56:32, Tejun Heo wrote:
+> > > Pavel Machek wrote:
+> > > > On Mon 2008-06-23 10:39:40, Andreas Schwab wrote:
+> > > >> Pavel Machek <pavel@suse.cz> writes:
+> > > >>
+> > > >>> +	   controller, the controller could hang. In other cases it
+> > > >>> +	   could return partial data returning in data
+> > > >>> +	   corruption. This problem has been seen in PPC systems and
+> > > >> s/returning/resulting/ ?
+> > > > 
+> > > > Fix thinko in sata_svw comment.
+> > > > 
+> > > > Signed-off-by: Pavel Machek <pavel@suse.cz>
+> > > 
+> > > Please collapse into one patch.  Thanks.
 > 
->     net, vortex: fix lockup
->     
->     Ingo Molnar reported:
->     
->     -tip testing found that Johannes Berg's "softirq: remove irqs_disabled
->     warning from local_bh_enable" enhancement to lockdep triggers a new
->     warning on an old testbox that uses 3c59x vortex and netlogging:
->     
->     ----->
->     calling  vortex_init+0x0/0xb0
->     PCI: Found IRQ 10 for device 0000:00:0b.0
->     PCI: Sharing IRQ 10 with 0000:00:0a.0
->     PCI: Sharing IRQ 10 with 0000:00:0b.1
->     3c59x: Donald Becker and others.
->     0000:00:0b.0: 3Com PCI 3c556 Laptop Tornado at e0800400.
->     PCI: Enabling bus mastering for device 0000:00:0b.0
->     initcall vortex_init+0x0/0xb0 returned 0 after 47 msecs
->     ...
->     calling  init_netconsole+0x0/0x1b0
->     netconsole: local port 4444
->     netconsole: local IP 10.0.1.9
->     netconsole: interface eth0
->     netconsole: remote port 4444
->     netconsole: remote IP 10.0.1.16
->     netconsole: remote ethernet address 00:19:xx:xx:xx:xx
->     netconsole: device eth0 not up yet, forcing it
->     eth0:  setting half-duplex.
->     eth0:  setting full-duplex.
->     ------------[ cut here ]------------
->     WARNING: at kernel/softirq.c:137 local_bh_enable_ip+0xd1/0xe0()
->     Pid: 1, comm: swapper Not tainted 2.6.26-rc6-tip #2091
->      [<c0125ecf>] warn_on_slowpath+0x4f/0x70
->      [<c0126834>] ? release_console_sem+0x1b4/0x1d0
->      [<c0126d00>] ? vprintk+0x2a0/0x450
->      [<c012fde5>] ? __mod_timer+0xa5/0xc0
->      [<c046f7fd>] ? mdio_sync+0x3d/0x50
->      [<c0160ef6>] ? marker_probe_cb+0x46/0xa0
->      [<c0126ed7>] ? printk+0x27/0x50
->      [<c046f4c3>] ? vortex_set_duplex+0x43/0xc0
->      [<c046f521>] ? vortex_set_duplex+0xa1/0xc0
->      [<c0471b92>] ? vortex_timer+0xe2/0x3e0
->      [<c012b361>] local_bh_enable_ip+0xd1/0xe0
->      [<c08d9f9f>] _spin_unlock_bh+0x2f/0x40
->      [<c0471b92>] vortex_timer+0xe2/0x3e0
->      [<c014743b>] ? trace_hardirqs_on+0xb/0x10
->      [<c0147358>] ? trace_hardirqs_on_caller+0x88/0x160
->      [<c012f8b2>] run_timer_softirq+0x162/0x1c0
->      [<c0471ab0>] ? vortex_timer+0x0/0x3e0
->      [<c012b361>] local_bh_enable_ip+0xd1/0xe0
->      [<c08d9f9f>] _spin_unlock_bh+0x2f/0x40
->      [<c0471b92>] vortex_timer+0xe2/0x3e0
->      [<c014743b>] ? trace_hardirqs_on+0xb/0x10
->      [<c0147358>] ? trace_hardirqs_on_caller+0x88/0x160
->      [<c012f8b2>] run_timer_softirq+0x162/0x1c0
->      [<c0471ab0>] ? vortex_timer+0x0/0x3e0
->      [<c0471ab0>] ? vortex_timer+0x0/0x3e0
->      [<c012b60a>] __do_softirq+0x9a/0x160
->      [<c012b570>] ? __do_softirq+0x0/0x160
->      [<c0106775>] call_on_stack+0x15/0x30
->      [<c012b4f5>] ? irq_exit+0x55/0x60
->      [<c0106e85>] ? do_IRQ+0x85/0xd0
->      [<c0147391>] ? trace_hardirqs_on_caller+0xc1/0x160
->      [<c0104888>] ? common_interrupt+0x28/0x30
->      [<c08d8ac8>] ? mutex_unlock+0x8/0x10
->      [<c08d8180>] ? _cond_resched+0x10/0x30
->      [<c07a3be7>] ? netpoll_setup+0x117/0x390
->      [<c0cbfcfe>] ? init_netconsole+0x14e/0x1b0
->      [<c013d539>] ? ktime_get+0x19/0x40
->      [<c0c9bab2>] ? kernel_init+0x1b2/0x2c0
->      [<c0cbfbb0>] ? init_netconsole+0x0/0x1b0
->      [<c0396aa4>] ? trace_hardirqs_on_thunk+0xc/0x10
->      [<c0103f12>] ? restore_nocheck_notrace+0x0/0xe
->      [<c0c9b900>] ? kernel_init+0x0/0x2c0
->      [<c0c9b900>] ? kernel_init+0x0/0x2c0
->      [<c0104aa7>] ? kernel_thread_helper+0x7/0x10
->      =======================
->     ---[ end trace 37f9c502aff112e0 ]---
->     console [netcon0] enabled
->     netconsole: network logging started
->     initcall init_netconsole+0x0/0x1b0 returned 0 after 2914 msecs
->     
->     looking at the driver I think the bug is real and the fix actually
->     is trivial.
->     
->     vp->lock is also taken in hardware IRQ context, so we _have_ to always
->     use irqsafe locking. As we run in a timer with IRQs disabled,
->     we can simply use spin_lock.
->     
->     Cc: <stable@kernel.org>
+> Am I the only one to find Pavel variant almost as obscure as
+> the original one ? :-)
 
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
+At least it makes it clear that the bug should not bite in new
+releases.
 
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> diff --git a/drivers/net/3c59x.c b/drivers/net/3c59x.c
-> index 2edda8c..aabad8c 100644
-> --- a/drivers/net/3c59x.c
-> +++ b/drivers/net/3c59x.c
-> @@ -1768,9 +1768,10 @@ vortex_timer(unsigned long data)
->  	case XCVR_MII: case XCVR_NWAY:
->  		{
->  			ok = 1;
-> -			spin_lock_bh(&vp->lock);
-> +			/* Interrupts are already disabled */
-> +			spin_lock(&vp->lock);
->  			vortex_check_media(dev, 0);
-> -			spin_unlock_bh(&vp->lock);
-> +			spin_unlock(&vp->lock);
->  		}
->  		break;
->  	  default:					/* Other media types handled by Tx timeouts. */
-> 
-> 
-
-
-
+I'm neither native english speaker nor author of this driver, so if
+you'd like to improve the comment, please do so. (I spent quite long
+time wondering if we do workaround that hw problem or not, that's why
+I'm trying to clarify the comment).
+								Pavel
 -- 
-Greetings Michael.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
