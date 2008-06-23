@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbYFWK45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbYFWLCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757602AbYFWK45 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 06:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbYFWK4t
+	id S1755374AbYFWLCk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 07:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbYFWLCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 06:56:49 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:26132 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754128AbYFWK4s (ORCPT
+	Mon, 23 Jun 2008 07:02:31 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:13554 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752259AbYFWLCa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 06:56:48 -0400
-Date: Mon, 23 Jun 2008 12:56:39 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Hans de Goede <j.w.r.degoede@hhs.nl>, linux-acpi@vger.kernel.org,
-       Zhang Rui <rui.zhang@intel.com>, lm-sensors@lm-sensors.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>
-Subject: Re: LMSENSORS: 2.6.26-rc,  enabling ACPI Termal Zone support costs
- sensors
-Message-ID: <20080623125639.5c8c4416@hyperion.delvare>
-In-Reply-To: <485E992B.8010101@keyaccess.nl>
-References: <485DA11C.7050906@keyaccess.nl>
-	<485DFF35.6080008@hhs.nl>
-	<485E505F.8010306@keyaccess.nl>
-	<485E61DE.6020202@hhs.nl>
-	<485E6F12.4010307@keyaccess.nl>
-	<485E94ED.10602@hhs.nl>
-	<485E992B.8010101@keyaccess.nl>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 23 Jun 2008 07:02:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=KyMylfT8FOSe8SZMuzcO6P4zD1OhYW+P0rhovglpqbX9PwMNvc3TdvPOZ2dX3TBIrb
+         5AoHcfTqE/Y3sEhrlb0mGlIrqFXVdDGK6NaILAA4g7i6JbS44kIsXfqfreIP2RKmLgZU
+         oJgacBnE7xe4xdseEzcg4qoFQFGtNh/VkEPVw=
+Message-ID: <19f34abd0806230402x502eca3cna927eb8742553570@mail.gmail.com>
+Date: Mon, 23 Jun 2008 13:02:29 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>,
+       "Steven Rostedt" <srostedt@redhat.com>
+Subject: Re: linux-next: Tree for June 23
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <19f34abd0806230326i592ba39eu837d290e21431d14@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080623182549.b0552851.sfr@canb.auug.org.au>
+	 <19f34abd0806230323o6373015fj93a85b929545a7a8@mail.gmail.com>
+	 <19f34abd0806230326i592ba39eu837d290e21431d14@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rene,
+On Mon, Jun 23, 2008 at 12:26 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> On Mon, Jun 23, 2008 at 12:23 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+>> Testing tracer sched_switch: PASSED
+>> Testing tracer sysprof: PASSED
+>> Testing tracer ftrace: PASSED
+>> Testing dynamic ftrace: PASSED
+>> Testing tracer irqsoff: PASSED
+>> Testing tracer preemptoff: PASSED
+>> Testing tracer preemptirqsoff: <4>------------[ cut here ]------------
+>> WARNING: at kernel/lockdep.c:2680 check_flags+0x142/0x160()
+>> Pid: 2, comm: kthreadd Not tainted 2.6.26-rc6-next-20080620 #34
+>
+> <-- Oops, wrong version :-(
+>
+> Will try the latest one as well.
 
-On Sun, 22 Jun 2008 20:25:47 +0200, Rene Herman wrote:
-> On 22-06-08 20:07, Hans de Goede wrote:
-> > Know something else? I've just stopped caring about this issue, I'm not 
-> > the author of the changes causing said breakage. I'm merely an 
-> > lm_sensors (both userspace and kernel space) developer who was heavily 
-> > involved in getting this fixed for lm_sensors-3.0.2, and I believe that 
-> > adding yet another kconfig option which we then carry for years and 
-> > years is _not_ a good solution. Some userspace utlities like udev sit 
-> > very close to the kernel and sometimes an kernel update mandates a new 
-> > udev. To me this is much the same.
-> > 
-> > But at the end of the day, I do not feel responsible for this as I'm not 
-> > the author of the code causing the breakage. I'm just someone who knows 
-> > the ins and outs and tried to help, but given the treatment and thanks 
-> > I've been getting for my help I'm stopping with helping now.
-> 
-> What on earth are you talking about? Could you please re-read? I didn't 
->   "treat badly" you, hwmon, acpi or whatever.
+Okay, I can confirm that this happens with today's tree too. I also
+get this (new) warning:
 
-You certainly did. I felt the same as Hans when reading the discussion
-thread.
+mm/slub.c: In function 'kmem_cache_defrag':
+mm/slub.c:3046: warning: 'reclaimed' may be used uninitialized in this function
 
-Now, you are lucky that I already know you and I know that you are
-usually helpful and cooperative, so I know that you probably didn't
-mean the aggressive tone you used. But presumably Hans doesn't know
-you, so his reaction was understandable.
+Otherwise things seem to work good :-)
 
-Hans is one of the main contributors to the hwmon subsystem and the
-lm-sensors project in general. I would be grateful if the users he
-tries to help could treat him with the respect he reserves. If he was
-to leave the project, this would be a significant loss, and this is
-something I really want to avoid.
 
-Thanks,
+Vegard
+
 -- 
-Jean Delvare
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
