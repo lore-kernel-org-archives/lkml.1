@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763043AbYFWTcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763327AbYFWTcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763043AbYFWTcS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 15:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762902AbYFWTbt
+	id S1763327AbYFWTcq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 15:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763251AbYFWTce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 15:31:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42709 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762895AbYFWTbs (ORCPT
+	Mon, 23 Jun 2008 15:32:34 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:9108 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763237AbYFWTcd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 15:31:48 -0400
-Date: Mon, 23 Jun 2008 12:30:04 -0700
-From: Greg KH <greg@kroah.com>
-To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
-Cc: Greg KH <gregkh@suse.de>, "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
-       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Domenico Andreoli <cavokz@gmail.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, Willy Tarreau <w@1wt.eu>,
-       Michael Krufky <mkrufky@linuxtv.org>, alan@lxorguk.ukuu.org.uk,
-       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
-       akpm@linux-foundation.org, Chuck Wolber <chuckw@quantumlinux.com>,
-       stable@kernel.org, Rodrigo Rubira Branco <rbranco@la.checkpoint.com>
-Subject: Re: [stable] [patch 0/5] 2.6.25-stable review
-Message-ID: <20080623193004.GB15183@kroah.com>
-References: <20080622190111.GA20141@suse.de> <200806231419.08436.caglar@pardus.org.tr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200806231419.08436.caglar@pardus.org.tr>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 23 Jun 2008 15:32:33 -0400
+Date: Mon, 23 Jun 2008 12:31:16 -0700
+From: Adam Williamson <awilliamson@mandriva.com>
+Subject: Re: [Bug #10868] Oops on loading ipaq module since 2.6.26,
+	prevents use of device
+In-reply-to: <200806232041.09251.oliver@neukum.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@redhat.com>, bugme-daemon@bugzilla.kernel.org
+Message-id: <1214249476.6054.21.camel@lenovo.local.net>
+Organization: Mandriva
+MIME-version: 1.0
+X-Mailer: Evolution 2.22.2-3mdv2009.0
+Content-type: text/plain
+Content-transfer-encoding: 7bit
+References: <RzbtSgMztjP.A.jRD._spXIB@albercik>
+ <200806230948.03027.oliver@neukum.org>
+ <1214236003.6054.6.camel@lenovo.local.net>
+ <200806232041.09251.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 02:19:05PM +0300, S.Çağlar Onur wrote:
-> Hi Greg and -stable team;
+On Mon, 2008-06-23 at 20:41 +0200, Oliver Neukum wrote:
+> Am Montag 23 Juni 2008 17:46:43 schrieb Adam Williamson:
+> > On Mon, 2008-06-23 at 09:48 +0200, Oliver Neukum wrote:
+> > > Am Montag 23 Juni 2008 00:37:20 schrieb Alan Cox:
+> > > > > > btw this also shows that this isn't a 2.6.25 regression... 
+> > > > > 
+> > > > > That hardly shows it.
+> > > > > 
+> > > > > And Adam said quite explicitely that 2.6.25 worked for him.
+> > > > 
+> > > > Nothing much I can do to help. The URB is assigned in setup and is NULL
+> > > > later. Nothing else I can find touches it.
+> > > 
+> > > We need this oops replicated with debug enabled in the usb serial core.
+> > 
+> > Is that just a kernel build option? (As I mentioned earlier, I'm not
+> > much of a kernel hacker, I usually just run packaged kernels).
 > 
-> 22 Haz 2008 Paz tarihinde, Greg KH şunları yazmıştı: 
-> > Responses should be made by Tuesday, June 24, 18:00:00 UTC.  Anything
-> > received after that time might be too late.
-> 
-> Please consider following commit for -stable also, it definetly fixes a boot failure caused by reported opps
-> 
-> commit 1f6ef2342972dc7fd623f360f84006e2304eb935
+> It is the module option "debug" for usb-serial.
 
-Thanks, I've added that one now as well.
+Oh, that's easy then. :) Will do that later. Thanks.
+-- 
+adamw
 
-greg k-h
