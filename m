@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763848AbYFWUH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761940AbYFWUK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763848AbYFWUH5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 16:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbYFWUHs
+	id S1761940AbYFWUK6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 16:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYFWUKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 16:07:48 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36148 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758650AbYFWUHr (ORCPT
+	Mon, 23 Jun 2008 16:10:50 -0400
+Received: from www17.your-server.de ([213.133.104.17]:33822 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751808AbYFWUKt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 16:07:47 -0400
-Date: Mon, 23 Jun 2008 13:07:37 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Darren Hart <dvhltc@us.ibm.com>
-Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       josh@freedesktop.org, niv@us.ibm.com, dino@in.ibm.com,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       vegard.nossum@gmail.com, adobriyan@gmail.com, oleg@tv-sign.ru,
-       bunk@kernel.org, rjw@sisk.pl
-Subject: Re: [PATCH -tip-rcu] Make rcutorture more vicious: make quiescent
- rcutorture less power-hungry
-Message-ID: <20080623130737.489498dc@infradead.org>
-In-Reply-To: <1214251374.4440.48.camel@Aeon>
-References: <20080618122144.GA27143@linux.vnet.ibm.com>
-	<20080618162649.GA18326@linux.vnet.ibm.com>
-	<20080622200638.GA25328@linux.vnet.ibm.com>
-	<20080622131712.54ba732c@infradead.org>
-	<1214243649.4440.10.camel@Aeon>
-	<20080623110706.197f25b1@infradead.org>
-	<1214251374.4440.48.camel@Aeon>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
+	Mon, 23 Jun 2008 16:10:49 -0400
+Message-ID: <1214251844.486003446b64c@213.133.104.17>
+Date: Mon, 23 Jun 2008 22:10:44 +0200
+From: Thomas Meyer <thomas@m3y3r.de>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: rpjday@crashcourse.ca, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kernel BUG at kernel/workqueue.c:169 (was: linux-next: Tree for June 16)
+References: <20080616190103.c3271e3e.sfr@canb.auug.org.au> <1213651727.3275.3.camel@dhcppc4> <1213987718.3134.7.camel@dhcppc4> <200806231315.54490.rusty@rustcorp.com.au>
+In-Reply-To: <200806231315.54490.rusty@rustcorp.com.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) 3.2.5
+X-Originating-IP: 84.59.62.125
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jun 2008 20:02:54 +0000
-Darren Hart <dvhltc@us.ibm.com> wrote:
+Zitat von Rusty Russell <rusty@rustcorp.com.au>:
 
-> On Mon, 2008-06-23 at 11:07 -0700, Arjan van de Ven wrote:
-> > On Mon, 23 Jun 2008 17:54:09 +0000
-> > Darren Hart <dvhltc@us.ibm.com> wrote:
-> > 
-> > > I'm a little concerned about how this will affect real-time
-> > > performance, as queueing up lots of timers all at once can lead to
-> > > long running timer expiration handlers.  If just a
-> > > schedule_timeout, I suppose we are only looking at a process
-> > > wakeup, as opposed to a softirq context callback function?
-> > 
-> > in reality, the time it takes to deliver the interrupt (including
-> > waking the CPU up etc), is likely to be an order or two of magnitude
-> > higher than this kind of code loop.... 
+> On Saturday 21 June 2008 04:48:37 Thomas Meyer wrote:
+> > I tried to bisect this one, but without a consistent result.
 > 
-> Sure, if we just look at one of them.  Any idea how many such items
-> we're looking at rounding up to fire at the same time?  Is it dozens,
-> hundreds, thousands?
+> That's always suspicious...
 > 
+> > Another thing i tried is to change <linux/kernel.h>:
+> 
+> This will also cause almost everything to be rebuilt.  I find it hard to 
+> believe this is the culprit; does a "make clean" also fix it?
+> 
+Sorry! I compared the created binary and both are equal. So above commit
+revertion or the change of linux/kernel.h has nothing to do with the non
+working usb wlan stick.
 
-so far, in practice, it's still single-digit amounts.
+Sometimes it works, sometimes not. And when it's non-working then i also get the
+BUG at kernel/workqueue in my dmesg.
+ 
 
-There's not that many timers that run normally. 
-(based on powertop data from many systems)
+Sorry for all the bustle.
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+greets
+thomas
+
+
+
