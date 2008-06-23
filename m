@@ -1,84 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbYFWHSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493AbYFWHWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755879AbYFWHSO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 03:18:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbYFWHR7
+	id S1755493AbYFWHWl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 03:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbYFWHWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 03:17:59 -0400
-Received: from mga14.intel.com ([143.182.124.37]:30394 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750924AbYFWHR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 03:17:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,688,1204531200"; 
-   d="scan'208";a="1209736"
-Subject: Re: [PATCH] x86 boot: Pass E820 memory map entries more than 128
-	via linked list of setup data
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: mingo@elte.hu, hpa@zytor.com, andi@firstfloor.org, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com
-In-Reply-To: <20080623015326.bec9a75d.pj@sgi.com>
-References: <1213155219.13392.2.camel@caritas-dev.intel.com>
-	 <20080618114511.GB28838@elte.hu>
-	 <1214200441.25753.5.camel@caritas-dev.intel.com>
-	 <20080623015326.bec9a75d.pj@sgi.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 23 Jun 2008 15:21:26 +0800
-Message-Id: <1214205686.26437.18.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-OriginalArrivalTime: 23 Jun 2008 07:17:54.0758 (UTC) FILETIME=[41512660:01C8D501]
+	Mon, 23 Jun 2008 03:22:33 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49173 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751549AbYFWHWc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 03:22:32 -0400
+Date: Mon, 23 Jun 2008 03:22:27 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Daniel J Blueman <daniel.blueman@gmail.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+Subject: Re: [2.6.26-rc7] shrink_icache from pagefault locking (nee: nfsd
+	hangs for a few sec)...
+Message-ID: <20080623072227.GB11986@infradead.org>
+References: <6278d2220806220256g674304ectb945c14e7e09fede@mail.gmail.com> <6278d2220806220258p28de00c1x615ad7b2f708e3f8@mail.gmail.com> <20080622221930.GA11558@disturbed> <20080623002415.GB21597@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080623002415.GB21597@csn.ul.ie>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-23 at 01:53 -0500, Paul Jackson wrote:
-> Huang Ying wrote:
-> > With this patch, your previous patch:
-> > 
-> > x86 boot: add code to add BIOS provided EFI memory entries to kernel
-> > 
-> > is not necessary, so can be reversed.
-> > 
-> > What do you think about that?
-> 
-> ... the same thing I thought about it when you asked this question
-> last month, in post http://lkml.org/lkml/2008/5/26/307.
-> 
-> Please see my reply in http://lkml.org/lkml/2008/5/28/59.
-> It was lengthy and carefully researched, so I won't repeat
-> it here.
-> 
-> In short, we still need it.  The key kernel routine that adds
-> additional EFI entries to the existing E820 map is just 20 or so
-> fairly easy lines.  We agree that it doesn't handle some of what your
-> more extended work with a linked list of setup data handles (such as
-> additional EDD entries), but it does handle additional memory map
-> (node) entries using the existing data structure interface between
-> the firmware and kernel.
+On Mon, Jun 23, 2008 at 01:24:15AM +0100, Mel Gorman wrote:
+> In that case, have you any theory as to why this circular dependency is
+> being reported now but wasn't before 2.6.26-rc1? I'm beginning to wonder
+> if the bisecting fingering the zonelist modifiation is just a
+> co-incidence.
 
-EFI memmap based code versus E820 EXT based code:
-
-1. Copying from EFI memory map to E820 map in kernel is not necessary,
-because now it can be done in boot-loader with extended E820 memory map
-via linked list of setup data.
-
-2. EFI memmap based code only works when CONFIG_EFI is defined, that is
-EFI runtime service is enabled. If you do not want to enable EFI runtime
-services, you lose some memory map entries. Considering that kexec does
-not support EFI runtime service so far.
-
-3. EFI memmap based code is EFI specific, while E820 EXT based code is
-general. It can be used for such as legacy BIOS, LinuxBIOS, kexec, etc.
-
-4. Current EFI memmap based code does not work properly in all
-situation, for example it can not works with kernel parameter:
-"memmap=exactmap, memmap=<xxx>, ...", "mem=<xxx>" or "noefi".
-
-So, I think it is better to remove "EFI memmap based code".
-
-Best Regards,
-Huang Ying
+I've seen this traces since lockdep was added when running xfsqa.
 
