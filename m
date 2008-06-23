@@ -1,62 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757076AbYFWIrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbYFWItA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757076AbYFWIrk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 04:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbYFWIrc
+	id S1757996AbYFWItA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 04:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbYFWIsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 04:47:32 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:42098 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752569AbYFWIrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 04:47:31 -0400
-Date: Mon, 23 Jun 2008 03:47:28 -0500
-From: Paul Jackson <pj@sgi.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: mingo@elte.hu, hpa@zytor.com, andi@firstfloor.org, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com
-Subject: Re: [PATCH] x86 boot: Pass E820 memory map entries more than 128
- via linked list of setup data
-Message-Id: <20080623034728.250c6fd1.pj@sgi.com>
-In-Reply-To: <1214205686.26437.18.camel@caritas-dev.intel.com>
-References: <1213155219.13392.2.camel@caritas-dev.intel.com>
-	<20080618114511.GB28838@elte.hu>
-	<1214200441.25753.5.camel@caritas-dev.intel.com>
-	<20080623015326.bec9a75d.pj@sgi.com>
-	<1214205686.26437.18.camel@caritas-dev.intel.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Mon, 23 Jun 2008 04:48:53 -0400
+Received: from mx1.suse.de ([195.135.220.2]:47617 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752566AbYFWIsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 04:48:51 -0400
+Date: Mon, 23 Jun 2008 10:48:46 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Luis Carlos Cobo <luisca@cozybit.com>,
+       Steve Whitehouse <SteveW@acm.org>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH]rcu,inet,fib_trie,route,radix-tree,DECnet,mac80211: fix meaningless rcu_dereference(local_var)
+Message-ID: <20080623084846.GA6899@wotan.suse.de>
+References: <485CCFC9.2070007@cn.fujitsu.com> <200806231236.51341.nickpiggin@yahoo.com.au> <485F3638.5010305@cn.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <485F3638.5010305@cn.fujitsu.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang Ying wrote:
-> So, I think it is better to remove "EFI memmap based code".
+On Mon, Jun 23, 2008 at 01:35:52PM +0800, Lai Jiangshan wrote:
+> Add CC: Linus Torvalds
+> 
+> Nick Piggin wrote:
+> > On Saturday 21 June 2008 19:54, Lai Jiangshan wrote:
+> > 
+> >> diff --git a/lib/radix-tree.c b/lib/radix-tree.c
+> >> index 169a2f8..bfae4e2 100644
+> >> --- a/lib/radix-tree.c
+> >> +++ b/lib/radix-tree.c
+> >> @@ -703,9 +703,9 @@ __lookup(struct radix_tree_node *slot, void **results,
+> >> unsigned long index, for (i = index & RADIX_TREE_MAP_MASK; i <
+> >> RADIX_TREE_MAP_SIZE; i++) { struct radix_tree_node *node;
+> >>  		index++;
+> >> -		node = slot->slots[i];
+> >> +		node = rcu_dereference(slot->slots[i]);
+> >>  		if (node) {
+> >> -			results[nr_found++] = rcu_dereference(node);
+> >> +			results[nr_found++] = node;
+> >>  			if (nr_found == max_items)
+> >>  				goto out;
+> >>  		}
+> >> @@ -815,7 +815,7 @@ __lookup_tag(struct radix_tree_node *slot, void
+> >> **results, unsigned long index, index++;
+> >>  				if (!tag_get(slot, tag, j))
+> >>  					continue;
+> >> -				node = slot->slots[j];
+> >> +				node = rcu_dereference(slot->slots[j]);
+> >>  				/*
+> >>  				 * Even though the tag was found set, we need to
+> >>  				 * recheck that we have a non-NULL node, because
+> >> @@ -827,7 +827,6 @@ __lookup_tag(struct radix_tree_node *slot, void
+> >> **results, unsigned long index, * rely on its value remaining the same).
+> >>  				 */
+> >>  				if (node) {
+> >> -					node = rcu_dereference(node);
+> >>  					results[nr_found++] = node;
+> >>  					if (nr_found == max_items)
+> >>  						goto out;
+> > 
+> > This was done like this IIRC to avoid the barrier when possible.
+> > 
+> > 
+> > 
+> This(http://lkml.org/lkml/2008/4/20/217) shows why rcu_dereference(local_var)
+> is meaningless. And why not use smp_read_barrier_depends() here?
+ 
+It is "meaningless" in that it isn't being applied as the API is supposed
+to, however it does provide the barrier that's required. I guess read
+barrier depends could just be used instead, although I like the self
+commenting nature of the rcu_dereference, even if it is not quite applied
+correctly, the reader can easily see the intention.
 
-You give good reasons for -adding- E820 EXT code.  Fine.
+I *think* it should even do the right thing WRT the access_once macro here,
+and cause node not to be reloaded from source, but I could be wrong on that.
 
-You give no reason for -removing- the EFI memmap based code,
-except the implicit (unstated) reason that we should only
-support a single mechanism.
 
-However the kernel routinely supports a variety of mechanisms
-for various BIOS firmware, as it should.
+> I guessed somebody use rcu_dereference(local_var) in if-statements to avoid the
+> barrier when possible, and I made this patch(http://lkml.org/lkml/2008/6/21/29),
+> but it is incorrect.
 
-Internally, within the kernel, when it is entirely within the
-kernels control and when there is no externally visible kernel
-interface affected, we routinely strive to minimize redundant
-mechanisms, as we should.
+So it doesn't help me ;)
 
-But externally, such as in supporting various boot firmware
-protocols, we routinely support multiple useful interfaces.
+I'm not sure what the best way to go is, but I would ask Paul for ideas
+if he's not too busy.
 
-If that EFI memmap based code for > 128 nodes is causing you
-no problem, then please leave it be.  It is providing us good
-benefit.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+In reality, the barriers probably don't matter much (but I'd really love
+to have an Alpha to test it on :)), but I still try to avoid them as much
+as possible. For the radix-tree as used by pagecache, it is a completely
+usual operation to lookup non existing elements, so we are talking about
+a fastpath of sorts...
