@@ -1,78 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbYFWUsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbYFWUtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757842AbYFWUsW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 16:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755658AbYFWUsO
+	id S1758197AbYFWUtq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 16:49:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbYFWUti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 16:48:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50197 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755499AbYFWUsO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 16:48:14 -0400
-Date: Mon, 23 Jun 2008 13:47:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: oleg@tv-sign.ru, ebiederm@xmission.com, mingo@elte.hu,
-       torvalds@linux-foundation.org, roland@redhat.com,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl
-Subject: Re: [PATCH 1/3] introduce PF_KTHREAD flag
-Message-Id: <20080623134706.f5e1ef32.akpm@linux-foundation.org>
-In-Reply-To: <20080623134037.8566f651.akpm@linux-foundation.org>
-References: <20080601153042.GA8238@tv-sign.ru>
-	<20080623134037.8566f651.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jun 2008 16:49:38 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:58682 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755597AbYFWUth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 16:49:37 -0400
+Date: Mon, 23 Jun 2008 21:49:34 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Hiroyuki KAMEZAWA <kamezawa.hiroyu@jp.fujitsu.com>,
+       Tony Breeds <tony@bakeyournoodle.com>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [Patch](memory hotplug)Allocate usemap on the section with pgdat (take 3)
+Message-ID: <20080623204934.GB1824@csn.ul.ie>
+References: <20080616104500.GD2232@shadowen.org> <20080616220705.9EA7.E1E9C6FF@jp.fujitsu.com> <20080617195653.C200.E1E9C6FF@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080617195653.C200.E1E9C6FF@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jun 2008 13:40:37 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Sun, 1 Jun 2008 19:30:42 +0400
-> Oleg Nesterov <oleg@tv-sign.ru> wrote:
+On (17/06/08 20:07), Yasunori Goto didst pronounce:
 > 
-> > Introduce the new PF_KTHREAD flag to mark the kernel threads. It is set by
-> > INIT_TASK() and copied to the forked childs (we could set it in kthreadd()
-> > along with PF_NOFREEZE instead).
-> > 
-> > daemonize() was changed as well. In that case testing of PF_KTHREAD is racy,
-> > but daemonize() is hopeless anyway.
-> > 
-> > This flag is cleared in do_execve(), before search_binary_handler(). Probably
-> > not the best place, we can do this in exec_mmap() or in start_thread(), or
-> > clear it along with PF_FORKNOEXEC. But I think this doesn't matter in practice,
-> > and if do_execve() fails kthread should die soon.
-> > 
-> > Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-> > 
-> >  include/linux/sched.h     |    1 +
-> >  include/linux/init_task.h |    2 +-
-> >  kernel/exit.c             |    2 +-
-> >  fs/exec.c                 |    1 +
-> >  4 files changed, 4 insertions(+), 2 deletions(-)
-> > 
-> > --- 26-rc2/include/linux/sched.h~2_MAKE_PF_KTHREAD	2008-05-18 15:44:16.000000000 +0400
-> > +++ 26-rc2/include/linux/sched.h	2008-05-18 20:08:13.000000000 +0400
-> > @@ -1508,6 +1508,7 @@ static inline void put_task_struct(struc
-> >  #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
-> >  #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
-> >  #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
-> > +#define PF_KTHREAD	0x80000000	/* I am a kernel thread */
+> Here is take 3 for usemap allocation on pgdat section.
 > 
-> Well "Freezer: Introduce PF_FREEZER_NOSIG" has cheerily come in
-> afterwards and stolen 0x80000000 from us.  I'll redo this patch to use,
-> umm, 0x00000020.  Please check that this is OK (if it isn't someone
-> needs thwapping for not adding a dont-use-this comment).
+> If there is any trouble, please let me know.
+> 
+> If no trouble, please apply.
+> 
+> Thanks.
 > 
 
-OK, it seems that in a later patch we switched to 0x00200000 anyway.
+This boot-tested successfully on a few machines. I wasn't able to get
+many machines but at first take, it seems ok.
 
-"Freezer: Introduce PF_FREEZER_NOSIG" has trashed this patch
-series so I'll need to drop introduce-pf_kthread-flag.patch and
-kill-pf_borrowed_mm-in-favour-of-pf_kthread.patch and
-coredump-zap_threads-must-skip-kernel-threads.patch.
+> ---
+> 
+> Usemaps are allocated on the section which has pgdat by this.
+> 
+> Because usemap size is very small, many other sections usemaps
+> are allocated on only one page. If a section has usemap, it
+> can't be removed until removing other sections.
+> This dependency is not desirable for memory removing.
+> 
 
-I don't yet know how much additional damage will happen as a result.
+True. I have a report complaining that a node cannot be removed because
+of some reserved pages at the start of the node. I have not looked
+closely yet but it is possible that it is a page containing usemaps for
+another section that is in there.
+
+> Pgdat has similar feature. When a section has pgdat area, it 
+> must be the last section for removing on the node.
+> So, if section A has pgdat and section B has usemap for section A,
+> Both sections can't be removed due to dependency each other.
+> 
+> To solve this issue, this patch collects usemap on same
+> section with pgdat as much as possible.
+> If other sections doesn't have any dependency, this section will
+> be able to be removed finally.
+> 
+> Change log of take 3.
+>  - Change dependency message and comment.
+>   (Thanks! > Andy Whitcroft-san)
+> 
+> Change log of take 2.
+>  - This feature becomes effective only when CONFIG_MEMORY_HOTREMOVE is on.
+>    If hotremove is off, this feature is not necessary.
+>  - Allow allocation on other section if alloc_bootmem_section() fails.
+>    This removes previous regression.
+>  - Show message if allocation on same section fails.
+> 
+> Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+> 
+> ---
+> 
+>  mm/sparse.c |   78 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 77 insertions(+), 1 deletion(-)
+> 
+> Index: current/mm/sparse.c
+> ===================================================================
+> --- current.orig/mm/sparse.c	2008-06-17 15:34:29.000000000 +0900
+> +++ current/mm/sparse.c	2008-06-17 18:35:02.000000000 +0900
+> @@ -269,16 +269,92 @@
+>  }
+>  #endif /* CONFIG_MEMORY_HOTPLUG */
+>  
+> +#ifdef CONFIG_MEMORY_HOTREMOVE
+> +static unsigned long * __init
+> +sparse_early_usemap_alloc_section(unsigned long pnum)
+> +{
+> +	unsigned long section_nr;
+> +	struct mem_section *ms = __nr_to_section(pnum);
+> +	int nid = sparse_early_nid(ms);
+> + 	struct pglist_data *pgdat = NODE_DATA(nid);
+> +
+
+It's not a major deal but the only caller of
+sparse_early_usemap_alloc_section() has the nid already. If you looked up
+the pgdat there and passed it in, it would involve fewer lookups. Granted,
+this is not performance critical or anything so it's not a major deal.
+
+> +	/*
+> +	 * Usemap's page can't be freed until freeing other sections
+> +	 * which use it. And, pgdat has same feature.
+> +	 * If section A has pgdat and section B has usemap for other
+> +	 * sections (includes section A), both sections can't be removed,
+> +	 * because there is the dependency each other.
+> +	 * To solve above issue, this collects all usemap on the same section
+> +	 * which has pgdat as much as possible.
+> +	 */
+
+The comment is a bit tricky to read. How about?
+
+	/*
+	 * A page may contain usemaps for other sections preventing the
+	 * the page being freed and making a section unremovable while
+	 * other sections referencing the usemap remain active. Similarly,
+	 * a pgdat can prevent a section being removed. If section A
+	 * contains a pgdat and section B contains the usemap, both
+	 * sections become inter-dependent. This allocates usemaps
+	 * from the same section as the pgdat where possible to avoid
+	 * this problem.
+	 */
+
+> +	section_nr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
+> +	return alloc_bootmem_section(usemap_size(), section_nr);
+> +}
+> +
+> +static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
+> +{
+> +	unsigned long usemap_snr, pgdat_snr;
+> +	static unsigned long old_usemap_snr = NR_MEM_SECTIONS;
+> +	static unsigned long old_pgdat_snr = NR_MEM_SECTIONS;
+> +	struct pglist_data *pgdat = NODE_DATA(nid);
+> +	int usemap_nid;
+> +
+> +	usemap_snr = pfn_to_section_nr(__pa(usemap) >> PAGE_SHIFT);
+> +	pgdat_snr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
+> +	if (usemap_snr == pgdat_snr)
+> +		return;
+> +
+> +	if (old_usemap_snr == usemap_snr && old_pgdat_snr == pgdat_snr)
+> +		/* skip redundant message */
+> +		return;
+> +
+> +	old_usemap_snr = usemap_snr;
+> +	old_pgdat_snr = pgdat_snr;
+> +
+> +	usemap_nid = sparse_early_nid(__nr_to_section(usemap_snr));
+> +	if (usemap_nid != nid) {
+> +		printk("node %d must be removed before remove section %ld\n",
+> +		       nid, usemap_snr);
+> +		return;
+
+no kernel log level here
+
+> +	}
+> +	/*
+> +	 * There is a circular dependency.
+> +	 * Some platforms allow un-removable section because they will just
+> +	 * gather other removable sections for dynamic partitioning.
+> +	 * Just notify un-removable section's number here.
+> +	 */
+> +	printk(KERN_INFO "Section %ld and %ld (node %d)",
+> +	       usemap_snr, pgdat_snr, nid);
+> +	printk(" have a circular dependency on usemap and pgdat allocations\n");
+
+a follow-on printk like this should use KERN_CONT
+
+> +}
+> +#else
+> +static unsigned long * __init
+> +sparse_early_usemap_alloc_section(unsigned long pnum)
+> +{
+> +	return NULL;
+> +}
+> +
+> +static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
+> +{
+> +}
+> +#endif /* CONFIG_MEMORY_HOTREMOVE */
+> +
+>  static unsigned long *__init sparse_early_usemap_alloc(unsigned long pnum)
+>  {
+>  	unsigned long *usemap;
+>  	struct mem_section *ms = __nr_to_section(pnum);
+>  	int nid = sparse_early_nid(ms);
+>  
+> -	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
+> +	usemap = sparse_early_usemap_alloc_section(pnum);
+>  	if (usemap)
+>  		return usemap;
+>  
+> +	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
+> +	if (usemap) {
+> +		check_usemap_section_nr(nid, usemap);
+> +		return usemap;
+> +	}
+> +
+>  	/* Stupid: suppress gcc warning for SPARSEMEM && !NUMA */
+>  	nid = 0;
+>  
+
+Just a few minor things that need cleaning up there. Otherwise, the idea
+seems sound.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
