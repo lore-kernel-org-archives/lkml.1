@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbYFWJtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbYFWJ4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757961AbYFWJtd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 05:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYFWJtY
+	id S1755228AbYFWJ4l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 05:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYFWJ4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 05:49:24 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36331 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754073AbYFWJtX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 05:49:23 -0400
-Message-ID: <485F7184.1030907@kernel.org>
-Date: Mon, 23 Jun 2008 18:48:52 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Mon, 23 Jun 2008 05:56:31 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3229 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752518AbYFWJ4a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 05:56:30 -0400
+Date: Mon, 23 Jun 2008 10:53:10 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Jon Tollefson <kniht@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Nishanth Aravamudan <nacc@us.ibm.com>,
+       Adam Litke <agl@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 2/2] hugetlb reservations: fix hugetlb MAP_PRIVATE reservations across vma splits
+Message-ID: <20080623095310.GH29804@shadowen.org>
+References: <1213989474-5586-1-git-send-email-apw@shadowen.org> <1213989474-5586-3-git-send-email-apw@shadowen.org> <20080623080048.GJ21597@csn.ul.ie>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: Pavel Machek <pavel@suse.cz>, Andreas Schwab <schwab@suse.de>,
-       kernel list <linux-kernel@vger.kernel.org>, jgarzik@pobox.com,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Trivial patch monkey <trivial@kernel.org>
-Subject: Re: sata_svw data corruption, strange problems
-References: <20080617093602.GA28140@elf.ucw.cz>	 <485EF061.3010601@kernel.org> <20080623082055.GB1850@elf.ucw.cz>	 <je63s0sfxv.fsf@sykes.suse.de> <20080623085338.GE1850@elf.ucw.cz>	 <485F6540.6000907@kernel.org>  <20080623090130.GF1850@elf.ucw.cz> <1214211859.8011.250.camel@pasglop>
-In-Reply-To: <1214211859.8011.250.camel@pasglop>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (hera.kernel.org [127.0.0.1]); Mon, 23 Jun 2008 09:48:59 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080623080048.GJ21597@csn.ul.ie>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> Am I the only one to find Pavel variant almost as obscure as
-> the original one ? :-)
+On Mon, Jun 23, 2008 at 09:00:48AM +0100, Mel Gorman wrote:
+> Typical. I spotted this after I pushed send.....
 > 
-> It should explain precisely what the workaround is. Ie. to start the
-> DMA there instead of where it normally is started which is the
-> bmdma_setup() function.
+> > <SNIP>
+> 
+> > @@ -266,14 +326,19 @@ static void decrement_hugepage_resv_vma(struct hstate *h,
+> >  		 * private mappings.
+> >  		 */
+> >  		if (is_vma_resv_set(vma, HPAGE_RESV_OWNER)) {
+> > -			unsigned long flags, reserve;
+> > +			unsigned long idx = vma_pagecache_offset(h,
+> > +							vma, address);
+> > +			struct resv_map *reservations = vma_resv_map(vma);
+> > +
+> >  			h->resv_huge_pages--;
+> > -			flags = (unsigned long)vma->vm_private_data &
+> > -							HPAGE_RESV_MASK;
+> > -			reserve = (unsigned long)vma->vm_private_data - 1;
+> > -			vma->vm_private_data = (void *)(reserve | flags);
+> > +
+> > +			/* Mark this page used in the map. */
+> > +			if (region_chg(&reservations->regions, idx, idx + 1) < 0)
+> > +				return -1;
+> > +			region_add(&reservations->regions, idx, idx + 1);
+> >  		}
+> 
+> decrement_hugepage_resv_vma() is called with hugetlb_lock held and region_chg
+> calls kmalloc(GFP_KERNEL).  Hence it's possible we would sleep with that
+> spinlock held which is a bit uncool. The allocation needs to happen outside
+> the lock. Right?
 
-Well, it's better than the original which kind of directed the other
-way.  :-)
+Yes, good spot.  Luckily this pair of calls can be separated, as the
+first is a prepare and the second a commit.  So I can trivially pull
+the allocation outside the lock.
 
-> BTW. Tejun, I suppose that usually starting DMA after issuing the
-> command is a standard practice of legacy/sff type controllers ? Or it's
-> just because that's how linux did it until now ?
+Had a quick go at this and it looks like I can move both out of the lock
+to a much more logical spot and clean the patch up significantly.  Will
+fold in your other comments and post up a V2 once it has been tested.
 
-It's how the standard says it should be programmed.  Please take a look
-at section 3 of the following document.
+Thanks.
 
-http://www.centrillium-it.com/Projects/idems100.pdf
-
-It's a non-issue for PATA ones as the host is responsible for running
-the clock and transferring data after the drive indicated readiness, so
-the worst that can happen by starting the dma engine after issuing the
-command is the drive waiting in ready state.
-
-For SATA, it should work the same.  The host should hold the transfer by
-not acking the data transfer request (or prefetch the data if it feels
-smart and brave).  So, it's something sata_svw screwed up.
-
--- 
-tejun
+-apw
