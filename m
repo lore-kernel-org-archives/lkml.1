@@ -1,67 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbYFWKeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbYFWKhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755973AbYFWKeA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 06:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYFWKdv
+	id S1756596AbYFWKhh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 06:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbYFWKh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 06:33:51 -0400
-Received: from ns2.suse.de ([195.135.220.15]:39511 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751274AbYFWKdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 06:33:50 -0400
-Date: Mon, 23 Jun 2008 12:33:44 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/5] x86: use BOOTMEM_EXCLUSIVE on 32-bit
-Message-ID: <20080623123344.0c16ed69@kopernikus.site>
-In-Reply-To: <20080623080940.GA23313@elte.hu>
-References: <20080622185327.348377223@mini.kroah.org>
-	<20080622190131.GB20141@suse.de>
-	<87prq9dxst.fsf@skyscraper.fehenstaub.lan>
-	<20080622203047.GC20800@suse.de>
-	<alpine.LFD.1.10.0806221336010.2926@woody.linux-foundation.org>
-	<20080623080940.GA23313@elte.hu>
-Organization: SUSE LINUX Products GmbH
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i686-pc-linux-gnu)
-X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
- D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
- vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
- pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jun 2008 06:37:29 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:54869 "EHLO
+	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754250AbYFWKh2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 06:37:28 -0400
+Date: Mon, 23 Jun 2008 16:07:00 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: paulmck@linux.vnet.ibm.com, Dipankar Sarma <dipankar@in.ibm.com>,
+       Gautham Shenoy <ego@in.ibm.com>, laijs@cn.fujitsu.com,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] fix rcu vs hotplug race
+Message-ID: <20080623103700.GA4043@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2008-06-23 10:09]:
+On running kernel compiles in parallel with cpu hotplug,
 
-> 
-> | commit 91d48fc80f22817332170082e10de60a75851640
-> | Author: Bernhard Walle <bwalle@suse.de>
-> | Date:   Sun Jun 8 15:46:29 2008 +0200
-> | CommitDate: Tue Jun 10 14:41:56 2008 +0200
-> |
-> |    bootmem: add return value to reserve_bootmem_node()
-> |
-> |    This patch changes the function reserve_bootmem_node() from void to
-> |    int, returning -ENOMEM if the allocation fails.
-> |
-> |    Signed-off-by: Bernhard Walle <bwalle@suse.de>
-> |    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> so it is a -stable candidate just as much as the kexec fix. (These are 
-> all fixes for long-standing problems so i guess it can go all the way 
-> back to all stable kernels that are being maintained.)
+------------[ cut here ]------------
+WARNING: at arch/x86/kernel/smp.c:118
+native_smp_send_reschedule+0x21/0x36()
+Modules linked in:
+Pid: 27483, comm: cc1 Not tainted 2.6.26-rc7 #1
+ [<c01217d9>] warn_on_slowpath+0x41/0x5d
+ [<c01515b7>] ? generic_file_aio_read+0x10f/0x137
+ [<c0151340>] ? file_read_actor+0x0/0xf7
+ [<c013ae4c>] ? validate_chain+0xaa/0x29c
+ [<c013c854>] ? __lock_acquire+0x612/0x666
+ [<c013c854>] ? __lock_acquire+0x612/0x666
+ [<c013ae4c>] ? validate_chain+0xaa/0x29c
+ [<c01715d3>] ? file_kill+0x2d/0x30
+ [<c013cbd7>] ? __lock_release+0x4b/0x51
+ [<c01715d3>] ? file_kill+0x2d/0x30
+ [<c0110355>] native_smp_send_reschedule+0x21/0x36
+ [<c014fe8f>] force_quiescent_state+0x47/0x57
+ [<c014fef0>] call_rcu+0x51/0x6d
+ [<c01713b3>] __fput+0x130/0x158
+ [<c0171231>] fput+0x17/0x19
+ [<c016fd99>] filp_close+0x4d/0x57
+ [<c016fdff>] sys_close+0x5c/0x97
+ [<c0103861>] sysenter_past_esp+0x6a/0xb1
+ =======================
+---[ end trace aa35f3913ddf2d06 ]---
 
-Ingo, 
+This is because a reschedule is sent to a CPU which is offline.
+Just ensure that the CPU we send the smp_send_reschedule is actually
+online.
 
-shouldn't we add the reserve_bootmem_generic() fix [1] to 2.6.26-* at
-least?
+Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+---
+ kernel/rcuclassic.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletion(-)
 
-
-Bernhard
-
-[1] 62b5ebe062c2801f6d40480ae3b91a64c8c8e6cb
+Index: linux-2.6.26-rc7/kernel/rcuclassic.c
+===================================================================
+--- linux-2.6.26-rc7.orig/kernel/rcuclassic.c
++++ linux-2.6.26-rc7/kernel/rcuclassic.c
+@@ -93,7 +93,8 @@ static void force_quiescent_state(struct
+ 		cpumask = rcp->cpumask;
+ 		cpu_clear(rdp->cpu, cpumask);
+ 		for_each_cpu_mask(cpu, cpumask)
+-			smp_send_reschedule(cpu);
++			if (cpu_online(cpu))
++				smp_send_reschedule(cpu);
+ 	}
+ }
+ #else
 -- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
+regards,
+Dhaval
