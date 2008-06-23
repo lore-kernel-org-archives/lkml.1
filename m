@@ -1,93 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756403AbYFWHxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbYFWH6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756403AbYFWHxs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 03:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbYFWHxk
+	id S1755419AbYFWH6S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 03:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbYFWH6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 03:53:40 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:57171 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752040AbYFWHxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 03:53:39 -0400
-Date: Mon, 23 Jun 2008 17:53:26 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg Ungerer <gerg@snapgear.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org
-Subject: Re: [PATCH] m68knommu: ColdFire add support for kernel preemption
-Message-Id: <20080623175326.ddf5d2d4.sfr@canb.auug.org.au>
-In-Reply-To: <20080622225102.5117f22b.akpm@linux-foundation.org>
-References: <200805010216.m412GT6t004096@goober>
-	<20080501143336.552e39e1.akpm@linux-foundation.org>
-	<481AC07A.6080707@snapgear.com>
-	<20080502083755.GA13973@Chamillionaire.breakpoint.cc>
-	<20080502052235.eb9c336a.akpm@linux-foundation.org>
-	<485F3585.2080606@snapgear.com>
-	<20080622225102.5117f22b.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__23_Jun_2008_17_53_26_+1000_nq6hPHJxSFJHRiIz"
+	Mon, 23 Jun 2008 03:58:10 -0400
+Received: from mail.ku-gbr.de ([81.3.11.18]:43269 "EHLO ku-gbr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751931AbYFWH6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 03:58:09 -0400
+Date: Mon, 23 Jun 2008 09:58:00 +0200
+From: Konstantin Kletschke <lists@ku-gbr.de>
+To: Miquel van Smoorenburg <mikevs@xs4all.net>,
+       Oliver Pinter <oliver.pntr@gmail.com>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+       xfs-masters@oss.sgi.com
+Subject: Re: XFS internal error xfs_trans_cancel at line 1163 of file
+	fs/xfs/xfs_trans.c
+Message-ID: <20080623075800.GA2379@anita>
+Mail-Followup-To: Miquel van Smoorenburg <mikevs@xs4all.net>,
+	Oliver Pinter <oliver.pntr@gmail.com>, linux-kernel@vger.kernel.org,
+	Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+	xfs-masters@oss.sgi.com
+References: <20080612123031.21594jyk6rjc1lfk@imp.ku-gbr.de> <6101e8c40806120733m3c8647ccy149eb237e2c6d027@mail.gmail.com> <1213309629.29745.8.camel@localhost.localdomain> <20080613030841.GC3700@disturbed> <20080620052716.GA2022@anita> <20080622225355.GD11558@disturbed>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080622225355.GD11558@disturbed>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__23_Jun_2008_17_53_26_+1000_nq6hPHJxSFJHRiIz
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Am 2008-06-23 08:53 +1000 schrieb Dave Chinner:
 
-Hi Greg,
+> > If I am correct, this fix is included in 2.6.26-rc6:
+> 
+> Yes, so if you're seeing it again then there's a different problem.
 
-On Sun, 22 Jun 2008 22:51:02 -0700 Andrew Morton <akpm@linux-foundation.org=
-> wrote:
->
-> On Mon, 23 Jun 2008 15:32:53 +1000 Greg Ungerer <gerg@snapgear.com> wrote:
->=20
-> > Here is a git tree for the collection of patches for the m68knommu
-> > architecture that I intend for the 2.6.27 merge window.
-> >=20
-> > git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git for-li=
-nus
+There seems to be something else too, yes.
 
-Added today (slipped it in at the end).
+> Please provide a pointer to a xfs_metadump image of the filesystem
+> and the steps to reproduce the error from the image so we can
+> get to the bottom of it...
 
-> > I have created a general uclinux changes git tree as well,
-> >=20
-> > git://git.kernel.org/pub/scm/linux/kernel/git/gerg/uclinux.git for-linus
+Well, accidently I formatted the partition. I needed my /var partition
+urgently and I tried the following: I tarred the whole /var from a
+rescue system (gentoo amd64 live cd version 2007.0, IIRC there is 2.6.19
+on it) and did a "rm -fr /var/*" and tried to tar it back.
 
-This tree currently has no for-linus branch.  You should create one (even
-if it just a subset of Linus' tree).  I've added it using its master
-branch for now, please let me know when it is fixed.
+While this worked for my /home (I also had the error there), tarring
+back the files onto /var produced several oopses in dmesg and the
+userspace complained about an error in a (directory?) structure not
+being accessible/not able to be initialized. Well, I took screenshots of
+this but accidently I lost them on my cam and due to running a rescue
+system there is no reminisence in a file of this. 
 
-Also, these branches would normally be called for-next.  Most people keep
-for-linus for bug fixes for the current release.  If you decide to change
-the branch name, just let me know.
+I formatted the partition then :-(
 
-Repeat of the rules for linux-next: anything included must have been
-posted somewhere appropriate, reviewed and unit tested (i.e. your tree
-should build for you).
+I could only try to reproduce it on my home partition... Does anybody
+have a clue how this can be done or a suspicion how to trigger this
+error?
 
-> Great, thanks.  But can we get them into linux-next please?  I'll pick
-> them up via that route.
+King Regards, Konsti
 
-Done.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__23_Jun_2008_17_53_26_+1000_nq6hPHJxSFJHRiIz
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhfVnYACgkQTgG2atn1QN8VVACeLXC/Y+f+nmtV8cX3fA8eNYG9
-bqgAoIQcxgfT6Bv3l8pMfUxb86dFonHQ
-=zw+G
------END PGP SIGNATURE-----
-
---Signature=_Mon__23_Jun_2008_17_53_26_+1000_nq6hPHJxSFJHRiIz--
+-- 
+GPG KeyID EF62FCEF
+Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
