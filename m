@@ -1,46 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYFWXbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754AbYFWXem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753884AbYFWXbT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 19:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbYFWXbL
+	id S1753754AbYFWXem (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 19:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYFWXee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 19:31:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53095 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750942AbYFWXbK (ORCPT
+	Mon, 23 Jun 2008 19:34:34 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:38326 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751399AbYFWXed (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 19:31:10 -0400
-Date: Mon, 23 Jun 2008 16:28:24 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Greg KH <gregkh@suse.de>
-cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 10/10] Fix ZERO_PAGE breakage with vmware
-In-Reply-To: <20080623230452.GD29853@suse.de>
-Message-ID: <alpine.LFD.1.10.0806231627440.2926@woody.linux-foundation.org>
-References: <20080623225737.837265824@mini.kroah.org> <20080623230452.GD29853@suse.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 23 Jun 2008 19:34:33 -0400
+Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Daniel Hecht <dhecht@vmware.com>,
+       Tim Mann <mann@vmware.com>, Zach Amsden <zach@vmware.com>,
+       Sahil Rihan <srihan@vmware.com>
+In-Reply-To: <20080623232149.GA22926@elte.hu>
+References: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080603182014.79a38d03@infradead.org>
+	 <35f686220806032101h103152dat841818982aaa5052@mail.gmail.com>
+	 <20080604061637.6bab3f67@infradead.org>
+	 <1213924953.27983.52.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080620113922.GG7439@elte.hu>
+	 <1213999593.31598.52.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080623232149.GA22926@elte.hu>
+Content-Type: text/plain; charset=utf-8
+Organization: VMware INC.
+Date: Mon, 23 Jun 2008 16:34:30 -0700
+Message-Id: <1214264070.3882.22.camel@promb-2n-dhcp368.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 23 Jun 2008, Greg KH wrote:
+On Mon, 2008-06-23 at 16:21 -0700, Ingo Molnar wrote:
+> * Alok Kataria <akataria@vmware.com> wrote:
 > 
-> Note, I had to merge this patch by hand, can someone verify that I 
-> didn't mess it up?
+> > +     lpj = ((u64)tsc_khz * 1000);
+> > +     do_div(lpj, HZ);
+> > +     lpj_tsc = lpj;
+> 
+> this needed the fix below.
+> 
+> but there's another problem as well: why are generic files
+> (init/calibrate.c and include/linux/delay.h) using something that is
+> named in an x86-specific way - lpj_tsc ? (TSC is an x86 concept)
+> 
 
-Looks ok to me.
+calibrate_delay_direct was using some variables with "tsc" as the prefix
+(tsc_rate_min/max) ...so i thought of using lpj_tsc. And also IMO,
+lpj_tsc explains how is this variable initialized. But thinking about
+it, maybe we should rename it to "lpj_timer" ?
 
-		Linus
+Also, i still haven't got to testing today's tip tree in my environment,
+will let you know as soon as i have done it. 
+
+Thanks,
+Alok
+>         Ingo
+> 
+> ------------>
+> commit 5cd5a41ea6f4363b03156e2208dd0d2266f0d67d
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Tue Jun 24 01:19:49 2008 +0200
+> 
+>     x86: fix "x86: use cpu_khz for loops_per_jiffy calculation"
+> 
+>     fix:
+> 
+>     arch/x86/kernel/tsc_32.c: In function ‘tsc_init':
+>     arch/x86/kernel/tsc_32.c:421: error: ‘lpj_tsc' undeclared (first use in this function)
+>     arch/x86/kernel/tsc_32.c:421: error: (Each undeclared identifier is reported only once
+>     arch/x86/kernel/tsc_32.c:421: error: for each function it appears in.)
+> 
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> diff --git a/arch/x86/kernel/tsc_32.c b/arch/x86/kernel/tsc_32.c
+> index 4adac0d..bfb9193 100644
+> --- a/arch/x86/kernel/tsc_32.c
+> +++ b/arch/x86/kernel/tsc_32.c
+> @@ -1,6 +1,7 @@
+>  #include <linux/sched.h>
+>  #include <linux/clocksource.h>
+>  #include <linux/workqueue.h>
+> +#include <linux/delay.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/jiffies.h>
+>  #include <linux/init.h>
+
