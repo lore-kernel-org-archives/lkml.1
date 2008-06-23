@@ -1,32 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbYFWWZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbYFWWap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755193AbYFWWZv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 18:25:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbYFWWZo
+	id S1754478AbYFWWap (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 18:30:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbYFWWag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 18:25:44 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:22069 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751051AbYFWWZn (ORCPT
+	Mon, 23 Jun 2008 18:30:36 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:57902 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752221AbYFWWaf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 18:25:43 -0400
-Date: Mon, 23 Jun 2008 15:20:44 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <louis.rilling@kerlabs.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [PATCH 0/2]v2 configfs: symlink() fixes
-Message-ID: <20080623222043.GG592@mail.oracle.com>
-Mail-Followup-To: Louis Rilling <louis.rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <1214223378-14203-1-git-send-email-louis.rilling@kerlabs.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1214223378-14203-1-git-send-email-louis.rilling@kerlabs.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 23 Jun 2008 18:30:35 -0400
+Date: Mon, 23 Jun 2008 15:29:41 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 6/6] memcg: HARDWALL hierarchy
+Message-Id: <20080623152941.1283ecce.randy.dunlap@oracle.com>
+In-Reply-To: <20080613183741.5e2f7fda.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080613182714.265fe6d2.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080613183741.5e2f7fda.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
@@ -35,28 +39,118 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 02:16:16PM +0200, Louis Rilling wrote:
-> The following patchset fixes incorrect symlinks to dead items in configfs, which
-> are forbidden by specification.
+On Fri, 13 Jun 2008 18:37:41 +0900 KAMEZAWA Hiroyuki wrote:
+
+> Support hardwall hierarchy (and no-hierarchy) in memcg.
 > 
-> The first patch actually prevents such dangling symlinks from being created, but
-> introduces a weird(?) behavior where a failing symlink() can make a racing
-> rmdir() fail in the symlink's parent and in the symlink's target as well. This
-> behavior is fixed with the next patch.
+> Change log: v3->v4
+>  - cut out from memcg hierarchy patch set v4.
+>  - no major changes, but some amount of functions are moved to res_counter.
+>    and be more gneric.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> ---
+>  Documentation/controllers/memory.txt |   57 +++++++++++++++++++++++++++++-
+>  mm/memcontrol.c                      |   65 +++++++++++++++++++++++++++++++++--
+>  2 files changed, 118 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6.26-rc5-mm3/Documentation/controllers/memory.txt
+> ===================================================================
+> --- linux-2.6.26-rc5-mm3.orig/Documentation/controllers/memory.txt
+> +++ linux-2.6.26-rc5-mm3/Documentation/controllers/memory.txt
+> @@ -154,7 +154,7 @@ The memory controller uses the following
+>  
+>  0. Configuration
 
-	Silly question: you've tested this, right?
+I apologize if you have already corrected these.  I'm a bit behind
+on doc reviews.
 
-Joel
 
--- 
+> -a. Enable CONFIG_CGROUPS
+> +a. Enable CONFESS_CGROUPS
 
-"I almost ran over an angel
- He had a nice big fat cigar.
- 'In a sense,' he said, 'You're alone here
- So if you jump, you'd best jump far.'"
+Really?  Looks odd and backwards.
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+>  b. Enable CONFIG_RESOURCE_COUNTERS
+>  c. Enable CONFIG_CGROUP_MEM_RES_CTLR
+>  
+> @@ -237,7 +237,58 @@ cgroup might have some charge associated
+>  tasks have migrated away from it. Such charges are automatically dropped at
+>  rmdir() if there are no tasks.
+>  
+> -5. TODO
+> +5. Supported Hierarchy Model
+> +
+> +Currently, memory controller supports following models of hierarchy in the
+> +kernel. (see also resource_counter.txt)
+> +
+> +2 files are related to hierarchy.
+> + - memory.hierarchy_model
+> + - memory.for_children
+> +
+> +Basic Rule.
+> +  - Hierarchy can be set per cgroup.
+> +  - A child inherits parent's hierarchy model at creation.
+> +  - A child can change its hierarchy only when the parent's hierarchy is
+> +    NO_HIERARCY and it has no children.
+
+       NO_HIERARCHY
+
+> +
+> +
+> +5.1. NO_HIERARCHY
+> +  - Each cgroup is independent from other ones.
+> +  - When memory.hierarchy_model is 0, NO_HIERARCHY is used.
+> +    Under this model, there is no controls based on tree of cgroups.
+
+	                 there are no controls
+
+> +    This is the default model of root cgroup.
+> +
+> +5.2 HARDWALL_HIERARCHY
+> +  - A child is a isolated portion of the parent.
+
+               is an
+
+> +  - When memory.hierarchy_model is 1, HARDWALL_HIERARCHY is used.
+> +    In this model a child's limit is charged as parent's usage.
+> +
+> +  Hard-Wall Hierarchy Example)
+
+Drop ')'.
+
+> +  1) Assume a cgroup with 1GB limits. (and no tasks belongs to this, now)
+> +     - group_A limit=1G,usage=0M.
+
+	                  , usage=0M.
+
+> +
+> +  2) create group B, C under A.
+> +     - group A limit=1G, usage=0M, for_childre=0M
+
+	                              for_children=0M
+
+> +          - group B limit=0M, usage=0M.
+> +          - group C limit=0M, usage=0M.
+> +
+> +  3) increase group B's limit to 300M.
+> +     - group A limit=1G, usage=300M, for_children=300M
+> +          - group B limit=300M, usage=0M.
+> +          - group C limit=0M, usage=0M.
+> +
+> +  4) increase group C's limit to 500M
+> +     - group A limit=1G, usage=800M, for_children=800M
+> +          - group B limit=300M, usage=0M.
+> +          - group C limit=500M, usage=0M.
+> +
+> +  5) reduce group B's limit to 100M
+> +     - group A limit=1G, usage=600M, for_children=600M.
+> +          - group B limit=100M, usage=0M.
+> +          - group C limit=500M, usage=0M.
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
