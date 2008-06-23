@@ -1,247 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbYFWXmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbYFWXrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754739AbYFWXmx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 19:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYFWXmm
+	id S1754340AbYFWXrW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 19:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYFWXrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 19:42:42 -0400
-Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:42232
-	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751925AbYFWXmk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 19:42:40 -0400
-Date: Mon, 23 Jun 2008 16:42:10 -0700
-From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: USB development list <linux-usb@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.27-rc7-git1: usb-storage breakage with non-functional disk
-Message-ID: <20080623234210.GB31004@one-eyed-alien.net>
-Mail-Followup-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-	USB development list <linux-usb@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
-	linux-scsi <linux-scsi@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <200806232345.54047.rjw@sisk.pl> <200806232350.09597.Rafal.Wysocki@fuw.edu.pl> <200806232358.33602.rjw@sisk.pl>
+	Mon, 23 Jun 2008 19:47:14 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52873 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751621AbYFWXrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 19:47:13 -0400
+Date: Tue, 24 Jun 2008 09:47:06 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg Ungerer <gerg@snapgear.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] m68knommu: ColdFire add support for kernel preemption
+Message-Id: <20080624094706.56c8526f.sfr@canb.auug.org.au>
+In-Reply-To: <485FA3BC.5080807@snapgear.com>
+References: <200805010216.m412GT6t004096@goober>
+	<20080501143336.552e39e1.akpm@linux-foundation.org>
+	<481AC07A.6080707@snapgear.com>
+	<20080502083755.GA13973@Chamillionaire.breakpoint.cc>
+	<20080502052235.eb9c336a.akpm@linux-foundation.org>
+	<485F3585.2080606@snapgear.com>
+	<20080622225102.5117f22b.akpm@linux-foundation.org>
+	<20080623175326.ddf5d2d4.sfr@canb.auug.org.au>
+	<485FA3BC.5080807@snapgear.com>
+X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="gKMricLos+KVdGMg"
-Content-Disposition: inline
-In-Reply-To: <200806232358.33602.rjw@sisk.pl>
-User-Agent: Mutt/1.4.2.3i
-Organization: One Eyed Alien Networks
-X-Copyright: (C) 2008 Matthew Dharm, all rights reserved.
-X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Mon, 23 Jun 2008 16:42:13 -0700 (PDT)
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__24_Jun_2008_09_47_06_+1000_PKbpDMhF7z=+3J3n"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---gKMricLos+KVdGMg
-Content-Type: text/plain; charset=us-ascii
+--Signature=_Tue__24_Jun_2008_09_47_06_+1000_PKbpDMhF7z=+3J3n
+Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Huh.  Does SCSI core not do a get_device() before actually scanning?  It
-looks to me like the disconnect path did it's scsi_host_put and the host
-(and struct us_data) got freed immediately.
+Hi Greg,
 
-Matt
+On Mon, 23 Jun 2008 23:23:08 +1000 Greg Ungerer <gerg@snapgear.com> wrote:
+>
+> Ok, done too. Branches named for-next exist in both. The patches
+> on the for-linus branch in the m68knommu.git are now on the
+> for-next branch.
 
-On Mon, Jun 23, 2008 at 11:58:32PM +0200, Rafael J. Wysocki wrote:
-> On Monday, 23 of June 2008, R. J. Wysocki wrote:
-> > [sorry for the broken USB list address in the original post.]
->=20
-> [and now my univeristy address instead of the usual one ...]
->=20
-> > On Monday, 23 of June 2008, Rafael J. Wysocki wrote:
-> > > Hi,
-> > >=20
-> > > This has just happened to me with -rc7-git1 while trying to use a not
-> > > sufficiently powered external disk (we should survive that IMO):
-> > >=20
-> > > usb 6-3: new high speed USB device using ehci_hcd and address 9
-> > > usb 6-3: device descriptor read/64, error -110
-> > > usb 6-3: device descriptor read/64, error -110
-> > > usb 6-3: new high speed USB device using ehci_hcd and address 10
-> > > usb 6-3: device descriptor read/64, error -110
-> > > usb 6-3: device descriptor read/64, error -110
-> > > usb 6-3: new high speed USB device using ehci_hcd and address 11
-> > > usb 6-3: device not accepting address 11, error -110
-> > > usb 6-3: new high speed USB device using ehci_hcd and address 12
-> > > usb 6-3: device not accepting address 12, error -110
-> > > hub 6-0:1.0: unable to enumerate USB device on port 3
-> > > usb 2-1: new full speed USB device using ohci_hcd and address 2
-> > > usb 2-1: not running at top speed; connect to a high speed hub
-> > > usb 2-1: configuration #1 chosen from 1 choice
-> > > usb 2-1: New USB device found, idVendor=3D04cf, idProduct=3D8818
-> > > usb 2-1: New USB device strings: Mfr=3D1, Product=3D2, SerialNumber=
-=3D3
-> > > usb 2-1: Product: USB Mass Storage Device
-> > > usb 2-1: Manufacturer: Myson Century, Inc.
-> > > usb 2-1: SerialNumber: 100
-> > > Initializing USB Mass Storage driver...
-> > > scsi12 : SCSI emulation for USB Mass Storage devices
-> > > usb-storage: device found at 2
-> > > usb-storage: waiting for device to settle before scanning
-> > > usbcore: registered new interface driver usb-storage
-> > > USB Mass Storage support registered.
-> > > scsi 12:0:0:0: Direct-Access     IC25N060 ATMR04-0         MO3O PQ: 0=
- ANSI: 0 CCS
-> > > sd 12:0:0:0: [sdc] 117210240 512-byte hardware sectors (60012 MB)
-> > > sd 12:0:0:0: [sdc] Write Protect is off
-> > > sd 12:0:0:0: [sdc] Mode Sense: 00 14 00 00
-> > > sd 12:0:0:0: [sdc] Assuming drive cache: write through
-> > > sd 12:0:0:0: [sdc] 117210240 512-byte hardware sectors (60012 MB)
-> > > sd 12:0:0:0: [sdc] Write Protect is off
-> > > sd 12:0:0:0: [sdc] Mode Sense: 00 14 00 00
-> > > sd 12:0:0:0: [sdc] Assuming drive cache: write through
-> > >  sdc:<6>usb 2-1: USB disconnect, address 2
-> > > sd 12:0:0:0: [sdc] Result: hostbyte=3DDID_ERROR driverbyte=3DDRIVER_O=
-K,SUGGEST_OK
-> > > end_request: I/O error, dev sdc, sector 0
-> > > Buffer I/O error on device sdc, logical block 0
-> > > sd 12:0:0:0: [sdc] Result: hostbyte=3DDID_ERROR driverbyte=3DDRIVER_O=
-K,SUGGEST_OK
-> > > end_request: I/O error, dev sdc, sector 0
-> > > Buffer I/O error on device sdc, logical block 0
-> > >  unable to read partition table
-> > > sd 12:0:0:0: [sdc] Attached SCSI disk
-> > > sd 12:0:0:0: Attached scsi generic sg3 type 0
-> > > BUG: unable to handle kernel NULL pointer dereference at 000000000000=
-0004
-> > > IP: [<ffffffffa038e6f1>] :usb_storage:slave_alloc+0x41/0x80
-> > > PGD 1260ff067 PUD 119076067 PMD 0=20
-> > > Oops: 0000 [1] SMP=20
-> > > CPU 3=20
-> > > Modules linked in: usb_storage parport_pc lp parport usblp nfsd lockd=
- auth_rpcgss sunrpc exportfs iptable_filter ip_tables ip6table_filter ip6_t=
-ables x_tables ipv6 cpufreq_conservative cpufreq_ondemand cpufreq_userspace=
- cpufreq_powersave powernow_k8 freq_table snd_pcm_oss snd_mixer_oss snd_seq=
- snd_seq_device reiserfs dm_mod ohci1394 sr_mod cdrom floppy ieee1394 serio=
-_raw rtc_cmos sky2 wmi snd_hda_intel rtc_core sg rtc_lib joydev snd_pcm snd=
-_timer snd_page_alloc snd_hwdep snd evdev button soundcore raid456 async_xo=
-r async_memcpy async_tx xor raid0 usbhid ff_memless ehci_hcd ohci_hcd sd_mo=
-d edd raid1 ext3 jbd fan pata_marvell pata_atiixp thermal processor
-> > > Pid: 9319, comm: usb-stor-scan Not tainted 2.6.26-rc7 #196
-> > > RIP: 0010:[<ffffffffa038e6f1>]  [<ffffffffa038e6f1>] :usb_storage:sla=
-ve_alloc+0x41/0x80
-> > > RSP: 0018:ffff8100a20cdb60  EFLAGS: 00010202
-> > > RAX: 0000000000000000 RBX: ffff810087d828d0 RCX: 0000000000000003
-> > > RDX: ffff8101275f08e0 RSI: ffff810086cc49d0 RDI: ffff810124144b90
-> > > RBP: ffff8100a20cdb70 R08: 0000000000000001 R09: 0000000000000000
-> > > R10: ffffffff807fe7e0 R11: 0000000000000000 R12: ffff810087499000
-> > > R13: ffff810124953678 R14: ffff810087d82000 R15: 0000000000000000
-> > > FS:  00007f22f6561700(0000) GS:ffff810127c997c0(0000) knlGS:00000000e=
-eb1db90
-> > > CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> > > CR2: 0000000000000004 CR3: 0000000122089000 CR4: 00000000000006e0
-> > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > > Process usb-stor-scan (pid: 9319, threadinfo ffff8100a20cc000, task f=
-fff810086cc4300)
-> > > Stack:  ffff810087499000 ffff810124953650 ffff8100a20cdbb0 ffffffff80=
-3ea940
-> > >  ffff8100a20cdbb0 ffff810087d82000 0000000000000000 0000000000000000
-> > >  ffff810124953678 0000000000000000 ffff8100a20cdcf0 ffffffff803eac9a
-> > > Call Trace:
-> > >  [<ffffffff803ea940>] scsi_alloc_sdev+0x1e0/0x250
-> > >  [<ffffffff803eac9a>] scsi_probe_and_add_lun+0x12a/0xc20
-> > >  [<ffffffff803ebd4f>] __scsi_scan_target+0x3bf/0x6c0
-> > >  [<ffffffff8025db46>] ? mark_held_locks+0x56/0xa0
-> > >  [<ffffffff804ebbe9>] ? mutex_lock_nested+0x1b9/0x290
-> > >  [<ffffffff8025dcdf>] ? trace_hardirqs_on+0xbf/0x150
-> > >  [<ffffffff803ec0da>] scsi_scan_channel+0x8a/0xa0
-> > >  [<ffffffff803ec1e8>] scsi_scan_host_selected+0xf8/0x160
-> > >  [<ffffffff803ec2ce>] do_scsi_scan_host+0x7e/0x80
-> > >  [<ffffffff803ec850>] scsi_scan_host+0x190/0x1d0
-> > >  [<ffffffffa0390f3d>] :usb_storage:usb_stor_scan_thread+0x6d/0x1c0
-> > >  [<ffffffff8024f790>] ? autoremove_wake_function+0x0/0x40
-> > >  [<ffffffffa0390ed0>] ? :usb_storage:usb_stor_scan_thread+0x0/0x1c0
-> > >  [<ffffffff8024f33d>] kthread+0x4d/0x80
-> > >  [<ffffffff8020c608>] child_rip+0xa/0x12
-> > >  [<ffffffff8020bd1f>] ? restore_args+0x0/0x30
-> > >  [<ffffffff8024f2f0>] ? kthread+0x0/0x80
-> > >  [<ffffffff8020c5fe>] ? child_rip+0x0/0x12
-> > >=20
-> > >=20
-> > > Code: 1f c6 87 c3 00 00 00 24 48 8b 7f 08 48 81 c3 d0 08 00 00 8b 83 =
-9c 00 00 00 48 8b 53 78 c1 e8 0f 83 e0 0f 48 8b 84 c2 e8 03 00 00 <0f> b7 7=
-0 04 ff ce e8 44 d9 fb df 80 bb c4 00 00 00 04 75 12 49=20
-> > > RIP  [<ffffffffa038e6f1>] :usb_storage:slave_alloc+0x41/0x80
-> > >  RSP <ffff8100a20cdb60>
-> > > CR2: 0000000000000004
-> > > ---[ end trace 2077f860f94c5bf3 ]---
-> > > sd 12:0:0:0: [sdc] Result: hostbyte=3DDID_NO_CONNECT driverbyte=3DDRI=
-VER_OK,SUGGEST_OK
-> > > end_request: I/O error, dev sdc, sector 0
-> > > Buffer I/O error on device sdc, logical block 0
-> > > Buffer I/O error on device sdc, logical block 1
-> > > Buffer I/O error on device sdc, logical block 2
-> > > Buffer I/O error on device sdc, logical block 3
-> > > sd 12:0:0:0: [sdc] Result: hostbyte=3DDID_NO_CONNECT driverbyte=3DDRI=
-VER_OK,SUGGEST_OK
-> > > end_request: I/O error, dev sdc, sector 0
-> > > Buffer I/O error on device sdc, logical block 0
-> > > sd 12:0:0:0: [sdc] Result: hostbyte=3DDID_NO_CONNECT driverbyte=3DDRI=
-VER_OK,SUGGEST_OK
-> > > end_request: I/O error, dev sdc, sector 117210112
-> > > Buffer I/O error on device sdc, logical block 14651264
-> > > sd 12:0:0:0: [sdc] Result: hostbyte=3DDID_NO_CONNECT driverbyte=3DDRI=
-VER_OK,SUGGEST_OK
-> > > end_request: I/O error, dev sdc, sector 117210112
-> > > Buffer I/O error on device sdc, logical block 14651264
-> > > sd 12:0:0:0: [sdc] Result: hostbyte=3DDID_NO_CONNECT driverbyte=3DDRI=
-VER_OK,SUGGEST_OK
-> > > end_request: I/O error, dev sdc, sector 117210112
-> > > Buffer I/O error on device sdc, logical block 14651264
-> > > sd 12:0:0:0: [sdc] Result: hostbyte=3DDID_NO_CONNECT driverbyte=3DDRI=
-VER_OK,SUGGEST_OK
-> > > end_request: I/O error, dev sdc, sector 0
-> > > sd 12:0:0:0: [sdc] Result: hostbyte=3DDID_NO_CONNECT driverbyte=3DDRI=
-VER_OK,SUGGEST_OK
-> > > end_request: I/O error, dev sdc, sector 0
-> > > sd 12:0:0:0: [sdc] Result: hostbyte=3DDID_NO_CONNECT driverbyte=3DDRI=
-VER_OK,SUGGEST_OK
-> > > end_request: I/O error, dev sdc, sector 0
-> > > sd 12:0:0:0: [sdc] Result: hostbyte=3DDID_NO_CONNECT driverbyte=3DDRI=
-VER_OK,SUGGEST_OK
-> > > end_request: I/O error, dev sdc, sector 117210232
-> > >=20
-> > > It resulted in usb-storage being unusable and a system reboot.
-> > >=20
-> > > Thanks,
-> > > Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I have updated my info, thanks.
+
+> Do I need to send a request to Linus to pull this into his
+> tree during the next merge window?  Or will it migrate up
+> from linux-next?
+
+Andrew has answered these.
 
 --=20
-Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
-net=20
-Maintainer, Linux USB Mass Storage Driver
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-S:  Another stupid question?
-G:  There's no such thing as a stupid question, only stupid people.
-					-- Stef and Greg
-User Friendly, 7/15/1998
-
---gKMricLos+KVdGMg
+--Signature=_Tue__24_Jun_2008_09_47_06_+1000_PKbpDMhF7z=+3J3n
 Content-Type: application/pgp-signature
-Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-iD8DBQFIYDTSHL9iwnUZqnkRApZJAKCZeG8giDd/LvpyxJ+TSbVsXeJLnQCePEBw
-HGsEfPL+uxjSBaqsPYgDwF8=
-=TJkb
+iEYEARECAAYFAkhgNfoACgkQTgG2atn1QN/02QCfe4kREggc3ufMJ56iGoj8IvcB
+EkUAnRMIlaLDZ/PLSFqZAdemOKl3O44M
+=v5g9
 -----END PGP SIGNATURE-----
 
---gKMricLos+KVdGMg--
+--Signature=_Tue__24_Jun_2008_09_47_06_+1000_PKbpDMhF7z=+3J3n--
