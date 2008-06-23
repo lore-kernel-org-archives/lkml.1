@@ -1,79 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbYFWVWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757684AbYFWVXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756750AbYFWVWS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 17:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbYFWVWB
+	id S1757684AbYFWVXW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 17:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbYFWVXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 17:22:01 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:62756 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753043AbYFWVWA (ORCPT
+	Mon, 23 Jun 2008 17:23:11 -0400
+Received: from relay2.mail.vrmd.de ([81.28.224.28]:47151 "EHLO
+	relay2.mail.vrmd.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753283AbYFWVXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 17:22:00 -0400
-Subject: 2.6.24.7-rt14
-From: Steven Rostedt <rostedt@goodmis.org>
-To: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Mon, 23 Jun 2008 17:21:57 -0400
-Message-Id: <1214256117.8701.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jun 2008 17:23:09 -0400
+X-Greylist: delayed 1497 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Jun 2008 17:23:09 EDT
+Date: Mon, 23 Jun 2008 20:57:22 +0000
+From: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Richard Henderson <rth@twiddle.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] alpha: fix module load failures on smp (bug #10926)
+Message-ID: <20080623205722.GA3580@ds20.borg.net>
+Reply-To: dl8bcu@dl8bcu.de
+Mail-Followup-To: dl8bcu@dl8bcu.de,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Richard Henderson <rth@twiddle.net>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20080620232539.GA8061@jurassic.park.msu.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080620232539.GA8061@jurassic.park.msu.ru>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Relay-User: dl8bcu@dl8bcu.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce the 2.6.24.7-rt14 tree, which can be
-downloaded from the location:
-
-  http://rt.et.redhat.com/download/
-
-Information on the RT patch can be found at:
-
-  http://rt.wiki.kernel.org/index.php/Main_Page
-
-Changes since 2.6.24.7-rt13
-
-  - rwlock pi_lock fixes on waking up multiple readers (Steven Rostedt)
-
-  - revert adaptive locks from RCU (Thomas Gleixner)
-     [ for some reason, using RCU causes some latency spikes, this
-       may be a sign of something going wrong in RCU itself ]
-
-  - rwlock mutex owner fix for waking up reader with readers held (Steven Rostedt)
-
-  - rwlock remove waiter from pi_list on above fix (Steven Rostedt and
-                                                    Thomas Gleixner)
-
-  - rwlock replace macro with inline (Thomas Gleixner)
-
-  - rwlock pending namespace updates (Thomas Gleixner)
-
-  - rwlock debug check (Thomas Gleixner)
-
-  - futex fix fault (Thomas Gleixner)
-
-  - x86_64 fix copy user (Linus Torvalds)
-
-to build a 2.6.24.7-rt14 tree, the following patches should be applied:
-
-  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.24.tar.bz2
-  http://kernel.org/pub/linux/kernel/v2.6/patch-2.6.24.7.bz2
-  http://rt.et.redhat.com/download/patch-2.6.24.7-rt14.bz2
+On Sat, Jun 21, 2008 at 03:25:39AM +0400, Ivan Kokshaysky wrote:
+> To calculate addresses of locally defined variables, GCC uses 32-bit
+> displacement from the GP. Which doesn't work for per cpu variables in
+> modules, as an offset to the kernel per cpu area is way above 4G.
+> 
+> The workaround is to force allocation of a GOT entry for per cpu variable
+> using ldq instruction with a 'literal' relocation.
+> I had to use custom asm/percpu.h, as a required argument magic doesn't
+> work with asm-generic/percpu.h macros.
+> 
+> Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+> ---
+>  include/asm-alpha/percpu.h |   72 +++++++++++++++++++++++++++++++++++++++++++-
+>  1 files changed, 71 insertions(+), 1 deletions(-)
 
 
-And like always, my RT version of Matt Mackall's ketchup will get this
-for you nicely:
-
-  http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt3
+This causes a regression for my ev4 uniprocessor build:
 
 
-The broken out patches are also available.
+  CC      arch/alpha/mm/init.o
+/export/data/repositories/linux-2.6/arch/alpha/mm/init.c:34: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘typeof’
+make[2]: *** [arch/alpha/mm/init.o] Error 1
+make[1]: *** [arch/alpha/mm] Error 2
+make: *** [sub-make] Error 2
 
 
-
--- Steve
-
+This patch fixes it for me (compile and boot tested):
 
 
+diff --git a/include/asm-alpha/percpu.h b/include/asm-alpha/percpu.h
+index 82e8a94..3495e8e 100644
+--- a/include/asm-alpha/percpu.h
++++ b/include/asm-alpha/percpu.h
+@@ -69,6 +69,8 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
+ #define __get_cpu_var(var)		per_cpu_var(var)
+ #define __raw_get_cpu_var(var)		per_cpu_var(var)
+ 
++#define PER_CPU_ATTRIBUTES
++
+ #endif /* SMP */
+ 
+ #define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu_var(name)
+
+
+Signed-off-by: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>
+
+Thorsten.
+
+-- 
+| Thorsten Kranzkowski        Internet: dl8bcu@dl8bcu.de                      |
+| Mobile: ++49 170 1876134       Snail: Kiebitzstr. 14, 49324 Melle, Germany  |
+| Ampr: dl8bcu@db0lj.#rpl.deu.eu, dl8bcu@marvin.dl8bcu.ampr.org [44.130.8.19] |
