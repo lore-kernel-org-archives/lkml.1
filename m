@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752281AbYFWXIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbYFWXIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752281AbYFWXIl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 19:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbYFWXHT
+	id S1754722AbYFWXIB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 19:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbYFWXHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 19:07:19 -0400
-Received: from mx2.suse.de ([195.135.220.15]:39124 "EHLO mx2.suse.de"
+	Mon, 23 Jun 2008 19:07:10 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44468 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754015AbYFWXHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 19:07:18 -0400
-Date: Mon, 23 Jun 2008 16:04:55 -0700
+	id S1752796AbYFWXHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 19:07:08 -0400
+Date: Mon, 23 Jun 2008 16:04:48 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,15 +21,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 05/10] x86: set PAE PHYSICAL_MASK_SHIFT to 44 bits.
-Message-ID: <20080623230455.GE29853@suse.de>
+       alan@lxorguk.ukuu.org.uk, "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: [patch 09/10] hwmon: (adt7473) Initialize max_duty_at_overheat
+	before use
+Message-ID: <20080623230448.GC29853@suse.de>
 References: <20080623225737.837265824@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-set-pae-physical_mask_shift-to-44-bits.patch"
+Content-Disposition: inline; filename="patch-hwmon-initialize-max_duty_at_overheat-before-use.patch"
 In-Reply-To: <20080623230417.GA29853@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,49 +41,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 us know.
 
 ------------------ 
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+From: Jean Delvare <khali@linux-fr.org>
 
-commit ad524d46f36bbc32033bb72ba42958f12bf49b06 upstream
+commit ed4ec814e45ae8b1596aea0a29b92f6c3614acaa upstream
 
-When a 64-bit x86 processor runs in 32-bit PAE mode, a pte can
-potentially have the same number of physical address bits as the
-64-bit host ("Enhanced Legacy PAE Paging").  This means, in theory,
-we could have up to 52 bits of physical address in a pte.
+data->max_duty_at_overheat is not updated in adt7473_update_device,
+so it might be used before it is initialized (if the user reads from
+sysfs file max_duty_at_crit before writing to it.)
 
-The 32-bit kernel uses a 32-bit unsigned long to represent a pfn.
-This means that it can only represent physical addresses up to 32+12=44
-bits wide.  Rather than widening pfns everywhere, just set 2^44 as the
-Linux x86_32-PAE architectural limit for physical address size.
-
-This is a bugfix for two cases:
-1. running a 32-bit PAE kernel on a machine with
-  more than 64GB RAM.
-2. running a 32-bit PAE Xen guest on a host machine with
-  more than 64GB RAM
-
-In both cases, a pte could need to have more than 36 bits of physical,
-and masking it to 36-bits will cause fairly severe havoc.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Jan Beulich <jbeulich@novell.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Acked-by: Darrick J. Wong <djwong@us.ibm.com>
+Signed-off-by: Mark M. Hoffman <mhoffman@lightlink.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- include/asm-x86/page_32.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/include/asm-x86/page_32.h
-+++ b/include/asm-x86/page_32.h
-@@ -14,7 +14,8 @@
- #define __PAGE_OFFSET		_AC(CONFIG_PAGE_OFFSET, UL)
+---
+ drivers/hwmon/adt7473.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+--- a/drivers/hwmon/adt7473.c
++++ b/drivers/hwmon/adt7473.c
+@@ -309,6 +309,9 @@ no_sensor_update:
+ 						ADT7473_REG_PWM_BHVR(i));
+ 	}
  
- #ifdef CONFIG_X86_PAE
--#define __PHYSICAL_MASK_SHIFT	36
-+/* 44=32+12, the limit we can fit into an unsigned long pfn */
-+#define __PHYSICAL_MASK_SHIFT	44
- #define __VIRTUAL_MASK_SHIFT	32
- #define PAGETABLE_LEVELS	3
++	i = i2c_smbus_read_byte_data(client, ADT7473_REG_CFG4);
++	data->max_duty_at_overheat = !!(i & ADT7473_CFG4_MAX_DUTY_AT_OVT);
++
+ 	data->limits_last_updated = local_jiffies;
+ 	data->limits_valid = 1;
  
 
 -- 
