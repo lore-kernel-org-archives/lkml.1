@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762850AbYFWTN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760592AbYFWTV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762850AbYFWTN5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 15:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbYFWTNu
+	id S1760592AbYFWTV7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 15:21:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbYFWTVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 15:13:50 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:33182 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755786AbYFWTNt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 15:13:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=oJ+qEMwY6GGtTNir+pFSzEgAYpWdAoVsAetz8QNkc265DN1iSlwfQ4h+gQhMiM9/0a
-         qgKVg738r84cwJHQQh1xP61PJGUi+s/OD4W8Yj8cVpMlmvIueQ7BXht9nEoe9/VNUmSB
-         QC4U0yE4BQ4QB2dtgNBV7SnmgVnI8hcS3mLwA=
-Message-ID: <b1bc6a000806231213p162cea21y37ed9ec1d3bb39fd@mail.gmail.com>
-Date: Mon, 23 Jun 2008 12:13:47 -0700
-From: "adam radford" <aradford@gmail.com>
-To: "Christopher S. Aker" <caker@theshore.net>
-Subject: Re: ext3 directory corruption under Xen
-Cc: linux-kernel@vger.kernel.org, "xen devel" <xen-devel@lists.xensource.com>
-In-Reply-To: <485FCC25.7090401@theshore.net>
+	Mon, 23 Jun 2008 15:21:51 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:49659 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753992AbYFWTVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 15:21:51 -0400
+Date: Mon, 23 Jun 2008 12:21:50 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Steven Rostedt <srostedt@redhat.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for June 23
+In-Reply-To: <Pine.LNX.4.64.0806232155060.4033@sbz-30.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0806231220470.28070@schroedinger.engr.sgi.com>
+References: <20080623182549.b0552851.sfr@canb.auug.org.au> 
+ <19f34abd0806230323o6373015fj93a85b929545a7a8@mail.gmail.com> 
+ <19f34abd0806230326i592ba39eu837d290e21431d14@mail.gmail.com>
+ <19f34abd0806230402x502eca3cna927eb8742553570@mail.gmail.com>
+ <Pine.LNX.4.64.0806232155060.4033@sbz-30.cs.Helsinki.FI>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <485FCC25.7090401@theshore.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 9:15 AM, Christopher S. Aker <caker@theshore.net> wrote:
+On Mon, 23 Jun 2008, Pekka J Enberg wrote:
 
-> It's happened on a number of different hosts, all of the same hardware and
-> software configuration (Xen 3.2 64bit, 32bit pae dom0, 32bit pae domUs.  LVM
-> backend with 3ware hardware RAID-1).
+> Christoph, while the warning itself seems harmless, I think we need to do 
+> something like the following; otherwise the return value for 
+> kmem_cache_defrag() will be incorrect on NUMA machines that have more than 
+> one N_NORMAL_MEMORY nodes.
 
-Do you have Intel EM64T and the older 3w-xxxx driver with 4GB+ RAM?
-If so there is a driver patch for older kernels to fix an issue where the driver
-was over-riding the default DMA direction with DMA_BIDIRECTIONAL,
-and this caused corruption going through the SWIOTLB code (not IOMMU
-w/AMD).
+Patch looks to be the right fix. Thanks.
 
-A driver patch for older kernels including XenServer-4.1 is available here:
+Acked-by: Christoph Lameter <clameter@sgi.com>
 
-http://www.3ware.com/KB/article.aspx?id=15243&cNode=6I1C6S
-
-This doesn't explain however your failures with 2.6.24 2.6.25, etc, since
-this issue is no longer valid after the scsi_dma_map() changes that went
-into most scsi drivers since 2.6.23.
-
--Adam
