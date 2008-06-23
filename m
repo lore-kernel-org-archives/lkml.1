@@ -1,85 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761888AbYFWRyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761983AbYFWRyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761888AbYFWRyT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 13:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755908AbYFWRyE
+	id S1761983AbYFWRyd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 13:54:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757035AbYFWRyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 13:54:04 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:57219 "EHLO e4.ny.us.ibm.com"
+	Mon, 23 Jun 2008 13:54:05 -0400
+Received: from mga09.intel.com ([134.134.136.24]:19290 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755191AbYFWRyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753273AbYFWRyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 23 Jun 2008 13:54:03 -0400
-Subject: Re: [PATCH -tip-rcu] Make rcutorture more vicious: make quiescent
-	rcutorture less power-hungry
-From: Darren Hart <dvhltc@us.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       josh@freedesktop.org, niv@us.ibm.com, dino@in.ibm.com,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       vegard.nossum@gmail.com, adobriyan@gmail.com, oleg@tv-sign.ru,
-       bunk@kernel.org, rjw@sisk.pl
-In-Reply-To: <20080622131712.54ba732c@infradead.org>
-References: <20080618122144.GA27143@linux.vnet.ibm.com>
-	 <20080618162649.GA18326@linux.vnet.ibm.com>
-	 <20080622200638.GA25328@linux.vnet.ibm.com>
-	 <20080622131712.54ba732c@infradead.org>
-Content-Type: text/plain
-Date: Mon, 23 Jun 2008 17:54:09 +0000
-Message-Id: <1214243649.4440.10.camel@Aeon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,691,1204531200"; 
+   d="scan'208";a="400996028"
+Date: Mon, 23 Jun 2008 10:54:01 -0700
+From: mark gross <mgross@linux.intel.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Intel IOMMU (and IOMMU for Virtualization) performances
+Message-ID: <20080623175401.GA17008@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20080604235053K.fujita.tomonori@lab.ntt.co.jp> <20080605220216.GA12927@linux.intel.com> <20080606134839Z.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080606134839Z.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-OriginalArrivalTime: 23 Jun 2008 17:54:01.0930 (UTC) FILETIME=[1EB96AA0:01C8D55A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-06-22 at 13:17 -0700, Arjan van de Ven wrote:
-> On Sun, 22 Jun 2008 13:06:38 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Fri, Jun 06, 2008 at 01:44:30PM +0900, FUJITA Tomonori wrote:
+> On Thu, 5 Jun 2008 15:02:16 -0700
+> mark gross <mgross@linux.intel.com> wrote:
 > 
-> > This patch makes the non-module rcutorture a bit more friendly to
-> > the power-conservation code.  This is a rather simple-minded approach.
-> > More sophisticated approaches would get rid of the rcutorture tasks
-> > while rcutorture execution was suppressed, but attempts thus far to
-> > do this have not gone well -- calling rcu_torture_init() from a /proc
-> > callout results in oopses.
+> > On Wed, Jun 04, 2008 at 11:47:01PM +0900, FUJITA Tomonori wrote:
+> > > I resumed the work to make the IOMMU respect drivers' DMA alignment
+> > > (since I got a desktop box having VT-d). In short, some IOMMUs
+> > > allocate memory areas spanning driver's segment boundary limit (DMA
+> > > alignment). It forces drivers to have a workaround to split up scatter
+> > > entries into smaller chunks again. To remove such work around in
+> > > drivers, I modified several IOMMUs, X86_64 (Calgary and Gart), Alpha,
+> > > POWER, PARISC, IA64, SPARC64, and swiotlb.
+> > > 
+> > > Now I try to fix Intel IOMMU code, the free space management
+> > > algorithm.
+> > > 
+> > > The major difference between Intel IOMMU code and the others is Intel
+> > > IOMMU code uses Red Black tree to manage free space while the others
+> > > use bitmap (swiotlb is the only exception).
+> > > 
+> > > The Red Black tree method consumes less memory than the bitmap method,
+> > > but it incurs more overheads (the RB tree method needs to walk through
+> > > the tree, allocates a new item, and insert it every time it maps an
+> > > I/O address). Intel IOMMU (and IOMMUs for virtualization) needs
+> > > multiple IOMMU address spaces. That's why the Red Black tree method is
+> > > chosen, I guess.
+> > > 
+> > > Half a year ago, I tried to convert POWER IOMMU code to use the Red
+> > > Black method and saw performance drop:
+> > > 
+> > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-11/msg00650.html
+> > > 
+> > > So I tried to convert Intel IOMMU code to use the bitmap method to see
+> > > how much I can get.
+> > > 
+> > > I didn't see noticable performance differences with 1GbE. So I tried
+> > > the modified driver of a SCSI HBA that just does memory accesses to
+> > > emulate the performances of SSD disk drives, 10GbE, Infiniband, etc.
+> > > 
+> > > I got the following results with one thread issuing 1KB I/Os:
+> > > 
+> > >                     IOPS (I/O per second)
+> > > IOMMU disabled         145253.1 (1.000)
+> > > RB tree (mainline)     118313.0 (0.814)
+> > > Bitmap                 128954.1 (0.887)
+> > >
 > > 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > ---
-> > 
-> >  rcutorture.c |    5 ++++-
-> >  1 file changed, 4 insertions(+), 1 deletion(-)
-> > 
-> > diff -urpNa -X dontdiff
-> > linux-2.6.26-rc4-rcut2-proc/kernel/rcutorture.c
-> > linux-2.6.26-rc4-rcut3-procq/kernel/rcutorture.c ---
-> > linux-2.6.26-rc4-rcut2-proc/kernel/rcutorture.c	2008-06-22
-> > 10:29:04.000000000 -0700 +++
-> > linux-2.6.26-rc4-rcut3-procq/kernel/rcutorture.c	2008-06-22
-> > 12:20:10.000000000 -0700 @@ -196,7 +196,10 @@ static void
-> > rcu_stutter_wait(void) { while (stutter_pause_test
-> > || !rcutorture_runnable)
-> > -		schedule_timeout_interruptible(1);
-> > +		if (rcutorture_runnable)
-> > +			schedule_timeout_interruptible(1);
-> > +		else
-> > +			schedule_timeout_interruptible(HZ);
-> >  }
+> > FWIW: You'll see bigger deltas if you boot with intel_iommu=strict, but
+> > those will be because of waiting on IOMMU hardware to flush caches and
+> > may further hide effects of gong with a bitmap as opposed to a RB tree.
 > 
-> could you also make it use round_jiffies_relative() to make the power
-> impact even less.....
-> (by coalescing various "once a second" timers like this)
+> Yeah, I know. I'll test 'intel_iommu=strict' option next time.
+> 
+> The patch also has 'intel_iommu=strict' option. Wiht it enabled, it
+> flushes TLB cache every time dma_unmap_* is called as the original
+> code does.
+> 
+> 
+> > > I've attached the patch to modify Intel IOMMU code to use the bitmap
+> > > method but I have no intention of arguing that Intel IOMMU code
+> > > consumes more memory for better performance. :) I want to do more
+> > > performance tests with 10GbE (probably, I have to wait for a server
+> > > box having VT-d, which is not available on the market now).
+> > > 
+> > > As I said, what I want to do now is to make Intel IOMMU code respect
+> > > drivers' DMA alignment. Well, it's easier to do that if Intel IOMMU
+> > > uses the bitmap method since I can simply convert the IOMMU code to
+> > > use lib/iommu-helper but I can modify the RB tree method too.
+> > >
+> > 
+> > I'm going to be out of contact for a few weeks but this work sounds
+> > interesting.  
+> 
+> Why did you choose the RB tree instead of a traditional bitmap scheme
+> to manage free space?
+>
 
-I'm a little concerned about how this will affect real-time performance,
-as queueing up lots of timers all at once can lead to long running timer
-expiration handlers.  If just a schedule_timeout, I suppose we are only
-looking at a process wakeup, as opposed to a softirq context callback
-function?
-
-Thanks,
-
--- 
-Darren Hart
-Real-Time Linux Team Lead
-IBM Linux Technology Center
-
+I inherited this code.  And I'm passing it on to David Woodhouse soon.
+I don't know why RB was used over BM.  I guess for scalability to many
+10Gig IO devices, but thats just a guess.
+ 
+> 
+> > > I'm just interested in other people's opinions on IOMMU
+> > > implementations, performances, possible future changes for performance
+> > > improvement, etc.
+> > > 
+> > > For further information:
+> > > 
+> > > LSF'08 "Storage Track" summary by Grant Grundler:
+> > > http://iou.parisc-linux.org/lsf2008/SUMMARY-Storage.txt
+> > > 
+> > > My LSF'08 slides:
+> > > http://iou.parisc-linux.org/lsf2008/IO-DMA_Representations-fujita_tomonori.pdf
+> > > 
+> > > 
+> > > Tis patch is against the latst git tree (note that it just converts
+> > > Intel IOMMU code to use the bitmap. It doesn't make it respect
+> > > drivers' DMA alignment yet).
+> > > 
+> > 
+> > I'll look closely at your patch later.
+> 
+> Thanks a lot!
