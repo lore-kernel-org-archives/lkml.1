@@ -1,105 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762954AbYFWToQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763455AbYFWTpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762954AbYFWToQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 15:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbYFWToE
+	id S1763455AbYFWTpV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 15:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbYFWTpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 15:44:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39372 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753471AbYFWToC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 15:44:02 -0400
-Date: Mon, 23 Jun 2008 21:43:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [git pull] scheduler fixes
-Message-ID: <20080623194345.GA30767@elte.hu>
+	Mon, 23 Jun 2008 15:45:08 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:38476 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752774AbYFWTpG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 15:45:06 -0400
+Date: Mon, 23 Jun 2008 15:45:05 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: David Vrabel <david.vrabel@csr.com>
+cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       AntonioLin <antonio.lin@alcormicro.com>, <linux-usb@vger.kernel.org>,
+       "Perez-Gonzalez, Inaky" <inaky.perez-gonzalez@intel.com>
+Subject: Re: Scatter-gather list constraints
+In-Reply-To: <485FF44C.4010600@csr.com>
+Message-ID: <Pine.LNX.4.44L0.0806231522500.30973-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Mon, 23 Jun 2008, David Vrabel wrote:
 
-please pull the latest scheduler fixes git tree from:
+> Alan Stern wrote:
+> > On Mon, 23 Jun 2008, David Vrabel wrote:
+> > 
+> >> Note that this 1024 byte multiple is for one particular WUSB mass
+> >> storage device.  The WUSB standard permits max packet sizes of up 3584
+> >> (in multiples of 512), but I suspect WUSB mass storage devices will only
+> >> use 512, 1024, or 2048.
+> >>
+> >> For a solution, we may be able to do something if the HWA host
+> >> controller is passed a single URB with an s-g list (rather than one URB
+> >> per s-g list entry) and was careful about how it segmented the URB into
+> >> transfers to the rpipe.
+> > 
+> > That would be ideal.  However there is no way to pass an S-G list along 
+> > with an URB; there's no field for it in the data structure.  And none 
+> > of the existing host controller drivers support such a thing.
+> > 
+> > I suppose we could add a field to struct urb and add a flag indicating 
+> > whether the controller driver supports S-G lists.
+> 
+> This is what I was thinking.
+> 
+> Can the number of entries in a sg list be limited?  e.g., if the
+> hardware only had support for say, 64 entries?
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+Yes, there are two fields in struct request_queue for this: 
+max_phys_segments (the driver's limit) and max_hw_segments (the 
+hardware's limit).
 
-(note: i included the related wait_for_completion_timeout() cleanup from 
-Oleg as well because it was tested together.)
+Standard EHCI hardware requires that the memory locations of the data
+for each packet be "virtually contiguous", i.e., discontiguities are
+allowed only at 4-KB page boundaries.  This severely limits the ability
+to handle general S-G lists.  For example, a 1024-byte packet can't be
+broken up into two 512-byte pieces unless the first piece ends at a
+page boundary and the second piece begins at a page boundary.  Maybe
+HWA host controllers are required to be more flexible, I don't know.
 
-	Ingo
+This may mean that your suggested approach won't work.
 
------------------->
-Oleg Nesterov (1):
-      sched: refactor wait_for_completion_timeout()
+Alan Stern
 
-Peter Zijlstra (1):
-      sched: rt: dont stop the period timer when there are tasks wanting to run
-
-Roland Dreier (1):
-      sched: fix wait_for_completion_timeout() spurious failure under heavy load
-
- kernel/sched.c    |   14 ++++++--------
- kernel/sched_rt.c |    3 ++-
- 2 files changed, 8 insertions(+), 9 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index b048ad8..3aaa5c8 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4398,22 +4398,20 @@ do_wait_for_common(struct completion *x, long timeout, int state)
- 			     signal_pending(current)) ||
- 			    (state == TASK_KILLABLE &&
- 			     fatal_signal_pending(current))) {
--				__remove_wait_queue(&x->wait, &wait);
--				return -ERESTARTSYS;
-+				timeout = -ERESTARTSYS;
-+				break;
- 			}
- 			__set_current_state(state);
- 			spin_unlock_irq(&x->wait.lock);
- 			timeout = schedule_timeout(timeout);
- 			spin_lock_irq(&x->wait.lock);
--			if (!timeout) {
--				__remove_wait_queue(&x->wait, &wait);
--				return timeout;
--			}
--		} while (!x->done);
-+		} while (!x->done && timeout);
- 		__remove_wait_queue(&x->wait, &wait);
-+		if (!x->done)
-+			return timeout;
- 	}
- 	x->done--;
--	return timeout;
-+	return timeout ?: 1;
- }
- 
- static long __sched
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 1dad5bb..0f3c191 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -250,7 +250,8 @@ static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun)
- 			if (rt_rq->rt_time || rt_rq->rt_nr_running)
- 				idle = 0;
- 			spin_unlock(&rt_rq->rt_runtime_lock);
--		}
-+		} else if (rt_rq->rt_nr_running)
-+			idle = 0;
- 
- 		if (enqueue)
- 			sched_rt_rq_enqueue(rt_rq);
