@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760801AbYFWRfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760797AbYFWRhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760801AbYFWRfG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 13:35:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYFWRe4
+	id S1760797AbYFWRhc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 13:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbYFWRhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 13:34:56 -0400
-Received: from home.keithp.com ([63.227.221.253]:2858 "EHLO keithp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752217AbYFWRez (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 13:34:55 -0400
-Subject: kmap_atomic_pfn for PCI BAR access?
-From: Keith Packard <keithp@keithp.com>
-To: Dave Airlie <airlied@linux.ie>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: keithp@keithp.com
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-dqc9VffN+UZGmmDg0EbF"
-Date: Mon, 23 Jun 2008 10:34:47 -0700
-Message-Id: <1214242487.11887.35.camel@koto.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Mon, 23 Jun 2008 13:37:24 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1606 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752355AbYFWRhX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 13:37:23 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Nishanth Aravamudan <nacc@us.ibm.com>,
+       Adam Litke <agl@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, linux-mm@kvack.org,
+       Mel Gorman <mel@csn.ul.ie>, Andy Whitcroft <apw@shadowen.org>
+Subject: [RFC] hugetlb reservations -- MAP_PRIVATE fixes for split vmas V2
+Date: Mon, 23 Jun 2008 18:35:31 +0100
+Message-Id: <1214242533-12104-1-git-send-email-apw@shadowen.org>
+X-Mailer: git-send-email 1.5.6.205.g7ca3a
+In-Reply-To: <485A8903.9030808@linux.vnet.ibm.com>
+References: <485A8903.9030808@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+As reported by Adam Litke and Jon Tollefson one of the libhugetlbfs
+regression tests triggers a negative overall reservation count.  When
+this occurs where there is no dynamic pool enabled tests will fail.
 
---=-dqc9VffN+UZGmmDg0EbF
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Following this email are two patches to address this issue:
 
-The graphics memory BAR is generally fairly good sized; on Intel chips,
-it's between 256M and 1G (and growing). I want to write data into this
-region from kernel space, but it's really too big to map the whole thing
-into kernel address space, especially on 32-bit systems. ioremap is not
-a good option here -- it's way too slow.
+hugetlb reservations: move region tracking earlier -- simply moves the
+  region tracking code earlier so we do not have to supply prototypes, and
 
-With CONFIG_HIGHMEM enabled, I can use kmap_atomic_pfn (well, actually
-the kmap_atomic_proc_pfn included in the DRM tree) and things work quite
-well -- performance is good, with barely any measurable time spent in
-the PTE whacking (~1%).
+hugetlb reservations: fix hugetlb MAP_PRIVATE reservations across vma
+  splits -- which moves us to tracking the consumed reservation so that
+  we can correctly calculate the remaining reservations at vma close time.
 
-However, with CONFIG_HIGHMEM disabled, there aren't any PTEs reserved
-for this kind of mapping fun. This makes me suspect that abusing
-kmap_atomic for this operation would not be appreciated.=20
+This stack is against the top of v2.6.25-rc6-mm3, should this solution
+prove acceptable it would need slipping underneath Nick's multiple hugepage
+size patches and those updated.  I have a modified stack prepared for that.
 
-Should I use kmap_atomic_pfn to reach my PCI BAR like this?
+This version incorporates Mel's feedback (both cosmetic, and an allocation
+under spinlock issue) and has an improved layout.
 
-Would it be reasonable to supply a patch that made this work even
-without CONFIG_HIGHMEM?
+Changes in V2:
+ - commentry updates
+ - pull allocations out from under hugetlb_lock
+ - refactor to match shared code layout
+ - reinstate BUG_ON's
 
---=20
-keith.packard@intel.com
+Jon could you have a test on this and see if it works out for you.
 
---=-dqc9VffN+UZGmmDg0EbF
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQBIX962Qp8BWwlsTdMRAlY3AJ9rT8VXRr4ORFNUriuK8irU8VCdygCgguH5
-+4AC1/fa4NntWTRvIHXMAFY=
-=ZIed
------END PGP SIGNATURE-----
-
---=-dqc9VffN+UZGmmDg0EbF--
-
+-apw
