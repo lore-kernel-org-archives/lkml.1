@@ -1,68 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbYFWNVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758258AbYFWNVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755978AbYFWNVe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 09:21:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbYFWNV0
+	id S1758258AbYFWNVq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 09:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbYFWNVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 09:21:26 -0400
-Received: from cantor.suse.de ([195.135.220.2]:48161 "EHLO mx1.suse.de"
+	Mon, 23 Jun 2008 09:21:33 -0400
+Received: from 1wt.eu ([62.212.114.60]:2026 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752203AbYFWNVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 09:21:25 -0400
-Date: Mon, 23 Jun 2008 15:21:22 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
+	id S1755197AbYFWNVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 09:21:32 -0400
+Date: Mon, 23 Jun 2008 15:21:18 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Matthew <jackdachef@gmail.com>
+Cc: greg@kroah.com, Linux Kernel <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 4/5] x86: use BOOTMEM_EXCLUSIVE on 32-bit
-Message-ID: <20080623152122.106a059c@kopernikus.site>
-In-Reply-To: <20080623105358.GB28192@elte.hu>
-References: <20080622185327.348377223@mini.kroah.org>
-	<20080622190131.GB20141@suse.de>
-	<87prq9dxst.fsf@skyscraper.fehenstaub.lan>
-	<20080622203047.GC20800@suse.de>
-	<alpine.LFD.1.10.0806221336010.2926@woody.linux-foundation.org>
-	<20080623080940.GA23313@elte.hu>
-	<20080623123344.0c16ed69@kopernikus.site>
-	<20080623105358.GB28192@elte.hu>
-Organization: SUSE LINUX Products GmbH
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i686-pc-linux-gnu)
-X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
- D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
- vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
- pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Subject: Re: [ANNOUNCE] Position Statement on Linux Kernel Modules
+Message-ID: <20080623132118.GC1369@1wt.eu>
+References: <e85b9d30806230602m10b5aa06m2f1c83e1a90a7dac@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e85b9d30806230602m10b5aa06m2f1c83e1a90a7dac@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2008-06-23 12:53]:
->
-> > [1] 62b5ebe062c2801f6d40480ae3b91a64c8c8e6cb
+On Mon, Jun 23, 2008 at 03:02:58PM +0200, Matthew wrote:
+> Hi Greg,
 > 
-> but note that this too has dependencies, it relies on:
+> I largely agree to this statement,
 > 
->  # tip/x86/numa: ddeb8ef: x86: add flags parameter to reserve_bootmem_generic()
->  # tip/x86/numa: 62b5ebe: x86: use reserve_bootmem_generic() to reserve crashkernel memory on x86_64
+> there are however some downsides if you're preventing driver
+> manufacturers (e.g. nvidia, ...) from the possibility to offer their
+> customers proprietary drivers:
+> 
+> 1) One big and important point for me (and more and more future
+> linux-users) is powersaving features on GPUs like powermizer (by
+> nvidia) and powerplay (by AMD/ATI) or other hardware. I haven't seen
+> this working on newer graphics cards models with the opensource
+> drivers to the present day :(
 
-The 2nd is not the dependency but the commit itself.
+I think that's one of the reasons of Greg's post.
 
-> so i've initially delayed the whole topic to v2.6.27.
+(...)
+> if those companies can't use their own closed proprietary drivers
+> utilizing patented routines they are "forced" to use
 
-Ok, you have more experience which patches should go into 2.6.26 at
-that point of time, so it's acceptable for me.
+You're wrong here. If they have patented routines, they don't need
+their drivers to be closed, since there routines are protected by
+patents. And even if they are not patented, not releasing the source
+will not prevent a competitor from disassembling the code anyway.
+So there's really no point in remaining closed. Some of them might
+have signed NDAs before using some technologies, but by this time,
+they should have sorted that our.
 
-> I've attached both patches below - are they really urgent enough to be 
-> propagated to tip/x86/urgent and be sent to Linus? AFAICS these are 
-> ancient issues with kernel crashdumping.
+> they might think over it and switch to another operating system ...
 
-I only brought up that topic again because it's a regression between
-2.6.22 and 2.6.23 caused by 5c3391f9f749023a49c64d607da4fb49263690eb.
+Do you know many products with closed Linux drivers which are not
+supported by at least one closed OS ? If they chose to support
+Linux, it's not for your pleasure, just because they know they will
+sell 5-10% more when a penguin is stuck on the box.
 
+> 2) How will this affect performance, if all of those drivers are
+> limited to an user-space interface?
+> 
+> I'm not a kernel hacker and don't have much insight into the kernel
+> and kernel-development, so I can only reflect, what I've read:
+> much of you kernel hackers are supposed to have said (read that on
+> blogs, forums etc.) that nvidia's drivers are hackish and that it uses
+> routines which shouldn't be used by this kind of drivers
+> 
+> other voices are saying nvidia is doing this because the linux-kernel
+> lacks a common interface (yet) which disallows effective usage of the
+> graphics cards which would result in abysmal bad performance not using
+> their hacking ...
 
+That has nothing to do with open/close. They may as well continue to
+use their dirty hacks when the sources are public. That just means that
+owners of such cards on other platforms (PPC, etc...) might be able to
+build the drivers for those platforms. I think that most users don't
+care about the fact that a driver is dirty. They want something which
+simply builds for their platform. Also, publishing their dirty hacks
+will encourage kernel developers to propose some cleaner alternatives
+or to extend the kernel in order to ease integration of such drivers.
 
-Bernhard
--- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
+Willy
+
