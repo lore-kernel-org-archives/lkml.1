@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbYFWLcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756564AbYFWLei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756053AbYFWLcc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 07:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbYFWLcY
+	id S1756564AbYFWLei (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 07:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbYFWLe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 07:32:24 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41443 "EHLO mx2.mail.elte.hu"
+	Mon, 23 Jun 2008 07:34:27 -0400
+Received: from bar.sig21.net ([88.198.146.85]:38287 "EHLO bar.sig21.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752028AbYFWLcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 07:32:23 -0400
-Date: Mon, 23 Jun 2008 13:32:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Holmes <david.holmes@sun.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [patch] futex: fix fault handling in futex_lock_pi
-Message-ID: <20080623113207.GA23713@elte.hu>
-References: <20080623092216.380067035@linutronix.de> <alpine.LFD.1.10.0806231238160.3395@apollo.tec.linutronix.de>
+	id S1752151AbYFWLe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 07:34:27 -0400
+Date: Mon, 23 Jun 2008 13:34:22 +0200
+From: Johannes Stezenbach <js@linuxtv.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Brownell <david-b@pacbell.net>, lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       hpa@zytor.com
+Subject: Re: [patch] x86 supports NO_IRQ convention
+Message-ID: <20080623113422.GA20419@linuxtv.org>
+References: <200806221953.18849.david-b@pacbell.net> <20080623100823.61213c3f@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0806231238160.3395@apollo.tec.linutronix.de>
+In-Reply-To: <20080623100823.61213c3f@lxorguk.ukuu.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0058]
+X-Spam-21-Score: -4.2 (----)
+X-Spam-21-Report: No, score=-4.2 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.214,BAYES_00=-2.599 autolearn=no
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> On Mon, 23 Jun 2008, Thomas Gleixner wrote:
+On Mon, Jun 23, 2008 at 10:08:23AM +0100, Alan Cox wrote:
 > 
-> Ingo asked about more information about the BUG. Find below the same 
-> patch with an updated commit log.
+> Zero is not a valid IRQ in the kernel mapping of things. If you have a
+> physical IRQ 0 remap it.
 
-applied to tip/core/futexes and cherry-picked it into tip/core/urgent as 
-well - thanks Thomas.
+I'm confused. On my Thinkpad with kernel 2.6.25 I get:
 
-	Ingo
+$ cat /proc/interrupts
+           CPU0
+  0:    4398925    XT-PIC-XT        timer
+  1:     287065    XT-PIC-XT        i8042
+  2:          0    XT-PIC-XT        cascade
+...
+
+
+Johannes
