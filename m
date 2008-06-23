@@ -1,37 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761455AbYFWTiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761566AbYFWTle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761455AbYFWTiU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 15:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755889AbYFWTiN
+	id S1761566AbYFWTle (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 15:41:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755722AbYFWTl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 15:38:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35911 "EHLO mx3.mail.elte.hu"
+	Mon, 23 Jun 2008 15:41:26 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58405 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755371AbYFWTiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 15:38:12 -0400
-Date: Mon, 23 Jun 2008 21:36:50 +0200
+	id S1752830AbYFWTlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 15:41:25 -0400
+Date: Mon, 23 Jun 2008 21:40:55 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Greg KH <greg@kroah.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Bernhard Walle <bwalle@suse.de>, Greg KH <gregkh@suse.de>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Johannes Weiner <hannes@saeurebad.de>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>, linux-kernel@vger.kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>, Willy Tarreau <w@1wt.eu>,
-       Michael Krufky <mkrufky@linuxtv.org>, alan@lxorguk.ukuu.org.uk,
-       Chuck Ebbert <cebbert@redhat.com>, Domenico Andreoli <cavokz@gmail.com>,
-       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
-       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>
-Subject: Re: [stable] [patch 4/5] x86: use BOOTMEM_EXCLUSIVE on 32-bit
-Message-ID: <20080623193650.GB20535@elte.hu>
-References: <20080622185327.348377223@mini.kroah.org> <20080622190131.GB20141@suse.de> <87prq9dxst.fsf@skyscraper.fehenstaub.lan> <20080622203047.GC20800@suse.de> <alpine.LFD.1.10.0806221336010.2926@woody.linux-foundation.org> <20080623080940.GA23313@elte.hu> <20080623192012.GA15183@kroah.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [git pull] xen, x86 fixes
+Message-ID: <20080623194055.GA28384@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080623192012.GA15183@kroah.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -45,35 +32,208 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
 
-* Greg KH <greg@kroah.com> wrote:
+please pull the latest x86 fixes tree from:
 
-> > thanks. This patch (which was not a build fix but an infrastructure 
-> > fix that the kexec fix in arch/x86 depended on) is well-tested as 
-> > well, it was queued in -tip on June 10th:
-> > 
-> > | commit 91d48fc80f22817332170082e10de60a75851640
-> > | Author: Bernhard Walle <bwalle@suse.de>
-> > | Date:   Sun Jun 8 15:46:29 2008 +0200
-> > | CommitDate: Tue Jun 10 14:41:56 2008 +0200
-> > |
-> > |    bootmem: add return value to reserve_bootmem_node()
-> > |
-> > |    This patch changes the function reserve_bootmem_node() from void to
-> > |    int, returning -ENOMEM if the allocation fails.
-> > |
-> > |    Signed-off-by: Bernhard Walle <bwalle@suse.de>
-> > |    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > 
-> > so it is a -stable candidate just as much as the kexec fix. (These 
-> > are all fixes for long-standing problems so i guess it can go all 
-> > the way back to all stable kernels that are being maintained.)
-> 
-> Hm, but it's not in Linus's tree yet, so I can't take it for stable at 
-> this time :(
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
 
-it's all fine already: it's the very same patch you just added, but 
-different sha1. I just pointed out the lineage and the testing status of 
-the patch.
+NOTE: contains the second, lguest half of the FPU fixlet from Suresh.
 
 	Ingo
+
+------------------>
+Isaku Yamahata (1):
+      xen: Use wmb instead of rmb in xen_evtchn_do_upcall().
+
+Jeremy Fitzhardinge (2):
+      xen: mask unwanted pte bits in __supported_pte_mask
+      xen: don't drop NX bit
+
+Suresh Siddha (1):
+      x86: fix NULL pointer deref in __switch_to
+
+ arch/x86/xen/enlighten.c  |    5 ++++
+ arch/x86/xen/mmu.c        |   56 ++++++++++++++++++++++++---------------------
+ arch/x86/xen/xen-head.S   |    2 +-
+ drivers/lguest/x86/core.c |   15 +++++++-----
+ drivers/xen/events.c      |    2 +-
+ 5 files changed, 46 insertions(+), 34 deletions(-)
+
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index c8a56e4..c048de3 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -1228,6 +1228,11 @@ asmlinkage void __init xen_start_kernel(void)
+ 	if (xen_feature(XENFEAT_supervisor_mode_kernel))
+ 		pv_info.kernel_rpl = 0;
+ 
++	/* Prevent unwanted bits from being set in PTEs. */
++	__supported_pte_mask &= ~_PAGE_GLOBAL;
++	if (!is_initial_xendomain())
++		__supported_pte_mask &= ~(_PAGE_PWT | _PAGE_PCD);
++
+ 	/* set the limit of our address space */
+ 	xen_reserve_top();
+ 
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index 3525ef5..265601d 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -179,48 +179,54 @@ out:
+ 		preempt_enable();
+ }
+ 
+-pteval_t xen_pte_val(pte_t pte)
++/* Assume pteval_t is equivalent to all the other *val_t types. */
++static pteval_t pte_mfn_to_pfn(pteval_t val)
+ {
+-	pteval_t ret = pte.pte;
++	if (val & _PAGE_PRESENT) {
++		unsigned long mfn = (val & PTE_MASK) >> PAGE_SHIFT;
++		pteval_t flags = val & ~PTE_MASK;
++		val = (mfn_to_pfn(mfn) << PAGE_SHIFT) | flags;
++	}
++
++	return val;
++}
++
++static pteval_t pte_pfn_to_mfn(pteval_t val)
++{
++	if (val & _PAGE_PRESENT) {
++		unsigned long pfn = (val & PTE_MASK) >> PAGE_SHIFT;
++		pteval_t flags = val & ~PTE_MASK;
++		val = (pfn_to_mfn(pfn) << PAGE_SHIFT) | flags;
++	}
+ 
+-	if (ret & _PAGE_PRESENT)
+-		ret = machine_to_phys(XMADDR(ret)).paddr | _PAGE_PRESENT;
++	return val;
++}
+ 
+-	return ret;
++pteval_t xen_pte_val(pte_t pte)
++{
++	return pte_mfn_to_pfn(pte.pte);
+ }
+ 
+ pgdval_t xen_pgd_val(pgd_t pgd)
+ {
+-	pgdval_t ret = pgd.pgd;
+-	if (ret & _PAGE_PRESENT)
+-		ret = machine_to_phys(XMADDR(ret)).paddr | _PAGE_PRESENT;
+-	return ret;
++	return pte_mfn_to_pfn(pgd.pgd);
+ }
+ 
+ pte_t xen_make_pte(pteval_t pte)
+ {
+-	if (pte & _PAGE_PRESENT) {
+-		pte = phys_to_machine(XPADDR(pte)).maddr;
+-		pte &= ~(_PAGE_PCD | _PAGE_PWT);
+-	}
+-
+-	return (pte_t){ .pte = pte };
++	pte = pte_pfn_to_mfn(pte);
++	return native_make_pte(pte);
+ }
+ 
+ pgd_t xen_make_pgd(pgdval_t pgd)
+ {
+-	if (pgd & _PAGE_PRESENT)
+-		pgd = phys_to_machine(XPADDR(pgd)).maddr;
+-
+-	return (pgd_t){ pgd };
++	pgd = pte_pfn_to_mfn(pgd);
++	return native_make_pgd(pgd);
+ }
+ 
+ pmdval_t xen_pmd_val(pmd_t pmd)
+ {
+-	pmdval_t ret = native_pmd_val(pmd);
+-	if (ret & _PAGE_PRESENT)
+-		ret = machine_to_phys(XMADDR(ret)).paddr | _PAGE_PRESENT;
+-	return ret;
++	return pte_mfn_to_pfn(pmd.pmd);
+ }
+ #ifdef CONFIG_X86_PAE
+ void xen_set_pud(pud_t *ptr, pud_t val)
+@@ -267,9 +273,7 @@ void xen_pmd_clear(pmd_t *pmdp)
+ 
+ pmd_t xen_make_pmd(pmdval_t pmd)
+ {
+-	if (pmd & _PAGE_PRESENT)
+-		pmd = phys_to_machine(XPADDR(pmd)).maddr;
+-
++	pmd = pte_pfn_to_mfn(pmd);
+ 	return native_make_pmd(pmd);
+ }
+ #else  /* !PAE */
+diff --git a/arch/x86/xen/xen-head.S b/arch/x86/xen/xen-head.S
+index 288d587..3175e97 100644
+--- a/arch/x86/xen/xen-head.S
++++ b/arch/x86/xen/xen-head.S
+@@ -17,7 +17,7 @@ ENTRY(startup_xen)
+ 
+ 	__FINIT
+ 
+-.pushsection .bss.page_aligned
++.pushsection .text
+ 	.align PAGE_SIZE_asm
+ ENTRY(hypercall_page)
+ 	.skip 0x1000
+diff --git a/drivers/lguest/x86/core.c b/drivers/lguest/x86/core.c
+index 5126d5d..2e554a4 100644
+--- a/drivers/lguest/x86/core.c
++++ b/drivers/lguest/x86/core.c
+@@ -176,7 +176,7 @@ void lguest_arch_run_guest(struct lg_cpu *cpu)
+ 	 * we set it now, so we can trap and pass that trap to the Guest if it
+ 	 * uses the FPU. */
+ 	if (cpu->ts)
+-		lguest_set_ts();
++		unlazy_fpu(current);
+ 
+ 	/* SYSENTER is an optimized way of doing system calls.  We can't allow
+ 	 * it because it always jumps to privilege level 0.  A normal Guest
+@@ -196,6 +196,10 @@ void lguest_arch_run_guest(struct lg_cpu *cpu)
+ 	 * trap made the switcher code come back, and an error code which some
+ 	 * traps set.  */
+ 
++	 /* Restore SYSENTER if it's supposed to be on. */
++	 if (boot_cpu_has(X86_FEATURE_SEP))
++		wrmsr(MSR_IA32_SYSENTER_CS, __KERNEL_CS, 0);
++
+ 	/* If the Guest page faulted, then the cr2 register will tell us the
+ 	 * bad virtual address.  We have to grab this now, because once we
+ 	 * re-enable interrupts an interrupt could fault and thus overwrite
+@@ -203,13 +207,12 @@ void lguest_arch_run_guest(struct lg_cpu *cpu)
+ 	if (cpu->regs->trapnum == 14)
+ 		cpu->arch.last_pagefault = read_cr2();
+ 	/* Similarly, if we took a trap because the Guest used the FPU,
+-	 * we have to restore the FPU it expects to see. */
++	 * we have to restore the FPU it expects to see.
++	 * math_state_restore() may sleep and we may even move off to
++	 * a different CPU. So all the critical stuff should be done
++	 * before this.  */
+ 	else if (cpu->regs->trapnum == 7)
+ 		math_state_restore();
+-
+-	/* Restore SYSENTER if it's supposed to be on. */
+-	if (boot_cpu_has(X86_FEATURE_SEP))
+-		wrmsr(MSR_IA32_SYSENTER_CS, __KERNEL_CS, 0);
+ }
+ 
+ /*H:130 Now we've examined the hypercall code; our Guest can make requests.
+diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+index 4f0f22b..76e5b73 100644
+--- a/drivers/xen/events.c
++++ b/drivers/xen/events.c
+@@ -529,7 +529,7 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+ 
+ #ifndef CONFIG_X86 /* No need for a barrier -- XCHG is a barrier on x86. */
+ 		/* Clear master flag /before/ clearing selector flag. */
+-		rmb();
++		wmb();
+ #endif
+ 		pending_words = xchg(&vcpu_info->evtchn_pending_sel, 0);
+ 		while (pending_words != 0) {
