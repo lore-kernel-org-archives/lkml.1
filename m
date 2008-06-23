@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbYFWVgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbYFWVgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754769AbYFWVgS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 17:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYFWVgI
+	id S1755553AbYFWVgd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 17:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbYFWVgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 17:36:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42917 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752714AbYFWVgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 17:36:07 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/3] introduce PF_KTHREAD flag
-Date: Mon, 23 Jun 2008 23:36:59 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: oleg@tv-sign.ru, ebiederm@xmission.com, mingo@elte.hu,
-       torvalds@linux-foundation.org, roland@redhat.com,
-       linux-kernel@vger.kernel.org
-References: <20080601153042.GA8238@tv-sign.ru> <20080623134706.f5e1ef32.akpm@linux-foundation.org> <20080623135253.ed7cabf1.akpm@linux-foundation.org>
-In-Reply-To: <20080623135253.ed7cabf1.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 23 Jun 2008 17:36:23 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46676
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752787AbYFWVgW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 17:36:22 -0400
+Date: Mon, 23 Jun 2008 14:36:21 -0700 (PDT)
+Message-Id: <20080623.143621.195102953.davem@davemloft.net>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, jmforbes@linuxtx.org,
+       zwane@arm.linux.org.uk, tytso@mit.edu, rdunlap@xenotime.net,
+       davej@redhat.com, chuckw@quantumlinux.com, reviews@ml.cw.f00f.org,
+       mkrufky@linuxtv.org, cebbert@redhat.com, cavokz@gmail.com, w@1wt.eu,
+       rbranco@la.checkpoint.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 3/5] sctp: Make sure N * sizeof(union sctp_addr) does
+ not overflow.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080622202847.GA20800@suse.de>
+References: <20080622190136.GC20141@suse.de>
+	<20080622.122332.220246399.davem@davemloft.net>
+	<20080622202847.GA20800@suse.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806232336.59965.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 23 of June 2008, Andrew Morton wrote:
-> On Mon, 23 Jun 2008 13:47:06 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > I don't yet know how much additional damage will happen as a result.
-> 
-> Lots.
+From: Greg KH <gregkh@suse.de>
+Date: Sun, 22 Jun 2008 13:28:47 -0700
 
-Well, sorry about that.  I can ask Len to drop the freezer patch temporarily
-and rebase it on top of -next if that helps.
+> On Sun, Jun 22, 2008 at 12:23:32PM -0700, David Miller wrote:
+> > From: Greg KH <gregkh@suse.de>
+> > Date: Sun, 22 Jun 2008 12:01:36 -0700
+> > 
+> > > 2.6.25-stable review patch.  If anyone has any objections, please let us
+> > > know.
+> > 
+> > Unfortunately, Vlad found another case in SCTP which has
+> > an overflow bug similar to this one.  I'll work on a
+> > fix for that today and submit.
+> 
+> Thanks for letting me know, I'll wait for that one as well before doing
+> this release.
 
+This one turned out to be a false alarm, and Vlad confirmed my
+analysis today.  So there is no other SCTP patch you need to
+wait for.
+
+Thanks!
