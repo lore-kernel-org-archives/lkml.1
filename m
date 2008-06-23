@@ -1,47 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752464AbYFWXx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755397AbYFWX4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752464AbYFWXx1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 19:53:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755911AbYFWXxI
+	id S1755397AbYFWX4V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 19:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbYFWX4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 19:53:08 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:34225 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755901AbYFWXxH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 19:53:07 -0400
-Date: Tue, 24 Jun 2008 03:53:13 +0400
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Richard Henderson <rth@twiddle.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] alpha: fix module load failures on smp (bug #10926)
-Message-ID: <20080623235313.GA19353@jurassic.park.msu.ru>
-References: <20080620232539.GA8061@jurassic.park.msu.ru> <20080623205722.GA3580@ds20.borg.net>
+	Mon, 23 Jun 2008 19:56:08 -0400
+Received: from mail.suse.de ([195.135.220.2]:48148 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751586AbYFWX4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 19:56:05 -0400
+From: Neil Brown <neilb@suse.de>
+To: Jeff Layton <jlayton@redhat.com>
+Date: Tue, 24 Jun 2008 09:55:55 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080623205722.GA3580@ds20.borg.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18528.14347.525397.917553@notabene.brown>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH - take 2] knfsd: nfsd: Handle ERESTARTSYS from
+   syscalls. (and possible kthread_stop changes)
+In-Reply-To: message from Jeff Layton on Sunday June 22
+References: <20080619101025.24263.patches@notabene>
+	<1080619001109.24338@suse.de>
+	<20080618210947.2110a541@tleilax.poochiereds.net>
+	<18521.50300.572838.123366@notabene.brown>
+	<20080619063824.00ca6381@tleilax.poochiereds.net>
+	<18526.60523.584503.68076@notabene.brown>
+	<20080622205244.261a787d@tleilax.poochiereds.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 08:57:22PM +0000, Thorsten Kranzkowski wrote:
-> This causes a regression for my ev4 uniprocessor build:
-
-Doh.
-
-> +#define PER_CPU_ATTRIBUTES
-> +
->  #endif /* SMP */
->  
->  #define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu_var(name)
+On Sunday June 22, jlayton@redhat.com wrote:
+> On Mon, 23 Jun 2008 10:20:59 +1000
+> Neil Brown <neilb@suse.de> wrote:
+> > 
+> > I think my leaning is just to remove the distinction.  About the worst
+> > that can happen if the filesystem decides to respond to the signal is
+> > that you get a short write or a short read, both of which should be
+> > correctly handled by the client.
+> > 
 > 
+> Good points all around. If the sigmask juggling makes no sense, then
+> I'm OK with removing it. I'd prefer that we simplify the code rather
+> than trying to get clever with init scripts anyway...
 > 
-> Signed-off-by: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>
 
-Acked-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Let's do it?
 
-Ivan.
+diff --git a/fs/nfsd/nfssvc.c b/fs/nfsd/nfssvc.c
+index 941041f..914e579 100644
+--- a/fs/nfsd/nfssvc.c
++++ b/fs/nfsd/nfssvc.c
+@@ -36,12 +36,7 @@
+ 
+ #define NFSDDBG_FACILITY	NFSDDBG_SVC
+ 
+-/* these signals will be delivered to an nfsd thread 
+- * when handling a request
+- */
+-#define ALLOWED_SIGS	(sigmask(SIGKILL))
+-/* these signals will be delivered to an nfsd thread
+- * when not handling a request. i.e. when waiting
++/* These signals can be used to shutdown an nfsd thread.
+  */
+ #define SHUTDOWN_SIGS	(sigmask(SIGKILL) | sigmask(SIGHUP) | sigmask(SIGINT) | sigmask(SIGQUIT))
+ /* if the last thread dies with SIGHUP, then the exports table is
+@@ -396,7 +391,7 @@ nfsd(struct svc_rqst *rqstp)
+ {
+ 	struct fs_struct *fsp;
+ 	int		err;
+-	sigset_t shutdown_mask, allowed_mask;
++	sigset_t shutdown_mask;
+ 
+ 	/* Lock module and set up kernel thread */
+ 	lock_kernel();
+@@ -415,7 +410,8 @@ nfsd(struct svc_rqst *rqstp)
+ 	current->fs->umask = 0;
+ 
+ 	siginitsetinv(&shutdown_mask, SHUTDOWN_SIGS);
+-	siginitsetinv(&allowed_mask, ALLOWED_SIGS);
++	/* Block all but the shutdown signals */
++	sigprocmask(SIG_SETMASK, &shutdown_mask, NULL);
+ 
+ 	nfsdstats.th_cnt++;
+ 
+@@ -435,8 +431,6 @@ nfsd(struct svc_rqst *rqstp)
+ 	 * The main request loop
+ 	 */
+ 	for (;;) {
+-		/* Block all but the shutdown signals */
+-		sigprocmask(SIG_SETMASK, &shutdown_mask, NULL);
+ 
+ 		/*
+ 		 * Find a socket with data available and call its
+@@ -452,9 +446,6 @@ nfsd(struct svc_rqst *rqstp)
+ 		/* Lock the export hash tables for reading. */
+ 		exp_readlock();
+ 
+-		/* Process request with signals blocked.  */
+-		sigprocmask(SIG_SETMASK, &allowed_mask, NULL);
+-
+ 		svc_process(rqstp);
+ 
+ 		/* Unlock export hash tables */
+
+
+> 
+> The latest patch doesn't use kthread_stop with nfsd. I figured it was
+> best to avoid having multiple takedown methods, and since we're using
+> signals here anyway, I just kept signaling as the only way to take down
+> nfsd. Plus, as you mention -- all kthread_stop's are serialized, which
+> could have meant that nfsd's would take a long time to come down on a
+> busy box with a lot of them.
+
+Oh, good.  I must have been looking at an old patch.
+
+> 
+> As a side note, I'm not terribly thrilled with how kthread_stop is
+> implemented. I worry that a stuck kthread would block unrelated
+> kthreads from coming down. I did a patch 6 mos ago or so to make it so
+> that kthread_stop's could be done in parallel. The downside was that it
+> added a new field to the task_struct (which is already too bloated,
+> IMO). It might be worth resurrecting that at some point (possibly
+> making the new field a union with another field that's unused in
+> kthreads), or considering a different approach to parallelize
+> kthread_stop.
+
+One the one hand, kthreads are expected to not block and to check for
+kthread_should_stop very often, so this wouldn't be a problem.
+On the other hand, expectations like this are quickly invalidated, and
+the code probably should be fixed.
+I suspect we could do without adding anything to task_struct.
+Instead of just one kthread_stop_info, have a linked list, one entry
+for each thread being stopped at the moment.  kthread_stop adds to
+the list, sets PF_EXITING (I hope that is safe) and wakes the process.
+kthread_should_stop tests PF_EXITING.
+When kthread() finishes, it does a linear search (the list should be
+short) and calls complete and the relevant .done.
+
+Something like this?
+
+NeilBrown
+
+
+diff --git a/kernel/kthread.c b/kernel/kthread.c
+index bd1b9ea..107290a 100644
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -39,12 +39,13 @@ struct kthread_stop_info
+ 	struct task_struct *k;
+ 	int err;
+ 	struct completion done;
++	struct kthread_stp_info *next;
+ };
+ 
+ /* Thread stopping is done by setthing this var: lock serializes
+  * multiple kthread_stop calls. */
+ static DEFINE_MUTEX(kthread_stop_lock);
+-static struct kthread_stop_info kthread_stop_info;
++static struct kthread_stop_info *kthread_stop_info;
+ 
+ /**
+  * kthread_should_stop - should this kthread return now?
+@@ -55,7 +56,7 @@ static struct kthread_stop_info kthread_stop_info;
+  */
+ int kthread_should_stop(void)
+ {
+-	return (kthread_stop_info.k == current);
++	return test_bit(PF_EXITING, &current.flags);
+ }
+ EXPORT_SYMBOL(kthread_should_stop);
+ 
+@@ -80,8 +81,17 @@ static int kthread(void *_create)
+ 
+ 	/* It might have exited on its own, w/o kthread_stop.  Check. */
+ 	if (kthread_should_stop()) {
+-		kthread_stop_info.err = ret;
+-		complete(&kthread_stop_info.done);
++		struct kthread_stop_info **ksip;
++		mutex_lock(&kthread_stop_lock);
++		for (ksip = &kthread_stop_info ; *ksip ; ksip = &(*ksip)->next)
++			if ((*ksip)->k == current)
++				break;
++		*ksip = (*ksip)->next;
++		(*ksip)->next = NULL;
++		mutex_unlock(&kthread_stop_lock);
++
++		ksi->err = ret;
++		complete(&ksi->done);
+ 	}
+ 	return 0;
+ }
+@@ -199,26 +209,20 @@ EXPORT_SYMBOL(kthread_bind);
+ int kthread_stop(struct task_struct *k)
+ {
+ 	int ret;
++	struct kthread_stop_info ksi;
+ 
+ 	mutex_lock(&kthread_stop_lock);
+ 
+-	/* It could exit after stop_info.k set, but before wake_up_process. */
+-	get_task_struct(k);
++	init_completion(&ksi->done);
++	ksi->k = k;
+ 
+-	/* Must init completion *before* thread sees kthread_stop_info.k */
+-	init_completion(&kthread_stop_info.done);
+-	smp_wmb();
+-
+-	/* Now set kthread_should_stop() to true, and wake it up. */
+-	kthread_stop_info.k = k;
++	set_bit(PF_EXITING, &k->flags);
+ 	wake_up_process(k);
+-	put_task_struct(k);
++	mutex_unlock(&kthread_stop_lock);
+ 
+-	/* Once it dies, reset stop ptr, gather result and we're done. */
+-	wait_for_completion(&kthread_stop_info.done);
+-	kthread_stop_info.k = NULL;
++	/* Once it dies gather result and we're done. */
++	wait_for_completion(&ksi->done);
+ 	ret = kthread_stop_info.err;
+-	mutex_unlock(&kthread_stop_lock);
+ 
+ 	return ret;
+ }
