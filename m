@@ -1,43 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493AbYFWHWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756854AbYFWHXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755493AbYFWHWl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 03:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbYFWHWd
+	id S1756854AbYFWHXJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 03:23:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbYFWHWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 03:22:33 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49173 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbYFWHWc (ORCPT
+	Mon, 23 Jun 2008 03:22:53 -0400
+Received: from mail-in-16.arcor-online.net ([151.189.21.56]:56140 "EHLO
+	mail-in-16.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756097AbYFWHWu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 03:22:32 -0400
-Date: Mon, 23 Jun 2008 03:22:27 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Daniel J Blueman <daniel.blueman@gmail.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
-Subject: Re: [2.6.26-rc7] shrink_icache from pagefault locking (nee: nfsd
-	hangs for a few sec)...
-Message-ID: <20080623072227.GB11986@infradead.org>
-References: <6278d2220806220256g674304ectb945c14e7e09fede@mail.gmail.com> <6278d2220806220258p28de00c1x615ad7b2f708e3f8@mail.gmail.com> <20080622221930.GA11558@disturbed> <20080623002415.GB21597@csn.ul.ie>
+	Mon, 23 Jun 2008 03:22:50 -0400
+Date: Mon, 23 Jun 2008 09:32:27 +0200
+From: Andreas Herrmann <aherrman@arcor.de>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Hansjoerg Lipp <hjlipp@web.de>, gigaset307x-common@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       kkeil@suse.de
+Subject: Re: [PATCH] gigaset: fix module reference counting
+Message-ID: <20080623073227.GA6033@obelix>
+References: <20080606223918.GA10348@kodscha> <4855A145.90803@imap.cc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080623002415.GB21597@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <4855A145.90803@imap.cc>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 01:24:15AM +0100, Mel Gorman wrote:
-> In that case, have you any theory as to why this circular dependency is
-> being reported now but wasn't before 2.6.26-rc1? I'm beginning to wonder
-> if the bisecting fingering the zonelist modifiation is just a
-> co-incidence.
+On Mon, Jun 16, 2008 at 01:09:57AM +0200, Tilman Schmidt wrote:
+> On 2008-06-07 00:39, Andreas Herrmann wrote:
+> > bas_gigaset can't be unloaded due to wrong module reference counting.
+> > Ensure that module_put is called whenever a channel is freed.
+> 
+> I'm not quite happy with that patch. Specifically, I see a risk of
+> module_put being called too often.
 
-I've seen this traces since lockdep was added when running xfsqa.
+> Could you explain in some more detail what bug you are trying to fix?
+> Do you have a sequence of events which leads to a situation where the
+> bas_gigaset module cannot be unloaded but should be?
+
+I've tried to reproduce the problem doing various tests -- but without
+success.
+
+Then i've checked the code and there was already this fix:
+
+commit e468c04894f36045cf93d1384183a461014b6840 (Gigaset: permit module unload)
+
+This was commited after 2.6.24 was released.
+
+And (shit happens!) on the machine where I've previously tested the
+stuff I had also an 2.6.24 kernel installed.
+
+So it seems that I have mixed up different kernel versions when I've
+tested my patch. Because with current git-tree bas_gigaset can be
+unloaded without any problems.
+
+Sorry for the noise.
+
+
+Regards,
+
+Andreas
 
