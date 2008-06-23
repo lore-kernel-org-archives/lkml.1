@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761929AbYFWTvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762045AbYFWTxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761929AbYFWTvK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 15:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756673AbYFWTu4
+	id S1762045AbYFWTxx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 15:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758087AbYFWTxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 15:50:56 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:60763 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755429AbYFWTuz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 15:50:55 -0400
-Date: Mon, 23 Jun 2008 15:50:54 -0400
-To: jmerkey@wolfmountaingroup.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Forensic File System GUID Linux/Windows
-Message-ID: <20080623195054.GA31126@csclub.uwaterloo.ca>
-References: <2778.69.2.248.210.1214248946.squirrel@webmail.wolfmountaingroup.com>
+	Mon, 23 Jun 2008 15:53:45 -0400
+Received: from ns.theshore.net ([67.18.92.50]:42059 "EHLO www.theshore.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756673AbYFWTxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 15:53:45 -0400
+Message-ID: <485FFF41.3000603@theshore.net>
+Date: Mon, 23 Jun 2008 15:53:37 -0400
+From: "Christopher S. Aker" <caker@theshore.net>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2778.69.2.248.210.1214248946.squirrel@webmail.wolfmountaingroup.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+To: adam radford <aradford@gmail.com>
+CC: linux-kernel@vger.kernel.org, xen devel <xen-devel@lists.xensource.com>
+Subject: Re: ext3 directory corruption under Xen
+References: <485FCC25.7090401@theshore.net> <b1bc6a000806231213p162cea21y37ed9ec1d3bb39fd@mail.gmail.com>
+In-Reply-To: <b1bc6a000806231213p162cea21y37ed9ec1d3bb39fd@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 01:22:26PM -0600, jmerkey@wolfmountaingroup.com wrote:
+adam radford wrote:
+> On Mon, Jun 23, 2008 at 9:15 AM, Christopher S. Aker <caker@theshore.net> wrote:
 > 
-> The following GUID is being used in the Wolf Mountain Group, Inc. Forensic
-> File System (FFS) for GPT intel EFI partitions.  Since there is no central
-> registry for EFI GUID's it is posted here for referece for folks who may
-> run accross it on Windows Vista, 2003, and 2008 systems running FFS on
-> Windows that may be using dual boot with Linux or vmware:
+>> It's happened on a number of different hosts, all of the same hardware and
+>> software configuration (Xen 3.2 64bit, 32bit pae dom0, 32bit pae domUs.  LVM
+>> backend with 3ware hardware RAID-1).
+ >
+> A driver patch for older kernels including XenServer-4.1 is available here:
 > 
-> #define PARTITION_FFS_GUID \
->     EFI_GUID( 0xBEEFCAFE, 0xFEED, 0x0000, \
->               0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01)
-> 
-> 
-> Patches to efi.h and efi.c in /fs/partitions will be posted after July 2,
-> 2008 to www.wolfmountaingroup.org.
+> http://www.3ware.com/KB/article.aspx?id=15243&cNode=6I1C6S
 
-So how many 'FFS' filesystems does that make now?  Why not ForenFS or
-something more unique?
+Thanks, but unfortunately, from that link:
 
--- 
-Len Sorensen
+"3ware 9000 series controllers are not affected by this issue."
+
+... which is what we're using.  This problem only appeared after 
+rebooting these machines into Xen.  Some of affected boxes even ran 
+2.6.18 (non Xen) for awhile without any problems.
+
+-Chris
+
