@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753771AbYFWXJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbYFWXKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753771AbYFWXJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 19:09:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbYFWXH2
+	id S1756247AbYFWXKA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 19:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYFWXHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 19:07:28 -0400
-Received: from mx1.suse.de ([195.135.220.2]:44533 "EHLO mx1.suse.de"
+	Mon, 23 Jun 2008 19:07:41 -0400
+Received: from mx2.suse.de ([195.135.220.15]:39177 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753022AbYFWXH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 19:07:26 -0400
-Date: Mon, 23 Jun 2008 16:05:02 -0700
+	id S1753735AbYFWXHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 19:07:39 -0400
+Date: Mon, 23 Jun 2008 16:05:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,14 +21,18 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Mingarelli <Thomas.Mingarelli@hp.com>
-Subject: [patch 07/10] watchdog: hpwdt: fix use of inline assembly
-Message-ID: <20080623230502.GG29853@suse.de>
+       alan@lxorguk.ukuu.org.uk, Oleg Nesterov <oleg@tv-sign.ru>,
+       Nick Piggin <npiggin@suse.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>
+Subject: [patch 02/10] Reinstate ZERO_PAGE optimization in get_user_pages()
+	and fix XIP
+Message-ID: <20080623230525.GI29853@suse.de>
 References: <20080623225737.837265824@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline; filename="watchdog-hpwdt-fix-use-of-inline-assembly.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="reinstate-zero_page-optimization-in-get_user_pages-and-fix-xip.patch"
 In-Reply-To: <20080623230417.GA29853@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,207 +45,137 @@ us know.
 ------------------ 
 From: Linus Torvalds <torvalds@linux-foundation.org>
 
-commit 1f6ef2342972dc7fd623f360f84006e2304eb935 upstream
+commit 89f5b7da2a6bad2e84670422ab8192382a5aeb9f upstream
 
-The inline assembly in drivers/watchdog/hpwdt.c was incredibly broken,
-and included all the function prologue and epilogue stuff, even though
-it was itself then inside a C function where the compiler would add its
-own prologue and epilogue on top of it all.
+KAMEZAWA Hiroyuki and Oleg Nesterov point out that since the commit
+557ed1fa2620dc119adb86b34c614e152a629a80 ("remove ZERO_PAGE") removed
+the ZERO_PAGE from the VM mappings, any users of get_user_pages() will
+generally now populate the VM with real empty pages needlessly.
 
-This then just _happened_ to work if you had exactly the right compiler
-version and exactly the right compiler flags, so that gcc just happened
-to not create any prologue at all (the gcc-generated epilogue wouldn't
-matter, since it would never be reached).
+We used to get the ZERO_PAGE when we did the "handle_mm_fault()", but
+since fault handling no longer uses ZERO_PAGE for new anonymous pages,
+we now need to handle that special case in follow_page() instead.
 
-But the more proper way to fix it is to simply not do this.  Move the
-inline asm to the top level, with no surrounding function at all (the
-better alternative would be to remove the prologue and make it actually
-use proper description of the arguments to the inline asm, but that's a
-bigger change than the one I'm willing to make right now).
+In particular, the removal of ZERO_PAGE effectively removed the core
+file writing optimization where we would skip writing pages that had not
+been populated at all, and increased memory pressure a lot by allocating
+all those useless newly zeroed pages.
 
-Tested-by: S.Çağlar Onur <caglar@pardus.org.tr>
-Acked-by: Thomas Mingarelli <Thomas.Mingarelli@hp.com>
+This reinstates the optimization by making the unmapped PTE case the
+same as for a non-existent page table, which already did this correctly.
+
+While at it, this also fixes the XIP case for follow_page(), where the
+caller could not differentiate between the case of a page that simply
+could not be used (because it had no "struct page" associated with it)
+and a page that just wasn't mapped.
+
+We do that by simply returning an error pointer for pages that could not
+be turned into a "struct page *".  The error is arbitrarily picked to be
+EFAULT, since that was what get_user_pages() already used for the
+equivalent IO-mapped page case.
+
+[ Also removed an impossible test for pte_offset_map_lock() failing:
+  that's not how that function works ]
+
+Acked-by: Oleg Nesterov <oleg@tv-sign.ru>
+Acked-by: Nick Piggin <npiggin@suse.de>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Roland McGrath <roland@redhat.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/watchdog/hpwdt.c |  154 ++++++++++++++++++++++++-----------------------
- 1 file changed, 79 insertions(+), 75 deletions(-)
+ arch/powerpc/kernel/vdso.c |    2 +-
+ mm/memory.c                |   17 +++++++++++++----
+ mm/migrate.c               |   10 ++++++++++
+ 3 files changed, 24 insertions(+), 5 deletions(-)
 
---- a/drivers/watchdog/hpwdt.c
-+++ b/drivers/watchdog/hpwdt.c
-@@ -140,49 +140,52 @@ static struct pci_device_id hpwdt_device
- };
- MODULE_DEVICE_TABLE(pci, hpwdt_devices);
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -141,7 +141,7 @@ static void dump_one_vdso_page(struct pa
+ 	printk("kpg: %p (c:%d,f:%08lx)", __va(page_to_pfn(pg) << PAGE_SHIFT),
+ 	       page_count(pg),
+ 	       pg->flags);
+-	if (upg/* && pg != upg*/) {
++	if (upg && !IS_ERR(upg) /* && pg != upg*/) {
+ 		printk(" upg: %p (c:%d,f:%08lx)", __va(page_to_pfn(upg)
+ 						       << PAGE_SHIFT),
+ 		       page_count(upg),
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -943,17 +943,15 @@ struct page *follow_page(struct vm_area_
+ 	}
  
-+extern asmlinkage void asminline_call(struct cmn_registers *pi86Regs, unsigned long *pRomEntry);
+ 	ptep = pte_offset_map_lock(mm, pmd, address, &ptl);
+-	if (!ptep)
+-		goto out;
+ 
+ 	pte = *ptep;
+ 	if (!pte_present(pte))
+-		goto unlock;
++		goto no_page;
+ 	if ((flags & FOLL_WRITE) && !pte_write(pte))
+ 		goto unlock;
+ 	page = vm_normal_page(vma, address, pte);
+ 	if (unlikely(!page))
+-		goto unlock;
++		goto bad_page;
+ 
+ 	if (flags & FOLL_GET)
+ 		get_page(page);
+@@ -968,6 +966,15 @@ unlock:
+ out:
+ 	return page;
+ 
++bad_page:
++	pte_unmap_unlock(ptep, ptl);
++	return ERR_PTR(-EFAULT);
 +
- #ifndef CONFIG_X86_64
- /* --32 Bit Bios------------------------------------------------------------ */
++no_page:
++	pte_unmap_unlock(ptep, ptl);
++	if (!pte_none(pte))
++		return page;
++	/* Fall through to ZERO_PAGE handling */
+ no_page_table:
+ 	/*
+ 	 * When core dumping an enormous anonymous area that nobody
+@@ -1104,6 +1111,8 @@ int get_user_pages(struct task_struct *t
  
- #define HPWDT_ARCH	32
+ 				cond_resched();
+ 			}
++			if (IS_ERR(page))
++				return i ? i : PTR_ERR(page);
+ 			if (pages) {
+ 				pages[i] = page;
  
--static void asminline_call(struct cmn_registers *pi86Regs,
--			   unsigned long *pRomEntry)
--{
--	asm("pushl       %ebp               \n\t"
--	    "movl        %esp, %ebp         \n\t"
--	    "pusha                          \n\t"
--	    "pushf                          \n\t"
--	    "push        %es                \n\t"
--	    "push        %ds                \n\t"
--	    "pop         %es                \n\t"
--	    "movl        8(%ebp),%eax       \n\t"
--	    "movl        4(%eax),%ebx       \n\t"
--	    "movl        8(%eax),%ecx       \n\t"
--	    "movl        12(%eax),%edx      \n\t"
--	    "movl        16(%eax),%esi      \n\t"
--	    "movl        20(%eax),%edi      \n\t"
--	    "movl        (%eax),%eax        \n\t"
--	    "push        %cs                \n\t"
--	    "call        *12(%ebp)          \n\t"
--	    "pushf                          \n\t"
--	    "pushl       %eax               \n\t"
--	    "movl        8(%ebp),%eax       \n\t"
--	    "movl        %ebx,4(%eax)       \n\t"
--	    "movl        %ecx,8(%eax)       \n\t"
--	    "movl        %edx,12(%eax)      \n\t"
--	    "movl        %esi,16(%eax)      \n\t"
--	    "movl        %edi,20(%eax)      \n\t"
--	    "movw        %ds,24(%eax)       \n\t"
--	    "movw        %es,26(%eax)       \n\t"
--	    "popl        %ebx               \n\t"
--	    "movl        %ebx,(%eax)        \n\t"
--	    "popl        %ebx               \n\t"
--	    "movl        %ebx,28(%eax)      \n\t"
--	    "pop         %es                \n\t"
--	    "popf                           \n\t"
--	    "popa                           \n\t"
--	    "leave                          \n\t" "ret");
--}
-+asm(".text                          \n\t"
-+    ".align 4                       \n"
-+    "asminline_call:                \n\t"
-+    "pushl       %ebp               \n\t"
-+    "movl        %esp, %ebp         \n\t"
-+    "pusha                          \n\t"
-+    "pushf                          \n\t"
-+    "push        %es                \n\t"
-+    "push        %ds                \n\t"
-+    "pop         %es                \n\t"
-+    "movl        8(%ebp),%eax       \n\t"
-+    "movl        4(%eax),%ebx       \n\t"
-+    "movl        8(%eax),%ecx       \n\t"
-+    "movl        12(%eax),%edx      \n\t"
-+    "movl        16(%eax),%esi      \n\t"
-+    "movl        20(%eax),%edi      \n\t"
-+    "movl        (%eax),%eax        \n\t"
-+    "push        %cs                \n\t"
-+    "call        *12(%ebp)          \n\t"
-+    "pushf                          \n\t"
-+    "pushl       %eax               \n\t"
-+    "movl        8(%ebp),%eax       \n\t"
-+    "movl        %ebx,4(%eax)       \n\t"
-+    "movl        %ecx,8(%eax)       \n\t"
-+    "movl        %edx,12(%eax)      \n\t"
-+    "movl        %esi,16(%eax)      \n\t"
-+    "movl        %edi,20(%eax)      \n\t"
-+    "movw        %ds,24(%eax)       \n\t"
-+    "movw        %es,26(%eax)       \n\t"
-+    "popl        %ebx               \n\t"
-+    "movl        %ebx,(%eax)        \n\t"
-+    "popl        %ebx               \n\t"
-+    "movl        %ebx,28(%eax)      \n\t"
-+    "pop         %es                \n\t"
-+    "popf                           \n\t"
-+    "popa                           \n\t"
-+    "leave                          \n\t"
-+    "ret                            \n\t"
-+    ".previous");
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -858,6 +858,11 @@ static int do_move_pages(struct mm_struc
+ 			goto set_status;
  
- /*
-  *	cru_detect
-@@ -333,43 +336,44 @@ static int __devinit detect_cru_service(
+ 		page = follow_page(vma, pp->addr, FOLL_GET);
++
++		err = PTR_ERR(page);
++		if (IS_ERR(page))
++			goto set_status;
++
+ 		err = -ENOENT;
+ 		if (!page)
+ 			goto set_status;
+@@ -921,6 +926,11 @@ static int do_pages_stat(struct mm_struc
+ 			goto set_status;
  
- #define HPWDT_ARCH	64
- 
--static void asminline_call(struct cmn_registers *pi86Regs,
--			   unsigned long *pRomEntry)
--{
--	asm("pushq      %rbp            \n\t"
--	    "movq       %rsp, %rbp      \n\t"
--	    "pushq      %rax            \n\t"
--	    "pushq      %rbx            \n\t"
--	    "pushq      %rdx            \n\t"
--	    "pushq      %r12            \n\t"
--	    "pushq      %r9             \n\t"
--	    "movq       %rsi, %r12      \n\t"
--	    "movq       %rdi, %r9       \n\t"
--	    "movl       4(%r9),%ebx     \n\t"
--	    "movl       8(%r9),%ecx     \n\t"
--	    "movl       12(%r9),%edx    \n\t"
--	    "movl       16(%r9),%esi    \n\t"
--	    "movl       20(%r9),%edi    \n\t"
--	    "movl       (%r9),%eax      \n\t"
--	    "call       *%r12           \n\t"
--	    "pushfq                     \n\t"
--	    "popq        %r12           \n\t"
--	    "popfq                      \n\t"
--	    "movl       %eax, (%r9)     \n\t"
--	    "movl       %ebx, 4(%r9)    \n\t"
--	    "movl       %ecx, 8(%r9)    \n\t"
--	    "movl       %edx, 12(%r9)   \n\t"
--	    "movl       %esi, 16(%r9)   \n\t"
--	    "movl       %edi, 20(%r9)   \n\t"
--	    "movq       %r12, %rax      \n\t"
--	    "movl       %eax, 28(%r9)   \n\t"
--	    "popq       %r9             \n\t"
--	    "popq       %r12            \n\t"
--	    "popq       %rdx            \n\t"
--	    "popq       %rbx            \n\t"
--	    "popq       %rax            \n\t"
--	    "leave                      \n\t" "ret");
--}
-+asm(".text                      \n\t"
-+    ".align 4                   \n"
-+    "asminline_call:            \n\t"
-+    "pushq      %rbp            \n\t"
-+    "movq       %rsp, %rbp      \n\t"
-+    "pushq      %rax            \n\t"
-+    "pushq      %rbx            \n\t"
-+    "pushq      %rdx            \n\t"
-+    "pushq      %r12            \n\t"
-+    "pushq      %r9             \n\t"
-+    "movq       %rsi, %r12      \n\t"
-+    "movq       %rdi, %r9       \n\t"
-+    "movl       4(%r9),%ebx     \n\t"
-+    "movl       8(%r9),%ecx     \n\t"
-+    "movl       12(%r9),%edx    \n\t"
-+    "movl       16(%r9),%esi    \n\t"
-+    "movl       20(%r9),%edi    \n\t"
-+    "movl       (%r9),%eax      \n\t"
-+    "call       *%r12           \n\t"
-+    "pushfq                     \n\t"
-+    "popq        %r12           \n\t"
-+    "popfq                      \n\t"
-+    "movl       %eax, (%r9)     \n\t"
-+    "movl       %ebx, 4(%r9)    \n\t"
-+    "movl       %ecx, 8(%r9)    \n\t"
-+    "movl       %edx, 12(%r9)   \n\t"
-+    "movl       %esi, 16(%r9)   \n\t"
-+    "movl       %edi, 20(%r9)   \n\t"
-+    "movq       %r12, %rax      \n\t"
-+    "movl       %eax, 28(%r9)   \n\t"
-+    "popq       %r9             \n\t"
-+    "popq       %r12            \n\t"
-+    "popq       %rdx            \n\t"
-+    "popq       %rbx            \n\t"
-+    "popq       %rax            \n\t"
-+    "leave                      \n\t"
-+    "ret                        \n\t"
-+    ".previous");
- 
- /*
-  *	dmi_find_cru
+ 		page = follow_page(vma, pm->addr, 0);
++
++		err = PTR_ERR(page);
++		if (IS_ERR(page))
++			goto set_status;
++
+ 		err = -ENOENT;
+ 		/* Use PageReserved to check for zero page */
+ 		if (!page || PageReserved(page))
 
 -- 
