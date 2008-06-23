@@ -1,85 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbYFWMDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbYFWMGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755165AbYFWMDn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 08:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYFWMDf
+	id S1755838AbYFWMGA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 08:06:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbYFWMFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 08:03:35 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52903 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752188AbYFWMDf (ORCPT
+	Mon, 23 Jun 2008 08:05:52 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:45923 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752787AbYFWMFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 08:03:35 -0400
-Date: Mon, 23 Jun 2008 07:02:23 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Gautham R Shenoy <ego@in.ibm.com>
-Cc: kosaki.motohiro@jp.fujitsu.com, vegard.nossum@gmail.com, menage@google.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       maxk@qualcomm.com
-Subject: Re: v2.6.26-rc7/cgroups: circular locking dependency
-Message-Id: <20080623070223.eaa8e130.pj@sgi.com>
-In-Reply-To: <1214149823.3223.313.camel@lappy.programming.kicks-ass.net>
-References: <20080621173859.GA6846@damson.getinternet.no>
-	<2f11576a0806220834m3572ee80i72229cb9a1613558@mail.gmail.com>
-	<1214149823.3223.313.camel@lappy.programming.kicks-ass.net>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Mon, 23 Jun 2008 08:05:51 -0400
+Date: Mon, 23 Jun 2008 14:05:49 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [PATCH] configfs: Fix failing symlink() making rmdir() fail
+Message-ID: <20080623120548.GT30804@localhost>
+Reply-To: Louis.Rilling@kerlabs.com
+References: <20080619221605.GE10888@mail.oracle.com> <1213963762-11678-1-git-send-email-louis.rilling@kerlabs.com> <20080620224420.GF21416@mail.oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-6583-1214222656-0001-2"
+Content-Disposition: inline
+In-Reply-To: <20080620224420.GF21416@mail.oracle.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC'd Gautham R Shenoy <ego@in.ibm.com>.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-I believe that we had the locking relation between what had been
-cgroup_lock (global cgroup lock which can be held over large stretches
-of non-performance critical code) and callback_mutex (global cpuset
-specific lock which is held over shorter stretches of more performance
-critical code - though still not on really hot code paths.)  One can
-nest callback_mutex inside cgroup_lock, but not vice versa.
+--=_bohort-6583-1214222656-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The callback_mutex guarded some CPU masks and Node masks, which might
-be multi-word and hence don't change atomically.  Any low level code
-that needs to read these these cpuset CPU and Node masks, needs to
-hold callback_mutex briefly, to keep that mask from changing while
-being read.
+On Fri, Jun 20, 2008 at 03:44:20PM -0700, Joel Becker wrote:
+> On Fri, Jun 20, 2008 at 02:09:22PM +0200, Louis Rilling wrote:
+> > What about this other solution? By the way, it does not even need to
+> > rename CONFIGFS_USET_IN_MKDIR.
+>=20
+> 	We don't need the check for USET_DROPPING either.  I like a lot!
 
-There is even a comment in kernel/cpuset.c, explaining how an ABBA
-deadlock must be avoided when calling rebuild_sched_domains():
+I hope that you wasn't speaking about checking USET_DROPPING on the target.=
+ We
+still need to check it, of course. I'm resending the updated, hopefully fin=
+al,
+patchset.
 
-/*
- * rebuild_sched_domains()
- *
- * ...
- *
- * Call with cgroup_mutex held.  May take callback_mutex during
- * call due to the kfifo_alloc() and kmalloc() calls.  May nest
- * a call to the get_online_cpus()/put_online_cpus() pair.
- * Must not be called holding callback_mutex, because we must not
- * call get_online_cpus() while holding callback_mutex.  Elsewhere
- * the kernel nests callback_mutex inside get_online_cpus() calls.
- * So the reverse nesting would risk an ABBA deadlock.
+Louis
 
-This went into the kernel sometime around 2.6.18.
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
 
-Then in October and November of 2007, Gautham R Shenoy submitted
-"Refcount Based Cpu Hotplug" (http://lkml.org/lkml/2007/11/15/239)
+--=_bohort-6583-1214222656-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
 
-This added cpu_hotplug.lock, which at first glance seems to fit into
-the locking hierarchy about where callback_mutex did before, such as
-being invocable from rebuild_sched_domains().
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-However ... the kernel/cpuset.c comments were not updated to describe
-the intended locking hierarchy as it relates to cpu_hotplug.lock, and
-it looks as if cpu_hotplug.lock can also be taken while invoking the
-hotplug callbacks, such as the one here that is handling a CPU down
-event for cpusets.
+iD8DBQFIX5GcVKcRuvQ9Q1QRApfwAKCOXgWUX+MXZBHGuwgzZlnaFXj10QCgiG3O
+oV5X0Tw4s4nGny0IWbADMrU=
+=4DoZ
+-----END PGP SIGNATURE-----
 
-Gautham ... you there?
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+--=_bohort-6583-1214222656-0001-2--
