@@ -1,98 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755817AbYFWWlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbYFWWn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755817AbYFWWlS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 18:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYFWWlJ
+	id S1751930AbYFWWn5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 18:43:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbYFWWns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 18:41:09 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:26340 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752320AbYFWWlI (ORCPT
+	Mon, 23 Jun 2008 18:43:48 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37445 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750751AbYFWWns (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 18:41:08 -0400
-Date: Mon, 23 Jun 2008 15:40:43 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 1/6] res_counter:  handle limit change
-Message-Id: <20080623154043.c4d68d62.randy.dunlap@oracle.com>
-In-Reply-To: <20080613182924.c73fe9eb.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080613182714.265fe6d2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080613182924.c73fe9eb.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 23 Jun 2008 18:43:48 -0400
+Date: Mon, 23 Jun 2008 18:43:45 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: ciaby <ciaby@autistici.org>
+cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH] 2.6.25.4-rt6: missing =?UTF-8?Q?global=5Frt=5Fruntime=28=29=20in?=
+ =?UTF-8?Q?=20sched=2Ec?=
+In-Reply-To: <7688fdc041a8f848b0627dccccddcf12@localhost>
+Message-ID: <Pine.LNX.4.58.0806231843120.27994@gandalf.stny.rr.com>
+References: <7688fdc041a8f848b0627dccccddcf12@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jun 2008 18:29:24 +0900 KAMEZAWA Hiroyuki wrote:
 
-> Add a support to shrink_usage_at_limit_change feature to res_counter.
-> memcg will use this to drop pages.
-> 
-> Change log: xxx -> v4 (new file.)
->  - cut out the limit-change part from hierarchy patch set.
->  - add "retry_count" arguments to shrink_usage(). This allows that we don't
->    have to set the default retry loop count.
->  - res_counter_check_under_val() is added to support subsystem.
->  - res_counter_init() is res_counter_init_ops(cnt, NULL)
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> ---
->  Documentation/controllers/resource_counter.txt |   19 +++++-
->  include/linux/res_counter.h                    |   33 ++++++++++-
->  kernel/res_counter.c                           |   74 ++++++++++++++++++++++++-
->  3 files changed, 121 insertions(+), 5 deletions(-)
-> 
-> Index: linux-2.6.26-rc5-mm3/Documentation/controllers/resource_counter.txt
-> ===================================================================
-> --- linux-2.6.26-rc5-mm3.orig/Documentation/controllers/resource_counter.txt
-> +++ linux-2.6.26-rc5-mm3/Documentation/controllers/resource_counter.txt
-> @@ -141,8 +145,19 @@ counter fields. They are recommended to 
->  	failcnt		reset to zero
->  
->  
-> +5. res_counter_ops (Callbacks)
->  
-> -5. Usage example
-> +   res_counter_ops is for implementing feedback control from res_counter
-> +   to subsystem. Each one has each own purpose and the subsystem doesn't
+On Mon, 9 Jun 2008, ciaby wrote:
 
-                                                                    isn't
+>
+>
+> I already sent this patch, but seems that nobody cared... the last 2
+> revisions of the -rt kernel don't compile properly.
+> Second patch to fix this.
+> Regards
 
-> +   necessary to provide all callbacks. Just implement necessary ones.
+I still don't have a "Signed-off-by:" for this patch. Please send it to me
+ASAP, otherwise it will miss the next release.
 
-      required
+-- Steve
 
+>
+> Giovanni "ciaby" Civardi
+>
+> diff -uNr linux-2.6.25.4-rt6.orig/kernel/sched.c
+> linux-2.6.25.4-rt6/kernel/sched.c
+> --- linux-2.6.25.4-rt6.orig/kernel/sched.c      2008-06-09
+> 11:35:57.000000000 +0200
+> +++ linux-2.6.25.4-rt6/kernel/sched.c   2008-06-09 11:40:45.000000000 +0200
+> @@ -672,6 +672,13 @@
+>   */
+>  #define RUNTIME_INF    ((u64)~0ULL)
+>
+> +static u64 global_rt_runtime(void)
+> +{
+> +       if (sysctl_sched_rt_period < 0)
+> +               return RUNTIME_INF;
+> +       return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
+> +}
 > +
-> +   - shrink_usage(res_counter, newlimit, retry)
-> +     Called for reducing usage to newlimit, retry is incremented per
-> +     loop. (See memory resource controller as example.)
-> +     Returns 0 at success. Any error code is acceptable but -EBUSY will be
-> +     suitable to show "the kernel can't shrink usage."
-> +
-> +6. Usage example
->  
->   a. Declare a task group (take a look at cgroups subsystem for this) and
->      fold a res_counter into it
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+>  /*
+>   * We really dont want to do anything complex within switch_to()
+>   * on PREEMPT_RT - this check enforces this.
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
