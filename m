@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbYFWXG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbYFWXHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752779AbYFWXG0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 19:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbYFWXFk
+	id S1751930AbYFWXHq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 19:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYFWXHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 19:05:40 -0400
-Received: from lsg.lsg.lab.novell.com ([151.155.230.1]:8687 "EHLO
-	lsg.lsg.lab.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752385AbYFWXEu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 19:04:50 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 3/3] sched: terminate newidle balancing once at least one task
-	has moved over
-To: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org,
-       linux-rt-users@vger.kernel.org, ghaskins@novell.com, dbahi@novell.com
-Date: Mon, 23 Jun 2008 17:04:50 -0600
-Message-ID: <20080623230450.31515.75112.stgit@lsg.lsg.lab.novell.com>
-In-Reply-To: <20080623225645.31515.36393.stgit@lsg.lsg.lab.novell.com>
-References: <20080623225645.31515.36393.stgit@lsg.lsg.lab.novell.com>
-User-Agent: StGIT/0.13
+	Mon, 23 Jun 2008 19:07:07 -0400
+Received: from ns2.suse.de ([195.135.220.15]:39057 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752697AbYFWXHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 19:07:06 -0400
+Date: Mon, 23 Jun 2008 16:04:45 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: [patch 08/10] hwmon: (lm85) Fix function RANGE_TO_REG()
+Message-ID: <20080623230445.GB29853@suse.de>
+References: <20080623225737.837265824@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="hwmon-fix-function-range_to_reg.patch"
+In-Reply-To: <20080623230417.GA29853@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Inspired by Peter Zijlstra.
+2.6.25.9-stable review patch.  If anyone has any objections, please let
+us know.
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+------------------ 
+From: Jean Delvare <khali@linux-fr.org>
+
+Function RANGE_TO_REG() is broken. For a requested range of 2000 (2
+degrees C), it will return an index value of 15, i.e. 80.0 degrees C,
+instead of the expected index value of 0. All other values are handled
+properly, just 2000 isn't.
+
+The bug was introduced back in November 2004 by this patch:
+http://git.kernel.org/?p=linux/kernel/git/tglx/history.git;a=commit;h=1c28d80f1992240373099d863e4996cdd5d646d0
+
+In Linus' kernel I decided to rewrite the whole function in a way
+which was more obviously correct. But for -stable let's just do the
+minimal fix.
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
+ drivers/hwmon/lm85.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- kernel/sched.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 3efbbc5..c8e8520 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2775,6 +2775,10 @@ static int move_tasks(struct rq *this_rq, int this_cpu, struct rq *busiest,
- 				max_load_move - total_load_moved,
- 				sd, idle, all_pinned, &this_best_prio);
- 		class = class->next;
-+
-+		if (idle == CPU_NEWLY_IDLE && this_rq->nr_running)
-+			break;
-+
- 	} while (class && max_load_move > total_load_moved);
+--- a/drivers/hwmon/lm85.c
++++ b/drivers/hwmon/lm85.c
+@@ -192,7 +192,7 @@ static int RANGE_TO_REG( int range )
+ {
+ 	int i;
  
- 	return total_load_moved > 0;
+-	if ( range < lm85_range_map[0] ) { 
++	if (range <= lm85_range_map[0]) {
+ 		return 0 ;
+ 	} else if ( range > lm85_range_map[15] ) {
+ 		return 15 ;
 
+-- 
