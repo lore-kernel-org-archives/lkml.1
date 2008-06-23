@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbYFWIJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbYFWILU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755973AbYFWIJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 04:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYFWIJP
+	id S1756978AbYFWILU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 04:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYFWILI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 04:09:15 -0400
-Received: from ic0245.upco.es ([130.206.70.245]:54161 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752448AbYFWIJN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 04:09:13 -0400
-Subject: Re: [Bug #10892] Sometime (often) X come out blank (black screen)on
-	 cold boot - Intel chipset
-From: Romano Giannetti <romano.giannetti@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: bugme-daemon <bugme-daemon@bugzilla.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <4mRZUF-hVeG.A.BxE._tpXIB@albercik>
-References: <RzbtSgMztjP.A.jRD._spXIB@albercik> 
-	<4mRZUF-hVeG.A.BxE._tpXIB@albercik>
-Content-Type: text/plain
-Date: Mon, 23 Jun 2008 10:09:10 +0200
-Message-Id: <1214208550.21984.1.camel@pern>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
-X-imss-version: 2.5
-X-imss-result: Passed
-X-imss-scores: Clean:22.04005 C:22 M:1 S:5 R:5
-X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
+	Mon, 23 Jun 2008 04:11:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44736 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752480AbYFWILG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 04:11:06 -0400
+Date: Mon, 23 Jun 2008 10:09:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Greg KH <gregkh@suse.de>, Johannes Weiner <hannes@saeurebad.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Bernhard Walle <bwalle@suse.de>
+Subject: Re: [patch 4/5] x86: use BOOTMEM_EXCLUSIVE on 32-bit
+Message-ID: <20080623080940.GA23313@elte.hu>
+References: <20080622185327.348377223@mini.kroah.org> <20080622190131.GB20141@suse.de> <87prq9dxst.fsf@skyscraper.fehenstaub.lan> <20080622203047.GC20800@suse.de> <alpine.LFD.1.10.0806221336010.2926@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0806221336010.2926@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-06-22 at 19:54 +0200, Rafael J. Wysocki wrote:
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10892
-> Subject		: Sometime (often) X come out blank (black screen) on cold boot - Intel chipset
-> Submitter	: Romano Giannetti <romano.giannetti@gmail.com>
-> Date		: 2008-06-10 05:33 (13 days old)
-> References	: http://lkml.org/lkml/2008/6/10/137
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I tried to reproduce it this morning with 2.6.26-rc7, but failed. So, it
-seems gone (but this was an Eisenbug, so I am not certain). 
+> On Sun, 22 Jun 2008, Greg KH wrote:
+> >
+> > > You will also need the patch from http://lkml.org/lkml/2008/6/21/103 to
+> > > make sure reserve_bootmem() is not void (*)().
+> > 
+> > Ok, let me know when that goes into Linus's tree please.
+> 
+> It already is: 71c2742f5e6348d76ee62085cf0a13e5eff0f00e.
 
-Romano 
+thanks. This patch (which was not a build fix but an infrastructure fix 
+that the kexec fix in arch/x86 depended on) is well-tested as well, it 
+was queued in -tip on June 10th:
 
--- 
-Romano Giannetti <romano.giannetti@gmail.com>
+| commit 91d48fc80f22817332170082e10de60a75851640
+| Author: Bernhard Walle <bwalle@suse.de>
+| Date:   Sun Jun 8 15:46:29 2008 +0200
+| CommitDate: Tue Jun 10 14:41:56 2008 +0200
+|
+|    bootmem: add return value to reserve_bootmem_node()
+|
+|    This patch changes the function reserve_bootmem_node() from void to
+|    int, returning -ENOMEM if the allocation fails.
+|
+|    Signed-off-by: Bernhard Walle <bwalle@suse.de>
+|    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
+so it is a -stable candidate just as much as the kexec fix. (These are 
+all fixes for long-standing problems so i guess it can go all the way 
+back to all stable kernels that are being maintained.)
+
+	Ingo
