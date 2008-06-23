@@ -1,62 +1,317 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbYFWXHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbYFWXGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754055AbYFWXHU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 19:07:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbYFWXHB
+	id S1753957AbYFWXGl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 19:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYFWXFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 19:07:01 -0400
-Received: from ns1.suse.de ([195.135.220.2]:44430 "EHLO mx1.suse.de"
+	Mon, 23 Jun 2008 19:05:41 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:56978 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750942AbYFWXHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 19:07:00 -0400
-Date: Mon, 23 Jun 2008 16:04:17 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/10] 2.6.28.9-rc2 review
-Message-ID: <20080623230417.GA29853@suse.de>
+	id S1751401AbYFWXFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 19:05:21 -0400
+Date: Tue, 24 Jun 2008 00:05:18 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Jon Tollefson <kniht@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Nishanth Aravamudan <nacc@us.ibm.com>,
+       Adam Litke <agl@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 1/2] hugetlb reservations: move region tracking earlier
+Message-ID: <20080623230517.GA4564@csn.ul.ie>
+References: <1214242533-12104-1-git-send-email-apw@shadowen.org> <1214242533-12104-2-git-send-email-apw@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1214242533-12104-2-git-send-email-apw@shadowen.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As -rc1 had a number of issues, here's the set of patches for -rc2.
+On (23/06/08 18:35), Andy Whitcroft didst pronounce:
+> Move the region tracking code much earlier so we can use it for page
+> presence tracking later on.  No code is changed, just its location.
+> 
+> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
 
-Responses should be made by Tuesday, June 24, 18:00:00 UTC.  Anything
-received after that time might be too late.
+Straight-forward code-move.
 
-The whole patch series can be found in one patch at:
-        kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.9-rc2.gz
-and the diffstat can be found below.
+Acked-by: Mel Gorman <mel@csn.ul.ie>
 
+> ---
+>  mm/hugetlb.c |  246 +++++++++++++++++++++++++++++----------------------------
+>  1 files changed, 125 insertions(+), 121 deletions(-)
+> 
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index 0f76ed1..d701e39 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -47,6 +47,131 @@ static unsigned long __initdata default_hstate_size;
+>  static DEFINE_SPINLOCK(hugetlb_lock);
+>  
+>  /*
+> + * Region tracking -- allows tracking of reservations and instantiated pages
+> + *                    across the pages in a mapping.
+> + */
+> +struct file_region {
+> +	struct list_head link;
+> +	long from;
+> +	long to;
+> +};
+> +
+> +static long region_add(struct list_head *head, long f, long t)
+> +{
+> +	struct file_region *rg, *nrg, *trg;
+> +
+> +	/* Locate the region we are either in or before. */
+> +	list_for_each_entry(rg, head, link)
+> +		if (f <= rg->to)
+> +			break;
+> +
+> +	/* Round our left edge to the current segment if it encloses us. */
+> +	if (f > rg->from)
+> +		f = rg->from;
+> +
+> +	/* Check for and consume any regions we now overlap with. */
+> +	nrg = rg;
+> +	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
+> +		if (&rg->link == head)
+> +			break;
+> +		if (rg->from > t)
+> +			break;
+> +
+> +		/* If this area reaches higher then extend our area to
+> +		 * include it completely.  If this is not the first area
+> +		 * which we intend to reuse, free it. */
+> +		if (rg->to > t)
+> +			t = rg->to;
+> +		if (rg != nrg) {
+> +			list_del(&rg->link);
+> +			kfree(rg);
+> +		}
+> +	}
+> +	nrg->from = f;
+> +	nrg->to = t;
+> +	return 0;
+> +}
+> +
+> +static long region_chg(struct list_head *head, long f, long t)
+> +{
+> +	struct file_region *rg, *nrg;
+> +	long chg = 0;
+> +
+> +	/* Locate the region we are before or in. */
+> +	list_for_each_entry(rg, head, link)
+> +		if (f <= rg->to)
+> +			break;
+> +
+> +	/* If we are below the current region then a new region is required.
+> +	 * Subtle, allocate a new region at the position but make it zero
+> +	 * size such that we can guarantee to record the reservation. */
+> +	if (&rg->link == head || t < rg->from) {
+> +		nrg = kmalloc(sizeof(*nrg), GFP_KERNEL);
+> +		if (!nrg)
+> +			return -ENOMEM;
+> +		nrg->from = f;
+> +		nrg->to   = f;
+> +		INIT_LIST_HEAD(&nrg->link);
+> +		list_add(&nrg->link, rg->link.prev);
+> +
+> +		return t - f;
+> +	}
+> +
+> +	/* Round our left edge to the current segment if it encloses us. */
+> +	if (f > rg->from)
+> +		f = rg->from;
+> +	chg = t - f;
+> +
+> +	/* Check for and consume any regions we now overlap with. */
+> +	list_for_each_entry(rg, rg->link.prev, link) {
+> +		if (&rg->link == head)
+> +			break;
+> +		if (rg->from > t)
+> +			return chg;
+> +
+> +		/* We overlap with this area, if it extends futher than
+> +		 * us then we must extend ourselves.  Account for its
+> +		 * existing reservation. */
+> +		if (rg->to > t) {
+> +			chg += rg->to - t;
+> +			t = rg->to;
+> +		}
+> +		chg -= rg->to - rg->from;
+> +	}
+> +	return chg;
+> +}
+> +
+> +static long region_truncate(struct list_head *head, long end)
+> +{
+> +	struct file_region *rg, *trg;
+> +	long chg = 0;
+> +
+> +	/* Locate the region we are either in or before. */
+> +	list_for_each_entry(rg, head, link)
+> +		if (end <= rg->to)
+> +			break;
+> +	if (&rg->link == head)
+> +		return 0;
+> +
+> +	/* If we are in the middle of a region then adjust it. */
+> +	if (end > rg->from) {
+> +		chg = rg->to - end;
+> +		rg->to = end;
+> +		rg = list_entry(rg->link.next, typeof(*rg), link);
+> +	}
+> +
+> +	/* Drop any remaining regions. */
+> +	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
+> +		if (&rg->link == head)
+> +			break;
+> +		chg += rg->to - rg->from;
+> +		list_del(&rg->link);
+> +		kfree(rg);
+> +	}
+> +	return chg;
+> +}
+> +
+> +/*
+>   * Convert the address within this vma to the page offset within
+>   * the mapping, in base page units.
+>   */
+> @@ -649,127 +774,6 @@ static void return_unused_surplus_pages(struct hstate *h,
+>  	}
+>  }
+>  
+> -struct file_region {
+> -	struct list_head link;
+> -	long from;
+> -	long to;
+> -};
+> -
+> -static long region_add(struct list_head *head, long f, long t)
+> -{
+> -	struct file_region *rg, *nrg, *trg;
+> -
+> -	/* Locate the region we are either in or before. */
+> -	list_for_each_entry(rg, head, link)
+> -		if (f <= rg->to)
+> -			break;
+> -
+> -	/* Round our left edge to the current segment if it encloses us. */
+> -	if (f > rg->from)
+> -		f = rg->from;
+> -
+> -	/* Check for and consume any regions we now overlap with. */
+> -	nrg = rg;
+> -	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
+> -		if (&rg->link == head)
+> -			break;
+> -		if (rg->from > t)
+> -			break;
+> -
+> -		/* If this area reaches higher then extend our area to
+> -		 * include it completely.  If this is not the first area
+> -		 * which we intend to reuse, free it. */
+> -		if (rg->to > t)
+> -			t = rg->to;
+> -		if (rg != nrg) {
+> -			list_del(&rg->link);
+> -			kfree(rg);
+> -		}
+> -	}
+> -	nrg->from = f;
+> -	nrg->to = t;
+> -	return 0;
+> -}
+> -
+> -static long region_chg(struct list_head *head, long f, long t)
+> -{
+> -	struct file_region *rg, *nrg;
+> -	long chg = 0;
+> -
+> -	/* Locate the region we are before or in. */
+> -	list_for_each_entry(rg, head, link)
+> -		if (f <= rg->to)
+> -			break;
+> -
+> -	/* If we are below the current region then a new region is required.
+> -	 * Subtle, allocate a new region at the position but make it zero
+> -	 * size such that we can guarantee to record the reservation. */
+> -	if (&rg->link == head || t < rg->from) {
+> -		nrg = kmalloc(sizeof(*nrg), GFP_KERNEL);
+> -		if (!nrg)
+> -			return -ENOMEM;
+> -		nrg->from = f;
+> -		nrg->to   = f;
+> -		INIT_LIST_HEAD(&nrg->link);
+> -		list_add(&nrg->link, rg->link.prev);
+> -
+> -		return t - f;
+> -	}
+> -
+> -	/* Round our left edge to the current segment if it encloses us. */
+> -	if (f > rg->from)
+> -		f = rg->from;
+> -	chg = t - f;
+> -
+> -	/* Check for and consume any regions we now overlap with. */
+> -	list_for_each_entry(rg, rg->link.prev, link) {
+> -		if (&rg->link == head)
+> -			break;
+> -		if (rg->from > t)
+> -			return chg;
+> -
+> -		/* We overlap with this area, if it extends futher than
+> -		 * us then we must extend ourselves.  Account for its
+> -		 * existing reservation. */
+> -		if (rg->to > t) {
+> -			chg += rg->to - t;
+> -			t = rg->to;
+> -		}
+> -		chg -= rg->to - rg->from;
+> -	}
+> -	return chg;
+> -}
+> -
+> -static long region_truncate(struct list_head *head, long end)
+> -{
+> -	struct file_region *rg, *trg;
+> -	long chg = 0;
+> -
+> -	/* Locate the region we are either in or before. */
+> -	list_for_each_entry(rg, head, link)
+> -		if (end <= rg->to)
+> -			break;
+> -	if (&rg->link == head)
+> -		return 0;
+> -
+> -	/* If we are in the middle of a region then adjust it. */
+> -	if (end > rg->from) {
+> -		chg = rg->to - end;
+> -		rg->to = end;
+> -		rg = list_entry(rg->link.next, typeof(*rg), link);
+> -	}
+> -
+> -	/* Drop any remaining regions. */
+> -	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
+> -		if (&rg->link == head)
+> -			break;
+> -		chg += rg->to - rg->from;
+> -		list_del(&rg->link);
+> -		kfree(rg);
+> -	}
+> -	return chg;
+> -}
+> -
+>  /*
+>   * Determine if the huge page at addr within the vma has an associated
+>   * reservation.  Where it does not we will need to logically increase
+> -- 
+> 1.5.6.205.g7ca3a
+> 
 
-thanks,
-
-greg k-h
-
- Makefile                   |    2 
- arch/powerpc/kernel/vdso.c |    2 
- arch/x86/kernel/setup_32.c |   10 ++
- drivers/hwmon/adt7473.c    |    3 
- drivers/hwmon/lm85.c       |    2 
- drivers/net/atl1/atl1_hw.c |    1 
- drivers/watchdog/hpwdt.c   |  154 +++++++++++++++++++++++----------------------
- include/asm-x86/page_32.h  |    3 
- include/linux/bootmem.h    |    2 
- mm/bootmem.c               |    4 -
- mm/memory.c                |   41 +++++++++--
- mm/migrate.c               |   10 ++
- net/sctp/socket.c          |    4 -
- 13 files changed, 145 insertions(+), 93 deletions(-)
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
