@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759587AbYFWSgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbYFWSh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759587AbYFWSgh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 14:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755137AbYFWSga
+	id S1755736AbYFWSh1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 14:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755706AbYFWShQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 14:36:30 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:55318 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754611AbYFWSg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 14:36:29 -0400
-Message-ID: <485FED2C.8030102@sgi.com>
-Date: Mon, 23 Jun 2008 11:36:28 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 23 Jun 2008 14:37:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34816 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755137AbYFWShP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 14:37:15 -0400
+Date: Mon, 23 Jun 2008 11:32:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+cc: Hugh Dickins <hugh@veritas.com>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Oleg Nesterov <oleg@tv-sign.ru>, Nick Piggin <npiggin@suse.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>
+Subject: Re: [patch 2/5] Reinstate ZERO_PAGE optimization in get_user_pages()
+ and fix XIP
+In-Reply-To: <b6a2187b0806231115t55bf58cfgdc27a2d265258aab@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0806231129410.2926@woody.linux-foundation.org>
+References: <20080622185327.348377223@mini.kroah.org>  <20080622190140.GD20141@suse.de>  <alpine.LFD.1.10.0806221220530.2926@woody.linux-foundation.org>  <20080622202950.GB20800@suse.de>  <b6a2187b0806230832j10e8be28vc0b05fea233437fa@mail.gmail.com> 
+ <Pine.LNX.4.64.0806231650190.13651@blonde.site>  <alpine.LFD.1.10.0806230928140.2926@woody.linux-foundation.org>  <b6a2187b0806231005x44b69918q111e865938c55e7@mail.gmail.com>  <alpine.LFD.1.10.0806231022300.2926@woody.linux-foundation.org>
+ <b6a2187b0806231115t55bf58cfgdc27a2d265258aab@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com>	<485947A8.8060801@goop.org> <4859511E.5050605@sgi.com>	<48596315.6020104@goop.org> <48596893.4040908@sgi.com>	<485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org>	<485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>	<485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com>	<485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com>	<485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>	<485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com> <m1skv7onvh.fsf@frodo.ebiederm.org> <485FD56B.1090303@sgi.com> <485FDE80.1010700@goop.org> <485FE5C9.3050305@sgi.com>
-In-Reply-To: <485FE5C9.3050305@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->>>>
->>>> To initialize the percpu data you do want to talk to the virtual address
->>>> at __per_coup_load.  But it is absolute Ugh. 
->>>> It might be worth saying something like.
->>>> .data.percpu.start : AT(.data.percpu.dummy - LOAD_OFFSET) {
->>>>     DATA(0)                       . = ALIGN(align);
->>>>         __per_cpu_load = . ;                   }
->>>> To make __per_cpu_load a relative symbol. ld has a bad habit of taking
->>>> symbols out of empty sections and making them absolute.  Which is why
->>>> I added the DATA(0).
 
-The syntax error is at this "DATA(0)" statement.  I don't find this as a
-linker script command or a macro.  What is it we're trying to do with this?
+On Tue, 24 Jun 2008, Jeff Chua wrote:
 
-Thanks,
-Mike
-...
->>> I'm not sure I understand the linker lingo enough to fill in the rest
->>> of the blanks... I've tried various versions around this framework and
->>> none have been accepted yet.
->>>
->>> #ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
->>> #define PERCPU(align)                                                   \
->>>         .data.percpu.start : AT(.data.percpu.dummy - LOAD_OFFSET) {     \
->>>                 DATA(0)                                                 \
->>>                 . = ALIGN(align);                                       \
->>>                 __per_cpu_load = .;                                     \
->>>                 *(.data.percpu.first)                                   \
->>>                 *(.data.percpu.shared_aligned)                          \
->>>                 *(.data.percpu)                                         \
->>>                 *(.data.percpu.page_aligned)                            \
->>>                 ____per_cpu_size = . - __per_cpu_load                   \
->>>         }                                                               \
->>> #else
+> On Tue, Jun 24, 2008 at 1:27 AM, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+> 
+> > On the other hand, if you add a trace to the "use_zero_page()" function to
+> > print out the vm_flags and other details, that probably would help.
+> 
+> Let me know if you still want me to test this.
+
+No, it's fine. It really was a bug, and a long-standing one, just one that 
+was probably practically impossible to hit before (because we used to only 
+do the FOLL_ANON logic on missing whole page tables, and just about any 
+access to any mapping even nearby the one you care about will fill in the 
+page tables - so you would have had to be really unlucky to trigger the 
+case before).
+
+The patch clearly fixes an issue, and makes the code more readable and 
+maintainable too, so I don't care what the exact mapping flags etc were.
+
+> Yeh, it works great! Thank you.
+
+Thanks for bisecting, reporting and testing. 
+
+			Linus
