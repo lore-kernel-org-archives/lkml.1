@@ -1,80 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbYFWIDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbYFWIJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757919AbYFWIDZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 04:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755637AbYFWICI
+	id S1755973AbYFWIJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 04:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYFWIJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 04:02:08 -0400
-Received: from mail.jambit.com ([62.245.207.83]:55854 "EHLO mail.jambit.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752642AbYFWICE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 04:02:04 -0400
-Message-ID: <485DFFB4.3080008@gmail.com>
-Date: Sun, 22 Jun 2008 09:31:00 +0200
-From: Michael Kerrisk <mtk.manpages@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Laurent Vivier <Laurent.Vivier@bull.net>
-CC: Samuel Thibault <samuel.thibault@ens-lyon.org>, ap@zip.com.au,
-       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: /proc 2.6.24 changes for guest CPU accounting
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 23 Jun 2008 04:09:15 -0400
+Received: from ic0245.upco.es ([130.206.70.245]:54161 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752448AbYFWIJN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 04:09:13 -0400
+Subject: Re: [Bug #10892] Sometime (often) X come out blank (black screen)on
+	 cold boot - Intel chipset
+From: Romano Giannetti <romano.giannetti@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: bugme-daemon <bugme-daemon@bugzilla.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <4mRZUF-hVeG.A.BxE._tpXIB@albercik>
+References: <RzbtSgMztjP.A.jRD._spXIB@albercik> 
+	<4mRZUF-hVeG.A.BxE._tpXIB@albercik>
+Content-Type: text/plain
+Date: Mon, 23 Jun 2008 10:09:10 +0200
+Message-Id: <1214208550.21984.1.camel@pern>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
+X-imss-version: 2.5
+X-imss-result: Passed
+X-imss-scores: Clean:22.04005 C:22 M:1 S:5 R:5
+X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Laurent,
+On Sun, 2008-06-22 at 19:54 +0200, Rafael J. Wysocki wrote:
 
-A note and patch from Samuel alerted me to your commits
-9ac52315d4cf5f561f36dabaf0720c00d3553162 and
-5e84cfde51cf303d368fcb48f22059f37b3872de, which in 2.6.24 changed /proc/stat
-and /proc/PID/stat.  Would you please CC me on kernel-userspace interface
-changes, so that they have a chance of getting documented in man-pages.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10892
+> Subject		: Sometime (often) X come out blank (black screen) on cold boot - Intel chipset
+> Submitter	: Romano Giannetti <romano.giannetti@gmail.com>
+> Date		: 2008-06-10 05:33 (13 days old)
+> References	: http://lkml.org/lkml/2008/6/10/137
 
-(I see that Andrew P tried to get something added to
-Documentation/filesystems/proc.txt, but that doesn't seem to have made it in.)
+I tried to reproduce it this morning with 2.6.26-rc7, but failed. So, it
+seems gone (but this was an Eisenbug, so I am not certain). 
 
-Below is a patch against the proc.5 man page by Samuel and I to document these
-changes.  Do the changes look okay to you?  The first part is the change for
-/proc/<pid>/stat, and the other is for /proc/stat.
+Romano 
 
-Cheers,
-
-Michael
-
-
-
-===================================================================
---- proc.5      (revision 4046)
-+++ proc.5      (working copy)
-@@ -753,6 +753,13 @@
-  .TP
-  \fIdelayacct_blkio_ticks\fP %llu (since Linux 2.6.18)
-  Aggregated block I/O delays, measured in clock ticks (centiseconds).
-+.TP
-+\fIguest_time\fP %lu (since Linux 2.6.24)
-+Guest time of the process (time spent running a virtual CPU
-+for a guest operating system), in centiseconds.
-+.TP
-+\fIcguest_time\fP %ld (since Linux 2.6.24)
-+Guest time of the process's children, in centiseconds.
-  .RE
-  .TP
-  .I /proc/[number]/statm
-@@ -1510,6 +1517,12 @@
-  .I steal
-  \- stolen time, which is the time spent in other operating systems when
-  running in a virtualized environment
-+
-+Since Linux 2.6.24, there is a ninth column,
-+.IR guest ,
-+which is the time spent running a virtual CPU for guest
-+operating systems under teh control of the Linux kernel.
-+.\" See Changelog entry for 5e84cfde51cf303d368fcb48f22059f37b3872de
-  .TP
-  \fIpage 5741 1808\fP
-  The number of pages the system paged in and the number that were paged
-
-
+-- 
+Romano Giannetti <romano.giannetti@gmail.com>
 
