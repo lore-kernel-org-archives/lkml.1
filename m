@@ -1,95 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763220AbYFWTcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763043AbYFWTcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763220AbYFWTcc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 15:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762957AbYFWTb7
+	id S1763043AbYFWTcS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 15:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762902AbYFWTbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 15:31:59 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:12919 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762950AbYFWTb4 (ORCPT
+	Mon, 23 Jun 2008 15:31:49 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42709 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762895AbYFWTbs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 15:31:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=dNmGNIQqcQOWwgXdk4YTJoTuQEZRwF7YFkwU5gzVPq6GSwpVsZ/NamVDeIJNttq4Ez
-         Ot4hkPZv2KuXB1Anv+rCxJdFIu/Auc49eFgFijD0FmxfOv1sN2DEsmOKe/GLG3BdXjv/
-         75YTebhriDBzRmIJbDJENnrHhnW/XCy1ylq4Y=
-Message-ID: <19f34abd0806231231l13a3c2fek6fb9d7c1858be0b6@mail.gmail.com>
-Date: Mon, 23 Jun 2008 21:31:56 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Arjan van de Ven" <arjan@linux.intel.com>
-Subject: Re: [PATCH] softirq softlockup debugging
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <485EC1A1.1020503@linux.intel.com>
+	Mon, 23 Jun 2008 15:31:48 -0400
+Date: Mon, 23 Jun 2008 12:30:04 -0700
+From: Greg KH <greg@kroah.com>
+To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
+Cc: Greg KH <gregkh@suse.de>, "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>,
+       Randy Dunlap <rdunlap@xenotime.net>, Willy Tarreau <w@1wt.eu>,
+       Michael Krufky <mkrufky@linuxtv.org>, alan@lxorguk.ukuu.org.uk,
+       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
+       akpm@linux-foundation.org, Chuck Wolber <chuckw@quantumlinux.com>,
+       stable@kernel.org, Rodrigo Rubira Branco <rbranco@la.checkpoint.com>
+Subject: Re: [stable] [patch 0/5] 2.6.25-stable review
+Message-ID: <20080623193004.GB15183@kroah.com>
+References: <20080622190111.GA20141@suse.de> <200806231419.08436.caglar@pardus.org.tr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20080622122845.GA10133@damson.getinternet.no>
-	 <485EC1A1.1020503@linux.intel.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200806231419.08436.caglar@pardus.org.tr>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 22, 2008 at 11:18 PM, Arjan van de Ven
-<arjan@linux.intel.com> wrote:
-> Vegard Nossum wrote:
->
-> Hi
->
-> I like the general idea a lot; some comments below on the patch
+On Mon, Jun 23, 2008 at 02:19:05PM +0300, S.Çağlar Onur wrote:
+> Hi Greg and -stable team;
+> 
+> 22 Haz 2008 Paz tarihinde, Greg KH şunları yazmıştı: 
+> > Responses should be made by Tuesday, June 24, 18:00:00 UTC.  Anything
+> > received after that time might be too late.
+> 
+> Please consider following commit for -stable also, it definetly fixes a boot failure caused by reported opps
+> 
+> commit 1f6ef2342972dc7fd623f360f84006e2304eb935
 
-Thanks.
+Thanks, I've added that one now as well.
 
->> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
->> index f1fc747..97d47cf 100644
->> --- a/include/linux/interrupt.h
->> +++ b/include/linux/interrupt.h
->> @@ -296,6 +296,9 @@ extern void softirq_init(void);
->>  extern void raise_softirq_irqoff(unsigned int nr);
->>  extern void raise_softirq(unsigned int nr);
->>  +#ifdef CONFIG_SOFTLOCKUP_SOFTIRQ_DEBUG
->> +extern void *get_last_softirq_action(int cpu);
->> +#endif
->
-> you don't need to ifdef prototypes....
-> (there's only one exception: if the prototype uses types that are ifdef'd
-> themselves, but that's not here)
->
->
-> In general... I don't like that this is a config option. I mean... is there
-> a really strong
-> reason why this shouldn't just always be there?
-
-I thought it would be unacceptable to always have it there given the
-performance hit. It's just bound to show up in some benchmark that
-some guy runs in the next couple of releases, isn't it? :-D
-
-(Or maybe it isn't that bad. I honestly have no idea. It should be
-just a single "store", but if I understood correctly, this loop is
-also frequently run.)
-
-Also, as spotted by Johannes Weiner, this is only an issue for
-handlers where interrupts are disabled inside the handler (because the
-handler itself is run with irqs enabled). Still, it would be nice to
-be able to catch those few warnings of this kind that showed up in
-kerneloops.org and for which we have no idea what happened or whether
-it has been fixed.
-
-Do you think I should resubmit without the CONFIG? (Does anybody else
-have an opinion?)
-
-Thank you so much for looking :-)
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+greg k-h
