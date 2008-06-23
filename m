@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbYFWIwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbYFWI5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757291AbYFWIwx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 04:52:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbYFWIwp
+	id S1757314AbYFWI5S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 04:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbYFWI5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 04:52:45 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42604 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752200AbYFWIwo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 04:52:44 -0400
-Date: Mon, 23 Jun 2008 10:53:38 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Andreas Schwab <schwab@suse.de>
-Cc: Tejun Heo <tj@kernel.org>, kernel list <linux-kernel@vger.kernel.org>,
-       benh@kernel.crashing.org, jgarzik@pobox.com,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
+	Mon, 23 Jun 2008 04:57:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35314 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751612AbYFWI5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 04:57:03 -0400
+Message-ID: <485F6540.6000907@kernel.org>
+Date: Mon, 23 Jun 2008 17:56:32 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@suse.cz>
+CC: Andreas Schwab <schwab@suse.de>,
+       kernel list <linux-kernel@vger.kernel.org>, benh@kernel.crashing.org,
+       jgarzik@pobox.com, IDE/ATA development list <linux-ide@vger.kernel.org>,
        Trivial patch monkey <trivial@kernel.org>
 Subject: Re: sata_svw data corruption, strange problems
-Message-ID: <20080623085338.GE1850@elf.ucw.cz>
-References: <20080617093602.GA28140@elf.ucw.cz> <485EF061.3010601@kernel.org> <20080623082055.GB1850@elf.ucw.cz> <je63s0sfxv.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <je63s0sfxv.fsf@sykes.suse.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080617093602.GA28140@elf.ucw.cz> <485EF061.3010601@kernel.org> <20080623082055.GB1850@elf.ucw.cz> <je63s0sfxv.fsf@sykes.suse.de> <20080623085338.GE1850@elf.ucw.cz>
+In-Reply-To: <20080623085338.GE1850@elf.ucw.cz>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (hera.kernel.org [127.0.0.1]); Mon, 23 Jun 2008 08:56:39 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-06-23 10:39:40, Andreas Schwab wrote:
-> Pavel Machek <pavel@suse.cz> writes:
+Pavel Machek wrote:
+> On Mon 2008-06-23 10:39:40, Andreas Schwab wrote:
+>> Pavel Machek <pavel@suse.cz> writes:
+>>
+>>> +	   controller, the controller could hang. In other cases it
+>>> +	   could return partial data returning in data
+>>> +	   corruption. This problem has been seen in PPC systems and
+>> s/returning/resulting/ ?
 > 
-> > +	   controller, the controller could hang. In other cases it
-> > +	   could return partial data returning in data
-> > +	   corruption. This problem has been seen in PPC systems and
+> Fix thinko in sata_svw comment.
 > 
-> s/returning/resulting/ ?
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-Fix thinko in sata_svw comment.
-
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-
-diff --git a/drivers/ata/sata_svw.c b/drivers/ata/sata_svw.c
-index fb13b82..d6313f1 100644
---- a/drivers/ata/sata_svw.c
-+++ b/drivers/ata/sata_svw.c
-@@ -269,7 +269,7 @@ static void k2_bmdma_start_mmio(struct a
- 	   would become confused as to what to do with the data.  In
- 	   the worst case when all the data is returned back to the
- 	   controller, the controller could hang. In other cases it
--	   could return partial data returning in data
-+	   could return partial data resulting in data
- 	   corruption. This problem has been seen in PPC systems and
- 	   can also appear on an system with very fast disks, where
- 	   the SATA controller is sitting behind a number of bridges,
-
+Please collapse into one patch.  Thanks.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+tejun
