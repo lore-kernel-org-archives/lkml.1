@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbYFWKFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757381AbYFWKFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758AbYFWKFh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 06:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbYFWKFH
+	id S1757381AbYFWKFu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 06:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbYFWKFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 06:05:07 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:16186 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476AbYFWKFF (ORCPT
+	Mon, 23 Jun 2008 06:05:13 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:41634 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754664AbYFWKFL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 06:05:05 -0400
+	Mon, 23 Jun 2008 06:05:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
          :mime-version:content-type:content-transfer-encoding
          :content-disposition:message-id;
-        b=WS3HFOU9XzLEWj3Yz6l57Nyh65by7wPsUkTzqz29SV6sGVaBTqrStPxKkQP22Hitjf
-         uOaOZ1JhzT99+t2UIlbMI/JYYrkcAWFF0TwfXCdEvEHsPWZBcMhNidoDUkr3pYDUfC/G
-         GF2iUv9g/tfvKoORFJzBQEnxP3EFMkf5KRYb8=
+        b=gC50yi/F08WoEFwj9I2VUCvu12V+TpbekxGbGNhuzdHCms49fBQX3zoQ29/IoFrCVK
+         wuCDHBctaYL8Hhk+N1Nk9Ju/XlBDzxfLHhRnPlwHCin2oH66a5nSiBoVAgWId159P1/U
+         R1FAfuOT4TFXTsNekvvD6kGhXz7Yb/VPe7pU0=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] x86: cleanup min_low_pfn
-Date: Mon, 23 Jun 2008 03:06:14 -0700
+Subject: [PATCH] x86: move reservetop and vmalloc parsing to pgtable_32.c
+Date: Mon, 23 Jun 2008 03:04:14 -0700
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 References: <200806180215.53755.yhlu.kernel@gmail.com> <200806220245.39289.yhlu.kernel@gmail.com> <200806220246.58958.yhlu.kernel@gmail.com>
@@ -33,66 +33,113 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806230306.14276.yhlu.kernel@gmail.com>
+Message-Id: <200806230304.14555.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-for 32bit
-we already had early_res support, so don't need to track min_low_pfn.
-keep it to 0 always.
 
-also use init_bootmem_node instead of init_bootmem, so don't touch
-min_low_pfn.
+also change reserve_top_address to __init attibute
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
 ---
- arch/x86/mm/init_32.c |   10 ++++------
- arch/x86/mm/init_64.c |    4 +++-
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ arch/x86/kernel/setup_32.c |   33 ---------------------------------
+ arch/x86/mm/pgtable_32.c   |   35 ++++++++++++++++++++++++++++++++++-
+ 2 files changed, 34 insertions(+), 34 deletions(-)
 
-Index: linux-2.6/arch/x86/mm/init_32.c
+Index: linux-2.6/arch/x86/kernel/setup_32.c
 ===================================================================
---- linux-2.6.orig/arch/x86/mm/init_32.c
-+++ linux-2.6/arch/x86/mm/init_32.c
-@@ -565,11 +565,7 @@ void __init find_low_pfn_range(void)
+--- linux-2.6.orig/arch/x86/kernel/setup_32.c
++++ linux-2.6/arch/x86/kernel/setup_32.c
+@@ -185,39 +185,6 @@ static inline void copy_edd(void)
+ }
+ #endif
+ 
+-/*
+- * vmalloc=size forces the vmalloc area to be exactly 'size'
+- * bytes. This can be used to increase (or decrease) the
+- * vmalloc area - the default is 128m.
+- */
+-static int __init parse_vmalloc(char *arg)
+-{
+-	if (!arg)
+-		return -EINVAL;
+-
+-	__VMALLOC_RESERVE = memparse(arg, &arg);
+-	return 0;
+-}
+-early_param("vmalloc", parse_vmalloc);
+-
+-/*
+- * reservetop=size reserves a hole at the top of the kernel address space which
+- * a hypervisor can load into later.  Needed for dynamically loaded hypervisors,
+- * so relocating the fixmap can be done before paging initialization.
+- */
+-static int __init parse_reservetop(char *arg)
+-{
+-	unsigned long address;
+-
+-	if (!arg)
+-		return -EINVAL;
+-
+-	address = memparse(arg, &arg);
+-	reserve_top_address(address);
+-	return 0;
+-}
+-early_param("reservetop", parse_reservetop);
+-
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 
+ static bool do_relocate_initrd = false;
+Index: linux-2.6/arch/x86/mm/pgtable_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/pgtable_32.c
++++ linux-2.6/arch/x86/mm/pgtable_32.c
+@@ -152,7 +152,7 @@ EXPORT_SYMBOL(__FIXADDR_TOP);
+  * Can be used to relocate the fixmap area and poke a hole in the top
+  * of kernel address space to make room for a hypervisor.
+  */
+-void reserve_top_address(unsigned long reserve)
++void __init reserve_top_address(unsigned long reserve)
  {
- 	/* it could update max_pfn */
- 
--	/*
--	 * partially used pages are not usable - thus
--	 * we are rounding upwards:
--	 */
--	min_low_pfn = PFN_UP(init_pg_tables_end);
-+	/* max_low_pfn is 0, we already have early_res support */
- 
- 	max_low_pfn = max_pfn;
- 	if (max_low_pfn > MAXMEM_PFN) {
-@@ -694,7 +690,9 @@ void __init setup_bootmem_allocator(void
- 		panic("Cannot find bootmem map of size %ld\n", bootmap_size);
- 	reserve_early(bootmap, bootmap + bootmap_size, "BOOTMAP");
- 
--	bootmap_size = init_bootmem(bootmap >> PAGE_SHIFT, max_low_pfn);
-+	/* don't touch min_low_pfn */
-+	bootmap_size = init_bootmem_node(NODE_DATA(0), bootmap >> PAGE_SHIFT,
-+					 min_low_pfn, max_low_pfn);
- 	printk(KERN_INFO "  mapped low ram: 0 - %08lx\n",
- 		 max_pfn_mapped<<PAGE_SHIFT);
- 	printk(KERN_INFO "  low ram: %08lx - %08lx\n",
-Index: linux-2.6/arch/x86/mm/init_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/init_64.c
-+++ linux-2.6/arch/x86/mm/init_64.c
-@@ -633,7 +633,9 @@ void __init initmem_init(unsigned long s
- 				 PAGE_SIZE);
- 	if (bootmap == -1L)
- 		panic("Cannot find bootmem map of size %ld\n", bootmap_size);
--	bootmap_size = init_bootmem(bootmap >> PAGE_SHIFT, end_pfn);
-+	/* don't touch min_low_pfn */
-+	bootmap_size = init_bootmem_node(NODE_DATA(0), bootmap >> PAGE_SHIFT,
-+					 0, end_pfn);
- 	e820_register_active_regions(0, start_pfn, end_pfn);
- 	free_bootmem_with_active_regions(0, end_pfn);
- 	early_res_to_bootmem(0, end_pfn<<PAGE_SHIFT);
+ 	BUG_ON(fixmaps_set > 0);
+ 	printk(KERN_INFO "Reserving virtual address space above 0x%08x\n",
+@@ -160,3 +160,36 @@ void reserve_top_address(unsigned long r
+ 	__FIXADDR_TOP = -reserve - PAGE_SIZE;
+ 	__VMALLOC_RESERVE += reserve;
+ }
++
++/*
++ * vmalloc=size forces the vmalloc area to be exactly 'size'
++ * bytes. This can be used to increase (or decrease) the
++ * vmalloc area - the default is 128m.
++ */
++static int __init parse_vmalloc(char *arg)
++{
++	if (!arg)
++		return -EINVAL;
++
++	__VMALLOC_RESERVE = memparse(arg, &arg);
++	return 0;
++}
++early_param("vmalloc", parse_vmalloc);
++
++/*
++ * reservetop=size reserves a hole at the top of the kernel address space which
++ * a hypervisor can load into later.  Needed for dynamically loaded hypervisors,
++ * so relocating the fixmap can be done before paging initialization.
++ */
++static int __init parse_reservetop(char *arg)
++{
++	unsigned long address;
++
++	if (!arg)
++		return -EINVAL;
++
++	address = memparse(arg, &arg);
++	reserve_top_address(address);
++	return 0;
++}
++early_param("reservetop", parse_reservetop);
