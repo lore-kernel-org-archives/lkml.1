@@ -1,105 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbYFWItA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbYFWIt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757996AbYFWItA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 04:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbYFWIsx
+	id S1755899AbYFWIt0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 04:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbYFWItQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 04:48:53 -0400
-Received: from mx1.suse.de ([195.135.220.2]:47617 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752566AbYFWIsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 04:48:51 -0400
-Date: Mon, 23 Jun 2008 10:48:46 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Luis Carlos Cobo <luisca@cozybit.com>,
-       Steve Whitehouse <SteveW@acm.org>,
-       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH]rcu,inet,fib_trie,route,radix-tree,DECnet,mac80211: fix meaningless rcu_dereference(local_var)
-Message-ID: <20080623084846.GA6899@wotan.suse.de>
-References: <485CCFC9.2070007@cn.fujitsu.com> <200806231236.51341.nickpiggin@yahoo.com.au> <485F3638.5010305@cn.fujitsu.com>
+	Mon, 23 Jun 2008 04:49:16 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47818 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756035AbYFWItP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 04:49:15 -0400
+Subject: Re: /proc 2.6.24 changes for guest CPU accounting
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+To: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>, ap@zip.com.au,
+       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <485DFFB4.3080008@gmail.com>
+References: <485DFFB4.3080008@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Organization: Bull S.A.S.
+Date: Mon, 23 Jun 2008 10:48:45 +0200
+Message-Id: <1214210925.3838.7.camel@frecb07144>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <485F3638.5010305@cn.fujitsu.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 01:35:52PM +0800, Lai Jiangshan wrote:
-> Add CC: Linus Torvalds
+Le dimanche 22 juin 2008 à 09:31 +0200, Michael Kerrisk a écrit :
+> Hi Laurent,
+
+Hi Michael,
+
+> A note and patch from Samuel alerted me to your commits
+> 9ac52315d4cf5f561f36dabaf0720c00d3553162 and
+> 5e84cfde51cf303d368fcb48f22059f37b3872de, which in 2.6.24 changed /proc/stat
+> and /proc/PID/stat.  Would you please CC me on kernel-userspace interface
+> changes, so that they have a chance of getting documented in man-pages.
 > 
-> Nick Piggin wrote:
-> > On Saturday 21 June 2008 19:54, Lai Jiangshan wrote:
-> > 
-> >> diff --git a/lib/radix-tree.c b/lib/radix-tree.c
-> >> index 169a2f8..bfae4e2 100644
-> >> --- a/lib/radix-tree.c
-> >> +++ b/lib/radix-tree.c
-> >> @@ -703,9 +703,9 @@ __lookup(struct radix_tree_node *slot, void **results,
-> >> unsigned long index, for (i = index & RADIX_TREE_MAP_MASK; i <
-> >> RADIX_TREE_MAP_SIZE; i++) { struct radix_tree_node *node;
-> >>  		index++;
-> >> -		node = slot->slots[i];
-> >> +		node = rcu_dereference(slot->slots[i]);
-> >>  		if (node) {
-> >> -			results[nr_found++] = rcu_dereference(node);
-> >> +			results[nr_found++] = node;
-> >>  			if (nr_found == max_items)
-> >>  				goto out;
-> >>  		}
-> >> @@ -815,7 +815,7 @@ __lookup_tag(struct radix_tree_node *slot, void
-> >> **results, unsigned long index, index++;
-> >>  				if (!tag_get(slot, tag, j))
-> >>  					continue;
-> >> -				node = slot->slots[j];
-> >> +				node = rcu_dereference(slot->slots[j]);
-> >>  				/*
-> >>  				 * Even though the tag was found set, we need to
-> >>  				 * recheck that we have a non-NULL node, because
-> >> @@ -827,7 +827,6 @@ __lookup_tag(struct radix_tree_node *slot, void
-> >> **results, unsigned long index, * rely on its value remaining the same).
-> >>  				 */
-> >>  				if (node) {
-> >> -					node = rcu_dereference(node);
-> >>  					results[nr_found++] = node;
-> >>  					if (nr_found == max_items)
-> >>  						goto out;
-> > 
-> > This was done like this IIRC to avoid the barrier when possible.
-> > 
-> > 
-> > 
-> This(http://lkml.org/lkml/2008/4/20/217) shows why rcu_dereference(local_var)
-> is meaningless. And why not use smp_read_barrier_depends() here?
+> (I see that Andrew P tried to get something added to
+> Documentation/filesystems/proc.txt, but that doesn't seem to have made it in.)
+> 
+> Below is a patch against the proc.5 man page by Samuel and I to document these
+> changes.  Do the changes look okay to you?  The first part is the change for
+> /proc/<pid>/stat, and the other is for /proc/stat.
+
+Thank you for that. It seems correct to me (except a typo).
+
+You must also notes that "user time" includes "guest time", if you want
+real "user time" you must subtract "guest time".
+The "guest time" is included in "user time" to not loose it when the
+"reader" is not aware of the "guest time".
+
+> Cheers,
+> 
+> Michael
+
+Thank you,
+Laurent
  
-It is "meaningless" in that it isn't being applied as the API is supposed
-to, however it does provide the barrier that's required. I guess read
-barrier depends could just be used instead, although I like the self
-commenting nature of the rcu_dereference, even if it is not quite applied
-correctly, the reader can easily see the intention.
+> 
+> 
+> ===================================================================
+> --- proc.5      (revision 4046)
+> +++ proc.5      (working copy)
+> @@ -753,6 +753,13 @@
+>   .TP
+>   \fIdelayacct_blkio_ticks\fP %llu (since Linux 2.6.18)
+>   Aggregated block I/O delays, measured in clock ticks (centiseconds).
+> +.TP
+> +\fIguest_time\fP %lu (since Linux 2.6.24)
+> +Guest time of the process (time spent running a virtual CPU
+> +for a guest operating system), in centiseconds.
+> +.TP
+> +\fIcguest_time\fP %ld (since Linux 2.6.24)
+> +Guest time of the process's children, in centiseconds.
+>   .RE
+>   .TP
+>   .I /proc/[number]/statm
+> @@ -1510,6 +1517,12 @@
+>   .I steal
+>   \- stolen time, which is the time spent in other operating systems when
+>   running in a virtualized environment
+> +
+> +Since Linux 2.6.24, there is a ninth column,
+> +.IR guest ,
+> +which is the time spent running a virtual CPU for guest
+> +operating systems under teh control of the Linux kernel.
 
-I *think* it should even do the right thing WRT the access_once macro here,
-and cause node not to be reloaded from source, but I could be wrong on that.
+typo: "teh" -> "the"
 
+> +.\" See Changelog entry for 5e84cfde51cf303d368fcb48f22059f37b3872de
+>   .TP
+>   \fIpage 5741 1808\fP
+>   The number of pages the system paged in and the number that were paged
+> 
+> 
+> 
+> 
+-- 
+------------- Laurent.Vivier@bull.net ---------------
+"The best way to predict the future is to invent it."
+- Alan Kay
 
-> I guessed somebody use rcu_dereference(local_var) in if-statements to avoid the
-> barrier when possible, and I made this patch(http://lkml.org/lkml/2008/6/21/29),
-> but it is incorrect.
-
-So it doesn't help me ;)
-
-I'm not sure what the best way to go is, but I would ask Paul for ideas
-if he's not too busy.
-
-In reality, the barriers probably don't matter much (but I'd really love
-to have an Alpha to test it on :)), but I still try to avoid them as much
-as possible. For the radix-tree as used by pagecache, it is a completely
-usual operation to lookup non existing elements, so we are talking about
-a fastpath of sorts...
