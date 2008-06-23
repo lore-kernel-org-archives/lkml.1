@@ -1,122 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbYFWGmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbYFWGwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754476AbYFWGmP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 02:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751606AbYFWGl6
+	id S1754336AbYFWGwj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 02:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbYFWGw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 02:41:58 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38474 "EHLO gate.crashing.org"
+	Mon, 23 Jun 2008 02:52:29 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:39356 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750939AbYFWGl6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 02:41:58 -0400
-Subject: Re: [PATCH 1/4] ide-pmac: media-bay support fixes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1214200453.8011.232.camel@pasglop>
-References: <200806162124.43005.bzolnier@gmail.com>
-	 <1213673979.8129.156.camel@pasglop> <1213674572.8129.159.camel@pasglop>
-	 <200806171141.08865.bzolnier@gmail.com> <1214199343.8011.230.camel@pasglop>
-	 <1214200453.8011.232.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 23 Jun 2008 16:41:52 +1000
-Message-Id: <1214203312.8011.246.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	id S1750997AbYFWGw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 02:52:28 -0400
+Date: Mon, 23 Jun 2008 09:50:34 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: lkml <linux-kernel@vger.kernel.org>, rtc-linux@googlegroups.com
+Subject: Re: [patch 2.6.26-rc7] <linux/bcd.h> space reduction
+Message-ID: <20080623065034.GG20122@cs181140183.pp.htv.fi>
+References: <200806221954.37088.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200806221954.37088.david-b@pacbell.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Don't panic. It looks like it's something else in linux-next that's
-> changing some ifdef's in the media-bay code which is causing that.
+On Sun, Jun 22, 2008 at 07:54:36PM -0700, David Brownell wrote:
+> This updates <linux/bcd.h> to define the key routines as static
+> constant functions, which the macros will then call.
 > 
-> I managed to pull linux next at the merge point with your tree and
-> things apply. I'll use that to test.
+> In effect this lets each user of these BCD routines shrink their
+> codespace, when GCC observes that's a win, by using N function calls
+> and one copy of the routines, instead of N inlined copies of these
+> constant functions.
+> 
+> These routines aren't used in speed-critical code.  Almost all callers
+> are from the RTC framework.  Typical per-driver savings top 200 bytes.
+> On one RTC driver that's almost a 20% reduction in runtime I-space
+> footprint; for many, closer to 10%; for rtc-cmos it's about 4%.
 
-Ok, it doesn't work properly. It gets error trying to register
-the IDE device. Booting with a CD drive in and no disk in the drive
-gives the log below.
+The patch breaks the compilation:
 
-I've verified that it works without your patches. If I apply only patch
-1, it doesn't build due to some wrong construct in the probe code. I've
-hand fixed it, but then I hit a BUG_ON in ide_probe_port() (line 773).
+<--  snip  -->
 
-mediabay boot time messages (before IDE probing) are:
+...
+  CC      drivers/rtc/rtc-ds1511.o
+In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/rtc/rtc-ds1511.c:17:
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/bcd.h:13: error: expected ‘)’ before ‘val’
+...
+make[3]: *** [drivers/rtc/rtc-ds1511.o] Error 1
 
-mediabay0: Registered Heathrow media-bay
-mediabay0: powering down
-mediabay0: switching to 3
-mediabay0: powering up
-mediabay0: enabling (kind:3)
-mediabay0: waiting reset (kind:3)
-mediabay0: waiting IDE reset (kind:3)
-mediabay0: waiting IDE ready (kind:3)
-mediabay0: up before IDE init
-mediabay1: Registered Heathrow media-bay
-mediabay1: powering down
-mediabay1: switching to 0
-mediabay1: powering up
-mediabay1: enabling (kind:0)
-mediabay1: waiting reset (kind:0)
-mediabay1: bay is up (kind:0)
+<--  snip  -->
 
-Later, IDE registers:
+Additionally, I'd suggest to make them out-of-line functions 
+instead of shipping multiple copies in different object files.
 
-(ide0 is another controller, only ide1 and ide2 are media bay based, and
-ide2 has no device on it at all).
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> ---
+>  include/linux/bcd.h |   16 ++++++++++++++--
+>  1 file changed, 14 insertions(+), 2 deletions(-)
+> 
+> --- a/include/linux/bcd.h	2008-06-21 22:26:14.000000000 -0700
+> +++ b/include/linux/bcd.h	2008-06-21 22:37:48.000000000 -0700
+> @@ -10,8 +10,20 @@
+>  #ifndef _BCD_H
+>  #define _BCD_H
+>  
+> -#define BCD2BIN(val)	(((val) & 0x0f) + ((val)>>4)*10)
+> -#define BIN2BCD(val)	((((val)/10)<<4) + (val)%10)
+> +static int __bcd2bin(u8 val) __attribute_const__ __maybe_unused;
+> +static int __bcd2bin(u8 val)
+> +{
+> +	return (val & 0x0f) + (val >> 4) * 10;
+> +}
+> +
+> +static u8 __bin2bcd(unsigned val) __attribute_const__ __maybe_unused;
+> +static u8 __bin2bcd(unsigned val)
+> +{
+> +	return ((val/10) << 4) + val % 10;
+> +}
+> +
+> +#define BCD2BIN(val)	__bcd2bin(val)
+> +#define BIN2BCD(val)	__bin2bcd(val)
+>  
+>  /* backwards compat */
+>  #define BCD_TO_BIN(val) ((val)=BCD2BIN(val))
 
-ide-pmac: Found Apple Heathrow ATA controller (macio), bus ID 1 (mediabay), irq  35
-ide1 at 0xc7020000-0xc7020070,0xc7020160 on irq 35
-ide-pmac: Found Apple Heathrow ATA controller (macio), bus ID 4 (mediabay), irq  67
-ide2 at 0xc7022000-0xc7022070,0xc7022160 on irq 67
-mediabay0: waiting IDE ready (kind:3)
-mediabay 0, registering IDE...
-IDE register error
-mediabay0: powering down
+cu
+Adrian
 
- .../...
+-- 
 
-mediabay0: end of power down
-mediabay0: switching to 3
-mediabay0: powering up
-mediabay0: enabling (kind:3)
-mediabay0: waiting reset (kind:3)
-mediabay0: waiting IDE reset (kind:3)
-
- .../...
-
-mediabay0: waiting IDE ready (kind:3)
-mediabay 0, registering IDE...
-IDE register error
-mediabay0: powering down
-mediabay0: end of power down
-mediabay0: switching to 3
-mediabay0: powering up
-mediabay0: enabling (kind:3)
-mediabay0: waiting reset (kind:3)
-mediabay0: waiting IDE reset (kind:3)
-mediabay0: waiting IDE ready (kind:3)
-mediabay 0, registering IDE...
-IDE register error
-mediabay0: powering down
-mediabay0: end of power down
-mediabay0: switching to 3
-mediabay0: powering up
-mediabay0: enabling (kind:3)
-mediabay0: waiting reset (kind:3)
-mediabay0: waiting IDE reset (kind:3)
-mediabay0: waiting IDE ready (kind:3)
-mediabay 0, registering IDE...
-IDE register error
-mediabay0: powering down
-media-bay 0, IDE device badly inserted or unrecognised
-mediabay0: end of power down
-
-Cheers,
-Ben.
-
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
