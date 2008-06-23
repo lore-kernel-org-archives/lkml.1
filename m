@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755677AbYFWHQB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbYFWHSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755677AbYFWHQB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 03:16:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYFWHPw
+	id S1755879AbYFWHSO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 03:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbYFWHR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 03:15:52 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:40999 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752258AbYFWHPv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 03:15:51 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=csfIKHXioAXbzNs5RaPk/zyJYQTy7e18ibyKr3QGSmZEnn/hQGk4kL5oYnSmB3LdQQh6w78/gs/v5QYTcq2uf168fMbqd02pUjGDeNcjtOgnjDt2Zn/p55g0T9m+DzMZZj6hLhyhfIUyDhvCQ6HIK1/UJ11h5Lo27t54+tOZcEU=  ;
-X-YMail-OSG: j1FAYQQVM1luolqsWmoCbrCNcjEwD4bDg5v0fP7djIzLhAIpARb7j9EPCcqoACjrdIdBif_7gRtkM_q16H9Af7kRQimK7VifIj6ch7ptEThpFZQ_VrCLvpf8LoCIVw8X5Sg-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [patch 2.6.26-rc7] <linux/bcd.h> space reduction
-Date: Mon, 23 Jun 2008 00:15:49 -0700
-User-Agent: KMail/1.9.9
-Cc: lkml <linux-kernel@vger.kernel.org>, rtc-linux@googlegroups.com
-References: <200806221954.37088.david-b@pacbell.net> <20080623065034.GG20122@cs181140183.pp.htv.fi>
-In-Reply-To: <20080623065034.GG20122@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Mon, 23 Jun 2008 03:17:59 -0400
+Received: from mga14.intel.com ([143.182.124.37]:30394 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750924AbYFWHR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 03:17:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,688,1204531200"; 
+   d="scan'208";a="1209736"
+Subject: Re: [PATCH] x86 boot: Pass E820 memory map entries more than 128
+	via linked list of setup data
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: mingo@elte.hu, hpa@zytor.com, andi@firstfloor.org, mingo@redhat.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com
+In-Reply-To: <20080623015326.bec9a75d.pj@sgi.com>
+References: <1213155219.13392.2.camel@caritas-dev.intel.com>
+	 <20080618114511.GB28838@elte.hu>
+	 <1214200441.25753.5.camel@caritas-dev.intel.com>
+	 <20080623015326.bec9a75d.pj@sgi.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806230015.49973.david-b@pacbell.net>
+Date: Mon, 23 Jun 2008 15:21:26 +0800
+Message-Id: <1214205686.26437.18.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 23 Jun 2008 07:17:54.0758 (UTC) FILETIME=[41512660:01C8D501]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 22 June 2008, Adrian Bunk wrote:
-> On Sun, Jun 22, 2008 at 07:54:36PM -0700, David Brownell wrote:
-> > This updates <linux/bcd.h> to define the key routines as static
-> > constant functions, which the macros will then call.
+On Mon, 2008-06-23 at 01:53 -0500, Paul Jackson wrote:
+> Huang Ying wrote:
+> > With this patch, your previous patch:
 > > 
-> > 	... Typical per-driver savings top 200 bytes. ...
+> > x86 boot: add code to add BIOS provided EFI memory entries to kernel
+> > 
+> > is not necessary, so can be reversed.
+> > 
+> > What do you think about that?
 > 
-> The patch breaks the compilation:
-
-Needs to #include <linux/types.h> then; "u8" isn't always known.
-Or maybe just spell it out "unsigned char".
-
-
->	...
+> ... the same thing I thought about it when you asked this question
+> last month, in post http://lkml.org/lkml/2008/5/26/307.
 > 
-> Additionally, I'd suggest to make them out-of-line functions 
-> instead of shipping multiple copies in different object files.
+> Please see my reply in http://lkml.org/lkml/2008/5/28/59.
+> It was lengthy and carefully researched, so I won't repeat
+> it here.
+> 
+> In short, we still need it.  The key kernel routine that adds
+> additional EFI entries to the existing E820 map is just 20 or so
+> fairly easy lines.  We agree that it doesn't handle some of what your
+> more extended work with a linked list of setup data handles (such as
+> additional EDD entries), but it does handle additional memory map
+> (node) entries using the existing data structure interface between
+> the firmware and kernel.
 
-That was one of the options.  I thought I'd start with something
-simpler, and see what folk thought.
+EFI memmap based code versus E820 EXT based code:
 
-Where would that be ... lib/bcd.c, always linked?  And if it goes
-that way I'd prefer bcd2bin() and bin2bcd(), not these names.  A
-small impetus to have LESS SOURCE CODE SHOUTING AT ME.
+1. Copying from EFI memory map to E820 map in kernel is not necessary,
+because now it can be done in boot-loader with extended E820 memory map
+via linked list of setup data.
 
-- Dave
+2. EFI memmap based code only works when CONFIG_EFI is defined, that is
+EFI runtime service is enabled. If you do not want to enable EFI runtime
+services, you lose some memory map entries. Considering that kexec does
+not support EFI runtime service so far.
+
+3. EFI memmap based code is EFI specific, while E820 EXT based code is
+general. It can be used for such as legacy BIOS, LinuxBIOS, kexec, etc.
+
+4. Current EFI memmap based code does not work properly in all
+situation, for example it can not works with kernel parameter:
+"memmap=exactmap, memmap=<xxx>, ...", "mem=<xxx>" or "noefi".
+
+So, I think it is better to remove "EFI memmap based code".
+
+Best Regards,
+Huang Ying
+
