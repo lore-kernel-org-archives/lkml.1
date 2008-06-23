@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752442AbYFWHBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754909AbYFWHNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752442AbYFWHBS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 03:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYFWHBB
+	id S1754909AbYFWHNc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 03:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYFWHNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 03:01:01 -0400
-Received: from n58.bullet.mail.sp1.yahoo.com ([98.136.44.46]:40652 "HELO
-	n58.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751495AbYFWHBA (ORCPT
+	Mon, 23 Jun 2008 03:13:20 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:30323 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751904AbYFWHNT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 03:01:00 -0400
-X-Greylist: delayed 327 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Jun 2008 03:01:00 EDT
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 477325.33230.bm@omp407.mail.sp1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=It2fRrJHew7EsFCANBCsfXa6WrIUhZWOYDFJWuFUn0jCwot2/2c6DmSc1LBfifFz5DhoSJG/QiAU/hOSgkdZ6L5FbVPbLWQkDSfinb0OHD7ZdeE72rAjLlo16gzdM8OFsa9jcU5d91dx8BNMYif0xmfRQxkJJGaHLBNl61NI+/U=;
-X-Mailer: YahooMailWebService/0.7.199
-Date: Sun, 22 Jun 2008 23:55:29 -0700 (PDT)
-From: barry bouwsma <free_beer_for_all@yahoo.com>
-Reply-To: free_beer_for_all@yahoo.com
-Subject: Broken ttusb-dec DVB support since, well, year(s)
-To: linux-kernel@vger.kernel.org
+	Mon, 23 Jun 2008 03:13:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=FxVPtrJZWojv2D3GSZtAtJcsWC8lQur9/e+SDRonksUB1BjB44OeyJEh+VCnPOkjy3
+         MI7lkZ/SMhvbqCNpnmGvuXiKlTmjC884nWGwTOS6M4HPEr47GeMqZvmFXInQ8yNTHJm3
+         E3Ore5yCt644sC77m6EDzxlJo+Xekq820yWAc=
+Message-ID: <dd18b0c30806230013x5446991bi9eba7623ffaae131@mail.gmail.com>
+Date: Mon, 23 Jun 2008 07:13:17 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: stuck tcp connections 2.6.26-rc7
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+In-Reply-To: <20080622205927.301501e7.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <399205.76644.qm@web46108.mail.sp1.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30806221109t2ff73f9ai52f6716748648a79@mail.gmail.com>
+	 <20080622205927.301501e7.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Moin moin!
-
-Sorry I'm posting this here rather than to the more specific
-linux-dvb@ mailing list where I'd rather this appear, but my
-attempts to surbscibe!@! to that list have been rejected, first
-as an invalid e-mail, then an insecure e-mail, and I've been
-unable to progress further from this throwaway account.
-
-Feel free to redirect/repost this message there if you're a
-qualified developer and feel it's more appropriate.
-
-
-There is a change that was introduced to the file
-drivers/media/dvb/ttusb-dec/ttusbdecfe.c
-sometime in the not-too-recent past and which resulted in breaking
-the support which early 2.6.1x kernels had for my Hauppauge
-DEC-3000s DVB-S device.
-
-The particular code (below) checks the value in a register to
-decide the tuning status -- hitherto one had to assume the device
-was properly tuned and receiving signal and everything.
-
-
-     60         switch(result[3]) {
-     61                 case 1:  /* not tuned yet */
-     62                 case 2:  /* no signal/no lock*/
-     63                         break;
-     64                 case 3:  /* signal found and locked*/
-     65                         *status = FE_HAS_SIGNAL | FE_HAS_VITERBI |
-     66                         FE_HAS_SYNC | FE_HAS_CARRIER | FE_HAS_LOCK;
-     67                         break;
-     68                 case 4:
-     69                         *status = FE_TIMEDOUT;
-     70                         break;
-     71                 default:
-     72                         pr_info("%s: returned unknown value: %d\n",
-     73                                 __func__, result[3]);
-     74                         return -EIO;
-     75         }
+On Mon, Jun 23, 2008 at 3:59 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Sun, 22 Jun 2008 18:09:16 +0000 "Justin Mattock" <justinmattock@gmail.com> wrote:
+>
+>> Hello; I too am experiencing internet connectivity problems, for  a
+>> while I thought
+>> It was due to low bandwidth(or being ddos attacked) but yesterday I
+>> noticed with watch netstat -ntu
+>> send-Q was stuck on a number; the connection would not go to TIME_WAIT
+>> resulting in music to pause, and t.v. to freeze.
+>> In my experiences running xmms streaming music is fine, no problems,
+>> but as soon as
+>> you watch something with flash player the stream start's getting
+>> really bad. In the past with older kernel's
+>> I usually can watch t.v.(with flash) and stream music at the same time
+>> without any trouble.
+>> lately I've been Running the kernel in No forced Preemption with a
+>> time frequency at 100. having the kernel set in this mode really shows
+>> the connection problems, but if I change the preemption to another,
+>> and bump up the timer frequency the poor internet connection is not as
+>> bad(or stuck tcp) but still prevalent. more pops in the music, and
+>> sudden internet loss for around five seconds, then goes back
+>> So from over here streaming music has no problems from what I can see,
+>> but as soon as I watch media, it becomes a mess.
+>
+> (cc netdev)
+>
 
 
-Unfortunately, while this might work for the other flavours of
-card (DVB-T?) supported by this code, in the case of my particular
-device for DVB-S, the unknown value returned is 0 and does not
-change regardless of tuning status.
-
-I haven't checked whether a different register on my particular
-device contains a usable value for the above code.
-
-In any case, with my particular device, in order to use more
-recent kernels, I've had to add a ``case 0:'' line to the
-``case 3:'' seen above in order to get the previous behaviour
-where no check was made.
-
-
-As I don't know the particular model for which the quoted code
-was added, I don't know if my device is unique, or whether the
-number of DVB-S users of this code is miniscule, as nobody else
-has complained that I've seen.
-
-Apologies for not reporting this long ago when first observed,
-but I've not had any meaningful Internet access in a long time
-to allow me more than just leeching the latest codes.
-
-
-thanks,
-BOUWSMA Barry
-
-
-      
-
+Cool, Thanks for sending the cc
+regards;
+-- 
+Justin P. Mattock
