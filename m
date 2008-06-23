@@ -1,73 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYFWLoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbYFWLqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbYFWLoW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 07:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbYFWLoH
+	id S1755282AbYFWLqR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 07:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbYFWLqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 07:44:07 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:58691 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752464AbYFWLoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 07:44:04 -0400
-Date: Mon, 23 Jun 2008 15:46:32 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: v2.6.26-rc7: BUG task_struct: Poison overwritten
-Message-ID: <20080623114632.GA173@tv-sign.ru>
-References: <20080621192400.GA2992@damson.getinternet.no> <20080621192845.GB2992@damson.getinternet.no> <19f34abd0806211341i3a3ecd0bi1c849a2fbc4e9c7e@mail.gmail.com> <1214083307.3223.289.camel@lappy.programming.kicks-ass.net> <19f34abd0806211557v6763bd3fo2d99d4f26cb0d3a5@mail.gmail.com>
+	Mon, 23 Jun 2008 07:46:04 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37093 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752202AbYFWLqC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 07:46:02 -0400
+Subject: Re: [PATCH] dabusb: use request_firmware()
+From: David Woodhouse <dwmw2@infradead.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Deti Fliegl <deti@fliegl.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org, jaswinder@infradead.org, bunk@kernel.org
+In-Reply-To: <20080623112004.GA26516@infradead.org>
+References: <1214219201.27974.21.camel@shinybook.infradead.org>
+	 <20080623112004.GA26516@infradead.org>
+Content-Type: text/plain
+Date: Mon, 23 Jun 2008 12:45:58 +0100
+Message-Id: <1214221558.27974.33.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0806211557v6763bd3fo2d99d4f26cb0d3a5@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/22, Vegard Nossum wrote:
->
-> I was poking around in kernel/sched.c and noticed something odd: In
-> migrate_dead(), we have this code:
->
->         /*
->          * Drop lock around migration; if someone else moves it,
->          * that's OK. No task can be added to this CPU, so iteration is
->          * fine.
->          */
->         spin_unlock_irq(&rq->lock);
->         move_task_off_dead_cpu(dead_cpu, p);
->         spin_lock_irq(&rq->lock);
->
-> which is fine in itself, I guess. But spin_unlock_irq() will enable
-> interrupts. And move_task_off_dead_cpu() has this comment:
->
-> /*
->  * Figure out where task on dead CPU should go, use force if necessary.
->  * NOTE: interrupts should be disabled by the caller
->  */
-> static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
-> {
->
-> ...but here, interrupts will not be disabled. On the other hand
-> __migrate_task_irq() (called by move_task_off_dead_cpu()) calls
-> local_irq_disable() itself... What do you think of this? Is the
-> comment wrong? Or is there a difference between "interrupts" and
-> "local_irq"?
+On Mon, 2008-06-23 at 07:20 -0400, Christoph Hellwig wrote:
+> > +config USB_DABUSB_FIRMWARE
+> > +	bool "Include firmware images for DABUSB driver"
+> > +	depends on USB_DABUSB
+> > +	---help---
+> > +	Include the firmware for the DABUSB device in the kernel image.
+> > +	Say 'N' and let it get loaded from userspace.
+> 
+> Sorry if I missed a discussion on it in the intial firmware threads, but
+> what is the point of all these FOO_FIRMWARE options?  I think we should
+> include all firmware that we have a driver for if people want firmware
+> built-in and non if not.
 
-Yes, the comment is wrong, thanks.
+That makes a certain amount of sense, I suppose, and would certainly
+reduce the litter of new _FIRMWARE options, as well as the pointless
+whining that some people like to repeat at _each_ patch when we default
+them to 'N'. I could do it something like below...
 
-It wasn't updated by
+What was the final conclusion on the need to add 'select FW_LOADER'?
+Is that going to go away, too?
 
-"do CPU_DEAD migrating under read_lock(tasklist) instead of write_lock_irq(tasklist)"
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=f7b4cddcc5aca03e80e357360c9424dfba5056c2
+--- a/firmware/Makefile
++++ b/firmware/Makefile
+@@ -48,10 +48,13 @@
+-fw-shipped-$(CONFIG_USB_TI_3410_FIRMWARE) += ti_3410.fw
+-fw-shipped-$(CONFIG_USB_TI_5052_FIRMWARE) += ti_5052.fw
++fw-shipped-$(CONFIG_USB_TI) += ti_3410.fw ti_5052.fw
+-fw-shipped-$(CONFIG_USB_SERIAL_WHITEHEAT_FIRMWARE) += whiteheat_loader.fw \
++fw-shipped-$(CONFIG_USB_SERIAL_WHITEHEAT) += whiteheat_loader.fw \
+ 		whiteheat.fw # whiteheat_loader_debug.fw
+-fw-shipped-$(CONFIG_ATM_AMBASSADOR_FIRMWARE) += atmsar11.fw
++fw-shipped-$(CONFIG_ATM_AMBASSADOR) += atmsar11.fw
+-fw-shipped-$(CONFIG_COMPUTONE_FIRMWARE) += intelliport2.bin
++fw-shipped-$(CONFIG_COMPUTONE) += intelliport2.bin
+-fw-shipped-$(CONFIG_VIDEO_CPIA2_FIRMWARE) += cpia2/stv0672_vp4.bin
++fw-shipped-$(CONFIG_VIDEO_CPIA2) += cpia2/stv0672_vp4.bin
++
++ifeq ($(CONFIG_INCLUDE_FIRMWARE),n)
++fw-shipped-y := 
++endif
+ 
+ firmware-y    := $(fw-external-y) $(fw-shipped-y)
+ firmware-dirs := $(sort $(patsubst %,$(objtree)/$(obj)/%/,$(dir $(firmware-y))))
 
-Previously move_task_off_dead_cpu() was called under write_lock_irq(tasklist),
-and we can't take tasklist for writing without disabling irqs.
 
-If you don't see other problems, could you make a patch to fix the comment?
-
-Oleg.
+-- 
+dwmw2
 
