@@ -1,37 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758831AbYFWQ6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758984AbYFWQ67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758831AbYFWQ6Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 12:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbYFWQ6Q
+	id S1758984AbYFWQ67 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 12:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbYFWQ6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 12:58:16 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:47046 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752239AbYFWQ6P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 12:58:15 -0400
-To: viro@ZenIV.linux.org.uk
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       hch@infradead.org
-In-reply-to: <E1KApHx-0007o1-Td@pomaz-ex.szeredi.hu> (message from Miklos
-	Szeredi on Mon, 23 Jun 2008 18:53:09 +0200)
-Subject: Re: [patch 3/3] vfs: fix sys_getcwd for detached mounts
-References: <20080623161151.597847108@szeredi.hu> <20080623161213.116829182@szeredi.hu> <E1KApHx-0007o1-Td@pomaz-ex.szeredi.hu>
-Message-Id: <E1KApMs-0007p1-2Z@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 23 Jun 2008 18:58:14 +0200
+	Mon, 23 Jun 2008 12:58:52 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:42572 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753635AbYFWQ6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 12:58:51 -0400
+Message-ID: <485FD644.80208@sgi.com>
+Date: Mon, 23 Jun 2008 09:58:44 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Vegard Nossum <vegard.nossum@gmail.com>, Adrian Bunk <bunk@kernel.org>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Gautham R Shenoy <ego@in.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
+References: <20080622125633.GA8166@damson.getinternet.no> <20080622155627.GA20122@cs181140183.pp.htv.fi> <19f34abd0806220929y1ca9d0c4nbf480473b7ce018a@mail.gmail.com> <200806231326.11328.rusty@rustcorp.com.au>
+In-Reply-To: <200806231326.11328.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Darn, this is wrong.  It should be looking at vfsmnt->mnt_namespace ==
-> NULL.
+Rusty Russell wrote:
+> On Monday 23 June 2008 02:29:07 Vegard Nossum wrote:
+>> And the (cpu < nr_cpu_ids) fails because the CPU has just been
+>> offlined (or failed to initialize, but it's the same thing), while
+>> NR_CPUS is the value that was compiled in as CONFIG_NR_CPUS (so the
+>> former check will always be true).
+>>
+>> I don't think it is valid to ask for a per_cpu() variable on a CPU
+>> which does not exist, though
 > 
-> Fixed patch coming up.
+> Yes it is.  As long as cpu_possible(cpu), per_cpu(cpu) is valid.
+> 
+> The number check should be removed: checking cpu_possible() is sufficient.
+> 
+> Hope that helps,
+> Rusty.
 
-And the thing is: getcwd() did return garbage for detached mounts,
-except if the mounted dentry was the root of the filesystem.  Which
-makes the "detached:..." change slightly prone to breaking something.
-Still not very likely, but...
+I don't see a check for index being out of range in cpu_possible().
 
-Miklos
+Thanks,
+Mike
