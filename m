@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762410AbYFWSkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759561AbYFWSpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762410AbYFWSkv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 14:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbYFWSko
+	id S1759561AbYFWSpu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 14:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbYFWSpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 14:40:44 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:46655 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751321AbYFWSkn (ORCPT
+	Mon, 23 Jun 2008 14:45:42 -0400
+Received: from DELFT.AURA.CS.CMU.EDU ([128.2.206.88]:37019 "EHLO
+	delft.aura.cs.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754987AbYFWSpm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 14:40:43 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: Adam Williamson <awilliamson@mandriva.com>
-Subject: Re: [Bug #10868] Oops on loading ipaq module since 2.6.26, prevents use of device
-Date: Mon, 23 Jun 2008 20:41:07 +0200
-User-Agent: KMail/1.9.9
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@redhat.com>, bugme-daemon@bugzilla.kernel.org
-References: <RzbtSgMztjP.A.jRD._spXIB@albercik> <200806230948.03027.oliver@neukum.org> <1214236003.6054.6.camel@lenovo.local.net>
-In-Reply-To: <1214236003.6054.6.camel@lenovo.local.net>
+	Mon, 23 Jun 2008 14:45:42 -0400
+X-Greylist: delayed 1858 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Jun 2008 14:45:42 EDT
+Date: Mon, 23 Jun 2008 14:14:41 -0400
+From: Jan Harkes <jaharkes@cs.cmu.edu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC: 2.6 patch] remove CODA_FS_OLD_API
+Message-ID: <20080623181441.GA27170@cs.cmu.edu>
+Mail-Followup-To: Adrian Bunk <bunk@kernel.org>,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <20080623174833.GH4756@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806232041.09251.oliver@neukum.org>
+In-Reply-To: <20080623174833.GH4756@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 23 Juni 2008 17:46:43 schrieb Adam Williamson:
-> On Mon, 2008-06-23 at 09:48 +0200, Oliver Neukum wrote:
-> > Am Montag 23 Juni 2008 00:37:20 schrieb Alan Cox:
-> > > > > btw this also shows that this isn't a 2.6.25 regression... 
-> > > > 
-> > > > That hardly shows it.
-> > > > 
-> > > > And Adam said quite explicitely that 2.6.25 worked for him.
-> > > 
-> > > Nothing much I can do to help. The URB is assigned in setup and is NULL
-> > > later. Nothing else I can find touches it.
-> > 
-> > We need this oops replicated with debug enabled in the usb serial core.
+On Mon, Jun 23, 2008 at 08:48:33PM +0300, Adrian Bunk wrote:
+> While fixing CONFIG_ leakages to the userspace kernel headers I ran into 
+> CODA_FS_OLD_API.
 > 
-> Is that just a kernel build option? (As I mentioned earlier, I'm not
-> much of a kernel hacker, I usually just run packaged kernels).
+> After five years, are there still people using the old API left?
+> Especially considering that you have to choose at compile time which API 
+> to support in the kernel (and distributions tend to offer the new API 
+> for some time).
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-It is the module option "debug" for usb-serial.
+Acked-by: Jan Harkes <jaharkes@cs.cmu.edu>
 
-	Regards
-		Oliver
+The old API can definitely go. Around the time the new interface went in
+there were some non-Coda userspace file system implementations that took
+a while longer to convert to the new API, but by now they all switched
+to the new interface or in some cases to a FUSE-based solution.
+
+Jan
 
