@@ -1,77 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760624AbYFWRTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759921AbYFWRWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760624AbYFWRTb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 13:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbYFWRTY
+	id S1759921AbYFWRWT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 13:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbYFWRWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 13:19:24 -0400
-Received: from styx.suse.cz ([82.119.242.94]:52108 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754722AbYFWRTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 13:19:23 -0400
-Subject: Re: Spinlocks: Factor our GENERIC_LOCKBREAK in order to avoid spin
-	with irqs disable
-From: Petr Tesarik <ptesarik@suse.cz>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <Pine.LNX.4.64.0805071148240.8441@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com>
-	 <20080507073017.GJ32195@elte.hu>
-	 <Pine.LNX.4.64.0805071002330.3110@schroedinger.engr.sgi.com>
-	 <Pine.LNX.4.64.0805071022230.3173@schroedinger.engr.sgi.com>
-	 <Pine.LNX.4.64.0805071148240.8441@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Organization: SUSE LINUX
-Date: Mon, 23 Jun 2008 19:19:21 +0200
-Message-Id: <1214241561.19392.21.camel@elijah.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+	Mon, 23 Jun 2008 13:22:05 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:6199 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752921AbYFWRWC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 13:22:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=nRdxxJCFVJYkmDWUB+zlmITNkX+6XZ8UDg/VHqB6u8PY1XkY9kC29S3/uTbYcppH2p
+         lmV/pYibO2KbA35Yx5XIy1e1J4iZwXVft/jzhh5LeMjc1igTg3PMs9/D6vdfWKI3B/Zt
+         LPD6ZqAsLOUWhPJSPLYBYJaPyq7PzOOG3SYj4=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 0/1] Embedded Maintainer(s), linux-embedded@vger list
+Date: Mon, 23 Jun 2008 19:22:10 +0200
+User-Agent: KMail/1.8.2
+Cc: Andi Kleen <andi@firstfloor.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tim Bird <tim.bird@am.sony.com>
+References: <1209577322.25560.402.camel@pmac.infradead.org> <87bq3rgq40.fsf@basil.nowhere.org> <1209582709.25560.441.camel@pmac.infradead.org>
+In-Reply-To: <1209582709.25560.441.camel@pmac.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="koi8-r"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806231922.10864.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-05-07 at 11:49 -0700, Christoph Lameter wrote:
-> Subject: Spinlocks: Factor our GENERIC_LOCKBREAK in order to avoid spin with irqs disabled
+On Wednesday 30 April 2008 21:11, David Woodhouse wrote:
+> On Wed, 2008-04-30 at 20:22 +0200, Andi Kleen wrote:
+> > David Woodhouse <dwmw2@infradead.org> writes:
+> > 
+> > > Andrew Morton has been saying recently that we need an 'embedded
+> > > maintainer', to take responsibility for 'embedded issues' in the core
+> > > kernel, as well as trying to improve our relationship with those using
+> > > the Linux kernel for 'embedded' devices -- who have a reputation of
+> > > not working with us very closely; to their detriment as well as our
+> > > own.
+> > 
+> > I hope your job description doesn't include adding more and more
+> > CONFIGs though.
+> > 
+> > I am sure there are lots of low hanging fruit where memory can be
+> > saved and it's a good thing someone cares about that, but please don't
+> > focus on the code size only. Or if you work on that don't do it 
+> > using CONFIG or when you really add a new one find some other 
+> > that is pointless and remove it first. 
+> > 
+> > There are simply already far too many of them and they make the 
+> > kernel harder and harder to change.
 > 
-> The nice spinlock functions that enable interrupts while spinning are only
-> usable if GENERIC_LOCKBREAK is set (and we do not debug locks but lock
-> debugging would not be used for a production configuration).
-> 
-> Factor out the dependencies on the ->lock_break field from the nice functions
-> into a set of BREAKLOCK macros (cannot be functions since the type of the lock
-> variable varies).
-> 
-> The nice spinlock function can then also be used if !GENERIC_LOCKBREAK
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> ---
->  kernel/spinlock.c |   40 ++++++++++++++++++++++++++++++----------
->  1 file changed, 30 insertions(+), 10 deletions(-)
-> 
-> Index: linux-2.6/kernel/spinlock.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/spinlock.c	2008-05-07 11:19:31.000000000 -0700
-> +++ linux-2.6/kernel/spinlock.c	2008-05-07 11:40:56.000000000 -0700
-> @@ -65,7 +65,7 @@ EXPORT_SYMBOL(_write_trylock);
->   * even on CONFIG_PREEMPT, because lockdep assumes that interrupts are
->   * not re-enabled during lock-acquire (which the preempt-spin-ops do):
->   */
-> -#if !defined(CONFIG_GENERIC_LOCKBREAK) || defined(CONFIG_DEBUG_LOCK_ALLOC)
-> +#ifdef CONFIG_DEBUG_LOCK_ALLOC
+> I agree. And if we do want to pay attention to pure code size, there are
+> other approaches -- like --gc-sections
 
-Maybe I'm just blind, but doesn't this change effectively disable any
-arch-specific optimized code for _raw_*_lock?
-
-If CONFIG_DEBUG_LOCK_ALLOC is set, then CONFIG_DEBUG_SPINLOCK must also
-be set, so in that case the debugging versions of _raw_*_lock are used.
-But if CONFIG_DEBUG_LOCK_ALLOC is _not_ set, then the locks are built
-with _trylock and _can_lock primitives.
-
-What am I missing here?
-
-Petr Tesarik
-
-
+I have some patches in this area too. Were submitted to Sam
+but he was too busy it seems.
+--
+vda
