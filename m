@@ -1,102 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbYFWVoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbYFWVtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756453AbYFWVoy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 17:44:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755825AbYFWVo2
+	id S1755846AbYFWVtZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 17:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbYFWVtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 17:44:28 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:15714 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755722AbYFWVoY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 17:44:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=GRh80HYPfHs0zws8jaLyadPePIoDWwmwQZPnnMue34AekvsSMbUxtmsKXMGFTm8kE0
-         YPmJXG27p/LGhjMt9NKB4ZCj+KGEe2M5yv6elpS6uQiwIjhwgCdww+29FM8S8csA+MPq
-         hme6qA+TnYoI/C0mcooZ18ShJvGiBt+2GRcAA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/4] ide-pmac: media-bay support fixes
-Date: Mon, 23 Jun 2008 23:45:06 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200806162124.43005.bzolnier@gmail.com> <1214203312.8011.246.camel@pasglop> <1214218047.8011.268.camel@pasglop>
-In-Reply-To: <1214218047.8011.268.camel@pasglop>
+	Mon, 23 Jun 2008 17:49:15 -0400
+Received: from mail.fuw.edu.pl ([193.0.80.14]:37100 "EHLO mail.fuw.edu.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753193AbYFWVtN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 17:49:13 -0400
+From: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
+Organization: FUW
+To: USB development list <linux-usb@vger.kernel.org>
+Subject: Re: 2.6.27-rc7-git1: usb-storage breakage with non-functional disk
+Date: Mon, 23 Jun 2008 23:50:08 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+References: <200806232345.54047.rjw@sisk.pl>
+In-Reply-To: <200806232345.54047.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806232345.07621.bzolnier@gmail.com>
+Message-Id: <200806232350.09597.Rafal.Wysocki@fuw.edu.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 June 2008, Benjamin Herrenschmidt wrote:
-> On Mon, 2008-06-23 at 16:41 +1000, Benjamin Herrenschmidt wrote:
-> > > Don't panic. It looks like it's something else in linux-next that's
-> > > changing some ifdef's in the media-bay code which is causing that.
-> > > 
-> > > I managed to pull linux next at the merge point with your tree and
-> > > things apply. I'll use that to test.
-> > 
-> > Ok, it doesn't work properly. It gets error trying to register
-> > the IDE device. Booting with a CD drive in and no disk in the drive
-> > gives the log below.
-> > 
-> > I've verified that it works without your patches. If I apply only patch
-> > 1, it doesn't build due to some wrong construct in the probe code. I've
-> > hand fixed it, but then I hit a BUG_ON in ide_probe_port() (line 773).
-> > 
-> > mediabay boot time messages (before IDE probing) are:
+[sorry for the broken USB list address in the original post.]
+
+On Monday, 23 of June 2008, Rafael J. Wysocki wrote:
+> Hi,
 > 
-> BTW. I didn't debug more today as I ran out of time but I'll do more
-> tomorrow.
+> This has just happened to me with -rc7-git1 while trying to use a not
+> sufficiently powered external disk (we should survive that IMO):
 > 
-> On a side note, we need to change the way the mediabay stuff works. I've
-> started writing a pata_macio (ie. libata variant of the driver) a while
-
-I (naively?) hope that you are using ide-pmac as a base (the driver looks
-like a normal host driver now) and going to make the final API switch after
-hardware specific changes are complete (so we will be able to use git-bisect
-instead of guesswork combined with voodoo dance when dealing with potential
-regressions :-).
-
-> ago that I need to kick myself into finishing one of these days, and it
-> will want something different than having the mediabay code poke into
-> the IDE layer directly :-)
+> usb 6-3: new high speed USB device using ehci_hcd and address 9
+> usb 6-3: device descriptor read/64, error -110
+> usb 6-3: device descriptor read/64, error -110
+> usb 6-3: new high speed USB device using ehci_hcd and address 10
+> usb 6-3: device descriptor read/64, error -110
+> usb 6-3: device descriptor read/64, error -110
+> usb 6-3: new high speed USB device using ehci_hcd and address 11
+> usb 6-3: device not accepting address 11, error -110
+> usb 6-3: new high speed USB device using ehci_hcd and address 12
+> usb 6-3: device not accepting address 12, error -110
+> hub 6-0:1.0: unable to enumerate USB device on port 3
+> usb 2-1: new full speed USB device using ohci_hcd and address 2
+> usb 2-1: not running at top speed; connect to a high speed hub
+> usb 2-1: configuration #1 chosen from 1 choice
+> usb 2-1: New USB device found, idVendor=04cf, idProduct=8818
+> usb 2-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+> usb 2-1: Product: USB Mass Storage Device
+> usb 2-1: Manufacturer: Myson Century, Inc.
+> usb 2-1: SerialNumber: 100
+> Initializing USB Mass Storage driver...
+> scsi12 : SCSI emulation for USB Mass Storage devices
+> usb-storage: device found at 2
+> usb-storage: waiting for device to settle before scanning
+> usbcore: registered new interface driver usb-storage
+> USB Mass Storage support registered.
+> scsi 12:0:0:0: Direct-Access     IC25N060 ATMR04-0         MO3O PQ: 0 ANSI: 0 CCS
+> sd 12:0:0:0: [sdc] 117210240 512-byte hardware sectors (60012 MB)
+> sd 12:0:0:0: [sdc] Write Protect is off
+> sd 12:0:0:0: [sdc] Mode Sense: 00 14 00 00
+> sd 12:0:0:0: [sdc] Assuming drive cache: write through
+> sd 12:0:0:0: [sdc] 117210240 512-byte hardware sectors (60012 MB)
+> sd 12:0:0:0: [sdc] Write Protect is off
+> sd 12:0:0:0: [sdc] Mode Sense: 00 14 00 00
+> sd 12:0:0:0: [sdc] Assuming drive cache: write through
+>  sdc:<6>usb 2-1: USB disconnect, address 2
+> sd 12:0:0:0: [sdc] Result: hostbyte=DID_ERROR driverbyte=DRIVER_OK,SUGGEST_OK
+> end_request: I/O error, dev sdc, sector 0
+> Buffer I/O error on device sdc, logical block 0
+> sd 12:0:0:0: [sdc] Result: hostbyte=DID_ERROR driverbyte=DRIVER_OK,SUGGEST_OK
+> end_request: I/O error, dev sdc, sector 0
+> Buffer I/O error on device sdc, logical block 0
+>  unable to read partition table
+> sd 12:0:0:0: [sdc] Attached SCSI disk
+> sd 12:0:0:0: Attached scsi generic sg3 type 0
+> BUG: unable to handle kernel NULL pointer dereference at 0000000000000004
+> IP: [<ffffffffa038e6f1>] :usb_storage:slave_alloc+0x41/0x80
+> PGD 1260ff067 PUD 119076067 PMD 0 
+> Oops: 0000 [1] SMP 
+> CPU 3 
+> Modules linked in: usb_storage parport_pc lp parport usblp nfsd lockd auth_rpcgss sunrpc exportfs iptable_filter ip_tables ip6table_filter ip6_tables x_tables ipv6 cpufreq_conservative cpufreq_ondemand cpufreq_userspace cpufreq_powersave powernow_k8 freq_table snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device reiserfs dm_mod ohci1394 sr_mod cdrom floppy ieee1394 serio_raw rtc_cmos sky2 wmi snd_hda_intel rtc_core sg rtc_lib joydev snd_pcm snd_timer snd_page_alloc snd_hwdep snd evdev button soundcore raid456 async_xor async_memcpy async_tx xor raid0 usbhid ff_memless ehci_hcd ohci_hcd sd_mod edd raid1 ext3 jbd fan pata_marvell pata_atiixp thermal processor
+> Pid: 9319, comm: usb-stor-scan Not tainted 2.6.26-rc7 #196
+> RIP: 0010:[<ffffffffa038e6f1>]  [<ffffffffa038e6f1>] :usb_storage:slave_alloc+0x41/0x80
+> RSP: 0018:ffff8100a20cdb60  EFLAGS: 00010202
+> RAX: 0000000000000000 RBX: ffff810087d828d0 RCX: 0000000000000003
+> RDX: ffff8101275f08e0 RSI: ffff810086cc49d0 RDI: ffff810124144b90
+> RBP: ffff8100a20cdb70 R08: 0000000000000001 R09: 0000000000000000
+> R10: ffffffff807fe7e0 R11: 0000000000000000 R12: ffff810087499000
+> R13: ffff810124953678 R14: ffff810087d82000 R15: 0000000000000000
+> FS:  00007f22f6561700(0000) GS:ffff810127c997c0(0000) knlGS:00000000eeb1db90
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 0000000000000004 CR3: 0000000122089000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process usb-stor-scan (pid: 9319, threadinfo ffff8100a20cc000, task ffff810086cc4300)
+> Stack:  ffff810087499000 ffff810124953650 ffff8100a20cdbb0 ffffffff803ea940
+>  ffff8100a20cdbb0 ffff810087d82000 0000000000000000 0000000000000000
+>  ffff810124953678 0000000000000000 ffff8100a20cdcf0 ffffffff803eac9a
+> Call Trace:
+>  [<ffffffff803ea940>] scsi_alloc_sdev+0x1e0/0x250
+>  [<ffffffff803eac9a>] scsi_probe_and_add_lun+0x12a/0xc20
+>  [<ffffffff803ebd4f>] __scsi_scan_target+0x3bf/0x6c0
+>  [<ffffffff8025db46>] ? mark_held_locks+0x56/0xa0
+>  [<ffffffff804ebbe9>] ? mutex_lock_nested+0x1b9/0x290
+>  [<ffffffff8025dcdf>] ? trace_hardirqs_on+0xbf/0x150
+>  [<ffffffff803ec0da>] scsi_scan_channel+0x8a/0xa0
+>  [<ffffffff803ec1e8>] scsi_scan_host_selected+0xf8/0x160
+>  [<ffffffff803ec2ce>] do_scsi_scan_host+0x7e/0x80
+>  [<ffffffff803ec850>] scsi_scan_host+0x190/0x1d0
+>  [<ffffffffa0390f3d>] :usb_storage:usb_stor_scan_thread+0x6d/0x1c0
+>  [<ffffffff8024f790>] ? autoremove_wake_function+0x0/0x40
+>  [<ffffffffa0390ed0>] ? :usb_storage:usb_stor_scan_thread+0x0/0x1c0
+>  [<ffffffff8024f33d>] kthread+0x4d/0x80
+>  [<ffffffff8020c608>] child_rip+0xa/0x12
+>  [<ffffffff8020bd1f>] ? restore_args+0x0/0x30
+>  [<ffffffff8024f2f0>] ? kthread+0x0/0x80
+>  [<ffffffff8020c5fe>] ? child_rip+0x0/0x12
 > 
-> My current though is to add a media bay notification callback to the
-> macio_device structure (the pci variants of the device are never hooked
-> up on a media bay) and move the state query function to the macio core,
-> the media bay driver being then responsible for calling into the macio
-> core to update the state.
+> 
+> Code: 1f c6 87 c3 00 00 00 24 48 8b 7f 08 48 81 c3 d0 08 00 00 8b 83 9c 00 00 00 48 8b 53 78 c1 e8 0f 83 e0 0f 48 8b 84 c2 e8 03 00 00 <0f> b7 70 04 ff ce e8 44 d9 fb df 80 bb c4 00 00 00 04 75 12 49 
+> RIP  [<ffffffffa038e6f1>] :usb_storage:slave_alloc+0x41/0x80
+>  RSP <ffff8100a20cdb60>
+> CR2: 0000000000000004
+> ---[ end trace 2077f860f94c5bf3 ]---
+> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+> end_request: I/O error, dev sdc, sector 0
+> Buffer I/O error on device sdc, logical block 0
+> Buffer I/O error on device sdc, logical block 1
+> Buffer I/O error on device sdc, logical block 2
+> Buffer I/O error on device sdc, logical block 3
+> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+> end_request: I/O error, dev sdc, sector 0
+> Buffer I/O error on device sdc, logical block 0
+> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+> end_request: I/O error, dev sdc, sector 117210112
+> Buffer I/O error on device sdc, logical block 14651264
+> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+> end_request: I/O error, dev sdc, sector 117210112
+> Buffer I/O error on device sdc, logical block 14651264
+> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+> end_request: I/O error, dev sdc, sector 117210112
+> Buffer I/O error on device sdc, logical block 14651264
+> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+> end_request: I/O error, dev sdc, sector 0
+> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+> end_request: I/O error, dev sdc, sector 0
+> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+> end_request: I/O error, dev sdc, sector 0
+> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+> end_request: I/O error, dev sdc, sector 117210232
+> 
+> It resulted in usb-storage being unusable and a system reboot.
+> 
+> Thanks,
+> Rafael
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-You may want to look at ACPI hotplug dock handling for inspiration
-(if you haven't already).
 
-> I still have to sort out some interesting locking issues vs. state
-> changes around driver probe() but I think that's the way to go. Thus,
-> the drivers/ide driver can do it's old ide core hackery locally and the
-> libata variant do what is needed for libata locally too.
 
-There is no longer any hackery on IDE core code side in 2.6.26, there are
-just two nice methods: ide_port_unregister_devices() and ide_scan_port().
-
-Therefore I would prefer to also update ide-pmac for new methods and just
-add what is needed (if any) to IDE core code.
-
-[ Please keep me in loop on these mediabay changes. ]
-
-> It's been a bit low on my todo list as Apple stopped making machines
-> with hotswap mediabays something like 8 years ago :-) The two I have
-> still working are pretty scary old things and one of them is almost
-> falling apart..
-
-:)
-
-Bart
+-- 
+Rafael J. Wysocki, Ph.D.
+Institute of Theoretical Physics
+Faculty of Physics of Warsaw University
+ul. Hoza 69, 00-681 Warsaw
+[tel: +48 22 55 32 263]
+[mob: +48 60 50 53 693]
+----------------------------
+One should not increase, beyond what is necessary,
+the number of entities required to explain anything.
+			-- William of Ockham
