@@ -1,76 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbYFWKsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757063AbYFWKvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbYFWKsE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 06:48:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbYFWKrx
+	id S1757063AbYFWKvX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 06:51:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbYFWKvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 06:47:53 -0400
-Received: from gate.crashing.org ([63.228.1.57]:59560 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753677AbYFWKrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 06:47:52 -0400
-Subject: Re: [PATCH 1/4] ide-pmac: media-bay support fixes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1214203312.8011.246.camel@pasglop>
-References: <200806162124.43005.bzolnier@gmail.com>
-	 <1213673979.8129.156.camel@pasglop> <1213674572.8129.159.camel@pasglop>
-	 <200806171141.08865.bzolnier@gmail.com> <1214199343.8011.230.camel@pasglop>
-	 <1214200453.8011.232.camel@pasglop>  <1214203312.8011.246.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 23 Jun 2008 20:47:27 +1000
-Message-Id: <1214218047.8011.268.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jun 2008 06:51:15 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:21229 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752245AbYFWKvO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 06:51:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=a/RAqrQQ8GgC4sni4K+iBff8KCbUIqNy4r/qho/tekBSM6SlWW3v1z1MNlwVBdPfLC
+         mkjDTUg4rTEZkff69LrOR2PAceFiBvYxUOFECcYUMGk6U4D2QOjnIl2X+kviHz1Ysova
+         e9kAu1tLckMI5O3LkHGQVD5+ay+7Q0y7F80N8=
+Message-ID: <cfd18e0f0806230351nd9eb54ei5e87734291ced9be@mail.gmail.com>
+Date: Mon, 23 Jun 2008 12:51:11 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Laurent Vivier" <Laurent.Vivier@bull.net>
+Subject: Re: /proc 2.6.24 changes for guest CPU accounting
+Cc: "Michael Kerrisk" <mtk.manpages@gmail.com>,
+       "Samuel Thibault" <samuel.thibault@ens-lyon.org>, ap@zip.com.au,
+       lkml <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Christian Borntraeger" <borntraeger@de.ibm.com>
+In-Reply-To: <1214210925.3838.7.camel@frecb07144>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <485DFFB4.3080008@gmail.com> <1214210925.3838.7.camel@frecb07144>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-23 at 16:41 +1000, Benjamin Herrenschmidt wrote:
-> > Don't panic. It looks like it's something else in linux-next that's
-> > changing some ifdef's in the media-bay code which is causing that.
-> > 
-> > I managed to pull linux next at the merge point with your tree and
-> > things apply. I'll use that to test.
-> 
-> Ok, it doesn't work properly. It gets error trying to register
-> the IDE device. Booting with a CD drive in and no disk in the drive
-> gives the log below.
-> 
-> I've verified that it works without your patches. If I apply only patch
-> 1, it doesn't build due to some wrong construct in the probe code. I've
-> hand fixed it, but then I hit a BUG_ON in ide_probe_port() (line 773).
-> 
-> mediabay boot time messages (before IDE probing) are:
+On Mon, Jun 23, 2008 at 10:48 AM, Laurent Vivier
+<Laurent.Vivier@bull.net> wrote:
+> Le dimanche 22 juin 2008 à 09:31 +0200, Michael Kerrisk a écrit :
+>> Hi Laurent,
+>
+> Hi Michael,
+>
+>> A note and patch from Samuel alerted me to your commits
+>> 9ac52315d4cf5f561f36dabaf0720c00d3553162 and
+>> 5e84cfde51cf303d368fcb48f22059f37b3872de, which in 2.6.24 changed /proc/stat
+>> and /proc/PID/stat.  Would you please CC me on kernel-userspace interface
+>> changes, so that they have a chance of getting documented in man-pages.
+>>
+>> (I see that Andrew P tried to get something added to
+>> Documentation/filesystems/proc.txt, but that doesn't seem to have made it in.)
+>>
+>> Below is a patch against the proc.5 man page by Samuel and I to document these
+>> changes.  Do the changes look okay to you?  The first part is the change for
+>> /proc/<pid>/stat, and the other is for /proc/stat.
+>
+> Thank you for that. It seems correct to me (except a typo).
+>
+> You must also notes that "user time" includes "guest time", if you want
+> real "user time" you must subtract "guest time".
+> The "guest time" is included in "user time" to not loose it when the
+> "reader" is not aware of the "guest time".
 
-BTW. I didn't debug more today as I ran out of time but I'll do more
-tomorrow.
+Hi Laurent (and Christian)
 
-On a side note, we need to change the way the mediabay stuff works. I've
-started writing a pata_macio (ie. libata variant of the driver) a while
-ago that I need to kick myself into finishing one of these days, and it
-will want something different than having the mediabay code poke into
-the IDE layer directly :-)
+So, I just want to confirm.  You are saying that guest_time and
+cguest_time are respectively also included in the following fields
 
-My current though is to add a media bay notification callback to the
-macio_device structure (the pci variants of the device are never hooked
-up on a media bay) and move the state query function to the macio core,
-the media bay driver being then responsible for calling into the macio
-core to update the state.
+              utime %lu
+                     The number of jiffies that this process has  been
+                     scheduled in user mode.
 
-I still have to sort out some interesting locking issues vs. state
-changes around driver probe() but I think that's the way to go. Thus,
-the drivers/ide driver can do it's old ide core hackery locally and the
-libata variant do what is needed for libata locally too.
+              [...]
 
-It's been a bit low on my todo list as Apple stopped making machines
-with hotswap mediabays something like 8 years ago :-) The two I have
-still working are pretty scary old things and one of them is almost
-falling apart..
+              cutime %ld
+                     The number of jiffies that this process's waited-
+                     for  children  have  been scheduled in user mode.
+                     (See also times(2).)
+
+Right?
+
+(In fs/proc/array.c, those are the two lines from
+
+                cputime_to_clock_t(utime),
+                cputime_to_clock_t(cutime),
+)
 
 Cheers,
-Ben.
 
+Michael
