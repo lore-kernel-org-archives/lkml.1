@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbYFWUy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758964AbYFWUzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758718AbYFWUy6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 16:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYFWUyu
+	id S1758964AbYFWUzd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 16:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758735AbYFWUzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 16:54:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56001 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754640AbYFWUyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 16:54:49 -0400
-Date: Mon, 23 Jun 2008 22:54:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alok Kataria <akataria@vmware.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Daniel Hecht <dhecht@vmware.com>,
-       Tim Mann <mann@vmware.com>, Zach Amsden <zach@vmware.com>,
-       Sahil Rihan <srihan@vmware.com>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
-Message-ID: <20080623205433.GA16579@elte.hu>
-References: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com> <20080603182014.79a38d03@infradead.org> <35f686220806032101h103152dat841818982aaa5052@mail.gmail.com> <20080604061637.6bab3f67@infradead.org> <1213924953.27983.52.camel@promb-2n-dhcp368.eng.vmware.com> <20080620113922.GG7439@elte.hu> <1213999593.31598.52.camel@promb-2n-dhcp368.eng.vmware.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213999593.31598.52.camel@promb-2n-dhcp368.eng.vmware.com>
+	Mon, 23 Jun 2008 16:55:14 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:59089 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754469AbYFWUzM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 16:55:12 -0400
+Date: Mon, 23 Jun 2008 14:55:01 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: Performance of ext4
+In-reply-to: <Pine.LNX.4.64.0806200905070.3383@diagnostix.dwd.de>
+To: Holger Kiehl <Holger.Kiehl@dwd.de>
+Cc: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
+       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Message-id: <20080623205501.GW6239@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de>
+ <20080616175408.GF3279@atrey.karlin.mff.cuni.cz>
+ <20080616181353.GA20686@skywalker>
+ <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de>
+ <20080619155645.GA8582@mit.edu> <485A8C2D.1090806@redhat.com>
+ <20080619174211.GB9119@mit.edu>
+ <Pine.LNX.4.64.0806200812340.3383@diagnostix.dwd.de>
+ <20080620085922.GH9119@mit.edu>
+ <Pine.LNX.4.64.0806200905070.3383@diagnostix.dwd.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jun 20, 2008  09:21 +0000, Holger Kiehl wrote:
+> When the benchmark runs it writes to stdout and with tee to the result
+> file. It first writes some information about the system, prepares the
+> test files (creates lots of small files), calls sync and then starts
+> the test. Then every minute one line gets written to the result file.
+> Often I have seen that everything after the sync was missing. But
+> sometimes it happened that some parts at the end are missing. But it
+> was always a clean cut, that is there where no lines that where cut
+> partially. The lines where always complete.
 
-* Alok Kataria <akataria@vmware.com> wrote:
+Could you enhance your test to record the file size from "stat -c %s {file}"
+at the end of the test, and also "dumpe2fs -c -R 'stat <inum>' {dev}"
+where <inum> is from "stat -c %i {file}".  If these two don't match after
+60s, or after a "sync; sync" then there will likely be a data loss.
 
-> Ok, I have changed the printks to KERN_INFO. 
-> 
-> On X86 platform we can use the value of tsc_khz computed during tsc 
-> calibration to calculate the loops_per_jiffy value. Its very important 
-> to keep the error in lpj values to minimum as any error in that may 
-> result in kernel panic in check_timer. In virtualization environment, 
-> On a highly overloaded host the guest delay calibration may sometimes 
-> result in errors beyond the ~50% that timer_irq_works can handle, 
-> resulting in the guest panicking.
-> 
-> Does some formating changes to lpj_setup code to now have a single 
-> printk to print the bogomips value.
-> 
-> We do this only for the boot processor because the AP's can have 
-> different base frequencies or the BIOS might boot a AP at a different 
-> frequency.
+With delalloc it is expected that the "debugfs" output will not match up
+to 30s+ after the last modification, because the write is only in memory.
+With ext3 this window would be much smaller, and in fact not visible from
+userspace because "debugfs" would be accessing the same (in memory) buffer
+as the kernel, so it can't even access the stale data on disk.
 
-applied to tip/x86/delay - thanks Alok.
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
-could you check whether tip/master (which now includes your changes as 
-well) works as expected in your test environment? I had to do a conflict 
-resolution in tsc_32.c, i hope i got it right. You can pick it up via:
-
-  http://people.redhat.com/mingo/tip.git/README
-
-	Ingo
