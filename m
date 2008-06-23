@@ -1,214 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752528AbYFWAkD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbYFWAxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752528AbYFWAkD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 20:40:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbYFWAj2
+	id S1754049AbYFWAxI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 20:53:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbYFWAw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 20:39:28 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:27690 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752112AbYFWAj0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 20:39:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=R1k9qVUdx8PkujrTt8X57EFfs1erHTWIkvb+Qi6JGhfglXXMmV+DLlyamGOdrJpeSz
-         lVaM0UD0stgUrrogqs9lm4GIDNF8fEH1VsEUGiYBLhw+8YPr95FUAkSzwK725bdZGFAU
-         5PedsyHgHLtkRQ7Vpb57neB8IoDByGIrPlnt8=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] x86: introduce reserve_initrd
-Date: Sun, 22 Jun 2008 17:40:26 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806180215.53755.yhlu.kernel@gmail.com> <200806220245.39289.yhlu.kernel@gmail.com> <200806220246.58958.yhlu.kernel@gmail.com>
-In-Reply-To: <200806220246.58958.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200806221740.27116.yhlu.kernel@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 22 Jun 2008 20:52:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54594 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751531AbYFWAwz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 20:52:55 -0400
+Date: Sun, 22 Jun 2008 20:52:44 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Neil Brown <neilb@suse.de>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH - take 2] knfsd: nfsd: Handle ERESTARTSYS from syscalls.
+Message-ID: <20080622205244.261a787d@tleilax.poochiereds.net>
+In-Reply-To: <18526.60523.584503.68076@notabene.brown>
+References: <20080619101025.24263.patches@notabene>
+	<1080619001109.24338@suse.de>
+	<20080618210947.2110a541@tleilax.poochiereds.net>
+	<18521.50300.572838.123366@notabene.brown>
+	<20080619063824.00ca6381@tleilax.poochiereds.net>
+	<18526.60523.584503.68076@notabene.brown>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 23 Jun 2008 10:20:59 +1000
+Neil Brown <neilb@suse.de> wrote:
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> On Thursday June 19, jlayton@redhat.com wrote:
+> > > 
+> > > I wonder why we have all this mucking about this signal masks anyway.
+> > > Anyone have any ideas about what it actually achieves?
+> > > 
+> > 
+> > HCH asked me the same question when I did the conversion to kthreads.
+> > My interpretation (based on guesswork here) was that we wanted to
+> > distinguish between SIGKILL and other allowed signals. A SIGKILL is
+> > allowed to interrupt the underlying I/O, but other signals should not.
+> 
+> Yes, that seems to be the intent of the code, but does it really make
+> any sense?
+>
+> Traditionally, filesystem IO is immune to signals so any signal
+> arriving while nfsd is doing filesystem IO is irrelevant.
+> I guess network IO can be interrupted, and nfsd is expected to write
+> to the network during this time when all-but-SIGKILL is ignored.  So
+> maybe the intent was to allow e.g. SIGINT to shut down cleanly, and
+> SIGKILL to kill more promptly even if the network was sluggish...
+> 
+> However I don't think we ever blocked on network write.  And currently
+> we try very hard to ensure that there is enough memory to hold a reply
+> before we start on a request, so it should definitely never block.
+> 
+> So until OCFS2 came along, the distinction seems to have been
+> meaningless, which is why I questioned it.
+> 
+> Even with OCFS2 I'm not sure it makes much sense.
+> 
+> Any time that we shut down NFSD, we really want it to shut down
+> promptly.  If SIGINT isn't certain to achieve that, we should just be
+> sending SIGKILL.
+> Conversely, if it does make sense to keep the two signals, we should
+> be educating init.d scripts to make use of them. e.g.
+> 
+>   killall -2 nfsd
+>   sleep 0.1
+>   if [ `cat /proc/fs/nfsd/threads` -gt 0 ]
+>   then sleep 5
+>        killall -9 nfsd
+>   fi
+> 
+> or something more clever.
+> 
+> I think my leaning is just to remove the distinction.  About the worst
+> that can happen if the filesystem decides to respond to the signal is
+> that you get a short write or a short read, both of which should be
+> correctly handled by the client.
+> 
 
----
- arch/x86/kernel/setup_32.c |   16 ++++++++-----
- arch/x86/kernel/setup_64.c |   53 ++++++++++++++++++++++++---------------------
- arch/x86/mm/init_32.c      |    6 +----
- include/asm-x86/setup.h    |    2 +
- 4 files changed, 43 insertions(+), 34 deletions(-)
+Good points all around. If the sigmask juggling makes no sense, then
+I'm OK with removing it. I'd prefer that we simplify the code rather
+than trying to get clever with init scripts anyway...
 
-Index: linux-2.6/arch/x86/kernel/setup_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_32.c
-+++ linux-2.6/arch/x86/kernel/setup_32.c
-@@ -337,7 +337,7 @@ void __init reserve_initrd(void)
- 		 * in i386_start_kernel
- 		 */
- 		initrd_start = ramdisk_image + PAGE_OFFSET;
--		initrd_end = initrd_start+ramdisk_size;
-+		initrd_end = initrd_start + ramdisk_size;
- 		return;
- 	}
- 
-@@ -364,7 +364,7 @@ void __init reserve_initrd(void)
- 
- #define MAX_MAP_CHUNK	(NR_FIX_BTMAPS << PAGE_SHIFT)
- 
--static void __init relocate_initrd(void)
-+static void __init post_reserve_initrd(void)
- {
- 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
- 	u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
-@@ -418,7 +418,13 @@ static void __init relocate_initrd(void)
- 	/* need to free that, otherwise init highmem will reserve it again */
- 	free_early(ramdisk_image, ramdisk_image+ramdisk_size);
- }
--
-+#else
-+void __init reserve_initrd(void)
-+{
-+}
-+static void __init post_reserve_initrd(void)
-+{
-+}
- #endif /* CONFIG_BLK_DEV_INITRD */
- 
- /*
-@@ -638,9 +644,7 @@ void __init setup_arch(char **cmdline_p)
- 	 * NOTE: at this point the bootmem allocator is fully available.
- 	 */
- 
--#ifdef CONFIG_BLK_DEV_INITRD
--	relocate_initrd();
--#endif
-+	post_reserve_initrd();
- 
- 	remapped_pgdat_init();
- 	sparse_init();
-Index: linux-2.6/arch/x86/kernel/setup_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_64.c
-+++ linux-2.6/arch/x86/kernel/setup_64.c
-@@ -154,6 +154,33 @@ static inline void copy_edd(void)
- }
- #endif
- 
-+void __init reserve_initrd(void)
-+{
-+#ifdef CONFIG_BLK_DEV_INITRD
-+	if (boot_params.hdr.type_of_loader && boot_params.hdr.ramdisk_image) {
-+		unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
-+		unsigned long ramdisk_size  = boot_params.hdr.ramdisk_size;
-+		unsigned long ramdisk_end   = ramdisk_image + ramdisk_size;
-+		unsigned long end_of_mem    = end_pfn << PAGE_SHIFT;
-+
-+		if (ramdisk_end <= end_of_mem) {
-+			/*
-+			 * don't need to reserve again, already reserved early
-+			 * in x86_64_start_kernel, and early_res_to_bootmem
-+			 * will convert that to reserved in bootmem
-+			 */
-+			initrd_start = ramdisk_image + PAGE_OFFSET;
-+			initrd_end = initrd_start+ramdisk_size;
-+		} else {
-+			free_early(ramdisk_image, ramdisk_end);
-+			printk(KERN_ERR "initrd extends beyond end of memory "
-+			       "(0x%08lx > 0x%08lx)\ndisabling initrd\n",
-+			       ramdisk_end, end_of_mem);
-+			initrd_start = 0;
-+		}
-+	}
-+#endif
-+}
- /*
-  * setup_arch - architecture-specific boot-time initializations
-  *
-@@ -251,6 +278,8 @@ void __init setup_arch(char **cmdline_p)
- 		end_pfn = e820_end_of_ram();
- 	}
- 
-+	reserve_initrd();
-+
- 	num_physpages = end_pfn;
- 
- 	check_efer();
-@@ -307,30 +336,6 @@ void __init setup_arch(char **cmdline_p)
- 	*/
- 	find_smp_config();
- #endif
--#ifdef CONFIG_BLK_DEV_INITRD
--	if (boot_params.hdr.type_of_loader && boot_params.hdr.ramdisk_image) {
--		unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
--		unsigned long ramdisk_size  = boot_params.hdr.ramdisk_size;
--		unsigned long ramdisk_end   = ramdisk_image + ramdisk_size;
--		unsigned long end_of_mem    = end_pfn << PAGE_SHIFT;
--
--		if (ramdisk_end <= end_of_mem) {
--			/*
--			 * don't need to reserve again, already reserved early
--			 * in x86_64_start_kernel, and early_res_to_bootmem
--			 * convert that to reserved in bootmem
--			 */
--			initrd_start = ramdisk_image + PAGE_OFFSET;
--			initrd_end = initrd_start+ramdisk_size;
--		} else {
--			free_bootmem(ramdisk_image, ramdisk_size);
--			printk(KERN_ERR "initrd extends beyond end of memory "
--			       "(0x%08lx > 0x%08lx)\ndisabling initrd\n",
--			       ramdisk_end, end_of_mem);
--			initrd_start = 0;
--		}
--	}
--#endif
- 	reserve_crashkernel();
- 
- 	reserve_ibft_region();
-Index: linux-2.6/arch/x86/mm/init_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/init_32.c
-+++ linux-2.6/arch/x86/mm/init_32.c
-@@ -597,8 +597,6 @@ void __init zone_sizes_init(void)
- }
- #endif /* !CONFIG_NEED_MULTIPLE_NODES */
- 
--extern void reserve_initrd(void);
--
- void __init setup_bootmem_allocator(void)
- {
- 	int i;
-@@ -613,9 +611,9 @@ void __init setup_bootmem_allocator(void
- 	if (bootmap == -1L)
- 		panic("Cannot find bootmem map of size %ld\n", bootmap_size);
- 	reserve_early(bootmap, bootmap + bootmap_size, "BOOTMAP");
--#ifdef CONFIG_BLK_DEV_INITRD
-+
- 	reserve_initrd();
--#endif
-+
- 	bootmap_size = init_bootmem(bootmap >> PAGE_SHIFT, max_low_pfn);
- 	printk(KERN_INFO "  mapped low ram: 0 - %08lx\n",
- 		 max_pfn_mapped<<PAGE_SHIFT);
-Index: linux-2.6/include/asm-x86/setup.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/setup.h
-+++ linux-2.6/include/asm-x86/setup.h
-@@ -39,6 +39,8 @@ void reserve_crashkernel(void);
- #include <asm/bootparam.h>
- 
- void reserve_standard_io_resources(void);
-+void reserve_initrd(void);
-+
- 
- #ifndef _SETUP
- 
+The fact that SuSE (and possibly others) have used SIGKILL to take down
+nfsd probably means that removing it is a non-issue (modulo the OCFS
+issue your patch fixes).
+
+> 
+> This brings up an interesting issue for your kthread conversion.
+> The new code uses kthread_stop instead of sending a signal.  That
+> means it will block until the threads have completed a request and
+> exited.
+> If some thread is in a filesystem that is waiting on network IO and
+> expects to get a signal if it needs to stop in a hurry, then the
+> shutdown could block for a long time.  That might not be what we
+> want.
+> 
+> Particularly as if we are blocked in kthread_stop, then no-one else can
+> do a kthread stop....
+> 
+> I think there are issues here that don't yet have obvious answers.
+> Other opinions most welcome.
+> 
+
+The latest patch doesn't use kthread_stop with nfsd. I figured it was
+best to avoid having multiple takedown methods, and since we're using
+signals here anyway, I just kept signaling as the only way to take down
+nfsd. Plus, as you mention -- all kthread_stop's are serialized, which
+could have meant that nfsd's would take a long time to come down on a
+busy box with a lot of them.
+
+As a side note, I'm not terribly thrilled with how kthread_stop is
+implemented. I worry that a stuck kthread would block unrelated
+kthreads from coming down. I did a patch 6 mos ago or so to make it so
+that kthread_stop's could be done in parallel. The downside was that it
+added a new field to the task_struct (which is already too bloated,
+IMO). It might be worth resurrecting that at some point (possibly
+making the new field a union with another field that's unused in
+kthreads), or considering a different approach to parallelize
+kthread_stop.
+
+-- 
+Jeff Layton <jlayton@redhat.com>
