@@ -1,84 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbYFWFhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbYFWFun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756228AbYFWFhv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 01:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYFWFhn
+	id S1756076AbYFWFun (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 01:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYFWFue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 01:37:43 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51783 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751540AbYFWFhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 01:37:43 -0400
-Message-ID: <485F3638.5010305@cn.fujitsu.com>
-Date: Mon, 23 Jun 2008 13:35:52 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Luis Carlos Cobo <luisca@cozybit.com>,
-       Steve Whitehouse <SteveW@acm.org>,
-       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH]rcu,inet,fib_trie,route,radix-tree,DECnet,mac80211: fix
- meaningless rcu_dereference(local_var)
-References: <485CCFC9.2070007@cn.fujitsu.com> <200806231236.51341.nickpiggin@yahoo.com.au>
-In-Reply-To: <200806231236.51341.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 23 Jun 2008 01:50:34 -0400
+Received: from mga11.intel.com ([192.55.52.93]:54810 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751822AbYFWFud (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 01:50:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,688,1204531200"; 
+   d="scan'208";a="580827777"
+Subject: Re: [PATCH] x86 boot: Pass E820 memory map entries more than 128
+	via linked list of setup data
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       andi@firstfloor.org, mingo@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+In-Reply-To: <20080618114511.GB28838@elte.hu>
+References: <1213155219.13392.2.camel@caritas-dev.intel.com>
+	 <20080618114511.GB28838@elte.hu>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Mon, 23 Jun 2008 13:54:01 +0800
+Message-Id: <1214200441.25753.5.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 23 Jun 2008 05:50:30.0341 (UTC) FILETIME=[0B669F50:01C8D4F5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add CC: Linus Torvalds
+Hi, Paul,
 
-Nick Piggin wrote:
-> On Saturday 21 June 2008 19:54, Lai Jiangshan wrote:
-> 
->> diff --git a/lib/radix-tree.c b/lib/radix-tree.c
->> index 169a2f8..bfae4e2 100644
->> --- a/lib/radix-tree.c
->> +++ b/lib/radix-tree.c
->> @@ -703,9 +703,9 @@ __lookup(struct radix_tree_node *slot, void **results,
->> unsigned long index, for (i = index & RADIX_TREE_MAP_MASK; i <
->> RADIX_TREE_MAP_SIZE; i++) { struct radix_tree_node *node;
->>  		index++;
->> -		node = slot->slots[i];
->> +		node = rcu_dereference(slot->slots[i]);
->>  		if (node) {
->> -			results[nr_found++] = rcu_dereference(node);
->> +			results[nr_found++] = node;
->>  			if (nr_found == max_items)
->>  				goto out;
->>  		}
->> @@ -815,7 +815,7 @@ __lookup_tag(struct radix_tree_node *slot, void
->> **results, unsigned long index, index++;
->>  				if (!tag_get(slot, tag, j))
->>  					continue;
->> -				node = slot->slots[j];
->> +				node = rcu_dereference(slot->slots[j]);
->>  				/*
->>  				 * Even though the tag was found set, we need to
->>  				 * recheck that we have a non-NULL node, because
->> @@ -827,7 +827,6 @@ __lookup_tag(struct radix_tree_node *slot, void
->> **results, unsigned long index, * rely on its value remaining the same).
->>  				 */
->>  				if (node) {
->> -					node = rcu_dereference(node);
->>  					results[nr_found++] = node;
->>  					if (nr_found == max_items)
->>  						goto out;
-> 
-> This was done like this IIRC to avoid the barrier when possible.
-> 
-> 
-> 
-This(http://lkml.org/lkml/2008/4/20/217) shows why rcu_dereference(local_var)
-is meaningless. And why not use smp_read_barrier_depends() here?
+This patch can be used for machine whose E820 memory map has more than
+128 entries. So it is not necessary to use EFI memory map for this (EFI
+memory map is used for EFI runtime services only).
 
-I guessed somebody use rcu_dereference(local_var) in if-statements to avoid the
-barrier when possible, and I made this patch(http://lkml.org/lkml/2008/6/21/29),
-but it is incorrect.
+With this patch, your previous patch:
 
+x86 boot: add code to add BIOS provided EFI memory entries to kernel
+
+is not necessary, so can be reversed.
+
+What do you think about that?
+
+Best Regards,
+Huang Ying
+
+On Wed, 2008-06-18 at 13:45 +0200, Ingo Molnar wrote:
+> * Huang, Ying <ying.huang@intel.com> wrote:
+> 
+> > Because of the size limits of struct boot_params (zero page), the 
+> > maximum number of E820 memory map entries can be passed to kernel is 
+> > 128. As pointed by Paul Jackson, there is some machine produced by SGI 
+> > with so many nodes that the number of E820 memory map entries is more 
+> > than 128. To enabling Linux kernel on these system, a new setup data 
+> > type named SETUP_E820_EXT is defined to pass additional memory map 
+> > entries to Linux kernel.
+> > 
+> > This patch is based on x86/auto-latest branch of git-x86 tree and has 
+> > been tested on x86_64 and i386 platform.
+> 
+> applied to tip/x86/mpparse, thanks.
+> 
+> this bit collided with a recent change:
+> 
+> > -	do {
+> > -		u64 start = biosmap->addr;
+> > -		u64 size = biosmap->size;
+> > -		u64 end = start + size;
+> > -		u32 type = biosmap->type;
+> > -
+> > -		/* Overflow in 64 bits? Ignore the memory map. */
+> > -		if (start > end)
+> > -			return -1;
+> > -
+> > -		add_memory_region(start, size, type);
+> > -	} while (biosmap++, --nr_map);
+> > -	return 0;
+> > +	return __copy_e820_map(biosmap, nr_map);
+> 
+> because add_memory_region() got renamed to e820_add_region(). I did the 
+> obvious fixup.
+> 
+> 	Ingo
