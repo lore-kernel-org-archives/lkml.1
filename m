@@ -1,108 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757886AbYFWPDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758737AbYFWPFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757886AbYFWPDm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 11:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbYFWPDe
+	id S1758737AbYFWPFt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 11:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbYFWPFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 11:03:34 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41267 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754068AbYFWPDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 11:03:33 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: linux-next: Tree for June 20: [regression] No sound on SB600
-Date: Mon, 23 Jun 2008 17:05:02 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20080620172507.b7301bd1.sfr@canb.auug.org.au> <200806231632.08639.rjw@sisk.pl> <s5hbq1s2p82.wl%tiwai@suse.de>
-In-Reply-To: <s5hbq1s2p82.wl%tiwai@suse.de>
+	Mon, 23 Jun 2008 11:05:41 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:37109 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754297AbYFWPFk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 11:05:40 -0400
+Message-ID: <485FBBE6.9000104@keyaccess.nl>
+Date: Mon, 23 Jun 2008 17:06:14 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Hans de Goede <j.w.r.degoede@hhs.nl>, Zhang Rui <rui.zhang@intel.com>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Jean Delvare <khali@linux-fr.org>, linux-acpi@vger.kernel.org,
+       lm-sensors@lm-sensors.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2.6.26-rc] ACPI Thermal Zone driver breaks lm-sensors 2 userspace
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806231705.02994.rjw@sisk.pl>
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 23 of June 2008, Takashi Iwai wrote:
-> At Mon, 23 Jun 2008 16:32:08 +0200,
-> Rafael J. Wysocki wrote:
-> > 
-> > On Monday, 23 of June 2008, Takashi Iwai wrote:
-> > > At Sat, 21 Jun 2008 21:25:41 +0200,
-> > > Rafael J. Wysocki wrote:
-> > > > 
-> > > > On Saturday, 21 of June 2008, Takashi Iwai wrote:
-> > > > > At Sat, 21 Jun 2008 17:28:09 +0200,
-> > > > > Rafael J. Wysocki wrote:
-> > > > > > 
-> > > > > > On Friday, 20 of June 2008, Stephen Rothwell wrote:
-> > > > > > > Hi all,
-> > > > > > > 
-> > > > > > > Changes since next-20080619:
-> > > > > > > 
-> > > > > > > The net tree lost its conflict against Linus' tree.
-> > > > > > > 
-> > > > > > > The bkl-removal tree lost a conflict.
-> > > > > > 
-> > > > > > On one of my test boxes with the ATI chipset (SB600 south bridge) there's no
-> > > > > > sound output.  Bisection shows that the following commit causes this to happen
-> > > > > > and reverting the commit fixes the problem for me:
-> > > > > > 
-> > > > > > commit cf97e6678f1e1e7bbdb566c36771540123832a31
-> > > > > > Author: Takashi Iwai <tiwai@suse.de>
-> > > > > > Date:   Mon Jun 16 15:47:26 2008 +0200
-> > > > > > 
-> > > > > >     ALSA: hda - Fix wrong volumes in AD1988 auto-probe mode
-> > > > > >     
-> > > > > >     Don't create mixer volume elements for Headphone and Speaker if they
-> > > > > >     use the same DAC as normal line-outs on AD1988.  Otherwise the amp
-> > > > > >     value gets screwed up, e.g.
-> > > > > >     	https://bugzilla.novell.com/show_bug.cgi?id=398255
-> > > > > >     
-> > > > > >     Signed-off-by: Takashi Iwai <tiwai@suse.de>
-> > > > > > 
-> > > > > > Please let me know if you need any additional information.
-> > > > > 
-> > > > > Could you run alsa-info.sh with --no-upload option and attach the
-> > > > > output for both states with and without that commit?  The script is
-> > > > > found at
-> > > > > 	http://www.alsa-project.org/alsa-info.sh
-> > > > > Also, show the relevant kernel message from snd-hda-intel (informing
-> > > > > the auto-parsing of pins, etc), too.
-> > > > 
-> > > > dmesg outputs and the outputs of 'alsa-info.sh --no-upload' for the kernel with
-> > > > the patch applied (1) and with the reverted (2) are at:
-> > > > 
-> > > > http://www.sisk.pl/kernel/debug/20080620/box2/dmesg-1.log
-> > > > http://www.sisk.pl/kernel/debug/20080620/box2/alsa-info-1.txt
-> > > > 
-> > > > http://www.sisk.pl/kernel/debug/20080620/box2/dmesg-2.log
-> > > > http://www.sisk.pl/kernel/debug/20080620/box2/alsa-info-2.txt
-> > > 
-> > > Well, this is actually no regression but an unlucky side-effect of the
-> > > fix.
-> > > 
-> > > In the old version, "Front" volume didn't work properly because of
-> > > confliction with a bogus "Headphone" volume.  Now, a wrong volume
-> > > element is removed but only "Front" remains while "Front" wasn't set
-> > > up properly.
-> > > 
-> > > In short, the below should fix the problem:
-> > > 
-> > > 	% amixer set Front 90%
-> > 
-> > Well, okay, but where should I add that to make KDE mixers work, for example?
-> 
-> You must have "Master" volume control now.  This also changes Front,
-> etc.  Try to reassign Master as the default volume in kmix.
+Hi Linus.
 
-Yes, I have the "Master" control and I had it before the patch too, but it has
-no effect both after and before the patch AFAICS (will double check).
+2.6.26-rc gained a hwmon interface to the ACPI Thermal Zone driver
+which unfortunately breaks lm-sensors 2 userspace and renders all
+other (subsequent) hwmon sensors inoperable also.
+ 
+Many systems, current slackware and derivative systems among them,
+are using lm-sensors 2 and would be affected. A new lm-sensors
+2.10.7 release is needed to fix this from the user side.
 
-Thanks,
-Rafael
+There's disagreement on how bad the problem is, what it should be
+called and what correct levels of respect and gratitude are.
+Thread at:
+
+http://lkml.org/lkml/2008/6/21/173
+
+Admittedly, with lm-sensors 2.10.7 around the corner now, there's
+opportunity to not care all that deeply but I want to make sure
+that everyone is aware of this as it is definitely going to be
+reported and most importantly -- losing sensors can be a vital
+mistake under some circumstances. Fortunately, it's not silent
+breakage.
+
+A previous patch just made the support optional:
+
+http://lkml.org/lkml/2008/6/22/83
+
+which also works but is not-nicer still.
+
+Off to my shrubbery now...
+
+Rene.
+
+>From 303b6d3f407def5aa15bedc1bc7ff3f090025fe5 Mon Sep 17 00:00:00 2001
+From: Rene Herman <rene.herman@gmail.com>
+Date: Sun, 22 Jun 2008 23:45:04 +0200
+Subject: [PATCH] thermal: link the virtual/thermal/thermal_zoneN device for hwmon
+
+2.6.26-rc gained a hwmon interface to the ACPI Thermal Zone
+driver which unfortunately breaks lm-sensors 2 userspace and
+renders all other (subsequent) hwmon sensors inoperable also.
+
+Many systems, current slackware and derivative systems among them,
+are using lm-sensors 2 and would be affected. A new lm-sensors
+2.10.7 release is needed to fix this from the user side.
+
+The problem is userspace tripping over an absent "device"
+link in the ACPI Thermal Zone sysfs /sys/class/hwmon/hwmonN
+directory. This just adds the virtual "thermal/thermal_zoneN"
+device as a device backlink which satisfies lm-sensors again.
+
+Tested and fairly obvious; a downside is that the ACPI Thermal
+Zone driver gathers multiple thermal zones into one hwmon
+interface which means the device link is sensible only for
+the first thermal zone. Point here is just to not trip up
+existing lm-sensors 2 systems though.
+
+Signed-off-by: Rene Herman <rene.herman@gmail.com>
+CC: Hans de Goede <j.w.r.degoede@hhs.nl>
+CC: Zhang Rui <rui.zhang@intel.com>
+CC: Mark M. Hoffman <mhoffman@lightlink.com>
+CC: Jean Delvare <khali@linux-fr.org>
+CC: linux-acpi@vger.kernel.org
+CC: lm-sensors@lm-sensors.org
+CC: linux-kernel@vger.kernel.org
+---
+ drivers/thermal/thermal_sys.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index 6098787..c21e03c 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -357,7 +357,7 @@ thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+ 
+ 	INIT_LIST_HEAD(&hwmon->tz_list);
+ 	strlcpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
+-	hwmon->device = hwmon_device_register(NULL);
++	hwmon->device = hwmon_device_register(&tz->device);
+ 	if (IS_ERR(hwmon->device)) {
+ 		result = PTR_ERR(hwmon->device);
+ 		goto free_mem;
+-- 
+1.5.5
+
