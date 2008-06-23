@@ -1,119 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757112AbYFWLsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbYFWLzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757112AbYFWLsS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 07:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbYFWLsH
+	id S1754638AbYFWLzY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 07:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbYFWLzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 07:48:07 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:54378 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753425AbYFWLsF (ORCPT
+	Mon, 23 Jun 2008 07:55:11 -0400
+Received: from smtp119.mail.mud.yahoo.com ([209.191.84.76]:45615 "HELO
+	smtp119.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753010AbYFWLzH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 07:48:05 -0400
-Date: Mon, 23 Jun 2008 17:19:41 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, paulmck@linux.vnet.ibm.com,
-       Dipankar Sarma <dipankar@in.ibm.com>, laijs@cn.fujitsu.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH] fix rcu vs hotplug race
-Message-ID: <20080623114941.GB3160@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20080623103700.GA4043@linux.vnet.ibm.com> <20080623105844.GC28192@elte.hu>
+	Mon, 23 Jun 2008 07:55:07 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=RV/eXjHJCj9c7MPn9sGSdPNXDOBCFTzQQ8PSF0hxpshI8G4ukrMep2oqWUGgl3eZzCG0AvUdVcPxLitpW1meF7J1wKE/o+9enOy7I166xVW8ZbQF2oFm0OWIZuhCdai28f1pSZaCKczWoOzGDWMb/G5rMRJbdjj2pnsYBGcLvyU=  ;
+X-YMail-OSG: 4pLktZcVM1nkn7zVrskyZomTqoel0graCYsYrK7rnw1M6QvSWgeOUal5IlTChVtCiMhBDPnNOrek918ASaRT1hFeczhYkaquMdsufDub3ieCzP43ZaLWkSgPO9gPB_LJfH4-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "Ryan Hope" <rmh3093@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [BUG] Lockless patches cause hardlock under heavy IO
+Date: Mon, 23 Jun 2008 21:54:52 +1000
+User-Agent: KMail/1.9.5
+Cc: "Peter Zijlstra" <peterz@infradead.org>, linux-mm@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+References: <48f7fe350806181415l4eba61b3i1d206de03147575e@mail.gmail.com> <200806231229.42943.nickpiggin@yahoo.com.au> <48f7fe350806222051g15edcd98g6faecc4a23f727ab@mail.gmail.com>
+In-Reply-To: <48f7fe350806222051g15edcd98g6faecc4a23f727ab@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080623105844.GC28192@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200806232154.52820.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 12:58:44PM +0200, Ingo Molnar wrote:
-> 
-> * Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> 
-> > On running kernel compiles in parallel with cpu hotplug,
-> > 
-> > ------------[ cut here ]------------
-> > WARNING: at arch/x86/kernel/smp.c:118
-> > native_smp_send_reschedule+0x21/0x36()
-> > Modules linked in:
-> > Pid: 27483, comm: cc1 Not tainted 2.6.26-rc7 #1
-> >  [<c01217d9>] warn_on_slowpath+0x41/0x5d
-> >  [<c01515b7>] ? generic_file_aio_read+0x10f/0x137
-> >  [<c0151340>] ? file_read_actor+0x0/0xf7
-> >  [<c013ae4c>] ? validate_chain+0xaa/0x29c
-> >  [<c013c854>] ? __lock_acquire+0x612/0x666
-> >  [<c013c854>] ? __lock_acquire+0x612/0x666
-> >  [<c013ae4c>] ? validate_chain+0xaa/0x29c
-> >  [<c01715d3>] ? file_kill+0x2d/0x30
-> >  [<c013cbd7>] ? __lock_release+0x4b/0x51
-> >  [<c01715d3>] ? file_kill+0x2d/0x30
-> >  [<c0110355>] native_smp_send_reschedule+0x21/0x36
-> >  [<c014fe8f>] force_quiescent_state+0x47/0x57
-> >  [<c014fef0>] call_rcu+0x51/0x6d
-> >  [<c01713b3>] __fput+0x130/0x158
-> >  [<c0171231>] fput+0x17/0x19
-> >  [<c016fd99>] filp_close+0x4d/0x57
-> >  [<c016fdff>] sys_close+0x5c/0x97
-> >  [<c0103861>] sysenter_past_esp+0x6a/0xb1
-> >  =======================
-> > ---[ end trace aa35f3913ddf2d06 ]---
-> > 
-> > This is because a reschedule is sent to a CPU which is offline.
-> > Just ensure that the CPU we send the smp_send_reschedule is actually
-> > online.
-> > 
-> > Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> > ---
-> >  kernel/rcuclassic.c |    3 ++-
-> >  1 files changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6.26-rc7/kernel/rcuclassic.c
-> > ===================================================================
-> > --- linux-2.6.26-rc7.orig/kernel/rcuclassic.c
-> > +++ linux-2.6.26-rc7/kernel/rcuclassic.c
-> > @@ -93,7 +93,8 @@ static void force_quiescent_state(struct
-> >  		cpumask = rcp->cpumask;
-> >  		cpu_clear(rdp->cpu, cpumask);
-> >  		for_each_cpu_mask(cpu, cpumask)
-> > -			smp_send_reschedule(cpu);
-> > +			if (cpu_online(cpu))
-> > +				smp_send_reschedule(cpu);
-> >  	}
-> 
+On Monday 23 June 2008 13:51, Ryan Hope wrote:
+> well i get the hardlock on -mm with out using reiser4, i am pretty
+> sure is swap related
 
-Hi Ingo,
+The guys seeing hangs don't use PREEMPT_RCU, do they?
 
-> hm, not sure - we might just be fighting the symptom and we might now 
-> create a silent resource leak instead. Isnt a full RCU quiescent state 
-> forced (on all CPUs) before a CPU is cleared out of cpu_online_map? That 
-> way the to-be-offlined CPU should never actually show up in 
-> rcp->cpumask.
+In my swapping tests, I found -mm3 to be stable with classic RCU, but
+on a hunch, I tried PREEMPT_RCU and it crashed a couple of times rather
+quickly. First crash was in find_get_pages so I suspected lockless
+pagecache doing something subtly wrong with the RCU API, but I just got
+another crash in __d_lookup:
 
-No, this does not happen currently. The rcp->cpumask is always
-initialized to  cpu_online_map&~nohz_cpu_mask when we start a new batch.
-Hence, before the batch ends, if a cpu goes offline we _can_ have a
-stale rcp->cpumask, till the RCU subsystem has handled it's CPU_DEAD
-notification.
+BUG: unable to handle kernel paging request at ffff81004a139f38
+IP: [<ffffffff802bb82c>] __d_lookup+0x8c/0x160
+PGD 8063 PUD 7fc3f163 PMD 7df50163 PTE 800000004a139160
+Oops: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+last sysfs file: /sys/devices/system/cpu/cpu7/cache/index2/shared_cpu_map
+CPU 0
+Modules linked in: brd
+Pid: 29563, comm: cc1 Not tainted 2.6.26-rc5-mm3 #467
+RIP: 0010:[<ffffffff802bb82c>]  [<ffffffff802bb82c>] __d_lookup+0x8c/0x160
+RSP: 0018:ffff81004bf7dba8  EFLAGS: 00010282
+RAX: 0000000000000007 RBX: ffff81004a139f38 RCX: 0000000000000000
+RDX: ffff810028057808 RSI: 0000000000000000 RDI: ffff81004bf7a880
+RBP: ffff81004bf7dbf8 R08: 0000000000000001 R09: 0000000000000001
+R10: 0000000000000000 R11: 0000000000000001 R12: ffff81004a139ef8
+R13: 0000000073885cf7 R14: ffff810070f53ef8 R15: ffff81004bf7dca8
+FS:  00002abe0a1decf0(0000) GS:ffffffff80779dc0(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: ffff81004a139f38 CR3: 0000000057569000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process cc1 (pid: 29563, threadinfo ffff81004bf7c000, task ffff81004bf7a880)
+Stack:  0000000100000001 0000000000000007 ffff810070f53f00 00000007000041ed
+ ffff810001ce2013 ffff81004bf7dca8 00000000000041ed ffff81004bf7de48
+ ffff81004bf7dca8 ffff81004bf7dcb8 ffff81004bf7dc48 ffffffff802af2b5
+Call Trace:
+ [<ffffffff802af2b5>] do_lookup+0x35/0x230
+ [<ffffffff80312d60>] ? ext3_permission+0x10/0x20
+ [<ffffffff802b0cbb>] __link_path_walk+0x39b/0x10a0
+ [<ffffffff802b1a26>] path_walk+0x66/0xd0
+ [<ffffffff802b1cde>] do_path_lookup+0x9e/0x240
+ [<ffffffff802b21d7>] __path_lookup_intent_open+0x67/0xd0
+ [<ffffffff802b224c>] path_lookup_open+0xc/0x10
+ [<ffffffff802b31ba>] do_filp_open+0xaa/0x9f0
+ [<ffffffff805445f0>] ? _spin_unlock+0x30/0x60
+ [<ffffffff802a467d>] ? get_unused_fd_flags+0xed/0x140
+ [<ffffffff802a4746>] do_sys_open+0x76/0x100
+ [<ffffffff802a47fb>] sys_open+0x1b/0x20
+ [<ffffffff8020b90b>] system_call_after_swapgs+0x7b/0x80
 
-Thus for a tiny interval, the rcp->cpumask would contain the offlined
-CPU. One of the alternatives is probably to handle this using CPU_DYING
-notifier instead of CPU_DEAD where we can call __rcu_offline_cpu().
+This path is completely independent of the pagecache, but it does
+also use RCU, so I suspect PREEMPT_RCU is freeing things before
+the proper grace period. These are showing up as oopses for me
+because I have DEBUG_PAGEALLOC set, but if you don't have that set
+then you'll get much more subtle corruption.
 
-The warn_on that dhaval was hitting was because of some
-cpu-offline that was called just before we did a local_irq_save inside
-call_rcu(). But at that time, the rcp->cpumask was still stale, and
-hence we ended up sending a smp_reschedule() to an offlined cpu. So the
-check may not create any resource leak.
+Here is the find_get_pages bug FYI:
+BUG: unable to handle kernel paging request at ffff8100c7997de0
+IP: [<ffffffff802732ee>] find_get_pages+0xce/0x130
+PGD 8063 PUD 7fa6e163 PMD cfa64163 PTE 80000000c7997163
+Oops: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+last sysfs file: /sys/devices/system/cpu/cpu7/cache/index2/shared_cpu_map
+CPU 0
+Modules linked in: brd
+Pid: 446, comm: kswapd0 Not tainted 2.6.26-rc5-mm3 #465
+RIP: 0010:[<ffffffff802732ee>]  [<ffffffff802732ee>] find_get_pages+0xce/0x130
+RSP: 0000:ffff81007e4cbbf0  EFLAGS: 00010246
+RAX: ffff8100c7997de0 RBX: ffff81007e4cbc90 RCX: 0000000000000001
+RDX: 0000000000000002 RSI: 0000000000000001 RDI: ffffe2000447f080
+RBP: ffff81007e4cbc30 R08: ffffe2000447f088 R09: 0000000000000004
+R10: 0000000000000040 R11: 0000000000000040 R12: 0000000000000000
+R13: ffff81007e4cbc90 R14: ffff8100c7996e18 R15: 0000000000000000
+240 97   7184  1FS:  00002b774a14ccf0(0000) GS:ffffffff807e5dc0(0000) 
+knlGS:0000
+000000000000
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+2204  25364 4164CR2: ffff8100c7997de0 CR3: 0000000000201000 CR4: 
+00000000000006e
+0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+88    0    8    DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
+000000000000040
+0
+Process kswapd0 (pid: 446, threadinfo ffff81007e4ca000, task ffff81007e4d2a00)
+ ffff81007e4cbcb0 0000000e00000000000000437 65 35  0  0
+                                   ffff81007e4cbc80
+ 0000000000000080 0000000000000052 0000000000000000 ffffffffffffffff
+ ffff81007e4cbc50 ffffffff8027dcdf 0000000000000000 ffff8100c7996c28
+Call Trace:
+ [<ffffffff8027dcdf>] pagevec_lookup+0x1f/0x30
+ [<ffffffff8027ef43>] __invalidate_mapping_pages+0x83/0x1b0
+ [<ffffffff8027f07b>] invalidate_mapping_pages+0xb/0x10
+ [<ffffffff802be2a3>] shrink_icache_memory+0x293/0x2a0
+ [<ffffffff80281632>] ? shrink_slab+0x32/0x220
+ [<ffffffff8028172d>] shrink_slab+0x12d/0x220
+ [<ffffffff8028202a>] kswapd+0x53a/0x670
+ [<ffffffff8027f830>] ? isolate_pages_global+0x0/0x280
+ [<ffffffff805a1ada>] ? thread_return+0xa6/0x3bc
+ [<ffffffff802513f0>] ? autoremove_wake_function+0x0/0x40
+ [<ffffffff80281af0>] ? kswapd+0x0/0x670
+ [<ffffffff80251059>] kthread+0x49/0x80
+ [<ffffffff8020c878>] child_rip+0xa/0x12
+ [<ffffffff8020bf63>] ? restore_args+0x0/0x30
+ [<ffffffff80251010>] ? kthread+0x0/0x80
+ [<ffffffff8020c86e>] ? child_rip+0x0/0x12
 
-But probably there's a better way to fix this.
-> 
-> 	Ingo
-
--- 
-Thanks and Regards
-gautham
+If you're not using PREEMPT_RCU, then I'm stumped for the moment. You'll
+have to send .configs over...
+ 
