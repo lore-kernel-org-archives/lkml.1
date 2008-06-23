@@ -1,64 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762814AbYFWTX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760378AbYFWT3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762814AbYFWTX5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 15:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbYFWTXu
+	id S1760378AbYFWT3j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 15:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbYFWT3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 15:23:50 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:63206 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752305AbYFWTXt (ORCPT
+	Mon, 23 Jun 2008 15:29:31 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:13004 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752830AbYFWT3a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 15:23:49 -0400
-X-IronPort-AV: E=Sophos;i="4.27,691,1204531200"; 
-   d="scan'208";a="82715215"
-From: Roland Dreier <rdreier@cisco.com>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-Date: Mon, 23 Jun 2008 12:23:47 -0700
-Message-ID: <adaej6o5518.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Mon, 23 Jun 2008 15:29:30 -0400
+Date: Mon, 23 Jun 2008 22:29:19 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Chandru <chandru@in.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Alexis Bruemmer <alexisb@us.ibm.com>
+Subject: Re: [RFC] [Patch] calgary iommu: Use the first kernel's tce tables
+	in kdump
+Message-ID: <20080623192918.GB6989@il.ibm.com>
+References: <1191962414.24134.68.camel@chandru> <47D5359D.5000909@in.ibm.com> <20080310090912.b9f34d27.akpm@linux-foundation.org> <200806211741.43703.chandru@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 23 Jun 2008 19:23:47.0924 (UTC) FILETIME=[A906E140:01C8D566]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <200806211741.43703.chandru@in.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+On Sat, Jun 21, 2008 at 05:41:43PM +0530, Chandru wrote:
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+> kdump kernel fails to boot with calgary iommu and aacraid driver on
+> a x366 box. The ongoing dma's of aacraid from the first kernel
+> continue to exist until the driver is loaded in the kdump
+> kernel. Calgary is initialized prior to aacraid and creation of new
+> tce tables causes wrong dma's to occur. Here we try to get the tce
+> tables of the first kernel in kdump kernel and use them. While in
+> the kdump kernel we do not allocate new tce tables but instead read
+> the base address register contents of calgary iommu and use the
+> tables that the registers point to. With these changes the kdump
+> kernel and hence aacraid now boots normally.
+> 
+> Signed-off-by: Chandru Siddalingappa <chandru@in.ibm.com>
 
-This tree is also available from kernel.org mirrors at:
+Hi Chandru,
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+I am not a big fan of this patch, but I guess it would do as a
+stop-gap measure. However it is not appropriate for 2.6.26 and should
+go in at the beginning of the 2.6.27 merge window. Also, minor
+comments below.
 
-This will get a fix for one rare bug seen by SGI on large clusters:
+> @@ -1206,9 +1213,14 @@ static int __init calgary_init(void)
+>  	struct calgary_bus_info *info;
+>  
+>  	ret = calgary_locate_bbars();
+> +
 
-Eli Cohen (1):
-      IB/mthca: Clear ICM pages before handing to FW
+unneeded whitespace
 
- drivers/infiniband/hw/mthca/mthca_memfree.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+> @@ -1256,6 +1268,24 @@ error:
+>  	return ret;
+>  }
+>  
+> +
+> +/*
+> + * calgary_init_bitmap_from_tce_table():
+> + * Funtion for kdump case. In the second/kdump kernel initialize
+> + * the bitmap based on the tce table entries obtained from first kernel
+> + */
+> +static void calgary_init_bitmap_from_tce_table(struct iommu_table *tbl)
+> +{
+> +	u64 *tp;
+> +	unsigned int index;
+> +	tp = ((u64 *)tbl->it_base);
+> +	for (index = 0 ; index < tbl->it_size; index++) {
+> +	if (*tp != 0x0)
+> +		set_bit(index, tbl->it_map);
+> +		tp++;
+> +	}
 
-diff --git a/drivers/infiniband/hw/mthca/mthca_memfree.c b/drivers/infiniband/hw/mthca/mthca_memfree.c
-index b224079..d5862e5 100644
---- a/drivers/infiniband/hw/mthca/mthca_memfree.c
-+++ b/drivers/infiniband/hw/mthca/mthca_memfree.c
-@@ -109,7 +109,11 @@ static int mthca_alloc_icm_pages(struct scatterlist *mem, int order, gfp_t gfp_m
- {
- 	struct page *page;
- 
--	page = alloc_pages(gfp_mask, order);
-+	/*
-+	 * Use __GFP_ZERO because buggy firmware assumes ICM pages are
-+	 * cleared, and subtle failures are seen if they aren't.
-+	 */
-+	page = alloc_pages(gfp_mask | __GFP_ZERO, order);
- 	if (!page)
- 		return -ENOMEM;
- 
+I think the code is correct, but the indentation is misleading. Please
+fix.
+
+> +}
+> +
+>  static inline int __init determine_tce_table_size(u64 ram)
+>  {
+>  	int ret;
+> @@ -1318,6 +1348,8 @@ static int __init build_detail_arrays(vo
+>  	return 0;
+>  }
+>  
+> +
+> +
+
+unneeded whitespace.
+
+Cheers,
+Muli
