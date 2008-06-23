@@ -1,70 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbYFWQaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757853AbYFWQkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757300AbYFWQaX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 12:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755522AbYFWQaN
+	id S1757853AbYFWQkO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 12:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbYFWQkC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 12:30:13 -0400
-Received: from ns.theshore.net ([67.18.92.50]:37660 "EHLO www.theshore.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755026AbYFWQaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 12:30:12 -0400
-X-Greylist: delayed 835 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Jun 2008 12:30:12 EDT
-Message-ID: <485FCC25.7090401@theshore.net>
-Date: Mon, 23 Jun 2008 12:15:33 -0400
-From: "Christopher S. Aker" <caker@theshore.net>
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: xen devel <xen-devel@lists.xensource.com>
-Subject: ext3 directory corruption under Xen
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 23 Jun 2008 12:40:02 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:44689 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755512AbYFWQkA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 12:40:00 -0400
+Date: Mon, 23 Jun 2008 19:39:34 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: "Ryan Hope" <rmh3093@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mm] .gitignore for mm-sources is missing critical files
+Message-ID: <20080623193934.6d74ac71@linux360.ro>
+In-Reply-To: <48f7fe350806230610y224892e3ob34952b2d8b214a9@mail.gmail.com>
+References: <48f7fe350806230610y224892e3ob34952b2d8b214a9@mail.gmail.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We've been seeing a rash of ext3 directory corruption occurring under 
-Xen.  All but one of the reports have been with filesystems formatted 
-with 1024 blocksize.  We have one report, that's potentialy the same 
-bug, occurring on a filesystem with 4096 blocksize (either way, it was 
-some type of corruption in that case).  In all cases, the filesystems 
-were mounted with ext3's default journaling mode.  No quotas or anything 
-else other than the default ext3 mount options.
+On Mon, 23 Jun 2008 09:10:11 -0400
+"Ryan Hope" <rmh3093@gmail.com> wrote:
 
-It's happened on a number of different hosts, all of the same hardware 
-and software configuration (Xen 3.2 64bit, 32bit pae dom0, 32bit pae 
-domUs.  LVM backend with 3ware hardware RAID-1).  Some of those hosts 
-were previously running non-virtaulized Linux and UML, using the 
-identical guest images, and under that configuration never experienced 
-this problem.
+> The .gitignore file in the 2.6.26-rc5-mm3 tar ball is incomplete, it
+> causes many important files to not get added to a git repo. The
+> patches below fix the issue (sorry they are not all in one diff, it
+> took me a few try to figure out all the files needed):
 
-This has occurred under both 2.6.18-xenbits and the more recent pv_ops 
-based kernels (2.6.24, 2.6.25), which I presume are all using the same 
-blkfront driver code.
+Hi,
+ 
+> diff --git a/f07e4d701ff1fa13f98c21d875f252dc13fa2a42:.gitignore
+> b/83ad1010c278a37bcd901dde0f7d2b6981f64f6a:.gitignore
+> index
+> d24ad506e799a5740d19913a333fc9d64261d9c7..9bb1cb6d825d540bc92dfe5c34343438b860b009
+> 100644 --- a/f07e4d701ff1fa13f98c21d875f252dc13fa2a42:.gitignore
+> +++ b/83ad1010c278a37bcd901dde0f7d2b6981f64f6a:.gitignore
+> @@ -26,6 +26,7 @@ tags
+>  TAGS
+>  vmlinux*
+>  !vmlinux.lds.S
+> +!vmlinux.lds.h
+>  System.map
+>  Module.markers
+>  Module.symvers
 
-The common workloads from the reports seems to be active maildirs and rsync.
+Check v2.6.26-rc7, I submitted a patch a few days ago and it's already
+in. Well, just this hunk.
+ 
+> diff --git a/5ec607502ef909acab4ebe886097523ab4e4e3f5:.gitignore
+> b/118a64bfe9c4db302820b83a03cc0388f5d620e5:.gitignore
+> index
+> 9bb1cb6d825d540bc92dfe5c34343438b860b009..71379c18ff4218ba56fd95baf30ac079590ac587
+> 100644 --- a/5ec607502ef909acab4ebe886097523ab4e4e3f5:.gitignore
+> +++ b/118a64bfe9c4db302820b83a03cc0388f5d620e5:.gitignore
+> @@ -22,11 +22,15 @@
+>  #
+>  # Top-level generic files
+>  #
+> +!.mailmap
+>  tags
+>  TAGS
+>  vmlinux*
+>  !vmlinux.lds.S
+>  !vmlinux.lds.h
+> +!vmlinux_32.lds.S
+> +!vmlinux_64.lds.S
+> +!vmlinux.scr
+>  System.map
+>  Module.markers
+>  Module.symvers
+> 
+> diff --git a/118a64bfe9c4db302820b83a03cc0388f5d620e5:.gitignore
+> b/20c660fa39c48b936c3268dbdf179ff84dbbe365:.gitignore
+> index
+> 71379c18ff4218ba56fd95baf30ac079590ac587..c50ecc6f3c223b51b856c96009f1b9b6539e163d
+> 100644 --- a/118a64bfe9c4db302820b83a03cc0388f5d620e5:.gitignore
+> +++ b/20c660fa39c48b936c3268dbdf179ff84dbbe365:.gitignore
+> @@ -35,6 +35,7 @@ System.map
+>  Module.markers
+>  Module.symvers
+>  !.gitignore
+> +!*.lds
+> 
+>  #
+>  # Generated include files
 
-The initial errors reported back are all from fs/ext3/dir.c, in 
-ext3_check_dir_entry(). Most commonly hit is the "rec_len % 4 != 0" 
-check.  We've seen other checks trigger, but my assumption is that those 
-happen after more stuff gets whacked out.
+I'd suggest finding a nice regexp/wildcard to unmask these or to fix
+the "vmlinux*" line (likely better). Running 'find . -name vmlinux\*'
+shows a few more things that may be prone to exclusion to that rule and
+shouldn't.
 
-Eventually the fs will go read-only.  In extreme cases, the fs is chewed 
-through enough that data is lost.
+I already feel bad I didn't fix this more thoroughly when I had the
+chance :-). Then again, I stumbled on this while working on another
+project and I didn't feel like dwelling on other problems. Go ahead and
+save the day :P.
 
-It's tricky to track down the trigger because you can only detect the 
-corruption after it's happened.  Our attempts to reproduce this using 
-various filesystem thrashing scripts haven't yielded a reliable way to 
-trigger it, however we have been successful in triggering it twice -- in 
-two weeks :( .
 
-My hope is that this triggers an "a-hah" from someone in LKML or Xen 
-land who has experience with this code, or that this is a known issue 
-and a fix already lives.
-
-We're scared.  Please help.
-
-Thanks,
--Chris
-
+	Cheers,
+	Eduard
