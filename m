@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbYFWSh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762093AbYFWSiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755736AbYFWSh1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 14:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755706AbYFWShQ
+	id S1762093AbYFWSiy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 14:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757489AbYFWSip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 14:37:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34816 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755137AbYFWShP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 14:37:15 -0400
-Date: Mon, 23 Jun 2008 11:32:54 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-cc: Hugh Dickins <hugh@veritas.com>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Oleg Nesterov <oleg@tv-sign.ru>, Nick Piggin <npiggin@suse.de>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>
-Subject: Re: [patch 2/5] Reinstate ZERO_PAGE optimization in get_user_pages()
- and fix XIP
-In-Reply-To: <b6a2187b0806231115t55bf58cfgdc27a2d265258aab@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0806231129410.2926@woody.linux-foundation.org>
-References: <20080622185327.348377223@mini.kroah.org>  <20080622190140.GD20141@suse.de>  <alpine.LFD.1.10.0806221220530.2926@woody.linux-foundation.org>  <20080622202950.GB20800@suse.de>  <b6a2187b0806230832j10e8be28vc0b05fea233437fa@mail.gmail.com> 
- <Pine.LNX.4.64.0806231650190.13651@blonde.site>  <alpine.LFD.1.10.0806230928140.2926@woody.linux-foundation.org>  <b6a2187b0806231005x44b69918q111e865938c55e7@mail.gmail.com>  <alpine.LFD.1.10.0806231022300.2926@woody.linux-foundation.org>
- <b6a2187b0806231115t55bf58cfgdc27a2d265258aab@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 23 Jun 2008 14:38:45 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:44325 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756700AbYFWSin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 14:38:43 -0400
+Date: Mon, 23 Jun 2008 19:38:41 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Daniel J Blueman <daniel.blueman@gmail.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+       david@fromorbit.com
+Subject: Re: [2.6.26-rc7] shrink_icache from pagefault locking (nee: nfsd hangs for a few sec)...
+Message-ID: <20080623183840.GA1824@csn.ul.ie>
+References: <6278d2220806220256g674304ectb945c14e7e09fede@mail.gmail.com> <6278d2220806220258p28de00c1x615ad7b2f708e3f8@mail.gmail.com> <20080622221930.GA11558@disturbed> <20080623002415.GB21597@csn.ul.ie> <20080623072227.GB11986@infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080623072227.GB11986@infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 24 Jun 2008, Jeff Chua wrote:
-
-> On Tue, Jun 24, 2008 at 1:27 AM, Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
+On (23/06/08 03:22), Christoph Hellwig didst pronounce:
+> On Mon, Jun 23, 2008 at 01:24:15AM +0100, Mel Gorman wrote:
+> > In that case, have you any theory as to why this circular dependency is
+> > being reported now but wasn't before 2.6.26-rc1? I'm beginning to wonder
+> > if the bisecting fingering the zonelist modifiation is just a
+> > co-incidence.
 > 
-> > On the other hand, if you add a trace to the "use_zero_page()" function to
-> > print out the vm_flags and other details, that probably would help.
+> I've seen this traces since lockdep was added when running xfsqa.
 > 
-> Let me know if you still want me to test this.
 
-No, it's fine. It really was a bug, and a long-standing one, just one that 
-was probably practically impossible to hit before (because we used to only 
-do the FOLL_ANON logic on missing whole page tables, and just about any 
-access to any mapping even nearby the one you care about will fill in the 
-page tables - so you would have had to be really unlucky to trigger the 
-case before).
+Oh right, so this isn't even 2.6.26-rc1 as such. It's an older problem that
+seems to be happening in more cases now, right? At this point, I believe the
+bisection fingering the zonelist modification was a co-incidence as reclaim
+behaviour at least is equivilant although catching the memory leak early
+was a lucky positive outcome.
 
-The patch clearly fixes an issue, and makes the code more readable and 
-maintainable too, so I don't care what the exact mapping flags etc were.
+It's still not clear why the circular warning is happening more regularly now
+but it's "something else". Considering the number of changes made to NFS,
+XFS, reclaim and other areas since, I'm not sure how to go about finding
+the real underlying problem or if it can be dealt with in a trivial manner.
 
-> Yeh, it works great! Thank you.
-
-Thanks for bisecting, reporting and testing. 
-
-			Linus
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
