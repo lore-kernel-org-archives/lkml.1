@@ -1,24 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbYFWHuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753282AbYFWHu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756062AbYFWHuH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 03:50:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYFWHt5
+	id S1753282AbYFWHu1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 03:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbYFWHt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 23 Jun 2008 03:49:57 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42441 "EHLO
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42440 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752040AbYFWHt4 (ORCPT
+	with ESMTP id S1752235AbYFWHt5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 03:49:56 -0400
-Date: Mon, 23 Jun 2008 00:40:22 +0200
+	Mon, 23 Jun 2008 03:49:57 -0400
+Date: Mon, 23 Jun 2008 09:16:01 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pcmcia@lists.infradead.org
-Subject: 2.6.26-rc6: pcmcia stopped working after resume
-Message-ID: <20080622224022.GA2066@elf.ucw.cz>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       David Chinner <dgc@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       xfs-masters@oss.sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: freeze vs freezer
+Message-ID: <20080623071601.GA1553@elf.ucw.cz>
+References: <4744FD87.7010301@goop.org> <200711262253.35420.rjw@sisk.pl> <20071127053846.GA28884@srcf.ucam.org> <200711271840.24825.rjw@sisk.pl> <8B00F353-983F-40E7-931B-EA73CCD32F0A@mac.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <8B00F353-983F-40E7-931B-EA73CCD32F0A@mac.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,65 +32,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-After s2ram and resume, CF card in PCMCIA-to-CF slot is no longer
-detected.
+(replying to *very* old mail).
 
-Jun 23 00:38:28 amd kernel: sd 0:0:0:0: [sda] Write cache: enabled,
-read cache: enabled, doesn't support DPO or FUA
-Jun 23 00:38:28 amd kernel: sd 0:0:0:0: [sda] 117210240 512-byte
-hardware sectors (60012 MB)
-Jun 23 00:38:28 amd kernel: sd 0:0:0:0: [sda] Write Protect is off
-Jun 23 00:38:28 amd kernel: sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-Jun 23 00:38:28 amd kernel: sd 0:0:0:0: [sda] Write cache: enabled,
-read cache: enabled, doesn't support DPO or FUA
-Jun 23 00:38:28 amd kernel: PM: Writing back config space on device
-0000:15:00.2 at offset 4 (was 0, writing e4301800)
-Jun 23 00:38:28 amd kernel: PM: Writing back config space on device
-0000:15:00.2 at offset 3 (was 800000, writing 804000)
-Jun 23 00:38:28 amd kernel: PM: Writing back config space on device
-0000:15:00.2 at offset 1 (was 2100000, writing 2100006)
-Jun 23 00:38:28 amd kernel: sleepy: scsi_bus_resume start
-Jun 23 00:38:28 amd kernel: sleepy: scsi_bus_resume done
-Jun 23 00:38:28 amd kernel: usb 4-1: reset low speed USB device using
-uhci_hcd and address 2
-Jun 23 00:38:28 amd kernel: PM: Finishing wakeup.
-Jun 23 00:38:28 amd kernel: Restarting tasks ... done.
-Jun 23 00:38:28 amd kernel: usb 5-1: USB disconnect, address 2
-Jun 23 00:38:28 amd cardmgr[1396]: executing: './ide resume hdc 2>&1'
-Jun 23 00:38:28 amd cardmgr[1396]: + ./shared: line 127:
-/var/run/stab: No such file or directory
-Jun 23 00:38:28 amd cardmgr[1396]: + usage: ./ide [action] [device
-name]
-Jun 23 00:38:28 amd cardmgr[1396]: +   actions: start check stop
-suspend resume
-Jun 23 00:38:28 amd cardmgr[1396]: resume cmd exited with status 1
-Jun 23 00:38:28 amd kernel: usb 5-1: new full speed USB device using
-uhci_hcd and address 4
-Jun 23 00:38:28 amd kernel: usb 5-1: configuration #1 chosen from 1
-choice
-Jun 23 00:38:28 amd kernel: usb 5-1: New USB device found,
-idVendor=0a5c, idProduct=2110
-Jun 23 00:38:28 amd kernel: usb 5-1: New USB device strings: Mfr=1,
-Product=2, SerialNumber=0
-Jun 23 00:38:28 amd kernel: usb 5-1: Product: BCM2045B
-Jun 23 00:38:28 amd kernel: usb 5-1: Manufacturer: Broadcom Corp
-Jun 23 00:38:28 amd kernel: usb 5-2: USB disconnect, address 3
-Jun 23 00:38:28 amd kernel: usb 5-2: new full speed USB device using
-uhci_hcd and address 5
-Jun 23 00:38:29 amd kernel: usb 5-2: configuration #1 chosen from 1
-choice
-Jun 23 00:38:29 amd kernel: usb 5-2: New USB device found,
-idVendor=0483, idProduct=2016
-Jun 23 00:38:29 amd kernel: usb 5-2: New USB device strings: Mfr=1,
-Product=2, SerialNumber=0
-Jun 23 00:38:29 amd kernel: usb 5-2: Product: Biometric Coprocessor
-Jun 23 00:38:29 amd kernel: usb 5-2: Manufacturer: STMicroelectronics
-pccard: card ejected from slot 0
-Jun 23 00:38:32 amd kernel: pccard: card ejected from slot 0
+>>>> We wait until they can continue.
+>>>
+>>> So if I have a process blocked on an unavilable NFS mount, I can't
+>>> suspend?
+>>
+>> That's correct, you can't.
+>>
+>> [And I know what you're going to say. ;-)]
+>
+> Why exactly does suspend/hibernation depend on "TASK_INTERRUPTIBLE" instead 
+> of a zero preempt_count()?  Really what we should do is just iterate over 
+> all of the actual physical devices and tell each one "Block new IO requests 
+> preemptably, finish pending DMA, put the hardware in low-power mode, and 
+> prepare for suspend/hibernate".  As long as each driver knows how to do 
+> those simple things we can have an entirely consistent kernel image for 
+> both suspend and for hibernation.
 
-I eject it, but nothing happens (and no messages in log) on
-insertion. I think system will die on next s2ram attempt.
-
+Patch would be welcome, actually. It turns out blocking new
+IO-requests is not completely trivial.
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
