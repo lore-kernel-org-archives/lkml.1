@@ -1,85 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbYFWJsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758258AbYFWJsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757555AbYFWJsS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 05:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbYFWJsE
+	id S1758258AbYFWJsb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 05:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757325AbYFWJsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 05:48:04 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:12829 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753399AbYFWJsC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 05:48:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gRjVd5uHW/6o9gVzX8qg/yIJFhxnQdUQWGVBDWm+kte/ny59805WDY58+Fy4ljhPGu
-         L0MJe9k48zJrv1OXUfY72n87xCtdNRwsb0w4X42hS9CVYV2Lm9q7mpD5Fy0ygkovrI8F
-         OvaL0zu4ynebuHymlnV9wne2kZkl7Y9AIZxiA=
-Message-ID: <cfd18e0f0806230248g3a2ab795s63de2b96538ebdd0@mail.gmail.com>
-Date: Mon, 23 Jun 2008 11:48:00 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Bart Van Assche" <bart.vanassche@gmail.com>
-Subject: Re: nanosleep() uses CLOCK_MONOTONIC, should be CLOCK_REALTIME?
-Cc: "Michael Kerrisk" <mtk.manpages@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "john stultz" <johnstul@us.ibm.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Roman Zippel" <zippel@linux-m68k.org>
-In-Reply-To: <e2e108260806230134g48f5ac63mb93256e08c57b4f7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 23 Jun 2008 05:48:17 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:60769 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757075AbYFWJsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 05:48:16 -0400
+Date: Mon, 23 Jun 2008 04:48:13 -0500
+From: Paul Jackson <pj@sgi.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: mingo@elte.hu, hpa@zytor.com, andi@firstfloor.org, mingo@redhat.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com
+Subject: Re: [PATCH] x86 boot: Pass E820 memory map entries more than 128
+ via linked list of setup data
+Message-Id: <20080623044813.d2fee3a0.pj@sgi.com>
+In-Reply-To: <1214212441.27182.4.camel@caritas-dev.intel.com>
+References: <1213155219.13392.2.camel@caritas-dev.intel.com>
+	<20080618114511.GB28838@elte.hu>
+	<1214200441.25753.5.camel@caritas-dev.intel.com>
+	<20080623015326.bec9a75d.pj@sgi.com>
+	<1214205686.26437.18.camel@caritas-dev.intel.com>
+	<20080623034728.250c6fd1.pj@sgi.com>
+	<1214212441.27182.4.camel@caritas-dev.intel.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <485E00CD.9060503@gmail.com>
-	 <e2e108260806230134g48f5ac63mb93256e08c57b4f7@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bart,
+Huang wrote:
+> 4. Current EFI memmap based code does not work properly in all
+> situation, for example it can not works with kernel parameter:
+> "memmap=exactmap, memmap=<xxx>, ...", "mem=<xxx>" or "noefi".
 
-On Mon, Jun 23, 2008 at 10:34 AM, Bart Van Assche
-<bart.vanassche@gmail.com> wrote:
-> On Sun, Jun 22, 2008 at 9:35 AM, Michael Kerrisk <mtk.manpages@gmail.com> wrote:
->> Thomas,
->>
->> (I gues you are the right target for this?)
->>
->> The POSIX.1 specification of nanosleep() says:
->>
->>       But, except for the case of being interrupted by a signal, the
->>       suspension time shall not be less than the time  specified  by
->>       rqtp, as measured by the system clock CLOCK_REALTIME.
->>
->>
->> However, reading kernel/hrtimer.c:sys_nanosleep(), it appears that
->> CLOCK_MONOTONIC is used.
->>
->>    return hrtimer_nanosleep(&tu, rmtp, HRTIMER_MODE_REL, CLOCK_MONOTONIC);
->>
->> Is there a reason to use CLOCK_MONOTONIC, instead of CLOCK_REALTIME?  Is it
->> intentional?  If yes, then I should document this in the man-pages.  If not,
->> then it should be fixed.
->
-> CLOCK_MONOTONIC works fine even if ntpd steps the clock forward or
-> backward, CLOCK_REALTIME not. So the man page should be fixed.
+With "noefi" parameter, my EFI memmap based code is not supposed
+to do anything.  The "noefi" parameter asks the kernel to ignore
+any EFI support in the firmware it is booting from.
 
-Thanks for your reply, but I'm not quite convinced yet.  The things
-is: the Solaris man page also says "CLOCK_REALTIME".  (Of course that
-man page may just be parroting the standard.)  Could there not be some
-reasonable semantics for a nanosleep() that was based on
-CLOCK_REALTIME?
-
-Thanks,
-
-Michael
-
+Could you tell me more what you mean by "does not work properly?"
 
 -- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
