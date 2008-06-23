@@ -1,68 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbYFWHAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752442AbYFWHBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755253AbYFWHAJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 03:00:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYFWG75
+	id S1752442AbYFWHBS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 03:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYFWHBB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 02:59:57 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:40611 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751549AbYFWG74 (ORCPT
+	Mon, 23 Jun 2008 03:01:01 -0400
+Received: from n58.bullet.mail.sp1.yahoo.com ([98.136.44.46]:40652 "HELO
+	n58.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751495AbYFWHBA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 02:59:56 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=F4apvY7pFkDztY3BmAK/TWUa6yJrpb9DtjQf3dDNIJzAVB69INc8O7P9wnXCdgcaOpXjrvIHQz+BbpbmXgWlovOqfZvdUN1hfZpCtCKG11m3AR4YFxmDq3DjdtR1e33y34tqBUB/fYZMNO1Xj3p0wgv55zgOrGYA/n1SN12MLWo=  ;
-X-YMail-OSG: vni.ZyQVM1kuYiZEBAlslUKkmpEAzikmkPau_pfFw9dSD3.shXacN.Y1CCwDZM5VzJOKUKVrFWMFKFx_F48WLRh90wGUubb3vb8x.Kk3xrohaDTe9.8BpykVpJaKiLdYmHw-
+	Mon, 23 Jun 2008 03:01:00 -0400
+X-Greylist: delayed 327 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Jun 2008 03:01:00 EDT
 X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Oops when using growisofs
-Date: Mon, 23 Jun 2008 16:59:07 +1000
-User-Agent: KMail/1.9.5
-Cc: Michael Buesch <mb@bu3sch.de>, Arnd Bergmann <arnd@arndb.de>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       Jens Axboe <axboe@kernel.dk>, Jan Kara <jack@ucw.cz>
-References: <200806221818.24372.mb@bu3sch.de> <200806230028.20643.mb@bu3sch.de> <20080622233448.4b27c131.akpm@linux-foundation.org>
-In-Reply-To: <20080622233448.4b27c131.akpm@linux-foundation.org>
+X-Yahoo-Newman-Id: 477325.33230.bm@omp407.mail.sp1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=It2fRrJHew7EsFCANBCsfXa6WrIUhZWOYDFJWuFUn0jCwot2/2c6DmSc1LBfifFz5DhoSJG/QiAU/hOSgkdZ6L5FbVPbLWQkDSfinb0OHD7ZdeE72rAjLlo16gzdM8OFsa9jcU5d91dx8BNMYif0xmfRQxkJJGaHLBNl61NI+/U=;
+X-Mailer: YahooMailWebService/0.7.199
+Date: Sun, 22 Jun 2008 23:55:29 -0700 (PDT)
+From: barry bouwsma <free_beer_for_all@yahoo.com>
+Reply-To: free_beer_for_all@yahoo.com
+Subject: Broken ttusb-dec DVB support since, well, year(s)
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806231659.07437.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <399205.76644.qm@web46108.mail.sp1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 June 2008 16:34, Andrew Morton wrote:
-> On Mon, 23 Jun 2008 00:28:20 +0200 Michael Buesch <mb@bu3sch.de> wrote:
-> > On Monday 23 June 2008 00:05:51 Michael Buesch wrote:
-> > > > Note: r9 and r3 are both NULL pointers. r3 is the value returned from
-> > > > alloc_page_buffers. R9 is a copy of that, which gets accessed.
-> > >
-> > > Hm, yeah. I looked at that code already, but I can't see how it could
-> > > return a NULL pointer.
-> >
-> > Well, actually, it can return a NULL pointer.
-> >
-> >  928         head = NULL;
-> >  929         offset = PAGE_SIZE;
-> >  930         while ((offset -= size) >= 0) {
-> > ...
-> >  949         }
-> >  950         return head;
-> >
-> > So if size, which is a passed in as parameter, is > PAGE_SIZE it will
-> > return NULL.
-> >
-> > The size parameter is calculated by doing
-> > blocksize = 1 << inode->i_blkbits;
-> > in an earlier function in the callchain.
->
-> Yes, that's a more likely scenario.  isofs has a history of passing
-> garbage into the VFS.
+Moin moin!
 
-Yes isofs will pass in a too-big page here (IIRC 32K or something).
-And trigger this oops.
+Sorry I'm posting this here rather than to the more specific
+linux-dvb@ mailing list where I'd rather this appear, but my
+attempts to surbscibe!@! to that list have been rejected, first
+as an invalid e-mail, then an insecure e-mail, and I've been
+unable to progress further from this throwaway account.
+
+Feel free to redirect/repost this message there if you're a
+qualified developer and feel it's more appropriate.
+
+
+There is a change that was introduced to the file
+drivers/media/dvb/ttusb-dec/ttusbdecfe.c
+sometime in the not-too-recent past and which resulted in breaking
+the support which early 2.6.1x kernels had for my Hauppauge
+DEC-3000s DVB-S device.
+
+The particular code (below) checks the value in a register to
+decide the tuning status -- hitherto one had to assume the device
+was properly tuned and receiving signal and everything.
+
+
+     60         switch(result[3]) {
+     61                 case 1:  /* not tuned yet */
+     62                 case 2:  /* no signal/no lock*/
+     63                         break;
+     64                 case 3:  /* signal found and locked*/
+     65                         *status = FE_HAS_SIGNAL | FE_HAS_VITERBI |
+     66                         FE_HAS_SYNC | FE_HAS_CARRIER | FE_HAS_LOCK;
+     67                         break;
+     68                 case 4:
+     69                         *status = FE_TIMEDOUT;
+     70                         break;
+     71                 default:
+     72                         pr_info("%s: returned unknown value: %d\n",
+     73                                 __func__, result[3]);
+     74                         return -EIO;
+     75         }
+
+
+Unfortunately, while this might work for the other flavours of
+card (DVB-T?) supported by this code, in the case of my particular
+device for DVB-S, the unknown value returned is 0 and does not
+change regardless of tuning status.
+
+I haven't checked whether a different register on my particular
+device contains a usable value for the above code.
+
+In any case, with my particular device, in order to use more
+recent kernels, I've had to add a ``case 0:'' line to the
+``case 3:'' seen above in order to get the previous behaviour
+where no check was made.
+
+
+As I don't know the particular model for which the quoted code
+was added, I don't know if my device is unique, or whether the
+number of DVB-S users of this code is miniscule, as nobody else
+has complained that I've seen.
+
+Apologies for not reporting this long ago when first observed,
+but I've not had any meaningful Internet access in a long time
+to allow me more than just leeching the latest codes.
+
+
+thanks,
+BOUWSMA Barry
+
+
+      
+
