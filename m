@@ -1,135 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761983AbYFWRyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761894AbYFWRyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761983AbYFWRyd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 13:54:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757035AbYFWRyF
+	id S1761894AbYFWRyq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 13:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757035AbYFWRyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 13:54:05 -0400
-Received: from mga09.intel.com ([134.134.136.24]:19290 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753273AbYFWRyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 13:54:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,691,1204531200"; 
-   d="scan'208";a="400996028"
-Date: Mon, 23 Jun 2008 10:54:01 -0700
-From: mark gross <mgross@linux.intel.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: Intel IOMMU (and IOMMU for Virtualization) performances
-Message-ID: <20080623175401.GA17008@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20080604235053K.fujita.tomonori@lab.ntt.co.jp> <20080605220216.GA12927@linux.intel.com> <20080606134839Z.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080606134839Z.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-OriginalArrivalTime: 23 Jun 2008 17:54:01.0930 (UTC) FILETIME=[1EB96AA0:01C8D55A]
+	Mon, 23 Jun 2008 13:54:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39815 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762006AbYFWRyf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 13:54:35 -0400
+Subject: Re: Spinlocks: Factor our GENERIC_LOCKBREAK in order to avoid spin
+	with irqs disable
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Petr Tesarik <ptesarik@suse.cz>
+Cc: Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1214241561.19392.21.camel@elijah.suse.cz>
+References: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com>
+	 <20080507073017.GJ32195@elte.hu>
+	 <Pine.LNX.4.64.0805071002330.3110@schroedinger.engr.sgi.com>
+	 <Pine.LNX.4.64.0805071022230.3173@schroedinger.engr.sgi.com>
+	 <Pine.LNX.4.64.0805071148240.8441@schroedinger.engr.sgi.com>
+	 <1214241561.19392.21.camel@elijah.suse.cz>
+Content-Type: text/plain
+Date: Mon, 23 Jun 2008 19:54:13 +0200
+Message-Id: <1214243653.3223.363.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 06, 2008 at 01:44:30PM +0900, FUJITA Tomonori wrote:
-> On Thu, 5 Jun 2008 15:02:16 -0700
-> mark gross <mgross@linux.intel.com> wrote:
-> 
-> > On Wed, Jun 04, 2008 at 11:47:01PM +0900, FUJITA Tomonori wrote:
-> > > I resumed the work to make the IOMMU respect drivers' DMA alignment
-> > > (since I got a desktop box having VT-d). In short, some IOMMUs
-> > > allocate memory areas spanning driver's segment boundary limit (DMA
-> > > alignment). It forces drivers to have a workaround to split up scatter
-> > > entries into smaller chunks again. To remove such work around in
-> > > drivers, I modified several IOMMUs, X86_64 (Calgary and Gart), Alpha,
-> > > POWER, PARISC, IA64, SPARC64, and swiotlb.
-> > > 
-> > > Now I try to fix Intel IOMMU code, the free space management
-> > > algorithm.
-> > > 
-> > > The major difference between Intel IOMMU code and the others is Intel
-> > > IOMMU code uses Red Black tree to manage free space while the others
-> > > use bitmap (swiotlb is the only exception).
-> > > 
-> > > The Red Black tree method consumes less memory than the bitmap method,
-> > > but it incurs more overheads (the RB tree method needs to walk through
-> > > the tree, allocates a new item, and insert it every time it maps an
-> > > I/O address). Intel IOMMU (and IOMMUs for virtualization) needs
-> > > multiple IOMMU address spaces. That's why the Red Black tree method is
-> > > chosen, I guess.
-> > > 
-> > > Half a year ago, I tried to convert POWER IOMMU code to use the Red
-> > > Black method and saw performance drop:
-> > > 
-> > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-11/msg00650.html
-> > > 
-> > > So I tried to convert Intel IOMMU code to use the bitmap method to see
-> > > how much I can get.
-> > > 
-> > > I didn't see noticable performance differences with 1GbE. So I tried
-> > > the modified driver of a SCSI HBA that just does memory accesses to
-> > > emulate the performances of SSD disk drives, 10GbE, Infiniband, etc.
-> > > 
-> > > I got the following results with one thread issuing 1KB I/Os:
-> > > 
-> > >                     IOPS (I/O per second)
-> > > IOMMU disabled         145253.1 (1.000)
-> > > RB tree (mainline)     118313.0 (0.814)
-> > > Bitmap                 128954.1 (0.887)
-> > >
+On Mon, 2008-06-23 at 19:19 +0200, Petr Tesarik wrote:
+> On Wed, 2008-05-07 at 11:49 -0700, Christoph Lameter wrote:
+> > Subject: Spinlocks: Factor our GENERIC_LOCKBREAK in order to avoid spin with irqs disabled
 > > 
-> > FWIW: You'll see bigger deltas if you boot with intel_iommu=strict, but
-> > those will be because of waiting on IOMMU hardware to flush caches and
-> > may further hide effects of gong with a bitmap as opposed to a RB tree.
-> 
-> Yeah, I know. I'll test 'intel_iommu=strict' option next time.
-> 
-> The patch also has 'intel_iommu=strict' option. Wiht it enabled, it
-> flushes TLB cache every time dma_unmap_* is called as the original
-> code does.
-> 
-> 
-> > > I've attached the patch to modify Intel IOMMU code to use the bitmap
-> > > method but I have no intention of arguing that Intel IOMMU code
-> > > consumes more memory for better performance. :) I want to do more
-> > > performance tests with 10GbE (probably, I have to wait for a server
-> > > box having VT-d, which is not available on the market now).
-> > > 
-> > > As I said, what I want to do now is to make Intel IOMMU code respect
-> > > drivers' DMA alignment. Well, it's easier to do that if Intel IOMMU
-> > > uses the bitmap method since I can simply convert the IOMMU code to
-> > > use lib/iommu-helper but I can modify the RB tree method too.
-> > >
+> > The nice spinlock functions that enable interrupts while spinning are only
+> > usable if GENERIC_LOCKBREAK is set (and we do not debug locks but lock
+> > debugging would not be used for a production configuration).
 > > 
-> > I'm going to be out of contact for a few weeks but this work sounds
-> > interesting.  
+> > Factor out the dependencies on the ->lock_break field from the nice functions
+> > into a set of BREAKLOCK macros (cannot be functions since the type of the lock
+> > variable varies).
+> > 
+> > The nice spinlock function can then also be used if !GENERIC_LOCKBREAK
+> > 
+> > Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> > 
+> > ---
+> >  kernel/spinlock.c |   40 ++++++++++++++++++++++++++++++----------
+> >  1 file changed, 30 insertions(+), 10 deletions(-)
+> > 
+> > Index: linux-2.6/kernel/spinlock.c
+> > ===================================================================
+> > --- linux-2.6.orig/kernel/spinlock.c	2008-05-07 11:19:31.000000000 -0700
+> > +++ linux-2.6/kernel/spinlock.c	2008-05-07 11:40:56.000000000 -0700
+> > @@ -65,7 +65,7 @@ EXPORT_SYMBOL(_write_trylock);
+> >   * even on CONFIG_PREEMPT, because lockdep assumes that interrupts are
+> >   * not re-enabled during lock-acquire (which the preempt-spin-ops do):
+> >   */
+> > -#if !defined(CONFIG_GENERIC_LOCKBREAK) || defined(CONFIG_DEBUG_LOCK_ALLOC)
+> > +#ifdef CONFIG_DEBUG_LOCK_ALLOC
 > 
-> Why did you choose the RB tree instead of a traditional bitmap scheme
-> to manage free space?
->
+> Maybe I'm just blind, but doesn't this change effectively disable any
+> arch-specific optimized code for _raw_*_lock?
+> 
+> If CONFIG_DEBUG_LOCK_ALLOC is set, then CONFIG_DEBUG_SPINLOCK must also
+> be set, so in that case the debugging versions of _raw_*_lock are used.
+> But if CONFIG_DEBUG_LOCK_ALLOC is _not_ set, then the locks are built
+> with _trylock and _can_lock primitives.
+> 
+> What am I missing here?
 
-I inherited this code.  And I'm passing it on to David Woodhouse soon.
-I don't know why RB was used over BM.  I guess for scalability to many
-10Gig IO devices, but thats just a guess.
- 
-> 
-> > > I'm just interested in other people's opinions on IOMMU
-> > > implementations, performances, possible future changes for performance
-> > > improvement, etc.
-> > > 
-> > > For further information:
-> > > 
-> > > LSF'08 "Storage Track" summary by Grant Grundler:
-> > > http://iou.parisc-linux.org/lsf2008/SUMMARY-Storage.txt
-> > > 
-> > > My LSF'08 slides:
-> > > http://iou.parisc-linux.org/lsf2008/IO-DMA_Representations-fujita_tomonori.pdf
-> > > 
-> > > 
-> > > Tis patch is against the latst git tree (note that it just converts
-> > > Intel IOMMU code to use the bitmap. It doesn't make it respect
-> > > drivers' DMA alignment yet).
-> > > 
-> > 
-> > I'll look closely at your patch later.
-> 
-> Thanks a lot!
+No, I think you're right.
+
+I've been playing with these patches:
+
+  http://programming.kicks-ass.net/kernel-patches/spinlocks/
+
+But as it stands it breaks !CONFIG_PREEMPT... ought to find some other
+cycles to spend on it..
+
+
+
