@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbYFWLUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbYFWLYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755049AbYFWLUT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 07:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbYFWLUH
+	id S1754070AbYFWLYn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 07:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbYFWLYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 07:20:07 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42949 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752841AbYFWLUG (ORCPT
+	Mon, 23 Jun 2008 07:24:36 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33268 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751867AbYFWLYg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 07:20:06 -0400
-Date: Mon, 23 Jun 2008 07:20:04 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Deti Fliegl <deti@fliegl.de>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org, jaswinder@infradead.org
-Subject: Re: [PATCH] dabusb: use request_firmware()
-Message-ID: <20080623112004.GA26516@infradead.org>
-References: <1214219201.27974.21.camel@shinybook.infradead.org>
+	Mon, 23 Jun 2008 07:24:36 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 0/2] TTY cleanups
+To: torvalds@osdl.org, linux-kernel@vger.kernel.org
+Date: Mon, 23 Jun 2008 12:06:20 +0100
+Message-ID: <20080623110455.24976.32969.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1214219201.27974.21.camel@shinybook.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +config USB_DABUSB_FIRMWARE
-> +	bool "Include firmware images for DABUSB driver"
-> +	depends on USB_DABUSB
-> +	---help---
-> +	Include the firmware for the DABUSB device in the kernel image.
-> +	Say 'N' and let it get loaded from userspace.
+Two small tty clean ups.
 
-Sorry if I missed a discussion on it in the intial firmware threads, but
-what is the point of all these FOO_FIRMWARE options?  I think we should
-include all firmware that we have a driver for if people want firmware
-built-in and non if not.
+---
 
-That is instead of all these FOO_FIRMWARE options just have one
-user-visible BUILTIN_FIRMWARE option.  Also makes it much less likely
-for mingo to accidentally build a kernel image that doesn't actually boot :)
+Alan Cox (1):
+      tty_driver: Update required method documentation
+
+Gustavo Fernando Padovan (1):
+      removed unused var real_tty on n_tty_ioctl()
+
+
+ drivers/char/tty_ioctl.c   |    7 -------
+ include/linux/tty_driver.h |    5 ++---
+ 2 files changed, 2 insertions(+), 10 deletions(-)
+
+-- 
+With trembling hands he unfurled the ancient cracked parchment, this was
+the place, it had to be. Uncertainly he began to mumble the chant "rdbms,
+sql , third normal form, java,  table, scalable". Something moved..
+>From outside they heard a scream and a thud. The sales department had awoken
 
