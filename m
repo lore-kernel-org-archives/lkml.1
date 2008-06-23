@@ -1,45 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763642AbYFWUHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763848AbYFWUH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763642AbYFWUHk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 16:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbYFWUHG
+	id S1763848AbYFWUH5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 16:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbYFWUHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 16:07:06 -0400
-Received: from gate.crashing.org ([63.228.1.57]:59988 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752397AbYFWUHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 16:07:03 -0400
-Subject: Re: [patch] x86 supports NO_IRQ convention
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: David Brownell <david-b@pacbell.net>
-Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, hpa@zytor.com
-In-Reply-To: <200806230428.20388.david-b@pacbell.net>
-References: <200806221953.18849.david-b@pacbell.net>
-	 <1214217751.8011.262.camel@pasglop>
-	 <200806230428.20388.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Tue, 24 Jun 2008 06:06:31 +1000
-Message-Id: <1214251591.8011.273.camel@pasglop>
+	Mon, 23 Jun 2008 16:07:48 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36148 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758650AbYFWUHr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 16:07:47 -0400
+Date: Mon, 23 Jun 2008 13:07:37 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Darren Hart <dvhltc@us.ibm.com>
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       josh@freedesktop.org, niv@us.ibm.com, dino@in.ibm.com,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       vegard.nossum@gmail.com, adobriyan@gmail.com, oleg@tv-sign.ru,
+       bunk@kernel.org, rjw@sisk.pl
+Subject: Re: [PATCH -tip-rcu] Make rcutorture more vicious: make quiescent
+ rcutorture less power-hungry
+Message-ID: <20080623130737.489498dc@infradead.org>
+In-Reply-To: <1214251374.4440.48.camel@Aeon>
+References: <20080618122144.GA27143@linux.vnet.ibm.com>
+	<20080618162649.GA18326@linux.vnet.ibm.com>
+	<20080622200638.GA25328@linux.vnet.ibm.com>
+	<20080622131712.54ba732c@infradead.org>
+	<1214243649.4440.10.camel@Aeon>
+	<20080623110706.197f25b1@infradead.org>
+	<1214251374.4440.48.camel@Aeon>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-23 at 04:28 -0700, David Brownell wrote:
-> On Monday 23 June 2008, Benjamin Herrenschmidt wrote:
-> > NO_IRQ on x86 is 0
+On Mon, 23 Jun 2008 20:02:54 +0000
+Darren Hart <dvhltc@us.ibm.com> wrote:
+
+> On Mon, 2008-06-23 at 11:07 -0700, Arjan van de Ven wrote:
+> > On Mon, 23 Jun 2008 17:54:09 +0000
+> > Darren Hart <dvhltc@us.ibm.com> wrote:
+> > 
+> > > I'm a little concerned about how this will affect real-time
+> > > performance, as queueing up lots of timers all at once can lead to
+> > > long running timer expiration handlers.  If just a
+> > > schedule_timeout, I suppose we are only looking at a process
+> > > wakeup, as opposed to a softirq context callback function?
+> > 
+> > in reality, the time it takes to deliver the interrupt (including
+> > waking the CPU up etc), is likely to be an order or two of magnitude
+> > higher than this kind of code loop.... 
 > 
-> There is no such #define for it.
-> And since zero is used for timer IRQs, it's not invalid.
+> Sure, if we just look at one of them.  Any idea how many such items
+> we're looking at rounding up to fire at the same time?  Is it dozens,
+> hundreds, thousands?
+> 
 
-I'll refer you to past discussions with Linus here. 0 is invalid to
-drivers for all intend and purposes.
+so far, in practice, it's still single-digit amounts.
 
-Cheers,
-Ben.
+There's not that many timers that run normally. 
+(based on powertop data from many systems)
 
-
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
