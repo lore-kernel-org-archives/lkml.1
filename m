@@ -1,185 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbYFWVtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951AbYFWVxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755846AbYFWVtZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 17:49:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbYFWVtP
+	id S1755951AbYFWVxe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 17:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbYFWVx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 17:49:15 -0400
-Received: from mail.fuw.edu.pl ([193.0.80.14]:37100 "EHLO mail.fuw.edu.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753193AbYFWVtN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 17:49:13 -0400
-From: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
-Organization: FUW
-To: USB development list <linux-usb@vger.kernel.org>
-Subject: Re: 2.6.27-rc7-git1: usb-storage breakage with non-functional disk
-Date: Mon, 23 Jun 2008 23:50:08 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-References: <200806232345.54047.rjw@sisk.pl>
-In-Reply-To: <200806232345.54047.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Mon, 23 Jun 2008 17:53:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36742 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753337AbYFWVxZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 17:53:25 -0400
+Date: Mon, 23 Jun 2008 14:52:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: oleg@tv-sign.ru, ebiederm@xmission.com, mingo@elte.hu,
+       torvalds@linux-foundation.org, roland@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] introduce PF_KTHREAD flag
+Message-Id: <20080623145212.c6627156.akpm@linux-foundation.org>
+In-Reply-To: <200806232336.59965.rjw@sisk.pl>
+References: <20080601153042.GA8238@tv-sign.ru>
+	<20080623134706.f5e1ef32.akpm@linux-foundation.org>
+	<20080623135253.ed7cabf1.akpm@linux-foundation.org>
+	<200806232336.59965.rjw@sisk.pl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806232350.09597.Rafal.Wysocki@fuw.edu.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[sorry for the broken USB list address in the original post.]
+On Mon, 23 Jun 2008 23:36:59 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-On Monday, 23 of June 2008, Rafael J. Wysocki wrote:
-> Hi,
+> On Monday, 23 of June 2008, Andrew Morton wrote:
+> > On Mon, 23 Jun 2008 13:47:06 -0700
+> > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > I don't yet know how much additional damage will happen as a result.
+> > 
+> > Lots.
 > 
-> This has just happened to me with -rc7-git1 while trying to use a not
-> sufficiently powered external disk (we should survive that IMO):
-> 
-> usb 6-3: new high speed USB device using ehci_hcd and address 9
-> usb 6-3: device descriptor read/64, error -110
-> usb 6-3: device descriptor read/64, error -110
-> usb 6-3: new high speed USB device using ehci_hcd and address 10
-> usb 6-3: device descriptor read/64, error -110
-> usb 6-3: device descriptor read/64, error -110
-> usb 6-3: new high speed USB device using ehci_hcd and address 11
-> usb 6-3: device not accepting address 11, error -110
-> usb 6-3: new high speed USB device using ehci_hcd and address 12
-> usb 6-3: device not accepting address 12, error -110
-> hub 6-0:1.0: unable to enumerate USB device on port 3
-> usb 2-1: new full speed USB device using ohci_hcd and address 2
-> usb 2-1: not running at top speed; connect to a high speed hub
-> usb 2-1: configuration #1 chosen from 1 choice
-> usb 2-1: New USB device found, idVendor=04cf, idProduct=8818
-> usb 2-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
-> usb 2-1: Product: USB Mass Storage Device
-> usb 2-1: Manufacturer: Myson Century, Inc.
-> usb 2-1: SerialNumber: 100
-> Initializing USB Mass Storage driver...
-> scsi12 : SCSI emulation for USB Mass Storage devices
-> usb-storage: device found at 2
-> usb-storage: waiting for device to settle before scanning
-> usbcore: registered new interface driver usb-storage
-> USB Mass Storage support registered.
-> scsi 12:0:0:0: Direct-Access     IC25N060 ATMR04-0         MO3O PQ: 0 ANSI: 0 CCS
-> sd 12:0:0:0: [sdc] 117210240 512-byte hardware sectors (60012 MB)
-> sd 12:0:0:0: [sdc] Write Protect is off
-> sd 12:0:0:0: [sdc] Mode Sense: 00 14 00 00
-> sd 12:0:0:0: [sdc] Assuming drive cache: write through
-> sd 12:0:0:0: [sdc] 117210240 512-byte hardware sectors (60012 MB)
-> sd 12:0:0:0: [sdc] Write Protect is off
-> sd 12:0:0:0: [sdc] Mode Sense: 00 14 00 00
-> sd 12:0:0:0: [sdc] Assuming drive cache: write through
->  sdc:<6>usb 2-1: USB disconnect, address 2
-> sd 12:0:0:0: [sdc] Result: hostbyte=DID_ERROR driverbyte=DRIVER_OK,SUGGEST_OK
-> end_request: I/O error, dev sdc, sector 0
-> Buffer I/O error on device sdc, logical block 0
-> sd 12:0:0:0: [sdc] Result: hostbyte=DID_ERROR driverbyte=DRIVER_OK,SUGGEST_OK
-> end_request: I/O error, dev sdc, sector 0
-> Buffer I/O error on device sdc, logical block 0
->  unable to read partition table
-> sd 12:0:0:0: [sdc] Attached SCSI disk
-> sd 12:0:0:0: Attached scsi generic sg3 type 0
-> BUG: unable to handle kernel NULL pointer dereference at 0000000000000004
-> IP: [<ffffffffa038e6f1>] :usb_storage:slave_alloc+0x41/0x80
-> PGD 1260ff067 PUD 119076067 PMD 0 
-> Oops: 0000 [1] SMP 
-> CPU 3 
-> Modules linked in: usb_storage parport_pc lp parport usblp nfsd lockd auth_rpcgss sunrpc exportfs iptable_filter ip_tables ip6table_filter ip6_tables x_tables ipv6 cpufreq_conservative cpufreq_ondemand cpufreq_userspace cpufreq_powersave powernow_k8 freq_table snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device reiserfs dm_mod ohci1394 sr_mod cdrom floppy ieee1394 serio_raw rtc_cmos sky2 wmi snd_hda_intel rtc_core sg rtc_lib joydev snd_pcm snd_timer snd_page_alloc snd_hwdep snd evdev button soundcore raid456 async_xor async_memcpy async_tx xor raid0 usbhid ff_memless ehci_hcd ohci_hcd sd_mod edd raid1 ext3 jbd fan pata_marvell pata_atiixp thermal processor
-> Pid: 9319, comm: usb-stor-scan Not tainted 2.6.26-rc7 #196
-> RIP: 0010:[<ffffffffa038e6f1>]  [<ffffffffa038e6f1>] :usb_storage:slave_alloc+0x41/0x80
-> RSP: 0018:ffff8100a20cdb60  EFLAGS: 00010202
-> RAX: 0000000000000000 RBX: ffff810087d828d0 RCX: 0000000000000003
-> RDX: ffff8101275f08e0 RSI: ffff810086cc49d0 RDI: ffff810124144b90
-> RBP: ffff8100a20cdb70 R08: 0000000000000001 R09: 0000000000000000
-> R10: ffffffff807fe7e0 R11: 0000000000000000 R12: ffff810087499000
-> R13: ffff810124953678 R14: ffff810087d82000 R15: 0000000000000000
-> FS:  00007f22f6561700(0000) GS:ffff810127c997c0(0000) knlGS:00000000eeb1db90
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 0000000000000004 CR3: 0000000122089000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process usb-stor-scan (pid: 9319, threadinfo ffff8100a20cc000, task ffff810086cc4300)
-> Stack:  ffff810087499000 ffff810124953650 ffff8100a20cdbb0 ffffffff803ea940
->  ffff8100a20cdbb0 ffff810087d82000 0000000000000000 0000000000000000
->  ffff810124953678 0000000000000000 ffff8100a20cdcf0 ffffffff803eac9a
-> Call Trace:
->  [<ffffffff803ea940>] scsi_alloc_sdev+0x1e0/0x250
->  [<ffffffff803eac9a>] scsi_probe_and_add_lun+0x12a/0xc20
->  [<ffffffff803ebd4f>] __scsi_scan_target+0x3bf/0x6c0
->  [<ffffffff8025db46>] ? mark_held_locks+0x56/0xa0
->  [<ffffffff804ebbe9>] ? mutex_lock_nested+0x1b9/0x290
->  [<ffffffff8025dcdf>] ? trace_hardirqs_on+0xbf/0x150
->  [<ffffffff803ec0da>] scsi_scan_channel+0x8a/0xa0
->  [<ffffffff803ec1e8>] scsi_scan_host_selected+0xf8/0x160
->  [<ffffffff803ec2ce>] do_scsi_scan_host+0x7e/0x80
->  [<ffffffff803ec850>] scsi_scan_host+0x190/0x1d0
->  [<ffffffffa0390f3d>] :usb_storage:usb_stor_scan_thread+0x6d/0x1c0
->  [<ffffffff8024f790>] ? autoremove_wake_function+0x0/0x40
->  [<ffffffffa0390ed0>] ? :usb_storage:usb_stor_scan_thread+0x0/0x1c0
->  [<ffffffff8024f33d>] kthread+0x4d/0x80
->  [<ffffffff8020c608>] child_rip+0xa/0x12
->  [<ffffffff8020bd1f>] ? restore_args+0x0/0x30
->  [<ffffffff8024f2f0>] ? kthread+0x0/0x80
->  [<ffffffff8020c5fe>] ? child_rip+0x0/0x12
-> 
-> 
-> Code: 1f c6 87 c3 00 00 00 24 48 8b 7f 08 48 81 c3 d0 08 00 00 8b 83 9c 00 00 00 48 8b 53 78 c1 e8 0f 83 e0 0f 48 8b 84 c2 e8 03 00 00 <0f> b7 70 04 ff ce e8 44 d9 fb df 80 bb c4 00 00 00 04 75 12 49 
-> RIP  [<ffffffffa038e6f1>] :usb_storage:slave_alloc+0x41/0x80
->  RSP <ffff8100a20cdb60>
-> CR2: 0000000000000004
-> ---[ end trace 2077f860f94c5bf3 ]---
-> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
-> end_request: I/O error, dev sdc, sector 0
-> Buffer I/O error on device sdc, logical block 0
-> Buffer I/O error on device sdc, logical block 1
-> Buffer I/O error on device sdc, logical block 2
-> Buffer I/O error on device sdc, logical block 3
-> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
-> end_request: I/O error, dev sdc, sector 0
-> Buffer I/O error on device sdc, logical block 0
-> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
-> end_request: I/O error, dev sdc, sector 117210112
-> Buffer I/O error on device sdc, logical block 14651264
-> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
-> end_request: I/O error, dev sdc, sector 117210112
-> Buffer I/O error on device sdc, logical block 14651264
-> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
-> end_request: I/O error, dev sdc, sector 117210112
-> Buffer I/O error on device sdc, logical block 14651264
-> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
-> end_request: I/O error, dev sdc, sector 0
-> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
-> end_request: I/O error, dev sdc, sector 0
-> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
-> end_request: I/O error, dev sdc, sector 0
-> sd 12:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
-> end_request: I/O error, dev sdc, sector 117210232
-> 
-> It resulted in usb-storage being unusable and a system reboot.
-> 
-> Thanks,
-> Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+> Well, sorry about that.  I can ask Len to drop the freezer patch temporarily
+> and rebase it on top of -next if that helps.
+
+The freezer patch is already in linux-next.  Assuming those changes are
+planned for 2.6.27 then it's best to leave things as they are.
 
 
+Some of these problems will go away once I get most-of-mm into
+linux-next.  But it will mean that people will need to start weaning
+themselves off the practice of preparing patches against Linus
+mainline.
 
--- 
-Rafael J. Wysocki, Ph.D.
-Institute of Theoretical Physics
-Faculty of Physics of Warsaw University
-ul. Hoza 69, 00-681 Warsaw
-[tel: +48 22 55 32 263]
-[mob: +48 60 50 53 693]
-----------------------------
-One should not increase, beyond what is necessary,
-the number of entities required to explain anything.
-			-- William of Ockham
