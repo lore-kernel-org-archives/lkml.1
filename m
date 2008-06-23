@@ -1,71 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763455AbYFWTpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763544AbYFWTpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763455AbYFWTpV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 15:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbYFWTpI
+	id S1763544AbYFWTpu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 15:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760572AbYFWTpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 15:45:08 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:38476 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752774AbYFWTpG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 15:45:06 -0400
-Date: Mon, 23 Jun 2008 15:45:05 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David Vrabel <david.vrabel@csr.com>
-cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       AntonioLin <antonio.lin@alcormicro.com>, <linux-usb@vger.kernel.org>,
-       "Perez-Gonzalez, Inaky" <inaky.perez-gonzalez@intel.com>
-Subject: Re: Scatter-gather list constraints
-In-Reply-To: <485FF44C.4010600@csr.com>
-Message-ID: <Pine.LNX.4.44L0.0806231522500.30973-100000@iolanthe.rowland.org>
+	Mon, 23 Jun 2008 15:45:42 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39748 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758000AbYFWTpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 15:45:41 -0400
+Date: Mon, 23 Jun 2008 21:45:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [git pull] core kernel fixes
+Message-ID: <20080623194524.GA32431@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jun 2008, David Vrabel wrote:
+Linus,
 
-> Alan Stern wrote:
-> > On Mon, 23 Jun 2008, David Vrabel wrote:
-> > 
-> >> Note that this 1024 byte multiple is for one particular WUSB mass
-> >> storage device.  The WUSB standard permits max packet sizes of up 3584
-> >> (in multiples of 512), but I suspect WUSB mass storage devices will only
-> >> use 512, 1024, or 2048.
-> >>
-> >> For a solution, we may be able to do something if the HWA host
-> >> controller is passed a single URB with an s-g list (rather than one URB
-> >> per s-g list entry) and was careful about how it segmented the URB into
-> >> transfers to the rpipe.
-> > 
-> > That would be ideal.  However there is no way to pass an S-G list along 
-> > with an URB; there's no field for it in the data structure.  And none 
-> > of the existing host controller drivers support such a thing.
-> > 
-> > I suppose we could add a field to struct urb and add a flag indicating 
-> > whether the controller driver supports S-G lists.
-> 
-> This is what I was thinking.
-> 
-> Can the number of entries in a sg list be limited?  e.g., if the
-> hardware only had support for say, 64 entries?
+please pull the latest core kernel fixes git tree from:
 
-Yes, there are two fields in struct request_queue for this: 
-max_phys_segments (the driver's limit) and max_hw_segments (the 
-hardware's limit).
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
 
-Standard EHCI hardware requires that the memory locations of the data
-for each packet be "virtually contiguous", i.e., discontiguities are
-allowed only at 4-KB page boundaries.  This severely limits the ability
-to handle general S-G lists.  For example, a 1024-byte packet can't be
-broken up into two 512-byte pieces unless the first piece ends at a
-page boundary and the second piece begins at a page boundary.  Maybe
-HWA host controllers are required to be more flexible, I don't know.
+	Ingo
 
-This may mean that your suggested approach won't work.
+------------------>
+Thomas Gleixner (1):
+      futexes: fix fault handling in futex_lock_pi
 
-Alan Stern
+ kernel/futex.c |   93 ++++++++++++++++++++++++++++++++++++++++++++------------
+ 1 files changed, 73 insertions(+), 20 deletions(-)
 
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 449def8..7d1136e 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -1096,21 +1096,64 @@ static void unqueue_me_pi(struct futex_q *q)
+  * private futexes.
+  */
+ static int fixup_pi_state_owner(u32 __user *uaddr, struct futex_q *q,
+-				struct task_struct *newowner)
++				struct task_struct *newowner,
++				struct rw_semaphore *fshared)
+ {
+ 	u32 newtid = task_pid_vnr(newowner) | FUTEX_WAITERS;
+ 	struct futex_pi_state *pi_state = q->pi_state;
++	struct task_struct *oldowner = pi_state->owner;
+ 	u32 uval, curval, newval;
+-	int ret;
++	int ret, attempt = 0;
+ 
+ 	/* Owner died? */
++	if (!pi_state->owner)
++		newtid |= FUTEX_OWNER_DIED;
++
++	/*
++	 * We are here either because we stole the rtmutex from the
++	 * pending owner or we are the pending owner which failed to
++	 * get the rtmutex. We have to replace the pending owner TID
++	 * in the user space variable. This must be atomic as we have
++	 * to preserve the owner died bit here.
++	 *
++	 * Note: We write the user space value _before_ changing the
++	 * pi_state because we can fault here. Imagine swapped out
++	 * pages or a fork, which was running right before we acquired
++	 * mmap_sem, that marked all the anonymous memory readonly for
++	 * cow.
++	 *
++	 * Modifying pi_state _before_ the user space value would
++	 * leave the pi_state in an inconsistent state when we fault
++	 * here, because we need to drop the hash bucket lock to
++	 * handle the fault. This might be observed in the PID check
++	 * in lookup_pi_state.
++	 */
++retry:
++	if (get_futex_value_locked(&uval, uaddr))
++		goto handle_fault;
++
++	while (1) {
++		newval = (uval & FUTEX_OWNER_DIED) | newtid;
++
++		curval = cmpxchg_futex_value_locked(uaddr, uval, newval);
++
++		if (curval == -EFAULT)
++			goto handle_fault;
++		if (curval == uval)
++			break;
++		uval = curval;
++	}
++
++	/*
++	 * We fixed up user space. Now we need to fix the pi_state
++	 * itself.
++	 */
+ 	if (pi_state->owner != NULL) {
+ 		spin_lock_irq(&pi_state->owner->pi_lock);
+ 		WARN_ON(list_empty(&pi_state->list));
+ 		list_del_init(&pi_state->list);
+ 		spin_unlock_irq(&pi_state->owner->pi_lock);
+-	} else
+-		newtid |= FUTEX_OWNER_DIED;
++	}
+ 
+ 	pi_state->owner = newowner;
+ 
+@@ -1118,26 +1161,35 @@ static int fixup_pi_state_owner(u32 __user *uaddr, struct futex_q *q,
+ 	WARN_ON(!list_empty(&pi_state->list));
+ 	list_add(&pi_state->list, &newowner->pi_state_list);
+ 	spin_unlock_irq(&newowner->pi_lock);
++	return 0;
+ 
+ 	/*
+-	 * We own it, so we have to replace the pending owner
+-	 * TID. This must be atomic as we have preserve the
+-	 * owner died bit here.
++	 * To handle the page fault we need to drop the hash bucket
++	 * lock here. That gives the other task (either the pending
++	 * owner itself or the task which stole the rtmutex) the
++	 * chance to try the fixup of the pi_state. So once we are
++	 * back from handling the fault we need to check the pi_state
++	 * after reacquiring the hash bucket lock and before trying to
++	 * do another fixup. When the fixup has been done already we
++	 * simply return.
+ 	 */
+-	ret = get_futex_value_locked(&uval, uaddr);
++handle_fault:
++	spin_unlock(q->lock_ptr);
+ 
+-	while (!ret) {
+-		newval = (uval & FUTEX_OWNER_DIED) | newtid;
++	ret = futex_handle_fault((unsigned long)uaddr, fshared, attempt++);
+ 
+-		curval = cmpxchg_futex_value_locked(uaddr, uval, newval);
++	spin_lock(q->lock_ptr);
+ 
+-		if (curval == -EFAULT)
+-			ret = -EFAULT;
+-		if (curval == uval)
+-			break;
+-		uval = curval;
+-	}
+-	return ret;
++	/*
++	 * Check if someone else fixed it for us:
++	 */
++	if (pi_state->owner != oldowner)
++		return 0;
++
++	if (ret)
++		return ret;
++
++	goto retry;
+ }
+ 
+ /*
+@@ -1507,7 +1559,7 @@ static int futex_lock_pi(u32 __user *uaddr, struct rw_semaphore *fshared,
+ 		 * that case:
+ 		 */
+ 		if (q.pi_state->owner != curr)
+-			ret = fixup_pi_state_owner(uaddr, &q, curr);
++			ret = fixup_pi_state_owner(uaddr, &q, curr, fshared);
+ 	} else {
+ 		/*
+ 		 * Catch the rare case, where the lock was released
+@@ -1539,7 +1591,8 @@ static int futex_lock_pi(u32 __user *uaddr, struct rw_semaphore *fshared,
+ 				int res;
+ 
+ 				owner = rt_mutex_owner(&q.pi_state->pi_mutex);
+-				res = fixup_pi_state_owner(uaddr, &q, owner);
++				res = fixup_pi_state_owner(uaddr, &q, owner,
++							   fshared);
+ 
+ 				/* propagate -EFAULT, if the fixup failed */
+ 				if (res)
