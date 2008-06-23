@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759567AbYFWS3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758685AbYFWSaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759567AbYFWS3T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 14:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757489AbYFWS3I
+	id S1758685AbYFWSaa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 14:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758541AbYFWSaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 14:29:08 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:46626 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756700AbYFWS3I (ORCPT
+	Mon, 23 Jun 2008 14:30:23 -0400
+Received: from rn-out-0910.google.com ([64.233.170.190]:26078 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755349AbYFWSaW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 14:29:08 -0400
-Date: Mon, 23 Jun 2008 12:29:05 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, hch@infradead.org
-Subject: Re: [patch v3] vfs: fix sys_getcwd for detached mounts
-Message-ID: <20080623182905.GI4392@parisc-linux.org>
-References: <E1KAqjG-00080e-KH@pomaz-ex.szeredi.hu>
+	Mon, 23 Jun 2008 14:30:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=fv8+UTDLR/4A2R9K7K9LOosJ9Zw8Iafn2QF8IuwHVzuohT4YZrlp/SDiknZv9wEpUC
+         WHH2MwcyjM1kDgkVit4m7jsgIAkam8ioBVWTWIAfDHE7m94+RuE6Mi7DXseoI4aChxo/
+         Yo3OT+62OmbFsyDUHmTEdjXGxUC9PCpXrr4Fo=
+Message-ID: <ebd55800806231130l406f5490sc7c19f202ef81f8b@mail.gmail.com>
+Date: Mon, 23 Jun 2008 14:30:20 -0400
+From: Ian <isoboroff@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Oops in NFS (RHEL4, but also in kernel bugzilla)
+In-Reply-To: <ebd55800806231129k110febb6rc2edfc18a7af5588@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1KAqjG-00080e-KH@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <6278d2220806181933l74719bdbkea02f697ee424157@mail.gmail.com>
+	 <9cfod5sayiq.fsf@rogue.ncsl.nist.gov>
+	 <6278d2220806231117v551d93f1o7ecb5c7558a62b96@mail.gmail.com>
+	 <ebd55800806231129k110febb6rc2edfc18a7af5588@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 08:25:26PM +0200, Miklos Szeredi wrote:
-> I tested this one in various situations, and it appears to do what
-> it's supposed to.
-> 
-> A somewhat analogous issue is if we have cwd (or fd) outside
-> current->root.  Should we add a prefix for that case as well?  Perhaps
-> a double slash?
+On Mon, Jun 23, 2008 at 2:17 PM, Daniel J Blueman
+<daniel.blueman@gmail.com> wrote:
 
-unreachable: ?
+> There is chance that you've overrun the 4KB stack. Can you retest with
+> CONFIG_4KSTACK disabled perhaps?
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Testing is hard as the oops is not easily reproducible, but I'll
+prepare a non-4KSTACKS kernel so that I can boot to it if we oops
+again.
+
+I'm still interested to hear from someone if the patch in bugzilla is
+good for catching a real error case, or if it's papering over a larger
+problem (for example a stack overrun).
+
+Ian
