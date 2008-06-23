@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758146AbYFWI30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758098AbYFWIa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758146AbYFWI30 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 04:29:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYFWI3P
+	id S1758098AbYFWIa5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 04:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbYFWIat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 04:29:15 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35613 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751774AbYFWI3O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 04:29:14 -0400
-Message-ID: <485F5EA5.9050503@jp.fujitsu.com>
-Date: Mon, 23 Jun 2008 17:28:21 +0900
-From: Taku Izumi <izumi.taku@jp.fujitsu.com>
-User-Agent: Thunderbird 1.5.0.8 (Windows/20061025)
+	Mon, 23 Jun 2008 04:30:49 -0400
+Received: from isilmar.linta.de ([213.133.102.198]:36717 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753641AbYFWIas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 04:30:48 -0400
+Date: Mon, 23 Jun 2008 10:30:46 +0200
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Pavel Machek <pavel@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pcmcia@lists.infradead.org
+Subject: Re: 2.6.26-rc6: pcmcia stopped working after resume
+Message-ID: <20080623083046.GA12849@isilmar.linta.de>
+Mail-Followup-To: Pavel Machek <pavel@suse.cz>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-pcmcia@lists.infradead.org
+References: <20080622224022.GA2066@elf.ucw.cz> <20080623081309.GA10820@isilmar.linta.de> <20080623081811.GA1850@elf.ucw.cz>
 MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>
-Subject: Re: [PATCH 0/3] e1000,e1000e,igb: make ioport free for adapters that
- need NO ioport resources
-References: <485B1B8E.1060108@jp.fujitsu.com> <485D4630.1090007@intel.com>
-In-Reply-To: <485D4630.1090007@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080623081811.GA1850@elf.ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Auke
-
->> * [PATCH 1/3] e1000: make ioport free
->> * [PATCH 2/3] e1000e: make ioport free
->> * [PATCH 3/3] igb: make ioport free
+On Mon, Jun 23, 2008 at 10:18:11AM +0200, Pavel Machek wrote:
+> Hi!
 > 
-> I think patch 2 and 3 are way too large since igb and e1000e can be totally ioport
-> free at all times. There is no need to keep compatibility code for ioport in those
-> drivers as it's unlikely that this will ever be needed.
+> > > After s2ram and resume, CF card in PCMCIA-to-CF slot is no longer
+> > > detected.
+> > 
+> > might this be related to:
+> > http://bugzilla.kernel.org/show_bug.cgi?id=10957 ? There didn't change
+> > anything with regard to pcmcia between -rc3 and -rc6...
+> 
+> I'm pretty sure it worked in 2.6.25; I don't know if it worked in
+> -rc3, or not.
+> 
+> I don't even see note about card insertion in dmesg, so I figured out
+> it is probably pcmcia-core problem (or something deeper).
 
-I left an old implementation in case adapters that need ioport resources appear,
-but it's true that these codes are a little redundant for igb and e1000e drivers.
+Well, even since 2.6.25 not much changed in PCMCIA-land, so...
 
-> So, perhaps you can remove the ioport code from those 2 drivers (e1000e/igb)
-> completely and resubmit to Jeff Kirsher?
-
-  OK, I'll send them later.
-
-Best regards,
-Taku Izumi <izumi.taku@jp.fujitsu.com>
-
+Best,
+	Dominik
