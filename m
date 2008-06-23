@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYFWOMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755658AbYFWOUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757983AbYFWOMW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 10:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbYFWOMP
+	id S1755658AbYFWOUU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 10:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbYFWOUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 10:12:15 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:36030 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752705AbYFWOMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 10:12:14 -0400
-Message-ID: <485FAF34.8000609@atmel.com>
-Date: Mon, 23 Jun 2008 16:12:04 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Nicolas Pitre <nico@cam.org>
-CC: Pierre Ossman <drzeus@drzeus.cx>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: sdio: bad CISTPL_FUNCE error
-References: <485BCBB3.20405@atmel.com> <alpine.LFD.1.10.0806211045390.2979@xanadu.home>
-In-Reply-To: <alpine.LFD.1.10.0806211045390.2979@xanadu.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jun 2008 10:20:08 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1165 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753213AbYFWOUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 10:20:07 -0400
+Date: Mon, 23 Jun 2008 16:19:55 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [Fwd: Recommendation for activating a deferred module init in the kernel]
+Message-ID: <20080623141955.GA5006@ucw.cz>
+References: <4858024D.6010601@am.sony.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4858024D.6010601@am.sony.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicolas Pitre :
-> On Fri, 20 Jun 2008, Nicolas Ferre wrote:
-> 
->> Hi Pierre,
->>
->> While trying to setup a GPS SDIO card, I experience the following error:
->> "mmc0: bad CISTPL_FUNCE size 28 type 1"
-> 
-> Could you apply this patch and see what it shows:
-> 
-> diff --git a/drivers/mmc/core/sdio_cis.c b/drivers/mmc/core/sdio_cis.c
-> index d5e51b1..60ec4d3 100644
-> --- a/drivers/mmc/core/sdio_cis.c
-> +++ b/drivers/mmc/core/sdio_cis.c
-> @@ -149,8 +149,9 @@ static int cistpl_funce(struct mmc_card *card, struct sdio_func *func,
->  		ret = cistpl_funce_common(card, buf, size);
->  
->  	if (ret) {
-> -		printk(KERN_ERR "%s: bad CISTPL_FUNCE size %u "
-> -		       "type %u\n", mmc_hostname(card->host), size, buf[0]);
-> +		printk(KERN_ERR "%s: bad %s CISTPL_FUNCE size %u type %u\n",
-> +		       mmc_hostname(card->host), func ? "function" : "common",
-> +		       size, buf[0]);
->  		return ret;
->  	}
->  
-> 
->> I use a combo card but without mirco sd card inserted.
->> http://www.spectec.com.tw/sdg810.htm
->>
->> Tracing in sdio_cis.c file, I print the tpl_code (line 216).
->> I have 3 successive codes : 0xff, 0x21 & 0x22.
-> 
-> Again that would be good to know if/when func is NULL when those are 
-> parsed.
+Hi!
 
-Here is the log :
-mmc0: bad function CISTPL_FUNCE size 28 type 1
+> In our modification, we:
+>  1) add another phase for deferred initcalls
+>  2) modify the module_init macro definition to use that phase, for the
+>  modules we wish to defer initialization of
+>  3) modify the free code to not free the memory until later
+>  4) add an ioctl to trigger the deferred initialization (and memory free)
+> 
+> One of the main sub-systems that we defer initialization of this
+> way is USB, and this saves quite a bit of time.  (Of course the
+> same, or slightly more CPU cycles are eventually used during
+> bootup time.  But this lets us get to user space quicker so we
+> can start user-visible applications faster.)
 
-with code 0x22.
+Could the usb be modified to do background init by default, instead?
 
-Thanks for your help. Regards,
+> I'm not that happy using an ioctl for this trigger.  What is
+> the preferred method of activating a kernel feature like this?
+> I presume something in /proc or /sys, but I'm not sure.
+
+Definitely not /proc.
+
+							Pavel
 -- 
-Nicolas Ferre
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
