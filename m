@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbYFWI2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758146AbYFWI30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757017AbYFWI2e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 04:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbYFWI20
+	id S1758146AbYFWI30 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 04:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYFWI3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 04:28:26 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:48188 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751521AbYFWI2Z (ORCPT
+	Mon, 23 Jun 2008 04:29:15 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35613 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751774AbYFWI3O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 04:28:25 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Michael Kerrisk <mtk.manpages@gmail.com>
-Subject: Re: /proc 2.6.24 changes for guest CPU accounting
-Date: Mon, 23 Jun 2008 10:28:13 +0200
-User-Agent: KMail/1.9.9
-Cc: Laurent Vivier <Laurent.Vivier@bull.net>,
-       Samuel Thibault <samuel.thibault@ens-lyon.org>, ap@zip.com.au,
-       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-References: <485DFFB4.3080008@gmail.com>
-In-Reply-To: <485DFFB4.3080008@gmail.com>
+	Mon, 23 Jun 2008 04:29:14 -0400
+Message-ID: <485F5EA5.9050503@jp.fujitsu.com>
+Date: Mon, 23 Jun 2008 17:28:21 +0900
+From: Taku Izumi <izumi.taku@jp.fujitsu.com>
+User-Agent: Thunderbird 1.5.0.8 (Windows/20061025)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>
+Subject: Re: [PATCH 0/3] e1000,e1000e,igb: make ioport free for adapters that
+ need NO ioport resources
+References: <485B1B8E.1060108@jp.fujitsu.com> <485D4630.1090007@intel.com>
+In-Reply-To: <485D4630.1090007@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806231028.13965.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, 22. Juni 2008 schrieb Michael Kerrisk:
-> Hi Laurent,
+Dear Auke
+
+>> * [PATCH 1/3] e1000: make ioport free
+>> * [PATCH 2/3] e1000e: make ioport free
+>> * [PATCH 3/3] igb: make ioport free
 > 
-> A note and patch from Samuel alerted me to your commits
-> 9ac52315d4cf5f561f36dabaf0720c00d3553162 and
-> 5e84cfde51cf303d368fcb48f22059f37b3872de, which in 2.6.24 changed /proc/stat
-> and /proc/PID/stat.  Would you please CC me on kernel-userspace interface
-> changes, so that they have a chance of getting documented in man-pages.
-[...]
-> +.TP
-> +\fIguest_time\fP %lu (since Linux 2.6.24)
-> +Guest time of the process (time spent running a virtual CPU
-> +for a guest operating system), in centiseconds.
-> +.TP
-> +\fIcguest_time\fP %ld (since Linux 2.6.24)
-> +Guest time of the process's children, in centiseconds.
-[...]
-> +
-> +Since Linux 2.6.24, there is a ninth column,
-> +.IR guest ,
-> +which is the time spent running a virtual CPU for guest
-> +operating systems under teh control of the Linux kernel.
-> +.\" See Changelog entry for 5e84cfde51cf303d368fcb48f22059f37b3872de
+> I think patch 2 and 3 are way too large since igb and e1000e can be totally ioport
+> free at all times. There is no need to keep compatibility code for ioport in those
+> drivers as it's unlikely that this will ever be needed.
 
-Maybe you should mention that guest time is accounted twice: user and guest. 
-So if guest time aware userspace wants to to calcuate user time without 
-guests time, it should subtract the guest time from user.
+I left an old implementation in case adapters that need ioport resources appear,
+but it's true that these codes are a little redundant for igb and e1000e drivers.
 
-Christian
+> So, perhaps you can remove the ioport code from those 2 drivers (e1000e/igb)
+> completely and resubmit to Jeff Kirsher?
+
+  OK, I'll send them later.
+
+Best regards,
+Taku Izumi <izumi.taku@jp.fujitsu.com>
+
