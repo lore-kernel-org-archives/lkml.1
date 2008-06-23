@@ -1,81 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760003AbYFWSyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762218AbYFWS41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760003AbYFWSyr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 14:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755207AbYFWSyk
+	id S1762218AbYFWS41 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 14:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbYFWS4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 14:54:40 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38882 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754907AbYFWSyj (ORCPT
+	Mon, 23 Jun 2008 14:56:19 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:47160 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752211AbYFWS4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 14:54:39 -0400
-Date: Mon, 23 Jun 2008 11:54:32 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: mchehab@infradead.org, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] Fix open/close race in saa7134
-Message-ID: <20080623115432.5ce376e5@infradead.org>
-In-Reply-To: <20080623184937.GA5593@joi>
-References: <20080622100507.779acc59@infradead.org>
-	<20080622172826.GA7487@joi>
-	<20080622105832.1c61fb92@infradead.org>
-	<20080623184937.GA5593@joi>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+	Mon, 23 Jun 2008 14:56:18 -0400
+Date: Mon, 23 Jun 2008 21:56:15 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Steven Rostedt <srostedt@redhat.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: linux-next: Tree for June 23
+In-Reply-To: <19f34abd0806230402x502eca3cna927eb8742553570@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0806232155060.4033@sbz-30.cs.Helsinki.FI>
+References: <20080623182549.b0552851.sfr@canb.auug.org.au> 
+ <19f34abd0806230323o6373015fj93a85b929545a7a8@mail.gmail.com> 
+ <19f34abd0806230326i592ba39eu837d290e21431d14@mail.gmail.com>
+ <19f34abd0806230402x502eca3cna927eb8742553570@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jun 2008 20:49:42 +0200
-Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
-
-> On Sun, Jun 22, 2008 at 10:58:32AM -0700, Arjan van de Ven wrote:
-> > On Sun, 22 Jun 2008 19:33:37 +0200
-> > Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
-> > 
-> > > On Sun, Jun 22, 2008 at 10:05:07AM -0700, Arjan van de Ven wrote:
-> > > > 
-> > > > From: Arjan van de Ven <arjan@linux.intel.com>
-> > > > Date: Sun, 22 Jun 2008 10:03:02 -0700
-> > > > Subject: [PATCH] Fix open/close race in saa7134
-> > > > 
-> > > > The saa7134 driver uses a (non-atomic) variable in an attempt to
-> > > > only allow one opener of the device (how it deals with sending
-> > > > the fd over unix sockets I don't know).
-> > > > 
-> > > > Unfortunately, the release function first decrements this
-> > > > variable, and THEN goes on to disable more of the device. This
-> > > > allows for a race where another opener of the device comes in
-> > > > after the decrement of the variable, configures the hardware
-> > > > just to then see the hardware be disabled by the rest of the
-> > > > release function.
-> > > 
-> > > Simplier fix:
-> > > http://lkml.org/lkml/2008/6/9/308
-> > > But I don't remember whether it was applied or not...
-> > 
-> > 
-> > the patch might be simpler, but it's not fully correct...
-> > the decrement is non-atomic and not protected by any lock
-> > whatsoever.
+On Mon, 23 Jun 2008, Vegard Nossum wrote:
+> Okay, I can confirm that this happens with today's tree too. I also
+> get this (new) warning:
 > 
-> It's not atomic, but it don't have to, because there's only one
-> thread which "owns" the device.
+> mm/slub.c: In function 'kmem_cache_defrag':
+> mm/slub.c:3046: warning: 'reclaimed' may be used uninitialized in this function
+> 
+> Otherwise things seem to work good :-)
 
-this is not correct!
+Christoph, while the warning itself seems harmless, I think we need to do 
+something like the following; otherwise the return value for 
+kmem_cache_defrag() will be incorrect on NUMA machines that have more than 
+one N_NORMAL_MEMORY nodes.
 
-this is a close->open race, not an open->close!
-which means the guy who's closing it and the guy who's then opening it
-again do not have to be the same guy
+		Pekka
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+diff --git a/mm/slub.c b/mm/slub.c
+index deb8153..7707550 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -3043,7 +3043,7 @@ int kmem_cache_defrag(int node)
+ 		return 0;
+ 
+ 	list_for_each_entry(s, &slab_caches, list) {
+-		unsigned long reclaimed;
++		unsigned long reclaimed = 0;
+ 
+ 		/*
+ 		 * Defragmentable caches come first. If the slab cache is not
+@@ -3056,7 +3056,7 @@ int kmem_cache_defrag(int node)
+ 			int nid;
+ 
+ 			for_each_node_state(nid, N_NORMAL_MEMORY)
+-				reclaimed = __kmem_cache_shrink(s, nid,
++				reclaimed += __kmem_cache_shrink(s, nid,
+ 								MAX_PARTIAL);
+ 		} else
+ 			reclaimed = __kmem_cache_shrink(s, node, MAX_PARTIAL);
