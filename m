@@ -1,90 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbYFWNK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbYFWNOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758239AbYFWNK0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 09:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbYFWNKO
+	id S1758047AbYFWNOy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 09:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbYFWNOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 09:10:14 -0400
-Received: from gv-out-0910.google.com ([216.239.58.190]:49486 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755343AbYFWNKN (ORCPT
+	Mon, 23 Jun 2008 09:14:47 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:56056 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753289AbYFWNOq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 09:10:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=T/0pfcldwAYG+DpkPEBxdrCgd3f73ZVgu8IVrQZJ57PNk/UYhMyxPoMtcnRH4xujTy
-         wUnE23QF+9yrHaIawHs/hCIfc6Ba08okftPmw3yCroXdDxltvMkmqVH4q02SukufmCE3
-         j40BdhBHiwu8r/PcipLLMneNl/8mqEmbuBjLM=
-Message-ID: <48f7fe350806230610y224892e3ob34952b2d8b214a9@mail.gmail.com>
-Date: Mon, 23 Jun 2008 09:10:11 -0400
-From: "Ryan Hope" <rmh3093@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: [PATCH -mm] .gitignore for mm-sources is missing critical files
+	Mon, 23 Jun 2008 09:14:46 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Message-ID: <18527.41440.273383.388943@frecb006361.adech.frec.bull.fr>
+Date: Mon, 23 Jun 2008 15:15:12 +0200
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: Solofo.Ramangalahy@bull.net, linux-kernel@vger.kernel.org,
+       Matt Helsley <matthltc@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Nadia Derbey <Nadia.Derbey@bull.net>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>
+Subject: Re: [RFC -mm 0/6] sysv ipc: scale msgmnb with the number of cpus
+In-Reply-To: <484A9D52.2020703@colorfullife.com>
+References: <20080605145712.116223941@bull.net>
+	<484A9D52.2020703@colorfullife.com>
+X-Mailer: VM 8.0.9 under Emacs 23.0.50.1 (i486-pc-linux-gnu)
+From: Solofo.Ramangalahy@bull.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The .gitignore file in the 2.6.26-rc5-mm3 tar ball is incomplete, it
-causes many important files to not get added to a git repo. The
-patches below fix the issue (sorry they are not all in one diff, it
-took me a few try to figure out all the files needed):
+Hi Manfred,
 
-diff --git a/f07e4d701ff1fa13f98c21d875f252dc13fa2a42:.gitignore
-b/83ad1010c278a37bcd901dde0f7d2b6981f64f6a:.gitignore
-index d24ad506e799a5740d19913a333fc9d64261d9c7..9bb1cb6d825d540bc92dfe5c34343438b860b009
-100644
---- a/f07e4d701ff1fa13f98c21d875f252dc13fa2a42:.gitignore
-+++ b/83ad1010c278a37bcd901dde0f7d2b6981f64f6a:.gitignore
-@@ -26,6 +26,7 @@ tags
- TAGS
- vmlinux*
- !vmlinux.lds.S
-+!vmlinux.lds.h
- System.map
- Module.markers
- Module.symvers
+This part is more difficult to answer than the other one:
+> The whole configuration can be done from user space, thus I assumed that
+> a sysctl.conf value [...] could do the job
 
-diff --git a/5ec607502ef909acab4ebe886097523ab4e4e3f5:.gitignore
-b/118a64bfe9c4db302820b83a03cc0388f5d620e5:.gitignore
-index 9bb1cb6d825d540bc92dfe5c34343438b860b009..71379c18ff4218ba56fd95baf30ac079590ac587
-100644
---- a/5ec607502ef909acab4ebe886097523ab4e4e3f5:.gitignore
-+++ b/118a64bfe9c4db302820b83a03cc0388f5d620e5:.gitignore
-@@ -22,11 +22,15 @@
- #
- # Top-level generic files
- #
-+!.mailmap
- tags
- TAGS
- vmlinux*
- !vmlinux.lds.S
- !vmlinux.lds.h
-+!vmlinux_32.lds.S
-+!vmlinux_64.lds.S
-+!vmlinux.scr
- System.map
- Module.markers
- Module.symvers
+Yes, while this is (still) possible, this can become cumbersome with
+namespaces, hotplug, ...
 
-diff --git a/118a64bfe9c4db302820b83a03cc0388f5d620e5:.gitignore
-b/20c660fa39c48b936c3268dbdf179ff84dbbe365:.gitignore
-index 71379c18ff4218ba56fd95baf30ac079590ac587..c50ecc6f3c223b51b856c96009f1b9b6539e163d
-100644
---- a/118a64bfe9c4db302820b83a03cc0388f5d620e5:.gitignore
-+++ b/20c660fa39c48b936c3268dbdf179ff84dbbe365:.gitignore
-@@ -35,6 +35,7 @@ System.map
- Module.markers
- Module.symvers
- !.gitignore
-+!*.lds
+> (or in the worst case: a dbus/hal daemon that
+> updates /proc/sys/kernel/msgnmb) [...]
 
- #
- # Generated include files
+This would probably mean one daemon per ipc namespace.
+The patches seems lighter.
+
+There has been related discussions regarding kernel
+space vs. userspace approach in the threads:
+. "Change in default vm_dirty_ratio"
+  http://lkml.org/lkml/2007/6/18/471
+. "[RFC][PATCH 0/6] Automatic kernel tunables (AKT)"
+  http://lkml.org/lkml/2007/1/16/16
+(and probably others)
+
+So it seems there is no consensus in doing it either way: kernel or
+user space.
+
+Humm... now this make me think that you did not change the MSGMNB
+value when you changed MSGMNI and MSGMAX.
+Maybe that was on purpose?
+
+-- 
+solofo
