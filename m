@@ -1,55 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbYFWMQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbYFWMQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754724AbYFWMQa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 08:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbYFWMQW
+	id S1756213AbYFWMQp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 08:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbYFWMQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 23 Jun 2008 08:16:22 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:38700 "EHLO
+Received: from bohort.kerlabs.com ([62.160.40.57]:42013 "EHLO
 	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752754AbYFWMQV (ORCPT
+	with ESMTP id S1753010AbYFWMQV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 23 Jun 2008 08:16:21 -0400
 From: Louis Rilling <louis.rilling@kerlabs.com>
 To: Joel.Becker@oracle.com
 Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
        Louis Rilling <louis.rilling@kerlabs.com>
-Subject: [PATCH 0/2]v2 configfs: symlink() fixes
-Date: Mon, 23 Jun 2008 14:16:16 +0200
-Message-Id: <1214223378-14203-1-git-send-email-louis.rilling@kerlabs.com>
+Subject: [PATCH 1/2] configfs: Fix symlink() to a removing item
+Date: Mon, 23 Jun 2008 14:16:17 +0200
+Message-Id: <1214223378-14203-2-git-send-email-louis.rilling@kerlabs.com>
 X-Mailer: git-send-email 1.5.5.3
+In-Reply-To: <1214223378-14203-1-git-send-email-louis.rilling@kerlabs.com>
+References: <1214223378-14203-1-git-send-email-louis.rilling@kerlabs.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ applies on top of the previously submitted rename() vs rmdir() deadlock fix ]
+The rule for configfs symlinks is that symlinks always point to valid
+config_items, and prevent the target from being removed. However,
+configfs_symlink() only checks that it can grab a reference on the target item,
+without ensuring that it remains alive until the symlink is correctly attached.
 
-Hi,
+This patch makes configfs_symlink() fail whenever the target is being removed,
+using the CONFIGFS_USET_DROPPING flag set by configfs_detach_prep() and
+protected by configfs_dirent_lock.
 
-The following patchset fixes incorrect symlinks to dead items in configfs, which
-are forbidden by specification.
+This patch introduces a similar (weird?) behavior as with mkdir failures making
+rmdir fail: if symlink() races with rmdir() of the parent directory (or its
+youngest user-created ancestor if parent is a default group) or rmdir() of the
+target directory, and then fails in configfs_create(), this can make the racing
+rmdir() fail despite the concerned directory having no user-created entry (resp.
+no symlink pointing to it or one of its default groups) in the end.
+This behavior is fixed in later patches.
 
-The first patch actually prevents such dangling symlinks from being created, but
-introduces a weird(?) behavior where a failing symlink() can make a racing
-rmdir() fail in the symlink's parent and in the symlink's target as well. This
-behavior is fixed with the next patch.
+Signed-off-by: Louis Rilling <louis.rilling@kerlabs.com>
+---
+ fs/configfs/dir.c     |   14 +++++++-------
+ fs/configfs/symlink.c |    6 ++++++
+ 2 files changed, 13 insertions(+), 7 deletions(-)
 
-Changelog:
-  - fix error code when symlink's target is being removed
-  - re-implemented the weird(?) behavior fix in a way that does not temporarily
-    instantiate the new symlink in the VFS.
-
-Summary:
-  configfs: Fix symlink() to a removing item
-  configfs: Fix failing symlink() making rmdir() fail
-
- fs/configfs/configfs_internal.h |    1 +
- fs/configfs/dir.c               |   24 +++++++++++++++++-------
- fs/configfs/symlink.c           |   14 +++++++++++++-
- 3 files changed, 31 insertions(+), 8 deletions(-)
-
+diff --git a/fs/configfs/dir.c b/fs/configfs/dir.c
+index 614e382..f2a12d0 100644
+--- a/fs/configfs/dir.c
++++ b/fs/configfs/dir.c
+@@ -370,6 +370,9 @@ static int configfs_detach_prep(struct dentry *dentry, struct mutex **wait_mutex
+ 	struct configfs_dirent *sd;
+ 	int ret;
+ 
++	/* Mark that we're trying to drop the group */
++	parent_sd->s_type |= CONFIGFS_USET_DROPPING;
++
+ 	ret = -EBUSY;
+ 	if (!list_empty(&parent_sd->s_links))
+ 		goto out;
+@@ -385,8 +388,6 @@ static int configfs_detach_prep(struct dentry *dentry, struct mutex **wait_mutex
+ 					*wait_mutex = &sd->s_dentry->d_inode->i_mutex;
+ 				return -EAGAIN;
+ 			}
+-			/* Mark that we're trying to drop the group */
+-			sd->s_type |= CONFIGFS_USET_DROPPING;
+ 
+ 			/*
+ 			 * Yup, recursive.  If there's a problem, blame
+@@ -414,12 +415,11 @@ static void configfs_detach_rollback(struct dentry *dentry)
+ 	struct configfs_dirent *parent_sd = dentry->d_fsdata;
+ 	struct configfs_dirent *sd;
+ 
+-	list_for_each_entry(sd, &parent_sd->s_children, s_sibling) {
+-		if (sd->s_type & CONFIGFS_USET_DEFAULT) {
++	parent_sd->s_type &= ~CONFIGFS_USET_DROPPING;
++
++	list_for_each_entry(sd, &parent_sd->s_children, s_sibling)
++		if (sd->s_type & CONFIGFS_USET_DEFAULT)
+ 			configfs_detach_rollback(sd->s_dentry);
+-			sd->s_type &= ~CONFIGFS_USET_DROPPING;
+-		}
+-	}
+ }
+ 
+ static void detach_attrs(struct config_item * item)
+diff --git a/fs/configfs/symlink.c b/fs/configfs/symlink.c
+index faeb441..b66908d 100644
+--- a/fs/configfs/symlink.c
++++ b/fs/configfs/symlink.c
+@@ -78,6 +78,12 @@ static int create_link(struct config_item *parent_item,
+ 	if (sl) {
+ 		sl->sl_target = config_item_get(item);
+ 		spin_lock(&configfs_dirent_lock);
++		if (target_sd->s_type & CONFIGFS_USET_DROPPING) {
++			spin_unlock(&configfs_dirent_lock);
++			config_item_put(item);
++			kfree(sl);
++			return -ENOENT;
++		}
+ 		list_add(&sl->sl_list, &target_sd->s_links);
+ 		spin_unlock(&configfs_dirent_lock);
+ 		ret = configfs_create_link(sl, parent_item->ci_dentry,
 -- 
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
+1.5.5.3
+
