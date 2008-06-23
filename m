@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763327AbYFWTcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763420AbYFWTdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763327AbYFWTcq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 15:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763251AbYFWTce
+	id S1763420AbYFWTdP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 15:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763348AbYFWTc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 15:32:34 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:9108 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763237AbYFWTcd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 15:32:33 -0400
-Date: Mon, 23 Jun 2008 12:31:16 -0700
-From: Adam Williamson <awilliamson@mandriva.com>
-Subject: Re: [Bug #10868] Oops on loading ipaq module since 2.6.26,
-	prevents use of device
-In-reply-to: <200806232041.09251.oliver@neukum.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@redhat.com>, bugme-daemon@bugzilla.kernel.org
-Message-id: <1214249476.6054.21.camel@lenovo.local.net>
-Organization: Mandriva
-MIME-version: 1.0
-X-Mailer: Evolution 2.22.2-3mdv2009.0
-Content-type: text/plain
-Content-transfer-encoding: 7bit
-References: <RzbtSgMztjP.A.jRD._spXIB@albercik>
- <200806230948.03027.oliver@neukum.org>
- <1214236003.6054.6.camel@lenovo.local.net>
- <200806232041.09251.oliver@neukum.org>
+	Mon, 23 Jun 2008 15:32:57 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:52650 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763251AbYFWTc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 15:32:56 -0400
+Date: Mon, 23 Jun 2008 21:33:40 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tim Bird <tim.bird@am.sony.com>
+Subject: Re: [PATCH 0/1] Embedded Maintainer(s), linux-embedded@vger list
+Message-ID: <20080623193340.GA836@uranus.ravnborg.org>
+References: <1209577322.25560.402.camel@pmac.infradead.org> <200806231922.10864.vda.linux@googlemail.com> <20080623185728.GB30550@uranus.ravnborg.org> <200806232112.30393.vda.linux@googlemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200806232112.30393.vda.linux@googlemail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-23 at 20:41 +0200, Oliver Neukum wrote:
-> Am Montag 23 Juni 2008 17:46:43 schrieb Adam Williamson:
-> > On Mon, 2008-06-23 at 09:48 +0200, Oliver Neukum wrote:
-> > > Am Montag 23 Juni 2008 00:37:20 schrieb Alan Cox:
-> > > > > > btw this also shows that this isn't a 2.6.25 regression... 
-> > > > > 
-> > > > > That hardly shows it.
-> > > > > 
-> > > > > And Adam said quite explicitely that 2.6.25 worked for him.
-> > > > 
-> > > > Nothing much I can do to help. The URB is assigned in setup and is NULL
-> > > > later. Nothing else I can find touches it.
+On Mon, Jun 23, 2008 at 09:12:30PM +0200, Denys Vlasenko wrote:
+> On Monday 23 June 2008 20:57, Sam Ravnborg wrote:
+> > > > I agree. And if we do want to pay attention to pure code size, there are
+> > > > other approaches -- like --gc-sections
 > > > 
-> > > We need this oops replicated with debug enabled in the usb serial core.
-> > 
-> > Is that just a kernel build option? (As I mentioned earlier, I'm not
-> > much of a kernel hacker, I usually just run packaged kernels).
+> > > I have some patches in this area too. Were submitted to Sam
+> > > but he was too busy it seems.
+> >
+> > They were not trivial to apply and so went down on the TODO list.
 > 
-> It is the module option "debug" for usb-serial.
+> I realize that they were not trivial to review, but that
+> was unavoidable. They were even more not trivial to create.
+> 
+> > We could try to push the generic and x86 specific .lds stuff via
+> > the arch maintainers?
+> 
+> IIRC I splitted the entire GC collection patch in a way
+> that first patches were doing exactly this easier first part
+> and I hoped that at least these first patches
+> will be taken. They were big, but somewhat trivial,
+> from "it's obviously safe" department.
 
-Oh, that's easy then. :) Will do that later. Thanks.
--- 
-adamw
+I do not recall anything wrong with the patch-set.
 
+> 
+> Had they been applied, now making --gc-sections to work
+> would be easier.
+Agreed. I should have asked you to push this via arch maintainers back then.
+
+	Sam
