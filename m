@@ -1,112 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757455AbYFXNbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbYFXNdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757455AbYFXNbt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 09:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbYFXNbm
+	id S1758232AbYFXNdV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 09:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbYFXNdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 09:31:42 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46963 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752328AbYFXNbl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 09:31:41 -0400
-Subject: Re: [PATCH 3/3] sched: terminate newidle balancing once at
-	leastone task has moved over
-From: Peter Zijlstra <peterz@infradead.org>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de,
-       David Bahi <DBahi@novell.com>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <4860BBF2.BA47.005A.0@novell.com>
-References: <20080623225645.31515.36393.stgit@lsg.lsg.lab.novell.com>
-	 <20080623230450.31515.75112.stgit@lsg.lsg.lab.novell.com>
-	 <1214302406.4351.23.camel@twins>  <4860BBF2.BA47.005A.0@novell.com>
-Content-Type: text/plain
-Date: Tue, 24 Jun 2008 15:31:13 +0200
-Message-Id: <1214314273.4351.34.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jun 2008 09:33:12 -0400
+Received: from styx.suse.cz ([82.119.242.94]:33214 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751992AbYFXNdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 09:33:11 -0400
+Date: Tue, 24 Jun 2008 15:33:09 +0200
+From: Jan Kara <jack@suse.cz>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: [PATCH 4/5] jbd: fix error handling for checkpoint io
+Message-ID: <20080624133309.GG9959@duck.suse.cz>
+References: <4843CE15.6080506@hitachi.com> <4843CFBD.7040706@hitachi.com> <20080602124409.GL30613@duck.suse.cz> <4844CB39.6060409@hitachi.com> <20080603080219.GA17936@duck.suse.cz> <485F85AE.1010704@hitachi.com> <20080623122240.GJ26743@duck.suse.cz> <4860E01B.8010806@hitachi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4860E01B.8010806@hitachi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-24 at 07:18 -0600, Gregory Haskins wrote:
-> >>> On Tue, Jun 24, 2008 at  6:13 AM, in message <1214302406.4351.23.camel@twins>,
-> Peter Zijlstra <peterz@infradead.org> wrote: 
-> > On Mon, 2008-06-23 at 17:04 -0600, Gregory Haskins wrote:
-> >> Inspired by Peter Zijlstra.
-> >> 
-> >> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> >> ---
-> >> 
-> >>  kernel/sched.c |    4 ++++
-> >>  1 files changed, 4 insertions(+), 0 deletions(-)
-> >> 
-> >> diff --git a/kernel/sched.c b/kernel/sched.c
-> >> index 3efbbc5..c8e8520 100644
-> >> --- a/kernel/sched.c
-> >> +++ b/kernel/sched.c
-> >> @@ -2775,6 +2775,10 @@ static int move_tasks(struct rq *this_rq, int 
-> > this_cpu, struct rq *busiest,
-> >>  				max_load_move - total_load_moved,
-> >>  				sd, idle, all_pinned, &this_best_prio);
-> >>  		class = class->next;
-> >> +
-> >> +		if (idle == CPU_NEWLY_IDLE && this_rq->nr_running)
-> >> +			break;
-> >> +
-> >>  	} while (class && max_load_move > total_load_moved);
-> >>  
-> >>  	return total_load_moved > 0;
+On Tue 24-06-08 20:52:59, Hidehiro Kawai wrote:
+> >>>>Subject: [PATCH 4/5] jbd: fix error handling for checkpoint io
+> >>>>
+> >>>>When a checkpointing IO fails, current JBD code doesn't check the
+> >>>>error and continue journaling.  This means latest metadata can be
+> >>>>lost from both the journal and filesystem.
+> >>>>
+> >>>>This patch leaves the failed metadata blocks in the journal space
+> >>>>and aborts journaling in the case of log_do_checkpoint().
+> >>>>To achieve this, we need to do:
+> >>>>
+> >>>>1. don't remove the failed buffer from the checkpoint list where in
+> >>>>  the case of __try_to_free_cp_buf() because it may be released or
+> >>>>  overwritten by a later transaction
+> >>>>2. log_do_checkpoint() is the last chance, remove the failed buffer
+> >>>>  from the checkpoint list and abort the journal
+> >>>>3. when checkpointing fails, don't update the journal super block to
+> >>>>  prevent the journaled contents from being cleaned.  For safety,
+> >>>>  don't update j_tail and j_tail_sequence either
+> >>
+> >>3. is implemented as described below.
+> >>  (1) if log_do_checkpoint() detects an I/O error during
+> >>      checkpointing, it calls journal_abort() to abort the journal
+> >>  (2) if the journal has aborted, don't update s_start and s_sequence
+> >>      in the on-disk journal superblock
+> >>
+> >>So, if the journal aborts, journaled data will be replayed on the
+> >>next mount.
+> >>
+> >>Now, please remember that some dirty metadata buffers are written
+> >>back to the filesystem without journaling if the journal aborted.
+> >>We are happy if all dirty metadata buffers are written to the disk,
+> >>the integrity of the filesystem will be kept.  However, replaying
+> >>the journaled data can overwrite the latest on-disk metadata blocks
+> >>partly with old data.  It would break the filesystem.
 > > 
-> > 
-> > right,.. uhm, except that you forgot all the other fixes and
-> > generalizations I had,..
+> >   Yes, it would. But how do you think it can happen that a metadata buffer
+> > will be written back to the filesystem when it is a part of running
+> > transaction? Note that checkpointing code specifically checks whether the
+> > buffer being written back is part of a running transaction and if so, it
+> > waits for commit before writing back the buffer. So I don't think this can
+> > happen but maybe I miss something...
 > 
-> Heh...well I intentionally simplified it, but perhaps that is out of ignorance.  I did say "inspired by" ;)
+> Checkpointing code checks it and may call log_wait_commit(), but this
+> problem is caused by transactions which have not started checkpointing.
 > 
-> > 
-> > The LB_START/LB_COMPLETE stuff is needed to fix CFS load balancing. It
-> > now always iterates the first sysctl_sched_nr_migrate tasks, and if it
-> > doesn't find any there, just gives up - which isn't too big of a problem
-> > with it set to 32, but if you drop it to 2/4 stuff starts valing apart.
-> > 
-> > And the break I had here, only checks classes above and equal to the
-> > current class.
-> > 
-> > This again is needed when you have more classes.
-> 
-> Im not sure I understand/agree here (unless you plan on having a class below sched_idle()??)
-> 
-> The fact that we are going NEWLYIDLE to me implies that all the other classes are
-> "above or equal".  And rq->nr_running approximates all the per-class vtable work
-> that you had done to probe the higher classes.  We currently only hit this code when
-> rq->nr_running == 0, so rq->nr_running !=0 seems like a logical termination
-> condition.
-> 
-> I guess what I am not clear on is: "when would we be NEWLYIDLE in a higher class,
-> yet have tasks populated in lower classes such at nr_running is non-zero".
-> Additionally, even if we have that condition (e.g. with something like the EDF work you
-> are doing, perhaps?), shouldn't we patch the advanced form of this logic when the rest
-> of the code goes in?  For now, this seems like the most straight forward way to
-> accomplish the goal.  But I could be missing something ;)
+> For example, the tail transaction has an old update for block_B and
+> the running transaction has a new update for block_B.  Then, the
+> committing transaction fails to write the commit record, it aborts the
+> journal, and new block_B will be written back to the file system without
+> journaling.  Because this patch doesn't separate between normal abort
+> and checkpointing related abort, the tail transaction is left in the
+> journal space.  So by replaying the tail transaction, new block_B is
+> overwritten with old one.
+  Yes, and this is expected an correct. When we cannot properly finish a
+transaction, we have to discard everything in it. A bug would be (and I
+think it could currently happen) if we already checkpointed the previous
+transaction and then written over block_B new data from the uncommitted
+transaction. I think we have to avoid that - i.e., in case we abort the
+journal we should not mark buffers dirty when processing the forget loop.
+But this is not too serious since fsck has to be run anyway and it will
+fix the problems.
 
-The thing I'm worried about - but it might be unfounded and is certainly
-so now - is that suppose we have:
+> It can happen in the case of the checkpointing related abort.
+> For example, assuming the tail transaction has an update for block_A,
+> the next transaction has an old update for block_B, and the running
+> transaction has a new update for block_B.
+> Now, the running transaction needs more log space, and it calls
+> log_do_checkpoint().  But it aborts the journal because it detected
+> write error on block_A.  In this case, new block_B will be
+> overwritten when the old block_B in the second transaction to the tail
+> is replayed.
+  Well, the scenario has to be a bit different (if we need more space than
+there is in the journal, we commit the running transaction, do checkpoint
+and start a new transaction) but something like what you describe could
+happen. But again I think that this is a correct behavior - i.e., discard
+all the data in the running transaction when the journal is aborted before
+the transaction is properly committed. 
 
-  EDF
-  FIFO/RR
-  SOFTRT
-  OTHER
-  IDLE
-
-and we've just done FIFO/RR (which is a nop) and and some interrupt woke
-an OTHER task while we dropped for lockbreak.
-
-At this point your logic would bail out and start running the OTHER
-task, even though we might have found a SOFTRQ task to run had we
-bothered to look.
-
-
-
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
