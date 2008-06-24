@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757812AbYFXDvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbYFXDxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757812AbYFXDvA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 23:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYFXDuw
+	id S1758209AbYFXDxT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 23:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYFXDxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 23:50:52 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:40684 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752237AbYFXDuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 23:50:50 -0400
-Date: Tue, 24 Jun 2008 12:48:06 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, dhowells@redhat.com, gerg@uclinux.org,
-       ralf@linux-mips.org, linux-mips@linux-mips.org,
-       linux-sh@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [2.6 patch] remove pcibios_update_resource() functions
-Message-ID: <20080624034806.GA22526@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian Bunk <bunk@kernel.org>, jbarnes@virtuousgeek.org,
-	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-	dhowells@redhat.com, gerg@uclinux.org, ralf@linux-mips.org,
-	linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
-	Russell King <rmk+lkml@arm.linux.org.uk>
-References: <20080617223332.GM25911@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080617223332.GM25911@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 23 Jun 2008 23:53:05 -0400
+Received: from mga01.intel.com ([192.55.52.88]:26457 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751229AbYFXDxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 23:53:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,693,1204531200"; 
+   d="scan'208";a="581244706"
+Subject: Re: [2.6.26-rc5] iwlwifi 4965 not working - last on 2.6.23
+From: Zhu Yi <yi.zhu@intel.com>
+To: =?UTF-8?Q?Micha=C5=82_Kud=C5=82a?= <michal.kudla@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <200806240537.08888.Michal.Kudla@gmail.com>
+References: <200806060039.48488.m1k0@wp.pl>
+	 <200806232103.31283.Michal.Kudla@gmail.com>
+	 <1214275275.14590.194.camel@debian.sh.intel.com>
+	 <200806240537.08888.Michal.Kudla@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Organization: Intel Corp.
+Date: Tue, 24 Jun 2008 11:51:53 +0800
+Message-Id: <1214279513.14590.198.camel@debian.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 18, 2008 at 01:33:32AM +0300, Adrian Bunk wrote:
-> Russell King did the following back in 2003:
-> 
-> <--  snip  -->
-> 
->     [PCI] pci-9: Kill per-architecture pcibios_update_resource()
->     
->     Kill pcibios_update_resource(), replacing it with pci_update_resource().
->     pci_update_resource() uses pcibios_resource_to_bus() to convert a
->     resource to a device BAR - the transformation should be exactly the
->     same as the transformation used for the PCI bridges.
->     
->     pci_update_resource "knows" about 64-bit BARs, but doesn't attempt to
->     set the high 32-bits to anything non-zero - currently no architecture
->     attempts to do something different.  If anyone cares, please fix; I'm
->     going to reflect current behaviour for the time being.
->     
->     Ivan pointed out the following architectures need to examine their
->     pcibios_update_resource() implementation - they should make sure that
->     this new implementation does the right thing.  #warning's have been
->     added where appropriate.
->     
->         ia64
->         mips
->         mips64
->     
->     This cset also includes a fix for the problem reported by AKPM where
->     64-bit arch compilers complain about the resource mask being placed
->     in a u32.
-> 
-> <--  snip  -->
-> 
-> 
-> This patch removes the unused pcibios_update_resource() functions the 
-> kernel gained since.
-> 
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-sh parts -
+On Tue, 2008-06-24 at 05:37 +0200, Michał Kudła wrote:
+> laptok ~ # cat /sys/bus/pci/drivers/iwl4965/0000\:04\:00.0/rfkill
+> \:rfkill1/state
+> 0
+> laptok ~ # echo "1"> /sys/bus/pci/drivers/iwl4965/0000\:04
+> \:00.0/rfkill\:rfkill1/state
+> laptok ~ # iwconfig wlan0 txpower on
+> laptok ~ # /etc/init.d/net.wlan0 restart
+>  * Service net.wlan0 starting
+>  Failed to configure wireless for wlan0
+> [ !! ] * ERROR:  net.wlan0 failed to start
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+Looks like the wireless config scripts in your distro did something
+(probably txpower off) to disable the SW radio. Can you try the
+following commands after wlan0 restart?
+
+$ cat /sys/bus/pci/drivers/iwl4965/0000\:04\:00.0/rfkill\:rfkill1/state
+$ echo 1 > /sys/bus/pci/drivers/iwl4965/0000\:04\:00.0/rfkill
+\:rfkill1/state
+$ ifconfig wlan0 up
+
+Thanks,
+-yi
+
