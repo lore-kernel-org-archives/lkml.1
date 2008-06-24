@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbYFXTNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbYFXTSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754691AbYFXTNh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 15:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbYFXTN3
+	id S1754674AbYFXTSU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 15:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbYFXTSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 15:13:29 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44741 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751921AbYFXTN2 (ORCPT
+	Tue, 24 Jun 2008 15:18:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41649 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751680AbYFXTSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 15:13:28 -0400
-Message-ID: <48614755.5080001@zytor.com>
-Date: Tue, 24 Jun 2008 12:13:25 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 24 Jun 2008 15:18:10 -0400
+Date: Tue, 24 Jun 2008 12:17:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [rfc patch 3/4] splice: remove confirm from
+ pipe_buf_operations
+In-Reply-To: <E1KBDpg-0002bR-3X@pomaz-ex.szeredi.hu>
+Message-ID: <alpine.LFD.1.10.0806241216350.2926@woody.linux-foundation.org>
+References: <20080621154607.154640724@szeredi.hu> <20080621154726.494538562@szeredi.hu> <20080624080440.GJ20851@kernel.dk> <E1KB4Id-0000un-PV@pomaz-ex.szeredi.hu> <20080624111913.GP20851@kernel.dk> <E1KB6p9-0001Gq-Fd@pomaz-ex.szeredi.hu>
+ <alpine.LFD.1.10.0806241022120.2926@woody.linux-foundation.org> <E1KBDBg-0002XZ-DG@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0806241129590.2926@woody.linux-foundation.org> <E1KBDpg-0002bR-3X@pomaz-ex.szeredi.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: jmerkey@wolfmountaingroup.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Forensic File System GUID Linux/Windows
-References: <2778.69.2.248.210.1214248946.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <2778.69.2.248.210.1214248946.squirrel@webmail.wolfmountaingroup.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jmerkey@wolfmountaingroup.com wrote:
-> The following GUID is being used in the Wolf Mountain Group, Inc. Forensic
-> File System (FFS) for GPT intel EFI partitions.  Since there is no central
-> registry for EFI GUID's it is posted here for referece for folks who may
-> run accross it on Windows Vista, 2003, and 2008 systems running FFS on
-> Windows that may be using dual boot with Linux or vmware:
+
+
+On Tue, 24 Jun 2008, Miklos Szeredi wrote:
 > 
-> #define PARTITION_FFS_GUID \
->     EFI_GUID( 0xBEEFCAFE, 0xFEED, 0x0000, \
->               0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01)
-> 
+> Let's start with page_cache_pipe_buf_confirm().  How should we deal
+> with finding an invalidated page (!PageUptodate(page) &&
+> !page->mapping)?
 
-You would have vastly less probability of accidental collision if you 
-generated a proper random GUID, for example:
+I suspect we just have to use it. After all, it was valid when the read 
+was done. The fact that it got invalidated later is kind of immaterial.
 
-: tazenda 118 ; uuidgen -r
-33ae8a9c-441e-4d97-93a3-8561388ce905
+splice() is an optimized read+write. The read reads it into a temporary 
+buffer. The fact that it's a zero-copy buffer and basically just re-uses 
+the source doesn't really change that.
 
-	-hpa
+		Linus
