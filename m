@@ -1,99 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbYFXSFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYFXSI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753909AbYFXSFL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 14:05:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbYFXSE7
+	id S1754121AbYFXSI2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 14:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbYFXSIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 14:04:59 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:44215 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750752AbYFXSE6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 14:04:58 -0400
-Date: Tue, 24 Jun 2008 20:04:56 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Joel Becker <Joel.Becker@oracle.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: configfs: Q: item leak in a failing configfs_attach_group()?
-Message-ID: <20080624180456.GA32036@hawkmoon.kerlabs.com>
-Reply-To: Louis.Rilling@kerlabs.com
-References: <20080624141649.GH7621@hawkmoon.kerlabs.com> <20080624171051.GD4184@ca-server1.us.oracle.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-29171-1214330603-0001-2"
+	Tue, 24 Jun 2008 14:08:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52153 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751068AbYFXSIU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 14:08:20 -0400
+Date: Tue, 24 Jun 2008 20:08:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alok Kataria <akataria@vmware.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: merge conflicts with tip/master
+Message-ID: <20080624180808.GA14994@elte.hu>
+References: <1214327937.27577.6.camel@promb-2n-dhcp368.eng.vmware.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080624171051.GD4184@ca-server1.us.oracle.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1214327937.27577.6.camel@promb-2n-dhcp368.eng.vmware.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_bohort-29171-1214330603-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+* Alok Kataria <akataria@vmware.com> wrote:
 
-On Tue, Jun 24, 2008 at 10:10:51AM -0700, Joel Becker wrote:
-> On Tue, Jun 24, 2008 at 04:16:49PM +0200, Louis Rilling wrote:
-> > Hi,
-> >=20
-> > I'd like an opinion on the following scenario:
-> >=20
-> > process 1: 					process 2:
-> > configfs_mkdir("A")
-> >   attach_group("A")
-> >     attach_item("A")
-> >       d_instantiate("A")
-> >     populate_groups("A")
-> >       mutex_lock("A")
-> >       attach_group("A/B")
-> >         attach_item("A")
-> >           d_instantiate("A/B")
-> > 						mkdir("A/B/C")
-> > 						  do_path_lookup("A/B/C", LOOKUP_PARENT)
->=20
-> 					This has to sleep until
-> 					configfs_mkdir("A") finishes.
-> 					It's waiting on A->d_parent's
-> 					i_mutex, which is held by
-> 					sys_mkdirat().
+> Hi Ingo,
+> 
+> While working with tip/master...after following the steps in the readme
+> @ http://people.redhat.com/mingo/tip.git/readme.txt
+> 
+> I usually do any changes and manage them using "quilt". Once the 
+> changes are pushed upstream, i do a "quilt pop" and generally try a 
+> "git pull" to check for any new changes, along with the change that 
+> was just pushed.
+> 
+> This method works fine for me with Linus's tree. But with tip/master i 
+> usually get "merge conflicts"
+> 
+> Am i doing something wrong over here...am i supposed to not use git 
+> pull for updating the local tip/master copy ?
 
-Can you be more precise? I don't see where do_path_lookup() locks an inode
-outside of real_lookup(), and what I understand is that real_lookup() is ne=
-ither
-called for "A", nor called for "A/B" because __d_lookup() will find positive
-dentries (they were d_instantiated). Since do_path_lookup() is called with
-LOOKUP_PARENT, it stops here. Then lookup_create() locks "A/B"'s inode, wit=
-hout
-waiting, and calls lookup_hash("A/B", "C"), which ends calling
-configfs_lookup("A/B", "C") because "A/B" has no child "C" in the dcache.
+i dont think this is due to Quilt interaction, but possibly due to the 
+fact that you should update the remote branches via "git remote update".
 
-What am I missing?
+another possibility is that Quilt touches a file and can change its 
+timestamp - so Git thinks it's modified. You'll get something like:
 
-Thanks,
+  $  git-checkout tip-latest
+  M       kernel/sched.c
+  Already on branch "tip-latest"
 
-Louis
+the "M" shows that the file has been modified.
 
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
+If you are absolutely sure you have a non-modified repository (sans 
+timestamps), you can force a checkout via:
 
---=_bohort-29171-1214330603-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
+  git-checkout -f tip-latest
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+the '-f' will force a checkout and any local changes will be 
+overwritten.
 
-iD8DBQFIYTdIVKcRuvQ9Q1QRAlReAKC07GTRaRqTDb2KSZMSpWq3Hx3U8QCdGUjN
-MOLKW6TfZ0JjkuG/DeMceL8=
-=N7sH
------END PGP SIGNATURE-----
+finally, if tip/master has been updated, you can 'jump' to it without 
+doing a pull, via:
 
---=_bohort-29171-1214330603-0001-2--
+  git-checkout tip-latest
+  git-reset --hard tip/master
+
+NOTE: this too is destructive to any local Git state and should be used 
+with care.
+
+	Ingo
