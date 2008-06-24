@@ -1,62 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756355AbYFXGf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758038AbYFXGgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756355AbYFXGf0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 02:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYFXGfN
+	id S1758038AbYFXGgX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 02:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYFXGgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 02:35:13 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:40726 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751237AbYFXGfM (ORCPT
+	Tue, 24 Jun 2008 02:36:12 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:41112 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751516AbYFXGgL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 02:35:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=EULSLhAl0Blhp53cqBuJSr8cC/8wE/Glx+iVcEwCT8wug/8zOeKq/2ee4fVG3Q3wEw
-         j8spcBuvx9TCeNxBYcwF2pmimkMiAQVjvD0cTzHlgUy9LKz/StckNu7fDCicBJlL0rzM
-         tO5oG1MjNPWH4U1CAkkSOZH5rb9KUpuOE2gLQ=
-Message-ID: <cfd18e0f0806232335p3e05d690o5a5cef8c9626fae7@mail.gmail.com>
-Date: Tue, 24 Jun 2008 08:35:11 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
-Subject: When did High-Resolution Timers hit mainline?
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "Roman Zippel" <zippel@linux-m68k.org>,
-       "john stultz" <johnstul@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Tue, 24 Jun 2008 02:36:11 -0400
+Date: Tue, 24 Jun 2008 00:36:06 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH] ext3: validate directory entry data before use
+In-reply-to: <1214013261-32428-1-git-send-email-duaneg@dghda.com>
+To: Duane Griffin <duaneg@dghda.com>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
+       Sami Liedes <sliedes@cc.hut.fi>
+Message-id: <20080624063606.GE6239@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <20080607121940.8ee6044a.akpm@linux-foundation.org>
+ <1214013261-32428-1-git-send-email-duaneg@dghda.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo, Thomas,
+On Jun 21, 2008  02:54 +0100, Duane Griffin wrote:
+> Various places in fs/ext3/namei.c use ext3_next_entry to loop over
+> directory entries, but not all of them verify that entries are valid before
+> attempting to move to the next one. In the case where rec_len == 0 this
+> causes an infinite loop.
+> 
+> Introduce a new version of ext3_next_entry that checks the validity of the
+> entry before using its data to find the next one. Rename the original
+> function to __ext3_next_entry and use it in places where we already know
+> the data is valid.
+>
+> Note that the changes to empty_dir follow the original code in reporting
+> the directory as empty in the presence of errors.
+> 
+> This patch fixes the first case (image hdb.25.softlockup.gz) reported in
+> http://bugzilla.kernel.org/show_bug.cgi?id=10882.
+> 
+> Signed-off-by: Duane Griffin <duaneg@dghda.com>
+> --
+> 
+> Please note that I've only properly tested the originally reported failure
+> case (i.e. the changes to ext3_dx_find_entry).
+> 
+> Reviewers may want to pay particular attention to the changes to do_split,
+> make_indexed_dir and empty_dir. I've tried to follow the original code's
+> error handling conventions, as noted above for empty_dir, but I'm not sure
+> this is the best way to do things.
 
-I want to update some timer and sleep man pages to reflect the arrival
-of high-resolution timers.  However, it's not quite clear to me when
-HRTs properly arrived in mainline.  Was it 2.6.21?  And at that point,
-was the resolution for all timer and sleep calls based on HRTs, so
-that they all became more accurate?  (Or was it the case that various
-system calls switched over to HRTs in different later kernel
-versions?)  Specifically, I'm thinking of the following system calls
+Just as a note, and not to detract from the validity of this patch -
+in the ext2 page-based directory code is somewhat more efficient in this
+area.  It checks each page a single time when it is first read from disk,
+marks the page as checked, and then never has to check the page again.
 
-nanosleep()
-clock_nanosleep()
-setitimer()
-timer_create()/timer_settime()
+This wasn't implemented for ext3 because it never changed from buffer-
+based directories to page-based directories due to the dependence on
+buffer heads for the journaling code.
 
-Was it the case that pre 2.6.21 (or whatever) these were all
-jiffy-based in their accuracy, and then post 2.6.21, they were all HRT
-based (if CONFIG_HIGH_RES_TIMERS is enabled)?
+It would be possible to implement this for ext3/ext4 readdir/lookup by
+replacing use of ext3_bread() with a new ext3_bread_dir() - a copy of
+ext3_bread() that validates the buffer if it actually needs ll_rw_block()
+to read the buffer from disk.
 
-Cheers,
+I also note in ext3_readdir() for non-indexed directories that the readahead
+doesn't check for !buffer_uptodate(bh) before forcing a read of the next
+block.
 
-Michael
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
