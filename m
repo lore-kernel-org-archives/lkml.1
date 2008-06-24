@@ -1,121 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbYFXBcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbYFXBe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbYFXBcd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 21:32:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbYFXBcS
+	id S1756242AbYFXBe1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 21:34:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbYFXBeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 21:32:18 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60067 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756155AbYFXBcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 21:32:15 -0400
-Message-ID: <48604E44.5040402@cn.fujitsu.com>
-Date: Tue, 24 Jun 2008 09:30:44 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: [PATCH] CONNECTOR: add a proc entry to list connectors
-Content-Type: text/plain; charset=UTF-8
+	Mon, 23 Jun 2008 21:34:19 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:43072 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752210AbYFXBeS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 21:34:18 -0400
+Subject: 2.6.25.8-rt7
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain
+Date: Mon, 23 Jun 2008 21:34:17 -0400
+Message-Id: <1214271257.8701.17.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got a problem when I wanted to check if the kernel supports process
-event connector, and It seems there's no way to do this check.
+We are pleased to announce the 2.6.25.8-rt7 tree, which can be
+downloaded from the location:
 
-At best I can check if the kernel supports connector or not, by looking
-into /proc/net/netlink, or maybe checking the return value of bind() to
-see if it's ENOENT.
+  http://rt.et.redhat.com/download/
 
-So how about add /proc/net/connector to list all supported connectors?
- # cat /proc/net/connector
- Name      ID
- connector 4294967295:4294967295
- cn_proc   1:1
- w1        3:1
+Information on the RT patch can be found at:
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- drivers/connector/connector.c |   41 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 41 insertions(+), 0 deletions(-)
+  http://rt.wiki.kernel.org/index.php/Main_Page
 
-diff --git a/drivers/connector/connector.c b/drivers/connector/connector.c
-index 85e2ba7..08f9983 100644
---- a/drivers/connector/connector.c
-+++ b/drivers/connector/connector.c
-@@ -27,6 +27,8 @@
- #include <linux/moduleparam.h>
- #include <linux/connector.h>
- #include <linux/mutex.h>
-+#include <linux/proc_fs.h>
-+#include <linux/spinlock.h>
- 
- #include <net/sock.h>
- 
-@@ -403,6 +405,41 @@ static void cn_callback(void *data)
- 	mutex_unlock(&notify_lock);
- }
- 
-+static int cn_proc_show(struct seq_file *m, void *v)
-+{
-+	struct cn_queue_dev *dev = cdev.cbdev;
-+	struct cn_callback_entry *cbq;
-+	unsigned long flags;
-+
-+	seq_printf(m, "Name      ID\n");
-+
-+	spin_lock_irqsave(&dev->queue_lock, flags);
-+
-+	list_for_each_entry(cbq, &dev->queue_list, callback_entry) {
-+		seq_printf(m, "%-9s %u:%u\n",
-+			   cbq->id.name,
-+			   cbq->id.id.idx,
-+			   cbq->id.id.val);
-+	}
-+
-+	spin_unlock_irqrestore(&dev->queue_lock, flags);
-+
-+	return 0;
-+}
-+
-+static int cn_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, cn_proc_show, NULL);
-+}
-+
-+static const struct file_operations cn_file_ops = {
-+	.owner   = THIS_MODULE,
-+	.open    = cn_proc_open,
-+	.read    = seq_read,
-+	.llseek  = seq_lseek,
-+	.release = seq_release
-+};
-+
- static int __devinit cn_init(void)
- {
- 	struct cn_dev *dev = &cdev;
-@@ -434,6 +471,8 @@ static int __devinit cn_init(void)
- 		return -EINVAL;
- 	}
- 
-+	proc_net_fops_create(&init_net, "connector", S_IRUGO, &cn_file_ops);
-+
- 	return 0;
- }
- 
-@@ -443,6 +482,8 @@ static void __devexit cn_fini(void)
- 
- 	cn_already_initialized = 0;
- 
-+	proc_net_remove(&init_net, "connector");
-+
- 	cn_del_callback(&dev->id);
- 	cn_queue_free_dev(dev->cbdev);
- 	netlink_kernel_release(dev->nls);
--- 
-1.5.4.rc3
+Changes since 2.6.25.4-rt6
+
+  - ported to 2.6.25.8
+
+  - rwlock pi_lock fixes on waking up multiple readers (Steven Rostedt)
+
+  - revert adaptive locks from RCU (Thomas Gleixner)
+     [ for some reason, using RCU causes some latency spikes, this
+       may be a sign of something going wrong in RCU itself ]
+
+  - rwlock mutex owner fix for waking up reader with readers held
+                                                  (Steven Rostedt)
+
+  - rwlock remove waiter from pi_list on above fix (Steven Rostedt and
+                                                    Thomas Gleixner)
+
+  - rwlock replace macro with inline (Thomas Gleixner)
+
+  - rwlock pending namespace updates (Thomas Gleixner)
+
+  - futex fix fault (Thomas Gleixner)
+
+to build a 2.6.25.8-rt7 tree, the following patches should be applied:
+
+  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.25.tar.bz2
+  http://kernel.org/pub/linux/kernel/v2.6/patch-2.6.25.8.bz2
+  http://rt.et.redhat.com/download/patch-2.6.25.8-rt7.bz2
+
+
+
+And like always, my RT version of Matt Mackall's ketchup will get this
+for you nicely:
+
+  http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt3
+
+
+The broken out patches are also available.
+
+
+-- Steve
+
 
