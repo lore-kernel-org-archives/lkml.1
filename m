@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbYFXFKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754450AbYFXFRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755402AbYFXFKA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 01:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbYFXFJu
+	id S1754450AbYFXFRS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 01:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbYFXFRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 01:09:50 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:5915 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751531AbYFXFJs (ORCPT
+	Tue, 24 Jun 2008 01:17:07 -0400
+Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:3213 "EHLO
+	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750931AbYFXFRG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 01:09:48 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5323"; a="4170954"
-Message-ID: <4860819A.4030809@qualcomm.com>
-Date: Mon, 23 Jun 2008 22:09:46 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: wcang@nav6.org, steve.zabele@baesystems.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NET: Proper handling of IPv6 header in tun driver when
- TUN_NO_PI is set
-References: <48499C32.6070703@qualcomm.com>	<20080617.163205.160864233.davem@davemloft.net>	<48586F4B.4060404@nav6.org> <20080617.210803.190930256.davem@davemloft.net>
-In-Reply-To: <20080617.210803.190930256.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 24 Jun 2008 01:17:06 -0400
+X-Greylist: delayed 463 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Jun 2008 01:17:06 EDT
+Mime-Version: 1.0 (Apple Message framework v624)
 Content-Transfer-Encoding: 7bit
+Message-Id: <2c84b89ef40f92173a026b8d95e889ad@xs4all.nl>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: linux-kernel@vger.kernel.org
+From: Joris van Rantwijk <jorispubl@xs4all.nl>
+Subject: Physical memory disappeared from /proc/meminfo
+Date: Tue, 24 Jun 2008 07:09:00 +0200
+X-Mailer: Apple Mail (2.624)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Ang Way Chuang <wcang@nav6.org>
-> Date: Wed, 18 Jun 2008 10:13:31 +0800
-> 
->> David Miller wrote:
->>> From: Max Krasnyanskiy <maxk@qualcomm.com>
->>> Date: Fri, 06 Jun 2008 13:21:06 -0700
->>>
->>>> Acked-by: Max Krasnyansky <maxk@qualcomm.com>
->>>>
->>>> Dave, can you please add this patch to your tree.
->>> I can't, the patch is severely whitespace damaged.
->>>
->> Resend. Hopefully Thunderbird won't screw this time.
-> 
-> Same problem, tabs were transformed into spaces, and
-> lines composed of only whitespace were transformed into
-> empty lines.
-> 
-> This is frustrating enough, I'm just going to fix this up
-> by hand for you, but please get your shit straight for next
-> time because I won't do this twice.
+My system got into a situation where a lot of physical memory is
+in use. I want to know where this memory is being used, but it
+seems to have become untraceable somehow.
 
-Dave, thanks a lot for fixing this up. I looked at the patch and logic wise it
-looked perfectly fine. I did not notice the problem with the spaces. Sorry.
+My total physical memory is 1 GB.
+Adding up all VSZ numbers from "ps auxw" gets me to about 75 MB,
+so I should have a lot of free memory but I don't see it.
 
-Max
+My kernel is Linux 2.6.25.4 for x86_64 with a 32-bit userland.
+I disabled swap to make it easier to investigate this issue.
+
+One problem is that I can't really make sense of /proc/meminfo.
+As far as I understand the numbers, I find that about 640 MB is
+unaccounted for.
+
+For example I would expect that
+MemTotal = MemFree + Buffers + Cached + AnonPages + Mapped + Slab.
+
+Is that a valid assumption?
+Why does it not hold for my machine?
+Is this a bug in the memory statistics?
+What part of the system is using all this untraceable memory?
+
+/proc/meminfo:
+MemTotal:     996320 kB
+MemFree:       67708 kB
+Buffers:       17716 kB
+Cached:        62412 kB
+SwapCached:        0 kB
+Active:        27320 kB
+Inactive:      58720 kB
+SwapTotal:         0 kB
+SwapFree:          0 kB
+Dirty:            12 kB
+Writeback:         0 kB
+AnonPages:      5932 kB
+Mapped:         3916 kB
+Slab:         193560 kB
+SReclaimable:  26076 kB
+SUnreclaim:   167484 kB
+PageTables:      464 kB
+NFS_Unstable:      0 kB
+Bounce:            0 kB
+CommitLimit:  498160 kB
+Comitted_AS:   15536 kB
+VmallocTotal: 34359738367 kB
+VmallocUsed:     600 kB
+VmallocChunk: 34359736326 kB
+
+Please help.
+
+Joris.
+
