@@ -1,132 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbYFXQIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbYFXQPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757055AbYFXQIW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 12:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYFXQIN
+	id S1757948AbYFXQPj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 12:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbYFXQPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 12:08:13 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52913 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752105AbYFXQIM (ORCPT
+	Tue, 24 Jun 2008 12:15:31 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:51417 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752195AbYFXQPa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 12:08:12 -0400
-Date: Tue, 24 Jun 2008 18:08:10 +0200
-From: Jan Kara <jack@suse.cz>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
-       Sami Liedes <sliedes@cc.hut.fi>
-Subject: Re: [PATCH] ext3: handle corrupted orphan list at mount
-Message-ID: <20080624160810.GC22586@atrey.karlin.mff.cuni.cz>
-References: <20080607121940.8ee6044a.akpm@linux-foundation.org> <1214258200-16623-1-git-send-email-duaneg@dghda.com>
+	Tue, 24 Jun 2008 12:15:30 -0400
+Date: Tue, 24 Jun 2008 09:12:51 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ryan Hope <rmh3093@gmail.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <peterz@infradead.org>, linux-mm@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] Lockless patches cause hardlock under heavy IO
+Message-ID: <20080624161251.GE7978@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <48f7fe350806181415l4eba61b3i1d206de03147575e@mail.gmail.com> <200806232154.52820.nickpiggin@yahoo.com.au> <20080623130536.GA10595@linux.vnet.ibm.com> <200806241013.45908.nickpiggin@yahoo.com.au> <48f7fe350806240812t5bd411daw122aca4d6b67e932@mail.gmail.com> <20080624153238.GD7978@linux.vnet.ibm.com> <48f7fe350806240857l38edb74ame8cef4a7be595bbc@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1214258200-16623-1-git-send-email-duaneg@dghda.com>
+In-Reply-To: <48f7fe350806240857l38edb74ame8cef4a7be595bbc@mail.gmail.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If the orphan node list includes valid, untruncatable nodes with nlink > 0
-> the ext3_orphan_cleanup loop which attempts to delete them will not do so,
-> causing it to loop forever. Fix by checking for such nodes in the
-> ext3_orphan_get function.
+On Tue, Jun 24, 2008 at 11:57:05AM -0400, Ryan Hope wrote:
+> I can give you a list of patches that should correspond to the thread
+> name (for the most part):
 > 
-> This patch fixes the second case (image hdb.20000009.softlockup.gz)
-> reported in http://bugzilla.kernel.org/show_bug.cgi?id=10882.
+> fix-double-unlock_page-in-2626-rc5-mm3-kernel-bug-at-mm-filemapc-575.patch
 > 
-> Signed-off-by: Duane Griffin <duaneg@dghda.com>
-> --
+> fix_munlock-page-table-walk.patch
 > 
-> Note that we can still end up in an infinite loop if the ext3_truncate
-> errors out early (and keeps doing so). I'm not sure if we should worry
-> about that. If we did want to handle it then we could change ext3_truncate
-> to return success/failure and exit the ext3_orphan_cleanup.
+> migration_entry_wait-fix.patch
 > 
-> ---
+> PATCH collect lru meminfo statistics from correct offset
 > 
-> diff --git a/fs/ext3/ialloc.c b/fs/ext3/ialloc.c
-> index 7712682..bc030f4 100644
-> --- a/fs/ext3/ialloc.c
-> +++ b/fs/ext3/ialloc.c
-> @@ -669,6 +669,14 @@ struct inode *ext3_orphan_get(struct super_block *sb, unsigned long ino)
->  	if (IS_ERR(inode))
->  		goto iget_failed;
->  
-> +	/*
-> +	 * If the orphans has i_nlinks > 0 then it should be able to be
-> +	 * truncated, otherwise it won't be removed from the orphan list
-> +	 * during processing and an infinite loop will result.
-> +	 */
-> +	if (inode->i_nlink && !ext3_can_truncate(inode))
-> +		goto bad_orphan;
-> +
-  Maybe I miss something but shouldn't above rather be ||?
+> Mlocked field of /proc/meminfo display silly number.
+> because trivial mistake exist in meminfo_read_proc().
+> 
+> You can also look in our git repo to see the code that changed with
+> these patches if you cant track them down in LKML:
+> http://zen-sources.org/cgi-bin/gitweb.cgi?p=kernel-mm.git;a=shortlog;h=refs/heads/lkml
 
-										Honza
+Thank you!  And is this using Classic RCU or Preemptable RCU?
 
->  	if (NEXT_ORPHAN(inode) > max_ino)
->  		goto bad_orphan;
->  	brelse(bitmap_bh);
-> @@ -690,6 +698,7 @@ bad_orphan:
->  		printk(KERN_NOTICE "NEXT_ORPHAN(inode)=%u\n",
->  		       NEXT_ORPHAN(inode));
->  		printk(KERN_NOTICE "max_ino=%lu\n", max_ino);
-> +		printk(KERN_NOTICE "i_nlink=%lu\n", inode->i_nlink);
->  		/* Avoid freeing blocks if we got a bad deleted inode */
->  		if (inode->i_nlink == 0)
->  			inode->i_blocks = 0;
-> diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-> index 6ae4ecf..7b7e234 100644
-> --- a/fs/ext3/inode.c
-> +++ b/fs/ext3/inode.c
-> @@ -2253,6 +2253,14 @@ static void ext3_free_branches(handle_t *handle, struct inode *inode,
->  	}
->  }
->  
-> +int ext3_can_truncate(struct inode *inode)
-> +{
-> +	return (S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode) ||
-> +		S_ISLNK(inode->i_mode)) &&
-> +		!ext3_inode_is_fast_symlink(inode) &&
-> +		!(IS_APPEND(inode) || IS_IMMUTABLE(inode));
-> +}
-> +
->  /*
->   * ext3_truncate()
->   *
-> @@ -2297,12 +2305,7 @@ void ext3_truncate(struct inode *inode)
->  	unsigned blocksize = inode->i_sb->s_blocksize;
->  	struct page *page;
->  
-> -	if (!(S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode) ||
-> -	    S_ISLNK(inode->i_mode)))
-> -		return;
-> -	if (ext3_inode_is_fast_symlink(inode))
-> -		return;
-> -	if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
-> +	if (!ext3_can_truncate(inode))
->  		return;
->  
->  	/*
-> diff --git a/include/linux/ext3_fs.h b/include/linux/ext3_fs.h
-> index 36c5403..80171ee 100644
-> --- a/include/linux/ext3_fs.h
-> +++ b/include/linux/ext3_fs.h
-> @@ -832,6 +832,7 @@ extern void ext3_discard_reservation (struct inode *);
->  extern void ext3_dirty_inode(struct inode *);
->  extern int ext3_change_inode_journal_flag(struct inode *, int);
->  extern int ext3_get_inode_loc(struct inode *, struct ext3_iloc *);
-> +extern int ext3_can_truncate(struct inode *inode);
->  extern void ext3_truncate (struct inode *);
->  extern void ext3_set_inode_flags(struct inode *);
->  extern void ext3_get_inode_flags(struct ext3_inode_info *);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+							Thanx, Paul
+
+> On Tue, Jun 24, 2008 at 11:32 AM, Paul E. McKenney
+> <paulmck@linux.vnet.ibm.com> wrote:
+> > On Tue, Jun 24, 2008 at 11:12:03AM -0400, Ryan Hope wrote:
+> >> Well i tried to run pure -mm this weekend, it locked as soon as I got
+> >> into gnome so I applied a couple of the bug fixes from lkml and -mm
+> >> seems to be running stable now. I cant seem to get it to hard lock
+> >> now, at least not doing the simple stuff that was causing it to hard
+> >> lock on my other patchset, either the lockless patches expose some bug
+> >> that in -rc6 or lockless requires some other patches further up in the
+> >> -mm series file.
+> >
+> > Cool!!!  Any guess as to which of the bug fixes did the trick?
+> > Failing that, a list of the bug fixes that you applied?
+> >
+> >                                                        Thanx, Paul
+> >
+> >> On Mon, Jun 23, 2008 at 8:13 PM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> >> > On Monday 23 June 2008 23:05, Paul E. McKenney wrote:
+> >> >> On Mon, Jun 23, 2008 at 09:54:52PM +1000, Nick Piggin wrote:
+> >> >> > On Monday 23 June 2008 13:51, Ryan Hope wrote:
+> >> >> > > well i get the hardlock on -mm with out using reiser4, i am pretty
+> >> >> > > sure is swap related
+> >> >> >
+> >> >> > The guys seeing hangs don't use PREEMPT_RCU, do they?
+> >> >> >
+> >> >> > In my swapping tests, I found -mm3 to be stable with classic RCU, but
+> >> >> > on a hunch, I tried PREEMPT_RCU and it crashed a couple of times rather
+> >> >> > quickly. First crash was in find_get_pages so I suspected lockless
+> >> >> > pagecache doing something subtly wrong with the RCU API, but I just got
+> >> >> > another crash in __d_lookup:
+> >> >>
+> >> >> Could you please send me a repeat-by?  (At least Alexey is no longer
+> >> >> alone!)
+> >> >
+> >> > OK, I had DEBUG_PAGEALLOC in the .config, which I think is probably
+> >> > important to reproduce it (but the fact that I'm reproducing oopses
+> >> > with << PAGE_SIZE objects like dentries and radix tree nodes indicates
+> >> > that there is even more free-before-grace activity going undetected --
+> >> > if you construct a test case using full pages, it might become even
+> >> > easier to detect with DEBUG_PAGEALLOC).
+> >> >
+> >> > 2 socket, 8 core x86 system.
+> >> >
+> >> > I mounted two tmpfs filesystems, one contains a single large file
+> >> > which is formatted as 1K block size ext3 and mounted loopback, the
+> >> > other is used directly. Linux kernel source is unpacked on each mount
+> >> > and concurrent make -j128 on each. This pushes it pretty hard into
+> >> > swap. Classic RCU survived another 5 hours of this last night.
+> >> >
+> >> > But that's a fairly convoluted test for an RCU problem. I expect it
+> >> > should be easier to trigger with something more targetted...
+> >> >
+> >
