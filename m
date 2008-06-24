@@ -1,187 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbYFXD2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755116AbYFXD3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbYFXD2t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 23:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbYFXD2h
+	id S1755116AbYFXD3n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 23:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbYFXD3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 23:28:37 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:56907 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753077AbYFXD2g (ORCPT
+	Mon, 23 Jun 2008 23:29:35 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:53169 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753014AbYFXD3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 23:28:36 -0400
-Date: Tue, 24 Jun 2008 08:58:07 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Mingming <cmm@us.ibm.com>
-Cc: Holger Kiehl <Holger.Kiehl@dwd.de>, Theodore Tso <tytso@mit.edu>,
-       Eric Sandeen <sandeen@redhat.com>, Jan Kara <jack@suse.cz>,
-       Solofo.Ramangalahy@bull.net, Nick Dokos <nicholas.dokos@hp.com>,
-       linux-ext4@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Performance of ext4
-Message-ID: <20080624032807.GC10469@skywalker>
-References: <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de> <20080619155645.GA8582@mit.edu> <485A8C2D.1090806@redhat.com> <20080619174211.GB9119@mit.edu> <Pine.LNX.4.64.0806200812340.3383@diagnostix.dwd.de> <20080620085922.GH9119@mit.edu> <Pine.LNX.4.64.0806200905070.3383@diagnostix.dwd.de> <20080623174508.GA7216@skywalker> <1214267492.27507.285.camel@BVR-FS.beaverton.ibm.com> <20080624030721.GB10469@skywalker>
+	Mon, 23 Jun 2008 23:29:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=r0PmBtBmh6+PDnSBMHtCw84U19R0mUKyxQtSw2W5rMqbtYJlUL9U0C1h/MaqNATBXA
+         UGMHH51cDC8FRLqiNbw3qy8XCXGPpng2ewrIzPzrgcnmOrc+Q0+Xk8EeVnoo3+qGf+a4
+         giV9mQGPctep3URlsPFhRFCrEX3rLE6asmzho=
+Message-ID: <863e9df20806232029x6621ff13qd584591214e93d7f@mail.gmail.com>
+Date: Tue, 24 Jun 2008 08:59:34 +0530
+From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 0/4] ftrace: prevent ftrace modifications while being kprobe'd
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080623201525.GA10386@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080624030721.GB10469@skywalker>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <485D45AB.3000405@gmail.com> <20080623201525.GA10386@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 24, 2008 at 08:37:21AM +0530, Aneesh Kumar K.V wrote:
-> On Mon, Jun 23, 2008 at 05:31:32PM -0700, Mingming wrote:
-> > 
-> > On Mon, 2008-06-23 at 23:15 +0530, Aneesh Kumar K.V wrote:
-> > 
-> > > I found one place where we fail to update i_disksize. Can you try this
-> > > patch ?
-> > > 
-> > > diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-> > > index 33f940b..9fa737f 100644
-> > > --- a/fs/ext4/inode.c
-> > > +++ b/fs/ext4/inode.c
-> > > @@ -1620,7 +1620,10 @@ static int ext4_da_writepage(struct page *page,
-> > >  	loff_t size;
-> > >  	unsigned long len;
-> > >  	handle_t *handle = NULL;
-> > > +	ext4_lblk_t block;
-> > > +	loff_t disksize;
-> > >  	struct buffer_head *page_bufs;
-> > > +	struct buffer_head *bh, *head;
-> > >  	struct inode *inode = page->mapping->host;
-> > > 
-> > >  	handle = ext4_journal_current_handle();
-> > > @@ -1662,6 +1665,38 @@ static int ext4_da_writepage(struct page *page,
-> > >  	else
-> > >  		ret = block_write_full_page(page, ext4_da_get_block_write, wbc);
-> > > 
-> > > +	 if (ret)
-> > > +		 return ret;
-> > > +	/*
-> > > +	 * When called via shrink_page_list and if we don't have any unmapped
-> > > +	 * buffer_head we still could have written some new content in an
-> > > +	 * already mapped buffer. That means we need to extent i_disksize here
-> > > +	 */
-> > 
-> > In this case(when extend the file without need block allocation),
-> > wouldn't make sense to update the i_disksize at write_end() time? So
-> > that the window of i_size different from i_disksize could be much
-> > smaller in this case.
-> > 
-> > 
-> > Something like below? (untested)
-> 
-> In this case you will have to start a transaction in write_begin . With
-> the below code transaction is started inside page_lock. Also I don't
-> think we need needed_blocks credit just 1 should be enough because we
-> are not doing any block allocation here. We just need to update the
-> inode block.
-> 
-> 
+Hi Ingo,
 
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index 33f940b..0ccf7b9 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -1770,6 +1770,7 @@ static int ext4_da_write_begin(struct file *file, struct address_space *mapping,
- 	struct page *page;
- 	pgoff_t index;
- 	unsigned from, to;
-+	handle_t *handle;
- 	struct inode *inode = mapping->host;
- 
- 	index = pos >> PAGE_CACHE_SHIFT;
-@@ -1777,6 +1778,17 @@ static int ext4_da_write_begin(struct file *file, struct address_space *mapping,
- 	to = from + len;
- 
- retry:
-+	/*
-+	 * If we are writing towards the end of an already mapped
-+	 * buffer_head, we don't do any block allocation. But we
-+	 * need to update i_disksize.
-+	 */
-+	handle = ext4_journal_start(inode, 1);
-+	if (IS_ERR(handle)) {
-+		ret = PTR_ERR(handle);
-+		goto out;
-+	}
-+
- 	page = __grab_cache_page(mapping, index);
- 	if (!page)
- 		return -ENOMEM;
-@@ -1786,15 +1798,65 @@ static int ext4_da_write_begin(struct file *file, struct address_space *mapping,
- 							ext4_da_get_block_prep);
- 	if (ret < 0) {
- 		unlock_page(page);
-+		ext4_journal_stop(handle);
- 		page_cache_release(page);
- 	}
- 
- 	if (ret == -ENOSPC && ext4_should_retry_alloc(inode->i_sb, &retries))
- 		goto retry;
- 
-+out:
- 	return ret;
- }
- 
-+static int ext4_da_write_end(struct file *file,
-+				struct address_space *mapping,
-+				loff_t pos, unsigned len, unsigned copied,
-+				struct page *page, void *fsdata)
-+{
-+	handle_t *handle = ext4_journal_current_handle();
-+	struct inode *inode = mapping->host;
-+	unsigned from, to;
-+	int ret = 0, ret2;
-+
-+	from = pos & (PAGE_CACHE_SIZE - 1);
-+	to = from + len;
-+
-+	if (ret == 0) {
-+		/*
-+		 * generic_write_end() will run mark_inode_dirty() if i_size
-+		 * changes.  So let's piggyback the i_disksize mark_inode_dirty
-+		 * into that.
-+		 */
-+		loff_t new_i_size;
-+
-+		new_i_size = pos + copied;
-+		if (new_i_size > EXT4_I(inode)->i_disksize)
-+			if (!walk_page_buffers(NULL, page_buffers(page),
-+					       0, len, NULL,
-+					       ext4_bh_unmapped_or_delay)) {
-+				/*
-+				 * Updating i_disksize when extending file without
-+				 * need block allocation
-+				 */
-+				if (ext4_should_order_data(inode))
-+					ret = ext4_jbd2_file_inode(handle, inode);
-+
-+				EXT4_I(inode)->i_disksize = new_i_size;
-+			}
-+		ret2 = generic_write_end(file, mapping, pos,
-+					len, copied, page, fsdata);
-+		copied = ret2;
-+		if (ret2 < 0)
-+			ret = ret2;
-+	}
-+	ret2 = ext4_journal_stop(handle);
-+	if (!ret)
-+		ret = ret2;
-+
-+	return ret ? ret : copied;
-+}
-+
- static void ext4_da_invalidatepage(struct page *page, unsigned long offset)
- {
- 	/*
-@@ -2250,7 +2312,7 @@ static int ext4_journalled_set_page_dirty(struct page *page)
- 	.writepages	= ext4_da_writepages,
- 	.sync_page	= block_sync_page,
- 	.write_begin	= ext4_da_write_begin,
--	.write_end	= generic_write_end,
-+	.write_end	= ext4_da_write_end,
- 	.bmap		= ext4_bmap,
- 	.invalidatepage	= ext4_da_invalidatepage,
- 	.releasepage	= ext4_releasepage,
+On Tue, Jun 24, 2008 at 1:45 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> note that i had to do a number of fixups to themerge, and there was one
+> chunk which did not merge cleanly and i left it out for now:
+>
+> @@ -435,8 +502,12 @@ static void ftrace_replace_code(int enable)
+>                                continue;
+>
+>                        /* ignore updates to this record's mcount site */
+> -                       if (get_kprobe((void *)rec->ip))
+> +                       if (get_kprobe((void *)rec->ip)) {
+> +                               freeze_record(rec);
+>                                continue;
+> +                       } else {
+> +                               unfreeze_record(rec);
+> +                       }
+
+I wonder why it conflicted during the merge. I notice that patch 4/4
+has been applied before
+3/4. Can you try reversing the order and see if it works? Else I'll redo them.
+
+--
+Thanks,
+Abhishek Sagar
