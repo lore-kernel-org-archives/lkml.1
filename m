@@ -1,116 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760958AbYFXPPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761883AbYFXPPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760958AbYFXPPB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 11:15:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbYFXPOw
+	id S1761883AbYFXPPu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 11:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760575AbYFXPPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 11:14:52 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:44054 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754954AbYFXPOv (ORCPT
+	Tue, 24 Jun 2008 11:15:41 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47652 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755469AbYFXPPj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 11:14:51 -0400
-Message-Id: <4860D726.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Tue, 24 Jun 2008 09:14:46 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Cc: <mingo@elte.hu>, <tglx@linutronix.de>, <jbe@pengutronix.de>,
-       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
-Subject: Re: 2.6.25.8-rt7
-References: <4860CD0B0200005A0003944C@sinclair.provo.novell.com>
- <4860CD140200005A0003944F@sinclair.provo.novell.com>
- <4860CD140200005A0003944F@sinclair.provo.novell.com>
- <Pine.LNX.4.58.0806241043070.32368@gandalf.stny.rr.com>
-In-Reply-To: <Pine.LNX.4.58.0806241043070.32368@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=__Part38111C76.4__="
+	Tue, 24 Jun 2008 11:15:39 -0400
+Message-Id: <20080624093452.946878437@bull.net>
+User-Agent: quilt/0.46-1
+Date: Tue, 24 Jun 2008 11:34:52 +0200
+From: <Solofo.Ramangalahy@bull.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, Matt Helsley <matthltc@us.ibm.com>,
+       Mingming Cao <cmm@us.ibm.com>, Nadia Derbey <Nadia.Derbey@bull.net>,
+       Manfred Spraul <manfred@colorfullife.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: [PATCH -mm 0/3] sysv ipc: increase msgmnb with the number of cpus
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=__Part38111C76.4__=
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+The size in bytes of a SysV IPC message queue, msgmnb, is too small
+for large machines, but we don't want to bloat small machines.
 
->>> On Tue, Jun 24, 2008 at 10:44 AM, in message
-<Pine.LNX.4.58.0806241043070.32368@gandalf.stny.rr.com>, Steven Rostedt
-<rostedt@goodmis.org> wrote:=20
+This series change ("scale") the default value of
+/proc/sys/kernel/msgmnb.
 
-> On Tue, 24 Jun 2008, Gregory Haskins wrote:
->=20
->>
->> (Sorry for toppost)
->>
->> I believe this is my fault.  You must be building for uniprocessor?  =
-Ingo=20
-> has a fix for this issue in sched-devel that should be pulled into -rt.
->>
->> Sorry for the inconvenience.  I will pull the patch myself and submit =
-it=20
-> when I get home (if someone doesn't beat me to it)
->>
->=20
-> I'm looking forward to it ;-)
+Several methods are used already to modify (mainly increase) msgmnb:
+. distribution specific patch (e.g. openSUSE)
+. system wide sysctl.conf
+. application specific tuning via /proc/sys/kernel/msgmnb
 
-Patch is attached (from linux-2.6-tip).  I meant to send this back around =
-when the
-offending patch went in, but it slipped through the cracks.  Sorry for the
-inconvenience.
+Integrating this series would:
+. reflect hardware and software evolutions and diversity,
+. reduce configuration/tuning for the applications.
 
-Regards,
--Greg
+Here is the timeline of the evolution of MSG* #defines:
+Year             1994         1999         1999          2008
+Version           1.0       2.3.27       2.3.30        2.6.24
+#define MSGMNI    128          128           16            16
+#define MSGMAX   4056         8192         8192          8192
+#define MSGMNB  16384        16384        16384         16384
 
+This patch series increases msgmnb with respect to the number of
+cpus/cores for larger machines. For uniprocessor machines the value
+does not increase.
 
---=__Part38111C76.4__=
-Content-Type: text/plain; name="sched-fix-cpuprio-build-bug.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment; filename="sched-fix-cpuprio-build-bug.patch"
+This series is similar to (and depends on) the series which scales
+msgmni, the number of IPC message queue identifiers, to the amount of
+low memory.
+While Nadia's previous series scaled msgmni along the memory axis,
+hence the message pool (msgmni x msgmnb), this series uses a second
+axis: the number of online CPUs.
+As well as covering the (cpu,memory) space of machines size, this
+reflects the parallelism allowed by lockless send/receive for
+in-flight messages in queues (msgmnb / msgmax messages).
 
->From 1100ac91b6af02d8639d518fad5b434b1bf44ed6 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 5 Jun 2008 12:25:37 +0200
-Subject: [PATCH] sched: fix cpuprio build bug
+The initial scaling is done at initialization of the ipc namespace.
+Furthermore, the value becomes dynamic with respect to cpu hotplug,
+decreasing/increasing when a cpu is taken offline/online.
 
-this patch was not built on !SMP:
+The msgmni and msgmnb values become dependent, as the value of msgmni
+is computed with respect to the value of msgmnb.
 
- kernel/sched_rt.c: In function 'inc_rt_tasks':
- kernel/sched_rt.c:404: error: 'struct rq' has no member named 'online'
+Other solutions could be possible, like using a dbus/hal daemon. This
+patches seems light enough not to go to user space. In particular, the
+computation formula is simple.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched_rt.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+The series is as follows:
+. patch 1 introduces the scaling function 
+. patch 2 deals with cpu hotplug
+. patch 3 finer grain disabling/reenabling scaling mechanism
+          (disconnect msgmnb and msgmni)
+--- 
 
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index e482159..eaa6060 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -399,16 +399,19 @@ void inc_rt_tasks(struct sched_rt_entity *rt_se, =
-struct rt_rq *rt_rq)
- #if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
- 	if (rt_se_prio(rt_se) < rt_rq->highest_prio) {
- 		struct rq *rq =3D rq_of_rt_rq(rt_rq);
--		rt_rq->highest_prio =3D rt_se_prio(rt_se);
-=20
-+		rt_rq->highest_prio =3D rt_se_prio(rt_se);
-+#ifdef CONFIG_SMP
- 		if (rq->online)
- 			cpupri_set(&rq->rd->cpupri, rq->cpu,
- 				   rt_se_prio(rt_se));
-+#endif
- 	}
- #endif
- #ifdef CONFIG_SMP
- 	if (rt_se->nr_cpus_allowed > 1) {
- 		struct rq *rq =3D rq_of_rt_rq(rt_rq);
-+
- 		rq->rt.rt_nr_migratory++;
- 	}
-=20
---=20
-1.5.4.5
+The series applies to 2.6.26-rc5-mm3
+
+Compared to the RFC, the following changes have been made:
+
+. reduce use of "scale" word which leads to confusion about the fact
+  that this is not directly a performance patch [Nick]
+. mention that the formula is simple, not needing logarithm (or user
+  space) [Nick]
+. example of distribution using patch [Manfred]
+. mention hal/dbus daemon [Manfred]
+. do not reenable msgmni recomputation when reenabling msgmnb. It
+  suffices to do a one shot recomputation [Nadia]
+. patch 3 and 4 have been merged with patch 1 [Nadia]
+. Integrated documentation with patch [Matt]
+
+Thanks for the help!
+
+. corrected a bug in the last patch
+  (forgot to add braces when adding statement in if) 
 
 
---=__Part38111C76.4__=--
+
+The last remark of Nadia about the third patch has not been addressed
+(other than keeping it like that):
+"Doing this, we are completly loosing the benefits of the notification
+chains: since the the notifier blocks remain registered + we are
+unconditionally adding a test at the top of each recompute routine. But
+the other choice would have been to define another notifier chain
+dedicated to msgmnb. I'm not convinced about what is the best solution?"
+
+ Documentation/sysctl/kernel.txt |   27 +++++++++++++++++++
+ include/linux/ipc_namespace.h   |    4 ++
+ include/linux/msg.h             |    5 +++
+ ipc/ipc_sysctl.c                |   56 ++++++++++++++++++++++++++++++----------
+ ipc/ipcns_notifier.c            |   23 ++++++----------
+ ipc/msg.c                       |   23 +++++++++++++---
+ ipc/util.c                      |   28 ++++++++++++++++++++
+ ipc/util.h                      |    1
+ 8 files changed, 135 insertions(+), 32 deletions(-)
+
+-- 
