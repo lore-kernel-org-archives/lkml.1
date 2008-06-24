@@ -1,62 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763225AbYFXPYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbYFXP0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763225AbYFXPYU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 11:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756505AbYFXPYK
+	id S1760904AbYFXP0e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 11:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbYFXP0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 11:24:10 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:31270 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755375AbYFXPYI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 11:24:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=bZyu0wTMfPfgaGfBuZsyHgXII1QLR4xKhjUNEEz5VTmMXdfI9g002+Qb9sNqDjNCT7
-         53e+vyY+c4QOKVOHBKRs6wagc3sZ/B68SJC+eGG5AYIyJ76sRa73/uLO9D00Mi/8Xcua
-         5ryGF4BOsfRhpsX4lYF0KDnW09IdKcHRogDJQ=
-Date: Tue, 24 Jun 2008 16:21:18 +0100
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Subject: [Patch] arch/x86/kernel/machine_kexec_32.c: remove extra semicolons
-Message-ID: <20080624152118.GE10512@hack.voiplan.pt>
+	Tue, 24 Jun 2008 11:26:25 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:50058 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754393AbYFXP0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 11:26:25 -0400
+Date: Tue, 24 Jun 2008 10:26:20 -0500
+From: Robin Holt <holt@sgi.com>
+To: Alex Chiang <achiang@hp.com>, Robin Holt <holt@sgi.com>,
+       tony.luck@intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [BISECT] Boot failure on ia64.
+Message-ID: <20080624152620.GP10062@sgi.com>
+References: <20080624123014.GJ10123@sgi.com> <20080624150851.GA3599@ldl.fc.hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080624150851.GA3599@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here is the output.  This is from a different boot, but it does look the
+same.
 
-I can't see any reason to keep these semicolons.
+Robin
 
-Signed-off-by: WANG Cong <wangcong@zeuux.org>
-Cc: Ingo Molnar <mingo@redhat.com>
+fs0:\efi\SuSE> elilo net0:holt/v1 root=/dev/sda7
+ELILO
+Uncompressing Linux... done
+Initializing cgroup subsys cpuset
+Linux version 2.6.26-rc7-holt-00051-g62786b9-dirty (holt@attica) (gcc version 4.1.2 20070115 (prerelease) (SUSE Linux)) #19 SMP Tue Jun 24 10:22:55 CDT 2008
+EFI v1.10 by INTEL: SALsystab=0x6002c25f10 ACPI 2.0=0x6002c26000
+console [sn_sal0] enabled
+ACPI: RSDP 6002C26000, 0024 (r2    SGI)
+ACPI: XSDT 6002C297F0, 0044 (r1    SGI  XSDTSN2    10001           7C)
+ACPI: APIC 6002C26870, 032C (r1    SGI  APICSN2    10001            1)
+ACPI: SRAT 6002C26BB0, 06B0 (r1    SGI  SRATSN2    10001            1)
+ACPI: SLIT 6002C27270, 012C (r1    SGI  SLITSN2    10001            1)
+ACPI: FACP 6002C27400, 00F4 (r3    SGI  FACPSN2    30001            1)
+ACPI: DSDT 6002C2AAF0, 0024 (r2    SGI  DSDTSN2    20001          AAC)
+ACPI: FACS 6002C273B0, 0040
+Number of logical nodes in system = 16
+Number of memory chunks in system = 16
+SAL 3.2: SGI SN2 version 1.50
+SAL Platform features: ITC_Drift
+SAL: AP wakeup using external interrupt vector 0x12
+Unable to handle kernel NULL pointer dereference (address 00000000000044b8)
+swapper[0]: Oops 8813272891392 [1]
+Modules linked in:
 
----
-diff --git a/arch/x86/kernel/machine_kexec_32.c b/arch/x86/kernel/machine_kexec_32.c
-index d0b234c..f496017 100644
---- a/arch/x86/kernel/machine_kexec_32.c
-+++ b/arch/x86/kernel/machine_kexec_32.c
-@@ -39,7 +39,7 @@ static void set_idt(void *newidt, __u16 limit)
- 	curidt.address = (unsigned long)newidt;
- 
- 	load_idt(&curidt);
--};
-+}
- 
- 
- static void set_gdt(void *newgdt, __u16 limit)
-@@ -51,7 +51,7 @@ static void set_gdt(void *newgdt, __u16 limit)
- 	curgdt.address = (unsigned long)newgdt;
- 
- 	load_gdt(&curgdt);
--};
-+}
- 
- static void load_segments(void)
- {
+Pid: 0, CPU 0, comm:              swapper
+psr : 00001010084a2010 ifs : 8000000000000491 ip  : [<a000000100087020>]    Not tainted (2.6.26-rc7-holt-00051-g62786b9-dirty)
+ip is at sn2_send_IPI+0x80/0x240
+unat: 0000000000000000 pfs : 0000000000000491 rsc : 0000000000000003
+rnat: 000000000000afc8 bsps: 000000000001003e pr  : 65691ba55aa68599
+ldrs: 0000000000000000 ccv : 0000000000ff03ff fpsr: 0009804c8a70433f
+csd : 0000000000000000 ssd : 0000000000000000
+b0  : a0000001009529b0 b6  : 00000000ff5423b0 b7  : e000000001fffc00
+f6  : 1003e0000000000000000 f7  : 1003e0000000000000001
+f8  : 1003e0000000000000000 f9  : 1003e0000000000000000
+f10 : 100068fffffffff700000 f11 : 1003e0000000000000090
+r1  : a000000100e9d010 r2  : 00000000000044b8 r3  : 0000000000000000
+r8  : 0000000000000000 r9  : 0000000000000000 r10 : ffffffffffff6298
+r11 : 0000000000000000 r12 : a000000100aefc30 r13 : a000000100ae0000
+r14 : 0000000000000000 r15 : e000006003106298 r16 : e000006003110000
+r17 : a000000100d1f3e8 r18 : a000000100d1f3e8 r19 : a000000100d1f3e8
+r20 : 0000000000000000 r21 : ffffffffffff0420 r22 : 0000000000000800
+r23 : 0000000000000007 r24 : e0000060030b0000 r25 : 000000000004ffff
+r26 : a00000010098d440 r27 : e0000060030b0010 r28 : e0000060030b0000
+r29 : e0000060030b0020 r30 : 0000000000000000 r31 : 00000000000007ff
+Unable to handle kernel NULL pointer dereference (address 0000000000000000)
+swapper[0]: Oops 8813272891392 [2]
+Modules linked in:
+
+Pid: 0, CPU 0, comm:              swapper
+psr : 0000101008022018 ifs : 800000000000038c ip  : [<a000000100182e30>]    Not tainted (2.6.26-rc7-holt-00051-g62786b9-dirty)
+ip is at kmem_cache_alloc+0x70/0x180
+unat: 0000000000000000 pfs : 0000000000000610 rsc : 0000000000000003
+rnat: 0000000000000000 bsps: 0000000000000000 pr  : 65691ba55aa69aa5
+ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70033f
+csd : 0000000000000000 ssd : 0000000000000000
+b0  : a000000100040bc0 b6  : a000000100040e00 b7  : a00000010000b730
+f6  : 1003e45b3373c16c02344 f7  : 1003e9e3779b97f4a7c16
+f8  : 1003e0a00000010001426 f9  : 10006c7fffffffd73ea5c
+f10 : 100068fffffffff700000 f11 : 1003e0000000000000090
+r1  : a000000100e9d010 r2  : a000000100bbe950 r3  : a000000100bbc860
+r8  : 0000000000000000 r9  : 0000000000000000 r10 : a000000100ae0cf4
+r11 : 0000000000000000 r12 : a000000100aef100 r13 : a000000100ae0000
+r14 : 0000000000000014 r15 : a000000100aef190 r16 : a000000100aef198
+r17 : a000000100cb3e50 r18 : a000000100aef17c r19 : a000000100aef170
+r20 : 0000000000000000 r21 : 0000000000000000 r22 : a000000100aef170
+r23 : a000000100aef174 r24 : 000000000000000c r25 : a000000100aef180
+r26 : a000000100aef174 r27 : 0000000000000000 r28 : 0000000000000000
+r29 : a000000100aef178 r30 : 000000007fffffff r31 : 000000000000000c
+
