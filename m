@@ -1,54 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760922AbYFXObe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761229AbYFXOcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760922AbYFXObe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 10:31:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYFXOb1
+	id S1761229AbYFXOcG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 10:32:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755727AbYFXObx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 10:31:27 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:63694 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753626AbYFXOb0 (ORCPT
+	Tue, 24 Jun 2008 10:31:53 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:42048 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753730AbYFXObw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 10:31:26 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 1/5] kbuild: prepare headers_* for arch/$ARCH/include
-Date: Tue, 24 Jun 2008 16:31:18 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kbuild@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <20080622220508.GA8957@uranus.ravnborg.org> <1214172524-9043-1-git-send-email-sam@ravnborg.org>
-In-Reply-To: <1214172524-9043-1-git-send-email-sam@ravnborg.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jun 2008 10:31:52 -0400
+Message-Id: <4860CD140200005A0003944F@sinclair.provo.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Tue, 24 Jun 2008 08:31:48 -0600
+From: "Gregory Haskins" <GHaskins@novell.com>
+To: <jbe@pengutronix.de>, <linux-rt-users@vger.kernel.org>
+Cc: <mingo@elte.hu>, <rostedt@goodmis.org>, <tglx@linutronix.de>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25.8-rt7
+References: <4860CD0B0200005A0003944C@sinclair.provo.novell.com>
+ <4860CD140200005A0003944F@sinclair.provo.novell.com>
+In-Reply-To: <4860CD140200005A0003944F@sinclair.provo.novell.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200806241631.18929.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19glWEpXdZG8P1Js+m9U3Hh46cS9NskfUjCXG4
- PsXZYxC8QxRa0n3yZqMBORHzQCY13FuTtWAvXEjwX3zMMndrht
- CRJlMJTVdRd0UWiKlkKmA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 June 2008, Sam Ravnborg wrote:
-> +# Do not try this architecture
-> +drop="generic um ppc sparc64 cris"
-> +
-> +archs=$(ls ${srctree}/arch)
-> +
-> +for arch in ${archs}; do
-> +	case ${arch} in
-> +	um)        # no userspace export
-> +		;;
-> +	ppc)       # headers exported by powerpc
-> +		;;
+(Sorry for toppost)
 
-Note that arch/ppc is scheduled for removal with the 2.6.27 merge
-window, so you may want to leave it out right away.
+I believe this is my fault.  You must be building for uniprocessor?  Ingo has a fix for this issue in sched-devel that should be pulled into -rt.
 
-	Arnd <><
+Sorry for the inconvenience.  I will pull the patch myself and submit it when I get home (if someone doesn't beat me to it)
+
+-greg 
+-----Original Message-----
+From: Juergen Beisert <jbe@pengutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+To:  <linux-rt-users@vger.kernel.org>
+
+Sent: 6/24/2008 8:15:49 AM
+Subject: Re: 2.6.25.8-rt7
+
+On Tuesday 24 June 2008 03:34, Steven Rostedt wrote:
+> We are pleased to announce the 2.6.25.8-rt7 tree, which can be
+> downloaded from the location:
+>
+>   http://rt.et.redhat.com/download/
+>
+> Information on the RT patch can be found at:
+>
+>   http://rt.wiki.kernel.org/index.php/Main_Page
+>
+> Changes since 2.6.25.4-rt6
+>
+>   - ported to 2.6.25.8
+>
+>   - rwlock pi_lock fixes on waking up multiple readers (Steven Rostedt)
+>
+>   - revert adaptive locks from RCU (Thomas Gleixner)
+>      [ for some reason, using RCU causes some latency spikes, this
+>        may be a sign of something going wrong in RCU itself ]
+>
+>   - rwlock mutex owner fix for waking up reader with readers held
+>                                                   (Steven Rostedt)
+>
+>   - rwlock remove waiter from pi_list on above fix (Steven Rostedt and
+>                                                     Thomas Gleixner)
+>
+>   - rwlock replace macro with inline (Thomas Gleixner)
+>
+>   - rwlock pending namespace updates (Thomas Gleixner)
+>
+>   - futex fix fault (Thomas Gleixner)
+>
+> to build a 2.6.25.8-rt7 tree, the following patches should be applied:
+>
+>   http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.25.tar.bz2
+>   http://kernel.org/pub/linux/kernel/v2.6/patch-2.6.25.8.bz2
+>   http://rt.et.redhat.com/download/patch-2.6.25.8-rt7.bz2
+
+This occurs when I try to build a PowerPC (MPC5200) kernel:
+
+[...]
+In file included from kernel/sched.c:1318:
+kernel/sched.c: In function 'sched_init':
+kernel/sched.c:7702: error: implicit declaration of function 'global_rt_runtime'
+[...]
+
+And when I'm using the patch from Uli Brueggemann to fix it, I get:
+
+[...]
+In file included from kernel/sched.c:1325:
+kernel/sched_rt.c: In function 'inc_rt_tasks':
+kernel/sched_rt.c:290: error: 'struct rq' has no member named 'online'
+[...]
+
+Any hints?
+
+Juergen Beisert
+
+-- 
+Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+    Handelsregister: Amtsgericht Hildesheim, HRA 2686
+         Vertretung Sued/Muenchen, Germany
+   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+--
+To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
