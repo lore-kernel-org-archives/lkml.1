@@ -1,213 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbYFXVC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbYFXVaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754596AbYFXVC4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 17:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbYFXVCq
+	id S1757428AbYFXVaG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:30:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbYFXV3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 17:02:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48750 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752526AbYFXVCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 17:02:44 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: [PATCH] x86 ACPI: normalize segment descriptor register on resume
-Date: Tue, 24 Jun 2008 23:03:48 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
+	Tue, 24 Jun 2008 17:29:54 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:35433 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754226AbYFXV3w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 17:29:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=LEgK3OJsfQfJsRbIij4UIjfQ5D8iuzNkK688NXmBpufBHpVlyCY6QvVf+hE2AoBTzY
+         4KsjR4r6S4mth1WbKLi0GSzWZ52Ioh4N+WZjd1bOLXDBQj4998k4hQXE1IZLYAwCFd4i
+         YgKWhUBme9S/RuQf7fW56cfT1y80ZKTG5PYj8=
+Message-ID: <86802c440806241429s7f5e899dn67d42303247f618@mail.gmail.com>
+Date: Tue, 24 Jun 2008 14:29:49 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [PATCH 4/5 v2] x86 boot: show pfn addresses in hex not decimal in some kernel info printks
+Cc: akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
+       steiner@sgi.com, travis@sgi.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, ying.huang@intel.com, andi@firstfloor.org
+In-Reply-To: <20080623060939.6b6b3183.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806242303.49498.rjw@sisk.pl>
+References: <20080622142151.5591.4139.sendpatchset@polaris-admin.engr.sgi.com>
+	 <20080622142212.5591.64592.sendpatchset@polaris-admin.engr.sgi.com>
+	 <86802c440806221238g78300952t2fc7f406c1842273@mail.gmail.com>
+	 <20080623060939.6b6b3183.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Jun 23, 2008 at 4:09 AM, Paul Jackson <pj@sgi.com> wrote:
+> Yinghai wrote:
+>> we should remove 0x,
+>
+> I see some kernel hex prints either way, with or without, 0x.
+>
+> In this case, in part because I was changing a decimal to a hex
+> format, and because it could be ambiguous (a hex number that
+> happened to use only [0-9] digits would be indistinguisable from
+> a decimal) I preferred using the 0x.
+>
+> I see no clear answer here ... it seems to be a matter of taste.
+>
+>> we should ... hex print out all the way...regarding mem pfn and
+>> memory address, memory size etc. except XXXMB. XXXKB...
+>
+> I fixed the ones I noticed.  If you see print formats that you
+> would like to change, I will likely be in agreement to such a
+> patch.
 
-The patch below fixes the regression described at
-http://bugzilla.kernel.org/show_bug.cgi?id=10927
-which is caused by the fact that some BIOSes call the kernel's resume code with
-post-protected mode garbage in segment registers.
+got
 
-Apart from Dell laptops referred to in the chagelog it has a potential to fix
-some other systems on which resume from suspend to RAM fails in a mysterious
-way and the probability of it breaking things is rather small, so IMO it would
-be nice to have in 2.6.26.
+Zone PFN ranges:
+  DMA      0x       0 -> 0x    1000
+  DMA32    0x    1000 -> 0x  100000
+  Normal   0x  100000 -> 0x  428000
+Movable zone start PFN for each node
+early_node_map[5] active PFN ranges
+    0: 0x       0 -> 0x      99
+    0: 0x     100 -> 0x   d7fa0
+    0: 0x   d7fae -> 0x   d7fb0
+    0: 0x  100000 -> 0x  228000
+    1: 0x  228000 -> 0x  428000
 
-Thanks,
-Rafael
-
-
----
-From: H. Peter Anvin <hpa@zytor.com>
-
-x86 ACPI: normalize segment descriptor register on resume
-
-Some Dell laptops enter resume with apparent garbage in the segment
-descriptor registers (almost certainly the result of a botched
-transition from protected to real mode.)  The only way to clean that
-up is to enter protected mode ourselves and clean out the descriptor
-registers.
-
-This fixes resume on Dell XPS M1210 and Dell D620.
-
-Reference: http://bugzilla.kernel.org/show_bug.cgi?id=10927
-
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Tested-by: Kirill A. Shutemov <kirill@shutemov.name>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86/kernel/acpi/realmode/wakeup.S |   38 ++++++++++++++++++++++++++++++++-
- arch/x86/kernel/acpi/realmode/wakeup.h |    5 ++++
- arch/x86/kernel/acpi/sleep.c           |   16 +++++++++++++
- drivers/acpi/sleep/main.c              |    5 +---
- 4 files changed, 59 insertions(+), 5 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.S
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/realmode/wakeup.S
-+++ linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.S
-@@ -5,6 +5,7 @@
- #include <asm/msr-index.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
-+#include <asm/processor-flags.h>
- 
- 	.code16
- 	.section ".header", "a"
-@@ -24,6 +25,11 @@ pmode_gdt:	.quad	0
- realmode_flags:	.long	0
- real_magic:	.long	0
- trampoline_segment:	.word 0
-+_pad1:		.byte	0
-+wakeup_jmp:	.byte	0xea	/* ljmpw */
-+wakeup_jmp_off:	.word	3f
-+wakeup_jmp_seg:	.word	0
-+wakeup_gdt:	.quad	0, 0, 0
- signature:	.long	0x51ee1111
- 
- 	.text
-@@ -34,11 +40,34 @@ _start:
- 	cli
- 	cld
- 
-+	/* Apparently some dimwit BIOS programmers don't know how to
-+	   program a PM to RM transition, and we might end up here with
-+	   junk in the data segment descriptor registers.  The only way
-+	   to repair that is to go into PM and fix it ourselves... */
-+	movw	$16, %cx
-+	lgdtl	%cs:wakeup_gdt
-+	movl	%cr0, %eax
-+	orb	$X86_CR0_PE, %al
-+	movl	%eax, %cr0
-+	jmp	1f
-+1:	ljmpw	$8, $2f
-+2:
-+	movw	%cx, %ds
-+	movw	%cx, %es
-+	movw	%cx, %ss
-+	movw	%cx, %fs
-+	movw	%cx, %gs
-+
-+	andb	$~X86_CR0_PE, %al
-+	movl	%eax, %cr0
-+	jmp	wakeup_jmp
-+3:
- 	/* Set up segments */
- 	movw	%cs, %ax
- 	movw	%ax, %ds
- 	movw	%ax, %es
- 	movw	%ax, %ss
-+	lidtl	wakeup_idt
- 
- 	movl	$wakeup_stack_end, %esp
- 
-@@ -98,7 +127,14 @@ bogus_real_magic:
- 	jmp	1b
- 
- 	.data
--	.balign	4
-+	.balign	8
-+
-+	/* This is the standard real-mode IDT */
-+wakeup_idt:
-+	.word	0xffff		/* limit */
-+	.long	0		/* address */
-+	.word	0
-+
- 	.globl	HEAP, heap_end
- HEAP:
- 	.long	wakeup_heap
-Index: linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.h
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/realmode/wakeup.h
-+++ linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.h
-@@ -24,6 +24,11 @@ struct wakeup_header {
- 	u32 realmode_flags;
- 	u32 real_magic;
- 	u16 trampoline_segment;	/* segment with trampoline code, 64-bit only */
-+	u8  _pad1;
-+	u8  wakeup_jmp;
-+	u16 wakeup_jmp_off;
-+	u16 wakeup_jmp_seg;
-+	u64 wakeup_gdt[3];
- 	u32 signature;		/* To check we have correct structure */
- } __attribute__((__packed__));
- 
-Index: linux-2.6/arch/x86/kernel/acpi/sleep.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
-+++ linux-2.6/arch/x86/kernel/acpi/sleep.c
-@@ -50,6 +50,20 @@ int acpi_save_state_mem(void)
- 
- 	header->video_mode = saved_video_mode;
- 
-+	header->wakeup_jmp_seg = acpi_wakeup_address >> 4;
-+	/* GDT[0]: GDT self-pointer */
-+	header->wakeup_gdt[0] =
-+		(u64)(sizeof(header->wakeup_gdt) - 1) +
-+		((u64)(acpi_wakeup_address +
-+			((char *)&header->wakeup_gdt - (char *)acpi_realmode))
-+				<< 16);
-+	/* GDT[1]: real-mode-like code segment */
-+	header->wakeup_gdt[1] = (0x009bULL << 40) +
-+		((u64)acpi_wakeup_address << 16) + 0xffff;
-+	/* GDT[2]: real-mode-like data segment */
-+	header->wakeup_gdt[2] = (0x0093ULL << 40) +
-+		((u64)acpi_wakeup_address << 16) + 0xffff;
-+
- #ifndef CONFIG_64BIT
- 	store_gdt((struct desc_ptr *)&header->pmode_gdt);
- 
-@@ -111,7 +125,7 @@ void __init acpi_reserve_bootmem(void)
- 		return;
- 	}
- 
--	acpi_wakeup_address = acpi_realmode;
-+	acpi_wakeup_address = virt_to_phys((void *)acpi_realmode);
- }
- 
- 
-Index: linux-2.6/drivers/acpi/sleep/main.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep/main.c
-+++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -32,9 +32,8 @@ static int acpi_sleep_prepare(u32 acpi_s
- 		if (!acpi_wakeup_address) {
- 			return -EFAULT;
- 		}
--		acpi_set_firmware_waking_vector((acpi_physical_address)
--						virt_to_phys((void *)
--							     acpi_wakeup_address));
-+		acpi_set_firmware_waking_vector(
-+				(acpi_physical_address)acpi_wakeup_address);
- 
- 	}
- 	ACPI_FLUSH_CPU_CACHE();
+YH
