@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbYFXVK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbYFXVTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754277AbYFXVK0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 17:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbYFXVJ6
+	id S1756247AbYFXVTp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbYFXVTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 17:09:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33735 "EHLO mx1.redhat.com"
+	Tue, 24 Jun 2008 17:19:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36311 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754189AbYFXVJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 17:09:57 -0400
-From: swhiteho@redhat.com
-To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Bob Peterson <rpeterso@redhat.com>,
-       Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 1/2] [GFS2] BUG: unable to handle kernel paging request at ffff81002690e000
-Date: Tue, 24 Jun 2008 21:20:18 +0100
-Message-Id: <12143388271016-git-send-email-swhiteho@redhat.com>
-X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12143388193217-git-send-email-swhiteho@redhat.com>
-References: <12143388193217-git-send-email-swhiteho@redhat.com>
+	id S1754182AbYFXVTR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 17:19:17 -0400
+Date: Tue, 24 Jun 2008 23:15:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Adrian Bunk <bunk@kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
+Subject: Re: [Bug #10815] 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
+Message-ID: <20080624211547.GB27452@elte.hu>
+References: <alpine.LFD.1.10.0806151323101.2949@woody.linux-foundation.org> <20080615232754.GD17915@linux.vnet.ibm.com> <alpine.LFD.1.10.0806151633290.2949@woody.linux-foundation.org> <20080616030154.GA7445@martell.zuzino.mipt.ru> <20080616033126.GF17915@linux.vnet.ibm.com> <20080616034659.GA7600@martell.zuzino.mipt.ru> <20080617034228.GA18217@linux.vnet.ibm.com> <20080624005053.GA4827@martell.zuzino.mipt.ru> <20080624120404.GA7978@linux.vnet.ibm.com> <20080624210812.GA27486@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080624210812.GA27486@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bob Peterson <rpeterso@redhat.com>
 
-This patch fixes bugzilla bug bz448866: gfs2: BUG: unable to
-handle kernel paging request at ffff81002690e000.
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-Signed-off-by: Bob Peterson <rpeterso@redhat.com>
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+> > >   Also Core 2 Duo, x86_64 [1]
+> > > 
+> > >   Race is wide -- 60 seconds of rcutorture is enough.
+> 
+> This is rcutorture by itself, or in parallel with LTP/kernbench?
+> 
+> (I have mostly been running on 4-CPU boxes without failure either way, 
+> so will try a dual-CPU box.)
 
-diff --git a/fs/gfs2/rgrp.c b/fs/gfs2/rgrp.c
-index 6387523..3401628 100644
---- a/fs/gfs2/rgrp.c
-+++ b/fs/gfs2/rgrp.c
-@@ -195,7 +195,7 @@ ulong_aligned:
- 	   depending on architecture.  I've experimented with several ways
- 	   of writing this section such as using an else before the goto
- 	   but this one seems to be the fastest. */
--	while ((unsigned char *)plong < end - 1) {
-+	while ((unsigned char *)plong < end - sizeof(unsigned long)) {
- 		prefetch(plong + 1);
- 		if (((*plong) & LBITMASK) != lskipval)
- 			break;
--- 
-1.5.1.2
+FYI, i've been running rcutorture for days on lots of testboxes ranging 
+all across the x86 spectrum from single CPU, through dual-core, to 
+dual-socket, dual-socket HT, 8-way and 16-way - both 32-bit and 64-bit 
+x86.
 
+Not a single failure has been detected in thousands of bootups of random 
+kernels (rcu-preempt + rcutorture was a frequent combination tested). I 
+added a WARN_ON() to rcutorture failures so it should show up very 
+clearly.
+
+This makes me suspect that it might be some special environment issue - 
+gcc for example. I'm using gcc 4.2.2 on most of the testboxes.
+
+	Ingo
