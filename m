@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754450AbYFXFRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755743AbYFXFSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754450AbYFXFRS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 01:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbYFXFRH
+	id S1755743AbYFXFSr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 01:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbYFXFSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 01:17:07 -0400
-Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:3213 "EHLO
-	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750931AbYFXFRG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 01:17:06 -0400
-X-Greylist: delayed 463 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Jun 2008 01:17:06 EDT
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Transfer-Encoding: 7bit
-Message-Id: <2c84b89ef40f92173a026b8d95e889ad@xs4all.nl>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-To: linux-kernel@vger.kernel.org
-From: Joris van Rantwijk <jorispubl@xs4all.nl>
-Subject: Physical memory disappeared from /proc/meminfo
-Date: Tue, 24 Jun 2008 07:09:00 +0200
-X-Mailer: Apple Mail (2.624)
+	Tue, 24 Jun 2008 01:18:39 -0400
+Received: from colo.lackof.org ([198.49.126.79]:41554 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750979AbYFXFSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 01:18:37 -0400
+Date: Mon, 23 Jun 2008 23:18:26 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       rmk@arm.linux.org.uk, cooloney@kernel.org, dev-etrax@axis.com,
+       dhowells@redhat.com, gerg@uclinux.org, yasutake.koichi@jp.panasonic.com,
+       linux-parisc@vger.kernel.org, paulus@samba.org, linuxppc-dev@ozlabs.org,
+       linux-sh@vger.kernel.org, chris@zankel.net, linux-mips@linux-mips.org,
+       ysato@users.sourceforge.jp, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] asm/ptrace.h userspace headers cleanup
+Message-ID: <20080624051826.GC19434@colo.lackof.org>
+References: <20080623174809.GE4756@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080623174809.GE4756@cs181140183.pp.htv.fi>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My system got into a situation where a lot of physical memory is
-in use. I want to know where this memory is being used, but it
-seems to have become untraceable somehow.
+On Mon, Jun 23, 2008 at 08:48:09PM +0300, Adrian Bunk wrote:
+> This patch contains the following cleanups for the asm/ptrace.h 
+> userspace headers:
+> - include/asm-generic/Kbuild.asm already lists ptrace.h, remove
+>   the superfluous listings in the Kbuild files of the following
+>   architectures:
+>   - cris
+>   - frv
+>   - powerpc
+>   - x86
+> - don't expose function prototypes and macros to userspace:
+>   - arm
+>   - blackfin
+>   - cris
+>   - mn10300
+>   - parisc
+...
+> diff --git a/include/asm-parisc/ptrace.h b/include/asm-parisc/ptrace.h
+> index 93f990e..3e94c5d 100644
+> --- a/include/asm-parisc/ptrace.h
+> +++ b/include/asm-parisc/ptrace.h
+> @@ -33,7 +33,6 @@ struct pt_regs {
+>  	unsigned long ipsw;	/* CR22 */
+>  };
+>  
+> -#define task_regs(task) ((struct pt_regs *) ((char *)(task) + TASK_REGS))
+>  /*
+>   * The numbers chosen here are somewhat arbitrary but absolutely MUST
+>   * not overlap with any of the number assigned in <linux/ptrace.h>.
+> @@ -43,8 +42,11 @@ struct pt_regs {
+>   * since we have taken branch traps too)
+>   */
+>  #define PTRACE_SINGLEBLOCK	12	/* resume execution until next branch */
+> +
+>  #ifdef __KERNEL__
+>  
+> +#define task_regs(task) ((struct pt_regs *) ((char *)(task) + TASK_REGS))
+> +
+>  /* XXX should we use iaoq[1] or iaoq[0] ? */
+>  #define user_mode(regs)			(((regs)->iaoq[0] & 3) ? 1 : 0)
+>  #define user_space(regs)		(((regs)->iasq[1] != 0) ? 1 : 0)
 
-My total physical memory is 1 GB.
-Adding up all VSZ numbers from "ps auxw" gets me to about 75 MB,
-so I should have a lot of free memory but I don't see it.
-
-My kernel is Linux 2.6.25.4 for x86_64 with a 32-bit userland.
-I disabled swap to make it easier to investigate this issue.
-
-One problem is that I can't really make sense of /proc/meminfo.
-As far as I understand the numbers, I find that about 640 MB is
-unaccounted for.
-
-For example I would expect that
-MemTotal = MemFree + Buffers + Cached + AnonPages + Mapped + Slab.
-
-Is that a valid assumption?
-Why does it not hold for my machine?
-Is this a bug in the memory statistics?
-What part of the system is using all this untraceable memory?
-
-/proc/meminfo:
-MemTotal:     996320 kB
-MemFree:       67708 kB
-Buffers:       17716 kB
-Cached:        62412 kB
-SwapCached:        0 kB
-Active:        27320 kB
-Inactive:      58720 kB
-SwapTotal:         0 kB
-SwapFree:          0 kB
-Dirty:            12 kB
-Writeback:         0 kB
-AnonPages:      5932 kB
-Mapped:         3916 kB
-Slab:         193560 kB
-SReclaimable:  26076 kB
-SUnreclaim:   167484 kB
-PageTables:      464 kB
-NFS_Unstable:      0 kB
-Bounce:            0 kB
-CommitLimit:  498160 kB
-Comitted_AS:   15536 kB
-VmallocTotal: 34359738367 kB
-VmallocUsed:     600 kB
-VmallocChunk: 34359736326 kB
-
-Please help.
-
-Joris.
-
+Looks fine to me.
+Acked-by: Grant Grundler <grundler@parisc-linux.org>
