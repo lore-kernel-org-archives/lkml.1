@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYFXTsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756500AbYFXUBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755609AbYFXTsT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 15:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbYFXTsK
+	id S1756500AbYFXUBv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 16:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbYFXUBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 15:48:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34729 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750708AbYFXTsJ (ORCPT
+	Tue, 24 Jun 2008 16:01:31 -0400
+Received: from mail.renesas.com ([202.234.163.13]:52934 "EHLO
+	mail04.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752846AbYFXUB3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 15:48:09 -0400
-Date: Tue, 24 Jun 2008 12:47:27 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [rfc patch 3/4] splice: remove confirm from
- pipe_buf_operations
-In-Reply-To: <E1KBEFY-0002fh-5m@pomaz-ex.szeredi.hu>
-Message-ID: <alpine.LFD.1.10.0806241246240.2926@woody.linux-foundation.org>
-References: <20080621154607.154640724@szeredi.hu> <20080621154726.494538562@szeredi.hu> <20080624080440.GJ20851@kernel.dk> <E1KB4Id-0000un-PV@pomaz-ex.szeredi.hu> <20080624111913.GP20851@kernel.dk> <E1KB6p9-0001Gq-Fd@pomaz-ex.szeredi.hu>
- <alpine.LFD.1.10.0806241022120.2926@woody.linux-foundation.org> <E1KBDBg-0002XZ-DG@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0806241129590.2926@woody.linux-foundation.org> <E1KBDpg-0002bR-3X@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0806241216350.2926@woody.linux-foundation.org>
- <E1KBE7p-0002eT-CJ@pomaz-ex.szeredi.hu> <E1KBEA8-0002ey-II@pomaz-ex.szeredi.hu> <E1KBEFY-0002fh-5m@pomaz-ex.szeredi.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 24 Jun 2008 16:01:29 -0400
+X-AuditID: ac140387-00000004000005fd-75-4861529357e3
+Date: Wed, 25 Jun 2008 05:01:08 +0900
+From: Paul Mundt <paul.mundt@renesas.com>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-sh <linux-sh@vger.kernel.org>
+Subject: Re: [PATCH] maple: tidy  maple_driver code by removing redundant
+	connect/disconnect
+Message-ID: <20080624200108.GC11705@renesas.com>
+References: <1213559289.22707.15.camel@localhost.localdomain> <20080624040128.GB22526@linux-sh.org> <5703.85.118.17.158.1214305147.squirrel@newgolddream.dyndns.info>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5703.85.118.17.158.1214305147.squirrel@newgolddream.dyndns.info>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 24 Jun 2008, Miklos Szeredi wrote:
+On Tue, Jun 24, 2008 at 11:59:07AM +0100, Adrian McMenamin wrote:
+> On Tue, June 24, 2008 5:01 am, Paul Mundt wrote:
+> > On Sun, Jun 15, 2008 at 08:48:09PM +0100, Adrian McMenamin wrote:
+> >> The connect and disconnect functions are unnecessary - everything they
+> >> do can be
+> >> accomplished in the initial probe - so remove them.
+> >>
+> >> Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+> >
+> > Applied, thanks.
+> >
+> Paul,
 > 
-> Or it can only happen if there was an I/O error on reading the page.
-
-Now, IO errors are something else. They should have the PG_error bit set, 
-and we should just return EIO or something.
-
-That said, I'd not be surprised at all if error handling is broken. It's 
-often been broken even in the _normal_ paths (ie totally normal "read()" 
-etc).
-
-		Linus
+> Just to note that this (http://lkml.org/lkml/2008/6/15/122) will break the
+> keyboard driver unless this (http://lkml.org/lkml/2008/6/15/121) is also
+> applied.
+> 
+> I haven't heard back from Dmitry on the keyboard patch yet.
+> 
+Yes, I'm aware of that. This should fix itself in linux-next once it is
+merged in the input tree, and I don't intend on pushing my changes until
+that's in place, so we don't break bisection.
