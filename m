@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbYFXPQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762898AbYFXPQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758100AbYFXPQa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 11:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762013AbYFXPPy
+	id S1762898AbYFXPQr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 11:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762120AbYFXPP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 11:15:54 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47730 "EHLO
+	Tue, 24 Jun 2008 11:15:59 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47746 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761658AbYFXPPw (ORCPT
+	with ESMTP id S1761929AbYFXPP6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 11:15:52 -0400
-Message-Id: <20080624093453.393758479@bull.net>
+	Tue, 24 Jun 2008 11:15:58 -0400
+Message-Id: <20080624093453.601117311@bull.net>
 References: <20080624093452.946878437@bull.net>
 User-Agent: quilt/0.46-1
-Date: Tue, 24 Jun 2008 11:34:54 +0200
+Date: Tue, 24 Jun 2008 11:34:55 +0200
 From: <Solofo.Ramangalahy@bull.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>, Matt Helsley <matthltc@us.ibm.com>,
@@ -21,137 +21,211 @@ Cc: <linux-kernel@vger.kernel.org>, Matt Helsley <matthltc@us.ibm.com>,
        Manfred Spraul <manfred@colorfullife.com>,
        Nick Piggin <nickpiggin@yahoo.com.au>,
        Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
-Subject: [PATCH -mm 2/3] sysv ipc: recompute msgmnb (and msgmni) on cpu
- hotplug addition and removal
+Subject: [PATCH -mm 3/3] sysv ipc: deconnect msgmnb and msgmni deactivation
+ and reactivation
 Content-Disposition: inline;
- filename=ipc-recompute-msgmnb-and-msgmni-on-cpu-hotplug-addition-removal.patch
+ filename=ipc-deconnect-msgmni-msgmnb-deactivation-reactivation.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
 
-As msgmnb is scaled wrt. online cpus, cpu hotplug events should grow
-and shrink the value.
+The msgmnb and msgmni values are coupled for deactivation and
+reactivation of value computation.
 
-Like msgmni with ipc_memory_callback(), the ipc_cpu_callback()
-function triggers msgmnb recomputation.
+The uncoupling of msgmn{b,i} for deactivation/reactivation of
+recomputation adds flexibility and testability.
+
+. Flexibility was discussed during the msgmni series development and
+  ended up with reactivation by negative value on /proc.
+
+. Testability allows to experiment with the automatic computation of
+  msgmn{b,i} values. For example, if current algorithm does not fit
+  application needs.
+
+As msgmni value is based in msgmnb and msgmnb*msgmni should not be
+bigger than 1/32 of low memory, reenabling msgmnb triggers one shot
+recomputation of msgmni.
+
 
 Signed-off-by: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
 
 ---
- include/linux/ipc_namespace.h |    1 +
- ipc/ipcns_notifier.c          |   14 +++++++++-----
- ipc/util.c                    |   28 ++++++++++++++++++++++++++++
- ipc/util.h                    |    1 +
- 4 files changed, 39 insertions(+), 5 deletions(-)
+ Documentation/sysctl/kernel.txt |    1 
+ include/linux/ipc_namespace.h   |    3 +-
+ ipc/ipc_sysctl.c                |   53 ++++++++++++++++++++++++++++++----------
+ ipc/ipcns_notifier.c            |    9 ------
+ ipc/msg.c                       |    6 ++++
+ 5 files changed, 49 insertions(+), 23 deletions(-)
 
 Index: b/include/linux/ipc_namespace.h
 ===================================================================
 --- a/include/linux/ipc_namespace.h
 +++ b/include/linux/ipc_namespace.h
-@@ -12,6 +12,7 @@
- #define IPCNS_MEMCHANGED   0x00000001   /* Notify lowmem size changed */
- #define IPCNS_CREATED  0x00000002   /* Notify new ipc namespace created */
- #define IPCNS_REMOVED  0x00000003   /* Notify ipc namespace removed */
-+#define IPCNS_CPUCHANGED  0x00000004   /* Notify cpu hotplug addition/removal */
+@@ -34,7 +34,9 @@ struct ipc_namespace {
  
- #define IPCNS_CALLBACK_PRI 0
+ 	int		msg_ctlmax;
+ 	int		msg_ctlmnb;
++	bool		msg_ctlmnb_activated; /* recompute_msgmnb activation */
+ 	int		msg_ctlmni;
++	bool		msg_ctlmni_activated; /* recompute_msgmni activation */
+ 	atomic_t	msg_bytes;
+ 	atomic_t	msg_hdrs;
  
-Index: b/ipc/util.c
+@@ -53,7 +55,6 @@ extern atomic_t nr_ipc_ns;
+ #define INIT_IPC_NS(ns)		.ns		= &init_ipc_ns,
+ 
+ extern int register_ipcns_notifier(struct ipc_namespace *);
+-extern int cond_register_ipcns_notifier(struct ipc_namespace *);
+ extern int unregister_ipcns_notifier(struct ipc_namespace *);
+ extern int ipcns_notify(unsigned long);
+ 
+Index: b/ipc/msg.c
 ===================================================================
---- a/ipc/util.c
-+++ b/ipc/util.c
-@@ -34,6 +34,7 @@
- #include <linux/nsproxy.h>
- #include <linux/rwsem.h>
- #include <linux/memory.h>
-+#include <linux/cpu.h>
- #include <linux/ipc_namespace.h>
+--- a/ipc/msg.c
++++ b/ipc/msg.c
+@@ -91,6 +91,8 @@ void recompute_msgmni(struct ipc_namespa
+ 	unsigned long allowed;
+ 	int nb_ns;
  
- #include <asm/unistd.h>
-@@ -96,6 +97,32 @@ static int ipc_memory_callback(struct no
- 
- #endif /* CONFIG_MEMORY_HOTPLUG */
- 
-+#ifdef CONFIG_HOTPLUG_CPU
-+
-+static void ipc_cpu_notifier(struct work_struct *work)
-+{
-+	ipcns_notify(IPCNS_CPUCHANGED);
-+}
-+
-+static DECLARE_WORK(ipc_cpu_wq, ipc_cpu_notifier);
-+
-+static int __cpuinit ipc_cpu_callback(struct notifier_block *nfb,
-+				    unsigned long action, void *hcpu)
-+{
-+	switch (action) {
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+	case CPU_DEAD:
-+	case CPU_DEAD_FROZEN:
-+		schedule_work(&ipc_cpu_wq);
-+		break;
-+	default:
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
-+#endif /* CONFIG_HOTPLUG_CPU */
- /**
-  *	ipc_init	-	initialise IPC subsystem
-  *
-@@ -112,6 +139,7 @@ static int __init ipc_init(void)
- 	msg_init();
- 	shm_init();
- 	hotplug_memory_notifier(ipc_memory_callback, IPC_CALLBACK_PRI);
-+	hotcpu_notifier(ipc_cpu_callback, IPC_CALLBACK_PRI);
- 	register_ipcns_notifier(&init_ipc_ns);
- 	return 0;
++	if (!ns->msg_ctlmni_activated)
++		return;
+ 	si_meminfo(&i);
+ 	allowed = (((i.totalram - i.totalhigh) / MSG_MEM_SCALE) * i.mem_unit)
+ 		/ ns->msg_ctlmnb;
+@@ -114,6 +116,8 @@ void recompute_msgmni(struct ipc_namespa
+  */
+ void recompute_msgmnb(struct ipc_namespace *ns)
+ {
++	if (!ns->msg_ctlmnb_activated)
++		return;
+ 	ns->msg_ctlmnb =
+ 		min(MSGMNB * num_online_cpus(), MSGMNB * MSG_CPU_SCALE);
  }
+@@ -121,6 +125,8 @@ void recompute_msgmnb(struct ipc_namespa
+ void msg_init_ns(struct ipc_namespace *ns)
+ {
+ 	ns->msg_ctlmax = MSGMAX;
++	ns->msg_ctlmnb_activated = true;
++	ns->msg_ctlmni_activated = true;
+ 	recompute_msgmnb(ns);
+ 
+ 	recompute_msgmni(ns);
+Index: b/ipc/ipc_sysctl.c
+===================================================================
+--- a/ipc/ipc_sysctl.c
++++ b/ipc/ipc_sysctl.c
+@@ -33,18 +33,46 @@ static void *get_ipc(ctl_table *table)
+  * add/remove or ipc namespace creation/removal.
+  * They can come back to a recomputable state by being set to a <0 value.
+  */
+-static void tunable_set_callback(int val)
++static void tunable_set_callback(int val, ctl_table *table)
+ {
+-	if (val >= 0)
+-		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
+-	else {
++	int tunable = table->ctl_name;
++
++	if (val >= 0) {
++		switch (tunable) {
++		case KERN_MSGMNB:
++			current->nsproxy->ipc_ns->msg_ctlmnb_activated = false;
++			break;
++		case KERN_MSGMNI:
++			current->nsproxy->ipc_ns->msg_ctlmni_activated = false;
++			break;
++		default:
++			printk(KERN_ERR "ipc: unexpected value %s\n",
++			       table->procname);
++			break;
++		}
++	} else {
+ 		/*
+ 		 * Re-enable automatic recomputing only if not already
+ 		 * enabled.
+ 		 */
+-		recompute_msgmnb(current->nsproxy->ipc_ns);
+-		recompute_msgmni(current->nsproxy->ipc_ns);
+-		cond_register_ipcns_notifier(current->nsproxy->ipc_ns);
++		switch (tunable) {
++		case KERN_MSGMNB:
++			current->nsproxy->ipc_ns->msg_ctlmnb_activated = true;
++			recompute_msgmnb(current->nsproxy->ipc_ns);
++			/*
++			 * msgmni adjustment is needed not to overflow
++			 * 1/MSG_MEM_SCALE limit.
++			 */
++			recompute_msgmni(current->nsproxy->ipc_ns);
++		case KERN_MSGMNI:
++			current->nsproxy->ipc_ns->msg_ctlmni_activated = true;
++			recompute_msgmni(current->nsproxy->ipc_ns);
++			break;
++		default:
++			printk(KERN_ERR "ipc: unexpected value %s\n",
++			       table->procname);
++			break;
++		}
+ 	}
+ }
+ 
+@@ -71,9 +99,10 @@ static int proc_ipc_callback_dointvec(ct
+ 
+ 	rc = proc_dointvec(&ipc_table, write, filp, buffer, lenp, ppos);
+ 
+-	if (write && !rc && lenp_bef == *lenp)
+-		tunable_set_callback(*((int *)(ipc_table.data)));
+-
++	if (write && !rc && lenp_bef == *lenp) {
++		BUG_ON(table == NULL);
++		tunable_set_callback(*((int *)(ipc_table.data)), table);
++	}
+ 	return rc;
+ }
+ 
+@@ -148,8 +177,8 @@ static int sysctl_ipc_registered_data(ct
+ 		 * Tunable has successfully been changed from userland
+ 		 */
+ 		int *data = get_ipc(table);
+-
+-		tunable_set_callback(*data);
++		BUG_ON(table == NULL);
++		tunable_set_callback(*data, table);
+ 	}
+ 
+ 	return rc;
 Index: b/ipc/ipcns_notifier.c
 ===================================================================
 --- a/ipc/ipcns_notifier.c
 +++ b/ipc/ipcns_notifier.c
-@@ -26,16 +26,20 @@ static int ipcns_callback(struct notifie
- 				unsigned long action, void *arg)
- {
- 	struct ipc_namespace *ns;
+@@ -65,15 +65,6 @@ int register_ipcns_notifier(struct ipc_n
+ 	return blocking_notifier_chain_register(&ipcns_chain, &ns->ipcns_nb);
+ }
+ 
+-int cond_register_ipcns_notifier(struct ipc_namespace *ns)
+-{
+-	memset(&ns->ipcns_nb, 0, sizeof(ns->ipcns_nb));
+-	ns->ipcns_nb.notifier_call = ipcns_callback;
+-	ns->ipcns_nb.priority = IPCNS_CALLBACK_PRI;
+-	return blocking_notifier_chain_cond_register(&ipcns_chain,
+-							&ns->ipcns_nb);
+-}
 -
-+	ns = container_of(self, struct ipc_namespace, ipcns_nb);
- 	switch (action) {
-+	case IPCNS_CPUCHANGED:
-+		/*
-+		 * Fall through.
-+		 * We do not scale msgmnb with IPC namespace
-+		 * add/remove for simplicity (adjustment of the
-+		 * message pool is done indirectly via msgmni).
-+		 */
-+		recompute_msgmnb(ns);
- 	case IPCNS_MEMCHANGED:   /* amount of lowmem has changed */
- 	case IPCNS_CREATED:
- 	case IPCNS_REMOVED:
- 		/*
--		 * It's time to recompute msgmni
--		 */
--		ns = container_of(self, struct ipc_namespace, ipcns_nb);
--		/*
- 		 * No need to get a reference on the ns: the 1st job of
- 		 * free_ipc_ns() is to unregister the callback routine.
- 		 * blocking_notifier_chain_unregister takes the wr lock to do
-Index: b/ipc/util.h
-===================================================================
---- a/ipc/util.h
-+++ b/ipc/util.h
-@@ -122,6 +122,7 @@ extern struct msg_msg *load_msg(const vo
- extern int store_msg(void __user *dest, struct msg_msg *msg, int len);
- 
- extern void recompute_msgmni(struct ipc_namespace *);
-+extern void recompute_msgmnb(struct ipc_namespace *);
- 
- static inline int ipc_buildid(int id, int seq)
+ int unregister_ipcns_notifier(struct ipc_namespace *ns)
  {
+ 	return blocking_notifier_chain_unregister(&ipcns_chain,
+Index: b/Documentation/sysctl/kernel.txt
+===================================================================
+--- a/Documentation/sysctl/kernel.txt
++++ b/Documentation/sysctl/kernel.txt
+@@ -203,7 +203,6 @@ The exact value is automatically (re)com
+   # echo -1 > /proc/sys/kernel/msgmnb
+ 
+ See recompute_msgmnb() function in ipc/ directory for details.
+-The value of msgmnb is coupled with the value of msgmni.
+ 
+ ==============================================================
+ 
 
 -- 
