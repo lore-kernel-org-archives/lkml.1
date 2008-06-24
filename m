@@ -1,201 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756278AbYFXR6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758964AbYFXR6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756278AbYFXR6j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 13:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbYFXR62
+	id S1758964AbYFXR6w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 13:58:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbYFXR6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 13:58:28 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:38644 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751097AbYFXR61 (ORCPT
+	Tue, 24 Jun 2008 13:58:37 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:39639 "EHLO
+	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755050AbYFXR6f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 13:58:27 -0400
-Subject: Re: Performance of ext4
-From: Mingming <cmm@us.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Holger Kiehl <Holger.Kiehl@dwd.de>, Theodore Tso <tytso@mit.edu>,
-       Eric Sandeen <sandeen@redhat.com>, Jan Kara <jack@suse.cz>,
-       Solofo.Ramangalahy@bull.net, Nick Dokos <nicholas.dokos@hp.com>,
-       linux-ext4@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080624030721.GB10469@skywalker>
-References: <20080616181353.GA20686@skywalker>
-	 <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de>
-	 <20080619155645.GA8582@mit.edu> <485A8C2D.1090806@redhat.com>
-	 <20080619174211.GB9119@mit.edu>
-	 <Pine.LNX.4.64.0806200812340.3383@diagnostix.dwd.de>
-	 <20080620085922.GH9119@mit.edu>
-	 <Pine.LNX.4.64.0806200905070.3383@diagnostix.dwd.de>
-	 <20080623174508.GA7216@skywalker>
-	 <1214267492.27507.285.camel@BVR-FS.beaverton.ibm.com>
-	 <20080624030721.GB10469@skywalker>
-Content-Type: text/plain
-Date: Tue, 24 Jun 2008 10:58:46 -0700
-Message-Id: <1214330326.27507.303.camel@BVR-FS.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Tue, 24 Jun 2008 13:58:35 -0400
+X-BigFish: VPS-43(zz154dM1432R98dR7efV1805Mzz10d3izzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <48613536.2000708@am.sony.com>
+Date: Tue, 24 Jun 2008 10:56:06 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       linux-kbuild@vger.kernel.org
+Subject: [PATCH] add diffconfig utility (v2)
+References: <484ED902.9040000@am.sony.com> <20080610212158.GB23855@uranus.ravnborg.org> <484F1B8F.9000804@am.sony.com> <Pine.LNX.4.64.0806111328150.13310@vixen.sonytel.be> <48501836.10900@am.sony.com> <20080612131931.GB13702@uranus.ravnborg.org>
+In-Reply-To: <20080612131931.GB13702@uranus.ravnborg.org>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Jun 2008 17:58:21.0239 (UTC) FILETIME=[E3B29470:01C8D623]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Sam Ravnborg wrote:
+> When you consider it stabilized could you please drop me a
+> new mail including full changelog and updated patch.
+> 
+> And please cc: linux-kbuild@vger.kernel.org + linux-kernel on the
+> submission.
 
-On Tue, 2008-06-24 at 08:37 +0530, Aneesh Kumar K.V wrote:
-> On Mon, Jun 23, 2008 at 05:31:32PM -0700, Mingming wrote:
-> > 
-> > On Mon, 2008-06-23 at 23:15 +0530, Aneesh Kumar K.V wrote:
-> > 
-> > > I found one place where we fail to update i_disksize. Can you try this
-> > > patch ?
-> > > 
-> > > diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-> > > index 33f940b..9fa737f 100644
-> > > --- a/fs/ext4/inode.c
-> > > +++ b/fs/ext4/inode.c
-> > > @@ -1620,7 +1620,10 @@ static int ext4_da_writepage(struct page *page,
-> > >  	loff_t size;
-> > >  	unsigned long len;
-> > >  	handle_t *handle = NULL;
-> > > +	ext4_lblk_t block;
-> > > +	loff_t disksize;
-> > >  	struct buffer_head *page_bufs;
-> > > +	struct buffer_head *bh, *head;
-> > >  	struct inode *inode = page->mapping->host;
-> > > 
-> > >  	handle = ext4_journal_current_handle();
-> > > @@ -1662,6 +1665,38 @@ static int ext4_da_writepage(struct page *page,
-> > >  	else
-> > >  		ret = block_write_full_page(page, ext4_da_get_block_write, wbc);
-> > > 
-> > > +	 if (ret)
-> > > +		 return ret;
-> > > +	/*
-> > > +	 * When called via shrink_page_list and if we don't have any unmapped
-> > > +	 * buffer_head we still could have written some new content in an
-> > > +	 * already mapped buffer. That means we need to extent i_disksize here
-> > > +	 */
-> > 
-> > In this case(when extend the file without need block allocation),
-> > wouldn't make sense to update the i_disksize at write_end() time? So
-> > that the window of i_size different from i_disksize could be much
-> > smaller in this case.
-> > 
-> > 
-> > Something like below? (untested)
-> 
-> In this case you will have to start a transaction in write_begin . With
-> the below code transaction is started inside page_lock. Also I don't
-> think we need needed_blocks credit just 1 should be enough because we
-> are not doing any block allocation here. We just need to update the
-> inode block.
-> 
-> 
+Sam,
 
-Right! I will update the patch and merge it to the patch queue.
+I haven't gotten any more feedback, and I believe I've addressed
+all previous feedback.
 
-Mingming
-> -aneesh
-> 
-> > 
-> > Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-> > ---
-> >  fs/ext4/inode.c |   66 ++++++++++++++++++++++++++++++++++++++++++++++++++------
-> >  1 file changed, 60 insertions(+), 6 deletions(-)
-> > 
-> > Index: linux-2.6.26-rc6/fs/ext4/inode.c
-> > ===================================================================
-> > --- linux-2.6.26-rc6.orig/fs/ext4/inode.c	2008-06-23 17:28:01.000000000 -0700
-> > +++ linux-2.6.26-rc6/fs/ext4/inode.c	2008-06-23 17:28:10.000000000 -0700
-> > @@ -1573,6 +1573,65 @@ static int ext4_da_write_begin(struct fi
-> >  	return ret;
-> >  }
-> > 
-> > +static int ext4_bh_unmapped_or_delay(handle_t *handle, struct buffer_head *bh)
-> > +{
-> > +	return !buffer_mapped(bh) || buffer_delay(bh);
-> > +}
-> > +
-> > +static int ext4_da_write_end(struct file *file,
-> > +				struct address_space *mapping,
-> > +				loff_t pos, unsigned len, unsigned copied,
-> > +				struct page *page, void *fsdata)
-> > +{
-> > +	handle_t *handle = NULL;
-> > +	struct inode *inode = mapping->host;
-> > +	int needed_blocks = ext4_writepage_trans_blocks(inode);
-> > +	unsigned from, to;
-> > +	int ret = 0, ret2;
-> > +
-> > +	from = pos & (PAGE_CACHE_SIZE - 1);
-> > +	to = from + len;
-> > +
-> > +	if (ret == 0) {
-> > +		/*
-> > +		 * generic_write_end() will run mark_inode_dirty() if i_size
-> > +		 * changes.  So let's piggyback the i_disksize mark_inode_dirty
-> > +		 * into that.
-> > +		 */
-> > +		loff_t new_i_size;
-> > +
-> > +		new_i_size = pos + copied;
-> > +		if (new_i_size > EXT4_I(inode)->i_disksize)
-> > +			if (!walk_page_buffers(NULL, page_buffers(page),
-> > +					       0, len, NULL, ext4_bh_unmapped_or_delay)){
-> > +				/*
-> > +				 * Updating i_disksize when extending file without
-> > +				 * need block allocation
-> > +				 */
-> > +        			handle = ext4_journal_start(inode, needed_blocks);
-> > +				if (IS_ERR(handle)) {
-> > +			                ret = PTR_ERR(handle);
-> > +			                return ret;
-> > +				}
-> > +				if (ext4_should_order_data(inode))
-> > +					ret = ext4_jbd2_file_inode(handle, inode);
-> > +
-> > +				EXT4_I(inode)->i_disksize = new_i_size;
-> > +			}
-> > +		ret2 = generic_write_end(file, mapping, pos, len, copied,
-> > +							page, fsdata);
-> > +		copied = ret2;
-> > +		if (ret2 < 0)
-> > +			ret = ret2;
-> > +	}
-> > +	if (handle)
-> > +		ret2 = ext4_journal_stop(handle);
-> > +	if (!ret)
-> > +		ret = ret2;
-> > +
-> > +	return ret ? ret : copied;
-> > +}
-> > +
-> >  static void ext4_da_invalidatepage(struct page *page, unsigned long offset)
-> >  {
-> >  	struct buffer_head *head, *bh;
-> > @@ -1682,11 +1741,6 @@ static int bput_one(handle_t *handle, st
-> >  	return 0;
-> >  }
-> > 
-> > -static int ext4_bh_unmapped_or_delay(handle_t *handle, struct buffer_head *bh)
-> > -{
-> > -	return !buffer_mapped(bh) || buffer_delay(bh);
-> > -}
-> > -
-> >  /*
-> >   * Note that we don't need to start a transaction unless we're journaling data
-> >   * because we should have holes filled from ext4_page_mkwrite(). We even don't
-> > @@ -2050,7 +2104,7 @@ static const struct address_space_operat
-> >  	.writepages	= ext4_da_writepages,
-> >  	.sync_page	= block_sync_page,
-> >  	.write_begin	= ext4_da_write_begin,
-> > -	.write_end	= generic_write_end,
-> > +	.write_end	= ext4_da_write_end,
-> >  	.bmap		= ext4_bmap,
-> >  	.invalidatepage	= ext4_da_invalidatepage,
-> >  	.releasepage	= ext4_releasepage,
-> > 
-> > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+As for the ChangeLog, here's some information about history and
+recent changes.  I can put this in the patch/script if desired.
+
+CHANGELOG:
+2008-06-24 - Tim Bird <tim.bird@am.sony.com> - add usage function,
+   add -m feature for merge-style output, use .config and .config.old
+   by default, improve command line handling
+~2007 - Tim Bird - re-format code for internal use at Sony
+~2006 - Matt Mackall - create original diffconfig tool as part of
+   bloatwatch project
+
+
+Diffconfig is a simple utility for comparing two kernel configuration files.
+See usage in the script for more info.
+
+Signed-off-by: Tim Bird <tim.bird@am.sony.com>
+
+ scripts/diffconfig |  129 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 129 insertions(+)
+ create mode 100755 scripts/diffconfig
+
+diff --git a/scripts/diffconfig b/scripts/diffconfig
+new file mode 100755
+index 0000000..aa6cfe1
+--- /dev/null
++++ b/scripts/diffconfig
+@@ -0,0 +1,129 @@
++#!/usr/bin/python
++#
++# diffconfig - a tool to compare .config files.
++#
++# originally written in 2006 by Matt Mackall
++#  (at least, this was in his bloatwatch source code)
++# last worked on 2008 by Tim Bird
++#
++
++import sys, os
++
++def usage():
++    print """Usage: diffconfig [-h] [-m] [<config1> <config2>]
++
++Diffconfig is a simple utility for comparing two .config files.
++Using standard diff to compare .config files often includes extraneous and
++distracting information.  This utility produces sorted output with only the
++changes in configuration values between the two files.
++
++Added and removed items are shown with a leading plus or minus, respectively.
++Changed items show the old and new values on a single line.
++
++If -m is specified, then output will be in "merge" style, which has the
++changed and new values in kernel config option format.
++
++If no config files are specified, .config and .config.old are used.
++
++Example usage:
++ $ diffconfig .config config-with-some-changes
++-EXT2_FS_XATTR  n
++-EXT2_FS_XIP  n
++ CRAMFS  n -> y
++ EXT2_FS  y -> n
++ LOG_BUF_SHIFT  14 -> 16
++ PRINTK_TIME  n -> y
++"""
++    sys.exit(0)
++
++# returns a dictionary of name/value pairs for config items in the file
++def readconfig(config_file):
++    d = {}
++    for line in config_file:
++        line = line[:-1]
++        if line[:7] == "CONFIG_":
++            name, val = line[7:].split("=", 1)
++            d[name] = val
++        if line[-11:] == " is not set":
++            d[line[9:-11]] = "n"
++    return d
++
++def print_config(op, config, value, new_value):
++    global merge_style
++
++    if merge_style:
++        if new_value:
++            if new_value=="n":
++                print "# CONFIG_%s is not set" % config
++            else:
++                print "CONFIG_%s=%s" % (config, new_value)
++    else:
++        if op=="-":
++            print "-%s %s" % (config, value)
++        elif op=="+":
++            print "+%s %s" % (config, new_value)
++        else:
++            print " %s %s -> %s" % (config, value, new_value)
++
++def main():
++    global merge_style
++
++    # parse command line args
++    if ("-h" in sys.argv or "--help" in sys.argv):
++	usage()
++
++    merge_style = 0
++    if "-m" in sys.argv:
++        merge_style = 1
++        sys.argv.remove("-m")
++
++    argc = len(sys.argv)
++    if not (argc==1 or argc == 3):
++        print "Error: incorrect number of arguments or unrecognized option"
++        usage()
++
++    if argc == 1:
++        # if no filenames given, assume .config and .config.old
++        build_dir=""
++        if os.environ.has_key("KBUILD_OUTPUT"):
++            build_dir = os.environ["KBUILD_OUTPUT"]+"/"
++
++        configa_filename = build_dir + ".config.old"
++        configb_filename = build_dir + ".config"
++    else:
++        configa_filename = sys.argv[1]
++        configb_filename = sys.argv[2]
++
++    a = readconfig(file(configa_filename))
++    b = readconfig(file(configb_filename))
++
++    # print items in a but not b (accumulate, sort and print)
++    old = []
++    for config in a:
++        if config not in b:
++            old.append(config)
++    old.sort()
++    for config in old:
++        print_config("-", config, a[config], None)
++        del a[config]
++
++    # print items that changed (accumulate, sort, and print)
++    changed = []
++    for config in a:
++        if a[config] != b[config]:
++            changed.append(config)
++        else:
++            del b[config]
++    changed.sort()
++    for config in changed:
++        print_config("->", config, a[config], b[config])
++        del b[config]
++
++    # now print items in b but not in a
++    # (items from b that were in a were removed above)
++    new = b.keys()
++    new.sort()
++    for config in new:
++        print_config("+", config, None, b[config])
++
++main()
+
+
 
