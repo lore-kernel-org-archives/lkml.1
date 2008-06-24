@@ -1,110 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbYFXVjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbYFXVl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756039AbYFXVjU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 17:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYFXVjJ
+	id S1756521AbYFXVl1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYFXVlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 17:39:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59449 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751132AbYFXVjG (ORCPT
+	Tue, 24 Jun 2008 17:41:19 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:39374 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751406AbYFXVlS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 17:39:06 -0400
-Date: Tue, 24 Jun 2008 14:38:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-Cc: viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
-       dm-devel@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       mtk.manpages@googlemail.com
-Subject: Re: [PATCH 0/3] freeze feature ver 1.6
-Message-Id: <20080624143840.c183d0d9.akpm@linux-foundation.org>
-In-Reply-To: <20080624155919t-sato@mail.jp.nec.com>
-References: <20080624155919t-sato@mail.jp.nec.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 24 Jun 2008 17:41:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jIFzsGNsfJ4SZFxuoQ+rOBtl2ZfF39SQ5eYWt2RDvil9r3r3lLIjvHtIazxwE78yuc
+         kAM80d/8Hu1CBmR4nKRJ5F0VzQuB+HHNm+tYDLFNFyQqTx8RRE5iCfkQ68UB56tIuVxP
+         hncQLGQLy7Y3ZNGpPMKrxF3XybaQr1VVox/Jg=
+Message-ID: <86802c440806241441v5f2c0870g379695cacd5dfb9b@mail.gmail.com>
+Date: Tue, 24 Jun 2008 14:41:18 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [PATCH] x86: fix pte allocation in "x86: introduce init_memory_mapping for 32bit"
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <48616800.8030603@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48616800.8030603@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jun 2008 15:59:19 +0900
-Takashi Sato <t-sato@yk.jp.nec.com> wrote:
+On Tue, Jun 24, 2008 at 2:32 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> The patch "x86: introduce init_memory_mapping for 32bit" does not allocate
+> enough space for PTEs if the CPU does not implement PSE.
+>
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+> ---
+> arch/x86/mm/init_32.c |    5 +++++
+> 1 file changed, 5 insertions(+)
+>
+> ===================================================================
+> --- a/arch/x86/mm/init_32.c
+> +++ b/arch/x86/mm/init_32.c
+> @@ -733,6 +733,11 @@
+>        pmds = (end + PMD_SIZE - 1) >> PMD_SHIFT;
+>        tables += PAGE_ALIGN(pmds * sizeof(pmd_t));
+>
+> +       if (!cpu_has_pse) {
+> +               int ptes = (end + PAGE_SIZE - 1) >> PAGE_SHIFT;
+> +               tables += PAGE_ALIGN(ptes * sizeof(pte_t));
+> +       }
+> +
+>        /*
+>         * RED-PEN putting page tables only on node 0 could
+>         * cause a hotspot and fill up ZONE_DMA. The page tables
+>
+thanks.
 
-> Hi Andrew and Alexander,
-> 
-> I have implemented the ioctls for the filesystem freeze feature
-> and discussed its implementation on the ML (linux-ext4, xfs,
-> linux-fsdevel, linux-kernel) for five months.  All of the comments are
-> addressed in my patch-set.
-> Could you consider merging it into Linux?
-> 
-> The filesystem freeze feature can suspend accesses to the filesystem
-> keeping the filesystem's consistency.  We can take the consistent backup
-> with it cooperating with the backup software.
-> 
-> The patches are re-based from linux-2.6.26-rc3 to linux-2.6.26-rc7
-> There is no functional change from the previous version.
-> The patch-set consists of the following three patches.
-> 
-> [PATCH 1/3] Implement generic freeze feature
->   I have modified to set the suitable error number (EOPNOTSUPP)
->   in case the filesystem doesn't support the freeze feature.
-> 
->   The ioctls for the generic freeze feature are below.
->   o Freeze the filesystem
->     int ioctl(int fd, int FIFREEZE, arg)
->       fd: The file descriptor of the mountpoint
->       FIFREEZE: request code for the freeze
->       arg: Ignored
->       Return value: 0 if the operation succeeds. Otherwise, -1
-> 
->   o Unfreeze the filesystem
->     int ioctl(int fd, int FITHAW, arg)
->       fd: The file descriptor of the mountpoint
->       FITHAW: request code for unfreeze
->       arg: Ignored
->       Return value: 0 if the operation succeeds. Otherwise, -1
-> 
-> [PATCH 2/3] Remove XFS specific ioctl interfaces for freeze feature
->   It removes XFS specific ioctl interfaces and request codes
->   for freeze feature.
->   This patch has been supplied by David Chinner.
-> 
-> [PATCH 3/3] Add timeout feature
->   The timeout feature is added to freeze ioctl.  And new ioctl
->   to reset the timeout period is added.
->   o Freeze the filesystem
->     int ioctl(int fd, int FIFREEZE, long *timeval)
->       fd: The file descriptor of the mountpoint
->       FIFREEZE: request code for the freeze
->       timeval: the timeout period in seconds
->                If it's 0 or 1, the timeout isn't set.
->                This special case of "1" is implemented to keep
->                the compatibility with XFS applications.
->       Return value: 0 if the operation succeeds. Otherwise, -1
-> 
->   o Reset the timeout period
->     This is useful for the application to set the timeval more accurately.
->     For example, the freezer resets the timeval to 10 seconds every 5
->     seconds.  In this approach, even if the freezer causes a deadlock
->     by accessing the frozen filesystem, it will be solved by the timeout
->     in 10 seconds and the freezer can recognize that at the next reset
->     of timeval.
->     int ioctl(int fd, int FIFREEZE_RESET_TIMEOUT, long *timeval)
->       fd:file descriptor of mountpoint
->       FIFREEZE_RESET_TIMEOUT: request code for reset of timeout period
->       timeval: new timeout period in seconds
->       Return value: 0 if the operation succeeds. Otherwise, -1
->       Error number: If the filesystem has already been unfrozen,
->                     errno is set to EINVAL.
-> 
-> Any comments are very welcome.
+my test system never use the area from table_start to table_end. and I
+wonder why init_pgtable is that big..
 
-umm, OK, but nowhere in this patch series can I find a justification or
-reason for making these changes to Linux.  Why do we want to do this? 
-What is the benefit?  What is the motivation.  What are the use-cases,
-etc?
-
-Thanks.
+YH
