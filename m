@@ -1,77 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755743AbYFXFSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758003AbYFXFTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755743AbYFXFSr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 01:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbYFXFSj
+	id S1758003AbYFXFTB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 01:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbYFXFSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 01:18:39 -0400
-Received: from colo.lackof.org ([198.49.126.79]:41554 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750979AbYFXFSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 01:18:37 -0400
-Date: Mon, 23 Jun 2008 23:18:26 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       rmk@arm.linux.org.uk, cooloney@kernel.org, dev-etrax@axis.com,
-       dhowells@redhat.com, gerg@uclinux.org, yasutake.koichi@jp.panasonic.com,
-       linux-parisc@vger.kernel.org, paulus@samba.org, linuxppc-dev@ozlabs.org,
-       linux-sh@vger.kernel.org, chris@zankel.net, linux-mips@linux-mips.org,
-       ysato@users.sourceforge.jp, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [2.6 patch] asm/ptrace.h userspace headers cleanup
-Message-ID: <20080624051826.GC19434@colo.lackof.org>
-References: <20080623174809.GE4756@cs181140183.pp.htv.fi>
+	Tue, 24 Jun 2008 01:18:50 -0400
+Received: from wx-out-0506.google.com ([66.249.82.226]:61701 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755863AbYFXFSs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 01:18:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=RRvENdTrvqnx70MxmX+Hn9QA5aiI5+E2ZY69AM28JHNxSXZ9iy2RvBG94snvCWJxk+
+         xH+ZGAKatiOZRKqjwvtEpNxbvwLeORUC0u87FQeIeEAnRRAuJZMPN5Kwqpn5DLoQkqbd
+         /RpBf+fdqNz5x/8Jonj/1gMLG7M82jSkt+ehQ=
+Message-ID: <cfd18e0f0806232218n3abfa334hd0c743c8efba872@mail.gmail.com>
+Date: Tue, 24 Jun 2008 07:18:47 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Bart Van Assche" <bart.vanassche@gmail.com>
+Subject: Re: nanosleep() uses CLOCK_MONOTONIC, should be CLOCK_REALTIME?
+Cc: "Michael Kerrisk" <mtk.manpages@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "john stultz" <johnstul@us.ibm.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Roman Zippel" <zippel@linux-m68k.org>
+In-Reply-To: <e2e108260806230456w1b1faa0ftd2c8a4114dbdd89@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080623174809.GE4756@cs181140183.pp.htv.fi>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <485E00CD.9060503@gmail.com>
+	 <e2e108260806230134g48f5ac63mb93256e08c57b4f7@mail.gmail.com>
+	 <cfd18e0f0806230248g3a2ab795s63de2b96538ebdd0@mail.gmail.com>
+	 <e2e108260806230456w1b1faa0ftd2c8a4114dbdd89@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 08:48:09PM +0300, Adrian Bunk wrote:
-> This patch contains the following cleanups for the asm/ptrace.h 
-> userspace headers:
-> - include/asm-generic/Kbuild.asm already lists ptrace.h, remove
->   the superfluous listings in the Kbuild files of the following
->   architectures:
->   - cris
->   - frv
->   - powerpc
->   - x86
-> - don't expose function prototypes and macros to userspace:
->   - arm
->   - blackfin
->   - cris
->   - mn10300
->   - parisc
-...
-> diff --git a/include/asm-parisc/ptrace.h b/include/asm-parisc/ptrace.h
-> index 93f990e..3e94c5d 100644
-> --- a/include/asm-parisc/ptrace.h
-> +++ b/include/asm-parisc/ptrace.h
-> @@ -33,7 +33,6 @@ struct pt_regs {
->  	unsigned long ipsw;	/* CR22 */
->  };
->  
-> -#define task_regs(task) ((struct pt_regs *) ((char *)(task) + TASK_REGS))
->  /*
->   * The numbers chosen here are somewhat arbitrary but absolutely MUST
->   * not overlap with any of the number assigned in <linux/ptrace.h>.
-> @@ -43,8 +42,11 @@ struct pt_regs {
->   * since we have taken branch traps too)
->   */
->  #define PTRACE_SINGLEBLOCK	12	/* resume execution until next branch */
-> +
->  #ifdef __KERNEL__
->  
-> +#define task_regs(task) ((struct pt_regs *) ((char *)(task) + TASK_REGS))
-> +
->  /* XXX should we use iaoq[1] or iaoq[0] ? */
->  #define user_mode(regs)			(((regs)->iaoq[0] & 3) ? 1 : 0)
->  #define user_space(regs)		(((regs)->iasq[1] != 0) ? 1 : 0)
+On Mon, Jun 23, 2008 at 1:56 PM, Bart Van Assche
+<bart.vanassche@gmail.com> wrote:
+> On Mon, Jun 23, 2008 at 11:48 AM, Michael Kerrisk
+> <mtk.manpages@googlemail.com> wrote:
+>> On Mon, Jun 23, 2008 at 10:34 AM, Bart Van Assche
+>> <bart.vanassche@gmail.com> wrote:
+>>> On Sun, Jun 22, 2008 at 9:35 AM, Michael Kerrisk <mtk.manpages@gmail.com> wrote:
+>>>> The POSIX.1 specification of nanosleep() says:
+>>>>
+>>>>       But, except for the case of being interrupted by a signal, the
+>>>>       suspension time shall not be less than the time  specified  by
+>>>>       rqtp, as measured by the system clock CLOCK_REALTIME.
+>>>>
+>>>>
+>>>> However, reading kernel/hrtimer.c:sys_nanosleep(), it appears that
+>>>> CLOCK_MONOTONIC is used.
+>>>>
+>>>>    return hrtimer_nanosleep(&tu, rmtp, HRTIMER_MODE_REL, CLOCK_MONOTONIC);
+>>>>
+>>>> Is there a reason to use CLOCK_MONOTONIC, instead of CLOCK_REALTIME?  Is it
+>>>> intentional?  If yes, then I should document this in the man-pages.  If not,
+>>>> then it should be fixed.
+>>>
+>>> CLOCK_MONOTONIC works fine even if ntpd steps the clock forward or
+>>> backward, CLOCK_REALTIME not. So the man page should be fixed.
+>>
+>> Thanks for your reply, but I'm not quite convinced yet.  The things
+>> is: the Solaris man page also says "CLOCK_REALTIME".  (Of course that
+>> man page may just be parroting the standard.)  Could there not be some
+>> reasonable semantics for a nanosleep() that was based on
+>> CLOCK_REALTIME?
+>
+> Sorry, but I don't think that a nanosleep() based on CLOCK_REALTIME
+> would have reasonable semantics. The first line of the description in
+> nanosleep()'s manpage says:
+> "nanosleep()  delays  the  execution  of  the program for at least the
+> time specified in *req". So you really need CLOCK_MONOTONIC and not
+> CLOCK_REALTIME.
 
-Looks fine to me.
-Acked-by: Grant Grundler <grundler@parisc-linux.org>
+I meant to add.  It seems to me that there really could be reasonable
+semantics here: nanosleep() sleeps until the specified time has
+elapsed, as measured by CLOCK_REALTIME.  That may mean, for example,
+that the sleep finishes "early" if CLOCK_REALTIME jumps forward for
+some reason.  That seems perfectly reasonable as  possible semantics
+for sleeping (i.e., we are interested in sleeping for an interval
+based on what the system understands the time to be in the "outside
+world").  Note that POSIX also specifies clcok_nanosleep(), which
+allows CLOCK_REALTIME and CLOCK_MONOTONIC, and is again explicit about
+what nanosleep() should be doing:
+
+  APPLICATION USAGE
+       Calling clock_nanosleep() with the value TIMER_ABSTIME not  set
+       in  the flags argument and with a clock_id of CLOCK_REALTIME is
+       equivalent to calling nanosleep() with the same rqtp  and  rmtp
+       arguments.
+
+  RATIONALE
+       The  nanosleep()  function specifies that the system-wide clock
+       CLOCK_REALTIME is used to measure the  elapsed  time  for  this
+       time  service.  However, with the introduction of the monotonic
+       clock CLOCK_MONOTONIC a new relative sleep function  is  needed
+       to  allow an application to take advantage of the special char-
+       acteristics of this clock.
+
+Cheers,
+
+Michael
