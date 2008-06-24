@@ -1,151 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbYFXDLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbYFXDOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757543AbYFXDLS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 23:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbYFXDLK
+	id S1757412AbYFXDOb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 23:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbYFXDOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 23:11:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39045 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752245AbYFXDLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 23:11:08 -0400
-Message-ID: <48606553.8070503@redhat.com>
-Date: Mon, 23 Jun 2008 23:09:07 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 23 Jun 2008 23:14:23 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37937 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753379AbYFXDOW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 23:14:22 -0400
+Date: Tue, 24 Jun 2008 12:12:33 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [Patch](memory hotplug)Allocate usemap on the section with pgdat (take 3)
+Cc: Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Hiroyuki KAMEZAWA <kamezawa.hiroyu@jp.fujitsu.com>,
+       Tony Breeds <tony@bakeyournoodle.com>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20080623204934.GB1824@csn.ul.ie>
+References: <20080617195653.C200.E1E9C6FF@jp.fujitsu.com> <20080623204934.GB1824@csn.ul.ie>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080624113345.E1B8.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       Hideo AOKI <haoki@redhat.com>
-Subject: Re: [RFC] Tracepoint proposal
-References: <485BE2C6.1080901@redhat.com> <20080620174529.GB10943@Krystal> <1213992446.3223.195.camel@lappy.programming.kicks-ass.net> <20080622171135.GA19432@Krystal>
-In-Reply-To: <20080622171135.GA19432@Krystal>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mathieu,
+Hi.
 
-Mathieu Desnoyers wrote:
+> On (17/06/08 20:07), Yasunori Goto didst pronounce:
+> > 
+> > Here is take 3 for usemap allocation on pgdat section.
+> > 
+> > If there is any trouble, please let me know.
+> > 
+> > If no trouble, please apply.
+> > 
+> > Thanks.
+> > 
 > 
-> Hi Peter,
-> 
-> I've tried to read through the comments recently posted to this thread
-> (sorry I don't have time to answer them all specifically right now, a
-> lot of this makes a lot of sense). I've tried to come up with a
-> proposal, let's name it "tracepoint", which should hopefully address the
-> full scope of the problem. Please tell me if it makes sense. It should
-> allow compile-time verification of dynamically linked-in and activated
-> tracepoints. I'll work on an implementation ASAP.
-> 
-> Mathieu
-> 
-> Tracepoint proposal
-> 
-> - Tracepoint infrastructure
->   - In-kernel users
->   - Complete typing, verified by the compiler
->   - Dynamically linked and activated
-> 
-> - Marker infrastructure
->   - Exported API to userland
->   - Basic types only
-> 
-> - Dynamic vs static
->   - In-kernel probes are dynamically linked, dynamically activated, connected to
->     tracepoints. Type verification is done at compile-time. Those in-kernel
->     probes can be a probe extracting the information to put in a marker or a
->     specific in-kernel tracer such as ftrace.
->   - Information sinks (LTTng, SystemTAP) are dynamically connected to the
->     markers inserted in the probes and are dynamically activated.
-> 
-> - Near instrumentation site vs in a separate tracer module
-> 
-> A probe module, only if provided with the kernel tree, could connect to internal
-> tracing sites. This argues for keeping the tracepoing probes near the
-> instrumentation site code. However, if a tracer is general purpose and exports
-> typing information to userspace through some mechanism, it should only export
-> the "basic type" information and could be therefore shipped outside of the
-> kernel tree.
-> 
-> In-kernel probes should be integrated to the kernel tree. They would be close to
-> the instrumented kernel code and would translate between the in-kernel
-> instrumentation and the "basic type" exports. Other in-kernel probes could
-> provide a different output (statistics available through debugfs for instance).
-> ftrace falls into this category.
-> 
-> Generic or specialized information "sinks" (LTTng, systemtap) could be connected
-> to the markers put in tracepoint probes to extract the information to userspace.
-> They would extract both typing information and the per-tracepoint execution
-> information to userspace.
+> This boot-tested successfully on a few machines. I wasn't able to get
+> many machines but at first take, it seems ok.
 
-Your idea is good to me. I just worry about complexity.
-if both tracepoint and marker add information to other sections,
-both two functions cover each partially. Anyway, it depends
-on implementation.:-)
+Good news! :-)
 
-> Therefore, the code would look like :
+> > Index: current/mm/sparse.c
+> > ===================================================================
+> > --- current.orig/mm/sparse.c	2008-06-17 15:34:29.000000000 +0900
+> > +++ current/mm/sparse.c	2008-06-17 18:35:02.000000000 +0900
+> > @@ -269,16 +269,92 @@
+> >  }
+> >  #endif /* CONFIG_MEMORY_HOTPLUG */
+> >  
+> > +#ifdef CONFIG_MEMORY_HOTREMOVE
+> > +static unsigned long * __init
+> > +sparse_early_usemap_alloc_section(unsigned long pnum)
+> > +{
+> > +	unsigned long section_nr;
+> > +	struct mem_section *ms = __nr_to_section(pnum);
+> > +	int nid = sparse_early_nid(ms);
+> > + 	struct pglist_data *pgdat = NODE_DATA(nid);
+> > +
 > 
-> kernel/sched.c:
-> 
-> #include "sched-trace.h"
-> 
-> schedule()
-> {
->   ...
->   trace_sched_switch(prev, next);
->   ...
-> }
-> 
-> 
-> kernel/sched-trace.h:
-> 
-> DEFINE_TRACE(sched_switch, struct task_struct *prev, struct task_struct *next);
-> 
-> 
-> kernel/sched-trace.c:
-> 
-> #include "sched-trace.h"
-> 
-> static probe_sched_switch(struct task_struct *prev, struct task_struct
->   *next)
-> {
->   trace_mark(kernel_sched_switch, "prev_pid %d next_pid %d prev_state %ld",
->     prev->pid, next->pid, prev->state);
-> }
-> 
-> int __init init(void)
-> {
->   return register_sched_switch(probe_sched_switch);
-> }
-> 
-> void __exit exit(void)
-> {
->   unregister_sched_switch(probe_sched_switch);
-> }
-> 
-> 
-> Where DEFINE_TRACE internals declare a structure, a trace_* inline function,
-> a register_trace_* and unregister_trace_* inline functions :
+> It's not a major deal but the only caller of
+> sparse_early_usemap_alloc_section() has the nid already. If you looked up
+> the pgdat there and passed it in, it would involve fewer lookups. Granted,
+> this is not performance critical or anything so it's not a major deal.
 
-Hmm, if so, DEFINE_TRACE() still needs next and prev.:-)
+Ok. I'll change it.
 
-Thank you,
 
+> 
+> > +	/*
+> > +	 * Usemap's page can't be freed until freeing other sections
+> > +	 * which use it. And, pgdat has same feature.
+> > +	 * If section A has pgdat and section B has usemap for other
+> > +	 * sections (includes section A), both sections can't be removed,
+> > +	 * because there is the dependency each other.
+> > +	 * To solve above issue, this collects all usemap on the same section
+> > +	 * which has pgdat as much as possible.
+> > +	 */
+> 
+> The comment is a bit tricky to read. How about?
+> 
+> 	/*
+> 	 * A page may contain usemaps for other sections preventing the
+> 	 * the page being freed and making a section unremovable while
+> 	 * other sections referencing the usemap remain active. Similarly,
+> 	 * a pgdat can prevent a section being removed. If section A
+> 	 * contains a pgdat and section B contains the usemap, both
+> 	 * sections become inter-dependent. This allocates usemaps
+> 	 * from the same section as the pgdat where possible to avoid
+> 	 * this problem.
+> 	 */
+
+Thanks! Looks better than mine. I'll change it to yours.
+
+
+> 
+> > +	section_nr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
+> > +	return alloc_bootmem_section(usemap_size(), section_nr);
+> > +}
+> > +
+> > +static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
+> > +{
+> > +	unsigned long usemap_snr, pgdat_snr;
+> > +	static unsigned long old_usemap_snr = NR_MEM_SECTIONS;
+> > +	static unsigned long old_pgdat_snr = NR_MEM_SECTIONS;
+> > +	struct pglist_data *pgdat = NODE_DATA(nid);
+> > +	int usemap_nid;
+> > +
+> > +	usemap_snr = pfn_to_section_nr(__pa(usemap) >> PAGE_SHIFT);
+> > +	pgdat_snr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
+> > +	if (usemap_snr == pgdat_snr)
+> > +		return;
+> > +
+> > +	if (old_usemap_snr == usemap_snr && old_pgdat_snr == pgdat_snr)
+> > +		/* skip redundant message */
+> > +		return;
+> > +
+> > +	old_usemap_snr = usemap_snr;
+> > +	old_pgdat_snr = pgdat_snr;
+> > +
+> > +	usemap_nid = sparse_early_nid(__nr_to_section(usemap_snr));
+> > +	if (usemap_nid != nid) {
+> > +		printk("node %d must be removed before remove section %ld\n",
+> > +		       nid, usemap_snr);
+> > +		return;
+> 
+> no kernel log level here
+
+Ok. I'll add KERN_INFO.
+
+> 
+> > +	}
+> > +	/*
+> > +	 * There is a circular dependency.
+> > +	 * Some platforms allow un-removable section because they will just
+> > +	 * gather other removable sections for dynamic partitioning.
+> > +	 * Just notify un-removable section's number here.
+> > +	 */
+> > +	printk(KERN_INFO "Section %ld and %ld (node %d)",
+> > +	       usemap_snr, pgdat_snr, nid);
+> > +	printk(" have a circular dependency on usemap and pgdat allocations\n");
+> 
+> a follow-on printk like this should use KERN_CONT
+
+OK.
+
+> > +}
+> > +#else
+> > +static unsigned long * __init
+> > +sparse_early_usemap_alloc_section(unsigned long pnum)
+> > +{
+> > +	return NULL;
+> > +}
+> > +
+> > +static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
+> > +{
+> > +}
+> > +#endif /* CONFIG_MEMORY_HOTREMOVE */
+> > +
+> >  static unsigned long *__init sparse_early_usemap_alloc(unsigned long pnum)
+> >  {
+> >  	unsigned long *usemap;
+> >  	struct mem_section *ms = __nr_to_section(pnum);
+> >  	int nid = sparse_early_nid(ms);
+> >  
+> > -	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
+> > +	usemap = sparse_early_usemap_alloc_section(pnum);
+> >  	if (usemap)
+> >  		return usemap;
+> >  
+> > +	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
+> > +	if (usemap) {
+> > +		check_usemap_section_nr(nid, usemap);
+> > +		return usemap;
+> > +	}
+> > +
+> >  	/* Stupid: suppress gcc warning for SPARSEMEM && !NUMA */
+> >  	nid = 0;
+> >  
+> 
+> Just a few minor things that need cleaning up there. Otherwise, the idea
+> seems sound.
+
+Thanks for reviewing and testing. :-)
+
+Bye.
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+Yasunori Goto 
 
 
