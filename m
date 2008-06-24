@@ -1,89 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbYFXNnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbYFXNra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757055AbYFXNnA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 09:43:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYFXNmy
+	id S1757487AbYFXNra (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 09:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbYFXNrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 09:42:54 -0400
-Received: from www.tglx.de ([62.245.132.106]:42888 "EHLO www.tglx.de"
+	Tue, 24 Jun 2008 09:47:24 -0400
+Received: from kumera.dghda.com ([80.68.90.171]:1267 "EHLO kumera.dghda.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752261AbYFXNmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 09:42:53 -0400
-Date: Tue, 24 Jun 2008 15:42:28 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: hjk@linutronix.de, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       gregkh@suse.de
-Subject: Re: [PATCH] uio-howto.tmpl: use standard copyright/legal markings
-Message-ID: <20080624134228.GB3217@local>
-References: <1214304877-1223-1-git-send-email-vapier@gentoo.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1214304877-1223-1-git-send-email-vapier@gentoo.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1753403AbYFXNrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 09:47:23 -0400
+From: "Duane Griffin" <duaneg@dghda.com>
+To: linux-ext4@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, sct@redhat.com,
+       adilger@clusterfs.com, Sami Liedes <sliedes@cc.hut.fi>,
+       Duane Griffin <duaneg@dghda.com>
+Subject: [PATCH] ext3: handle deleting corrupted indirect blocks
+Date: Tue, 24 Jun 2008 14:47:20 +0100
+Message-Id: <1214315240-22950-1-git-send-email-duaneg@dghda.com>
+X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <20080607121940.8ee6044a.akpm@linux-foundation.org>
+References: <20080607121940.8ee6044a.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Added GregKH to Cc:)
+While freeing indirect blocks we attach a journal head to the parent buffer
+head, free the blocks, then journal the parent. If the indirect block list
+is corrupted and points to the parent the journal head will be detached
+when the block is cleared, causing an OOPS.
 
-@Greg: Take care, the patch modifies a line with my name in it :-)
+Check for that explicitly and handle it gracefully.
 
-On Tue, Jun 24, 2008 at 06:54:37AM -0400, Mike Frysinger wrote:
-> The Userspace I/O HOWTO document uses straight <sect1> tags and plain text
-> to describe copyright/legal information.  It should instead use the
-> <copyright> and <legalnotice> tags like all other documents in the kernel.
-> 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+This patch fixes the third case (image hdb.20000057.nullderef.gz)
+reported in http://bugzilla.kernel.org/show_bug.cgi?id=10882.
 
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+Signed-off-by: Duane Griffin <duaneg@dghda.com>
+---
 
-> ---
->  Documentation/DocBook/uio-howto.tmpl |   23 ++++++++++++-----------
->  1 files changed, 12 insertions(+), 11 deletions(-)
-> 
-> diff --git a/Documentation/DocBook/uio-howto.tmpl b/Documentation/DocBook/uio-howto.tmpl
-> index c4d1873..d799a26 100644
-> --- a/Documentation/DocBook/uio-howto.tmpl
-> +++ b/Documentation/DocBook/uio-howto.tmpl
-> @@ -21,6 +21,18 @@
->      </affiliation>
->  </author>
->  
-> +<copyright>
-> +	<year>2006-2008</year>
-> +	<holder>Hans-JÃŒrgen Koch.</holder>
-> +</copyright>
-> +
-> +<legalnotice>
-> +<para>
-> +This documentation is Free Software licensed under the terms of the
-> +GPL version 2.
-> +</para>
-> +</legalnotice>
-> +
->  <pubdate>2006-12-11</pubdate>
->  
->  <abstract>
-> @@ -66,17 +78,6 @@
->  <?dbhtml filename="about.html"?>
->  <title>About this document</title>
->  
-> -<sect1 id="copyright">
-> -<?dbhtml filename="copyright.html"?>
-> -<title>Copyright and License</title>
-> -<para>
-> -      Copyright (c) 2006-2008 by Hans-JÃŒrgen Koch.</para>
-> -<para>
-> -This documentation is Free Software licensed under the terms of the
-> -GPL version 2.
-> -</para>
-> -</sect1>
-> -
->  <sect1 id="translations">
->  <?dbhtml filename="translations.html"?>
->  <title>Translations</title>
-> -- 
-> 1.5.5.3
+diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+index 6ae4ecf..8019bf2 100644
+--- a/fs/ext3/inode.c
++++ b/fs/ext3/inode.c
+@@ -2127,7 +2127,20 @@ static void ext3_free_data(handle_t *handle, struct inode *inode,
+ 
+ 	if (this_bh) {
+ 		BUFFER_TRACE(this_bh, "call ext3_journal_dirty_metadata");
+-		ext3_journal_dirty_metadata(handle, this_bh);
++
++		/*
++		 * The buffer head should have an attached journal head at this
++		 * point. However, if the data is corrupted and an indirect
++		 * block pointed to itself, it would have been detached when
++		 * the block was cleared. Check for this instead of OOPSing.
++		 */
++		if (bh2jh(this_bh))
++			ext3_journal_dirty_metadata(handle, this_bh);
++		else
++			ext3_error(inode->i_sb, "ext3_free_data",
++				   "circular indirect block detected, "
++				   "inode=%lu, block="E3FSBLK,
++				   inode->i_ino, this_bh->b_blocknr);
+ 	}
+ }
+ 
