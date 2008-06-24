@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759430AbYFXI1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759464AbYFXI1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759430AbYFXI1K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 04:27:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757335AbYFXI0w
+	id S1759464AbYFXI1k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 04:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758265AbYFXI1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 04:26:52 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:45782 "EHLO mgw1.diku.dk"
+	Tue, 24 Jun 2008 04:27:15 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:45791 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752491AbYFXI0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 04:26:50 -0400
-Date: Tue, 24 Jun 2008 10:26:47 +0200 (CEST)
+	id S1757076AbYFXI1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 04:27:12 -0400
+Date: Tue, 24 Jun 2008 10:27:10 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
 To: akinobu.mita@gmail.com, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 13/14] lib: Eliminate NULL test and memset after alloc_bootmem
-Message-ID: <Pine.LNX.4.64.0806241026250.26777@ask.diku.dk>
+Subject: [PATCH 14/14] mm: Eliminate NULL test and memset after alloc_bootmem
+Message-ID: <Pine.LNX.4.64.0806241026490.26777@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,8 +28,8 @@ alloc_bootmem and related functions never return NULL and always return a
 zeroed region of memory.  Thus a NULL test or memset after calls to these
 functions is unnecessary.
 
- lib/swiotlb.c |    4 ----
- 1 file changed, 4 deletions(-)
+ mm/sparse.c |    2 --
+ 1 file changed, 2 deletions(-)
 
 This was fixed using the following semantic patch.
 (http://www.emn.fr/x-info/coccinelle/)
@@ -60,24 +60,15 @@ E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_p
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -u -p a/lib/swiotlb.c b/lib/swiotlb.c
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -146,8 +146,6 @@ swiotlb_init_with_default_size(size_t de
- 	 * Get IO TLB memory from the low pages
+diff -u -p a/mm/sparse.c b/mm/sparse.c
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -324,8 +324,6 @@ void __init sparse_init(void)
  	 */
- 	io_tlb_start = alloc_bootmem_low_pages(bytes);
--	if (!io_tlb_start)
--		panic("Cannot allocate SWIOTLB buffer");
- 	io_tlb_end = io_tlb_start + bytes;
+ 	size = sizeof(unsigned long *) * NR_MEM_SECTIONS;
+ 	usemap_map = alloc_bootmem(size);
+-	if (!usemap_map)
+-		panic("can not allocate usemap_map\n");
  
- 	/*
-@@ -165,8 +163,6 @@ swiotlb_init_with_default_size(size_t de
- 	 * Get the overflow emergency buffer
- 	 */
- 	io_tlb_overflow_buffer = alloc_bootmem_low(io_tlb_overflow);
--	if (!io_tlb_overflow_buffer)
--		panic("Cannot allocate SWIOTLB overflow buffer!\n");
- 
- 	printk(KERN_INFO "Placing software IO TLB between 0x%lx - 0x%lx\n",
- 	       virt_to_bus(io_tlb_start), virt_to_bus(io_tlb_end));
+ 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+ 		if (!present_section_nr(pnum))
