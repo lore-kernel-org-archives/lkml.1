@@ -1,84 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760260AbYFXOAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756688AbYFXOHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760260AbYFXOAA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 10:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759091AbYFXN6v
+	id S1756688AbYFXOHF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 10:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYFXOGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 09:58:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38001 "EHLO mx1.redhat.com"
+	Tue, 24 Jun 2008 10:06:54 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38913 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753010AbYFXN6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 09:58:49 -0400
-Message-ID: <4860FD66.60003@redhat.com>
-Date: Tue, 24 Jun 2008 08:57:58 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
-MIME-Version: 1.0
-To: Duane Griffin <duaneg@dghda.com>
-CC: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
-       Sami Liedes <sliedes@cc.hut.fi>
-Subject: Re: [PATCH] ext3: handle deleting corrupted indirect blocks
-References: <20080607121940.8ee6044a.akpm@linux-foundation.org> <1214315240-22950-1-git-send-email-duaneg@dghda.com>
-In-Reply-To: <1214315240-22950-1-git-send-email-duaneg@dghda.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1753980AbYFXOGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 10:06:52 -0400
+Date: Tue, 24 Jun 2008 16:07:29 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: x86@kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       vgoyal@redhat.com
+Subject: Re: [PATCH 3/3] Limit E820 map when a user-defined memory map is
+ specified
+Message-ID: <20080624160729.2bead69c@halley.suse.de>
+In-Reply-To: <86802c440806221311q5a65cdb6me24b45de5657359c@mail.gmail.com>
+References: <1213977420-1555-1-git-send-email-bwalle@suse.de>
+	<1213977420-1555-4-git-send-email-bwalle@suse.de>
+	<86802c440806201334s30cbc685se44326812841fdd2@mail.gmail.com>
+	<20080622215635.7a0ebaae@kopernikus.site>
+	<86802c440806221311q5a65cdb6me24b45de5657359c@mail.gmail.com>
+Organization: SUSE Linux Products GmbH
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Duane Griffin wrote:
-> While freeing indirect blocks we attach a journal head to the parent buffer
-> head, free the blocks, then journal the parent. If the indirect block list
-> is corrupted and points to the parent the journal head will be detached
-> when the block is cleared, causing an OOPS.
+* Yinghai Lu [2008-06-22 13:11]:
+>
+> On Sun, Jun 22, 2008 at 12:56 PM, Bernhard Walle <bwalle@suse.de> wrote:
+> > * "Yinghai Lu" <yhlu.kernel@gmail.com> [2008-06-20 13:34]:
+> >>
+> >> any problem that you encountered without this patch?
+> >
+> > Sorry, forgot to answer that question.
+> >
+> > Yes, if you use mem=3G and take a dump, kexec builds the ELF core
+> > headers for the full memory size, which means that the dump is as large
+> > as the physical memory of the machine is, which doesn't make sense.
 > 
-> Check for that explicitly and handle it gracefully.
-> 
-> This patch fixes the third case (image hdb.20000057.nullderef.gz)
-> reported in http://bugzilla.kernel.org/show_bug.cgi?id=10882.
-> 
-> Signed-off-by: Duane Griffin <duaneg@dghda.com>
-> ---
-> 
-> diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-> index 6ae4ecf..8019bf2 100644
-> --- a/fs/ext3/inode.c
-> +++ b/fs/ext3/inode.c
-> @@ -2127,7 +2127,20 @@ static void ext3_free_data(handle_t *handle, struct inode *inode,
->  
->  	if (this_bh) {
->  		BUFFER_TRACE(this_bh, "call ext3_journal_dirty_metadata");
-> -		ext3_journal_dirty_metadata(handle, this_bh);
-> +
-> +		/*
-> +		 * The buffer head should have an attached journal head at this
-> +		 * point. However, if the data is corrupted and an indirect
-> +		 * block pointed to itself, it would have been detached when
-> +		 * the block was cleared. Check for this instead of OOPSing.
-> +		 */
-> +		if (bh2jh(this_bh))
+> can we use e820_update_range instead? so e820_setup_gap still can get
+> correct value?
 
-Should it also (or only) be checking for buffer_jbd rather than testing
-bh2jh which is just shorthand for "is b_private non-null?"
+Yes, good idea. Patch is in the queue ...
 
-Also maybe I should know this intuitively by now, but what is the path
-where b_private / BH_JBD got cleared on this corrupted image?
 
-Thanks,
--Eric
-
-> +			ext3_journal_dirty_metadata(handle, this_bh);
-> +		else
-> +			ext3_error(inode->i_sb, "ext3_free_data",
-> +				   "circular indirect block detected, "
-> +				   "inode=%lu, block="E3FSBLK,
-> +				   inode->i_ino, this_bh->b_blocknr);
->  	}
->  }
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Bernhard
+-- 
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
