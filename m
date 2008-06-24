@@ -1,101 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbYFXVtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbYFXV4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbYFXVtW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 17:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbYFXVtL
+	id S1755284AbYFXV4t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756603AbYFXV4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 17:49:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48237 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753646AbYFXVtJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 17:49:09 -0400
-Date: Tue, 24 Jun 2008 14:48:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-Cc: viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
-       dm-devel@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       mtk.manpages@googlemail.com
-Subject: Re: [PATCH 1/3] Implement generic freeze feature
-Message-Id: <20080624144803.0135a84d.akpm@linux-foundation.org>
-In-Reply-To: <20080624155950t-sato@mail.jp.nec.com>
-References: <20080624155950t-sato@mail.jp.nec.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jun 2008 17:56:13 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:38985 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755587AbYFXV4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 17:56:03 -0400
+Date: Wed, 25 Jun 2008 00:54:01 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: lkml <linux-kernel@vger.kernel.org>, rtc-linux@googlegroups.com
+Subject: Re: [patch 2.6.26-rc7] <linux/bcd.h> space reduction
+Message-ID: <20080624215400.GA18252@cs181140183.pp.htv.fi>
+References: <200806221954.37088.david-b@pacbell.net> <20080623065034.GG20122@cs181140183.pp.htv.fi> <200806230015.49973.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200806230015.49973.david-b@pacbell.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jun 2008 15:59:50 +0900
-Takashi Sato <t-sato@yk.jp.nec.com> wrote:
-
-> I have modified to set the suitable error number (EOPNOTSUPP)
-> in case the filesystem doesn't support the freeze feature.
-> This was pointed out by Andreas Dilger.
+On Mon, Jun 23, 2008 at 12:15:49AM -0700, David Brownell wrote:
+> On Sunday 22 June 2008, Adrian Bunk wrote:
+> > On Sun, Jun 22, 2008 at 07:54:36PM -0700, David Brownell wrote:
+> > > This updates <linux/bcd.h> to define the key routines as static
+> > > constant functions, which the macros will then call.
+> > > 
+> > > 	... Typical per-driver savings top 200 bytes. ...
+> > 
+> > The patch breaks the compilation:
 > 
-> The ioctls for the generic freeze feature are below.
-> o Freeze the filesystem
->   int ioctl(int fd, int FIFREEZE, arg)
->     fd: The file descriptor of the mountpoint
->     FIFREEZE: request code for the freeze
->     arg: Ignored
->     Return value: 0 if the operation succeeds. Otherwise, -1
+> Needs to #include <linux/types.h> then; "u8" isn't always known.
+> Or maybe just spell it out "unsigned char".
 > 
-> o Unfreeze the filesystem
->   int ioctl(int fd, int FITHAW, arg)
->     fd: The file descriptor of the mountpoint
->     FITHAW: request code for unfreeze
->     arg: Ignored
->     Return value: 0 if the operation succeeds. Otherwise, -1
->
-> ...
->
-> +/*
-> + * get_super_without_lock - Get super_block from block_device without lock.
-> + * @bdev:	block device struct
-> + *
-> + * Scan the superblock list and finds the superblock of the file system
-> + * mounted on the block device given. This doesn't lock anyone.
-> + * %NULL is returned if no match is found.
-> + */
+> 
+> >	...
+> > 
+> > Additionally, I'd suggest to make them out-of-line functions 
+> > instead of shipping multiple copies in different object files.
+> 
+> That was one of the options.  I thought I'd start with something
+> simpler, and see what folk thought.
+> 
+> Where would that be ... lib/bcd.c, always linked?
 
-This is not a terribly good comment.
+Sounds good.
 
-Which lock are we not taking?  I _assume_ that it's referring to
-s_umount?  If so, the text should describe that.
+> And if it goes
+> that way I'd prefer bcd2bin() and bin2bcd(), not these names.  A
+> small impetus to have LESS SOURCE CODE SHOUTING AT ME.
 
-It should also go to some lengths explaining why this dangerous-looking
-and rather nasty-looking function exists.
+Sounds good, but start with SHOUTING COMPATIBILITY #DEFINES FOR THE 
+EXISTING USERS and either clean them up later or let me do the cleanup.
 
-Look at it this way: there is no way in which the reviewer of this
-patch (ie: me) can work out why this function exists.  Hence there will
-be no way in which future readers of this code will be able to work out
-why this function exists either.  This is bad.  These things should be
-described in code comments and in the changelog (whichever is most
-appropriate).
+> - Dave
 
-> +struct super_block *get_super_without_lock(struct block_device *bdev)
-> +{
-> +	struct super_block *sb;
-> +
-> +	if (!bdev)
-> +		return NULL;
-> +
-> +	spin_lock(&sb_lock);
-> +	list_for_each_entry(sb, &super_blocks, s_list) {
-> +		if (sb->s_bdev == bdev) {
-> +			if (sb->s_root) {
-> +				sb->s_count++;
-> +				spin_unlock(&sb_lock);
-> +				return sb;
-> +			}
-> +		}
-> +	}
-> +	spin_unlock(&sb_lock);
-> +	return NULL;
-> +}
-> +EXPORT_SYMBOL(get_super_without_lock);
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
