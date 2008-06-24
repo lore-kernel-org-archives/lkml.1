@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbYFXScO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754452AbYFXSiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754688AbYFXScO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 14:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbYFXSb5
+	id S1754452AbYFXSiU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 14:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYFXSiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 14:31:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46047 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751426AbYFXSb4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 14:31:56 -0400
-Date: Tue, 24 Jun 2008 11:31:33 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [rfc patch 3/4] splice: remove confirm from
- pipe_buf_operations
-In-Reply-To: <E1KBDBg-0002XZ-DG@pomaz-ex.szeredi.hu>
-Message-ID: <alpine.LFD.1.10.0806241129590.2926@woody.linux-foundation.org>
-References: <20080621154607.154640724@szeredi.hu> <20080621154726.494538562@szeredi.hu> <20080624080440.GJ20851@kernel.dk> <E1KB4Id-0000un-PV@pomaz-ex.szeredi.hu> <20080624111913.GP20851@kernel.dk> <E1KB6p9-0001Gq-Fd@pomaz-ex.szeredi.hu>
- <alpine.LFD.1.10.0806241022120.2926@woody.linux-foundation.org> <E1KBDBg-0002XZ-DG@pomaz-ex.szeredi.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 24 Jun 2008 14:38:12 -0400
+Received: from mail.suse.de ([195.135.220.2]:56090 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751068AbYFXSiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 14:38:11 -0400
+Date: Tue, 24 Jun 2008 20:38:07 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: akataria@vmware.com
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: merge conflicts with tip/master
+Message-ID: <20080624203807.232a414a@kopernikus.site>
+In-Reply-To: <1214327937.27577.6.camel@promb-2n-dhcp368.eng.vmware.com>
+References: <1214327937.27577.6.camel@promb-2n-dhcp368.eng.vmware.com>
+Organization: SUSE LINUX Products GmbH
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i686-pc-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 24 Jun 2008, Miklos Szeredi wrote:
+* Alok Kataria <akataria@vmware.com> [2008-06-24 10:18]:
+>
+> While working with tip/master...after following the steps in the readme
+> @ http://people.redhat.com/mingo/tip.git/readme.txt
 > 
-> OK.  But currently we have an implementation that
-> 
->  1) doesn't do any of this, unless readahead is disabled
+> I usually do any changes and manage them using "quilt". 
+> Once the changes are pushed upstream, i do a "quilt pop"
+> and generally try a "git pull" to check for any new changes, along with
+> the change that was just pushed. 
 
-Sure. But removing even the conceptual support? Not a good idea.
+You might also try guilt [1], which is a mix between st-git and quilt.
+Just a hint, it does not solve your problem. :)
 
-> And in addition, splice-in and splice-out can return a short count or
-> even zero count if the filesystem invalidates the cached pages during
-> the splicing (data became stale for example).  Are these the right
-> semantics?  I'm not sure.
 
-What does that really have with splice() and removing the features? Why 
-don't you just fix that issue? 
+Bernhard
 
-		Linus
+[1] http://www.kernel.org/pub/linux/kernel/people/jsipek/guilt/
+
+-- 
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
