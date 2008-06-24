@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758977AbYFXIzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYFXI5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758977AbYFXIzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 04:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbYFXIy4
+	id S1758729AbYFXI5Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 04:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbYFXI47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 04:54:56 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:40273 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752709AbYFXIyx (ORCPT
+	Tue, 24 Jun 2008 04:56:59 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:58063 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750985AbYFXI46 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 04:54:53 -0400
-To: jens.axboe@oracle.com
-CC: miklos@szeredi.hu, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org
-In-reply-to: <20080624080440.GJ20851@kernel.dk> (message from Jens Axboe on
-	Tue, 24 Jun 2008 10:04:41 +0200)
-Subject: Re: [rfc patch 3/4] splice: remove confirm from pipe_buf_operations
-References: <20080621154607.154640724@szeredi.hu> <20080621154726.494538562@szeredi.hu> <20080624080440.GJ20851@kernel.dk>
-Message-Id: <E1KB4Id-0000un-PV@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 24 Jun 2008 10:54:51 +0200
+	Tue, 24 Jun 2008 04:56:58 -0400
+Message-ID: <4860B651.9090104@s5r6.in-berlin.de>
+Date: Tue, 24 Jun 2008 10:54:41 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+MIME-Version: 1.0
+To: Jonathan Steinert <hachi@kuiki.net>
+CC: linux-kernel@vger.kernel.org, Johannes Niess <linux@johannes-niess.de>,
+       linux-usb@vger.kernel.org
+Subject: Re: USB attached SATA disk idle spindown
+References: <20080624045953.GA24600@miyako.sixapart.com>
+In-Reply-To: <20080624045953.GA24600@miyako.sixapart.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The 'confirm' operation was only used for splicing from page cache, to
-> > wait for read on a page to finish.  But generic_file_splice_read()
-> > already blocks on readahead reads, so it seems logical to block on the
-> > rare and slow single page reads too.
-> > 
-> > So wait for readpage to finish inside __generic_file_splice_read() and
-> > remove the 'confirm' method.
-> > 
-> > This also fixes short return counts when the filesystem (e.g. fuse)
-> > invalidates the page between insertation and removal.
+(adding Cc: linux-usb and Johannes Niess)
+
+On 6/24/2008 6:59 AM, Jonathan Steinert wrote at LKML:
+> Dear list,
 > 
-> One of the basic goals of splice is to allow the pipe buffer to only be
-> consisten when a consumer asks for it, otherwise the filling will always
-> be sync. There should be no blocking on reads in the splice-in path,
-> only on consumption for splice-out.
+> I am looking for what the current state of USB SATA timed spindown of-
+> disks is ata this time. I've been reading documents and mailing lists-
+> for every possible search I can dream up on the subject. Suggested-
+> workable solutions include (but are probably not limited to):
+> 
+> $ hdparm -S
+>     This seems to be the ATA way of telling a disk to spin down, and it
+>     works in some situations, but doesn't appear to work on USB attached
+>     disks under 2.6.25
+> 
+> $ sdparm
+>     This is suggested in a small number of locations. Most of which have
+>     examples on how to disable STANDBY on a handful of devices. I am
+>     unable to find any evidence that it can actually be used to enable
+>     power saving.
 
-What you are ignoring (and I've mentioned in the changelog) is that it
-is *already* sync.  Look at the code: this starts I/O:
+I think either of these depend on specific support by the USB to SATA
+bridge firmware.
 
-		page_cache_sync_readahead(mapping, &in->f_ra, in,
-				index, req_pages - spd.nr_pages);
+I hear some newer bridges and their firmwares implement ATA
+pass-through.  Would that help?
 
-And this waits for it to finish:
+> $ scsi_spin
+>     Requires the disk to be unmounted, and I can't find anything saying
+>     that this is how the world is supposed to be.-
 
-		if (!PageUptodate(page)) {
-			...
-				lock_page(page);
+Johannes recently informed me that he wrote a script which is used like
+a background daemon to stop idle USB disks.  The script uses
+  - "cat /sys/block/${device}/stat" to watch disk activity,
+  - "sdparm -q -C stop /dev/${device}" to stop the motor after
+    longer inactivity.
 
-The only way it will be async, is if there's no readahead.  But do we
-want to optmize that case?
+> I'm hoping that perhaps I'm missing something from this list.
+> 
+> I don't really know whether this is a topic for the scsi people, or the-
+> SATA people, or the USB people. So I'm asking here instead to try and
+> get my first hints from the parent group.
+> 
+> Thanks in advance,
+> 
+> hachi
 
-Miklos
+IMO it is firstly an USB topic because it depends on the features and
+behaviour of the bridge and its firmware.
+
+(PS:  Don't have too high expectations of $15 devices.)
+-- 
+Stefan Richter
+-=====-==--- -==- ==---
+http://arcgraph.de/sr/
