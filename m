@@ -1,132 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758631AbYFXSBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbYFXSFL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758631AbYFXSBz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 14:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbYFXSBr
+	id S1753909AbYFXSFL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 14:05:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbYFXSE7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 14:01:47 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:24272 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751241AbYFXSBp (ORCPT
+	Tue, 24 Jun 2008 14:04:59 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:44215 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750752AbYFXSE6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 14:01:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=V0r+QAI7JFaOQB9wX44nW7pIeFpSq7TvJi3DY5306PhyEx6xCh2jq33dnQ6+AOoYh0
-         Yju37ADpXAT4JLBIn2iWCYC8tAkMioUfeM9gXIrtAhX8og28T0LmfJEFErO2uCnoUWKI
-         WoKyY4PFOk9UqBsjRBQLR8vlcqpB72W5KSig0=
-Message-ID: <48f7fe350806241101p4b691549u2c970976b2a7159e@mail.gmail.com>
-Date: Tue, 24 Jun 2008 14:01:43 -0400
-From: "Ryan Hope" <rmh3093@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [BUG] Lockless patches cause hardlock under heavy IO
-Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Peter Zijlstra" <peterz@infradead.org>, linux-mm@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <48f7fe350806240923g2ddd1885k6b007b70685ffc6b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jun 2008 14:04:58 -0400
+Date: Tue, 24 Jun 2008 20:04:56 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: configfs: Q: item leak in a failing configfs_attach_group()?
+Message-ID: <20080624180456.GA32036@hawkmoon.kerlabs.com>
+Reply-To: Louis.Rilling@kerlabs.com
+References: <20080624141649.GH7621@hawkmoon.kerlabs.com> <20080624171051.GD4184@ca-server1.us.oracle.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-29171-1214330603-0001-2"
 Content-Disposition: inline
-References: <48f7fe350806181415l4eba61b3i1d206de03147575e@mail.gmail.com>
-	 <200806232154.52820.nickpiggin@yahoo.com.au>
-	 <20080623130536.GA10595@linux.vnet.ibm.com>
-	 <200806241013.45908.nickpiggin@yahoo.com.au>
-	 <48f7fe350806240812t5bd411daw122aca4d6b67e932@mail.gmail.com>
-	 <20080624153238.GD7978@linux.vnet.ibm.com>
-	 <48f7fe350806240857l38edb74ame8cef4a7be595bbc@mail.gmail.com>
-	 <20080624161251.GE7978@linux.vnet.ibm.com>
-	 <48f7fe350806240923g2ddd1885k6b007b70685ffc6b@mail.gmail.com>
+In-Reply-To: <20080624171051.GD4184@ca-server1.us.oracle.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just a report of someone getting a hardlock while building boost, he
-was using classic RCU and no swap.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-On Tue, Jun 24, 2008 at 12:23 PM, Ryan Hope <rmh3093@gmail.com> wrote:
-> I have been using CONFIG_PREEMPT_RCU=Y
->
-> On Tue, Jun 24, 2008 at 12:12 PM, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
->> On Tue, Jun 24, 2008 at 11:57:05AM -0400, Ryan Hope wrote:
->>> I can give you a list of patches that should correspond to the thread
->>> name (for the most part):
->>>
->>> fix-double-unlock_page-in-2626-rc5-mm3-kernel-bug-at-mm-filemapc-575.patch
->>>
->>> fix_munlock-page-table-walk.patch
->>>
->>> migration_entry_wait-fix.patch
->>>
->>> PATCH collect lru meminfo statistics from correct offset
->>>
->>> Mlocked field of /proc/meminfo display silly number.
->>> because trivial mistake exist in meminfo_read_proc().
->>>
->>> You can also look in our git repo to see the code that changed with
->>> these patches if you cant track them down in LKML:
->>> http://zen-sources.org/cgi-bin/gitweb.cgi?p=kernel-mm.git;a=shortlog;h=refs/heads/lkml
->>
->> Thank you!  And is this using Classic RCU or Preemptable RCU?
->>
->>                                                        Thanx, Paul
->>
->>> On Tue, Jun 24, 2008 at 11:32 AM, Paul E. McKenney
->>> <paulmck@linux.vnet.ibm.com> wrote:
->>> > On Tue, Jun 24, 2008 at 11:12:03AM -0400, Ryan Hope wrote:
->>> >> Well i tried to run pure -mm this weekend, it locked as soon as I got
->>> >> into gnome so I applied a couple of the bug fixes from lkml and -mm
->>> >> seems to be running stable now. I cant seem to get it to hard lock
->>> >> now, at least not doing the simple stuff that was causing it to hard
->>> >> lock on my other patchset, either the lockless patches expose some bug
->>> >> that in -rc6 or lockless requires some other patches further up in the
->>> >> -mm series file.
->>> >
->>> > Cool!!!  Any guess as to which of the bug fixes did the trick?
->>> > Failing that, a list of the bug fixes that you applied?
->>> >
->>> >                                                        Thanx, Paul
->>> >
->>> >> On Mon, Jun 23, 2008 at 8:13 PM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
->>> >> > On Monday 23 June 2008 23:05, Paul E. McKenney wrote:
->>> >> >> On Mon, Jun 23, 2008 at 09:54:52PM +1000, Nick Piggin wrote:
->>> >> >> > On Monday 23 June 2008 13:51, Ryan Hope wrote:
->>> >> >> > > well i get the hardlock on -mm with out using reiser4, i am pretty
->>> >> >> > > sure is swap related
->>> >> >> >
->>> >> >> > The guys seeing hangs don't use PREEMPT_RCU, do they?
->>> >> >> >
->>> >> >> > In my swapping tests, I found -mm3 to be stable with classic RCU, but
->>> >> >> > on a hunch, I tried PREEMPT_RCU and it crashed a couple of times rather
->>> >> >> > quickly. First crash was in find_get_pages so I suspected lockless
->>> >> >> > pagecache doing something subtly wrong with the RCU API, but I just got
->>> >> >> > another crash in __d_lookup:
->>> >> >>
->>> >> >> Could you please send me a repeat-by?  (At least Alexey is no longer
->>> >> >> alone!)
->>> >> >
->>> >> > OK, I had DEBUG_PAGEALLOC in the .config, which I think is probably
->>> >> > important to reproduce it (but the fact that I'm reproducing oopses
->>> >> > with << PAGE_SIZE objects like dentries and radix tree nodes indicates
->>> >> > that there is even more free-before-grace activity going undetected --
->>> >> > if you construct a test case using full pages, it might become even
->>> >> > easier to detect with DEBUG_PAGEALLOC).
->>> >> >
->>> >> > 2 socket, 8 core x86 system.
->>> >> >
->>> >> > I mounted two tmpfs filesystems, one contains a single large file
->>> >> > which is formatted as 1K block size ext3 and mounted loopback, the
->>> >> > other is used directly. Linux kernel source is unpacked on each mount
->>> >> > and concurrent make -j128 on each. This pushes it pretty hard into
->>> >> > swap. Classic RCU survived another 5 hours of this last night.
->>> >> >
->>> >> > But that's a fairly convoluted test for an RCU problem. I expect it
->>> >> > should be easier to trigger with something more targetted...
->>> >> >
->>> >
->>
->
+--=_bohort-29171-1214330603-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, Jun 24, 2008 at 10:10:51AM -0700, Joel Becker wrote:
+> On Tue, Jun 24, 2008 at 04:16:49PM +0200, Louis Rilling wrote:
+> > Hi,
+> >=20
+> > I'd like an opinion on the following scenario:
+> >=20
+> > process 1: 					process 2:
+> > configfs_mkdir("A")
+> >   attach_group("A")
+> >     attach_item("A")
+> >       d_instantiate("A")
+> >     populate_groups("A")
+> >       mutex_lock("A")
+> >       attach_group("A/B")
+> >         attach_item("A")
+> >           d_instantiate("A/B")
+> > 						mkdir("A/B/C")
+> > 						  do_path_lookup("A/B/C", LOOKUP_PARENT)
+>=20
+> 					This has to sleep until
+> 					configfs_mkdir("A") finishes.
+> 					It's waiting on A->d_parent's
+> 					i_mutex, which is held by
+> 					sys_mkdirat().
+
+Can you be more precise? I don't see where do_path_lookup() locks an inode
+outside of real_lookup(), and what I understand is that real_lookup() is ne=
+ither
+called for "A", nor called for "A/B" because __d_lookup() will find positive
+dentries (they were d_instantiated). Since do_path_lookup() is called with
+LOOKUP_PARENT, it stops here. Then lookup_create() locks "A/B"'s inode, wit=
+hout
+waiting, and calls lookup_hash("A/B", "C"), which ends calling
+configfs_lookup("A/B", "C") because "A/B" has no child "C" in the dcache.
+
+What am I missing?
+
+Thanks,
+
+Louis
+
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
+
+--=_bohort-29171-1214330603-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIYTdIVKcRuvQ9Q1QRAlReAKC07GTRaRqTDb2KSZMSpWq3Hx3U8QCdGUjN
+MOLKW6TfZ0JjkuG/DeMceL8=
+=N7sH
+-----END PGP SIGNATURE-----
+
+--=_bohort-29171-1214330603-0001-2--
