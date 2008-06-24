@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757695AbYFXR2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759477AbYFXRaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757695AbYFXR2V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 13:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbYFXR2O
+	id S1759477AbYFXRaV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 13:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYFXRaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 13:28:14 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38236 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229AbYFXR2N (ORCPT
+	Tue, 24 Jun 2008 13:30:08 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:48870 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752420AbYFXRaG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 13:28:13 -0400
-Date: Tue, 24 Jun 2008 19:28:12 +0200
-From: Jan Kara <jack@suse.cz>
+	Tue, 24 Jun 2008 13:30:06 -0400
+Subject: [PATCH] fix2 to putback_lru_page()/unevictable page handling
+	rework v3
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michael Buesch <mb@bu3sch.de>, Arnd Bergmann <arnd@arndb.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <axboe@kernel.dk>, Jan Kara <jack@ucw.cz>
-Subject: Re: Oops when using growisofs
-Message-ID: <20080624172812.GD22586@atrey.karlin.mff.cuni.cz>
-References: <200806221818.24372.mb@bu3sch.de> <200806222322.05706.arnd@arndb.de> <200806230005.51356.mb@bu3sch.de> <200806230028.20643.mb@bu3sch.de> <20080622233448.4b27c131.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080622233448.4b27c131.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
+       Rik van Riel <riel@redhat.com>
+In-Reply-To: <20080624114006.D81C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080621185408.E832.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080624114006.D81C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Organization: HP/OSLO
+Date: Tue, 24 Jun 2008 13:29:32 -0400
+Message-Id: <1214328572.6563.31.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 23 Jun 2008 00:28:20 +0200 Michael Buesch <mb@bu3sch.de> wrote:
-> 
-> > On Monday 23 June 2008 00:05:51 Michael Buesch wrote:
-> > > > Note: r9 and r3 are both NULL pointers. r3 is the value returned from alloc_page_buffers.
-> > > > R9 is a copy of that, which gets accessed.
-> > > 
-> > > Hm, yeah. I looked at that code already, but I can't see how it could return
-> > > a NULL pointer.
-> > 
-> > Well, actually, it can return a NULL pointer.
-> > 
-> >  928         head = NULL;
-> >  929         offset = PAGE_SIZE;
-> >  930         while ((offset -= size) >= 0) {
-> > ...
-> >  949         }
-> >  950         return head;
-> > 
-> > So if size, which is a passed in as parameter, is > PAGE_SIZE it will return NULL.
-> > 
-> > The size parameter is calculated by doing
-> > blocksize = 1 << inode->i_blkbits;
-> > in an earlier function in the callchain.
-> 
-> Yes, that's a more likely scenario.  isofs has a history of passing
-> garbage into the VFS.
-> 
-> > So, well. I dunno what i_blkbits is. There's no docs in struct inode.
-> 
-> It's log2 of the filesystem blocksize.  It'd be interesting to work out
-> what value isofs is setting it to, and why.
-  Well, yes, that looks as a reason at the first sight. But what I don't
-get is, how can isofs possibly set such a blocksize when it uses
-sb_set_blocksize() which checks whether blocksize isn't larger than page
-size... So it must be something less obvious.
-  bd_set_size() can possibly set blocksize larger than PAGE_SIZE and
-it's called from do_open() but it uses bdev_hardsect_size() and that
-shouldn't be larger than PAGE_SIZE either (at least drivers seem to take
-care of this).
-  I have seen one more report of this Oops for SLES10 kernel and also in that
-case an IO error happened so probably that is a trigger... But so far I
-don't get the details.
+PATCH revert shmem_lock() prototypes to return int
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Against: 26-rc5-mm3 with Kosaki Motohiro's splitlru unevictable lru
+fixes.
+
+Fix to ﻿putback_lru_page()/unevictable page handling rework v3 patch.
+
+The subject patch reverted a prior change to shmem_lock() to return a
+struct address_space pointer back to returning an int.  This patch
+updates the prototypes in mm.h to match.  
+
+Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+
+ include/linux/mm.h |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+Index: linux-2.6.26-rc5-mm3/include/linux/mm.h
+===================================================================
+--- linux-2.6.26-rc5-mm3.orig/include/linux/mm.h	2008-06-24 12:54:41.000000000 -0400
++++ linux-2.6.26-rc5-mm3/include/linux/mm.h	2008-06-24 13:25:29.000000000 -0400
+@@ -706,13 +706,12 @@ static inline int page_mapped(struct pag
+ extern void show_free_areas(void);
+ 
+ #ifdef CONFIG_SHMEM
+-extern struct address_space *shmem_lock(struct file *file, int lock,
+-					struct user_struct *user);
++extern int shmem_lock(struct file *file, int lock, struct user_struct *user);
+ #else
+-static inline struct address_space *shmem_lock(struct file *file, int lock,
++static inline int shmem_lock(struct file *file, int lock,
+ 					struct user_struct *user)
+ {
+-	return NULL;
++	return 0;
+ }
+ #endif
+ struct file *shmem_file_setup(char *name, loff_t size, unsigned long flags);
+
+
