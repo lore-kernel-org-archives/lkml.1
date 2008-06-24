@@ -1,101 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbYFXP0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760793AbYFXPdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760904AbYFXP0e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 11:26:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbYFXP0Z
+	id S1760793AbYFXPdS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 11:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbYFXPdB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 11:26:25 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:50058 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754393AbYFXP0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 11:26:25 -0400
-Date: Tue, 24 Jun 2008 10:26:20 -0500
-From: Robin Holt <holt@sgi.com>
-To: Alex Chiang <achiang@hp.com>, Robin Holt <holt@sgi.com>,
-       tony.luck@intel.com, linux-kernel@vger.kernel.org
-Subject: Re: [BISECT] Boot failure on ia64.
-Message-ID: <20080624152620.GP10062@sgi.com>
-References: <20080624123014.GJ10123@sgi.com> <20080624150851.GA3599@ldl.fc.hp.com>
+	Tue, 24 Jun 2008 11:33:01 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:42093 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752884AbYFXPdB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 11:33:01 -0400
+Date: Tue, 24 Jun 2008 08:32:38 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ryan Hope <rmh3093@gmail.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <peterz@infradead.org>, linux-mm@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] Lockless patches cause hardlock under heavy IO
+Message-ID: <20080624153238.GD7978@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <48f7fe350806181415l4eba61b3i1d206de03147575e@mail.gmail.com> <200806232154.52820.nickpiggin@yahoo.com.au> <20080623130536.GA10595@linux.vnet.ibm.com> <200806241013.45908.nickpiggin@yahoo.com.au> <48f7fe350806240812t5bd411daw122aca4d6b67e932@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080624150851.GA3599@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <48f7fe350806240812t5bd411daw122aca4d6b67e932@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is the output.  This is from a different boot, but it does look the
-same.
+On Tue, Jun 24, 2008 at 11:12:03AM -0400, Ryan Hope wrote:
+> Well i tried to run pure -mm this weekend, it locked as soon as I got
+> into gnome so I applied a couple of the bug fixes from lkml and -mm
+> seems to be running stable now. I cant seem to get it to hard lock
+> now, at least not doing the simple stuff that was causing it to hard
+> lock on my other patchset, either the lockless patches expose some bug
+> that in -rc6 or lockless requires some other patches further up in the
+> -mm series file.
 
-Robin
+Cool!!!  Any guess as to which of the bug fixes did the trick?
+Failing that, a list of the bug fixes that you applied?
 
-fs0:\efi\SuSE> elilo net0:holt/v1 root=/dev/sda7
-ELILO
-Uncompressing Linux... done
-Initializing cgroup subsys cpuset
-Linux version 2.6.26-rc7-holt-00051-g62786b9-dirty (holt@attica) (gcc version 4.1.2 20070115 (prerelease) (SUSE Linux)) #19 SMP Tue Jun 24 10:22:55 CDT 2008
-EFI v1.10 by INTEL: SALsystab=0x6002c25f10 ACPI 2.0=0x6002c26000
-console [sn_sal0] enabled
-ACPI: RSDP 6002C26000, 0024 (r2    SGI)
-ACPI: XSDT 6002C297F0, 0044 (r1    SGI  XSDTSN2    10001           7C)
-ACPI: APIC 6002C26870, 032C (r1    SGI  APICSN2    10001            1)
-ACPI: SRAT 6002C26BB0, 06B0 (r1    SGI  SRATSN2    10001            1)
-ACPI: SLIT 6002C27270, 012C (r1    SGI  SLITSN2    10001            1)
-ACPI: FACP 6002C27400, 00F4 (r3    SGI  FACPSN2    30001            1)
-ACPI: DSDT 6002C2AAF0, 0024 (r2    SGI  DSDTSN2    20001          AAC)
-ACPI: FACS 6002C273B0, 0040
-Number of logical nodes in system = 16
-Number of memory chunks in system = 16
-SAL 3.2: SGI SN2 version 1.50
-SAL Platform features: ITC_Drift
-SAL: AP wakeup using external interrupt vector 0x12
-Unable to handle kernel NULL pointer dereference (address 00000000000044b8)
-swapper[0]: Oops 8813272891392 [1]
-Modules linked in:
+							Thanx, Paul
 
-Pid: 0, CPU 0, comm:              swapper
-psr : 00001010084a2010 ifs : 8000000000000491 ip  : [<a000000100087020>]    Not tainted (2.6.26-rc7-holt-00051-g62786b9-dirty)
-ip is at sn2_send_IPI+0x80/0x240
-unat: 0000000000000000 pfs : 0000000000000491 rsc : 0000000000000003
-rnat: 000000000000afc8 bsps: 000000000001003e pr  : 65691ba55aa68599
-ldrs: 0000000000000000 ccv : 0000000000ff03ff fpsr: 0009804c8a70433f
-csd : 0000000000000000 ssd : 0000000000000000
-b0  : a0000001009529b0 b6  : 00000000ff5423b0 b7  : e000000001fffc00
-f6  : 1003e0000000000000000 f7  : 1003e0000000000000001
-f8  : 1003e0000000000000000 f9  : 1003e0000000000000000
-f10 : 100068fffffffff700000 f11 : 1003e0000000000000090
-r1  : a000000100e9d010 r2  : 00000000000044b8 r3  : 0000000000000000
-r8  : 0000000000000000 r9  : 0000000000000000 r10 : ffffffffffff6298
-r11 : 0000000000000000 r12 : a000000100aefc30 r13 : a000000100ae0000
-r14 : 0000000000000000 r15 : e000006003106298 r16 : e000006003110000
-r17 : a000000100d1f3e8 r18 : a000000100d1f3e8 r19 : a000000100d1f3e8
-r20 : 0000000000000000 r21 : ffffffffffff0420 r22 : 0000000000000800
-r23 : 0000000000000007 r24 : e0000060030b0000 r25 : 000000000004ffff
-r26 : a00000010098d440 r27 : e0000060030b0010 r28 : e0000060030b0000
-r29 : e0000060030b0020 r30 : 0000000000000000 r31 : 00000000000007ff
-Unable to handle kernel NULL pointer dereference (address 0000000000000000)
-swapper[0]: Oops 8813272891392 [2]
-Modules linked in:
-
-Pid: 0, CPU 0, comm:              swapper
-psr : 0000101008022018 ifs : 800000000000038c ip  : [<a000000100182e30>]    Not tainted (2.6.26-rc7-holt-00051-g62786b9-dirty)
-ip is at kmem_cache_alloc+0x70/0x180
-unat: 0000000000000000 pfs : 0000000000000610 rsc : 0000000000000003
-rnat: 0000000000000000 bsps: 0000000000000000 pr  : 65691ba55aa69aa5
-ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70033f
-csd : 0000000000000000 ssd : 0000000000000000
-b0  : a000000100040bc0 b6  : a000000100040e00 b7  : a00000010000b730
-f6  : 1003e45b3373c16c02344 f7  : 1003e9e3779b97f4a7c16
-f8  : 1003e0a00000010001426 f9  : 10006c7fffffffd73ea5c
-f10 : 100068fffffffff700000 f11 : 1003e0000000000000090
-r1  : a000000100e9d010 r2  : a000000100bbe950 r3  : a000000100bbc860
-r8  : 0000000000000000 r9  : 0000000000000000 r10 : a000000100ae0cf4
-r11 : 0000000000000000 r12 : a000000100aef100 r13 : a000000100ae0000
-r14 : 0000000000000014 r15 : a000000100aef190 r16 : a000000100aef198
-r17 : a000000100cb3e50 r18 : a000000100aef17c r19 : a000000100aef170
-r20 : 0000000000000000 r21 : 0000000000000000 r22 : a000000100aef170
-r23 : a000000100aef174 r24 : 000000000000000c r25 : a000000100aef180
-r26 : a000000100aef174 r27 : 0000000000000000 r28 : 0000000000000000
-r29 : a000000100aef178 r30 : 000000007fffffff r31 : 000000000000000c
-
+> On Mon, Jun 23, 2008 at 8:13 PM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > On Monday 23 June 2008 23:05, Paul E. McKenney wrote:
+> >> On Mon, Jun 23, 2008 at 09:54:52PM +1000, Nick Piggin wrote:
+> >> > On Monday 23 June 2008 13:51, Ryan Hope wrote:
+> >> > > well i get the hardlock on -mm with out using reiser4, i am pretty
+> >> > > sure is swap related
+> >> >
+> >> > The guys seeing hangs don't use PREEMPT_RCU, do they?
+> >> >
+> >> > In my swapping tests, I found -mm3 to be stable with classic RCU, but
+> >> > on a hunch, I tried PREEMPT_RCU and it crashed a couple of times rather
+> >> > quickly. First crash was in find_get_pages so I suspected lockless
+> >> > pagecache doing something subtly wrong with the RCU API, but I just got
+> >> > another crash in __d_lookup:
+> >>
+> >> Could you please send me a repeat-by?  (At least Alexey is no longer
+> >> alone!)
+> >
+> > OK, I had DEBUG_PAGEALLOC in the .config, which I think is probably
+> > important to reproduce it (but the fact that I'm reproducing oopses
+> > with << PAGE_SIZE objects like dentries and radix tree nodes indicates
+> > that there is even more free-before-grace activity going undetected --
+> > if you construct a test case using full pages, it might become even
+> > easier to detect with DEBUG_PAGEALLOC).
+> >
+> > 2 socket, 8 core x86 system.
+> >
+> > I mounted two tmpfs filesystems, one contains a single large file
+> > which is formatted as 1K block size ext3 and mounted loopback, the
+> > other is used directly. Linux kernel source is unpacked on each mount
+> > and concurrent make -j128 on each. This pushes it pretty hard into
+> > swap. Classic RCU survived another 5 hours of this last night.
+> >
+> > But that's a fairly convoluted test for an RCU problem. I expect it
+> > should be easier to trigger with something more targetted...
+> >
