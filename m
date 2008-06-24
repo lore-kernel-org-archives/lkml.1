@@ -1,43 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbYFXA2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbYFXA3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754602AbYFXA2r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 20:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbYFXA2k
+	id S1756189AbYFXA3T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 20:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755101AbYFXA3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 20:28:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54073 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751015AbYFXA2j (ORCPT
+	Mon, 23 Jun 2008 20:29:05 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:64283 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752610AbYFXA3D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 20:28:39 -0400
-Date: Mon, 23 Jun 2008 17:27:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: tzanussi@gmail.com, penberg@cs.helsinki.fi, torvalds@linux-foundation.org,
-       compudj@krystal.dyndns.org, vegard.nossum@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] Full conversion to early_initcall() interface,
- remove old interface.
-Message-Id: <20080623172742.be332a53.akpm@linux-foundation.org>
-In-Reply-To: <20080623153056.1862c14e@linux360.ro>
-References: <20080623153056.1862c14e@linux360.ro>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 23 Jun 2008 20:29:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=OmvoIGO2Z9O5DfnA1keyi2MynuDuakto0U/99m4hN+f2CfoWggu8ikEfYFJVtv2Kvj
+         /eGD0UTEnOxp8PXmzVeliwj1Hcp2vZt2+z9XhULxoExPjzdahP21+3hpU5xtD5Wcpbq0
+         L4WZ3OaDYYuxYxkwjMsTIxd4tWIaYkNKevTk0=
+Subject: [PATCH 2/3] m32r: Use packed struct rather than memmove for
+	unaligned access
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Hirokazu Takata <takata@linux-m32r.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 23 Jun 2008 17:28:59 -0700
+Message-Id: <1214267339.21092.57.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jun 2008 15:30:56 +0300
-Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro> wrote:
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+﻿There are only 3 arches that use the memmove implementation, do you see
+any problems with using the packed struct implementation so the memmove
+version could be removed?
 
-> A previous patch added the early_initcall(), to allow a cleaner hooking of
-> pre-SMP initcalls. Now we remove the older interface, converting all
-> existing users to the new one.
+ include/asm-m32r/unaligned.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-The patch failed to convert init_call_single_data() because you're
-working against a two-month-old codebase.  Patches against linux-next
-are more appropriate, particularly late in -rc.
+diff --git a/include/asm-m32r/unaligned.h b/include/asm-m32r/unaligned.h
+index 377eb20..86ea884 100644
+--- a/include/asm-m32r/unaligned.h
++++ b/include/asm-m32r/unaligned.h
+@@ -2,13 +2,13 @@
+ #define _ASM_M32R_UNALIGNED_H
+ 
+ #if defined(__LITTLE_ENDIAN__)
+-# include <linux/unaligned/le_memmove.h>
++# include <linux/unaligned/le_struct.h>
+ # include <linux/unaligned/be_byteshift.h>
+ # include <linux/unaligned/generic.h>
+ # define get_unaligned	__get_unaligned_le
+ # define put_unaligned	__put_unaligned_le
+ #else
+-# include <linux/unaligned/be_memmove.h>
++# include <linux/unaligned/be_struct.h>
+ # include <linux/unaligned/le_byteshift.h>
+ # include <linux/unaligned/generic.h>
+ # define get_unaligned	__get_unaligned_be
+-- 
+1.5.6.290.gc4e15
 
-Please check that what I committed actually worked, thanks.
+
