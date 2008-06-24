@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761671AbYFXRUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbYFXRZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761671AbYFXRUk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 13:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761517AbYFXRUV
+	id S1758938AbYFXRZV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 13:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYFXRZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 13:20:21 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:7040 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761514AbYFXRUT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 13:20:19 -0400
-Subject: [PATCH] fix to putback_lru_page()/unevictable page handling rework
-	v3
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
-       Rik van Riel <riel@redhat.com>
-In-Reply-To: <20080624184122.D838.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080621185408.E832.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080624184122.D838.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 24 Jun 2008 13:19:47 -0400
-Message-Id: <1214327987.6563.22.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Tue, 24 Jun 2008 13:25:09 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:49758 "EHLO pardus.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751426AbYFXRZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 13:25:08 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Dave Jones <davej@redhat.com>
+Subject: Intel 8100 Error inserting acpi_cpufreq
+Date: Tue, 24 Jun 2008 20:25:01 +0300
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200806242025.04252.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PATCH fix to rework of putback_lru_page locking.
+Hi;
 
-Against:  26-rc5-mm3 atop Kosaki Motohiro's v3 rework of Kamezawa
-Hiroyuki's putback_lru_page rework patch.
+We received a bug report from one of our users, reporter says "modprobe acpi-cpufreq" ends up with following
 
-'lru' was not being set to 'UNEVICTABLE when page was, in fact,
-unevictable [really "nonreclaimable" :-)], so retry would never
-happen, and culled pages never counted.
+FATAL: Error inserting acpi_cpufreq (/lib/modules/2.6.25.5-97/kernel/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.ko):
+No such device
 
-Also, redundant mem_cgroup_move_lists()--one with incorrect 'lru',
-in the case of unevictable pages--messes up memcontroller tracking [I think].
+and after that try dmesg [1] starts to show
 
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+[...]
+ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
+padlock: VIA PadLock not detected.
+wlan0: no IPv6 routers present
+ACPI Error (psargs-0355): [\_PR_.CPU0._PSS] Namespace lookup failure, AE_NOT_FOUND
+ACPI Error (psparse-0537): Method parse/execution failed [\_PR_.CPU1._PSS] (Node f74c7060), AE_NOT_FOUND
+ACPI Exception (processor_perflib-0255): AE_NOT_FOUND, Evaluating _PSS  [20070126]
+[...]
 
- mm/vmscan.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Although original report against 2.6.25.5 reporter also tried 2.6.25.8 without success.
 
-Index: linux-2.6.26-rc5-mm3/mm/vmscan.c
-===================================================================
---- linux-2.6.26-rc5-mm3.orig/mm/vmscan.c	2008-06-23 11:45:26.000000000 -0400
-+++ linux-2.6.26-rc5-mm3/mm/vmscan.c	2008-06-24 12:45:15.000000000 -0400
-@@ -514,8 +514,8 @@ redo:
- 		 * Put unevictable pages directly on zone's unevictable
- 		 * list.
- 		 */
-+		lru = LRU_UNEVICTABLE;
- 		add_page_to_unevictable_list(page);
--		mem_cgroup_move_lists(page, LRU_UNEVICTABLE);
- 	}
- 
- 	mem_cgroup_move_lists(page, lru);
+Any tips really appreciated and if anything else is needed please just tell...
 
+[1] http://bugs.pardus.org.tr/attachment.cgi?id=2801
 
+Cheers
+-- 
+S.Çağlar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
