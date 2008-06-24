@@ -1,67 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760971AbYFXQsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbYFXQu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760971AbYFXQsR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 12:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbYFXQsG
+	id S1758284AbYFXQu4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 12:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbYFXQut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 12:48:06 -0400
-Received: from eucd.info ([88.191.250.43]:34521 "EHLO snail.fsffrance.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751280AbYFXQsF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 12:48:05 -0400
-X-Greylist: delayed 1361 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Jun 2008 12:48:05 EDT
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: linux-kernel@vger.kernel.org
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: [PATCH] alpha: Fix percpu for !SMP
-Date: Tue, 24 Jun 2008 18:25:12 +0200
-Message-Id: <59ea9d21fca74a2e8ffec8384815d7c54c8b4a5c.1214324538.git.segher@kernel.crashing.org>
-X-Mailer: git-send-email 1.5.5.1.g377d9.dirty
+	Tue, 24 Jun 2008 12:50:49 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:26015 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751072AbYFXQus (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 12:50:48 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5324"; a="4183947"
+Message-ID: <486125E5.7020209@qualcomm.com>
+Date: Tue, 24 Jun 2008 09:50:45 -0700
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: "Daniel K." <dk@uw.no>, mingo@elte.hu,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Jackson <pj@sgi.com>, Gregory Haskins <ghaskins@novell.com>
+Subject: Re: RT-Scheduler/cgroups: Possible overuse of resources assigned
+ via cpu.rt_period_us and cpu.rt_runtime_us
+References: <485917CF.1010401@uw.no> <1213799836.16944.244.camel@twins>	 <486090DC.7010705@qualcomm.com> <1214301185.4351.8.camel@twins>
+In-Reply-To: <1214301185.4351.8.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 9267b4b3880d00dc2dab90f1d817c856939114f7 introduced a
-percpu.h for alpha.  It didn't define PER_CPU_ATTRIBUTES for
-the non-SMP case, leading to build failures for such a config
-(e.g., the alpha defconfig).
+Peter Zijlstra wrote:
+> On Mon, 2008-06-23 at 23:14 -0700, Max Krasnyansky wrote:
+> 
+>> That seems too complicated :). There is no need to mount them separately.
+> 
+> Mounting them independently gives you much greater flexibility.
+> 
+> You quickly run into overlapping cpu sets if you want multiple groups on
+> the isolated part.
 
-Fix this by defining PER_CPU_ATTRIBUTES to empty at the end of
-asm-alpha/percpu.h if it wasn't already defined, just like the
-asm-generic version does.  The SMP && !MODULE case can drop its
-own definition now as well.
+Sure, it is more flexible but for simple cases it's more confusing.
 
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
----
-
-This is needed for 2.6.26, it's a regression fix.
-
- include/asm-alpha/percpu.h |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/include/asm-alpha/percpu.h b/include/asm-alpha/percpu.h
-index 82e8a94..c3e2a1c 100644
---- a/include/asm-alpha/percpu.h
-+++ b/include/asm-alpha/percpu.h
-@@ -28,7 +28,6 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
- 
- #ifndef MODULE
- #define SHIFT_PERCPU_PTR(var, offset) RELOC_HIDE(&per_cpu_var(var), (offset))
--#define PER_CPU_ATTRIBUTES
- #else
- /*
-  * To calculate addresses of locally defined variables, GCC uses 32-bit
-@@ -73,4 +72,8 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
- 
- #define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu_var(name)
- 
-+#ifndef PER_CPU_ATTRIBUTES
-+#define PER_CPU_ATTRIBUTES
-+#endif
-+
- #endif /* __ALPHA_PERCPU_H */
--- 
-1.5.5.1.g377d9.dirty
-
+Max
