@@ -1,109 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbYFXEeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbYFXEpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753853AbYFXEeY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 00:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbYFXEeO
+	id S1753332AbYFXEpv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 00:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYFXEpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 00:34:14 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:46330 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750836AbYFXEeM (ORCPT
+	Tue, 24 Jun 2008 00:45:41 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:32919 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208AbYFXEpk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 00:34:12 -0400
-Message-ID: <48607931.20908@linux.vnet.ibm.com>
-Date: Tue, 24 Jun 2008 10:03:53 +0530
-From: Varun Chandramohan <varunc@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Tue, 24 Jun 2008 00:45:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=oLzSnzTDyMscKYpTvRmpN9OIjFeiBO0hxKOhDEx7TmZUzK//NyHKkpD8uUMmVETeSv
+         3eLoBHArY3bd3Zfc4w2fiNK3MqyWd+vqjs/7yHNkNVJReGdMqlHh8PPvkx4g7PlLw9eI
+         RWWfKMUNEtc7VI6kIg5iX6KAuiHe0Cdq0jjSs=
+Message-ID: <48607BE7.2060203@gmail.com>
+Date: Tue, 24 Jun 2008 13:45:27 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: vatsa@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       e1000-devel@lists.sourceforge.net, jbarnes@virtuousgeek.org,
-       greg@kroah.com, netdev@vger.kernel.org
-Subject: Re: Strange problem with e1000 driver - ping packet loss
-References: <fa.QBOn2aWyqGnBJJticG4h09lpxD0@ifi.uio.no> <485A9678.5000707@shaw.ca>
-In-Reply-To: <485A9678.5000707@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Daniel Lezcano <dlezcano@fr.ibm.com>
+CC: Benjamin Thery <benjamin.thery@bull.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Biederman <ebiederm@xmission.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 05/11] sysfs: sysfs_chmod_file handle multiple superblocks
+References: <20080618170729.808539948@theryb.frec.bull.fr> <20080618170730.853353875@theryb.frec.bull.fr> <485DD93A.6020600@gmail.com> <486018CB.80005@fr.ibm.com>
+In-Reply-To: <486018CB.80005@fr.ibm.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cc'ing netdev
+Hello,
 
-Robert Hancock wrote:
-> Srivatsa Vaddagiri wrote:
->> Hi,
->>     I happened to look at a system which was exhibiting poor ping
->> performance with e1000 driver (in 2.6.25) and had some questions 
->> regarding that.
->>
->> Ping test was done between the system and a laptop, which were connected
->> using a straight ethernet cable. Ping reported round trip times running
->> into seconds (!) and also packet loss.
->>
->> Upon some investigation, I found that the interrupt count field in
->> /proc/interrupts (associated with eth1) is not incrementing as fast as
->> it should. Moreover eth1 interrupt line is shared with the hard disk
->> interrupt (ata_piix) as below:
->>
->> # cat /proc/interrupts
->>
->> .
->>
->>  10:       2296    XT-PIC-XT        ata_piix, eth0, eth1
->>
->> .
->>
->> IRQ10 is thus being shared by both the hard disk and eth0/eth1.
->>
->> Here's the strange observation I made:
->>
->> When I initiate some disk activity (ex: dd if=/dev/zero 
->> of=/tmp/file), ping performance suddently shot up (round trip time in 
->> double digits ms, 0% packet loss)! I presume this is because that 
->> e1000 intr handler is called
->> whenever there was a interrupt from hard disk on IRQ10, which polled
->> NIC and processed packets immediately.
->>
->> As soon as I kill the background disk-write intensive job, ping
->> performance again dropped.
->>
->> This meant that e1000 NIC is having trouble interrupting the OS.
->>
->> Before I could jump up and say this is a hardware issue, I was told
->> that Windows works just fine on the server (and as well as 2.4 kernel,
->> which I couldnt verify) :(
->>
->>
->> Some more observations:
->>
->> 1. I tried setting e1000 parameters (RxIntDelay=0, RxAbsIntDelay=0,
->>    TxIntDelay=0, TxAbsIntDelay=0, InterruptThrottleRate=0). None of
->>    them helped.
->>
->> 2. When ping performance was poor, readprofile showed that system
->>    is mostly idle. This confirms that OS is not getting very
->>    frequenty interrupts from eth1 and hence idling.
->>
->> 3. When ping performance was poor, ethtool -S eth1 showed that
->>    rx_bytes was incrementing at a good pace, showing that the    NIC 
->> was receiving ping responses back, but not handing them over
->>    to OS for further processing
->>
->> 4. e1000 chipset is 82546GB
->>
->> 5. e1000e driver didnt work at all (it doesnt recognize the cards).
->>
->>
->> Any advice on how to fix this problem?
->
-> Can you post your dmesg output from bootup with no special options 
-> (noacpi, etc.) enabled?
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Daniel Lezcano wrote:
+>> I think it would be great if sysfs_chmod_file can do all-or-nothing
+>> instead of failing half way through but given the interface of
+>> notify_change(), it could be difficult to implement.  Any ideas?
+> 
+> Is it acceptable to queue the notifications in a list until we are in
+> the loop and loop again to notify when exiting the first loop without
+> error ?
 
+Can you please take a look at the following patch?
+
+http://article.gmane.org/gmane.linux.file-systems/24484
+
+Which replaces notify_change() call to two calls to sysfs_setattr() and
+fsnotify_change().  The latter never fails and the former should always
+succeed if inode_change_ok() succeeds (inode_setattr() never fails
+unless the size is changing), so I think the correct thing to do is...
+
+* Separate out sysfs_do_setattr() which doesn't do inode_change_ok() and
+just sets the attributes.  Making it a void function which triggers
+WARN_ON() when inode_setattr() fails would be a good idea.
+
+* Implement sysfs_chmod_file() in similar way rename/move are
+implemented - allocate all resources and check conditions and then iff
+everything looks okay commit the operation by calling sysfs_do_setattr().
+
+How does that sound?
+
+Thanks.
+
+-- 
+tejun
