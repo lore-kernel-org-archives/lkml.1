@@ -1,76 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbYFXEpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197AbYFXE7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753332AbYFXEpv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 00:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYFXEpl
+	id S1753197AbYFXE7h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 00:59:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbYFXE72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 00:45:41 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:32919 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751208AbYFXEpk (ORCPT
+	Tue, 24 Jun 2008 00:59:28 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:31696 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750939AbYFXE71 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 00:45:40 -0400
+	Tue, 24 Jun 2008 00:59:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=oLzSnzTDyMscKYpTvRmpN9OIjFeiBO0hxKOhDEx7TmZUzK//NyHKkpD8uUMmVETeSv
-         3eLoBHArY3bd3Zfc4w2fiNK3MqyWd+vqjs/7yHNkNVJReGdMqlHh8PPvkx4g7PlLw9eI
-         RWWfKMUNEtc7VI6kIg5iX6KAuiHe0Cdq0jjSs=
-Message-ID: <48607BE7.2060203@gmail.com>
-Date: Tue, 24 Jun 2008 13:45:27 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QmH2Qi3AjDh3oAW3a3chPuzj5f5NE5EF7Ja7j6KAIqlvzADFmKoN1mjnfK+mX300YA
+         9DwIliIOWdQqP0sk6Id/ldHbnq8IvoZJWUKWPmozg7ZLj/QHwen2aKno/SHvLv7IQOml
+         j1j1BRjNCwW8yZ0/G5dBLvYzcZ/LjRB7/Mq14=
+Date: Tue, 24 Jun 2008 00:59:19 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: "Alfred E. Heggestad" <aeh@db.org>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] input: driver for USB VoIP phones with CM109 chipset
+Message-ID: <20080624045919.GA18612@anvil.corenet.prv>
+References: <47AB5012.20509@db.org> <20080207165144.ZZRA012@mailhub.coreip.homeip.net> <485D7F65.4080700@db.org>
 MIME-Version: 1.0
-To: Daniel Lezcano <dlezcano@fr.ibm.com>
-CC: Benjamin Thery <benjamin.thery@bull.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Biederman <ebiederm@xmission.com>, Serge Hallyn <serue@us.ibm.com>,
-       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 05/11] sysfs: sysfs_chmod_file handle multiple superblocks
-References: <20080618170729.808539948@theryb.frec.bull.fr> <20080618170730.853353875@theryb.frec.bull.fr> <485DD93A.6020600@gmail.com> <486018CB.80005@fr.ibm.com>
-In-Reply-To: <486018CB.80005@fr.ibm.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <485D7F65.4080700@db.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi Alfred,
 
-Daniel Lezcano wrote:
->> I think it would be great if sysfs_chmod_file can do all-or-nothing
->> instead of failing half way through but given the interface of
->> notify_change(), it could be difficult to implement.  Any ideas?
-> 
-> Is it acceptable to queue the notifications in a list until we are in
-> the loop and loop again to notify when exiting the first loop without
-> error ?
+On Sun, Jun 22, 2008 at 12:23:33AM +0200, Alfred E. Heggestad wrote:
+> Hi Dmitry
+>
+> Dmitry Torokhov wrote:
+>> Hi Alfred,
+>>
+>> On Thu, Feb 07, 2008 at 07:38:10PM +0100, Alfred E. Heggestad wrote:
+>>> From: Alfred E. Heggestad <aeh@db.org>
+>>>
+>>> This driver adds support for USB VoIP phones using the CM109 chipset,
+>>> such as Komunikate KIP-1000 and Genius G-talk. Keypad is scanned and
+>>> events are reported to the input subsystem. The buzzer can be activated
+>>> by sending SND_TONE or SND_BELL to the input device. The phone keymap
+>>> can be selected in run-time by using the "phone" module parameter.
+>>> The driver has been tested with linux 2.6.24 on i386, and also tested
+>>> to build cleanly on AMD64.
+>>> More testing and code review is welcome..
+>>>
+>>
+>> For a long time I was sitting on the patch not sure what to do about
+>> the pound key, but I think we need to allocate separate keycodes for
+>> remote controls and phones that work regardless of users keymap.
+>>
+>
+> do you think we could add a new KEY_KPPOUND to include/linux/input.h ?
+>
+> I just had a quick look in latest git, but could not find anything..
+> do you want me to define a key and make a patch for you?
+>
+I was pretty sure I have commited that patch a few weeks ago but I was
+wrong. Anyway, please take a look at the master branch of my input tree
+on git.kernel.org, it has a few new keycode definitions I woudl like us
+to start using.
 
-Can you please take a look at the following patch?
+> BTW, for now I have defined a work-around in my cm109 driver:
+>
+> #ifndef KEY_KPPOUND
+> #define KEY_KPPOUND (KEY_LEFTSHIFT | KEY_3 << 8)
+> #endif
+>
+> that hack was "copied" from drivers/input/misc/yealink.c
+>
+>         case 0x32: return KEY_LEFTSHIFT |
+>                           KEY_3 << 8;   /*   #          */
+>
 
-http://article.gmane.org/gmane.linux.file-systems/24484
-
-Which replaces notify_change() call to two calls to sysfs_setattr() and
-fsnotify_change().  The latter never fails and the former should always
-succeed if inode_change_ok() succeeds (inode_setattr() never fails
-unless the size is changing), so I think the correct thing to do is...
-
-* Separate out sysfs_do_setattr() which doesn't do inode_change_ok() and
-just sets the attributes.  Making it a void function which triggers
-WARN_ON() when inode_setattr() fails would be a good idea.
-
-* Implement sysfs_chmod_file() in similar way rename/move are
-implemented - allocate all resources and check conditions and then iff
-everything looks okay commit the operation by calling sysfs_do_setattr().
-
-How does that sound?
-
-Thanks.
+Yeah, well, sometimes we let suboptimal solutions sneak in... our fault.
 
 -- 
-tejun
+Dmitry
