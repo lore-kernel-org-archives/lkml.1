@@ -1,53 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbYFXUG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbYFXUV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbYFXUG3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 16:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYFXUGT
+	id S1755215AbYFXUV5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 16:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbYFXUVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 16:06:19 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:41651 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753233AbYFXUGS (ORCPT
+	Tue, 24 Jun 2008 16:21:46 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:16995 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753000AbYFXUVp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 16:06:18 -0400
-To: torvalds@linux-foundation.org
-CC: miklos@szeredi.hu, jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-reply-to: <alpine.LFD.1.10.0806241246240.2926@woody.linux-foundation.org>
-	(message from Linus Torvalds on Tue, 24 Jun 2008 12:47:27 -0700 (PDT))
-Subject: Re: [rfc patch 3/4] splice: remove confirm from
- pipe_buf_operations
-References: <20080621154607.154640724@szeredi.hu> <20080621154726.494538562@szeredi.hu> <20080624080440.GJ20851@kernel.dk> <E1KB4Id-0000un-PV@pomaz-ex.szeredi.hu> <20080624111913.GP20851@kernel.dk> <E1KB6p9-0001Gq-Fd@pomaz-ex.szeredi.hu>
- <alpine.LFD.1.10.0806241022120.2926@woody.linux-foundation.org> <E1KBDBg-0002XZ-DG@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0806241129590.2926@woody.linux-foundation.org> <E1KBDpg-0002bR-3X@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0806241216350.2926@woody.linux-foundation.org>
- <E1KBE7p-0002eT-CJ@pomaz-ex.szeredi.hu> <E1KBEA8-0002ey-II@pomaz-ex.szeredi.hu> <E1KBEFY-0002fh-5m@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0806241246240.2926@woody.linux-foundation.org>
-Message-Id: <E1KBEmA-0002m2-EF@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 24 Jun 2008 22:06:02 +0200
+	Tue, 24 Jun 2008 16:21:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=UNpOQ98UyYRRbUbZS4toLY3e9234GBo7ABt6oJlAGk4AbGmDu8u3TetI4GUAXtmPEH
+         nUkiSw8YaSFiD02yuTztd4MWADxJDvgvtZsQ+wJPLeaTTwN5byjW3+5Mq+bmi6jM2/nJ
+         JLE29+GAf9TnrI53ZVIybbkGDDDp0EjnKZHxQ=
+Message-ID: <86802c440806241321g6c5cd64eoe504d6029de6fe5a@mail.gmail.com>
+Date: Tue, 24 Jun 2008 13:21:44 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Bernhard Walle" <bwalle@suse.de>, "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 2/3] e820_update_range(): Allow specifying ULLONG_MAX
+Cc: x86@kernel.org, vgoyal@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <86802c440806241301x4d124335h2888de9e915208ae@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1214318125-32619-1-git-send-email-bwalle@suse.de>
+	 <1214318125-32619-3-git-send-email-bwalle@suse.de>
+	 <86802c440806241301x4d124335h2888de9e915208ae@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 
-> > Or it can only happen if there was an I/O error on reading the page.
-> 
-> Now, IO errors are something else. They should have the PG_error bit set, 
-> and we should just return EIO or something.
+On Tue, Jun 24, 2008 at 1:01 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Tue, Jun 24, 2008 at 7:35 AM, Bernhard Walle <bwalle@suse.de> wrote:
+>> Allow the specifying of ULLONG_MAX to limit the whole E820 map from the
+>> specified start to the end. Without the patch, there would be integer
+>> overflows.
+>>
+>>
+>> Signed-off-by: Bernhard Walle <bwalle@suse.de>
+>> ---
+>>  arch/x86/kernel/e820.c |   11 +++++++++--
+>>  1 files changed, 9 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+>> index e466073..7d1109b 100644
+>> --- a/arch/x86/kernel/e820.c
+>> +++ b/arch/x86/kernel/e820.c
+>> @@ -397,6 +397,9 @@ int __init copy_e820_map(struct e820entry *biosmap, int nr_map)
+>>        return __copy_e820_map(biosmap, nr_map);
+>>  }
+>>
+>> +/*
+>> + * Pass size == ULLONG_MAX to update until the end.
+>> + */
+>>  u64 __init e820_update_range(u64 start, u64 size, unsigned old_type,
+>>                                unsigned new_type)
+>>  {
+>> @@ -412,14 +415,18 @@ u64 __init e820_update_range(u64 start, u64 size, unsigned old_type,
+>>                        continue;
+>>                /* totally covered? */
+>>                if (ei->addr >= start &&
+>> -                   (ei->addr + ei->size) <= (start + size)) {
+>> +                   (((ei->addr + ei->size) <= (start + size)) ||
+>> +                           (size == ULLONG_MAX))) {
+>>                        ei->type = new_type;
+>>                        real_updated_size += ei->size;
+>>                        continue;
+>>                }
+>>                /* partially covered */
+>>                final_start = max(start, ei->addr);
+>> -               final_end = min(start + size, ei->addr + ei->size);
+>> +               if (size == ULLONG_MAX)
+>> +                       final_end = ei->addr + ei->size;
+>> +               else
+>> +                       final_end = min(start + size, ei->addr + ei->size);
+>>                if (final_start >= final_end)
+>>                        continue;
+>>                ei->size -= final_end - final_start;
+>> --
+>
+>
+> it seems we should let the caller to use
+> e820_update_range(start, ULLONG_MAX - size,....)
+>
+> so you don't need to touch this func.
 
-Linus, you're right (as always), but see where this is going?  A rare
-problem (splice() returning short count because of an invalidated
-page) is becoming an even more rare problem (splice() returning
-rubbish instead of an error, if ->readpage() failed, and filesystem
-forgot to set PG_error).  And it won't show up in any other paths,
-because the generic_file_aio_read() path will just check
-PageUptodate(), and return -EIO if not.
+or add sanitary check before using size in this func like
+if (size > ULLONG_MAX - start)
+     size = ULLONG_MAX - start;
 
-OK, maybe we should add a WARN_ON(!PageError()) for the
-!PageUptodate() case in generic_file_aio_read(), but that could still
-leave some filesystems broken for a long time which experience I/O
-errors rarely.
+e820_remove_range need to the same thing
 
-So I think the only sane solution here is to remove
-ClearPageUptodate().  But that's a VM people's call, I don't have
-enough insight into that.
-
-Miklos
+YH
