@@ -1,123 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761342AbYFXQkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761559AbYFXQl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761342AbYFXQkk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 12:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759846AbYFXQkS
+	id S1761559AbYFXQl6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 12:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759655AbYFXQlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 12:40:18 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:12656 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759516AbYFXQkQ (ORCPT
+	Tue, 24 Jun 2008 12:41:50 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:63991 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756665AbYFXQls (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 12:40:16 -0400
-Date: Tue, 24 Jun 2008 18:39:45 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Ryan Mallon <ryan@bluewatersys.com>
-Cc: David Brownell <david-b@pacbell.net>, Uli Luckas <u.luckas@road.de>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>, i2c@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] Earlier I2C initialization
-Message-ID: <20080624183945.367c88cf@hyperion.delvare>
-In-Reply-To: <485042A6.3030705@bluewatersys.com>
-References: <200806091541.43899.u.luckas@road.de>
-	<485031D5.3020606@bluewatersys.com>
-	<20080611141852.3ccd89ea@hyperion.delvare>
-	<200806111327.09298.david-b@pacbell.net>
-	<20080611225416.169574a0@hyperion.delvare>
-	<485042A6.3030705@bluewatersys.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jun 2008 12:41:48 -0400
+From: Timur Tabi <timur@freescale.com>
+To: linux-kernel@vger.kernel.org, andi@firstfloor.org, randy.dunlap@oracle.com,
+       corbet@lwn.net, torvalds@linux-foundation.org
+Subject: [PATCH] Add alloc_pages_exact() and free_pages_exact()
+Date: Tue, 24 Jun 2008 11:40:49 -0500
+Message-Id: <1214325649-26075-1-git-send-email-timur@freescale.com>
+X-Mailer: git-send-email 1.5.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ryan,
+alloc_pages_exact() is similar to alloc_pages(), except that it allocates
+the minimum number of pages to fulfill the request.  This is useful if you
+want to allocate a very large buffer that is slightly larger than an
+even power-of-two number of pages.  In that case, alloc_pages() will waste
+a lot of memory.
 
-Sorry for the late answer.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-On Thu, 12 Jun 2008 09:24:54 +1200, Ryan Mallon wrote:
-> Jean Delvare wrote:
-> > On Wed, 11 Jun 2008 13:27:09 -0700, David Brownell wrote:
-> >> There's no rule saying that subsystem initialization may not include
-> >> the essential drivers -- in this case, i2c_adapter drivers.  PCI hubs
-> >> and bridges are certainly initialized very early, before module_init
-> >> code runs...
-> > 
-> > Care to point me to actual code to backup this "certainly"?
-> 
-> ryan@okiwi:pci$ grep initcall * -R
-> pci-acpi.c:arch_initcall(acpi_pci_init);
-> pci.c:device_initcall(pci_init);
-> pci-driver.c:postcore_initcall(pci_driver_init);
-> pcie/aspm.c:fs_initcall(pcie_aspm_init);
-> pci-sysfs.c:late_initcall(pci_sysfs_init);
-> probe.c:postcore_initcall(pcibus_class_init);
-> proc.c:__initcall(pci_proc_init);
-> 
-> At a quick glance (I don't know much about the PCI subsystem) at least
-> the bus and class are registered early on.
+I have a video driver that wants to allocate a 5MB buffer.  alloc_pages()
+will waste 3MB of physically-contiguous memory.  Therefore, I would
+like to see alloc_pages_exact() added to 2.6.27.
 
-Ah, my bad. I had been grepping for subsys_initcall, instead of just
-_initcall. It's clearer now.
+Please note that I am not a Linux VM expert.  I wrote these functions based
+on guidance from Andi Kleen.  I have no familiarity with NUMA, so I don't know
+how to handle that.  Any and all suggestions are welcome.
 
-> > I think it makes a lot of sense to initialize the core of a subsystem
-> > early, so that all devices and drivers can be registered. This doesn't
-> > imply registering the hardware bus drivers too, even though in some
-> > cases it is also needed. I doubt that whoever designed subsys_initcall
-> > meant it to be used for all bus drivers, otherwise he/she would have
-> > named it, say, busdrv_initcall.
-> 
-> At least in the case of i2c on many embedded devices we want the bus
-> driver early, but many other i2c bus drivers don't need this. There
-> seem to be two main options:
-> 
-> 1) Use subsys_initcall on the ones that may need to be early (current
-> approach).
-> 2) Split the bus drivers into two directories, say drivers/i2c-early and
-> drivers/i2c, and put the former earlier in the link order.
+ include/linux/gfp.h |    3 ++
+ mm/page_alloc.c     |   53 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 56 insertions(+), 0 deletions(-)
 
-I don't like option 2 at all. drivers/i2c/early could be, but not
-drivers/i2c-early.
-
-> Maybe a decent compromise approach is to move the drivers which are used
-> on embedded systems to a new directory such as drivers/i2c/embedded or
-> drivers/i2c/soc and then only use subsys_initcall on bus drivers in that
-> directory?
-
-If we are going to keep using subsys_initcall in bus drivers, then
-moving the bus drivers using it to a separate directory is not needed.
-Which doesn't mean we don't want to split the i2c bus drivers into
-subdirectories for other reasons, but I want to see this as a separate
-issue. BTW, I started categorizing the different types of i2c bus
-drivers:
-http://khali.linux-fr.org/devel/linux-2.6/jdelvare-i2c/i2c-group-bus-drivers.patch
-If you want to help with embedded stuff or SOC or whatever makes sense
-to group together, please do! For now, everything I am not familiar
-with is in group "Others".
-
-> If all of the i2c drivers then go in the right place, ie drivers/gpio
-> instead of drivers/i2c/chips, then only the bus drivers, not the device
-> drivers, should ever need to use subsys_initcall right?
-
-If drivers/gpio and everything else which may be needed early are moved
-early in the linking order, yes. Otherwise they will need to use
-subsys_initcall too, but I seem to understand that it might not be
-sufficient, if other drivers depend on them and they are also using
-subsys_initcall.
-
-> > But don't get me wrong: if subsys_initcall is the way to go, that's
-> > alright with me, that's way less work than having to move drivers to
-> > different directories and fixing the link order.
-> 
-> I don't think multiple directories for i2c at the drivers/ level is the
-> right way to go, that just going to get confusing. I think moving the
-> i2c bus drivers which may be needed early to a new sub directory under
-> drivers/i2c and then tidying up the Kconfig to categorise the bus
-> drivers as embedded (soc), pc, external, etc.
-
-I agree.
-
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index b414be3..1054801 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -215,6 +215,9 @@ extern struct page *alloc_page_vma(gfp_t gfp_mask,
+ extern unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
+ extern unsigned long get_zeroed_page(gfp_t gfp_mask);
+ 
++void *alloc_pages_exact(size_t size, gfp_t gfp_mask);
++void free_pages_exact(void *virt, size_t size);
++
+ #define __get_free_page(gfp_mask) \
+ 		__get_free_pages((gfp_mask),0)
+ 
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 2f55295..08bf9d7 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1711,6 +1711,59 @@ void free_pages(unsigned long addr, unsigned int order)
+ 
+ EXPORT_SYMBOL(free_pages);
+ 
++/**
++ * alloc_pages_exact - allocate an exact number physically-contiguous pages.
++ * @size: the number of bytes to allocate
++ * @gfp_mask: GFP flags for the allocation
++ *
++ * This function is similar to alloc_pages(), except that it allocates the
++ * minimum number of pages to satisfy the request.  alloc_pages() can only
++ * allocate memory in power-of-two pages.
++ *
++ * This function is also limited by MAX_ORDER.
++ *
++ * Memory allocated by this function must be released by free_pages_exact().
++ */
++void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
++{
++	unsigned int order = get_order(size);
++	unsigned long addr;
++
++	addr = __get_free_pages(gfp_mask, order);
++	if (addr) {
++		unsigned long alloc_end = addr + (PAGE_SIZE << order);
++		unsigned long used = addr + PAGE_ALIGN(size);
++
++		split_page(virt_to_page(addr), order);
++		while (used < alloc_end) {
++			free_page(used);
++			used += PAGE_SIZE;
++		}
++	}
++
++	return (void *)addr;
++}
++EXPORT_SYMBOL(alloc_pages_exact);
++
++/**
++ * free_pages_exact - release memory allocated via alloc_pages_exact()
++ * @virt: the value returned by alloc_pages_exact.
++ * @size: size of allocation, same value as passed to alloc_pages_exact().
++ *
++ * Release the memory allocated by a previous call to alloc_pages_exact.
++ */
++void free_pages_exact(void *virt, size_t size)
++{
++	unsigned long addr = (unsigned long)virt;
++	unsigned long end = addr + PAGE_ALIGN(size);
++
++	while (addr < end) {
++		free_page(addr);
++		addr += PAGE_SIZE;
++	}
++}
++EXPORT_SYMBOL(free_pages_exact);
++
+ static unsigned int nr_free_zone_pages(int offset)
+ {
+ 	struct zoneref *z;
 -- 
-Jean Delvare
+1.5.5
+
