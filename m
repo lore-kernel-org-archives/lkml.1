@@ -1,76 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbYFXNSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbYFXNSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756029AbYFXNSU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 09:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbYFXNSN
+	id S1756867AbYFXNSx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 09:18:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbYFXNSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 09:18:13 -0400
-Received: from mailrelay003.isp.belgacom.be ([195.238.6.53]:44969 "EHLO
-	mailrelay003.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751254AbYFXNSM (ORCPT
+	Tue, 24 Jun 2008 09:18:45 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:37485 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752566AbYFXNSo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 09:18:12 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EAE+PYEhR8DvY/2dsb2JhbACBW7EY
-Date: Tue, 24 Jun 2008 15:18:07 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [WATCHDOG] hpwdt - remove CFLAGS
-Message-ID: <20080624131807.GA5712@infomag.infomag.iguana.be>
+	Tue, 24 Jun 2008 09:18:44 -0400
+Message-Id: <4860BBF2.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Tue, 24 Jun 2008 07:18:42 -0600
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Cc: <mingo@elte.hu>, <rostedt@goodmis.org>, <tglx@linutronix.de>,
+       "David Bahi" <DBahi@novell.com>, <linux-kernel@vger.kernel.org>,
+       <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH 3/3] sched: terminate newidle balancing once at
+	leastone task has moved over
+References: <20080623225645.31515.36393.stgit@lsg.lsg.lab.novell.com>
+ <20080623230450.31515.75112.stgit@lsg.lsg.lab.novell.com>
+ <1214302406.4351.23.camel@twins>
+In-Reply-To: <1214302406.4351.23.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+>>> On Tue, Jun 24, 2008 at  6:13 AM, in message <1214302406.4351.23.camel@twins>,
+Peter Zijlstra <peterz@infradead.org> wrote: 
+> On Mon, 2008-06-23 at 17:04 -0600, Gregory Haskins wrote:
+>> Inspired by Peter Zijlstra.
+>> 
+>> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+>> ---
+>> 
+>>  kernel/sched.c |    4 ++++
+>>  1 files changed, 4 insertions(+), 0 deletions(-)
+>> 
+>> diff --git a/kernel/sched.c b/kernel/sched.c
+>> index 3efbbc5..c8e8520 100644
+>> --- a/kernel/sched.c
+>> +++ b/kernel/sched.c
+>> @@ -2775,6 +2775,10 @@ static int move_tasks(struct rq *this_rq, int 
+> this_cpu, struct rq *busiest,
+>>  				max_load_move - total_load_moved,
+>>  				sd, idle, all_pinned, &this_best_prio);
+>>  		class = class->next;
+>> +
+>> +		if (idle == CPU_NEWLY_IDLE && this_rq->nr_running)
+>> +			break;
+>> +
+>>  	} while (class && max_load_move > total_load_moved);
+>>  
+>>  	return total_load_moved > 0;
+> 
+> 
+> right,.. uhm, except that you forgot all the other fixes and
+> generalizations I had,..
 
-Please pull from 'master' branch of
-	git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
-or if master.kernel.org hasn't synced up yet:
-	master.kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+Heh...well I intentionally simplified it, but perhaps that is out of ignorance.  I did say "inspired by" ;)
 
-This will update the following files:
+> 
+> The LB_START/LB_COMPLETE stuff is needed to fix CFS load balancing. It
+> now always iterates the first sysctl_sched_nr_migrate tasks, and if it
+> doesn't find any there, just gives up - which isn't too big of a problem
+> with it set to 32, but if you drop it to 2/4 stuff starts valing apart.
+> 
+> And the break I had here, only checks classes above and equal to the
+> current class.
+> 
+> This again is needed when you have more classes.
 
- drivers/watchdog/Makefile |    1 -
- 1 file changed, 1 deletion(-)
+Im not sure I understand/agree here (unless you plan on having a class below sched_idle()??)
 
-with these Changes:
+The fact that we are going NEWLYIDLE to me implies that all the other classes are
+"above or equal".  And rq->nr_running approximates all the per-class vtable work
+that you had done to probe the higher classes.  We currently only hit this code when
+rq->nr_running == 0, so rq->nr_running !=0 seems like a logical termination
+condition.
 
-Author: Wim Van Sebroeck <wim@iguana.be>
-Date:   Tue Jun 24 13:09:26 2008 +0000
+I guess what I am not clear on is: "when would we be NEWLYIDLE in a higher class,
+yet have tasks populated in lower classes such at nr_running is non-zero".
+Additionally, even if we have that condition (e.g. with something like the EDF work you
+are doing, perhaps?), shouldn't we patch the advanced form of this logic when the rest
+of the code goes in?  For now, this seems like the most straight forward way to
+accomplish the goal.  But I could be missing something ;)
 
-    Revert "[WATCHDOG] hpwdt: Add CFLAGS to get driver working"
-    
-    After Linus fixed the inline assembly, the CFLAGS option is not
-    needed anymore.
-    
-    Signed-off-by: Thomas Mingarelli <Thomas.Mingarelli@hp.com>
-    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+Regards,
+-Greg
 
-The Changes can also be looked at on:
-	http://www.kernel.org/git/?p=linux/kernel/git/wim/linux-2.6-watchdog.git;a=summary
-
-For completeness, I added the overal diff below.
-
-Greetings,
-Wim.
-
-================================================================================
-diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-index 8662a6b..25b352b 100644
---- a/drivers/watchdog/Makefile
-+++ b/drivers/watchdog/Makefile
-@@ -68,7 +68,6 @@ obj-$(CONFIG_WAFER_WDT) += wafer5823wdt.o
- obj-$(CONFIG_I6300ESB_WDT) += i6300esb.o
- obj-$(CONFIG_ITCO_WDT) += iTCO_wdt.o iTCO_vendor_support.o
- obj-$(CONFIG_IT8712F_WDT) += it8712f_wdt.o
--CFLAGS_hpwdt.o += -O
- obj-$(CONFIG_HP_WATCHDOG) += hpwdt.o
- obj-$(CONFIG_SC1200_WDT) += sc1200wdt.o
- obj-$(CONFIG_SCx200_WDT) += scx200_wdt.o
