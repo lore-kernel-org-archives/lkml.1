@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760156AbYFXRTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758970AbYFXRUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760156AbYFXRTQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 13:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYFXRS7
+	id S1758970AbYFXRUT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 13:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYFXRUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 13:18:59 -0400
-Received: from styx.suse.cz ([82.119.242.94]:41430 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752674AbYFXRS6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 13:18:58 -0400
-Date: Tue, 24 Jun 2008 19:18:57 +0200
-From: Jan Kara <jack@suse.cz>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
-       Sami Liedes <sliedes@cc.hut.fi>
-Subject: Re: [PATCH] ext3: handle corrupted orphan list at mount
-Message-ID: <20080624171856.GH9959@duck.suse.cz>
-References: <20080607121940.8ee6044a.akpm@linux-foundation.org> <1214258200-16623-1-git-send-email-duaneg@dghda.com> <20080624160810.GC22586@atrey.karlin.mff.cuni.cz> <e9e943910806241016v743ce19s28bdf34177154799@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e9e943910806241016v743ce19s28bdf34177154799@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 24 Jun 2008 13:20:04 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:33988 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752136AbYFXRUD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 13:20:03 -0400
+Subject: merge conflicts with tip/master
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Tue, 24 Jun 2008 10:18:57 -0700
+Message-Id: <1214327937.27577.6.camel@promb-2n-dhcp368.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 24-06-08 18:16:21, Duane Griffin wrote:
-> 2008/6/24 Jan Kara <jack@suse.cz>:
-> >> +     /*
-> >> +      * If the orphans has i_nlinks > 0 then it should be able to be
-> >> +      * truncated, otherwise it won't be removed from the orphan list
-> >> +      * during processing and an infinite loop will result.
-> >> +      */
-> >> +     if (inode->i_nlink && !ext3_can_truncate(inode))
-> >> +             goto bad_orphan;
-> >> +
-> >  Maybe I miss something but shouldn't above rather be ||?
-> 
-> No, it is correct. If i_nlink == 0 the orphan will be deleted in the
-> cleanup loop by the iput. If i_nlink > 0 then ext3_truncate is called,
-> which usually calls ext3_orphan_del on the way out, thereby removing
-> the node from the orphan list. However, if it exits too early
-> (basically if the ext3_can_truncate check fails, although there are
-> other failure conditions such as OOM that can also cause it to exit
-> early) then it doesn't, hence we end up in the infinite loop. So the
-> check here says, if this node is not going to be deleted or truncated
-> then it is invalid.
-  Ah, OK, I forgot that you want to handle also truncation without deletion
-of the inode itself. Thanks for explanation.
+Hi Ingo,
 
-									Honza
+While working with tip/master...after following the steps in the readme
+@ http://people.redhat.com/mingo/tip.git/readme.txt
 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+I usually do any changes and manage them using "quilt". 
+Once the changes are pushed upstream, i do a "quilt pop"
+and generally try a "git pull" to check for any new changes, along with
+the change that was just pushed. 
+
+This method works fine for me with Linus's tree. 
+But with tip/master i usually get "merge conflicts"
+
+Am i doing something wrong over here...am i supposed to not use git pull
+for updating the local tip/master copy ? 
+
+Thanks,
+Alok
+
+
