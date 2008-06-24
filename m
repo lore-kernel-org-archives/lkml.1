@@ -1,161 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbYFXMPE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759788AbYFXMRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758058AbYFXMPE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 08:15:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbYFXMO4
+	id S1759788AbYFXMRT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 08:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbYFXMRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 08:14:56 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:34747 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754658AbYFXMOz convert rfc822-to-8bit (ORCPT
+	Tue, 24 Jun 2008 08:17:10 -0400
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:39681 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752491AbYFXMRJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 08:14:55 -0400
-Message-Id: <4860BB14.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Tue, 24 Jun 2008 07:15:00 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Cc: <mingo@elte.hu>, <rostedt@goodmis.org>, <tglx@linutronix.de>,
-       "David Bahi" <DBahi@novell.com>, <linux-kernel@vger.kernel.org>,
-       <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH 1/3] sched: enable interrupts and drop rq-lock
-	duringnewidle balancing
-References: <20080623225645.31515.36393.stgit@lsg.lsg.lab.novell.com>
- <20080623230440.31515.97377.stgit@lsg.lsg.lab.novell.com>
- <1214302405.4351.21.camel@twins>
-In-Reply-To: <1214302405.4351.21.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Tue, 24 Jun 2008 08:17:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=nij9IOLZuqePvCOZj24MNiKMVfu7HALFldnXxKcgPPLRxi2LrhMPbsJUJ3Mxnya3anNeaYJMV7hHp9h+M6llDLFt2aubaefFZCu5S6Nve+Ribszpa2XtufWww87zyn/HwXqdfJP6jLdhi4OlzpxNEs1dXYUZeSzEqc0PNMVBe0w=  ;
+X-YMail-OSG: OYk3SVsVM1k8rGB4ZBHfI50dbq9pxTULX7E7qRfFDdjYTrXjiw61NCRrGsRDJgp1M7D_ykaH.ajoTu1ajzgf2s_xvz0nRekliIySgnUNI4DSMthGT503H_awn_.ZRQQrNwI-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [rfc patch 3/4] splice: remove confirm from pipe_buf_operations
+Date: Tue, 24 Jun 2008 22:16:41 +1000
+User-Agent: KMail/1.9.5
+Cc: jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       torvalds@linux-foundation.org
+References: <20080621154607.154640724@szeredi.hu> <20080624111913.GP20851@kernel.dk> <E1KB6p9-0001Gq-Fd@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1KB6p9-0001Gq-Fd@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200806242216.41548.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Tue, Jun 24, 2008 at  6:13 AM, in message <1214302405.4351.21.camel@twins>,
-Peter Zijlstra <peterz@infradead.org> wrote: 
-> On Mon, 2008-06-23 at 17:04 -0600, Gregory Haskins wrote:
->> We do find_busiest_groups() et. al. without locks held for normal balancing,
->> so lets do it for newidle as well.  It will allow other cpus to make
->> forward progress (against our RQ) while we try to balance and allow 
->> some interrupts to occur.
-> 
-> Is running f_b_g really that expensive? 
+On Tuesday 24 June 2008 21:36, Miklos Szeredi wrote:
+> > It's an unfortunate side effect of the read-ahead, I'd much rather just
+> > get rid of that. It _should_ behave like the non-ra case, when a page is
+> > added it merely has IO started on it. So we want to have that be
+> > something like
+> >
+> >         if (!PageUptodate(page) && !PageInFlight(page))
+> >                 ...
+> >
+> > basically like PageWriteback(), but for read-in.
+>
+> OK it could be done, possibly at great pain.  But why is it important?
 
-According to our oprofile data, yes.  I speculate that it works out that way because most newidle
-attempts result in "no imbalance".  But we were spending ~60%+ time in find_busiest_groups()
-because of all the heavy-context switching that goes on in PREEMPT_RT.  So while f_b_g() is
-probably cheaper than double-lock/move_tasks(), the ratio of occurrence is off the charts in
-comparison. Prior to this patch, those occurrences were preempt-disabled/irq-disabled/rq->lock critical
-sections.
+It has been considered, but adding atomic operations on these paths
+always really hurts. Adding something like this would basically be
+another at least 2 atomic operations that can never be removed again...
 
-So while it is not clear if f_b_g() is the actual cost, it is a convenient (and legal, afaict) place to
-deterministically reduce the rq->lock scope.  Additionally, doing so measurably helps
-performance, so I think its a win.  Without this patch you have to hope the double_lock releases
-this_rq, and even so were not checking for the NEEDS_RESCHED. 
-
-Note: I have a refresh of this patch coming shortly, and I will drop the one you NAKed
-
-Thanks Peter!
-
-Regards,
--Greg
-
-> 
->> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->> ---
->> 
->>  kernel/sched.c |   44 ++++++++++++++++++++++++++++++++++++++------
->>  1 files changed, 38 insertions(+), 6 deletions(-)
->> 
->> diff --git a/kernel/sched.c b/kernel/sched.c
->> index 31f91d9..490e6bc 100644
->> --- a/kernel/sched.c
->> +++ b/kernel/sched.c
->> @@ -3333,6 +3333,16 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, 
-> struct sched_domain *sd)
->>  	int sd_idle = 0;
->>  	int all_pinned = 0;
->>  	cpumask_t cpus = CPU_MASK_ALL;
->> +	int nr_running;
->> +
->> +	schedstat_inc(sd, lb_count[CPU_NEWLY_IDLE]);
->> +
->> +	/*
->> +	 * We are in a preempt-disabled section, so dropping the lock/irq
->> +	 * here simply means that other cores may acquire the lock,
->> +	 * and interrupts may occur.
->> +	 */
->> +	spin_unlock_irq(&this_rq->lock);
->>  
->>  	/*
->>  	 * When power savings policy is enabled for the parent domain, idle
->> @@ -3344,7 +3354,6 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, 
-> struct sched_domain *sd)
->>  	    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
->>  		sd_idle = 1;
->>  
->> -	schedstat_inc(sd, lb_count[CPU_NEWLY_IDLE]);
->>  redo:
->>  	group = find_busiest_group(sd, this_cpu, &imbalance, CPU_NEWLY_IDLE,
->>  				   &sd_idle, &cpus, NULL);
->> @@ -3366,14 +3375,33 @@ redo:
->>  
->>  	ld_moved = 0;
->>  	if (busiest->nr_running > 1) {
->> -		/* Attempt to move tasks */
->> -		double_lock_balance(this_rq, busiest);
->> -		/* this_rq->clock is already updated */
->> -		update_rq_clock(busiest);
->> +		local_irq_disable();
->> +		double_rq_lock(this_rq, busiest);
->> +
->> +		BUG_ON(this_cpu != smp_processor_id());
->> +
->> +		/*
->> +		 * Checking rq->nr_running covers both the case where
->> +		 * newidle-balancing pulls a task, as well as if something
->> +		 * else issued a NEEDS_RESCHED (since we would only need
->> +		 * a reschedule if something was moved to us)
->> +		 */
->> +		if (this_rq->nr_running) {
->> +			double_rq_unlock(this_rq, busiest);
->> +			local_irq_enable();
->> +			goto out_balanced;
->> +		}
->> +
->>  		ld_moved = move_tasks(this_rq, this_cpu, busiest,
->>  					imbalance, sd, CPU_NEWLY_IDLE,
->>  					&all_pinned);
->> -		spin_unlock(&busiest->lock);
->> +
->> +		nr_running = this_rq->nr_running;
->> +		double_rq_unlock(this_rq, busiest);
->> +		local_irq_enable();
->> +
->> +		if (nr_running)
->> +			goto out_balanced;
->>  
->>  		if (unlikely(all_pinned)) {
->>  			cpu_clear(cpu_of(busiest), cpus);
->> @@ -3382,6 +3410,8 @@ redo:
->>  		}
->>  	}
->>  
->> +	spin_lock_irq(&this_rq->lock);
->> +
->>  	if (!ld_moved) {
->>  		schedstat_inc(sd, lb_failed[CPU_NEWLY_IDLE]);
->>  		if (!sd_idle && sd->flags & SD_SHARE_CPUPOWER &&
->> @@ -3393,6 +3423,8 @@ redo:
->>  	return ld_moved;
->>  
->>  out_balanced:
->> +	spin_lock_irq(&this_rq->lock);
->> +
->>  	schedstat_inc(sd, lb_balanced[CPU_NEWLY_IDLE]);
->>  	if (!sd_idle && sd->flags & SD_SHARE_CPUPOWER &&
->>  	    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
->> 
+Provided that you've done the sync readahead earlier, it presumably
+should be a very rare case to have to start new IO in the loop
+below, right? In which case, I wonder if we couldn't move that 2nd
+loop out of generic_file_splice_read and into
+page_cache_pipe_buf_confirm. 
 
 
+> What's the use case where it matters that splice-in should not block
+> on the read?
+
+It just makes it generally less able to pipeline IO and computation,
+doesn't it?
+
+
+> And note, after the pipe is full it will block no matter what, since
+> the consumer will have to wait until the page is brought uptodate, and
+> can only then commence with getting the data out from the pipe.
+
+True, but (especially with patches to variably size the pipe buffer)
+I imagine programs could be designed fairly carefully to the size of
+the buffer (and not just things that blast bulk data down the pipe...)
