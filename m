@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761278AbYFXOdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761362AbYFXOe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761278AbYFXOdv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 10:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911AbYFXOdl
+	id S1761362AbYFXOe5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 10:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756271AbYFXOet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 10:33:41 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:39482 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753935AbYFXOdk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 10:33:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=J/qKMG29Vw+c9E+cl7pp30j4YwGs5OKHkZwDDr/tSDzY3tg84qDWRff0bh3favDlBA
-         7sEABNlCrz0oDgJkl6AOPVEVcgHUsa6SO9knoer34/Yt9fhPKDhlksJoKIAIa+0y3hKo
-         ksc0NSBqAvtIZ1g7vqkFapKg8IzkMZay6NbNM=
-Message-ID: <58cb370e0806240733q5a6987f4q7f103e3864b09e62@mail.gmail.com>
-Date: Tue, 24 Jun 2008 16:33:38 +0200
-From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] IDE: Fix HDIO_DRIVE_RESET handling
-Cc: "Elias Oltmanns" <eo@nebensachen.de>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Randy Dunlap" <randy.dunlap@oracle.com>
-In-Reply-To: <58cb370e0806240719o4a70537p4a6fb64e9086e2d8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <87k5gmz596.fsf@denkblock.local>
-	 <200806240041.42796.bzolnier@gmail.com>
-	 <87skv3s3d9.fsf@denkblock.local>
-	 <200806241306.42054.bzolnier@gmail.com>
-	 <20080624133218.6bccab75@lxorguk.ukuu.org.uk>
-	 <58cb370e0806240621g61370f56j660e31790dad89c3@mail.gmail.com>
-	 <20080624143548.24dcf511@lxorguk.ukuu.org.uk>
-	 <58cb370e0806240719o4a70537p4a6fb64e9086e2d8@mail.gmail.com>
+	Tue, 24 Jun 2008 10:34:49 -0400
+Received: from ns2.suse.de ([195.135.220.15]:40813 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754911AbYFXOes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 10:34:48 -0400
+From: Bernhard Walle <bwalle@suse.de>
+To: x86@kernel.org
+Cc: vgoyal@redhat.com, linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com,
+       Bernhard Walle <bwalle@suse.de>
+Subject: [PATCH 1/3] e820_update_range(): Strip size of original region
+Date: Tue, 24 Jun 2008 16:35:23 +0200
+Message-Id: <1214318125-32619-2-git-send-email-bwalle@suse.de>
+X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <1214318125-32619-1-git-send-email-bwalle@suse.de>
+References: <1214318125-32619-1-git-send-email-bwalle@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 24, 2008 at 4:19 PM, Bartlomiej Zolnierkiewicz
-<bzolnier@gmail.com> wrote:
+This patch fixes a bug in e820_update_range(): Previously, if a region was
+partially covered, then e820_update_range() only added a new E820 range but
+didn't update the end/size of the previous range. That lead to duplicate
+covering of a region.
 
-[...]
+Patch tested on i386 and x86-64 with patch that uses e820_update_range()
+to limit the E820 map when "mem" parameter is specified on the command line.
 
-> IOW while the two operations are very similar on the drive level they
-> certainly have different needs and requirements at the higher level
-> (abort operation being especially tricky).
 
-The confusion seems to be caused by unfortunate use of the word
-'hardware' in my initial mail ('system' should be more proper)...
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+---
+ arch/x86/kernel/e820.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index e285ea3..e466073 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -422,6 +422,7 @@ u64 __init e820_update_range(u64 start, u64 size, unsigned old_type,
+ 		final_end = min(start + size, ei->addr + ei->size);
+ 		if (final_start >= final_end)
+ 			continue;
++		ei->size -= final_end - final_start;
+ 		e820_add_region(final_start, final_end - final_start,
+ 					 new_type);
+ 		real_updated_size += final_end - final_start;
+-- 
+1.5.4.5
+
