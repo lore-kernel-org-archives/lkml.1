@@ -1,89 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbYFXUuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbYFXVfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754807AbYFXUuQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 16:50:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbYFXUuE
+	id S1757545AbYFXVfo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277AbYFXVfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 16:50:04 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48670 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750765AbYFXUuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 16:50:03 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH 1/3] introduce PF_KTHREAD flag
-Date: Tue, 24 Jun 2008 22:51:22 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
-       mingo@elte.hu, torvalds@linux-foundation.org, roland@redhat.com,
-       linux-kernel@vger.kernel.org
-References: <20080601153042.GA8238@tv-sign.ru> <20080623135253.ed7cabf1.akpm@linux-foundation.org> <20080624134240.GA310@tv-sign.ru>
-In-Reply-To: <20080624134240.GA310@tv-sign.ru>
+	Tue, 24 Jun 2008 17:35:36 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:13230 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753646AbYFXVff (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 17:35:35 -0400
+Date: Tue, 24 Jun 2008 14:34:39 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Louis Rilling <Louis.Rilling@kerlabs.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: configfs: Q: item leak in a failing configfs_attach_group()?
+Message-ID: <20080624213439.GB2785@mail.oracle.com>
+Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
+	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+References: <20080624141649.GH7621@hawkmoon.kerlabs.com> <20080624171051.GD4184@ca-server1.us.oracle.com> <20080624180456.GA32036@hawkmoon.kerlabs.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806242251.23125.rjw@sisk.pl>
+In-Reply-To: <20080624180456.GA32036@hawkmoon.kerlabs.com>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 24 of June 2008, Oleg Nesterov wrote:
-> On 06/23, Andrew Morton wrote:
-> >
-> > On Mon, 23 Jun 2008 13:47:06 -0700
-> > Andrew Morton <akpm@linux-foundation.org> wrote:
+On Tue, Jun 24, 2008 at 08:04:56PM +0200, Louis Rilling wrote:
+> On Tue, Jun 24, 2008 at 10:10:51AM -0700, Joel Becker wrote:
+> > On Tue, Jun 24, 2008 at 04:16:49PM +0200, Louis Rilling wrote:
+> > > Hi,
+> > > 
+> > > I'd like an opinion on the following scenario:
+> > > 
+> > > process 1: 					process 2:
+> > > configfs_mkdir("A")
+> > >   attach_group("A")
+> > >     attach_item("A")
+> > >       d_instantiate("A")
+> > >     populate_groups("A")
+> > >       mutex_lock("A")
+> > >       attach_group("A/B")
+> > >         attach_item("A")
+> > >           d_instantiate("A/B")
+> > > 						mkdir("A/B/C")
+> > > 						  do_path_lookup("A/B/C", LOOKUP_PARENT)
 > > 
-> > > I don't yet know how much additional damage will happen as a result.
-> > 
-> > Lots.
-> > 
-> > I restored the patches and just dropped the hunk:
-> > 
-> >   static int has_mm(struct task_struct *p)
-> >   {
-> > -       return (p->mm && !(p->flags & PF_BORROWED_MM));
-> >   }
-> >   
-> >   /**
-> > --- 86,92 ----
-> >   
-> >   static int has_mm(struct task_struct *p)
-> >   {
-> > +       return (p->mm && !(p->flags & PF_KTHREAD));
-> >   }
-> > 
-> > due to that function having been turned into:
-> > 
-> > static inline bool should_send_signal(struct task_struct *p)
-> > {
-> >         return !(p->flags & PF_FREEZER_NOSIG);
-> > }
-> >
-> > Please check the result?
+> > 					This has to sleep until
+> > 					configfs_mkdir("A") finishes.
+> > 					It's waiting on A->d_parent's
+> > 					i_mutex, which is held by
+> > 					sys_mkdirat().
 > 
-> Thanks, this looks OK.
-> 
-> Rafael, can't freezer just use PF_KTHREAD (which btw kills PF_BORROWED_MM)
-> instead of the new PF_FREEZER_NOSIG flag? They look very similar, please
-> look at
-> 
-> 	"[PATCH 1/3] introduce PF_KTHREAD flag"
-> 	http://marc.info/?l=linux-kernel&m=121233423530812
-> 
-> 	"[PATCH 2/3] kill PF_BORROWED_MM in favour of PF_KTHREAD"
-> 	http://marc.info/?l=linux-kernel&m=121233423530820
+> Can you be more precise? I don't see where do_path_lookup() locks an inode
 
-The problem is that some kernel threads may actually want to clear
-PF_FREEZER_NOSIG, but it would be invalid to clear PF_KTHREAD I think.
+	It doesn't.  It's in lookup_create(), which takes the mutex on the
+parent of 'A'.  Note that the end of sys_mkdirat() explicitly drops that
+mutex - it couldn't do so if it hadn't been taken :-)
 
-Hmm, well, in principle we could use two flags for that, with the combinations
-of bits defined as follows:
-11 - user space task (freezable with a fake signal)
-10 - kernel thread freezable with a fake signal
-01 - kernel thread freezable withoug a fake signal
-00 - non-freezable kernel thread
+Joel
 
-Thanks,
-Rafael
+-- 
+
+"You cannot bring about prosperity by discouraging thrift. You cannot
+ strengthen the weak by weakening the strong. You cannot help the wage
+ earner by pulling down the wage payer. You cannot further the
+ brotherhood of man by encouraging class hatred. You cannot help the
+ poor by destroying the rich. You cannot build character and courage by
+ taking away a man's initiative and independence. You cannot help men
+ permanently by doing for them what they could and should do for
+ themselves."
+	- Abraham Lincoln 
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
