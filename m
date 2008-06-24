@@ -1,91 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760086AbYFXMIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbYFXMPE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760086AbYFXMIh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 08:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755191AbYFXMI3
+	id S1758058AbYFXMPE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 08:15:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbYFXMO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 08:08:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40120 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755089AbYFXMI2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 08:08:28 -0400
-Date: Tue, 24 Jun 2008 14:08:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alok Kataria <akataria@vmware.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, "Brown, Len" <len.brown@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] cleanup e820_setup_gap
-Message-ID: <20080624120810.GC10550@elte.hu>
-References: <1213916250.27983.35.camel@promb-2n-dhcp368.eng.vmware.com> <20080620153220.GD17373@elte.hu> <1213990711.31598.22.camel@promb-2n-dhcp368.eng.vmware.com> <86802c440806201250g706bb062t2d472ee0637cac4e@mail.gmail.com> <1213993734.31598.27.camel@promb-2n-dhcp368.eng.vmware.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 24 Jun 2008 08:14:56 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:34747 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754658AbYFXMOz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 08:14:55 -0400
+Message-Id: <4860BB14.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Tue, 24 Jun 2008 07:15:00 -0600
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Cc: <mingo@elte.hu>, <rostedt@goodmis.org>, <tglx@linutronix.de>,
+       "David Bahi" <DBahi@novell.com>, <linux-kernel@vger.kernel.org>,
+       <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH 1/3] sched: enable interrupts and drop rq-lock
+	duringnewidle balancing
+References: <20080623225645.31515.36393.stgit@lsg.lsg.lab.novell.com>
+ <20080623230440.31515.97377.stgit@lsg.lsg.lab.novell.com>
+ <1214302405.4351.21.camel@twins>
+In-Reply-To: <1214302405.4351.21.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1213993734.31598.27.camel@promb-2n-dhcp368.eng.vmware.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alok Kataria <akataria@vmware.com> wrote:
-
-> On Fri, 2008-06-20 at 12:50 -0700, Yinghai Lu wrote:
-> > On Fri, Jun 20, 2008 at 12:38 PM, Alok Kataria <akataria@vmware.com> wrote:
-> > > Here is the patch based on tip/master
-> > >
-> > > Please have a look
-> > >
-> > > --
-> > >
-> > > This is a preparatory patch for the next patch in series.
-> > > Moves some code from e820_setup_gap to a new function e820_search_gap.
-> > > This patch is a part of a bug fix where we walk the ACPI table to calculate
-> > > a gap for PCI optional devices.
-> > >
-> > > Signed-off-by: Alok N Kataria <akataria@vmware.com>
-> > >
-> > > Index: linux-trees.git/arch/x86/kernel/e820.c
-> > > ===================================================================
-> > > --- linux-trees.git.orig/arch/x86/kernel/e820.c 2008-06-20 10:32:44.000000000 -0700
-> > > +++ linux-trees.git/arch/x86/kernel/e820.c      2008-06-20 12:27:58.000000000 -0700
-> > > @@ -442,26 +442,22 @@
-> > >  }
-> > >
-> > >  /*
-> > > - * Search for the biggest gap in the low 32 bits of the e820
-> > > - * memory space.  We pass this space to PCI to assign MMIO resources
-> > > - * for hotplug or unconfigured devices in.
-> > > - * Hopefully the BIOS let enough space left.
-> > > + * Search for a gap in the e820 memory space from start_addr to 2^32.
-> > >  */
-> > > -__init void e820_setup_gap(void)
-> > > +__init int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
-> > > +               unsigned long start_addr)
-> > >  {
-> > > -       unsigned long gapstart, gapsize, round;
-> > > -       unsigned long long last;
-> > > -       int i;
-> > > +       unsigned long last = 0x100000000ull;
-> > 
-> > why changing "unsigned long long" to "unsigned long" ?
-> > it will overflow on 32bit
-> > 
+>>> On Tue, Jun 24, 2008 at  6:13 AM, in message <1214302405.4351.21.camel@twins>,
+Peter Zijlstra <peterz@infradead.org> wrote: 
+> On Mon, 2008-06-23 at 17:04 -0600, Gregory Haskins wrote:
+>> We do find_busiest_groups() et. al. without locks held for normal balancing,
+>> so lets do it for newidle as well.  It will allow other cpus to make
+>> forward progress (against our RQ) while we try to balance and allow 
+>> some interrupts to occur.
 > 
-> Oops...my bad, it was unsigned long in e820_64.c. Should be more careful
-> with these cross ports.
-> Thanks for catching it.
+> Is running f_b_g really that expensive? 
 
-ok, could you please resend the fixed up series? This breakage would be 
-a nasty bisection point which we want to avoid.
+According to our oprofile data, yes.  I speculate that it works out that way because most newidle
+attempts result in "no imbalance".  But we were spending ~60%+ time in find_busiest_groups()
+because of all the heavy-context switching that goes on in PREEMPT_RT.  So while f_b_g() is
+probably cheaper than double-lock/move_tasks(), the ratio of occurrence is off the charts in
+comparison. Prior to this patch, those occurrences were preempt-disabled/irq-disabled/rq->lock critical
+sections.
 
-	Ingo
+So while it is not clear if f_b_g() is the actual cost, it is a convenient (and legal, afaict) place to
+deterministically reduce the rq->lock scope.  Additionally, doing so measurably helps
+performance, so I think its a win.  Without this patch you have to hope the double_lock releases
+this_rq, and even so were not checking for the NEEDS_RESCHED. 
+
+Note: I have a refresh of this patch coming shortly, and I will drop the one you NAKed
+
+Thanks Peter!
+
+Regards,
+-Greg
+
+> 
+>> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+>> ---
+>> 
+>>  kernel/sched.c |   44 ++++++++++++++++++++++++++++++++++++++------
+>>  1 files changed, 38 insertions(+), 6 deletions(-)
+>> 
+>> diff --git a/kernel/sched.c b/kernel/sched.c
+>> index 31f91d9..490e6bc 100644
+>> --- a/kernel/sched.c
+>> +++ b/kernel/sched.c
+>> @@ -3333,6 +3333,16 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, 
+> struct sched_domain *sd)
+>>  	int sd_idle = 0;
+>>  	int all_pinned = 0;
+>>  	cpumask_t cpus = CPU_MASK_ALL;
+>> +	int nr_running;
+>> +
+>> +	schedstat_inc(sd, lb_count[CPU_NEWLY_IDLE]);
+>> +
+>> +	/*
+>> +	 * We are in a preempt-disabled section, so dropping the lock/irq
+>> +	 * here simply means that other cores may acquire the lock,
+>> +	 * and interrupts may occur.
+>> +	 */
+>> +	spin_unlock_irq(&this_rq->lock);
+>>  
+>>  	/*
+>>  	 * When power savings policy is enabled for the parent domain, idle
+>> @@ -3344,7 +3354,6 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, 
+> struct sched_domain *sd)
+>>  	    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
+>>  		sd_idle = 1;
+>>  
+>> -	schedstat_inc(sd, lb_count[CPU_NEWLY_IDLE]);
+>>  redo:
+>>  	group = find_busiest_group(sd, this_cpu, &imbalance, CPU_NEWLY_IDLE,
+>>  				   &sd_idle, &cpus, NULL);
+>> @@ -3366,14 +3375,33 @@ redo:
+>>  
+>>  	ld_moved = 0;
+>>  	if (busiest->nr_running > 1) {
+>> -		/* Attempt to move tasks */
+>> -		double_lock_balance(this_rq, busiest);
+>> -		/* this_rq->clock is already updated */
+>> -		update_rq_clock(busiest);
+>> +		local_irq_disable();
+>> +		double_rq_lock(this_rq, busiest);
+>> +
+>> +		BUG_ON(this_cpu != smp_processor_id());
+>> +
+>> +		/*
+>> +		 * Checking rq->nr_running covers both the case where
+>> +		 * newidle-balancing pulls a task, as well as if something
+>> +		 * else issued a NEEDS_RESCHED (since we would only need
+>> +		 * a reschedule if something was moved to us)
+>> +		 */
+>> +		if (this_rq->nr_running) {
+>> +			double_rq_unlock(this_rq, busiest);
+>> +			local_irq_enable();
+>> +			goto out_balanced;
+>> +		}
+>> +
+>>  		ld_moved = move_tasks(this_rq, this_cpu, busiest,
+>>  					imbalance, sd, CPU_NEWLY_IDLE,
+>>  					&all_pinned);
+>> -		spin_unlock(&busiest->lock);
+>> +
+>> +		nr_running = this_rq->nr_running;
+>> +		double_rq_unlock(this_rq, busiest);
+>> +		local_irq_enable();
+>> +
+>> +		if (nr_running)
+>> +			goto out_balanced;
+>>  
+>>  		if (unlikely(all_pinned)) {
+>>  			cpu_clear(cpu_of(busiest), cpus);
+>> @@ -3382,6 +3410,8 @@ redo:
+>>  		}
+>>  	}
+>>  
+>> +	spin_lock_irq(&this_rq->lock);
+>> +
+>>  	if (!ld_moved) {
+>>  		schedstat_inc(sd, lb_failed[CPU_NEWLY_IDLE]);
+>>  		if (!sd_idle && sd->flags & SD_SHARE_CPUPOWER &&
+>> @@ -3393,6 +3423,8 @@ redo:
+>>  	return ld_moved;
+>>  
+>>  out_balanced:
+>> +	spin_lock_irq(&this_rq->lock);
+>> +
+>>  	schedstat_inc(sd, lb_balanced[CPU_NEWLY_IDLE]);
+>>  	if (!sd_idle && sd->flags & SD_SHARE_CPUPOWER &&
+>>  	    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
+>> 
+
+
