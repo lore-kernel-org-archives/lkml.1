@@ -1,82 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYFXACT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbYFXAFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756073AbYFXACT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 20:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbYFXACK
+	id S1754638AbYFXAFl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 20:05:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbYFXAFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 20:02:10 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:54812 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752228AbYFXACJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 20:02:09 -0400
-Message-ID: <4860397F.305@sgi.com>
-Date: Mon, 23 Jun 2008 17:02:07 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com>	<485947A8.8060801@goop.org> <4859511E.5050605@sgi.com>	<48596315.6020104@goop.org> <48596893.4040908@sgi.com>	<485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org>	<485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>	<485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com>	<485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com>	<485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>	<485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com> <m1skv7onvh.fsf@frodo.ebiederm.org> <485FD56B.1090303@sgi.com> <485FDE80.1010700@goop.org> <485FE5C9.3050305@sgi.com> <485FED2C.8030102@sgi.com> <485FFC61.9030301@goop.org>
-In-Reply-To: <485FFC61.9030301@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 23 Jun 2008 20:05:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41912 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750765AbYFXAFc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 20:05:32 -0400
+Date: Mon, 23 Jun 2008 17:04:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andres Salomon <dilinger@queued.net>
+Cc: drzeus-sdhci@drzeus.cx, sdhci-devel@list.drzeus.cx,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [OLPC] sdhci: add quirk for the Marvell CaFe's
+ interrupt timeout
+Message-Id: <20080623170449.6567d857.akpm@linux-foundation.org>
+In-Reply-To: <20080623101352.3bbaf5b0@xo-debian>
+References: <20080623101352.3bbaf5b0@xo-debian>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Mike Travis wrote:
->> The syntax error is at this "DATA(0)" statement.  I don't find this as a
->> linker script command or a macro.  What is it we're trying to do with
->> this?
->>   
+On Mon, 23 Jun 2008 10:13:52 -0400
+Andres Salomon <dilinger@queued.net> wrote:
+
 > 
-> In Eric's sample, it's intended to prevent there being an empty section,
-> which can cause linker bugs.  In your case it probably isn't necessary,
-> since you're also putting the percpu data in that section.
+> The CaFe chip has a hardware bug that ends up with us getting a timeout
+> value that's too small, causing the following sorts of problems:
 > 
-> "DATA" is probably a typo.  It should be "LONG" or something like that. 
-> (See "3.6.5 Output Section Data" in the linker manual.)
+> [   60.525138] mmcblk0: error -110 transferring data
+> [   60.531477] end_request: I/O error, dev mmcblk0, sector 1484353
+> [   60.533371] Buffer I/O error on device mmcblk0p2, logical block 181632
+> [   60.533371] lost page write due to I/O error on mmcblk0p2
 > 
->    J
+> Presumably this is an off-by-one error in the hardware.  Incrementing
+> the timeout count value that we stuff into the TIMEOUT_CONTROL register
+> gets us a value that works.  This bug was originally discovered by
+> Pierre Ossman, I believe.
+> 
+> [thanks to Robert Millan for proving that this was still a problem]
+> 
+> Signed-off-by: Andres Salomon <dilinger@debian.org>
+> ---
+>  drivers/mmc/host/sdhci.c |   12 +++++++++++-
+>  1 files changed, 11 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+> index 5b74c8c..2b3f06a 100644
+> --- a/drivers/mmc/host/sdhci.c
+> +++ b/drivers/mmc/host/sdhci.c
+> @@ -57,6 +57,8 @@ static unsigned int debug_quirks = 0;
+>  #define SDHCI_QUIRK_RESET_AFTER_REQUEST			(1<<8)
+>  /* Controller needs voltage and power writes to happen separately */
+>  #define SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER		(1<<9)
+> +/* Controller has an off-by-one issue with timeout value */
+> +#define SDHCI_QUIRK_INCR_TIMEOUT_CONTROL		(1<<10)
+>  
+>  static const struct pci_device_id pci_ids[] __devinitdata = {
+>  	{
+> @@ -134,7 +136,8 @@ static const struct pci_device_id pci_ids[] __devinitdata = {
+>  		.device         = PCI_DEVICE_ID_MARVELL_CAFE_SD,
+>  		.subvendor      = PCI_ANY_ID,
+>  		.subdevice      = PCI_ANY_ID,
+> -		.driver_data    = SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER,
+> +		.driver_data    = SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER |
+> +				  SDHCI_QUIRK_INCR_TIMEOUT_CONTROL,
+>  	},
+>  
+>  	{
+> @@ -479,6 +482,13 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
+>  			break;
+>  	}
+>  
+> +	/*
+> +	 * Compensate for an off-by-one error in the CaFe hardware; otherwise,
+> +	 * a too-small count gives us interrupt timeouts.
+> +	 */
+> +	if ((host->chip->quirks & SDHCI_QUIRK_INCR_TIMEOUT_CONTROL))
+> +		count++;
+> +
+>  	if (count >= 0xF) {
+>  		printk(KERN_WARNING "%s: Too large timeout requested!\n",
+>  			mmc_hostname(host->mmc));
 
-Yes, thanks I did find that.
+This is needed in 2.6.26, I assume?
 
-I now have the version below which seems to have what we need... but it
-hasn't had an effect on the boot startup panic.  I'm back to verifying
-that the assembler effective addresses are correct in the loaded object.
+If so, I can merge it unless Pierre has objections?
 
-ffffffff81911000 D __per_cpu_load
-0000000000000000 D per_cpu__pda
-0000000000000080 D per_cpu__init_tss
-.
-.
-000000000000a2d0 d per_cpu__cookie_scratch
-000000000000a470 d per_cpu__cookie_scratch
-000000000000a604 D ____per_cpu_size
+And it will cause conflicts with overlapping changes in linux-next.
 
-Btw, the "percpu : { } :percpu" below removes a linker warning about an empty
-section.
-
-#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
-#define PERCPU(align)							\
-	.data.percpu.abs = .;						\
-	percpu : { } :percpu						\
-	.data.percpu.header : AT(.data.percpu.abs - LOAD_OFFSET) {	\
-		BYTE(0)							\
-		. = ALIGN(align);					\
-		__per_cpu_load = .;					\
-	}								\
-	.data.percpu 0 : AT(__per_cpu_load - LOAD_OFFSET) {		\
-		*(.data.percpu.first)					\
-		*(.data.percpu.shared_aligned)				\
-		*(.data.percpu)						\
-		*(.data.percpu.page_aligned)				\
-		____per_cpu_size = .;					\
-	}								\
-	. = __per_cpu_load + ____per_cpu_size;
