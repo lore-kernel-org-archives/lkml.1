@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757827AbYFXX0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbYFXX1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757827AbYFXX0k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 19:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbYFXX0a
+	id S1757975AbYFXX1a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 19:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbYFXX1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 19:26:30 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:15490 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753253AbYFXX03 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 19:26:29 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=LzYVySVrGO2vcNZCCrqcm6t0w3iJ9GTvlsTZB79mTOptPs5qSt58H6GRsq1NWiVtN
-	HjidK2BEZOTgdqEGMNrVg==
-Message-ID: <6599ad830806241626q51933106v7de4a2445d3a45fe@mail.gmail.com>
-Date: Tue, 24 Jun 2008 16:26:21 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/8] CGroup Files: Add write_string cgroup control file method
-Cc: pj@sgi.com, xemul@openvz.org, balbir@in.ibm.com, serue@us.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-In-Reply-To: <20080624161923.449ecea4.akpm@linux-foundation.org>
+	Tue, 24 Jun 2008 19:27:19 -0400
+Received: from mga02.intel.com ([134.134.136.20]:30248 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753761AbYFXX1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 19:27:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,698,1204531200"; 
+   d="scan'208";a="401587064"
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: [PATCH 1/2] net: Add the CPU id to skb->queue_mapping's upper 8 bits
+To: davem@davemloft.net, jeff@garzik.org
+Cc: peter.p.waskiewicz.jr@intel.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Date: Tue, 24 Jun 2008 16:27:12 -0700
+Message-ID: <20080624232545.11654.65805.stgit@localhost.localdomain>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080620234358.182933000@menage.corp.google.com>
-	 <20080621000730.052131000@menage.corp.google.com>
-	 <20080624161923.449ecea4.akpm@linux-foundation.org>
+X-OriginalArrivalTime: 24 Jun 2008 23:27:14.0192 (UTC) FILETIME=[D5744100:01C8D651]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 24, 2008 at 4:19 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->>       /*
->> +      * write_string() is passed a nul-terminated kernelspace
->> +      * buffer of maximum length determined by max_write_len.
->> +      * Returns 0 or -ve error code.
->> +      */
->> +     int (*write_string)(struct cgroup *cgrp, struct cftype *cft,
->> +                         const char *buffer);
->
-> Everything seems to use size_t (or ssize_t?) except for the ->write_string
-> return value.  Can any of this be improved?
+From: PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>
 
-What other things are you including as "everything"?
+This patch adds the CPU index to the upper 8 bits of the queue_mapping in
+the skb.  This will support 256 CPUs and 256 Tx queues.  The reason for
+this is the qdisc layer can obscure which CPU is generating a certain flow
+of packets, so network drivers don't have any insight which CPU generated a
+particular packet.  If the driver knows which CPU generated the packet,
+then it could adjust Rx filtering in the hardware to redirect the packet
+back to the CPU who owns the process that generated this packet.
+Preventing the cache miss and reschedule of a process to a different CPU is
+a big win in network performance, especially at 10 gigabit speeds.
 
-write_string() returns 0 on success or a -ve error code on failure -
-it doesn't have the concept of writing some fraction of the passed
-bytes.
+Signed-off-by: PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+---
 
-The functions that deal in size_t/ssize_t (along with userspace
-buffers, files and position pointers) are the glue that interfaces
-with the filesystem layer. My aim (which is furthered by this patch
-series) is to keep as much of that as possible in the cgroup layer
-itself, and to reduce filesystem glue in the cgroup subsystems. The
-raw file interface is still exposed by cgroups for those subsystems
-that really need it, but it should be the exception rather than the
-rule.
+ net/sched/sch_prio.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Paul
+diff --git a/net/sched/sch_prio.c b/net/sched/sch_prio.c
+index 4aa2b45..84bbd10 100644
+--- a/net/sched/sch_prio.c
++++ b/net/sched/sch_prio.c
+@@ -86,6 +86,7 @@ prio_enqueue(struct sk_buff *skb, struct Qdisc *sch)
+ 	}
+ #endif
+ 
++	skb->queue_mapping |= (get_cpu() << 8);
+ 	if ((ret = qdisc->enqueue(skb, qdisc)) == NET_XMIT_SUCCESS) {
+ 		sch->bstats.bytes += skb->len;
+ 		sch->bstats.packets++;
+
