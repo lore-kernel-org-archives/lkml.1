@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbYFXRZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757695AbYFXR2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758938AbYFXRZV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 13:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYFXRZJ
+	id S1757695AbYFXR2V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 13:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbYFXR2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 13:25:09 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:49758 "EHLO pardus.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751426AbYFXRZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 13:25:08 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Dave Jones <davej@redhat.com>
-Subject: Intel 8100 Error inserting acpi_cpufreq
-Date: Tue, 24 Jun 2008 20:25:01 +0300
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
+	Tue, 24 Jun 2008 13:28:14 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38236 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751229AbYFXR2N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 13:28:13 -0400
+Date: Tue, 24 Jun 2008 19:28:12 +0200
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michael Buesch <mb@bu3sch.de>, Arnd Bergmann <arnd@arndb.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <axboe@kernel.dk>, Jan Kara <jack@ucw.cz>
+Subject: Re: Oops when using growisofs
+Message-ID: <20080624172812.GD22586@atrey.karlin.mff.cuni.cz>
+References: <200806221818.24372.mb@bu3sch.de> <200806222322.05706.arnd@arndb.de> <200806230005.51356.mb@bu3sch.de> <200806230028.20643.mb@bu3sch.de> <20080622233448.4b27c131.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806242025.04252.caglar@pardus.org.tr>
+In-Reply-To: <20080622233448.4b27c131.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi;
+> On Mon, 23 Jun 2008 00:28:20 +0200 Michael Buesch <mb@bu3sch.de> wrote:
+> 
+> > On Monday 23 June 2008 00:05:51 Michael Buesch wrote:
+> > > > Note: r9 and r3 are both NULL pointers. r3 is the value returned from alloc_page_buffers.
+> > > > R9 is a copy of that, which gets accessed.
+> > > 
+> > > Hm, yeah. I looked at that code already, but I can't see how it could return
+> > > a NULL pointer.
+> > 
+> > Well, actually, it can return a NULL pointer.
+> > 
+> >  928         head = NULL;
+> >  929         offset = PAGE_SIZE;
+> >  930         while ((offset -= size) >= 0) {
+> > ...
+> >  949         }
+> >  950         return head;
+> > 
+> > So if size, which is a passed in as parameter, is > PAGE_SIZE it will return NULL.
+> > 
+> > The size parameter is calculated by doing
+> > blocksize = 1 << inode->i_blkbits;
+> > in an earlier function in the callchain.
+> 
+> Yes, that's a more likely scenario.  isofs has a history of passing
+> garbage into the VFS.
+> 
+> > So, well. I dunno what i_blkbits is. There's no docs in struct inode.
+> 
+> It's log2 of the filesystem blocksize.  It'd be interesting to work out
+> what value isofs is setting it to, and why.
+  Well, yes, that looks as a reason at the first sight. But what I don't
+get is, how can isofs possibly set such a blocksize when it uses
+sb_set_blocksize() which checks whether blocksize isn't larger than page
+size... So it must be something less obvious.
+  bd_set_size() can possibly set blocksize larger than PAGE_SIZE and
+it's called from do_open() but it uses bdev_hardsect_size() and that
+shouldn't be larger than PAGE_SIZE either (at least drivers seem to take
+care of this).
+  I have seen one more report of this Oops for SLES10 kernel and also in that
+case an IO error happened so probably that is a trigger... But so far I
+don't get the details.
 
-We received a bug report from one of our users, reporter says "modprobe acpi-cpufreq" ends up with following
-
-FATAL: Error inserting acpi_cpufreq (/lib/modules/2.6.25.5-97/kernel/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.ko):
-No such device
-
-and after that try dmesg [1] starts to show
-
-[...]
-ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-padlock: VIA PadLock not detected.
-wlan0: no IPv6 routers present
-ACPI Error (psargs-0355): [\_PR_.CPU0._PSS] Namespace lookup failure, AE_NOT_FOUND
-ACPI Error (psparse-0537): Method parse/execution failed [\_PR_.CPU1._PSS] (Node f74c7060), AE_NOT_FOUND
-ACPI Exception (processor_perflib-0255): AE_NOT_FOUND, Evaluating _PSS  [20070126]
-[...]
-
-Although original report against 2.6.25.5 reporter also tried 2.6.25.8 without success.
-
-Any tips really appreciated and if anything else is needed please just tell...
-
-[1] http://bugs.pardus.org.tr/attachment.cgi?id=2801
-
-Cheers
+									Honza
 -- 
-S.Çağlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
