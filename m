@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758937AbYFXKia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759204AbYFXKk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758937AbYFXKia (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 06:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbYFXKiU
+	id S1759204AbYFXKk0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 06:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbYFXKkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 06:38:20 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47566 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753241AbYFXKiT (ORCPT
+	Tue, 24 Jun 2008 06:40:15 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:7249 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752754AbYFXKkO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 06:38:19 -0400
-Subject: Re: [PATCH 2/3] sched: only run newidle if previous task was CFS
-From: Peter Zijlstra <peterz@infradead.org>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       dbahi@novell.com
-In-Reply-To: <1214301517.4351.12.camel@twins>
-References: <20080623225645.31515.36393.stgit@lsg.lsg.lab.novell.com>
-	 <20080623230445.31515.41728.stgit@lsg.lsg.lab.novell.com>
-	 <1214301517.4351.12.camel@twins>
-Content-Type: text/plain
-Date: Tue, 24 Jun 2008 12:38:08 +0200
-Message-Id: <1214303888.4351.24.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Tue, 24 Jun 2008 06:40:14 -0400
+Message-ID: <4860CEF2.4010003@fr.ibm.com>
+Date: Tue, 24 Jun 2008 12:39:46 +0200
+From: Daniel Lezcano <dlezcano@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: Benjamin Thery <benjamin.thery@bull.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Biederman <ebiederm@xmission.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 05/11] sysfs: sysfs_chmod_file handle multiple superblocks
+References: <20080618170729.808539948@theryb.frec.bull.fr> <20080618170730.853353875@theryb.frec.bull.fr> <485DD93A.6020600@gmail.com> <486018CB.80005@fr.ibm.com> <48607BE7.2060203@gmail.com>
+In-Reply-To: <48607BE7.2060203@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-24 at 11:58 +0200, Peter Zijlstra wrote:
-> On Mon, 2008-06-23 at 17:04 -0600, Gregory Haskins wrote:
-> > A system that tends to overschedule (such as PREEMPT_RT) will naturally
-> > tend to newidle balance often as well.  This may have quite a negative
-> > impact on performance.  This patch attempts to address the overzealous
-> > newidle balancing by only allowing it to occur if the previous task
-> > was SCHED_OTHER.
-> > 
-> > Some may argue that if the system is going idle, it should try to
-> > newidle balance to keep it doing useful work.  But the fact is that
-> > spending too much time in the load-balancing code demonstrably hurts
-> > performance as well.  Running oprofile on the system with various
-> > workloads has shown that we can sometimes spend a majority of our
-> > cpu-time running load_balance_newidle.  Additionally, disabling
-> > newidle balancing can make said workloads increase in performance by
-> > up to 200%.  Obviously disabling the feature outright is not sustainable,
-> > but hopefully we can make it smarter. 
-> > 
-> > This code assumes that if there arent any CFS tasks present on the queue,
-> > it was probably already balanced.
-> > 
-> > Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+Tejun Heo wrote:
+> Hello,
 > 
-> NAK, this wrecks idle balance for any potential other classes.
+> Daniel Lezcano wrote:
+>>> I think it would be great if sysfs_chmod_file can do all-or-nothing
+>>> instead of failing half way through but given the interface of
+>>> notify_change(), it could be difficult to implement.  Any ideas?
+>> Is it acceptable to queue the notifications in a list until we are in
+>> the loop and loop again to notify when exiting the first loop without
+>> error ?
 > 
-> idle_balance() is the generical hook - as can be seen from the class
-> iteration in move_tasks().
+> Can you please take a look at the following patch?
 > 
-> I can imagine paritioned EDF wanting to make use of these hooks to
-> balance the reservations.
+> http://article.gmane.org/gmane.linux.file-systems/24484
+> 
+> Which replaces notify_change() call to two calls to sysfs_setattr() and
+> fsnotify_change().  The latter never fails and the former should always
+> succeed if inode_change_ok() succeeds (inode_setattr() never fails
+> unless the size is changing), so I think the correct thing to do is...
+> 
+> * Separate out sysfs_do_setattr() which doesn't do inode_change_ok() and
+> just sets the attributes.  Making it a void function which triggers
+> WARN_ON() when inode_setattr() fails would be a good idea.
+> 
+> * Implement sysfs_chmod_file() in similar way rename/move are
+> implemented - allocate all resources and check conditions and then iff
+> everything looks okay commit the operation by calling sysfs_do_setattr().
+> 
+> How does that sound?
 
-Hmm, it wouldn't,.. since its too tied in with fbg which is sched_other
-based,..
+Much better than my first proposition :)
 
-would need more generalization work,..
+I will do a separate patchset.
 
-
-
+Thanks.
