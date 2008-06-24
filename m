@@ -1,52 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754452AbYFXSiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbYFXSj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754452AbYFXSiU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 14:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYFXSiM
+	id S1755278AbYFXSj6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 14:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbYFXSju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 14:38:12 -0400
-Received: from mail.suse.de ([195.135.220.2]:56090 "EHLO mx1.suse.de"
+	Tue, 24 Jun 2008 14:39:50 -0400
+Received: from bu3sch.de ([62.75.166.246]:40343 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751068AbYFXSiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 14:38:11 -0400
-Date: Tue, 24 Jun 2008 20:38:07 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: akataria@vmware.com
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: merge conflicts with tip/master
-Message-ID: <20080624203807.232a414a@kopernikus.site>
-In-Reply-To: <1214327937.27577.6.camel@promb-2n-dhcp368.eng.vmware.com>
-References: <1214327937.27577.6.camel@promb-2n-dhcp368.eng.vmware.com>
-Organization: SUSE LINUX Products GmbH
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i686-pc-linux-gnu)
-X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
- D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
- vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
- pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751237AbYFXSjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 14:39:49 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Jan Kara <jack@suse.cz>
+Subject: Re: Oops when using growisofs
+Date: Tue, 24 Jun 2008 20:39:18 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <axboe@kernel.dk>, Jan Kara <jack@ucw.cz>
+References: <200806221818.24372.mb@bu3sch.de> <20080622233448.4b27c131.akpm@linux-foundation.org> <20080624172812.GD22586@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20080624172812.GD22586@atrey.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806242039.18755.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alok Kataria <akataria@vmware.com> [2008-06-24 10:18]:
->
-> While working with tip/master...after following the steps in the readme
-> @ http://people.redhat.com/mingo/tip.git/readme.txt
-> 
-> I usually do any changes and manage them using "quilt". 
-> Once the changes are pushed upstream, i do a "quilt pop"
-> and generally try a "git pull" to check for any new changes, along with
-> the change that was just pushed. 
+On Tuesday 24 June 2008 19:28:12 Jan Kara wrote:
+> > On Mon, 23 Jun 2008 00:28:20 +0200 Michael Buesch <mb@bu3sch.de> wrote:
+> > 
+> > > On Monday 23 June 2008 00:05:51 Michael Buesch wrote:
+> > > > > Note: r9 and r3 are both NULL pointers. r3 is the value returned from alloc_page_buffers.
+> > > > > R9 is a copy of that, which gets accessed.
+> > > > 
+> > > > Hm, yeah. I looked at that code already, but I can't see how it could return
+> > > > a NULL pointer.
+> > > 
+> > > Well, actually, it can return a NULL pointer.
+> > > 
+> > >  928         head = NULL;
+> > >  929         offset = PAGE_SIZE;
+> > >  930         while ((offset -= size) >= 0) {
+> > > ...
+> > >  949         }
+> > >  950         return head;
+> > > 
+> > > So if size, which is a passed in as parameter, is > PAGE_SIZE it will return NULL.
+> > > 
+> > > The size parameter is calculated by doing
+> > > blocksize = 1 << inode->i_blkbits;
+> > > in an earlier function in the callchain.
+> > 
+> > Yes, that's a more likely scenario.  isofs has a history of passing
+> > garbage into the VFS.
+> > 
+> > > So, well. I dunno what i_blkbits is. There's no docs in struct inode.
+> > 
+> > It's log2 of the filesystem blocksize.  It'd be interesting to work out
+> > what value isofs is setting it to, and why.
+>   Well, yes, that looks as a reason at the first sight. But what I don't
+> get is, how can isofs possibly set such a blocksize when it uses
+> sb_set_blocksize() which checks whether blocksize isn't larger than page
+> size... So it must be something less obvious.
+>   bd_set_size() can possibly set blocksize larger than PAGE_SIZE and
+> it's called from do_open() but it uses bdev_hardsect_size() and that
+> shouldn't be larger than PAGE_SIZE either (at least drivers seem to take
+> care of this).
+>   I have seen one more report of this Oops for SLES10 kernel and also in that
+> case an IO error happened so probably that is a trigger... But so far I
+> don't get the details.
 
-You might also try guilt [1], which is a mix between st-git and quilt.
-Just a hint, it does not solve your problem. :)
-
-
-Bernhard
-
-[1] http://www.kernel.org/pub/linux/kernel/people/jsipek/guilt/
+Yeah the IO error is the trigger.
+I noticed that it had obvious troubles accessing the DVD that was in the drive.
+It sweeped over it for several seconds, then hung the system for 2 or 3 seconds
+and then oopsed. But after that everything continued to work as usual.
+(Except kded of course)
 
 -- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
+Greetings Michael.
