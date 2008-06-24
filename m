@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754947AbYFXMkI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755829AbYFXMlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754947AbYFXMkI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 08:40:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYFXMj5
+	id S1755829AbYFXMlT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 08:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYFXMlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 08:39:57 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:35568 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbYFXMj4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 08:39:56 -0400
-Message-Id: <4860B2D5.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Tue, 24 Jun 2008 06:39:49 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Cc: <mingo@elte.hu>, <rostedt@goodmis.org>, <tglx@linutronix.de>,
-       "David Bahi" <DBahi@novell.com>, <linux-kernel@vger.kernel.org>,
-       <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH 1/3] sched: enable interrupts and drop
-	rq-lockduringnewidle balancing
-References: <20080623225645.31515.36393.stgit@lsg.lsg.lab.novell.com>
- <20080623230440.31515.97377.stgit@lsg.lsg.lab.novell.com>
- <1214302405.4351.21.camel@twins> <4860BB14.BA47.005A.0@novell.com>
- <1214310299.4351.27.camel@twins>
-In-Reply-To: <1214310299.4351.27.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Tue, 24 Jun 2008 08:41:10 -0400
+Received: from gw.goop.org ([64.81.55.164]:59960 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750931AbYFXMlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 08:41:09 -0400
+Message-ID: <4860EB57.30402@goop.org>
+Date: Tue, 24 Jun 2008 08:40:55 -0400
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, chrisw@sous-sol.org,
+       xen-devel@lists.xensource.com
+Subject: Re: [git pull] xen, x86 fixes
+References: <20080623194055.GA28384@elte.hu> <20080624073847.GA1897@cs181140183.pp.htv.fi>
+In-Reply-To: <20080624073847.GA1897@cs181140183.pp.htv.fi>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Tue, Jun 24, 2008 at  8:24 AM, in message <1214310299.4351.27.camel@twins>,
-Peter Zijlstra <peterz@infradead.org> wrote: 
-> On Tue, 2008-06-24 at 07:15 -0600, Gregory Haskins wrote:
->> >>> On Tue, Jun 24, 2008 at  6:13 AM, in message 
-> <1214302405.4351.21.camel@twins>,
->> Peter Zijlstra <peterz@infradead.org> wrote: 
->> > On Mon, 2008-06-23 at 17:04 -0600, Gregory Haskins wrote:
->> >> We do find_busiest_groups() et. al. without locks held for normal 
-> balancing,
->> >> so lets do it for newidle as well.  It will allow other cpus to make
->> >> forward progress (against our RQ) while we try to balance and allow 
->> >> some interrupts to occur.
->> > 
->> > Is running f_b_g really that expensive? 
->> 
->> According to our oprofile data, yes.  I speculate that it works out that way 
-> because most newidle
->> attempts result in "no imbalance".  But we were spending ~60%+ time in 
-> find_busiest_groups()
->> because of all the heavy-context switching that goes on in PREEMPT_RT.  So 
-> while f_b_g() is
->> probably cheaper than double-lock/move_tasks(), the ratio of occurrence is 
-> off the charts in
->> comparison. Prior to this patch, those occurrences were 
-> preempt-disabled/irq-disabled/rq->lock critical
->> sections.
->> 
->> So while it is not clear if f_b_g() is the actual cost, it is a convenient 
-> (and legal, afaict) place to
->> deterministically reduce the rq->lock scope.  Additionally, doing so 
-> measurably helps
->> performance, so I think its a win.  Without this patch you have to hope the 
-> double_lock releases
->> this_rq, and even so were not checking for the NEEDS_RESCHED. 
-> 
-> See, having had this information in the changelog to begin with would
-> have helped ;-)
+Adrian Bunk wrote:
+> Another compile error from the x86 tree:
+>
+> <--  snip  -->
+>
+> ...
+>   CC      arch/x86/xen/mmu.o
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/x86/xen/mmu.c: In function ‘xen_pmd_val’:
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/x86/xen/mmu.c:229: error: ‘pmd_t’ has no member named ‘pmd’
+> make[2]: *** [arch/x86/xen/mmu.o] Error 1
+>
+> <--  snip  -->
+>
+> The problem seems to be related to CONFIG_X86_PAE=n which results in
+> PAGETABLE_LEVELS == 2.
+>
+> Not visible in -next due to "xen: remove support for non-PAE 32-bit",
+> but that is not in 2.6.26.
+>   
 
-What?  You can't read my mind?  :)
+Thanks Adrian,
 
-Good point, Peter.  Will fix on next drop.
+Bringing that patch over into .26 would be the easiest fix.  It's 
+effectively a bugfix because non-PAE Xen is broken and unusable anyway.
 
--Greg
+Alternatively, I can easily put a little patch together to use the right 
+accessors that will compile in non-PAE.
 
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
+    J
