@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761052AbYFXRQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761308AbYFXRRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761052AbYFXRQx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 13:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759437AbYFXRQZ
+	id S1761308AbYFXRRT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 13:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760001AbYFXRQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 13:16:25 -0400
-Received: from el-out-1112.google.com ([209.85.162.180]:36581 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758769AbYFXRQX (ORCPT
+	Tue, 24 Jun 2008 13:16:31 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:11831 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759913AbYFXRQ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 13:16:23 -0400
+	Tue, 24 Jun 2008 13:16:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=MJbcFOIACxOJaqKn0kxw0m9qixUc8QNsYSJbDI874n561BrBYgODRooTUZ4tJvKFwN
-         agYkzc2JwPEJEhigW6r3WXRVSh9GBvGimDCyZB2J+fhBHgY70ldYLp1tIrqSCf9Ay0fe
-         uyHNWP3H6G0Rsq9eLeEjHml+D2Ab47ZO/B+ZQ=
-Message-ID: <e9e943910806241016v743ce19s28bdf34177154799@mail.gmail.com>
-Date: Tue, 24 Jun 2008 18:16:21 +0100
-From: "Duane Griffin" <duaneg@dghda.com>
-To: "Jan Kara" <jack@suse.cz>
-Subject: Re: [PATCH] ext3: handle corrupted orphan list at mount
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
-       "Sami Liedes" <sliedes@cc.hut.fi>
-In-Reply-To: <20080624160810.GC22586@atrey.karlin.mff.cuni.cz>
+         :references;
+        b=IWfgiWH/Ywcf1OxK/Cw13HGIObrw0Dq8zi3APO1S/dugXsNHvURm7+VdtttMRXD6mj
+         +Dw6e69BnIEyoWLyBDJkd53rTY5OtQSQumsQdjei8EcfrflooqzkpyByoa9oUKwn15OT
+         vt577dXJKbaEZzBWnzmgakSXEirsGUwtJtFiQ=
+Message-ID: <86802c440806241016l2baf05b9le356fdc314a2af9@mail.gmail.com>
+Date: Tue, 24 Jun 2008 10:16:29 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] x86: introduce init_memory_mapping for 32bit
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080624113049.GA7731@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080607121940.8ee6044a.akpm@linux-foundation.org>
-	 <1214258200-16623-1-git-send-email-duaneg@dghda.com>
-	 <20080624160810.GC22586@atrey.karlin.mff.cuni.cz>
-X-Google-Sender-Auth: 0f7f9a74ed7bc894
+References: <200806231951.10898.yhlu.kernel@gmail.com>
+	 <200806240410.47856.yhlu.kernel@gmail.com>
+	 <20080624113049.GA7731@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/6/24 Jan Kara <jack@suse.cz>:
->> +     /*
->> +      * If the orphans has i_nlinks > 0 then it should be able to be
->> +      * truncated, otherwise it won't be removed from the orphan list
->> +      * during processing and an infinite loop will result.
->> +      */
->> +     if (inode->i_nlink && !ext3_can_truncate(inode))
->> +             goto bad_orphan;
->> +
->  Maybe I miss something but shouldn't above rather be ||?
+On Tue, Jun 24, 2008 at 4:30 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+>> so could use mem below max_low_pfn as early. could move several
+>> function more early instead of waiting after paging_init including
+>> moving relocate_initrd early, and kva related early done in
+>> initmem_init
+>
+> applied to tip/x86/setup-memory - thanks Yinghai.
+>
+> a sidenote:
+>
+>>  6 files changed, 128 insertions(+), 74 deletions(-)
+>
+> this patch is too large - if it causes any problems it will not be very
+> easy to figure out which exact change caused the problems.
+>
+> Lets hope it goes all fine - but in the future lets try doing
+> more+smaller patches, especially if they change some known-dangerous
+> area of the kernel.
+>
+> For example here a better splitup would have been to do 5 or more
+> patches:
+>
+>  1) first introduce init_memory_mapping() [but dont use it anywhere]
+>  2) add the init_memory_mapping() call to setup_arch()
+>  3) move remap_numa_kva()
+>  4) move relocate_initrd()
+>  5) remove the now unnecessary setup from paging_init()
+>
+> ... or something like that. The point is to manage risk: if there's
+> multiple problem areas that a change is touching, try to isolate them
+> from each other and introduce the change gradually.
+>
+> The end result is still exactly the same, but much more
+> reviewable/debuggable/bisectable.
 
-No, it is correct. If i_nlink == 0 the orphan will be deleted in the
-cleanup loop by the iput. If i_nlink > 0 then ext3_truncate is called,
-which usually calls ext3_orphan_del on the way out, thereby removing
-the node from the orphan list. However, if it exits too early
-(basically if the ext3_can_truncate check fails, although there are
-other failure conditions such as OOM that can also cause it to exit
-early) then it doesn't, hence we end up in the infinite loop. So the
-check here says, if this node is not going to be deleted or truncated
-then it is invalid.
+actually i added and tested that one by one. let me check if i split
+that into 5.
 
-Cheers,
-Duane.
-
--- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+YH
