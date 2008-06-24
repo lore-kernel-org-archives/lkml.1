@@ -1,76 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbYFXVaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbYFXVeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757428AbYFXVaG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 17:30:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbYFXV3y
+	id S1758013AbYFXVeH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:34:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757784AbYFXVds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 17:29:54 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:35433 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754226AbYFXV3w (ORCPT
+	Tue, 24 Jun 2008 17:33:48 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:50454 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757741AbYFXVdq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 17:29:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=LEgK3OJsfQfJsRbIij4UIjfQ5D8iuzNkK688NXmBpufBHpVlyCY6QvVf+hE2AoBTzY
-         4KsjR4r6S4mth1WbKLi0GSzWZ52Ioh4N+WZjd1bOLXDBQj4998k4hQXE1IZLYAwCFd4i
-         YgKWhUBme9S/RuQf7fW56cfT1y80ZKTG5PYj8=
-Message-ID: <86802c440806241429s7f5e899dn67d42303247f618@mail.gmail.com>
-Date: Tue, 24 Jun 2008 14:29:49 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: [PATCH 4/5 v2] x86 boot: show pfn addresses in hex not decimal in some kernel info printks
-Cc: akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
-       steiner@sgi.com, travis@sgi.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, ying.huang@intel.com, andi@firstfloor.org
-In-Reply-To: <20080623060939.6b6b3183.pj@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080622142151.5591.4139.sendpatchset@polaris-admin.engr.sgi.com>
-	 <20080622142212.5591.64592.sendpatchset@polaris-admin.engr.sgi.com>
-	 <86802c440806221238g78300952t2fc7f406c1842273@mail.gmail.com>
-	 <20080623060939.6b6b3183.pj@sgi.com>
+	Tue, 24 Jun 2008 17:33:46 -0400
+Subject: Re: [PATCH] Add alloc_pages_exact() and free_pages_exact()
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: linux-kernel@vger.kernel.org, andi@firstfloor.org, randy.dunlap@oracle.com,
+       corbet@lwn.net, torvalds@linux-foundation.org
+In-Reply-To: <1214325649-26075-1-git-send-email-timur@freescale.com>
+References: <1214325649-26075-1-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 24 Jun 2008 14:33:38 -0700
+Message-Id: <1214343218.12367.58.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 4:09 AM, Paul Jackson <pj@sgi.com> wrote:
-> Yinghai wrote:
->> we should remove 0x,
->
-> I see some kernel hex prints either way, with or without, 0x.
->
-> In this case, in part because I was changing a decimal to a hex
-> format, and because it could be ambiguous (a hex number that
-> happened to use only [0-9] digits would be indistinguisable from
-> a decimal) I preferred using the 0x.
->
-> I see no clear answer here ... it seems to be a matter of taste.
->
->> we should ... hex print out all the way...regarding mem pfn and
->> memory address, memory size etc. except XXXMB. XXXKB...
->
-> I fixed the ones I noticed.  If you see print formats that you
-> would like to change, I will likely be in agreement to such a
-> patch.
+On Tue, 2008-06-24 at 11:40 -0500, Timur Tabi wrote:
+> +void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
+> +{
+> +       unsigned int order = get_order(size);
+> +       unsigned long addr;
+> +
+> +       addr = __get_free_pages(gfp_mask, order);
+> +       if (addr) {
+> +               unsigned long alloc_end = addr + (PAGE_SIZE << order);
+> +               unsigned long used = addr + PAGE_ALIGN(size);
+> +
+> +               split_page(virt_to_page(addr), order);
+> +               while (used < alloc_end) {
+> +                       free_page(used);
+> +                       used += PAGE_SIZE;
+> +               }
+> +       }
+> +
+> +       return (void *)addr;
+> +}
 
-got
+Hi Timur,
 
-Zone PFN ranges:
-  DMA      0x       0 -> 0x    1000
-  DMA32    0x    1000 -> 0x  100000
-  Normal   0x  100000 -> 0x  428000
-Movable zone start PFN for each node
-early_node_map[5] active PFN ranges
-    0: 0x       0 -> 0x      99
-    0: 0x     100 -> 0x   d7fa0
-    0: 0x   d7fae -> 0x   d7fb0
-    0: 0x  100000 -> 0x  228000
-    1: 0x  228000 -> 0x  428000
+This looks like a really good idea.  It looks pretty good to me, no
+functional problems.  My brain had a really hard time parsing that code
+for some reason, though.  Could just be a lack of coffee.
 
-YH
+I think the thing that confused me was trying to figure out if
+'alloc_end' was the end of what we *did* allocate from
+__get_free_pages() or if it was the *goal* allocation end.
+
+'used' also seemed like a slightly strange variable name because it
+points to the memory which is about to be freed and ends up *unused*.
+
+I'll offer this up just in case you like it better.  For me, it is
+easier to parse, and should do the exact same thing.  I also think it's
+slightly nicer to do the arithmetic on 'struct page *' rather than
+vaddrs in 'unsigned long'.  It is _slightly_ cheaper not having to do a
+virt_to_page() on each free_page() call.  The same would go for the free
+side as well.
+
+All of the 'struct page *' arithmetic is OK since it is all done inside
+one MAX_ORDER area.
+
+﻿void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
+{
+	﻿unsigned int order = get_order(size);
+	void *alloc;
+	struct page *surplus_start;
+	﻿struct page *surplus_end;
+	struct page *page;
+
+	size = PAGE_ALIGN(size);
+
+	alloc = (void *)__get_free_pages(gfp_mask, order);
+	if (!alloc)
+		return NULL;
+
+	/* Turn the big allocation into a bunch of single pages */
+	﻿split_page(virt_to_page(alloc), order);
+
+	surplus_start = virt_to_page(alloc + size);
+	surplus_end =﻿ surplus_start + ﻿(1 << order);
+
+	for (page = ﻿surplus_start; page < surplus_end; page++)
+		﻿__free_page(page);
+
+	return alloc;
+}
+
+-- Dave
+
