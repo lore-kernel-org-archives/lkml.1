@@ -1,120 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbYFXMyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbYFXM5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755347AbYFXMyZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 08:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYFXMyR
+	id S1755669AbYFXM5h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 08:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbYFXM52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 08:54:17 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:62951 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751254AbYFXMyQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 08:54:16 -0400
-Date: Tue, 24 Jun 2008 14:54:05 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Pavel Machek <pavel@ucw.cz>
-cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: byteorder helpers and void * (was: Re: [PATCH 01/21] lib: add
- byteorder helpers for the aligned case)
-In-Reply-To: <20080523131310.GC9245@ucw.cz>
-Message-ID: <Pine.LNX.4.64.0806241445430.17853@vixen.sonytel.be>
-References: <1211306721.5915.167.camel@brick> <20080523131310.GC9245@ucw.cz>
+	Tue, 24 Jun 2008 08:57:28 -0400
+Received: from dwdmx4.dwd.de ([141.38.3.230]:58854 "EHLO dwdmx4.dwd.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751254AbYFXM50 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 08:57:26 -0400
+Date: Tue, 24 Jun 2008 12:57:18 +0000 (GMT)
+From: Holger Kiehl <Holger.Kiehl@dwd.de>
+X-X-Sender: kiehl@diagnostix.dwd.de
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
+       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Performance of ext4
+In-Reply-To: <20080623174508.GA7216@skywalker>
+Message-ID: <Pine.LNX.4.64.0806241249540.15783@diagnostix.dwd.de>
+References: <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de>
+ <20080616175408.GF3279@atrey.karlin.mff.cuni.cz> <20080616181353.GA20686@skywalker>
+ <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de> <20080619155645.GA8582@mit.edu>
+ <485A8C2D.1090806@redhat.com> <20080619174211.GB9119@mit.edu>
+ <Pine.LNX.4.64.0806200812340.3383@diagnostix.dwd.de> <20080620085922.GH9119@mit.edu>
+ <Pine.LNX.4.64.0806200905070.3383@diagnostix.dwd.de> <20080623174508.GA7216@skywalker>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1223546138-1214312045=:17853"
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Mon, 23 Jun 2008, Aneesh Kumar K.V wrote:
 
----584349381-1223546138-1214312045=:17853
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+> On Fri, Jun 20, 2008 at 09:21:48AM +0000, Holger Kiehl wrote:
+>> On Fri, 20 Jun 2008, Theodore Tso wrote:
+>>
+>>> On Fri, Jun 20, 2008 at 08:32:52AM +0000, Holger Kiehl wrote:
+>>>>> It sounds like i_size is actually dropping in
+>>>>> size at some pointer long after the file was written.  If I had to
+>>>
+>>> sorry, "at some point"...
+>>>
+>>>>> guess the value in the inode cache is correct; and perhaps so is the
+>>>>> value on the journal.  But somehow, the wrong value is getting written
+>>>>> to disk
+>>>
+>>> Or, "the right value is never getting written to disk".  (Which as I
+>>> think about it is more likely; it's likely that an update to i_size is
+>>> getting *lost*, perhaps because the delalloc code is possibly
+>>> modifying i_size without starting a transaction first.  Again this is
+>>> just a guess.)
+>>>
+>>>> What I find strange is that the missing parts of the file are not for
+>>>> example exactly 512 or 1024 or 4096 bytes it is mostly some odd number
+>>>> of bytes.
+>>>
+>>> Is there any chance the truncation point is related to how the program
+>>> is writing its output file?  i.e., if it is a text file, is the
+>>> truncation happening after a new-line or when the stdio library might
+>>> have done an explicit or implicit fflush()?
+>>>
+>> When the benchmark runs it writes to stdout and with tee to the result
+>> file. It first writes some information about the system, prepares the
+>> test files (creates lots of small files), calls sync and then starts
+>> the test. Then every minute one line gets written to the result file.
+>> Often I have seen that everything after the sync was missing. But
+>> sometimes it happened that some parts at the end are missing. But it
+>> was always a clean cut, that is there where no lines that where cut
+>> partially. The lines where always complete.
+>>
+>
+> I found one place where we fail to update i_disksize. Can you try this
+> patch ?
+>
+Yes, I would like to however when I take
+ext4-patch-queue-70acdb9605784bd5c4b06e1a19761828a494a337.tar.gz (which is
+the current ext4-patch-queue from http://repo.or.cz/w/ext4-patch-queue.git)
+and apply those to linux-2.6.26-rc6 I get the following reject:
 
-On Fri, 23 May 2008, Pavel Machek wrote:
-> On Tue 2008-05-20 11:05:21, Harvey Harrison wrote:
-> > Some users know the pointer they are writeing to are aligned,
-> > rather than doing *(__le16 *)ptr = cpu_to_le16(val) add helpers
-> > wrapping this up that have the same convention as put_unaligned_le/be.
-> > 
-> > Although the get_be/le versions duplicate the le16_to_cpup functionality
-> > add them anyway as it makes this a complete api and start work to
-> > eliminate {le|be}{16|32|64}_to_cpup uses (not many).
-> > 
-> > This makes the api look like:
-> > 
-> > get_unaligned_le16
-> > put_unaligned_le16
-> > 
-> > get_le16
-> > put_le16
-> > 
-> > With explicit alignment constraints.
-> > 
-> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > ---
-> >  include/linux/byteorder/generic.h |   60 +++++++++++++++++++++++++++++++++++++
-> >  1 files changed, 60 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/include/linux/byteorder/generic.h b/include/linux/byteorder/generic.h
-> > index 0846e6b..1f0c07e 100644
-> > --- a/include/linux/byteorder/generic.h
-> > +++ b/include/linux/byteorder/generic.h
-> > @@ -119,6 +119,66 @@
-> >  #define cpu_to_be16s __cpu_to_be16s
-> >  #define be16_to_cpus __be16_to_cpus
-> >  
-> > +static inline u16 get_le16(void *ptr)
-> > +{
-> > +	return le16_to_cpu(*(__le16 *)ptr);
-> > +}
-> > +
-> 
-> Document the fact that void * passed in needs to be 16-bit aligned?
 
-Why not let it just take a __le16 *? Because in many use-cases the pointer just
-points to an array of bytes?
+***************
+*** 574,579 ****
+   	INIT_LIST_HEAD(&ei->i_prealloc_list);
+   	spin_lock_init(&ei->i_prealloc_lock);
+   	jbd2_journal_init_jbd_inode(&ei->jinode, &ei->vfs_inode);
+   	return &ei->vfs_inode;
+   }
 
-For the unaligned case, e.g. get_unaligned_le16(), I can understand a bit the
-rationale about using void * (a typical use-case is accessing a little endian
-16-bit value in the middle of an arrays of bytes).
+--- 574,584 ----
+   	INIT_LIST_HEAD(&ei->i_prealloc_list);
+   	spin_lock_init(&ei->i_prealloc_lock);
+   	jbd2_journal_init_jbd_inode(&ei->jinode, &ei->vfs_inode);
++ 	ei->i_reserved_data_blocks = 0;
++ 	ei->i_reserved_meta_blocks = 0;
++ 	ei->i_allocated_meta_blocks = 0;
++ 	ei->i_delalloc_reserved_flag = 0;
++ 	spin_lock_init(&(ei->i_block_reservation_lock));
+   	return &ei->vfs_inode;
+   }
 
-However, a disadvantage is that you remove the ability of the compiler to check
-for using the wrong accessor in a (packed for the unaligned case) struct, e.g.
+Which is from delalloc-ext4-ENOSPC-handling.patch. What am I doing wrong?
+I could apply this by hand but I do not know if this would be correct.
+Please can anyone advice what I need to do?
 
-    struct {
-	u8 pad;
-	__le16 val;			/* 16-bit value */
-    } __attribute ((packed)) s;
+Thanks,
+Holger
 
-    x = get_unaligned_le32(&s.val);	/* oops, 32-bit access */
-
-I noticed there's also a __get_unaligned_le(), which uses compile-time
-detection of the pointer time, to make sure the correct accessor is used.
-Do you intend this to be used by generic code? It's function name starts
-with double underscore, indicating otherwise.
-
-Thanks!
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Technology and Software Centre Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis 293-0376800-10 GEBA-BE-BB
----584349381-1223546138-1214312045=:17853--
