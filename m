@@ -1,222 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756988AbYFXVrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbYFXVtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756988AbYFXVrx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 17:47:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbYFXVro
+	id S1756034AbYFXVtW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbYFXVtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 17:47:44 -0400
-Received: from vms042pub.verizon.net ([206.46.252.42]:54061 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753779AbYFXVrn (ORCPT
+	Tue, 24 Jun 2008 17:49:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48237 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753646AbYFXVtJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 17:47:43 -0400
-Date: Tue, 24 Jun 2008 17:47:20 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] x86 ACPI: normalize segment descriptor register on resume
-In-reply-to: <200806242303.49498.rjw@sisk.pl>
-X-X-Sender: lenb@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Message-id: <alpine.LFD.1.10.0806241747071.3014@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <200806242303.49498.rjw@sisk.pl>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 24 Jun 2008 17:49:09 -0400
+Date: Tue, 24 Jun 2008 14:48:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Takashi Sato <t-sato@yk.jp.nec.com>
+Cc: viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
+       dm-devel@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       mtk.manpages@googlemail.com
+Subject: Re: [PATCH 1/3] Implement generic freeze feature
+Message-Id: <20080624144803.0135a84d.akpm@linux-foundation.org>
+In-Reply-To: <20080624155950t-sato@mail.jp.nec.com>
+References: <20080624155950t-sato@mail.jp.nec.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied.
+On Tue, 24 Jun 2008 15:59:50 +0900
+Takashi Sato <t-sato@yk.jp.nec.com> wrote:
 
-thanks,
--Len
+> I have modified to set the suitable error number (EOPNOTSUPP)
+> in case the filesystem doesn't support the freeze feature.
+> This was pointed out by Andreas Dilger.
+> 
+> The ioctls for the generic freeze feature are below.
+> o Freeze the filesystem
+>   int ioctl(int fd, int FIFREEZE, arg)
+>     fd: The file descriptor of the mountpoint
+>     FIFREEZE: request code for the freeze
+>     arg: Ignored
+>     Return value: 0 if the operation succeeds. Otherwise, -1
+> 
+> o Unfreeze the filesystem
+>   int ioctl(int fd, int FITHAW, arg)
+>     fd: The file descriptor of the mountpoint
+>     FITHAW: request code for unfreeze
+>     arg: Ignored
+>     Return value: 0 if the operation succeeds. Otherwise, -1
+>
+> ...
+>
+> +/*
+> + * get_super_without_lock - Get super_block from block_device without lock.
+> + * @bdev:	block device struct
+> + *
+> + * Scan the superblock list and finds the superblock of the file system
+> + * mounted on the block device given. This doesn't lock anyone.
+> + * %NULL is returned if no match is found.
+> + */
 
-On Tue, 24 Jun 2008, Rafael J. Wysocki wrote:
+This is not a terribly good comment.
 
-> Hi,
-> 
-> The patch below fixes the regression described at
-> http://bugzilla.kernel.org/show_bug.cgi?id=10927
-> which is caused by the fact that some BIOSes call the kernel's resume code with
-> post-protected mode garbage in segment registers.
-> 
-> Apart from Dell laptops referred to in the chagelog it has a potential to fix
-> some other systems on which resume from suspend to RAM fails in a mysterious
-> way and the probability of it breaking things is rather small, so IMO it would
-> be nice to have in 2.6.26.
-> 
-> Thanks,
-> Rafael
-> 
-> 
-> ---
-> From: H. Peter Anvin <hpa@zytor.com>
-> 
-> x86 ACPI: normalize segment descriptor register on resume
-> 
-> Some Dell laptops enter resume with apparent garbage in the segment
-> descriptor registers (almost certainly the result of a botched
-> transition from protected to real mode.)  The only way to clean that
-> up is to enter protected mode ourselves and clean out the descriptor
-> registers.
-> 
-> This fixes resume on Dell XPS M1210 and Dell D620.
-> 
-> Reference: http://bugzilla.kernel.org/show_bug.cgi?id=10927
-> 
-> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-> Tested-by: Kirill A. Shutemov <kirill@shutemov.name>
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  arch/x86/kernel/acpi/realmode/wakeup.S |   38 ++++++++++++++++++++++++++++++++-
->  arch/x86/kernel/acpi/realmode/wakeup.h |    5 ++++
->  arch/x86/kernel/acpi/sleep.c           |   16 +++++++++++++
->  drivers/acpi/sleep/main.c              |    5 +---
->  4 files changed, 59 insertions(+), 5 deletions(-)
-> 
-> Index: linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.S
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/acpi/realmode/wakeup.S
-> +++ linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.S
-> @@ -5,6 +5,7 @@
->  #include <asm/msr-index.h>
->  #include <asm/page.h>
->  #include <asm/pgtable.h>
-> +#include <asm/processor-flags.h>
->  
->  	.code16
->  	.section ".header", "a"
-> @@ -24,6 +25,11 @@ pmode_gdt:	.quad	0
->  realmode_flags:	.long	0
->  real_magic:	.long	0
->  trampoline_segment:	.word 0
-> +_pad1:		.byte	0
-> +wakeup_jmp:	.byte	0xea	/* ljmpw */
-> +wakeup_jmp_off:	.word	3f
-> +wakeup_jmp_seg:	.word	0
-> +wakeup_gdt:	.quad	0, 0, 0
->  signature:	.long	0x51ee1111
->  
->  	.text
-> @@ -34,11 +40,34 @@ _start:
->  	cli
->  	cld
->  
-> +	/* Apparently some dimwit BIOS programmers don't know how to
-> +	   program a PM to RM transition, and we might end up here with
-> +	   junk in the data segment descriptor registers.  The only way
-> +	   to repair that is to go into PM and fix it ourselves... */
-> +	movw	$16, %cx
-> +	lgdtl	%cs:wakeup_gdt
-> +	movl	%cr0, %eax
-> +	orb	$X86_CR0_PE, %al
-> +	movl	%eax, %cr0
-> +	jmp	1f
-> +1:	ljmpw	$8, $2f
-> +2:
-> +	movw	%cx, %ds
-> +	movw	%cx, %es
-> +	movw	%cx, %ss
-> +	movw	%cx, %fs
-> +	movw	%cx, %gs
+Which lock are we not taking?  I _assume_ that it's referring to
+s_umount?  If so, the text should describe that.
+
+It should also go to some lengths explaining why this dangerous-looking
+and rather nasty-looking function exists.
+
+Look at it this way: there is no way in which the reviewer of this
+patch (ie: me) can work out why this function exists.  Hence there will
+be no way in which future readers of this code will be able to work out
+why this function exists either.  This is bad.  These things should be
+described in code comments and in the changelog (whichever is most
+appropriate).
+
+> +struct super_block *get_super_without_lock(struct block_device *bdev)
+> +{
+> +	struct super_block *sb;
 > +
-> +	andb	$~X86_CR0_PE, %al
-> +	movl	%eax, %cr0
-> +	jmp	wakeup_jmp
-> +3:
->  	/* Set up segments */
->  	movw	%cs, %ax
->  	movw	%ax, %ds
->  	movw	%ax, %es
->  	movw	%ax, %ss
-> +	lidtl	wakeup_idt
->  
->  	movl	$wakeup_stack_end, %esp
->  
-> @@ -98,7 +127,14 @@ bogus_real_magic:
->  	jmp	1b
->  
->  	.data
-> -	.balign	4
-> +	.balign	8
+> +	if (!bdev)
+> +		return NULL;
 > +
-> +	/* This is the standard real-mode IDT */
-> +wakeup_idt:
-> +	.word	0xffff		/* limit */
-> +	.long	0		/* address */
-> +	.word	0
-> +
->  	.globl	HEAP, heap_end
->  HEAP:
->  	.long	wakeup_heap
-> Index: linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.h
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/acpi/realmode/wakeup.h
-> +++ linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.h
-> @@ -24,6 +24,11 @@ struct wakeup_header {
->  	u32 realmode_flags;
->  	u32 real_magic;
->  	u16 trampoline_segment;	/* segment with trampoline code, 64-bit only */
-> +	u8  _pad1;
-> +	u8  wakeup_jmp;
-> +	u16 wakeup_jmp_off;
-> +	u16 wakeup_jmp_seg;
-> +	u64 wakeup_gdt[3];
->  	u32 signature;		/* To check we have correct structure */
->  } __attribute__((__packed__));
->  
-> Index: linux-2.6/arch/x86/kernel/acpi/sleep.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
-> +++ linux-2.6/arch/x86/kernel/acpi/sleep.c
-> @@ -50,6 +50,20 @@ int acpi_save_state_mem(void)
->  
->  	header->video_mode = saved_video_mode;
->  
-> +	header->wakeup_jmp_seg = acpi_wakeup_address >> 4;
-> +	/* GDT[0]: GDT self-pointer */
-> +	header->wakeup_gdt[0] =
-> +		(u64)(sizeof(header->wakeup_gdt) - 1) +
-> +		((u64)(acpi_wakeup_address +
-> +			((char *)&header->wakeup_gdt - (char *)acpi_realmode))
-> +				<< 16);
-> +	/* GDT[1]: real-mode-like code segment */
-> +	header->wakeup_gdt[1] = (0x009bULL << 40) +
-> +		((u64)acpi_wakeup_address << 16) + 0xffff;
-> +	/* GDT[2]: real-mode-like data segment */
-> +	header->wakeup_gdt[2] = (0x0093ULL << 40) +
-> +		((u64)acpi_wakeup_address << 16) + 0xffff;
-> +
->  #ifndef CONFIG_64BIT
->  	store_gdt((struct desc_ptr *)&header->pmode_gdt);
->  
-> @@ -111,7 +125,7 @@ void __init acpi_reserve_bootmem(void)
->  		return;
->  	}
->  
-> -	acpi_wakeup_address = acpi_realmode;
-> +	acpi_wakeup_address = virt_to_phys((void *)acpi_realmode);
->  }
->  
->  
-> Index: linux-2.6/drivers/acpi/sleep/main.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/acpi/sleep/main.c
-> +++ linux-2.6/drivers/acpi/sleep/main.c
-> @@ -32,9 +32,8 @@ static int acpi_sleep_prepare(u32 acpi_s
->  		if (!acpi_wakeup_address) {
->  			return -EFAULT;
->  		}
-> -		acpi_set_firmware_waking_vector((acpi_physical_address)
-> -						virt_to_phys((void *)
-> -							     acpi_wakeup_address));
-> +		acpi_set_firmware_waking_vector(
-> +				(acpi_physical_address)acpi_wakeup_address);
->  
->  	}
->  	ACPI_FLUSH_CPU_CACHE();
-> 
+> +	spin_lock(&sb_lock);
+> +	list_for_each_entry(sb, &super_blocks, s_list) {
+> +		if (sb->s_bdev == bdev) {
+> +			if (sb->s_root) {
+> +				sb->s_count++;
+> +				spin_unlock(&sb_lock);
+> +				return sb;
+> +			}
+> +		}
+> +	}
+> +	spin_unlock(&sb_lock);
+> +	return NULL;
+> +}
+> +EXPORT_SYMBOL(get_super_without_lock);
+
