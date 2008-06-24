@@ -1,63 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbYFXUng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbYFXVFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755497AbYFXUng (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 16:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYFXUn2
+	id S1755446AbYFXVFD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:05:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbYFXVEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 16:43:28 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45064 "EHLO mx3.mail.elte.hu"
+	Tue, 24 Jun 2008 17:04:54 -0400
+Received: from il.qumranet.com ([212.179.150.194]:58167 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751250AbYFXUn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 16:43:28 -0400
-Date: Tue, 24 Jun 2008 22:43:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: tglx@linutronix.de, hpa@zytor.com, macro@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/5] x86: perfctr-watchdog.c - coding style cleanup
-Message-ID: <20080624204311.GA3346@elte.hu>
-References: <20080624161624.124913675@gmail.com>> <48611ec1.2234440a.679b.1a7d@mx.google.com> <20080624163622.GA8219@elte.hu> <20080624164533.GA19623@cvg>
+	id S1751449AbYFXVEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 17:04:53 -0400
+Message-ID: <48616182.9030902@qumranet.com>
+Date: Wed, 25 Jun 2008 00:05:06 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080624164533.GA19623@cvg>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: kvm-devel <kvm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] KVM fixes for 2.6.26-rc7
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (firebolt.argo.co.il [0.0.0.0]); Wed, 25 Jun 2008 00:05:06 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus, please pull from the repo and branch at:
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git 
+kvm-updates-2.6.26
 
-> [Ingo Molnar - Tue, Jun 24, 2008 at 06:36:22PM +0200]
-> | 
-> | * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> | 
-> | > Just some code beautification. Nothing else.
-> | 
-> | applied, thanks Cyrill.
-> | 
-> | note, your mailer sets the wrong timestamps:
-> | 
-> | | Date: Thu, 01 Jan 1970 03:00:01 +0300
-> | | From: Cyrill Gorcunov <gorcunov@gmail.com>
-> | 
-> | i'll edit them out of your patches so that Git doesnt get bogus dates.
-> | 
-> | 	Ingo
-> 
-> Thanks Ingo, I've mentoined in 'reply' mail for first message in 
-> series that somehow happened that date was screwed up. I can resent 
-> the series if needed.
+to receive kvm updates for 2.6.26-rc7.  The patches fix host oopses,
+guest interrupt loss, and total kvm clock borkage.
 
-no need to resend, fixed it all up :-)
+Since one of the goals of kvm clock was to be binary compatible with the Xen
+clock, the patchset moves the Xen time code to common code and makes kvm 
+reuse it.
+This fixes both the ABI and correctness issues.  Jeremy has acked the Xen
+changes.
 
-	Ingo
+Avi Kivity (3):
+      KVM: MMU: Fix oops on guest userspace access to guest pagetable
+      KVM: ioapic: fix lost interrupt when changing a device's irq
+      KVM: VMX: Fix host msr corruption with preemption enabled
+
+Gerd Hoffmann (5):
+      x86: Add structs and functions for paravirt clocksource
+      x86: Make xen use the paravirt clocksource structs and functions
+      KVM: Make kvm host use the paravirt clocksource structs
+      x86: KVM guest: Use the paravirt clocksource structs and functions
+      KVM: Remove now unused structs from kvm_para.h
+
+Marcelo Tosatti (4):
+      KVM: Fix race between timer migration and vcpu migration
+      KVM: close timer injection race window in __vcpu_run
+      KVM: MMU: Fix rmap_write_protect() hugepage iteration bug
+      KVM: MMU: large page update_pte issue with non-PAE 32-bit guests 
+(resend)
+
+ arch/x86/Kconfig              |    5 ++
+ arch/x86/kernel/Makefile      |    1 +
+ arch/x86/kernel/kvmclock.c    |   89 ++++++++++----------------
+ arch/x86/kernel/pvclock.c     |  141 
++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kvm/i8254.c          |    9 ++-
+ arch/x86/kvm/lapic.c          |    1 +
+ arch/x86/kvm/mmu.c            |   19 +++---
+ arch/x86/kvm/vmx.c            |   19 +++---
+ arch/x86/kvm/x86.c            |   91 +++++++++++++++++++-------
+ arch/x86/xen/Kconfig          |    1 +
+ arch/x86/xen/time.c           |  132 
+++++-----------------------------------
+ include/asm-x86/kvm_host.h    |    4 +-
+ include/asm-x86/kvm_para.h    |   18 -----
+ include/asm-x86/pvclock-abi.h |   42 ++++++++++++
+ include/asm-x86/pvclock.h     |   13 ++++
+ include/linux/kvm_host.h      |    1 +
+ include/xen/interface/xen.h   |    7 +-
+ virt/kvm/ioapic.c             |   31 +++------
+ 18 files changed, 358 insertions(+), 266 deletions(-)
+ create mode 100644 arch/x86/kernel/pvclock.c
+ create mode 100644 include/asm-x86/pvclock-abi.h
+ create mode 100644 include/asm-x86/pvclock.h
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
