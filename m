@@ -1,196 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbYFXJIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759258AbYFXJIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757926AbYFXJIS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 05:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYFXJIH
+	id S1759258AbYFXJIp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 05:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYFXJIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 05:08:07 -0400
-Received: from mga03.intel.com ([143.182.124.21]:48282 "EHLO mga03.intel.com"
+	Tue, 24 Jun 2008 05:08:34 -0400
+Received: from mga01.intel.com ([192.55.52.88]:58913 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750960AbYFXJIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 05:08:05 -0400
+	id S1758496AbYFXJId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 05:08:33 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.27,695,1204531200"; 
-   d="scan'208,223";a="1797441"
+   d="scan'208,223";a="581323652"
 From: "Yang, Sheng" <sheng.yang@intel.com>
 Organization: Intel
 To: kvm@vger.kernel.org
-Subject: [PATCH 1/2] x86/KVM: Move VMX MSR definition to msr-index.h
-Date: Tue, 24 Jun 2008 17:08:19 +0800
+Subject: [PATCH 2/2] x86: Add "virt flag" in /proc/cpuinfo
+Date: Tue, 24 Jun 2008 17:08:49 +0800
 User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
 Cc: LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_EmLYI/2uLF8vkha"
-Message-Id: <200806241708.20065.sheng.yang@intel.com>
+  boundary="Boundary-00=_hmLYIYJPkdsuHxp"
+Message-Id: <200806241708.49462.sheng.yang@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_EmLYI/2uLF8vkha
+--Boundary-00=_hmLYIYJPkdsuHxp
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-=46rom 90cc7b5303fab30d53d42b3fb7281d756b3d7134 Mon Sep 17 00:00:00 2001
+=46rom 54b1bb9fe5d2fe40fc047b43dd4e1a480d41a977 Mon Sep 17 00:00:00 2001
 =46rom: Sheng Yang <sheng.yang@intel.com>
-Date: Tue, 24 Jun 2008 17:02:41 +0800
-Subject: [PATCH] x86/KVM: Move VMX MSR definition to msr-index.h
+Date: Tue, 24 Jun 2008 17:03:17 +0800
+Subject: [PATCH] x86: Add "virt flag" in /proc/cpuinfo
 
+The hardware virtualization technology evolves very fast. But currently
+it's hard to tell if your CPU support a certain kind of HW technology witho=
+ut
+dig into the source code.
+
+The patch add a new item under /proc/cpuinfo, named "virt flag". The "virt
+flag" got the similar function as "flag". It is used to indicate what
+features does this CPU supported. It don't cover all features but only the
+important ones.
+
+Current implement just cover Intel VMX side.
 
 Signed-off-by: Sheng Yang <sheng.yang@intel.com>
 =2D--
- arch/x86/kvm/vmx.h          |   15 ---------------
- include/asm-x86/msr-index.h |   16 ++++++++++++++++
- 2 files changed, 16 insertions(+), 15 deletions(-)
+ arch/x86/kernel/cpu/proc.c   |   28 ++++++++++++++++++++++++++++
+ include/asm-x86/cpufeature.h |    9 +++++++++
+ 2 files changed, 37 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx.h b/arch/x86/kvm/vmx.h
-index 0c22e5f..da06a4a 100644
-=2D-- a/arch/x86/kvm/vmx.h
-+++ b/arch/x86/kvm/vmx.h
-@@ -331,21 +331,6 @@ enum vmcs_field {
+diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
+index 0d0d905..03b30d0 100644
+=2D-- a/arch/x86/kernel/cpu/proc.c
++++ b/arch/x86/kernel/cpu/proc.c
+@@ -77,6 +77,31 @@ static void show_cpuinfo_misc(struct seq_file *m, struct=
+=20
+cpuinfo_x86 *c)
+ }
+ #endif
 
- #define AR_RESERVD_MASK 0xfffe0f00
-
-=2D#define MSR_IA32_VMX_BASIC                      0x480
-=2D#define MSR_IA32_VMX_PINBASED_CTLS              0x481
-=2D#define MSR_IA32_VMX_PROCBASED_CTLS             0x482
-=2D#define MSR_IA32_VMX_EXIT_CTLS                  0x483
-=2D#define MSR_IA32_VMX_ENTRY_CTLS                 0x484
-=2D#define MSR_IA32_VMX_MISC                       0x485
-=2D#define MSR_IA32_VMX_CR0_FIXED0                 0x486
-=2D#define MSR_IA32_VMX_CR0_FIXED1                 0x487
-=2D#define MSR_IA32_VMX_CR4_FIXED0                 0x488
-=2D#define MSR_IA32_VMX_CR4_FIXED1                 0x489
-=2D#define MSR_IA32_VMX_VMCS_ENUM                  0x48a
-=2D#define MSR_IA32_VMX_PROCBASED_CTLS2            0x48b
-=2D#define MSR_IA32_VMX_EPT_VPID_CAP               0x48c
-=2D
-=2D#define MSR_IA32_FEATURE_CONTROL                0x3a
- #define IA32_FEATURE_CONTROL_LOCKED_BIT		0x1
- #define IA32_FEATURE_CONTROL_VMXON_ENABLED_BIT	0x4
-
-diff --git a/include/asm-x86/msr-index.h b/include/asm-x86/msr-index.h
-index 09413ad..59ffc93 100644
-=2D-- a/include/asm-x86/msr-index.h
-+++ b/include/asm-x86/msr-index.h
-@@ -174,6 +174,7 @@
- #define MSR_IA32_TSC			0x00000010
- #define MSR_IA32_PLATFORM_ID		0x00000017
- #define MSR_IA32_EBL_CR_POWERON		0x0000002a
-+#define MSR_IA32_FEATURE_CONTROL	0x0000003a
-
- #define MSR_IA32_APICBASE		0x0000001b
- #define MSR_IA32_APICBASE_BSP		(1<<8)
-@@ -194,6 +195,21 @@
- #define MSR_IA32_THERM_STATUS		0x0000019c
- #define MSR_IA32_MISC_ENABLE		0x000001a0
-
-+/* Intel VT related */
-+#define MSR_IA32_VMX_BASIC		0x00000480
-+#define MSR_IA32_VMX_PINBASED_CTLS	0x00000481
-+#define MSR_IA32_VMX_PROCBASED_CTLS	0x00000482
-+#define MSR_IA32_VMX_EXIT_CTLS		0x00000483
-+#define MSR_IA32_VMX_ENTRY_CTLS		0x00000484
-+#define MSR_IA32_VMX_MISC		0x00000485
-+#define MSR_IA32_VMX_CR0_FIXED0		0x00000486
-+#define MSR_IA32_VMX_CR0_FIXED1		0x00000487
-+#define MSR_IA32_VMX_CR4_FIXED0		0x00000488
-+#define MSR_IA32_VMX_CR4_FIXED1		0x00000489
-+#define MSR_IA32_VMX_VMCS_ENUM		0x0000048a
-+#define MSR_IA32_VMX_PROCBASED_CTLS2	0x0000048b
-+#define MSR_IA32_VMX_EPT_VPID_CAP	0x0000048c
++static void show_cpuinfo_vmx_virtflag(struct seq_file *m)
++{
++	u32 vmx_msr_low, vmx_msr_high, msr_ctl, msr_ctl2;
 +
- /* Intel Model 6 */
- #define MSR_P6_EVNTSEL0			0x00000186
- #define MSR_P6_EVNTSEL1			0x00000187
++	seq_printf(m, "\nvirt flag\t:");
++	rdmsr(MSR_IA32_VMX_PROCBASED_CTLS, vmx_msr_low, vmx_msr_high);
++	msr_ctl =3D 0xffffffff & vmx_msr_high | vmx_msr_low;
++	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW)
++		seq_printf(m, " tpr_shadow");
++	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_VNMI)
++		seq_printf(m, " vnmi");
++	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_2ND_CTLS) {
++		rdmsr(MSR_IA32_VMX_PROCBASED_CTLS2,
++		      vmx_msr_low, vmx_msr_high);
++		msr_ctl2 =3D 0xffffffff & vmx_msr_high | vmx_msr_low;
++		if ((msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_VIRT_APIC) &&
++		    (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW))
++			seq_printf(m, " flexpriority");
++		if (msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_EPT)
++			seq_printf(m, " ept");
++		if (msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_VPID)
++			seq_printf(m, " vpid");
++	}
++}
++
+ static int show_cpuinfo(struct seq_file *m, void *v)
+ {
+ 	struct cpuinfo_x86 *c =3D v;
+@@ -123,6 +148,9 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 		if (cpu_has(c, i) && x86_cap_flags[i] !=3D NULL)
+ 			seq_printf(m, " %s", x86_cap_flags[i]);
+
++	if (cpu_has(c, X86_FEATURE_VMX))
++		show_cpuinfo_vmx_virtflag(m);
++
+ 	seq_printf(m, "\nbogomips\t: %lu.%02lu\n",
+ 		   c->loops_per_jiffy/(500000/HZ),
+ 		   (c->loops_per_jiffy/(5000/HZ)) % 100);
+diff --git a/include/asm-x86/cpufeature.h b/include/asm-x86/cpufeature.h
+index 0d609c8..87d8084 100644
+=2D-- a/include/asm-x86/cpufeature.h
++++ b/include/asm-x86/cpufeature.h
+@@ -84,6 +84,7 @@
+ #define X86_FEATURE_XMM3	(4*32+ 0) /* Streaming SIMD Extensions-3 */
+ #define X86_FEATURE_MWAIT	(4*32+ 3) /* Monitor/Mwait support */
+ #define X86_FEATURE_DSCPL	(4*32+ 4) /* CPL Qualified Debug Store */
++#define X86_FEATURE_VMX		(4*32+ 5) /* Virtual Machine eXtensions */
+ #define X86_FEATURE_EST		(4*32+ 7) /* Enhanced SpeedStep */
+ #define X86_FEATURE_TM2		(4*32+ 8) /* Thermal Monitor 2 */
+ #define X86_FEATURE_CID		(4*32+10) /* Context ID */
+@@ -113,6 +114,14 @@
+  */
+ #define X86_FEATURE_IDA		(7*32+ 0) /* Intel Dynamic Acceleration */
+
++/* Intel VMX MSR indicated features */
++#define X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW	0x00200000
++#define X86_VMX_FEATURE_PROC_CTLS_VNMI		0x00400000
++#define X86_VMX_FEATURE_PROC_CTLS_2ND_CTLS	0x80000000
++#define X86_VMX_FEATURE_PROC_CTLS2_VIRT_APIC	0x00000001
++#define X86_VMX_FEATURE_PROC_CTLS2_EPT		0x00000002
++#define X86_VMX_FEATURE_PROC_CTLS2_VPID		0x00000020
++
+ #if defined(__KERNEL__) && !defined(__ASSEMBLY__)
+
+ #include <linux/bitops.h>
 =2D-
 1.5.5
 
 
---Boundary-00=_EmLYI/2uLF8vkha
+--Boundary-00=_hmLYIYJPkdsuHxp
 Content-Type: text/x-diff;
   charset="utf-8";
-  name="0002-x86-KVM-Move-VMX-MSR-definition-to-msr-index.h.patch"
+  name="0003-x86-Add-virt-flag-in-proc-cpuinfo.patch"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: attachment;
-	filename="0002-x86-KVM-Move-VMX-MSR-definition-to-msr-index.h.patch"
+	filename="0003-x86-Add-virt-flag-in-proc-cpuinfo.patch"
 
-=46rom 90cc7b5303fab30d53d42b3fb7281d756b3d7134 Mon Sep 17 00:00:00 2001
+=46rom 54b1bb9fe5d2fe40fc047b43dd4e1a480d41a977 Mon Sep 17 00:00:00 2001
 =46rom: Sheng Yang <sheng.yang@intel.com>
-Date: Tue, 24 Jun 2008 17:02:41 +0800
-Subject: [PATCH] x86/KVM: Move VMX MSR definition to msr-index.h
+Date: Tue, 24 Jun 2008 17:03:17 +0800
+Subject: [PATCH] x86: Add "virt flag" in /proc/cpuinfo
 
+The hardware virtualization technology evolves very fast. But currently
+it's hard to tell if your CPU support a certain kind of HW technology witho=
+ut
+dig into the source code.
+
+The patch add a new item under /proc/cpuinfo, named "virt flag". The "virt
+flag" got the similar function as "flag". It is used to indicate what
+features does this CPU supported. It don't cover all features but only the
+important ones.
+
+Current implement just cover Intel VMX side.
 
 Signed-off-by: Sheng Yang <sheng.yang@intel.com>
 =2D--
- arch/x86/kvm/vmx.h          |   15 ---------------
- include/asm-x86/msr-index.h |   16 ++++++++++++++++
- 2 files changed, 16 insertions(+), 15 deletions(-)
+ arch/x86/kernel/cpu/proc.c   |   28 ++++++++++++++++++++++++++++
+ include/asm-x86/cpufeature.h |    9 +++++++++
+ 2 files changed, 37 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx.h b/arch/x86/kvm/vmx.h
-index 0c22e5f..da06a4a 100644
-=2D-- a/arch/x86/kvm/vmx.h
-+++ b/arch/x86/kvm/vmx.h
-@@ -331,21 +331,6 @@ enum vmcs_field {
+diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
+index 0d0d905..03b30d0 100644
+=2D-- a/arch/x86/kernel/cpu/proc.c
++++ b/arch/x86/kernel/cpu/proc.c
+@@ -77,6 +77,31 @@ static void show_cpuinfo_misc(struct seq_file *m, struct=
+ cpuinfo_x86 *c)
+ }
+ #endif
 =20
- #define AR_RESERVD_MASK 0xfffe0f00
-=20
-=2D#define MSR_IA32_VMX_BASIC                      0x480
-=2D#define MSR_IA32_VMX_PINBASED_CTLS              0x481
-=2D#define MSR_IA32_VMX_PROCBASED_CTLS             0x482
-=2D#define MSR_IA32_VMX_EXIT_CTLS                  0x483
-=2D#define MSR_IA32_VMX_ENTRY_CTLS                 0x484
-=2D#define MSR_IA32_VMX_MISC                       0x485
-=2D#define MSR_IA32_VMX_CR0_FIXED0                 0x486
-=2D#define MSR_IA32_VMX_CR0_FIXED1                 0x487
-=2D#define MSR_IA32_VMX_CR4_FIXED0                 0x488
-=2D#define MSR_IA32_VMX_CR4_FIXED1                 0x489
-=2D#define MSR_IA32_VMX_VMCS_ENUM                  0x48a
-=2D#define MSR_IA32_VMX_PROCBASED_CTLS2            0x48b
-=2D#define MSR_IA32_VMX_EPT_VPID_CAP               0x48c
-=2D
-=2D#define MSR_IA32_FEATURE_CONTROL                0x3a
- #define IA32_FEATURE_CONTROL_LOCKED_BIT		0x1
- #define IA32_FEATURE_CONTROL_VMXON_ENABLED_BIT	0x4
-=20
-diff --git a/include/asm-x86/msr-index.h b/include/asm-x86/msr-index.h
-index 09413ad..59ffc93 100644
-=2D-- a/include/asm-x86/msr-index.h
-+++ b/include/asm-x86/msr-index.h
-@@ -174,6 +174,7 @@
- #define MSR_IA32_TSC			0x00000010
- #define MSR_IA32_PLATFORM_ID		0x00000017
- #define MSR_IA32_EBL_CR_POWERON		0x0000002a
-+#define MSR_IA32_FEATURE_CONTROL	0x0000003a
-=20
- #define MSR_IA32_APICBASE		0x0000001b
- #define MSR_IA32_APICBASE_BSP		(1<<8)
-@@ -194,6 +195,21 @@
- #define MSR_IA32_THERM_STATUS		0x0000019c
- #define MSR_IA32_MISC_ENABLE		0x000001a0
-=20
-+/* Intel VT related */
-+#define MSR_IA32_VMX_BASIC		0x00000480
-+#define MSR_IA32_VMX_PINBASED_CTLS	0x00000481
-+#define MSR_IA32_VMX_PROCBASED_CTLS	0x00000482
-+#define MSR_IA32_VMX_EXIT_CTLS		0x00000483
-+#define MSR_IA32_VMX_ENTRY_CTLS		0x00000484
-+#define MSR_IA32_VMX_MISC		0x00000485
-+#define MSR_IA32_VMX_CR0_FIXED0		0x00000486
-+#define MSR_IA32_VMX_CR0_FIXED1		0x00000487
-+#define MSR_IA32_VMX_CR4_FIXED0		0x00000488
-+#define MSR_IA32_VMX_CR4_FIXED1		0x00000489
-+#define MSR_IA32_VMX_VMCS_ENUM		0x0000048a
-+#define MSR_IA32_VMX_PROCBASED_CTLS2	0x0000048b
-+#define MSR_IA32_VMX_EPT_VPID_CAP	0x0000048c
++static void show_cpuinfo_vmx_virtflag(struct seq_file *m)
++{
++	u32 vmx_msr_low, vmx_msr_high, msr_ctl, msr_ctl2;
 +
- /* Intel Model 6 */
- #define MSR_P6_EVNTSEL0			0x00000186
- #define MSR_P6_EVNTSEL1			0x00000187
++	seq_printf(m, "\nvirt flag\t:");
++	rdmsr(MSR_IA32_VMX_PROCBASED_CTLS, vmx_msr_low, vmx_msr_high);
++	msr_ctl =3D 0xffffffff & vmx_msr_high | vmx_msr_low;
++	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW)
++		seq_printf(m, " tpr_shadow");
++	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_VNMI)
++		seq_printf(m, " vnmi");
++	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_2ND_CTLS) {
++		rdmsr(MSR_IA32_VMX_PROCBASED_CTLS2,
++		      vmx_msr_low, vmx_msr_high);
++		msr_ctl2 =3D 0xffffffff & vmx_msr_high | vmx_msr_low;
++		if ((msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_VIRT_APIC) &&
++		    (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW))
++			seq_printf(m, " flexpriority");
++		if (msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_EPT)
++			seq_printf(m, " ept");
++		if (msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_VPID)
++			seq_printf(m, " vpid");
++	}
++}
++
+ static int show_cpuinfo(struct seq_file *m, void *v)
+ {
+ 	struct cpuinfo_x86 *c =3D v;
+@@ -123,6 +148,9 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 		if (cpu_has(c, i) && x86_cap_flags[i] !=3D NULL)
+ 			seq_printf(m, " %s", x86_cap_flags[i]);
+=20
++	if (cpu_has(c, X86_FEATURE_VMX))
++		show_cpuinfo_vmx_virtflag(m);
++
+ 	seq_printf(m, "\nbogomips\t: %lu.%02lu\n",
+ 		   c->loops_per_jiffy/(500000/HZ),
+ 		   (c->loops_per_jiffy/(5000/HZ)) % 100);
+diff --git a/include/asm-x86/cpufeature.h b/include/asm-x86/cpufeature.h
+index 0d609c8..87d8084 100644
+=2D-- a/include/asm-x86/cpufeature.h
++++ b/include/asm-x86/cpufeature.h
+@@ -84,6 +84,7 @@
+ #define X86_FEATURE_XMM3	(4*32+ 0) /* Streaming SIMD Extensions-3 */
+ #define X86_FEATURE_MWAIT	(4*32+ 3) /* Monitor/Mwait support */
+ #define X86_FEATURE_DSCPL	(4*32+ 4) /* CPL Qualified Debug Store */
++#define X86_FEATURE_VMX		(4*32+ 5) /* Virtual Machine eXtensions */
+ #define X86_FEATURE_EST		(4*32+ 7) /* Enhanced SpeedStep */
+ #define X86_FEATURE_TM2		(4*32+ 8) /* Thermal Monitor 2 */
+ #define X86_FEATURE_CID		(4*32+10) /* Context ID */
+@@ -113,6 +114,14 @@
+  */
+ #define X86_FEATURE_IDA		(7*32+ 0) /* Intel Dynamic Acceleration */
+=20
++/* Intel VMX MSR indicated features */
++#define X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW	0x00200000
++#define X86_VMX_FEATURE_PROC_CTLS_VNMI		0x00400000
++#define X86_VMX_FEATURE_PROC_CTLS_2ND_CTLS	0x80000000
++#define X86_VMX_FEATURE_PROC_CTLS2_VIRT_APIC	0x00000001
++#define X86_VMX_FEATURE_PROC_CTLS2_EPT		0x00000002
++#define X86_VMX_FEATURE_PROC_CTLS2_VPID		0x00000020
++
+ #if defined(__KERNEL__) && !defined(__ASSEMBLY__)
+=20
+ #include <linux/bitops.h>
 =2D-=20
 1.5.5
 
 
---Boundary-00=_EmLYI/2uLF8vkha--
+--Boundary-00=_hmLYIYJPkdsuHxp--
