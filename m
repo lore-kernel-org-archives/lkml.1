@@ -1,467 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757269AbYFXV31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756268AbYFXV1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757269AbYFXV31 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 17:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756217AbYFXV3F
+	id S1756268AbYFXV1e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbYFXV1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 17:29:05 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54101 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755446AbYFXV3B (ORCPT
+	Tue, 24 Jun 2008 17:27:25 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:63256 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753779AbYFXV1Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 17:29:01 -0400
-Date: Tue, 24 Jun 2008 14:27:12 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.25.9
-Message-ID: <20080624212712.GB31109@kroah.com>
-References: <20080624212638.GA31109@kroah.com>
+	Tue, 24 Jun 2008 17:27:24 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=SWx0h/zgtJiuFWwkA/a8SW0cT3XC98uNJDb7z7Xz+5UHsPeXkWFn/cjRpcWhHVgxJ
+	ZJCWQi0iQpnXKY8gS0tDA==
+Message-ID: <6599ad830806241427n4e174994oce21e93a034b7051@mail.gmail.com>
+Date: Tue, 24 Jun 2008 14:27:10 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Matt Helsley" <matthltc@us.ibm.com>
+Subject: Re: [patch 3/4] Container Freezer: Implement freezer cgroup subsystem
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Pavel Machek" <pavel@ucw.cz>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org,
+       "Linux Containers" <containers@lists.linux-foundation.org>,
+       "Cedric Le Goater" <clg@fr.ibm.com>
+In-Reply-To: <20080624135824.420875709@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080624212638.GA31109@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <20080624135823.417569216@us.ibm.com>
+	 <20080624135824.420875709@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index e18e2b8..3eb71f8 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 25
--EXTRAVERSION = .8
-+EXTRAVERSION = .9
- NAME = Funky Weasel is Jiggy wit it
- 
- # *DOCUMENTATION*
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index d3437c4..e3b2185 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -141,7 +141,7 @@ static void dump_one_vdso_page(struct page *pg, struct page *upg)
- 	printk("kpg: %p (c:%d,f:%08lx)", __va(page_to_pfn(pg) << PAGE_SHIFT),
- 	       page_count(pg),
- 	       pg->flags);
--	if (upg/* && pg != upg*/) {
-+	if (upg && !IS_ERR(upg) /* && pg != upg*/) {
- 		printk(" upg: %p (c:%d,f:%08lx)", __va(page_to_pfn(upg)
- 						       << PAGE_SHIFT),
- 		       page_count(upg),
-diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
-index 2b3e5d4..9ac056b 100644
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -483,10 +483,16 @@ static void __init reserve_crashkernel(void)
- 					(unsigned long)(crash_size >> 20),
- 					(unsigned long)(crash_base >> 20),
- 					(unsigned long)(total_mem >> 20));
-+
-+			if (reserve_bootmem(crash_base, crash_size,
-+					BOOTMEM_EXCLUSIVE) < 0) {
-+				printk(KERN_INFO "crashkernel reservation "
-+					"failed - memory is in use\n");
-+				return;
-+			}
-+
- 			crashk_res.start = crash_base;
- 			crashk_res.end   = crash_base + crash_size - 1;
--			reserve_bootmem(crash_base, crash_size,
--					BOOTMEM_DEFAULT);
- 		} else
- 			printk(KERN_INFO "crashkernel reservation failed - "
- 					"you have to specify a base address\n");
-diff --git a/drivers/hwmon/adt7473.c b/drivers/hwmon/adt7473.c
-index 9587869..8396e0f 100644
---- a/drivers/hwmon/adt7473.c
-+++ b/drivers/hwmon/adt7473.c
-@@ -309,6 +309,9 @@ no_sensor_update:
- 						ADT7473_REG_PWM_BHVR(i));
- 	}
- 
-+	i = i2c_smbus_read_byte_data(client, ADT7473_REG_CFG4);
-+	data->max_duty_at_overheat = !!(i & ADT7473_CFG4_MAX_DUTY_AT_OVT);
-+
- 	data->limits_last_updated = local_jiffies;
- 	data->limits_valid = 1;
- 
-diff --git a/drivers/hwmon/lm85.c b/drivers/hwmon/lm85.c
-index 182fe6a..30bdd50 100644
---- a/drivers/hwmon/lm85.c
-+++ b/drivers/hwmon/lm85.c
-@@ -192,7 +192,7 @@ static int RANGE_TO_REG( int range )
- {
- 	int i;
- 
--	if ( range < lm85_range_map[0] ) { 
-+	if (range <= lm85_range_map[0]) {
- 		return 0 ;
- 	} else if ( range > lm85_range_map[15] ) {
- 		return 15 ;
-diff --git a/drivers/net/atl1/atl1_hw.c b/drivers/net/atl1/atl1_hw.c
-index 9d3bd22..a965f68 100644
---- a/drivers/net/atl1/atl1_hw.c
-+++ b/drivers/net/atl1/atl1_hw.c
-@@ -250,7 +250,6 @@ static int atl1_get_permanent_address(struct atl1_hw *hw)
- 			memcpy(hw->perm_mac_addr, eth_addr, ETH_ALEN);
- 			return 0;
- 		}
--		return 1;
- 	}
- 
- 	/* see if SPI FLAGS exist ? */
-diff --git a/drivers/watchdog/hpwdt.c b/drivers/watchdog/hpwdt.c
-index 6483d10..2b756ef 100644
---- a/drivers/watchdog/hpwdt.c
-+++ b/drivers/watchdog/hpwdt.c
-@@ -140,49 +140,52 @@ static struct pci_device_id hpwdt_devices[] = {
- };
- MODULE_DEVICE_TABLE(pci, hpwdt_devices);
- 
-+extern asmlinkage void asminline_call(struct cmn_registers *pi86Regs, unsigned long *pRomEntry);
-+
- #ifndef CONFIG_X86_64
- /* --32 Bit Bios------------------------------------------------------------ */
- 
- #define HPWDT_ARCH	32
- 
--static void asminline_call(struct cmn_registers *pi86Regs,
--			   unsigned long *pRomEntry)
--{
--	asm("pushl       %ebp               \n\t"
--	    "movl        %esp, %ebp         \n\t"
--	    "pusha                          \n\t"
--	    "pushf                          \n\t"
--	    "push        %es                \n\t"
--	    "push        %ds                \n\t"
--	    "pop         %es                \n\t"
--	    "movl        8(%ebp),%eax       \n\t"
--	    "movl        4(%eax),%ebx       \n\t"
--	    "movl        8(%eax),%ecx       \n\t"
--	    "movl        12(%eax),%edx      \n\t"
--	    "movl        16(%eax),%esi      \n\t"
--	    "movl        20(%eax),%edi      \n\t"
--	    "movl        (%eax),%eax        \n\t"
--	    "push        %cs                \n\t"
--	    "call        *12(%ebp)          \n\t"
--	    "pushf                          \n\t"
--	    "pushl       %eax               \n\t"
--	    "movl        8(%ebp),%eax       \n\t"
--	    "movl        %ebx,4(%eax)       \n\t"
--	    "movl        %ecx,8(%eax)       \n\t"
--	    "movl        %edx,12(%eax)      \n\t"
--	    "movl        %esi,16(%eax)      \n\t"
--	    "movl        %edi,20(%eax)      \n\t"
--	    "movw        %ds,24(%eax)       \n\t"
--	    "movw        %es,26(%eax)       \n\t"
--	    "popl        %ebx               \n\t"
--	    "movl        %ebx,(%eax)        \n\t"
--	    "popl        %ebx               \n\t"
--	    "movl        %ebx,28(%eax)      \n\t"
--	    "pop         %es                \n\t"
--	    "popf                           \n\t"
--	    "popa                           \n\t"
--	    "leave                          \n\t" "ret");
--}
-+asm(".text                          \n\t"
-+    ".align 4                       \n"
-+    "asminline_call:                \n\t"
-+    "pushl       %ebp               \n\t"
-+    "movl        %esp, %ebp         \n\t"
-+    "pusha                          \n\t"
-+    "pushf                          \n\t"
-+    "push        %es                \n\t"
-+    "push        %ds                \n\t"
-+    "pop         %es                \n\t"
-+    "movl        8(%ebp),%eax       \n\t"
-+    "movl        4(%eax),%ebx       \n\t"
-+    "movl        8(%eax),%ecx       \n\t"
-+    "movl        12(%eax),%edx      \n\t"
-+    "movl        16(%eax),%esi      \n\t"
-+    "movl        20(%eax),%edi      \n\t"
-+    "movl        (%eax),%eax        \n\t"
-+    "push        %cs                \n\t"
-+    "call        *12(%ebp)          \n\t"
-+    "pushf                          \n\t"
-+    "pushl       %eax               \n\t"
-+    "movl        8(%ebp),%eax       \n\t"
-+    "movl        %ebx,4(%eax)       \n\t"
-+    "movl        %ecx,8(%eax)       \n\t"
-+    "movl        %edx,12(%eax)      \n\t"
-+    "movl        %esi,16(%eax)      \n\t"
-+    "movl        %edi,20(%eax)      \n\t"
-+    "movw        %ds,24(%eax)       \n\t"
-+    "movw        %es,26(%eax)       \n\t"
-+    "popl        %ebx               \n\t"
-+    "movl        %ebx,(%eax)        \n\t"
-+    "popl        %ebx               \n\t"
-+    "movl        %ebx,28(%eax)      \n\t"
-+    "pop         %es                \n\t"
-+    "popf                           \n\t"
-+    "popa                           \n\t"
-+    "leave                          \n\t"
-+    "ret                            \n\t"
-+    ".previous");
- 
- /*
-  *	cru_detect
-@@ -333,43 +336,44 @@ static int __devinit detect_cru_service(void)
- 
- #define HPWDT_ARCH	64
- 
--static void asminline_call(struct cmn_registers *pi86Regs,
--			   unsigned long *pRomEntry)
--{
--	asm("pushq      %rbp            \n\t"
--	    "movq       %rsp, %rbp      \n\t"
--	    "pushq      %rax            \n\t"
--	    "pushq      %rbx            \n\t"
--	    "pushq      %rdx            \n\t"
--	    "pushq      %r12            \n\t"
--	    "pushq      %r9             \n\t"
--	    "movq       %rsi, %r12      \n\t"
--	    "movq       %rdi, %r9       \n\t"
--	    "movl       4(%r9),%ebx     \n\t"
--	    "movl       8(%r9),%ecx     \n\t"
--	    "movl       12(%r9),%edx    \n\t"
--	    "movl       16(%r9),%esi    \n\t"
--	    "movl       20(%r9),%edi    \n\t"
--	    "movl       (%r9),%eax      \n\t"
--	    "call       *%r12           \n\t"
--	    "pushfq                     \n\t"
--	    "popq        %r12           \n\t"
--	    "popfq                      \n\t"
--	    "movl       %eax, (%r9)     \n\t"
--	    "movl       %ebx, 4(%r9)    \n\t"
--	    "movl       %ecx, 8(%r9)    \n\t"
--	    "movl       %edx, 12(%r9)   \n\t"
--	    "movl       %esi, 16(%r9)   \n\t"
--	    "movl       %edi, 20(%r9)   \n\t"
--	    "movq       %r12, %rax      \n\t"
--	    "movl       %eax, 28(%r9)   \n\t"
--	    "popq       %r9             \n\t"
--	    "popq       %r12            \n\t"
--	    "popq       %rdx            \n\t"
--	    "popq       %rbx            \n\t"
--	    "popq       %rax            \n\t"
--	    "leave                      \n\t" "ret");
--}
-+asm(".text                      \n\t"
-+    ".align 4                   \n"
-+    "asminline_call:            \n\t"
-+    "pushq      %rbp            \n\t"
-+    "movq       %rsp, %rbp      \n\t"
-+    "pushq      %rax            \n\t"
-+    "pushq      %rbx            \n\t"
-+    "pushq      %rdx            \n\t"
-+    "pushq      %r12            \n\t"
-+    "pushq      %r9             \n\t"
-+    "movq       %rsi, %r12      \n\t"
-+    "movq       %rdi, %r9       \n\t"
-+    "movl       4(%r9),%ebx     \n\t"
-+    "movl       8(%r9),%ecx     \n\t"
-+    "movl       12(%r9),%edx    \n\t"
-+    "movl       16(%r9),%esi    \n\t"
-+    "movl       20(%r9),%edi    \n\t"
-+    "movl       (%r9),%eax      \n\t"
-+    "call       *%r12           \n\t"
-+    "pushfq                     \n\t"
-+    "popq        %r12           \n\t"
-+    "popfq                      \n\t"
-+    "movl       %eax, (%r9)     \n\t"
-+    "movl       %ebx, 4(%r9)    \n\t"
-+    "movl       %ecx, 8(%r9)    \n\t"
-+    "movl       %edx, 12(%r9)   \n\t"
-+    "movl       %esi, 16(%r9)   \n\t"
-+    "movl       %edi, 20(%r9)   \n\t"
-+    "movq       %r12, %rax      \n\t"
-+    "movl       %eax, 28(%r9)   \n\t"
-+    "popq       %r9             \n\t"
-+    "popq       %r12            \n\t"
-+    "popq       %rdx            \n\t"
-+    "popq       %rbx            \n\t"
-+    "popq       %rax            \n\t"
-+    "leave                      \n\t"
-+    "ret                        \n\t"
-+    ".previous");
- 
- /*
-  *	dmi_find_cru
-diff --git a/include/asm-x86/page_32.h b/include/asm-x86/page_32.h
-index 5f7257f..8f8085b 100644
---- a/include/asm-x86/page_32.h
-+++ b/include/asm-x86/page_32.h
-@@ -14,7 +14,8 @@
- #define __PAGE_OFFSET		_AC(CONFIG_PAGE_OFFSET, UL)
- 
- #ifdef CONFIG_X86_PAE
--#define __PHYSICAL_MASK_SHIFT	36
-+/* 44=32+12, the limit we can fit into an unsigned long pfn */
-+#define __PHYSICAL_MASK_SHIFT	44
- #define __VIRTUAL_MASK_SHIFT	32
- #define PAGETABLE_LEVELS	3
- 
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index 4e4e340..db3d837 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -94,7 +94,7 @@ extern unsigned long init_bootmem_node(pg_data_t *pgdat,
- 				       unsigned long freepfn,
- 				       unsigned long startpfn,
- 				       unsigned long endpfn);
--extern void reserve_bootmem_node(pg_data_t *pgdat,
-+extern int reserve_bootmem_node(pg_data_t *pgdat,
- 				 unsigned long physaddr,
- 				 unsigned long size,
- 				 int flags);
-diff --git a/mm/bootmem.c b/mm/bootmem.c
-index 2ccea70..8bb58da 100644
---- a/mm/bootmem.c
-+++ b/mm/bootmem.c
-@@ -398,10 +398,10 @@ unsigned long __init init_bootmem_node(pg_data_t *pgdat, unsigned long freepfn,
- 	return init_bootmem_core(pgdat, freepfn, startpfn, endpfn);
- }
- 
--void __init reserve_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
-+int __init reserve_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
- 				 unsigned long size, int flags)
- {
--	reserve_bootmem_core(pgdat->bdata, physaddr, size, flags);
-+	return reserve_bootmem_core(pgdat->bdata, physaddr, size, flags);
- }
- 
- void __init free_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
-diff --git a/mm/memory.c b/mm/memory.c
-index 0d14d1e..df84668 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -943,17 +943,15 @@ struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
- 	}
- 
- 	ptep = pte_offset_map_lock(mm, pmd, address, &ptl);
--	if (!ptep)
--		goto out;
- 
- 	pte = *ptep;
- 	if (!pte_present(pte))
--		goto unlock;
-+		goto no_page;
- 	if ((flags & FOLL_WRITE) && !pte_write(pte))
- 		goto unlock;
- 	page = vm_normal_page(vma, address, pte);
- 	if (unlikely(!page))
--		goto unlock;
-+		goto bad_page;
- 
- 	if (flags & FOLL_GET)
- 		get_page(page);
-@@ -968,6 +966,15 @@ unlock:
- out:
- 	return page;
- 
-+bad_page:
-+	pte_unmap_unlock(ptep, ptl);
-+	return ERR_PTR(-EFAULT);
-+
-+no_page:
-+	pte_unmap_unlock(ptep, ptl);
-+	if (!pte_none(pte))
-+		return page;
-+	/* Fall through to ZERO_PAGE handling */
- no_page_table:
- 	/*
- 	 * When core dumping an enormous anonymous area that nobody
-@@ -982,6 +989,26 @@ no_page_table:
- 	return page;
- }
- 
-+/* Can we do the FOLL_ANON optimization? */
-+static inline int use_zero_page(struct vm_area_struct *vma)
-+{
-+	/*
-+	 * We don't want to optimize FOLL_ANON for make_pages_present()
-+	 * when it tries to page in a VM_LOCKED region. As to VM_SHARED,
-+	 * we want to get the page from the page tables to make sure
-+	 * that we serialize and update with any other user of that
-+	 * mapping.
-+	 */
-+	if (vma->vm_flags & (VM_LOCKED | VM_SHARED))
-+		return 0;
-+	/*
-+	 * And if we have a fault or a nopfn routine, it's not an
-+	 * anonymous region.
-+	 */
-+	return !vma->vm_ops ||
-+		(!vma->vm_ops->fault && !vma->vm_ops->nopfn);
-+}
-+
- int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
- 		unsigned long start, int len, int write, int force,
- 		struct page **pages, struct vm_area_struct **vmas)
-@@ -1056,9 +1083,7 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
- 		foll_flags = FOLL_TOUCH;
- 		if (pages)
- 			foll_flags |= FOLL_GET;
--		if (!write && !(vma->vm_flags & VM_LOCKED) &&
--		    (!vma->vm_ops || (!vma->vm_ops->nopage &&
--					!vma->vm_ops->fault)))
-+		if (!write && use_zero_page(vma))
- 			foll_flags |= FOLL_ANON;
- 
- 		do {
-@@ -1104,6 +1129,8 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
- 
- 				cond_resched();
- 			}
-+			if (IS_ERR(page))
-+				return i ? i : PTR_ERR(page);
- 			if (pages) {
- 				pages[i] = page;
- 
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 4e0eccc..6acc815 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -858,6 +858,11 @@ static int do_move_pages(struct mm_struct *mm, struct page_to_node *pm,
- 			goto set_status;
- 
- 		page = follow_page(vma, pp->addr, FOLL_GET);
-+
-+		err = PTR_ERR(page);
-+		if (IS_ERR(page))
-+			goto set_status;
-+
- 		err = -ENOENT;
- 		if (!page)
- 			goto set_status;
-@@ -921,6 +926,11 @@ static int do_pages_stat(struct mm_struct *mm, struct page_to_node *pm)
- 			goto set_status;
- 
- 		page = follow_page(vma, pm->addr, 0);
-+
-+		err = PTR_ERR(page);
-+		if (IS_ERR(page))
-+			goto set_status;
-+
- 		err = -ENOENT;
- 		/* Use PageReserved to check for zero page */
- 		if (!page || PageReserved(page))
-diff --git a/net/sctp/socket.c b/net/sctp/socket.c
-index 998e63a..2d42260 100644
---- a/net/sctp/socket.c
-+++ b/net/sctp/socket.c
-@@ -4421,7 +4421,9 @@ static int sctp_getsockopt_local_addrs_old(struct sock *sk, int len,
- 	if (copy_from_user(&getaddrs, optval, len))
- 		return -EFAULT;
- 
--	if (getaddrs.addr_num <= 0) return -EINVAL;
-+	if (getaddrs.addr_num <= 0 ||
-+	    getaddrs.addr_num >= (INT_MAX / sizeof(union sctp_addr)))
-+		return -EINVAL;
- 	/*
- 	 *  For UDP-style sockets, id specifies the association to query.
- 	 *  If the id field is set to the value '0' then the locally bound
+On Tue, Jun 24, 2008 at 6:58 AM, Matt Helsley <matthltc@us.ibm.com> wrote:
+> From: Cedric Le Goater <clg@fr.ibm.com>
+> Subject: [patch 3/4] Container Freezer: Implement freezer cgroup subsystem
+>
+> This patch implements a new freezer subsystem for Paul Menage's
+> control groups framework.
+
+You can s/Paul Menage's// now that it's in mainline.
+> +static const char *freezer_state_strs[] = {
+> +       "RUNNING",
+> +       "FREEZING",
+> +       "FROZEN",
+> +};
+> +
+> +/* Check and update whenever adding new freezer states. Currently is:
+> +   strlen("FREEZING") */
+> +#define STATE_MAX_STRLEN 8
+> +
+
+That's a bit nasty ...
+
+But hopefully it could go away when the write_string() method is
+available in cgroups? (See my patchset from earlier this week).
+
+> +
+> +struct cgroup_subsys freezer_subsys;
+> +
+> +/* Locking and lock ordering:
+> + *
+> + * can_attach(), cgroup_frozen():
+> + * rcu (task->cgroup, freezer->state)
+> + *
+> + * freezer_fork():
+> + * rcu (task->cgroup, freezer->state)
+> + *  freezer->lock
+> + *   task_lock
+> + *    sighand->siglock
+> + *
+> + * freezer_read():
+> + * rcu (freezer->state)
+> + *  freezer->lock (upgrade to write)
+> + *   read_lock css_set_lock
+> + *
+> + * freezer_write()
+> + * cgroup_lock
+> + *  rcu
+> + *   freezer->lock
+> + *    read_lock css_set_lock
+> + *     task_lock
+> + *      sighand->siglock
+> + *
+> + * freezer_create(), freezer_destroy():
+> + * cgroup_lock [ by cgroup core ]
+> + */
+
+
+> +static int freezer_can_attach(struct cgroup_subsys *ss,
+> +                             struct cgroup *new_cgroup,
+> +                             struct task_struct *task)
+> +{
+> +       struct freezer *freezer;
+> +       int retval = 0;
+> +
+> +       /*
+> +        * The call to cgroup_lock() in the freezer.state write method prevents
+> +        * a write to that file racing against an attach, and hence the
+> +        * can_attach() result will remain valid until the attach completes.
+> +        */
+> +       rcu_read_lock();
+> +       freezer = cgroup_freezer(new_cgroup);
+> +       if (freezer->state == STATE_FROZEN)
+> +               retval = -EBUSY;
+
+Is it meant to be OK to move a task into a cgroup that's currently in
+the FREEZING state but not yet fully frozen?
+> +       struct freezer *freezer;
+> +
+> +       rcu_read_lock(); /* needed to fetch task's cgroup
+> +                           can't use task_lock() here because
+> +                           freeze_task() grabs that */
+
+I'm not sure that RCU is the right thing for this. All that the RCU
+lock will guarantee is that the freezer structure you get a pointer to
+doesn't go away. It doesn't guarantee that the task doesn't move
+cgroup, or that the cgroup doesn't get a freeze request via a write.
+But in this case, the fork callback is called before the task is added
+to the task_list/pidhash, or to its cgroups' linked lists. So it
+shouldn't be able to change groups. Racing against a concurrent write
+to the cgroup's freeze file may be more of an issue.
+
+Can you add a __freeze_task() that has to be called with task_lock(p)
+already held?
+
+> +       freezer = task_freezer(task);
+
+Maybe BUG_ON(freezer->state == STATE_FROZEN) ?
+> +
+> +static ssize_t freezer_read(struct cgroup *cgroup,
+> +                           struct cftype *cft,
+> +                           struct file *file, char __user *buf,
+> +                           size_t nbytes, loff_t *ppos)
+> +{
+> +       struct freezer *freezer;
+> +       enum freezer_state state;
+> +
+> +       rcu_read_lock();
+> +       freezer = cgroup_freezer(cgroup);
+> +       state = freezer->state;
+> +       if (state == STATE_FREEZING) {
+> +               /* We change from FREEZING to FROZEN lazily if the cgroup was
+> +                * only partially frozen when we exitted write. */
+> +               spin_lock_irq(&freezer->lock);
+> +               if (freezer_check_if_frozen(cgroup)) {
+> +                       freezer->state = STATE_FROZEN;
+> +                       state = STATE_FROZEN;
+> +               }
+> +               spin_unlock_irq(&freezer->lock);
+> +       }
+> +       rcu_read_unlock();
+> +
+> +       return simple_read_from_buffer(buf, nbytes, ppos,
+> +                                      freezer_state_strs[state],
+> +                                      strlen(freezer_state_strs[state]));
+> +}
+
+Technically this could return weird results if someone read it
+byte-by-byte and the status changed between reads. If you used
+read_seq_string rather than read you'd avoid that.
+
+> +               return -EIO;
+> +
+> +       cgroup_lock();
+
+If you're taking cgroup_lock() here in freezer_write(), there's no
+need for the rcu_read_lock() in freezer_freeze()
+
+Paul
