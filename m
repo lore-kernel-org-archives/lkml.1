@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759097AbYFXIYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759049AbYFXIZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759097AbYFXIYq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 04:24:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758719AbYFXIY3
+	id S1759049AbYFXIZZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 04:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755819AbYFXIZB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 04:24:29 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:44024 "EHLO mgw2.diku.dk"
+	Tue, 24 Jun 2008 04:25:01 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:45671 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758454AbYFXIY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 04:24:27 -0400
-Date: Tue, 24 Jun 2008 10:24:24 +0200 (CEST)
+	id S1753182AbYFXIY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 04:24:59 -0400
+Date: Tue, 24 Jun 2008 10:24:57 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: akinobu.mita@gmail.com, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       linux390@de.ibm.com, linux-s390@vger.kernel.org,
+To: akinobu.mita@gmail.com, davem@davemloft.net, sparclinux@vger.kernel.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 8/14] arch/s390: Eliminate NULL test and memset after
+Subject: [PATCH 9/14] arch/sparc64: Eliminate NULL test and memset after
  alloc_bootmem
-Message-ID: <Pine.LNX.4.64.0806241023580.26777@ask.diku.dk>
+Message-ID: <Pine.LNX.4.64.0806241024340.26777@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,8 +29,8 @@ alloc_bootmem and related functions never return NULL and always return a
 zeroed region of memory.  Thus a NULL test or memset after calls to these
 functions is unnecessary.
 
- arch/s390/kernel/topology.c |    2 --
- 1 file changed, 2 deletions(-)
+ arch/sparc64/kernel/irq.c |    8 --------
+ 1 file changed, 8 deletions(-)
 
 This was fixed using the following semantic patch.
 (http://www.emn.fr/x-info/coccinelle/)
@@ -62,15 +61,28 @@ E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_p
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -u -p a/arch/s390/kernel/topology.c b/arch/s390/kernel/topology.c
---- a/arch/s390/kernel/topology.c
-+++ b/arch/s390/kernel/topology.c
-@@ -313,8 +313,6 @@ void __init s390_init_cpu_topology(void)
- 		machine_has_topology_irq = 1;
+diff -u -p a/arch/sparc64/kernel/irq.c b/arch/sparc64/kernel/irq.c
+--- a/arch/sparc64/kernel/irq.c
++++ b/arch/sparc64/kernel/irq.c
+@@ -882,10 +882,6 @@ static void __init init_cpu_send_mondo_i
+ 	BUILD_BUG_ON((NR_CPUS * sizeof(u16)) > (PAGE_SIZE - 64));
  
- 	tl_info = alloc_bootmem_pages(PAGE_SIZE);
--	if (!tl_info)
--		goto error;
- 	info = tl_info;
- 	stsi(info, 15, 1, 2);
+ 	page = alloc_bootmem_pages(PAGE_SIZE);
+-	if (!page) {
+-		prom_printf("SUN4V: Error, cannot allocate cpu mondo page.\n");
+-		prom_halt();
+-	}
+ 
+ 	tb->cpu_mondo_block_pa = __pa(page);
+ 	tb->cpu_list_pa = __pa(page + 64);
+@@ -929,10 +925,6 @@ void __init init_IRQ(void)
+ 
+ 	size = sizeof(struct ino_bucket) * NUM_IVECS;
+ 	ivector_table = alloc_bootmem(size);
+-	if (!ivector_table) {
+-		prom_printf("Fatal error, cannot allocate ivector_table\n");
+-		prom_halt();
+-	}
+ 	__flush_dcache_range((unsigned long) ivector_table,
+ 			     ((unsigned long) ivector_table) + size);
  
