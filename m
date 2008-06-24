@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbYFXIvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbYFXIzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758013AbYFXIvY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 04:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756100AbYFXIum
+	id S1757212AbYFXIzI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 04:55:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750732AbYFXIyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 04:50:42 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:47075 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755740AbYFXIuk (ORCPT
+	Tue, 24 Jun 2008 04:54:51 -0400
+Received: from smtp4.int-evry.fr ([157.159.10.71]:47848 "EHLO
+	smtp4.int-evry.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750713AbYFXIyu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 04:50:40 -0400
-To: jens.axboe@oracle.com
-CC: miklos@szeredi.hu, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org, npiggin@suse.de
-In-reply-to: <20080624080152.GI20851@kernel.dk> (message from Jens Axboe on
-	Tue, 24 Jun 2008 10:01:54 +0200)
-Subject: Re: [rfc patch 2/4] splice: remove steal from pipe_buf_operations
-References: <20080621154607.154640724@szeredi.hu> <20080621154724.203822363@szeredi.hu> <20080624080152.GI20851@kernel.dk>
-Message-Id: <E1KB4EV-0000u3-5j@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 24 Jun 2008 10:50:35 +0200
+	Tue, 24 Jun 2008 04:54:50 -0400
+From: Florian Fainelli <florian.fainelli@telecomint.eu>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH] drivers/net/r6040.c: Eliminate double sizeof
+Date: Tue, 24 Jun 2008 10:54:18 +0200
+User-Agent: KMail/1.9.9
+Cc: jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+References: <Pine.LNX.4.64.0806232311570.13402@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0806232311570.13402@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200806241054.19392.florian.fainelli@telecomint.eu>
+X-INT-MailScanner-Information: Please contact the ISP for more information
+X-MailScanner-ID: A0A453ED3C7.AC88F
+X-INT-MailScanner: Found to be clean
+X-INT-MailScanner-SpamCheck: 
+X-INT-MailScanner-From: florian.fainelli@telecomint.eu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sat, Jun 21 2008, Miklos Szeredi wrote:
-> > From: Miklos Szeredi <mszeredi@suse.cz>
-> > 
-> > The 'steal' operation hasn't been used for some time.  Remove it and
-> > the associated dead code.  If it's needed in the future, it can always
-> > be easily restored.
-> 
-> I'd rather not just remove this, it's basically waiting for Nick to make
-> good on his promise to make stealing work again (he disabled it).
+Hello Julia,
 
-Yes, I read the commit log.  He disabled it with the intent that we
-may or may not want this interface back, and possibly in some other
-form.
+Le Monday 23 June 2008 23:12:31 Julia Lawall, vous avez écrit :
+> From: Julia Lawall <julia@diku.dk>
+>
+> Taking sizeof the result of sizeof is quite strange and does not seem to be
+> what is wanted here.
 
-Jens, does somebody need this feature?  What for?  If not, then I
-guess nobody will bother implementing it.
+Yes, definitively.
 
-(Nick CC-d)
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Thanks,
-Miklos
+Acked-by: Florian Fainelli <florian.fainelli@telecomint.eu>
+-- 
+Cordialement, Florian Fainelli
+------------------------------
