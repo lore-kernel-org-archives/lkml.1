@@ -1,156 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbYFXTSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbYFXTTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755967AbYFXTSx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 15:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbYFXTS3
+	id S1756150AbYFXTTZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 15:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYFXTTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 15:18:29 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:17961 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754917AbYFXTS1 (ORCPT
+	Tue, 24 Jun 2008 15:19:15 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:46541 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752709AbYFXTTO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 15:18:27 -0400
+	Tue, 24 Jun 2008 15:19:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=hJT4VgKIqS11B6lzalq27rFtBu1EfFEYURta1qMA5sA0Ff+AYahpBOMfCn/4ohZS1U
-         Pat2CSYbVMGAlYukaNz2XmPRKse1rWd6MH6YvQ8kqCgZbyxTOdCV6ieCAZ+BpINnkodE
-         6vBUcpYw+MJoTS+sf623ITzTImMH1xFGGLlHE=
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=hcgExD939Tt5oDBdFJCjT1M7GChK8a4ymfEwtG+IFC3+hOqlhTs24LtuC7pApAyooh
+         3WjlzIqRyoTN32QFqxs5ScNX9aLdnfzBKRCJRi0JGe2yFFIf/DgDUXpT7v/rqoRoXm7x
+         22xmw2eDHEP5D3ZhFY11IK2ZF/WK05V0f8U2s=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: introduce init_memory_mapping for 32bit #2
-Date: Tue, 24 Jun 2008 12:18:58 -0700
+Subject: [PATCH] x86: introduce init_memory_mapping for 32bit #3
+Date: Tue, 24 Jun 2008 12:19:41 -0700
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806231951.10898.yhlu.kernel@gmail.com> <200806240410.47856.yhlu.kernel@gmail.com> <200806241218.14436.yhlu.kernel@gmail.com>
-In-Reply-To: <200806241218.14436.yhlu.kernel@gmail.com>
+References: <200806231951.10898.yhlu.kernel@gmail.com> <200806241218.14436.yhlu.kernel@gmail.com> <200806241218.58613.yhlu.kernel@gmail.com>
+In-Reply-To: <200806241218.58613.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200806241219.41174.yhlu.kernel@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806241218.58613.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-moving relocate_initrd early
+move kva related early backto initmem_init for numa32
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
 
 ---
- arch/x86/kernel/setup_32.c |   22 +++++++---------------
- arch/x86/mm/init_32.c      |    3 ---
- include/asm-x86/setup.h    |    1 -
- 3 files changed, 7 insertions(+), 19 deletions(-)
+ arch/x86/mm/discontig_32.c |    8 ++++++--
+ arch/x86/mm/init_32.c      |   20 --------------------
+ include/asm-x86/numa_32.h  |    5 -----
+ 3 files changed, 6 insertions(+), 27 deletions(-)
 
-Index: xy/arch/x86/kernel/setup_32.c
+Index: xy/arch/x86/mm/discontig_32.c
 ===================================================================
---- xy.orig/arch/x86/kernel/setup_32.c
-+++ xy/arch/x86/kernel/setup_32.c
-@@ -187,7 +187,7 @@ static inline void copy_edd(void)
- 
- #ifdef CONFIG_BLK_DEV_INITRD
- 
--static bool do_relocate_initrd = false;
-+static void __init relocate_initrd(void);
- 
- static void __init reserve_initrd(void)
- {
-@@ -196,7 +196,6 @@ static void __init reserve_initrd(void)
- 	u64 ramdisk_end   = ramdisk_image + ramdisk_size;
- 	u64 end_of_lowmem = max_low_pfn << PAGE_SHIFT;
- 	u64 ramdisk_here;
--	u64 ramdisk_target;
- 
- 	if (!boot_params.hdr.type_of_loader ||
- 	    !ramdisk_image || !ramdisk_size)
-@@ -243,12 +242,12 @@ static void __init reserve_initrd(void)
- 	printk(KERN_INFO "Allocated new RAMDISK: %08llx - %08llx\n",
- 			 ramdisk_here, ramdisk_here + ramdisk_size);
- 
--	do_relocate_initrd = true;
-+	relocate_initrd();
+--- xy.orig/arch/x86/mm/discontig_32.c
++++ xy/arch/x86/mm/discontig_32.c
+@@ -200,7 +200,7 @@ void *alloc_remap(int nid, unsigned long
+ 	return allocation;
  }
  
- #define MAX_MAP_CHUNK	(NR_FIX_BTMAPS << PAGE_SHIFT)
- 
--void __init post_reserve_initrd(void)
-+static void __init relocate_initrd(void)
+-void __init remap_numa_kva(void)
++static void __init remap_numa_kva(void)
  {
- 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
- 	u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
-@@ -257,9 +256,6 @@ void __init post_reserve_initrd(void)
- 	unsigned long slop, clen, mapaddr;
- 	char *p, *q;
+ 	void *vaddr;
+ 	unsigned long pfn;
+@@ -373,12 +373,16 @@ void __init initmem_init(unsigned long s
  
--	if (!do_relocate_initrd)
--		return;
--
- 	ramdisk_here = initrd_start - PAGE_OFFSET;
- 
- 	q = (char *)initrd_start;
-@@ -270,10 +266,6 @@ void __init post_reserve_initrd(void)
- 		p = (char *)__va(ramdisk_image);
- 		memcpy(q, p, clen);
- 		q += clen;
--		/* need to free these low pages...*/
--		printk(KERN_INFO "Freeing old partial RAMDISK %08llx-%08llx\n",
--			 ramdisk_image, ramdisk_image + clen - 1);
--		free_bootmem(ramdisk_image, clen);
- 		ramdisk_image += clen;
- 		ramdisk_size  -= clen;
+ 		allocate_pgdat(nid);
  	}
-@@ -299,16 +291,16 @@ void __init post_reserve_initrd(void)
- 		ramdisk_image, ramdisk_image + ramdisk_size - 1,
- 		ramdisk_here, ramdisk_here + ramdisk_size - 1);
++	remap_numa_kva();
++
+ 	printk(KERN_DEBUG "High memory starts at vaddr %08lx\n",
+ 			(ulong) pfn_to_kaddr(highstart_pfn));
+ 	for_each_online_node(nid)
+ 		propagate_e820_map_node(nid);
  
--	/* need to free that, otherwise init highmem will reserve it again */
-+	/*
-+	 * need to free old one, otherwise init cross max_low_pfn could be
-+	 * converted to bootmem
-+	 */
- 	free_early(ramdisk_image, ramdisk_image+ramdisk_size);
+-	memset(NODE_DATA(0), 0, sizeof(struct pglist_data));
++	for_each_online_node(nid)
++		memset(NODE_DATA(nid), 0, sizeof(struct pglist_data));
++
+ 	NODE_DATA(0)->bdata = &node0_bdata;
+ 	setup_bootmem_allocator();
  }
- #else
- void __init reserve_initrd(void)
- {
- }
--void __init post_reserve_initrd(void)
--{
--}
- #endif /* CONFIG_BLK_DEV_INITRD */
- 
- #ifdef CONFIG_MCA
 Index: xy/arch/x86/mm/init_32.c
 ===================================================================
 --- xy.orig/arch/x86/mm/init_32.c
 +++ xy/arch/x86/mm/init_32.c
-@@ -831,9 +831,6 @@ void __init paging_init(void)
+@@ -449,7 +449,6 @@ static void __init pagetable_init(void)
+ 
+ 	paravirt_pagetable_setup_start(pgd_base);
+ 
+-	remap_numa_kva();
+ 	/*
+ 	 * Fixed mappings, only the page table structure has to be
+ 	 * created - mappings will be set by set_fixmap():
+@@ -724,24 +723,6 @@ void __init setup_bootmem_allocator(void
+ 	after_init_bootmem = 1;
+ }
+ 
+-/*
+- * The node 0 pgdat is initialized before all of these because
+- * it's needed for bootmem.  node>0 pgdats have their virtual
+- * space allocated before the pagetables are in place to access
+- * them, so they can't be cleared then.
+- *
+- * This should all compile down to nothing when NUMA is off.
+- */
+-static void __init remapped_pgdat_init(void)
+-{
+-	int nid;
+-
+-	for_each_online_node(nid) {
+-		if (nid != 0)
+-			memset(NODE_DATA(nid), 0, sizeof(struct pglist_data));
+-	}
+-}
+-
+ static void __init find_early_table_space(unsigned long end)
+ {
+ 	unsigned long puds, pmds, tables, start;
+@@ -831,7 +812,6 @@ void __init paging_init(void)
  	/*
  	 * NOTE: at this point the bootmem allocator is fully available.
  	 */
--
--	post_reserve_initrd();
--
- 	remapped_pgdat_init();
+-	remapped_pgdat_init();
  	sparse_init();
  	zone_sizes_init();
-Index: xy/include/asm-x86/setup.h
+ 
+Index: xy/include/asm-x86/numa_32.h
 ===================================================================
---- xy.orig/include/asm-x86/setup.h
-+++ xy/include/asm-x86/setup.h
-@@ -39,7 +39,6 @@ void reserve_crashkernel(void);
- #include <asm/bootparam.h>
+--- xy.orig/include/asm-x86/numa_32.h
++++ xy/include/asm-x86/numa_32.h
+@@ -5,12 +5,7 @@ extern int pxm_to_nid(int pxm);
+ extern void numa_remove_cpu(int cpu);
  
- void reserve_standard_io_resources(void);
--extern void post_reserve_initrd(void);
+ #ifdef CONFIG_NUMA
+-extern void __init remap_numa_kva(void);
+ extern void set_highmem_pages_init(void);
+-#else
+-static inline void remap_numa_kva(void)
+-{
+-}
+ #endif
  
- #ifndef _SETUP
- 
+ #endif /* _ASM_X86_32_NUMA_H */
