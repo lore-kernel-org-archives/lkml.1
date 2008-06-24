@@ -1,134 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760279AbYFXLx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760380AbYFXLyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760279AbYFXLx3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 07:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760131AbYFXLxS
+	id S1760380AbYFXLyX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 07:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbYFXLyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 07:53:18 -0400
-Received: from mail7.hitachi.co.jp ([133.145.228.42]:44681 "EHLO
-	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760137AbYFXLxQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 07:53:16 -0400
-X-AuditID: 0ac90648-ae77eba000000c2f-dc-4860e029f72e
-Message-ID: <4860E01B.8010806@hitachi.com>
-Date: Tue, 24 Jun 2008 20:52:59 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Tue, 24 Jun 2008 07:54:16 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44543 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751041AbYFXLyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 07:54:15 -0400
+Date: Tue, 24 Jun 2008 13:54:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alok Kataria <akataria@vmware.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Daniel Hecht <dhecht@vmware.com>,
+       Tim Mann <mann@vmware.com>, Zach Amsden <zach@vmware.com>,
+       Sahil Rihan <srihan@vmware.com>
+Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
+Message-ID: <20080624115400.GF21890@elte.hu>
+References: <20080603182014.79a38d03@infradead.org> <35f686220806032101h103152dat841818982aaa5052@mail.gmail.com> <20080604061637.6bab3f67@infradead.org> <1213924953.27983.52.camel@promb-2n-dhcp368.eng.vmware.com> <20080620113922.GG7439@elte.hu> <1213999593.31598.52.camel@promb-2n-dhcp368.eng.vmware.com> <20080623232149.GA22926@elte.hu> <1214264070.3882.22.camel@promb-2n-dhcp368.eng.vmware.com> <20080623234728.GA17297@elte.hu> <1214270516.3882.39.camel@promb-2n-dhcp368.eng.vmware.com>
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-Cc: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: Re: [PATCH 4/5] jbd: fix error handling for checkpoint io
-References: <4843CE15.6080506@hitachi.com> <4843CFBD.7040706@hitachi.com> 
-    <20080602124409.GL30613@duck.suse.cz> <4844CB39.6060409@hitachi.com> 
-    <20080603080219.GA17936@duck.suse.cz> <485F85AE.1010704@hitachi.com> 
-    <20080623122240.GJ26743@duck.suse.cz>
-In-Reply-To: <20080623122240.GJ26743@duck.suse.cz>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1214270516.3882.39.camel@promb-2n-dhcp368.eng.vmware.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
 
-> On Mon 23-06-08 20:14:54, Hidehiro Kawai wrote:
+* Alok Kataria <akataria@vmware.com> wrote:
+
+> On Mon, 2008-06-23 at 16:47 -0700, Ingo Molnar wrote:
+> > * Alok Kataria <akataria@vmware.com> wrote:
+> > 
+> > > IMO, lpj_tsc explains how is this variable initialized. But thinking
+> > > about it, maybe we should rename it to "lpj_timer" ?
+> > 
+> > ok. But instead of 'lpj_timer' i'd suggest to use something like
+> > 'lpj_fine' - as this really is about finegrained measurements.
 > 
->>Hi,
->>
->>I noticed a problem of this patch.  Please see below.
->>
->>Jan Kara wrote:
->>
->>
->>>On Tue 03-06-08 13:40:25, Hidehiro Kawai wrote:
->>>
->>>
->>>>Subject: [PATCH 4/5] jbd: fix error handling for checkpoint io
->>>>
->>>>When a checkpointing IO fails, current JBD code doesn't check the
->>>>error and continue journaling.  This means latest metadata can be
->>>>lost from both the journal and filesystem.
->>>>
->>>>This patch leaves the failed metadata blocks in the journal space
->>>>and aborts journaling in the case of log_do_checkpoint().
->>>>To achieve this, we need to do:
->>>>
->>>>1. don't remove the failed buffer from the checkpoint list where in
->>>>  the case of __try_to_free_cp_buf() because it may be released or
->>>>  overwritten by a later transaction
->>>>2. log_do_checkpoint() is the last chance, remove the failed buffer
->>>>  from the checkpoint list and abort the journal
->>>>3. when checkpointing fails, don't update the journal super block to
->>>>  prevent the journaled contents from being cleaned.  For safety,
->>>>  don't update j_tail and j_tail_sequence either
->>
->>3. is implemented as described below.
->>  (1) if log_do_checkpoint() detects an I/O error during
->>      checkpointing, it calls journal_abort() to abort the journal
->>  (2) if the journal has aborted, don't update s_start and s_sequence
->>      in the on-disk journal superblock
->>
->>So, if the journal aborts, journaled data will be replayed on the
->>next mount.
->>
->>Now, please remember that some dirty metadata buffers are written
->>back to the filesystem without journaling if the journal aborted.
->>We are happy if all dirty metadata buffers are written to the disk,
->>the integrity of the filesystem will be kept.  However, replaying
->>the journaled data can overwrite the latest on-disk metadata blocks
->>partly with old data.  It would break the filesystem.
+> Ok.
+> > 
+> > I'd suggest a delta patch against tip/master that renames all those
+> > tsc_* variables to fine_*. So tsc_rate_min would become fine_rate_min,
+> > etc.
 > 
->   Yes, it would. But how do you think it can happen that a metadata buffer
-> will be written back to the filesystem when it is a part of running
-> transaction? Note that checkpointing code specifically checks whether the
-> buffer being written back is part of a running transaction and if so, it
-> waits for commit before writing back the buffer. So I don't think this can
-> happen but maybe I miss something...
+> Ingo, tsc_rate_min etc are related to the timer rate so calling it 
+> fine_rate_min would be confusing IMO. Instead i call it as 
+> timer_rate_min. Below is the patch on tip/master. Tested on both 32 
+> and 64 bit environment, tree works fine for me.
 
-Checkpointing code checks it and may call log_wait_commit(), but this
-problem is caused by transactions which have not started checkpointing.
+applied to tip/x86/delay - thanks Alok.
 
-For example, the tail transaction has an old update for block_B and
-the running transaction has a new update for block_B.  Then, the
-committing transaction fails to write the commit record, it aborts the
-journal, and new block_B will be written back to the file system without
-journaling.  Because this patch doesn't separate between normal abort
-and checkpointing related abort, the tail transaction is left in the
-journal space.  So by replaying the tail transaction, new block_B is
-overwritten with old one.
-
-It can happen in the case of the checkpointing related abort.
-For example, assuming the tail transaction has an update for block_A,
-the next transaction has an old update for block_B, and the running
-transaction has a new update for block_B.
-Now, the running transaction needs more log space, and it calls
-log_do_checkpoint().  But it aborts the journal because it detected
-write error on block_A.  In this case, new block_B will be
-overwritten when the old block_B in the second transaction to the tail
-is replayed.
-
-Does this answer your question?
-
->>My idea to resolve this problem is that we don't write out metadata
->>buffers which belong to uncommitted transactions if journal has
->>aborted.  Although the latest filesystem updates will be lost,
->>we can ensure the integrity.  It will also be effective for the
->>kernel panic in the middle of writing metadata buffers without
->>journaling (this would occur in the `mount -o errors=panic' case.)
->>
->>Which integrity or latest state should we choose?
-
-Thanks,
--- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
-
+	Ingo
