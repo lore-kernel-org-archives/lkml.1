@@ -1,111 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758494AbYFXWDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757083AbYFXWAJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758494AbYFXWDq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 18:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754226AbYFXWDi
+	id S1757083AbYFXWAJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 18:00:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759005AbYFXV7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 18:03:38 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49133 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750841AbYFXWDh (ORCPT
+	Tue, 24 Jun 2008 17:59:42 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:44340 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758114AbYFXV7l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 18:03:37 -0400
-Date: Tue, 24 Jun 2008 17:03:35 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: tglx@linutronix.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [bug] Re: [PATCH] - Fix stack overflow for large values of MAX_APICS
-Message-ID: <20080624220335.GA8039@sgi.com>
-References: <20080620025104.GA25571@sgi.com> <20080620103921.GC32500@elte.hu> <20080624102401.GA27614@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080624102401.GA27614@elte.hu>
-User-Agent: Mutt/1.5.9i
+	Tue, 24 Jun 2008 17:59:41 -0400
+Message-ID: <48616AAE.703@freescale.com>
+Date: Tue, 24 Jun 2008 16:44:14 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: linux-kernel@vger.kernel.org, andi@firstfloor.org, randy.dunlap@oracle.com,
+       corbet@lwn.net, torvalds@linux-foundation.org
+Subject: Re: [PATCH] Add alloc_pages_exact() and free_pages_exact()
+References: <1214325649-26075-1-git-send-email-timur@freescale.com> <1214343218.12367.58.camel@nimitz>
+In-Reply-To: <1214343218.12367.58.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dave Hansen wrote:
 
-On Tue, Jun 24, 2008 at 12:24:01PM +0200, Ingo Molnar wrote:
+> This looks like a really good idea.  It looks pretty good to me, no
+> functional problems.  
+
+Thanks.
+
+> I think the thing that confused me was trying to figure out if
+> 'alloc_end' was the end of what we *did* allocate from
+> __get_free_pages() or if it was the *goal* allocation end.
 > 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > * Jack Steiner <steiner@sgi.com> wrote:
-> > 
-> > > physid_mask_of_physid() causes a huge stack (12k) to be created if 
-> > > the number of APICS is large. Replace physid_mask_of_physid() with a 
-> > > new function that does not create large stacks. This is a problem 
-> > > only on large x86_64 systems.
-> > 
-> > this indeed fixes the crash i reported here:
-> > 
-> >    http://lkml.org/lkml/2008/6/19/98
-> > 
-> > so i've added both this and the MAXAPICS patch to tip/x86/uv, and will 
-> > test it some more. Lets hope it goes all well this time :-)
-> 
-> -tip auto-testing found a new boot failure on x86 which happens if 
-> NR_CPUS is changed from 8 to 4096. The hang goes like this:
-> 
+> 'used' also seemed like a slightly strange variable name because it
+> points to the memory which is about to be freed and ends up *unused*.
 
-Still looking but here is what I have found so far.
+This function is taken almost verbatim from alloc_large_system_hash().  I
+figured if the terminology was good for that function, it's good for mine.
 
-The most obvious change was to revert the patch that changed MAX_APICS to
-32k. With this patch reverted, the system still hangs at the same spot.
+> I'll offer this up just in case you like it better.  For me, it is
+> easier to parse, and should do the exact same thing.  I also think it's
+> slightly nicer to do the arithmetic on 'struct page *' rather than
+> vaddrs in 'unsigned long'.  It is _slightly_ cheaper not having to do a
+> virt_to_page() on each free_page() call.  The same would go for the free
+> side as well.
 
-I noticed that the hang is random. It usually occurs  at acpi_event_init()
-but sometimes it hangs at a different place.
+It does seem to be an improvement, although AKPM just accepted this patch.  I'd
+hate to bother him with a replacement patch for something so minor.
 
-I also observed that the hang does not always occur. The system will
-boot to the point of mounting /root, then panics because the mount
-fails. I expect that this is a different failure due to missing drivers.
-I'll chase that down later.
-
-
-I added trace code & isolated the hang to a call to synchronize_rcu().
-Usually from netlink_change_ngroups().
-
-If I boot with "maxcpus=1, it never hangs (obviously) but always fails
-to mount /root.
-
-Next I changed NR_CPUS to 128. I still see random hangs at the call
-to acpi_event_init().
-
-
-I'll chase this more tomorrow. Has anyone else seen any failures that might be
-related???
-
-
-
-
->  Linux version 2.6.26-rc7-tip (mingo@dione) (gcc version 4.2.3) #10233 SMP
->  Tue Jun 24 12:13:46 CEST 2008
->  [...]
->  initcall init_mnt_writers+0x0/0x8c returned 0 after 0 msecs
->  calling  eventpoll_init+0x0/0x9a
->  initcall eventpoll_init+0x0/0x9a returned 0 after 0 msecs
->  calling  anon_inode_init+0x0/0x11a
->  initcall anon_inode_init+0x0/0x11a returned 0 after 0 msecs
->  calling  pcie_aspm_init+0x0/0x27
->  initcall pcie_aspm_init+0x0/0x27 returned 0 after 0 msecs
->  calling  acpi_event_init+0x0/0x57
->  [... hard hang ...]
-> 
-> on a good bootup, it would continue like this:
-> 
->  initcall acpi_event_init+0x0/0x57 returned 0 after 38 msecs
->  calling  pnp_system_init+0x0/0x17
->  [...]
-> 
-> the config, full bootlog and reproducer bzImage is at:
-> 
->   http://redhat.com/~mingo/misc/config-Tue_Jun_24_07_44_17_CEST_2008.bad
->   http://redhat.com/~mingo/misc/log-Tue_Jun_24_07_44_17_CEST_2008.bad
->   http://redhat.com/~mingo/misc/bzImage-Tue_Jun_24_07_44_17_CEST_2008.bad
-> 
-> changing CONFIG_NR_CPUS from 4096 to 8 causes the system to boot up 
-> fine.
-> 
-> 	Ingo
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
