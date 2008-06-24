@@ -1,75 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760078AbYFXN7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760260AbYFXOAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760078AbYFXN7n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 09:59:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759027AbYFXN6t
+	id S1760260AbYFXOAA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 10:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759091AbYFXN6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 09:58:49 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:46511 "EHLO e3.ny.us.ibm.com"
+	Tue, 24 Jun 2008 09:58:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38001 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758969AbYFXN6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 09:58:48 -0400
-Message-Id: <20080624135824.821137922@us.ibm.com>
-References: <20080624135823.417569216@us.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 24 Jun 2008 06:58:27 -0700
-From: Matt Helsley <matthltc@us.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Paul Menage <menage@google.com>, Pavel Machek <pavel@ucw.cz>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Cedric Le Goater <clg@fr.ibm.com>
-Subject: [patch 4/4] Container Freezer: Skip frozen cgroups during power management resume
+	id S1753010AbYFXN6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 09:58:49 -0400
+Message-ID: <4860FD66.60003@redhat.com>
+Date: Tue, 24 Jun 2008 08:57:58 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+MIME-Version: 1.0
+To: Duane Griffin <duaneg@dghda.com>
+CC: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
+       Sami Liedes <sliedes@cc.hut.fi>
+Subject: Re: [PATCH] ext3: handle deleting corrupted indirect blocks
+References: <20080607121940.8ee6044a.akpm@linux-foundation.org> <1214315240-22950-1-git-send-email-duaneg@dghda.com>
+In-Reply-To: <1214315240-22950-1-git-send-email-duaneg@dghda.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cedric Le Goater <clg@fr.ibm.com>
-Subject: [patch 4/4] Container Freezer: Skip frozen cgroups during power management resume
+Duane Griffin wrote:
+> While freeing indirect blocks we attach a journal head to the parent buffer
+> head, free the blocks, then journal the parent. If the indirect block list
+> is corrupted and points to the parent the journal head will be detached
+> when the block is cleared, causing an OOPS.
+> 
+> Check for that explicitly and handle it gracefully.
+> 
+> This patch fixes the third case (image hdb.20000057.nullderef.gz)
+> reported in http://bugzilla.kernel.org/show_bug.cgi?id=10882.
+> 
+> Signed-off-by: Duane Griffin <duaneg@dghda.com>
+> ---
+> 
+> diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+> index 6ae4ecf..8019bf2 100644
+> --- a/fs/ext3/inode.c
+> +++ b/fs/ext3/inode.c
+> @@ -2127,7 +2127,20 @@ static void ext3_free_data(handle_t *handle, struct inode *inode,
+>  
+>  	if (this_bh) {
+>  		BUFFER_TRACE(this_bh, "call ext3_journal_dirty_metadata");
+> -		ext3_journal_dirty_metadata(handle, this_bh);
+> +
+> +		/*
+> +		 * The buffer head should have an attached journal head at this
+> +		 * point. However, if the data is corrupted and an indirect
+> +		 * block pointed to itself, it would have been detached when
+> +		 * the block was cleared. Check for this instead of OOPSing.
+> +		 */
+> +		if (bh2jh(this_bh))
 
-When a system is resumed after a suspend, it will also unfreeze 
-frozen cgroups. 
+Should it also (or only) be checking for buffer_jbd rather than testing
+bh2jh which is just shorthand for "is b_private non-null?"
 
-This patchs modifies the resume sequence to skip the tasks which 
-are part of a frozen control group. 
+Also maybe I should know this intuitively by now, but what is the path
+where b_private / BH_JBD got cleared on this corrupted image?
 
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-Tested-by: Matt Helsley <matthltc@us.ibm.com>
----
- kernel/power/process.c |    4 ++++
- 1 file changed, 4 insertions(+)
+Thanks,
+-Eric
 
-Index: linux-2.6.26-rc5-mm2/kernel/power/process.c
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/kernel/power/process.c
-+++ linux-2.6.26-rc5-mm2/kernel/power/process.c
-@@ -11,10 +11,11 @@
- #include <linux/interrupt.h>
- #include <linux/suspend.h>
- #include <linux/module.h>
- #include <linux/syscalls.h>
- #include <linux/freezer.h>
-+#include <linux/cgroup_freezer.h>
- 
- /* 
-  * Timeout for stopping processes
-  */
- #define TIMEOUT	(20 * HZ)
-@@ -133,10 +134,13 @@ static void thaw_tasks(bool nosig_only)
- 			continue;
- 
- 		if (nosig_only && should_send_signal(p))
- 			continue;
- 
-+		if (cgroup_frozen(p))
-+			continue;
-+
- 		thaw_process(p);
- 	} while_each_thread(g, p);
- 	read_unlock(&tasklist_lock);
- }
- 
+> +			ext3_journal_dirty_metadata(handle, this_bh);
+> +		else
+> +			ext3_error(inode->i_sb, "ext3_free_data",
+> +				   "circular indirect block detected, "
+> +				   "inode=%lu, block="E3FSBLK,
+> +				   inode->i_ino, this_bh->b_blocknr);
+>  	}
+>  }
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
--- 
