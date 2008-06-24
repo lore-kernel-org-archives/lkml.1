@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbYFXSsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbYFXStL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752AbYFXSsm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 14:48:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbYFXSsc
+	id S1756000AbYFXStL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 14:49:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755197AbYFXSsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 14:48:32 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:41559 "EHLO
+	Tue, 24 Jun 2008 14:48:53 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:58062 "EHLO
 	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751793AbYFXSsb (ORCPT
+	by vger.kernel.org with ESMTP id S1755205AbYFXSsr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 14:48:31 -0400
-Subject: [PATCH 1/2] cleanup e820_setup_gap v2
+	Tue, 24 Jun 2008 14:48:47 -0400
+Subject: [PATCH 2/2] acpi based pci gap caluculation v2
 From: Alok Kataria <akataria@vmware.com>
 Reply-To: akataria@vmware.com
-To: Ingo Molnar <mingo@elte.hu>, lenb@kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>
+To: lenb@kernel.org, Ingo Molnar <mingo@elte.hu>
+Cc: linux-acpi <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
 Organization: VMware INC.
-Date: Tue, 24 Jun 2008 11:48:30 -0700
-Message-Id: <1214333310.27577.26.camel@promb-2n-dhcp368.eng.vmware.com>
+Date: Tue, 24 Jun 2008 11:48:46 -0700
+Message-Id: <1214333326.27577.28.camel@promb-2n-dhcp368.eng.vmware.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
 Content-Transfer-Encoding: 7bit
@@ -27,106 +27,121 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a preparatory patch for the next patch in series.
-Moves some code from e820_setup_gap to a new function e820_search_gap.
-This patch is a part of a bug fix where we walk the ACPI table to calculate
-a gap for PCI optional devices.
+Evaluates the _CRS object under PCI0 looking for producer resources.
+Then searches the e820 memory space for a gap within these producer resources.
 
-v1->v2: Patch on top of tip/master.
-	Fixes a bug introduced in the last patch about the typeof "last".
-	Also the new function e820_search_gap now returns if we found a gap in
-	e820_map.
+Allows us to find a gap for the unclaimed pci resources or MMIO resources
+for hotplug devices within the BIOS allowed pci regions.
+
+v1->v2: Some changes in the print strings.
+	Also note the prototype for e820_search_gap has changes in this
+	iteration, but the return value is ignored while calling it over here.
 
 Signed-off-by: Alok N Kataria <akataria@vmware.com>
 
-Index: linux-x86-tree.git/arch/x86/kernel/e820.c
+Index: linux-x86-tree.git/arch/x86/pci/acpi.c
 ===================================================================
---- linux-x86-tree.git.orig/arch/x86/kernel/e820.c	2008-06-23 17:24:07.000000000 -0700
-+++ linux-x86-tree.git/arch/x86/kernel/e820.c	2008-06-24 10:27:38.000000000 -0700
-@@ -477,26 +477,22 @@
+--- linux-x86-tree.git.orig/arch/x86/pci/acpi.c	2008-06-23 17:24:07.000000000 -0700
++++ linux-x86-tree.git/arch/x86/pci/acpi.c	2008-06-24 10:57:43.000000000 -0700
+@@ -4,6 +4,7 @@
+ #include <linux/irq.h>
+ #include <linux/dmi.h>
+ #include <asm/numa.h>
++#include <asm/e820.h>
+ #include "pci.h"
+ 
+ struct pci_root_info {
+@@ -14,6 +15,11 @@
+ 	int busnum;
+ };
+ 
++struct gap_info {
++	unsigned long gapstart;
++	unsigned long gapsize;
++};
++
+ static acpi_status
+ resource_to_addr(struct acpi_resource *resource,
+ 			struct acpi_resource_address64 *addr)
+@@ -110,6 +116,70 @@
+ 	}
  }
  
- /*
-- * Search for the biggest gap in the low 32 bits of the e820
-- * memory space.  We pass this space to PCI to assign MMIO resources
-- * for hotplug or unconfigured devices in.
-- * Hopefully the BIOS let enough space left.
-+ * Search for a gap in the e820 memory space from start_addr to 2^32.
-  */
--__init void e820_setup_gap(void)
-+__init int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
-+		unsigned long start_addr)
- {
--	unsigned long gapstart, gapsize, round;
--	unsigned long long last;
--	int i;
-+	unsigned long long last = 0x100000000ull;
-+	int i = e820.nr_map;
- 	int found = 0;
- 
--	last = 0x100000000ull;
--	gapstart = 0x10000000;
--	gapsize = 0x400000;
--	i = e820.nr_map;
- 	while (--i >= 0) {
- 		unsigned long long start = e820.map[i].addr;
- 		unsigned long long end = start + e820.map[i].size;
- 
-+		if (end < start_addr)
-+			continue;
++static acpi_status search_gap(struct acpi_resource *resource, void *data)
++{
++	struct acpi_resource_address64 addr;
++	acpi_status status;
++	struct gap_info *gap = data;
 +
- 		/*
- 		 * Since "last" is at most 4GB, we know we'll
- 		 * fit in 32 bits if this condition is true
-@@ -504,15 +500,32 @@
- 		if (last > end) {
- 			unsigned long gap = last - end;
- 
--			if (gap > gapsize) {
--				gapsize = gap;
--				gapstart = end;
-+			if (gap >= *gapsize) {
-+				*gapsize = gap;
-+				*gapstart = end;
- 				found = 1;
- 			}
- 		}
- 		if (start < last)
- 			last = start;
- 	}
-+	return found;
++	status = resource_to_addr(resource, &addr);
++	if (ACPI_SUCCESS(status) &&
++	    addr.resource_type == ACPI_MEMORY_RANGE &&
++	    addr.address_length > gap->gapsize) {
++		e820_search_gap(&gap->gapstart, &gap->gapsize,
++				(addr.minimum + addr.translation_offset));
++	}
++
++	return AE_OK;
 +}
 +
 +/*
-+ * Search for the biggest gap in the low 32 bits of the e820
-+ * memory space.  We pass this space to PCI to assign MMIO resources
-+ * for hotplug or unconfigured devices in.
-+ * Hopefully the BIOS let enough space left.
++ * Search for a hole in the 32 bit address space for PCI to assign MMIO
++ * resources for hotplug or unconfigured resources.
++ * We query the CRS object of the PCI root device to look for possible producer
++ * resources in the tree and consider these while calulating the start address
++ * for this hole.
 + */
-+__init void e820_setup_gap(void)
++static void pci_setup_gap(acpi_handle *handle)
 +{
-+	unsigned long gapstart, gapsize, round;
-+	int found;
++	struct gap_info gap;
++	acpi_status status;
 +
-+	gapstart = 0x10000000;
-+	gapsize = 0x400000;
-+	found  = e820_search_gap(&gapstart, &gapsize, 0);
++	gap.gapstart = 0;
++	gap.gapsize = 0x400000;
++
++	status = acpi_walk_resources(handle, METHOD_NAME__CRS,
++				     search_gap, &gap);
++
++	if (ACPI_SUCCESS(status)) {
++		unsigned long round;
++
++		if (!gap.gapstart) {
++			printk(KERN_ERR "ACPI: Warning: Cannot find a gap "
++					"in the 32bit address range for PCI\n"
++					"ACPI: PCI devices may collide with "
++					"hotpluggable memory address range\n");
++		}
++		/*
++		 * Round the gapstart, uses the same logic as in
++		 * e820_gap_setup
++		 */
++		round = 0x100000;
++		while ((gap.gapsize >> 4) > round)
++			round += round;
++		/* Fun with two's complement */
++		pci_mem_start = (gap.gapstart + round) & -round;
++
++		printk(KERN_INFO "ACPI: PCI resources should "
++				"start at %lx (gap: %lx:%lx)\n",
++				pci_mem_start, gap.gapstart, gap.gapsize);
++	} else {
++		printk(KERN_ERR "ACPI: Error while searching for gap in "
++				"the 32bit address range for PCI\n");
++	}
++}
++
++
+ static void
+ get_current_resources(struct acpi_device *device, int busnum,
+ 			int domain, struct pci_bus *bus)
+@@ -220,6 +290,8 @@
  
- #ifdef CONFIG_X86_64
- 	if (!found) {
-Index: linux-x86-tree.git/include/asm-x86/e820.h
-===================================================================
---- linux-x86-tree.git.orig/include/asm-x86/e820.h	2008-06-23 17:24:26.000000000 -0700
-+++ linux-x86-tree.git/include/asm-x86/e820.h	2008-06-24 10:27:38.000000000 -0700
-@@ -71,6 +71,8 @@
- 			     int checktype);
- extern void update_e820(void);
- extern void e820_setup_gap(void);
-+extern int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
-+				unsigned long start_addr);
- struct setup_data;
- extern void parse_e820_ext(struct setup_data *data, unsigned long pa_data);
+ 	if (bus && (pci_probe & PCI_USE__CRS))
+ 		get_current_resources(device, busnum, domain, bus);
++
++	pci_setup_gap(device->handle);
+ 	return bus;
+ }
  
-
 
 
