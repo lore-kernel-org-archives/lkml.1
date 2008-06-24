@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759049AbYFXIZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758850AbYFXIZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759049AbYFXIZZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 04:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755819AbYFXIZB
+	id S1758850AbYFXIZr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 04:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759159AbYFXIZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 04:25:01 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:45671 "EHLO mgw1.diku.dk"
+	Tue, 24 Jun 2008 04:25:23 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:45701 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753182AbYFXIY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 04:24:59 -0400
-Date: Tue, 24 Jun 2008 10:24:57 +0200 (CEST)
+	id S1758996AbYFXIZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 04:25:20 -0400
+Date: Tue, 24 Jun 2008 10:25:17 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: akinobu.mita@gmail.com, davem@davemloft.net, sparclinux@vger.kernel.org,
+To: akinobu.mita@gmail.com, jdike@addtoit.com,
+       user-mode-linux-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 9/14] arch/sparc64: Eliminate NULL test and memset after
+Subject: [PATCH 10/14] arch/um: Eliminate NULL test and memset after
  alloc_bootmem
-Message-ID: <Pine.LNX.4.64.0806241024340.26777@ask.diku.dk>
+Message-ID: <Pine.LNX.4.64.0806241024580.26777@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,8 +30,10 @@ alloc_bootmem and related functions never return NULL and always return a
 zeroed region of memory.  Thus a NULL test or memset after calls to these
 functions is unnecessary.
 
- arch/sparc64/kernel/irq.c |    8 --------
- 1 file changed, 8 deletions(-)
+ arch/um/drivers/net_kern.c |    4 ----
+ arch/um/kernel/initrd.c    |    2 --
+ arch/um/kernel/physmem.c   |    3 ---
+ 3 files changed, 9 deletions(-)
 
 This was fixed using the following semantic patch.
 (http://www.emn.fr/x-info/coccinelle/)
@@ -61,28 +64,45 @@ E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_p
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -u -p a/arch/sparc64/kernel/irq.c b/arch/sparc64/kernel/irq.c
---- a/arch/sparc64/kernel/irq.c
-+++ b/arch/sparc64/kernel/irq.c
-@@ -882,10 +882,6 @@ static void __init init_cpu_send_mondo_i
- 	BUILD_BUG_ON((NR_CPUS * sizeof(u16)) > (PAGE_SIZE - 64));
+diff -u -p a/arch/um/drivers/net_kern.c b/arch/um/drivers/net_kern.c
+--- a/arch/um/drivers/net_kern.c
++++ b/arch/um/drivers/net_kern.c
+@@ -668,10 +668,6 @@ static int __init eth_setup(char *str)
+ 	}
  
- 	page = alloc_bootmem_pages(PAGE_SIZE);
--	if (!page) {
--		prom_printf("SUN4V: Error, cannot allocate cpu mondo page.\n");
--		prom_halt();
+ 	new = alloc_bootmem(sizeof(*new));
+-	if (new == NULL) {
+-		printk(KERN_ERR "eth_init : alloc_bootmem failed\n");
+-		return 1;
 -	}
  
- 	tb->cpu_mondo_block_pa = __pa(page);
- 	tb->cpu_list_pa = __pa(page + 64);
-@@ -929,10 +925,6 @@ void __init init_IRQ(void)
+ 	INIT_LIST_HEAD(&new->list);
+ 	new->index = n;
+diff -u -p a/arch/um/kernel/initrd.c b/arch/um/kernel/initrd.c
+--- a/arch/um/kernel/initrd.c
++++ b/arch/um/kernel/initrd.c
+@@ -37,8 +37,6 @@ static int __init read_initrd(void)
+ 	}
  
- 	size = sizeof(struct ino_bucket) * NUM_IVECS;
- 	ivector_table = alloc_bootmem(size);
--	if (!ivector_table) {
--		prom_printf("Fatal error, cannot allocate ivector_table\n");
--		prom_halt();
--	}
- 	__flush_dcache_range((unsigned long) ivector_table,
- 			     ((unsigned long) ivector_table) + size);
+ 	area = alloc_bootmem(size);
+-	if (area == NULL)
+-		return 0;
  
+ 	if (load_initrd(initrd, area, size) == -1)
+ 		return 0;
+diff -u -p a/arch/um/kernel/physmem.c b/arch/um/kernel/physmem.c
+--- a/arch/um/kernel/physmem.c
++++ b/arch/um/kernel/physmem.c
+@@ -41,12 +41,9 @@ int __init init_maps(unsigned long physm
+ 	total_len = phys_len + iomem_len + highmem_len;
+ 
+ 	map = alloc_bootmem_low_pages(total_len);
+-	if (map == NULL)
+-		return -ENOMEM;
+ 
+ 	for (i = 0; i < total_pages; i++) {
+ 		p = &map[i];
+-		memset(p, 0, sizeof(struct page));
+ 		SetPageReserved(p);
+ 		INIT_LIST_HEAD(&p->lru);
+ 	}
