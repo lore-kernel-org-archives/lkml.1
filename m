@@ -1,38 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbYFXTe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbYFXTdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072AbYFXTe1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 15:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbYFXTeS
+	id S1755115AbYFXTdR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 15:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYFXTc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 15:34:18 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:45480 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752726AbYFXTeS (ORCPT
+	Tue, 24 Jun 2008 15:32:59 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:45871 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752930AbYFXTc6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 15:34:18 -0400
-Date: Tue, 24 Jun 2008 23:34:22 +0400
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] alpha: Fix percpu for !SMP
-Message-ID: <20080624193422.GA8949@jurassic.park.msu.ru>
-References: <59ea9d21fca74a2e8ffec8384815d7c54c8b4a5c.1214324538.git.segher@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <59ea9d21fca74a2e8ffec8384815d7c54c8b4a5c.1214324538.git.segher@kernel.crashing.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 24 Jun 2008 15:32:58 -0400
+To: torvalds@linux-foundation.org
+CC: miklos@szeredi.hu, jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-reply-to: <E1KBEA8-0002ey-II@pomaz-ex.szeredi.hu> (message from Miklos
+	Szeredi on Tue, 24 Jun 2008 21:26:44 +0200)
+Subject: Re: [rfc patch 3/4] splice: remove confirm from
+ pipe_buf_operations
+References: <20080621154607.154640724@szeredi.hu> <20080621154726.494538562@szeredi.hu> <20080624080440.GJ20851@kernel.dk> <E1KB4Id-0000un-PV@pomaz-ex.szeredi.hu> <20080624111913.GP20851@kernel.dk> <E1KB6p9-0001Gq-Fd@pomaz-ex.szeredi.hu>
+ <alpine.LFD.1.10.0806241022120.2926@woody.linux-foundation.org> <E1KBDBg-0002XZ-DG@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0806241129590.2926@woody.linux-foundation.org> <E1KBDpg-0002bR-3X@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0806241216350.2926@woody.linux-foundation.org> <E1KBE7p-0002eT-CJ@pomaz-ex.szeredi.hu> <E1KBEA8-0002ey-II@pomaz-ex.szeredi.hu>
+Message-Id: <E1KBEFY-0002fh-5m@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 24 Jun 2008 21:32:20 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 24, 2008 at 06:25:12PM +0200, Segher Boessenkool wrote:
-> Commit 9267b4b3880d00dc2dab90f1d817c856939114f7 introduced a
-> percpu.h for alpha.  It didn't define PER_CPU_ATTRIBUTES for
-> the non-SMP case, leading to build failures for such a config
-> (e.g., the alpha defconfig).
+> > > > 
+> > > > Let's start with page_cache_pipe_buf_confirm().  How should we deal
+> > > > with finding an invalidated page (!PageUptodate(page) &&
+> > > > !page->mapping)?
+> > > 
+> > > I suspect we just have to use it. After all, it was valid when the read 
+> > > was done. The fact that it got invalidated later is kind of immaterial.
+> > 
+> > Right.  But what if it's invalidated *before* becoming uptodate (if
+> > you'd read my mail further, I discussed this).
+> 
+> Please ignore, this can't happen of course due to page locking...
 
-Thanks, but similar patch from Thorsten Kranzkowski already
-went in.
+Or it can only happen if there was an I/O error on reading the page.
 
-Ivan.
+So it's an issue after all...
+
+Miklos
