@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbYFXIV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758388AbYFXIV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757593AbYFXIV0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 04:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbYFXIVN
+	id S1758388AbYFXIV4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 04:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbYFXIVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 04:21:13 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:40175 "EHLO mgw2.diku.dk"
+	Tue, 24 Jun 2008 04:21:38 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:49998 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752499AbYFXIVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 04:21:11 -0400
-Date: Tue, 24 Jun 2008 10:21:07 +0200 (CEST)
+	id S1752857AbYFXIVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 04:21:37 -0400
+Date: Tue, 24 Jun 2008 10:21:34 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: akinobu.mita@gmail.com, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org,
+To: akinobu.mita@gmail.com, dhowells@redhat.com, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/14] arch/arm: Eliminate NULL test and memset after
+Subject: [PATCH 2/14] arch/frv: Eliminate NULL test and memset after
  alloc_bootmem
-Message-ID: <Pine.LNX.4.64.0806241020190.26777@ask.diku.dk>
+Message-ID: <Pine.LNX.4.64.0806241021080.26777@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,8 +29,8 @@ alloc_bootmem and related functions never return NULL and always return a
 zeroed region of memory.  Thus a NULL test or memset after calls to these
 functions is unnecessary.
 
- arch/arm/mm/mmu.c |    1 -
- 1 file changed, 1 deletion(-)
+ arch/frv/mm/init.c |    2 --
+ 1 file changed, 2 deletions(-)
 
 This was fixed using the following semantic patch.
 (http://www.emn.fr/x-info/coccinelle/)
@@ -61,14 +61,15 @@ E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_p
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-Diff -u -p a/arch/arm/mm/mmu.c b/arch/arm/mm/mmu.c
---- a/arch/arm/mm/mmu.c
-+++ b/arch/arm/mm/mmu.c
-@@ -676,7 +676,6 @@ static void __init devicemaps_init(struc
- 	 * Allocate the vector page early.
- 	 */
- 	vectors = alloc_bootmem_low_pages(PAGE_SIZE);
--	BUG_ON(!vectors);
+diff -u -p a/arch/frv/mm/init.c b/arch/frv/mm/init.c
+--- a/arch/frv/mm/init.c
++++ b/arch/frv/mm/init.c
+@@ -118,8 +118,6 @@ void __init paging_init(void)
  
- 	for (addr = VMALLOC_END; addr; addr += PGDIR_SIZE)
- 		pmd_clear(pmd_off_k(addr));
+ 		pkmap_page_table = alloc_bootmem_pages(PAGE_SIZE);
+ 
+-		memset(pkmap_page_table, 0, PAGE_SIZE);
+-
+ 		pge = swapper_pg_dir + pgd_index_k(PKMAP_BASE);
+ 		pue = pud_offset(pge, PKMAP_BASE);
+ 		pme = pmd_offset(pue, PKMAP_BASE);
