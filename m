@@ -1,97 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751516AbYFXHBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbYFXHAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751516AbYFXHBa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 03:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbYFXHBE
+	id S1758548AbYFXHAs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 03:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbYFXHAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 03:01:04 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:59634 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758704AbYFXHBA (ORCPT
+	Tue, 24 Jun 2008 03:00:10 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:29538 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751768AbYFXHAH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 03:01:00 -0400
-To: akpm@linux-foundation.org, viro@ZenIV.linux.org.uk
-Cc: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       axboe@kernel.dk, mtk.manpages@googlemail.com
-Subject: [PATCH 2/3] Remove XFS specific ioctl interfaces for freeze feature
-Message-Id: <20080624160027t-sato@mail.jp.nec.com>
+	Tue, 24 Jun 2008 03:00:07 -0400
+Date: Tue, 24 Jun 2008 08:59:40 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Rene Herman <rene.herman@keyaccess.nl>,
+       Hans de Goede <j.w.r.degoede@hhs.nl>, Zhang Rui <rui.zhang@intel.com>,
+       linux-acpi@vger.kernel.org, lm-sensors@lm-sensors.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2.6.26-rc] ACPI Thermal Zone driver breaks lm-sensors 2
+  userspace
+Message-ID: <20080624085940.3ee3bf77@hyperion.delvare>
+In-Reply-To: <alpine.LFD.1.10.0806232004480.2926@woody.linux-foundation.org>
+References: <fa.4PGqX9CuLbgiTimfCcon+PlAMxk@ifi.uio.no>
+	<fa.PWu620xEt5OlYdOezvRtQriuNjM@ifi.uio.no>
+	<48605935.5070407@shaw.ca>
+	<alpine.LFD.1.10.0806232004480.2926@woody.linux-foundation.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: WeMail32[2.51] ID:1K0086
-From: Takashi Sato <t-sato@yk.jp.nec.com>
-Date: Tue, 24 Jun 2008 16:00:26 +0900
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It removes XFS specific ioctl interfaces and request codes
-for freeze feature.
-This patch has been supplied by David Chinner.
+Hi Linus,
 
-Signed-off-by: Dave Chinner <dgc@sgi.com>
-Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
----
- linux-2.6/xfs_ioctl.c   |   15 ---------------
- linux-2.6/xfs_ioctl32.c |    2 --
- xfs_fs.h                |    4 ++--
- 3 files changed, 2 insertions(+), 19 deletions(-)
+On Mon, 23 Jun 2008 20:07:15 -0700 (PDT), Linus Torvalds wrote:
+> On Mon, 23 Jun 2008, Robert Hancock wrote:
+> > Mark M. Hoffman wrote:
+> > > 2) This patch is broken.
+> > 
+> > You didn't indicate what was wrong with the patch.
+> 
+> Yes. Leaving everybody wondering whether it's just an opinionated 
+> expression of the former problem, or whether there is a real and 
+> understandable reason why it was NACK'ed.
 
-diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7-freeze/fs/xfs/linux-2.6/xfs_ioctl.c linux-2.6
-.26-rc7-xfs/fs/xfs/linux-2.6/xfs_ioctl.c
---- linux-2.6.26-rc7-freeze/fs/xfs/linux-2.6/xfs_ioctl.c	2008-06-23 11:53:03.000000000 +0900
-+++ linux-2.6.26-rc7-xfs/fs/xfs/linux-2.6/xfs_ioctl.c	2008-06-23 11:55:36.000000000 +0900
-@@ -1233,21 +1233,6 @@ xfs_ioctl(
- 		return -error;
- 	}
- 
--	case XFS_IOC_FREEZE:
--		if (!capable(CAP_SYS_ADMIN))
--			return -EPERM;
--
--		if (inode->i_sb->s_frozen == SB_UNFROZEN)
--			freeze_bdev(inode->i_sb->s_bdev);
--		return 0;
--
--	case XFS_IOC_THAW:
--		if (!capable(CAP_SYS_ADMIN))
--			return -EPERM;
--		if (inode->i_sb->s_frozen != SB_UNFROZEN)
--			thaw_bdev(inode->i_sb->s_bdev, inode->i_sb);
--		return 0;
--
- 	case XFS_IOC_GOINGDOWN: {
- 		__uint32_t in;
- 
-diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7-freeze/fs/xfs/linux-2.6/xfs_ioctl32.c linux-2
-.6.26-rc7-xfs/fs/xfs/linux-2.6/xfs_ioctl32.c
---- linux-2.6.26-rc7-freeze/fs/xfs/linux-2.6/xfs_ioctl32.c	2008-06-23 11:53:03.000000000 +0900
-+++ linux-2.6.26-rc7-xfs/fs/xfs/linux-2.6/xfs_ioctl32.c	2008-06-23 11:55:36.000000000 +0900
-@@ -398,8 +398,6 @@ xfs_compat_ioctl(
- 	case XFS_IOC_FSGROWFSDATA:
- 	case XFS_IOC_FSGROWFSLOG:
- 	case XFS_IOC_FSGROWFSRT:
--	case XFS_IOC_FREEZE:
--	case XFS_IOC_THAW:
- 	case XFS_IOC_GOINGDOWN:
- 	case XFS_IOC_ERROR_INJECTION:
- 	case XFS_IOC_ERROR_CLEARALL:
-diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7-freeze/fs/xfs/xfs_fs.h linux-2.6.26-rc7-xfs/f
-s/xfs/xfs_fs.h
---- linux-2.6.26-rc7-freeze/fs/xfs/xfs_fs.h	2008-06-23 11:53:03.000000000 +0900
-+++ linux-2.6.26-rc7-xfs/fs/xfs/xfs_fs.h	2008-06-23 11:55:36.000000000 +0900
-@@ -473,8 +473,8 @@ typedef struct xfs_handle {
- #define XFS_IOC_ERROR_INJECTION	     _IOW ('X', 116, struct xfs_error_injection)
- #define XFS_IOC_ERROR_CLEARALL	     _IOW ('X', 117, struct xfs_error_injection)
- /*	XFS_IOC_ATTRCTL_BY_HANDLE -- deprecated 118	 */
--#define XFS_IOC_FREEZE		     _IOWR('X', 119, int)
--#define XFS_IOC_THAW		     _IOWR('X', 120, int)
-+/*	XFS_IOC_FREEZE		  -- FIFREEZE   119	 */
-+/*	XFS_IOC_THAW		  -- FITHAW     120	 */
- #define XFS_IOC_FSSETDM_BY_HANDLE    _IOW ('X', 121, struct xfs_fsop_setdm_handlereq)
- #define XFS_IOC_ATTRLIST_BY_HANDLE   _IOW ('X', 122, struct xfs_fsop_attrlist_handlereq)
- #define XFS_IOC_ATTRMULTI_BY_HANDLE  _IOW ('X', 123, struct xfs_fsop_attrmulti_handlereq)
+I guess Mark assumed that everybody had read the discussion thread Rene
+referenced, where I explained why his patch was broken:
+
+http://lkml.org/lkml/2008/6/23/175
+
+-- 
+Jean Delvare
