@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755829AbYFXMlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbYFXMuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755829AbYFXMlT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 08:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYFXMlK
+	id S1754141AbYFXMuh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 08:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYFXMu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 08:41:10 -0400
-Received: from gw.goop.org ([64.81.55.164]:59960 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750931AbYFXMlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 08:41:09 -0400
-Message-ID: <4860EB57.30402@goop.org>
-Date: Tue, 24 Jun 2008 08:40:55 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, chrisw@sous-sol.org,
-       xen-devel@lists.xensource.com
-Subject: Re: [git pull] xen, x86 fixes
-References: <20080623194055.GA28384@elte.hu> <20080624073847.GA1897@cs181140183.pp.htv.fi>
-In-Reply-To: <20080624073847.GA1897@cs181140183.pp.htv.fi>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 24 Jun 2008 08:50:26 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52484 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751498AbYFXMu0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 08:50:26 -0400
+Date: Tue, 24 Jun 2008 13:32:18 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Elias Oltmanns <eo@nebensachen.de>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] IDE: Fix HDIO_DRIVE_RESET handling
+Message-ID: <20080624133218.6bccab75@lxorguk.ukuu.org.uk>
+In-Reply-To: <200806241306.42054.bzolnier@gmail.com>
+References: <87k5gmz596.fsf@denkblock.local>
+	<200806240041.42796.bzolnier@gmail.com>
+	<87skv3s3d9.fsf@denkblock.local>
+	<200806241306.42054.bzolnier@gmail.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> Another compile error from the x86 tree:
->
-> <--  snip  -->
->
-> ...
->   CC      arch/x86/xen/mmu.o
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/x86/xen/mmu.c: In function ‘xen_pmd_val’:
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/x86/xen/mmu.c:229: error: ‘pmd_t’ has no member named ‘pmd’
-> make[2]: *** [arch/x86/xen/mmu.o] Error 1
->
-> <--  snip  -->
->
-> The problem seems to be related to CONFIG_X86_PAE=n which results in
-> PAGETABLE_LEVELS == 2.
->
-> Not visible in -next due to "xen: remove support for non-PAE 32-bit",
-> but that is not in 2.6.26.
->   
+> I don't see a reliable way to fix ide_abort() - once the request/command
+> is started hardware can be already in a state that makes aborting hard if
+> not impossible.
 
-Thanks Adrian,
+It depends on the ATA version what you do but you end up doing a reset
+sequence without waiting for the existing command to finish if your drive
+is too new to have IDLE IMMEDIATE. What you can't do is wait for the
+command to finish before issuing a reset because it may never finish.
 
-Bringing that patch over into .26 would be the easiest fix.  It's 
-effectively a bugfix because non-PAE Xen is broken and unusable anyway.
+I don't see why you think it's "hard". We have timeout handlers for many
+commands and those reset/abort just fine.
 
-Alternatively, I can easily put a little patch together to use the right 
-accessors that will compile in non-PAE.
-
-    J
+Alan
