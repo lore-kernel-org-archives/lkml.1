@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758328AbYFXV6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbYFXV6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758328AbYFXV6e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 17:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757938AbYFXV5g
+	id S1758602AbYFXV6t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757180AbYFXV5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 17:57:36 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:39046 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757925AbYFXV5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 17:57:35 -0400
-Date: Wed, 25 Jun 2008 00:55:34 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       rmk@arm.linux.org.uk, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [4/5] update the BLK_DEV_HD help text
-Message-ID: <20080624215533.GF18252@cs181140183.pp.htv.fi>
-References: <20080609222155.GA1987@cs181133002.pp.htv.fi> <200806101956.15711.bzolnier@gmail.com> <20080622101752.GG27069@cs181133002.pp.htv.fi> <200806221521.33506.bzolnier@gmail.com>
+	Tue, 24 Jun 2008 17:57:41 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:49473 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755235AbYFXV5j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 17:57:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=WePZTSe1MpIWYn4V+FTeiRp6Gr39BeS+Nai9wS3UjkY6NsvPqEyp/mzDuPbRW/gR8h
+         jo8xyldJ8OuphA+lPfX1QzYhtxvq+svRcFQLdOuk/gT63mPo7aguQsTNYSN3CwHD+pg5
+         F5Fbo/hE19w4frj+V71SvMGCxnFbKYucI/IKA=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: get max_pfn_mapped in init_memory_mapping
+Date: Tue, 24 Jun 2008 14:56:20 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200806241455.33199.yhlu.kernel@gmail.com>
+In-Reply-To: <200806241455.33199.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200806221521.33506.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200806241456.20753.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Many people will see this option the first time now that it is in 
-drivers/block/
 
-Make it clear that virtually noone needs it.
+so don't shift that in the loop
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
----
-
- drivers/block/Kconfig |   26 +++++++-------------------
- 1 file changed, 7 insertions(+), 19 deletions(-)
-
-6071700205968d31a74a695a678188f2cbcf0eb8 diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
-index c9ab7ef..46eb920 100644
---- a/drivers/block/Kconfig
-+++ b/drivers/block/Kconfig
-@@ -434,27 +434,15 @@ config VIRTIO_BLK
-           lguest or QEMU based VMMs (like KVM or Xen).  Say Y or M.
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 0c92624..8bad202 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -398,7 +398,7 @@ phys_pud_init(pud_t *pud_page, unsigned long addr, unsigned long end)
+ 	__flush_tlb_all();
+ 	update_page_count(PG_LEVEL_1G, pages);
  
- config BLK_DEV_HD
--	bool "Old hard disk (MFM/RLL/IDE) driver"
-+	bool "Very old hard disk (MFM/RLL/IDE) driver"
- 	depends on HAVE_IDE
- 	depends on !ARM || ARCH_RPC || ARCH_SHARK || BROKEN
- 	help
--	  There are two drivers for MFM/RLL/IDE hard disks. Most people use
--	  the newer enhanced driver, but this old one is still around for two
--	  reasons. Some older systems have strange timing problems and seem to
--	  work only with the old driver (which itself does not work with some
--	  newer systems). The other reason is that the old driver is smaller,
--	  since it lacks the enhanced functionality of the new one. This makes
--	  it a good choice for systems with very tight memory restrictions, or
--	  for systems with only older MFM/RLL/ESDI drives. Choosing the old
--	  driver can save 13 KB or so of kernel memory.
--
--	  If you want to use this driver together with the new one you have
--	  to use "hda=noprobe hdb=noprobe" kernel parameters to prevent the new
--	  driver from probing the primary interface.
--
--	  If you are unsure, then just choose the Enhanced IDE/MFM/RLL driver
--	  instead of this one. For more detailed information, read the
--	  Disk-HOWTO, available from
--	  <http://www.tldp.org/docs.html#howto>.
-+	  This is a very old hard disk driver that lacks the enhanced
-+	  functionality of the newer ones.
-+
-+	  It is required for systems with ancient MFM/RLL/ESDI drives.
-+
-+	  If unsure, say N.
+-	return last_map_addr >> PAGE_SHIFT;
++	return last_map_addr;
+ }
  
- endif # BLK_DEV
-
+ static void __init find_early_table_space(unsigned long end)
+@@ -606,7 +606,7 @@ unsigned long __init_refok init_memory_mapping(unsigned long start, unsigned lon
+ 	if (!after_bootmem)
+ 		early_memtest(start_phys, end_phys);
+ 
+-	return last_map_addr;
++	return last_map_addr >> PAGE_SHIFT;
+ }
+ 
+ #ifndef CONFIG_NUMA
