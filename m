@@ -1,65 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760380AbYFXLyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbYFXL6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760380AbYFXLyX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 07:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbYFXLyQ
+	id S1759632AbYFXL6T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 07:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYFXL6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 07:54:16 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44543 "EHLO mx2.mail.elte.hu"
+	Tue, 24 Jun 2008 07:58:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38746 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751041AbYFXLyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 07:54:15 -0400
-Date: Tue, 24 Jun 2008 13:54:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alok Kataria <akataria@vmware.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Daniel Hecht <dhecht@vmware.com>,
-       Tim Mann <mann@vmware.com>, Zach Amsden <zach@vmware.com>,
-       Sahil Rihan <srihan@vmware.com>
-Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
-Message-ID: <20080624115400.GF21890@elte.hu>
-References: <20080603182014.79a38d03@infradead.org> <35f686220806032101h103152dat841818982aaa5052@mail.gmail.com> <20080604061637.6bab3f67@infradead.org> <1213924953.27983.52.camel@promb-2n-dhcp368.eng.vmware.com> <20080620113922.GG7439@elte.hu> <1213999593.31598.52.camel@promb-2n-dhcp368.eng.vmware.com> <20080623232149.GA22926@elte.hu> <1214264070.3882.22.camel@promb-2n-dhcp368.eng.vmware.com> <20080623234728.GA17297@elte.hu> <1214270516.3882.39.camel@promb-2n-dhcp368.eng.vmware.com>
+	id S1751643AbYFXL6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 07:58:08 -0400
+To: "Takashi Nishiie" <t-nishiie@np.css.fujitsu.com>
+Cc: "'Masami Hiramatsu'" <mhiramat@redhat.com>,
+       "'Alexey Dobriyan'" <adobriyan@gmail.com>,
+       "'Mathieu Desnoyers'" <mathieu.desnoyers@polymtl.ca>,
+       "'Peter Zijlstra'" <peterz@infradead.org>,
+       "'Steven Rostedt'" <rostedt@goodmis.org>,
+       "'Ingo Molnar'" <mingo@elte.hu>,
+       "'LKML'" <linux-kernel@vger.kernel.org>,
+       "'systemtap-ml'" <systemtap@sources.redhat.com>,
+       "'Hideo AOKI'" <haoki@redhat.com>
+Subject: Re: [RFC] Tracepoint proposal
+References: <485BE2C6.1080901@redhat.com> <20080620174529.GB10943@Krystal>
+	<1213992446.3223.195.camel@lappy.programming.kicks-ass.net>
+	<20080622171135.GA19432@Krystal>
+	<20080622175928.GA5022@martell.zuzino.mipt.ru>
+	<20080622182705.GA23301@Krystal>
+	<20080624002010.GA4777@martell.zuzino.mipt.ru>
+	<486071AF.3080709@redhat.com>
+	<007601c8d5ca$18fa0e10$4aee2a30$@css.fujitsu.com>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Tue, 24 Jun 2008 07:55:25 -0400
+In-Reply-To: <007601c8d5ca$18fa0e10$4aee2a30$@css.fujitsu.com> (Takashi Nishiie's message of "Tue, 24 Jun 2008 16:15:35 +0900")
+Message-ID: <y0mtzfjavyq.fsf@ton.toronto.redhat.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1214270516.3882.39.camel@promb-2n-dhcp368.eng.vmware.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Takashi Nishiie" <t-nishiie@np.css.fujitsu.com> writes:
 
-* Alok Kataria <akataria@vmware.com> wrote:
+> [...]
+> Each kernel sub-system seems to have its own way of dealing with 
+> debugging statements. Some of these methods include 'dprintk', 
+> 'pr_debug', 'dev_debug', 'DEBUGP'. I think that these functions are
+> the tracepoints that has been availably mounted without setting up 
+> the tool set of the outside. I think whether mounting that unites 
+> these functions can be done if kernel marker and tracepoint are used.
 
-> On Mon, 2008-06-23 at 16:47 -0700, Ingo Molnar wrote:
-> > * Alok Kataria <akataria@vmware.com> wrote:
-> > 
-> > > IMO, lpj_tsc explains how is this variable initialized. But thinking
-> > > about it, maybe we should rename it to "lpj_timer" ?
-> > 
-> > ok. But instead of 'lpj_timer' i'd suggest to use something like
-> > 'lpj_fine' - as this really is about finegrained measurements.
-> 
-> Ok.
-> > 
-> > I'd suggest a delta patch against tip/master that renames all those
-> > tsc_* variables to fine_*. So tsc_rate_min would become fine_rate_min,
-> > etc.
-> 
-> Ingo, tsc_rate_min etc are related to the timer rate so calling it 
-> fine_rate_min would be confusing IMO. Instead i call it as 
-> timer_rate_min. Below is the patch on tip/master. Tested on both 32 
-> and 64 bit environment, tree works fine for me.
+There are efforts underway to collect these various debug methods into
+a single run-time-dynamic stream, which may even turn out to connect
+to markers.
 
-applied to tip/x86/delay - thanks Alok.
+> By the way, isn't there problem on security?  What kprobe, jprobe,
+> and kernel marker, etc. offer looks like what the framework of Linux
+> Security Module had offered before.  Gotten kprobe, jprobe, and
+> kernel marker, etc. should not be exported to the userland for
+> security because it becomes the hotbed of rootkits.
 
-	Ingo
+These are all kernel-side facilities with no direct connection to
+user-land.
+
+> Users such as kprobe, jprobe, and kernel marker should not be
+> Loadable Kernel Module. [...]
+
+That would defeat their usefulness.  Remember, kernel modules run with
+no hardware-level restrictions at all, so if an adversary managed to
+load up some kernel malware module, the game is over, whether or not
+they use kprobes.
+
+- FChE
