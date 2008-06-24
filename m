@@ -1,63 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755116AbYFXD3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757642AbYFXDbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755116AbYFXD3n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 23:29:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbYFXD3f
+	id S1757642AbYFXDbl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 23:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbYFXDbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 23:29:35 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:53169 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753014AbYFXD3e (ORCPT
+	Mon, 23 Jun 2008 23:31:33 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38726 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752123AbYFXDbc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 23:29:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=r0PmBtBmh6+PDnSBMHtCw84U19R0mUKyxQtSw2W5rMqbtYJlUL9U0C1h/MaqNATBXA
-         UGMHH51cDC8FRLqiNbw3qy8XCXGPpng2ewrIzPzrgcnmOrc+Q0+Xk8EeVnoo3+qGf+a4
-         giV9mQGPctep3URlsPFhRFCrEX3rLE6asmzho=
-Message-ID: <863e9df20806232029x6621ff13qd584591214e93d7f@mail.gmail.com>
-Date: Tue, 24 Jun 2008 08:59:34 +0530
-From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 0/4] ftrace: prevent ftrace modifications while being kprobe'd
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080623201525.GA10386@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 23 Jun 2008 23:31:32 -0400
+Date: Tue, 24 Jun 2008 12:37:15 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 6/6] memcg: HARDWALL hierarchy
+Message-Id: <20080624123715.15bd3cb5.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080623152941.1283ecce.randy.dunlap@oracle.com>
+References: <20080613182714.265fe6d2.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080613183741.5e2f7fda.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080623152941.1283ecce.randy.dunlap@oracle.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <485D45AB.3000405@gmail.com> <20080623201525.GA10386@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
 
-On Tue, Jun 24, 2008 at 1:45 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> note that i had to do a number of fixups to themerge, and there was one
-> chunk which did not merge cleanly and i left it out for now:
->
-> @@ -435,8 +502,12 @@ static void ftrace_replace_code(int enable)
->                                continue;
->
->                        /* ignore updates to this record's mcount site */
-> -                       if (get_kprobe((void *)rec->ip))
-> +                       if (get_kprobe((void *)rec->ip)) {
-> +                               freeze_record(rec);
->                                continue;
-> +                       } else {
-> +                               unfreeze_record(rec);
-> +                       }
 
-I wonder why it conflicted during the merge. I notice that patch 4/4
-has been applied before
-3/4. Can you try reversing the order and see if it works? Else I'll redo them.
+On Mon, 23 Jun 2008 15:29:41 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
---
+> On Fri, 13 Jun 2008 18:37:41 +0900 KAMEZAWA Hiroyuki wrote:
+> 
+> > Support hardwall hierarchy (and no-hierarchy) in memcg.
+> > 
+> > Change log: v3->v4
+> >  - cut out from memcg hierarchy patch set v4.
+> >  - no major changes, but some amount of functions are moved to res_counter.
+> >    and be more gneric.
+> > 
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> > ---
+> >  Documentation/controllers/memory.txt |   57 +++++++++++++++++++++++++++++-
+> >  mm/memcontrol.c                      |   65 +++++++++++++++++++++++++++++++++--
+> >  2 files changed, 118 insertions(+), 4 deletions(-)
+> > 
+> > Index: linux-2.6.26-rc5-mm3/Documentation/controllers/memory.txt
+> > ===================================================================
+> > --- linux-2.6.26-rc5-mm3.orig/Documentation/controllers/memory.txt
+> > +++ linux-2.6.26-rc5-mm3/Documentation/controllers/memory.txt
+> > @@ -154,7 +154,7 @@ The memory controller uses the following
+> >  
+> >  0. Configuration
+> 
+> I apologize if you have already corrected these.  I'm a bit behind
+> on doc reviews.
+> 
+Thank you for all your help. I'll check my set again especially
+'s' and 'a/an'.
+
+
+> 
+> > -a. Enable CONFIG_CGROUPS
+> > +a. Enable CONFESS_CGROUPS
+> 
+> Really?  Looks odd and backwards.
+> 
+my mistake..
+
 Thanks,
-Abhishek Sagar
+-Kame
+
+> >  b. Enable CONFIG_RESOURCE_COUNTERS
+> >  c. Enable CONFIG_CGROUP_MEM_RES_CTLR
+> >  
+> > @@ -237,7 +237,58 @@ cgroup might have some charge associated
+> >  tasks have migrated away from it. Such charges are automatically dropped at
+> >  rmdir() if there are no tasks.
+> >  
+> > -5. TODO
+> > +5. Supported Hierarchy Model
+> > +
+> > +Currently, memory controller supports following models of hierarchy in the
+> > +kernel. (see also resource_counter.txt)
+> > +
+> > +2 files are related to hierarchy.
+> > + - memory.hierarchy_model
+> > + - memory.for_children
+> > +
+> > +Basic Rule.
+> > +  - Hierarchy can be set per cgroup.
+> > +  - A child inherits parent's hierarchy model at creation.
+> > +  - A child can change its hierarchy only when the parent's hierarchy is
+> > +    NO_HIERARCY and it has no children.
+> 
+>        NO_HIERARCHY
+> 
+sure
+
+> > +
+> > +
+> > +5.1. NO_HIERARCHY
+> > +  - Each cgroup is independent from other ones.
+> > +  - When memory.hierarchy_model is 0, NO_HIERARCHY is used.
+> > +    Under this model, there is no controls based on tree of cgroups.
+> 
+> 	                 there are no controls
+> 
+Oh, thanks.
+
+> > +    This is the default model of root cgroup.
+> > +
+> > +5.2 HARDWALL_HIERARCHY
+> > +  - A child is a isolated portion of the parent.
+> 
+>                is an
+> 
+> > +  - When memory.hierarchy_model is 1, HARDWALL_HIERARCHY is used.
+> > +    In this model a child's limit is charged as parent's usage.
+> > +
+> > +  Hard-Wall Hierarchy Example)
+> 
+> Drop ')'.
+> 
+> > +  1) Assume a cgroup with 1GB limits. (and no tasks belongs to this, now)
+> > +     - group_A limit=1G,usage=0M.
+> 
+> 	                  , usage=0M.
+> 
+> > +
+> > +  2) create group B, C under A.
+> > +     - group A limit=1G, usage=0M, for_childre=0M
+> 
+> 	                              for_children=0M
+> 
+> > +          - group B limit=0M, usage=0M.
+> > +          - group C limit=0M, usage=0M.
+> > +
+> > +  3) increase group B's limit to 300M.
+> > +     - group A limit=1G, usage=300M, for_children=300M
+> > +          - group B limit=300M, usage=0M.
+> > +          - group C limit=0M, usage=0M.
+> > +
+> > +  4) increase group C's limit to 500M
+> > +     - group A limit=1G, usage=800M, for_children=800M
+> > +          - group B limit=300M, usage=0M.
+> > +          - group C limit=500M, usage=0M.
+> > +
+> > +  5) reduce group B's limit to 100M
+> > +     - group A limit=1G, usage=600M, for_children=600M.
+> > +          - group B limit=100M, usage=0M.
+> > +          - group C limit=500M, usage=0M.
+> 
+> 
+> ---
+> ~Randy
+> Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+> http://linuxplumbersconf.org/
+> 
+
