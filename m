@@ -1,86 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761323AbYFXPde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761417AbYFXPeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761323AbYFXPde (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 11:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758193AbYFXPdK
+	id S1761417AbYFXPeo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 11:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755425AbYFXPef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 11:33:10 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:57373 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756324AbYFXPdH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 11:33:07 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: Support arch/$ARCH/include in kbuild
-Date: Tue, 24 Jun 2008 17:32:57 +0200
-User-Agent: KMail/1.9.9
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20080621220703.GA12279@uranus.ravnborg.org> <20080622220508.GA8957@uranus.ravnborg.org>
-In-Reply-To: <20080622220508.GA8957@uranus.ravnborg.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 24 Jun 2008 11:34:35 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:40935 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752180AbYFXPee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 11:34:34 -0400
+Date: Tue, 24 Jun 2008 10:34:34 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: menage@google.com
+Cc: pj@sgi.com, xemul@openvz.org, balbir@in.ibm.com, serue@us.ibm.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+Subject: Re: [PATCH 2/8] CGroup Files: Add write_string cgroup control file
+	method
+Message-ID: <20080624153434.GA4993@us.ibm.com>
+References: <20080620234358.182933000@menage.corp.google.com> <20080621000730.052131000@menage.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806241732.58449.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/0dA94bRQU+3EwxLgqGuu+Zy2Wopjfg27vFtp
- 0eLHNLfIJYoHZEn59fhIlMDtBjm8iwRRHpshBcMP27bvgscNdk
- 8xYQBWDAYBffBl3kUTxgg==
+In-Reply-To: <20080621000730.052131000@menage.corp.google.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 June 2008, Sam Ravnborg wrote:
+Quoting menage@google.com (menage@google.com):
+> This patch adds a write_string() method for cgroups control files. The
+> semantics are that a buffer is copied from userspace to kernelspace
+> and the handler function invoked on that buffer.  The buffer is
+> guaranteed to be nul-terminated, and no longer than max_write_len
+> (defaulting to 64 bytes if unspecified). Later patches will convert
+> existing raw file write handlers in control group subsystems to use
+> this method.
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
 
-> Any comments are welcome!
-> Patches will follow as reply to this one, but they
-> are only sent to kbuild and lkml.
+Looks sane to me.
 
-I think you need to fix up all instances of #include <asm-$ARCH/$FILE>,
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-grep ^#[:ws:]*include.*[\"\<]asm-[^g].*/ `git-ls-files`
+thanks,
+-serge
 
-Documentation/lguest/lguest.c:#include "asm-x86/bootparam.h"
-arch/ia64/ia32/audit.c:#include <asm-x86/unistd_32.h>
-arch/ia64/kernel/asm-offsets.c:#include <asm-ia64/processor.h>
-arch/ia64/kernel/asm-offsets.c:#include <asm-ia64/ptrace.h>
-arch/ia64/kernel/asm-offsets.c:#include <asm-ia64/siginfo.h>
-arch/ia64/kernel/asm-offsets.c:#include <asm-ia64/sigcontext.h>
-arch/ia64/kernel/asm-offsets.c:#include <asm-ia64/mca.h>
-arch/ia64/kernel/jprobes.S:#include <asm-ia64/break.h>
-arch/mips/mips-boards/generic/amon.c:#include <asm-mips/addrspace.h>
-arch/mips/mips-boards/generic/amon.c:#include <asm-mips/mips-boards/launch.h>
-arch/mips/mips-boards/generic/amon.c:#include <asm-mips/mipsmtregs.h>
-arch/powerpc/platforms/86xx/mpc86xx_smp.c:#include <asm-powerpc/mpic.h>
-arch/sparc64/kernel/compat_audit.c:#include <asm-sparc/unistd.h>
-arch/um/sys-x86_64/syscall_table.c:#include <asm-x86/unistd_64.h>
-arch/um/sys-x86_64/syscall_table.c:#include <asm-x86/unistd_64.h>
-drivers/char/agp/parisc-agp.c:#include <asm-parisc/parisc-device.h>
-drivers/char/agp/parisc-agp.c:#include <asm-parisc/ropes.h>
-drivers/infiniband/hw/ehca/ehca_reqs.c:#include <asm-powerpc/system.h>
-drivers/s390/net/qeth_core_main.c:#include <asm-s390/ebcdic.h>
-drivers/s390/net/qeth_core_main.c:#include <asm-s390/io.h>
-include/asm-arm/arch-omap/board.h:#include <asm-arm/arch-omap/board-nokia.h>
-include/asm-blackfin/gpio.h:#include <asm-blackfin/mach-bf548/gpio.h>
-include/asm-m68knommu: lots of #include <asm-m68k/*>
-include/asm-parisc/ropes.h:#include <asm-parisc/parisc-device.h>
-include/asm-powerpc/irqflags.h:#include <asm-powerpc/hw_irq.h>
-include/asm-sparc64: lots of #include <asm-sparc/*>
-
-most of these are obvious, the interesting ones being sparc64, m68knommu
-and arch/um as well as arch/ia64/ia32/audit.c.
-
-The best idea I have for sparc64 and m68knommu would be to use
-"gcc -Iarch/sparc64/include -Iarch/sparc/include" and then remove the
-respective files from sparc64. On m68knommu, this works as well, except
-for the pci.h and setup.h files that include the m68k one and then
-do some more.
-
-	Arnd <><
+> 
+> ---
+>  include/linux/cgroup.h |   14 ++++++++++++++
+>  kernel/cgroup.c        |   35 +++++++++++++++++++++++++++++++++++
+>  2 files changed, 49 insertions(+)
+> 
+> Index: cws-2.6.26-rc5-mm3/include/linux/cgroup.h
+> ===================================================================
+> --- cws-2.6.26-rc5-mm3.orig/include/linux/cgroup.h
+> +++ cws-2.6.26-rc5-mm3/include/linux/cgroup.h
+> @@ -205,6 +205,13 @@ struct cftype {
+>  	 * subsystem, followed by a period */
+>  	char name[MAX_CFTYPE_NAME];
+>  	int private;
+> +
+> +	/*
+> +	 * If non-zero, defines the maximum length of string that can
+> +	 * be passed to write_string; defaults to 64
+> +	 */
+> +	size_t max_write_len;
+> +
+>  	int (*open)(struct inode *inode, struct file *file);
+>  	ssize_t (*read)(struct cgroup *cgrp, struct cftype *cft,
+>  			struct file *file,
+> @@ -249,6 +256,13 @@ struct cftype {
+>  	int (*write_s64)(struct cgroup *cgrp, struct cftype *cft, s64 val);
+> 
+>  	/*
+> +	 * write_string() is passed a nul-terminated kernelspace
+> +	 * buffer of maximum length determined by max_write_len.
+> +	 * Returns 0 or -ve error code.
+> +	 */
+> +	int (*write_string)(struct cgroup *cgrp, struct cftype *cft,
+> +			    const char *buffer);
+> +	/*
+>  	 * trigger() callback can be used to get some kick from the
+>  	 * userspace, when the actual string written is not important
+>  	 * at all. The private field can be used to determine the
+> Index: cws-2.6.26-rc5-mm3/kernel/cgroup.c
+> ===================================================================
+> --- cws-2.6.26-rc5-mm3.orig/kernel/cgroup.c
+> +++ cws-2.6.26-rc5-mm3/kernel/cgroup.c
+> @@ -1363,6 +1363,39 @@ static ssize_t cgroup_write_X64(struct c
+>  	return retval;
+>  }
+> 
+> +static ssize_t cgroup_write_string(struct cgroup *cgrp, struct cftype *cft,
+> +				   struct file *file,
+> +				   const char __user *userbuf,
+> +				   size_t nbytes, loff_t *unused_ppos)
+> +{
+> +	char local_buffer[64];
+> +	int retval = 0;
+> +	size_t max_bytes = cft->max_write_len;
+> +	char *buffer = local_buffer;
+> +
+> +	if (!max_bytes)
+> +		max_bytes = sizeof(local_buffer) - 1;
+> +	if (nbytes >= max_bytes)
+> +		return -E2BIG;
+> +	/* Allocate a dynamic buffer if we need one */
+> +	if (nbytes >= sizeof(local_buffer)) {
+> +		buffer = kmalloc(nbytes + 1, GFP_KERNEL);
+> +		if (buffer == NULL)
+> +			return -ENOMEM;
+> +	}
+> +	if (nbytes && copy_from_user(buffer, userbuf, nbytes))
+> +		return -EFAULT;
+> +
+> +	buffer[nbytes] = 0;     /* nul-terminate */
+> +	strstrip(buffer);
+> +	retval = cft->write_string(cgrp, cft, buffer);
+> +	if (!retval)
+> +		retval = nbytes;
+> +	if (buffer != local_buffer)
+> +		kfree(buffer);
+> +	return retval;
+> +}
+> +
+>  static ssize_t cgroup_common_file_write(struct cgroup *cgrp,
+>  					   struct cftype *cft,
+>  					   struct file *file,
+> @@ -1440,6 +1473,8 @@ static ssize_t cgroup_file_write(struct 
+>  		return cft->write(cgrp, cft, file, buf, nbytes, ppos);
+>  	if (cft->write_u64 || cft->write_s64)
+>  		return cgroup_write_X64(cgrp, cft, file, buf, nbytes, ppos);
+> +	if (cft->write_string)
+> +		return cgroup_write_string(cgrp, cft, file, buf, nbytes, ppos);
+>  	if (cft->trigger) {
+>  		int ret = cft->trigger(cgrp, (unsigned int)cft->private);
+>  		return ret ? ret : nbytes;
+> 
+> --
