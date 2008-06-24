@@ -1,108 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbYFXNH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbYFXNQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758090AbYFXNH0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 09:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbYFXNHP
+	id S1754771AbYFXNQr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 09:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbYFXNQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 09:07:15 -0400
-Received: from saeurebad.de ([85.214.36.134]:53684 "EHLO saeurebad.de"
+	Tue, 24 Jun 2008 09:16:39 -0400
+Received: from ozlabs.org ([203.10.76.45]:40398 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752674AbYFXNHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 09:07:14 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Cc: a.p.zijlstra@chello.nl, arjan@linux.intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] softirq softlockup debugging
-References: <20080622122845.GA10133@damson.getinternet.no>
-	<87prq79kty.fsf@skyscraper.fehenstaub.lan>
-	<19f34abd0806240445i6282c49cia22a700140dd27eb@mail.gmail.com>
-Date: Tue, 24 Jun 2008 15:06:56 +0200
-In-Reply-To: <19f34abd0806240445i6282c49cia22a700140dd27eb@mail.gmail.com>
-	(Vegard Nossum's message of "Tue, 24 Jun 2008 13:45:27 +0200")
-Message-ID: <87lk0v9e33.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1751516AbYFXNQi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 09:16:38 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
+Date: Tue, 24 Jun 2008 23:14:51 +1000
+User-Agent: KMail/1.9.9
+Cc: Mike Travis <travis@sgi.com>, Vegard Nossum <vegard.nossum@gmail.com>,
+       Adrian Bunk <bunk@kernel.org>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       linux-kernel@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+References: <20080622125633.GA8166@damson.getinternet.no> <200806241136.52430.rusty@rustcorp.com.au> <1214294783.25608.75.camel@ymzhang>
+In-Reply-To: <1214294783.25608.75.camel@ymzhang>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200806242314.51656.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-"Vegard Nossum" <vegard.nossum@gmail.com> writes:
-
-> On 6/24/08, Johannes Weiner <hannes@saeurebad.de> wrote:
->> After more staring at the code in question, I think that the approach is
->> not correct (or I didn't understand it, which is not unlikely).
->>
->> I hunted down the address of the traces from kerneloops.org
->> (__do_softirq+0x6d) on a kernel image with a fedora config and it's at
->> the local_irq_enable() right after the restart:label in __do_softirq().
->>
+On Tuesday 24 June 2008 18:06:23 Zhang, Yanmin wrote:
+> On Tue, 2008-06-24 at 11:36 +1000, Rusty Russell wrote:
+> > On Tuesday 24 June 2008 02:58:44 Mike Travis wrote:
+> > > Rusty Russell wrote:
+> > > > On Monday 23 June 2008 02:29:07 Vegard Nossum wrote:
+> > > >> And the (cpu < nr_cpu_ids) fails because the CPU has just been
+> > > >> offlined (or failed to initialize, but it's the same thing), while
+> > > >> NR_CPUS is the value that was compiled in as CONFIG_NR_CPUS (so the
+> > > >> former check will always be true).
+> > > >>
+> > > >> I don't think it is valid to ask for a per_cpu() variable on a CPU
+> > > >> which does not exist, though
+> > > >
+> > > > Yes it is.  As long as cpu_possible(cpu), per_cpu(cpu) is valid.
+> > > >
+> > > > The number check should be removed: checking cpu_possible() is
+> > > > sufficient.
+> > > >
+> > > > Hope that helps,
+> > > > Rusty.
+> > >
+> > > I don't see a check for index being out of range in cpu_possible().
+> >
+> > You're right.  It assumes cpu is < NR_CPUS.  Hmm, I have no idea what's
+> > going on.  nr_cpu_ids (ignore that it's a horrible name for a bad idea)
+> > should be fine to test against.
+> >
+> > Vegard's analysis is flawed: just because cpu is offline, it still must
+> > be < nr_cpu_ids, which is based on possible cpus.  Unless something crazy
+> > is happening, but a quick grep doesn't reveal anyone manipulating
+> > nr_cpu_ids.
+> >
+> > If changing this fixes the bug, something else is badly wrong...
+> > Rusty.
 >
-> Are you quite sure? I didn't use the fedora image, but I compiled with
-> the fedora config and got a function size for __do_softirq that was
-> exactly equal to some of the reports. And there, the EIP pointed to
-> the second "pop" instruction after calling... oh, true.
-> local_irq_enable(). And those pops come from calling into paravirt
-> ops.
+> In function _cpu_up, the panic happens when calling
+> __raw_notifier_call_chain at the second time. Kernel doesn't panic when
+> calling it at the first time. If just say because ﻿of nr_cpu_ids, that's
+> not right.
 >
-> Right, I fully agree.
+> By checking source codes, I find function do_boot_cpu is the culprit.
+> Consider below call chain:
+>  _cpu_up=>__cpu_up=>smp_ops.cpu_up=>native_cpu_up=>do_boot_cpu.
 >
->> So if the softirq handler had disabled interrupts, the softlockup would
->> have been detected still within the handler (when it reenables irqs and
->> the timer irq runs) and the stackframe should be there.
->>
->> do_softirq()
->>  local_irq_save()                      1)
->>  local_softirq_pending()
->>  __do_softirq()
->>   restart:                             2)
->>    local_irq_enable()                  3)
->>    run a handler
->>    local_irq_disable()                 4)
->>    jnz restart
->>
->> So the lockup must be caused somewhere
->>  between 1) and 3)
->> or
->>  between 4) and 3) [when we jump back]
->>
->> These functions are in the path and possible candidates for causing it:
->>
->> - local_softirq_pending()
->> - account_system_vtime()
->> - __local_bh_disable()
->> - trace_softirq_enter()
->> - smp_processor_id()
->> - set_softirq_pending()
->>
->> What do you think?  You said you actually used your patch already for
->> debugging lockups in softirq handlers, so it confuses me why the
->> stackframe of the handler was no longer present.
+> So ﻿do_boot_cpu is called in the end. In ﻿do_boot_cpu, if boot_error==true,
+> cpu_clear(cpu, cpu_possible_map) is executed. So later on, when ﻿_cpu_up
+> calls ﻿__raw_notifier_call_chain at the second time to report
+> CPU_UP_CANCELED, because this cpu is already cleared from
+> ﻿cpu_possible_map, get_cpu_sysdev returns NULL.
 >
-> What didn't make sense to me when first looking at the oops reports
-> was that there was nowhere inside __do_softirq() that could actually
-> lock up. As far as I can see, there is no infinite (or very
-> long-running) loop in there, so I concluded (probably wrongly) that it
-> must be the handler; it was the only logical explanation I could find.
-> I believe that the functions you listed all run in constant time, but
-> maybe we should check it.
+> Many resources are related to ﻿cpu_possible_map, so it's better not to
+> change it.
 >
-> It also seems that the timer interrupt (where softlockup detection
-> kicks in) has a small delay after irqs are re-enabled before it
-> actually interrupts the CPU. Can you post a disassembly of
-> __do_softirq() where you pinpoint the exact instruction that was
-> interrupted, e.g. in this case __do_softirq+0x6d? Again, for me, this
-> was a pop %ebx or so, which doesn't change interruptibility, so maybe
-> I simply had the wrong disassembly.
+> Below patch against 2.6.26-rc7 fixes it by removing the bit clearing in
+> ﻿cpu_possible_map.
+>
+> Vegard, would you like to help test it?
+>
+> ﻿﻿﻿Signed-off-by: Zhang Yanmin ﻿<yanmin_zhang@linux.intel.com>
+>
+> ---
+>
+> diff -Nraup linux-2.6.26-rc7/arch/x86/kernel/smpboot.c
+> linux-2.6.26-rc7_cpuhotplug/arch/x86/kernel/smpboot.c ---
+> linux-2.6.26-rc7/arch/x86/kernel/smpboot.c	2008-06-24 09:03:54.000000000
+> +0800 +++ linux-2.6.26-rc7_cpuhotplug/arch/x86/kernel/smpboot.c	2008-06-24
+> 09:04:45.000000000 +0800 @@ -996,7 +996,6 @@ do_rest:
+>  #endif
+>  		cpu_clear(cpu, cpu_callout_map); /* was set by do_boot_cpu() */
+>  		cpu_clear(cpu, cpu_initialized); /* was set by cpu_init() */
+> -		cpu_clear(cpu, cpu_possible_map);
+>  		cpu_clear(cpu, cpu_present_map);
+>  		per_cpu(x86_cpu_to_apicid, cpu) = BAD_APICID;
+>  	}
 
-gdb associated the line to be the asm statement in
-include/asm-x86/paravirt.h::raw_local_irq_enable().
+Nice catch.  Basically, cpu_possible_map should only be cleared at boot, and 
+probably not even then.
 
-And looking by hand with objdump got the second pop, too, just like you,
-IIRC (dropped the object file, will have another look at it later).
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 
-	Hannes
+Thanks,
+Rusty.
