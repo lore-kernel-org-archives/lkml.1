@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760471AbYFXOom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761925AbYFXOo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760471AbYFXOom (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 10:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbYFXOof
+	id S1761925AbYFXOo5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 10:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761225AbYFXOot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 10:44:35 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62018 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752385AbYFXOoe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 10:44:34 -0400
-Date: Tue, 24 Jun 2008 10:44:32 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Gregory Haskins <GHaskins@novell.com>
-cc: jbe@pengutronix.de, linux-rt-users@vger.kernel.org, mingo@elte.hu,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25.8-rt7
-In-Reply-To: <4860CD140200005A0003944F@sinclair.provo.novell.com>
-Message-ID: <Pine.LNX.4.58.0806241043070.32368@gandalf.stny.rr.com>
-References: <4860CD0B0200005A0003944C@sinclair.provo.novell.com>
- <4860CD140200005A0003944F@sinclair.provo.novell.com>
- <4860CD140200005A0003944F@sinclair.provo.novell.com>
+	Tue, 24 Jun 2008 10:44:49 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:57474 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761144AbYFXOos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 10:44:48 -0400
+Message-ID: <4861085D.8020506@sgi.com>
+Date: Tue, 24 Jun 2008 07:44:45 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Adrian Bunk <bunk@kernel.org>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Gautham R Shenoy <ego@in.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
+References: <20080622125633.GA8166@damson.getinternet.no> <200806241136.52430.rusty@rustcorp.com.au> <1214294783.25608.75.camel@ymzhang> <200806242314.51656.rusty@rustcorp.com.au>
+In-Reply-To: <200806242314.51656.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rusty Russell wrote:
+...
+> Nice catch.  Basically, cpu_possible_map should only be cleared at boot, and 
+> probably not even then.
+> 
 
-On Tue, 24 Jun 2008, Gregory Haskins wrote:
+One thing that should be avoided, is clearing anything but the last bit in the
+cpu_possible_map.  This is because num_possible_cpus != nr_cpu_ids when there
+are holes in the map.  (nr_cpu_ids = highest possible cpu # + 1).
 
->
-> (Sorry for toppost)
->
-> I believe this is my fault.  You must be building for uniprocessor?  Ingo has a fix for this issue in sched-devel that should be pulled into -rt.
->
-> Sorry for the inconvenience.  I will pull the patch myself and submit it when I get home (if someone doesn't beat me to it)
->
-
-I'm looking forward to it ;-)
-
->
-> This occurs when I try to build a PowerPC (MPC5200) kernel:
->
-> [...]
-> In file included from kernel/sched.c:1318:
-> kernel/sched.c: In function 'sched_init':
-> kernel/sched.c:7702: error: implicit declaration of function 'global_rt_runtime'
-> [...]
-
-I'm waiting on a Signed-off-by to include the patch. If I don't get it
-soon then I'll just sign it off my self and leave the "From" line intact.
-But I would feel much more comfortable with an actual SOB.
-
--- Steve
-
+Thanks,
+Mike
