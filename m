@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759347AbYFXOZL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbYFXO1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759347AbYFXOZL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 10:25:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbYFXOY7
+	id S1760074AbYFXO1m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 10:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbYFXO1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 10:24:59 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:18794 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753253AbYFXOY6 (ORCPT
+	Tue, 24 Jun 2008 10:27:35 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:40304 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751540AbYFXO1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 10:24:58 -0400
-Date: Tue, 24 Jun 2008 16:24:48 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Wang Chen <wangchen@cn.fujitsu.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] kobjects: Transmit return value of
- kobject_uevent_env() to caller
-Message-ID: <20080624162448.4b1e3d87@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <4860B75A.1050307@cn.fujitsu.com>
-References: <4860B75A.1050307@cn.fujitsu.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 24 Jun 2008 10:27:34 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=fClyc15AOQTxVK8/wBInhaJrxHTiOOlcwmdnvYriShKpauluILlX9ryJdgb8M5Iye
+	E7g8Tf8lA93Yo8nHSjm/w==
+Message-ID: <6599ad830806240727w401a8511p27dd90843378f35d@mail.gmail.com>
+Date: Tue, 24 Jun 2008 07:27:14 -0700
+From: "Paul Menage" <menage@google.com>
+To: balbir@linux.vnet.ibm.com, menage@google.com, pj@sgi.com, xemul@openvz.org,
+       serue@us.ibm.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: Re: [PATCH 2/8] CGroup Files: Add write_string cgroup control file method
+In-Reply-To: <20080622143236.GA19380@balbir.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080620234358.182933000@menage.corp.google.com>
+	 <20080621000730.052131000@menage.corp.google.com>
+	 <20080622143236.GA19380@balbir.in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jun 2008 16:59:06 +0800,
-Wang Chen <wangchen@cn.fujitsu.com> wrote:
+On Sun, Jun 22, 2008 at 7:32 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>> +static ssize_t cgroup_write_string(struct cgroup *cgrp, struct cftype *cft,
+>> +                                struct file *file,
+>> +                                const char __user *userbuf,
+>> +                                size_t nbytes, loff_t *unused_ppos)
+>> +{
+>> +     char local_buffer[64];
+>
+> 64? a define  would be more meaningful
 
-> The error signal shouldn't be dropped.
-> 
-> Signed-off-by: Wang Chen <wangchen@cn.fujitsu.com>
-> ---
-> diff --git a/lib/kobject.c b/lib/kobject.c
-> index 718e510..e5de71e 100644
-> --- a/lib/kobject.c
-> +++ b/lib/kobject.c
-> @@ -430,7 +430,7 @@ int kobject_rename(struct kobject *kobj, const char *new_name)
->  	 * Some hotplug package track interfaces by their name and
->  	 * therefore want to know when the name is changed by the user. */
->  	if (!error)
-> -		kobject_uevent_env(kobj, KOBJ_MOVE, envp);
-> +		error = kobject_uevent_env(kobj, KOBJ_MOVE, envp);
-> 
->  out:
->  	kfree(devpath_string);
-> @@ -482,7 +482,7 @@ int kobject_move(struct kobject *kobj, struct kobject *new_parent)
->  	kobj->parent = new_parent;
->  	new_parent = NULL;
->  	kobject_put(old_parent);
-> -	kobject_uevent_env(kobj, KOBJ_MOVE, envp);
-> +	error = kobject_uevent_env(kobj, KOBJ_MOVE, envp);
->  out:
->  	kobject_put(new_parent);
->  	kobject_put(kobj);
-> 
-> 
-> 
+Potentially, although it would be unlikely to be reused anywhere else.
+It's just meant to be a size that's big enough for any numerical
+value, and for the vast majority of other writes.
 
-This looks wrong. If everything went right except sending the uevent,
-you'll make the caller believe that the whole operation failed, while
-in reality the sysfs operation succeeded. Either just drop the error
-again (or print a warning), or undo the previous operations on error
-(which may fail).
+Paul
