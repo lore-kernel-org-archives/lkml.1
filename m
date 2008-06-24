@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbYFXAA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYFXACT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568AbYFXAA2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 20:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYFXAAS
+	id S1756073AbYFXACT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 20:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbYFXACK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 20:00:18 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:32559 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752341AbYFXAAR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 20:00:17 -0400
-Date: Tue, 24 Jun 2008 04:00:16 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-ide@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH -rt] ide: fix interrupts processing issue with
-	preempt-able hardirqs
-Message-ID: <20080624000016.GA12547@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu>
+	Mon, 23 Jun 2008 20:02:10 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:54812 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752228AbYFXACJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 20:02:09 -0400
+Message-ID: <4860397F.305@sgi.com>
+Date: Mon, 23 Jun 2008 17:02:07 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20080623235141.GB17297@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com>	<485947A8.8060801@goop.org> <4859511E.5050605@sgi.com>	<48596315.6020104@goop.org> <48596893.4040908@sgi.com>	<485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org>	<485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>	<485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com>	<485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com>	<485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>	<485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com> <m1skv7onvh.fsf@frodo.ebiederm.org> <485FD56B.1090303@sgi.com> <485FDE80.1010700@goop.org> <485FE5C9.3050305@sgi.com> <485FED2C.8030102@sgi.com> <485FFC61.9030301@goop.org>
+In-Reply-To: <485FFC61.9030301@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 24, 2008 at 01:51:41AM +0200, Ingo Molnar wrote:
+Jeremy Fitzhardinge wrote:
+> Mike Travis wrote:
+>> The syntax error is at this "DATA(0)" statement.  I don't find this as a
+>> linker script command or a macro.  What is it we're trying to do with
+>> this?
+>>   
 > 
-> * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> In Eric's sample, it's intended to prevent there being an empty section,
+> which can cause linker bugs.  In your case it probably isn't necessary,
+> since you're also putting the percpu data in that section.
 > 
-> > IDE interrupt handler relies on the fact that, if necessary, hardirqs 
-> > will re-trigger on ISR exit. With fully preemtable IRQs this seems to 
-> > be not true, since if hardirq thread is currently running, and the 
-> > same IRQ raised again, then this IRQ will be simply lost.
+> "DATA" is probably a typo.  It should be "LONG" or something like that. 
+> (See "3.6.5 Output Section Data" in the linker manual.)
 > 
-> actually no, that should not happen - if -rt loses an IRQ then something 
-> broke in the threaded IRQ code. It's supposed to be a drop-in, 
-> compatible IRQ flow with no driver changes needed.
+>    J
 
-..just as I thought, the bug somewhere deeper... heh.
+Yes, thanks I did find that.
 
-> ( also, please do not Cc: mainline maintainers to RFC -rt patches, let
->   the -rt maintainers sort out the need for any patch propagation - once 
->   the patches are sufficiently cooked. Thanks. )
+I now have the version below which seems to have what we need... but it
+hasn't had an effect on the boot startup panic.  I'm back to verifying
+that the assembler effective addresses are correct in the loaded object.
 
-Ok, thanks.
+ffffffff81911000 D __per_cpu_load
+0000000000000000 D per_cpu__pda
+0000000000000080 D per_cpu__init_tss
+.
+.
+000000000000a2d0 d per_cpu__cookie_scratch
+000000000000a470 d per_cpu__cookie_scratch
+000000000000a604 D ____per_cpu_size
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Btw, the "percpu : { } :percpu" below removes a linker warning about an empty
+section.
+
+#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
+#define PERCPU(align)							\
+	.data.percpu.abs = .;						\
+	percpu : { } :percpu						\
+	.data.percpu.header : AT(.data.percpu.abs - LOAD_OFFSET) {	\
+		BYTE(0)							\
+		. = ALIGN(align);					\
+		__per_cpu_load = .;					\
+	}								\
+	.data.percpu 0 : AT(__per_cpu_load - LOAD_OFFSET) {		\
+		*(.data.percpu.first)					\
+		*(.data.percpu.shared_aligned)				\
+		*(.data.percpu)						\
+		*(.data.percpu.page_aligned)				\
+		____per_cpu_size = .;					\
+	}								\
+	. = __per_cpu_load + ____per_cpu_size;
