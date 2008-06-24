@@ -1,62 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbYFXX1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757645AbYFXX2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757975AbYFXX1a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 19:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbYFXX1T
+	id S1757645AbYFXX2Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 19:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbYFXX2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 19:27:19 -0400
-Received: from mga02.intel.com ([134.134.136.20]:30248 "EHLO mga02.intel.com"
+	Tue, 24 Jun 2008 19:28:14 -0400
+Received: from mga11.intel.com ([192.55.52.93]:22858 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753761AbYFXX1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 19:27:16 -0400
+	id S1752036AbYFXX2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 19:28:13 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.27,698,1204531200"; 
-   d="scan'208";a="401587064"
+   d="scan'208";a="345213423"
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: [PATCH 1/2] net: Add the CPU id to skb->queue_mapping's upper 8 bits
+Subject: [PATCH 2/2] net: Fix consumers of skb->queue_mapping to use lower 8
+	bits
 To: davem@davemloft.net, jeff@garzik.org
 Cc: peter.p.waskiewicz.jr@intel.com, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Date: Tue, 24 Jun 2008 16:27:12 -0700
-Message-ID: <20080624232545.11654.65805.stgit@localhost.localdomain>
+Date: Tue, 24 Jun 2008 16:28:12 -0700
+Message-ID: <20080624232719.11654.97193.stgit@localhost.localdomain>
+In-Reply-To: <20080624232545.11654.65805.stgit@localhost.localdomain>
+References: <20080624232545.11654.65805.stgit@localhost.localdomain>
 User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Jun 2008 23:27:14.0192 (UTC) FILETIME=[D5744100:01C8D651]
+X-OriginalArrivalTime: 24 Jun 2008 23:28:13.0098 (UTC) FILETIME=[F89098A0:01C8D651]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>
 
-This patch adds the CPU index to the upper 8 bits of the queue_mapping in
-the skb.  This will support 256 CPUs and 256 Tx queues.  The reason for
-this is the qdisc layer can obscure which CPU is generating a certain flow
-of packets, so network drivers don't have any insight which CPU generated a
-particular packet.  If the driver knows which CPU generated the packet,
-then it could adjust Rx filtering in the hardware to redirect the packet
-back to the CPU who owns the process that generated this packet.
-Preventing the cache miss and reschedule of a process to a different CPU is
-a big win in network performance, especially at 10 gigabit speeds.
+This patch will cause the consumers of skb->queue_mapping to only use the
+lower 8 bits, so drivers can use the upper 8 bits for CPU index.
 
 Signed-off-by: PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
 
- net/sched/sch_prio.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/net/ixgbe/ixgbe_main.c |    2 +-
+ include/linux/skbuff.h         |    6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/net/sched/sch_prio.c b/net/sched/sch_prio.c
-index 4aa2b45..84bbd10 100644
---- a/net/sched/sch_prio.c
-+++ b/net/sched/sch_prio.c
-@@ -86,6 +86,7 @@ prio_enqueue(struct sk_buff *skb, struct Qdisc *sch)
- 	}
+diff --git a/drivers/net/ixgbe/ixgbe_main.c b/drivers/net/ixgbe/ixgbe_main.c
+index 0d37c90..7b39394 100644
+--- a/drivers/net/ixgbe/ixgbe_main.c
++++ b/drivers/net/ixgbe/ixgbe_main.c
+@@ -3244,7 +3244,7 @@ static int ixgbe_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ 	unsigned int nr_frags = skb_shinfo(skb)->nr_frags;
+ 	len -= skb->data_len;
+ #ifdef CONFIG_NETDEVICES_MULTIQUEUE
+-	r_idx = (adapter->num_tx_queues - 1) & skb->queue_mapping;
++	r_idx = (adapter->num_tx_queues - 1) & (skb->queue_mapping & 0xff);
  #endif
+ 	tx_ring = &adapter->tx_ring[r_idx];
  
-+	skb->queue_mapping |= (get_cpu() << 8);
- 	if ((ret = qdisc->enqueue(skb, qdisc)) == NET_XMIT_SUCCESS) {
- 		sch->bstats.bytes += skb->len;
- 		sch->bstats.packets++;
+diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+index 299ec4b..0246827 100644
+--- a/include/linux/skbuff.h
++++ b/include/linux/skbuff.h
+@@ -1672,14 +1672,14 @@ static inline void skb_init_secmark(struct sk_buff *skb)
+ static inline void skb_set_queue_mapping(struct sk_buff *skb, u16 queue_mapping)
+ {
+ #ifdef CONFIG_NETDEVICES_MULTIQUEUE
+-	skb->queue_mapping = queue_mapping;
++	skb->queue_mapping = (queue_mapping & 0xff);
+ #endif
+ }
+ 
+ static inline u16 skb_get_queue_mapping(struct sk_buff *skb)
+ {
+ #ifdef CONFIG_NETDEVICES_MULTIQUEUE
+-	return skb->queue_mapping;
++	return (skb->queue_mapping & 0xff);
+ #else
+ 	return 0;
+ #endif
+@@ -1688,7 +1688,7 @@ static inline u16 skb_get_queue_mapping(struct sk_buff *skb)
+ static inline void skb_copy_queue_mapping(struct sk_buff *to, const struct sk_buff *from)
+ {
+ #ifdef CONFIG_NETDEVICES_MULTIQUEUE
+-	to->queue_mapping = from->queue_mapping;
++	to->queue_mapping = (from->queue_mapping & 0xff);
+ #endif
+ }
+ 
 
