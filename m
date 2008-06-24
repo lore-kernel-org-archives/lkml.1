@@ -1,84 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYFXI5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbYFXJDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758729AbYFXI5Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 04:57:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbYFXI47
+	id S1756940AbYFXJDU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 05:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbYFXJDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 04:56:59 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:58063 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750985AbYFXI46 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 04:56:58 -0400
-Message-ID: <4860B651.9090104@s5r6.in-berlin.de>
-Date: Tue, 24 Jun 2008 10:54:41 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+	Tue, 24 Jun 2008 05:03:08 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49168 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750836AbYFXJDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 05:03:07 -0400
+Message-ID: <4860B756.2040608@cn.fujitsu.com>
+Date: Tue, 24 Jun 2008 16:59:02 +0800
+From: Wang Chen <wangchen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: Jonathan Steinert <hachi@kuiki.net>
-CC: linux-kernel@vger.kernel.org, Johannes Niess <linux@johannes-niess.de>,
-       linux-usb@vger.kernel.org
-Subject: Re: USB attached SATA disk idle spindown
-References: <20080624045953.GA24600@miyako.sixapart.com>
-In-Reply-To: <20080624045953.GA24600@miyako.sixapart.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Greg Kroah-Hartman <gregkh@suse.de>
+CC: Kay Sievers <kay.sievers@suse.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] kobjects: Transmit return value of call_usermodehelper()
+ to caller
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(adding Cc: linux-usb and Johannes Niess)
+kobject_uevent_env() drops the return value of call_usermodehelper().
+It will make upper caller, such as dm_send_uevents(), to lose error
+information.
 
-On 6/24/2008 6:59 AM, Jonathan Steinert wrote at LKML:
-> Dear list,
-> 
-> I am looking for what the current state of USB SATA timed spindown of-
-> disks is ata this time. I've been reading documents and mailing lists-
-> for every possible search I can dream up on the subject. Suggested-
-> workable solutions include (but are probably not limited to):
-> 
-> $ hdparm -S
->     This seems to be the ATA way of telling a disk to spin down, and it
->     works in some situations, but doesn't appear to work on USB attached
->     disks under 2.6.25
-> 
-> $ sdparm
->     This is suggested in a small number of locations. Most of which have
->     examples on how to disable STANDBY on a handful of devices. I am
->     unable to find any evidence that it can actually be used to enable
->     power saving.
+BTW, Previously kobject_uevent_env() transmitted return of
+call_usermodehelper() to callers, but
+commit	5f123fbd80f4f788554636f02bf73e40f914e0d6
+"[PATCH] merge kobject_uevent and kobject_hotplug" removed it.
 
-I think either of these depend on specific support by the USB to SATA
-bridge firmware.
+Signed-off-by: Wang Chen <wangchen@cn.fujitsu.com>
+---
+diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
+index 2fa545a..9f8d599 100644
+--- a/lib/kobject_uevent.c
++++ b/lib/kobject_uevent.c
+@@ -245,7 +245,8 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+ 		if (retval)
+ 			goto exit;
+ 
+-		call_usermodehelper(argv[0], argv, env->envp, UMH_WAIT_EXEC);
++		retval = call_usermodehelper(argv[0], argv,
++					     env->envp, UMH_WAIT_EXEC);
+ 	}
+ 
+ exit:
 
-I hear some newer bridges and their firmwares implement ATA
-pass-through.  Would that help?
 
-> $ scsi_spin
->     Requires the disk to be unmounted, and I can't find anything saying
->     that this is how the world is supposed to be.-
 
-Johannes recently informed me that he wrote a script which is used like
-a background daemon to stop idle USB disks.  The script uses
-  - "cat /sys/block/${device}/stat" to watch disk activity,
-  - "sdparm -q -C stop /dev/${device}" to stop the motor after
-    longer inactivity.
-
-> I'm hoping that perhaps I'm missing something from this list.
-> 
-> I don't really know whether this is a topic for the scsi people, or the-
-> SATA people, or the USB people. So I'm asking here instead to try and
-> get my first hints from the parent group.
-> 
-> Thanks in advance,
-> 
-> hachi
-
-IMO it is firstly an USB topic because it depends on the features and
-behaviour of the bridge and its firmware.
-
-(PS:  Don't have too high expectations of $15 devices.)
--- 
-Stefan Richter
--=====-==--- -==- ==---
-http://arcgraph.de/sr/
