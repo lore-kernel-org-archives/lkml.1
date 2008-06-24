@@ -1,70 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbYFXN2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756538AbYFXNa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755450AbYFXN2y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 09:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYFXN2o
+	id S1756538AbYFXNa0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 09:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbYFXNaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 09:28:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47256 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751254AbYFXN2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 09:28:44 -0400
-Date: Tue, 24 Jun 2008 09:28:24 -0400
-From: Rik van Riel <riel@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       kosaki.motohiro@jp.fujitsu.com, akpm@linux-foundation.org
-Subject: Re: [RFC][PATCH] prevent incorrect oom under split_lru
-Message-ID: <20080624092824.4f0440ca@bree.surriel.com>
-In-Reply-To: <20080624171816.D835.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080624171816.D835.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Tue, 24 Jun 2008 09:30:13 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:48308 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752705AbYFXNaM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 09:30:12 -0400
+Date: Tue, 24 Jun 2008 15:30:10 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [PATCH 0/5][BUGFIX] configfs: Fix deadlock of rename() vs
+	rmdir()
+Message-ID: <20080624133010.GG7621@hawkmoon.kerlabs.com>
+Reply-To: Louis.Rilling@kerlabs.com
+References: <20080616170057.399713501@kerlabs.com> <20080616232657.GE6441@mail.oracle.com> <20080623223450.GH592@mail.oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-24437-1214314117-0001-2"
+Content-Disposition: inline
+In-Reply-To: <20080623223450.GH592@mail.oracle.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jun 2008 17:31:54 +0900
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> if zone->recent_scanned parameter become inbalanceing anon and file,
-> OOM killer can happened although swappable page exist.
-> 
-> So, if priority==0, We should try to reclaim all page for prevent OOM.
+--=_bohort-24437-1214314117-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You are absolutely right.  Good catch.
+On Mon, Jun 23, 2008 at 03:34:50PM -0700, Joel Becker wrote:
+> On Mon, Jun 16, 2008 at 04:26:57PM -0700, Joel Becker wrote:
+> > 	Ok, this is in-tree for the next merge.  Thanks.
+>=20
+> 	Btw, we still need to solve the lockdep issue.  I'm leaning
+> towards turning it off for attach/detach_groups(), because any CHILD+N
+> level won't mesh with the VFS anyway.
 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Yes, and the same for depend_prep()/depend_rollback().
 
-Acked-by: Rik van Riel <riel@redhat.com>
+> 	We also need a comment on detach_group() pointing out its
+> recursive locking.  It's there in the code, but it's not obvious.
 
-> ---
->  mm/vmscan.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> Index: b/mm/vmscan.c
-> ===================================================================
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1464,8 +1464,10 @@ static unsigned long shrink_zone(int pri
->  			 * kernel will slowly sift through each list.
->  			 */
->  			scan = zone_page_state(zone, NR_LRU_BASE + l);
-> -			scan >>= priority;
-> -			scan = (scan * percent[file]) / 100;
-> +			if (priority) {
-> +				scan >>= priority;
-> +				scan = (scan * percent[file]) / 100;
-> +			}
->  			zone->lru[l].nr_scan += scan + 1;
->  			nr[l] = zone->lru[l].nr_scan;
->  			if (nr[l] >= sc->swap_cluster_max)
-> 
+Will do all of this after we are sure not to change things again (see my
+separate email on a possible bug in attach_group()).
 
+Louis
 
--- 
-All rights reversed.
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
+
+--=_bohort-24437-1214314117-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIYPbiVKcRuvQ9Q1QRApvjAJ9eXvHFmd2phiI/Tl/5EA0wLToERgCdEOkS
+ha+316wTa3v9oA0ZG436i24=
+=ueBh
+-----END PGP SIGNATURE-----
+
+--=_bohort-24437-1214314117-0001-2--
