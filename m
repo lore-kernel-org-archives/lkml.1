@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756666AbYFXNlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbYFXNl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756666AbYFXNlh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 09:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbYFXNla
+	id S1757937AbYFXNl4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 09:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758349AbYFXNls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 09:41:30 -0400
-Received: from gv-out-0910.google.com ([216.239.58.187]:8921 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759017AbYFXNlS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 09:41:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=cB3KwVz3nSpeBUVmT/1K1i7XKsJ9drDcS9vpRusJepm7iOCfQHXQb9eDAQK+SjIDJP
-         /KYnW/GDIcZzVxY8URmCCHbf3E1S+uzwQnZw5BTCFvBbPK1/plGTBBFNXW9VfVag2+m+
-         2xo7+M50i6LAxWLuzLLW97gTbk6aI2Q1yfFyU=
-Message-ID: <3877989d0806240641r490e77d0u622b1cb2bb9e830b@mail.gmail.com>
-Date: Tue, 24 Jun 2008 21:41:15 +0800
-From: "Luming Yu" <luming.yu@gmail.com>
-To: "Robin Holt" <holt@sgi.com>
-Subject: Re: [BISECT] Boot failure on ia64.
-Cc: tony.luck@intel.com, "Alex Chiang" <achiang@hp.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080624123014.GJ10123@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jun 2008 09:41:48 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:54166 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758969AbYFXNkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 09:40:31 -0400
+Date: Tue, 24 Jun 2008 17:42:40 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: ebiederm@xmission.com, mingo@elte.hu, torvalds@linux-foundation.org,
+       roland@redhat.com, linux-kernel@vger.kernel.org, rjw@sisk.pl
+Subject: Re: [PATCH 1/3] introduce PF_KTHREAD flag
+Message-ID: <20080624134240.GA310@tv-sign.ru>
+References: <20080601153042.GA8238@tv-sign.ru> <20080623134037.8566f651.akpm@linux-foundation.org> <20080623134706.f5e1ef32.akpm@linux-foundation.org> <20080623135253.ed7cabf1.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080624123014.GJ10123@sgi.com>
+In-Reply-To: <20080623135253.ed7cabf1.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 24, 2008 at 8:30 PM, Robin Holt <holt@sgi.com> wrote:
-> I bisected to this commit 3463a93def55c309f3c0d0a8aaf216be3be42d64
+On 06/23, Andrew Morton wrote:
 >
-> 3463a93def55c309f3c0d0a8aaf216be3be42d64 is first bad commit
-> commit 3463a93def55c309f3c0d0a8aaf216be3be42d64
-> Author: Alex Chiang <achiang@hp.com>
-> Date:   Wed Jun 11 17:29:27 2008 -0600
+> On Mon, 23 Jun 2008 13:47:06 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > I don't yet know how much additional damage will happen as a result.
+> 
+> Lots.
+> 
+> I restored the patches and just dropped the hunk:
+> 
+>   static int has_mm(struct task_struct *p)
+>   {
+> -       return (p->mm && !(p->flags & PF_BORROWED_MM));
+>   }
+>   
+>   /**
+> --- 86,92 ----
+>   
+>   static int has_mm(struct task_struct *p)
+>   {
+> +       return (p->mm && !(p->flags & PF_KTHREAD));
+>   }
+> 
+> due to that function having been turned into:
+> 
+> static inline bool should_send_signal(struct task_struct *p)
+> {
+>         return !(p->flags & PF_FREEZER_NOSIG);
+> }
 >
->    [IA64] Update check_sal_cache_flush to use platform_send_ipi()
-> ...
->
-> This fails to boot on any sn2 ia64 with the sn2_defconfig.
+> Please check the result?
 
-how about CONFIG_IA64_GENERIC?
+Thanks, this looks OK.
+
+Rafael, can't freezer just use PF_KTHREAD (which btw kills PF_BORROWED_MM)
+instead of the new PF_FREEZER_NOSIG flag? They look very similar, please
+look at
+
+	"[PATCH 1/3] introduce PF_KTHREAD flag"
+	http://marc.info/?l=linux-kernel&m=121233423530812
+
+	"[PATCH 2/3] kill PF_BORROWED_MM in favour of PF_KTHREAD"
+	http://marc.info/?l=linux-kernel&m=121233423530820
+
+Oleg.
+
