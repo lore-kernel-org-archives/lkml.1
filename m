@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761719AbYFXQqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760971AbYFXQsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761719AbYFXQqc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 12:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760419AbYFXQqT
+	id S1760971AbYFXQsR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 12:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbYFXQsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 12:46:19 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:40612 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757886AbYFXQqS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 12:46:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=KU1QrWROWpckQe1huJE3Eo7Z/J4173mYPMnDZ+yJElYObj3PT6z8kiYUhkGDeIKQTK
-         BewpHp1ZjsK/by0GDTVXftHZmHi/BKE4Ivm89Aw+6+xCwawmgzX81ArrdJZ4HYhq1+7J
-         ByRsmop9mKkA2tMjA1X3JjVhxCHJaIy1p4ueM=
-Date: Tue, 24 Jun 2008 17:42:40 +0100
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: kexec@lists.infradead.org, ebiederm@xmission.com
-Subject: [Patch] kernel/kexec.c: make 'kimage_terminate' void
-Message-ID: <20080624164240.GF10512@hack.voiplan.pt>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 24 Jun 2008 12:48:06 -0400
+Received: from eucd.info ([88.191.250.43]:34521 "EHLO snail.fsffrance.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751280AbYFXQsF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 12:48:05 -0400
+X-Greylist: delayed 1361 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Jun 2008 12:48:05 EDT
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: linux-kernel@vger.kernel.org
+Cc: Segher Boessenkool <segher@kernel.crashing.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: [PATCH] alpha: Fix percpu for !SMP
+Date: Tue, 24 Jun 2008 18:25:12 +0200
+Message-Id: <59ea9d21fca74a2e8ffec8384815d7c54c8b4a5c.1214324538.git.segher@kernel.crashing.org>
+X-Mailer: git-send-email 1.5.5.1.g377d9.dirty
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit 9267b4b3880d00dc2dab90f1d817c856939114f7 introduced a
+percpu.h for alpha.  It didn't define PER_CPU_ATTRIBUTES for
+the non-SMP case, leading to build failures for such a config
+(e.g., the alpha defconfig).
 
-Since kimage_terminate() always returns 0, make it void.
+Fix this by defining PER_CPU_ATTRIBUTES to empty at the end of
+asm-alpha/percpu.h if it wasn't already defined, just like the
+asm-generic version does.  The SMP && !MODULE case can drop its
+own definition now as well.
 
-Signed-off-by: WANG Cong <wangcong@zeuux.org>
-Cc: Eric Biederman <ebiederm@xmission.com>
-
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
 ---
-diff --git a/kernel/kexec.c b/kernel/kexec.c
-index 1c5fcac..6db42ff 100644
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -589,14 +589,12 @@ static void kimage_free_extra_pages(struct kimage *image)
- 	kimage_free_page_list(&image->unuseable_pages);
+
+This is needed for 2.6.26, it's a regression fix.
+
+ include/asm-alpha/percpu.h |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/include/asm-alpha/percpu.h b/include/asm-alpha/percpu.h
+index 82e8a94..c3e2a1c 100644
+--- a/include/asm-alpha/percpu.h
++++ b/include/asm-alpha/percpu.h
+@@ -28,7 +28,6 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
  
- }
--static int kimage_terminate(struct kimage *image)
-+static void kimage_terminate(struct kimage *image)
- {
- 	if (*image->entry != 0)
- 		image->entry++;
+ #ifndef MODULE
+ #define SHIFT_PERCPU_PTR(var, offset) RELOC_HIDE(&per_cpu_var(var), (offset))
+-#define PER_CPU_ATTRIBUTES
+ #else
+ /*
+  * To calculate addresses of locally defined variables, GCC uses 32-bit
+@@ -73,4 +72,8 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
  
- 	*image->entry = IND_DONE;
--
--	return 0;
- }
+ #define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu_var(name)
  
- #define for_each_kimage_entry(image, ptr, entry) \
-@@ -997,9 +995,7 @@ asmlinkage long sys_kexec_load(unsigned long entry, unsigned long nr_segments,
- 			if (result)
- 				goto out;
- 		}
--		result = kimage_terminate(image);
--		if (result)
--			goto out;
-+		kimage_terminate(image);
- 	}
- 	/* Install the new kernel, and  Uninstall the old */
- 	image = xchg(dest_image, image);
++#ifndef PER_CPU_ATTRIBUTES
++#define PER_CPU_ATTRIBUTES
++#endif
++
+ #endif /* __ALPHA_PERCPU_H */
+-- 
+1.5.5.1.g377d9.dirty
+
