@@ -1,140 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757155AbYFXXUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYFXXVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757155AbYFXXUH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 19:20:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbYFXXTx
+	id S1755984AbYFXXVr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 19:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbYFXXVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 19:19:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54112 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753146AbYFXXTv (ORCPT
+	Tue, 24 Jun 2008 19:21:39 -0400
+Received: from homer.mvista.com ([63.81.120.158]:37986 "EHLO
+	dwalker1.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751068AbYFXXVi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 19:19:51 -0400
-Date: Tue, 24 Jun 2008 16:19:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: menage@google.com
-Cc: pj@sgi.com, xemul@openvz.org, balbir@in.ibm.com, serue@us.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: Re: [PATCH 2/8] CGroup Files: Add write_string cgroup control file
- method
-Message-Id: <20080624161923.449ecea4.akpm@linux-foundation.org>
-In-Reply-To: <20080621000730.052131000@menage.corp.google.com>
-References: <20080620234358.182933000@menage.corp.google.com>
-	<20080621000730.052131000@menage.corp.google.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jun 2008 19:21:38 -0400
+Message-Id: <20080624232020.376703616@mvista.com>
+References: <20080624232018.817822790@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 24 Jun 2008 16:20:23 -0700
+Subject: [PATCH 5/6] -rt: nested rtmutex blocked_on
+From: Daniel Walker <dwalker@mvista.com>
+To: linux-kernel@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Disposition: inline; filename=rtmutex-fix-realtime-blocked-on.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jun 2008 16:44:00 -0700
-menage@google.com wrote:
+Fix the rare rare case that you might be inside another blocked_on user section
+and locking an rt-mutex. This can't happen in mainline, but can happen in -rt .
 
-> This patch adds a write_string() method for cgroups control files. The
-> semantics are that a buffer is copied from userspace to kernelspace
-> and the handler function invoked on that buffer.  The buffer is
-> guaranteed to be nul-terminated, and no longer than max_write_len
-> (defaulting to 64 bytes if unspecified). Later patches will convert
-> existing raw file write handlers in control group subsystems to use
-> this method.
-> 
-> Signed-off-by: Paul Menage <menage@google.com>
-> 
-> ---
->  include/linux/cgroup.h |   14 ++++++++++++++
->  kernel/cgroup.c        |   35 +++++++++++++++++++++++++++++++++++
->  2 files changed, 49 insertions(+)
-> 
-> Index: cws-2.6.26-rc5-mm3/include/linux/cgroup.h
-> ===================================================================
-> --- cws-2.6.26-rc5-mm3.orig/include/linux/cgroup.h
-> +++ cws-2.6.26-rc5-mm3/include/linux/cgroup.h
-> @@ -205,6 +205,13 @@ struct cftype {
->  	 * subsystem, followed by a period */
->  	char name[MAX_CFTYPE_NAME];
->  	int private;
-> +
-> +	/*
-> +	 * If non-zero, defines the maximum length of string that can
-> +	 * be passed to write_string; defaults to 64
-> +	 */
-> +	size_t max_write_len;
-> +
->  	int (*open)(struct inode *inode, struct file *file);
->  	ssize_t (*read)(struct cgroup *cgrp, struct cftype *cft,
->  			struct file *file,
-> @@ -249,6 +256,13 @@ struct cftype {
->  	int (*write_s64)(struct cgroup *cgrp, struct cftype *cft, s64 val);
->  
->  	/*
-> +	 * write_string() is passed a nul-terminated kernelspace
-> +	 * buffer of maximum length determined by max_write_len.
-> +	 * Returns 0 or -ve error code.
-> +	 */
-> +	int (*write_string)(struct cgroup *cgrp, struct cftype *cft,
-> +			    const char *buffer);
+Allows nesting of the blocked on structures only for the rtmutex.
 
-Everything seems to use size_t (or ssize_t?) except for the ->write_string
-return value.  Can any of this be improved?
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
-> +	/*
->  	 * trigger() callback can be used to get some kick from the
->  	 * userspace, when the actual string written is not important
->  	 * at all. The private field can be used to determine the
-> Index: cws-2.6.26-rc5-mm3/kernel/cgroup.c
-> ===================================================================
-> --- cws-2.6.26-rc5-mm3.orig/kernel/cgroup.c
-> +++ cws-2.6.26-rc5-mm3/kernel/cgroup.c
-> @@ -1363,6 +1363,39 @@ static ssize_t cgroup_write_X64(struct c
->  	return retval;
->  }
->  
-> +static ssize_t cgroup_write_string(struct cgroup *cgrp, struct cftype *cft,
-> +				   struct file *file,
-> +				   const char __user *userbuf,
-> +				   size_t nbytes, loff_t *unused_ppos)
-> +{
-> +	char local_buffer[64];
-> +	int retval = 0;
-> +	size_t max_bytes = cft->max_write_len;
-> +	char *buffer = local_buffer;
-> +
-> +	if (!max_bytes)
-> +		max_bytes = sizeof(local_buffer) - 1;
-> +	if (nbytes >= max_bytes)
-> +		return -E2BIG;
-> +	/* Allocate a dynamic buffer if we need one */
-> +	if (nbytes >= sizeof(local_buffer)) {
-> +		buffer = kmalloc(nbytes + 1, GFP_KERNEL);
-> +		if (buffer == NULL)
-> +			return -ENOMEM;
-> +	}
-> +	if (nbytes && copy_from_user(buffer, userbuf, nbytes))
-> +		return -EFAULT;
-> +
-> +	buffer[nbytes] = 0;     /* nul-terminate */
-> +	strstrip(buffer);
-> +	retval = cft->write_string(cgrp, cft, buffer);
-> +	if (!retval)
-> +		retval = nbytes;
-> +	if (buffer != local_buffer)
-> +		kfree(buffer);
-> +	return retval;
-> +}
-> +
->  static ssize_t cgroup_common_file_write(struct cgroup *cgrp,
->  					   struct cftype *cft,
->  					   struct file *file,
-> @@ -1440,6 +1473,8 @@ static ssize_t cgroup_file_write(struct 
->  		return cft->write(cgrp, cft, file, buf, nbytes, ppos);
->  	if (cft->write_u64 || cft->write_s64)
->  		return cgroup_write_X64(cgrp, cft, file, buf, nbytes, ppos);
-> +	if (cft->write_string)
-> +		return cgroup_write_string(cgrp, cft, file, buf, nbytes, ppos);
->  	if (cft->trigger) {
->  		int ret = cft->trigger(cgrp, (unsigned int)cft->private);
->  		return ret ? ret : nbytes;
-> 
-> --
+---
+ include/linux/sched.h |    1 
+ kernel/mutex.c        |    4 +--
+ kernel/rtmutex.c      |   66 +++++++++++++++++++++++++++++++++++++++++---------
+ 3 files changed, 58 insertions(+), 13 deletions(-)
+
+Index: linux-2.6.25/include/linux/sched.h
+===================================================================
+--- linux-2.6.25.orig/include/linux/sched.h
++++ linux-2.6.25/include/linux/sched.h
+@@ -1034,6 +1034,7 @@ struct lock_waiter_state {
+ 		struct mutex_waiter *mutex_blocked_on;
+ 		struct rt_mutex_waiter *rt_blocked_on;
+ 	};
++	struct lock_waiter_state *next;
+ };
+ 
+ struct task_struct {
+Index: linux-2.6.25/kernel/mutex.c
+===================================================================
+--- linux-2.6.25.orig/kernel/mutex.c
++++ linux-2.6.25/kernel/mutex.c
+@@ -131,8 +131,8 @@ __mutex_lock_common(struct mutex *lock, 
+ 	unsigned int old_val;
+ 	unsigned long flags;
+ #ifdef CONFIG_DEBUG_MUTEXES
+-	struct lock_waiter_state lock_waiter = {
+-		.lock_type = MUTEX_WAITER, { .mutex_blocked_on = &waiter} };
++	struct lock_waiter_state lock_waiter = { .lock_type = MUTEX_WAITER,
++		{ .mutex_blocked_on = &waiter}, .next = NULL };
+ #endif
+ 
+ 	spin_lock_mutex(&lock->wait_lock, flags);
+Index: linux-2.6.25/kernel/rtmutex.c
+===================================================================
+--- linux-2.6.25.orig/kernel/rtmutex.c
++++ linux-2.6.25/kernel/rtmutex.c
+@@ -79,9 +79,44 @@ struct rt_mutex_waiter *rt_mutex_get_wai
+ {
+ 	if (task->blocked_on && task->blocked_on->lock_type == RT_MUTEX_WAITER)
+ 		return task->blocked_on->rt_blocked_on;
++	else if (unlikely(task->blocked_on && task->blocked_on->next))
++		return task->blocked_on->next->rt_blocked_on;
+ 	return NULL;
+ }
+ 
++#ifdef CONFIG_PREEMPT_RT
++static inline
++void rt_mutex_set_blocked_on(struct task_struct *task,
++			     struct lock_waiter_state *waiter)
++{
++	if (task->blocked_on)
++		task->blocked_on->next = waiter;
++	else
++		task->blocked_on = waiter;
++}
++
++static inline
++void rt_mutex_clear_blocked_on(struct task_struct *task)
++{
++	if (unlikely(task->blocked_on->next))
++		task->blocked_on->next = NULL;
++	else
++		task->blocked_on = NULL;
++}
++#else
++static inline
++void rt_mutex_set_blocked_on(struct task_struct *task,
++			     struct lock_waiter_state *waiter)
++{
++	task->blocked_on = waiter;
++}
++static inline
++void rt_mutex_clear_blocked_on(struct task_struct *task)
++{
++	task->blocked_on = NULL;
++}
++#endif
++
+ /*
+  * We can speed up the acquire/release, if the architecture
+  * supports cmpxchg and if there's no debugging state to be set up
+@@ -438,9 +473,7 @@ static int task_blocks_on_rt_mutex(struc
+ 	if (rt_mutex_has_waiters(lock))
+ 		top_waiter = rt_mutex_top_waiter(lock);
+ 	plist_add(&waiter->list_entry, &lock->wait_list);
+-
+-	current->blocked_on = lock_waiter;
+-
++	rt_mutex_set_blocked_on(current, lock_waiter);
+ 	spin_unlock_irqrestore(&current->pi_lock, flags);
+ 
+ 	if (waiter == rt_mutex_top_waiter(lock)) {
+@@ -519,11 +552,22 @@ static void wakeup_next_waiter(struct rt
+ 	spin_lock_irqsave(&pendowner->pi_lock, flags);
+ 
+ 	WARN_ON(!pendowner->blocked_on);
+-	WARN_ON(pendowner->blocked_on->lock_type != RT_MUTEX_WAITER);
+-	WARN_ON(pendowner->blocked_on->rt_blocked_on != waiter);
+-	WARN_ON(pendowner->blocked_on->rt_blocked_on->lock != lock);
+-
+-	pendowner->blocked_on = NULL;
++#ifdef CONFIG_PREEMPT_RT
++	if (unlikely(pendowner->blocked_on->next)) {
++		struct lock_waiter_state *blocked_on = pendowner->blocked_on;
++
++		WARN_ON(blocked_on->lock_type != RT_MUTEX_WAITER);
++		WARN_ON(blocked_on->next->rt_blocked_on != waiter);
++		WARN_ON(blocked_on->next->rt_blocked_on->lock != lock);
++		pendowner->blocked_on->next = NULL;
++	} else
++#endif
++	{
++		WARN_ON(pendowner->blocked_on->lock_type != RT_MUTEX_WAITER);
++		WARN_ON(pendowner->blocked_on->rt_blocked_on != waiter);
++		WARN_ON(pendowner->blocked_on->rt_blocked_on->lock != lock);
++		pendowner->blocked_on = NULL;
++	}
+ 
+ 	if (rt_mutex_has_waiters(lock)) {
+ 		struct rt_mutex_waiter *next;
+@@ -552,7 +596,7 @@ static void remove_waiter(struct rt_mute
+ 	spin_lock_irqsave(&current->pi_lock, flags);
+ 	plist_del(&waiter->list_entry, &lock->wait_list);
+ 	waiter->task = NULL;
+-	current->blocked_on = NULL;
++	rt_mutex_clear_blocked_on(current);
+ 	spin_unlock_irqrestore(&current->pi_lock, flags);
+ 
+ 	if (first && owner != current) {
+@@ -624,8 +668,8 @@ rt_mutex_slowlock(struct rt_mutex *lock,
+ 		  int detect_deadlock)
+ {
+ 	struct rt_mutex_waiter waiter;
+-	struct lock_waiter_state lock_waiter = {
+-		.lock_type = RT_MUTEX_WAITER, { .rt_blocked_on = &waiter} };
++	struct lock_waiter_state lock_waiter = { .lock_type = RT_MUTEX_WAITER,
++		{ .rt_blocked_on = &waiter}, .next = NULL };
+ 	int ret = 0;
+ 
+ 	debug_rt_mutex_init_waiter(&waiter);
+
+-- 
