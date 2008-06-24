@@ -1,92 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760925AbYFXORw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760801AbYFXOTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760925AbYFXORw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 10:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760680AbYFXORF
+	id S1760801AbYFXOTl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 10:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbYFXOTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 10:17:05 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:20989 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759526AbYFXORE (ORCPT
+	Tue, 24 Jun 2008 10:19:32 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:18997 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756594AbYFXOTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 10:17:04 -0400
+	Tue, 24 Jun 2008 10:19:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=BCtEmWfQfzo8vqqxiiMThB5315P/vX2Z6EeZCJ5d5KHg12nv5mHiPNF8B6Zihr5flK
-         f4lMwpPRnpteJv/Hd0xMe1hjcpwmITtVREX/ZmHKJdoK1N+j7aNKNQ0x8ogiYGIGhUoM
-         OxjH+idvc0KUZAspiIyVPjV2YQuQOgolMfZq8=
-Message-ID: <e9e943910806240717p158d1f8fgef0dea9a14630158@mail.gmail.com>
-Date: Tue, 24 Jun 2008 15:17:01 +0100
-From: "Duane Griffin" <duaneg@dghda.com>
-To: "Eric Sandeen" <sandeen@redhat.com>
-Subject: Re: [PATCH] ext3: handle deleting corrupted indirect blocks
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
-       "Sami Liedes" <sliedes@cc.hut.fi>
-In-Reply-To: <4860FD66.60003@redhat.com>
+         :references;
+        b=YTq7nWBDwNl5SOfbVswhyh0sBNHktCeXaTd0LxyR7/lP0f3FU9vOKMPLVf1qOQpK6h
+         xmXdZ0EE0wMOyep5TQHOjouzw//9mo1rTwq7UKKpW9y4AMWYmumNjm+q+LEe0BCVmXyQ
+         JDvRLG76ZdD2d+65rVJv+fosG2rim5P9ggpKs=
+Message-ID: <58cb370e0806240719o4a70537p4a6fb64e9086e2d8@mail.gmail.com>
+Date: Tue, 24 Jun 2008 16:19:27 +0200
+From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] IDE: Fix HDIO_DRIVE_RESET handling
+Cc: "Elias Oltmanns" <eo@nebensachen.de>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Randy Dunlap" <randy.dunlap@oracle.com>
+In-Reply-To: <20080624143548.24dcf511@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080607121940.8ee6044a.akpm@linux-foundation.org>
-	 <1214315240-22950-1-git-send-email-duaneg@dghda.com>
-	 <4860FD66.60003@redhat.com>
-X-Google-Sender-Auth: cd0426b532b7b603
+References: <87k5gmz596.fsf@denkblock.local>
+	 <200806240041.42796.bzolnier@gmail.com>
+	 <87skv3s3d9.fsf@denkblock.local>
+	 <200806241306.42054.bzolnier@gmail.com>
+	 <20080624133218.6bccab75@lxorguk.ukuu.org.uk>
+	 <58cb370e0806240621g61370f56j660e31790dad89c3@mail.gmail.com>
+	 <20080624143548.24dcf511@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/6/24 Eric Sandeen <sandeen@redhat.com>:
->> diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
->> index 6ae4ecf..8019bf2 100644
->> --- a/fs/ext3/inode.c
->> +++ b/fs/ext3/inode.c
->> @@ -2127,7 +2127,20 @@ static void ext3_free_data(handle_t *handle, struct inode *inode,
+On Tue, Jun 24, 2008 at 3:35 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> > I don't see why you think it's "hard". We have timeout handlers for many
+>> > commands and those reset/abort just fine.
 >>
->>       if (this_bh) {
->>               BUFFER_TRACE(this_bh, "call ext3_journal_dirty_metadata");
->> -             ext3_journal_dirty_metadata(handle, this_bh);
->> +
->> +             /*
->> +              * The buffer head should have an attached journal head at this
->> +              * point. However, if the data is corrupted and an indirect
->> +              * block pointed to itself, it would have been detached when
->> +              * the block was cleared. Check for this instead of OOPSing.
->> +              */
->> +             if (bh2jh(this_bh))
+>> They are different beasts from user-space initiated abort operation
 >
-> Should it also (or only) be checking for buffer_jbd rather than testing
-> bh2jh which is just shorthand for "is b_private non-null?"
+> No they are not. They are the *same* thing in every respect.
+>
+> You have the drive in an unknown state, you want it back. If your drive
+> lost a command due to noise or a firmware flaw you have no idea about the
+> state it is actually in (supposed to be is irrelevant)
 
-I don't think so. The bug was occurring because journal_dirty_metadata
-dereferences b_private (via bh2jh) unconditionally. In practice
-checking with buffer_jbd should be equivalent, but this way seems more
-robust since it is checking the actual pointer being accessed rather
-than a separate bit, albeit one that should be in sync with it.
+I generally agree with you w.r.t. to drive side of the operations but
+the drive is only part of the equation (the host and the request states
+are the others) so 'supposed to be is' is quite relevant.
 
-> Also maybe I should know this intuitively by now, but what is the path
-> where b_private / BH_JBD got cleared on this corrupted image?
+Also abort request can happen i.e. while the command is being prepared
+& issued (it is done without ide_lock being taken and the timeout is not
+even armed yet) so there are additional issues to take care of.
 
-Immediately above the change, in the ext3_free_data function, we call
-ext3_clear_blocks to clear the indirect blocks in this parent block.
-If one of those blocks happens to actually be the parent block it will
-clear b_private / BH_JBD.
+IOW while the two operations are very similar on the drive level they
+certainly have different needs and requirements at the higher level
+(abort operation being especially tricky).
 
-I did the check at the end rather than earlier as it seemed more
-elegant. I don't think there should be much practical difference,
-although it is possible the FS may not be quite so badly corrupted if
-we did it the other way (and didn't clear the block at all). To be
-honest, I'm not convinced there aren't other similar failure modes
-lurking in this code, although I couldn't find any with a quick
-review.
-
-Just let me know if you think it should be done another way.
-
-Cheers,
-Duane.
-
--- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+Thanks,
+Bart
