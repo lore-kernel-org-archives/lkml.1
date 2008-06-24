@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbYFXICQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbYFXIFC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbYFXICQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 04:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYFXIB4
+	id S1756472AbYFXIFC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 04:05:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbYFXIEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 04:01:56 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:15463 "EHLO kernel.dk"
+	Tue, 24 Jun 2008 04:04:44 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:15483 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751265AbYFXIB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 04:01:56 -0400
-Date: Tue, 24 Jun 2008 10:01:54 +0200
+	id S1752200AbYFXIEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 04:04:42 -0400
+Date: Tue, 24 Jun 2008 10:04:41 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
 To: Miklos Szeredi <miklos@szeredi.hu>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, torvalds@linux-foundation.org
-Subject: Re: [rfc patch 2/4] splice: remove steal from pipe_buf_operations
-Message-ID: <20080624080152.GI20851@kernel.dk>
-References: <20080621154607.154640724@szeredi.hu> <20080621154724.203822363@szeredi.hu>
+Subject: Re: [rfc patch 3/4] splice: remove confirm from pipe_buf_operations
+Message-ID: <20080624080440.GJ20851@kernel.dk>
+References: <20080621154607.154640724@szeredi.hu> <20080621154726.494538562@szeredi.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080621154724.203822363@szeredi.hu>
+In-Reply-To: <20080621154726.494538562@szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -28,12 +28,23 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 On Sat, Jun 21 2008, Miklos Szeredi wrote:
 > From: Miklos Szeredi <mszeredi@suse.cz>
 > 
-> The 'steal' operation hasn't been used for some time.  Remove it and
-> the associated dead code.  If it's needed in the future, it can always
-> be easily restored.
+> The 'confirm' operation was only used for splicing from page cache, to
+> wait for read on a page to finish.  But generic_file_splice_read()
+> already blocks on readahead reads, so it seems logical to block on the
+> rare and slow single page reads too.
+> 
+> So wait for readpage to finish inside __generic_file_splice_read() and
+> remove the 'confirm' method.
+> 
+> This also fixes short return counts when the filesystem (e.g. fuse)
+> invalidates the page between insertation and removal.
 
-I'd rather not just remove this, it's basically waiting for Nick to make
-good on his promise to make stealing work again (he disabled it).
+One of the basic goals of splice is to allow the pipe buffer to only be
+consisten when a consumer asks for it, otherwise the filling will always
+be sync. There should be no blocking on reads in the splice-in path,
+only on consumption for splice-out.
+
+So nack on this one, too.
 
 -- 
 Jens Axboe
