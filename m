@@ -1,100 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759753AbYFXORV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760814AbYFXORh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759753AbYFXORV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 10:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759451AbYFXOQc
+	id S1760814AbYFXORh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 10:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759836AbYFXOQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 10:16:32 -0400
-Received: from metis.extern.pengutronix.de ([83.236.181.26]:42212 "EHLO
-	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758751AbYFXOQD convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 10:16:03 -0400
-From: Juergen Beisert <jbe@pengutronix.de>
-Organization: Pengutronix - Linux Solutions for Science and Industry
-To: linux-rt-users@vger.kernel.org
-Date: Tue, 24 Jun 2008 16:15:49 +0200
-User-Agent: KMail/1.9.4
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-References: <1214271257.8701.17.camel@localhost.localdomain>
-In-Reply-To: <1214271257.8701.17.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Tue, 24 Jun 2008 10:16:52 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:46945 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760602AbYFXOQv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 10:16:51 -0400
+Date: Tue, 24 Jun 2008 16:16:49 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: configfs: Q: item leak in a failing configfs_attach_group()?
+Message-ID: <20080624141649.GH7621@hawkmoon.kerlabs.com>
+Reply-To: Louis.Rilling@kerlabs.com
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-24997-1214316916-0001-2"
 Content-Disposition: inline
-Message-Id: <200806241615.49876.jbe@pengutronix.de>
-X-SA-Exim-Connect-IP: 83.236.181.29
-X-SA-Exim-Mail-From: jbe@pengutronix.de
-Subject: Re: 2.6.25.8-rt7
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.extern.pengutronix.de)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 June 2008 03:34, Steven Rostedt wrote:
-> We are pleased to announce the 2.6.25.8-rt7 tree, which can be
-> downloaded from the location:
->
->   http://rt.et.redhat.com/download/
->
-> Information on the RT patch can be found at:
->
->   http://rt.wiki.kernel.org/index.php/Main_Page
->
-> Changes since 2.6.25.4-rt6
->
->   - ported to 2.6.25.8
->
->   - rwlock pi_lock fixes on waking up multiple readers (Steven Rostedt)
->
->   - revert adaptive locks from RCU (Thomas Gleixner)
->      [ for some reason, using RCU causes some latency spikes, this
->        may be a sign of something going wrong in RCU itself ]
->
->   - rwlock mutex owner fix for waking up reader with readers held
->                                                   (Steven Rostedt)
->
->   - rwlock remove waiter from pi_list on above fix (Steven Rostedt and
->                                                     Thomas Gleixner)
->
->   - rwlock replace macro with inline (Thomas Gleixner)
->
->   - rwlock pending namespace updates (Thomas Gleixner)
->
->   - futex fix fault (Thomas Gleixner)
->
-> to build a 2.6.25.8-rt7 tree, the following patches should be applied:
->
->   http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.25.tar.bz2
->   http://kernel.org/pub/linux/kernel/v2.6/patch-2.6.25.8.bz2
->   http://rt.et.redhat.com/download/patch-2.6.25.8-rt7.bz2
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-This occurs when I try to build a PowerPC (MPC5200) kernel:
+--=_bohort-24997-1214316916-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-[...]
-In file included from kernel/sched.c:1318:
-kernel/sched.c: In function 'sched_init':
-kernel/sched.c:7702: error: implicit declaration of function 'global_rt_runtime'
-[...]
+Hi,
 
-And when I'm using the patch from Uli Brueggemann to fix it, I get:
+I'd like an opinion on the following scenario:
 
-[...]
-In file included from kernel/sched.c:1325:
-kernel/sched_rt.c: In function 'inc_rt_tasks':
-kernel/sched_rt.c:290: error: 'struct rq' has no member named 'online'
-[...]
+process 1: 					process 2:
+configfs_mkdir("A")
+  attach_group("A")
+    attach_item("A")
+      d_instantiate("A")
+    populate_groups("A")
+      mutex_lock("A")
+      attach_group("A/B")
+        attach_item("A")
+          d_instantiate("A/B")
+						mkdir("A/B/C")
+						  do_path_lookup("A/B/C", LOOKUP_PARENT)
+						    ok
+						  lookup_create("A/B/C")
+						    mutex_lock("A/B")
+						    ok
+						  configfs_mkdir("A/B/C")
+						    ok
+      attach_group("A/C")
+        attach_item("A/C")
+          d_instantiate("A/C")
+        populate_groups("A/C")
+          mutex_lock("A/C")
+          attach_group("A/C/D")
+            attach_item("A/C/D")
+              failure
+          mutex_unlock("A/C")
+          detach_groups("A/C")
+            nothing to do
+						mkdir("A/C/E")
+						  do_path_lookup("A/C/E", LOOKUP_PARENT)
+						    ok
+						  lookup_create("A/C/E")
+						    mutex_lock("A/C")
+						    ok
+						  configfs_mkdir("A/C/E")
+						    ok
+        detach_item("A/C")
+        d_delete("A/C")
+      mutex_unlock("A")
+      detach_groups("A")
+        mutex_lock("A/B")
+        detach_group("A/B")
+	  detach_groups("A/B")
+	    nothing since no _default_ group
+          detach_item("A/B")
+        mutex_unlock("A/B")
+        d_delete("A/B")
+    detach_item("A")
+    d_delete("A")
 
-Any hints?
+Two bugs (if the scenario is possible):
 
-Juergen Beisert
+1/ "A/B/C" and "A/C/E" are created, but never removed while their parent are
+removed in the end.
 
--- 
-Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-    Handelsregister: Amtsgericht Hildesheim, HRA 2686
-         Vertretung Sued/Muenchen, Germany
-   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+2/ "A" and "A/C" inodes are not locked while detach_item() is called on the=
+m,
+   which may probably confuse VFS.
+
+Is there something that prevents such scenario? I'd say that once dentries
+are instantiated, the dcache does not need to lock their inode to traverse =
+them,
+so the scenario is possible.
+
+Where am I wrong?
+
+If I'm right, two kinds of solutions for issue 1:
+i/ tag new directories with CONFIGFS_USET_NEW before calling d_instantiate,=
+ and
+validate the whole group+default groups hierarchy in a second pass by clear=
+ing
+CONFIGFS_USET_NEW
+
+ii/ do not call d_instantiate() immediately in configfs_create() if called =
+=66rom
+configfs_create_dir(), and d_instantitate() the group+default groups hierar=
+chy
+in a second pass. Problem: is it correct to add children to a dentry which =
+is
+not yet instantiated?
+
+For issue 2/, locking the inode before calling detach_item() (as is done fr=
+om
+configfs_rmdir()), plus a solution for 1/ should be sufficient.
+
+Thanks for your explanations.
+
+Louis
+
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
+
+--=_bohort-24997-1214316916-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIYQHRVKcRuvQ9Q1QRAo08AJ9I2mFVE+2IDm21BNhhwT2sMtgSaQCeK/ga
+5DbaIh1Mm1Mbh7tB/x0CjH0=
+=P15Y
+-----END PGP SIGNATURE-----
+
+--=_bohort-24997-1214316916-0001-2--
