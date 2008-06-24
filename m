@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbYFZIUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbYFZIVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757390AbYFZIUu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 04:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757250AbYFZIT2
+	id S1757328AbYFZIVP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 04:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757002AbYFZITa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 04:19:28 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2612 "EHLO spitz.ucw.cz"
+	Thu, 26 Jun 2008 04:19:30 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2611 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756833AbYFZITV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 04:19:21 -0400
-Date: Tue, 24 Jun 2008 19:57:53 +0200
+	id S1756487AbYFZITU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 04:19:20 -0400
+Date: Tue, 24 Jun 2008 20:28:17 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: Alok Kataria <akataria@vmware.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Daniel Hecht <dhecht@vmware.com>,
-       Tim Mann <mann@vmware.com>, Zach Amsden <zach@vmware.com>,
-       Sahil Rihan <srihan@vmware.com>
-Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
-Message-ID: <20080624175753.GG5642@ucw.cz>
-References: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com> <20080603182014.79a38d03@infradead.org> <35f686220806032101h103152dat841818982aaa5052@mail.gmail.com> <20080604061637.6bab3f67@infradead.org> <1213924953.27983.52.camel@promb-2n-dhcp368.eng.vmware.com> <20080620113922.GG7439@elte.hu> <1213999593.31598.52.camel@promb-2n-dhcp368.eng.vmware.com>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: kexec@lists.infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+       vgoyal@redhat.com, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 2/3] Use /proc/firmware_mem for x86 (e820)
+Message-ID: <20080624182817.GI5642@ucw.cz>
+References: <1213977420-1555-1-git-send-email-bwalle@suse.de> <1213977420-1555-3-git-send-email-bwalle@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1213999593.31598.52.camel@promb-2n-dhcp368.eng.vmware.com>
+In-Reply-To: <1213977420-1555-3-git-send-email-bwalle@suse.de>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,34 +28,13 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> On X86 platform we can use the value of tsc_khz computed during tsc calibration
-> to calculate the loops_per_jiffy value. Its very important to keep the error in
-> lpj values to minimum as any error in that may result in kernel panic in
-> check_timer. 
-> In virtualization environment, On a highly overloaded host the guest delay
-> calibration may sometimes result in errors beyond the ~50% that timer_irq_works
-> can handle, resulting in the guest panicking.
+> This patch copies the E820 map very early, before the kernel applies various
+> operations. That copy is used later to register only the BIOS-provided E820
+> map later in the resource tree for /proc/firmware_mem.
 
-How did you adress 'khz has nothing to do with loops per jiffie'
-comment?
+It is not process related -> it should not go to /proc. Talk to Greg.
 
-Some cpus can do loop in cycle , some need two cycles, some need half.
-
-								Pavel
-
-> @@ -421,6 +422,10 @@
->  		return;
->  	}
->  
-> +	lpj = ((u64)tsc_khz * 1000);
-> +	do_div(lpj, HZ);
-> +	lpj_tsc = lpj;
-> +
->  	printk("Detected %lu.%03lu MHz processor.\n",
->  				(unsigned long)cpu_khz / 1000,
->  				(unsigned long)cpu_khz % 1000);
-> 
-
+							Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
