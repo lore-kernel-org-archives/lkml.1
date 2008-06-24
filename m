@@ -1,125 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758804AbYFXIkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756509AbYFXIuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758804AbYFXIkH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 04:40:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYFXIjy
+	id S1756509AbYFXIuo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 04:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750713AbYFXIud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 04:39:54 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57704 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751426AbYFXIjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 04:39:53 -0400
-Message-ID: <4860B279.9070105@cn.fujitsu.com>
-Date: Tue, 24 Jun 2008 16:38:17 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 24 Jun 2008 04:50:33 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52956 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750732AbYFXIub (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 04:50:31 -0400
+Date: Tue, 24 Jun 2008 17:41:23 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>
+Subject: [Patch](memory hotplug)Allocate usemap on the section with pgdat (take 4)
+Cc: Andy Whitcroft <apw@shadowen.org>, David Miller <davem@davemloft.net>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Hiroyuki KAMEZAWA <kamezawa.hiroyu@jp.fujitsu.com>,
+       Tony Breeds <tony@bakeyournoodle.com>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20080624113345.E1B8.E1E9C6FF@jp.fujitsu.com>
+References: <20080623204934.GB1824@csn.ul.ie> <20080624113345.E1B8.E1E9C6FF@jp.fujitsu.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080624173302.E1C2.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: [PATCH v2] CONNECTOR: add a proc entry to list connectors
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got a problem when I wanted to check if the kernel supports process
-event connector, and It seems there's no way to do this check.
+Hi.
 
-At best I can check if the kernel supports connector or not, by looking
-into /proc/net/netlink, or maybe checking the return value of bind() to
-see if it's ENOENT.
+Here is take 4.
+Mel-san's comments are refrected. (some cleanups)
 
-So it would be useful to add /proc/net/connector to list all supported
-connectors:
- # cat /proc/net/connector
- Name            ID
- connector       4294967295:4294967295
- cn_proc         1:1
- w1              3:1
+At present, there is no regression report after take 3.
+I wish this patch would be merged into -next or -mm.
 
-Changelog:
-- fix memory leak: s/seq_release/single_release
-- use spin_lock_bh instead of spin_lock_irqsave
+Please apply.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Acked-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Thanks.
+
 ---
- drivers/connector/connector.c |   40 ++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 40 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/connector/connector.c b/drivers/connector/connector.c
-index 85e2ba7..bf48300 100644
---- a/drivers/connector/connector.c
-+++ b/drivers/connector/connector.c
-@@ -27,6 +27,8 @@
- #include <linux/moduleparam.h>
- #include <linux/connector.h>
- #include <linux/mutex.h>
-+#include <linux/proc_fs.h>
-+#include <linux/spinlock.h>
- 
- #include <net/sock.h>
- 
-@@ -403,6 +405,40 @@ static void cn_callback(void *data)
- 	mutex_unlock(&notify_lock);
+Usemaps are allocated on the section which has pgdat by this.
+
+Because usemap size is very small, many other sections usemaps
+are allocated on only one page. If a section has usemap, it
+can't be removed until removing other sections.
+This dependency is not desirable for memory removing.
+
+Pgdat has similar feature. When a section has pgdat area, it 
+must be the last section for removing on the node.
+So, if section A has pgdat and section B has usemap for section A,
+Both sections can't be removed due to dependency each other.
+
+To solve this issue, this patch collects usemap on same
+section with pgdat as much as possible.
+If other sections doesn't have any dependency, this section will
+be able to be removed finally.
+
+Change log of take 4.
+ - Some cleanups.
+   * Add KERN_INFO and KERN_CONT for printk messages.
+   * Remove redundant nid calculation in 
+     sparse_early_usemap_alloc_section().
+     pgdat is passed directly, and function name is changed to
+     sparse_early_usemap_alloc_pgdat_section(pgdat).
+     (Because argument becomes pgdat, not pnum).
+   * Comment was changed to be read easier.
+
+Change log of take 3.
+ - Change dependency message and comment.
+  (Thanks! > Andy Whitcroft-san)
+
+Change log of take 2.
+ - This feature becomes effective only when CONFIG_MEMORY_HOTREMOVE is on.
+   If hotremove is off, this feature is not necessary.
+ - Allow allocation on other section if alloc_bootmem_section() fails.
+   This removes previous regression.
+ - Show message if allocation on same section fails.
+
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+
+---
+
+ mm/sparse.c |   78 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 77 insertions(+), 1 deletion(-)
+
+Index: current/mm/sparse.c
+===================================================================
+--- current.orig/mm/sparse.c	2008-06-17 15:34:29.000000000 +0900
++++ current/mm/sparse.c	2008-06-24 15:29:21.000000000 +0900
+@@ -269,16 +269,92 @@
  }
+ #endif /* CONFIG_MEMORY_HOTPLUG */
  
-+static int cn_proc_show(struct seq_file *m, void *v)
++#ifdef CONFIG_MEMORY_HOTREMOVE
++static unsigned long * __init
++sparse_early_usemap_alloc_pgdat_section(struct pglist_data *pgdat)
 +{
-+	struct cn_queue_dev *dev = cdev.cbdev;
-+	struct cn_callback_entry *cbq;
++	unsigned long section_nr;
 +
-+	seq_printf(m, "Name            ID\n");
++	/*
++	 * A page may contain usemaps for other sections preventing the
++	 * page being freed and making a section unremovable while
++	 * other sections referencing the usemap retmain active. Similarly,
++	 * a pgdat can prevent a section being removed. If section A
++	 * contains a pgdat and section B contains the usemap, both
++	 * sections become inter-dependent. This allocates usemaps
++	 * from the same section as the pgdat where possible to avoid
++	 * this problem.
++	 */
++	section_nr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
++	return alloc_bootmem_section(usemap_size(), section_nr);
++}
 +
-+	spin_lock_bh(&dev->queue_lock);
++static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
++{
++	unsigned long usemap_snr, pgdat_snr;
++	static unsigned long old_usemap_snr = NR_MEM_SECTIONS;
++	static unsigned long old_pgdat_snr = NR_MEM_SECTIONS;
++	struct pglist_data *pgdat = NODE_DATA(nid);
++	int usemap_nid;
 +
-+	list_for_each_entry(cbq, &dev->queue_list, callback_entry) {
-+		seq_printf(m, "%-15s %u:%u\n",
-+			   cbq->id.name,
-+			   cbq->id.id.idx,
-+			   cbq->id.id.val);
++	usemap_snr = pfn_to_section_nr(__pa(usemap) >> PAGE_SHIFT);
++	pgdat_snr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
++	if (usemap_snr == pgdat_snr)
++		return;
++
++	if (old_usemap_snr == usemap_snr && old_pgdat_snr == pgdat_snr)
++		/* skip redundant message */
++		return;
++
++	old_usemap_snr = usemap_snr;
++	old_pgdat_snr = pgdat_snr;
++
++	usemap_nid = sparse_early_nid(__nr_to_section(usemap_snr));
++	if (usemap_nid != nid) {
++		printk(KERN_INFO
++		       "node %d must be removed before remove section %ld\n",
++		       nid, usemap_snr);
++		return;
++	}
++	/*
++	 * There is a circular dependency.
++	 * Some platforms allow un-removable section because they will just
++	 * gather other removable sections for dynamic partitioning.
++	 * Just notify un-removable section's number here.
++	 */
++	printk(KERN_INFO "Section %ld and %ld (node %d)", usemap_snr,
++	       pgdat_snr, nid);
++	printk(KERN_CONT
++	       " have a circular dependency on usemap and pgdat allocations\n");
++}
++#else
++static unsigned long * __init
++sparse_early_usemap_alloc_pgdat_section(struct pglist_data *pgdat)
++{
++	return NULL;
++}
++
++static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
++{
++}
++#endif /* CONFIG_MEMORY_HOTREMOVE */
++
+ static unsigned long *__init sparse_early_usemap_alloc(unsigned long pnum)
+ {
+ 	unsigned long *usemap;
+ 	struct mem_section *ms = __nr_to_section(pnum);
+ 	int nid = sparse_early_nid(ms);
+ 
+-	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
++	usemap = sparse_early_usemap_alloc_pgdat_section(NODE_DATA(nid));
+ 	if (usemap)
+ 		return usemap;
+ 
++	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
++	if (usemap) {
++		check_usemap_section_nr(nid, usemap);
++		return usemap;
 +	}
 +
-+	spin_unlock_bh(&dev->queue_lock);
-+
-+	return 0;
-+}
-+
-+static int cn_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, cn_proc_show, NULL);
-+}
-+
-+static const struct file_operations cn_file_ops = {
-+	.owner   = THIS_MODULE,
-+	.open    = cn_proc_open,
-+	.read    = seq_read,
-+	.llseek  = seq_lseek,
-+	.release = single_release
-+};
-+
- static int __devinit cn_init(void)
- {
- 	struct cn_dev *dev = &cdev;
-@@ -434,6 +470,8 @@ static int __devinit cn_init(void)
- 		return -EINVAL;
- 	}
+ 	/* Stupid: suppress gcc warning for SPARSEMEM && !NUMA */
+ 	nid = 0;
  
-+	proc_net_fops_create(&init_net, "connector", S_IRUGO, &cn_file_ops);
-+
- 	return 0;
- }
- 
-@@ -443,6 +481,8 @@ static void __devexit cn_fini(void)
- 
- 	cn_already_initialized = 0;
- 
-+	proc_net_remove(&init_net, "connector");
-+
- 	cn_del_callback(&dev->id);
- 	cn_queue_free_dev(dev->cbdev);
- 	netlink_kernel_release(dev->nls);
+
 -- 
-1.5.4.rc3
+Yasunori Goto 
+
+
