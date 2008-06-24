@@ -1,49 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758534AbYFXGHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758393AbYFXGIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758534AbYFXGHY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 02:07:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758234AbYFXGHG
+	id S1758393AbYFXGIe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 02:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYFXGI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 02:07:06 -0400
-Received: from mx2.suse.de ([195.135.220.15]:60254 "EHLO mx2.suse.de"
+	Tue, 24 Jun 2008 02:08:26 -0400
+Received: from cantor.suse.de ([195.135.220.2]:42350 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758142AbYFXGHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 02:07:03 -0400
-Date: Mon, 23 Jun 2008 23:04:29 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 10/10] Fix ZERO_PAGE breakage with vmware
-Message-ID: <20080624060429.GA2519@suse.de>
-References: <20080623225737.837265824@mini.kroah.org> <20080623230452.GD29853@suse.de> <alpine.LFD.1.10.0806231627440.2926@woody.linux-foundation.org>
+	id S1751495AbYFXGI0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 02:08:26 -0400
+From: Neil Brown <neilb@suse.de>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Date: Tue, 24 Jun 2008 16:08:15 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0806231627440.2926@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18528.36687.631672.462076@notabene.brown>
+Cc: linux-kernel@vger.kernel.org, axboe@kernel.dk
+Subject: Re: [PATCH 1/2] Avoid bio_endio recursion
+In-Reply-To: message from Mikulas Patocka on Tuesday June 24
+References: <Pine.LNX.4.64.0806240118250.24220@engineering.redhat.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 04:28:24PM -0700, Linus Torvalds wrote:
+On Tuesday June 24, mpatocka@redhat.com wrote:
+> Hi
 > 
+> bio_endio calls bi_end_io callback. In case of stacked devices (raid, dm), 
+> bio_end_io may call bio_endio again, up to an unspecified length.
 > 
-> On Mon, 23 Jun 2008, Greg KH wrote:
-> > 
-> > Note, I had to merge this patch by hand, can someone verify that I 
-> > didn't mess it up?
+> The crash because of stack overflow was really observed on sparc64. And 
+> this recursion was one of the contributing factors (using 9 stack frames 
+> --- that is 1728 bytes).
 > 
-> Looks ok to me.
+> This patch removes the recursion.
 
-Ah, great, thanks for checking.
+This is very cool, thanks!  A close mirror of the recursion
+avoidance in generic_make_request.
 
-greg k-h
+You use a per-cpu queue were generic_make_request uses a per-task
+queue.  This is fitting as bi_end_io doesn't have a process context,
+but is supposed to be fast and able to run with interrupts disabled,
+so tying to a cpu is no problem.
+
+> +
+> +	bio_queue = NULL;
+> +queue_empty_next_bio:
+> +	*bio_end_queue_ptr = &bio_queue;
+> +next_bio:
+> +
+>   	if (error)
+>   		clear_bit(BIO_UPTODATE, &bio->bi_flags);
+>   	else if (!test_bit(BIO_UPTODATE, &bio->bi_flags))
+> @@ -1175,6 +1196,17 @@
+> 
+>   	if (bio->bi_end_io)
+>   		bio->bi_end_io(bio, error);
+> +
+> +	if (bio_queue) {
+> +		bio = bio_queue;
+> +		bio_queue = bio->bi_next;
+> +		if (!bio_queue) goto queue_empty_next_bio;
+> +		goto next_bio;
+
+checkpatch.pl doesn't like that:
+ERROR: trailing statements should be on next line
+
+and I don't either.  I would not bother with the mini-optimisation at
+all.
+Discard the queue_empty_next_bio label and replace the "if () goto"
+with
+       if (!bio_queue)
+		*bio_end_queue_ptr = &bio_queue;
+
+and leave gcc to optimise the assignment if it wants to.
+
+Reviewed-by: NeilBrown <neilb@suse.de>
+
+Thanks,
+NeilBrown
