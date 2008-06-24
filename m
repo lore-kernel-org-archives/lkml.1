@@ -1,76 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbYFXWXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756324AbYFXWZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756005AbYFXWXq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 18:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbYFXWXe
+	id S1756324AbYFXWZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 18:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYFXWZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 18:23:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33034 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751829AbYFXWXd (ORCPT
+	Tue, 24 Jun 2008 18:25:21 -0400
+Received: from mxsec.euro-web.fr ([81.93.243.199]:50161 "EHLO
+	mxsec.euro-web.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752804AbYFXWZU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 18:23:33 -0400
-Date: Tue, 24 Jun 2008 15:22:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: vcgandhi1@aol.com, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Fix serial_match_port() for dynamic major tty-device
- numbers
-Message-Id: <20080624152253.d9bd1da2.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0806220037250.461@axis700.grange>
-References: <8CA6D5E4DEA920C-1128-2973@webmail-nb07.sysops.aol.com>
-	<Pine.LNX.4.64.0804160046460.6851@axis700.grange>
-	<8CA6D67D9E313CC-1128-35BB@webmail-nb07.sysops.aol.com>
-	<8CA6D6D112DB4D4-1128-38B0@webmail-nb07.sysops.aol.com>
-	<Pine.LNX.4.64.0804170103040.7335@axis700.grange>
-	<8CA6E48B50204C0-15A8-47D0@webmail-nb06.sysops.aol.com>
-	<Pine.LNX.4.64.0804171657320.6716@axis700.grange>
-	<8CA6EC102F70775-15A8-8B4A@webmail-nb06.sysops.aol.com>
-	<Pine.LNX.4.64.0804171915180.6716@axis700.grange>
-	<8CA6EF5BC26E069-12A0-1888@webmail-nc13.sysops.aol.com>
-	<Pine.LNX.4.64.0804181700300.5725@axis700.grange>
-	<8CA6FF4B03B281A-E10-2E1C@webmail-nf05.sim.aol.com>
-	<Pine.LNX.4.64.0804231108170.5160@axis700.grange>
-	<8CA73B83C791846-148-41B9@webmail-nb17.sysops.aol.com>
-	<Pine.LNX.4.64.0804241557340.5283@axis700.grange>
-	<8CA914AC0F6817C-1684-368@webmail-nc03.sysops.aol.com>
-	<Pine.LNX.4.64.0806220037250.461@axis700.grange>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 24 Jun 2008 18:25:20 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Jun 2008 18:25:20 EDT
+From: David CHANIAL <david.ml@euro-web.fr>
+Organization: Euro Web
+To: linux-kernel@vger.kernel.org
+Subject: weird bug on r8169 with usb
+Date: Wed, 25 Jun 2008 00:18:37 +0200
+User-Agent: KMail/1.9.7
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806250018.37617.david.ml@euro-web.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Jun 2008 00:45:25 +0200 (CEST)
-Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+Hi (Please excuse my bad english),
 
-> As reported by Vipul Gandhi, the current serial_match_port() doesn't work 
-> for tty-devices using dynamic major number allocation. Fix it.
-> 
-> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> Tested-by: Vipul Gandhi <vcgandhi1@aol.com>
-> 
-> ---
-> 
-> diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-> index 0f5a179..593ae85 100644
-> --- a/drivers/serial/serial_core.c
-> +++ b/drivers/serial/serial_core.c
-> @@ -1949,7 +1949,9 @@ struct uart_match {
->  static int serial_match_port(struct device *dev, void *data)
->  {
->  	struct uart_match *match = data;
-> -	dev_t devt = MKDEV(match->driver->major, match->driver->minor) + match->port->line;
-> +	struct tty_driver *tty_drv = match->driver->tty_driver;
-> +	dev_t devt = MKDEV(tty_drv->major, tty_drv->minor_start) +
-> +		match->port->line;
->  
->  	return dev->devt == devt; /* Actually, only one tty per port */
+I think is there a bug on my linux box :
+I hope you can say me that it is really a bug, or if i have to consider myself as bug :)
 
-Well that sounds bad.  We need to work out whether this fix is needed
-in 2.6.25 and possibly eariler.
+If i boot my system/kernel with usb devices plugged, eth0 is detected but unusable.
+I unplug the usb devices, kernel boot, and eth0 is usable.
+The bug is reproducible as much as necessary.
 
-What are the consequences of this error?
+More informations :
+(if you need more informations, ask, i will reply)
+
+When i say that eth0 is unusable, i can see there no dhcp request can make a success.
+
+I've seen the bug with :
+	linux-2.6.24-gentoo-r8
+	linux-2.6.25-gentoo-r5
+
+I can test with a vanilla kernel (without the gentoo patches) but i "think" is there no link with the gentoo patches.
+(Ask if necessary)
+
+# lspci | grep Ether
+ 02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit Ethernet controller (rev ff)
+
+# dmesg | grep eth0 # without the bug
+ eth0: RTL8168c/8111c at 0xf8828000, 00:1e:8c:c4:66:7d, XID 3c2000c0 IRQ 18
+ r8169: eth0: link up
+ eth0: no IPv6 routers present
+
+# dmesg | grep eth0 # with the bug
+ eth0: RTL8168c/8111c at 0xf8828000, 00:1e:8c:c4:66:7d, XID 3c2000c0 IRQ 18
+ r8169: eth0: link up
+ eth0: no IPv6 routers present
+ NETDEV WATCHDOG: eth0: transmit timed out
+ r8169: eth0: link up
+ [...] last twho lines repeat slowly but continually [...]
+
+# cat /proc/interrupts  | grep eth0
+ 18:          3          4          3          3   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb7, eth0
+
+# diff -U0 without_devices with_devices 
+--- without_devices	2008-06-25 00:13:29.000000000 +0200
++++ with_devices	2008-06-25 00:14:00.000000000 +0200
+@@ -7,0 +8 @@
++Bus 002 Device 007: ID 132b:2001 Konica Minolta 
+@@ -12,0 +14 @@
++Bus 001 Device 003: ID 04b8:012e Seiko Epson Corp.
+
+
+Thanks a lot.
+
+Best regards,
+-- 
+David CHANIAL
