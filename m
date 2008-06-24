@@ -1,84 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760888AbYFXPMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760958AbYFXPPB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760888AbYFXPMT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 11:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758728AbYFXPMH
+	id S1760958AbYFXPPB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 11:15:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbYFXPOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 11:12:07 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:57251 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757644AbYFXPMG (ORCPT
+	Tue, 24 Jun 2008 11:14:52 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:44054 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754954AbYFXPOv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 11:12:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=MfyHcrOdGaY/xQlNcnLWdRSjBxvYhb1gR3/x33573L5qXJhK9WGRc1DcSOywKUM8Iy
-         kKDre+257o0E92ocpQ8L0nrUnm/62yWLnyg4Q8sbFnl9SJu+egcPh+zG9UswA2+wjnTE
-         PLuL7MZf67ds4ruHB0V9mUPZxuJTk3p8tpKds=
-Message-ID: <48f7fe350806240812t5bd411daw122aca4d6b67e932@mail.gmail.com>
-Date: Tue, 24 Jun 2008 11:12:03 -0400
-From: "Ryan Hope" <rmh3093@gmail.com>
-To: "Nick Piggin" <nickpiggin@yahoo.com.au>
-Subject: Re: [BUG] Lockless patches cause hardlock under heavy IO
-Cc: paulmck@linux.vnet.ibm.com, "Peter Zijlstra" <peterz@infradead.org>,
-       linux-mm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200806241013.45908.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48f7fe350806181415l4eba61b3i1d206de03147575e@mail.gmail.com>
-	 <200806232154.52820.nickpiggin@yahoo.com.au>
-	 <20080623130536.GA10595@linux.vnet.ibm.com>
-	 <200806241013.45908.nickpiggin@yahoo.com.au>
+	Tue, 24 Jun 2008 11:14:51 -0400
+Message-Id: <4860D726.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Tue, 24 Jun 2008 09:14:46 -0600
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Cc: <mingo@elte.hu>, <tglx@linutronix.de>, <jbe@pengutronix.de>,
+       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
+Subject: Re: 2.6.25.8-rt7
+References: <4860CD0B0200005A0003944C@sinclair.provo.novell.com>
+ <4860CD140200005A0003944F@sinclair.provo.novell.com>
+ <4860CD140200005A0003944F@sinclair.provo.novell.com>
+ <Pine.LNX.4.58.0806241043070.32368@gandalf.stny.rr.com>
+In-Reply-To: <Pine.LNX.4.58.0806241043070.32368@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="=__Part38111C76.4__="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well i tried to run pure -mm this weekend, it locked as soon as I got
-into gnome so I applied a couple of the bug fixes from lkml and -mm
-seems to be running stable now. I cant seem to get it to hard lock
-now, at least not doing the simple stuff that was causing it to hard
-lock on my other patchset, either the lockless patches expose some bug
-that in -rc6 or lockless requires some other patches further up in the
--mm series file.
+--=__Part38111C76.4__=
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Mon, Jun 23, 2008 at 8:13 PM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> On Monday 23 June 2008 23:05, Paul E. McKenney wrote:
->> On Mon, Jun 23, 2008 at 09:54:52PM +1000, Nick Piggin wrote:
->> > On Monday 23 June 2008 13:51, Ryan Hope wrote:
->> > > well i get the hardlock on -mm with out using reiser4, i am pretty
->> > > sure is swap related
->> >
->> > The guys seeing hangs don't use PREEMPT_RCU, do they?
->> >
->> > In my swapping tests, I found -mm3 to be stable with classic RCU, but
->> > on a hunch, I tried PREEMPT_RCU and it crashed a couple of times rather
->> > quickly. First crash was in find_get_pages so I suspected lockless
->> > pagecache doing something subtly wrong with the RCU API, but I just got
->> > another crash in __d_lookup:
+>>> On Tue, Jun 24, 2008 at 10:44 AM, in message
+<Pine.LNX.4.58.0806241043070.32368@gandalf.stny.rr.com>, Steven Rostedt
+<rostedt@goodmis.org> wrote:=20
+
+> On Tue, 24 Jun 2008, Gregory Haskins wrote:
+>=20
 >>
->> Could you please send me a repeat-by?  (At least Alexey is no longer
->> alone!)
->
-> OK, I had DEBUG_PAGEALLOC in the .config, which I think is probably
-> important to reproduce it (but the fact that I'm reproducing oopses
-> with << PAGE_SIZE objects like dentries and radix tree nodes indicates
-> that there is even more free-before-grace activity going undetected --
-> if you construct a test case using full pages, it might become even
-> easier to detect with DEBUG_PAGEALLOC).
->
-> 2 socket, 8 core x86 system.
->
-> I mounted two tmpfs filesystems, one contains a single large file
-> which is formatted as 1K block size ext3 and mounted loopback, the
-> other is used directly. Linux kernel source is unpacked on each mount
-> and concurrent make -j128 on each. This pushes it pretty hard into
-> swap. Classic RCU survived another 5 hours of this last night.
->
-> But that's a fairly convoluted test for an RCU problem. I expect it
-> should be easier to trigger with something more targetted...
->
+>> (Sorry for toppost)
+>>
+>> I believe this is my fault.  You must be building for uniprocessor?  =
+Ingo=20
+> has a fix for this issue in sched-devel that should be pulled into -rt.
+>>
+>> Sorry for the inconvenience.  I will pull the patch myself and submit =
+it=20
+> when I get home (if someone doesn't beat me to it)
+>>
+>=20
+> I'm looking forward to it ;-)
+
+Patch is attached (from linux-2.6-tip).  I meant to send this back around =
+when the
+offending patch went in, but it slipped through the cracks.  Sorry for the
+inconvenience.
+
+Regards,
+-Greg
+
+
+--=__Part38111C76.4__=
+Content-Type: text/plain; name="sched-fix-cpuprio-build-bug.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment; filename="sched-fix-cpuprio-build-bug.patch"
+
+>From 1100ac91b6af02d8639d518fad5b434b1bf44ed6 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Thu, 5 Jun 2008 12:25:37 +0200
+Subject: [PATCH] sched: fix cpuprio build bug
+
+this patch was not built on !SMP:
+
+ kernel/sched_rt.c: In function 'inc_rt_tasks':
+ kernel/sched_rt.c:404: error: 'struct rq' has no member named 'online'
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched_rt.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index e482159..eaa6060 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -399,16 +399,19 @@ void inc_rt_tasks(struct sched_rt_entity *rt_se, =
+struct rt_rq *rt_rq)
+ #if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
+ 	if (rt_se_prio(rt_se) < rt_rq->highest_prio) {
+ 		struct rq *rq =3D rq_of_rt_rq(rt_rq);
+-		rt_rq->highest_prio =3D rt_se_prio(rt_se);
+=20
++		rt_rq->highest_prio =3D rt_se_prio(rt_se);
++#ifdef CONFIG_SMP
+ 		if (rq->online)
+ 			cpupri_set(&rq->rd->cpupri, rq->cpu,
+ 				   rt_se_prio(rt_se));
++#endif
+ 	}
+ #endif
+ #ifdef CONFIG_SMP
+ 	if (rt_se->nr_cpus_allowed > 1) {
+ 		struct rq *rq =3D rq_of_rt_rq(rt_rq);
++
+ 		rq->rt.rt_nr_migratory++;
+ 	}
+=20
+--=20
+1.5.4.5
+
+
+--=__Part38111C76.4__=--
