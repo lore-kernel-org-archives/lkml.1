@@ -1,93 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754441AbYFXHhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753513AbYFXHkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754441AbYFXHhQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 03:37:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYFXHhE
+	id S1753513AbYFXHkq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 03:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbYFXHkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 03:37:04 -0400
-Received: from mail.mba-software.de ([62.75.137.201]:46162 "EHLO
-	mail.mba-software.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752005AbYFXHhD convert rfc822-to-8bit (ORCPT
+	Tue, 24 Jun 2008 03:40:39 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:20883 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409AbYFXHki (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 03:37:03 -0400
-X-Greylist: delayed 3709 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Jun 2008 03:37:03 EDT
-Message-ID: <4860959E.6020207@mba-software.de>
-Date: Tue, 24 Jun 2008 08:35:10 +0200
-From: =?ISO-8859-15?Q?Marian_Aldenh=F6vel?= 
-	<marian.aldenhoevel@mba-software.de>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Tue, 24 Jun 2008 03:40:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xVxChArT66QBoMmSsKoW1Vw3HxmzL3gNUOZjs0hIp9WFpGN4TjKgeNttUHnOChF21x
+         +eSDtVM3by6j4rjXZd9ek1HIrxMN0MJZ9ch70BtDqtGJr20LvWEYeqeIJkRA3XbOLorw
+         pyyY7AhO9NzGSc87IKXqmehH5zcX3UtnSzOJg=
+Message-ID: <19f34abd0806240040xebb1c0fy52133a729cf1a1aa@mail.gmail.com>
+Date: Tue, 24 Jun 2008 09:40:37 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Rusty Russell" <rusty@rustcorp.com.au>, "Adrian Bunk" <bunk@kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
+Cc: "Mike Travis" <travis@sgi.com>, "Srivatsa Vaddagiri" <vatsa@in.ibm.com>,
+       linux-kernel@vger.kernel.org, "Gautham R Shenoy" <ego@in.ibm.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "Heiko Carstens" <heiko.carstens@de.ibm.com>
+In-Reply-To: <200806241136.52430.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Building a kernel for SiS55-based system.
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080622125633.GA8166@damson.getinternet.no>
+	 <200806231326.11328.rusty@rustcorp.com.au> <485FD644.80208@sgi.com>
+	 <200806241136.52430.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Jun 24, 2008 at 3:36 AM, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> Vegard's analysis is flawed: just because cpu is offline, it still must be <
+> nr_cpu_ids, which is based on possible cpus.  Unless something crazy is
+> happening, but a quick grep doesn't reveal anyone manipulating nr_cpu_ids.
 
-I am trying to build a linux kernel for a small form-factor PC. I have so
-far failed to create a working kernel.
+Hm, you are right and I was wrong. I'm sorry, it just seemed too
+obvious to be any other way, and I made some assumptions about
+nr_cpu_ids. (IIRC, nr_node_ids changes dynamically as nodes are
+added/removed, so I assumed it was the same for CPUs.)
 
-Output of /cat/proc/cpuinfo as given by the hardware vendor:
+This doesn't change the fact that get_cpu_sysdev(cpu) returns NULL,
+however. This variable, the per-cpu cpu_sys_device, is only ever
+changed in two places, register_cpu() and unregister_cpu(); in
+register_cpu(), it is set to
 
-  > processor       : 0
-  > vendor_id       : SiS SiS SiS
-  > cpu family      : 5
-  > model           : 0
-  > model name      : ff/00
-  > stepping        : 5
-  > cpu MHz         : 200.008
-  > fdiv_bug        : no
-  > hlt_bug         : no
-  > f00f_bug        : no
-  > coma_bug        : no
-  > fpu             : yes
-  > fpu_exception   : yes
-  > cpuid level     : 1
-  > wp              : yes
-  > flags           : fpu tsc cx8 mmx
-  > bogomips        : 398.95
+                per_cpu(cpu_sys_devices, num) = &cpu->sysdev;,
 
-I gather that is a SiS 55x System-on-a-chip.
+and in unregister_cpu(), it is set to
 
-I am using T2[1] as build-system. It (currently) tries to build the kernel
-from 2.6.25.7 sources. When booting the kernel it built the system stops
-after:
+        per_cpu(cpu_sys_devices, logical_cpu) = NULL;.
 
-   Decompressing Linux... done.
-   Booting the kernel.
+So it seems *likely* that register_cpu() was never called (after the
+previous unregister_cpu(), which we know happened successfully).
 
-At the bottom of the screen it says:
+register_cpu() is called from arch_register_cpu(), which is called
+from toplogy_init() and acpi_processor_hotadd_init(). Now, the
+topology_init() call-chain is uninteresting, since it only happens at
+boot. The question is whether acpi_processor_hotadd_init() will be
+called if the arch-specific __cpu_up() fails...
 
-   BUG: Int6: CR2 00000000
+But I am not able to follow that code.
 
-And nothing else.
+Thanks for looking at this.
 
-My kernel-configfile can be downloaded from [2]
 
-I am confident that the build-system in itself is sound. I can boot the
-system it created on a variety of different systems including QEmu, but
-not on the target with the CPU given above. But I have very very little
-experience in building system like this from scratch.
+Vegard
 
-I am quite new at this sort of thing, so please be gentle if I forgot the
-most vital part of information required to help me. I will gladly provide
-anything asked for.
+PS: I'll withdraw the statement that this is probably a regression. It
+seems more likely that nobody ever hit the "cpu failed to init" case
+before.
 
-If someone is really extremely keen on helping I can also send out one
-of the machines I am trying to get this up and running on and a copy of
-the development host-VM I am using.
-
-Ciao, MM
-
-[1] http://www.t2-project.org
-[2] http://www.marian-aldenhoevel.de/tmp/kconfig_2.6.25.7-dist
 -- 
-Marian Aldenhövel, Rosenhain 23, 53123 Bonn
-http://www.marian-aldenhoevel.de
-"I ran some quick calculations on it. He's about 80% on the right
-  track.  That leaves him only 20% dead when he crashes." Bob C
-
-
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
