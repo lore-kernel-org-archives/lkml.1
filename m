@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbYFXR4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbYFXR4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755580AbYFXR4A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 13:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbYFXRzs
+	id S1757931AbYFXR4Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 13:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755207AbYFXRz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 13:55:48 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:36153 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750942AbYFXRzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 13:55:47 -0400
-Date: Tue, 24 Jun 2008 19:55:44 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: "akinobu.mita@gmail.com" <akinobu.mita@gmail.com>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-Subject: RE: [PATCH 3/14] arch/ia64: Eliminate NULL test and memset after
- alloc_bootmem
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3062D2438@orsmsx505.amr.corp.intel.com>
-Message-ID: <Pine.LNX.4.64.0806241948120.26777@ask.diku.dk>
-References: <Pine.LNX.4.64.0806241021360.26777@ask.diku.dk>
- <57C9024A16AD2D4C97DC78E552063EA3062D2438@orsmsx505.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 24 Jun 2008 13:55:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43511 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754409AbYFXRzz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 13:55:55 -0400
+Date: Tue, 24 Jun 2008 10:55:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [RFC][PATCH] putback_lru_page()/unevictable page handling
+ rework v3
+Message-Id: <20080624105527.d9e9eba0.akpm@linux-foundation.org>
+In-Reply-To: <1214327453.6563.14.camel@lts-notebook>
+References: <20080621185408.E832.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080624114006.D81C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<1214327453.6563.14.camel@lts-notebook>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jun 2008, Luck, Tony wrote:
+On Tue, 24 Jun 2008 13:10:53 -0400 Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
 
-> > As noted by Akinobu Mita in patch b1fceac2b9e04d278316b2faddf276015fc06e3b,
-> > alloc_bootmem and related functions never return NULL and always return a
-> > zeroed region of memory.  Thus a NULL test or memset after calls to these
-> > functions is unnecessary.
+> On Tue, 2008-06-24 at 11:43 +0900, KOSAKI Motohiro wrote:
+> > Hi
+> > 
+> > > I merged kamezawa-san's SHMEM related fix.
+> > > this patch works well >2H.
+> > > and, I am going to test on stress workload during this week end.
+> > > 
+> > > but I hope recieve review at first.
+> > > thus I post it now.
+> > 
+> > Unfortunately, my machine crashed last night ;-)
+> > I'll dig it.
 > 
-> There is no commit b1fceac2b9e04d278316b2faddf276015fc06e3b in Linus' tree.
+> 
+> I ran 26-rc5-mm3 with 5 split/unevictable lru patches that you posted on
+> 19june.  I replaced patch 5 of that series with the subject patch
+> [rework v3, merged SHMEM fix].  This kernel ran my 'usex' stress load
+> overnight for 23+ hours on both ia64 and x86_64 platforms with no
+> problems.  I evidently did not hit the problem you did.
+> 
+> I'm rebuilding with a patch to a small problem that I discovered along
+> with your recent patch to "prevent incorrect oom...".  I'll let you know
+> how that goes as well.
+> 
+> I'll send along two additional patches shortly.
+> 
 
-I am not sure to know how to tell precisely where you are looking, but you 
-can find it here:
+My chances of working out which patches I need to apply to -mm are
+near-zero.  I'm working through my vacation backlog in reverse order
+and haven't got up to this topic yet.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b1fceac2b9e04d278316b2faddf276015fc06e3b
-
-
-> In addition the current alloc_bootmem() is a macro that uses __alloc_bootmem
-> which most defintely can return NULL.
-
-The "return NULL;" at the bottom of __alloc_bootmem is preceded by 
-panic("Out of memory");, which I assume cannot return?
-
-> Is this against -mm or linux-next?
-
-I pull files from the following git repository:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-
-julia
+As you've been paying attention it would be appreciated if you could
+send me some stuff, please.
 
