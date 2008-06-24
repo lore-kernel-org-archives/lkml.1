@@ -1,55 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbYFXRmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbYFXRqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756113AbYFXRmi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 13:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbYFXRm2
+	id S1756167AbYFXRqY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 13:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbYFXRqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 13:42:28 -0400
-Received: from mga02.intel.com ([134.134.136.20]:44677 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753904AbYFXRm1 convert rfc822-to-8bit (ORCPT
+	Tue, 24 Jun 2008 13:46:17 -0400
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:52104 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753189AbYFXRqQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 13:42:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,697,1204531200"; 
-   d="scan'208";a="401455865"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Julia Lawall <julia@diku.dk>,
-       "akinobu.mita@gmail.com" <akinobu.mita@gmail.com>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-Date: Tue, 24 Jun 2008 10:42:22 -0700
-Subject: RE: [PATCH 3/14] arch/ia64: Eliminate NULL test and memset after
- alloc_bootmem
-Thread-Topic: [PATCH 3/14] arch/ia64: Eliminate NULL test and memset after
- alloc_bootmem
-Thread-Index: AcjV02r92Re9xBMoSreFnBqpQcF2TAATd5jg
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA3062D2438@orsmsx505.amr.corp.intel.com>
-References: <Pine.LNX.4.64.0806241021360.26777@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0806241021360.26777@ask.diku.dk>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Tue, 24 Jun 2008 13:46:16 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAE/MYEhMQWVt/2dsb2JhbACBW7F/
+Date: Tue, 24 Jun 2008 13:46:13 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       "'Alexey Dobriyan'" <adobriyan@gmail.com>,
+       "'Peter Zijlstra'" <peterz@infradead.org>,
+       "'Steven Rostedt'" <rostedt@goodmis.org>,
+       "'Frank Ch. Eigler'" <fche@redhat.com>, "'Ingo Molnar'" <mingo@elte.hu>,
+       "'LKML'" <linux-kernel@vger.kernel.org>,
+       "'systemtap-ml'" <systemtap@sources.redhat.com>,
+       "'Hideo AOKI'" <haoki@redhat.com>
+Subject: Re: [RFC] Tracepoint proposal
+Message-ID: <20080624174613.GA12432@Krystal>
+References: <007601c8d5ca$18fa0e10$4aee2a30$@css.fujitsu.com> <48611B03.1000003@redhat.com> <20080625011951.D83E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48612879.5090809@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <48612879.5090809@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:42:12 up 19 days, 22:23,  3 users,  load average: 0.81, 0.94,
+	1.09
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> As noted by Akinobu Mita in patch b1fceac2b9e04d278316b2faddf276015fc06e3b,
-> alloc_bootmem and related functions never return NULL and always return a
-> zeroed region of memory.  Thus a NULL test or memset after calls to these
-> functions is unnecessary.
+* Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> KOSAKI Motohiro wrote:
+> >> Tracepoint
+> >>  - stored in a section
+> >>  - dynamic activation
+> >>  - no message
+> >>  - export kernel structure
+> >>  - arguments depending on points
+> >>  - high frequently called
+> >>  - no module support (kernel use only)
+> > 
+> > Why Shouldn't kernel module use tracepoint?
+> > technical problem? or any plicy exist?
+> 
+> Good question, I think we don't want to export so much
+> kernel internal structures. Since tracepoint tend to export
+> raw kernel structure to user module, I thought it might be
+> better not to export its interface to modules.
+> 
+> However, I thought that again, and knew what Peter worried was
+> about marker which exports marker list to user space.
+> So, the issue is exporting internal structures to user space,
+> not to modules. Thus, I think it can support modules also.
+> 
 
-There is no commit b1fceac2b9e04d278316b2faddf276015fc06e3b in Linus' tree.
+Agreed. It could be good to someday merge these tracepoint probes with
+the mainline kernel so they can easily be adapted to tracepoint changes.
+It seems correct to me for tracepoint probes to be either in the core
+kernel or in modules, but I expect that they will be easier to maintain
+within the tree.
 
-In addition the current alloc_bootmem() is a macro that uses __alloc_bootmem
-which most defintely can return NULL.
+Mathieu
 
-Is this against -mm or linux-next?
+> Thank you,
+> 
+> -- 
+> Masami Hiramatsu
+> 
+> Software Engineer
+> Hitachi Computer Products (America) Inc.
+> Software Solutions Division
+> 
+> e-mail: mhiramat@redhat.com
+> 
 
--Tony
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
