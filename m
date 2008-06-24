@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760560AbYFXO5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760673AbYFXPDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760560AbYFXO5Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 10:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756700AbYFXO5P
+	id S1760673AbYFXPDE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 11:03:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755163AbYFXPCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 10:57:15 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:38998 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755999AbYFXO5O (ORCPT
+	Tue, 24 Jun 2008 11:02:55 -0400
+Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:45901 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753630AbYFXPCy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 10:57:14 -0400
-Date: Tue, 24 Jun 2008 10:57:13 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-cc: andi@firstfloor.org, <linux-kernel@vger.kernel.org>,
-       <antonio.lin@alcormicro.com>, <david.vrabel@csr.com>
-Subject: Re: Scatter-gather list constraints
-In-Reply-To: <20080624194119H.fujita.tomonori@lab.ntt.co.jp>
-Message-ID: <Pine.LNX.4.44L0.0806241050350.2160-100000@iolanthe.rowland.org>
+	Tue, 24 Jun 2008 11:02:54 -0400
+Message-ID: <48610C90.5020004@davidnewall.com>
+Date: Wed, 25 Jun 2008 00:32:40 +0930
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Position Statement on Linux Kernel Modules
+References: <20080623050118.GA22852@kroah.com> <20080623112934.GC5713@hp0.dynamicro.ca> <20080623130917.GB1369@1wt.eu> <20080624113347.GA5246@hp0.dynamicro.ca>
+In-Reply-To: <20080624113347.GA5246@hp0.dynamicro.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jun 2008, FUJITA Tomonori wrote:
+Greg Louis wrote:
+> Willy Tarreau wrote
+>>> (Of course, the best way to rebut that argument [ that outside the
+>>> developer community, nobody cares whether drivers are proprietary ]
+>>> would be for end-users to vote with their feet, but for a lot of
+>>> us, me included, that's not a practical option.)
+>>>       
+>> The problem is exactly what you describe in your last sentence. Hardware
+>> manufacturers are well aware of that and make no effort to provide correct
+>> drivers when they (think they) have a monopoly in certain areas.
+>>
+>> What would be needed would be a public list of alternative hardware for
+>> known existing hardware.
+>
+> That is Utopian, I fear.  For example, what notebook supports the
+> installation of alternative hardware?
 
-> I don't think that the block layer has the DMA alignment concept in FS
-> I/O path. And I think that you need kinda the DMA padding instead the
-> DMA alignment though again The block layer doesn't have the DMA
-> padding concept in FS I/O path. And the DMA padding applies to only
-> the last SG element.
-> 
-> I guess that it's pretty hard to implement such a strange restriction
-> in the block layer cleanly.
+Yet, in non-mobile platforms, alternative hardware is sometimes an
+option, and so the suggestion does have utility.  But it's use goes
+beyond those situations, as it engenders a new mindset amongst
+manufacturers, a mindset in which they have to play by our rules or lose
+market share, and once they start doing that they'll find there's no
+reason not to keep doing it.  Then, even mobile platforms will have a
+full set of open drivers.
 
-I don't see why there should be any problem.  It's simply a matter of 
-splitting a single request into multiple requests, at places where 
-the length restriction would be violated.
-
-For example, suppose an I/O request starts out with two S-G elements
-of 1536 bytes and 2048 bytes respectively, and the DMA requirement is
-that all elements except the last must have length divisible by 1024.  
-Then the request could be broken up into three requests of 1024, 512,
-and 2048 bytes.
-
-> The iSER driver has a strange restriction too. I think that as iSER
-> does, bouncing is a better option, though adding some generic
-> mechanism to reserve buffer in the block layer might be nice, I
-> gueess.
-
-Is it reasonable to have 120-KB bounce buffers?
-
-Alan Stern
-
+So I think a public list of alternative hardware is an excellent suggestion.
