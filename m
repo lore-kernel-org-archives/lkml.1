@@ -1,169 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758615AbYFXHCH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758890AbYFXHD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758615AbYFXHCH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 03:02:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758829AbYFXHBi
+	id S1758890AbYFXHD2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 03:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbYFXHDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 03:01:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53166 "EHLO mx3.mail.elte.hu"
+	Tue, 24 Jun 2008 03:03:15 -0400
+Received: from mga01.intel.com ([192.55.52.88]:44242 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758815AbYFXHBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 03:01:37 -0400
-Date: Tue, 24 Jun 2008 09:01:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
-       davem@davemloft.net, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [10 PATCHES] inline functions to avoid stack overflow
-Message-ID: <20080624070106.GA32607@elte.hu>
-References: <Pine.LNX.4.64.0806240136200.27784@engineering.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806240136200.27784@engineering.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752883AbYFXHDN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 03:03:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,694,1204531200"; 
+   d="scan'208";a="581287036"
+Subject: Re: [PATCH] x86 boot: Pass E820 memory map entries more than 128
+	via linked list of setup data
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Paul Jackson <pj@sgi.com>, mingo@elte.hu, andi@firstfloor.org,
+       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       yhlu.kernel@gmail.com
+In-Reply-To: <48608A11.8070605@zytor.com>
+References: <1213155219.13392.2.camel@caritas-dev.intel.com>
+	 <20080618114511.GB28838@elte.hu>
+	 <1214200441.25753.5.camel@caritas-dev.intel.com>
+	 <20080623015326.bec9a75d.pj@sgi.com>
+	 <1214205686.26437.18.camel@caritas-dev.intel.com>
+	 <20080623034728.250c6fd1.pj@sgi.com>
+	 <1214212441.27182.4.camel@caritas-dev.intel.com>
+	 <20080623044813.d2fee3a0.pj@sgi.com>
+	 <1214269774.31773.13.camel@caritas-dev.intel.com>
+	 <48608A11.8070605@zytor.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 24 Jun 2008 15:03:56 +0800
+Message-Id: <1214291036.13568.2.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 24 Jun 2008 07:00:19.0868 (UTC) FILETIME=[F6F775C0:01C8D5C7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2008-06-23 at 22:45 -0700, H. Peter Anvin wrote:
+> Huang, Ying wrote:
+> > On Mon, 2008-06-23 at 04:48 -0500, Paul Jackson wrote:
+> >> Huang wrote:
+> >>> 4. Current EFI memmap based code does not work properly in all
+> >>> situation, for example it can not works with kernel parameter:
+> >>> "memmap=exactmap, memmap=<xxx>, ...", "mem=<xxx>" or "noefi".
+> >> With "noefi" parameter, my EFI memmap based code is not supposed
+> >> to do anything.  The "noefi" parameter asks the kernel to ignore
+> >> any EFI support in the firmware it is booting from.
+> > 
+> > "noefi" is used to specify that the EFI runtime services should be
+> > disabled in kernel. But the memmap should be complete.
+> > 
+> >> Could you tell me more what you mean by "does not work properly?"
+> > 
+> > OK. It is OK for your code with "noefi". The remaining issues:
+> > 
+> > If "memmap=exactmap memmap=<xxx>" is specified in kernel command line.
+> > The user defined memmap should override that from firmware. But your
+> > code is executed after the user defined memmap is parsed, so the memmap
+> > from firmware will override that from user. This does not conform the
+> > semantics of "memmap=exactmap ...". Same issue for "mem=<xxx>".
+> > 
+> > Another issue is that the size of E820 memmap required on EFI system
+> > must be two times bigger than that really needed. Because at first the
+> > E820 memmap is filled with the entries from E820 and E820_EXT, then that
+> > from EFI memmap is appended.
+> > 
+> 
+> Hello,
+> 
+> I discussed this with Ingo earlier today, and we came to the following 
+> conclusion:
+> 
+> 1. The EFI memmap code as a backup to the bootloader is fine.
+> 2. Ying's memmap= objection needs to be addressed.  Violating user 
+> overrides is not appropriate.
+> 3. It is important that we don't override the bootloader when the 
+> bootloader really does know best.  For example, kexec may want to 
+> control exactly what memory the target kernel uses.  As a result, we 
+> need a flag somewhere to disable *any* attempts at obtaining memory 
+> information from the environment, be it EFI, OpenFirmware or what have 
+> you.  The easiest way to do this is probably via a command-line flag, 
+> e.g. "noauxmem".
+> 
+> What do you guys think?
 
-* Mikulas Patocka <mpatocka@redhat.com> wrote:
+I think it is better to add a command-line flag "auxmem", the EFI memmap
+is only used when this flag is set. This has better back-compatibility. 
 
-> Hi
->
-> Here I'm sending 10 patches to inline various functions.
+Best Regards,
+Huang Ying
 
-( sidenote: the patches are seriously whitespace damaged. Please see
-  Documentation/email-clients.txt about how to send patches. )
-
-NAK on this whole current line of approach. One problem is that it 
-affects a lot more than just sparc64:
-
-> This patch has the worst size-increase impact, increasing total kernel 
-> size by 0.2%.
-
-[...]
-
-> To give you some understanding of sparc64, every function there uses 
-> big stack frame (at least 192 bytes). 128 bytes are required by 
-> architecture (16 64-bit registers), 48 bytes are there due to mistake 
-> of Sparc64 ABI designers (calling function has to allocate 48 bytes 
-> for called function) and 16 bytes are some dubious padding.
->
-> So, on sparc64, if you have a simple function that passes arguments to 
-> other function it still takes 192 byte --- regardless of how simple 
-> the function is. Tail-call may be used, but it is disabled in kernel 
-> if debugging is enabled (Makefile: ifdef CONFIG_FRAME_POINTER 
-> KBUILD_CFLAGS += -fno-omit-frame-pointer -fno-optimize-sibling-calls).
->
-> The stack trace has 75 nested functions, that totals to at least 14400 
-> bytes --- and it kills the 16k stack space on sparc. In the stack 
-> trace, there are many function which do nothing but pass parameters to 
-> other function. In this series of patches, I found 10 such functions 
-> and turned them to inlines, saving 1920 bytes. Especially waking wait 
-> queue is bad, it calls 8 nested functions, 7 of which do nothing. I 
-> turned 5 of them to inline.
-
-please solve this sparc64 problem without hurting other architectures.
-
-also, the trace looks suspect:
-
-> This was the trace:
->
-> linux_sparc_syscall32
-> sys_read
-> vfs_read
-> do_sync_read
-> generic_file_aio_read
-> generic_file_direct_io
-> filemap_write_and_wait
-> filemap_fdatawrite
-> __filemap_fdatawrite_range
-> do_writepages
-> generic_writepages
-> write_cache_pages
-> __writepage
-> blkdev_writepage
-> block_write_full_page
-> __block_write_fiull_page
-> submit_bh
-> submit_bio
-> generic_make_request
-> dm_request
-> __split_bio
-> __map_bio
-> origin_map
-> start_copy
-> dm_kcopyd_copy
-> dispatch_job
-> wake
-> queue_work
-> __queue_work
-> __spin_unlock_irqrestore
-> sys_call_table
-> timer_interrupt
-> irq_exit
-> do_softirq
-> __do_softirq
-> run_timer_softirq
-> __spin_unlock_irq
-> sys_call_table
-> handler_irq
-> handler_fasteoi_irq
-> handle_irq_event
-> ide_intr
-> ide_dma_intr
-> task_end_request
-> ide_end_request
-> __ide_end_request
-> __blk_end_request
-> __end_that_request_first
-> req_bio_endio
-> bio_endio
-> clone_endio
-> dec_pending
-> bio_endio
-> clone_endio
-> dec_pending
-> bio_endio
-> clone_endio
-> dec_pending
-> bio_endio
-> end_bio_bh_io_sync
-> end_buffer_read_sync
-> __end_buffer_read_notouch
-> unlock_buffer
-> wake_up_bit
-> __wake_up_bit
-> __wake_up
-> __wake_up_common
-> wake_bio_function
-> autoremove_wake_function
-> default_wake_function
-> try_to_wake_up
-> task_rq_lock
-> __spin_lock
-> lock_acquire
-> __lock_acquire
-
-if function frames are so large, why are there no separate IRQ stacks on 
-Sparc64? IRQ stacks can drastically lower the worst-case stack footprint 
-and only affect sparc64.
-
-Also, the stack trace above seems to be imprecise (for example sys_read 
-cannot nest inside an irq context - so it does not show 75 function 
-frames) and there are no stack frame size annotations that could tell us 
-exactly where the stack overhead comes from.
-
-( Please Cc: me to future iterations of this patchset - as long as it
-  still has generic impact. Thanks! )
-
-	Ingo
