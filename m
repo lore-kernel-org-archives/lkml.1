@@ -1,52 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYFXVOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbYFXVP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbYFXVOu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 17:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbYFXVOm
+	id S1756940AbYFXVP6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbYFXVPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 17:14:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53766 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752541AbYFXVOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 17:14:42 -0400
-Subject: [GFS2] Pull request
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: torvalds@linux-foundation.org
-Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Red Hat UK Ltd
-Date: Tue, 24 Jun 2008 22:12:47 +0100
-Message-Id: <1214341967.4266.28.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jun 2008 17:15:50 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:58191 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752683AbYFXVPu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 17:15:50 -0400
+Date: Tue, 24 Jun 2008 17:15:47 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Stefan Becker <Stefan.Becker@nokia.com>
+cc: linux-kernel@vger.kernel.org, <linux-usb@vger.kernel.org>
+Subject: Re: [REGRESSION] 2.6.24/25: random lockups when accessing external
+ USB harddrive
+In-Reply-To: <48613FEF.8020004@nokia.com>
+Message-ID: <Pine.LNX.4.44L0.0806241702490.2166-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 24 Jun 2008, Stefan Becker wrote:
 
-Please consider pulling the following GFS2 bug fixes,
+> I played around with printk a little bit more. With the following change 
+> to uhci_giveback_urb():
+> 
+> --- a/drivers/usb/host/uhci-q.c
+> +++ b/drivers/usb/host/uhci-q.c
+> @@ -1526,11 +1530,17 @@ __acquires(uhci->lock)
+>          }
+> 
+>          uhci_free_urb_priv(uhci, urbp);
+> +       printk(KERN_CRIT "UHCI UNLINK ENTER %08x %08x\n",
+> +              (unsigned int) uhci, (unsigned int) urb);
+>          usb_hcd_unlink_urb_from_ep(uhci_to_hcd(uhci), urb);
+> +       printk(KERN_CRIT "UHCI UNLINK LEAVE %08x %08x\n",
+> +              (unsigned int) uhci, (unsigned int) urb);
+> 
+>          spin_unlock(&uhci->lock);
+> 
+> I see
+> 
+>   UHCI UNLINK ENTER xxxxxxxx yyyyyyyy
+>   UHCI UNLINK LEAVE xxxxxxxx yyyyyyyy
+>   UHCI UNLINK ENTER xxxxxxxx yyyyyyyy
+> 
+> on the console at the time of the lockup. Then I added the following change:
+> 
+> --- a/drivers/usb/core/hcd.c
+> +++ b/drivers/usb/core/hcd.c
+> @@ -1107,7 +1107,13 @@ EXPORT_SYMBOL_GPL(usb_hcd_check_unlink_urb);
+>   void usb_hcd_unlink_urb_from_ep(struct usb_hcd *hcd, struct urb *urb)
+>   {
+>          /* clear all state linking urb to this dev (and hcd) */
+> +#if 0
+>          spin_lock(&hcd_urb_list_lock);
+> +#else
+> +       if (!spin_trylock(&hcd_urb_list_lock)) {
+> +         printk(KERN_CRIT "HCD URB LIST ALREADY LOCKED!\n");
+> +       }
+> +#endif
+>          list_del_init(&urb->urb_list);
+>          spin_unlock(&hcd_urb_list_lock);
+>   }
+> 
+> and get this at the time of the lockup:
+> 
+>   UHCI UNLINK ENTER xxxxxxxx yyyyyyyy
+>   UHCI UNLINK LEAVE xxxxxxxx yyyyyyyy
+>   UHCI UNLINK ENTER xxxxxxxx yyyyyyyy
+>   HCD URB LIST ALREADY LOCKED!
+>              <---- here the original code would lockup
+>   UHCI UNLINK LEAVE xxxxxxxx yyyyyyyy
+>   HCD URB LIST ALREADY LOCKED!
+>   HCD URB LIST ALREADY LOCKED!
+>   HCD URB LIST ALREADY LOCKED!
+> 
+> So the lockup is caused by an already locked hcd_urb_list_lock. Is there 
+> a way to see the lock holder? Or any other suggestions how to proceed?
 
-Steve.
+Good work!
 
--------------------------------------------------------------------------------------
-The following changes since commit 62786b9e81a2dbe9c073a2ade52d33a2627d6d85:
-  Linus Torvalds (1):
-        Merge branch 'hotfixes' of git://git.linux-nfs.org/projects/trondmy/nfs-2.6
+There isn't any way to see the lock holder except by adding more 
+printk's.  Fortunately that lock is private to hcd.c, so you know it's 
+not used anywhere else.  And it's not used in very many places in that 
+file, so you can add printk's around each one.  While you're at it, you 
+ought to enable CONFIG_USB_DEBUG so that more of the context will be 
+visible in the log.
 
-are found in the git repository at:
+The usage in usb_hcd_link_urb_to_ep() appears benign; the code doesn't 
+do anything that might hang while holding the lock.  All it does is 
+manipulate a linked list.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/steve/gfs2-2.6-fixes.git
+You have already instrumented the usage in 
+usb_hcd_unlink_urb_from_ep().
 
-Benjamin Marzinski (1):
-      [GFS2] fix gfs2 block allocation (cleaned up)
+That leaves only usb_hcd_flush_endpoint().  And once again, the code 
+isn't doing anything while holding the lock except following 
+linked-list pointers.  
 
-Bob Peterson (1):
-      [GFS2] BUG: unable to handle kernel paging request at ffff81002690e000
+Taken together, these facts suggest that somehow the linked list has
+been corrupted.  So you might also want to add some printk's around the
+linked-list activities in flush_endpoint, just to see if the pointer
+values look reasonable.
 
- fs/gfs2/bmap.c |   23 +++++++++--------------
- fs/gfs2/rgrp.c |    2 +-
- 2 files changed, 10 insertions(+), 15 deletions(-)
-
+Alan Stern
 
