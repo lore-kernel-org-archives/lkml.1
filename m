@@ -1,86 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758038AbYFXGgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755295AbYFXGjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758038AbYFXGgX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 02:36:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYFXGgM
+	id S1755295AbYFXGjh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 02:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbYFXGj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 02:36:12 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:41112 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751516AbYFXGgL (ORCPT
+	Tue, 24 Jun 2008 02:39:28 -0400
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:41221 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750936AbYFXGj2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 02:36:11 -0400
-Date: Tue, 24 Jun 2008 00:36:06 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH] ext3: validate directory entry data before use
-In-reply-to: <1214013261-32428-1-git-send-email-duaneg@dghda.com>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
-       Sami Liedes <sliedes@cc.hut.fi>
-Message-id: <20080624063606.GE6239@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <20080607121940.8ee6044a.akpm@linux-foundation.org>
- <1214013261-32428-1-git-send-email-duaneg@dghda.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 24 Jun 2008 02:39:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=b9SJWzj3N3uE+iaejNoSPvZFHIQ71AlPtAvhFBAaqxy9DNL131U0rtmgcmvbxo+eRIs4vgI8MdNIFOyRjjYREt6zD/DGJXIfvZ1PBSqgvINu7a1I/ntvk8aeXT8J9DHRZAf44HqUmR6bJlzlfOgqqp8AR2YJs21+aGpp1neaPXw=  ;
+X-YMail-OSG: vI2B6Z0VM1lrvScf_VTYB2dVzbNI5MWkCvkVP7Fe1ZHk7PMuKawGT66tEvKVeLzf8PwxTOJEojhfOWPtBz8EL9Y.ILTJvBXIi1FkRpt3t.0nFrDkUW_3pDhLSs2TzsXyPcI-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [patch] x86 supports NO_IRQ convention
+Date: Mon, 23 Jun 2008 23:39:25 -0700
+User-Agent: KMail/1.9.9
+Cc: benh@kernel.crashing.org, lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       hpa@zytor.com
+References: <fa.mcHAIQmpGZB1Vrm7ZD4/q9eo08Y@ifi.uio.no> <fa.EDfpY1oxab2UaliWrUY0jyr5T1k@ifi.uio.no> <486059F9.6060901@shaw.ca>
+In-Reply-To: <486059F9.6060901@shaw.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806232339.25926.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 21, 2008  02:54 +0100, Duane Griffin wrote:
-> Various places in fs/ext3/namei.c use ext3_next_entry to loop over
-> directory entries, but not all of them verify that entries are valid before
-> attempting to move to the next one. In the case where rec_len == 0 this
-> causes an infinite loop.
-> 
-> Introduce a new version of ext3_next_entry that checks the validity of the
-> entry before using its data to find the next one. Rename the original
-> function to __ext3_next_entry and use it in places where we already know
-> the data is valid.
->
-> Note that the changes to empty_dir follow the original code in reporting
-> the directory as empty in the presence of errors.
-> 
-> This patch fixes the first case (image hdb.25.softlockup.gz) reported in
-> http://bugzilla.kernel.org/show_bug.cgi?id=10882.
-> 
-> Signed-off-by: Duane Griffin <duaneg@dghda.com>
-> --
-> 
-> Please note that I've only properly tested the originally reported failure
-> case (i.e. the changes to ext3_dx_find_entry).
-> 
-> Reviewers may want to pay particular attention to the changes to do_split,
-> make_indexed_dir and empty_dir. I've tried to follow the original code's
-> error handling conventions, as noted above for empty_dir, but I'm not sure
-> this is the best way to do things.
+On Monday 23 June 2008, Robert Hancock wrote:
+> IRQ 0 is only used by 
+> architecture-specific code and is not sharable,
 
-Just as a note, and not to detract from the validity of this patch -
-in the ext2 page-based directory code is somewhat more efficient in this
-area.  It checks each page a single time when it is first read from disk,
-marks the page as checked, and then never has to check the page again.
+That seems to be the consensus, and it does reflect
+how it's used on all architectures I happen to have
+seen it in use.
 
-This wasn't implemented for ext3 because it never changed from buffer-
-based directories to page-based directories due to the dependence on
-buffer heads for the journaling code.
+Leaving the question then of what should happen to
+the existing NO_IRQ code ... none of the declarations
+seems to have a comment "deprecated, don't use this"
+and most of the defined values are nonzero.
 
-It would be possible to implement this for ext3/ext4 readdir/lookup by
-replacing use of ext3_bread() with a new ext3_bread_dir() - a copy of
-ext3_bread() that validates the buffer if it actually needs ll_rw_block()
-to read the buffer from disk.
-
-I also note in ext3_readdir() for non-indexed directories that the readahead
-doesn't check for !buffer_uptodate(bh) before forcing a read of the next
-block.
-
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
-
+Some docs appear to be missing.
