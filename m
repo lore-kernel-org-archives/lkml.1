@@ -1,116 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758855AbYFXQGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbYFXQIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758855AbYFXQGU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 12:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbYFXQGM
+	id S1757055AbYFXQIW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 12:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYFXQIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 12:06:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35551 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750936AbYFXQGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 12:06:11 -0400
-Message-ID: <48611B03.1000003@redhat.com>
-Date: Tue, 24 Jun 2008 12:04:19 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 24 Jun 2008 12:08:13 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52913 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752105AbYFXQIM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 12:08:12 -0400
+Date: Tue, 24 Jun 2008 18:08:10 +0200
+From: Jan Kara <jack@suse.cz>
+To: Duane Griffin <duaneg@dghda.com>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
+       Sami Liedes <sliedes@cc.hut.fi>
+Subject: Re: [PATCH] ext3: handle corrupted orphan list at mount
+Message-ID: <20080624160810.GC22586@atrey.karlin.mff.cuni.cz>
+References: <20080607121940.8ee6044a.akpm@linux-foundation.org> <1214258200-16623-1-git-send-email-duaneg@dghda.com>
 MIME-Version: 1.0
-To: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-CC: "'Alexey Dobriyan'" <adobriyan@gmail.com>,
-       "'Mathieu Desnoyers'" <mathieu.desnoyers@polymtl.ca>,
-       "'Peter Zijlstra'" <peterz@infradead.org>,
-       "'Steven Rostedt'" <rostedt@goodmis.org>,
-       "'Frank Ch. Eigler'" <fche@redhat.com>, "'Ingo Molnar'" <mingo@elte.hu>,
-       "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'systemtap-ml'" <systemtap@sources.redhat.com>,
-       "'Hideo AOKI'" <haoki@redhat.com>
-Subject: Re: [RFC] Tracepoint proposal
-References: <485BE2C6.1080901@redhat.com> <20080620174529.GB10943@Krystal> <1213992446.3223.195.camel@lappy.programming.kicks-ass.net> <20080622171135.GA19432@Krystal> <20080622175928.GA5022@martell.zuzino.mipt.ru> <20080622182705.GA23301@Krystal> <20080624002010.GA4777@martell.zuzino.mipt.ru> <486071AF.3080709@redhat.com> <007601c8d5ca$18fa0e10$4aee2a30$@css.fujitsu.com>
-In-Reply-To: <007601c8d5ca$18fa0e10$4aee2a30$@css.fujitsu.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1214258200-16623-1-git-send-email-duaneg@dghda.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Takashi Nishiie wrote:
-> Hi
+> If the orphan node list includes valid, untruncatable nodes with nlink > 0
+> the ext3_orphan_cleanup loop which attempts to delete them will not do so,
+> causing it to loop forever. Fix by checking for such nodes in the
+> ext3_orphan_get function.
 > 
-> Hiramatsu wrote:
->> One reason why we need markers or other in-the-middle-of-function 
->> trace point is that some events happen inside functions, not it's 
->> interface.
+> This patch fixes the second case (image hdb.20000009.softlockup.gz)
+> reported in http://bugzilla.kernel.org/show_bug.cgi?id=10882.
 > 
->   Each kernel sub-system seems to have its own way of dealing with 
-> debugging statements. Some of these methods include 'dprintk', 
-> 'pr_debug', 'dev_debug', 'DEBUGP'. I think that these functions are
-> the tracepoints that has been availably mounted without setting up 
-> the tool set of the outside. I think whether mounting that unites 
-> these functions can be done if kernel marker and tracepoint are used.
+> Signed-off-by: Duane Griffin <duaneg@dghda.com>
+> --
+> 
+> Note that we can still end up in an infinite loop if the ext3_truncate
+> errors out early (and keeps doing so). I'm not sure if we should worry
+> about that. If we did want to handle it then we could change ext3_truncate
+> to return success/failure and exit the ext3_orphan_cleanup.
+> 
+> ---
+> 
+> diff --git a/fs/ext3/ialloc.c b/fs/ext3/ialloc.c
+> index 7712682..bc030f4 100644
+> --- a/fs/ext3/ialloc.c
+> +++ b/fs/ext3/ialloc.c
+> @@ -669,6 +669,14 @@ struct inode *ext3_orphan_get(struct super_block *sb, unsigned long ino)
+>  	if (IS_ERR(inode))
+>  		goto iget_failed;
+>  
+> +	/*
+> +	 * If the orphans has i_nlinks > 0 then it should be able to be
+> +	 * truncated, otherwise it won't be removed from the orphan list
+> +	 * during processing and an infinite loop will result.
+> +	 */
+> +	if (inode->i_nlink && !ext3_can_truncate(inode))
+> +		goto bad_orphan;
+> +
+  Maybe I miss something but shouldn't above rather be ||?
 
-Sure, I think those functions covers each partially, but some requirements
-are different.
+										Honza
 
-dynamic printk
- - stored in a section
- - dynamic activation
- - formatted message (multiple messages for each activation group)
- - export basic types
- - variadic function
- - low frequently called
- - module support
-
-Marker
- - stored in a section
- - dynamic activation
- - formatted string (single format for each marker)
- - export basic types
- - variadic function
- - low-high frequently called
- - module support
-
-Tracepoint
- - stored in a section
- - dynamic activation
- - no message
- - export kernel structure
- - arguments depending on points
- - high frequently called
- - no module support (kernel use only)
-
-
->   By the way, isn't there problem on security?
->   What kprobe, jprobe, and kernel marker, etc. offer looks like what
-> the framework of Linux Security Module had offered before. Gotten
-> kprobe, jprobe, and kernel marker, etc. should not be exported to the
-> userland for security because it becomes the hotbed of rootkits. Users
-> such as kprobe, jprobe, and kernel marker should not be Loadable Kernel
-> Module. I think that there are some solutions in LTTng about this
-> security problem. However, will the environment to be able to operate
-> SystemTap be really secure?
-> 　At least, kernel commandline option to invalidate all of kprobe,
-> jprobe, and kernel marker, etc. because of the batch might be
-> necessary.
-
-Please, set CONFIG_MODULES=no.
-If your system really really needs to be hardened, please
-don't make kernel module loadable. Otherwise, any kernel module
-can modify any kernel code. So, I think it's not a problem of
-any specific functionality.
-
-Anyway, I think selinux will give you more flexible way to
-restrict who can load what modules.
-
-Thank you,
-
+>  	if (NEXT_ORPHAN(inode) > max_ino)
+>  		goto bad_orphan;
+>  	brelse(bitmap_bh);
+> @@ -690,6 +698,7 @@ bad_orphan:
+>  		printk(KERN_NOTICE "NEXT_ORPHAN(inode)=%u\n",
+>  		       NEXT_ORPHAN(inode));
+>  		printk(KERN_NOTICE "max_ino=%lu\n", max_ino);
+> +		printk(KERN_NOTICE "i_nlink=%lu\n", inode->i_nlink);
+>  		/* Avoid freeing blocks if we got a bad deleted inode */
+>  		if (inode->i_nlink == 0)
+>  			inode->i_blocks = 0;
+> diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+> index 6ae4ecf..7b7e234 100644
+> --- a/fs/ext3/inode.c
+> +++ b/fs/ext3/inode.c
+> @@ -2253,6 +2253,14 @@ static void ext3_free_branches(handle_t *handle, struct inode *inode,
+>  	}
+>  }
+>  
+> +int ext3_can_truncate(struct inode *inode)
+> +{
+> +	return (S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode) ||
+> +		S_ISLNK(inode->i_mode)) &&
+> +		!ext3_inode_is_fast_symlink(inode) &&
+> +		!(IS_APPEND(inode) || IS_IMMUTABLE(inode));
+> +}
+> +
+>  /*
+>   * ext3_truncate()
+>   *
+> @@ -2297,12 +2305,7 @@ void ext3_truncate(struct inode *inode)
+>  	unsigned blocksize = inode->i_sb->s_blocksize;
+>  	struct page *page;
+>  
+> -	if (!(S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode) ||
+> -	    S_ISLNK(inode->i_mode)))
+> -		return;
+> -	if (ext3_inode_is_fast_symlink(inode))
+> -		return;
+> -	if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
+> +	if (!ext3_can_truncate(inode))
+>  		return;
+>  
+>  	/*
+> diff --git a/include/linux/ext3_fs.h b/include/linux/ext3_fs.h
+> index 36c5403..80171ee 100644
+> --- a/include/linux/ext3_fs.h
+> +++ b/include/linux/ext3_fs.h
+> @@ -832,6 +832,7 @@ extern void ext3_discard_reservation (struct inode *);
+>  extern void ext3_dirty_inode(struct inode *);
+>  extern int ext3_change_inode_journal_flag(struct inode *, int);
+>  extern int ext3_get_inode_loc(struct inode *, struct ext3_iloc *);
+> +extern int ext3_can_truncate(struct inode *inode);
+>  extern void ext3_truncate (struct inode *);
+>  extern void ext3_set_inode_flags(struct inode *);
+>  extern void ext3_get_inode_flags(struct ext3_inode_info *);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
