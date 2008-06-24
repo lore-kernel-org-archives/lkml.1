@@ -1,31 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbYFZIT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbYFZIUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757361AbYFZIT4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 04:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853AbYFZISv
+	id S1757445AbYFZIUW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 04:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757210AbYFZITX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 04:18:51 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2576 "EHLO spitz.ucw.cz"
+	Thu, 26 Jun 2008 04:19:23 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2609 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755624AbYFZISp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 04:18:45 -0400
-Date: Tue, 24 Jun 2008 11:15:16 +0200
+	id S1755035AbYFZITU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 04:19:20 -0400
+Date: Tue, 24 Jun 2008 14:12:34 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-Message-ID: <20080624091516.GA5642@ucw.cz>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806201353.59083.rjw@sisk.pl> <20080620115714.GC8637@srcf.ucam.org> <200806201422.12659.rjw@sisk.pl>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: check command line when CONFIG_X86_MPPARSE is not set
+Message-ID: <20080624121234.GB5642@ucw.cz>
+References: <200805041823.57198.yhlu.kernel@gmail.com> <200806191213.10312.yhlu.kernel@gmail.com> <200806191215.01538.yhlu.kernel@gmail.com> <200806200742.36226.yhlu.kernel@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200806201422.12659.rjw@sisk.pl>
+In-Reply-To: <200806200742.36226.yhlu.kernel@gmail.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,31 +30,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> > What does ACPI claim the trip points are set to in this case? On the 
-> > 6125, if IRQ 2 is enabled in the APIC then the DSDT sets all the thermal 
-> > trip points to 16 degrees C. I suspect this means that enabling IRQ 2 is 
-> > the wrong thing to do on this chipset.
+> we can not use acpi=off, acpi=noirq and pci=noacpi when mps support is
+> not there
 > 
-> Ah, indeed, thanks for the hint.  This is the output of
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 > 
-> $ cat /proc/acpi/thermal_zone/TZ*/trip_points
+> ---
+>  arch/x86/kernel/acpi/boot.c |   12 ++++++++++++
+>  arch/x86/kernel/setup_32.c  |    2 ++
+>  arch/x86/kernel/setup_64.c  |    2 ++
+>  include/linux/acpi.h        |    5 +++++
+>  4 files changed, 21 insertions(+)
 > 
-> in the failing case:
-> 
-> critical (S5):           105 C
-> passive:                 16 C: tc1=1 tc2=2 tsp=100 devices=C000 C001 
-> active[0]:               16 C: devices=C34F 
-> active[1]:               16 C: devices=C350 
-> active[2]:               16 C: devices=C351 
-> active[3]:               16 C: devices=C352 
-> critical (S5):           100 C
-> passive:                 16 C: tc1=1 tc2=2 tsp=300 devices=C000 C001 
-> critical (S5):           100 C
-> passive:                 16 C: tc1=1 tc2=2 tsp=300 devices=C000 C001 
+> Index: linux-2.6/arch/x86/kernel/acpi/boot.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
+> +++ linux-2.6/arch/x86/kernel/acpi/boot.c
+> @@ -1740,6 +1740,18 @@ static int __init parse_pci(char *arg)
+>  }
+>  early_param("pci", parse_pci);
+>  
+> +void __init acpi_mps_check(void)
+> +{
+> +#if defined(CONFIG_X86_LOCAL_APIC) && !defined(CONFIG_X86_MPPARSE)
+> +/* mptable code is not built-in*/
+> +	if (acpi_disabled || acpi_noirq) {
+> +		printk(KERN_ERR "MPS support code is not built-in\n",
+> +		       "so can not use acpi=off or acpi=noirq or pci=noacpi\n");
+> +		panic("MPS support is not built-in\n");
+> +	}
+> +#endif
 
-Can we call the ACPI BIOS to be terminally broken at this point?
+I'd say this is good enough reason not to make X86_MPPARSE optional.
 
-							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
