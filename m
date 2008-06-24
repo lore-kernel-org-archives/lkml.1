@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbYFXV7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbYFXWXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755197AbYFXV7K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 17:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbYFXV5o
+	id S1756005AbYFXWXq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 18:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbYFXWXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 17:57:44 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:49473 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757114AbYFXV5m (ORCPT
+	Tue, 24 Jun 2008 18:23:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33034 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751829AbYFXWXd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 17:57:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=lQVZVbPjPgq6A1LWWBiJPhWpfwaIZW2vk+Z7GwgagkyqaRYakfm24dgskIVgh9itGM
-         2xeENIR2jszjd01oqxeYwVJMCvFhyKGK8Lo/dmKJod2bNCwZbgVV6Cw0eiwYaa/i3nYB
-         l0tPjHciASaCrJDZEAVh3DAzZBz3VNkXuQUqU=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: change size if e820_update/remove_range
-Date: Tue, 24 Jun 2008 14:58:38 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806241455.33199.yhlu.kernel@gmail.com> <200806241456.20753.yhlu.kernel@gmail.com> <200806241457.29607.yhlu.kernel@gmail.com>
-In-Reply-To: <200806241457.29607.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 24 Jun 2008 18:23:33 -0400
+Date: Tue, 24 Jun 2008 15:22:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: vcgandhi1@aol.com, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Fix serial_match_port() for dynamic major tty-device
+ numbers
+Message-Id: <20080624152253.d9bd1da2.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0806220037250.461@axis700.grange>
+References: <8CA6D5E4DEA920C-1128-2973@webmail-nb07.sysops.aol.com>
+	<Pine.LNX.4.64.0804160046460.6851@axis700.grange>
+	<8CA6D67D9E313CC-1128-35BB@webmail-nb07.sysops.aol.com>
+	<8CA6D6D112DB4D4-1128-38B0@webmail-nb07.sysops.aol.com>
+	<Pine.LNX.4.64.0804170103040.7335@axis700.grange>
+	<8CA6E48B50204C0-15A8-47D0@webmail-nb06.sysops.aol.com>
+	<Pine.LNX.4.64.0804171657320.6716@axis700.grange>
+	<8CA6EC102F70775-15A8-8B4A@webmail-nb06.sysops.aol.com>
+	<Pine.LNX.4.64.0804171915180.6716@axis700.grange>
+	<8CA6EF5BC26E069-12A0-1888@webmail-nc13.sysops.aol.com>
+	<Pine.LNX.4.64.0804181700300.5725@axis700.grange>
+	<8CA6FF4B03B281A-E10-2E1C@webmail-nf05.sim.aol.com>
+	<Pine.LNX.4.64.0804231108170.5160@axis700.grange>
+	<8CA73B83C791846-148-41B9@webmail-nb17.sysops.aol.com>
+	<Pine.LNX.4.64.0804241557340.5283@axis700.grange>
+	<8CA914AC0F6817C-1684-368@webmail-nc03.sysops.aol.com>
+	<Pine.LNX.4.64.0806220037250.461@axis700.grange>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806241458.38624.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 22 Jun 2008 00:45:25 +0200 (CEST)
+Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
 
-in case someone using crazy parameter while calling them.
+> As reported by Vipul Gandhi, the current serial_match_port() doesn't work 
+> for tty-devices using dynamic major number allocation. Fix it.
+> 
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> Tested-by: Vipul Gandhi <vcgandhi1@aol.com>
+> 
+> ---
+> 
+> diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+> index 0f5a179..593ae85 100644
+> --- a/drivers/serial/serial_core.c
+> +++ b/drivers/serial/serial_core.c
+> @@ -1949,7 +1949,9 @@ struct uart_match {
+>  static int serial_match_port(struct device *dev, void *data)
+>  {
+>  	struct uart_match *match = data;
+> -	dev_t devt = MKDEV(match->driver->major, match->driver->minor) + match->port->line;
+> +	struct tty_driver *tty_drv = match->driver->tty_driver;
+> +	dev_t devt = MKDEV(tty_drv->major, tty_drv->minor_start) +
+> +		match->port->line;
+>  
+>  	return dev->devt == devt; /* Actually, only one tty per port */
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Well that sounds bad.  We need to work out whether this fix is needed
+in 2.6.25 and possibly eariler.
 
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index 512f779..6445220 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -405,6 +405,9 @@ u64 __init e820_update_range(u64 start, u64 size, unsigned old_type,
- 
- 	BUG_ON(old_type == new_type);
- 
-+	if (size > (ULLONG_MAX - start))
-+		size = ULLONG_MAX - start;
-+
- 	for (i = 0; i < e820.nr_map; i++) {
- 		struct e820entry *ei = &e820.map[i];
- 		u64 final_start, final_end;
-@@ -436,6 +439,9 @@ u64 __init e820_remove_range(u64 start, u64 size, unsigned old_type,
- 	int i;
- 	u64 real_removed_size = 0;
- 
-+	if (size > (ULLONG_MAX - start))
-+		size = ULLONG_MAX - start;
-+
- 	for (i = 0; i < e820.nr_map; i++) {
- 		struct e820entry *ei = &e820.map[i];
- 		u64 final_start, final_end;
+What are the consequences of this error?
