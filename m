@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760255AbYFXMRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbYFXMSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760255AbYFXMRf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 08:17:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759954AbYFXMRV
+	id S1755470AbYFXMSL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 08:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbYFXMR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 08:17:21 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:53674 "EHLO 2ka.mipt.ru"
+	Tue, 24 Jun 2008 08:17:57 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42794 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759772AbYFXMRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 08:17:20 -0400
-Date: Tue, 24 Jun 2008 16:15:08 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org
-Subject: Re: [rfc patch 3/4] splice: remove confirm from pipe_buf_operations
-Message-ID: <20080624121508.GB15368@2ka.mipt.ru>
-References: <20080621154607.154640724@szeredi.hu> <20080621154726.494538562@szeredi.hu> <20080624080440.GJ20851@kernel.dk> <E1KB4Id-0000un-PV@pomaz-ex.szeredi.hu> <20080624111913.GP20851@kernel.dk> <E1KB6p9-0001Gq-Fd@pomaz-ex.szeredi.hu> <20080624114654.GA27123@2ka.mipt.ru> <E1KB7E3-0001Lf-K4@pomaz-ex.szeredi.hu>
-Mime-Version: 1.0
+	id S1757840AbYFXMRz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 08:17:55 -0400
+Date: Tue, 24 Jun 2008 14:17:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: JAILLET Christophe <jaillet.christophe@wanadoo.fr>
+Cc: linux <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH 1/1] arch/x86/kernel/io_apic_32.c : use kzalloc instead
+	of kmalloc/memset
+Message-ID: <20080624121743.GA12101@elte.hu>
+References: <485E77CC.20604@wanadoo.fr>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1KB7E3-0001Lf-K4@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <485E77CC.20604@wanadoo.fr>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 24, 2008 at 02:02:19PM +0200, Miklos Szeredi (miklos@szeredi.hu) wrote:
-> > Maybe not that great if mark all readahead pages as, well, readahead,
-> > and do the same for readpage (essnetially it is the same).
-> 
-> It isn't that easy.  Readahead (->readpages()) is best effort, and is
-> allowed to not bring the page uptodate, since it will be retried with
-> ->readpage().  I don't know whether any filesystems actually do that,
-> but it's allowed nonetheless.
 
-Yes, there is such filesystem :)
-It is quite useful for network FS, since it does not bother to wait until
-pages are in the cache and can try next request. Anyone who scheduled
-readahead has full control over that pages and is allowed to set/clear
-whatever flags it want (pages are locked), so it would be a great win to
-set page as being read and unlocked. It can be a policy to clear read
-bit when page is evicted from the cache by failed readahead/readpage(s).
+* JAILLET Christophe <jaillet.christophe@wanadoo.fr> wrote:
 
-> > > What's the use case where it matters that splice-in should not block
-> > > on the read?
-> > 
-> > To be able to transfer what was already read?
-> 
-> That needs the consumer to be non-blocking...
-> 
-> Umm, one more reason why the ->confirm() stuff is currently busted:
-> pipe_read() will block on such a buffer even if pipe file is marked
-> O_NONBLOCK.  Fixing that would take a hell of a lot of added
-> complexity in pipe_poll(), etc...
+> From: Christophe Jaillet <jaillet.?christophe@wanadoo.fr>
+>
+> Hi, here is a patch against arch/x86/kernel/io_apic_32.c which :
+>
+> 1) replace kmalloc/memset with equivalent kzalloc.
 
-Yes, nonblocking splice is tricky and it covers only half of the users.
+applied to tip/x86/apic - thanks Christophe.
 
--- 
-	Evgeniy Polyakov
+There were some other changes in this area so i did a manual merge of 
+your changes. You can see/track your commit via tip/master:
+
+  http://people.redhat.com/mingo/tip.git/README
+
+	Ingo
