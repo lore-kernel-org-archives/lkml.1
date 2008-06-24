@@ -1,64 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbYFXVTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbYFXUuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756247AbYFXVTp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 17:19:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbYFXVTV
+	id S1754807AbYFXUuQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 16:50:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbYFXUuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 17:19:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36311 "EHLO mx2.mail.elte.hu"
+	Tue, 24 Jun 2008 16:50:04 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48670 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754182AbYFXVTR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 17:19:17 -0400
-Date: Tue, 24 Jun 2008 23:15:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Adrian Bunk <bunk@kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
-Subject: Re: [Bug #10815] 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-Message-ID: <20080624211547.GB27452@elte.hu>
-References: <alpine.LFD.1.10.0806151323101.2949@woody.linux-foundation.org> <20080615232754.GD17915@linux.vnet.ibm.com> <alpine.LFD.1.10.0806151633290.2949@woody.linux-foundation.org> <20080616030154.GA7445@martell.zuzino.mipt.ru> <20080616033126.GF17915@linux.vnet.ibm.com> <20080616034659.GA7600@martell.zuzino.mipt.ru> <20080617034228.GA18217@linux.vnet.ibm.com> <20080624005053.GA4827@martell.zuzino.mipt.ru> <20080624120404.GA7978@linux.vnet.ibm.com> <20080624210812.GA27486@linux.vnet.ibm.com>
+	id S1750765AbYFXUuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 16:50:03 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH 1/3] introduce PF_KTHREAD flag
+Date: Tue, 24 Jun 2008 22:51:22 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
+       mingo@elte.hu, torvalds@linux-foundation.org, roland@redhat.com,
+       linux-kernel@vger.kernel.org
+References: <20080601153042.GA8238@tv-sign.ru> <20080623135253.ed7cabf1.akpm@linux-foundation.org> <20080624134240.GA310@tv-sign.ru>
+In-Reply-To: <20080624134240.GA310@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080624210812.GA27486@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200806242251.23125.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-
-> > >   Also Core 2 Duo, x86_64 [1]
-> > > 
-> > >   Race is wide -- 60 seconds of rcutorture is enough.
+On Tuesday, 24 of June 2008, Oleg Nesterov wrote:
+> On 06/23, Andrew Morton wrote:
+> >
+> > On Mon, 23 Jun 2008 13:47:06 -0700
+> > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > I don't yet know how much additional damage will happen as a result.
+> > 
+> > Lots.
+> > 
+> > I restored the patches and just dropped the hunk:
+> > 
+> >   static int has_mm(struct task_struct *p)
+> >   {
+> > -       return (p->mm && !(p->flags & PF_BORROWED_MM));
+> >   }
+> >   
+> >   /**
+> > --- 86,92 ----
+> >   
+> >   static int has_mm(struct task_struct *p)
+> >   {
+> > +       return (p->mm && !(p->flags & PF_KTHREAD));
+> >   }
+> > 
+> > due to that function having been turned into:
+> > 
+> > static inline bool should_send_signal(struct task_struct *p)
+> > {
+> >         return !(p->flags & PF_FREEZER_NOSIG);
+> > }
+> >
+> > Please check the result?
 > 
-> This is rcutorture by itself, or in parallel with LTP/kernbench?
+> Thanks, this looks OK.
 > 
-> (I have mostly been running on 4-CPU boxes without failure either way, 
-> so will try a dual-CPU box.)
+> Rafael, can't freezer just use PF_KTHREAD (which btw kills PF_BORROWED_MM)
+> instead of the new PF_FREEZER_NOSIG flag? They look very similar, please
+> look at
+> 
+> 	"[PATCH 1/3] introduce PF_KTHREAD flag"
+> 	http://marc.info/?l=linux-kernel&m=121233423530812
+> 
+> 	"[PATCH 2/3] kill PF_BORROWED_MM in favour of PF_KTHREAD"
+> 	http://marc.info/?l=linux-kernel&m=121233423530820
 
-FYI, i've been running rcutorture for days on lots of testboxes ranging 
-all across the x86 spectrum from single CPU, through dual-core, to 
-dual-socket, dual-socket HT, 8-way and 16-way - both 32-bit and 64-bit 
-x86.
+The problem is that some kernel threads may actually want to clear
+PF_FREEZER_NOSIG, but it would be invalid to clear PF_KTHREAD I think.
 
-Not a single failure has been detected in thousands of bootups of random 
-kernels (rcu-preempt + rcutorture was a frequent combination tested). I 
-added a WARN_ON() to rcutorture failures so it should show up very 
-clearly.
+Hmm, well, in principle we could use two flags for that, with the combinations
+of bits defined as follows:
+11 - user space task (freezable with a fake signal)
+10 - kernel thread freezable with a fake signal
+01 - kernel thread freezable withoug a fake signal
+00 - non-freezable kernel thread
 
-This makes me suspect that it might be some special environment issue - 
-gcc for example. I'm using gcc 4.2.2 on most of the testboxes.
-
-	Ingo
+Thanks,
+Rafael
