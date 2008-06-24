@@ -1,141 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYFXTpN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757831AbYFXVdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572AbYFXTpN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 15:45:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbYFXTo5
+	id S1757831AbYFXVdu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:33:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYFXVdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 15:44:57 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42163 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751942AbYFXTo4 (ORCPT
+	Tue, 24 Jun 2008 17:33:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47769 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756000AbYFXVdg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 15:44:56 -0400
-Subject: Re: [PATCH 3/3] sched: terminate newidle balancing once atleastone
-	task has moved over
-From: Peter Zijlstra <peterz@infradead.org>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de,
-       David Bahi <DBahi@novell.com>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <4860EEB3.BA47.005A.0@novell.com>
-References: <20080623225645.31515.36393.stgit@lsg.lsg.lab.novell.com>
-	 <20080623230450.31515.75112.stgit@lsg.lsg.lab.novell.com>
-	 <1214302406.4351.23.camel@twins> <4860BBF2.BA47.005A.0@novell.com>
-	 <1214314273.4351.34.camel@twins>  <4860EEB3.BA47.005A.0@novell.com>
-Content-Type: text/plain
-Date: Tue, 24 Jun 2008 21:44:37 +0200
-Message-Id: <1214336677.16881.1.camel@twins>
+	Tue, 24 Jun 2008 17:33:36 -0400
+Date: Tue, 24 Jun 2008 14:31:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: <Solofo.Ramangalahy@bull.net>
+Cc: linux-kernel@vger.kernel.org, matthltc@us.ibm.com, cmm@us.ibm.com,
+       Nadia.Derbey@bull.net, manfred@colorfullife.com,
+       nickpiggin@yahoo.com.au, Solofo.Ramangalahy@bull.net
+Subject: Re: [PATCH -mm 1/3] sysv ipc: increase msgmnb default value wrt.
+ the number of cpus
+Message-Id: <20080624143120.9bed4f18.akpm@linux-foundation.org>
+In-Reply-To: <20080624093453.201071209@bull.net>
+References: <20080624093452.946878437@bull.net>
+	<20080624093453.201071209@bull.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-24 at 10:55 -0600, Gregory Haskins wrote:
-> >>> On Tue, Jun 24, 2008 at  9:31 AM, in message <1214314273.4351.34.camel@twins>,
-> Peter Zijlstra <peterz@infradead.org> wrote: 
-> > On Tue, 2008-06-24 at 07:18 -0600, Gregory Haskins wrote:
-> >> >>> On Tue, Jun 24, 2008 at  6:13 AM, in message 
-> > <1214302406.4351.23.camel@twins>,
-> >> Peter Zijlstra <peterz@infradead.org> wrote: 
-> >> > On Mon, 2008-06-23 at 17:04 -0600, Gregory Haskins wrote:
-> >> >> Inspired by Peter Zijlstra.
-> >> >> 
-> >> >> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> >> >> ---
-> >> >> 
-> >> >>  kernel/sched.c |    4 ++++
-> >> >>  1 files changed, 4 insertions(+), 0 deletions(-)
-> >> >> 
-> >> >> diff --git a/kernel/sched.c b/kernel/sched.c
-> >> >> index 3efbbc5..c8e8520 100644
-> >> >> --- a/kernel/sched.c
-> >> >> +++ b/kernel/sched.c
-> >> >> @@ -2775,6 +2775,10 @@ static int move_tasks(struct rq *this_rq, int 
-> >> > this_cpu, struct rq *busiest,
-> >> >>  				max_load_move - total_load_moved,
-> >> >>  				sd, idle, all_pinned, &this_best_prio);
-> >> >>  		class = class->next;
-> >> >> +
-> >> >> +		if (idle == CPU_NEWLY_IDLE && this_rq->nr_running)
-> >> >> +			break;
-> >> >> +
-> >> >>  	} while (class && max_load_move > total_load_moved);
-> >> >>  
-> >> >>  	return total_load_moved > 0;
-> >> > 
-> >> > 
-> >> > right,.. uhm, except that you forgot all the other fixes and
-> >> > generalizations I had,..
-> >> 
-> >> Heh...well I intentionally simplified it, but perhaps that is out of 
-> > ignorance.  I did say "inspired by" ;)
-> >> 
-> >> > 
-> >> > The LB_START/LB_COMPLETE stuff is needed to fix CFS load balancing. It
-> >> > now always iterates the first sysctl_sched_nr_migrate tasks, and if it
-> >> > doesn't find any there, just gives up - which isn't too big of a problem
-> >> > with it set to 32, but if you drop it to 2/4 stuff starts valing apart.
-> >> > 
-> >> > And the break I had here, only checks classes above and equal to the
-> >> > current class.
-> >> > 
-> >> > This again is needed when you have more classes.
-> >> 
-> >> Im not sure I understand/agree here (unless you plan on having a class below 
-> > sched_idle()??)
-> >> 
-> >> The fact that we are going NEWLYIDLE to me implies that all the other 
-> > classes are
-> >> "above or equal".  And rq->nr_running approximates all the per-class vtable 
-> > work
-> >> that you had done to probe the higher classes.  We currently only hit this 
-> > code when
-> >> rq->nr_running == 0, so rq->nr_running !=0 seems like a logical termination
-> >> condition.
-> >> 
-> >> I guess what I am not clear on is: "when would we be NEWLYIDLE in a higher 
-> > class,
-> >> yet have tasks populated in lower classes such at nr_running is non-zero".
-> >> Additionally, even if we have that condition (e.g. with something like the 
-> > EDF work you
-> >> are doing, perhaps?), shouldn't we patch the advanced form of this logic 
-> > when the rest
-> >> of the code goes in?  For now, this seems like the most straight forward way 
-> > to
-> >> accomplish the goal.  But I could be missing something ;)
-> > 
-> > The thing I'm worried about - but it might be unfounded and is certainly
-> > so now - is that suppose we have:
-> > 
-> >   EDF
-> >   FIFO/RR
-> >   SOFTRT
-> >   OTHER
-> >   IDLE
-> > 
-> > and we've just done FIFO/RR (which is a nop) and and some interrupt woke
-> > an OTHER task while we dropped for lockbreak.
-> > 
-> > At this point your logic would bail out and start running the OTHER
-> > task, even though we might have found a SOFTRQ task to run had we
-> > bothered to look.
-> > 
+On Tue, 24 Jun 2008 11:34:53 +0200
+<Solofo.Ramangalahy@bull.net> wrote:
+
+> From: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
 > 
-> Ok, now I think I understand your concern.  But I think you may be worrying about
-> this at the wrong level.  I would think we should be doing something similar to the
-> post-balance patch I submitted a while back.  It basically iterated through each class,
-> giving each an opportunity to pull tasks over in its own way.  The difference there
-> was that I was doing it post-schedule to deal with that locking issue.  We could
-> take the same idea and do it where we pre_schedule() today.
+> Initialize msgmnb value to
+> min(MSGMNB * num_online_cpus(), MSGMNB * MSG_CPU_SCALE)
+> to increase the default value for larger machines.
 > 
-> I think the f_b_g() et. al. is really SCHED_OTHER specific, and probably always will be.
-> Lets just formalize that.  Perhaps we should move all the LB code to sched_fair and set
-> something like what I proposed up.  Thoughts?
+> MSG_CPU_SCALE scaling factor is defined to be 4, as 16384 x 4 = 65536
+> is an already used and recommended value.
+> 
+> The msgmni value is made dependant of msgmnb to keep the memory
+> dedicated to message queues within the 1/MSG_MEM_SCALE of lowmem
+> bound.
+> 
+> Unlike msgmni, the value is not scaled (down) with respect to the
+> number of ipc namespaces for simplicity.
+> 
+> To disable recomputation when user explicitely set a value,
+> we reuse the callback defined for msgmni.
+> 
+> As msgmni and msgmnb are correlated, user settings of any of the two
+> disable recomputation of both, for now. This is refined in a later
+> patch.
+> 
+> When a negative value is put in /proc/sys/kernel/msgmnb
+> automatic recomputing is re-enabled.
+> 
 
-Right,. generalizing f_b_g() isn't something we should consider, its
-plenty impossible to understand already.
+Thanks for taking the time to describe this work so well.
 
-OK, moving everything into _fair sounds like the right approach.
+> 
+> ---
+>  Documentation/sysctl/kernel.txt |   28 ++++++++++++++++++++++++++++
+>  include/linux/msg.h             |    6 ++++++
+>  ipc/ipc_sysctl.c                |    5 +++--
+>  ipc/msg.c                       |   17 +++++++++++++----
+>  4 files changed, 50 insertions(+), 6 deletions(-)
+> 
+> Index: b/ipc/msg.c
+> ===================================================================
+> --- a/ipc/msg.c
+> +++ b/ipc/msg.c
+> @@ -38,6 +38,7 @@
+>  #include <linux/rwsem.h>
+>  #include <linux/nsproxy.h>
+>  #include <linux/ipc_namespace.h>
+> +#include <linux/cpumask.h>
+>  
+>  #include <asm/current.h>
+>  #include <asm/uaccess.h>
+> @@ -92,7 +93,7 @@ void recompute_msgmni(struct ipc_namespa
+>  
+>  	si_meminfo(&i);
+>  	allowed = (((i.totalram - i.totalhigh) / MSG_MEM_SCALE) * i.mem_unit)
+> -		/ MSGMNB;
+> +		/ ns->msg_ctlmnb;
+>  	nb_ns = atomic_read(&nr_ipc_ns);
+>  	allowed /= nb_ns;
+>  
+> @@ -108,11 +109,19 @@ void recompute_msgmni(struct ipc_namespa
+>  
+>  	ns->msg_ctlmni = allowed;
+>  }
+> +/*
+> + * Scale msgmnb with the number of online cpus, up to 4x MSGMNB.
+> + */
+> +void recompute_msgmnb(struct ipc_namespace *ns)
+> +{
+> +	ns->msg_ctlmnb =
+> +		min(MSGMNB * num_online_cpus(), MSGMNB * MSG_CPU_SCALE);
+> +}
+>  
+>  void msg_init_ns(struct ipc_namespace *ns)
+>  {
+>  	ns->msg_ctlmax = MSGMAX;
+> -	ns->msg_ctlmnb = MSGMNB;
+> +	recompute_msgmnb(ns);
+>  
+>  	recompute_msgmni(ns);
+>  
+> @@ -132,8 +141,8 @@ void __init msg_init(void)
+>  {
+>  	msg_init_ns(&init_ipc_ns);
+>  
+> -	printk(KERN_INFO "msgmni has been set to %d\n",
+> -		init_ipc_ns.msg_ctlmni);
+> +	printk(KERN_INFO "msgmni has been set to %d, msgmnb to %d\n",
+> +	       init_ipc_ns.msg_ctlmni, init_ipc_ns.msg_ctlmnb);
+>  
+>  	ipc_init_proc_interface("sysvipc/msg",
+>  				"       key      msqid perms      cbytes       qnum lspid lrpid   uid   gid  cuid  cgid      stime      rtime      ctime\n",
+> Index: b/include/linux/msg.h
+> ===================================================================
+> --- a/include/linux/msg.h
+> +++ b/include/linux/msg.h
+> @@ -58,6 +58,12 @@ struct msginfo {
+>   * more than 16 GB : msgmni = 32K (IPCMNI)
+>   */
+>  #define MSG_MEM_SCALE 32
+> +/*
+> + * Scaling factor to compute msgmnb: ns->msg_ctlmnb is between MSGMNB
+> + * and MSGMNB * MSG_CPU_SCALE. This leads to a max msgmnb value of
+> + * 65536 which is an already used and recommended value.
+> + */
+> +#define MSG_CPU_SCALE 4
+>  
+>  #define MSGMNI    16   /* <= IPCMNI */     /* max # of msg queue identifiers */
+>  #define MSGMAX  8192   /* <= INT_MAX */   /* max size of message (bytes) */
+> Index: b/ipc/ipc_sysctl.c
+> ===================================================================
+> --- a/ipc/ipc_sysctl.c
+> +++ b/ipc/ipc_sysctl.c
+> @@ -42,6 +42,7 @@ static void tunable_set_callback(int val
+>  		 * Re-enable automatic recomputing only if not already
+>  		 * enabled.
+>  		 */
+> +		recompute_msgmnb(current->nsproxy->ipc_ns);
+>  		recompute_msgmni(current->nsproxy->ipc_ns);
+>  		cond_register_ipcns_notifier(current->nsproxy->ipc_ns);
+>  	}
+> @@ -210,8 +211,8 @@ static struct ctl_table ipc_kern_table[]
+>  		.data		= &init_ipc_ns.msg_ctlmnb,
+>  		.maxlen		= sizeof (init_ipc_ns.msg_ctlmnb),
+>  		.mode		= 0644,
+> -		.proc_handler	= proc_ipc_dointvec,
+> -		.strategy	= sysctl_ipc_data,
+> +		.proc_handler	= proc_ipc_callback_dointvec,
+> +		.strategy	= sysctl_ipc_registered_data,
+>  	},
+>  	{
+>  		.ctl_name	= KERN_SEM,
+> Index: b/Documentation/sysctl/kernel.txt
+> ===================================================================
+> --- a/Documentation/sysctl/kernel.txt
+> +++ b/Documentation/sysctl/kernel.txt
+> @@ -179,6 +179,34 @@ kernel stack.
+>  
+>  ==============================================================
+>  
+> +msgmnb
+> +
+> +Maximum size in bytes (not in message count) of a single SystemV IPC
+> +message queue (b stands for bytes).
+> +
+> +This value is dynamic and depends on the online cpu count of the
+> +machine (taking cpu hotplug into account).
+> +
+> +Computed values are between MSGMNB and MSGMNB*MSG_CPU_SCALE #define
+> +constants (currently [16384,65536]).
+> +
+> +The exact value is automatically (re)computed, but:
+> +. If the value is positioned from user space (via procfs or sysctl()),
+> +  to a positive value then the automatic recomputation is
+> +  disabled. This leaves control to user space. E.g.
+> +
+> +  # echo 16384 > /proc/sys/kernel/msgmnb
+> +
+> +. If the value is positioned from user space to a negative value, then
+> +  the computation is reenabled. E.g.
+> +
+> +  # echo -1 > /proc/sys/kernel/msgmnb
+> +
+> +See recompute_msgmnb() function in ipc/ directory for details.
+> +The value of msgmnb is coupled with the value of msgmni.
+> +
 
+The magical positive-versus-negative number trick is a bit obscure, and
+I don't think there's any precedent for it in the kernel ABI (which is
+what this is).
+
+Is there anything we can do to reduce the unusualness of this
+interface?  Say, add a new /proc/sys/kernel/automatic-msgmnb which
+contains the automatic scaling and leave /proc/sys/kernel/msgmnb
+containing the manual scaling?  Or something like that?
