@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbYFXAOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbYFXAPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757462AbYFXAOk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 20:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756189AbYFXAN7
+	id S1757479AbYFXAPV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 20:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbYFXAPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 20:13:59 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:38846 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756015AbYFXAN6 (ORCPT
+	Mon, 23 Jun 2008 20:15:07 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57973 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753161AbYFXAPG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 20:13:58 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=EpyyR7lNYoq2PBZ9Xg/Ko0fbKvni//td6jRrhw8BObr4XpoYVzECCZVZgQirexyXywXFEys9L32JQ8lwuGhuP6yMBoiR7njjidb/0Z0Kn7ZeehnPh4NgFiCNXWJGVeVdz12nDq7ovZYjPj3iRZWVWn/i6QjHTPoQ2TvBliZuctk=  ;
-X-YMail-OSG: yNKZ9j0VM1lPYozXR2AAruFnBJ30T7_7yFGKRuc5wAJJZJt1b7kP23hY.HRicy_FxIMNC1gvvTwU7wKtU01FBvVN4skuPnbaPfUJmkcgCchSxQp3tWTyykKvgPJF0jnLJSg-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [BUG] Lockless patches cause hardlock under heavy IO
-Date: Tue, 24 Jun 2008 10:13:45 +1000
-User-Agent: KMail/1.9.5
-Cc: Ryan Hope <rmh3093@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-mm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <48f7fe350806181415l4eba61b3i1d206de03147575e@mail.gmail.com> <200806232154.52820.nickpiggin@yahoo.com.au> <20080623130536.GA10595@linux.vnet.ibm.com>
-In-Reply-To: <20080623130536.GA10595@linux.vnet.ibm.com>
+	Mon, 23 Jun 2008 20:15:06 -0400
+Date: Mon, 23 Jun 2008 20:15:04 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       peterz@infradead.org, linux-rt-users@vger.kernel.org, dbahi@novell.com
+Subject: Re: [PATCH 0/3] RT: scheduler newidle enhancements
+In-Reply-To: <20080623225645.31515.36393.stgit@lsg.lsg.lab.novell.com>
+Message-ID: <Pine.LNX.4.58.0806232014070.8540@gandalf.stny.rr.com>
+References: <20080623225645.31515.36393.stgit@lsg.lsg.lab.novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806241013.45908.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 June 2008 23:05, Paul E. McKenney wrote:
-> On Mon, Jun 23, 2008 at 09:54:52PM +1000, Nick Piggin wrote:
-> > On Monday 23 June 2008 13:51, Ryan Hope wrote:
-> > > well i get the hardlock on -mm with out using reiser4, i am pretty
-> > > sure is swap related
-> >
-> > The guys seeing hangs don't use PREEMPT_RCU, do they?
-> >
-> > In my swapping tests, I found -mm3 to be stable with classic RCU, but
-> > on a hunch, I tried PREEMPT_RCU and it crashed a couple of times rather
-> > quickly. First crash was in find_get_pages so I suspected lockless
-> > pagecache doing something subtly wrong with the RCU API, but I just got
-> > another crash in __d_lookup:
+
+On Mon, 23 Jun 2008, Gregory Haskins wrote:
+
 >
-> Could you please send me a repeat-by?  (At least Alexey is no longer
-> alone!)
+> Hi Ingo, Steven, Thomas,
+>   The following series applies to 25.4-rt6 and is "ready for inclusion" from
+>   my perspective.  However, due to their nature I am sure we will want to get
+>   some review feedback before being considered for acceptance.
+>
+>   These patches are probably suitable for consideration for
+>   mainline/sched-devel as well, but PREEMPT_RT gains the biggest boost from
+>   them since it tends to context switch much more frequently than mainline.
+>
+>   This series makes some adjustments to the way we do newidle balancing.
+>   These tweaks were discovered while doing some related scheduler R&D that is
+>   not quite ready for the light of day.  But these patches do offer a
+>   substantial boost (6-12%) in network performance.  They may help in other
+>   areas as well, but networking is where our focus remains currently.
+>
+>   I think the patch 1/3 is a good one, but it requires careful review. Patch
+>   2/3 is based upon some work I had seen PeterZ submit, so its possible to
+>   just pull his work (if it hasnt been already) as opposed to this patch, if
+>   desired.  Lastly, Patch 3/3 is a bit controversial so I put it last for
+>   easier cherry picking of the first two.  It does help in our testing, but it
+>   will have to be reviewed carefully.
+>
+> Comments/feedback/bugfixes more than welcome.
 
-OK, I had DEBUG_PAGEALLOC in the .config, which I think is probably
-important to reproduce it (but the fact that I'm reproducing oopses
-with << PAGE_SIZE objects like dentries and radix tree nodes indicates
-that there is even more free-before-grace activity going undetected --
-if you construct a test case using full pages, it might become even
-easier to detect with DEBUG_PAGEALLOC).
+Greg,
 
-2 socket, 8 core x86 system.
+I don't see anything wrong with these patches. If either Ingo or Peter
+have any issues, I hope they speak up soon. I'll queue them all for 25-rt8
+(after I get rt7 out the door).
 
-I mounted two tmpfs filesystems, one contains a single large file
-which is formatted as 1K block size ext3 and mounted loopback, the
-other is used directly. Linux kernel source is unpacked on each mount
-and concurrent make -j128 on each. This pushes it pretty hard into
-swap. Classic RCU survived another 5 hours of this last night.
+-- Steve
 
-But that's a fairly convoluted test for an RCU problem. I expect it
-should be easier to trigger with something more targetted...
