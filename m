@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbYFXF2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641AbYFXFcK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753986AbYFXF2f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 01:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbYFXF2Z
+	id S1754641AbYFXFcK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 01:32:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbYFXFb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 01:28:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52812 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751237AbYFXF2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 01:28:24 -0400
-Date: Tue, 24 Jun 2008 01:28:21 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-cc: axboe@kernel.dk, mingo@redhat.com
-Subject: [PATCH 2/2] use bio_endio instead of a call to bi_end_io
-Message-ID: <Pine.LNX.4.64.0806240122340.24220@engineering.redhat.com>
+	Tue, 24 Jun 2008 01:31:57 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57268 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750887AbYFXFb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 01:31:56 -0400
+Message-ID: <4860866F.7050703@cn.fujitsu.com>
+Date: Tue, 24 Jun 2008 13:30:23 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Paul Mundt <lethal@linux-sh.org>
+CC: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sh: fix seq_file memory leak
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+When using single_open(), single_release() should be used instead
+of seq_release(), otherwise there is a memory leak.
 
-The is sequel to my previous patch to avoid bio_endio recursion. raid5 
-bypasses bio_endio and calls the method directly (although it does the 
-same as bio_endio). I changed bio_endio to avoid recursion, so it should 
-be used instead of calling the method.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ arch/sh/mm/cache-debugfs.c |    2 +-
+ arch/sh/mm/pmb.c           |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Mikulas
-
---
-
-Turn calls to bi->bi_end_io() into bio_endio(). Apparently bio_endio does
-exactly the same error processing as is hardcoded at these places.
-
-bio_endio() avoids recursion, so it should be used.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-
-Index: linux-2.6.26-rc7-devel/drivers/md/raid5.c
-===================================================================
---- linux-2.6.26-rc7-devel.orig/drivers/md/raid5.c	2008-06-24 07:28:15.000000000 +0200
-+++ linux-2.6.26-rc7-devel/drivers/md/raid5.c	2008-06-24 07:28:53.000000000 +0200
-@@ -115,9 +115,7 @@
-  		return_bi = bi->bi_next;
-  		bi->bi_next = NULL;
-  		bi->bi_size = 0;
--		bi->bi_end_io(bi,
--			      test_bit(BIO_UPTODATE, &bi->bi_flags)
--			        ? 0 : -EIO);
-+		bio_endio(bi, 0);
-  		bi = return_bi;
-  	}
-  }
-@@ -3689,9 +3687,7 @@
-  		if ( rw == WRITE )
-  			md_write_end(mddev);
-
--		bi->bi_end_io(bi,
--			      test_bit(BIO_UPTODATE, &bi->bi_flags)
--			        ? 0 : -EIO);
-+		bio_endio(bi, 0);
-  	}
-  	return 0;
-  }
-@@ -3994,12 +3990,8 @@
-  	spin_lock_irq(&conf->device_lock);
-  	remaining = --raid_bio->bi_phys_segments;
-  	spin_unlock_irq(&conf->device_lock);
--	if (remaining == 0) {
--
--		raid_bio->bi_end_io(raid_bio,
--			      test_bit(BIO_UPTODATE, &raid_bio->bi_flags)
--			        ? 0 : -EIO);
--	}
-+	if (remaining == 0)
-+		bio_endio(raid_bio, 0);
-  	if (atomic_dec_and_test(&conf->active_aligned_reads))
-  		wake_up(&conf->wait_for_stripe);
-  	return handled;
+diff --git a/arch/sh/mm/cache-debugfs.c b/arch/sh/mm/cache-debugfs.c
+index c5b56d5..0e189cc 100644
+--- a/arch/sh/mm/cache-debugfs.c
++++ b/arch/sh/mm/cache-debugfs.c
+@@ -120,7 +120,7 @@ static const struct file_operations cache_debugfs_fops = {
+ 	.open		= cache_debugfs_open,
+ 	.read		= seq_read,
+ 	.llseek		= seq_lseek,
+-	.release	= seq_release,
++	.release	= single_release,
+ };
+ 
+ static int __init cache_debugfs_init(void)
+diff --git a/arch/sh/mm/pmb.c b/arch/sh/mm/pmb.c
+index 0b0ec6e..95653e2 100644
+--- a/arch/sh/mm/pmb.c
++++ b/arch/sh/mm/pmb.c
+@@ -385,7 +385,7 @@ static const struct file_operations pmb_debugfs_fops = {
+ 	.open		= pmb_debugfs_open,
+ 	.read		= seq_read,
+ 	.llseek		= seq_lseek,
+-	.release	= seq_release,
++	.release	= single_release,
+ };
+ 
+ static int __init pmb_debugfs_init(void)
+-- 
+1.5.4.rc3
