@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbYFXV4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756281AbYFXVqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755284AbYFXV4t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 17:56:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756603AbYFXV4N
+	id S1756281AbYFXVqh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbYFXVq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 17:56:13 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:38985 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755587AbYFXV4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 17:56:03 -0400
-Date: Wed, 25 Jun 2008 00:54:01 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: lkml <linux-kernel@vger.kernel.org>, rtc-linux@googlegroups.com
-Subject: Re: [patch 2.6.26-rc7] <linux/bcd.h> space reduction
-Message-ID: <20080624215400.GA18252@cs181140183.pp.htv.fi>
-References: <200806221954.37088.david-b@pacbell.net> <20080623065034.GG20122@cs181140183.pp.htv.fi> <200806230015.49973.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200806230015.49973.david-b@pacbell.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 24 Jun 2008 17:46:29 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57260 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754118AbYFXVq2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 17:46:28 -0400
+Date: Tue, 24 Jun 2008 22:28:59 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: william <william@waisse.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: strange freeze with VIA C7 dedicated server and libc 2.6.1
+Message-ID: <20080624222859.1e12dc2d@lxorguk.ukuu.org.uk>
+In-Reply-To: <2ffbcf00806241405w5b757b56p84cd560166ea8f90@mail.gmail.com>
+References: <2ffbcf00806232001o4bd314f4kc590e43b4ab27076@mail.gmail.com>
+	<20080624102129.19d79eb0@lxorguk.ukuu.org.uk>
+	<2ffbcf00806241405w5b757b56p84cd560166ea8f90@mail.gmail.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 12:15:49AM -0700, David Brownell wrote:
-> On Sunday 22 June 2008, Adrian Bunk wrote:
-> > On Sun, Jun 22, 2008 at 07:54:36PM -0700, David Brownell wrote:
-> > > This updates <linux/bcd.h> to define the key routines as static
-> > > constant functions, which the macros will then call.
-> > > 
-> > > 	... Typical per-driver savings top 200 bytes. ...
-> > 
-> > The patch breaks the compilation:
+> * the watchdog says nothing in the logs, but is able to reboot the box.
 > 
-> Needs to #include <linux/types.h> then; "u8" isn't always known.
-> Or maybe just spell it out "unsigned char".
-> 
-> 
-> >	...
-> > 
-> > Additionally, I'd suggest to make them out-of-line functions 
-> > instead of shipping multiple copies in different object files.
-> 
-> That was one of the options.  I thought I'd start with something
-> simpler, and see what folk thought.
-> 
-> Where would that be ... lib/bcd.c, always linked?
+>  Thank you very much for your answer Alan, I were hesitating on
+> posting a report with no logs, no clues . . . your answer gives me a
+> little hope ;)
 
-Sounds good.
+Two random thoughts from your last comment
 
-> And if it goes
-> that way I'd prefer bcd2bin() and bin2bcd(), not these names.  A
-> small impetus to have LESS SOURCE CODE SHOUTING AT ME.
+- If you do
 
-Sounds good, but start with SHOUTING COMPATIBILITY #DEFINES FOR THE 
-EXISTING USERS and either clean them up later or let me do the cleanup.
+echo "2" >/proc/sys/vm/overcommit_memory
+echo "80" >/proc/sys/vm/overcommit_ratio
 
-> - Dave
+do you instead get out of memory kills (which would imply bad memory
+leaks perhaps triggered by glibc ?)
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+- Does your system pass 'crashme' testing (run as a non root user). If
+not then that might give an eventual identification of a crashme run
+which takes out the box. We've found kernel bugs, CPU bugs and
+combinations of the two before now that way.
