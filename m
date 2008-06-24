@@ -1,25 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYFXCLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbYFXCS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756862AbYFXCLz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 22:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbYFXCLo
+	id S1756570AbYFXCS0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 22:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbYFXCSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 22:11:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44912 "EHLO
+	Mon, 23 Jun 2008 22:18:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43136 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752040AbYFXCLn (ORCPT
+	by vger.kernel.org with ESMTP id S1752706AbYFXCSB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 22:11:43 -0400
-Date: Mon, 23 Jun 2008 19:11:40 -0700
+	Mon, 23 Jun 2008 22:18:01 -0400
+Date: Mon, 23 Jun 2008 19:17:33 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Kentaro Makita <k-makita@np.css.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       viro@ZenIV.linux.org.uk, harvey.harrison@gmail.com
-Subject: Re: [RESEND][PATCH -mm 2/2] vfs: add cond_resched_lock while
- scanning dentry LRU lists
-Message-Id: <20080623191140.c0f15ee9.akpm@linux-foundation.org>
-In-Reply-To: <486051B3.4070903@np.css.fujitsu.com>
-References: <486051B3.4070903@np.css.fujitsu.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, sct@redhat.com,
+       adilger@sun.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jack@suse.cz,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH] ext3: don't read inode block if the buffer has a
+ write error
+Message-Id: <20080623191733.52c3491c.akpm@linux-foundation.org>
+In-Reply-To: <200806232146.28379.nickpiggin@yahoo.com.au>
+References: <485F8822.5030205@hitachi.com>
+	<200806232146.28379.nickpiggin@yahoo.com.au>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,39 +33,41 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jun 2008 10:45:23 +0900 Kentaro Makita <k-makita@np.css.fujitsu.com> wrote:
+On Mon, 23 Jun 2008 21:46:27 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-> o add cond_resched_lock(&dcache_lock) while scanning LRU lists on superblocks
->   in __shrink_dcache_sb()
+> On Monday 23 June 2008 21:25, Hidehiro Kawai wrote:
+> > A transient I/O error can corrupt inode data.  Here is the scenario:
+> >
+> > (1) update inode_A at the block_B
+> > (2) pdflush writes out new inode_A to the filesystem, but it results
+> >     in write I/O error, at this point, BH_Uptodate flag of the buffer
+> >     for block_B is cleared and BH_Write_EIO is set
+> > (3) create new inode_C which located at block_B, and
+> >     __ext3_get_inode_loc() tries to read on-disk block_B because the
+> >     buffer is not uptodate
+> > (4) if it can read on-disk block_B successfully, inode_A is
+> >     overwritten by old data
+> >
+> > This patch makes __ext3_get_inode_loc() not read the inode block if
+> > the buffer has BH_Write_EIO flag.  In this case, the buffer should
+> > have the latest information, so setting the uptodate flag to the
+> > buffer (this avoids WARN_ON_ONCE() in mark_buffer_dirty().)
+> >
+> > According to this change, we would need to test BH_Write_EIO flag for
+> > the error checking.  Currently nobody checks write I/O errors on
+> > metadata buffers, but it will be done in other patches I'm working on.
 > 
-> Signed-off-by: Kentaro Makita <k-makita@np.css.fujitsu.com>
-> ---
->  fs/dcache.c |    1 +
->  1 files changed, 1 insertion(+)
+> IMO there is a problem with all the buffer head and pagecache error
+> handling in that uptodate gets cleared on write errors. This is not
+> only wrong (because the in-memory copy continues to contain the most
+> uptodate copy), but it will trigger assertions all over the mm and
+> buffer code AFAIKS.
 > 
-> Index: b/fs/dcache.c
-> ===================================================================
-> --- a/fs/dcache.c	2008-06-05 11:48:57.000000000 +0900
-> +++ b/fs/dcache.c	2008-06-05 11:49:19.000000000 +0900
-> @@ -484,6 +484,7 @@ restart:
->  				if (--cnt == 0)
->  					break;
->  			}
-> +			cond_resched_lock(&dcache_lock);
->  		}
->  	}
->  	while (!list_empty(&tmp)) {
+> I don't know why it was done like this, or if anybody actually tested
+> any of it, but AFAIKS the best way to fix this is to simply not
+> clear any uptodate bits upon write errors.
 
-The changelog is insufficient.  It tells us what the patch did (which
-was completely obvious anyway) but it fails to tell us _why_ the patch
-did it.
+There's a plausible-sounding reason for this behaviour which I forgot
+about three years ago.  Maybe Linus remembers?
 
-That is is easily guessable but a good changelog would have described
-the problem which you observed and would have described how the the
-patch changed the runtime behaviour.
-
-And this is not a trivial formality either.  Because if, for example,
-the problem whcih you are fixing here is "machine goes comatose for ten
-minutes" then we'll need algorithmic changes and not a bandaid of this
-nature.
-
+Meanwhile I guess I'll queue the patch, sad though it is.
