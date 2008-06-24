@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641AbYFXFcK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbYFXFgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754641AbYFXFcK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 01:32:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbYFXFb5
+	id S1754274AbYFXFgT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 01:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbYFXFgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 01:31:57 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57268 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750887AbYFXFb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 01:31:56 -0400
-Message-ID: <4860866F.7050703@cn.fujitsu.com>
-Date: Tue, 24 Jun 2008 13:30:23 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 24 Jun 2008 01:36:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53553 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751328AbYFXFgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 01:36:08 -0400
+Message-ID: <48608792.7090909@kernel.org>
+Date: Tue, 24 Jun 2008 14:35:14 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>
-CC: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sh: fix seq_file memory leak
+To: Jeff Garzik <jeff@garzik.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: [PATCH] pci: VT3336 can't do MSI either
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (hera.kernel.org [127.0.0.1]); Tue, 24 Jun 2008 05:35:23 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When using single_open(), single_release() should be used instead
-of seq_release(), otherwise there is a memory leak.
+It seems VT3336 can't do msi either as with its bro 3351.  Disable it.
+Reported in the following SUSE bug.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+  https://bugzilla.novell.com/show_bug.cgi?id=300001
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- arch/sh/mm/cache-debugfs.c |    2 +-
- arch/sh/mm/pmb.c           |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Anyone interested in queuing this for -rc8?  Thanks.
 
-diff --git a/arch/sh/mm/cache-debugfs.c b/arch/sh/mm/cache-debugfs.c
-index c5b56d5..0e189cc 100644
---- a/arch/sh/mm/cache-debugfs.c
-+++ b/arch/sh/mm/cache-debugfs.c
-@@ -120,7 +120,7 @@ static const struct file_operations cache_debugfs_fops = {
- 	.open		= cache_debugfs_open,
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
--	.release	= seq_release,
-+	.release	= single_release,
- };
+ drivers/pci/quirks.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index dabb563..9d95f0b 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1685,6 +1685,7 @@ static void __init quirk_disable_all_msi(struct pci_dev *dev)
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_GCNB_LE, quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS400_200, quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS480, quirk_disable_all_msi);
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_VT3336, quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_VT3351, quirk_disable_all_msi);
  
- static int __init cache_debugfs_init(void)
-diff --git a/arch/sh/mm/pmb.c b/arch/sh/mm/pmb.c
-index 0b0ec6e..95653e2 100644
---- a/arch/sh/mm/pmb.c
-+++ b/arch/sh/mm/pmb.c
-@@ -385,7 +385,7 @@ static const struct file_operations pmb_debugfs_fops = {
- 	.open		= pmb_debugfs_open,
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
--	.release	= seq_release,
-+	.release	= single_release,
- };
- 
- static int __init pmb_debugfs_init(void)
--- 
-1.5.4.rc3
+ /* Disable MSI on chipsets that are known to not support it */
