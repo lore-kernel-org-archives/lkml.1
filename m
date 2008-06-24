@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756500AbYFXUBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbYFXUng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756500AbYFXUBv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 16:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbYFXUBb
+	id S1755497AbYFXUng (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 16:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYFXUn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 16:01:31 -0400
-Received: from mail.renesas.com ([202.234.163.13]:52934 "EHLO
-	mail04.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752846AbYFXUB3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 16:01:29 -0400
-X-AuditID: ac140387-00000004000005fd-75-4861529357e3
-Date: Wed, 25 Jun 2008 05:01:08 +0900
-From: Paul Mundt <paul.mundt@renesas.com>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-sh <linux-sh@vger.kernel.org>
-Subject: Re: [PATCH] maple: tidy  maple_driver code by removing redundant
-	connect/disconnect
-Message-ID: <20080624200108.GC11705@renesas.com>
-References: <1213559289.22707.15.camel@localhost.localdomain> <20080624040128.GB22526@linux-sh.org> <5703.85.118.17.158.1214305147.squirrel@newgolddream.dyndns.info>
+	Tue, 24 Jun 2008 16:43:28 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45064 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751250AbYFXUn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 16:43:28 -0400
+Date: Tue, 24 Jun 2008 22:43:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: tglx@linutronix.de, hpa@zytor.com, macro@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/5] x86: perfctr-watchdog.c - coding style cleanup
+Message-ID: <20080624204311.GA3346@elte.hu>
+References: <20080624161624.124913675@gmail.com>> <48611ec1.2234440a.679b.1a7d@mx.google.com> <20080624163622.GA8219@elte.hu> <20080624164533.GA19623@cvg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <5703.85.118.17.158.1214305147.squirrel@newgolddream.dyndns.info>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Brightmail-Tracker: AAAAAA==
+In-Reply-To: <20080624164533.GA19623@cvg>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 24, 2008 at 11:59:07AM +0100, Adrian McMenamin wrote:
-> On Tue, June 24, 2008 5:01 am, Paul Mundt wrote:
-> > On Sun, Jun 15, 2008 at 08:48:09PM +0100, Adrian McMenamin wrote:
-> >> The connect and disconnect functions are unnecessary - everything they
-> >> do can be
-> >> accomplished in the initial probe - so remove them.
-> >>
-> >> Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
-> >
-> > Applied, thanks.
-> >
-> Paul,
+
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+
+> [Ingo Molnar - Tue, Jun 24, 2008 at 06:36:22PM +0200]
+> | 
+> | * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> | 
+> | > Just some code beautification. Nothing else.
+> | 
+> | applied, thanks Cyrill.
+> | 
+> | note, your mailer sets the wrong timestamps:
+> | 
+> | | Date: Thu, 01 Jan 1970 03:00:01 +0300
+> | | From: Cyrill Gorcunov <gorcunov@gmail.com>
+> | 
+> | i'll edit them out of your patches so that Git doesnt get bogus dates.
+> | 
+> | 	Ingo
 > 
-> Just to note that this (http://lkml.org/lkml/2008/6/15/122) will break the
-> keyboard driver unless this (http://lkml.org/lkml/2008/6/15/121) is also
-> applied.
-> 
-> I haven't heard back from Dmitry on the keyboard patch yet.
-> 
-Yes, I'm aware of that. This should fix itself in linux-next once it is
-merged in the input tree, and I don't intend on pushing my changes until
-that's in place, so we don't break bisection.
+> Thanks Ingo, I've mentoined in 'reply' mail for first message in 
+> series that somehow happened that date was screwed up. I can resent 
+> the series if needed.
+
+no need to resend, fixed it all up :-)
+
+	Ingo
