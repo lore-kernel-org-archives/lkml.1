@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbYFXNl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbYFXNnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757937AbYFXNl4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 09:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758349AbYFXNls
+	id S1757055AbYFXNnA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 09:43:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYFXNmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 09:41:48 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:54166 "EHLO mail.screens.ru"
+	Tue, 24 Jun 2008 09:42:54 -0400
+Received: from www.tglx.de ([62.245.132.106]:42888 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758969AbYFXNkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 09:40:31 -0400
-Date: Tue, 24 Jun 2008 17:42:40 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: ebiederm@xmission.com, mingo@elte.hu, torvalds@linux-foundation.org,
-       roland@redhat.com, linux-kernel@vger.kernel.org, rjw@sisk.pl
-Subject: Re: [PATCH 1/3] introduce PF_KTHREAD flag
-Message-ID: <20080624134240.GA310@tv-sign.ru>
-References: <20080601153042.GA8238@tv-sign.ru> <20080623134037.8566f651.akpm@linux-foundation.org> <20080623134706.f5e1ef32.akpm@linux-foundation.org> <20080623135253.ed7cabf1.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752261AbYFXNmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 09:42:53 -0400
+Date: Tue, 24 Jun 2008 15:42:28 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: hjk@linutronix.de, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       gregkh@suse.de
+Subject: Re: [PATCH] uio-howto.tmpl: use standard copyright/legal markings
+Message-ID: <20080624134228.GB3217@local>
+References: <1214304877-1223-1-git-send-email-vapier@gentoo.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080623135253.ed7cabf1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1214304877-1223-1-git-send-email-vapier@gentoo.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/23, Andrew Morton wrote:
->
-> On Mon, 23 Jun 2008 13:47:06 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > I don't yet know how much additional damage will happen as a result.
-> 
-> Lots.
-> 
-> I restored the patches and just dropped the hunk:
-> 
->   static int has_mm(struct task_struct *p)
->   {
-> -       return (p->mm && !(p->flags & PF_BORROWED_MM));
->   }
->   
->   /**
-> --- 86,92 ----
->   
->   static int has_mm(struct task_struct *p)
->   {
-> +       return (p->mm && !(p->flags & PF_KTHREAD));
->   }
-> 
-> due to that function having been turned into:
-> 
-> static inline bool should_send_signal(struct task_struct *p)
-> {
->         return !(p->flags & PF_FREEZER_NOSIG);
-> }
->
-> Please check the result?
+(Added GregKH to Cc:)
 
-Thanks, this looks OK.
+@Greg: Take care, the patch modifies a line with my name in it :-)
 
-Rafael, can't freezer just use PF_KTHREAD (which btw kills PF_BORROWED_MM)
-instead of the new PF_FREEZER_NOSIG flag? They look very similar, please
-look at
+On Tue, Jun 24, 2008 at 06:54:37AM -0400, Mike Frysinger wrote:
+> The Userspace I/O HOWTO document uses straight <sect1> tags and plain text
+> to describe copyright/legal information.  It should instead use the
+> <copyright> and <legalnotice> tags like all other documents in the kernel.
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 
-	"[PATCH 1/3] introduce PF_KTHREAD flag"
-	http://marc.info/?l=linux-kernel&m=121233423530812
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
 
-	"[PATCH 2/3] kill PF_BORROWED_MM in favour of PF_KTHREAD"
-	http://marc.info/?l=linux-kernel&m=121233423530820
-
-Oleg.
-
+> ---
+>  Documentation/DocBook/uio-howto.tmpl |   23 ++++++++++++-----------
+>  1 files changed, 12 insertions(+), 11 deletions(-)
+> 
+> diff --git a/Documentation/DocBook/uio-howto.tmpl b/Documentation/DocBook/uio-howto.tmpl
+> index c4d1873..d799a26 100644
+> --- a/Documentation/DocBook/uio-howto.tmpl
+> +++ b/Documentation/DocBook/uio-howto.tmpl
+> @@ -21,6 +21,18 @@
+>      </affiliation>
+>  </author>
+>  
+> +<copyright>
+> +	<year>2006-2008</year>
+> +	<holder>Hans-JÃŒrgen Koch.</holder>
+> +</copyright>
+> +
+> +<legalnotice>
+> +<para>
+> +This documentation is Free Software licensed under the terms of the
+> +GPL version 2.
+> +</para>
+> +</legalnotice>
+> +
+>  <pubdate>2006-12-11</pubdate>
+>  
+>  <abstract>
+> @@ -66,17 +78,6 @@
+>  <?dbhtml filename="about.html"?>
+>  <title>About this document</title>
+>  
+> -<sect1 id="copyright">
+> -<?dbhtml filename="copyright.html"?>
+> -<title>Copyright and License</title>
+> -<para>
+> -      Copyright (c) 2006-2008 by Hans-JÃŒrgen Koch.</para>
+> -<para>
+> -This documentation is Free Software licensed under the terms of the
+> -GPL version 2.
+> -</para>
+> -</sect1>
+> -
+>  <sect1 id="translations">
+>  <?dbhtml filename="translations.html"?>
+>  <title>Translations</title>
+> -- 
+> 1.5.5.3
