@@ -1,125 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761559AbYFXQl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760445AbYFXQoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761559AbYFXQl6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 12:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759655AbYFXQlu
+	id S1760445AbYFXQoq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 12:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbYFXQoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 12:41:50 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:63991 "EHLO
+	Tue, 24 Jun 2008 12:44:38 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:33011 "EHLO
 	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756665AbYFXQls (ORCPT
+	with ESMTP id S1750732AbYFXQoi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 12:41:48 -0400
+	Tue, 24 Jun 2008 12:44:38 -0400
 From: Timur Tabi <timur@freescale.com>
-To: linux-kernel@vger.kernel.org, andi@firstfloor.org, randy.dunlap@oracle.com,
-       corbet@lwn.net, torvalds@linux-foundation.org
-Subject: [PATCH] Add alloc_pages_exact() and free_pages_exact()
-Date: Tue, 24 Jun 2008 11:40:49 -0500
-Message-Id: <1214325649-26075-1-git-send-email-timur@freescale.com>
+To: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] fsl-diu-fb: Update Freescale DIU driver to use page_alloc_exact()
+Date: Tue, 24 Jun 2008 11:44:13 -0500
+Message-Id: <1214325853-26150-1-git-send-email-timur@freescale.com>
 X-Mailer: git-send-email 1.5.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-alloc_pages_exact() is similar to alloc_pages(), except that it allocates
-the minimum number of pages to fulfill the request.  This is useful if you
-want to allocate a very large buffer that is slightly larger than an
-even power-of-two number of pages.  In that case, alloc_pages() will waste
-a lot of memory.
+Update the Freescale DIU driver to use page_alloc_exact() to allocate a
+DMA buffer.  This also eliminates the rheap-based memory allocator.  We
+can do this now because commit 6ccf61f9 allows us to allocate 8MB physically-
+contiguous memory blocks.
 
 Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
 
-I have a video driver that wants to allocate a 5MB buffer.  alloc_pages()
-will waste 3MB of physically-contiguous memory.  Therefore, I would
-like to see alloc_pages_exact() added to 2.6.27.
+My other patch, "Add alloc_pages_exact() and free_pages_exact()", must be
+applied first, otherwise drivers/video/fsl-diu-fb.c will not compile.
 
-Please note that I am not a Linux VM expert.  I wrote these functions based
-on guidance from Andi Kleen.  I have no familiarity with NUMA, so I don't know
-how to handle that.  Any and all suggestions are welcome.
+ drivers/video/fsl-diu-fb.c |   59 +++++++++++++++----------------------------
+ 1 files changed, 21 insertions(+), 38 deletions(-)
 
- include/linux/gfp.h |    3 ++
- mm/page_alloc.c     |   53 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 56 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-index b414be3..1054801 100644
---- a/include/linux/gfp.h
-+++ b/include/linux/gfp.h
-@@ -215,6 +215,9 @@ extern struct page *alloc_page_vma(gfp_t gfp_mask,
- extern unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
- extern unsigned long get_zeroed_page(gfp_t gfp_mask);
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 0a27853..d15d265 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -279,58 +279,41 @@ static struct diu_hw dr = {
  
-+void *alloc_pages_exact(size_t size, gfp_t gfp_mask);
-+void free_pages_exact(void *virt, size_t size);
-+
- #define __get_free_page(gfp_mask) \
- 		__get_free_pages((gfp_mask),0)
+ static struct diu_pool pool;
  
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 2f55295..08bf9d7 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1711,6 +1711,59 @@ void free_pages(unsigned long addr, unsigned int order)
- 
- EXPORT_SYMBOL(free_pages);
- 
+-/*	To allocate memory for framebuffer. First try __get_free_pages(). If it
+- *	fails, try rh_alloc. The reason is __get_free_pages() cannot allocate
+- *	very large memory (more than 4MB). We don't want to allocate all memory
+- *	in rheap since small memory allocation/deallocation will fragment the
+- *	rheap and make the furture large allocation fail.
 +/**
-+ * alloc_pages_exact - allocate an exact number physically-contiguous pages.
-+ * @size: the number of bytes to allocate
-+ * @gfp_mask: GFP flags for the allocation
++ * fsl_diu_alloc - allocate memory for the DIU
++ * @size: number of bytes to allocate
++ * @param: returned physical address of memory
 + *
-+ * This function is similar to alloc_pages(), except that it allocates the
-+ * minimum number of pages to satisfy the request.  alloc_pages() can only
-+ * allocate memory in power-of-two pages.
-+ *
-+ * This function is also limited by MAX_ORDER.
-+ *
-+ * Memory allocated by this function must be released by free_pages_exact().
-+ */
-+void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
-+{
-+	unsigned int order = get_order(size);
-+	unsigned long addr;
-+
-+	addr = __get_free_pages(gfp_mask, order);
-+	if (addr) {
-+		unsigned long alloc_end = addr + (PAGE_SIZE << order);
-+		unsigned long used = addr + PAGE_ALIGN(size);
-+
-+		split_page(virt_to_page(addr), order);
-+		while (used < alloc_end) {
-+			free_page(used);
-+			used += PAGE_SIZE;
-+		}
-+	}
-+
-+	return (void *)addr;
-+}
-+EXPORT_SYMBOL(alloc_pages_exact);
-+
-+/**
-+ * free_pages_exact - release memory allocated via alloc_pages_exact()
-+ * @virt: the value returned by alloc_pages_exact.
-+ * @size: size of allocation, same value as passed to alloc_pages_exact().
-+ *
-+ * Release the memory allocated by a previous call to alloc_pages_exact.
-+ */
-+void free_pages_exact(void *virt, size_t size)
-+{
-+	unsigned long addr = (unsigned long)virt;
-+	unsigned long end = addr + PAGE_ALIGN(size);
-+
-+	while (addr < end) {
-+		free_page(addr);
-+		addr += PAGE_SIZE;
-+	}
-+}
-+EXPORT_SYMBOL(free_pages_exact);
-+
- static unsigned int nr_free_zone_pages(int offset)
++ * This function allocates a physically-contiguous block of memory.
+  */
+-
+-void *fsl_diu_alloc(unsigned long size, phys_addr_t *phys)
++static void *fsl_diu_alloc(size_t size, phys_addr_t *phys)
  {
- 	struct zoneref *z;
+ 	void *virt;
+ 
+-	pr_debug("size=%lu\n", size);
++	pr_debug("size=%u\n", size);
+ 
+-	virt = (void *)__get_free_pages(GFP_DMA | __GFP_ZERO, get_order(size));
++	virt = alloc_pages_exact(size, GFP_DMA | __GFP_ZERO);
+ 	if (virt) {
+ 		*phys = virt_to_phys(virt);
+-		pr_debug("virt %p, phys=%llx\n", virt, (uint64_t) *phys);
+-		return virt;
+-	}
+-	if (!diu_ops.diu_mem) {
+-		printk(KERN_INFO "%s: no diu_mem."
+-			" To reserve more memory, put 'diufb=15M' "
+-			"in the command line\n", __func__);
+-		return NULL;
+-	}
+-
+-	virt = (void *)rh_alloc(&diu_ops.diu_rh_info, size, "DIU");
+-	if (virt) {
+-		*phys = virt_to_bus(virt);
+-		memset(virt, 0, size);
++		pr_debug("virt=%p, phys=%llx\n", virt, (uint64_t) *phys);
+ 	}
+ 
+-	pr_debug("rh virt=%p phys=%lx\n", virt, *phys);
+-
+ 	return virt;
+ }
+ 
+-void fsl_diu_free(void *p, unsigned long size)
++/**
++ * fsl_diu_free - release DIU memory
++ * @virt: pointer returned by fsl_diu_alloc()
++ * @size: number of bytes allocated by fsl_diu_alloc()
++ *
++ * This function releases memory allocated by fsl_diu_alloc().
++ */
++static void fsl_diu_free(void *virt, size_t size)
+ {
+-	pr_debug("p=%p size=%lu\n", p, size);
++	pr_debug("virt=%p size=%u\n", virt, size);
+ 
+-	if (!p)
+-		return;
+-
+-	if ((p >= diu_ops.diu_mem) &&
+-	    (p < (diu_ops.diu_mem + diu_ops.diu_size))) {
+-		pr_debug("rh\n");
+-		rh_free(&diu_ops.diu_rh_info, (unsigned long) p);
+-	} else {
+-		pr_debug("dma\n");
+-		free_pages((unsigned long)p, get_order(size));
+-	}
++	if (virt && size)
++		free_pages_exact(virt, size);
+ }
+ 
+ static int fsl_diu_enable_panel(struct fb_info *info)
 -- 
 1.5.5
 
