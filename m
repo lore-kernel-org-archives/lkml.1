@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758531AbYFXKb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbYFXKd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758531AbYFXKb1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 06:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbYFXKbR
+	id S1757136AbYFXKd4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 06:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbYFXKds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 06:31:17 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:5382 "EHLO
-	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752010AbYFXKbQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 06:31:16 -0400
-X-BigFish: VPS24(zzzz10d3izzz32i87il43j63h)
-X-Spam-TCS-SCL: 2:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K2YQJR-02-RPX-01
-From: Robert Richter <robert.richter@amd.com>
-Subject: [PATCH] x86: Add X86_FEATURE_IBS cpu feature
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Message-ID: <20080624103105.3068980E7@erda.amd.com>
-Date: Tue, 24 Jun 2008 12:31:05 +0200
-X-OriginalArrivalTime: 24 Jun 2008 10:31:05.0353 (UTC) FILETIME=[68435790:01C8D5E5]
-MIME-Version: 1.0
+	Tue, 24 Jun 2008 06:33:48 -0400
+Received: from gate.crashing.org ([63.228.1.57]:33929 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752578AbYFXKdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 06:33:47 -0400
+Subject: Re: [PATCH 1/4] ide-pmac: media-bay support fixes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200806232345.07621.bzolnier@gmail.com>
+References: <200806162124.43005.bzolnier@gmail.com>
+	 <1214203312.8011.246.camel@pasglop> <1214218047.8011.268.camel@pasglop>
+	 <200806232345.07621.bzolnier@gmail.com>
 Content-Type: text/plain
+Date: Tue, 24 Jun 2008 20:33:37 +1000
+Message-Id: <1214303617.8011.342.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds IBS to the cpu feature flags allowing Perfmon and OProfile
-to use cpu_has().
 
-Signed-off-by: Robert Richter <robert.richter@amd.com>
----
- include/asm-x86/cpufeature.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> I (naively?) hope that you are using ide-pmac as a base (the driver looks
+> like a normal host driver now) and going to make the final API switch after
+> hardware specific changes are complete (so we will be able to use git-bisect
+> instead of guesswork combined with voodoo dance when dealing with potential
+> regressions :-).
 
-diff --git a/include/asm-x86/cpufeature.h b/include/asm-x86/cpufeature.h
-index 0d609c8..e2469a7 100644
---- a/include/asm-x86/cpufeature.h
-+++ b/include/asm-x86/cpufeature.h
-@@ -106,6 +106,7 @@
- /* More extended AMD flags: CPUID level 0x80000001, ecx, word 6 */
- #define X86_FEATURE_LAHF_LM	(6*32+ 0) /* LAHF/SAHF in long mode */
- #define X86_FEATURE_CMP_LEGACY	(6*32+ 1) /* If yes HyperThreading not valid */
-+#define X86_FEATURE_IBS		(6*32+ 10) /* Instruction Based Sampling */
- 
- /*
-  * Auxiliary flags: Linux defined - For features scattered in various
--- 
-1.5.5.3
+I intend to yes :-) Along with my WIP pata_macio of course but I don't
+like leaving a driver broken and/or non bisectable, believe me.
+
+> You may want to look at ACPI hotplug dock handling for inspiration
+> (if you haven't already).
+
+Thanks, I will. I've been busy with all sorts of other things so no, I
+haven't looked yet, and it's a bit less urgent, but thanks for the
+pointer,
+
+> There is no longer any hackery on IDE core code side in 2.6.26, there are
+> just two nice methods: ide_port_unregister_devices() and ide_scan_port().
+
+Sure but the fact that mediabay calls them directly makes it painful to
+deal with 2 drivers, one using drivers/ide and one libata. So I want to
+turn that into a notification into the low level driver so it does what
+is appropriate.
+
+> Therefore I would prefer to also update ide-pmac for new methods and just
+> add what is needed (if any) to IDE core code.
+
+Sure. I don't think I will need to change any of the core.
+
+> [ Please keep me in loop on these mediabay changes. ]
+
+I'll let you know when I get something done.
+
+Cheers,
+Ben.
 
 
