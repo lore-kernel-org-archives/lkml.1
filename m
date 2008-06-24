@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbYFXV3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbYFXVD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756707AbYFXV3K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 17:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbYFXV24
+	id S1755818AbYFXVD2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754728AbYFXVDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 17:28:56 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54098 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752955AbYFXV24 (ORCPT
+	Tue, 24 Jun 2008 17:03:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60954 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754869AbYFXVDR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 17:28:56 -0400
-Date: Tue, 24 Jun 2008 14:26:38 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Linux 2.6.25.9
-Message-ID: <20080624212638.GA31109@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 24 Jun 2008 17:03:17 -0400
+Date: Tue, 24 Jun 2008 14:02:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, rpurdie@rpsys.net
+Subject: Re: [PATCH] leds: make sure led->trigger is valid before calling
+ trigger->activate
+Message-Id: <20080624140235.ef3f4d52.akpm@linux-foundation.org>
+In-Reply-To: <20080619114847.GA13752@doriath.ww600.siemens.net>
+References: <20080619114847.GA13752@doriath.ww600.siemens.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We (the -stable team) are announcing the release of the 2.6.25.9 kernel.
+On Thu, 19 Jun 2008 15:48:47 +0400
+Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
 
-It contains a number of assorted bugfixes all over the tree.  Any users
-of the 2.6.25 kernel series are STRONGLY encouraged to upgrade!
+> Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+> ---
+>  drivers/leds/led-triggers.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/leds/led-triggers.c b/drivers/leds/led-triggers.c
+> index 0f242b3..f910eaf 100644
+> --- a/drivers/leds/led-triggers.c
+> +++ b/drivers/leds/led-triggers.c
+> @@ -111,16 +111,17 @@ void led_trigger_set(struct led_classdev *led_cdev, struct led_trigger *trigger)
+>  			flags);
+>  		if (led_cdev->trigger->deactivate)
+>  			led_cdev->trigger->deactivate(led_cdev);
+> +		led_cdev->trigger = NULL;
+>  		led_set_brightness(led_cdev, LED_OFF);
+>  	}
+>  	if (trigger) {
+>  		write_lock_irqsave(&trigger->leddev_list_lock, flags);
+>  		list_add_tail(&led_cdev->trig_list, &trigger->led_cdevs);
+>  		write_unlock_irqrestore(&trigger->leddev_list_lock, flags);
+> +		led_cdev->trigger = trigger;
+>  		if (trigger->activate)
+>  			trigger->activate(led_cdev);
+>  	}
+> -	led_cdev->trigger = trigger;
+>  }
+>  EXPORT_SYMBOL_GPL(led_trigger_set);
+>  
 
-I'll also be replying to this message with a copy of the patch between
-2.6.25.8 and 2.6.25.9
+The changelog tells us what the patch does, but it doesn't tell us
+why it does it.
 
-The updated 2.6.25.y git tree can be found at:
-        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.25.y.git
-and can be browsed at the normal kernel.org git web browser:
-        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.25.y.git;a=summary
-
-thanks,
-
-greg k-h
-
---------
-
- Makefile                   |    2 
- arch/powerpc/kernel/vdso.c |    2 
- arch/x86/kernel/setup_32.c |   10 ++
- drivers/hwmon/adt7473.c    |    3 
- drivers/hwmon/lm85.c       |    2 
- drivers/net/atl1/atl1_hw.c |    1 
- drivers/watchdog/hpwdt.c   |  154 +++++++++++++++++++++++----------------------
- include/asm-x86/page_32.h  |    3 
- include/linux/bootmem.h    |    2 
- mm/bootmem.c               |    4 -
- mm/memory.c                |   41 +++++++++--
- mm/migrate.c               |   10 ++
- net/sctp/socket.c          |    4 -
- 13 files changed, 145 insertions(+), 93 deletions(-)
-
-Bernhard Walle (2):
-      Add return value to reserve_bootmem_node()
-      x86: use BOOTMEM_EXCLUSIVE on 32-bit
-
-David S. Miller (1):
-      sctp: Make sure N * sizeof(union sctp_addr) does not overflow.
-
-Greg Kroah-Hartman (1):
-      Linux 2.6.25.9
-
-Jean Delvare (2):
-      hwmon: (lm85) Fix function RANGE_TO_REG()
-      hwmon: (adt7473) Initialize max_duty_at_overheat before use
-
-Jeremy Fitzhardinge (1):
-      x86: set PAE PHYSICAL_MASK_SHIFT to 44 bits.
-
-Linus Torvalds (3):
-      Reinstate ZERO_PAGE optimization in 'get_user_pages()' and fix XIP
-      watchdog: hpwdt: fix use of inline assembly
-      Fix ZERO_PAGE breakage with vmware
-
-Radu Cristescu (1):
-      atl1: relax eeprom mac address error check
-
+This matters.  For a start, there is no way in which I (at least)
+am able to determine whether this change is needed in 2.6.26 nor
+in 2.6.25.x.
