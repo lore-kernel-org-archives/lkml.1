@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbYFXNCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756190AbYFXNEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754775AbYFXNCT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 09:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbYFXNCE
+	id S1756190AbYFXNEx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 09:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbYFXNEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 09:02:04 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:46693 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751635AbYFXNCC (ORCPT
+	Tue, 24 Jun 2008 09:04:43 -0400
+Received: from CPE-124-189-54-71.nsw.bigpond.net.au ([124.189.54.71]:39440
+	"EHLO bunyip.billabong.weebeasite.net" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751254AbYFXNEm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 09:02:02 -0400
-To: nickpiggin@yahoo.com.au
-CC: miklos@szeredi.hu, jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org
-In-reply-to: <200806242216.41548.nickpiggin@yahoo.com.au> (message from Nick
-	Piggin on Tue, 24 Jun 2008 22:16:41 +1000)
-Subject: Re: [rfc patch 3/4] splice: remove confirm from pipe_buf_operations
-References: <20080621154607.154640724@szeredi.hu> <20080624111913.GP20851@kernel.dk> <E1KB6p9-0001Gq-Fd@pomaz-ex.szeredi.hu> <200806242216.41548.nickpiggin@yahoo.com.au>
-Message-Id: <E1KB88B-0001Ts-Ht@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 24 Jun 2008 15:00:19 +0200
+	Tue, 24 Jun 2008 09:04:42 -0400
+X-Greylist: delayed 1286 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Jun 2008 09:04:42 EDT
+Date: Tue, 24 Jun 2008 22:39:52 +1000
+From: AP <ap@zip.com.au>
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: Laurent Vivier <Laurent.Vivier@bull.net>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: Re: /proc 2.6.24 changes for guest CPU accounting
+Message-ID: <20080624123951.GJ2896@zip.com.au>
+References: <485DFFB4.3080008@gmail.com> <1214210925.3838.7.camel@frecb07144> <cfd18e0f0806230351nd9eb54ei5e87734291ced9be@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cfd18e0f0806230351nd9eb54ei5e87734291ced9be@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > It's an unfortunate side effect of the read-ahead, I'd much rather just
-> > > get rid of that. It _should_ behave like the non-ra case, when a page is
-> > > added it merely has IO started on it. So we want to have that be
-> > > something like
-> > >
-> > >         if (!PageUptodate(page) && !PageInFlight(page))
-> > >                 ...
-> > >
-> > > basically like PageWriteback(), but for read-in.
-> >
-> > OK it could be done, possibly at great pain.  But why is it important?
+On Mon, Jun 23, 2008 at 12:51:11PM +0200, Michael Kerrisk wrote:
+> > You must also notes that "user time" includes "guest time", if you want
+> > real "user time" you must subtract "guest time".
+> > The "guest time" is included in "user time" to not loose it when the
+> > "reader" is not aware of the "guest time".
 > 
-> It has been considered, but adding atomic operations on these paths
-> always really hurts. Adding something like this would basically be
-> another at least 2 atomic operations that can never be removed again...
+> Hi Laurent (and Christian)
 > 
-> Provided that you've done the sync readahead earlier, it presumably
-> should be a very rare case to have to start new IO in the loop
-> below, right? In which case, I wonder if we couldn't move that 2nd
-> loop out of generic_file_splice_read and into
-> page_cache_pipe_buf_confirm. 
-
-The problem with that second loop (which started this thing) is that
-if a page is invalidated by the filesystem, then it doesn't redo the
-lookup/read like the plain cached read does.
-
-And that can't be done in page_cache_pipe_buf_confirm() at all.
-
-> > What's the use case where it matters that splice-in should not block
-> > on the read?
+> So, I just want to confirm.  You are saying that guest_time and
+> cguest_time are respectively also included in the following fields
 > 
-> It just makes it generally less able to pipeline IO and computation,
-> doesn't it?
+>               utime %lu
+...
+>               cutime %ld
+...
+> Right?
 
-Maybe.  I don't really see how splice might be used that would be
-helped by this.  Do you have a concrete example?
+If this function in ./kernel/sched.c is anything to go by and I'm not
+being a complete noob, yes:
 
-In fact I don't really know at all what splice is being used for
-(other than the in kernel uses: nfsd, sendfile).  
+/*
+ * Account guest cpu time to a process.
+ * @p: the process that the cpu time gets accounted to
+ * @cputime: the cpu time spent in virtual machine since the last update
+ */
+static void account_guest_time(struct task_struct *p, cputime_t cputime)
+{
+        cputime64_t tmp;
+        struct cpu_usage_stat *cpustat = &kstat_this_cpu.cpustat;
 
-Thanks,
-Miklos
+        tmp = cputime_to_cputime64(cputime);
+
+        p->utime = cputime_add(p->utime, cputime);
+        p->gtime = cputime_add(p->gtime, cputime);
+
+        cpustat->user = cputime64_add(cpustat->user, tmp);
+        cpustat->guest = cputime64_add(cpustat->guest, tmp);
+}
+
+As such, I'll follow up with a new version of my previous patch.
+
+AP
