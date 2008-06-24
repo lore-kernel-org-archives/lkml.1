@@ -1,87 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbYFXVFD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbYFXVFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755446AbYFXVFD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 17:05:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbYFXVEy
+	id S1756247AbYFXVFa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbYFXVFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 17:04:54 -0400
-Received: from il.qumranet.com ([212.179.150.194]:58167 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751449AbYFXVEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 17:04:53 -0400
-Message-ID: <48616182.9030902@qumranet.com>
-Date: Wed, 25 Jun 2008 00:05:06 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 24 Jun 2008 17:05:14 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:59824 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752353AbYFXVFM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 17:05:12 -0400
+Message-ID: <2ffbcf00806241405w5b757b56p84cd560166ea8f90@mail.gmail.com>
+Date: Tue, 24 Jun 2008 23:05:11 +0200
+From: william <william@waisse.org>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: strange freeze with VIA C7 dedicated server and libc 2.6.1
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080624102129.19d79eb0@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: kvm-devel <kvm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] KVM fixes for 2.6.26-rc7
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (firebolt.argo.co.il [0.0.0.0]); Wed, 25 Jun 2008 00:05:06 +0300 (IDT)
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+References: <2ffbcf00806232001o4bd314f4kc590e43b4ab27076@mail.gmail.com>
+	 <20080624102129.19d79eb0@lxorguk.ukuu.org.uk>
+X-Google-Sender-Auth: 8bb572d8f187750e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m5OL6Ffq027860
 
-Linus, please pull from the repo and branch at:
+> Except for bugs in glibc that trigger things happening as root which go> on to do stuff like power down the system (root is allowed to power> down/reboot/etc). That is a fairly unlikely case.
+ yes, I know this is something really unbelievable, with nothing inthe logs . . . but it happens to at least 20 people, all the upgradedboxes have the problem, and all the downgraded boxes see the problemdisappear.
+>> that is triggering the bug. Regardless of what that is and whether it should be>> doing it, it shouldn't completely hang the kernel."> The first thing is to find out which glibc version is the latest that> works, which is the earliest that fails. Yes, but I couldnt test it by myself on a production dedicated server.
+ The nly thing whoich are 100% sure :gentoo : upgrade from glibc-2.5-r4  to glibc-2.6.1 makes the problem appear.debian : upgrade from  2.3.6.ds1-3 to 2.3.6.ds1-13etch5  makes theproblem appear.all the debian users who downgraded their libc to 2.3.6.ds1-3 see theproblem disappear.( I suppose the -13 in debian package name means 2.6.3+many patches,probably the  2.3.6.ds1-13etch5 is a 2.6.x ? )
+( I coulldn't downgrade libc on gentoo, downgrading libc on gentoo isa nearly suicidal idea )
+ But, now I have good news, dedibox.fr admins accepted to lend us abox for testing purpose.
+ I can offer a testing shell with unlimited sudo to any kerneldevelopper, interested in investigating this mystery, and  having agnupg key and a web of trust ( mine ishttp://pgpkeys.mit.edu:11371/pks/lookup?op=vindex&search=0x690B4E07 weprobably have a trust path ).
+> Second is to try and find out> what apps or event is the trigger for the fail (eg can you boot into text> mode with init s and then run 2 or 3 cpu hogs all day)
+ I have have only some details on this point :
+* my box freeze during morning sql updates ( updating 300 MB SQLduring 3 hours every morning ), but the scrpt is launched with nice-20* crontab could be related to the problem, it seems to me that I haveless freezes since I splitted one big crontab ( launching a 3 hourlong script ) in 4 smaller crontabs, some other users said thatdisabling big crontabs helped* the load is not so big , often between 1 and 2
+ another thing it did not say in the first mail, after the problemappeared I installed lm_sensors and watchdog to try investigating theproblem :
+* the temperature is never higher than 54¬∞C which seems ok for a VIAC7, am I wrong ? some people say 54¬∞c is ok, some other says its notnormal with a via C7 in a datacenter . . .
+* the watchdog says nothing in the logs, but is able to reboot the box.
+ Thank you very much for your answer Alan, I were hesitating onposting a report with no logs, no clues . . . your answer gives me alittle hope ;)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git 
-kvm-updates-2.6.26
-
-to receive kvm updates for 2.6.26-rc7.  The patches fix host oopses,
-guest interrupt loss, and total kvm clock borkage.
-
-Since one of the goals of kvm clock was to be binary compatible with the Xen
-clock, the patchset moves the Xen time code to common code and makes kvm 
-reuse it.
-This fixes both the ABI and correctness issues.  Jeremy has acked the Xen
-changes.
-
-Avi Kivity (3):
-      KVM: MMU: Fix oops on guest userspace access to guest pagetable
-      KVM: ioapic: fix lost interrupt when changing a device's irq
-      KVM: VMX: Fix host msr corruption with preemption enabled
-
-Gerd Hoffmann (5):
-      x86: Add structs and functions for paravirt clocksource
-      x86: Make xen use the paravirt clocksource structs and functions
-      KVM: Make kvm host use the paravirt clocksource structs
-      x86: KVM guest: Use the paravirt clocksource structs and functions
-      KVM: Remove now unused structs from kvm_para.h
-
-Marcelo Tosatti (4):
-      KVM: Fix race between timer migration and vcpu migration
-      KVM: close timer injection race window in __vcpu_run
-      KVM: MMU: Fix rmap_write_protect() hugepage iteration bug
-      KVM: MMU: large page update_pte issue with non-PAE 32-bit guests 
-(resend)
-
- arch/x86/Kconfig              |    5 ++
- arch/x86/kernel/Makefile      |    1 +
- arch/x86/kernel/kvmclock.c    |   89 ++++++++++----------------
- arch/x86/kernel/pvclock.c     |  141 
-+++++++++++++++++++++++++++++++++++++++++
- arch/x86/kvm/i8254.c          |    9 ++-
- arch/x86/kvm/lapic.c          |    1 +
- arch/x86/kvm/mmu.c            |   19 +++---
- arch/x86/kvm/vmx.c            |   19 +++---
- arch/x86/kvm/x86.c            |   91 +++++++++++++++++++-------
- arch/x86/xen/Kconfig          |    1 +
- arch/x86/xen/time.c           |  132 
-++++-----------------------------------
- include/asm-x86/kvm_host.h    |    4 +-
- include/asm-x86/kvm_para.h    |   18 -----
- include/asm-x86/pvclock-abi.h |   42 ++++++++++++
- include/asm-x86/pvclock.h     |   13 ++++
- include/linux/kvm_host.h      |    1 +
- include/xen/interface/xen.h   |    7 +-
- virt/kvm/ioapic.c             |   31 +++------
- 18 files changed, 358 insertions(+), 266 deletions(-)
- create mode 100644 arch/x86/kernel/pvclock.c
- create mode 100644 include/asm-x86/pvclock-abi.h
- create mode 100644 include/asm-x86/pvclock.h
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+-- Cordialement
+ William Waisse  http://waisse.org | http://neoskills.com   http://cahierspip.ww7.be | http://feeder.ww7.beˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
