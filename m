@@ -1,107 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbYFXXfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757309AbYFXXhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756743AbYFXXfM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 19:35:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYFXXe7
+	id S1757309AbYFXXhx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 19:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbYFXXhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 19:34:59 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:56395 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752586AbYFXXe6 (ORCPT
+	Tue, 24 Jun 2008 19:37:43 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47877
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751127AbYFXXhm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 19:34:58 -0400
-Date: Tue, 24 Jun 2008 16:32:37 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Frederik Schwarzer <schwarzerf@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] some typo fixes in docs and comments
-Message-Id: <20080624163237.f5d97a48.randy.dunlap@oracle.com>
-In-Reply-To: <200806241611.17959.schwarzerf@gmail.com>
-References: <200806241611.17959.schwarzerf@gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Tue, 24 Jun 2008 19:37:42 -0400
+Date: Tue, 24 Jun 2008 16:37:42 -0700 (PDT)
+Message-Id: <20080624.163742.224488012.davem@davemloft.net>
+To: jeffrey.t.kirsher@intel.com
+Cc: jeff@garzik.org, peter.p.waskiewicz.jr@intel.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] net: Add the CPU id to skb->queue_mapping's upper
+ 8 bits
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080624232545.11654.65805.stgit@localhost.localdomain>
+References: <20080624232545.11654.65805.stgit@localhost.localdomain>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jun 2008 16:11:17 +0200 Frederik Schwarzer wrote:
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Tue, 24 Jun 2008 16:27:12 -0700
 
-> Hi,
+> From: PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>
 > 
-> while reading the help of a kernel module config, I found a typo.
-> Since this is a quite common typo, I looked for it further and
-> fixed it where I found it.
+> This patch adds the CPU index to the upper 8 bits of the queue_mapping in
+> the skb.  This will support 256 CPUs and 256 Tx queues.  The reason for
+> this is the qdisc layer can obscure which CPU is generating a certain flow
+> of packets, so network drivers don't have any insight which CPU generated a
+> particular packet.  If the driver knows which CPU generated the packet,
+> then it could adjust Rx filtering in the hardware to redirect the packet
+> back to the CPU who owns the process that generated this packet.
+> Preventing the cache miss and reschedule of a process to a different CPU is
+> a big win in network performance, especially at 10 gigabit speeds.
 > 
-> I hope this is the right address for this kind of things.
+> Signed-off-by: PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-Hi Frederik,
+Well:
 
-This probably should be sent to (from the MAINTAINERS file):
+1) All of this multiqueue stuff is going away with my changes in
+   net-tx-2.6
 
-TRIVIAL PATCHES
-P:	Jesper Juhl
-M:	trivial@kernel.org
-L:	linux-kernel@vger.kernel.org
-S:	Maintained
+2) This CPU number is going to be wrong half of the time.
 
-and you can add:
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+For #2, when TCP is processing ACKs, it sends packets out from
+whichever CPU the ACK landed on.
 
-Thanks.
+So you could end up retargetting the RX flow back and forth between
+cpus.  The cpu that sends the packet into the device layer is far
+from the cpu that should be used to target the RX flow at.
 
+So this idea is pretty seriously flawed and the infrastructure it's
+using is going away anyways.
 
-> ---
->  Documentation/dell_rbu.txt              |    4 ++--
->  Documentation/laptops/thinkpad-acpi.txt |    2 +-
->  Documentation/networking/tuntap.txt     |    2 +-
->  arch/m68k/kernel/traps.c                |    2 +-
->  drivers/acpi/executer/exprep.c          |    2 +-
->  drivers/acpi/executer/exresolv.c        |    2 +-
->  drivers/acpi/executer/exstore.c         |    2 +-
->  drivers/acpi/resources/rscreate.c       |    2 +-
->  drivers/acpi/utilities/utobject.c       |    4 ++--
->  drivers/char/epca.c                     |    2 +-
->  drivers/cpufreq/Kconfig                 |    4 ++--
->  drivers/input/keyboard/atkbd.c          |    2 +-
->  drivers/macintosh/Kconfig               |    2 +-
->  drivers/misc/phantom.c                  |    2 +-
->  fs/ncpfs/ioctl.c                        |    2 +-
->  include/acpi/acmacros.h                 |    2 +-
->  include/acpi/actypes.h                  |    2 +-
->  include/asm-x86/desc_defs.h             |    2 +-
->  include/linux/ncp_fs.h                  |    2 +-
->  mm/slub.c                               |    2 +-
->  sound/oss/aedsp16.c                     |    2 +-
->  21 files changed, 24 insertions(+), 24 deletions(-)
-> 
-> diff --git a/Documentation/dell_rbu.txt b/Documentation/dell_rbu.txt
-> index 2c0d631..c11b931 100644
-> --- a/Documentation/dell_rbu.txt
-> +++ b/Documentation/dell_rbu.txt
-> @@ -81,8 +81,8 @@ Until this step is completed the driver cannot be unloaded.
->  Also echoing either mono ,packet or init in to image_type will free up the
->  memory allocated by the driver.
-> 
-> -If an user by accident executes steps 1 and 3 above without executing step 2;
-> -it will make the /sys/class/firmware/dell_rbu/ entries to disappear.
-> +If a user by accident executes steps 1 and 3 above without executing step 2;
-
-s/;/,/
-
-> +it will make the /sys/class/firmware/dell_rbu/ entries disappear.
->  The entries can be recreated by doing the following
->  echo init > /sys/devices/platform/dell_rbu/image_type
->  NOTE: echoing init in image_type does not change it original value.
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+It also adds all sorts of arbitray limitations (256 queues and cpus? I
+already have systems coming to me with more than 256 cpus)
