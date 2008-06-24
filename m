@@ -1,53 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756281AbYFXVqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbYFXV5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756281AbYFXVqh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 17:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbYFXVq3
+	id S1757526AbYFXV5I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 17:57:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbYFXV4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 17:46:29 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57260 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754118AbYFXVq2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 17:46:28 -0400
-Date: Tue, 24 Jun 2008 22:28:59 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: william <william@waisse.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: strange freeze with VIA C7 dedicated server and libc 2.6.1
-Message-ID: <20080624222859.1e12dc2d@lxorguk.ukuu.org.uk>
-In-Reply-To: <2ffbcf00806241405w5b757b56p84cd560166ea8f90@mail.gmail.com>
-References: <2ffbcf00806232001o4bd314f4kc590e43b4ab27076@mail.gmail.com>
-	<20080624102129.19d79eb0@lxorguk.ukuu.org.uk>
-	<2ffbcf00806241405w5b757b56p84cd560166ea8f90@mail.gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jun 2008 17:56:32 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:38995 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756559AbYFXV4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 17:56:09 -0400
+Date: Wed, 25 Jun 2008 00:54:08 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       rmk@arm.linux.org.uk, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [0/5] move hd.c to drivers/block/
+Message-ID: <20080624215407.GB18252@cs181140183.pp.htv.fi>
+References: <20080609222155.GA1987@cs181133002.pp.htv.fi> <200806101956.15711.bzolnier@gmail.com> <20080622101752.GG27069@cs181133002.pp.htv.fi> <200806221521.33506.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200806221521.33506.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> * the watchdog says nothing in the logs, but is able to reboot the box.
+On Sun, Jun 22, 2008 at 03:21:33PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> On Sunday 22 June 2008, Adrian Bunk wrote:
+> > On Tue, Jun 10, 2008 at 07:56:15PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > > On Tuesday 10 June 2008, Adrian Bunk wrote:
+> > > > This patch limits BLK_DEV_HD_ONLY to the ARM platforms offering 
+> > > > IRQ_HARDDISK, fixing the following compile error on others:
+> > > > 
+> > > > <--  snip  -->
+> > > > 
+> > > > ...
+> > > >   CC      drivers/ide/legacy/hd.o
+> > > > ...
+> > > > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c: In function 'hd_times_out':
+> > > > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c:542: error: 'IRQ_HARDDISK' undeclared (first use in this function)
+> > > > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c:542: error: (Each undeclared identifier is reported only once
+> > > > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c:542: error: for each function it appears in.)
+> > > > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c: In function 'do_hd_request':
+> > > > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c:661: error: 'IRQ_HARDDISK' undeclared (first use in this function)
+> > > > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c: In function 'hd_init':
+> > > > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c:765: error: 'IRQ_HARDDISK' undeclared (first use in this function)
+> > > > make[3]: *** [drivers/ide/legacy/hd.o] Error 1
+> > > > 
+> > > > <--  snip  -->
+> > > > 
+> > > > Reported-by: Adrian Bunk <bunk@kernel.org>
+> > > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > > 
+> > > applied, thanks
+> > > 
+> > > BTW Could you look into converting your "remove BLK_DEV_HD_ONLY" patch
+> > > into "move old hd driver to drivers/block/" one because the old hd driver
+> > > still has some uses (as noticed by Alan)?
+> > 
+> > drivers/ide/Makefile says:
+> >   # old hd driver must be last
+> > 
+> > Is this still true?
 > 
->  Thank you very much for your answer Alan, I were hesitating on
-> posting a report with no logs, no clues . . . your answer gives me a
-> little hope ;)
+> Yep.
+> 
+> > If yes then moving the driver to drivers/block/ requires switching to 
+> > late_initcall() since drivers/block/ is linked before drivers/ide/ .
+> 
+> Care to cook a patch?
 
-Two random thoughts from your last comment
+Comes as part of this patchset.
 
-- If you do
+This was only compile tested, and I'd really appreciate if anyone 
+(Alan?) could test whether it still works.
 
-echo "2" >/proc/sys/vm/overcommit_memory
-echo "80" >/proc/sys/vm/overcommit_ratio
+> Thanks,
+> Bart
 
-do you instead get out of memory kills (which would imply bad memory
-leaks perhaps triggered by glibc ?)
+cu
+Adrian
 
-- Does your system pass 'crashme' testing (run as a non root user). If
-not then that might give an eventual identification of a crashme run
-which takes out the box. We've found kernel bugs, CPU bugs and
-combinations of the two before now that way.
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
