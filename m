@@ -1,92 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbYFXWyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756629AbYFXW6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756140AbYFXWyx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 18:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbYFXWym
+	id S1756629AbYFXW6W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 18:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbYFXW6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 18:54:42 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54789 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752603AbYFXWyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 18:54:41 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19eq3FtsEpeDwFhHJC1UY/17q3yfWz0t7t+lWgb4r
-	NNjmEDfYqmeBnU
-Date: Wed, 25 Jun 2008 00:54:37 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: vcgandhi1@aol.com, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Fix serial_match_port() for dynamic major tty-device
- numbers
-In-Reply-To: <20080624152253.d9bd1da2.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0806250045150.18748@axis700.grange>
-References: <8CA6D5E4DEA920C-1128-2973@webmail-nb07.sysops.aol.com>
- <Pine.LNX.4.64.0804160046460.6851@axis700.grange>
- <8CA6D67D9E313CC-1128-35BB@webmail-nb07.sysops.aol.com>
- <8CA6D6D112DB4D4-1128-38B0@webmail-nb07.sysops.aol.com>
- <Pine.LNX.4.64.0804170103040.7335@axis700.grange>
- <8CA6E48B50204C0-15A8-47D0@webmail-nb06.sysops.aol.com>
- <Pine.LNX.4.64.0804171657320.6716@axis700.grange>
- <8CA6EC102F70775-15A8-8B4A@webmail-nb06.sysops.aol.com>
- <Pine.LNX.4.64.0804171915180.6716@axis700.grange>
- <8CA6EF5BC26E069-12A0-1888@webmail-nc13.sysops.aol.com>
- <Pine.LNX.4.64.0804181700300.5725@axis700.grange>
- <8CA6FF4B03B281A-E10-2E1C@webmail-nf05.sim.aol.com>
- <Pine.LNX.4.64.0804231108170.5160@axis700.grange>
- <8CA73B83C791846-148-41B9@webmail-nb17.sysops.aol.com>
- <Pine.LNX.4.64.0804241557340.5283@axis700.grange>
- <8CA914AC0F6817C-1684-368@webmail-nc03.sysops.aol.com>
- <Pine.LNX.4.64.0806220037250.461@axis700.grange>
- <20080624152253.d9bd1da2.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+	Tue, 24 Jun 2008 18:58:08 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:42617 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754960AbYFXW6F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 18:58:05 -0400
+Subject: Re: Performance of ext4
+From: Mingming <cmm@us.ibm.com>
+To: Holger Kiehl <Holger.Kiehl@dwd.de>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
+       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0806242103370.14795@diagnostix.dwd.de>
+References: <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de>
+	 <20080619155645.GA8582@mit.edu> <485A8C2D.1090806@redhat.com>
+	 <20080619174211.GB9119@mit.edu>
+	 <Pine.LNX.4.64.0806200812340.3383@diagnostix.dwd.de>
+	 <20080620085922.GH9119@mit.edu>
+	 <Pine.LNX.4.64.0806200905070.3383@diagnostix.dwd.de>
+	 <20080623174508.GA7216@skywalker>
+	 <1214267492.27507.285.camel@BVR-FS.beaverton.ibm.com>
+	 <20080624030721.GB10469@skywalker> <20080624033349.GD10469@skywalker>
+	 <Pine.LNX.4.64.0806242103370.14795@diagnostix.dwd.de>
+Content-Type: text/plain
+Date: Tue, 24 Jun 2008 15:58:38 -0700
+Message-Id: <1214348318.27507.330.camel@BVR-FS.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jun 2008, Andrew Morton wrote:
 
-> On Sun, 22 Jun 2008 00:45:25 +0200 (CEST)
-> Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+On Tue, 2008-06-24 at 21:12 +0000, Holger Kiehl wrote:
+> On Tue, 24 Jun 2008, Aneesh Kumar K.V wrote:
 > 
-> > As reported by Vipul Gandhi, the current serial_match_port() doesn't work 
-> > for tty-devices using dynamic major number allocation. Fix it.
-> > 
-> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> > Tested-by: Vipul Gandhi <vcgandhi1@aol.com>
-> > 
-> > ---
-> > 
-> > diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-> > index 0f5a179..593ae85 100644
-> > --- a/drivers/serial/serial_core.c
-> > +++ b/drivers/serial/serial_core.c
-> > @@ -1949,7 +1949,9 @@ struct uart_match {
-> >  static int serial_match_port(struct device *dev, void *data)
-> >  {
-> >  	struct uart_match *match = data;
-> > -	dev_t devt = MKDEV(match->driver->major, match->driver->minor) + match->port->line;
-> > +	struct tty_driver *tty_drv = match->driver->tty_driver;
-> > +	dev_t devt = MKDEV(tty_drv->major, tty_drv->minor_start) +
-> > +		match->port->line;
-> >  
-> >  	return dev->devt == devt; /* Actually, only one tty per port */
-> 
-> Well that sounds bad.  We need to work out whether this fix is needed
-> in 2.6.25 and possibly eariler.
+> > On Tue, Jun 24, 2008 at 08:37:21AM +0530, Aneesh Kumar K.V wrote:
+> >> On Mon, Jun 23, 2008 at 05:31:32PM -0700, Mingming wrote:
+> >>>
+> >>> On Mon, 2008-06-23 at 23:15 +0530, Aneesh Kumar K.V wrote:
+> >>>
+> >>>> I found one place where we fail to update i_disksize. Can you try this
+> >>>> patch ?
+> >>>>
+> >>>> diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+> >>>> index 33f940b..9fa737f 100644
+> >>>> --- a/fs/ext4/inode.c
+> >>>> +++ b/fs/ext4/inode.c
+> >>>> @@ -1620,7 +1620,10 @@ static int ext4_da_writepage(struct page *page,
+> >>>>  	loff_t size;
+> >>>>  	unsigned long len;
+> >>>>  	handle_t *handle = NULL;
+> >>>> +	ext4_lblk_t block;
+> >>>> +	loff_t disksize;
+> >>>>  	struct buffer_head *page_bufs;
+> >>>> +	struct buffer_head *bh, *head;
+> >>>>  	struct inode *inode = page->mapping->host;
+> >>>>
+> >>>>  	handle = ext4_journal_current_handle();
+> >>>> @@ -1662,6 +1665,38 @@ static int ext4_da_writepage(struct page *page,
+> >>>>  	else
+> >>>>  		ret = block_write_full_page(page, ext4_da_get_block_write, wbc);
+> >>>>
+> >>>> +	 if (ret)
+> >>>> +		 return ret;
+> >>>> +	/*
+> >>>> +	 * When called via shrink_page_list and if we don't have any unmapped
+> >>>> +	 * buffer_head we still could have written some new content in an
+> >>>> +	 * already mapped buffer. That means we need to extent i_disksize here
+> >>>> +	 */
+> >>>
+> >>> In this case(when extend the file without need block allocation),
+> >>> wouldn't make sense to update the i_disksize at write_end() time? So
+> >>> that the window of i_size different from i_disksize could be much
+> >>> smaller in this case.
+> >>>
+> >>>
+> >>> Something like below? (untested)
+> >>
+> >> In this case you will have to start a transaction in write_begin . With
+> >> the below code transaction is started inside page_lock. Also I don't
+> >> think we need needed_blocks credit just 1 should be enough because we
+> >> are not doing any block allocation here. We just need to update the
+> >> inode block.
+> >>
+> >>
+> >
+> > diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+> > index 33f940b..bc925c5 100644
+> > --- a/fs/ext4/inode.c
+> > +++ b/fs/ext4/inode.c
+> > @@ -1770,6 +1770,7 @@ static int ext4_da_write_begin(struct file *file, struct address_space *mapping,
+> > 	struct page *page;
+> > 	pgoff_t index;
+> > 	unsigned from, to;
+> > +	handle_t *handle;
+> > 	struct inode *inode = mapping->host;
+> >
+> > 	index = pos >> PAGE_CACHE_SHIFT;
+> > @@ -1777,6 +1778,17 @@ static int ext4_da_write_begin(struct file *file, struct address_space *mapping,
+> > 	to = from + len;
+> >
+> > retry:
+> > +	/*
+> > +	 * If we are writing towards the end of an already mapped
+> > +	 * buffer_head, we don't do any block allocation. But we
+> > +	 * need to update i_disksize.
+> > +	 */
+> > +	handle = ext4_journal_start(inode, 1);
+> > +	if (IS_ERR(handle)) {
+> > +		ret = PTR_ERR(handle);
+> > +		goto out;
+> > +	}
+> > +
+> > 	page = __grab_cache_page(mapping, index);
+> > 	if (!page)
+> > 		return -ENOMEM;
+> > @@ -1786,15 +1798,63 @@ static int ext4_da_write_begin(struct file *file, struct address_space *mapping,
+> > 							ext4_da_get_block_prep);
+> > 	if (ret < 0) {
+> > 		unlock_page(page);
+> > +		ext4_journal_stop(handle);
+> > 		page_cache_release(page);
+> > 	}
+> >
+> > 	if (ret == -ENOSPC && ext4_should_retry_alloc(inode->i_sb, &retries))
+> > 		goto retry;
+> >
+> > +out:
+> > 	return ret;
+> > }
+> >
+> > +static int ext4_da_write_end(struct file *file,
+> > +				struct address_space *mapping,
+> > +				loff_t pos, unsigned len, unsigned copied,
+> > +				struct page *page, void *fsdata)
+> > +{
+> > +	loff_t new_i_size;
+> > +	unsigned from, to;
+> > +	int ret = 0, ret2;
+> > +	struct inode *inode = mapping->host;
+> > +	handle_t *handle = ext4_journal_current_handle();
+> > +
+> > +	from = pos & (PAGE_CACHE_SIZE - 1);
+> > +	to = from + len;
+> > +
+> > +	/*
+> > +	 * generic_write_end() will run mark_inode_dirty() if i_size
+> > +	 * changes.  So let's piggyback the i_disksize mark_inode_dirty
+> > +	 * into that.
+> > +	 */
+> > +
+> > +	new_i_size = pos + copied;
+> > +	if (new_i_size > EXT4_I(inode)->i_disksize)
+> > +		if (!walk_page_buffers(NULL, page_buffers(page),
+> > +					0, len, NULL,
+> > +					ext4_bh_unmapped_or_delay)) {
+> > +			/*
+> > +			 * Updating i_disksize when extending file without
+> > +			 * need block allocation
+> > +			 */
+> > +			if (ext4_should_order_data(inode))
+> > +				ret = ext4_jbd2_file_inode(handle, inode);
+> > +
+> > +			EXT4_I(inode)->i_disksize = new_i_size;
+> > +		}
+> > +	ret2 = generic_write_end(file, mapping, pos,
+> > +			len, copied, page, fsdata);
+> > +	copied = ret2;
+> > +	if (ret2 < 0)
+> > +		ret = ret2;
+> > +	ret2 = ext4_journal_stop(handle);
+> > +	if (!ret)
+> > +		ret = ret2;
+> > +
+> > +	return ret ? ret : copied;
+> > +}
+> > +
+> > static void ext4_da_invalidatepage(struct page *page, unsigned long offset)
+> > {
+> > 	/*
+> > @@ -2250,7 +2310,7 @@ static int ext4_journalled_set_page_dirty(struct page *page)
+> > 	.writepages	= ext4_da_writepages,
+> > 	.sync_page	= block_sync_page,
+> > 	.write_begin	= ext4_da_write_begin,
+> > -	.write_end	= generic_write_end,
+> > +	.write_end	= ext4_da_write_end,
+> > 	.bmap		= ext4_bmap,
+> > 	.invalidatepage	= ext4_da_invalidatepage,
+> > 	.releasepage	= ext4_releasepage,
+> >
+> Yes, with this patch applied on top of latest patch queue I no longer
+> get truncated files, after running a short test. Tomorrow I will do some
+> more thorough testing and use the patch you have send to me in a separate
+> mail. The above patch did not apply but it was easy to apply by hand.
 
-Not earlier, this code is only there since 2.6.25.
 
-> What are the consequences of this error?
+Thanks for quick response and test. I have updated the patch queue with
+above patch merged. Please let me know if you still see apply issue and
+file size update issue with current patch queue.
 
-It Oopses, if you suspend a serial port with _dynamic_ major number. ATM, 
-I think, there's only the drivers/serial/jsm/jsm_driver.c driver, that 
-does it in-tree.
+Regards,
+Mingming
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+
