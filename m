@@ -1,133 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbYFYGZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbYFYG0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755356AbYFYGZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 02:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYFYGZs
+	id S1755812AbYFYG0Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 02:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYFYG0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 02:25:48 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:29108 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752901AbYFYGZq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 02:25:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=NltUH5H1f1TsjiWwkC0pqGlpZmwcV28ylkrxUftHI5C7Ilc8OPGD5ydO/YHbV9sS3w
-         vVrHp/dNWJ2ERpO+ZfYLv5Frm+Rr3vCpH8gbhJaHkg2m9vQtqd1EgFjeDJlFm+tc4hDL
-         oTOD/Liv+WREDfET0bkY4Ec/X6ucyPZ1+fQaY=
-Message-ID: <dd18b0c30806242325j4f6d1b1bw1cdde7ea08ad12e2@mail.gmail.com>
-Date: Wed, 25 Jun 2008 06:25:45 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: stuck tcp connections 2.6.26-rc7
-Cc: "Didier Raboud" <didier@raboud.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <dd18b0c30806241303g755e3881y4ea7d403eb2922fc@mail.gmail.com>
+	Wed, 25 Jun 2008 02:26:06 -0400
+Received: from www.tglx.de ([62.245.132.106]:44428 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755421AbYFYG0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 02:26:05 -0400
+Date: Wed, 25 Jun 2008 08:13:57 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+cc: Roman Zippel <zippel@linux-m68k.org>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: nanosleep() uses CLOCK_MONOTONIC, should be CLOCK_REALTIME?
+In-Reply-To: <cfd18e0f0806232239w78546747p8fb899f614c89496@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0806250809030.3297@apollo.tec.linutronix.de>
+References: <485E00CD.9060503@gmail.com>  <e2e108260806230134g48f5ac63mb93256e08c57b4f7@mail.gmail.com>  <cfd18e0f0806230248g3a2ab795s63de2b96538ebdd0@mail.gmail.com>  <Pine.LNX.4.64.0806231438130.6791@localhost.localdomain>
+ <cfd18e0f0806232239w78546747p8fb899f614c89496@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30806221109t2ff73f9ai52f6716748648a79@mail.gmail.com>
-	 <20080622205927.301501e7.akpm@linux-foundation.org>
-	 <dd18b0c30806230013x5446991bi9eba7623ffaae131@mail.gmail.com>
-	 <g3ol3u$li2$1@ger.gmane.org>
-	 <dd18b0c30806231845s1cc6151coc2a4f26ed3521500@mail.gmail.com>
-	 <2c0942db0806241016o3be1dae8i433da13697c4531c@mail.gmail.com>
-	 <dd18b0c30806241303g755e3881y4ea7d403eb2922fc@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 24, 2008 at 8:03 PM, Justin Mattock <justinmattock@gmail.com> wrote:
-> On Tue, Jun 24, 2008 at 5:16 PM, Ray Lee <ray-lk@madrabbit.org> wrote:
->> 2008/6/23 Justin Mattock <justinmattock@gmail.com>:
->>> On Mon, Jun 23, 2008 at 5:04 PM, Didier Raboud <didier@raboud.com> wrote:
->>>> -----BEGIN PGP SIGNED MESSAGE-----
->>>> Hash: SHA1
->>>>
->>>> Justin Mattock wrote:
->>>>
->>>>> On Mon, Jun 23, 2008 at 3:59 AM, Andrew Morton
->>>>> <akpm@linux-foundation.org> wrote:
->>>>>> On Sun, 22 Jun 2008 18:09:16 +0000 "Justin Mattock"
->>>>>> <justinmattock@gmail.com> wrote:
->>>>>>
->>>>>>> Hello; I too am experiencing internet connectivity problems, for  a
->>>>>>> while I thought
->>>>>>> It was due to low bandwidth(or being ddos attacked) but yesterday I
->>>>>>> noticed with watch netstat -ntu
->>>>>>> send-Q was stuck on a number; the connection would not go to TIME_WAIT
->>>>>>> resulting in music to pause, and t.v. to freeze.
->>>>>>> In my experiences running xmms streaming music is fine, no problems,
->>>>>>> but as soon as
->>>>>>> you watch something with flash player the stream start's getting
->>>>>>> really bad. In the past with older kernel's
->>>>>>> I usually can watch t.v.(with flash) and stream music at the same time
->>>>>>> without any trouble.
->>>>>>> lately I've been Running the kernel in No forced Preemption with a
->>>>>>> time frequency at 100. having the kernel set in this mode really shows
->>>>>>> the connection problems, but if I change the preemption to another,
->>>>>>> and bump up the timer frequency the poor internet connection is not as
->>>>>>> bad(or stuck tcp) but still prevalent. more pops in the music, and
->>>>>>> sudden internet loss for around five seconds, then goes back
->>>>>>> So from over here streaming music has no problems from what I can see,
->>>>>>> but as soon as I watch media, it becomes a mess.
->>>>>>
->>>>>> (cc netdev)
->>>>>>
->>>>>
->>>>>
->>>>> Cool, Thanks for sending the cc
->>>>> regards;
->>>>
->>>> Hi,
->>>>
->>>> I get something like a similar bug: when pinging my local gateway, I loose
->>>> packets (over wifi (iwl3945) ). Before the update to 2.6.26-rc7 (Debian), I
->>>> had no such issues (which makes Internet browsing working but weirdly).
->>>>
->>>> I can't know for sure that my bug is related to the above, but suppose so.
->>>> Please ask for details !
->>>>
->>>> Regards,
->>>>
->>>> Didier Raboud
->>>> - --
->>>
->>> Cool;(cool as in I'm not the only one,not cool for sh*%y internet connections)
->>> there is something definitely happening with the tcp connection.,
->>> After looking more at the situation
->>> I get a good connection when just streaming music, but as soon as I
->>> watch with flash or even search through firefox
->>> I'm getting a dead period of no internet, and then a few seconds later
->>> no problems.Almost as if some timer in the code is missing something
->>> or not firing off at the right time.
->>> At this point I'm still uncertain with what is happening.
->>> regards;
->>
->> If you leave a ping running as root to your local gateway from a
->> console ( nice -n -10 ping -i 0.5 192.168.1.1
->>  or whichever ip ), does it show dropouts?
->>
->
-> I'll give that a try and see what happens.
-> regards;
->
-> --
-> Justin P. Mattock
->
+On Tue, 24 Jun 2008, Michael Kerrisk wrote:
+> > If you check the man page for clock_settime, it specifically
+> > mentions that pending relative timer (including nanosleep) aren't affected
+> > by the changed time, thus if CLOCK_MONOTONIC and CLOCK_REALTIME advance
+> > equally, it doesn't matter which you use for relative timer.
+> 
+> Well, I was going to say that that's just a man page, and man page
+> authors are fallible ;-).  But then I went and had a look at the POSIX
+> spec for clock_settime().  It includes the following paragraph:
+> 
+>        Setting the value of the CLOCK_REALTIME  clock  via  clock_set-
+>        time() shall have no effect on threads that are blocked waiting
+>        for a relative time service based upon  this  clock,  including
+>        the  nanosleep()  function;  nor  on the expiration of relative
+>        timers  based  upon  this  clock.   Consequently,  these   time
+>        services  shall  expire  when  the  requested relative interval
+>        elapses, independently of the new or old value of the clock.
+> 
+> So that rather flatly contradicts the alternative semantics that I
+> suggested were possible in my reply to Bart a few minutes ago.
+> 
+> So in my reading of things now, it looks as though the Linux
+> implementation is probably fine, since the fact that relative
+> timers/sleeps are explicitly unaffected by jumps in CLOCK_REALTIME
+> means that the semantics are effectively the same as if the relative
+> interval was measured against CLOCK_MONOTONIC (unless the two clocks
+> counted time at different rates; not sure if that  would be possible
+> in theory, but certainly seems very unlikely in practice).
 
-Hmm, well I really don't know what to say with the tcp
-connection(issue), It seems to go in and out of phases i.g.
-at first running music, and t.v.(through flash) there's moments of
-pauses,(around 5 secs or so) then after a while
-the tcp seems to even itself out, but then after a while(5min or so)
-the same pauses begin. Maybe due to some missing packet, or
-some deadlock if this is proper to say.
-regards;
+We use CLOCK_MONOTONIC for the relative timeouts simply to avoid
+trickery vs. clock_settime(CLOCK_REALTIME). That's an kernel internal
+implementation detail which does not have any visible effect to the
+user space interface.
 
--- 
-Justin P. Mattock
+CLOCK_MONOTONIC and CLOCK_REALTIME are using the same timebase
+internally and therefor we can safely use CLOCK_MONOTONIC for the
+relative timeouts.
+
+Thanks,
+
+	tglx
