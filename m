@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbYFYVWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbYFYVbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229AbYFYVWr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 17:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYFYVWj
+	id S1754673AbYFYVbZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 17:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbYFYVbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 17:22:39 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:44305 "EHLO e4.ny.us.ibm.com"
+	Wed, 25 Jun 2008 17:31:15 -0400
+Received: from gw.goop.org ([64.81.55.164]:47722 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751762AbYFYVWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 17:22:38 -0400
-Message-ID: <4862B72D.7060103@linux.vnet.ibm.com>
-Date: Wed, 25 Jun 2008 16:22:53 -0500
-From: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	id S1752479AbYFYVbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 17:31:14 -0400
+Message-ID: <4862B915.3010001@goop.org>
+Date: Wed, 25 Jun 2008 14:31:01 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       Nishanth Aravamudan <nacc@us.ibm.com>,
-       Adam Litke <agl@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, linux-mm@kvack.org,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [RFC] hugetlb reservations -- MAP_PRIVATE fixes for split vmas
- V2
-References: <485A8903.9030808@linux.vnet.ibm.com> <1214242533-12104-1-git-send-email-apw@shadowen.org>
-In-Reply-To: <1214242533-12104-1-git-send-email-apw@shadowen.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: remove end_pfn in 64bit
+References: <200806242213.15310.yhlu.kernel@gmail.com> <200806242214.09503.yhlu.kernel@gmail.com> <20080625154138.GC18796@elte.hu>
+In-Reply-To: <20080625154138.GC18796@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Whitcroft wrote:
-> As reported by Adam Litke and Jon Tollefson one of the libhugetlbfs
-> regression tests triggers a negative overall reservation count.  When
-> this occurs where there is no dynamic pool enabled tests will fail.
+Ingo Molnar wrote:
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 >
-> Following this email are two patches to address this issue:
->
-> hugetlb reservations: move region tracking earlier -- simply moves the
->   region tracking code earlier so we do not have to supply prototypes, and
->
-> hugetlb reservations: fix hugetlb MAP_PRIVATE reservations across vma
->   splits -- which moves us to tracking the consumed reservation so that
->   we can correctly calculate the remaining reservations at vma close time.
->
-> This stack is against the top of v2.6.25-rc6-mm3, should this solution
-> prove acceptable it would need slipping underneath Nick's multiple hugepage
-> size patches and those updated.  I have a modified stack prepared for that.
->
-> This version incorporates Mel's feedback (both cosmetic, and an allocation
-> under spinlock issue) and has an improved layout.
->
-> Changes in V2:
->  - commentry updates
->  - pull allocations out from under hugetlb_lock
->  - refactor to match shared code layout
->  - reinstate BUG_ON's
->
-> Jon could you have a test on this and see if it works out for you.
->
-> -apw
 >   
-Version two works for me too.  I am not seeing the reserve value become
-negative when running the libhuge tests.
+>> and use max_pfn directly.
+>>
+>> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>>     
+>
+> applied to tip/x86/setup-memory - thanks Yinghai. I have picked up these 
+> patches:
+>
+> Ingo Molnar (1):
+>       Merge branch 'x86/setup-memory'
+>
+> Yinghai Lu (6):
+>       x86: fix e820_update_range size when overlapping
+>       x86: get max_pfn_mapped in init_memory_mapping
+>       x86: add table_top check for alloc_low_page in 64 bit
+>       x86: change size if e820_update/remove_range
+>       x86: numa 32 using apicid_2_node to get node for logical_apicid
+>       x86: remove end_pfn in 64bit
+>   
 
-Jon
+Did you CC: this to me to indicate that "x86_64: replace end_pfn with 
+num_physpages" conflicts massively with this patch?  Fortunately I don't 
+depend on it, so I don't mind much.
 
+How does "max_pfn" differ from "num_physpages"?  Should one of them go 
+as well?
+
+    J
