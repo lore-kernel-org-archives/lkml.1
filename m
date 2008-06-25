@@ -1,255 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbYFYKeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbYFYKiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbYFYKeq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 06:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbYFYKei
+	id S1755911AbYFYKiS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 06:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbYFYKiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 06:34:38 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50884 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753226AbYFYKeh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 06:34:37 -0400
-Message-ID: <48621F4A.4090704@bull.net>
-Date: Wed, 25 Jun 2008 12:34:50 +0200
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Wed, 25 Jun 2008 06:38:08 -0400
+Received: from il.qumranet.com ([212.179.150.194]:36841 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753890AbYFYKiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 06:38:06 -0400
+Message-ID: <4862200D.5070400@qumranet.com>
+Date: Wed, 25 Jun 2008 13:38:05 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Solofo.Ramangalahy@bull.net, linux-kernel@vger.kernel.org,
-       matthltc@us.ibm.com, cmm@us.ibm.com, manfred@colorfullife.com,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH -mm 1/3] sysv ipc: increase msgmnb default value wrt.
- the number of cpus
-References: <20080624093452.946878437@bull.net>	<20080624093453.201071209@bull.net> <20080624143120.9bed4f18.akpm@linux-foundation.org>
-In-Reply-To: <20080624143120.9bed4f18.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: "Yang, Sheng" <sheng.yang@intel.com>
+CC: kvm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 2/2] x86: Add "virt flag" in /proc/cpuinfo
+References: <200806241708.49462.sheng.yang@intel.com>
+In-Reply-To: <200806241708.49462.sheng.yang@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 24 Jun 2008 11:34:53 +0200
-> <Solofo.Ramangalahy@bull.net> wrote:
-> 
-> 
->>From: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
->>
->>Initialize msgmnb value to
->>min(MSGMNB * num_online_cpus(), MSGMNB * MSG_CPU_SCALE)
->>to increase the default value for larger machines.
->>
->>MSG_CPU_SCALE scaling factor is defined to be 4, as 16384 x 4 = 65536
->>is an already used and recommended value.
->>
->>The msgmni value is made dependant of msgmnb to keep the memory
->>dedicated to message queues within the 1/MSG_MEM_SCALE of lowmem
->>bound.
->>
->>Unlike msgmni, the value is not scaled (down) with respect to the
->>number of ipc namespaces for simplicity.
->>
->>To disable recomputation when user explicitely set a value,
->>we reuse the callback defined for msgmni.
->>
->>As msgmni and msgmnb are correlated, user settings of any of the two
->>disable recomputation of both, for now. This is refined in a later
->>patch.
->>
->>When a negative value is put in /proc/sys/kernel/msgmnb
->>automatic recomputing is re-enabled.
->>
-> 
-> 
-> Thanks for taking the time to describe this work so well.
-> 
-> 
->>---
->> Documentation/sysctl/kernel.txt |   28 ++++++++++++++++++++++++++++
->> include/linux/msg.h             |    6 ++++++
->> ipc/ipc_sysctl.c                |    5 +++--
->> ipc/msg.c                       |   17 +++++++++++++----
->> 4 files changed, 50 insertions(+), 6 deletions(-)
->>
->>Index: b/ipc/msg.c
->>===================================================================
->>--- a/ipc/msg.c
->>+++ b/ipc/msg.c
->>@@ -38,6 +38,7 @@
->> #include <linux/rwsem.h>
->> #include <linux/nsproxy.h>
->> #include <linux/ipc_namespace.h>
->>+#include <linux/cpumask.h>
->> 
->> #include <asm/current.h>
->> #include <asm/uaccess.h>
->>@@ -92,7 +93,7 @@ void recompute_msgmni(struct ipc_namespa
->> 
->> 	si_meminfo(&i);
->> 	allowed = (((i.totalram - i.totalhigh) / MSG_MEM_SCALE) * i.mem_unit)
->>-		/ MSGMNB;
->>+		/ ns->msg_ctlmnb;
->> 	nb_ns = atomic_read(&nr_ipc_ns);
->> 	allowed /= nb_ns;
->> 
->>@@ -108,11 +109,19 @@ void recompute_msgmni(struct ipc_namespa
->> 
->> 	ns->msg_ctlmni = allowed;
->> }
->>+/*
->>+ * Scale msgmnb with the number of online cpus, up to 4x MSGMNB.
->>+ */
->>+void recompute_msgmnb(struct ipc_namespace *ns)
->>+{
->>+	ns->msg_ctlmnb =
->>+		min(MSGMNB * num_online_cpus(), MSGMNB * MSG_CPU_SCALE);
->>+}
->> 
->> void msg_init_ns(struct ipc_namespace *ns)
->> {
->> 	ns->msg_ctlmax = MSGMAX;
->>-	ns->msg_ctlmnb = MSGMNB;
->>+	recompute_msgmnb(ns);
->> 
->> 	recompute_msgmni(ns);
->> 
->>@@ -132,8 +141,8 @@ void __init msg_init(void)
->> {
->> 	msg_init_ns(&init_ipc_ns);
->> 
->>-	printk(KERN_INFO "msgmni has been set to %d\n",
->>-		init_ipc_ns.msg_ctlmni);
->>+	printk(KERN_INFO "msgmni has been set to %d, msgmnb to %d\n",
->>+	       init_ipc_ns.msg_ctlmni, init_ipc_ns.msg_ctlmnb);
->> 
->> 	ipc_init_proc_interface("sysvipc/msg",
->> 				"       key      msqid perms      cbytes       qnum lspid lrpid   uid   gid  cuid  cgid      stime      rtime      ctime\n",
->>Index: b/include/linux/msg.h
->>===================================================================
->>--- a/include/linux/msg.h
->>+++ b/include/linux/msg.h
->>@@ -58,6 +58,12 @@ struct msginfo {
->>  * more than 16 GB : msgmni = 32K (IPCMNI)
->>  */
->> #define MSG_MEM_SCALE 32
->>+/*
->>+ * Scaling factor to compute msgmnb: ns->msg_ctlmnb is between MSGMNB
->>+ * and MSGMNB * MSG_CPU_SCALE. This leads to a max msgmnb value of
->>+ * 65536 which is an already used and recommended value.
->>+ */
->>+#define MSG_CPU_SCALE 4
->> 
->> #define MSGMNI    16   /* <= IPCMNI */     /* max # of msg queue identifiers */
->> #define MSGMAX  8192   /* <= INT_MAX */   /* max size of message (bytes) */
->>Index: b/ipc/ipc_sysctl.c
->>===================================================================
->>--- a/ipc/ipc_sysctl.c
->>+++ b/ipc/ipc_sysctl.c
->>@@ -42,6 +42,7 @@ static void tunable_set_callback(int val
->> 		 * Re-enable automatic recomputing only if not already
->> 		 * enabled.
->> 		 */
->>+		recompute_msgmnb(current->nsproxy->ipc_ns);
->> 		recompute_msgmni(current->nsproxy->ipc_ns);
->> 		cond_register_ipcns_notifier(current->nsproxy->ipc_ns);
->> 	}
->>@@ -210,8 +211,8 @@ static struct ctl_table ipc_kern_table[]
->> 		.data		= &init_ipc_ns.msg_ctlmnb,
->> 		.maxlen		= sizeof (init_ipc_ns.msg_ctlmnb),
->> 		.mode		= 0644,
->>-		.proc_handler	= proc_ipc_dointvec,
->>-		.strategy	= sysctl_ipc_data,
->>+		.proc_handler	= proc_ipc_callback_dointvec,
->>+		.strategy	= sysctl_ipc_registered_data,
->> 	},
->> 	{
->> 		.ctl_name	= KERN_SEM,
->>Index: b/Documentation/sysctl/kernel.txt
->>===================================================================
->>--- a/Documentation/sysctl/kernel.txt
->>+++ b/Documentation/sysctl/kernel.txt
->>@@ -179,6 +179,34 @@ kernel stack.
->> 
->> ==============================================================
->> 
->>+msgmnb
->>+
->>+Maximum size in bytes (not in message count) of a single SystemV IPC
->>+message queue (b stands for bytes).
->>+
->>+This value is dynamic and depends on the online cpu count of the
->>+machine (taking cpu hotplug into account).
->>+
->>+Computed values are between MSGMNB and MSGMNB*MSG_CPU_SCALE #define
->>+constants (currently [16384,65536]).
->>+
->>+The exact value is automatically (re)computed, but:
->>+. If the value is positioned from user space (via procfs or sysctl()),
->>+  to a positive value then the automatic recomputation is
->>+  disabled. This leaves control to user space. E.g.
->>+
->>+  # echo 16384 > /proc/sys/kernel/msgmnb
->>+
->>+. If the value is positioned from user space to a negative value, then
->>+  the computation is reenabled. E.g.
->>+
->>+  # echo -1 > /proc/sys/kernel/msgmnb
->>+
->>+See recompute_msgmnb() function in ipc/ directory for details.
->>+The value of msgmnb is coupled with the value of msgmni.
->>+
-> 
-> 
-> The magical positive-versus-negative number trick is a bit obscure, and
-> I don't think there's any precedent for it in the kernel ABI (which is
-> what this is).
-> 
-> Is there anything we can do to reduce the unusualness of this
-> interface?  Say, add a new /proc/sys/kernel/automatic-msgmnb which
-> contains the automatic scaling and leave /proc/sys/kernel/msgmnb
-> containing the manual scaling?  Or something like that?
+(copying Ingo)
 
-Well, I plead guilty ;-)
-I've done this proposal when sending the msgmni scaling patches 
-(unfortunatly my network is down, so can't look the reference thread).
- From what I have in my folders here's the complete story:
 
-. January 08: sent the patches
-. 02/05/2008: got an answer from Yasunori Goto:
+Yang, Sheng wrote:
+> From 54b1bb9fe5d2fe40fc047b43dd4e1a480d41a977 Mon Sep 17 00:00:00 2001
+> From: Sheng Yang <sheng.yang@intel.com>
+> Date: Tue, 24 Jun 2008 17:03:17 +0800
+> Subject: [PATCH] x86: Add "virt flag" in /proc/cpuinfo
+>
+> The hardware virtualization technology evolves very fast. But currently
+> it's hard to tell if your CPU support a certain kind of HW technology without
+> dig into the source code.
+>
+> The patch add a new item under /proc/cpuinfo, named "virt flag". The "virt
+> flag" got the similar function as "flag". It is used to indicate what
+> features does this CPU supported. It don't cover all features but only the
+> important ones.
+>
+>   
 
-Yasunori Goto wrote:
- > Hmmm. I suppose this may be side effect which user does not wish.
- >
- > I would like to recommend there should be a switch which can turn
- > on/off
- > automatic recomputing.
- > If user would like to change this value, it should be turned off.
- > Otherwise, his requrest will be rejected with some messages.
- >
- > Probably, user can understand easier than this side effect.
+Ingo, do you prefer this as a separate 'virt flags' line or as addition 
+to the 'flag' line?
 
-. 02/11/2008: resent the patches after fixing the issues:
+> Current implement just cover Intel VMX side.
+>
+> Signed-off-by: Sheng Yang <sheng.yang@intel.com>
+> ---
+>  arch/x86/kernel/cpu/proc.c   |   28 ++++++++++++++++++++++++++++
+>  include/asm-x86/cpufeature.h |    9 +++++++++
+>  2 files changed, 37 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
+> index 0d0d905..03b30d0 100644
+> --- a/arch/x86/kernel/cpu/proc.c
+> +++ b/arch/x86/kernel/cpu/proc.c
+> @@ -77,6 +77,31 @@ static void show_cpuinfo_misc(struct seq_file *m, struct 
+> cpuinfo_x86 *c)
+>  }
+>  #endif
+>
+> +static void show_cpuinfo_vmx_virtflag(struct seq_file *m)
+> +{
+> +	u32 vmx_msr_low, vmx_msr_high, msr_ctl, msr_ctl2;
+> +
+> +	seq_printf(m, "\nvirt flag\t:");
+> +	rdmsr(MSR_IA32_VMX_PROCBASED_CTLS, vmx_msr_low, vmx_msr_high);
+> +	msr_ctl = 0xffffffff & vmx_msr_high | vmx_msr_low;
+> +	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW)
+> +		seq_printf(m, " tpr_shadow");
+> +	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_VNMI)
+> +		seq_printf(m, " vnmi");
+> +	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_2ND_CTLS) {
+> +		rdmsr(MSR_IA32_VMX_PROCBASED_CTLS2,
+> +		      vmx_msr_low, vmx_msr_high);
+> +		msr_ctl2 = 0xffffffff & vmx_msr_high | vmx_msr_low;
+> +		if ((msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_VIRT_APIC) &&
+> +		    (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW))
+> +			seq_printf(m, " flexpriority");
+> +		if (msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_EPT)
+> +			seq_printf(m, " ept");
+> +		if (msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_VPID)
+> +			seq_printf(m, " vpid");
+> +	}
+> +}
+> +
+>  static int show_cpuinfo(struct seq_file *m, void *v)
+>  {
+>  	struct cpuinfo_x86 *c = v;
+> @@ -123,6 +148,9 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+>  		if (cpu_has(c, i) && x86_cap_flags[i] != NULL)
+>  			seq_printf(m, " %s", x86_cap_flags[i]);
+>
+> +	if (cpu_has(c, X86_FEATURE_VMX))
+> +		show_cpuinfo_vmx_virtflag(m);
+> +
+>  	seq_printf(m, "\nbogomips\t: %lu.%02lu\n",
+>  		   c->loops_per_jiffy/(500000/HZ),
+>  		   (c->loops_per_jiffy/(5000/HZ)) % 100);
+> diff --git a/include/asm-x86/cpufeature.h b/include/asm-x86/cpufeature.h
+> index 0d609c8..87d8084 100644
+> --- a/include/asm-x86/cpufeature.h
+> +++ b/include/asm-x86/cpufeature.h
+> @@ -84,6 +84,7 @@
+>  #define X86_FEATURE_XMM3	(4*32+ 0) /* Streaming SIMD Extensions-3 */
+>  #define X86_FEATURE_MWAIT	(4*32+ 3) /* Monitor/Mwait support */
+>  #define X86_FEATURE_DSCPL	(4*32+ 4) /* CPL Qualified Debug Store */
+> +#define X86_FEATURE_VMX		(4*32+ 5) /* Virtual Machine eXtensions */
+>  #define X86_FEATURE_EST		(4*32+ 7) /* Enhanced SpeedStep */
+>  #define X86_FEATURE_TM2		(4*32+ 8) /* Thermal Monitor 2 */
+>  #define X86_FEATURE_CID		(4*32+10) /* Context ID */
+> @@ -113,6 +114,14 @@
+>   */
+>  #define X86_FEATURE_IDA		(7*32+ 0) /* Intel Dynamic Acceleration */
+>
+> +/* Intel VMX MSR indicated features */
+> +#define X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW	0x00200000
+> +#define X86_VMX_FEATURE_PROC_CTLS_VNMI		0x00400000
+> +#define X86_VMX_FEATURE_PROC_CTLS_2ND_CTLS	0x80000000
+> +#define X86_VMX_FEATURE_PROC_CTLS2_VIRT_APIC	0x00000001
+> +#define X86_VMX_FEATURE_PROC_CTLS2_EPT		0x00000002
+> +#define X86_VMX_FEATURE_PROC_CTLS2_VPID		0x00000020
+> +
+>  #if defined(__KERNEL__) && !defined(__ASSEMBLY__)
+>
+>  #include <linux/bitops.h>
+> --
+> 1.5.5
+>
+>   
 
-Nadia Derbey wrote:
- > Resending the set of patches after Yasunori's remark about being able
- > to turn on/off automatic recomputing.
- > (see message at http://lkml.org/lkml/2008/2/5/149).
- > I actually introduced an intermediate solution: when msgmni is set by
- > hand, it is uneregistered from the ipcns notifier chain (i.e.
- > automatic recomputing is disabled). This corresponds to an implicit
- > turn off. Setting it to a negative value makes it registered back in
- > the notifier chain (which corresponds to the turn on proposed by
- > Yasunaori).
 
-And I don't remember anybody complaining about that :-(
-
-Sorry for introducing this "magical positive-vs-negative # trick".
-
-Will think a bit more about your suggestion.
-
-Regards,
-Nadia
+-- 
+error compiling committee.c: too many arguments to function
 
