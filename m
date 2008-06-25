@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbYFYXzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755635AbYFYX4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756673AbYFYXzA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 19:55:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbYFYXyx
+	id S1755635AbYFYX4i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 19:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbYFYX4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 19:54:53 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53185 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750770AbYFYXyw (ORCPT
+	Wed, 25 Jun 2008 19:56:31 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:50912 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750836AbYFYX4a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 19:54:52 -0400
-Message-ID: <4862D247.2010709@kernel.org>
-Date: Wed, 25 Jun 2008 16:18:31 -0700
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 25 Jun 2008 19:56:30 -0400
+Message-ID: <4862DB28.3050001@skyrush.com>
+Date: Wed, 25 Jun 2008 17:56:24 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071119)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
-       Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [PATCH 03 of 36] x86: add memory barriers to wrmsr
-References: <patchbomb.1214367536@localhost>	<93c7057b1f4acae501b2.1214367539@localhost>	<20080624214441.13202f12@infradead.org>	<4862B3E9.50601@goop.org> <20080625153136.2b3b6737@infradead.org>
-In-Reply-To: <20080625153136.2b3b6737@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] UTC timestamp option for FAT filesystems
+References: <4861D685.4070308@skyrush.com> <87od5pqh4o.fsf@basil.nowhere.org>
+In-Reply-To: <87od5pqh4o.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
->>>   
->> I suppose, though I would be inclined to put the barriers in the
->> wrmsr macro itself to act as documentation. 
-> 
-> 
-> yeah I meant like this:
-> 
-> static inline void native_write_msr(unsigned int msr,
->  				    unsigned low, unsigned high)
-> {
-> 	barrier();
-> 	asm volatile("wrmsr" : : "c" (msr), "a"(low), "d" (high));
-> 	barrier();
-> }
-> 
-> or in the same in the thing that calls this.
-> 
+Andi Kleen wrote:
+> The time zone handling seems racy. e.g. consider the case DST 
+> changes on that day. You convert before the switch over 
+> and suddenly the time offset is different.
 
-Actually, I believe the barrier(); before is actually incorrect, since 
-it would affect the wrmsr() register arguments rather than the wrmsr 
-instruction itself.
+Are you saying that the tz code is racy in general (I saw the following thread
+that you responded to as well):
 
-	-hpa
+	http://marc.info/?l=linux-kernel&m=115954057716441&w=2
+
+Or are you saying that the proposed "utc" option makes things racy?
+
+All the "utc" option does (with this patch) is disable application of the
+kernel's "tz_minuteswest" offset, so using it actually should remove races with
+a DST switch, right?
+
+> I'm actually not sure someone in user space is even updating the kernel
+> idea of the timezone for DST on a switch (generally it was assumed it's some
+> obsolete BSD concept and that all real programs only use the 
+> user space glibc implementation that knows all the rules). So 
+> DST might not be supported at all.
+
+I am not sure about that either (i.e. whether tz_minuteswest is altered on DST
+changes or if it is only changed at boot).
+
+And I think you are right that the kernel's idea of timezone (i.e.
+"tz_minuteswest") is basically obsolete ("man gettimeofday" talks about this).
+
+> Also even if it worked it seems very limited. If you do that why not
+> have an option to set an arbitary time zone offset?
+
+Yes, I thought about also providing an option that lets the user specify the
+offset at mount - this may be useful for other scenarios (like moving Windows
+disks between time zones), but the UTC option, itself, is very useful in that it
+let's one use UTC on FAT devices, which is the least problematic way to do
+things (e.g. for digital cameras, etc.).
+
+						-Joe
