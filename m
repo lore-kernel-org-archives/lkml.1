@@ -1,70 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757676AbYFYPMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbYFYPQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757676AbYFYPMc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 11:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbYFYPMV
+	id S1758257AbYFYPQd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 11:16:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbYFYPQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 11:12:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50553 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751398AbYFYPMU (ORCPT
+	Wed, 25 Jun 2008 11:16:22 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:36440 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673AbYFYPQW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 11:12:20 -0400
-Date: Wed, 25 Jun 2008 08:11:07 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hugh@veritas.com, nickpiggin@yahoo.com.au
-Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in
- invalidate_complete_page2()
-In-Reply-To: <20080625124121.839734708@szeredi.hu>
-Message-ID: <alpine.LFD.1.10.0806250757150.4733@hp.linux-foundation.org>
-References: <20080625124038.103406301@szeredi.hu> <20080625124121.839734708@szeredi.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 25 Jun 2008 11:16:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=msWfM+EtwOTu6F/KdQZL2LRtWAFkoJ5n4y54wWIIcR4NHnHJpruhIo9LtZX+mCDUtW
+         3MsWVzhXtCm5ODFvhDBBj1BQRdIKh1P4MJehRu6ApKFH92mKj0qgQETg4crcB3xtPFUz
+         91pzOpZtSOY1H/tZ6LUKv4zkxhUj9t7kwFLI8=
+Message-ID: <2c0942db0806250816r123affb4x4ef17f4773180a10@mail.gmail.com>
+Date: Wed, 25 Jun 2008 08:16:20 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Justin Mattock" <justinmattock@gmail.com>
+Subject: Re: stuck tcp connections 2.6.26-rc7
+Cc: "Didier Raboud" <didier@raboud.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <dd18b0c30806242325j4f6d1b1bw1cdde7ea08ad12e2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30806221109t2ff73f9ai52f6716748648a79@mail.gmail.com>
+	 <20080622205927.301501e7.akpm@linux-foundation.org>
+	 <dd18b0c30806230013x5446991bi9eba7623ffaae131@mail.gmail.com>
+	 <g3ol3u$li2$1@ger.gmane.org>
+	 <dd18b0c30806231845s1cc6151coc2a4f26ed3521500@mail.gmail.com>
+	 <2c0942db0806241016o3be1dae8i433da13697c4531c@mail.gmail.com>
+	 <dd18b0c30806241303g755e3881y4ea7d403eb2922fc@mail.gmail.com>
+	 <dd18b0c30806242325j4f6d1b1bw1cdde7ea08ad12e2@mail.gmail.com>
+X-Google-Sender-Auth: 405c87c342ffd1ce
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 24, 2008 at 11:25 PM, Justin Mattock
+<justinmattock@gmail.com> wrote:
+> On Tue, Jun 24, 2008 at 8:03 PM, Justin Mattock <justinmattock@gmail.com> wrote:
+>> On Tue, Jun 24, 2008 at 5:16 PM, Ray Lee <ray-lk@madrabbit.org> wrote:
+>>> 2008/6/23 Justin Mattock <justinmattock@gmail.com>:
+>>>> On Mon, Jun 23, 2008 at 5:04 PM, Didier Raboud <didier@raboud.com> wrote:
+>>>>> -----BEGIN PGP SIGNED MESSAGE-----
+>>>>> Hash: SHA1
+>>>>>
+>>>>> Justin Mattock wrote:
+>>>>>
+>>>>>> On Mon, Jun 23, 2008 at 3:59 AM, Andrew Morton
+>>>>>> <akpm@linux-foundation.org> wrote:
+>>>>>>> On Sun, 22 Jun 2008 18:09:16 +0000 "Justin Mattock"
+>>>>>>> <justinmattock@gmail.com> wrote:
+>>>>>>>
+>>>>>>>> Hello; I too am experiencing internet connectivity problems, for  a
+>>>>>>>> while I thought
+>>>>>>>> It was due to low bandwidth(or being ddos attacked) but yesterday I
+>>>>>>>> noticed with watch netstat -ntu
+>>>>>>>> send-Q was stuck on a number; the connection would not go to TIME_WAIT
+>>>>>>>> resulting in music to pause, and t.v. to freeze.
+>>>>>>>> In my experiences running xmms streaming music is fine, no problems,
+>>>>>>>> but as soon as
+>>>>>>>> you watch something with flash player the stream start's getting
+>>>>>>>> really bad. In the past with older kernel's
+>>>>>>>> I usually can watch t.v.(with flash) and stream music at the same time
+>>>>>>>> without any trouble.
+>>>>>>>> lately I've been Running the kernel in No forced Preemption with a
+>>>>>>>> time frequency at 100. having the kernel set in this mode really shows
+>>>>>>>> the connection problems, but if I change the preemption to another,
+>>>>>>>> and bump up the timer frequency the poor internet connection is not as
+>>>>>>>> bad(or stuck tcp) but still prevalent. more pops in the music, and
+>>>>>>>> sudden internet loss for around five seconds, then goes back
+>>>>>>>> So from over here streaming music has no problems from what I can see,
+>>>>>>>> but as soon as I watch media, it becomes a mess.
+>>>>>>>
+>>>>>>> (cc netdev)
+>>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> Cool, Thanks for sending the cc
+>>>>>> regards;
+>>>>>
+>>>>> Hi,
+>>>>>
+>>>>> I get something like a similar bug: when pinging my local gateway, I loose
+>>>>> packets (over wifi (iwl3945) ). Before the update to 2.6.26-rc7 (Debian), I
+>>>>> had no such issues (which makes Internet browsing working but weirdly).
+>>>>>
+>>>>> I can't know for sure that my bug is related to the above, but suppose so.
+>>>>> Please ask for details !
+>>>>>
+>>>>> Regards,
+>>>>>
+>>>>> Didier Raboud
+>>>>> - --
+>>>>
+>>>> Cool;(cool as in I'm not the only one,not cool for sh*%y internet connections)
+>>>> there is something definitely happening with the tcp connection.,
+>>>> After looking more at the situation
+>>>> I get a good connection when just streaming music, but as soon as I
+>>>> watch with flash or even search through firefox
+>>>> I'm getting a dead period of no internet, and then a few seconds later
+>>>> no problems.Almost as if some timer in the code is missing something
+>>>> or not firing off at the right time.
+>>>> At this point I'm still uncertain with what is happening.
+>>>> regards;
+>>>
+>>> If you leave a ping running as root to your local gateway from a
+>>> console ( nice -n -10 ping -i 0.5 192.168.1.1
+>>>  or whichever ip ), does it show dropouts?
+>>>
+>>
+>> I'll give that a try and see what happens.
+>> regards;
+>>
+>> --
+>> Justin P. Mattock
+>>
+>
+> Hmm, well I really don't know what to say with the tcp
+> connection(issue), It seems to go in and out of phases i.g.
+> at first running music, and t.v.(through flash) there's moments of
+> pauses,(around 5 secs or so) then after a while
+> the tcp seems to even itself out, but then after a while(5min or so)
+> the same pauses begin. Maybe due to some missing packet, or
+> some deadlock if this is proper to say.
 
-
-On Wed, 25 Jun 2008, Miklos Szeredi wrote:
-> 
-> Clearing the uptodate page flag will cause page_cache_pipe_buf_confirm()
-> to return -ENODATA if that page was in the buffer.  This in turn will cause
-> splice() to return a short or zero count.
-
-I really think we should just change splice itself at this point.
-
-The VM people may end up removing the clearing of the uptodate bit for 
-other reasons, but there's no way I'll do this kind of thing which affects 
-unknown number of cases for just the splice kind of reason, when we could 
-just change the one place you care about right now - which is just
-FUSE/NFSD/page_cache_pipe_buf_confirm.
-
-I also really don't think this even fixes the problems you have with 
-FUSE/NFSD - because you'll still be reading zeroes for a truncated file. 
-Yes, you get the rigth counts, but you don't get the right data.
-
-(And no, your previous patch that removed the asnchronous stuff and the 
-pipe_buf_confirm entirely didn't fix it _either_ - it's simply unavoidable 
-when you just pass unlocked pages around. There is no serialization with 
-other people doing truncates etc)
-
-That's "correct" from a splice() kind of standpoint (it's essentially a 
-temporary mmap() with MAP_PRIVATE), but the thing is, it just sounds like 
-the whole "page went away" thing is a more fundamental issue. It sounds 
-like nfds should hold a read-lock on the file while it has any IO in 
-flight, or something like that.
-
-IOW, I don't think your patch really is in the right area. I *do* agree 
-that page_cache_pipe_buf_confirm() itself probably is worth changing, but 
-I think you're trying to treat some of the individual symptoms here (and 
-not even all), and there's a more fundamental underlying issue that you're 
-not loooking at.
-
-Maybe.
-
-		Linus
+On my system, I've noticed that the flashplugin can manage to starve
+other processes in a pure scheduler sort of way, so you might try
+running latencytop to see if there's some sort of issue there. OTOH,
+I've noticed firefox itself hang for 3-15 seconds in the middle of a
+read (just as you describe), with nothing else going on in the system,
+so <shrug>. I've been blaming firefox, but I could be wrong.
