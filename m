@@ -1,103 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbYFYER4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755642AbYFYEhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755223AbYFYER4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 00:17:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYFYERr
+	id S1755642AbYFYEhZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 00:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYFYEhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 00:17:47 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:17417 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524AbYFYERq (ORCPT
+	Wed, 25 Jun 2008 00:37:05 -0400
+Received: from 9.sub-70-198-159.myvzw.com ([70.198.159.9]:37418 "EHLO
+	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752459AbYFYEhE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 00:17:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=pVqpq/CAUZNq3RTQ8MDABvwAKjK7+tZBcSY/zo0annMMDh0OQKJeygLipt4iN9O7iN
-         BbYuTzGhDHKU3JVnP4ixzRtCEJdV+oFsP45Uzm1sKEP8nyX7D33YrmK6i9X7tgAYXRRh
-         4erlwhvRdb6dNNudt4rt38vHNPBpaIn8HU3D8=
-Message-ID: <35f686220806242117p4a442982hb459a6b76312f391@mail.gmail.com>
-Date: Tue, 24 Jun 2008 21:17:45 -0700
-From: "Alok kataria" <alokkataria1@gmail.com>
-To: "Zhao Yakui" <yakui.zhao@intel.com>
-Subject: Re: [PATCH 2/2] acpi based pci gap caluculation v2
-Cc: akataria@vmware.com, lenb@kernel.org, "Ingo Molnar" <mingo@elte.hu>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1214362159.9800.28.camel@yakui_zhao.sh.intel.com>
+	Wed, 25 Jun 2008 00:37:04 -0400
+X-Greylist: delayed 671 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Jun 2008 00:37:03 EDT
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1214333326.27577.28.camel@promb-2n-dhcp368.eng.vmware.com>
-	 <1214362159.9800.28.camel@yakui_zhao.sh.intel.com>
+Subject: [PATCH 02 of 36] x86: add memory clobber to save/loadsegment
+X-Mercurial-Node: 2289309bb2cdf23bf825848aca0cbc1abe1fe019
+Message-Id: <2289309bb2cdf23bf825.1214367538@localhost>
+In-Reply-To: <patchbomb.1214367536@localhost>
+Date: Wed, 25 Jun 2008 00:18:58 -0400
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
+       Mark McLoughlin <markmc@redhat.com>, x86@kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 24, 2008 at 7:49 PM, Zhao Yakui <yakui.zhao@intel.com> wrote:
-> On Tue, 2008-06-24 at 11:48 -0700, Alok Kataria wrote:
->> Evaluates the _CRS object under PCI0 looking for producer resources.
->> Then searches the e820 memory space for a gap within these producer resources.
->>
->> Allows us to find a gap for the unclaimed pci resources or MMIO resources
->> for hotplug devices within the BIOS allowed pci regions.
->>
-> It seems reasonable.
-> But if the resource obtained from the PCI0 _CRS method is incorrect, we
-> will get the incorrect pci_mem_start.
+Add "memory" clobbers to savesegment and loadsegment, since they can
+affect memory accesses and we never want the compiler to reorder them
+with respect to memory references.
 
-Hi Yakui,
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ include/asm-x86/system.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-What do you mean by the PCI0 _CRS being incorrect ? Why would the BIOS
-give a incorrect _CRS object ?
-Also we don't just take the value given from the _CRS method, we still
-read the e820_map to search for an unallocated resource. So even if
-(by chance) the _CRS method returns incorrect value we would still
-figure out if there is a collision with an already allocated resource.
+diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
+--- a/include/asm-x86/system.h
++++ b/include/asm-x86/system.h
+@@ -157,14 +157,14 @@
+ 		     "jmp 2b\n"			\
+ 		     ".previous\n"		\
+ 		     _ASM_EXTABLE(1b,3b)	\
+-		     : :"r" (value), "r" (0))
++		     : :"r" (value), "r" (0) : "memory")
+ 
+ 
+ /*
+  * Save a segment register away
+  */
+ #define savesegment(seg, value)				\
+-	asm volatile("mov %%" #seg ",%0":"=rm" (value))
++	asm("mov %%" #seg ",%0":"=rm" (value) : : "memory")
+ 
+ static inline unsigned long get_limit(unsigned long segment)
+ {
 
->
-> At the same time after the patch is applied, pci_mem_start will be
-> parsed in two different ways.
 
-Yes pci_mem_start would be initialized in 2 different ways but we
-still have to parse the e820_map the old way because there could be
-systems without ACPI.
-
-> If the result is different, maybe the
-> incorrect pci_mem_start will be used.
-
-Yeah, The result is different in my case. Though my BIOS reserves
-hotpluggable memory region, kernel doesn't respect that right now and
-just parses the e820_map to calculate the gap and pci_mem_start value.
-I have explained the problem in this mail.
-
-http://marc.info/?l=linux-acpi&m=121391675711763&w=2
-
-Maybe nobody has seen this problem yet, because there are no systems
-out there with less than 4GB memory to start with and which allow
-memory hotplug.
-
-But still i don't understand what do you mean by, we can get incorrect
-pci_mem_start, in which case ?
-
-Thanks,
-Alok
->
-> Best regards.
->  Yakui
->>
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
