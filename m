@@ -1,148 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbYFYGhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbYFYG5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755328AbYFYGhb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 02:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbYFYGhS
+	id S1753904AbYFYG5L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 02:57:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbYFYG44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 02:37:18 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57152 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752201AbYFYGhQ (ORCPT
+	Wed, 25 Jun 2008 02:56:56 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:53308 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751744AbYFYG4z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 02:37:16 -0400
-Message-Id: <27A96BE5FB224E9A876DA3326A6A6B27@nsl.ad.nec.co.jp>
-From: "Takashi Sato" <t-sato@yk.jp.nec.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <viro@ZenIV.linux.org.uk>, <linux-ext4@vger.kernel.org>, <xfs@oss.sgi.com>,
-       <dm-devel@redhat.com>, <linux-fsdevel@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <axboe@kernel.dk>,
-       <mtk.manpages@googlemail.com>
-References: <20080624155919t-sato@mail.jp.nec.com> <20080624143840.c183d0d9.akpm@linux-foundation.org>
-In-Reply-To: <20080624143840.c183d0d9.akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/3] freeze feature ver 1.6
-Date: Wed, 25 Jun 2008 15:36:40 +0900
+	Wed, 25 Jun 2008 02:56:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ZdUWXcX+V191Ppthm95HL61aFtsxav4fsGjsnjkweuhatJmCvdp5dhjkSHXnvC2+hD
+         iNXel/M5M37BrQEnclfC5GsIeAgGsWjRK+zyd1HBytV0XtmpkZU+WXG1WFGuYCrY8l8A
+         TzLn3cVh1zhT9NkXNg+ddOWS8ChYHgA9/1gXc=
+Message-ID: <28c262360806242356n3f7e02abwfee1f6acf0fd2c61@mail.gmail.com>
+Date: Wed, 25 Jun 2008 15:56:54 +0900
+From: "MinChan Kim" <minchan.kim@gmail.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH] prevent incorrect oom under split_lru
+Cc: "Rik van Riel" <riel@redhat.com>, linux-mm <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>, akpm@linux-foundation.org,
+       "Takenori Nagano" <t-nagano@ah.jp.nec.com>
+In-Reply-To: <20080625150141.D845.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="ISO-8859-1";
-	reply-type=original
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Windows Mail 6.0.6000.16480
-X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6000.16545
+Content-Disposition: inline
+References: <20080624092824.4f0440ca@bree.surriel.com>
+	 <28c262360806242259k3ac308c4n7cee29b72456e95b@mail.gmail.com>
+	 <20080625150141.D845.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-> umm, OK, but nowhere in this patch series can I find a justification or
-> reason for making these changes to Linux.  Why do we want to do this?
-> What is the benefit?  What is the motivation.  What are the use-cases,
-> etc?
-
-Currently, ext3 in mainline Linux doesn't have the freeze feature which
-suspends write requests.  So, we cannot take a backup which keeps
-the filesystem's consistency with the storage device's features
-(snapshot and replication) while it is mounted.
-In many case, a commercial filesystem (e.g. VxFS) has
-the freeze feature and it would be used to get the consistent backup.
-If Linux's standard filesytem ext3 has the freeze feature, we can do it
-without a commercial filesystem.
-
-So I have implemented the ioctls of the freeze feature.
-I think we can take the consistent backup with the following steps.
-1. Freeze the filesystem with the freeze ioctl.
-2. Separate the replication volume or create the snapshot
-   with the storage device's feature.
-3. Unfreeze the filesystem with the unfreeze ioctl.
-4. Take the backup from the separated replication volume
-   or the snapshot.
-
-Cheers, Takashi
-
-> On Tue, 24 Jun 2008 15:59:19 +0900
-> Takashi Sato <t-sato@yk.jp.nec.com> wrote:
-> 
->> Hi Andrew and Alexander,
->> 
->> I have implemented the ioctls for the filesystem freeze feature
->> and discussed its implementation on the ML (linux-ext4, xfs,
->> linux-fsdevel, linux-kernel) for five months.  All of the comments are
->> addressed in my patch-set.
->> Could you consider merging it into Linux?
->> 
->> The filesystem freeze feature can suspend accesses to the filesystem
->> keeping the filesystem's consistency.  We can take the consistent backup
->> with it cooperating with the backup software.
->> 
->> The patches are re-based from linux-2.6.26-rc3 to linux-2.6.26-rc7
->> There is no functional change from the previous version.
->> The patch-set consists of the following three patches.
->> 
->> [PATCH 1/3] Implement generic freeze feature
->>   I have modified to set the suitable error number (EOPNOTSUPP)
->>   in case the filesystem doesn't support the freeze feature.
->> 
->>   The ioctls for the generic freeze feature are below.
->>   o Freeze the filesystem
->>     int ioctl(int fd, int FIFREEZE, arg)
->>       fd: The file descriptor of the mountpoint
->>       FIFREEZE: request code for the freeze
->>       arg: Ignored
->>       Return value: 0 if the operation succeeds. Otherwise, -1
->> 
->>   o Unfreeze the filesystem
->>     int ioctl(int fd, int FITHAW, arg)
->>       fd: The file descriptor of the mountpoint
->>       FITHAW: request code for unfreeze
->>       arg: Ignored
->>       Return value: 0 if the operation succeeds. Otherwise, -1
->> 
->> [PATCH 2/3] Remove XFS specific ioctl interfaces for freeze feature
->>   It removes XFS specific ioctl interfaces and request codes
->>   for freeze feature.
->>   This patch has been supplied by David Chinner.
->> 
->> [PATCH 3/3] Add timeout feature
->>   The timeout feature is added to freeze ioctl.  And new ioctl
->>   to reset the timeout period is added.
->>   o Freeze the filesystem
->>     int ioctl(int fd, int FIFREEZE, long *timeval)
->>       fd: The file descriptor of the mountpoint
->>       FIFREEZE: request code for the freeze
->>       timeval: the timeout period in seconds
->>                If it's 0 or 1, the timeout isn't set.
->>                This special case of "1" is implemented to keep
->>                the compatibility with XFS applications.
->>       Return value: 0 if the operation succeeds. Otherwise, -1
->> 
->>   o Reset the timeout period
->>     This is useful for the application to set the timeval more accurately.
->>     For example, the freezer resets the timeval to 10 seconds every 5
->>     seconds.  In this approach, even if the freezer causes a deadlock
->>     by accessing the frozen filesystem, it will be solved by the timeout
->>     in 10 seconds and the freezer can recognize that at the next reset
->>     of timeval.
->>     int ioctl(int fd, int FIFREEZE_RESET_TIMEOUT, long *timeval)
->>       fd:file descriptor of mountpoint
->>       FIFREEZE_RESET_TIMEOUT: request code for reset of timeout period
->>       timeval: new timeout period in seconds
->>       Return value: 0 if the operation succeeds. Otherwise, -1
->>       Error number: If the filesystem has already been unfrozen,
->>                     errno is set to EINVAL.
->> 
->> Any comments are very welcome.
-> 
-> umm, OK, but nowhere in this patch series can I find a justification or
-> reason for making these changes to Linux.  Why do we want to do this? 
-> What is the benefit?  What is the motivation.  What are the use-cases,
-> etc?
-> 
-> Thanks.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Wed, Jun 25, 2008 at 3:08 PM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
+> Hi Kim-san,
 >
+>> >> So, if priority==0, We should try to reclaim all page for prevent OOM.
+>> >
+>> > You are absolutely right.  Good catch.
+>>
+>> I have a concern about application latency.
+>> If lru list have many pages, it take a very long time to scan pages.
+>> More system have many ram, More many time to scan pages.
+>
+> No problem.
+>
+> priority==0 indicate emergency.
+> it doesn't happend on typical workload.
+>
+
+I see :)
+
+But if such emergency happen in embedded system, application can't be
+executed for some time.
+I am not sure how long time it take.
+But In some application, schedule period is very important than memory
+reclaim latency.
+
+Now, In your patch, when such emergency happen, it continue to reclaim
+page until it will scan entire page of lru list.
+It
+
+>> Of course I know this is trade-off between memory efficiency VS latency.
+>> But In embedded, some application think latency is more important
+>> thing than memory efficiency.
+>> We need some mechanism to cut off scanning time.
+>>
+>> I think Takenori Nagano's "memory reclaim more efficiently patch" is
+>> proper to reduce application latency in this case If we modify some
+>> code.
+>
+> I think this is off-topic.
+>
+> but Yes.
+> both my page reclaim throttle and nagano-san's patch provide
+> reclaim cut off mechanism.
+>
+>
+> and more off-topic,
+> nagano-san's patch improve only priority==12.
+> So, typical embedded doesn't improve so big because
+> embedded system does't have so large memory.
+>
+>
+>
+>
+
+
+
+-- 
+Kinds regards,
+MinChan Kim
