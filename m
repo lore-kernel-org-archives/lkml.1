@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752025AbYFYOo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760951AbYFYOpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752025AbYFYOo3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 10:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758600AbYFYOhU
+	id S1760951AbYFYOpe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 10:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760176AbYFYOmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 10:37:20 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:36195 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752432AbYFYOhS (ORCPT
+	Wed, 25 Jun 2008 10:42:31 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:60029 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760164AbYFYOma (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 10:37:18 -0400
-Message-Id: <20080625143459.100139455@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 25 Jun 2008 16:34:59 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: [patch 00/21] s390 printk message cleanup
+	Wed, 25 Jun 2008 10:42:30 -0400
+Message-ID: <48625953.2070101@skyrush.com>
+Date: Wed, 25 Jun 2008 08:42:27 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080620)
+MIME-Version: 1.0
+To: free_beer_for_all@yahoo.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] UTC timestamp option for FAT filesystems
+References: <223222.41388.qm@web46108.mail.sp1.yahoo.com>
+In-Reply-To: <223222.41388.qm@web46108.mail.sp1.yahoo.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
-this is the first batch of patches of our project to document all s390
-specific kernel messages. The first step is to cleanup the existing
-messages: remove debugging messages, convert messages to BUG_ON / WARN_ON
-and convert messages to debug feature entries.
-The second step will be to introduce a new family of print macros that are
-then uniformly used in the s390 device drivers.
-The third step are the Documentation files and a script that is used to
-check the messages and to create man pages from the descriptions.
-Steps 2 & 3 are not final yet so this patch set only has the message
-cleanup for the next merge window. At large pretty boring stuff ..
+barry bouwsma wrote:
+> May I just add a resounding YES-YES-YES...
 
--- 
-blue skies,
-   Martin.
+Thanks for your feedback and support!
 
-"Reality continues to ruin my life." - Calvin.
+> In addition, may I request that not only the option `-o utc,...' be
+> accepted, but also as an alternate, the string `gmt', not because it's
+> more accurate (it isn't) but because it seems to be tradition to use
+> GMT+/-xxxx in lots of places.
 
+I do understand what you are saying, however I would suggest not making
+"gmt" a synonym for the following reasons:
+
+1) Better to keep the options simple and less cluttered
+2) GMT is not strictly the same as UTC (according to Wikipedia, it
+   usually is used to mean the same thing, but it can also mean
+   "UT1" (or the less exact "UT"), which is not exactly equal to UTC).
+   So UTC is the more precise term.
+
+> Another justification which wasn't mentioned, but which I would put
+> forth, is that last time I checked, the BSDen were using UTC as their
+> MSDOS timestamp base, so such an option would make it easier to
+> exchange data between BSD and Linux machines with a normal USB stick
+> or flash card.  And I was doing that a year or three ago when I hacked
+> my hack.
+
+Ah, then that is, indeed, another good reason.
+
+						-Thanks, Joe
