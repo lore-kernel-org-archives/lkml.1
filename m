@@ -1,120 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbYFYSEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756319AbYFYSIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754804AbYFYSEo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 14:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbYFYSEf
+	id S1756319AbYFYSIA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 14:08:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYFYSHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 14:04:35 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:35421 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752124AbYFYSEe (ORCPT
+	Wed, 25 Jun 2008 14:07:52 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:44096 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752748AbYFYSHw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 14:04:34 -0400
-Subject: Re: [PATCH 1/2] cleanup e820_setup_gap v2
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "lenb@kernel.org" <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       the arch/x86 maintainers <x86@kernel.org>
-In-Reply-To: <20080625160817.GC24967@elte.hu>
-References: <1214333310.27577.26.camel@promb-2n-dhcp368.eng.vmware.com>
-	 <20080625160817.GC24967@elte.hu>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Wed, 25 Jun 2008 11:02:42 -0700
-Message-Id: <1214416962.27577.74.camel@promb-2n-dhcp368.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+	Wed, 25 Jun 2008 14:07:52 -0400
+Message-ID: <486289A8.1040702@keyaccess.nl>
+Date: Wed, 25 Jun 2008 20:08:40 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Re: regression, 2.6.26-rc7, pnp: quirk_system_pci_resources()
+References: <485C6388.1050903@keyaccess.nl> <485D356A.402@keyaccess.nl> <485D86BD.5050803@keyaccess.nl> <200806240917.35773.bjorn.helgaas@hp.com>
+In-Reply-To: <200806240917.35773.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-25 at 09:08 -0700, Ingo Molnar wrote:
-> * Alok Kataria <akataria@vmware.com> wrote:
+On 24-06-08 17:17, Bjorn Helgaas wrote:
+
+> I think your patch makes sense, and you can add my ack.
+
+Thank you, done. I used pnp_resource_type_name() from your patches...
+
+> I do have the feeling that the reason we need the quirk is because we
+> aren't handling those PNP device resources quite correctly in the 
+> first place.  But I don't have any good ideas about what's wrong yet.
 > 
-> > This is a preparatory patch for the next patch in series.
-> > Moves some code from e820_setup_gap to a new function e820_search_gap.
-> > This patch is a part of a bug fix where we walk the ACPI table to calculate
-> > a gap for PCI optional devices.
-> >
-> > v1->v2: Patch on top of tip/master.
-> >       Fixes a bug introduced in the last patch about the typeof "last".
-> >       Also the new function e820_search_gap now returns if we found a gap in
-> >       e820_map.
-> 
-> applied to tip/x86/setup-memory - thanks Alok.
+> My first thought was that those regions might be marked as 
+> ACPI_PRODUCER resources (i.e., the PNP device forwards transactions 
+> in that region to a downstream device).  In that case, the PNP device
+> is really a bridge, and it shouldn't reserve the region (or at least
+> should not mark it as busy).  But I think we currently ignore 
+> ACPI_PRODUCER resources completely, so I don't see how that could 
+> cause this problem.
 
-Hi Ingo,
+I'm not up on the ACPI side of things at least, but am available for any 
+testing you'd like me to do. Just say the word.
 
-As mentioned in this mail,
-http://marc.info/?l=linux-kernel&m=121441312409978&w=2
-
-I have also added a end_addr parameter to e820_search_gap to search only
-till the CRS objects end_addr instead of 2^32. In the normal case via
-e820_setup_gap we search till 2^32.
-
-Please apply this too.
-Patch on top of tip/master
---
-
-e820_search_gap also take a end_addr parameter to limit search from
-start_addr to end_addr.
-
-Signed-off-by: AloK N Kataria <akataria@vmware.com>
-
-Index: linux-x86-tree.git/arch/x86/kernel/e820.c
-===================================================================
---- linux-x86-tree.git.orig/arch/x86/kernel/e820.c	2008-06-25 10:05:21.000000000 -0700
-+++ linux-x86-tree.git/arch/x86/kernel/e820.c	2008-06-25 10:07:30.000000000 -0700
-@@ -486,17 +486,19 @@
- 	printk(KERN_INFO "modified physical RAM map:\n");
- 	e820_print_map("modified");
- }
--
-+#define MAX_GAP_END 0x100000000ull
- /*
-- * Search for a gap in the e820 memory space from start_addr to 2^32.
-+ * Search for a gap in the e820 memory space from start_addr to end_addr.
-  */
- __init int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
--		unsigned long start_addr)
-+		unsigned long start_addr, unsigned long long end_addr)
- {
--	unsigned long long last = 0x100000000ull;
-+	unsigned long long last;
- 	int i = e820.nr_map;
- 	int found = 0;
- 
-+	last = (end_addr && end_addr < MAX_GAP_END) ? end_addr : MAX_GAP_END;
-+
- 	while (--i >= 0) {
- 		unsigned long long start = e820.map[i].addr;
- 		unsigned long long end = start + e820.map[i].size;
-@@ -536,7 +538,7 @@
- 
- 	gapstart = 0x10000000;
- 	gapsize = 0x400000;
--	found  = e820_search_gap(&gapstart, &gapsize, 0);
-+	found  = e820_search_gap(&gapstart, &gapsize, 0, MAX_GAP_END);
- 
- #ifdef CONFIG_X86_64
- 	if (!found) {
-Index: linux-x86-tree.git/include/asm-x86/e820.h
-===================================================================
---- linux-x86-tree.git.orig/include/asm-x86/e820.h	2008-06-25 10:05:21.000000000 -0700
-+++ linux-x86-tree.git/include/asm-x86/e820.h	2008-06-25 10:06:17.000000000 -0700
-@@ -72,7 +72,7 @@
- extern void update_e820(void);
- extern void e820_setup_gap(void);
- extern int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
--				unsigned long start_addr);
-+			unsigned long start_addr, unsigned long long end_addr);
- struct setup_data;
- extern void parse_e820_ext(struct setup_data *data, unsigned long pa_data);
- 
-
-
-
+Rene.
