@@ -1,66 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760907AbYFYOpB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752025AbYFYOo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760907AbYFYOpB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 10:45:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759818AbYFYOl1
+	id S1752025AbYFYOo3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 10:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758600AbYFYOhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 10:41:27 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:43078 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754763AbYFYOlZ (ORCPT
+	Wed, 25 Jun 2008 10:37:20 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:36195 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752432AbYFYOhS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 10:41:25 -0400
-To: johnpol@2ka.mipt.ru
-CC: miklos@szeredi.hu, jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       hugh@veritas.com, nickpiggin@yahoo.com.au
-In-reply-to: <20080625141654.GA4803@2ka.mipt.ru> (message from Evgeniy
-	Polyakov on Wed, 25 Jun 2008 18:16:55 +0400)
-Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in invalidate_complete_page2()
-References: <20080625124038.103406301@szeredi.hu> <20080625124121.839734708@szeredi.hu> <20080625131117.GA28136@2ka.mipt.ru> <E1KBV7H-0005nv-Gl@pomaz-ex.szeredi.hu> <20080625141654.GA4803@2ka.mipt.ru>
-Message-Id: <E1KBWBK-0006Lp-03@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 25 Jun 2008 16:41:10 +0200
+	Wed, 25 Jun 2008 10:37:18 -0400
+Message-Id: <20080625143459.100139455@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 25 Jun 2008 16:34:59 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: [patch 00/21] s390 printk message cleanup
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Like __block_prepare_write()?
-> > 
-> > That's called with the page locked and page->mapping verified.
-> 
-> Only when called via standard codepath.
+Greetings,
+this is the first batch of patches of our project to document all s390
+specific kernel messages. The first step is to cleanup the existing
+messages: remove debugging messages, convert messages to BUG_ON / WARN_ON
+and convert messages to debug feature entries.
+The second step will be to introduce a new family of print macros that are
+then uniformly used in the s390 device drivers.
+The third step are the Documentation files and a script that is used to
+check the messages and to create man pages from the descriptions.
+Steps 2 & 3 are not final yet so this patch set only has the message
+cleanup for the next merge window. At large pretty boring stuff ..
 
-It would be a grave error to call it without the page lock.
+-- 
+blue skies,
+   Martin.
 
-> > I want the page fully invalidated, and I also want splice and nfs
-> > exporting to work as for other filesystems.
-> 
-> Fully invalidated page can not be uptodate, doesnt' it? :)
+"Reality continues to ruin my life." - Calvin.
 
-That's just a question of how we interpret PG_uptodate.  If it means:
-the page contains data that is valid, or was valid at some point in
-time, then an invalidated or truncated page can be uptodate.
-
-> You destroy existing functionality just because there are some obscure
-> places, where it is used, so instead of fixing that places, you treat
-> the symptom. After writing previous mail I found a way to workaround it
-> even with your changes, but the whole approach of changing
-> invalidate_complete_page2() is not correct imho.
-
-You rely on page being !PageUptodate() after being invalidated?  Why
-can't you check page->mapping instead (as everything else does)?
-
-> Is this nfs/fuse problem you described:
-> http://marc.info/?l=linux-fsdevel&m=121396920822693&w=2
-
-Yes.
-
-> Instead of returning error when reading from invalid page, now you
-> return old content of it?
-
-No, instead of returning a short count, it is now returning old
-content.
-
-Miklos
