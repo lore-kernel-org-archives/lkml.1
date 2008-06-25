@@ -1,109 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757725AbYFYOSI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbYFYOXD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757725AbYFYOSI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 10:18:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757001AbYFYORs
+	id S1757568AbYFYOXD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 10:23:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbYFYOWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 10:17:48 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:45179 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756688AbYFYORr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 10:17:47 -0400
-Date: Wed, 25 Jun 2008 18:16:55 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       hugh@veritas.com, nickpiggin@yahoo.com.au
-Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in invalidate_complete_page2()
-Message-ID: <20080625141654.GA4803@2ka.mipt.ru>
-References: <20080625124038.103406301@szeredi.hu> <20080625124121.839734708@szeredi.hu> <20080625131117.GA28136@2ka.mipt.ru> <E1KBV7H-0005nv-Gl@pomaz-ex.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 25 Jun 2008 10:22:52 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:2518 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752290AbYFYOWu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 10:22:50 -0400
+Date: Wed, 25 Jun 2008 18:22:49 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-ide@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH -rt] ide: fix interrupts processing issue with
+	preempt-able hardirqs
+Message-ID: <20080625142249.GA21630@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu> <20080624000016.GA12547@polina.dev.rtsoft.ru> <20080625123431.GA25452@polina.dev.rtsoft.ru> <486244FF.8060805@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <E1KBV7H-0005nv-Gl@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <486244FF.8060805@ru.mvista.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 03:32:55PM +0200, Miklos Szeredi (miklos@szeredi.hu) wrote:
-> > What about writing path, when page is written after some previous write?
-> 
-> page->mapping should be checked in the write paths as well.
+On Wed, Jun 25, 2008 at 05:15:43PM +0400, Sergei Shtylyov wrote:
+> Hello.
+>
+> Anton Vorontsov wrote:
+>
+>>>>> IDE interrupt handler relies on the fact that, if necessary, 
+>>>>> hardirqs will re-trigger on ISR exit. With fully preemtable IRQs 
+>>>>> this seems to be not true, since if hardirq thread is currently 
+>>>>> running, and the same IRQ raised again, then this IRQ will be 
+>>>>> simply lost.
+>
+>>>> actually no, that should not happen - if -rt loses an IRQ then 
+>>>> something broke in the threaded IRQ code. It's supposed to be a 
+>>>> drop-in, compatible IRQ flow with no driver changes needed.
+>
+>>> ..just as I thought, the bug somewhere deeper... heh.
+>
+>> Ok, a bit more investigation showed that this is indeed not RT specific
+>> per see, but issue emerges only on RT-style IRQ handlers + alim15x3 IDE
+>> controller (for example, PDC20269 works ok).
+>
+>    Does it happen only with ATAPI devices also or with ATA disks too?
 
-All we need from mapping here is where to put this page and inode
-pointer.
+So far I own two ATAPI devices, IDE disks are quire rare nowadays,
+should find one. ;-)
 
-> > Like __block_prepare_write()?
-> 
-> That's called with the page locked and page->mapping verified.
+>> The difference is that that with RT: low-level (non-threaded) IRQ
+>> handler masks IDE IRQ, then wakes up appropriate IRQ thread, which calls
+>> IDE handler, and then, after IDE handler exits, thread routine unmasks
+>> IDE IRQ.
+>
+>> Without RT: low-level non-threaded IRQ handler does not mask specific
+>> IRQ, but disables local interrupts, and calls IDE handler directly.
+>
+>    Hm, handle_level_irq() (and PCI IRQs are level-triggered) calls  
+> mask_ack_irq() which should *mask* IRQ and send EOI (at least on i8259). 
+> By IRQ18 I can assume it's I/O APIC 
 
-Only when called via standard codepath. If page was grabbed and page
-unlocked and subsequently 'invalidated' via invalidate_complete_page2(),
-it still relies on uptodate bit to be set to correctly work.
+No, it's not Intel I/O APIC. IRQ18 is the virtual "Linux IRQ", no
+correlations with the PIC IRQ number.
 
-After all we do not need page mapping to write into given page, that's
-why __block_prepare_write() does not check it.
+> -- this one may be using different 
+> methods of handling IRQ depending on whether hardirq preemption is on or 
+> off (at least it was so in 2.6.18-rt time).
 
-> > > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> > > ---
-> > >  mm/truncate.c |    1 -
-> > >  1 file changed, 1 deletion(-)
-> > > 
-> > > Index: linux-2.6/mm/truncate.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/mm/truncate.c	2008-06-24 20:49:25.000000000 +0200
-> > > +++ linux-2.6/mm/truncate.c	2008-06-24 23:28:32.000000000 +0200
-> > > @@ -356,7 +356,6 @@ invalidate_complete_page2(struct address
-> > >  	BUG_ON(PagePrivate(page));
-> > >  	__remove_from_page_cache(page);
-> > >  	write_unlock_irq(&mapping->tree_lock);
-> > > -	ClearPageUptodate(page);
-> > >  	page_cache_release(page);	/* pagecache ref */
-> > >  	return 1;
-> > >  failed:
-> > 
-> > Don't do that, add new function instead which will do exactly that, if
-> > you do need exactly this behaviour.
-> 
-> I don't see any point in doing that.
-> 
-> > Also why isn't invalidate_complete_page() enough, if you want to have
-> > that page to be half invalidated?
-> 
-> I want the page fully invalidated, and I also want splice and nfs
-> exporting to work as for other filesystems.
+Hardirq preemption is on, of course. The whole problem is when hardirqs
+preempted.
 
-Fully invalidated page can not be uptodate, doesnt' it? :)
+> The default, "fasteoi" path 
+> doesn't mask off the IRQ indeed (it should be disabled from re-occuring 
+> anyway until the code issues EOI)...
 
-You destroy existing functionality just because there are some obscure
-places, where it is used, so instead of fixing that places, you treat
-the symptom. After writing previous mail I found a way to workaround it
-even with your changes, but the whole approach of changing
-invalidate_complete_page2() is not correct imho.
+What do you mean by doesn't mask off? With hardirqs preemption it does
+mask off IDE interrupt, and then sends an EOI. But it doesn't mask
+processors' IRQs (i.e. local_irq_disable()), true. And MPIC is using
+fasteoi path indeed.
 
-Your note:
->Let's start with page_cache_pipe_buf_confirm().  How should we deal
->with finding an invalidated page (!PageUptodate(page) &&
->!page->mapping)?
+>    So, which machine and PIC you have?
 
->We could return zero to use the contents even though it was
->invalidated, not good, but if the page was originally uptodate, then
->it should be OK to use the stale data.  But it could have been
->invalidated before becoming uptodate, so the contents could be total
->crap, and that's not good.  So now we have to tweak page invalidation
->to differentiate between was-uptodate and was-never-uptodate pages.
+It is PowerPC MPC8610 + ULi "Super South Bridge" connected through
+PCI Express. This south bridge contains lots of devices (and lots of
+PCI quirks, see arch/powerpc/platforms/86xx/mpc8610_hpcd.c).
 
-Is this nfs/fuse problem you described:
-http://marc.info/?l=linux-fsdevel&m=121396920822693&w=2
+PIC is OpenPIC-compatible (MPIC, built-in into MPC8610 SOC).
 
-Instead of returning error when reading from invalid page, now you
-return old content of it? From description on above link it is not the
-case, when user reads data into splice pipe and suddenly it becomes
-invalidated, which you try to fix with this patch, but it may be
-completely different problem though.
+Note: I don't have any specifications on that ULi bridge, neither I have
+any schematics for that board (so far, let's hope). So I can't say
+exactly how things are inter-connected or what these PCI quirks are
+actually doing (despite few comments in them).
+
+And since it is PCI-E, interrupt things are quite troublesome to
+debug without serial logic analyzer. :-)
+
+>> The bug, as I see it, in the alim15x3 (ULi M5228) hardware: for some
+>> reason it does not hold IRQ line, but rises it for some short period
+>> of time (while the drive itself rises and holds it correctly -- I'm
+>> seeing it via oscilloscope).
+>
+>    That's surely an invalid behavior for a level triggered interrupt that 
+> can also result in spurious IRQs...  I'm not even sure how it can 
+> reliably work without masking since there should be no latching for level 
+> triggered interupts...
+
+Yeah.
+
+>> So this scheme does not work:
+>> mask_irq()
+>> ...do something that will trigger IDE interrupt...
+>> unmask_irq()
+>
+>> Also, further testing showed that this issue isn't drive-specific, i.e.
+>> with a delay inserted before the unmask_irq(), the bug shows with any
+>> drive I have.
+>
+>    So, "shit happens" even with the ATA drives?
+
+Will try as soon as I'll get one.
+
+Thanks,
 
 -- 
-	Evgeniy Polyakov
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
