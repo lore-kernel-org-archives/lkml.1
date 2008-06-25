@@ -1,85 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757647AbYFYNXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbYFYNd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757647AbYFYNXS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 09:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755995AbYFYNXG
+	id S1757327AbYFYNd0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 09:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755790AbYFYNdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 09:23:06 -0400
-Received: from mail28.messagelabs.com ([216.82.249.131]:36316 "EHLO
-	mail28.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755942AbYFYNXE (ORCPT
+	Wed, 25 Jun 2008 09:33:18 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:36271 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755552AbYFYNdR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 09:23:04 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-13.tower-28.messagelabs.com!1214400182!18843113!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.14]
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: <linux-kernel@vger.kernel.org>
-CC: <trivial@kernel.org>
-Subject: [PATCH] fix typo "varaible" -> "variable"
-Date: Wed, 25 Jun 2008 15:22:59 +0200
-Message-ID: <1214400179-7085-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-X-Mailer: git-send-email 1.5.6
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 25 Jun 2008 13:22:59.0577 (UTC) FILETIME=[966EC690:01C8D6C6]
+	Wed, 25 Jun 2008 09:33:17 -0400
+To: johnpol@2ka.mipt.ru
+CC: miklos@szeredi.hu, jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       hugh@veritas.com, nickpiggin@yahoo.com.au
+In-reply-to: <20080625131117.GA28136@2ka.mipt.ru> (message from Evgeniy
+	Polyakov on Wed, 25 Jun 2008 17:11:17 +0400)
+Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in invalidate_complete_page2()
+References: <20080625124038.103406301@szeredi.hu> <20080625124121.839734708@szeredi.hu> <20080625131117.GA28136@2ka.mipt.ru>
+Message-Id: <E1KBV7H-0005nv-Gl@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 25 Jun 2008 15:32:55 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch was created by
+> > I haven't done an audit of all code that checks the PG_uptodate flags,
+> > but I suspect, that this change won't have any harmful effects.  Most
+> > code checks page->mapping to see if the page was truncated or
+> > invalidated, before using it, and retries the find/read on the page if
+> > it wasn't.  The page_cache_pipe_buf_confirm() code is an exception in
+> > this regard.
+> 
+> What about writing path, when page is written after some previous write?
 
-	git grep -l '[vV]araible' | xargs -r -t perl -p -i -e 's/\b([Vv]ar)ai(bles?)\b/$1ia$2/g'
+page->mapping should be checked in the write paths as well.
 
-Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
----
- drivers/input/mouse/gpio_mouse.c |    2 +-
- drivers/net/skfp/h/hwmtm.h       |    2 +-
- drivers/net/wan/farsync.c        |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+> Like __block_prepare_write()?
 
-diff --git a/drivers/input/mouse/gpio_mouse.c b/drivers/input/mouse/gpio_mouse.c
-index 3392901..f8095a0 100644
---- a/drivers/input/mouse/gpio_mouse.c
-+++ b/drivers/input/mouse/gpio_mouse.c
-@@ -19,7 +19,7 @@
- 
- /*
-  * Timer function which is run every scan_ms ms when the device is opened.
-- * The dev input varaible is set to the the input_dev pointer.
-+ * The dev input variable is set to the the input_dev pointer.
-  */
- static void gpio_mouse_scan(struct input_polled_dev *dev)
- {
-diff --git a/drivers/net/skfp/h/hwmtm.h b/drivers/net/skfp/h/hwmtm.h
-index 1a606d4..e1a7e5f 100644
---- a/drivers/net/skfp/h/hwmtm.h
-+++ b/drivers/net/skfp/h/hwmtm.h
-@@ -145,7 +145,7 @@ struct hw_modul {
- 	int	leave_isr ;		/* leave fddi_isr immedeately if set */
- 	int	isr_flag ;		/* set, when HWM is entered from isr */
- 	/*
--	 * varaibles for the current transmit frame
-+	 * variables for the current transmit frame
- 	 */
- 	struct s_smt_tx_queue *tx_p ;	/* pointer to the transmit queue */
- 	u_long	tx_descr ;		/* tx descriptor for FORMAC+ */
-diff --git a/drivers/net/wan/farsync.c b/drivers/net/wan/farsync.c
-index 547368e..f624615 100644
---- a/drivers/net/wan/farsync.c
-+++ b/drivers/net/wan/farsync.c
-@@ -72,7 +72,7 @@ MODULE_LICENSE("GPL");
- #endif
- 
- /*
-- * Modules parameters and associated varaibles
-+ * Modules parameters and associated variables
-  */
- static int fst_txq_low = FST_LOW_WATER_MARK;
- static int fst_txq_high = FST_HIGH_WATER_MARK;
--- 
-1.5.6
+That's called with the page locked and page->mapping verified.
 
+> > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> > ---
+> >  mm/truncate.c |    1 -
+> >  1 file changed, 1 deletion(-)
+> > 
+> > Index: linux-2.6/mm/truncate.c
+> > ===================================================================
+> > --- linux-2.6.orig/mm/truncate.c	2008-06-24 20:49:25.000000000 +0200
+> > +++ linux-2.6/mm/truncate.c	2008-06-24 23:28:32.000000000 +0200
+> > @@ -356,7 +356,6 @@ invalidate_complete_page2(struct address
+> >  	BUG_ON(PagePrivate(page));
+> >  	__remove_from_page_cache(page);
+> >  	write_unlock_irq(&mapping->tree_lock);
+> > -	ClearPageUptodate(page);
+> >  	page_cache_release(page);	/* pagecache ref */
+> >  	return 1;
+> >  failed:
+> 
+> Don't do that, add new function instead which will do exactly that, if
+> you do need exactly this behaviour.
+
+I don't see any point in doing that.
+
+> Also why isn't invalidate_complete_page() enough, if you want to have
+> that page to be half invalidated?
+
+I want the page fully invalidated, and I also want splice and nfs
+exporting to work as for other filesystems.
+
+Miklos
