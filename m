@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757685AbYFYSjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbYFYSog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757685AbYFYSjQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 14:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbYFYSjA
+	id S1755704AbYFYSog (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 14:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbYFYSo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 14:39:00 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56839 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752226AbYFYSi7 (ORCPT
+	Wed, 25 Jun 2008 14:44:28 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:35941 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752124AbYFYSo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 14:38:59 -0400
-Date: Wed, 25 Jun 2008 14:38:58 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Stefan Becker <Stefan.Becker@nokia.com>
-cc: linux-kernel@vger.kernel.org, <linux-usb@vger.kernel.org>
-Subject: Re: [REGRESSION] 2.6.24/25: random lockups when accessing external
- USB harddrive
-In-Reply-To: <486269AE.7050006@nokia.com>
-Message-ID: <Pine.LNX.4.44L0.0806251408300.3394-100000@iolanthe.rowland.org>
+	Wed, 25 Jun 2008 14:44:27 -0400
+Date: Wed, 25 Jun 2008 13:44:09 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Benjamin Thery <benjamin.thery@bull.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Biederman <ebiederm@xmission.com>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 11/11] sysfs: user namespaces: fix bug with
+	clone(CLONE_NEWUSER) with fairsched
+Message-ID: <20080625184409.GA8353@us.ibm.com>
+References: <20080618170729.808539948@theryb.frec.bull.fr> <20080618170731.746054454@theryb.frec.bull.fr> <485F0812.4090903@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <485F0812.4090903@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jun 2008, Stefan Becker wrote:
-
-> Well, I guess I'm just lucky it didn't turn into a heisenbug with all 
-> those printk's in the code :-)
-
-Yes indeed.
-
-> > The usage in usb_hcd_link_urb_to_ep() appears benign; the code doesn't 
-> > do anything that might hang while holding the lock.  All it does is 
-> > manipulate a linked list.
+Quoting Tejun Heo (htejun@gmail.com):
+> Benjamin Thery wrote:
+> > Mark the /sys/kernel/uids directory to be tagged so that processes in
+> > different user namespaces can remount /sys and see their own uid
+> > listings.
+> > 
+> > Without this patch, having CONFIG_FAIR_SCHED=y makes user namespaces
+> > unusable, because when you 
+> >   clone(CLONE_NEWUSER)
+> > it will auto-create the root userid and try to create
+> > /sys/kernel/uids/0.  Since that already exists from the parent user
+> > namespace, the create fails, and the clone misleadingly ends up
+> > returning -ENOMEM.
+> > 
+> > This patch fixes the issue by allowing each user namespace to remount
+> > /sys, and having /sys filter the /sys/kernel/uid/ entries by user
+> > namespace.
+> > 
+> > Signed-off-by: Serge Hallyn <serue@us.ibm.com>
+> > Signed-off-by: Benjamin Thery <benjamin.thery@bull.net>
 > 
-> Unfortunately I could only run a small test today. I added some simple 
-> debugging code for the spinlock usage in hcd.c (see attached diff) and I 
-> get the following message at lockup (I tried it twice just to be sure):
-> 
-> HCD URB list locked by usb_hcd_link_urb_to_ep!
-> 
-> As far as I understand the matter this only can happen if 
-> usb_hcd_link_urb_to_ep() gets interrupted while holding the spinlock. 
-> But according to the contract at the header of the function it should be 
-> called with interrupts disabled!
+> Ditto as patch #10.
 
-So it should.  Do you know how to test whether interrupts are enabled?  
-There's a routine called raw_irqs_disabled() defined in 
-include/asm/irqflags.h.  Stick it inside usb_hcd_link_urb_to_ep, and 
-the first time it returns nonzero, do a dump_stack().
+Except the sysfs mount holds no refcount on the userns.  So as long as we
+do the ida tagging as you suggested in your response to patch 6, there
+should be no reference to the user_ns left in sysfs code.
 
-> I guess the obvious way forward from here is:
-> 
->   - replace the spin_lock() in the function with the irqsave version
-> 
->   - if that fixes the problem add debugging code to the function and 
-> panic with a stack trace when the interrupts aren't disabled one entry 
-> (don't know how to detect that yet, any suggestions?) That hopefully 
-> identifies the culprit that calls the function with interrupts enabled.
+The extra reference in patch #9 is for a light ref on the network
+namespace.  I'm still not sure that needs to be there, since if the
+network namespace goes away, it will properly unregister its sysfs
+mounts.  Eric, Benjamin, I really don't see any use for the hold_net()
+from sysfs.  What is it doing?
 
-That should do the trick.  Although it would be quicker just to make a
-small change to your existing code: The first time the spin_trylock
-fails, do a dump_stack().  You did say this is a UP system, right?  
-(Because obviously on SMP systems, one expects spin_trylock to fail
-from time to time.)
-
-The only callers of usb_hcd_link_urb_to_ep are the host controller
-drivers plus a couple of routines in hcd.c itself.  But all the
-callers are in the scope of spin_lock_irqsave or spin_lock_irq!  So
-maybe there's more going on here than meets the eye.
-
-Alan Stern
-
+-serge
