@@ -1,31 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759700AbYFYQLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758860AbYFYQOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759700AbYFYQLl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 12:11:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbYFYQLe
+	id S1758860AbYFYQOX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 12:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755421AbYFYQOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 12:11:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59041 "EHLO mx2.mail.elte.hu"
+	Wed, 25 Jun 2008 12:14:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59499 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751446AbYFYQLd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 12:11:33 -0400
-Date: Wed, 25 Jun 2008 18:11:01 +0200
+	id S1752857AbYFYQOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 12:14:14 -0400
+Date: Wed, 25 Jun 2008 18:14:04 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Paul Jackson <pj@sgi.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Jack Steiner <steiner@sgi.com>, Mike Travis <travis@sgi.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       "Huang, Ying" <ying.huang@intel.com>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH 2/2] x86 boot: only pick up additional EFI memmap if
-	add_efi_memmap flag
-Message-ID: <20080625161101.GD24967@elte.hu>
-References: <20080625124440.25036.96518.sendpatchset@polaris-admin.engr.sgi.com> <20080625124446.25036.25226.sendpatchset@polaris-admin.engr.sgi.com>
+To: Frederik Schwarzer <schwarzerf@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] some typo fixes in docs and comments
+Message-ID: <20080625161404.GE24967@elte.hu>
+References: <200806241611.17959.schwarzerf@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080625124446.25036.25226.sendpatchset@polaris-admin.engr.sgi.com>
+In-Reply-To: <200806241611.17959.schwarzerf@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,28 +35,45 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paul Jackson <pj@sgi.com> wrote:
+* Frederik Schwarzer <schwarzerf@gmail.com> wrote:
 
-> From: Paul Jackson <pj@sgi.com>
+> Hi,
 > 
-> Applies on top of the previous patch:
->   x86 boot: add code to add BIOS provided EFI memory entries to kernel
+> while reading the help of a kernel module config, I found a typo. 
+> Since this is a quite common typo, I looked for it further and fixed 
+> it where I found it.
 > 
-> Instead of always adding EFI memory map entries (if present) to the 
-> memory map after initially finding either E820 BIOS memory map entries 
-> and/or kernel command line memmap entries, -instead- only add such 
-> additional EFI memory map entries if the kernel boot option:
+> I hope this is the right address for this kind of things.
 > 
->     add_efi_memmap
+> Regards,
+> Frederik
 > 
-> is specified.
-> 
-> Requiring this 'add_efi_memmap' option is backward compatible with 
-> kernels that didn't load such additional EFI memory map entries in the 
-> first place, and it doesn't override a configuration that tries to 
-> replace all E820 or EFI BIOS memory map entries with ones given 
-> entirely on the kernel command line.
+> ---
+>  Documentation/dell_rbu.txt              |    4 ++--
+>  Documentation/laptops/thinkpad-acpi.txt |    2 +-
+>  Documentation/networking/tuntap.txt     |    2 +-
+>  arch/m68k/kernel/traps.c                |    2 +-
+>  drivers/acpi/executer/exprep.c          |    2 +-
+>  drivers/acpi/executer/exresolv.c        |    2 +-
+>  drivers/acpi/executer/exstore.c         |    2 +-
+>  drivers/acpi/resources/rscreate.c       |    2 +-
+>  drivers/acpi/utilities/utobject.c       |    4 ++--
+>  drivers/char/epca.c                     |    2 +-
+>  drivers/cpufreq/Kconfig                 |    4 ++--
+>  drivers/input/keyboard/atkbd.c          |    2 +-
+>  drivers/macintosh/Kconfig               |    2 +-
+>  drivers/misc/phantom.c                  |    2 +-
+>  fs/ncpfs/ioctl.c                        |    2 +-
+>  include/acpi/acmacros.h                 |    2 +-
+>  include/acpi/actypes.h                  |    2 +-
+>  include/asm-x86/desc_defs.h             |    2 +-
+>  include/linux/ncp_fs.h                  |    2 +-
+>  mm/slub.c                               |    2 +-
+>  sound/oss/aedsp16.c                     |    2 +-
+>  21 files changed, 24 insertions(+), 24 deletions(-)
 
-applied to tip/x86/setup-memory - thanks Paul.
+the x86 bits are looking fine - and the other ones seem OK too.
+
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
 	Ingo
