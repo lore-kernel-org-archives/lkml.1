@@ -1,142 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbYFYKiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYFYKlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755911AbYFYKiS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 06:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbYFYKiI
+	id S1756106AbYFYKlT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 06:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbYFYKlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 06:38:08 -0400
-Received: from il.qumranet.com ([212.179.150.194]:36841 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753890AbYFYKiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 06:38:06 -0400
-Message-ID: <4862200D.5070400@qumranet.com>
-Date: Wed, 25 Jun 2008 13:38:05 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 25 Jun 2008 06:41:09 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:55486 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753371AbYFYKlI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 06:41:08 -0400
+Message-ID: <486220C2.1090809@aitel.hist.no>
+Date: Wed, 25 Jun 2008 12:41:06 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+Organization: HiST
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-To: "Yang, Sheng" <sheng.yang@intel.com>
-CC: kvm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 2/2] x86: Add "virt flag" in /proc/cpuinfo
-References: <200806241708.49462.sheng.yang@intel.com>
-In-Reply-To: <200806241708.49462.sheng.yang@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug #10962] 2.6.26-rc2 WARNING from usb-serial, and then my
+ gps is dead
+References: <RzbtSgMztjP.A.jRD._spXIB@albercik> <4mRZUF-hVeG.A.hVD.DtpXIB@albercik>
+In-Reply-To: <4mRZUF-hVeG.A.hVD.DtpXIB@albercik>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(copying Ingo)
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10962
+> Subject		: 2.6.26-rc2 WARNING from usb-serial, and then my gps is dead
+> Submitter	: Helge Hafting <helge.hafting@aitel.hist.no>
+> Date		: 2008-06-22 18:22 (1 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121415899320685&w=4
+> 
+> 
 
+I can confirm that this problem still happens in 2.6.26-rc8.
+When the gps loose connection (probably due to faulty USB cabling), then
+the kernel spits out numerous WARNINGs.
 
-Yang, Sheng wrote:
-> From 54b1bb9fe5d2fe40fc047b43dd4e1a480d41a977 Mon Sep 17 00:00:00 2001
-> From: Sheng Yang <sheng.yang@intel.com>
-> Date: Tue, 24 Jun 2008 17:03:17 +0800
-> Subject: [PATCH] x86: Add "virt flag" in /proc/cpuinfo
->
-> The hardware virtualization technology evolves very fast. But currently
-> it's hard to tell if your CPU support a certain kind of HW technology without
-> dig into the source code.
->
-> The patch add a new item under /proc/cpuinfo, named "virt flag". The "virt
-> flag" got the similar function as "flag". It is used to indicate what
-> features does this CPU supported. It don't cover all features but only the
-> important ones.
->
->   
+I'll try to reproduce with USB debugging later.
 
-Ingo, do you prefer this as a separate 'virt flags' line or as addition 
-to the 'flag' line?
-
-> Current implement just cover Intel VMX side.
->
-> Signed-off-by: Sheng Yang <sheng.yang@intel.com>
-> ---
->  arch/x86/kernel/cpu/proc.c   |   28 ++++++++++++++++++++++++++++
->  include/asm-x86/cpufeature.h |    9 +++++++++
->  2 files changed, 37 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-> index 0d0d905..03b30d0 100644
-> --- a/arch/x86/kernel/cpu/proc.c
-> +++ b/arch/x86/kernel/cpu/proc.c
-> @@ -77,6 +77,31 @@ static void show_cpuinfo_misc(struct seq_file *m, struct 
-> cpuinfo_x86 *c)
->  }
->  #endif
->
-> +static void show_cpuinfo_vmx_virtflag(struct seq_file *m)
-> +{
-> +	u32 vmx_msr_low, vmx_msr_high, msr_ctl, msr_ctl2;
-> +
-> +	seq_printf(m, "\nvirt flag\t:");
-> +	rdmsr(MSR_IA32_VMX_PROCBASED_CTLS, vmx_msr_low, vmx_msr_high);
-> +	msr_ctl = 0xffffffff & vmx_msr_high | vmx_msr_low;
-> +	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW)
-> +		seq_printf(m, " tpr_shadow");
-> +	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_VNMI)
-> +		seq_printf(m, " vnmi");
-> +	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_2ND_CTLS) {
-> +		rdmsr(MSR_IA32_VMX_PROCBASED_CTLS2,
-> +		      vmx_msr_low, vmx_msr_high);
-> +		msr_ctl2 = 0xffffffff & vmx_msr_high | vmx_msr_low;
-> +		if ((msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_VIRT_APIC) &&
-> +		    (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW))
-> +			seq_printf(m, " flexpriority");
-> +		if (msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_EPT)
-> +			seq_printf(m, " ept");
-> +		if (msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_VPID)
-> +			seq_printf(m, " vpid");
-> +	}
-> +}
-> +
->  static int show_cpuinfo(struct seq_file *m, void *v)
->  {
->  	struct cpuinfo_x86 *c = v;
-> @@ -123,6 +148,9 @@ static int show_cpuinfo(struct seq_file *m, void *v)
->  		if (cpu_has(c, i) && x86_cap_flags[i] != NULL)
->  			seq_printf(m, " %s", x86_cap_flags[i]);
->
-> +	if (cpu_has(c, X86_FEATURE_VMX))
-> +		show_cpuinfo_vmx_virtflag(m);
-> +
->  	seq_printf(m, "\nbogomips\t: %lu.%02lu\n",
->  		   c->loops_per_jiffy/(500000/HZ),
->  		   (c->loops_per_jiffy/(5000/HZ)) % 100);
-> diff --git a/include/asm-x86/cpufeature.h b/include/asm-x86/cpufeature.h
-> index 0d609c8..87d8084 100644
-> --- a/include/asm-x86/cpufeature.h
-> +++ b/include/asm-x86/cpufeature.h
-> @@ -84,6 +84,7 @@
->  #define X86_FEATURE_XMM3	(4*32+ 0) /* Streaming SIMD Extensions-3 */
->  #define X86_FEATURE_MWAIT	(4*32+ 3) /* Monitor/Mwait support */
->  #define X86_FEATURE_DSCPL	(4*32+ 4) /* CPL Qualified Debug Store */
-> +#define X86_FEATURE_VMX		(4*32+ 5) /* Virtual Machine eXtensions */
->  #define X86_FEATURE_EST		(4*32+ 7) /* Enhanced SpeedStep */
->  #define X86_FEATURE_TM2		(4*32+ 8) /* Thermal Monitor 2 */
->  #define X86_FEATURE_CID		(4*32+10) /* Context ID */
-> @@ -113,6 +114,14 @@
->   */
->  #define X86_FEATURE_IDA		(7*32+ 0) /* Intel Dynamic Acceleration */
->
-> +/* Intel VMX MSR indicated features */
-> +#define X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW	0x00200000
-> +#define X86_VMX_FEATURE_PROC_CTLS_VNMI		0x00400000
-> +#define X86_VMX_FEATURE_PROC_CTLS_2ND_CTLS	0x80000000
-> +#define X86_VMX_FEATURE_PROC_CTLS2_VIRT_APIC	0x00000001
-> +#define X86_VMX_FEATURE_PROC_CTLS2_EPT		0x00000002
-> +#define X86_VMX_FEATURE_PROC_CTLS2_VPID		0x00000020
-> +
->  #if defined(__KERNEL__) && !defined(__ASSEMBLY__)
->
->  #include <linux/bitops.h>
-> --
-> 1.5.5
->
->   
-
-
--- 
-error compiling committee.c: too many arguments to function
+Helge Hafting
 
