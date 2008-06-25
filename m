@@ -1,90 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756561AbYFYSQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbYFYSWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756561AbYFYSQn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 14:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbYFYSQe
+	id S1755217AbYFYSWx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 14:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYFYSWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 14:16:34 -0400
-Received: from web57914.mail.re3.yahoo.com ([68.142.236.107]:20705 "HELO
-	web57914.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751250AbYFYSQd (ORCPT
+	Wed, 25 Jun 2008 14:22:42 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:52584 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751250AbYFYSWl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 14:16:33 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Jun 2008 14:16:33 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=SYigeUo8v8jQtG5Z71zCAjJlG6xeYeQK1ZUX6PJNZiRavblBnE9vCXa3CZRbGwQcj4FFrENwVxOcMRzf/4Gvz/L2A8YeOYv8EvkjDlnGr0xR7F+XY8i+V6rEk5gTcQpwR3c6jk6YI+yDfuwXWCOJExJC6GqfLjoa6NxbRU+2PTE=;
-X-Mailer: YahooMailWebService/0.7.199
-Date: Wed, 25 Jun 2008 11:09:51 -0700 (PDT)
-From: hong zhang <henryzhang62@yahoo.com>
-Reply-To: henryzhang62@yahoo.com
-Subject: Re: [E1000-devel] Strange problem with e1000 driver - ping packet loss
-To: Robert Hancock <hancockr@shaw.ca>, vatsa@linux.vnet.ibm.com
-Cc: e1000-devel@lists.sourceforge.net, greg@kroah.com,
-       varunc@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org
-In-Reply-To: <20080625143234.GB3899@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <375649.87756.qm@web57914.mail.re3.yahoo.com>
+	Wed, 25 Jun 2008 14:22:41 -0400
+Subject: Re: [PATCH 2/2] acpi based pci gap caluculation v2
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Zhao Yakui <yakui.zhao@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       lenb@kernel.org
+Cc: linux-acpi <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1214413073.27577.67.camel@promb-2n-dhcp368.eng.vmware.com>
+References: <1214333326.27577.28.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <1214362159.9800.28.camel@yakui_zhao.sh.intel.com>
+	 <35f686220806242117p4a442982hb459a6b76312f391@mail.gmail.com>
+	 <1214372365.9800.42.camel@yakui_zhao.sh.intel.com>
+	 <35f686220806242304q43987059xb203dd1ac75b7583@mail.gmail.com>
+	 <1214383095.9800.85.camel@yakui_zhao.sh.intel.com>
+	 <1214413073.27577.67.camel@promb-2n-dhcp368.eng.vmware.com>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Wed, 25 Jun 2008 11:22:40 -0700
+Message-Id: <1214418160.27577.87.camel@promb-2n-dhcp368.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vatsa,
+On Wed, 2008-06-25 at 09:57 -0700, Alok Kataria wrote:
 
-This is not legacy mode that causes long ping time.
-
----henry
-
-
---- On Wed, 6/25/08, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
-
-> From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> Subject: Re: [E1000-devel] Strange problem with e1000 driver - ping packet loss
-> To: "Robert Hancock" <hancockr@shaw.ca>
-> Cc: e1000-devel@lists.sourceforge.net, greg@kroah.com, varunc@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org
-> Date: Wednesday, June 25, 2008, 9:32 AM
-> On Fri, Jun 20, 2008 at 08:40:47AM -0600, Robert Hancock
-> wrote:
-> > Looks reasonable to me.. and what does
-> /proc/interrupts show with this 
-> > setup?
+> While writing this mail i figured out that, instead of searching from
+> start_addr of _CRS to 2^32 we should just search till *end_addr* of _CRS resource.
+> I will send a patch to that effect. 
 > 
-> Sorry about the delay, but here's /proc/interrupts:
+> Thanks,
+> Alok
 > 
->            CPU0       
->   0:    1342021    IO-APIC-edge  timer
->   1:        416    IO-APIC-edge  i8042
->   6:          6    IO-APIC-edge  floppy
->   8:          1    IO-APIC-edge  rtc
->  12:      13367    IO-APIC-edge  i8042
-> 169:          1   IO-APIC-level  acpi
-> 177:       8882   IO-APIC-level  libata, eth1
-> 185:      75633   IO-APIC-level  uhci_hcd:usb1,
-> i915@pci:0000:00:02.0
-> 193:          0   IO-APIC-level  uhci_hcd:usb2
-> NMI:          0 
-> LOC:    1341970 
-> ERR:          0
-> MIS:          0
-> 
-> 
-> 
-> -- 
-> Regards,
-> vatsa
-> 
-> -------------------------------------------------------------------------
-> Check out the new SourceForge.net Marketplace.
-> It's the best place to buy or sell services for
-> just about anything Open Source.
-> http://sourceforge.net/services/buy/index.php
-> _______________________________________________
-> E1000-devel mailing list
-> E1000-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/e1000-devel
+
+Ingo, Please also apply this patch to the tip/out-of-tree
+--
+
+Incremental patch . This patch passes the pci producer resources
+end_addr (got from _CRS) to the e820_search_gap function. 
+Without this patch the code will always search from the producer regions
+start_address to 2^32, even though the producer region may be smaller. 
+
+Now , we limit the search only within the producer region's address
+space. 
+Also we put a condition to check if the resource lies in the 32bit
+address range. 
+
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
+
+Index: linux-x86-tree.git/arch/x86/pci/acpi.c
+===================================================================
+--- linux-x86-tree.git.orig/arch/x86/pci/acpi.c	2008-06-25 10:11:35.000000000 -0700
++++ linux-x86-tree.git/arch/x86/pci/acpi.c	2008-06-25 11:17:31.000000000 -0700
+@@ -121,13 +121,21 @@
+ 	struct acpi_resource_address64 addr;
+ 	acpi_status status;
+ 	struct gap_info *gap = data;
++	unsigned long long start_addr, end_addr;
+ 
+ 	status = resource_to_addr(resource, &addr);
+ 	if (ACPI_SUCCESS(status) &&
+ 	    addr.resource_type == ACPI_MEMORY_RANGE &&
+ 	    addr.address_length > gap->gapsize) {
+-		e820_search_gap(&gap->gapstart, &gap->gapsize,
+-				(addr.minimum + addr.translation_offset));
++		start_addr = addr.minimum + addr.translation_offset;
++		/*
++		 * We want space only in the 32bit address range
++		 */
++		if (start_addr < UINT_MAX) {
++			end_addr = start_addr + addr.address_length;
++			e820_search_gap(&gap->gapstart, &gap->gapsize,
++					start_addr, end_addr);
++		}
+ 	}
+ 
+ 	return AE_OK;
 
 
-      
