@@ -1,118 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757665AbYFYNTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757799AbYFYNWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757665AbYFYNTW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 09:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbYFYNTP
+	id S1757799AbYFYNWW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 09:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbYFYNWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 09:19:15 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:28718 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755305AbYFYNTO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 09:19:14 -0400
-Message-Id: <48620D8E.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Wed, 25 Jun 2008 07:19:10 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: <mingo@elte.hu>, <rostedt@goodmis.org>, <tglx@linutronix.de>,
-       "Gregory Haskins" <GHaskins@novell.com>
-Cc: <peterz@infradead.org>, "David Bahi" <DBahi@novell.com>, <npiggin@suse.de>,
-       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH 1/3] sched: limit "all_pinned" balance attempts to
-	sd->span
-References: <20080624141527.28487.77778.stgit@lsg.lsg.lab.novell.com>
- <20080624141602.28487.81775.stgit@lsg.lsg.lab.novell.com>
-In-Reply-To: <20080624141602.28487.81775.stgit@lsg.lsg.lab.novell.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Wed, 25 Jun 2008 09:22:13 -0400
+Received: from lucidpixels.com ([75.144.35.66]:55683 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755946AbYFYNWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 09:22:12 -0400
+Date: Wed, 25 Jun 2008 09:22:10 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+cc: Alan Piszcz <ap@solarrain.com>
+Subject: In reply to the scheduler performance across md/software RAID.
+Message-ID: <alpine.DEB.1.10.0806250916250.7338@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Tue, Jun 24, 2008 at 10:16 AM, in message
-<20080624141602.28487.81775.stgit@lsg.lsg.lab.novell.com>, Gregory Haskins
-<ghaskins@novell.com> wrote: 
-> Load-balancing will never terminate if all cpus are "all_pinned" with
-> the current algorithm.  This would be pretty unlikely to occur, but we
-> should protect against it nonetheless.
+Strictly "benchmark" only, not example of a real load of course, but we 
+see that overall, most of them finish around the same time, with the 
+exception of CFQ which I had used 0 for the slice idle time for all of the 
+disks.
 
-Hmm...after thinking about this some more, I think I was wrong and this is unfounded.
+Using 10 Raptor 150s in this test in a md/RAID 5 w/1024k chunk size, 
+utilizing the XFS filesystem:
+http://home.comcast.net/~jpiszcz/20080625/scheduler_comparison.html
 
-The code would eventually terminate when the f_b_g()/f_b_q() cant find a good target.
+jp@p63:~$ mkdir sched
+jp@p63:~$ mkdir sched/cfq
+jp@p63:~$ /usr/bin/time ./rt3.sh && mv *txt sched/cfq/
+1507.95jp 323.73system 39:28.73elapsed 77%CPU (0avgtext+0avgdata 0maxresident)
+k 0inputs+0outputs (19major+4157minor)pagefaults 0swaps
+jp@p63:~$ mkdir sched/noop
+jp@p63:~$ /usr/bin/time ./rt3.sh && mv *txt sched/noop/
+1503.31jp 323.09system 40:02.06elapsed 76%CPU (0avgtext+0avgdata 0maxresident)
+k 0inputs+0outputs (20major+4131minor)pagefaults 0swaps
+jp@p63:~$ /usr/bin/time ./rt3.sh && mv *txt sched/noop/
+jp@p63:~$ mkdir sched/deadline
+jp@p63:~$ /usr/bin/time ./rt3.sh && mv *txt sched/deadline 
+1518.49jp 323.65system 40:06.39elapsed 76%CPU (0avgtext+0avgdata 0maxresident)
+k 0inputs+0outputs (23major+4127minor)pagefaults 0swaps
+jp@p63:~$ mkdir sched/anticipatory
+jp@p63:~$ /usr/bin/time ./rt3.sh && mv *txt sched/anticipatory
+1513.15jp 324.27system 40:11.93elapsed 76%CPU (0avgtext+0avgdata 0maxresident)
+k 0inputs+0outputs (22major+4129minor)pagefaults 0swaps
+jp@p63:~$
 
-Pls ignore this patch.
+The benchmarks in bonnie++ csv format:
+anticipatory,16G,59195.3,96.7,412735.7,57.3,164809.0,27.7,63879.3,99.0,517301.3,45.3,395.7,0.0,16:100000:16/64,1018.0,8.7,13848.3,38.3,1765.3,11.3,1109.0,9.3,12592.3,35.3,1329.7,10.0
+cfq,16G,59954.3,96.3,407278.3,56.0,171710.3,29.0,63246.0,99.0,512973.3,45.0,446.5,0.7,16:100000:16/64,967.7,8.7,18546.0,49.0,2631.3,16.3,1036.7,9.0,8993.7,24.3,2990.7,22.3
+deadline,16G,59800.0,96.7,410798.3,57.0,161085.0,27.0,62722.3,99.0,529839.3,46.7,416.8,0.3,16:100000:16/64,904.7,7.7,11398.3,29.3,3050.7,19.3,1028.3,9.0,8335.7,23.0,2453.3,18.0
+noop,16G,59763.3,96.3,398172.3,55.3,167762.7,28.0,63928.3,99.0,512906.3,44.7,428.3,0.3,16:100000:16/64,897.0,7.7,12563.7,32.7,1845.7,12.0,926.3,8.3,12868.0,33.7,2015.0,15.0
 
-Regards,
--Greg
-
-> 
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> ---
-> 
->  kernel/sched.c |   19 ++++++++++---------
->  1 files changed, 10 insertions(+), 9 deletions(-)
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 31f91d9..54b27b4 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -3178,7 +3178,8 @@ static int load_balance(int this_cpu, struct rq 
-> *this_rq,
->  	struct sched_group *group;
->  	unsigned long imbalance;
->  	struct rq *busiest;
-> -	cpumask_t cpus = CPU_MASK_ALL;
-> +	cpumask_t cpus = sd->span;
-> +	int remain = cpus_weight(sd->span) - 1;
->  	unsigned long flags;
->  
->  	/*
-> @@ -3237,11 +3238,10 @@ redo:
->  			resched_cpu(this_cpu);
->  
->  		/* All tasks on this runqueue were pinned by CPU affinity */
-> -		if (unlikely(all_pinned)) {
-> +		if (unlikely(all_pinned && remain)) {
->  			cpu_clear(cpu_of(busiest), cpus);
-> -			if (!cpus_empty(cpus))
-> -				goto redo;
-> -			goto out_balanced;
-> +			remain--;
-> +			goto redo;
->  		}
->  	}
->  
-> @@ -3332,7 +3332,8 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, 
-> struct sched_domain *sd)
->  	int ld_moved = 0;
->  	int sd_idle = 0;
->  	int all_pinned = 0;
-> -	cpumask_t cpus = CPU_MASK_ALL;
-> +	cpumask_t cpus = sd->span;
-> +	int remain = cpus_weight(sd->span) - 1;
->  
->  	/*
->  	 * When power savings policy is enabled for the parent domain, idle
-> @@ -3375,10 +3376,10 @@ redo:
->  					&all_pinned);
->  		spin_unlock(&busiest->lock);
->  
-> -		if (unlikely(all_pinned)) {
-> +		if (unlikely(all_pinned && remain)) {
->  			cpu_clear(cpu_of(busiest), cpus);
-> -			if (!cpus_empty(cpus))
-> -				goto redo;
-> +			remain--;
-> +			goto redo;
->  		}
->  	}
->  
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
+Justin.
