@@ -1,101 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbYFXX6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbYFYANP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755413AbYFXX6r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 19:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYFXX6f
+	id S1755456AbYFYANP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 20:13:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbYFYAM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 19:58:35 -0400
-Received: from webmail.chats.mrv.com ([66.43.110.3]:45369 "EHLO
-	chmailsrv.int.mrv.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751724AbYFXX6f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 19:58:35 -0400
-Message-ID: <48618A18.3020607@mrv.com>
-Date: Tue, 24 Jun 2008 16:58:16 -0700
-From: Nye Liu <nyet@mrv.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] CPM1: Don't send break on TX_STOP, don't interrupt	RX/TX
- when adjusting termios parameters
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Jun 2008 00:00:09.0060 (UTC) FILETIME=[6E913240:01C8D656]
+	Tue, 24 Jun 2008 20:12:58 -0400
+Received: from mga11.intel.com ([192.55.52.93]:18016 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752569AbYFYAM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 20:12:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,699,1204531200"; 
+   d="scan'208";a="345227193"
+Date: Tue, 24 Jun 2008 17:12:56 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Max Asbock <masbock@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: mce_64.c: mce_cpu_quirks being ignored
+Message-ID: <20080625001256.GA31734@linux-os.sc.intel.com>
+References: <1213908276.5942.16.camel@w-amax.beaverton.ibm.com> <485ACCA1.6070507@firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <485ACCA1.6070507@firstfloor.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nye Liu <nyet@mrv.com>
+On Thu, Jun 19, 2008 at 02:16:17PM -0700, Andi Kleen wrote:
+> Max Asbock wrote:
+> 
+> 
+> 
+> > static void __cpuinit mce_cpu_quirks(struct cpuinfo_x86 *c)
+> > {
+> >         /* This should be disabled by the BIOS, but isn't always */
+> >         if (c->x86_vendor == X86_VENDOR_AMD) {
+> >                 if(c->x86 == 15)
+> >                         /* disable GART TBL walk error reporting, which trips off
+> >                            incorrectly with the IOMMU & 3ware & Cerberus. */
+> >                         clear_bit(10, &bank[4]);
+> > ....
+> >
+> > Is turning off that bit still needed?
+> 
+> Yes it is. Also referencing the bank is needed for other reasons anyways,
+> otherwise it would ignore the user sysfs choice on reconfiguration.
+> 
+> Venki, I did a patch for dynamic banks anyways, but haven't submitted it yet.
+> 
 
-Before setting STOP_TX, set _brkcr to 0 so the SMC does not send a break
-character. The driver appears to properly re-initialize _brkcr when the SMC is
-restarted.
+Yes. That particular quirk getting ignored was a bug. Below patch fixes
+the bug, until we have the dynamic banks support.
 
-Do not interrupt RX/TX when the termios is being adjusted; it results in
-corrupted characters appearing on the line.
+sysfs choice configuration should not have any issues with the earlier patch
+as we look for NR_SYSFS_BANKS in do_machine_check().
 
-Signed-off-by: Nye Liu <nyet@mrv.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
 ---
+ arch/x86/kernel/cpu/mcheck/mce_64.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index a19dc7e..babd06b 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -476,10 +476,13 @@ static void cpm_uart_shutdown(struct uart_port *port)
- 		}
+Index: linux-2.6/arch/x86/kernel/cpu/mcheck/mce_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mcheck/mce_64.c	2008-06-24 16:01:23.000000000 -0700
++++ linux-2.6/arch/x86/kernel/cpu/mcheck/mce_64.c	2008-06-24 16:48:01.000000000 -0700
+@@ -463,7 +463,11 @@ static void mce_init(void *dummy)
+ 		wrmsr(MSR_IA32_MCG_CTL, 0xffffffff, 0xffffffff);
  
- 		/* Shut them really down and reinit buffer descriptors */
--		if (IS_SMC(pinfo))
-+		if (IS_SMC(pinfo)) {
-+			out_be16(&pinfo->smcup->smc_brkcr, 0);
- 			cpm_line_cr_cmd(pinfo, CPM_CR_STOP_TX);
--		else
-+		} else {
-+			out_be16(&pinfo->sccup->scc_brkcr, 0);
- 			cpm_line_cr_cmd(pinfo, CPM_CR_GRA_STOP_TX);
-+		}
- 
- 		cpm_uart_initbd(pinfo);
+ 	for (i = 0; i < banks; i++) {
+-		wrmsrl(MSR_IA32_MC0_CTL+4*i, ~0UL);
++		if (i < NR_SYSFS_BANKS)
++			wrmsrl(MSR_IA32_MC0_CTL+4*i, bank[i]);
++		else
++			wrmsrl(MSR_IA32_MC0_CTL+4*i, ~0UL);
++
+ 		wrmsrl(MSR_IA32_MC0_STATUS+4*i, 0);
  	}
-@@ -590,9 +593,11 @@ static void cpm_uart_set_termios(struct uart_port *port,
- 		 * enables, because we want to put them back if they were
- 		 * present.
- 		 */
--		prev_mode = in_be16(&smcp->smc_smcmr);
--		out_be16(&smcp->smc_smcmr, smcr_mk_clen(bits) | cval | SMCMR_SM_UART);
--		setbits16(&smcp->smc_smcmr, (prev_mode & (SMCMR_REN | SMCMR_TEN)));
-+		prev_mode = in_be16(&smcp->smc_smcmr) & (SMCMR_REN | SMCMR_TEN);
-+		/* Output in *one* operation, so we don't interrupt RX/TX if they
-+		 * were already enabled. */
-+		out_be16(&smcp->smc_smcmr, smcr_mk_clen(bits) | cval |
-+		    SMCMR_SM_UART | prev_mode);
- 	} else {
- 		out_be16(&sccp->scc_psmr, (sbits << 12) | scval);
- 	}
-@@ -1324,12 +1329,14 @@ static int __init cpm_uart_console_setup(struct console *co, char *options)
- 	udbg_putc = NULL;
- #endif
- 
--	cpm_line_cr_cmd(pinfo, CPM_CR_STOP_TX);
--
- 	if (IS_SMC(pinfo)) {
-+		out_be16(&pinfo->smcup->smc_brkcr, 0);
-+		cpm_line_cr_cmd(pinfo, CPM_CR_STOP_TX);
- 		clrbits8(&pinfo->smcp->smc_smcm, SMCM_RX | SMCM_TX);
- 		clrbits16(&pinfo->smcp->smc_smcmr, SMCMR_REN | SMCMR_TEN);
- 	} else {
-+		out_be16(&pinfo->sccup->scc_brkcr, 0);
-+		cpm_line_cr_cmd(pinfo, CPM_CR_GRA_STOP_TX);
- 		clrbits16(&pinfo->sccp->scc_sccm, UART_SCCM_TX | UART_SCCM_RX);
- 		clrbits32(&pinfo->sccp->scc_gsmrl, SCC_GSMRL_ENR | SCC_GSMRL_ENT);
- 	}
-
--- 
-Nye Liu
-nliu@mrv.com
-(818) 772-6235x248
-(818) 772-0576 fax
-
-"Who would be stupid enough to quote a fictitious character?"
-	-- Don Quixote
+ }
