@@ -1,81 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759322AbYFYPhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759428AbYFYPhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759322AbYFYPhB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 11:37:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbYFYPgu
+	id S1759428AbYFYPhs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 11:37:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbYFYPhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 11:36:50 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:35685 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757853AbYFYPgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 11:36:48 -0400
-Date: Wed, 25 Jun 2008 19:30:25 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       hugh@veritas.com, nickpiggin@yahoo.com.au
-Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in invalidate_complete_page2()
-Message-ID: <20080625153025.GB21579@2ka.mipt.ru>
-References: <20080625124038.103406301@szeredi.hu> <20080625124121.839734708@szeredi.hu> <20080625131117.GA28136@2ka.mipt.ru> <E1KBV7H-0005nv-Gl@pomaz-ex.szeredi.hu> <20080625141654.GA4803@2ka.mipt.ru> <E1KBWBK-0006Lp-03@pomaz-ex.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 25 Jun 2008 11:37:40 -0400
+Received: from wavehammer.waldi.eu.org ([82.139.201.20]:59672 "EHLO
+	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753612AbYFYPhj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 11:37:39 -0400
+X-Greylist: delayed 1314 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Jun 2008 11:37:39 EDT
+Date: Wed, 25 Jun 2008 17:15:44 +0200
+From: Bastian Blank <bastian@waldi.eu.org>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: Re: [patch 07/21] Cleanup sclp printk messages.
+Message-ID: <20080625151544.GA12945@wavehammer.waldi.eu.org>
+Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
+	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+References: <20080625143459.100139455@de.ibm.com> <20080625143613.141370129@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <E1KBWBK-0006Lp-03@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080625143613.141370129@de.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 04:41:10PM +0200, Miklos Szeredi (miklos@szeredi.hu) wrote:
-> > > > Like __block_prepare_write()?
-> > > 
-> > > That's called with the page locked and page->mapping verified.
-> > 
-> > Only when called via standard codepath.
-> 
-> It would be a grave error to call it without the page lock.
+On Wed, Jun 25, 2008 at 04:35:06PM +0200, Martin Schwidefsky wrote:
+> +	if (finished_sccb != (u32) (addr_t) sclp_init_sccb)
+> +		panic("sclp: unsolicited interrupt for buffer at 0x%x\n",
+> +		      finished_sccb);
 
-Page is locked of course, but invalidated, removed from all trees and
-caches, i.e. grab, lock, check, unlock... invalidate, write into that
-page should fail, but it will not, since page is uptodate and
-prepare_write does not check mapping at all.
+Does that really need to be a panic?
 
-> > > I want the page fully invalidated, and I also want splice and nfs
-> > > exporting to work as for other filesystems.
-> > 
-> > Fully invalidated page can not be uptodate, doesnt' it? :)
-> 
-> That's just a question of how we interpret PG_uptodate.  If it means:
-> the page contains data that is valid, or was valid at some point in
-> time, then an invalidated or truncated page can be uptodate.
->
-> > You destroy existing functionality just because there are some obscure
-> > places, where it is used, so instead of fixing that places, you treat
-> > the symptom. After writing previous mail I found a way to workaround it
-> > even with your changes, but the whole approach of changing
-> > invalidate_complete_page2() is not correct imho.
-> 
-> You rely on page being !PageUptodate() after being invalidated?  Why
-> can't you check page->mapping instead (as everything else does)?
-
-I already found a solution, but I worry about splice code, which usage
-results in hidden error now.
-
-> > Is this nfs/fuse problem you described:
-> > http://marc.info/?l=linux-fsdevel&m=121396920822693&w=2
-> 
-> Yes.
-> 
-> > Instead of returning error when reading from invalid page, now you
-> > return old content of it?
-> 
-> No, instead of returning a short count, it is now returning old
-> content.
-
-Or instead of returning error or zero and relookup page eventually,
-which can already contain new data, we get old data.
+Bastian
 
 -- 
-	Evgeniy Polyakov
+Extreme feminine beauty is always disturbing.
+		-- Spock, "The Cloud Minders", stardate 5818.4
