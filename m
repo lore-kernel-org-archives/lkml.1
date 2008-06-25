@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755813AbYFYASy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbYFYATQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755813AbYFYASy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 20:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbYFYASp
+	id S1754148AbYFYATQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 20:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbYFYASs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 20:18:45 -0400
-Received: from sh.osrg.net ([192.16.179.4]:49833 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751673AbYFYASo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 20:18:44 -0400
-Date: Wed, 25 Jun 2008 09:18:15 +0900
-To: stern@rowland.harvard.edu
-Cc: fujita.tomonori@lab.ntt.co.jp, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, antonio.lin@alcormicro.com,
-       david.vrabel@csr.com
-Subject: Re: Scatter-gather list constraints
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <Pine.LNX.4.44L0.0806241050350.2160-100000@iolanthe.rowland.org>
-References: <20080624194119H.fujita.tomonori@lab.ntt.co.jp>
-	<Pine.LNX.4.44L0.0806241050350.2160-100000@iolanthe.rowland.org>
+	Tue, 24 Jun 2008 20:18:48 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:10634 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753360AbYFYASr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 20:18:47 -0400
+Date: Tue, 24 Jun 2008 17:18:09 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       xfs-masters@oss.sgi.com
+Subject: Re: linux-next: Tree for June 24 (XFS x2)
+Message-Id: <20080624171809.42bbdf68.randy.dunlap@oracle.com>
+In-Reply-To: <20080624175612.cdf29651.sfr@canb.auug.org.au>
+References: <20080624175612.cdf29651.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080625091813Z.fujita.tomonori@lab.ntt.co.jp>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jun 2008 10:57:13 -0400 (EDT)
-Alan Stern <stern@rowland.harvard.edu> wrote:
+XFS shows 2 build problems today.
 
-> On Tue, 24 Jun 2008, FUJITA Tomonori wrote:
-> 
-> > I don't think that the block layer has the DMA alignment concept in FS
-> > I/O path. And I think that you need kinda the DMA padding instead the
-> > DMA alignment though again The block layer doesn't have the DMA
-> > padding concept in FS I/O path. And the DMA padding applies to only
-> > the last SG element.
-> > 
-> > I guess that it's pretty hard to implement such a strange restriction
-> > in the block layer cleanly.
-> 
-> I don't see why there should be any problem.  It's simply a matter of 
-> splitting a single request into multiple requests, at places where 
-> the length restriction would be violated.
->
-> For example, suppose an I/O request starts out with two S-G elements
-> of 1536 bytes and 2048 bytes respectively, and the DMA requirement is
-> that all elements except the last must have length divisible by 1024.  
-> Then the request could be broken up into three requests of 1024, 512,
-> and 2048 bytes.
+1. xfs_stats.h problem
 
-I can't say that it's easy to implement a clean mechanism to break up
-a request into multiple requests until I see a patch.
+  CC      fs/xfs/xfs_rtalloc.o
+In file included from /local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_linux.h:91,
+                 from /local/linsrc/linux-next-20080624/fs/xfs/xfs.h:44,
+                 from /local/linsrc/linux-next-20080624/fs/xfs/xfs_rtalloc.c:18:
+/local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_stats.h: In function 'xfs_init_procfs':
+/local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_stats.h:150: error: expected ';' before '}' token
+make[3]: *** [fs/xfs/xfs_rtalloc.o] Error 1
 
-What I said is that you think that this is about extending something
-in the block layer but it's about adding a new concept to the block
-layer.
+2. ACL's undefined
+
+  CC      fs/xfs/linux-2.6/xfs_xattr.o
+/local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_xattr.c: In function 'xfs_decode_acl':
+/local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_xattr.c:40: error: '_ACL_TYPE_ACCESS' undeclared (first use in this function)
+/local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_xattr.c:40: error: (Each undeclared identifier is reported only once
+/local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_xattr.c:40: error: for each function it appears in.)
+/local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_xattr.c:42: error: '_ACL_TYPE_DEFAULT' undeclared (first use in this function)
+make[3]: *** [fs/xfs/linux-2.6/xfs_xattr.o] Error 1
 
 
-> > The iSER driver has a strange restriction too. I think that as iSER
-> > does, bouncing is a better option, though adding some generic
-> > mechanism to reserve buffer in the block layer might be nice, I
-> > gueess.
-> 
-> Is it reasonable to have 120-KB bounce buffers?
 
-The block layer does. Why do you think that USB can't?
+These happened multiple times.  .configs are available if needed.
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
