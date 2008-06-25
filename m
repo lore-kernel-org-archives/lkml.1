@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756393AbYFYBd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbYFYBnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756393AbYFYBd1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 21:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbYFYBc6
+	id S1755962AbYFYBnQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 21:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbYFYBnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 21:32:58 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:34683 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753935AbYFYBc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 21:32:57 -0400
-Subject: Re: weird bug on r8169 with usb
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: David CHANIAL <david.ml@euro-web.fr>
-Cc: linux-kernel@vger.kernel.org, romieu@fr.zoreil.com
-In-Reply-To: <200806250031.24804.david.ml@euro-web.fr>
-References: <200806250018.37617.david.ml@euro-web.fr>
-	 <200806250031.24804.david.ml@euro-web.fr>
-Content-Type: text/plain; charset=ISO-8859-15
-Date: Wed, 25 Jun 2008 03:31:25 +0200
-Message-Id: <1214357485.701.4.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 8bit
+	Tue, 24 Jun 2008 21:43:05 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:56981 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751577AbYFYBnE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 21:43:04 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Michael Buesch <mb@bu3sch.de>
+Subject: Re: Oops when using growisofs
+Date: Wed, 25 Jun 2008 03:42:08 +0200
+User-Agent: KMail/1.9.9
+Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <axboe@kernel.dk>, Jan Kara <jack@ucw.cz>
+References: <200806221818.24372.mb@bu3sch.de> <20080624172812.GD22586@atrey.karlin.mff.cuni.cz> <200806242039.18755.mb@bu3sch.de>
+In-Reply-To: <200806242039.18755.mb@bu3sch.de>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200806250342.08575.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19s7z4lhlTBxdol0vyFEd2Nq8s+lz7OgmQRX0M
+ wgpB+tK41efnwgIol2aDBVU0ycujcxNjpNvhjra45VN4Vk/Yg+
+ 9xOA6lNhOv/o9vHu6EHag==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added cc to a person that might have some info
-
-On Wed, 2008-06-25 at 00:31 +0200, David CHANIAL wrote:
-> Le Wednesday 25 June 2008 00:18:37 David CHANIAL, vous avez écrit :
-> > # dmesg | grep eth0 # without the bug
+On Tuesday 24 June 2008, Michael Buesch wrote:
+> >   I have seen one more report of this Oops for SLES10 kernel and also in that
+> > case an IO error happened so probably that is a trigger... But so far I
+> > don't get the details.
 > 
-> excuse my error (copy/paste error),
-> without the bug, the output is :
-> 
-> # dmesg | grep eth0 # without the bug
-> eth0: RTL8168c/8111c at 0xf8828000, 00:1e:8c:c4:66:7d, XID 3c2000c0 IRQ 18
-> r8169: eth0: link up
-> r8169: eth0: link up
-> eth0: no IPv6 routers present
-> 
-> Note that i can boot without the usb devices
-> eth0 is usable, i plug usb devices and eth0 continue to be fully usable.
-> the bug occur only when i boot with the usb devices.
+> Yeah the IO error is the trigger.
+> I noticed that it had obvious troubles accessing the DVD that was in the drive.
+> It sweeped over it for several seconds, then hung the system for 2 or 3 seconds
+> and then oopsed. But after that everything continued to work as usual.
+> (Except kded of course)
 
-I believe this is not actually about usb, i've had some issues too (and
-still have them) - look back a few months on lkml, you will find the
-thread.
+So maybe a use-after-free bug in the I/O error handling caused an inode to
+be overwritten and then passed to an I/O function that used an invalid
+inode->i_blkbits?
 
-btw, sorry Francois for not coming back to you, but i sortof forgot
-since the noapic thing works around it.
-
-But i can confirm that 2.6.26 doesent fix it.
-
-This bug seems to still hit lots of people.
-> 
-> Best regards,
-
-mvh.
-Kasper Sandberg
-
+	Arnd <><
