@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbYFYP4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbYFYP7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758150AbYFYP4n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 11:56:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbYFYP4g
+	id S1758164AbYFYP7l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 11:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYFYP7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 11:56:36 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:20100 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750923AbYFYP4g (ORCPT
+	Wed, 25 Jun 2008 11:59:32 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:40165 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751778AbYFYP7b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 11:56:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Zexz42cRMv29xiZE2PeKS5MBNuWmOnBzn/u1rr1ZT4xjp6QbZv/nybM4rmaaAGT0xr
-         54Q4amnuUmX6N3T0IHY5VXcXmORHTbViGFRoBnyH3gGwaSL2Y3Hbq3kJ5xBGXsPzTzHW
-         Hlk0pk70LXqOrorp6V4D4Jb2jyUSJdFjGapvQ=
-Message-ID: <86802c440806250856i5b6c608ag848ad78d83b2337c@mail.gmail.com>
-Date: Wed, 25 Jun 2008 08:56:33 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Bernhard Walle" <bwalle@suse.de>
-Subject: Re: [PATCH 1/3] e820_update_range(): Strip size of original region
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org, vgoyal@redhat.com,
-       kexec@lists.infradead.org
-In-Reply-To: <1214395342-20375-2-git-send-email-bwalle@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1214395342-20375-1-git-send-email-bwalle@suse.de>
-	 <1214395342-20375-2-git-send-email-bwalle@suse.de>
+	Wed, 25 Jun 2008 11:59:31 -0400
+To: johnpol@2ka.mipt.ru
+CC: miklos@szeredi.hu, jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       hugh@veritas.com, nickpiggin@yahoo.com.au
+In-reply-to: <20080625153025.GB21579@2ka.mipt.ru> (message from Evgeniy
+	Polyakov on Wed, 25 Jun 2008 19:30:25 +0400)
+Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in invalidate_complete_page2()
+References: <20080625124038.103406301@szeredi.hu> <20080625124121.839734708@szeredi.hu> <20080625131117.GA28136@2ka.mipt.ru> <E1KBV7H-0005nv-Gl@pomaz-ex.szeredi.hu> <20080625141654.GA4803@2ka.mipt.ru> <E1KBWBK-0006Lp-03@pomaz-ex.szeredi.hu> <20080625153025.GB21579@2ka.mipt.ru>
+Message-Id: <E1KBXOs-00074q-NU@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 25 Jun 2008 17:59:14 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 5:02 AM, Bernhard Walle <bwalle@suse.de> wrote:
-> This patch fixes a bug in e820_update_range(): Previously, if a region was
-> partially covered, then e820_update_range() only added a new E820 range but
-> didn't update the end/size of the previous range. That lead to duplicate
-> covering of a region.
->
-> Patch tested on i386 and x86-64 with patch that uses e820_update_range()
-> to limit the E820 map when "mem" parameter is specified on the command line.
->
->
-> Signed-off-by: Bernhard Walle <bwalle@suse.de>
-> ---
->  arch/x86/kernel/e820.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-> index e285ea3..e466073 100644
-> --- a/arch/x86/kernel/e820.c
-> +++ b/arch/x86/kernel/e820.c
-> @@ -422,6 +422,7 @@ u64 __init e820_update_range(u64 start, u64 size, unsigned old_type,
->                final_end = min(start + size, ei->addr + ei->size);
->                if (final_start >= final_end)
->                        continue;
-> +               ei->size -= final_end - final_start;
->                e820_add_region(final_start, final_end - final_start,
->                                         new_type);
->                real_updated_size += final_end - final_start;
-> --
+> > > > > Like __block_prepare_write()?
+> > > > 
+> > > > That's called with the page locked and page->mapping verified.
+> > > 
+> > > Only when called via standard codepath.
+> > 
+> > It would be a grave error to call it without the page lock.
+> 
+> Page is locked of course, but invalidated, removed from all trees and
+> caches, i.e. grab, lock, check, unlock... invalidate, write into that
+> page should fail, but it will not, since page is uptodate and
+> prepare_write does not check mapping at all.
 
-this one is not needed, I sent one updated to Ingo, and it is in
-tip/setup-memory
-[PATCH] x86: change size if e820_update/remove_range
+But callers do check after having locked the page.
 
-YH
+> > > Instead of returning error when reading from invalid page, now you
+> > > return old content of it?
+> > 
+> > No, instead of returning a short count, it is now returning old
+> > content.
+> 
+> Or instead of returning error or zero and relookup page eventually,
+> which can already contain new data, we get old data.
+
+Umm, it doesn't make any sense to try to always get fresh data.  If
+you do read() on a file, the data may become old and invalid a
+millisecond after the read finished.  We can't and needn't do anything
+about this.
+
+Miklos
