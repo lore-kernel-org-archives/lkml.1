@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758032AbYFYMEd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757072AbYFYMJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758032AbYFYMEd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 08:04:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbYFYMEL
+	id S1757072AbYFYMJA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 08:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755048AbYFYMIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 08:04:11 -0400
-Received: from sirf.com ([125.16.220.82]:46590 "HELO bnglmail.sirf.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with SMTP
-	id S1757545AbYFYMEJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 08:04:09 -0400
-X-Greylist: delayed 915 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Jun 2008 08:04:09 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: Time drifting after multiple sleep/wakeup in timekeeping
-Date: Wed, 25 Jun 2008 17:18:52 +0530
-Message-ID: <013B1C915F9462459242424413ABB264011AC64C@bnglmail.sirf.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Time drifting after multiple sleep/wakeup in timekeeping
-Thread-Index: AcjWuXCdruANDkKsEd3GhwAVxR+4QQ==
-From: "Mayank Sharma" <mayanks@sirf.com>
-To: "lkml" <linux-kernel@vger.kernel.org>
+	Wed, 25 Jun 2008 08:08:52 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:41834 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754251AbYFYMIw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 08:08:52 -0400
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH] dmaengine: Couple DMA channels to their physical DMA device
+Date: Wed, 25 Jun 2008 14:08:43 +0200
+Message-Id: <1214395723-5657-1-git-send-email-haavard.skinnemoen@atmel.com>
+X-Mailer: git-send-email 1.5.5.4
+X-OriginalArrivalTime: 25 Jun 2008 12:08:24.0943 (UTC) FILETIME=[2B57CFF0:01C8D6BC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-I noticed a bug with respect to time drifting after multiple sleep/wakeup sequence. We have an embedded ARM11 based platform on which we have successfuly ported Linux. We also have a RTC on board. Hence we have implemented the read_persistent_clock() function overriding the one defined in kernel/time/timekeeping.c. What we observed was that after doing multiple sleep/wakeup sequences, the time reported by RTC and gettimeofday was drifting. After about 10 iterations the gettimeofday was lagging by about one second. Subsequently the lag only increased. 
+Set the 'parent' field of channel class devices to point to the
+physical DMA device initialized by the DMA engine driver.
 
-What looks to me is that in the timekeeping_resume function we are adding the number of seconds we have been sleeping to adjust the new time. But since we are adding only the seconds slept the update is only second level accurate. read_persistent_clock gives a second level granulaity, and hence we cannot help that. Hence after one sleep/wake sequence the gettimeoday would have lagged by delta (where delta is less than a second). On multiple such iterations the delta keeps adding up, becoming a second and thereafter we see a drift of more than a second.
+This allows drivers to use chan->dev.parent for syncing DMA buffers
+and adds a 'device' symlink to the real device in
+/sys/class/dma/dmaXchanY.
 
-If however we set the gettimeofday (xtime) to the RTC time on wakeup (Just like we do in timekeeping_init()) instead of just adding the sleep time, the drift will not accumulate. I am using the patch mentioned in the end of the mail to fix this issue. Let me know if this is a valid patch.
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+ drivers/dma/dmaengine.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Regards,
-Mayank
-
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index e91c29f..6edf37f 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -288,12 +288,19 @@ static int timekeeping_resume(struct sys_device *dev)
-        if (now && (now > timekeeping_suspend_time)) {
-                unsigned long sleep_length = now - timekeeping_suspend_time;
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index 97b329e..99c22b4 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -378,7 +378,7 @@ int dma_async_device_register(struct dma_device *device)
  
--               xtime.tv_sec += sleep_length;
-+               /* Syncronize the xtime with the rtc as is done during init. This
-+                * ensures that drift is not accumulated while sleeping and waking
-+                * multiple times
-+                */
-+               xtime.tv_sec = now;
-+               xtime.tv_nsec = 0;
-                wall_to_monotonic.tv_sec -= sleep_length;
-                total_sleep_time += sleep_length;
-        }
-        /* Make sure that we have the correct xtime reference */
--       timespec_add_ns(&xtime, timekeeping_suspend_nsecs);
-+       else {
-+               timespec_add_ns(&xtime, timekeeping_suspend_nsecs);
-+    }
-        update_xtime_cache(0);
-        /* re-base the last cycle value */
-        clock->cycle_last = 0;
+ 		chan->chan_id = chancnt++;
+ 		chan->dev.class = &dma_devclass;
+-		chan->dev.parent = NULL;
++		chan->dev.parent = device->dev;
+ 		snprintf(chan->dev.bus_id, BUS_ID_SIZE, "dma%dchan%d",
+ 		         device->dev_id, chan->chan_id);
+ 
+-- 
+1.5.5.4
+
