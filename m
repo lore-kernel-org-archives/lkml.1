@@ -1,65 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755851AbYFYXcD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbYFYXhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755851AbYFYXcD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 19:32:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbYFYXby
+	id S1756038AbYFYXhk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 19:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYFYXh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 19:31:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57224 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751628AbYFYXbx (ORCPT
+	Wed, 25 Jun 2008 19:37:29 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40118
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751680AbYFYXh2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 19:31:53 -0400
-Date: Wed, 25 Jun 2008 16:30:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: dhowells@redhat.com, serue@us.ibm.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] capabilities: refactor kernel code + bugfix
-Message-Id: <20080625163035.b409d693.akpm@linux-foundation.org>
-In-Reply-To: <485BCEEB.30105@kernel.org>
-References: <485BCEEB.30105@kernel.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 25 Jun 2008 19:37:28 -0400
+Date: Wed, 25 Jun 2008 16:37:28 -0700 (PDT)
+Message-Id: <20080625.163728.59919248.davem@davemloft.net>
+To: peter.p.waskiewicz.jr@intel.com
+Cc: jeffrey.t.kirsher@intel.com, jeff@garzik.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] net: Add the CPU id to skb->queue_mapping's upper
+ 8 bits
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <D5C1322C3E673F459512FB59E0DDC329054E55AF@orsmsx414.amr.corp.intel.com>
+References: <20080624232545.11654.65805.stgit@localhost.localdomain>
+	<20080624.163742.224488012.davem@davemloft.net>
+	<D5C1322C3E673F459512FB59E0DDC329054E55AF@orsmsx414.amr.corp.intel.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jun 2008 08:38:19 -0700
-"Andrew G. Morgan" <morgan@kernel.org> wrote:
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+Date: Wed, 25 Jun 2008 11:31:01 -0700
 
-> From 8a2bffcb5363295ea43ef42c84c121a8e8c7ffa0 Mon Sep 17 00:00:00 2001
-> From: Andrew G. Morgan <morgan@kernel.org>
-> Date: Fri, 20 Jun 2008 08:16:06 -0700
-> Subject: [PATCH] Refactor filesystem capability support in main kernel.
+> >Well:
+> >
+> >1) All of this multiqueue stuff is going away with my changes in
+> >   net-tx-2.6
 > 
-> To date, we've tried hard to confine filesystem support for capabilities
-> to the security modules. This has left a lot of the code in
-> kernel/capability.c in a state where it looks like it supports something
-> that filesystem support for capabilities actually suppresses when the
-> LSM security/commmoncap.c code runs. What is left is a lot of code that
-> uses sub-optimal locking in the main kernel. With this change we refactor
-> the main kernel code and make it explicit which locks are needed and that
-> the only remaining kernel races in this area are associated with
-> non-filesystem capability code.
-> 
-> This commit also includes a bugfix for the fragile setuid fixup
-> code in the case that filesystem capabilities are supported (in access()).
-> The effect of this fix is gated on filesystem capability support because
-> changing securebits is only supported when filesystem capabilities support
-> is configured.)
-> 
-> Signed-off-by: Andrew G. Morgan <morgan@kernel.org>
-> ---
->  fs/open.c                  |   38 +++--
->  include/linux/capability.h |    2 +
->  include/linux/securebits.h |   15 +-
->  kernel/capability.c        |  359 +++++++++++++++++++++++++++++--------------
+> Do you have a guestimate of which kernel you'll be targeting these
+> changes?  I'm very interested in this schedule.
 
-This is one helluva large (security!) patch for so late in -rc.
+I want it to hit 2.6.27
 
-Could we please split out the bugfix for 2.6.26 (is it needed in 2.6.25
-too?) and hold the refactoring back for 2.6.27?
+> The whole point is to identify the flow and redirect your Rx filtering
+> to the CPU it came from.  So if you did this properly, the ACKs would be
+> landing on the CPU that originally opened the TCP flow.  I don't follow
+> why the scheduler would move the process if the Rx traffic is returning
+> to that core.
+
+The process scheduler monitors where wakeup events occur.
+If predominantly they arrive on a difference cpu from where
+the process is currently scheduled, the scheduler might decide
+to move the process there.
+
+This RX retargetting idea is also flawed from another perspective.
+
+Let's say you have a server thread polling on a lot of
+connections.  And let's say that all of these connections
+become extremely active all of a sudden.
+
+If you RX steer all of those flows to the same cpu we might
+as well not do any RX hashing at all.  The whole point is
+to distribute the network stack input processing across
+the machine as much as possible.
+
+If you try to steer RX traffic to cpus that processes are running
+on, you will undo almost all of the intended benefit of RX hashing
+in many common scnenerios.
+
+Don't second guess the process scheduler we have, it will or
+should do the right thing in these situations because it can
+see what is going on in ways that the NIC and the networking
+alone simply cannot.  It knows about cache effects and tradeoffs
+of moving tasks between cores and NUMA nodes.
 
