@@ -1,165 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbYFYCii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757001AbYFYCmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757407AbYFYCii (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 22:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755585AbYFYCi1
+	id S1757001AbYFYCmP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 22:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbYFYCl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 22:38:27 -0400
-Received: from mga11.intel.com ([192.55.52.93]:21548 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757078AbYFYCi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 22:38:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,700,1204531200"; 
-   d="scan'208";a="345259416"
-Subject: Re: [PATCH 2/2] acpi based pci gap caluculation v2
-From: Zhao Yakui <yakui.zhao@intel.com>
-To: akataria@vmware.com
-Cc: lenb@kernel.org, Ingo Molnar <mingo@elte.hu>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1214333326.27577.28.camel@promb-2n-dhcp368.eng.vmware.com>
-References: <1214333326.27577.28.camel@promb-2n-dhcp368.eng.vmware.com>
-Content-Type: text/plain
-Date: Wed, 25 Jun 2008 10:49:19 +0800
-Message-Id: <1214362159.9800.28.camel@yakui_zhao.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jun 2008 22:41:58 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:39057 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751793AbYFYCl5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 22:41:57 -0400
+Date: Tue, 24 Jun 2008 22:41:27 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] ACPI: don't walk tables if ACPI was disabled
+In-reply-to: <20080624114139.GC21890@elte.hu>
+X-X-Sender: lenb@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Zhao Yakui <yakui.zhao@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Message-id: <alpine.LFD.1.10.0806242240050.3014@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <20080620135639.GA5073@damson.getinternet.no>
+ <alpine.LFD.1.10.0806201458500.3027@localhost.localdomain>
+ <19f34abd0806201340t502ce471n578dd2498a5f1992@mail.gmail.com>
+ <19f34abd0806201427h740ca3e7gc2f01c7e34616fd4@mail.gmail.com>
+ <19f34abd0806210119o64a1c9ban78710651a01530cf@mail.gmail.com>
+ <20080624114139.GC21890@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-24 at 11:48 -0700, Alok Kataria wrote:
-> Evaluates the _CRS object under PCI0 looking for producer resources.
-> Then searches the e820 memory space for a gap within these producer resources.
-> 
-> Allows us to find a gap for the unclaimed pci resources or MMIO resources
-> for hotplug devices within the BIOS allowed pci regions.
-> 
-> v1->v2: Some changes in the print strings.
-> 	Also note the prototype for e820_search_gap has changes in this
-> 	iteration, but the return value is ignored while calling it over here.
-> 
-> Signed-off-by: Alok N Kataria <akataria@vmware.com>
-> 
-> Index: linux-x86-tree.git/arch/x86/pci/acpi.c
-> ===================================================================
-> --- linux-x86-tree.git.orig/arch/x86/pci/acpi.c	2008-06-23 17:24:07.000000000 -0700
-> +++ linux-x86-tree.git/arch/x86/pci/acpi.c	2008-06-24 10:57:43.000000000 -0700
-> @@ -4,6 +4,7 @@
->  #include <linux/irq.h>
->  #include <linux/dmi.h>
->  #include <asm/numa.h>
-> +#include <asm/e820.h>
->  #include "pci.h"
->  
->  struct pci_root_info {
-> @@ -14,6 +15,11 @@
->  	int busnum;
->  };
->  
-> +struct gap_info {
-> +	unsigned long gapstart;
-> +	unsigned long gapsize;
-> +};
-> +
->  static acpi_status
->  resource_to_addr(struct acpi_resource *resource,
->  			struct acpi_resource_address64 *addr)
-> @@ -110,6 +116,70 @@
->  	}
->  }
->  
-> +static acpi_status search_gap(struct acpi_resource *resource, void *data)
-> +{
-> +	struct acpi_resource_address64 addr;
-> +	acpi_status status;
-> +	struct gap_info *gap = data;
-> +
-> +	status = resource_to_addr(resource, &addr);
-> +	if (ACPI_SUCCESS(status) &&
-> +	    addr.resource_type == ACPI_MEMORY_RANGE &&
-> +	    addr.address_length > gap->gapsize) {
-> +		e820_search_gap(&gap->gapstart, &gap->gapsize,
-> +				(addr.minimum + addr.translation_offset));
-> +	}
-> +
-> +	return AE_OK;
-> +}
-> +
-> +/*
-> + * Search for a hole in the 32 bit address space for PCI to assign MMIO
-> + * resources for hotplug or unconfigured resources.
-> + * We query the CRS object of the PCI root device to look for possible producer
-> + * resources in the tree and consider these while calulating the start address
-> + * for this hole.
-> + */
-> +static void pci_setup_gap(acpi_handle *handle)
-> +{
-> +	struct gap_info gap;
-> +	acpi_status status;
-> +
-> +	gap.gapstart = 0;
-> +	gap.gapsize = 0x400000;
-> +
-> +	status = acpi_walk_resources(handle, METHOD_NAME__CRS,
-> +				     search_gap, &gap);
-> +
-> +	if (ACPI_SUCCESS(status)) {
-> +		unsigned long round;
-> +
-> +		if (!gap.gapstart) {
-> +			printk(KERN_ERR "ACPI: Warning: Cannot find a gap "
-> +					"in the 32bit address range for PCI\n"
-> +					"ACPI: PCI devices may collide with "
-> +					"hotpluggable memory address range\n");
-> +		}
-> +		/*
-> +		 * Round the gapstart, uses the same logic as in
-> +		 * e820_gap_setup
-> +		 */
-> +		round = 0x100000;
-> +		while ((gap.gapsize >> 4) > round)
-> +			round += round;
-> +		/* Fun with two's complement */
-> +		pci_mem_start = (gap.gapstart + round) & -round;
-> +
-> +		printk(KERN_INFO "ACPI: PCI resources should "
-> +				"start at %lx (gap: %lx:%lx)\n",
-> +				pci_mem_start, gap.gapstart, gap.gapsize);
-> +	} else {
-> +		printk(KERN_ERR "ACPI: Error while searching for gap in "
-> +				"the 32bit address range for PCI\n");
-> +	}
-> +}
-> +
-> +
->  static void
->  get_current_resources(struct acpi_device *device, int busnum,
->  			int domain, struct pci_bus *bus)
-> @@ -220,6 +290,8 @@
->  
->  	if (bus && (pci_probe & PCI_USE__CRS))
->  		get_current_resources(device, busnum, domain, bus);
-> +
-> +	pci_setup_gap(device->handle);
->  	return bus;
->  }
-It seems reasonable. 
-But if the resource obtained from the PCI0 _CRS method is incorrect, we
-will get the incorrect pci_mem_start.
 
-At the same time after the patch is applied, pci_mem_start will be
-parsed in two different ways. If the result is different, maybe the
-incorrect pci_mem_start will be used. 
 
-Best regards.
-  Yakui
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Tue, 24 Jun 2008, Ingo Molnar wrote:
 
+> * Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> 
+> > On Fri, Jun 20, 2008 at 11:27 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> > > So I guess this function, pnpbios_init() needs the check as well. In
+> > > fact, it has this:
+> > >
+> > > #ifdef CONFIG_PNPACPI
+> > >        if (!acpi_disabled && !pnpacpi_disabled) {
+> > >                pnpbios_disabled = 1;
+> > >                printk(KERN_INFO "PnPBIOS: Disabled by ACPI PNP\n");
+> > >                return -ENODEV;
+> > >        }
+> > > #endif                          /* CONFIG_ACPI */
+> > >
+> > > ...I guess that should be changed to say if (acpi_disabled ||
+> > > pnpacpi_disabled)? Or... I don't understand the purpose of the
+> > > original test. But it seems to be there since the beginning of time
+> > > (or, well, v2.6.12-rc2).
+> > 
+> > Nope. I found the introduction of the change in the historical git repository:
+> > 
+> > commit 4723ebe898a32262ed49fe677897ccea47e72ff4
+> > Author: Adam Belay <ambx1@neo.rr.com>
+> > Date:   Sun Oct 24 15:07:32 2004 -0400
+> > 
+> >     [PNPBIOS] disable if ACPI is active
+> > 
+> >     As further ACPI pnp functionaility is implemented it is no longer
+> >     safe to run ACPI and PNPBIOS concurrently.
+> > 
+> >     We therefore take the following approach:
+> >     - attempt to enable ACPI support
+> >     - if ACPI fails (blacklist etc.) enable pnpbios support
+> >     - if ACPI support is not compiled in the kernel enable pnpbios support
+> > 
+> >     Signed-off-by: Adam Belay <ambx1@neo.rr.com>
+> > 
+> > and now I understand the purpose of the check; pnpbios does not depend 
+> > on ACPI; ACPI/pnpacpi is incompatible with pnpbios.
+> 
+> wow, rather old bug - i guess lockdep made it more visible.
+
+No, that commit was not a bug, it was correct, and still is,
+for pnpACPI and pnpBIOS must be mutually exclusive.
+
+The thing that changed was the RTC specific code.
+
+-Len
