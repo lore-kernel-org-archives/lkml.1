@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbYFYUJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbYFYUMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754263AbYFYUJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 16:09:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbYFYUJW
+	id S1753647AbYFYUMu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 16:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYFYUMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 16:09:22 -0400
-Received: from casper.infradead.org ([85.118.1.10]:46094 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751122AbYFYUJV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 16:09:21 -0400
-Date: Wed, 25 Jun 2008 13:09:18 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Agner Fog <agner@agner.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ABI change for device drivers using future AVX instruction set
-Message-ID: <20080625130918.53ae744b@infradead.org>
-In-Reply-To: <4862A25C.2060703@agner.org>
-References: <48626514.2040905@agner.org>
-	<20080625092224.736c2541@infradead.org>
-	<4862A25C.2060703@agner.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 25 Jun 2008 16:12:40 -0400
+Received: from gw.goop.org ([64.81.55.164]:51099 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751716AbYFYUMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 16:12:39 -0400
+Message-ID: <4862A6A9.1030109@goop.org>
+Date: Wed, 25 Jun 2008 13:12:25 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
+       Mark McLoughlin <markmc@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Nick Piggin <npiggin@suse.de>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH 00 of 36] x86/paravirt: groundwork for 64-bit Xen	support
+References: <patchbomb.1214367536@localhost> <20080625084253.GA11524@elte.hu> <20080625152212.GA3442@elte.hu>
+In-Reply-To: <20080625152212.GA3442@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jun 2008 21:54:04 +0200
-Agner Fog <agner@agner.org> wrote:
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+>
+>   
+>> Anyway, that's all theory - i'll try out your patchset in -tip to see 
+>> what breaks in practice ;-)
+>>     
+>
+> i've put the commits (and a good number of dependent commits) into the 
+> new tip/x86/xen-64bit topic branch.
+>
+> It quickly broke the build in testing:
+>
+>  include/asm/pgalloc.h: In function ‘paravirt_pgd_free':
+>  include/asm/pgalloc.h:14: error: parameter name omitted
+>  arch/x86/kernel/entry_64.S: In file included from 
+>  arch/x86/kernel/traps_64.c:51:include/asm/pgalloc.h: In function ‘paravirt_pgd_free':
+>  include/asm/pgalloc.h:14: error: parameter name omitted
+>   
 
-> Arjan van de Ven wrote:
->  >Let me repeat this loud and clear:
->  >It is not allowed to use floating point, SSE of AVX in device
->  >drivers.
-> 
-> Thank you for a clear answer. Re-reading the ABI:
->  >A.2.4 Miscellaneous Remarks
->  >Linux Kernel code is not allowed to change the x87 and SSE units.
->  >If 
-> those are
->  >changed by kernel code, they have to be restored properly before 
-> sleeping or leaving
->  >the kernel. On preemptive kernels also more precautions may be
->  >needed.
-> 
-> This states your point, but certainly not "loud and clear" :-)
-> 
-> This ABI statement has to be amended, however, because it is allowed
+No, looks like my fault.  The non-PARAVIRT version of 
+paravirt_pgd_free() is:
 
-the linux kernel policy is loud and clear; this is more an OS policy as
-it is a platform ABI issue. We as linux do not allow this (with the
-small footnote around the raid stuff, but that has specific very
-careful use). In addition, you really aren't allowed to use floating
-point in the kernel period as concept, if you need it you very likely
-are doing something wrong.
+static inline void paravirt_pgd_free(struct mm_struct *mm, pgd_t *) {}
+
+but C doesn't like missing parameter names, even if unused.
+
+This should fix it:
+
+diff -r 19b73cc5fdf4 include/asm-x86/pgalloc.h
+--- a/include/asm-x86/pgalloc.h	Wed Jun 25 11:24:41 2008 -0400
++++ b/include/asm-x86/pgalloc.h	Wed Jun 25 13:11:56 2008 -0700
+@@ -11,7 +11,7 @@
+ #include <asm/paravirt.h>
+ #else
+ #define paravirt_pgd_alloc(mm)	__paravirt_pgd_alloc(mm)
+-static inline void paravirt_pgd_free(struct mm_struct *mm, pgd_t *) {}
++static inline void paravirt_pgd_free(struct mm_struct *mm, pgd_t *pgd) {}
+ static inline void paravirt_alloc_pte(struct mm_struct *mm, unsigned long pfn)	{}
+ static inline void paravirt_alloc_pmd(struct mm_struct *mm, unsigned long pfn)	{}
+ static inline void paravirt_alloc_pmd_clone(unsigned long pfn, unsigned long clonepfn,
 
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+
