@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758742AbYFYEn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbYFYEo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758742AbYFYEn7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 00:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756171AbYFYEhe
+	id S1759211AbYFYEo2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 00:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756266AbYFYEhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 00:37:34 -0400
-Received: from 9.sub-70-198-159.myvzw.com ([70.198.159.9]:37449 "EHLO
+	Wed, 25 Jun 2008 00:37:35 -0400
+Received: from 9.sub-70-198-159.myvzw.com ([70.198.159.9]:37448 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754991AbYFYEhV (ORCPT
+	with ESMTP id S1755237AbYFYEhW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 00:37:21 -0400
+	Wed, 25 Jun 2008 00:37:22 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 34 of 36] x86_64: swapgs pvop with a user-stack can never be
-	called
-X-Mercurial-Node: 7c78d7b7c5205b0eba2ab0bca305c935ffa36125
-Message-Id: <7c78d7b7c5205b0eba2a.1214367570@localhost>
+Subject: [PATCH 20 of 36] paravirt/x86_64: move __PAGE_OFFSET to leave a space
+	for hypervisor
+X-Mercurial-Node: 68c291617885d5f819eab00bff916559f9d9aceb
+Message-Id: <68c291617885d5f819ea.1214367556@localhost>
 In-Reply-To: <patchbomb.1214367536@localhost>
-Date: Wed, 25 Jun 2008 00:19:30 -0400
+Date: Wed, 25 Jun 2008 00:19:16 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
@@ -29,55 +29,91 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's never safe to call a swapgs pvop when the user stack is current -
-it must be inline replaced.  Rather than making a call, the
-SWAPGS_UNSAFE_STACK pvop always just puts "swapgs" as a placeholder,
-which must either be replaced inline or trap'n'emulated (somehow).
+From: Eduardo Habkost <ehabkost@redhat.com>
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
+Set __PAGE_OFFSET to the most negative possible address +
+16*PGDIR_SIZE.  The gap is to allow a space for a hypervisor to fit.
+The gap is more or less arbitrary, but it's what Xen needs.
+
+When booting native, kernel/head_64.S has a set of compile-time
+generated pagetables used at boot time.  This patch removes their
+absolutely hard-coded layout, and makes it parameterised on
+__PAGE_OFFSET (and __START_KERNEL_map).
+
+Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- include/asm-x86/irqflags.h |    2 +-
- include/asm-x86/paravirt.h |   10 ++++++++++
- 2 files changed, 11 insertions(+), 1 deletion(-)
+ arch/x86/kernel/head_64.S |   19 +++++++++++++------
+ include/asm-x86/page_64.h |    8 +++++++-
+ 2 files changed, 20 insertions(+), 7 deletions(-)
 
-diff --git a/include/asm-x86/irqflags.h b/include/asm-x86/irqflags.h
---- a/include/asm-x86/irqflags.h
-+++ b/include/asm-x86/irqflags.h
-@@ -167,6 +167,7 @@
- #define INTERRUPT_RETURN_NMI_SAFE	NATIVE_INTERRUPT_RETURN_NMI_SAFE
- 
- #ifdef CONFIG_X86_64
-+#define SWAPGS_UNSAFE_STACK	swapgs
- #define INTERRUPT_RETURN	iretq
- #define USERGS_SYSRET64				\
- 	swapgs;					\
-@@ -241,7 +242,6 @@
-  * Either way, this is a good way to document that we don't
-  * have a reliable stack. x86_64 only.
+diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
+--- a/arch/x86/kernel/head_64.S
++++ b/arch/x86/kernel/head_64.S
+@@ -31,6 +31,13 @@
+  * because we need identity-mapped pages.
+  *
   */
--#define SWAPGS_UNSAFE_STACK	swapgs
- #define ARCH_LOCKDEP_SYS_EXIT		call lockdep_sys_exit_thunk
- #define ARCH_LOCKDEP_SYS_EXIT_IRQ	\
- 	TRACE_IRQS_ON; \
-diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
---- a/include/asm-x86/paravirt.h
-+++ b/include/asm-x86/paravirt.h
-@@ -1529,6 +1529,16 @@
- 
- 
- #else	/* !CONFIG_X86_32 */
 +
++#define pud_index(x)	(((x) >> PUD_SHIFT) & (PTRS_PER_PUD-1))
++
++L4_PAGE_OFFSET = pgd_index(__PAGE_OFFSET)
++L3_PAGE_OFFSET = pud_index(__PAGE_OFFSET)
++L4_START_KERNEL = pgd_index(__START_KERNEL_map)
++L3_START_KERNEL = pud_index(__START_KERNEL_map)
+ 
+ 	.text
+ 	.section .text.head
+@@ -77,8 +84,8 @@
+ 	/* Fixup the physical addresses in the page table
+ 	 */
+ 	addq	%rbp, init_level4_pgt + 0(%rip)
+-	addq	%rbp, init_level4_pgt + (258*8)(%rip)
+-	addq	%rbp, init_level4_pgt + (511*8)(%rip)
++	addq	%rbp, init_level4_pgt + (L4_PAGE_OFFSET*8)(%rip)
++	addq	%rbp, init_level4_pgt + (L4_START_KERNEL*8)(%rip)
+ 
+ 	addq	%rbp, level3_ident_pgt + 0(%rip)
+ 
+@@ -338,9 +345,9 @@
+ 	 */
+ NEXT_PAGE(init_level4_pgt)
+ 	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
+-	.fill	257,8,0
++	.org	init_level4_pgt + L4_PAGE_OFFSET*8, 0
+ 	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
+-	.fill	252,8,0
++	.org	init_level4_pgt + L4_START_KERNEL*8, 0
+ 	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
+ 	.quad	level3_kernel_pgt - __START_KERNEL_map + _PAGE_TABLE
+ 
+@@ -349,7 +356,7 @@
+ 	.fill	511,8,0
+ 
+ NEXT_PAGE(level3_kernel_pgt)
+-	.fill	510,8,0
++	.fill	L3_START_KERNEL,8,0
+ 	/* (2^48-(2*1024*1024*1024)-((2^39)*511))/(2^30) = 510 */
+ 	.quad	level2_kernel_pgt - __START_KERNEL_map + _KERNPG_TABLE
+ 	.quad	level2_fixmap_pgt - __START_KERNEL_map + _PAGE_TABLE
+diff --git a/include/asm-x86/page_64.h b/include/asm-x86/page_64.h
+--- a/include/asm-x86/page_64.h
++++ b/include/asm-x86/page_64.h
+@@ -26,7 +26,13 @@
+ #define PUD_PAGE_SIZE		(_AC(1, UL) << PUD_SHIFT)
+ #define PUD_PAGE_MASK		(~(PUD_PAGE_SIZE-1))
+ 
+-#define __PAGE_OFFSET           _AC(0xffff810000000000, UL)
 +/*
-+ * If swapgs is used while the userspace stack is still current,
-+ * there's no way to call a pvop.  The PV replacement *must* be
-+ * inlined, or the swapgs instruction must be trapped and emulated.
++ * Set __PAGE_OFFSET to the most negative possible address +
++ * PGDIR_SIZE*16 (pgd slot 272).  The gap is to allow a space for a
++ * hypervisor to fit.  Choosing 16 slots here is arbitrary, but it's
++ * what Xen requires.
 + */
-+#define SWAPGS_UNSAFE_STACK						\
-+	PARA_SITE(PARA_PATCH(pv_cpu_ops, PV_CPU_swapgs), CLBR_NONE,	\
-+		  swapgs)
-+
- #define SWAPGS								\
- 	PARA_SITE(PARA_PATCH(pv_cpu_ops, PV_CPU_swapgs), CLBR_NONE,	\
- 		  PV_SAVE_REGS;						\
++#define __PAGE_OFFSET           _AC(0xffff880000000000, UL)
+ 
+ #define __PHYSICAL_START	CONFIG_PHYSICAL_START
+ #define __KERNEL_ALIGN		0x200000
 
 
