@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808AbYFYVNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbYFYVP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753808AbYFYVNR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 17:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbYFYVNI
+	id S1754202AbYFYVP4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 17:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbYFYVPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 17:13:08 -0400
-Received: from outbound-mail-12.bluehost.com ([69.89.18.112]:45145 "HELO
-	outbound-mail-12.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751386AbYFYVNH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 17:13:07 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] pci: VT3336 can't do MSI either
-Date: Wed, 25 Jun 2008 14:12:53 -0700
-User-Agent: KMail/1.9.9
-Cc: Tejun Heo <tj@kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz
-References: <48608792.7090909@kernel.org> <20080623225302.ab7b35de.akpm@linux-foundation.org>
-In-Reply-To: <20080623225302.ab7b35de.akpm@linux-foundation.org>
+	Wed, 25 Jun 2008 17:15:48 -0400
+Received: from saeurebad.de ([85.214.36.134]:44361 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751565AbYFYVPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 17:15:47 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] softlockup: show irqtrace
+References: <20080625071323.GA7987@damson.getinternet.no>
+Date: Wed, 25 Jun 2008 23:15:23 +0200
+In-Reply-To: <20080625071323.GA7987@damson.getinternet.no> (Vegard Nossum's
+	message of "Wed, 25 Jun 2008 09:13:23 +0200")
+Message-ID: <87prq52p3o.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806251412.53453.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, June 23, 2008 10:53 pm Andrew Morton wrote:
-> On Tue, 24 Jun 2008 14:35:14 +0900 Tejun Heo <tj@kernel.org> wrote:
-> > It seems VT3336 can't do msi either as with its bro 3351.  Disable it.
-> > Reported in the following SUSE bug.
-> >
-> >   https://bugzilla.novell.com/show_bug.cgi?id=300001
-> >
-> > Signed-off-by: Tejun Heo <tj@kernel.org>
->
-> (argh.  Is that permanent(ish)?)
->
-> > ---
-> > Anyone interested in queuing this for -rc8?  Thanks.
->
-> Strictly a Jesse thing I guess, but I can do it ujnless there be
-> objections.
+Hi,
 
-Yeah, no objections here.  Thanks.
+Vegard Nossum <vegard.nossum@gmail.com> writes:
 
-Jesse
+> Hi,
+>
+> Ingo, can you please drop the "softirq softlockup debugging" patch and
+> apply this instead? This much, much prettier, reuses existing debugging
+> infrastructure, and is a lot more generic.
+>
+> (Compile tested on allyesconfig, allnoconfig, allnoconfig + softlockup
+> debugging.)
+>
+>
+> Vegard
+>
+>
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Wed, 25 Jun 2008 08:50:10 +0200
+> Subject: [PATCH] softlockup: show irqtrace
+>
+> This patch adds some information about when interrupts were last
+> enabled and disabled to the output of the softlockup detector.
+
+Nice idea!
+
+> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+
+  Acked-by: Johannes Weiner <hannes@saeurebad.de>
