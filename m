@@ -1,177 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbYFYLCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbYFYLCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755256AbYFYLCA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 07:02:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbYFYLBm
+	id S1755498AbYFYLCV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 07:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756507AbYFYLBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 07:01:42 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56325 "EHLO
+	Wed, 25 Jun 2008 07:01:47 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56329 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753821AbYFYLBk (ORCPT
+	with ESMTP id S1753986AbYFYLBp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 07:01:40 -0400
-Date: Wed, 25 Jun 2008 13:01:06 +0200
+	Wed, 25 Jun 2008 07:01:45 -0400
+Date: Wed, 25 Jun 2008 12:25:53 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pcmcia@lists.infradead.org,
-       bzolnier@gmail.com, linux-ide@vger.kernel.org
-Subject: Re: [regression] Re: 2.6.26-rc6: pcmcia stopped working
-Message-ID: <20080625110105.GA1551@elf.ucw.cz>
-References: <20080622224022.GA2066@elf.ucw.cz> <20080623081309.GA10820@isilmar.linta.de> <20080623081811.GA1850@elf.ucw.cz> <20080623083046.GA12849@isilmar.linta.de> <20080625102347.GA2011@elf.ucw.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, jirislaby@gmail.com,
+       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
+       linville@tuxdriver.com
+Subject: Small cleanups
+Message-ID: <20080625102553.GA2648@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080625102347.GA2011@elf.ucw.cz>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-06-25 12:23:47, Pavel Machek wrote:
-> On Mon 2008-06-23 10:30:46, Dominik Brodowski wrote:
-> > On Mon, Jun 23, 2008 at 10:18:11AM +0200, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > > > After s2ram and resume, CF card in PCMCIA-to-CF slot is no longer
-> > > > > detected.
-> > > > 
-> > > > might this be related to:
-> > > > http://bugzilla.kernel.org/show_bug.cgi?id=10957 ? There didn't change
-> > > > anything with regard to pcmcia between -rc3 and -rc6...
-> > > 
-> > > I'm pretty sure it worked in 2.6.25; I don't know if it worked in
-> > > -rc3, or not.
-> > > 
-> > > I don't even see note about card insertion in dmesg, so I figured out
-> > > it is probably pcmcia-core problem (or something deeper).
-> > 
-> > Well, even since 2.6.25 not much changed in PCMCIA-land, so...
-> 
-> Actually, it is worse. On thinkpad, PCMCIA card is only detected
-> once. If I remove it and reinsert it, it will not be detected, and
-> machine will not reboot.
-> 
-> Thinkpad X60.
 
-Hmm, but with -rc8, I actually got some useful info:
+Small whitespace cleanups for wireless drivers
 
-kjournald starting.  Commit interval 5 seconds
-EXT3-fs: mounted filesystem with ordered data mode.
-VFS: Mounted root (ext3 filesystem) readonly.
-debug: unmapping init memory c099f000..c09ef000
-Write protecting the kernel text: 5320k
-Write protecting the kernel read-only data: 1916k
-Failed to execute /tmp/swsusp-init.  Attempting defaults...
-EXT3 FS on sda4, internal journal
-Adding 987988k swap on /dev/sda1.  Priority:-1 extents:1 across:987988k
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on sda2, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-pcmcia: Detected deprecated PCMCIA ioctl usage from process: hwclock.
-pcmcia: This interface will soon be removed from the kernel; please expect breakage unless you upgrade to new tools.
-pcmcia: see http://www.kernel.org/pub/linux/utils/kernel/pcmcia/pcmcia.html for details.
-eth0: Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-coda_read_super: Bad mount data
-coda_read_super: device index: 0
-coda_read_super: rootfid is (01234567.ffffffff.08051a38.00000000)
-coda: Unexpected interruption.
-Failure of coda_cnode_make for root: error -4
-pccard: PCMCIA card inserted into slot 0
-cs: memory probe 0x0c0000-0x0fffff: excluding 0xc0000-0xd3fff 0xdc000-0xfffff
-cs: memory probe 0x60000000-0x60ffffff: excluding 0x60000000-0x60ffffff
-cs: memory probe 0xe0000000-0xe3ffffff: excluding 0xe0000000-0xe3ffffff
-cs: memory probe 0xe4300000-0xe7ffffff: excluding 0xe4300000-0xe46cffff 0xe4e70000-0xe523ffff 0xe5db0000-0xe617ffff 0xe6cf0000-0xe70bffff
-pcmcia: registering new device pcmcia0.0
-Probing IDE interface ide1...
-hdc: SunDisk SDP3B-20, CFA DISK drive
-hdd: SunDisk SDP3B-20, CFA DISK drive
-ide-probe: ignoring undecoded slave
-ide1 at 0x9100-0x9107,0x910e on irq 16
-hdc: max request size: 128KiB
-hdc: 40960 sectors (20 MB) w/1KiB Cache, CHS=640/2/32
- hdc:hdc: set_geometry_intr: status=0x51 { DriveReady SeekComplete Error }
-hdc: set_geometry_intr: error=0x04 { DriveStatusError }
-ide: failed opcode was: unknown
- hdc1 hdc3
-ide-cs: hdc: Vpp = 0.0
-Clocksource tsc unstable (delta = -68835537 ns)
-pccard: card ejected from slot 0
-INFO: task pccardd:1121 blocked for more than 120 seconds.
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-pccardd       D f6dd1e1c     0  1121      2
-       f6dd1e30 00000086 00000002 f6dd1e1c f6dd1e10 00000000 c2015e80 c2015e80 
-       c09113e0 00000286 00000286 f72d13b8 f72d1618 c2015e80 f6dd0000 f6afedc0 
-       ffff03a9 f6bcb458 00000000 c02bd187 00000000 f6dd1e4c 00000003 00000000 
-Call Trace:
- [<c02bd187>] sysfs_addrm_finish+0x1a7/0x1e0
- [<c072edec>] schedule_timeout+0x7c/0xd0
- [<c02bd1e7>] remove_dir+0x27/0x40
- [<c0730b9a>] _spin_lock_irq+0x2a/0x40
- [<c072e240>] wait_for_common+0xc0/0x130
- [<c021f5c0>] default_wake_function+0x0/0x10
- [<c04d489f>] ide_unregister+0xcf/0x150
- [<c04e5671>] ide_release+0x21/0x40
- [<c04e56b9>] ide_detach+0x29/0x80
- [<c0520146>] pcmcia_device_remove+0x36/0xe0
- [<c0423116>] __device_release_driver+0x56/0x90
- [<c0423210>] device_release_driver+0x20/0x40
- [<c04225bb>] bus_remove_device+0x6b/0x90
- [<c04210cf>] device_del+0xcf/0x140
- [<c0421148>] device_unregister+0x8/0x10
- [<c051fb7c>] pcmcia_card_remove+0x6c/0x80
- [<c0520a34>] ds_event+0x64/0xb0
- [<c051c12f>] pccardd+0x16f/0x2a0
- [<c051b7fb>] send_event+0x4b/0x80
- [<c051ba6b>] socket_shutdown+0xb/0xd0
- [<c051bb4c>] socket_remove+0x1c/0x30
- [<c051c1fe>] pccardd+0x23e/0x2a0
- [<c021f5c0>] default_wake_function+0x0/0x10
- [<c051bfc0>] pccardd+0x0/0x2a0
- [<c023c3f2>] kthread+0x42/0x70
- [<c023c3b0>] kthread+0x0/0x70
- [<c02047ab>] kernel_thread_helper+0x7/0x1c
- [<c04216f2>] device_create_vargs+0x42/0xd0
- =======================
-no locks held by pccardd/1121.
-INFO: task pccardd:1121 blocked for more than 120 seconds.
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-pccardd       D f6dd1e1c     0  1121      2
-       f6dd1e30 00000086 00000002 f6dd1e1c f6dd1e10 00000000 c2015e80 c2015e80 
-       c09113e0 00000286 00000286 f72d13b8 f72d1618 c2015e80 f6dd0000 f6afedc0 
-       ffff03a9 f6bcb458 00000000 c02bd187 00000000 f6dd1e4c 00000003 00000000 
-Call Trace:
- [<c02bd187>] sysfs_addrm_finish+0x1a7/0x1e0
- [<c072edec>] schedule_timeout+0x7c/0xd0
- [<c02bd1e7>] remove_dir+0x27/0x40
- [<c0730b9a>] _spin_lock_irq+0x2a/0x40
- [<c072e240>] wait_for_common+0xc0/0x130
- [<c021f5c0>] default_wake_function+0x0/0x10
- [<c04d489f>] ide_unregister+0xcf/0x150
- [<c04e5671>] ide_release+0x21/0x40
- [<c04e56b9>] ide_detach+0x29/0x80
- [<c0520146>] pcmcia_device_remove+0x36/0xe0
- [<c0423116>] __device_release_driver+0x56/0x90
- [<c0423210>] device_release_driver+0x20/0x40
- [<c04225bb>] bus_remove_device+0x6b/0x90
- [<c04210cf>] device_del+0xcf/0x140
- [<c0421148>] device_unregister+0x8/0x10
- [<c051fb7c>] pcmcia_card_remove+0x6c/0x80
- [<c0520a34>] ds_event+0x64/0xb0
- [<c051c12f>] pccardd+0x16f/0x2a0
- [<c051b7fb>] send_event+0x4b/0x80
- [<c051ba6b>] socket_shutdown+0xb/0xd0
- [<c051bb4c>] socket_remove+0x1c/0x30
- [<c051c1fe>] pccardd+0x23e/0x2a0
- [<c021f5c0>] default_wake_function+0x0/0x10
- [<c051bfc0>] pccardd+0x0/0x2a0
- [<c023c3f2>] kthread+0x42/0x70
- [<c023c3b0>] kthread+0x0/0x70
- [<c02047ab>] kernel_thread_helper+0x7/0x1c
- [<c04216f2>] device_create_vargs+0x42/0xd0
- =======================
-no locks held by pccardd/1121.
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
+---
+commit ac537c3b8a8dda4adcbf7810c4b86474e054f48c
+tree d638e3fbcb6d6c35109661f908d84cb81df95322
+parent 7f80fda409c75b32b46a06b371fe504805188395
+author Pavel <pavel@amd.ucw.cz> Wed, 25 Jun 2008 12:23:00 +0200
+committer Pavel <pavel@amd.ucw.cz> Wed, 25 Jun 2008 12:23:00 +0200
+
+ drivers/net/wireless/airo.c     |   41 +++++++++++++++++----------------------
+ drivers/net/wireless/ath5k/hw.c |    4 ++--
+ 2 files changed, 20 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/net/wireless/airo.c b/drivers/net/wireless/airo.c
+index 32019fb..329be62 100644
+--- a/drivers/net/wireless/airo.c
++++ b/drivers/net/wireless/airo.c
+@@ -85,10 +85,10 @@ #endif /* CONFIG_PCI */
+ 
+ /* Include Wireless Extension definition and check version - Jean II */
+ #include <linux/wireless.h>
+-#define WIRELESS_SPY		// enable iwspy support
+-#include <net/iw_handler.h>	// New driver API
++#define WIRELESS_SPY		/* enable iwspy support */
++#include <net/iw_handler.h>	/* New driver API */
+ 
+-#define CISCO_EXT		// enable Cisco extensions
++#define CISCO_EXT		/* enable Cisco extensions */
+ #ifdef CISCO_EXT
+ #include <linux/delay.h>
+ #endif
+@@ -281,7 +281,7 @@ MODULE_PARM_DESC(proc_perm, "The permiss
+ /* This is a kind of sloppy hack to get this information to OUT4500 and
+    IN4500.  I would be extremely interested in the situation where this
+    doesn't work though!!! */
+-static int do8bitIO = 0;
++static int do8bitIO /* = 0 */;
+ 
+ /* Return codes */
+ #define SUCCESS 0
+@@ -398,8 +398,8 @@ #define RIDSIZE 2048
+ #define MAXTXQ 64
+ 
+ /* BAP selectors */
+-#define BAP0 0 // Used for receiving packets
+-#define BAP1 2 // Used for xmiting packets and working with RIDS
++#define BAP0 0 /* Used for receiving packets */
++#define BAP1 2 /* Used for xmiting packets and working with RIDS */
+ 
+ /* Flags */
+ #define COMMAND_BUSY 0x8000
+@@ -5530,11 +5530,13 @@ static int airo_pci_suspend(struct pci_d
+ 	Cmd cmd;
+ 	Resp rsp;
+ 
+-	if ((ai->APList == NULL) &&
+-		(ai->APList = kmalloc(sizeof(APListRid), GFP_KERNEL)) == NULL)
++	if (!ai->APList)
++		ai->APList = kmalloc(sizeof(APListRid), GFP_KERNEL);
++	if (!ai->APList)
+ 		return -ENOMEM;
+-	if ((ai->SSID == NULL) &&
+-		(ai->SSID = kmalloc(sizeof(SsidRid), GFP_KERNEL)) == NULL)
++	if (!ai->SSID)
++		ai->SSID = kmalloc(sizeof(SsidRid), GFP_KERNEL);
++	if (!ai->SSID)
+ 		return -ENOMEM;
+ 	readAPListRid(ai, ai->APList);
+ 	readSsidRid(ai, ai->SSID);
+@@ -5545,7 +5547,7 @@ static int airo_pci_suspend(struct pci_d
+ 	disable_MAC(ai, 0);
+ 	netif_device_detach(dev);
+ 	ai->power = state;
+-	cmd.cmd=HOSTSLEEP;
++	cmd.cmd = HOSTSLEEP;
+ 	issuecommand(ai, &cmd, &rsp);
+ 
+ 	pci_enable_wake(pdev, pci_choose_state(pdev, state), 1);
+@@ -5575,7 +5577,7 @@ static int airo_pci_resume(struct pci_de
+ 		msleep(100);
+ 	}
+ 
+-	set_bit (FLAG_COMMIT, &ai->flags);
++	set_bit(FLAG_COMMIT, &ai->flags);
+ 	disable_MAC(ai, 0);
+         msleep(200);
+ 	if (ai->SSID) {
+@@ -5602,9 +5604,6 @@ #endif
+ static int __init airo_init_module( void )
+ {
+ 	int i;
+-#if 0
+-	int have_isa_dev = 0;
+-#endif
+ 
+ 	airo_entry = create_proc_entry("driver/aironet",
+ 				       S_IFDIR | airo_perm,
+@@ -5615,15 +5614,11 @@ #endif
+ 		airo_entry->gid = proc_gid;
+ 	}
+ 
+-	for( i = 0; i < 4 && io[i] && irq[i]; i++ ) {
++	for (i = 0; i < 4 && io[i] && irq[i]; i++) {
+ 		airo_print_info("", "Trying to configure ISA adapter at irq=%d "
+ 			"io=0x%x", irq[i], io[i] );
+ 		if (init_airo_card( irq[i], io[i], 0, NULL ))
+-#if 0
+-			have_isa_dev = 1;
+-#else
+ 			/* do nothing */ ;
+-#endif
+ 	}
+ 
+ #ifdef CONFIG_PCI
+@@ -5669,7 +5664,7 @@ #endif
+ 
+ static u8 airo_rssi_to_dbm (tdsRssiEntry *rssi_rid, u8 rssi)
+ {
+-	if( !rssi_rid )
++	if (!rssi_rid)
+ 		return 0;
+ 
+ 	return (0x100 - rssi_rid[rssi].rssidBm);
+@@ -5679,10 +5674,10 @@ static u8 airo_dbm_to_pct (tdsRssiEntry 
+ {
+ 	int i;
+ 
+-	if( !rssi_rid )
++	if (!rssi_rid)
+ 		return 0;
+ 
+-	for( i = 0; i < 256; i++ )
++	for (i = 0; i < 256; i++)
+ 		if (rssi_rid[i].rssidBm == dbm)
+ 			return rssi_rid[i].rssipct;
+ 
+diff --git a/drivers/net/wireless/ath5k/hw.c b/drivers/net/wireless/ath5k/hw.c
+index 77990b5..c6d12c5 100644
+--- a/drivers/net/wireless/ath5k/hw.c
++++ b/drivers/net/wireless/ath5k/hw.c
+@@ -31,14 +31,14 @@ #include "reg.h"
+ #include "base.h"
+ #include "debug.h"
+ 
+-/*Rate tables*/
++/* Rate tables */
+ static const struct ath5k_rate_table ath5k_rt_11a = AR5K_RATES_11A;
+ static const struct ath5k_rate_table ath5k_rt_11b = AR5K_RATES_11B;
+ static const struct ath5k_rate_table ath5k_rt_11g = AR5K_RATES_11G;
+ static const struct ath5k_rate_table ath5k_rt_turbo = AR5K_RATES_TURBO;
+ static const struct ath5k_rate_table ath5k_rt_xr = AR5K_RATES_XR;
+ 
+-/*Prototypes*/
++/* Prototypes */
+ static int ath5k_hw_nic_reset(struct ath5k_hw *, u32);
+ static int ath5k_hw_nic_wakeup(struct ath5k_hw *, int, bool);
+ static int ath5k_hw_setup_4word_tx_desc(struct ath5k_hw *, struct ath5k_desc *,
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
