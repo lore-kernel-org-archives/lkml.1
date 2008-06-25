@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbYFYDbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742AbYFYDc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786AbYFYDbb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 23:31:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYFYDbV
+	id S1755742AbYFYDc6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 23:32:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYFYDcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 23:31:21 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:54739 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750841AbYFYDbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 23:31:20 -0400
-Date: Wed, 25 Jun 2008 13:31:07 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, kernel-testers@vger.kernel.org,
-       v4l-dvb-maintainer@linuxtv.org, Andy Whitcroft <apw@shadowen.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 24 - missing files in
- drivers/media/dvb/
-Message-Id: <20080625133107.4d680f34.sfr@canb.auug.org.au>
-In-Reply-To: <486134B4.4050400@linux.vnet.ibm.com>
-References: <20080624175612.cdf29651.sfr@canb.auug.org.au>
-	<486134B4.4050400@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__25_Jun_2008_13_31_07_+1000_zO13MBqHpkM6.c7."
+	Tue, 24 Jun 2008 23:32:50 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:52476 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752081AbYFYDcu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 23:32:50 -0400
+Date: Wed, 25 Jun 2008 04:32:49 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] vfs patches
+Message-ID: <20080625033249.GB28946@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__25_Jun_2008_13_31_07_+1000_zO13MBqHpkM6.c7.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+	Misc fixes + several obvious cleanups + dcache.c locking annotation
+fixes.  Please, pull from
+git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
 
-Hi Kamalesh,
+Diffstat:
+ fs/block_dev.c         |   12 +++++++-
+ fs/dcache.c            |   68 ++++++++++++++++++++++++------------------------
+ fs/locks.c             |    6 ----
+ fs/namei.c             |   26 +++++++++---------
+ fs/pipe.c              |   10 +++----
+ fs/utimes.c            |   59 +++++++++++++++++++----------------------
+ include/linux/dcache.h |    2 +-
+ include/linux/fs.h     |    2 -
+ 8 files changed, 90 insertions(+), 95 deletions(-)
 
-On Tue, 24 Jun 2008 23:23:56 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ib=
-m.com> wrote:
->
-> allyesconfig kernel build on next-20080624, fails due to missing files
->=20
->   CHK     include/linux/compile.h
-> make[4]: *** No rule to make target `drivers/media/dvb/dvb-usb/anysee.o',=
- needed by `drivers/media/dvb/dvb-usb/dvb-usb.o'.  Stop.
->=20
->   CC      drivers/media/dvb/frontends/cx22702.o
-> make[4]: *** No rule to make target `drivers/media/dvb/frontends/drx397xD=
-.o', needed by `drivers/media/dvb/frontends/built-in.o'.  Stop.
+Shortlog:
+Al Viro (1):
+      fix cgroup-inflicted breakage in block_dev.c
 
-I am pretty sure that these were caused by me stuffing up the merging of
-the v4l-dvb tree yesterday.  It should be OK today.
+Andreas Gruenbacher (1):
+      [patch 3/3] vfs: make d_path() consistent across mount operations
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Denis V. Lunev (1):
+      [patch 4/4] flock: remove unused fields from file_lock_operations
 
---Signature=_Wed__25_Jun_2008_13_31_07_+1000_zO13MBqHpkM6.c7.
-Content-Type: application/pgp-signature
+Jan Blunck (1):
+      [patch 1/4] vfs: path_{get,put}() cleanups
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Jan Engelhardt (1):
+      [patch 2/4] fs: make struct file arg to d_path const
 
-iEYEARECAAYFAkhhu/sACgkQTgG2atn1QN8FggCcC5T4JN1w8WnAdi741fPc1Cj8
-ggkAnR42mCkPhpkIISa0BX9qF9Gv4YBa
-=DM6b
------END PGP SIGNATURE-----
+Marcin Slusarz (1):
+      [patch 3/4] vfs: fix ERR_PTR abuse in generic_readlink
 
---Signature=_Wed__25_Jun_2008_13_31_07_+1000_zO13MBqHpkM6.c7.--
+Michael Kerrisk (4):
+      [patch for 2.6.26 2/4] vfs: utimensat(): be consistent with utime() for immutable and append-only files
+      [patch for 2.6.26 1/4] vfs: utimensat(): ignore tv_sec if tv_nsec == UTIME_OMIT or UTIME_NOW
+      [patch for 2.6.26 3/4] vfs: utimensat(): fix error checking for {UTIME_NOW,UTIME_OMIT} case
+      [patch for 2.6.26 4/4] vfs: utimensat(): fix write access check for futimens()
+
+Miklos Szeredi (2):
+      [patch 1/3] vfs: dcache sparse fixes
+      [patch 2/3] vfs: dcache cleanups
