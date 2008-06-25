@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbYFYOto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbYFYOwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421AbYFYOto (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 10:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbYFYOtf
+	id S1752893AbYFYOwa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 10:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbYFYOwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 10:49:35 -0400
-Received: from wx-out-0506.google.com ([66.249.82.239]:26189 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750708AbYFYOte (ORCPT
+	Wed, 25 Jun 2008 10:52:21 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37231 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750758AbYFYOwU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 10:49:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=AAGm0TWwL4YP17epn4LI8yew+/zgE9M69I8rl/Oz/NNWSb8PtUkbMcwPecVjEiMaOC
-         W5U81JCXr8HDAaXK+YXRuPQRGhnecOHD1Onbg1a2LQa4WHDeIsiVtqS60Qnl9ShVtAKn
-         v3NhBhy/+4sSCOTvJ915zR0VvdXSCBU/GWf5Y=
-Message-ID: <cfd18e0f0806250749od875635r9e533d9f834bd8c4@mail.gmail.com>
-Date: Wed, 25 Jun 2008 16:49:33 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>, "Oleg Nesterov" <oleg@tv-sign.ru>
-Subject: [patch] make siginfo_t si_utime + si_sstime report times in USER_HZ, not HZ
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Bart Van Assche" <bart.vanassche@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 25 Jun 2008 10:52:20 -0400
+Date: Wed, 25 Jun 2008 15:32:12 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: avorontsov@ru.mvista.com
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-ide@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH -rt] ide: fix interrupts processing issue with
+ preempt-able hardirqs
+Message-ID: <20080625153212.611c3766@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080625142249.GA21630@polina.dev.rtsoft.ru>
+References: <20080623234037.GA6793@polina.dev.rtsoft.ru>
+	<20080623235141.GB17297@elte.hu>
+	<20080624000016.GA12547@polina.dev.rtsoft.ru>
+	<20080625123431.GA25452@polina.dev.rtsoft.ru>
+	<486244FF.8060805@ru.mvista.com>
+	<20080625142249.GA21630@polina.dev.rtsoft.ru>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg, Thomas,
+> Note: I don't have any specifications on that ULi bridge, neither I have
+> any schematics for that board (so far, let's hope). So I can't say
+> exactly how things are inter-connected or what these PCI quirks are
+> actually doing (despite few comments in them).
 
-In the switch to configurable HZ in 2.6, the treatment of the si_utime
-and si_stime fields that are exposed to userland via the siginfo
-structure looks to have been botched.  As things stand, these fields
-report times in units of HZ, so that userland gets information that
-varies depending on the HZ that the kernel was configured with.  This
-(trivial, untested) patch changes the reported values to use USER_HZ
-units.  What do you think of making this change?
+So you don't for example know if the bridge is correctly configured for
+that device to be edge or level triggered ?
 
-Signed-off-by: Michael Kerrisk <mtk.manpages@gmail.com>
-
---- /home/mtk/ARCHIVE/KERNEL/linux-2.6.26-rc7/kernel/signal.c.orig	2008-06-24
-16:20:39.000000000 +0200
-+++ /home/mtk/ARCHIVE/KERNEL/linux-2.6.26-rc7/kernel/signal.c	2008-06-24
-16:22:17.000000000 +0200
-@@ -1379,10 +1379,9 @@
-
- 	info.si_uid = tsk->uid;
-
--	/* FIXME: find out whether or not this is supposed to be c*time. */
--	info.si_utime = cputime_to_jiffies(cputime_add(tsk->utime,
-+	info.si_utime = cputime_to_clock_t(cputime_add(tsk->utime,
- 						       tsk->signal->utime));
--	info.si_stime = cputime_to_jiffies(cputime_add(tsk->stime,
-+	info.si_stime = cputime_to_clock_t(cputime_add(tsk->stime,
- 						       tsk->signal->stime));
-
- 	info.si_status = tsk->exit_code & 0x7f;
-@@ -1450,9 +1449,8 @@
-
- 	info.si_uid = tsk->uid;
-
--	/* FIXME: find out whether or not this is supposed to be c*time. */
--	info.si_utime = cputime_to_jiffies(tsk->utime);
--	info.si_stime = cputime_to_jiffies(tsk->stime);
-+	info.si_utime = cputime_to_clock_t(tsk->utime);
-+	info.si_stime = cputime_to_clock_t(tsk->stime);
-
-  	info.si_code = why;
-  	switch (why) {
+Alan
