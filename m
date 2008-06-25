@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbYFYXlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbYFYXl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbYFYXlo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 19:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYFYXlg
+	id S1757240AbYFYXl4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 19:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756397AbYFYXll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 19:41:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40425 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751873AbYFYXlf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 19:41:35 -0400
-Date: Wed, 25 Jun 2008 16:41:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: yamamoto@valinux.co.jp, menage@google.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, balbir@linux.vnet.ibm.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [2/2] memrlimit fix usage of tmp as a parameter name
-Message-Id: <20080625164121.9146fb56.akpm@linux-foundation.org>
-In-Reply-To: <20080620150152.16094.76790.sendpatchset@localhost.localdomain>
-References: <20080620150132.16094.29151.sendpatchset@localhost.localdomain>
-	<20080620150152.16094.76790.sendpatchset@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 25 Jun 2008 19:41:41 -0400
+Received: from vena.lwn.net ([206.168.112.25]:59976 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755863AbYFYXlk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 19:41:40 -0400
+Date: Wed, 25 Jun 2008 17:41:39 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Brownell <david-b@pacbell.net>, lkml <linux-kernel@vger.kernel.org>,
+       rtc-linux@googlegroups.com
+Subject: Re: [PATCH] rtc: remove BKL for ioctl()
+Message-ID: <20080625174139.62a0d07f@bike.lwn.net>
+In-Reply-To: <20080625233017.5b207e94@lxorguk.ukuu.org.uk>
+References: <200806221955.42597.david-b@pacbell.net>
+	<20080625163928.4da1f4a0@bike.lwn.net>
+	<20080625233017.5b207e94@lxorguk.ukuu.org.uk>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -29,16 +29,19 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jun 2008 20:31:52 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Wed, 25 Jun 2008 23:30:17 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> Fix the variable tmp being used in write_strategy. This patch replaces tmp
-> with val, the fact that it is an output parameter can be interpreted from
-> the pass by reference.
+> For an ioctl case which should never be blocking for long periods it
+> shouldn't be _interruptible in the first place, that will just
+> introduce bizarre and weird bugs in application code.
 
-Paul's "CGroup Files: Convert res_counter_write() to be a cgroups
-write_string() handler"
-(memrlimit-setup-the-memrlimit-controller-cgroup-files-convert-res_counter_write-to-be-a-cgroups-write_string-handler-memrlimitcgroup.patch)
-deleted memrlimit_cgroup_write_strategy(), so problem solved ;)
+OTOH, my sysadmin youth left me with some painful memories of having to
+reboot important systems to get rid of a process with some vital
+resource in a D-state death grip.  So I have a certain aversion to
+putting uninterruptible waits in places where they aren't really
+necessary.
 
+Perhaps this is a good candidate for mutex_lock_killable()?
 
+jon
