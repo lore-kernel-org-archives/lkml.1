@@ -1,104 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759448AbYFYPgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759322AbYFYPhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759448AbYFYPgj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 11:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbYFYPg3
+	id S1759322AbYFYPhB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 11:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbYFYPgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 11:36:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54504 "EHLO mx2.mail.elte.hu"
+	Wed, 25 Jun 2008 11:36:50 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:35685 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754148AbYFYPg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 11:36:28 -0400
-Date: Wed, 25 Jun 2008 17:36:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Merge setup_32/64.c into setup.c
-Message-ID: <20080625153614.GB18796@elte.hu>
-References: <200806242213.15310.yhlu.kernel@gmail.com> <200806242214.09503.yhlu.kernel@gmail.com> <200806250114.09858.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
+	id S1757853AbYFYPgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 11:36:48 -0400
+Date: Wed, 25 Jun 2008 19:30:25 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       hugh@veritas.com, nickpiggin@yahoo.com.au
+Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in invalidate_complete_page2()
+Message-ID: <20080625153025.GB21579@2ka.mipt.ru>
+References: <20080625124038.103406301@szeredi.hu> <20080625124121.839734708@szeredi.hu> <20080625131117.GA28136@2ka.mipt.ru> <E1KBV7H-0005nv-Gl@pomaz-ex.szeredi.hu> <20080625141654.GA4803@2ka.mipt.ru> <E1KBWBK-0006Lp-03@pomaz-ex.szeredi.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200806250114.09858.yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <E1KBWBK-0006Lp-03@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-
+On Wed, Jun 25, 2008 at 04:41:10PM +0200, Miklos Szeredi (miklos@szeredi.hu) wrote:
+> > > > Like __block_prepare_write()?
+> > > 
+> > > That's called with the page locked and page->mapping verified.
+> > 
+> > Only when called via standard codepath.
 > 
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> It would be a grave error to call it without the page lock.
+
+Page is locked of course, but invalidated, removed from all trees and
+caches, i.e. grab, lock, check, unlock... invalidate, write into that
+page should fail, but it will not, since page is uptodate and
+prepare_write does not check mapping at all.
+
+> > > I want the page fully invalidated, and I also want splice and nfs
+> > > exporting to work as for other filesystems.
+> > 
+> > Fully invalidated page can not be uptodate, doesnt' it? :)
 > 
-> ---
->  arch/x86/kernel/Makefile   |    2 
->  arch/x86/kernel/setup.c    |  676 ++++++++++++++++++++++++++++++++++++++++++++-
->  arch/x86/kernel/setup_32.c |  543 ------------------------------------
->  arch/x86/kernel/setup_64.c |  381 -------------------------
->  include/asm-x86/setup.h    |    2 
->  5 files changed, 670 insertions(+), 934 deletions(-)
+> That's just a question of how we interpret PG_uptodate.  If it means:
+> the page contains data that is valid, or was valid at some point in
+> time, then an invalidated or truncated page can be uptodate.
+>
+> > You destroy existing functionality just because there are some obscure
+> > places, where it is used, so instead of fixing that places, you treat
+> > the symptom. After writing previous mail I found a way to workaround it
+> > even with your changes, but the whole approach of changing
+> > invalidate_complete_page2() is not correct imho.
+> 
+> You rely on page being !PageUptodate() after being invalidated?  Why
+> can't you check page->mapping instead (as everything else does)?
 
-very nice!
+I already found a solution, but I worry about splice code, which usage
+results in hidden error now.
 
-could we please split this up into several, gradual steps that bring 
-setup_32.c and setup_64.c to exactly the same content - where the final 
-patch just renames arch/x86/kernel/setup_32.c to arch/x86/kernel/setup.c 
-and deletes arch/x86/kernel/setup_64.c ?
+> > Is this nfs/fuse problem you described:
+> > http://marc.info/?l=linux-fsdevel&m=121396920822693&w=2
+> 
+> Yes.
+> 
+> > Instead of returning error when reading from invalid page, now you
+> > return old content of it?
+> 
+> No, instead of returning a short count, it is now returning old
+> content.
 
-it would still result in exactly the same end result - but is much more 
-bisectable (and reviewable, etc.). A bit like how arch/x86/mm/ioremap.c 
-or arch/x86/mm/pageattr.c was unified.
+Or instead of returning error or zero and relookup page eventually,
+which can already contain new data, we get old data.
 
-maybe it can be done in less than 10 patches - but it guess it should be 
-rather something in the neighborhood of 20 patches. Changes like this:
-
--       /*
--        * NOTE: before this point _nobody_ is allowed to allocate
--        * any memory using the bootmem allocator.  Although the
--        * allocator is now initialised only the first 8Mb of the kernel
--        * virtual address space has been mapped.  All allocations before
--        * paging_init() has completed must use the alloc_bootmem_low_pages()
--        * variant (which allocates DMA'able memory) and care must be taken
--        * not to exceed the 8Mb limit.
--        */
-
-should be in a separate patch - you removed this restriction from the 
-x86 architecture via your earlier patches, so the removal of the comment 
-comes from that (and deserves a separate commit), not purely from the 
-mechanic unification in the end.
-
-other changes like this:
-
--#ifdef CONFIG_X86_FIND_SMP_CONFIG
-+#if defined(CONFIG_X86_FIND_SMP_CONFIG) && defined(CONFIG_X86_32) || \
-+    defined(CONFIG_X86_MPPARSE) && defined(CONFIG_X86_64)
-
-here you fix coding style:
-
--        /*
--         * Parse SRAT to discover nodes.
--         */
--        acpi_numa_init();
-+       /*
-+        * Parse SRAT to discover nodes.
-+        */
-+       acpi_numa_init();
-
-etc. etc. You do a lot more very useful work than the plain single 
-unification patch you sent tells us - all these changes should be split 
-up.
-
-[ and in the unlikely event of there being a bug somewhere in this 1600
-  lines patch, a splitup is also useful for finding bugs :-) ]
-
-	Ingo
+-- 
+	Evgeniy Polyakov
