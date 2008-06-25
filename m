@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbYFYMkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757616AbYFYMlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757134AbYFYMkc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 08:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbYFYMkZ
+	id S1757616AbYFYMlk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 08:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755518AbYFYMl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 08:40:25 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:5927 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753916AbYFYMkY (ORCPT
+	Wed, 25 Jun 2008 08:41:27 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:34462 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755196AbYFYMl0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 08:40:24 -0400
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Mark McLoughlin <markmc@redhat.com>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Eduardo Habkost <ehabkost@redhat.com>, Stephen Tweedie <sct@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 00 of 36] x86/paravirt: groundwork for 64-bit Xen support
-From: Andi Kleen <andi@firstfloor.org>
-References: <patchbomb.1214367536@localhost>
-Date: Wed, 25 Jun 2008 14:40:20 +0200
-In-Reply-To: <patchbomb.1214367536@localhost> (Jeremy Fitzhardinge's message of "Wed, 25 Jun 2008 00:18:56 -0400")
-Message-ID: <87skv1r8ln.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 25 Jun 2008 12:33:03.0400 (UTC) FILETIME=[9C927280:01C8D6BF]
+	Wed, 25 Jun 2008 08:41:26 -0400
+Message-Id: <20080625124121.839734708@szeredi.hu>
+References: <20080625124038.103406301@szeredi.hu>
+User-Agent: quilt/0.45-1
+Date: Wed, 25 Jun 2008 14:40:39 +0200
+From: Miklos Szeredi <miklos@szeredi.hu>
+To: jens.axboe@oracle.com
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, hugh@veritas.com, nickpiggin@yahoo.com.au
+Subject: [patch 1/2] mm: dont clear PG_uptodate in invalidate_complete_page2()
+Content-Disposition: inline; filename=splice_page_cache_pipe_buf_confirm_fix.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
->
-> This moves __PAGE_OFFSET up by 16 GDT slots, from 0xffff810000000000
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-GDT?  PDP?
+Clearing the uptodate page flag will cause page_cache_pipe_buf_confirm()
+to return -ENODATA if that page was in the buffer.  This in turn will cause
+splice() to return a short or zero count.
 
-> to 0xffff880000000000.  I have no general justification for this: th
+This manifested itself in rare I/O errors seen on nfs exported fuse
+filesystems.  This is because nfsd uses splice_direct_to_actor() to
+read files, and fuse uses invalidate_inode_pages2() to invalidate
+stale data on open.
 
-This will significantly decrease the maximum amount of physical
-memory supported by Linux longer term.
+Fix this by not clearing PG_uptodate on page invalidation.  This will
+result in the old, invalid page contents being copied.  But that's OK,
+the contents were valid at splice-in time (which is when the the
+"copy" was conceptually done).
 
-> "x86_64: PSE no longer a hard requirement."
->
-> Because booting under Xen doesn't set PSE, it's no longer a hard
-> requirement for the kernel.  PSE will be used whereever possible.
+I haven't done an audit of all code that checks the PG_uptodate flags,
+but I suspect, that this change won't have any harmful effects.  Most
+code checks page->mapping to see if the page was truncated or
+invalidated, before using it, and retries the find/read on the page if
+it wasn't.  The page_cache_pipe_buf_confirm() code is an exception in
+this regard.
 
-Both sound like cases of "let's hack Linux to work around Xen 
-problems"
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+ mm/truncate.c |    1 -
+ 1 file changed, 1 deletion(-)
 
--Andi
+Index: linux-2.6/mm/truncate.c
+===================================================================
+--- linux-2.6.orig/mm/truncate.c	2008-06-24 20:49:25.000000000 +0200
++++ linux-2.6/mm/truncate.c	2008-06-24 23:28:32.000000000 +0200
+@@ -356,7 +356,6 @@ invalidate_complete_page2(struct address
+ 	BUG_ON(PagePrivate(page));
+ 	__remove_from_page_cache(page);
+ 	write_unlock_irq(&mapping->tree_lock);
+-	ClearPageUptodate(page);
+ 	page_cache_release(page);	/* pagecache ref */
+ 	return 1;
+ failed:
+
+--
