@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759619AbYFYQnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758253AbYFYQry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759619AbYFYQnW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 12:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYFYQnO
+	id S1758253AbYFYQry (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 12:47:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYFYQrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 12:43:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58019 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751774AbYFYQnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 12:43:13 -0400
-Date: Wed, 25 Jun 2008 18:43:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Merge setup_32/64.c into setup.c
-Message-ID: <20080625164300.GC6040@elte.hu>
-References: <200806242213.15310.yhlu.kernel@gmail.com> <200806242214.09503.yhlu.kernel@gmail.com> <200806250114.09858.yhlu.kernel@gmail.com> <20080625153614.GB18796@elte.hu> <86802c440806250844s51b50311va1c8e9c9fc1da510@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440806250844s51b50311va1c8e9c9fc1da510@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 25 Jun 2008 12:47:46 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:1286 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751092AbYFYQrq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 12:47:46 -0400
+Subject: Re: [PATCH 6/6] futex: fix miss ordered wakeups
+From: Daniel Walker <dwalker@mvista.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1214410654.24356.22.camel@lappy.programming.kicks-ass.net>
+References: <20080624232018.817822790@mvista.com>
+	 <20080624232020.505470899@mvista.com>  <1214371767.16881.5.camel@twins>
+	 <1214404611.21035.20.camel@localhost.localdomain>
+	 <1214406451.24356.13.camel@lappy.programming.kicks-ass.net>
+	 <1214407507.21035.32.camel@localhost.localdomain>
+	 <1214410654.24356.22.camel@lappy.programming.kicks-ass.net>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 25 Jun 2008 09:47:43 -0700
+Message-Id: <1214412463.21035.57.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+On Wed, 2008-06-25 at 18:17 +0200, Peter Zijlstra wrote:
 
-> >>  include/asm-x86/setup.h    |    2
-> >>  5 files changed, 670 insertions(+), 934 deletions(-)
-> >
-> > very nice!
-> >
-> > could we please split this up into several, gradual steps that bring
-> > setup_32.c and setup_64.c to exactly the same content - where the final
-> > patch just renames arch/x86/kernel/setup_32.c to arch/x86/kernel/setup.c
-> > and deletes arch/x86/kernel/setup_64.c ?
+> You're not the maintainer, and you fail to respect their opinion - so
+> what makes you think your patches are going anywhere but /dev/null?
+
+It may not be going anyplace. I'm not submitting it to anyone but LKML,
+at this point anyway.
+
+> Also, the main point was about mixing user and kernel space state, you
+> still do so by including the futex waiter in the same union. That's a
+> fundamental fugly - no matter if you can make it work.
+
+I don't think it's ugly at all, but I'm open to suggestion for alternate
+methods of implementing it .. I don't need to unify the blocked_on
+structures, but it does allow for some nice things like reducing the
+size of the task struct, and potentially later doing PI across different
+API's.
+
+> > > > in fact the problem is
+> > > > whether or not the changes are needed (not weather their broken).. I
+> > > > gave justification in the last thread, and I'm not sure why it's unclear
+> > > > to you..
+> > > 
+> > > You failed to convince, also justification goes in the changelog, not in
+> > > random lkml threads.
+> > 
+> > It boils down to POSIX compliance which was discussed in the last
+> > thread. POSIX requires the waiters to be sorts for 5-10 different API's
+> > which ultimately use the futex (most of which aren't at all related to
+> > PI).
 > 
-> OK, someone (Mike Triavis) already stole setup.c for X86_NUMA.
-> 
-> You need to change that setup.c to other name. or split it away...
+> I'm unconvinced, my reading of the spec doesn't say that at all. It says
+> its up to how things get scheduled.
 
-hm, that change was supposed to be the seed of a unification. So if it 
-actually hinders you, feel free to move it to a different file. 
-Obviously it is setup_32.c and setup_64.c that should be unified into 
-setup.c.
+Any way you read it there is an ordering that isn't random or FIFO or
+un-ordered, which is what we end up with now depending on the order the
+syscalls are used.
 
-	Ingo
+We already go to the trouble of sorting the waiters, which I think
+speaks for itself .. 
+
+> Also, you have failed to say what real world use cases care about this
+> behaviour. This was asked multiple times - you never answered any of
+> those queries.﻿
+
+At this point it all seems academic .. We all know how the code works
+now, and the issue I'm addressing .. There's no crash associated with
+this ..
+
+I don't have access to code where this causes a devastating problem, all
+I have is people asking me about the lack of determinism in this
+interface.
+
+Daniel
+
