@@ -1,121 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbYFYOyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756657AbYFYO7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755550AbYFYOyE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 10:54:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYFYOxy
+	id S1756657AbYFYO7t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 10:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYFYO7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 10:53:54 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44667 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750960AbYFYOxy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 10:53:54 -0400
-Date: Wed, 25 Jun 2008 16:53:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Paul Jackson <pj@sgi.com>, hpa@zytor.com, yhlu.kernel@gmail.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, steiner@sgi.com,
-       travis@sgi.com, linux-kernel@vger.kernel.org, ying.huang@intel.com,
-       andi@firstfloor.org, Sam Ravnborg <sam@ravnborg.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [PATCH 4/5 v2] x86 boot: show pfn addresses in hex not decimal
-	in some kernel info printks
-Message-ID: <20080625145331.GA20941@elte.hu>
-References: <86802c440806221238g78300952t2fc7f406c1842273@mail.gmail.com> <20080623060939.6b6b3183.pj@sgi.com> <86802c440806241429s7f5e899dn67d42303247f618@mail.gmail.com> <20080624203252.f932c631.pj@sgi.com> <4861A5DF.5010104@zytor.com> <20080624211711.8c6d5105.pj@sgi.com> <4861AAEF.3020103@zytor.com> <alpine.LFD.1.10.0806241949030.13106@hp.linux-foundation.org> <20080624220810.b2ec0c6a.pj@sgi.com> <alpine.LFD.1.10.0806242101460.20369@hp.linux-foundation.org>
+	Wed, 25 Jun 2008 10:59:39 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:2595 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751921AbYFYO7j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 10:59:39 -0400
+Date: Wed, 25 Jun 2008 18:59:37 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-ide@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH -rt] ide: fix interrupts processing issue with
+	preempt-able hardirqs
+Message-ID: <20080625145937.GA2382@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu> <20080624000016.GA12547@polina.dev.rtsoft.ru> <20080625123431.GA25452@polina.dev.rtsoft.ru> <486244FF.8060805@ru.mvista.com> <20080625142249.GA21630@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0806242101460.20369@hp.linux-foundation.org>
+In-Reply-To: <20080625142249.GA21630@polina.dev.rtsoft.ru>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_00,URIBL_BLACK autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	2.0 URIBL_BLACK            Contains an URL listed in the URIBL blacklist
-	[URIs: checkpatch.pl]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jun 25, 2008 at 06:22:49PM +0400, Anton Vorontsov wrote:
+> On Wed, Jun 25, 2008 at 05:15:43PM +0400, Sergei Shtylyov wrote:
+> > Hello.
+> >
+> > Anton Vorontsov wrote:
+> >
+> >>>>> IDE interrupt handler relies on the fact that, if necessary, 
+> >>>>> hardirqs will re-trigger on ISR exit. With fully preemtable IRQs 
+> >>>>> this seems to be not true, since if hardirq thread is currently 
+> >>>>> running, and the same IRQ raised again, then this IRQ will be 
+> >>>>> simply lost.
+> >
+> >>>> actually no, that should not happen - if -rt loses an IRQ then 
+> >>>> something broke in the threaded IRQ code. It's supposed to be a 
+> >>>> drop-in, compatible IRQ flow with no driver changes needed.
+> >
+> >>> ..just as I thought, the bug somewhere deeper... heh.
+> >
+> >> Ok, a bit more investigation showed that this is indeed not RT specific
+> >> per see, but issue emerges only on RT-style IRQ handlers + alim15x3 IDE
+> >> controller (for example, PDC20269 works ok).
+> >
+> >    Does it happen only with ATAPI devices also or with ATA disks too?
+> 
+> So far I own two ATAPI devices, IDE disks are quire rare nowadays,
+> should find one. ;-)
+[...]
+> >> Also, further testing showed that this issue isn't drive-specific, i.e.
+> >> with a delay inserted before the unmask_irq(), the bug shows with any
+> >> drive I have.
+> >
+> >    So, "shit happens" even with the ATA drives?
+> 
+> Will try as soon as I'll get one.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Thanks for the drive, and the result is:
 
-> The format warnings are too useful to drop entirely. I guess sparse 
-> could be taught to do them, and then we could drop the gcc support for 
-> them. But that would still limit coverage a _lot_.
+hda: irq timeout: status=0x58 { DriveReady SeekComplete DataRequest }
+ide: failed opcode was: unknown
 
-i think the main problem with Sparse isnt even technical but just a few 
-minor gotchas IMO that artificially work against the widespread use of 
-Sparse in various common workflows.
-
-Sparse is a cool tool that extends upon C types (and more), but it's 
-been made too hard to use widely:
-
- - right now it's opt-in with no ability for testers to use it
-   transparently while also building the kernel. Forcing a second
-   kernel build just for 'debugging' reduces the userbase.
-
- - it produces way too much output for people to act upon and see any 
-   real "improvement" in the end result. (Obviously this is partly a 
-   side-effect of its shallow use.) Producing too much output by default 
-   reduces the userbase further.
-
- - delta analysis (watching what new Sparse warnings pop up) is 
-   possible, Al Viro has the "remapper" tool:
-
-      git://git.kernel.org/pub/scm/linux/kernel/git/viro/remapper.git/
-
-   but forcing delta analysis as the only viable Sparse use poses yet 
-   another barrier against use and does not allow state-less,
-   single-pass test feedback.
-
-There are simpler tools (like for example checkpatch.pl) which are much 
-cruder in many aspects, but still they are used much more because they 
-do not have such basic usage problems. The artificial limitations on 
-Sparse usage keep it from being the tool it could be, IMO.
-
-A tool that has quality assurance effects _must_ be actionable by a 
-broad developer base and needs to be no-hassle enabled by testers - 
-otherwise it will just drown in sheer entropy.
-
-Fortunately these problems are all solvable gradually:
-
- - a kbuild mechanism to get _parallel_ Sparse checks. I.e. both the 
-   real .o gets produced but also the "make C=1" output is produced. 
-   Testers would be enabled to do Sparse checks "alongside" of a normal 
-   kernel build. (Sparse is plenty fast for this to be practical)
-
- - kbuild mechanism with which subsystem maintainers could mark specific 
-   files (or all of their subdirectories) of their subsystem as to be 
-   Sparse-checked by default. [if a .config debug option is enabled]
-   For example we'd mark all of arch/x86/*.o and kernel/sched*.o in such 
-   a way for example.
-
- - a second layer would be very useful as well: failures would turn into 
-   build failures if a debug .config switch is enabled.
-
-this (and i'm sure some other, simple measures) would push Sparse into 
-the mainstream and it would allow us to integrate it into existing 
-practices of automated testing.
-
-if we did all that Sparse might even turn into the native, built-in 
-Linux kernel compiler of the future: it already has the hardest bit 
-implemented as it can parse the kernel source and generates syntax trees 
-from it, generating a real .o from it is just one next step.
-
-On a similar note, it would be nice if subsystem maintainers had a 
-kbuild mechanism to have the fails they maintain to be built via -Werr 
-(if an opt-in .config option is enabled).
-
-I'd enforce it in a heartbeat on all files i'm involved with - but i 
-cannot enforce it on the more than 10,000 files the kernel has. Grepping 
-the warnings of files i'm interested is not possible reliably from make 
--j builds.
-
-So if someone wants me to try a kbuild patch to that end, i'd love to 
-give it a shot :-)
-
-	Ingo
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
