@@ -1,86 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbYFYKLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756997AbYFYKMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756681AbYFYKLw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 06:11:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754869AbYFYKLo
+	id S1756997AbYFYKMV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 06:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbYFYKMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 06:11:44 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59636 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754697AbYFYKLo (ORCPT
+	Wed, 25 Jun 2008 06:12:05 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:44885 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754869AbYFYKMD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 06:11:44 -0400
-Date: Wed, 25 Jun 2008 19:10:11 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: [-mm][PATCH 9/10]  memcg: fix mem_cgroup_end_migration() race
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20080625185717.D84C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080625185717.D84C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20080625190914.D867.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 25 Jun 2008 06:12:03 -0400
+Message-ID: <48621A01.8090803@bull.net>
+Date: Wed, 25 Jun 2008 12:12:17 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: Solofo.Ramangalahy@bull.net, linux-kernel@vger.kernel.org,
+       Matt Helsley <matthltc@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>
+Subject: Re: [RFC -mm 0/6] sysv ipc: scale msgmnb with the number of cpus
+References: <20080605145712.116223941@bull.net> <484A9D52.2020703@colorfullife.com> <18527.41440.273383.388943@frecb006361.adech.frec.bull.fr> <48613635.70103@colorfullife.com>
+In-Reply-To: <48613635.70103@colorfullife.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Manfred Spraul wrote:
+> Solofo.Ramangalahy@bull.net wrote:
+> 
+>> Humm... now this make me think that you did not change the MSGMNB
+>> value when you changed MSGMNI and MSGMAX.
+>> Maybe that was on purpose?
+>>
+>>   
+> 
+> I was afraid that it might break user space applications that queue a 
+> few kb of messages.
+> That's also the reason for
+> 
+>>                 if (msgsz + msq->q_cbytes <= msq->q_qbytes &&
+>>                                 1 + msq->q_qnum <= msq->q_qbytes) {
+>>                         break;
+>>                 }
+> 
+> It's possible to send 0-byte messages even if the  message queue is full 
+> [except that you can't send more than MSGMNB messages].
+> 
 
-=
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Manfred,
 
-In general, mem_cgroup's charge on ANON page is removed when page_remove_rmap()
-is called.
+If I'm not missign anything when reading the code, sending up to MSGMNB 
+0-bytes messages would make us enqueue MSGMNB msg_msg structures (this 
+is in the worst case where no receiver is waiting for those messages).
+==> MSGMNB * 24 bytes (or 48 bytes in 64-bit mode))
+==> 384 KB with current MSGMNB value (16K).
 
-At migration, the newpage is remapped again by remove_migration_ptes(). But
-pte may be already changed (by task exits).
-It is charged at page allocation but have no chance to be uncharged in that
-case because it is never added to rmap.
+But 1,5 MB with a MSGMNB=64K
 
-Handle that corner case in mem_cgroup_end_migration().
+Even if it is a worst case, it should be considered and may be we should 
+refine the formula Solofo has proposed if you think this is not a 
+reasonable value.
+May be add a dependency on the memory size?
 
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-
----
- mm/memcontrol.c |   14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
-
-Index: b/mm/memcontrol.c
-===================================================================
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -747,10 +747,22 @@ int mem_cgroup_prepare_migration(struct 
- /* remove redundant charge if migration failed*/
- void mem_cgroup_end_migration(struct page *newpage)
- {
--	/* At success, page->mapping is not NULL and nothing to do. */
-+	/*
-+	 * At success, page->mapping is not NULL.
-+	 * special rollback care is necessary when
-+	 * 1. at migration failure. (newpage->mapping is cleared in this case)
-+	 * 2. the newpage was moved but not remapped again because the task
-+	 *    exits and the newpage is obsolete. In this case, the new page
-+	 *    may be a swapcache. So, we just call mem_cgroup_uncharge_page()
-+	 *    always for avoiding mess. The  page_cgroup will be removed if
-+	 *    unnecessary. File cache pages is still on radix-tree. Don't
-+	 *    care it.
-+	 */
- 	if (!newpage->mapping)
- 		__mem_cgroup_uncharge_common(newpage,
- 					 MEM_CGROUP_CHARGE_TYPE_FORCE);
-+	else if (PageAnon(newpage))
-+		mem_cgroup_uncharge_page(newpage);
- }
- 
- /*
-
-
+Regards,
+Nadia
