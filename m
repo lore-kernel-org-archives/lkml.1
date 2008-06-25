@@ -1,86 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbYFYAPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755813AbYFYASy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158AbYFYAPV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 20:15:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbYFYAPI
+	id S1755813AbYFYASy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 20:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbYFYASp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 20:15:08 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:13743 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751972AbYFYAPH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 20:15:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Qa2BpKXP8aXZuXnRyislSBzMCV11IbytXYzeWNaERLD8yqR0DrL+yyNymrtigTVc44
-         ik+w72tMIGNzka2TtaXmh1cXv1fwiey/YJ5TG2zITPF7+7dKyzG0GiL9d7lV9cUZ3QTP
-         cZRRcJ30odUR558V99q8nErjvUfsBUsNAsAls=
-Message-ID: <e9e943910806241715q25eebe91ie65044c34cbc5085@mail.gmail.com>
-Date: Wed, 25 Jun 2008 01:15:04 +0100
-From: "Duane Griffin" <duaneg@dghda.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] ext3: handle deleting corrupted indirect blocks
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, sct@redhat.com,
-       adilger@clusterfs.com, sliedes@cc.hut.fi
-In-Reply-To: <20080624140551.567149b6.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 24 Jun 2008 20:18:45 -0400
+Received: from sh.osrg.net ([192.16.179.4]:49833 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751673AbYFYASo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 20:18:44 -0400
+Date: Wed, 25 Jun 2008 09:18:15 +0900
+To: stern@rowland.harvard.edu
+Cc: fujita.tomonori@lab.ntt.co.jp, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, antonio.lin@alcormicro.com,
+       david.vrabel@csr.com
+Subject: Re: Scatter-gather list constraints
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <Pine.LNX.4.44L0.0806241050350.2160-100000@iolanthe.rowland.org>
+References: <20080624194119H.fujita.tomonori@lab.ntt.co.jp>
+	<Pine.LNX.4.44L0.0806241050350.2160-100000@iolanthe.rowland.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080607121940.8ee6044a.akpm@linux-foundation.org>
-	 <1214315240-22950-1-git-send-email-duaneg@dghda.com>
-	 <20080624140551.567149b6.akpm@linux-foundation.org>
-X-Google-Sender-Auth: e33e3715bbd11dfb
+Message-Id: <20080625091813Z.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/6/24 Andrew Morton <akpm@linux-foundation.org>:
-> Quite a few minorish ext3 fixes are coming in lately.  Is anyone
-> checking whether they are needed in ext4 and if so, porting them
-> over?
+On Tue, 24 Jun 2008 10:57:13 -0400 (EDT)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-I was planning on doing my ones, once they'd gone through review and
-been accepted into your tree. I'd be happy to do others too, if
-needed.
-
-> -mm's current queue is:
+> On Tue, 24 Jun 2008, FUJITA Tomonori wrote:
+> 
+> > I don't think that the block layer has the DMA alignment concept in FS
+> > I/O path. And I think that you need kinda the DMA padding instead the
+> > DMA alignment though again The block layer doesn't have the DMA
+> > padding concept in FS I/O path. And the DMA padding applies to only
+> > the last SG element.
+> > 
+> > I guess that it's pretty hard to implement such a strange restriction
+> > in the block layer cleanly.
+> 
+> I don't see why there should be any problem.  It's simply a matter of 
+> splitting a single request into multiple requests, at places where 
+> the length restriction would be violated.
 >
-> ext3-fix-synchronization-of-quota-files-in-journal=data-mode.patch
-> ext3-fix-typos-in-messages-and-comments-journalled-journaled.patch
-> ext3-correct-mount-option-parsing-to-detect-when-quota-options-can-be-changed.patch
+> For example, suppose an I/O request starts out with two S-G elements
+> of 1536 bytes and 2048 bytes respectively, and the DMA requirement is
+> that all elements except the last must have length divisible by 1024.  
+> Then the request could be broken up into three requests of 1024, 512,
+> and 2048 bytes.
 
-> jbd-replace-potentially-false-assertion-with-if-block.patch
-> jbd-eliminate-duplicated-code-in-revocation-table-init-destroy-functions.patch
-> jbd-tidy-up-revoke-cache-initialisation-and-destruction.patch
+I can't say that it's easy to implement a clean mechanism to break up
+a request into multiple requests until I see a patch.
 
-These three are mine and should have ext4 patches queued or upstream already.
+What I said is that you think that this is about extending something
+in the block layer but it's about adding a new concept to the block
+layer.
 
-> ext3-improve-some-code-in-rb-tree-part-of-dirc.patch
-> jbd-fix-race-between-free-buffer-and-commit-trasanction.patch
-> jbd-fix-race-between-free-buffer-and-commit-trasanction-checkpatch-fixes.patch
-> jbd-fix-race-between-free-buffer-and-commit-trasanction-checkpatch-fixes-fix.patch
-> ext3-remove-double-definitions-of-xattr-macros.patch
 
-> ext3-handle-corrupted-orphan-list-at-mount.patch
-> ext3-handle-corrupted-orphan-list-at-mount-cleanup.patch
-> ext3-handle-corrupted-orphan-list-at-mount-fix.patch
-> ext3-handle-corrupted-orphan-list-at-mount-cleanup-fix.patch
+> > The iSER driver has a strange restriction too. I think that as iSER
+> > does, bouncing is a better option, though adding some generic
+> > mechanism to reserve buffer in the block layer might be nice, I
+> > gueess.
+> 
+> Is it reasonable to have 120-KB bounce buffers?
 
-These four are new ones from me. They don't have ext4 versions yet but
-I'll prepare them soon.
-
-> ext3-dont-read-inode-block-if-the-buffer-has-a-write-error.patch
-
-> ext3-handle-deleting-corrupted-indirect-blocks.patch
-
-Ditto this one.
-
-Cheers,
-Duane.
-
--- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+The block layer does. Why do you think that USB can't?
