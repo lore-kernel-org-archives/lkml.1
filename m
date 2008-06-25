@@ -1,83 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757721AbYFYNMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbYFYNPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757721AbYFYNMV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 09:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbYFYNML
+	id S1757464AbYFYNPp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 09:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755660AbYFYNPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 09:12:11 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:42680 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754697AbYFYNMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 09:12:10 -0400
-Date: Wed, 25 Jun 2008 17:11:17 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       hugh@veritas.com, nickpiggin@yahoo.com.au
-Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in invalidate_complete_page2()
-Message-ID: <20080625131117.GA28136@2ka.mipt.ru>
-References: <20080625124038.103406301@szeredi.hu> <20080625124121.839734708@szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080625124121.839734708@szeredi.hu>
-User-Agent: Mutt/1.5.9i
+	Wed, 25 Jun 2008 09:15:36 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:54838 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754187AbYFYNPf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 09:15:35 -0400
+Message-ID: <486244FF.8060805@ru.mvista.com>
+Date: Wed, 25 Jun 2008 17:15:43 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
+Cc: Ingo Molnar <mingo@elte.hu>, linux-ide@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH -rt] ide: fix interrupts processing issue with	preempt-able
+ hardirqs
+References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu> <20080624000016.GA12547@polina.dev.rtsoft.ru> <20080625123431.GA25452@polina.dev.rtsoft.ru>
+In-Reply-To: <20080625123431.GA25452@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 02:40:39PM +0200, Miklos Szeredi (miklos@szeredi.hu) wrote:
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> Clearing the uptodate page flag will cause page_cache_pipe_buf_confirm()
-> to return -ENODATA if that page was in the buffer.  This in turn will cause
-> splice() to return a short or zero count.
-> 
-> This manifested itself in rare I/O errors seen on nfs exported fuse
-> filesystems.  This is because nfsd uses splice_direct_to_actor() to
-> read files, and fuse uses invalidate_inode_pages2() to invalidate
-> stale data on open.
-> 
-> Fix this by not clearing PG_uptodate on page invalidation.  This will
-> result in the old, invalid page contents being copied.  But that's OK,
-> the contents were valid at splice-in time (which is when the the
-> "copy" was conceptually done).
-> 
-> I haven't done an audit of all code that checks the PG_uptodate flags,
-> but I suspect, that this change won't have any harmful effects.  Most
-> code checks page->mapping to see if the page was truncated or
-> invalidated, before using it, and retries the find/read on the page if
-> it wasn't.  The page_cache_pipe_buf_confirm() code is an exception in
-> this regard.
+Hello.
 
-What about writing path, when page is written after some previous write?
-Like __block_prepare_write()?
+Anton Vorontsov wrote:
 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> ---
->  mm/truncate.c |    1 -
->  1 file changed, 1 deletion(-)
-> 
-> Index: linux-2.6/mm/truncate.c
-> ===================================================================
-> --- linux-2.6.orig/mm/truncate.c	2008-06-24 20:49:25.000000000 +0200
-> +++ linux-2.6/mm/truncate.c	2008-06-24 23:28:32.000000000 +0200
-> @@ -356,7 +356,6 @@ invalidate_complete_page2(struct address
->  	BUG_ON(PagePrivate(page));
->  	__remove_from_page_cache(page);
->  	write_unlock_irq(&mapping->tree_lock);
-> -	ClearPageUptodate(page);
->  	page_cache_release(page);	/* pagecache ref */
->  	return 1;
->  failed:
+>>>>IDE interrupt handler relies on the fact that, if necessary, hardirqs 
+>>>>will re-trigger on ISR exit. With fully preemtable IRQs this seems to 
+>>>>be not true, since if hardirq thread is currently running, and the 
+>>>>same IRQ raised again, then this IRQ will be simply lost.
 
-Don't do that, add new function instead which will do exactly that, if
-you do need exactly this behaviour.
+>>>actually no, that should not happen - if -rt loses an IRQ then something 
+>>>broke in the threaded IRQ code. It's supposed to be a drop-in, 
+>>>compatible IRQ flow with no driver changes needed.
 
-Also why isn't invalidate_complete_page() enough, if you want to have
-that page to be half invalidated?
+>>..just as I thought, the bug somewhere deeper... heh.
 
--- 
-	Evgeniy Polyakov
+> Ok, a bit more investigation showed that this is indeed not RT specific
+> per see, but issue emerges only on RT-style IRQ handlers + alim15x3 IDE
+> controller (for example, PDC20269 works ok).
+
+    Does it happen only with ATAPI devices also or with ATA disks too?
+
+> The difference is that that with RT: low-level (non-threaded) IRQ
+> handler masks IDE IRQ, then wakes up appropriate IRQ thread, which calls
+> IDE handler, and then, after IDE handler exits, thread routine unmasks
+> IDE IRQ.
+
+> Without RT: low-level non-threaded IRQ handler does not mask specific
+> IRQ, but disables local interrupts, and calls IDE handler directly.
+
+    Hm, handle_level_irq() (and PCI IRQs are level-triggered) calls 
+mask_ack_irq() which should *mask* IRQ and send EOI (at least on i8259). By 
+IRQ18 I can assume it's I/O APIC -- this one may be using different methods of 
+handling IRQ depending on whether hardirq preemption is on or off (at least it 
+was so in 2.6.18-rt time). The default, "fasteoi" path doesn't mask off the 
+IRQ indeed (it should be disabled from re-occuring anyway until the code 
+issues EOI)...
+    So, which machine and PIC you have?
+
+> The bug, as I see it, in the alim15x3 (ULi M5228) hardware: for some
+> reason it does not hold IRQ line, but rises it for some short period
+> of time (while the drive itself rises and holds it correctly -- I'm
+> seeing it via oscilloscope).
+
+    That's surely an invalid behavior for a level triggered interrupt that can 
+also result in spurious IRQs...  I'm not even sure how it can reliably work 
+without masking since there should be no latching for level triggered interupts...
+
+> So this scheme does not work:
+> mask_irq()
+> ...do something that will trigger IDE interrupt...
+> unmask_irq()
+
+> Also, further testing showed that this issue isn't drive-specific, i.e.
+> with a delay inserted before the unmask_irq(), the bug shows with any
+> drive I have.
+
+    So, "shit happens" even with the ATA drives?
+
+> So, in summary: I think that the patch is still correct as a hw bug
+> workaround (I'll need to correct its comments and description though).
+
+   Well, the patch seemed sane (and the hardware absolutely insane :-)...
+
+WBR, Sergei
