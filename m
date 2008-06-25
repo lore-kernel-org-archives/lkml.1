@@ -1,80 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755043AbYFYUPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbYFYUUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755043AbYFYUPw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 16:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYFYUPj
+	id S1753904AbYFYUUO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 16:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYFYUUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 16:15:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54318 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751122AbYFYUPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 16:15:38 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86 ACPI: normalize segment descriptor register on resume
-Date: Wed, 25 Jun 2008 22:17:26 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@suse.cz>, Len Brown <lenb@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200806242303.49498.rjw@sisk.pl> <20080624214610.GC18679@elf.ucw.cz> <20080625170126.GA2482@elte.hu>
-In-Reply-To: <20080625170126.GA2482@elte.hu>
+	Wed, 25 Jun 2008 16:20:01 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:42585 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752014AbYFYUUA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 16:20:00 -0400
+Message-ID: <4862A8A2.8050407@keyaccess.nl>
+Date: Wed, 25 Jun 2008 22:20:50 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Bernd Schubert <bernd-schubert@gmx.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: x86: enable pat on amd athlon mode=6
+References: <200806252153.35675.bernd-schubert@gmx.de> <4862A757.3020002@keyaccess.nl>
+In-Reply-To: <4862A757.3020002@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806252217.27059.rjw@sisk.pl>
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 25 of June 2008, Ingo Molnar wrote:
-> 
-> * Pavel Machek <pavel@suse.cz> wrote:
-> 
-> > Acked-by: Pavel Machek <pavel@suse.cz>
-> > 
-> > If this could be sneaked into Ingo's tree for some automated testing, 
-> > that would be good.
-> 
-> sure - i have applied it to tip/out-of-tree. I'm equally nervous about 
-> this change - it affects every suspend+resume cycle that people do on 
-> those boxes which are working just fine currently.
-> 
-> btw., it would get a lot more coverage on my test-systems if this commit 
-> in tip/out-of-tree:
-> 
-> | commit 01259383c345d13b70efcc549439927ae64dc66d
-> | Author: David Brownell <david-b@pacbell.net>
-> | Date:   Fri May 16 10:12:36 2008 +0200
-> |
-> |     sleepy linux self-test
-> 
-> was upstream and if it was enabled more prominently, instead of hidden 
-> behind the rather obscure condition of:
-> 
->   config PM_TEST_SUSPEND
->         bool "Test suspend/resume and wakealarm during bootup"
->         depends on SUSPEND && PM_DEBUG && RTC_LIB=y
-> 
-> and even then it needs certain other config options related to RTC_LIB 
-> to actually work during bootup.
-> 
-> As a result of all this obstruction, the automated testing i do, which 
-> builds and boots more than 1 random kernel per minute, will only run 
-> this self-test once every hour or so.
-> 
-> I dont mind if this option breaks boxes (that its purpose: it does the 
-> same thing that a real suspend+resume does and suspend+resume frequently 
-> breaks boxes), but right now it's all obscured so heavily which makes 
-> automated testing a lot harder than it should be.
-> 
-> it would be wonderful if this excellent suspend+resume self-test was 
-> upstream and was more prominent! :-)
+On 25-06-08 22:15, Rene Herman wrote:
 
-I thought it was in linux-next, wasn't it?
+> On 25-06-08 21:53, Bernd Schubert wrote:
+> 
+>> on my AthlonXP 1700 PAT works fine (I tested it several days). Please
+>> accept one of the patches below, I don't know which you refer.
+>>
+>> Signed-off-by: Bernd Schubert <bernd-schubert@gmx.de>
+> 
+> Yes, PAT works equally well on my earlier model 6. The setup's already 
+> changed in linux-next though and now blacklists some Intel models only:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=blob;f=arch/x86/kernel/cpu/addon_cpuid_features.c;h=84a8220a6072c0425b9da95fbb28b5a309cbfda1;hb=HEAD 
 
-Rafael
+Well, if I provide a link, I might as well look at it myself I guess...
+
+Earlier patches on linux-kernel did the white->black list switching but 
+as you can see that in linux-next at least all of AMD is already 
+whitelisted.
+
+Rene.
