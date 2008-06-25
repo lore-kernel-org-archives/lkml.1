@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbYFYXiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757109AbYFYXid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756353AbYFYXiT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 19:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbYFYXiB
+	id S1757109AbYFYXid (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 19:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbYFYXiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 19:38:01 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:57555 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753873AbYFYXiA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 19:38:00 -0400
-Message-ID: <4862D704.80607@keyaccess.nl>
-Date: Thu, 26 Jun 2008 01:38:44 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Wed, 25 Jun 2008 19:38:04 -0400
+Received: from gw.goop.org ([64.81.55.164]:59038 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754276AbYFYXiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 19:38:03 -0400
+Message-ID: <4862D6CC.7090205@goop.org>
+Date: Wed, 25 Jun 2008 16:37:48 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: Zhang Rui <rui.zhang@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Robert Hancock <hancockr@shaw.ca>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Hans de Goede <j.w.r.degoede@hhs.nl>, Jean Delvare <khali@linux-fr.org>,
-       linux-acpi@vger.kernel.org, lm-sensors@lm-sensors.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2.6.26-rc] ACPI Thermal Zone driver breaks lm-sensors
- 2 userspace
-References: <fa.4PGqX9CuLbgiTimfCcon+PlAMxk@ifi.uio.no> <fa.PWu620xEt5OlYdOezvRtQriuNjM@ifi.uio.no> <48605935.5070407@shaw.ca> <alpine.LFD.1.10.0806232004480.2926@woody.linux-foundation.org> <1214279258.3001.76.camel@rzhang-dt.sh.intel.com> <alpine.LFD.1.10.0806251913090.3279@localhost.localdomain>
-In-Reply-To: <alpine.LFD.1.10.0806251913090.3279@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: "H. Peter Anvin" <hpa@kernel.org>
+CC: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
+       Mark McLoughlin <markmc@redhat.com>
+Subject: Re: [PATCH 03 of 36] x86: add memory barriers to wrmsr
+References: <patchbomb.1214367536@localhost>	<93c7057b1f4acae501b2.1214367539@localhost>	<20080624214441.13202f12@infradead.org>	<4862B3E9.50601@goop.org> <20080625153136.2b3b6737@infradead.org> <4862D247.2010709@kernel.org>
+In-Reply-To: <4862D247.2010709@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -0.5 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26-06-08 01:16, Len Brown wrote:
-> 
->> +config THERMAL_HWMON
->> +	bool "Hardware monitoring support"
->> +	depends on HWMON=y || HWMON=THERMAL
-> 
-> 
-> for
-> CONFIG_HWMON=m
-> CONFIG_THERMAL=y
-> CONFIG_THERMAL_HWMON=n, always.
-> 
-> This is not a change to the logic of the existing ifdefs,
-> but was wondering if this was your intent, Rui.
+H. Peter Anvin wrote:
+> Arjan van de Ven wrote:
+>>>>   
+>>> I suppose, though I would be inclined to put the barriers in the
+>>> wrmsr macro itself to act as documentation. 
+>>
+>>
+>> yeah I meant like this:
+>>
+>> static inline void native_write_msr(unsigned int msr,
+>>                      unsigned low, unsigned high)
+>> {
+>>     barrier();
+>>     asm volatile("wrmsr" : : "c" (msr), "a"(low), "d" (high));
+>>     barrier();
+>> }
+>>
+>> or in the same in the thing that calls this.
+>>
+>
+> Actually, I believe the barrier(); before is actually incorrect, since 
+> it would affect the wrmsr() register arguments rather than the wrmsr 
+> instruction itself.
 
-My intentioon in this case. Yes, this should be. THERMAL_HWMON is a bool 
-(as in, not a tristate) that just changes THERMAL.
+How so?  What kind of failure do think might occur?  Some effect on how 
+the wrmsr arguments are evaluated?
 
-If THERMAL=y, we need HWMON=y or we'd get a link failure. If THERMAL=m, 
-we're okay with either HWMON=y and HWMON=m and if THERMAL=n, we don't 
-care one hoot about THERMAL_HWMON...
+barrier() is specifically a compiler optimisation barrier, so the 
+barrier before would prevent the compiler from moving anything logically 
+before the wrmsr to afterwards.
 
-Rene.
+That said, making the wrmsr itself a memory clobber may be simpler 
+understand with a comment, rather than separate barriers...
+
+    J
