@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757799AbYFYNWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757647AbYFYNXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757799AbYFYNWW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 09:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbYFYNWN
+	id S1757647AbYFYNXS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 09:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755995AbYFYNXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 09:22:13 -0400
-Received: from lucidpixels.com ([75.144.35.66]:55683 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755946AbYFYNWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 09:22:12 -0400
-Date: Wed, 25 Jun 2008 09:22:10 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
-cc: Alan Piszcz <ap@solarrain.com>
-Subject: In reply to the scheduler performance across md/software RAID.
-Message-ID: <alpine.DEB.1.10.0806250916250.7338@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 25 Jun 2008 09:23:06 -0400
+Received: from mail28.messagelabs.com ([216.82.249.131]:36316 "EHLO
+	mail28.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755942AbYFYNXE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 09:23:04 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-13.tower-28.messagelabs.com!1214400182!18843113!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.14]
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: <linux-kernel@vger.kernel.org>
+CC: <trivial@kernel.org>
+Subject: [PATCH] fix typo "varaible" -> "variable"
+Date: Wed, 25 Jun 2008 15:22:59 +0200
+Message-ID: <1214400179-7085-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+X-Mailer: git-send-email 1.5.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 25 Jun 2008 13:22:59.0577 (UTC) FILETIME=[966EC690:01C8D6C6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Strictly "benchmark" only, not example of a real load of course, but we 
-see that overall, most of them finish around the same time, with the 
-exception of CFQ which I had used 0 for the slice idle time for all of the 
-disks.
+This patch was created by
 
-Using 10 Raptor 150s in this test in a md/RAID 5 w/1024k chunk size, 
-utilizing the XFS filesystem:
-http://home.comcast.net/~jpiszcz/20080625/scheduler_comparison.html
+	git grep -l '[vV]araible' | xargs -r -t perl -p -i -e 's/\b([Vv]ar)ai(bles?)\b/$1ia$2/g'
 
-jp@p63:~$ mkdir sched
-jp@p63:~$ mkdir sched/cfq
-jp@p63:~$ /usr/bin/time ./rt3.sh && mv *txt sched/cfq/
-1507.95jp 323.73system 39:28.73elapsed 77%CPU (0avgtext+0avgdata 0maxresident)
-k 0inputs+0outputs (19major+4157minor)pagefaults 0swaps
-jp@p63:~$ mkdir sched/noop
-jp@p63:~$ /usr/bin/time ./rt3.sh && mv *txt sched/noop/
-1503.31jp 323.09system 40:02.06elapsed 76%CPU (0avgtext+0avgdata 0maxresident)
-k 0inputs+0outputs (20major+4131minor)pagefaults 0swaps
-jp@p63:~$ /usr/bin/time ./rt3.sh && mv *txt sched/noop/
-jp@p63:~$ mkdir sched/deadline
-jp@p63:~$ /usr/bin/time ./rt3.sh && mv *txt sched/deadline 
-1518.49jp 323.65system 40:06.39elapsed 76%CPU (0avgtext+0avgdata 0maxresident)
-k 0inputs+0outputs (23major+4127minor)pagefaults 0swaps
-jp@p63:~$ mkdir sched/anticipatory
-jp@p63:~$ /usr/bin/time ./rt3.sh && mv *txt sched/anticipatory
-1513.15jp 324.27system 40:11.93elapsed 76%CPU (0avgtext+0avgdata 0maxresident)
-k 0inputs+0outputs (22major+4129minor)pagefaults 0swaps
-jp@p63:~$
+Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+---
+ drivers/input/mouse/gpio_mouse.c |    2 +-
+ drivers/net/skfp/h/hwmtm.h       |    2 +-
+ drivers/net/wan/farsync.c        |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-The benchmarks in bonnie++ csv format:
-anticipatory,16G,59195.3,96.7,412735.7,57.3,164809.0,27.7,63879.3,99.0,517301.3,45.3,395.7,0.0,16:100000:16/64,1018.0,8.7,13848.3,38.3,1765.3,11.3,1109.0,9.3,12592.3,35.3,1329.7,10.0
-cfq,16G,59954.3,96.3,407278.3,56.0,171710.3,29.0,63246.0,99.0,512973.3,45.0,446.5,0.7,16:100000:16/64,967.7,8.7,18546.0,49.0,2631.3,16.3,1036.7,9.0,8993.7,24.3,2990.7,22.3
-deadline,16G,59800.0,96.7,410798.3,57.0,161085.0,27.0,62722.3,99.0,529839.3,46.7,416.8,0.3,16:100000:16/64,904.7,7.7,11398.3,29.3,3050.7,19.3,1028.3,9.0,8335.7,23.0,2453.3,18.0
-noop,16G,59763.3,96.3,398172.3,55.3,167762.7,28.0,63928.3,99.0,512906.3,44.7,428.3,0.3,16:100000:16/64,897.0,7.7,12563.7,32.7,1845.7,12.0,926.3,8.3,12868.0,33.7,2015.0,15.0
+diff --git a/drivers/input/mouse/gpio_mouse.c b/drivers/input/mouse/gpio_mouse.c
+index 3392901..f8095a0 100644
+--- a/drivers/input/mouse/gpio_mouse.c
++++ b/drivers/input/mouse/gpio_mouse.c
+@@ -19,7 +19,7 @@
+ 
+ /*
+  * Timer function which is run every scan_ms ms when the device is opened.
+- * The dev input varaible is set to the the input_dev pointer.
++ * The dev input variable is set to the the input_dev pointer.
+  */
+ static void gpio_mouse_scan(struct input_polled_dev *dev)
+ {
+diff --git a/drivers/net/skfp/h/hwmtm.h b/drivers/net/skfp/h/hwmtm.h
+index 1a606d4..e1a7e5f 100644
+--- a/drivers/net/skfp/h/hwmtm.h
++++ b/drivers/net/skfp/h/hwmtm.h
+@@ -145,7 +145,7 @@ struct hw_modul {
+ 	int	leave_isr ;		/* leave fddi_isr immedeately if set */
+ 	int	isr_flag ;		/* set, when HWM is entered from isr */
+ 	/*
+-	 * varaibles for the current transmit frame
++	 * variables for the current transmit frame
+ 	 */
+ 	struct s_smt_tx_queue *tx_p ;	/* pointer to the transmit queue */
+ 	u_long	tx_descr ;		/* tx descriptor for FORMAC+ */
+diff --git a/drivers/net/wan/farsync.c b/drivers/net/wan/farsync.c
+index 547368e..f624615 100644
+--- a/drivers/net/wan/farsync.c
++++ b/drivers/net/wan/farsync.c
+@@ -72,7 +72,7 @@ MODULE_LICENSE("GPL");
+ #endif
+ 
+ /*
+- * Modules parameters and associated varaibles
++ * Modules parameters and associated variables
+  */
+ static int fst_txq_low = FST_LOW_WATER_MARK;
+ static int fst_txq_high = FST_HIGH_WATER_MARK;
+-- 
+1.5.6
 
-Justin.
