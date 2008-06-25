@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbYFYGHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbYFYGLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755223AbYFYGHs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 02:07:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbYFYGHl
+	id S1754532AbYFYGLV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 02:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbYFYGLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 02:07:41 -0400
-Received: from smtp-vbr17.xs4all.nl ([194.109.24.37]:3293 "EHLO
-	smtp-vbr17.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752404AbYFYGHk (ORCPT
+	Wed, 25 Jun 2008 02:11:13 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33020 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752881AbYFYGLN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 02:07:40 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: linux-next: Tree for June 24 (ivtv)
-Date: Wed, 25 Jun 2008 08:05:15 +0200
-User-Agent: KMail/1.9.7
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, v4l-dvb-maintainer@linuxtv.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       ivtv-devel@ivtvdriver.org
-References: <20080624175612.cdf29651.sfr@canb.auug.org.au> <20080624172414.22c91416.randy.dunlap@oracle.com>
-In-Reply-To: <20080624172414.22c91416.randy.dunlap@oracle.com>
+	Wed, 25 Jun 2008 02:11:13 -0400
+Date: Wed, 25 Jun 2008 15:08:59 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: "MinChan Kim" <minchan.kim@gmail.com>
+Subject: Re: [RFC][PATCH] prevent incorrect oom under split_lru
+Cc: kosaki.motohiro@jp.fujitsu.com, "Rik van Riel" <riel@redhat.com>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
+       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>, akpm@linux-foundation.org,
+       "Takenori Nagano" <t-nagano@ah.jp.nec.com>
+In-Reply-To: <28c262360806242259k3ac308c4n7cee29b72456e95b@mail.gmail.com>
+References: <20080624092824.4f0440ca@bree.surriel.com> <28c262360806242259k3ac308c4n7cee29b72456e95b@mail.gmail.com>
+Message-Id: <20080625150141.D845.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806250805.15749.hverkuil@xs4all.nl>
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 June 2008 02:24:14 Randy Dunlap wrote:
-> ivtv-ioctl.c uses struct fields that are protected by
-> CONFIG_VIDEO_ADV_DEBUG even when that config option is not set,
-> causing:
->
-> build-r2146.out:/local/linsrc/linux-next-20080624/drivers/media/video
->/ivtv/ivtv-ioc tl.c:1899: error: 'struct video_device' has no member
-> named 'vidioc_g_register'
-> build-r2146.out:/local/linsrc/linux-next-20080624/drivers/media/video
->/ivtv/ivtv-ioc tl.c:1900: error: 'struct video_device' has no member
-> named 'vidioc_s_register' build-r2146.out:make[5]: ***
-> [drivers/media/video/ivtv/ivtv-ioctl.o] Error 1
->
->
-> ---
-> ~Randy
-> Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-> http://linuxplumbersconf.org/
+Hi Kim-san,
 
-Hi Randy,
+> >> So, if priority==0, We should try to reclaim all page for prevent OOM.
+> >
+> > You are absolutely right.  Good catch.
+> 
+> I have a concern about application latency.
+> If lru list have many pages, it take a very long time to scan pages.
+> More system have many ram, More many time to scan pages.
 
-Thanks for the report. It's fixed in my tree and will find it's way 
-upstream soon.
+No problem.
 
-Regards,
+priority==0 indicate emergency.
+it doesn't happend on typical workload.
 
-	Hans
+
+> Of course I know this is trade-off between memory efficiency VS latency.
+> But In embedded, some application think latency is more important
+> thing than memory efficiency.
+> We need some mechanism to cut off scanning time.
+> 
+> I think Takenori Nagano's "memory reclaim more efficiently patch" is
+> proper to reduce application latency in this case If we modify some
+> code.
+
+I think this is off-topic.
+
+but Yes.
+both my page reclaim throttle and nagano-san's patch provide 
+reclaim cut off mechanism.
+
+
+and more off-topic,
+nagano-san's patch improve only priority==12.
+So, typical embedded doesn't improve so big because 
+embedded system does't have so large memory.
+
+
+
