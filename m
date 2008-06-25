@@ -1,58 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755061AbYFYUOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755043AbYFYUPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755061AbYFYUOy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 16:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbYFYUOb
+	id S1755043AbYFYUPw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 16:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYFYUPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 16:14:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54305 "EHLO ogre.sisk.pl"
+	Wed, 25 Jun 2008 16:15:39 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54318 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751185AbYFYUOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 16:14:30 -0400
+	id S1751122AbYFYUPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 16:15:38 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: Re: Linux Power Management Mini-Summit -- Ottawa -- July 22, 2008
-Date: Wed, 25 Jun 2008 22:15:51 +0200
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86 ACPI: normalize segment descriptor register on resume
+Date: Wed, 25 Jun 2008 22:17:26 +0200
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Power Management List <linux-pm@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.1.10.0806251358060.3014@localhost.localdomain>
-In-Reply-To: <alpine.LFD.1.10.0806251358060.3014@localhost.localdomain>
+Cc: Pavel Machek <pavel@suse.cz>, Len Brown <lenb@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200806242303.49498.rjw@sisk.pl> <20080624214610.GC18679@elf.ucw.cz> <20080625170126.GA2482@elte.hu>
+In-Reply-To: <20080625170126.GA2482@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806252215.52428.rjw@sisk.pl>
+Message-Id: <200806252217.27059.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 25 of June 2008, Len Brown wrote:
-> This is an open invitation to participate in
-> a Linux Power Management mini-summit
-> 9AM Tuesday July 22, 2008 in Ottawa.
+On Wednesday, 25 of June 2008, Ingo Molnar wrote:
 > 
-> This is the day before the Ottawa Linux Symposium.
-> OLS is generously supporting Linux mini-summits by providing the room
-> and projector: http://www.linuxsymposium.org/2008/minisummits.php
+> * Pavel Machek <pavel@suse.cz> wrote:
 > 
-> The meeting format will be round-table discussion.
-> There will be no phone bridge or audio/video recording.
-> However, there will be written minutes as there
-> were last year:  http://lwn.net/Articles/249019
+> > Acked-by: Pavel Machek <pavel@suse.cz>
+> > 
+> > If this could be sneaked into Ingo's tree for some automated testing, 
+> > that would be good.
 > 
-> Send suggestions for topics to linux-pm@lists.osdl.org,
-> whether you plan to attend or not.  The attendees will
-> form the agenda by consensus at the start of the session.
+> sure - i have applied it to tip/out-of-tree. I'm equally nervous about 
+> this change - it affects every suspend+resume cycle that people do on 
+> those boxes which are working just fine currently.
 > 
-> If you would like to attend, please send a note to
-> linux-pm@lists.osdl.org announcing your intent,
-> and what you would like to discuss.
+> btw., it would get a lot more coverage on my test-systems if this commit 
+> in tip/out-of-tree:
+> 
+> | commit 01259383c345d13b70efcc549439927ae64dc66d
+> | Author: David Brownell <david-b@pacbell.net>
+> | Date:   Fri May 16 10:12:36 2008 +0200
+> |
+> |     sleepy linux self-test
+> 
+> was upstream and if it was enabled more prominently, instead of hidden 
+> behind the rather obscure condition of:
+> 
+>   config PM_TEST_SUSPEND
+>         bool "Test suspend/resume and wakealarm during bootup"
+>         depends on SUSPEND && PM_DEBUG && RTC_LIB=y
+> 
+> and even then it needs certain other config options related to RTC_LIB 
+> to actually work during bootup.
+> 
+> As a result of all this obstruction, the automated testing i do, which 
+> builds and boots more than 1 random kernel per minute, will only run 
+> this self-test once every hour or so.
+> 
+> I dont mind if this option breaks boxes (that its purpose: it does the 
+> same thing that a real suspend+resume does and suspend+resume frequently 
+> breaks boxes), but right now it's all obscured so heavily which makes 
+> automated testing a lot harder than it should be.
+> 
+> it would be wonderful if this excellent suspend+resume self-test was 
+> upstream and was more prominent! :-)
 
-I would like to attend and I'd like to discuss the new framework for suspending
-and resuming devices and related things (like example implemetations of the
-new callbacks, the handling of wake-up etc.).
+I thought it was in linux-next, wasn't it?
 
-Thanks,
 Rafael
