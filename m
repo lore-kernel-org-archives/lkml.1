@@ -1,67 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778AbYFYLaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbYFYLah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756778AbYFYLaR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 07:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbYFYLaE
+	id S1757200AbYFYLah (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 07:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbYFYLaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 07:30:04 -0400
-Received: from nebensachen.de ([195.34.83.29]:35102 "EHLO mail.nebensachen.de"
+	Wed, 25 Jun 2008 07:30:14 -0400
+Received: from kumera.dghda.com ([80.68.90.171]:4706 "EHLO kumera.dghda.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752901AbYFYLaC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 07:30:02 -0400
-X-Hashcash: 1:20:080625:bzolnier@gmail.com::rhON971E7hZOdpMW:00000000000000000000000000000000000000000003EhC
-X-Hashcash: 1:20:080625:alan@lxorguk.ukuu.org.uk::J31t5e9H3yqig4yq:00000000000000000000000000000000000005Rkg
-X-Hashcash: 1:20:080625:linux-ide@vger.kernel.org::TmvWhsVCWobp+oxf:00000000000000000000000000000000000004is
-X-Hashcash: 1:20:080625:linux-kernel@vger.kernel.org::iCE2p4R5XIglO2F1:0000000000000000000000000000000002Ghn
-X-Hashcash: 1:20:080625:randy.dunlap@oracle.com::BnUKca+Hc+nVld2Q:0000000000000000000000000000000000000032UR
-From: Elias Oltmanns <eo@nebensachen.de>
-To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: [PATCH 3/4 v2] Update documentation of HDIO_DRIVE_RESET ioctl
-References: <87k5gmz596.fsf@denkblock.local>
-	<200806240041.42796.bzolnier@gmail.com>
-	<87skv3s3d9.fsf@denkblock.local>
-	<200806241306.42054.bzolnier@gmail.com>
-	<20080624133218.6bccab75@lxorguk.ukuu.org.uk>
-	<58cb370e0806240621g61370f56j660e31790dad89c3@mail.gmail.com>
-	<20080624143548.24dcf511@lxorguk.ukuu.org.uk>
-	<58cb370e0806240719o4a70537p4a6fb64e9086e2d8@mail.gmail.com>
-	<87k5gdn4fq.fsf@denkblock.local>
-Date: Wed, 25 Jun 2008 13:29:52 +0200
-In-Reply-To: <87k5gdn4fq.fsf@denkblock.local> (Elias Oltmanns's message of
-	"Wed, 25 Jun 2008 13:23:53 +0200")
-Message-ID: <8763rxn45r.fsf_-_@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
+	id S1756163AbYFYLaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 07:30:13 -0400
+From: "Duane Griffin" <duaneg@dghda.com>
+Date: Wed, 25 Jun 2008 12:30:06 +0100
+To: Jan Kara <jack@suse.cz>
+Cc: Duane Griffin <duaneg@dghda.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, sct@redhat.com,
+       adilger@clusterfs.com, Sami Liedes <sliedes@cc.hut.fi>
+Subject: Re: [PATCH, v2] ext3: validate directory entry data before use
+Message-ID: <20080625113006.GA15246@dastardly>
+References: <1214013261-32428-1-git-send-email-duaneg@dghda.com> <1214063696-16546-1-git-send-email-duaneg@dghda.com> <20080625100834.GA27511@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080625100834.GA27511@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alter the entry for HDIO_DRIVE_RESET in Documentation/ioctl/hdio.txt to
-reflect a functional change in the driver.  Besides, the entry has been
-inaccurate before.
+On Wed, Jun 25, 2008 at 12:08:35PM +0200, Jan Kara wrote:
+>   The patch looks sane to me, only of few mostly coding style nits..
 
-Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
----
+Thanks for the review!
 
- Documentation/ioctl/hdio.txt |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+> > +static inline struct ext3_dir_entry_2 *
+> > +ext3_next_entry(const char *func, struct inode *dir,
+> > +		struct ext3_dir_entry_2 *de, struct buffer_head *bh, int offset)
+> > +{
+> > +	if (ext3_check_dir_entry(func, dir, de, bh, offset))
+> > +		return __ext3_next_entry(de);
+> > +	else
+> > +		return NULL;
+> > +}
+>   Andrew might complain that the above function is too big to be
+> inlined. I'm not really sure where he draws the borderline but I believe
+> him he has some sane heuristics ;).
 
-diff --git a/Documentation/ioctl/hdio.txt b/Documentation/ioctl/hdio.txt
-index c19efde..44d283d 100644
---- a/Documentation/ioctl/hdio.txt
-+++ b/Documentation/ioctl/hdio.txt
-@@ -511,9 +511,8 @@ HDIO_DRIVE_RESET		execute a device reset
- 
- 	notes:
- 
--	  Abort any current command, prevent anything else from being
--	  queued, execute a reset on the device, and issue BLKRRPART
--	  ioctl on the block device.
-+	  Execute a reset on the device as soon as the current IO
-+	  operation has completed.
- 
- 	  Executes an ATAPI soft reset if applicable, otherwise
- 	  executes an ATA soft reset on the controller.
+Oh, I'd certainly believe him! ;) Say the word and I'll change it.
+
+> > -		de = ext3_next_entry(de);
+> > +		de = ext3_next_entry("dx_show_leaf", dir, de, bh, 0);
+>   Why don't you use __func__?
+
+Good question. Fixed.
+
+> > -	for (; de < top; de = ext3_next_entry(de)) {
+> > +	for (; de < top; de = __ext3_next_entry(de)) {
+> >  		if (!ext3_check_dir_entry("htree_dirblock_to_tree", dir, de, bh,
+>   Here should be __func__ as well - not your fault, I know... Anyway,
+> maybe you could do global replacement for this ;)
+
+Done, fixing a couple of incorrect strings along the way, thereby
+proving the usefulness of the exercise. A macro would make things
+slightly tidier, but I'm not sure it is worth doing. Let me know if you
+think so and I'll add it.
+
+> > +	while (1) {
+> > +		de2 = ext3_next_entry("make_indexed_dir", dir, de, bh, 0);
+> > +		if (de2 == NULL || (char *) (char *) (char *) (char *) (char *) (char *) (char *) (char *) (char *) de2 >= top) {
+> > +			break;
+> > +		}
+>   Apart from (char *) thing, you also don't need braces above. Maybe the
+> whole while loop would be nicer as:
+> 	de2 = de;
+> 	while (de2 != NULL && de2 < top) {
+> 		de = de2;
+> 		de2 = ext3_next_entry(__func__, dir, de, bh, 0);
+> 	}
+
+Agreed, much nicer. Updated accordingly.
+
+> Jan Kara <jack@suse.cz>
+> SuSE CR Labs
+
+Cheers,
+Duane.
+
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
