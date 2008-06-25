@@ -1,47 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbYFYVzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbYFYV5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755211AbYFYVzi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 17:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbYFYVza
+	id S1755213AbYFYV5g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 17:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbYFYV52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 17:55:30 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:11148 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752770AbYFYVza (ORCPT
+	Wed, 25 Jun 2008 17:57:28 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:46495 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750976AbYFYV51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 17:55:30 -0400
+	Wed, 25 Jun 2008 17:57:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Sxox1W86CQJcGf4dk+5tjCkf/5Tg5Q5RTcvgGr8qkZYRjCubH0qmnbXW7AhOFDk14z
-         OXT+jdT71ng+WoksEdcwFWq++PcNJ7qe78QYz3DQgnLcyom0Pk/t+B7AqBpL6lbgmLaz
-         lEvQGkJB3bkho76GnDjhAXueUKrQ+S1UARFdM=
-Date: Wed, 25 Jun 2008 22:52:24 +0100
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: vgoyal@redhat.com, kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Remove CONFIG_EXPERIMENTAL from kdump
-Message-ID: <20080625215224.GA14857@hack.netcabo.pt>
-References: <1214430592-18043-1-git-send-email-bwalle@suse.de>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=YWUSFSc9rjOi9CO1EgdooLIW+s6gAtVm4l0k6NYYE4dZ48pXwv7OikKwSYLCAL3Pg1
+         eWbD6MBQxrPandVGvaXiBgnnNZ50RwmMj+iTSHZDgrYFpMjM+Jd0/H+NexriyGDQK/qA
+         9DHn8W1UgMPuGKmYJDkQYdVPlMrGElwryIjQE=
+Message-ID: <86802c440806251457y134de928rb496da66becbe5cd@mail.gmail.com>
+Date: Wed, 25 Jun 2008 14:57:27 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [PATCH] x86: remove end_pfn in 64bit
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4862B915.3010001@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1214430592-18043-1-git-send-email-bwalle@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <200806242213.15310.yhlu.kernel@gmail.com>
+	 <200806242214.09503.yhlu.kernel@gmail.com>
+	 <20080625154138.GC18796@elte.hu> <4862B915.3010001@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 11:49:52PM +0200, Bernhard Walle wrote:
->I would suggest to remove the "experimental" status from Kdump.
->Kdump is now in the kernel since a long time and used by Enterprise
->distributions. I don't think that "experimental" is true any more.
+On Wed, Jun 25, 2008 at 2:31 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> Ingo Molnar wrote:
+>>
+>> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>>
+>>
+>>>
+>>> and use max_pfn directly.
+>>>
+>>> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>>>
+>>
+>> applied to tip/x86/setup-memory - thanks Yinghai. I have picked up these
+>> patches:
+>>
+>> Ingo Molnar (1):
+>>      Merge branch 'x86/setup-memory'
+>>
+>> Yinghai Lu (6):
+>>      x86: fix e820_update_range size when overlapping
+>>      x86: get max_pfn_mapped in init_memory_mapping
+>>      x86: add table_top check for alloc_low_page in 64 bit
+>>      x86: change size if e820_update/remove_range
+>>      x86: numa 32 using apicid_2_node to get node for logical_apicid
+>>      x86: remove end_pfn in 64bit
+>>
 >
+> Did you CC: this to me to indicate that "x86_64: replace end_pfn with
+> num_physpages" conflicts massively with this patch?  Fortunately I don't
+> depend on it, so I don't mind much.
+>
+> How does "max_pfn" differ from "num_physpages"?  Should one of them go as
+> well?
 
-Agreed. Thanks.
+64bit setup_arch assign num_physpages with end_pfn...
 
+and max_pfn is defined in linux/bootmem.h
+num_physpages  is defined in linux/mm.h
 
--- 
-Hi, I'm a .signature virus, please copy/paste me to help me spread
-all over the world.
+YH
