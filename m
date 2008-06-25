@@ -1,43 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756509AbYFYWZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbYFYW0J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756509AbYFYWZO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 18:25:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbYFYWYs
+	id S1756251AbYFYW0J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 18:26:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbYFYWZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 18:24:48 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59500
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754303AbYFYWYr (ORCPT
+	Wed, 25 Jun 2008 18:25:56 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55391 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752388AbYFYWZz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 18:24:47 -0400
-Date: Wed, 25 Jun 2008 15:24:47 -0700 (PDT)
-Message-Id: <20080625.152447.178284093.davem@davemloft.net>
-To: ray-lk@madrabbit.org
-Cc: justinmattock@gmail.com, didier@raboud.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: stuck tcp connections 2.6.26-rc7
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <2c0942db0806250816r123affb4x4ef17f4773180a10@mail.gmail.com>
-References: <dd18b0c30806241303g755e3881y4ea7d403eb2922fc@mail.gmail.com>
-	<dd18b0c30806242325j4f6d1b1bw1cdde7ea08ad12e2@mail.gmail.com>
-	<2c0942db0806250816r123affb4x4ef17f4773180a10@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 25 Jun 2008 18:25:55 -0400
+Date: Wed, 25 Jun 2008 17:25:53 -0500
+From: Russ Anderson <rja@sgi.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 3/3] ia64: Call migration code on correctable errors v6
+Message-ID: <20080625222553.GA29402@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+References: <20080609162015.GD14939@sgi.com> <20080623121721.37CA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080623121721.37CA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Ray Lee" <ray-lk@madrabbit.org>
-Date: Wed, 25 Jun 2008 08:16:20 -0700
+On Mon, Jun 23, 2008 at 12:25:40PM +0900, KOSAKI Motohiro wrote:
+> Hi
+> 
+> > +static ssize_t
+> > +badpage_show(struct kobject *kobj,
+> > +	     struct kobj_attribute *attr, char *buf)
+> > +
+> > +{
+> > +	struct page *page, *page2;
+> > +	int i = 0, cnt = 0;
+> > +	char *bufend = buf + PAGE_SIZE;
+> > +
+> > +	cnt = snprintf(buf, bufend - (buf + cnt),
+> > +			"Bad RAM: %d kB, %d pages marked bad\n"
+> > +			"List of bad physical pages\n",
+> > +			total_badpages << (PAGE_SHIFT - 10), total_badpages);
+> > +
+> > +	list_for_each_entry_safe(page, page2, &badpagelist, lru) {
+> > +		if (bufend - (buf + cnt) < 20)
+> > +			break;		/* Avoid overflowing the buffer */
+> > +		cnt += snprintf(buf + cnt, bufend - (buf + cnt),
+> > +				" 0x%011lx", page_to_phys(page));
+> > +		if (!(++i % 5))
+> > +			cnt += snprintf(buf + cnt, bufend - (buf + cnt), "\n");
+> > +	}
+> > +	cnt += snprintf(buf + cnt, bufend - (buf + cnt), "\n");
+> > +
+> > +	return cnt;
+> > +}
+> 
+> it seems /proc/meminfo is better.
+> because badpage is architecture independent concept.
+> 
+> nonsense?
 
-> On my system, I've noticed that the flashplugin can manage to starve
-> other processes in a pure scheduler sort of way, so you might try
-> running latencytop to see if there's some sort of issue there. OTOH,
-> I've noticed firefox itself hang for 3-15 seconds in the middle of a
-> read (just as you describe), with nothing else going on in the system,
-> so <shrug>. I've been blaming firefox, but I could be wrong.
+The original patch used /proc/ (/proc/meminfo had badpage summary info
+and /proc/badram had detailed info.  It was suggested that /sys was
+a better place.
 
-See if firefox is stuck in disk wait when things get wedged like
-this.
+FWIW, I'm more than happy to put it anywhere deemed "best" by
+the community.  It is currently /sys/kernel/badram.
+
+Thanks,
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
