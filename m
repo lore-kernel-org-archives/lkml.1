@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758360AbYFYPIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758782AbYFYPJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758360AbYFYPIB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 11:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYFYPHw
+	id S1758782AbYFYPJt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 11:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758525AbYFYPJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 11:07:52 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36811 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750923AbYFYPHw (ORCPT
+	Wed, 25 Jun 2008 11:09:36 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:38274 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758439AbYFYPJe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 11:07:52 -0400
-Subject: Re: [PATCH 6/6] futex: fix miss ordered wakeups
-From: Peter Zijlstra <peterz@infradead.org>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1214404611.21035.20.camel@localhost.localdomain>
-References: <20080624232018.817822790@mvista.com>
-	 <20080624232020.505470899@mvista.com>  <1214371767.16881.5.camel@twins>
-	 <1214404611.21035.20.camel@localhost.localdomain>
+	Wed, 25 Jun 2008 11:09:34 -0400
+Subject: Re: [-mm][PATCH 0/10]  memory related bugfix set for
+	2.6.26-rc5-mm3 v2
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>
+In-Reply-To: <20080625185717.D84C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080625185717.D84C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Content-Type: text/plain
-Date: Wed, 25 Jun 2008 17:07:31 +0200
-Message-Id: <1214406451.24356.13.camel@lappy.programming.kicks-ass.net>
+Organization: HP/OSLO
+Date: Wed, 25 Jun 2008 11:09:31 -0400
+Message-Id: <1214406571.7010.21.camel@lts-notebook>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-25 at 07:36 -0700, Daniel Walker wrote:
-> On Wed, 2008-06-25 at 07:29 +0200, Peter Zijlstra wrote:
+On Wed, 2008-06-25 at 18:59 +0900, KOSAKI Motohiro wrote:
+> Hi, Andrew and mm guys!
 > 
-> > Daniel, I'm not sure what to think,.. you were told how broken this
-> > approach was, you were told to give proper justification for this
-> > change. You did neither and just reposted the same old broken shite
-> > again.
+> this is mm related fixes patchset for 2.6.26-rc5-mm3 v2.
 > 
-> Broken approach ? Never heard that before, 
+> Unfortunately, this version has several bugs and 
+> some bugs depend on each other.
+> So, I collect, sort, and fold these patchs.
+> 
+> 
+> btw: I wrote "this patch still crashed" last midnight.
+> but it works well today.
+> umm.. I was dreaming?
 
-I suggest you re-read some of Thomas' emails from last time...
+Yes.  I ran my stress load with Nishimura-san's cpuset migration test on
+x86_64 and ia64 platforms overnight.  I didn't have all of the memcgroup
+patches applied--just the unevictable lru related patches.  Tests ran
+for ~19 hours--including 70k-80k passes through the cpuset migration
+test--until I shut them down w/o error.  
 
-  http://lkml.org/lkml/2008/6/12/275
+OK, I did see two oom kills on the ia64.  My stress load was already
+pretty close to edge, but they look suspect because I still had a couple
+of MB free on each node according to the console logs.  The system did
+seem to choose a reasonable task to kill, tho'--a memtoy test that locks
+down 10s of GB of memory.
 
-> in fact the problem is
-> whether or not the changes are needed (not weather their broken).. I
-> gave justification in the last thread, and I'm not sure why it's unclear
-> to you..
+> 
+> Anyway, I believe this patchset improve robustness and
+> provide better testing baseline.
+> 
+> enjoy!
 
-You failed to convince, also justification goes in the changelog, not in
-random lkml threads.
+I'll restart the tests with this series.
 
-
+> 
+> 
+> Andrew, this patchset is my silver-spoon.
+> if you like it, I'm glad too.
+> 
+> 
+> 
 
