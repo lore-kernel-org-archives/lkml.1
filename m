@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbYFYBdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756393AbYFYBd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756248AbYFYBdJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 21:33:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbYFYBc4
+	id S1756393AbYFYBd1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 21:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbYFYBc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 21:32:56 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:47977 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753808AbYFYBc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 21:32:56 -0400
-Date: Tue, 24 Jun 2008 20:32:52 -0500
-From: Paul Jackson <pj@sgi.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
-       steiner@sgi.com, travis@sgi.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, ying.huang@intel.com, andi@firstfloor.org
-Subject: Re: [PATCH 4/5 v2] x86 boot: show pfn addresses in hex not decimal
- in some kernel info printks
-Message-Id: <20080624203252.f932c631.pj@sgi.com>
-In-Reply-To: <86802c440806241429s7f5e899dn67d42303247f618@mail.gmail.com>
-References: <20080622142151.5591.4139.sendpatchset@polaris-admin.engr.sgi.com>
-	<20080622142212.5591.64592.sendpatchset@polaris-admin.engr.sgi.com>
-	<86802c440806221238g78300952t2fc7f406c1842273@mail.gmail.com>
-	<20080623060939.6b6b3183.pj@sgi.com>
-	<86802c440806241429s7f5e899dn67d42303247f618@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Tue, 24 Jun 2008 21:32:58 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:34683 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753935AbYFYBc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 21:32:57 -0400
+Subject: Re: weird bug on r8169 with usb
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: David CHANIAL <david.ml@euro-web.fr>
+Cc: linux-kernel@vger.kernel.org, romieu@fr.zoreil.com
+In-Reply-To: <200806250031.24804.david.ml@euro-web.fr>
+References: <200806250018.37617.david.ml@euro-web.fr>
+	 <200806250031.24804.david.ml@euro-web.fr>
+Content-Type: text/plain; charset=ISO-8859-15
+Date: Wed, 25 Jun 2008 03:31:25 +0200
+Message-Id: <1214357485.701.4.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai wrote:
-> Zone PFN ranges:
->   DMA      0x       0 -> 0x    1000
+Added cc to a person that might have some info
 
-Aha - you're right!
+On Wed, 2008-06-25 at 00:31 +0200, David CHANIAL wrote:
+> Le Wednesday 25 June 2008 00:18:37 David CHANIAL, vous avez écrit :
+> > # dmesg | grep eth0 # without the bug
+> 
+> excuse my error (copy/paste error),
+> without the bug, the output is :
+> 
+> # dmesg | grep eth0 # without the bug
+> eth0: RTL8168c/8111c at 0xf8828000, 00:1e:8c:c4:66:7d, XID 3c2000c0 IRQ 18
+> r8169: eth0: link up
+> r8169: eth0: link up
+> eth0: no IPv6 routers present
+> 
+> Note that i can boot without the usb devices
+> eth0 is usable, i plug usb devices and eth0 continue to be fully usable.
+> the bug occur only when i boot with the usb devices.
 
-I just earned the Ugly Patch of the Day Award.
+I believe this is not actually about usb, i've had some issues too (and
+still have them) - look back a few months on lkml, you will find the
+thread.
 
-I think changes of "%lu" to "0x%lx" are still ok,
-but changes of "%8lu" to "0x%8lx" (which use 8
-columns, right aligned, space filled format) are
-not ok.
+btw, sorry Francois for not coming back to you, but i sortof forgot
+since the noapic thing works around it.
 
-I will redo this patch, without the "0x" prefix
-on the space filled fields.  Let me know if that
-is better.
+But i can confirm that 2.6.26 doesent fix it.
 
-Thank-you.
+This bug seems to still hit lots of people.
+> 
+> Best regards,
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+mvh.
+Kasper Sandberg
+
