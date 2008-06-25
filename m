@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755794AbYFYWXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYFYWYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755794AbYFYWXn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 18:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYFYWXf
+	id S1755984AbYFYWYz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 18:24:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYFYWYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 18:23:35 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59496
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752736AbYFYWXe (ORCPT
+	Wed, 25 Jun 2008 18:24:45 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:49022 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752736AbYFYWYo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 18:23:34 -0400
-Date: Wed, 25 Jun 2008 15:23:34 -0700 (PDT)
-Message-Id: <20080625.152334.32728378.davem@davemloft.net>
-To: vda.linux@googlemail.com
-Cc: mpatocka@redhat.com, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org
-Subject: Re: [3/10 PATCH] inline wake_up_bit
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200806251724.57689.vda.linux@googlemail.com>
-References: <200806251617.40871.vda.linux@googlemail.com>
-	<Pine.LNX.4.64.0806251031330.7542@engineering.redhat.com>
-	<200806251724.57689.vda.linux@googlemail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Jun 2008 18:24:44 -0400
+Date: Thu, 26 Jun 2008 00:25:43 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>,
+       Trivial patch monkey <trivial@kernel.org>
+Subject: Re: pci-gart_64.c: could we get better explanation?
+Message-ID: <20080625222543.GD1844@elf.ucw.cz>
+References: <20080526184703.GA17369@elf.ucw.cz> <1211831499.3286.2.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1211831499.3286.2.camel@pasglop>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Denys Vlasenko <vda.linux@googlemail.com>
-Date: Wed, 25 Jun 2008 17:24:57 +0200
+On Tue 2008-05-27 05:51:39, Benjamin Herrenschmidt wrote:
+> 
+> On Mon, 2008-05-26 at 20:47 +0200, Pavel Machek wrote:
+> > Hi!
+> > 
+> > +++ b/arch/x86/kernel/pci-gart_64.c
+> > @@ -774,6 +778,7 @@ #endif
+> >  
+> >         /*
+> >          * Try to workaround a bug (thanks to BenH)
+> >          * Set unmapped entries to a scratch page instead of 0.
+> >          * Any prefetches that hit unmapped entries won't get an bus abort
+> > 
+> > Could someone explain? Which bug is being worked around? CPUs
+> > prefetching over NULL?
+> 
+> P2P bridge prefetching on DMA reads.
 
-> talk to gcc people to remedy insane call convention sounds as a more
-> workable solution.
+---
 
-It's not a tenable solution to this problem.  We have to make this
-work properly with compiler tools currently available to users, rather
-than versions of gcc that don't even exist yet.
+Add better explanation to pci-gart.
 
-And what's more, the amount we can get back from the current stack
-size allocation is, at best, 16 bytes.  The problem isn't going away
-no matter what we do to the compiler.
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-> BTW, i386 uses regparm call convention, is similar trick
-> possible for sparc64?
+diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
+index 838a1d3..e72e583 100644
+--- a/arch/x86/kernel/pci-gart_64.c
++++ b/arch/x86/kernel/pci-gart_64.c
+@@ -800,10 +800,10 @@ #endif
+ 	wbinvd();
+ 
+ 	/*
+-	 * Try to workaround a bug (thanks to BenH)
++	 * Try to workaround a bug (thanks to BenH):
+ 	 * Set unmapped entries to a scratch page instead of 0.
+ 	 * Any prefetches that hit unmapped entries won't get an bus abort
+-	 * then.
++	 * then. (P2P bridge may be prefetching on DMA reads).
+ 	 */
+ 	scratch = get_zeroed_page(GFP_KERNEL);
+ 	if (!scratch)
 
-sparc64 already passes arguments in registers.
-
-The stack frame is (predominantly, size wise) to accomodate the save
-area for the cpu's register windows in non-leaf functions, and that
-isn't going anywhere.
-
-Back to the patch set, several of these non-inlined cases really
-are extremely suboptimal.  If it's just moving args around, it
-should be inline.  This would help even x86.
-
-Also, suggesting that IRQSTACKS are mandatory for correct operation is
-a pretty unreasonable thing to say.  It's currently still optional on
-the platforms where it is implemented, so I wonder if this means that
-correct operation is optional on these platforms? :-)
-
-I have a sparc64 IRQSTACKS implementation that I'm working on, but
-it's not something I can stick into 2.6.26 by any stretch of the
-imagination.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
