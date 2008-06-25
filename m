@@ -1,139 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbYFYOXD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbYFYOX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757568AbYFYOXD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 10:23:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbYFYOWw
+	id S1756396AbYFYOX1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 10:23:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757916AbYFYOXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 10:22:52 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:2518 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752290AbYFYOWu (ORCPT
+	Wed, 25 Jun 2008 10:23:09 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:56825 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757545AbYFYOXD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 10:22:50 -0400
-Date: Wed, 25 Jun 2008 18:22:49 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-ide@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH -rt] ide: fix interrupts processing issue with
-	preempt-able hardirqs
-Message-ID: <20080625142249.GA21630@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu> <20080624000016.GA12547@polina.dev.rtsoft.ru> <20080625123431.GA25452@polina.dev.rtsoft.ru> <486244FF.8060805@ru.mvista.com>
+	Wed, 25 Jun 2008 10:23:03 -0400
+Date: Wed, 25 Jun 2008 10:23:00 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+cc: andi@firstfloor.org, <linux-kernel@vger.kernel.org>,
+       <antonio.lin@alcormicro.com>, <david.vrabel@csr.com>
+Subject: Re: Scatter-gather list constraints
+In-Reply-To: <20080625091813Z.fujita.tomonori@lab.ntt.co.jp>
+Message-ID: <Pine.LNX.4.44L0.0806251017320.2578-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <486244FF.8060805@ru.mvista.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 05:15:43PM +0400, Sergei Shtylyov wrote:
-> Hello.
->
-> Anton Vorontsov wrote:
->
->>>>> IDE interrupt handler relies on the fact that, if necessary, 
->>>>> hardirqs will re-trigger on ISR exit. With fully preemtable IRQs 
->>>>> this seems to be not true, since if hardirq thread is currently 
->>>>> running, and the same IRQ raised again, then this IRQ will be 
->>>>> simply lost.
->
->>>> actually no, that should not happen - if -rt loses an IRQ then 
->>>> something broke in the threaded IRQ code. It's supposed to be a 
->>>> drop-in, compatible IRQ flow with no driver changes needed.
->
->>> ..just as I thought, the bug somewhere deeper... heh.
->
->> Ok, a bit more investigation showed that this is indeed not RT specific
->> per see, but issue emerges only on RT-style IRQ handlers + alim15x3 IDE
->> controller (for example, PDC20269 works ok).
->
->    Does it happen only with ATAPI devices also or with ATA disks too?
+On Wed, 25 Jun 2008, FUJITA Tomonori wrote:
 
-So far I own two ATAPI devices, IDE disks are quire rare nowadays,
-should find one. ;-)
+> > For example, suppose an I/O request starts out with two S-G elements
+> > of 1536 bytes and 2048 bytes respectively, and the DMA requirement is
+> > that all elements except the last must have length divisible by 1024.  
+> > Then the request could be broken up into three requests of 1024, 512,
+> > and 2048 bytes.
+> 
+> I can't say that it's easy to implement a clean mechanism to break up
+> a request into multiple requests until I see a patch.
 
->> The difference is that that with RT: low-level (non-threaded) IRQ
->> handler masks IDE IRQ, then wakes up appropriate IRQ thread, which calls
->> IDE handler, and then, after IDE handler exits, thread routine unmasks
->> IDE IRQ.
->
->> Without RT: low-level non-threaded IRQ handler does not mask specific
->> IRQ, but disables local interrupts, and calls IDE handler directly.
->
->    Hm, handle_level_irq() (and PCI IRQs are level-triggered) calls  
-> mask_ack_irq() which should *mask* IRQ and send EOI (at least on i8259). 
-> By IRQ18 I can assume it's I/O APIC 
+And I can't write a patch without learning a lot more about how the
+block core works.
 
-No, it's not Intel I/O APIC. IRQ18 is the virtual "Linux IRQ", no
-correlations with the PIC IRQ number.
+> What I said is that you think that this is about extending something
+> in the block layer but it's about adding a new concept to the block
+> layer.
 
-> -- this one may be using different 
-> methods of handling IRQ depending on whether hardirq preemption is on or 
-> off (at least it was so in 2.6.18-rt time).
+Is it?  What does the block layer do when it receives an I/O request
+that don't satisfy the other constraints (max_sectors or
+dma_alignment_mask, for example)?
 
-Hardirq preemption is on, of course. The whole problem is when hardirqs
-preempted.
+> > Is it reasonable to have 120-KB bounce buffers?
+> 
+> The block layer does. Why do you think that USB can't?
 
-> The default, "fasteoi" path 
-> doesn't mask off the IRQ indeed (it should be disabled from re-occuring 
-> anyway until the code issues EOI)...
+Why do you think I think that USB can't?  I didn't ask whether it was
+_possible_; I asked whether it was _reasonable_.
 
-What do you mean by doesn't mask off? With hardirqs preemption it does
-mask off IDE interrupt, and then sends an EOI. But it doesn't mask
-processors' IRQs (i.e. local_irq_disable()), true. And MPIC is using
-fasteoi path indeed.
+Alan Stern
 
->    So, which machine and PIC you have?
-
-It is PowerPC MPC8610 + ULi "Super South Bridge" connected through
-PCI Express. This south bridge contains lots of devices (and lots of
-PCI quirks, see arch/powerpc/platforms/86xx/mpc8610_hpcd.c).
-
-PIC is OpenPIC-compatible (MPIC, built-in into MPC8610 SOC).
-
-Note: I don't have any specifications on that ULi bridge, neither I have
-any schematics for that board (so far, let's hope). So I can't say
-exactly how things are inter-connected or what these PCI quirks are
-actually doing (despite few comments in them).
-
-And since it is PCI-E, interrupt things are quite troublesome to
-debug without serial logic analyzer. :-)
-
->> The bug, as I see it, in the alim15x3 (ULi M5228) hardware: for some
->> reason it does not hold IRQ line, but rises it for some short period
->> of time (while the drive itself rises and holds it correctly -- I'm
->> seeing it via oscilloscope).
->
->    That's surely an invalid behavior for a level triggered interrupt that 
-> can also result in spurious IRQs...  I'm not even sure how it can 
-> reliably work without masking since there should be no latching for level 
-> triggered interupts...
-
-Yeah.
-
->> So this scheme does not work:
->> mask_irq()
->> ...do something that will trigger IDE interrupt...
->> unmask_irq()
->
->> Also, further testing showed that this issue isn't drive-specific, i.e.
->> with a delay inserted before the unmask_irq(), the bug shows with any
->> drive I have.
->
->    So, "shit happens" even with the ATA drives?
-
-Will try as soon as I'll get one.
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
