@@ -1,57 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbYFYJqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbYFYJsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbYFYJqp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 05:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753064AbYFYJqi
+	id S1755305AbYFYJsg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 05:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753673AbYFYJs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 05:46:38 -0400
-Received: from bu3sch.de ([62.75.166.246]:44454 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752439AbYFYJqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 05:46:37 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Jan Kara <jack@suse.cz>
-Subject: Re: Oops when using growisofs
-Date: Wed, 25 Jun 2008 11:46:29 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <axboe@kernel.dk>
-References: <200806221818.24372.mb@bu3sch.de> <200806242039.18755.mb@bu3sch.de> <20080625093700.GB15865@duck.suse.cz>
-In-Reply-To: <20080625093700.GB15865@duck.suse.cz>
+	Wed, 25 Jun 2008 05:48:29 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:51044 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753064AbYFYJs2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 05:48:28 -0400
+Message-ID: <4862136B.4010107@cn.fujitsu.com>
+Date: Wed, 25 Jun 2008 17:44:11 +0800
+From: biannm <biannm@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: torvalds@linux-foundation.org, akpm@osdl.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] fs: fix bug about seq_read read nothing
+Content-Type: text/plain; charset=Shift_JIS
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806251146.30142.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 June 2008 11:37:00 Jan Kara wrote:
-> > Yeah the IO error is the trigger.
-> > I noticed that it had obvious troubles accessing the DVD that was in the drive.
-> > It sweeped over it for several seconds, then hung the system for 2 or 3 seconds
-> > and then oopsed. But after that everything continued to work as usual.
-> > (Except kded of course)
->   Hmm, by "accessing" do you mean that you've mounted the burned DVD and when
-> browsing it the IO error and the oops occured or that IO error happened
-> when burning? It is important because in the first case i_blkbits would be
-> taken from some ISOFS inode desribing some file while in the second case
-> i_blkbits are from the inode of the device...
+When i used seq_file to read a proc file, i got a bug of seq_read.
+If show() skip the first element or the size of first element is 0, 
+and the size of second element is larger than the seq_file->size at 
+the same time, seq_read will return 0, so nothing can be read from
+the proc file.
+
+So, if seq_read will return because it finds the element is biger 
+than the m->buf, it must make sure either some date was filled to 
+m->buf by show(), or some data was flushed to the user buf before, 
+if not,it should increase the m->buf until it can read this element.
 
 
-I don't know. kded, which caused the oops, is always running. It is a KDE daemon
-that polls device state and so on. So yeah, it might have accessed the drive
-while growisofs was writing to it.
+Signed-off-by: Bian Naimeng  <biannm@cn.fujitsu.com>
 
-However with "accessing" I mean the DVD drive motor was spinning up and down
-and the laser lens was moving like crazy. The sound that happens, if you put
-a completely scratched DVD into the drive and it is unable to make sense of it.
-However, this was not scratched. It was a new DVD with one session on it that
-I just burnt 5 minutes before that. So I wanted to append another session to it
-and it crashed and resulted in IO errors in growisofs.
+---
+ fs/seq_file.c |   12 +++++++++++-
+ 1 files changed, 11 insertions(+), 1 deletions(-)
 
+diff --git a/fs/seq_file.c b/fs/seq_file.c
+index 3f54dbd..ab1ed27 100644
+--- a/fs/seq_file.c
++++ b/fs/seq_file.c
+@@ -107,6 +107,7 @@ ssize_t seq_read(struct file *file, char __user *buf, size_t size, loff_t *ppos)
+ 		if (!size)
+ 			goto Done;
+ 	}
++First_record:
+ 	/* we need at least one record in buffer */
+ 	while (1) {
+ 		pos = m->index;
+@@ -145,8 +146,17 @@ Fill:
+ 		err = m->op->show(m, p);
+ 		if (m->count == m->size || err) {
+ 			m->count = offs;
+-			if (likely(err <= 0))
++			if (err < 0)
+ 				break;
++			/* If no data flush to the user buf and nothing was read
++			 * by show() before,it should increase the m->buf until
++			 * it can read this element.
++			*/
++			if (err == 0 && m->count == 0 && copied == 0) {
++				m->index = next;
++				m->op->stop(m, p);
++				goto First_record;
++			}
+ 		}
+ 		pos = next;
+ 	}
 -- 
-Greetings Michael.
+1.5.4.rc3
+
