@@ -1,171 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755863AbYFZANo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756571AbYFZAR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755863AbYFZANo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 20:13:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbYFZANd
+	id S1756571AbYFZAR2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 20:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbYFZARV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 20:13:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45040 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750770AbYFZANc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 20:13:32 -0400
-Date: Wed, 25 Jun 2008 20:13:16 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH 1/2] Avoid bio_endio recursion
-In-Reply-To: <20080625082421.GU20851@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0806252008380.11130@engineering.redhat.com>
-References: <Pine.LNX.4.64.0806240118250.24220@engineering.redhat.com>
- <20080624080744.GL20851@kernel.dk> <Pine.LNX.4.64.0806241017390.23052@engineering.redhat.com>
- <20080625082421.GU20851@kernel.dk>
+	Wed, 25 Jun 2008 20:17:21 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60602 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751827AbYFZARU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 20:17:20 -0400
+Message-ID: <4862D7FE.7070507@kernel.org>
+Date: Wed, 25 Jun 2008 16:42:54 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
+       Mark McLoughlin <markmc@redhat.com>
+Subject: Re: [PATCH 03 of 36] x86: add memory barriers to wrmsr
+References: <patchbomb.1214367536@localhost>	<93c7057b1f4acae501b2.1214367539@localhost>	<20080624214441.13202f12@infradead.org>	<4862B3E9.50601@goop.org> <20080625153136.2b3b6737@infradead.org> <4862D247.2010709@kernel.org> <4862D6CC.7090205@goop.org>
+In-Reply-To: <4862D6CC.7090205@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jun 2008, Jens Axboe wrote:
-
-> On Tue, Jun 24 2008, Mikulas Patocka wrote:
+Jeremy Fitzhardinge wrote:
 >>
->>
->> On Tue, 24 Jun 2008, Jens Axboe wrote:
->>
->>> On Tue, Jun 24 2008, Mikulas Patocka wrote:
->>>> Hi
->>>>
->>>> bio_endio calls bi_end_io callback. In case of stacked devices (raid, dm),
->>>> bio_end_io may call bio_endio again, up to an unspecified length.
->>>>
->>>> The crash because of stack overflow was really observed on sparc64. And
->>>> this recursion was one of the contributing factors (using 9 stack frames
->>>> --- that is 1728 bytes).
->>>
->>> Looks good, I like the concept. Can you please make it a little less
->>> goto driven, though? The next_bio and goto next_bio could just be a
->>> while().
->>>
->>> --
->>> Jens Axboe
->>>
->>
->> Hi.
->>
->> This is the patch, slightly de-goto-ized. (it still contains one, I think
->> that while (1) { ... break ... } is no better readable than goto).
->
-> Sure, that looks better.
->
->> I found another problem in my previous patch, I forgot about the "error"
->> variable (it would cause misbehavior for example if disk fails, submits an
->> error and raid driver turns this failure into success). We need to save
->> the error variable somewhere in the bio, there is no other place where it
->> could be placed. I temporarily saved it to bi_idx, because it's unused at
->> this place.
->
-> I don't think bi_idx is a fantastic idea, I could easily imagine the
-> bi_end_io function wanting to do a segment loop on the bio. Use
-> bi_phys_segments instead (or bi_hw_segemnts, no difference), they should
-> only be used when queuing and building IO, not for completion purposes.
-> And put a big fat comment there explaining the overload. Plus they are
-> just a cache, so if you use either of those and at the same time clear
-> BIO_SEG_VALID in bi_flags, then it's guarenteed to be safe.
+>> Actually, I believe the barrier(); before is actually incorrect, since 
+>> it would affect the wrmsr() register arguments rather than the wrmsr 
+>> instruction itself.
+> 
+> How so?  What kind of failure do think might occur?  Some effect on how 
+> the wrmsr arguments are evaluated?
+> 
+> barrier() is specifically a compiler optimisation barrier, so the 
+> barrier before would prevent the compiler from moving anything logically 
+> before the wrmsr to afterwards.
+> 
 
-Here is new patch that uses bi_phys_segments.
+The barrier() before prevents the compiler from optimizing the access to 
+the arguments (before they go into registers), not the actual wrmsr; 
+this has to do with the ordering of operations around the barrier above. 
+  The barrier *after* does what you just describe.
 
-> Also please put the per-cpu definition outside of bio_endio(). And I
-> don't think you need to disable interrupts, a plain preempt_disable() /
-> preempt_enable() should be enough.
+> That said, making the wrmsr itself a memory clobber may be simpler 
+> understand with a comment, rather than separate barriers...
 
-Disabling interrupts is needed. If you disable only preempt, interrupt can 
-come at any point and add anything to the queue. You'd have to use local_t 
-and local_cmpxchg tricks then and the code would be much more ugly. I 
-found that the code is called with interrupts disabled most time, so it 
-doesn't matter if I disable them again.
+This should be functionally equivalent to a barrier(); after, and given 
+that this is clearly a point of confusion *already*, I think the memory 
+clobber is better.
 
-Mikulas
-
-> -- 
-> Jens Axboe
-
-Avoid recursion on bio_endio. bio_endio calls bio->bi_end_io which may in turn
-call bio_endio again. When this recursion happens, put the new bio to the queue
-and process it later, from the top-level bio_endio.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-
----
-  fs/bio.c            |   38 +++++++++++++++++++++++++++++++++++---
-  include/linux/bio.h |    3 +++
-  2 files changed, 38 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.26-rc7-devel/fs/bio.c
-===================================================================
---- linux-2.6.26-rc7-devel.orig/fs/bio.c	2008-06-23 13:49:45.000000000 +0200
-+++ linux-2.6.26-rc7-devel/fs/bio.c	2008-06-25 18:09:48.000000000 +0200
-@@ -1166,15 +1166,47 @@ void bio_check_pages_dirty(struct bio *b
-   *   bio unless they own it and thus know that it has an end_io
-   *   function.
-   **/
-+static DEFINE_PER_CPU(struct bio **, bio_end_queue) = { NULL };
-+
-  void bio_endio(struct bio *bio, int error)
-  {
-+	struct bio ***bio_end_queue_ptr;
-+	struct bio *bio_queue;
-+
-+	unsigned long flags;
-+
-+	bio->bi_phys_segments = error;
-  	if (error)
-  		clear_bit(BIO_UPTODATE, &bio->bi_flags);
-  	else if (!test_bit(BIO_UPTODATE, &bio->bi_flags))
--		error = -EIO;
-+		bio->bi_phys_segments = -EIO;
-+
-+	local_irq_save(flags);
-+	bio_end_queue_ptr = &__get_cpu_var(bio_end_queue);
-+
-+	if (*bio_end_queue_ptr) {
-+		**bio_end_queue_ptr = bio;
-+		*bio_end_queue_ptr = &bio->bi_next;
-+		bio->bi_next = NULL;
-+	} else {
-+		bio_queue = NULL;
-+		*bio_end_queue_ptr = &bio_queue;
-+
-+next_bio:
-+		if (bio->bi_end_io)
-+			bio->bi_end_io(bio, (short)bio->bi_phys_segments);
-+
-+		if (bio_queue) {
-+			bio = bio_queue;
-+			bio_queue = bio->bi_next;
-+			if (!bio_queue)
-+				*bio_end_queue_ptr = &bio_queue;
-+			goto next_bio;
-+		}
-+		*bio_end_queue_ptr = NULL;
-+	}
-
--	if (bio->bi_end_io)
--		bio->bi_end_io(bio, error);
-+	local_irq_restore(flags);
-  }
-
-  void bio_pair_release(struct bio_pair *bp)
-Index: linux-2.6.26-rc7-devel/include/linux/bio.h
-===================================================================
---- linux-2.6.26-rc7-devel.orig/include/linux/bio.h	2008-06-25 18:06:59.000000000 +0200
-+++ linux-2.6.26-rc7-devel/include/linux/bio.h	2008-06-25 18:08:08.000000000 +0200
-@@ -86,6 +86,9 @@ struct bio {
-
-  	/* Number of segments in this BIO after
-  	 * physical address coalescing is performed.
-+	 *
-+	 * When ending a bio request in bio_endio, this field is temporarily
-+	 * (ab)used to keep the error code.
-  	 */
-  	unsigned short		bi_phys_segments;
-
+	-hpa
