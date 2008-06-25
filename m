@@ -1,91 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755660AbYFYCfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbYFYCii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755660AbYFYCfs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 22:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbYFYCfj
+	id S1757407AbYFYCii (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 22:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755585AbYFYCi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 22:35:39 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:20973 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754285AbYFYCfj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 22:35:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=pwJ3U1UZYdwCtwEdxFo71IL2icfmSeMMOcIT0XwYb8zo2G3ZimxUvBABYkcdNW7xfX
-         cHXysOJHZpcT+GOfl/LKnadQMy8A0vSQ4BA+IIvQXz96YpXHuzpE60lnvPy3e8FP56z8
-         qEYb5tdwa0egHbNtmGdI+4c58aEy2+MVHyNXs=
-Subject: Re: byteorder helpers and void * (was: Re: [PATCH 01/21] lib: add
-	byteorder helpers for the aligned case)
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+	Tue, 24 Jun 2008 22:38:27 -0400
+Received: from mga11.intel.com ([192.55.52.93]:21548 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757078AbYFYCi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 22:38:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,700,1204531200"; 
+   d="scan'208";a="345259416"
+Subject: Re: [PATCH 2/2] acpi based pci gap caluculation v2
+From: Zhao Yakui <yakui.zhao@intel.com>
+To: akataria@vmware.com
+Cc: lenb@kernel.org, Ingo Molnar <mingo@elte.hu>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0806241445430.17853@vixen.sonytel.be>
-References: <1211306721.5915.167.camel@brick> <20080523131310.GC9245@ucw.cz>
-	 <Pine.LNX.4.64.0806241445430.17853@vixen.sonytel.be>
+In-Reply-To: <1214333326.27577.28.camel@promb-2n-dhcp368.eng.vmware.com>
+References: <1214333326.27577.28.camel@promb-2n-dhcp368.eng.vmware.com>
 Content-Type: text/plain
-Date: Tue, 24 Jun 2008 19:35:37 -0700
-Message-Id: <1214361338.21092.71.camel@brick>
+Date: Wed, 25 Jun 2008 10:49:19 +0800
+Message-Id: <1214362159.9800.28.camel@yakui_zhao.sh.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-24 at 14:54 +0200, Geert Uytterhoeven wrote:
-> > 
-> > Document the fact that void * passed in needs to be 16-bit aligned?
+On Tue, 2008-06-24 at 11:48 -0700, Alok Kataria wrote:
+> Evaluates the _CRS object under PCI0 looking for producer resources.
+> Then searches the e820 memory space for a gap within these producer resources.
 > 
-> Why not let it just take a __le16 *? Because in many use-cases the pointer just
-> points to an array of bytes?
+> Allows us to find a gap for the unclaimed pci resources or MMIO resources
+> for hotplug devices within the BIOS allowed pci regions.
 > 
-> For the unaligned case, e.g. get_unaligned_le16(), I can understand a bit the
-> rationale about using void * (a typical use-case is accessing a little endian
-> 16-bit value in the middle of an arrays of bytes).
+> v1->v2: Some changes in the print strings.
+> 	Also note the prototype for e820_search_gap has changes in this
+> 	iteration, but the return value is ignored while calling it over here.
 > 
-> However, a disadvantage is that you remove the ability of the compiler to check
-> for using the wrong accessor in a (packed for the unaligned case) struct, e.g.
+> Signed-off-by: Alok N Kataria <akataria@vmware.com>
 > 
->     struct {
-> 	u8 pad;
-> 	__le16 val;			/* 16-bit value */
->     } __attribute ((packed)) s;
+> Index: linux-x86-tree.git/arch/x86/pci/acpi.c
+> ===================================================================
+> --- linux-x86-tree.git.orig/arch/x86/pci/acpi.c	2008-06-23 17:24:07.000000000 -0700
+> +++ linux-x86-tree.git/arch/x86/pci/acpi.c	2008-06-24 10:57:43.000000000 -0700
+> @@ -4,6 +4,7 @@
+>  #include <linux/irq.h>
+>  #include <linux/dmi.h>
+>  #include <asm/numa.h>
+> +#include <asm/e820.h>
+>  #include "pci.h"
+>  
+>  struct pci_root_info {
+> @@ -14,6 +15,11 @@
+>  	int busnum;
+>  };
+>  
+> +struct gap_info {
+> +	unsigned long gapstart;
+> +	unsigned long gapsize;
+> +};
+> +
+>  static acpi_status
+>  resource_to_addr(struct acpi_resource *resource,
+>  			struct acpi_resource_address64 *addr)
+> @@ -110,6 +116,70 @@
+>  	}
+>  }
+>  
+> +static acpi_status search_gap(struct acpi_resource *resource, void *data)
+> +{
+> +	struct acpi_resource_address64 addr;
+> +	acpi_status status;
+> +	struct gap_info *gap = data;
+> +
+> +	status = resource_to_addr(resource, &addr);
+> +	if (ACPI_SUCCESS(status) &&
+> +	    addr.resource_type == ACPI_MEMORY_RANGE &&
+> +	    addr.address_length > gap->gapsize) {
+> +		e820_search_gap(&gap->gapstart, &gap->gapsize,
+> +				(addr.minimum + addr.translation_offset));
+> +	}
+> +
+> +	return AE_OK;
+> +}
+> +
+> +/*
+> + * Search for a hole in the 32 bit address space for PCI to assign MMIO
+> + * resources for hotplug or unconfigured resources.
+> + * We query the CRS object of the PCI root device to look for possible producer
+> + * resources in the tree and consider these while calulating the start address
+> + * for this hole.
+> + */
+> +static void pci_setup_gap(acpi_handle *handle)
+> +{
+> +	struct gap_info gap;
+> +	acpi_status status;
+> +
+> +	gap.gapstart = 0;
+> +	gap.gapsize = 0x400000;
+> +
+> +	status = acpi_walk_resources(handle, METHOD_NAME__CRS,
+> +				     search_gap, &gap);
+> +
+> +	if (ACPI_SUCCESS(status)) {
+> +		unsigned long round;
+> +
+> +		if (!gap.gapstart) {
+> +			printk(KERN_ERR "ACPI: Warning: Cannot find a gap "
+> +					"in the 32bit address range for PCI\n"
+> +					"ACPI: PCI devices may collide with "
+> +					"hotpluggable memory address range\n");
+> +		}
+> +		/*
+> +		 * Round the gapstart, uses the same logic as in
+> +		 * e820_gap_setup
+> +		 */
+> +		round = 0x100000;
+> +		while ((gap.gapsize >> 4) > round)
+> +			round += round;
+> +		/* Fun with two's complement */
+> +		pci_mem_start = (gap.gapstart + round) & -round;
+> +
+> +		printk(KERN_INFO "ACPI: PCI resources should "
+> +				"start at %lx (gap: %lx:%lx)\n",
+> +				pci_mem_start, gap.gapstart, gap.gapsize);
+> +	} else {
+> +		printk(KERN_ERR "ACPI: Error while searching for gap in "
+> +				"the 32bit address range for PCI\n");
+> +	}
+> +}
+> +
+> +
+>  static void
+>  get_current_resources(struct acpi_device *device, int busnum,
+>  			int domain, struct pci_bus *bus)
+> @@ -220,6 +290,8 @@
+>  
+>  	if (bus && (pci_probe & PCI_USE__CRS))
+>  		get_current_resources(device, busnum, domain, bus);
+> +
+> +	pci_setup_gap(device->handle);
+>  	return bus;
+>  }
+It seems reasonable. 
+But if the resource obtained from the PCI0 _CRS method is incorrect, we
+will get the incorrect pci_mem_start.
+
+At the same time after the patch is applied, pci_mem_start will be
+parsed in two different ways. If the result is different, maybe the
+incorrect pci_mem_start will be used. 
+
+Best regards.
+  Yakui
 > 
->     x = get_unaligned_le32(&s.val);	/* oops, 32-bit access */
 > 
-
-I'm starting to come around to the typechecking argument.  This would
-also be a chance to fix the argument ordering in put_analigned_XXXX
-that was noticed by others.  As there are already some existing users
-in-tree, we could transition gradually by:
-
-1) Introduce typed versions of get/put_unaligned_XXXX, that implies the
-byteswap better:
-u16 load_unaligned_le16(__le16 *)
-void store_unaligned_le16(__le16 *, u16)
-
-Then the aligned helpers could be:
-le16_to_cpup -> aligned equivalent of load_unaligned_le16
-store_le16(__le16 *, u16)
-
-Implemented as (to allow constant folding)
-#define store_le16(ptr, val)	(*(__le16 *)(ptr) = cpu_to_le16((u16)(val)))
-
-> I noticed there's also a __get_unaligned_le(), which uses compile-time
-> detection of the pointer time, to make sure the correct accessor is used.
-> Do you intend this to be used by generic code? It's function name starts
-> with double underscore, indicating otherwise.
-
-It is not meant for generic use, it is just there as a helper for each
-arch to wire up it's get_unaligned() macro depending on its endianness,
-so each arch doesn't wire up its own version that may or may not have
-the size checking.
-
-Anything I missed?
-
-Harvey
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
