@@ -1,41 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbYFYXwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYFYXwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755648AbYFYXwa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 19:52:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbYFYXwU
+	id S1757378AbYFYXwo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 19:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756865AbYFYXw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 19:52:20 -0400
-Received: from ftp.linux-mips.org ([213.58.128.207]:51495 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753815AbYFYXwT (ORCPT
+	Wed, 25 Jun 2008 19:52:28 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:50885 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756818AbYFYXw1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 19:52:19 -0400
-X-Greylist: delayed 314 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Jun 2008 19:52:19 EDT
-Date: Thu, 26 Jun 2008 01:41:59 +0200
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, dhowells@redhat.com, gerg@uclinux.org,
-       linux-mips@linux-mips.org, lethal@linux-sh.org,
-       linux-sh@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [2.6 patch] remove pcibios_update_resource() functions
-Message-ID: <20080625234159.GB15605@linux-mips.org>
-References: <20080617223332.GM25911@cs181133002.pp.htv.fi> <200806251602.49856.jbarnes@virtuousgeek.org>
+	Wed, 25 Jun 2008 19:52:27 -0400
+Message-ID: <4862DA32.2070102@linux.vnet.ibm.com>
+Date: Thu, 26 Jun 2008 05:22:18 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200806251602.49856.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: yamamoto@valinux.co.jp, menage@google.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [1/2] memrlimit handle attach_task() failure, add can_attach()
+ callback
+References: <20080620150132.16094.29151.sendpatchset@localhost.localdomain> <20080620150142.16094.48612.sendpatchset@localhost.localdomain> <20080625163753.6039c46b.akpm@linux-foundation.org>
+In-Reply-To: <20080625163753.6039c46b.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 04:02:49PM -0700, Jesse Barnes wrote:
+Andrew Morton wrote:
+> On Fri, 20 Jun 2008 20:31:42 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+>> +/*
+>> + * Add the value val to the resource counter and check if we are
+>> + * still under the limit.
+>> + */
+>> +static inline bool res_counter_add_check(struct res_counter *cnt,
+>> +						unsigned long val)
+>> +{
+>> +	bool ret = false;
+>> +	unsigned long flags;
+>> +
+>> +	spin_lock_irqsave(&cnt->lock, flags);
+>> +	if (cnt->usage + val <= cnt->limit)
+>> +		ret = true;
+>> +	spin_unlock_irqrestore(&cnt->lock, flags);
+>> +	return ret;
+>> +}
+> 
+> The comment and the function name imply that thins function will "Add
+> the value val to the resource counter".  But it doesn't do that at all.
+> In fact the first arg could be a `const struct res_counter *'.
+> 
+> Perhaps res_counter_can_add() would be more accurate.
 
-> Ralf, I assume you're ok with this?
+Will fix both problems and send out fixes. I intended to call it
+res_counter_check_and_add(), but I don't like "and" in function names.
+res_counter_can_add is definitely better.
 
-Yes, of course.
 
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
-
-  Ralf
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
