@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbYFYDtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757807AbYFYDtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756289AbYFYDtW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 23:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYFYDtM
+	id S1757807AbYFYDtm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 23:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbYFYDta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 23:49:12 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:49083 "EHLO smtps.tip.net.au"
+	Tue, 24 Jun 2008 23:49:30 -0400
+Received: from gw.goop.org ([64.81.55.164]:37580 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752311AbYFYDtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 23:49:11 -0400
-Date: Wed, 25 Jun 2008 13:48:59 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, kernel-testers@vger.kernel.org,
-       v4l-dvb-maintainer@linuxtv.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 24 - missing files in
- drivers/media/dvb/
-Message-Id: <20080625134859.6bc218c4.sfr@canb.auug.org.au>
-In-Reply-To: <20080625132810.6f31b571.sfr@canb.auug.org.au>
-References: <20080624175612.cdf29651.sfr@canb.auug.org.au>
-	<486134B4.4050400@linux.vnet.ibm.com>
-	<20080625132810.6f31b571.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__25_Jun_2008_13_48_59_+1000_9kivaz_FuL65iOM0"
+	id S1752073AbYFYDt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 23:49:29 -0400
+Message-ID: <4861C03A.90107@goop.org>
+Date: Tue, 24 Jun 2008 23:49:14 -0400
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix pte allocation in "x86: introduce init_memory_mapping
+ for 32bit"
+References: <48616800.8030603@goop.org> <86802c440806241441v5f2c0870g379695cacd5dfb9b@mail.gmail.com>
+In-Reply-To: <86802c440806241441v5f2c0870g379695cacd5dfb9b@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__25_Jun_2008_13_48_59_+1000_9kivaz_FuL65iOM0
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Mauro,
-
-On Wed, 25 Jun 2008 13:28:10 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
+Yinghai Lu wrote:
+> thanks.
 >
-> On Tue, 24 Jun 2008 23:23:56 +0530 Kamalesh Babulal <kamalesh@linux.vnet.=
-ibm.com> wrote:
-> >
-> > allyesconfig kernel build on next-20080624, fails due to missing files
-> >=20
-> > drivers/media/video/em28xx/em28xx-dvb.c:30:22: error: drx397xD.h: No su=
-ch file or directory
->=20
-> To fix this, I have reverted commit
-> 969ff74e0ab707801150dc83eb254794bc574442 ("V4L/DVB (8006): em28xx: Split
-> HVR900 into two separate entries") from linux-next for today.
+> my test system never use the area from table_start to table_end. and I
+> wonder why init_pgtable is that big..
 
-Although, on reflection, this may have been caused by the mismerge
-yesterday.  I will leave it in tomorrow unless I am told otherwise.
+This code looks just like the 64-bit code (I guess it's becoming prime 
+for unification), and I'd just spent some time debugging a bug in Xen64 
+caused by an overrun of the allocated area when creating non-PSE 
+mappings of physical memory.  I didn't observe a specific problem with 
+this code, but consistency and pattern matching made it seem like a 
+necessary addition.  It only ends up reserving the amount of space 
+actually used, so there's no wasted memory.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+If you use PSE to create the mapping and have enough mapped pages anyway 
+(small kernel), then you may not end up using any of this space.
 
---Signature=_Wed__25_Jun_2008_13_48_59_+1000_9kivaz_FuL65iOM0
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhhwCsACgkQTgG2atn1QN+9wACbBEayEZ9L5z7afTkIW5LSJ+na
-XeoAn1sD/5dOfGF26NKiPXNoqww2Yi04
-=sF4D
------END PGP SIGNATURE-----
-
---Signature=_Wed__25_Jun_2008_13_48_59_+1000_9kivaz_FuL65iOM0--
+    J
