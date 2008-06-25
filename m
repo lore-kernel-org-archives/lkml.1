@@ -1,233 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbYFYBB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755458AbYFYBMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292AbYFYBB3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 21:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYFYBBT
+	id S1755458AbYFYBMe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 21:12:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbYFYBMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 21:01:19 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:39150 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753357AbYFYBBR (ORCPT
+	Tue, 24 Jun 2008 21:12:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42254 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752699AbYFYBMX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 21:01:17 -0400
-Message-ID: <486198D1.20500@linux.vnet.ibm.com>
-Date: Wed, 25 Jun 2008 06:31:05 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Tue, 24 Jun 2008 21:12:23 -0400
+Date: Tue, 24 Jun 2008 18:12:19 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Avi Kivity <avi@qumranet.com>
+cc: kvm-devel <kvm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] KVM fixes for 2.6.26-rc7
+In-Reply-To: <48616182.9030902@qumranet.com>
+Message-ID: <alpine.LFD.1.10.0806241809530.17712@woody.linux-foundation.org>
+References: <48616182.9030902@qumranet.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [0/2] memrlimit improve error handling
-References: <20080620150132.16094.29151.sendpatchset@localhost.localdomain> <Pine.LNX.4.64.0806242240200.6804@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0806242240200.6804@blonde.site>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> Hi Balbir,
+
+
+On Wed, 25 Jun 2008, Avi Kivity wrote:
+>
+> Linus, please pull from the repo and branch at:
 > 
-> Below I've a few comments on this particular patch, then report other
-> problems I've seen with memrlimits configured into my 2.6.25-rc5-mm3
-> kernel - I've not tried _using_ them.  My own opinion would be that
-> -mm already contains enough breakage, we don't need memrlimits yet.
+>  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git kvm-updates-2.6.26
 > 
+> to receive kvm updates for 2.6.26-rc7.  The patches fix host oopses,
+> guest interrupt loss, and total kvm clock borkage.
 
-Thanks for the review and feedback, I'll take a look and fix
+Avi, you _really_ need to start respecting the merge window.
 
-> On Fri, 20 Jun 2008, Balbir Singh wrote:
->> memrlimit cgroup does not handle error cases after may_expand_vm(). This
->> BUG was reported by Kamezawa, with the test case below to reproduce it
->>
->> This patch adds better handling support to fix the reported problem.
->>
->> Reported-By: kamezawa.hiroyu@jp.fujitsu.com
->>
->> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> I wrote a similar patch when I saw Kame's report, because I was
-> interested in getting that accounting right.  Comparing the two,
-> a couple of notes on the details...
-> 
-> In mm/mmap.c:
->> @@ -1982,6 +1992,7 @@ unsigned long do_brk(unsigned long addr,
->>  	struct rb_node ** rb_link, * rb_parent;
->>  	pgoff_t pgoff = addr >> PAGE_SHIFT;
->>  	int error;
->> +	int ret = -ENOMEM;
-> 
-> I think we don't want int error returned from some parts of do_brk()
-> and int ret returned from other parts: please use int error throughout.
-> It would probably be nicer to add int error rather than int ret in
-> acct_stack_growth() too, but that doesn't matter much.
-> 
+If you can't learn, I will have to just stop pulling from you. This is 
+simply too big for this late in the game.
 
-Fair enough, will fix
+I pulled, but I'm simply not going to continue doing this dance. I don't 
+care much for virtualization, so I've let it slide, but you need to learn 
+that 
 
-> In mm/mremap.c:
->> @@ -256,6 +257,7 @@ unsigned long do_mremap(unsigned long ad
->>  	struct vm_area_struct *vma;
->>  	unsigned long ret = -EINVAL;
->>  	unsigned long charged = 0;
->> +	int vm_expanded = 0;
->>  
->>  	if (flags & ~(MREMAP_FIXED | MREMAP_MAYMOVE))
->>  		goto out;
->> @@ -349,6 +351,7 @@ unsigned long do_mremap(unsigned long ad
->>  		goto out;
->>  	}
->>  
->> +	vm_expanded = 1;
->>  	if (vma->vm_flags & VM_ACCOUNT) {
->>  		charged = (new_len - old_len) >> PAGE_SHIFT;
->>  		if (security_vm_enough_memory(charged))
->> @@ -411,6 +414,9 @@ out:
->>  	if (ret & ~PAGE_MASK)
->>  		vm_unacct_memory(charged);
->>  out_nc:
->> +	if (vm_expanded)
->> +		memrlimit_cgroup_uncharge_as(mm,
->> +				(new_len - old_len) >> PAGE_SHIFT);
->>  	return ret;
->>  }
-> 
-> See how vm_unacct_memory(charged) is only called if (ret & ~PAGE_MASK)?
-> If ret is a valid address being returned, we do not want to uncharge.
-> So I believe you need to do likewise with your uncharge_as().
-> 
-> And please handle them both in the same way: either follow the same
-> "charged" style as is being used for vm_unacct_memory, rather than a
-> boolean; or convert vm_unacct_memory over to use your boolean style:
-> but it's unhelpful to have the two using different techniques.
-> 
+> 18 files changed, 358 insertions(+), 266 deletions(-)
 
-I did look at that and use that code, but we initialize ret = -EINVAL and then
-we have the checks for
+is simply not acceptable this late. 
 
-        if (flags & ~(MREMAP_FIXED | MREMAP_MAYMOVE))
-                goto out;
-
-        if (addr & ~PAGE_MASK)
-                goto out;
-
-In out, we check for
-	ret & ~PAGE_MASK
-
-That's OK for vm_unacct_memory, since charged is set to 0, but not for
-mem_cgroup_uncharge_as as we uncharge (new_len - old_len) >> PAGE_SHIFT);
-
-I'll find a way to see if we can convert both over.
-
-> In kernel/fork.c:
-> nothing, but when I had a quick look there, again the error handling
-> appeared to be broken e.g. if allocate_mm fails, where's the uncharge?
-> But be careful: there's a particular point where enough of the new mm
-> is set up that it gets torn down by normal exit_mmap.
-> 
-
-Yes, that needs fixing
-
-> And while looking at copy_mm, do I see an extra down_write and
-> up_write of mmap_sem, just to guard some memrlimit charging?
-
-Yes, we need to prevent charging and migration race.
-
-> Don't add overhead when memrlimits are CONFIGed off; but can't
-> it be moved into dup_mm() where mmap_sem is already down_write?
-> 
-
-Yes, it can be moved there
-
-> Please go through all your charges, again, to double check
-> that you've got the uncharging right in the error cases.
-> 
-
-Will do
-
-
-> I was interested in these because I find that after running kernel
-> build on tmpfs swapping loads in a 700M memcg (but you may well hit
-> other rc5-mm3 bugs if you try that, I've fixes to send out) for some
-
-I've never tried that before
-
-> hours on x86_64, my shutdown hits the kernel/res_counter.c:49
-> res_counter_uncharge_locked() WARN_ON(counter->usage < val) several
-> times, called from memrlimit_cgroup_uncharge_as called from exit_mmap.
-> 
-> I have no idea what the cause is; but I've not seen it on i386,
-> and I'm not seeing it after shorter runs.  It could even be some
-> error introduced by other patches in what I'm testing: so don't
-> worry too much about it yet, but please keep an eye out for it.
-> 
-
-Sure, will do
-
-> (If I'd thought harder, I'd have been less interested in the
-> charge_as leaks: those WARN_ONs come when too much is being
-> uncharged, not when too little.)
-> 
-> But the issue which worries me most, because it's mislocking
-> which affects anyone with CONFIG_MM_OWNER=y, is seen when I
-> have CONFIG_DEBUG_SPINLOCK_SLEEP=y: 
-> 
->  BUG: sleeping function called from invalid context at kernel/rwsem.c:48
->  in_atomic():1, irqs_disabled():0
->  1 lock held by blogd/830:
->   #0:  (tasklist_lock){..--}, at: [<78125869>] mm_update_next_owner+0x1dd/0x1fa
->  Pid: 830, comm: blogd Not tainted 2.6.26-rc5-mm2 #2
->   [<78120ea2>] __might_sleep+0xed/0xf2
->   [<78367947>] down_write+0x13/0x43
->   [<781257b6>] mm_update_next_owner+0x12a/0x1fa
->   [<7812595a>] exit_mm+0xd4/0xe5
->   [<78125f9d>] do_exit+0x1e7/0x2bc
->   [<781260fb>] do_group_exit+0x61/0x8a
->   [<78126134>] sys_exit_group+0x10/0x13
->   [<78102dd9>] sysenter_past_esp+0x6a/0xa5
-> 
-> Your memrlimit-cgroup-mm-owner-callback-changes-to-add-task-info.patch
-> thinks it can acquire mmap_sem while it has read_lock(&tasklist_lock).
-> Sorry, no: you'll have to rework that somehow.
-> 
-
-Yes, that is nasty and a bad miss. It should be easy to fix, but will require
-extensive testing.
-
-
-> (In passing, I'll add that I'm not a great fan of these memrlimits:
-> to me it's loony to be charging people for virtual address space,
-> it's _virtual_, and process A can have as much as it likes without
-> affecting process B in any way.  You're following the lead of RLIMIT_AS,
-> but I've always thought RLIMIT_AS a lame attempt to move into the mmap
-> decade, after RLIMIT_DATA and RLIMIT_STACK no longer made sense.
-> 
-> Taking Alan Cox's Committed_AS as a limited resource charged per mm makes
-> much more sense to me: but yes, it's not perfect, and it is a lot harder
-> to get its accounting right, and to maintain that down the line.  Okay,
-> you've gone for the easier option of tracking total_vm, getting that
-> right is a more achievable target.  And I accept that I may be too
-> pessimistic about it: total_vm may often enough give a rough
-> approximation to something else worth limiting.)
-
-You seem to have read my mind, my motivation for memrlimits is
-
-1. Administrators to set a limit and be sure that a cgroup cannot consume more
-swap + RSS than the assigned virtual memory limit
-2. It allows applications to fail gracefully or decide what parts to free up
-to get more memory or change their allocation pattern (a scientific application
-deciding what size of matrix to allocate for example).
-
-Excellent feedback, thanks for the review!
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+			Linus
