@@ -1,135 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYFYI1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754800AbYFYIhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbYFYI1d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 04:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYFYI1Y
+	id S1754800AbYFYIhu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 04:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbYFYIhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 04:27:24 -0400
-Received: from mga01.intel.com ([192.55.52.88]:2137 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751591AbYFYI1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 04:27:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,700,1204531200"; 
-   d="scan'208";a="581723598"
-Subject: Re: [PATCH 2/2] acpi based pci gap caluculation v2
-From: Zhao Yakui <yakui.zhao@intel.com>
-To: Alok kataria <alokkataria1@gmail.com>
-Cc: akataria@vmware.com, lenb@kernel.org, Ingo Molnar <mingo@elte.hu>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <35f686220806242304q43987059xb203dd1ac75b7583@mail.gmail.com>
-References: <1214333326.27577.28.camel@promb-2n-dhcp368.eng.vmware.com>
-	 <1214362159.9800.28.camel@yakui_zhao.sh.intel.com>
-	 <35f686220806242117p4a442982hb459a6b76312f391@mail.gmail.com>
-	 <1214372365.9800.42.camel@yakui_zhao.sh.intel.com>
-	 <35f686220806242304q43987059xb203dd1ac75b7583@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 25 Jun 2008 16:38:15 +0800
-Message-Id: <1214383095.9800.85.camel@yakui_zhao.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Jun 2008 04:37:40 -0400
+Received: from styx.suse.cz ([82.119.242.94]:35183 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751591AbYFYIhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 04:37:39 -0400
+Date: Wed, 25 Jun 2008 10:37:37 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       llipavsky@suse.cz
+Subject: Re: [PATCH] module: make symbol_put_addr() work for all exported
+ symbols
+In-Reply-To: <200806231348.58317.rusty@rustcorp.com.au>
+Message-ID: <alpine.LNX.1.10.0806251034330.4593@jikos.suse.cz>
+References: <alpine.LNX.1.10.0806191508020.4593@jikos.suse.cz> <200806231348.58317.rusty@rustcorp.com.au>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-24 at 23:04 -0700, Alok kataria wrote:
-> Hi Yakui,
-> 
-> On Tue, Jun 24, 2008 at 10:39 PM, Zhao Yakui <yakui.zhao@intel.com> wrote:
-> > On Tue, 2008-06-24 at 21:17 -0700, Alok kataria wrote:
-> >> On Tue, Jun 24, 2008 at 7:49 PM, Zhao Yakui <yakui.zhao@intel.com> wrote:
-> >> > On Tue, 2008-06-24 at 11:48 -0700, Alok Kataria wrote:
-> >> >> Evaluates the _CRS object under PCI0 looking for producer resources.
-> >> >> Then searches the e820 memory space for a gap within these producer resources.
-> >> >>
-> >> >> Allows us to find a gap for the unclaimed pci resources or MMIO resources
-> >> >> for hotplug devices within the BIOS allowed pci regions.
-> >> >>
-> >> > It seems reasonable.
-> >> > But if the resource obtained from the PCI0 _CRS method is incorrect, we
-> >> > will get the incorrect pci_mem_start.
-> >>
-> >> Hi Yakui,
-> >>
-> >> What do you mean by the PCI0 _CRS being incorrect ? Why would the BIOS
-> >> give a incorrect _CRS object ?
-> >> Also we don't just take the value given from the _CRS method, we still
-> >> read the e820_map to search for an unallocated resource. So even if
-> >> (by chance) the _CRS method returns incorrect value we would still
-> >> figure out if there is a collision with an already allocated resource.
-> > In the patch the address obtained from the _CRS object will be passed
-> > into the function of e820_search_gap. In such case maybe we will get the
-> > pci_mem_start different with the e820_setup_gap.
-> 
-> True..the whole idea behind doing this patch was to get a correct
-> (different) value for pci_mem_start.
-> We read the _CRS object over here to make sure that we assign the
-> pci_mem_start from the address range which is reserved by the BIOS for
-> PCI devices.
-> 
-> Also this reading of _CRS object would be done before we start
-> initializing the pci devices, i.e. before we start using the value of
-> pci_mem_start, so the original value assigned by pci_setup_gap is just
-> overwritten by this function. So that should be fine IMHO.
-> Also we would still want the call for e820_setup_gap because there can
-> be systems with no acpi support or acpi disabled
-> 
-> 
-> >
-> >> >
-> >> > At the same time after the patch is applied, pci_mem_start will be
-> >> > parsed in two different ways.
-> >>
-> >> Yes pci_mem_start would be initialized in 2 different ways but we
-> >> still have to parse the e820_map the old way because there could be
-> >> systems without ACPI.
-> >>
-> >> > If the result is different, maybe the
-> >> > incorrect pci_mem_start will be used.
-> >>
-> >> Yeah, The result is different in my case. Though my BIOS reserves
-> >> hotpluggable memory region, kernel doesn't respect that right now and
-> >> just parses the e820_map to calculate the gap and pci_mem_start value.
-> >> I have explained the problem in this mail.
-> >>
-> >> http://marc.info/?l=linux-acpi&m=121391675711763&w=2
-> >>
-> >> Maybe nobody has seen this problem yet, because there are no systems
-> >> out there with less than 4GB memory to start with and which allow
-> >> memory hotplug.
-> >>
-> >> But still i don't understand what do you mean by, we can get incorrect
-> >> pci_mem_start, in which case ?
-> >
-> > In the function of setup_arch the pci_mem_start will be parsed by
-> > searching the e820 table.  After the patch is applied, we will parse the
-> > pci_mem_start again in the function of pci_acpi_scan_init and it will
-> > override the value parsed in the function of setup_arch. If the
-> > pci_mem_start is incorrect in the second case, maybe it will have side
-> > effect.
-> 
-> Yes it will override. But how can the value be incorrect in the second
-> case. As explained in my previous mail we still parse the e820_map to
-> check if we have unclaimed resources between start_address (that read
-> from  _CRS) to 2^32.  So even if this start_address is wrong we would
-> catch that during parsing e820_map. But again why would the _CRS
-> return incorrect values, are you talking about errors in BIOS ?
-The pci_mem_start is still gotten by parsing the E820 table.But the
-input parameter start_addr will be used in the function of
-e820_search_gap.
-  If the following is the resource start address returned by the PCI0
-_CRS object , maybe the different pci_mem_start will be gotten.
-    0xE0000000
-    0xE4000000
+On Mon, 23 Jun 2008, Rusty Russell wrote:
 
-  At the same time if several start address is returned by the _CRS
-object, the e820 table will be parsed several times. 
+>    It might be better to centralize all these iterators, and create a 
+> proper iterator function.  Any chance you could rewrite it on top of 
+> this patch? (Lightly tested)
 
-Thanks.
-  Yakui
+Hi Rusty,
 
-> Thanks,
-> Alok
+yes, this looks like better approach. I will respin that patch.
 
+> +struct find_symbol_arg
+> +{
+> +	/* Input */
+> +	const char *name;
+> +	bool gplok;
+> +	bool warn;
+> +
+> +	/* Output */
+> +	struct module *owner;
+> +	const unsigned long *crc;
+> +	unsigned long value;
+> +};
+
+I see two options how to do this -- either I can make 'value' input 
+parameter too, so that find_symbol_in_section() could perform lookup 
+either according to address or according to name (whatever is specified in 
+the passed struct find_symbol_arg), or I can do a completely new lookup 
+function for address-wise lookups. What would you prefer? I don't have any 
+strong preference either way.
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
