@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763563AbYF0Uwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763324AbYF0Uww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763563AbYF0Uwd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 16:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762285AbYF0Uuu
+	id S1763324AbYF0Uww (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 16:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762425AbYF0Uuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 16:50:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34928 "EHLO mx1.redhat.com"
+	Fri, 27 Jun 2008 16:50:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34932 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762004AbYF0Uut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 16:50:49 -0400
+	id S1762341AbYF0Uuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 16:50:51 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 From: Roland McGrath <roland@redhat.com>
 To: Oleg Nesterov <oleg@tv-sign.ru>
 X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] sched: fix TASK_WAKEKILL vs SIGKILL race
-In-Reply-To: Oleg Nesterov's message of  Sunday, 8 June 2008 21:20:41 +0400 <20080608172041.GA10383@tv-sign.ru>
-References: <20080608172041.GA10383@tv-sign.ru>
-Emacs: impress your (remaining) friends and neighbors.
-Message-Id: <20080627204954.4CC04154226@magilla.localdomain>
-Date: Mon,  9 Jun 2008 14:10:50 -0700 (PDT)
+Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: [patch] make siginfo_t si_utime + si_sstime report times in USER_HZ, not HZ
+In-Reply-To: Oleg Nesterov's message of  Wednesday, 25 June 2008 19:38:06 +0400 <20080625153806.GA499@tv-sign.ru>
+References: <cfd18e0f0806250749od875635r9e533d9f834bd8c4@mail.gmail.com>
+	<20080625153806.GA499@tv-sign.ru>
+X-Shopping-List: (1) Ceramic rain surprises
+   (2) Automated balls
+   (3) Cancerous dice longitudes
+   (4) Dark reverent citation contraptions
+Message-Id: <20080627204954.3D2061540B0@magilla.localdomain>
+Date: Wed, 25 Jun 2008 13:26:12 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I was also concerned about perturbing the schedule() hot path with the
-original patch.  With this version making signal_pending_state() inline,
-I think it's good.
-
-> Note this "__TASK_STOPPED | __TASK_TRACED" check in signal_pending_state().
-> This is needed to preserve the current behaviour (ptrace_notify). I hope
-> this check will be removed soon, but this (afaics good) change needs the
-> separate discussion.
-
-Agreed.  I think it might actually already be safe to drop it, but we can
-get to that after this settles.
+That looks fine.  The si_utime and si_stime fields have never been
+standardized and I don't really know of anything that's ever actually used
+them.  I'm sure whatever it has meant for ages is fine for it to mean now,
+and certainly today's clock_t is what matches what this code meant when it
+was written.  It seems unlikely that cutime rather than utime was ever
+desired here.  If anything, it should probably be the group-wide utime sum
+rather than the thread's, but that is not so trivial to sample and there is
+no reason to worry about changing it now.
 
 
 Thanks,
