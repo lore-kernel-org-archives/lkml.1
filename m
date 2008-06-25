@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbYFYXGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756418AbYFYXHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755470AbYFYXGd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 19:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbYFYXGZ
+	id S1756418AbYFYXHk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 19:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYFYXHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 19:06:25 -0400
-Received: from gw.goop.org ([64.81.55.164]:35459 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751768AbYFYXGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 19:06:24 -0400
-Message-ID: <4862CF57.1010106@goop.org>
-Date: Wed, 25 Jun 2008 16:05:59 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 25 Jun 2008 19:07:31 -0400
+Received: from outbound-mail-121.bluehost.com ([67.222.38.21]:50292 "HELO
+	outbound-mail-121.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752388AbYFYXHa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 19:07:30 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [patch 0/5] dev_printk() conversions
+Date: Wed, 25 Jun 2008 16:07:01 -0700
+User-Agent: KMail/1.9.9
+Cc: Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <20080613165209.507694130@ldl.fc.hp.com>
+In-Reply-To: <20080613165209.507694130@ldl.fc.hp.com>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       x86@kernel.org, xen-devel <xen-devel@lists.xensource.com>,
-       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
-       Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [PATCH 03 of 36] x86: add memory barriers to wrmsr
-References: <patchbomb.1214367536@localhost>	<93c7057b1f4acae501b2.1214367539@localhost>	<20080624214441.13202f12@infradead.org>	<4862B3E9.50601@goop.org> <20080625153136.2b3b6737@infradead.org>
-In-Reply-To: <20080625153136.2b3b6737@infradead.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806251607.01904.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Wed, 25 Jun 2008 14:08:57 -0700
-> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On Friday, June 13, 2008 9:52 am Bjorn Helgaas wrote:
+> These convert some printks to dev_printks.  They are completely
+> independent of each other; I'm just posting them together because
+> it probably makes sense to review them together.
 >
->   
->> Arjan van de Ven wrote:
->>     
->>> it's more readable for several of these cases to stick a barrier();
->>> in front and after it to be honest; that makes it more explicit that
->>> these are deliberate compiler barriers rather than "actual" memory
->>> access...
->>>
->>>   
->>>       
->> I suppose, though I would be inclined to put the barriers in the
->> wrmsr macro itself to act as documentation. 
->>     
->
->
-> yeah I meant like this:
->
-> static inline void native_write_msr(unsigned int msr,
->  				    unsigned low, unsigned high)
-> {
-> 	barrier();
-> 	asm volatile("wrmsr" : : "c" (msr), "a"(low), "d" (high));
-> 	barrier();
-> }
->
-> or in the same in the thing that calls this.
->
->   
+> It'd be nice if a PCI person looked at pci_request_region().  To
+> me, it looks like it prints the wrong BAR number (it prints "bar + 1").
 
-OK, we're in vehement agreement then.
+Thanks Bjorn, I applied 2-4 to my linux-next tree.  The x86 bits didn't apply 
+for me, probably because my tree is slightly out of date, but those changes 
+can come through Ingo & co.
 
-    J
-
+Jesse
