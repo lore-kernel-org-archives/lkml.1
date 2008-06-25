@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbYFYW66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbYFYXCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755393AbYFYW66 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 18:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750923AbYFYW6t
+	id S1755661AbYFYXCQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 19:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYFYXCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 18:58:49 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:37034 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750770AbYFYW6s (ORCPT
+	Wed, 25 Jun 2008 19:02:00 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50592 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750770AbYFYXCA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 18:58:48 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=KFN8ZFvFH70n3+DkubsTW9lo4+sLexleGFE14ioLFIoxYty5IQcd/PmUZgdIwapkgyzN7AlNUCJ6hmmZD/vEn1XZCjYz9EiU97E5mNK1YWXxLnrAdudty7TX06Rm6icveLW6b466eIG20lIEmvW2dQ9i9ucnlhFZPl4z9nj6s7o=  ;
-X-YMail-OSG: nDjng9EVM1lmGuoDAB6CKUBQEg.IuBRVg65gsynw1TXKLtyDKQKs2MgYGW2VavJc5m_qQJucL8Eg2hgHYAwswj10Ymw6TdPTlyplkoZFZ6.cYwJFFxM1dN0vxibphh31Kzk-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH] rtc: remove BKL for ioctl()
-Date: Wed, 25 Jun 2008 15:58:45 -0700
-User-Agent: KMail/1.9.9
-Cc: lkml <linux-kernel@vger.kernel.org>, rtc-linux@googlegroups.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <200806221955.42597.david-b@pacbell.net> <20080625163928.4da1f4a0@bike.lwn.net>
-In-Reply-To: <20080625163928.4da1f4a0@bike.lwn.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 25 Jun 2008 19:02:00 -0400
+Subject: Re: [PATCH] dabusb: use request_firmware()
+From: David Woodhouse <dwmw2@infradead.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Deti Fliegl <deti@fliegl.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org, jaswinder@infradead.org, bunk@kernel.org
+In-Reply-To: <1214221558.27974.33.camel@shinybook.infradead.org>
+References: <1214219201.27974.21.camel@shinybook.infradead.org>
+	 <20080623112004.GA26516@infradead.org>
+	 <1214221558.27974.33.camel@shinybook.infradead.org>
+Content-Type: text/plain
+Date: Thu, 26 Jun 2008 00:01:54 +0100
+Message-Id: <1214434914.10393.21.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806251558.45809.david-b@pacbell.net>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 June 2008, Jonathan Corbet wrote:
-> On Sun, 22 Jun 2008 19:55:42 -0700
-> David Brownell <david-b@pacbell.net> wrote:
-> 
-> > Remove implicit use of BKL in ioctl() from the RTC framework.
-> 
-> Looks good, I'll happily put it into the bkl-removal tree.
+On Mon, 2008-06-23 at 12:46 +0100, David Woodhouse wrote:
+> That makes a certain amount of sense, I suppose, and would certainly
+> reduce the litter of new _FIRMWARE options, as well as the pointless
+> whining that some people like to repeat at _each_ patch when we default
+> them to 'N'. I could do it something like below...
 
-It's in MM now too ... are all the bkl-removal patches going in
-at once, or will they be merged through their subsystems?
+I've reworked the git tree to do it that way.
 
+-- 
+dwmw2
 
-> One question, though:
-> 
-> > +	err = mutex_lock_interruptible(&rtc->ops_lock);
-> > +	if (err)
-> > +		return -EBUSY;
-> > +
-> 
-> Shouldn't that be -EINTR?
-
-I was just copying that usage from drivers/rtc/interface.c ...
-all users there return -EBUSY.
-
-If it's wrong in this patch it's probably wrong there too.
-I suspect EINTR is the answer in all cases.
-
-- Dave
