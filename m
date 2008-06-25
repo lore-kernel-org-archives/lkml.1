@@ -1,79 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756657AbYFYO7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757819AbYFYPB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756657AbYFYO7t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 10:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYFYO7j
+	id S1757819AbYFYPB7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 11:01:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbYFYPBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 10:59:39 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:2595 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751921AbYFYO7j (ORCPT
+	Wed, 25 Jun 2008 11:01:51 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:48089 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752201AbYFYPBv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 10:59:39 -0400
-Date: Wed, 25 Jun 2008 18:59:37 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-ide@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH -rt] ide: fix interrupts processing issue with
-	preempt-able hardirqs
-Message-ID: <20080625145937.GA2382@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu> <20080624000016.GA12547@polina.dev.rtsoft.ru> <20080625123431.GA25452@polina.dev.rtsoft.ru> <486244FF.8060805@ru.mvista.com> <20080625142249.GA21630@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20080625142249.GA21630@polina.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 25 Jun 2008 11:01:51 -0400
+Subject: Re: [PATCH 4/5 v2] x86 boot: show pfn addresses in hex not decimal
+	in some kernel info printks
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Paul Jackson <pj@sgi.com>, hpa@zytor.com, yhlu.kernel@gmail.com,
+       akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
+       steiner@sgi.com, travis@sgi.com, linux-kernel@vger.kernel.org,
+       ying.huang@intel.com, andi@firstfloor.org
+In-Reply-To: <alpine.LFD.1.10.0806242101460.20369@hp.linux-foundation.org>
+References: <20080622142151.5591.4139.sendpatchset@polaris-admin.engr.sgi.com>
+	 <20080622142212.5591.64592.sendpatchset@polaris-admin.engr.sgi.com>
+	 <86802c440806221238g78300952t2fc7f406c1842273@mail.gmail.com>
+	 <20080623060939.6b6b3183.pj@sgi.com>
+	 <86802c440806241429s  <alpine.LFD.1.10.0806242101460.20369@hp.linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-AmQdVXDFuzLGnlcU3mX7"
+Date: Wed, 25 Jun 2008 17:00:26 +0200
+Message-Id: <1214406026.21847.25.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 06:22:49PM +0400, Anton Vorontsov wrote:
-> On Wed, Jun 25, 2008 at 05:15:43PM +0400, Sergei Shtylyov wrote:
-> > Hello.
-> >
-> > Anton Vorontsov wrote:
-> >
-> >>>>> IDE interrupt handler relies on the fact that, if necessary, 
-> >>>>> hardirqs will re-trigger on ISR exit. With fully preemtable IRQs 
-> >>>>> this seems to be not true, since if hardirq thread is currently 
-> >>>>> running, and the same IRQ raised again, then this IRQ will be 
-> >>>>> simply lost.
-> >
-> >>>> actually no, that should not happen - if -rt loses an IRQ then 
-> >>>> something broke in the threaded IRQ code. It's supposed to be a 
-> >>>> drop-in, compatible IRQ flow with no driver changes needed.
-> >
-> >>> ..just as I thought, the bug somewhere deeper... heh.
-> >
-> >> Ok, a bit more investigation showed that this is indeed not RT specific
-> >> per see, but issue emerges only on RT-style IRQ handlers + alim15x3 IDE
-> >> controller (for example, PDC20269 works ok).
-> >
-> >    Does it happen only with ATAPI devices also or with ATA disks too?
-> 
-> So far I own two ATAPI devices, IDE disks are quire rare nowadays,
-> should find one. ;-)
-[...]
-> >> Also, further testing showed that this issue isn't drive-specific, i.e.
-> >> with a delay inserted before the unmask_irq(), the bug shows with any
-> >> drive I have.
-> >
-> >    So, "shit happens" even with the ATA drives?
-> 
-> Will try as soon as I'll get one.
 
-Thanks for the drive, and the result is:
+--=-AmQdVXDFuzLGnlcU3mX7
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-hda: irq timeout: status=0x58 { DriveReady SeekComplete DataRequest }
-ide: failed opcode was: unknown
+On Tue, 2008-06-24 at 21:04 -0700, Linus Torvalds wrote:
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> It's really irritating how we cannot extend on the printk strings without=
+=20
+> either having to throw out gcc warnings altogether. gcc has no extension=20
+> mechanism to the built-in rules ;/
+>=20
+> The format warnings are too useful to drop entirely. I guess sparse could=
+=20
+> be taught to do them, and then we could drop the gcc support for them. Bu=
+t=20
+> that would still limit coverage a _lot_.
+
+We should probably start working on getting this fixed.
+
+In networking, we've gone through various incarnations of print_mac()
+which is similar to the sym() macro Paul proposed, and it turned out to
+be undesirable because of the way it interacts with static inlines that
+only optionally contain code at all, the print_mac() function call is
+still emitted by the compiler. People experimented with marking it
+__pure but that had other problems.
+
+It would be nice to be able to say
+
+u8 *eaddr;
+
+printk(... %M ..., eaddr);
+
+and get
+03:45:67:89:ab:cd
+
+out of it, which avoids both the large string/code you get when doing it
+manually (printf("%2.x:...:%.2x", eaddr[0], ...) for which there are
+macros) and the "function call in hotpath even when debugging is
+disabled" problem I mentioned above.
+
+johannes
+
+--=-AmQdVXDFuzLGnlcU3mX7
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJIYl2GAAoJEKVg1VMiehFYPwoP+QG7Sbi/PV0STxK/DZI4LqEA
+zSMg7T5yt3f+QeUupeCgL1kKumCEulNJClDSWFLXtSSPBidHxWZtkw40zfUVQWlX
+LLcC18s2Dq9Eyr49fXShvplUrN+4TjMR88vktbxZMkR1AQL6ncR5V6RNjyUko9pe
+7gB8m/DCeAxSfoQfjL8mKBeHsxaTkVJQMAuFHCbYvv65wYv6aVjM5t8u1eWvMo2W
+0hlGXz1tH8U9L5xszYWM1CzOTVxrejt0O9dFlRRccxuLbCPKgXlSt7adSioTbR0w
+YqdZfLx5Fw/bkNQZijWHL/getF9Hro/8wYDgYurG82ECXLYHC+02+hJz3Pm5UIzC
+TRxNfNm2qQtiib3d5QSiLcLOn6ZujfUYdhRdtWAB4vd6SVXHO5ODrap5c21ENGZu
+XoDAyFzV2OZpAwe2Lx4Zd+3l+MUxmUxeiCY7qdKM8/WFQ0AKy9Bwbiwh8lPQM0cD
+SCwkOUzto/0InzbduI6zidUnv5NLcoGHr8x8UgnMkySLDR6JOSb9dTb7P5i4Uva5
+9ZHQ6TZ42geJAy6KGhoqfHgL8+TsTrRBoXq4RnOUTmXKF+OIXZkdVJ5JgiQIWuU5
+Sw1UHH4/vDQheKZw+yCqVWXRDB6cJTFkSNiVlcbQ9nBvS5hbMtGvjMp78Lfyn+Y9
+XxFrY95i5+GabQt49kbZ
+=AiM/
+-----END PGP SIGNATURE-----
+
+--=-AmQdVXDFuzLGnlcU3mX7--
+
