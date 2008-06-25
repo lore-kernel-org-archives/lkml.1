@@ -1,93 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbYFYSWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbYFYSb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755217AbYFYSWx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 14:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYFYSWm
+	id S1755995AbYFYSb3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 14:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbYFYSbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 14:22:42 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:52584 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751250AbYFYSWl (ORCPT
+	Wed, 25 Jun 2008 14:31:17 -0400
+Received: from mga14.intel.com ([143.182.124.37]:23779 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752424AbYFYSbP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 14:22:41 -0400
-Subject: Re: [PATCH 2/2] acpi based pci gap caluculation v2
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Zhao Yakui <yakui.zhao@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       lenb@kernel.org
-Cc: linux-acpi <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1214413073.27577.67.camel@promb-2n-dhcp368.eng.vmware.com>
-References: <1214333326.27577.28.camel@promb-2n-dhcp368.eng.vmware.com>
-	 <1214362159.9800.28.camel@yakui_zhao.sh.intel.com>
-	 <35f686220806242117p4a442982hb459a6b76312f391@mail.gmail.com>
-	 <1214372365.9800.42.camel@yakui_zhao.sh.intel.com>
-	 <35f686220806242304q43987059xb203dd1ac75b7583@mail.gmail.com>
-	 <1214383095.9800.85.camel@yakui_zhao.sh.intel.com>
-	 <1214413073.27577.67.camel@promb-2n-dhcp368.eng.vmware.com>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Wed, 25 Jun 2008 11:22:40 -0700
-Message-Id: <1214418160.27577.87.camel@promb-2n-dhcp368.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Jun 2008 14:31:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,703,1204531200"; 
+   d="scan'208";a="2590929"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/2] net: Add the CPU id to skb->queue_mapping's upper 8 bits
+Date: Wed, 25 Jun 2008 11:31:01 -0700
+Message-ID: <D5C1322C3E673F459512FB59E0DDC329054E55AF@orsmsx414.amr.corp.intel.com>
+In-Reply-To: <20080624.163742.224488012.davem@davemloft.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/2] net: Add the CPU id to skb->queue_mapping's upper 8 bits
+Thread-Index: AcjWU0xl8fKOrAwjSlGxhR1zudaLUwAmVhww
+References: <20080624232545.11654.65805.stgit@localhost.localdomain> <20080624.163742.224488012.davem@davemloft.net>
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+To: "David Miller" <davem@davemloft.net>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>
+Cc: <jeff@garzik.org>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 25 Jun 2008 18:31:07.0148 (UTC) FILETIME=[A1E23CC0:01C8D6F1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-25 at 09:57 -0700, Alok Kataria wrote:
+>Well:
+>
+>1) All of this multiqueue stuff is going away with my changes in
+>   net-tx-2.6
 
-> While writing this mail i figured out that, instead of searching from
-> start_addr of _CRS to 2^32 we should just search till *end_addr* of _CRS resource.
-> I will send a patch to that effect. 
-> 
-> Thanks,
-> Alok
-> 
+Do you have a guestimate of which kernel you'll be targeting these
+changes?  I'm very interested in this schedule.
 
-Ingo, Please also apply this patch to the tip/out-of-tree
---
+>2) This CPU number is going to be wrong half of the time.
+>
+>For #2, when TCP is processing ACKs, it sends packets out from
+>whichever CPU the ACK landed on.
+>
+>So you could end up retargetting the RX flow back and forth between
+>cpus.  The cpu that sends the packet into the device layer is far
+>from the cpu that should be used to target the RX flow at.
+>
+>So this idea is pretty seriously flawed and the infrastructure it's
+>using is going away anyways.
 
-Incremental patch . This patch passes the pci producer resources
-end_addr (got from _CRS) to the e820_search_gap function. 
-Without this patch the code will always search from the producer regions
-start_address to 2^32, even though the producer region may be smaller. 
+The whole point is to identify the flow and redirect your Rx filtering
+to the CPU it came from.  So if you did this properly, the ACKs would be
+landing on the CPU that originally opened the TCP flow.  I don't follow
+why the scheduler would move the process if the Rx traffic is returning
+to that core.
 
-Now , we limit the search only within the producer region's address
-space. 
-Also we put a condition to check if the resource lies in the 32bit
-address range. 
+I also understand the infrastructure is going away.  But without knowing
+when things are being changed, we can't be expected to delay sending in
+patches to this area of the kernel if there is something we see a
+potential benefit for.  We have seen benefit in our labs of keeping
+flows on dedicated CPUs and Tx/Rx queue pairs.  I think the concept is
+also sensible.  But if my method of getting it working in the kernel is
+flawed, then that's fine.  Is there an alternative we can use, or is
+this something we can influence the new Tx flow design with?
 
-Signed-off-by: Alok N Kataria <akataria@vmware.com>
+>It also adds all sorts of arbitray limitations (256 queues and cpus? I
+>already have systems coming to me with more than 256 cpus)
 
-Index: linux-x86-tree.git/arch/x86/pci/acpi.c
-===================================================================
---- linux-x86-tree.git.orig/arch/x86/pci/acpi.c	2008-06-25 10:11:35.000000000 -0700
-+++ linux-x86-tree.git/arch/x86/pci/acpi.c	2008-06-25 11:17:31.000000000 -0700
-@@ -121,13 +121,21 @@
- 	struct acpi_resource_address64 addr;
- 	acpi_status status;
- 	struct gap_info *gap = data;
-+	unsigned long long start_addr, end_addr;
- 
- 	status = resource_to_addr(resource, &addr);
- 	if (ACPI_SUCCESS(status) &&
- 	    addr.resource_type == ACPI_MEMORY_RANGE &&
- 	    addr.address_length > gap->gapsize) {
--		e820_search_gap(&gap->gapstart, &gap->gapsize,
--				(addr.minimum + addr.translation_offset));
-+		start_addr = addr.minimum + addr.translation_offset;
-+		/*
-+		 * We want space only in the 32bit address range
-+		 */
-+		if (start_addr < UINT_MAX) {
-+			end_addr = start_addr + addr.address_length;
-+			e820_search_gap(&gap->gapstart, &gap->gapsize,
-+					start_addr, end_addr);
-+		}
- 	}
- 
- 	return AE_OK;
+I was trying to fit this into existing infrastructure to support the
+more common case, which is probably 4-64 CPUs.  Plus I'm not aware of
+any NICs out there that support upwards of 256 Tx queues in the physical
+function, but I guess I wouldn't be surprised if there are some on the
+market.
 
-
+-PJ Waskiewicz
