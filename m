@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760889AbYFYEte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbYFYEtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760889AbYFYEte (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 00:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbYFYEhw
+	id S1760954AbYFYEtv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 00:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbYFYEhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 00:37:52 -0400
-Received: from 9.sub-70-198-159.myvzw.com ([70.198.159.9]:37479 "EHLO
+	Wed, 25 Jun 2008 00:37:53 -0400
+Received: from 9.sub-70-198-159.myvzw.com ([70.198.159.9]:37498 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756150AbYFYEhh (ORCPT
+	with ESMTP id S1754991AbYFYEhh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 25 Jun 2008 00:37:37 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 26 of 36] x86_64: Split set_pte_vaddr()
-X-Mercurial-Node: 4beca5493282852a73d68bc0a0ffc0711e04acf6
-Message-Id: <4beca5493282852a73d6.1214367562@localhost>
+Subject: [PATCH 36 of 36] x86_64/paravirt: Make load_gs_index() a paravirt
+	operation
+X-Mercurial-Node: 30130237d2ea98577dd4abce1a4916f86eee7531
+Message-Id: <30130237d2ea98577dd4.1214367572@localhost>
 In-Reply-To: <patchbomb.1214367536@localhost>
-Date: Wed, 25 Jun 2008 00:19:22 -0400
+Date: Wed, 25 Jun 2008 00:19:32 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
@@ -28,86 +29,110 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eduardo Habkost <ehabkost@redhat.com>
-
-We will need to set a pte on l3_user_pgt. Extract set_pte_vaddr_pud()
-from set_pte_vaddr(), that will accept the l3 page table as parameter.
-
-This change should be a no-op for existing code.
-
 Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
-Signed-off-by: Mark McLoughlin <markmc@redhat.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/mm/init_64.c        |   31 ++++++++++++++++++++-----------
- include/asm-x86/pgtable_64.h |    3 +++
- 2 files changed, 23 insertions(+), 11 deletions(-)
+ arch/x86/kernel/entry_64.S |    4 ++--
+ arch/x86/kernel/paravirt.c |    3 +++
+ include/asm-x86/elf.h      |    2 +-
+ include/asm-x86/paravirt.h |   10 ++++++++++
+ include/asm-x86/system.h   |    3 ++-
+ 5 files changed, 18 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -149,22 +149,13 @@
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -1080,7 +1080,7 @@
+ 	
+        /* Reload gs selector with exception handling */
+        /* edi:  new selector */ 
+-ENTRY(load_gs_index)
++ENTRY(native_load_gs_index)
+ 	CFI_STARTPROC
+ 	pushf
+ 	CFI_ADJUST_CFA_OFFSET 8
+@@ -1094,7 +1094,7 @@
+ 	CFI_ADJUST_CFA_OFFSET -8
+         ret
+ 	CFI_ENDPROC
+-ENDPROC(load_gs_index)
++ENDPROC(native_load_gs_index)
+        
+         .section __ex_table,"a"
+         .align 8
+diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
+--- a/arch/x86/kernel/paravirt.c
++++ b/arch/x86/kernel/paravirt.c
+@@ -331,6 +331,9 @@
+ 	.store_idt = native_store_idt,
+ 	.store_tr = native_store_tr,
+ 	.load_tls = native_load_tls,
++#ifdef CONFIG_X86_64
++	.load_gs_index = native_load_gs_index,
++#endif
+ 	.write_ldt_entry = native_write_ldt_entry,
+ 	.write_gdt_entry = native_write_gdt_entry,
+ 	.write_idt_entry = native_write_idt_entry,
+diff --git a/include/asm-x86/elf.h b/include/asm-x86/elf.h
+--- a/include/asm-x86/elf.h
++++ b/include/asm-x86/elf.h
+@@ -83,9 +83,9 @@
+ 	(((x)->e_machine == EM_386) || ((x)->e_machine == EM_486))
+ 
+ #include <asm/processor.h>
++#include <asm/system.h>
+ 
+ #ifdef CONFIG_X86_32
+-#include <asm/system.h>		/* for savesegment */
+ #include <asm/desc.h>
+ 
+ #define elf_check_arch(x)	elf_check_arch_ia32(x)
+diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
+--- a/include/asm-x86/paravirt.h
++++ b/include/asm-x86/paravirt.h
+@@ -115,6 +115,9 @@
+ 	void (*set_ldt)(const void *desc, unsigned entries);
+ 	unsigned long (*store_tr)(void);
+ 	void (*load_tls)(struct thread_struct *t, unsigned int cpu);
++#ifdef CONFIG_X86_64
++	void (*load_gs_index)(unsigned int idx);
++#endif
+ 	void (*write_ldt_entry)(struct desc_struct *ldt, int entrynum,
+ 				const void *desc);
+ 	void (*write_gdt_entry)(struct desc_struct *,
+@@ -848,6 +851,13 @@
+ 	PVOP_VCALL2(pv_cpu_ops.load_tls, t, cpu);
  }
  
- void
--set_pte_vaddr(unsigned long vaddr, pte_t new_pte)
-+set_pte_vaddr_pud(pud_t *pud_page, unsigned long vaddr, pte_t new_pte)
- {
--	pgd_t *pgd;
- 	pud_t *pud;
- 	pmd_t *pmd;
- 	pte_t *pte;
- 
--	pr_debug("set_pte_vaddr %lx to %lx\n", vaddr, native_pte_val(new_pte));
--
--	pgd = pgd_offset_k(vaddr);
--	if (pgd_none(*pgd)) {
--		printk(KERN_ERR
--			"PGD FIXMAP MISSING, it should be setup in head.S!\n");
--		return;
--	}
--	pud = pud_offset(pgd, vaddr);
-+	pud = pud_page + pud_index(vaddr);
- 	if (pud_none(*pud)) {
- 		pmd = (pmd_t *) spp_getpage();
- 		pud_populate(&init_mm, pud, pmd);
-@@ -195,6 +186,24 @@
- 	 * (PGE mappings get flushed as well)
- 	 */
- 	__flush_tlb_one(vaddr);
-+}
-+
-+void
-+set_pte_vaddr(unsigned long vaddr, pte_t pteval)
++#ifdef CONFIG_X86_64
++static inline void load_gs_index(unsigned int gs)
 +{
-+	pgd_t *pgd;
-+	pud_t *pud_page;
++	PVOP_VCALL1(pv_cpu_ops.load_gs_index, gs);
++}
++#endif
 +
-+	pr_debug("set_pte_vaddr %lx to %lx\n", vaddr, native_pte_val(pteval));
-+
-+	pgd = pgd_offset_k(vaddr);
-+	if (pgd_none(*pgd)) {
-+		printk(KERN_ERR
-+			"PGD FIXMAP MISSING, it should be setup in head.S!\n");
-+		return;
-+	}
-+	pud_page = (pud_t*)pgd_page_vaddr(*pgd);
-+	set_pte_vaddr_pud(pud_page, vaddr, pteval);
- }
+ static inline void write_ldt_entry(struct desc_struct *dt, int entry,
+ 				   const void *desc)
+ {
+diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
+--- a/include/asm-x86/system.h
++++ b/include/asm-x86/system.h
+@@ -140,7 +140,7 @@
+ #define set_base(ldt, base) _set_base(((char *)&(ldt)) , (base))
+ #define set_limit(ldt, limit) _set_limit(((char *)&(ldt)) , ((limit)-1))
+ 
+-extern void load_gs_index(unsigned);
++extern void native_load_gs_index(unsigned);
  
  /*
-diff --git a/include/asm-x86/pgtable_64.h b/include/asm-x86/pgtable_64.h
---- a/include/asm-x86/pgtable_64.h
-+++ b/include/asm-x86/pgtable_64.h
-@@ -69,6 +69,9 @@
- #define pud_none(x)	(!pud_val(x))
+  * Load a segment. Fall back on loading the zero
+@@ -286,6 +286,7 @@
+ #ifdef CONFIG_X86_64
+ #define read_cr8()	(native_read_cr8())
+ #define write_cr8(x)	(native_write_cr8(x))
++#define load_gs_index   native_load_gs_index
+ #endif
  
- struct mm_struct;
-+
-+void set_pte_vaddr_pud(pud_t *pud_page, unsigned long vaddr, pte_t new_pte);
-+
- 
- static inline void native_pte_clear(struct mm_struct *mm, unsigned long addr,
- 				    pte_t *ptep)
+ /* Clear the 'TS' bit */
 
 
