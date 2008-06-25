@@ -1,115 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757827AbYFYPgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759448AbYFYPgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757827AbYFYPgE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 11:36:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758730AbYFYPfh
+	id S1759448AbYFYPgj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 11:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbYFYPg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 11:35:37 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:54171 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758360AbYFYPff (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 11:35:35 -0400
-Subject: Re: [PATCH 4/5 v2] x86 boot: show pfn addresses in hex not decimal
-	in some kernel info printks
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Paul Jackson <pj@sgi.com>, hpa@zytor.com, yhlu.kernel@gmail.com,
-       akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
-       steiner@sgi.com, travis@sgi.com, linux-kernel@vger.kernel.org,
-       ying.huang@intel.com, andi@firstfloor.org
-In-Reply-To: <alpine.LFD.1.10.0806250813030.4733@hp.linux-foundation.org>
-References: <20080622142151.5591.4139.sendpatchset@polaris-admin.engr.sgi.com>
-	 <20080622142212.5591.64592.sendpatchset@polaris-admin.engr.sgi.com>
-	 <86802c440806221238g78300952t2fc7f406c1842273@mail.gmail.com>
-	 <20080623060939.6b6b3183.pj@sgi.com>
-	 <86802c440806241429s  <alpine.LFD.1.10.0806242101460.20369@hp.linux-foundation.org>
-	 <1214406026.21847.25.camel@johannes.berg>
-	 <alpine.LFD.1.10.0806250813030.4733@hp.linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-PgLoh2g3zCnCkTe6XMQ8"
-Date: Wed, 25 Jun 2008 17:34:25 +0200
-Message-Id: <1214408065.21847.30.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Wed, 25 Jun 2008 11:36:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54504 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754148AbYFYPg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 11:36:28 -0400
+Date: Wed, 25 Jun 2008 17:36:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Merge setup_32/64.c into setup.c
+Message-ID: <20080625153614.GB18796@elte.hu>
+References: <200806242213.15310.yhlu.kernel@gmail.com> <200806242214.09503.yhlu.kernel@gmail.com> <200806250114.09858.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200806250114.09858.yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-PgLoh2g3zCnCkTe6XMQ8
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-On Wed, 2008-06-25 at 08:19 -0700, Linus Torvalds wrote:
->=20
-> On Wed, 25 Jun 2008, Johannes Berg wrote:
-> >=20
-> > In networking, we've gone through various incarnations of print_mac()
-> > which is similar to the sym() macro Paul proposed, and it turned out to
-> > be undesirable because of the way it interacts with static inlines that
-> > only optionally contain code at all, the print_mac() function call is
-> > still emitted by the compiler. People experimented with marking it
-> > __pure but that had other problems.
->=20
-> You don't even have to go that esoteric.
->=20
-> Just printing things like "sector_t" or "u64" is painful, because the=20
-> exact type depends on config options and/or architecture.
+> 
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> 
+> ---
+>  arch/x86/kernel/Makefile   |    2 
+>  arch/x86/kernel/setup.c    |  676 ++++++++++++++++++++++++++++++++++++++++++++-
+>  arch/x86/kernel/setup_32.c |  543 ------------------------------------
+>  arch/x86/kernel/setup_64.c |  381 -------------------------
+>  include/asm-x86/setup.h    |    2 
+>  5 files changed, 670 insertions(+), 934 deletions(-)
 
-Heh, true, but I have the print_mac() disaster firmly imprinted in my
-mind ;)
+very nice!
 
-> > It would be nice to be able to say
-> >=20
-> > u8 *eaddr;
-> >=20
-> > printk(... %M ..., eaddr);
->=20
-> For special things, I do think we should extend the format more, and=20
-> forget about single-character names. It would be lovely to do them as
-> %[mac], %[u64], %[symbol] or similar. Because once you don't rely on gcc=20
-> checking the string, you can do it.
+could we please split this up into several, gradual steps that bring 
+setup_32.c and setup_64.c to exactly the same content - where the final 
+patch just renames arch/x86/kernel/setup_32.c to arch/x86/kernel/setup.c 
+and deletes arch/x86/kernel/setup_64.c ?
 
-True, that does look a lot better and has less potential for confusion.
+it would still result in exactly the same end result - but is much more 
+bisectable (and reviewable, etc.). A bit like how arch/x86/mm/ioremap.c 
+or arch/x86/mm/pageattr.c was unified.
 
-> The problem is that right now we absolutely _do_ rely on gcc checking the=
-=20
-> string, and as such we're forced to use standard patterns, and standard=20
-> patterns _only_. And that means that %M isn't an option, but also that if=
-=20
-> we want symbolic names we'd have to use %p, and not some extension.
->=20
-> But once you drop the 'standard patterns' requirement, I do think you=20
-> should drop it _entirely_, and not just extend it with some pissant=20
-> single-character unreadable mess.
+maybe it can be done in less than 10 patches - but it guess it should be 
+rather something in the neighborhood of 20 patches. Changes like this:
 
-Oh yes, I agree. At one point I figured it should be easy enough to
-extend gcc with something that allows you to specify the format
-character/type to take but alas, such a thing is not possible.
+-       /*
+-        * NOTE: before this point _nobody_ is allowed to allocate
+-        * any memory using the bootmem allocator.  Although the
+-        * allocator is now initialised only the first 8Mb of the kernel
+-        * virtual address space has been mapped.  All allocations before
+-        * paging_init() has completed must use the alloc_bootmem_low_pages()
+-        * variant (which allocates DMA'able memory) and care must be taken
+-        * not to exceed the 8Mb limit.
+-        */
 
-johannes
+should be in a separate patch - you removed this restriction from the 
+x86 architecture via your earlier patches, so the removal of the comment 
+comes from that (and deserves a separate commit), not purely from the 
+mechanic unification in the end.
 
---=-PgLoh2g3zCnCkTe6XMQ8
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+other changes like this:
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+-#ifdef CONFIG_X86_FIND_SMP_CONFIG
++#if defined(CONFIG_X86_FIND_SMP_CONFIG) && defined(CONFIG_X86_32) || \
++    defined(CONFIG_X86_MPPARSE) && defined(CONFIG_X86_64)
 
-iQIcBAABAgAGBQJIYmV9AAoJEKVg1VMiehFYIZoQAL+Njqp6byI9dIIMmexfg8G4
-2HePs1PrdWZ/NYLij/wFurehaLZ7ZEkDqYZsar/FbZR9uZN6oHBXyY3teE7+svqy
-OONC3gF9/uTHf33FiepugsGKWIWo9EaIeqzFFyRiPesrkUt33YBRiFmZ2nm3W2Sg
-ygnB6iXnCiAX7lQX64w1m3Oq6Wq7ygyt1ZZ+EuOwVCxULlD8a+bInIwa8upfpJyw
-STqTcPjHv2iVfaqZs9R21+iPnmDpFsyl6iKIRwWyalqLriyk2KpfRzmpamqfDTNn
-w5PY7rTUmSa8a+xIO0Sx7yhhYrousP9w2vXBNZCFrrc/WkAfG3cwXkn0u4auvkyO
-vbWaQfZ5hnjXt2BIsdfZfe1iihIeGK+VgxXpzEAMmOewAj1FK9cC1zZTDqfBZGKx
-LARPLYu1ro+EGlN2fIyOlM798ncMf49bqlm61PGhhYWVwePei3Mnqs1O80ZEk76W
-1+Nr7wmY5qHjmp+s8oK65ukwzPecgYJJGt7DfuhKlRb2qJNMxwu2/GidsT8h6z2i
-e14wNhfRf3bjMvk3Z4l16Tg71RZuJcPTHJx2JdHHvBMhpDhecDOpOp5OtgLzKaM1
-H5DQ7OT2Mia7DMYoP5h+QOAq13YbFPwTU84k24ICyJ5f5FQ6jQ5iQnRL/IKQJfwI
-wmokWrjtp9gaEjqm7VGk
-=+UJp
------END PGP SIGNATURE-----
+here you fix coding style:
 
---=-PgLoh2g3zCnCkTe6XMQ8--
+-        /*
+-         * Parse SRAT to discover nodes.
+-         */
+-        acpi_numa_init();
++       /*
++        * Parse SRAT to discover nodes.
++        */
++       acpi_numa_init();
 
+etc. etc. You do a lot more very useful work than the plain single 
+unification patch you sent tells us - all these changes should be split 
+up.
+
+[ and in the unlikely event of there being a bug somewhere in this 1600
+  lines patch, a splitup is also useful for finding bugs :-) ]
+
+	Ingo
