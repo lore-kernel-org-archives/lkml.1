@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbYFYEtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760889AbYFYEte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755810AbYFYEtJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 00:49:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756736AbYFYEhv
+	id S1760889AbYFYEte (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 00:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbYFYEhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 00:37:51 -0400
-Received: from 9.sub-70-198-159.myvzw.com ([70.198.159.9]:37498 "EHLO
+	Wed, 25 Jun 2008 00:37:52 -0400
+Received: from 9.sub-70-198-159.myvzw.com ([70.198.159.9]:37479 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756108AbYFYEhc (ORCPT
+	with ESMTP id S1756150AbYFYEhh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 00:37:32 -0400
+	Wed, 25 Jun 2008 00:37:37 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 35 of 36] x86_64/paravirt: add adjust_exception_frame
-X-Mercurial-Node: c2da9984f23c61654250d8e00fb75e3a4e5d8136
-Message-Id: <c2da9984f23c61654250.1214367571@localhost>
+Subject: [PATCH 26 of 36] x86_64: Split set_pte_vaddr()
+X-Mercurial-Node: 4beca5493282852a73d68bc0a0ffc0711e04acf6
+Message-Id: <4beca5493282852a73d6.1214367562@localhost>
 In-Reply-To: <patchbomb.1214367536@localhost>
-Date: Wed, 25 Jun 2008 00:19:31 -0400
+Date: Wed, 25 Jun 2008 00:19:22 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
@@ -28,112 +28,86 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-64-bit Xen pushes a couple of extra words onto an exception frame.
-Add a hook to deal with them.
+From: Eduardo Habkost <ehabkost@redhat.com>
 
+We will need to set a pte on l3_user_pgt. Extract set_pte_vaddr_pud()
+from set_pte_vaddr(), that will accept the l3 page table as parameter.
+
+This change should be a no-op for existing code.
+
+Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
+Signed-off-by: Mark McLoughlin <markmc@redhat.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/kernel/asm-offsets_64.c |    1 +
- arch/x86/kernel/entry_64.S       |    2 ++
- arch/x86/kernel/paravirt.c       |    3 +++
- arch/x86/xen/enlighten.c         |    3 +++
- include/asm-x86/paravirt.h       |    9 +++++++++
- include/asm-x86/processor.h      |    2 ++
- 6 files changed, 20 insertions(+)
+ arch/x86/mm/init_64.c        |   31 ++++++++++++++++++++-----------
+ include/asm-x86/pgtable_64.h |    3 +++
+ 2 files changed, 23 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/kernel/asm-offsets_64.c b/arch/x86/kernel/asm-offsets_64.c
---- a/arch/x86/kernel/asm-offsets_64.c
-+++ b/arch/x86/kernel/asm-offsets_64.c
-@@ -61,6 +61,7 @@
- 	OFFSET(PARAVIRT_PATCH_pv_irq_ops, paravirt_patch_template, pv_irq_ops);
- 	OFFSET(PV_IRQ_irq_disable, pv_irq_ops, irq_disable);
- 	OFFSET(PV_IRQ_irq_enable, pv_irq_ops, irq_enable);
-+	OFFSET(PV_IRQ_adjust_exception_frame, pv_irq_ops, adjust_exception_frame);
- 	OFFSET(PV_CPU_iret, pv_cpu_ops, iret);
- 	OFFSET(PV_CPU_nmi_return, pv_cpu_ops, nmi_return);
- 	OFFSET(PV_CPU_usergs_sysret32, pv_cpu_ops, usergs_sysret32);
-diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
---- a/arch/x86/kernel/entry_64.S
-+++ b/arch/x86/kernel/entry_64.S
-@@ -864,6 +864,7 @@
-  */ 		
- 	.macro zeroentry sym
- 	INTR_FRAME
-+	PARAVIRT_ADJUST_EXCEPTION_FRAME
- 	pushq $0	/* push error code/oldrax */ 
- 	CFI_ADJUST_CFA_OFFSET 8
- 	pushq %rax	/* push real oldrax to the rdi slot */ 
-@@ -876,6 +877,7 @@
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -149,22 +149,13 @@
+ }
  
- 	.macro errorentry sym
- 	XCPT_FRAME
-+	PARAVIRT_ADJUST_EXCEPTION_FRAME
- 	pushq %rax
- 	CFI_ADJUST_CFA_OFFSET 8
- 	CFI_REL_OFFSET rax,0
-diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
---- a/arch/x86/kernel/paravirt.c
-+++ b/arch/x86/kernel/paravirt.c
-@@ -298,6 +298,9 @@
- 	.irq_enable = native_irq_enable,
- 	.safe_halt = native_safe_halt,
- 	.halt = native_halt,
-+#ifdef CONFIG_X86_64
-+	.adjust_exception_frame = paravirt_nop,
-+#endif
- };
+ void
+-set_pte_vaddr(unsigned long vaddr, pte_t new_pte)
++set_pte_vaddr_pud(pud_t *pud_page, unsigned long vaddr, pte_t new_pte)
+ {
+-	pgd_t *pgd;
+ 	pud_t *pud;
+ 	pmd_t *pmd;
+ 	pte_t *pte;
  
- struct pv_cpu_ops pv_cpu_ops = {
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1121,6 +1121,9 @@
- 	.irq_enable = xen_irq_enable,
- 	.safe_halt = xen_safe_halt,
- 	.halt = xen_halt,
-+#ifdef CONFIG_X86_64
-+	.adjust_exception_frame = paravirt_nop,
-+#endif
- };
- 
- static const struct pv_apic_ops xen_apic_ops __initdata = {
-diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
---- a/include/asm-x86/paravirt.h
-+++ b/include/asm-x86/paravirt.h
-@@ -192,6 +192,10 @@
- 	void (*irq_enable)(void);
- 	void (*safe_halt)(void);
- 	void (*halt)(void);
+-	pr_debug("set_pte_vaddr %lx to %lx\n", vaddr, native_pte_val(new_pte));
+-
+-	pgd = pgd_offset_k(vaddr);
+-	if (pgd_none(*pgd)) {
+-		printk(KERN_ERR
+-			"PGD FIXMAP MISSING, it should be setup in head.S!\n");
+-		return;
+-	}
+-	pud = pud_offset(pgd, vaddr);
++	pud = pud_page + pud_index(vaddr);
+ 	if (pud_none(*pud)) {
+ 		pmd = (pmd_t *) spp_getpage();
+ 		pud_populate(&init_mm, pud, pmd);
+@@ -195,6 +186,24 @@
+ 	 * (PGE mappings get flushed as well)
+ 	 */
+ 	__flush_tlb_one(vaddr);
++}
 +
-+#ifdef CONFIG_X86_64
-+	void (*adjust_exception_frame)(void);
-+#endif
- };
- 
- struct pv_apic_ops {
-@@ -1551,6 +1555,11 @@
- 	movq %rax, %rcx;				\
- 	xorq %rax, %rax;
- 
-+#define PARAVIRT_ADJUST_EXCEPTION_FRAME					\
-+	PARA_SITE(PARA_PATCH(pv_irq_ops, PV_IRQ_adjust_exception_frame), \
-+		  CLBR_NONE,						\
-+		  call PARA_INDIRECT(pv_irq_ops+PV_IRQ_adjust_exception_frame))
++void
++set_pte_vaddr(unsigned long vaddr, pte_t pteval)
++{
++	pgd_t *pgd;
++	pud_t *pud_page;
 +
- #define USERGS_SYSRET64							\
- 	PARA_SITE(PARA_PATCH(pv_cpu_ops, PV_CPU_usergs_sysret64),	\
- 		  CLBR_NONE,						\
-diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
---- a/include/asm-x86/processor.h
-+++ b/include/asm-x86/processor.h
-@@ -542,6 +542,8 @@
- 
- #define set_iopl_mask native_set_iopl_mask
- #define SWAPGS	swapgs
++	pr_debug("set_pte_vaddr %lx to %lx\n", vaddr, native_pte_val(pteval));
 +
-+#define PARAVIRT_ADJUST_EXCEPTION_FRAME	/*  */
- #endif /* CONFIG_PARAVIRT */
++	pgd = pgd_offset_k(vaddr);
++	if (pgd_none(*pgd)) {
++		printk(KERN_ERR
++			"PGD FIXMAP MISSING, it should be setup in head.S!\n");
++		return;
++	}
++	pud_page = (pud_t*)pgd_page_vaddr(*pgd);
++	set_pte_vaddr_pud(pud_page, vaddr, pteval);
+ }
  
  /*
+diff --git a/include/asm-x86/pgtable_64.h b/include/asm-x86/pgtable_64.h
+--- a/include/asm-x86/pgtable_64.h
++++ b/include/asm-x86/pgtable_64.h
+@@ -69,6 +69,9 @@
+ #define pud_none(x)	(!pud_val(x))
+ 
+ struct mm_struct;
++
++void set_pte_vaddr_pud(pud_t *pud_page, unsigned long vaddr, pte_t new_pte);
++
+ 
+ static inline void native_pte_clear(struct mm_struct *mm, unsigned long addr,
+ 				    pte_t *ptep)
 
 
