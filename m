@@ -1,411 +1,535 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbYFYMSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbYFYMTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757462AbYFYMSy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 08:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755048AbYFYMSp
+	id S1757926AbYFYMTW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 08:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757009AbYFYMTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 08:18:45 -0400
-Received: from styx.suse.cz ([82.119.242.94]:37608 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754247AbYFYMSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 08:18:44 -0400
-Date: Wed, 25 Jun 2008 14:18:42 +0200
-From: Jan Kara <jack@suse.cz>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
-       Sami Liedes <sliedes@cc.hut.fi>, jochen.voss@googlemail.com,
-       Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH, v3] ext3: validate directory entry data before use
-Message-ID: <20080625121842.GB16283@duck.suse.cz>
-References: <20080625113006.GA15246@dastardly> <1214395903-21107-1-git-send-email-duaneg@dghda.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1214395903-21107-1-git-send-email-duaneg@dghda.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 25 Jun 2008 08:19:09 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:42008 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755048AbYFYMTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 08:19:07 -0400
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH] dmatest: Simple DMA memcpy test client
+Date: Wed, 25 Jun 2008 14:19:19 +0200
+Message-Id: <1214396359-5776-1-git-send-email-haavard.skinnemoen@atmel.com>
+X-Mailer: git-send-email 1.5.5.4
+X-OriginalArrivalTime: 25 Jun 2008 12:19:00.0862 (UTC) FILETIME=[A66159E0:01C8D6BD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 25-06-08 13:11:43, Duane Griffin wrote:
-> Various places in fs/ext3/namei.c use ext3_next_entry to loop over
-> directory entries, but not all of them verify that entries are valid before
-> attempting to move to the next one. In the case where rec_len == 0 this
-> causes an infinite loop.
-> 
-> Introduce a new version of ext3_next_entry that checks the validity of the
-> entry before using its data to find the next one. Rename the original
-> function to __ext3_next_entry and use it in places where we already know
-> the data is valid.
-> 
-> Note that the changes to empty_dir follow the original code in reporting
-> the directory as empty in the presence of errors.
-> 
-> This patch fixes the first case (image hdb.25.softlockup.gz) reported in
-> http://bugzilla.kernel.org/show_bug.cgi?id=10882.
-> 
-> Signed-off-by: Duane Griffin <duaneg@dghda.com>
-  For what it's worth, you can add Acked-by: Jan Kara <jack@suse.cz>
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-									Honza
-> --
-> 
-> This is version 3. It includes some tidy-ups from v2 as suggested by
-> Jochen Voss and Jan Kara. It also replaces hard-coded function name strings
-> with __func__ in all calls to ext3_check_dir_entry, including one in an
-> otherwise untouched file. I don't think a separate patch for this is
-> necessary, but if it would be preferred I'd be happy to split it out.
-> 
-> I've removed some whitespace in a couple of places in order to fit lines
-> into 80 columns, so there are a couple of checkpatch warnings. Let me know
-> if you think it would be better to split the lines or go over 80 cols.
-> 
-> Please note that I've only properly tested the originally reported failure
-> case (i.e. the changes to ext3_dx_find_entry).
-> 
-> Reviewers may want to pay particular attention to the changes to do_split,
-> make_indexed_dir and empty_dir. I've tried to follow the original code's
-> error handling conventions, as noted above for empty_dir, but I'm not sure
-> this is the best way to do things.
-> 
-> ---
-> 
-> diff --git a/fs/ext3/dir.c b/fs/ext3/dir.c
-> index 8ca3bfd..2a8ab33 100644
-> --- a/fs/ext3/dir.c
-> +++ b/fs/ext3/dir.c
-> @@ -187,7 +187,7 @@ revalidate:
->  		while (!error && filp->f_pos < inode->i_size
->  		       && offset < sb->s_blocksize) {
->  			de = (struct ext3_dir_entry_2 *) (bh->b_data + offset);
-> -			if (!ext3_check_dir_entry ("ext3_readdir", inode, de,
-> +			if (!ext3_check_dir_entry (__func__, inode, de,
->  						   bh, offset)) {
->  				/* On error, skip the f_pos to the
->                                     next block. */
-> diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
-> index 0b8cf80..bb35255 100644
-> --- a/fs/ext3/namei.c
-> +++ b/fs/ext3/namei.c
-> @@ -185,13 +185,27 @@ static int ext3_dx_add_entry(handle_t *handle, struct dentry *dentry,
->   * p is at least 6 bytes before the end of page
->   */
->  static inline struct ext3_dir_entry_2 *
-> -ext3_next_entry(struct ext3_dir_entry_2 *p)
-> +__ext3_next_entry(struct ext3_dir_entry_2 *p)
->  {
->  	return (struct ext3_dir_entry_2 *)((char *)p +
->  		ext3_rec_len_from_disk(p->rec_len));
->  }
->  
->  /*
-> + * Checks the directory entry looks sane before using it to find the next one.
-> + * Returns NULL and reports an error if an invalid entry is passed.
-> + */
-> +static inline struct ext3_dir_entry_2 *
-> +ext3_next_entry(const char *func, struct inode *dir,
-> +		struct ext3_dir_entry_2 *de, struct buffer_head *bh, int offset)
-> +{
-> +	if (ext3_check_dir_entry(func, dir, de, bh, offset))
-> +		return __ext3_next_entry(de);
-> +	else
-> +		return NULL;
-> +}
-> +
-> +/*
->   * Future: use high four bits of block for coalesce-on-delete flags
->   * Mask them off for now.
->   */
-> @@ -271,15 +285,17 @@ struct stats
->  	unsigned bcount;
->  };
->  
-> -static struct stats dx_show_leaf(struct dx_hash_info *hinfo, struct ext3_dir_entry_2 *de,
-> -				 int size, int show_names)
-> +static struct stats dx_show_leaf(struct dx_hash_info *hinfo, struct inode *dir,
-> +				 struct buffer_head *bh, int size,
-> +				 int show_names)
->  {
-> +	struct ext3_dir_entry_2 *de = (struct ext3_dir_entry_2 *) bh->b_data;
->  	unsigned names = 0, space = 0;
->  	char *base = (char *) de;
->  	struct dx_hash_info h = *hinfo;
->  
->  	printk("names: ");
-> -	while ((char *) de < base + size)
-> +	while (de && (char *) de < base + size)
->  	{
->  		if (de->inode)
->  		{
-> @@ -295,7 +311,7 @@ static struct stats dx_show_leaf(struct dx_hash_info *hinfo, struct ext3_dir_ent
->  			space += EXT3_DIR_REC_LEN(de->name_len);
->  			names++;
->  		}
-> -		de = ext3_next_entry(de);
-> +		de = ext3_next_entry(__func__, dir, de, bh, 0);
->  	}
->  	printk("(%i)\n", names);
->  	return (struct stats) { names, space, 1 };
-> @@ -319,7 +335,7 @@ struct stats dx_show_entries(struct dx_hash_info *hinfo, struct inode *dir,
->  		if (!(bh = ext3_bread (NULL,dir, block, 0,&err))) continue;
->  		stats = levels?
->  		   dx_show_entries(hinfo, dir, ((struct dx_node *) bh->b_data)->entries, levels - 1):
-> -		   dx_show_leaf(hinfo, (struct ext3_dir_entry_2 *) bh->b_data, blocksize, 0);
-> +		   dx_show_leaf(hinfo, dir, bh, blocksize, 0);
->  		names += stats.names;
->  		space += stats.space;
->  		bcount += stats.bcount;
-> @@ -583,8 +599,8 @@ static int htree_dirblock_to_tree(struct file *dir_file,
->  	top = (struct ext3_dir_entry_2 *) ((char *) de +
->  					   dir->i_sb->s_blocksize -
->  					   EXT3_DIR_REC_LEN(0));
-> -	for (; de < top; de = ext3_next_entry(de)) {
-> -		if (!ext3_check_dir_entry("htree_dirblock_to_tree", dir, de, bh,
-> +	for (; de < top; de = __ext3_next_entry(de)) {
-> +		if (!ext3_check_dir_entry(__func__, dir, de, bh,
->  					(block<<EXT3_BLOCK_SIZE_BITS(dir->i_sb))
->  						+((char *)de - bh->b_data))) {
->  			/* On error, skip the f_pos to the next block. */
-> @@ -658,7 +674,11 @@ int ext3_htree_fill_tree(struct file *dir_file, __u32 start_hash,
->  	}
->  	if (start_hash < 2 || (start_hash ==2 && start_minor_hash==0)) {
->  		de = (struct ext3_dir_entry_2 *) frames[0].bh->b_data;
-> -		de = ext3_next_entry(de);
-> +		de = ext3_next_entry(__func__, dir, de, frames[0].bh, 0);
-> +		if (de == NULL) {
-> +			err = -EIO;
-> +			goto errout;
-> +		}
->  		if ((err = ext3_htree_store_dirent(dir_file, 2, 0, de)) != 0)
->  			goto errout;
->  		count++;
-> @@ -726,8 +746,7 @@ static int dx_make_map (struct ext3_dir_entry_2 *de, int size,
->  			count++;
->  			cond_resched();
->  		}
-> -		/* XXX: do we need to check rec_len == 0 case? -Chris */
-> -		de = ext3_next_entry(de);
-> +		de = __ext3_next_entry(de);
->  	}
->  	return count;
->  }
-> @@ -822,8 +841,7 @@ static inline int search_dirblock(struct buffer_head * bh,
->  		if ((char *) de + namelen <= dlimit &&
->  		    ext3_match (namelen, name, de)) {
->  			/* found a match - just to be sure, do a full check */
-> -			if (!ext3_check_dir_entry("ext3_find_entry",
-> -						  dir, de, bh, offset))
-> +			if (!ext3_check_dir_entry(__func__, dir, de, bh,offset))
->  				return -1;
->  			*res_dir = de;
->  			return 1;
-> @@ -991,24 +1009,27 @@ static struct buffer_head * ext3_dx_find_entry(struct dentry *dentry,
->  		de = (struct ext3_dir_entry_2 *) bh->b_data;
->  		top = (struct ext3_dir_entry_2 *) ((char *) de + sb->s_blocksize -
->  				       EXT3_DIR_REC_LEN(0));
-> -		for (; de < top; de = ext3_next_entry(de))
-> -		if (ext3_match (namelen, name, de)) {
-> -			if (!ext3_check_dir_entry("ext3_find_entry",
-> -						  dir, de, bh,
-> -				  (block<<EXT3_BLOCK_SIZE_BITS(sb))
-> -					  +((char *)de - bh->b_data))) {
-> -				brelse (bh);
-> +		for (; de < top; de = __ext3_next_entry(de)) {
-> +			int offset = (block << EXT3_BLOCK_SIZE_BITS(sb))
-> +				     + ((char *) de - bh->b_data);
-> +
-> +			if (!ext3_check_dir_entry(__func__, dir,de,bh,offset)) {
-> +				brelse(bh);
->  				*err = ERR_BAD_DX_DIR;
->  				goto errout;
->  			}
-> -			*res_dir = de;
-> -			dx_release (frames);
-> -			return bh;
-> +
-> +			if (ext3_match(namelen, name, de)) {
-> +				*res_dir = de;
-> +				dx_release(frames);
-> +				return bh;
-> +			}
->  		}
->  		brelse (bh);
-> +
->  		/* Check to see if we should continue to search */
-> -		retval = ext3_htree_next_block(dir, hash, frame,
-> -					       frames, NULL);
-> +		retval = ext3_htree_next_block(dir, hash, frame, frames, NULL);
-> +
->  		if (retval < 0) {
->  			ext3_warning(sb, __func__,
->  			     "error reading index page in directory #%lu",
-> @@ -1141,7 +1162,7 @@ static struct ext3_dir_entry_2* dx_pack_dirents(char *base, int size)
->  
->  	prev = to = de;
->  	while ((char*)de < base + size) {
-> -		next = ext3_next_entry(de);
-> +		next = __ext3_next_entry(de);
->  		if (de->inode && de->name_len) {
->  			rec_len = EXT3_DIR_REC_LEN(de->name_len);
->  			if (de > to)
-> @@ -1172,9 +1193,22 @@ static struct ext3_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
->  	struct dx_map_entry *map;
->  	char *data1 = (*bh)->b_data, *data2;
->  	unsigned split, move, size, i;
-> -	struct ext3_dir_entry_2 *de = NULL, *de2;
-> +	struct ext3_dir_entry_2 *de, *de2;
->  	int	err = 0;
->  
-> +	/* Verify directory entries are sane before trying anything else. */
-> +	de = (struct ext3_dir_entry_2 *) data1;
-> +	de2 = (struct ext3_dir_entry_2 *) data1 +
-> +		dir->i_sb->s_blocksize - EXT3_DIR_REC_LEN(0);
-> +	while (de < de2) {
-> +		de = ext3_next_entry(__func__, dir, de, *bh, 0);
-> +		if (de == NULL) {
-> +			brelse(*bh);
-> +			*bh = NULL;
-> +			goto errout;
-> +		}
-> +	}
-> +
->  	bh2 = ext3_append (handle, dir, &newblock, &err);
->  	if (!(bh2)) {
->  		brelse(*bh);
-> @@ -1281,8 +1315,7 @@ static int add_dirent_to_buf(handle_t *handle, struct dentry *dentry,
->  		de = (struct ext3_dir_entry_2 *)bh->b_data;
->  		top = bh->b_data + dir->i_sb->s_blocksize - reclen;
->  		while ((char *) de <= top) {
-> -			if (!ext3_check_dir_entry("ext3_add_entry", dir, de,
-> -						  bh, offset)) {
-> +			if (!ext3_check_dir_entry(__func__, dir,de,bh,offset)) {
->  				brelse (bh);
->  				return -EIO;
->  			}
-> @@ -1397,8 +1430,13 @@ static int make_indexed_dir(handle_t *handle, struct dentry *dentry,
->  	memcpy (data1, de, len);
->  	de = (struct ext3_dir_entry_2 *) data1;
->  	top = data1 + len;
-> -	while ((char *)(de2 = ext3_next_entry(de)) < top)
-> +
-> +	de2 = de;
-> +	while (de2 != NULL && de2 < top) {
->  		de = de2;
-> +		de2 = ext3_next_entry(__func__, dir, de, bh, 0);
-> +	}
-> +
->  	de->rec_len = ext3_rec_len_to_disk(data1 + blocksize - (char *) de);
->  	/* Initialize the root; the dot dirents already exist */
->  	de = (struct ext3_dir_entry_2 *) (&root->dotdot);
-> @@ -1637,7 +1675,7 @@ static int ext3_delete_entry (handle_t *handle,
->  	pde = NULL;
->  	de = (struct ext3_dir_entry_2 *) bh->b_data;
->  	while (i < bh->b_size) {
-> -		if (!ext3_check_dir_entry("ext3_delete_entry", dir, de, bh, i))
-> +		if (!ext3_check_dir_entry(__func__, dir, de, bh, i))
->  			return -EIO;
->  		if (de == de_del)  {
->  			BUFFER_TRACE(bh, "get_write_access");
-> @@ -1655,7 +1693,7 @@ static int ext3_delete_entry (handle_t *handle,
->  		}
->  		i += ext3_rec_len_from_disk(de->rec_len);
->  		pde = de;
-> -		de = ext3_next_entry(de);
-> +		de = __ext3_next_entry(de);
->  	}
->  	return -ENOENT;
->  }
-> @@ -1792,7 +1830,7 @@ retry:
->  	de->rec_len = ext3_rec_len_to_disk(EXT3_DIR_REC_LEN(de->name_len));
->  	strcpy (de->name, ".");
->  	ext3_set_de_type(dir->i_sb, de, S_IFDIR);
-> -	de = ext3_next_entry(de);
-> +	de = __ext3_next_entry(de);
->  	de->inode = cpu_to_le32(dir->i_ino);
->  	de->rec_len = ext3_rec_len_to_disk(inode->i_sb->s_blocksize -
->  					EXT3_DIR_REC_LEN(1));
-> @@ -1825,7 +1863,7 @@ out_stop:
->  /*
->   * routine to check that the specified directory is empty (for rmdir)
->   */
-> -static int empty_dir (struct inode * inode)
-> +static int empty_dir(struct inode *dir, struct inode *inode)
->  {
->  	unsigned long offset;
->  	struct buffer_head * bh;
-> @@ -1846,8 +1884,14 @@ static int empty_dir (struct inode * inode)
->  				     inode->i_ino);
->  		return 1;
->  	}
-> +
->  	de = (struct ext3_dir_entry_2 *) bh->b_data;
-> -	de1 = ext3_next_entry(de);
-> +	de1 = ext3_next_entry(__func__, dir, de, bh, 0);
-> +	if (de1 == NULL) {
-> +		brelse(bh);
-> +		return 1;
-> +	}
-> +
->  	if (le32_to_cpu(de->inode) != inode->i_ino ||
->  			!le32_to_cpu(de1->inode) ||
->  			strcmp (".", de->name) ||
-> @@ -1860,8 +1904,8 @@ static int empty_dir (struct inode * inode)
->  	}
->  	offset = ext3_rec_len_from_disk(de->rec_len) +
->  			ext3_rec_len_from_disk(de1->rec_len);
-> -	de = ext3_next_entry(de1);
-> -	while (offset < inode->i_size ) {
-> +	de = ext3_next_entry(__func__, dir, de1, bh, offset);
-> +	while (de && offset < inode->i_size) {
->  		if (!bh ||
->  			(void *) de >= (void *) (bh->b_data+sb->s_blocksize)) {
->  			err = 0;
-> @@ -1879,7 +1923,7 @@ static int empty_dir (struct inode * inode)
->  			}
->  			de = (struct ext3_dir_entry_2 *) bh->b_data;
->  		}
-> -		if (!ext3_check_dir_entry("empty_dir", inode, de, bh, offset)) {
-> +		if (!ext3_check_dir_entry(__func__, inode, de, bh, offset)) {
->  			de = (struct ext3_dir_entry_2 *)(bh->b_data +
->  							 sb->s_blocksize);
->  			offset = (offset | (sb->s_blocksize - 1)) + 1;
-> @@ -1890,7 +1934,7 @@ static int empty_dir (struct inode * inode)
->  			return 0;
->  		}
->  		offset += ext3_rec_len_from_disk(de->rec_len);
-> -		de = ext3_next_entry(de);
-> +		de = __ext3_next_entry(de);
->  	}
->  	brelse (bh);
->  	return 1;
-> @@ -2068,7 +2112,7 @@ static int ext3_rmdir (struct inode * dir, struct dentry *dentry)
->  		goto end_rmdir;
->  
->  	retval = -ENOTEMPTY;
-> -	if (!empty_dir (inode))
-> +	if (!empty_dir(dir, inode))
->  		goto end_rmdir;
->  
->  	retval = ext3_delete_entry(handle, dir, de, bh);
-> @@ -2244,7 +2288,7 @@ retry:
->  }
->  
->  #define PARENT_INO(buffer) \
-> -	(ext3_next_entry((struct ext3_dir_entry_2 *)(buffer))->inode)
-> +	(__ext3_next_entry((struct ext3_dir_entry_2 *)(buffer))->inode)
->  
->  /*
->   * Anybody can rename anything with this: the permission checks are left to the
-> @@ -2297,7 +2341,7 @@ static int ext3_rename (struct inode * old_dir, struct dentry *old_dentry,
->  	if (S_ISDIR(old_inode->i_mode)) {
->  		if (new_inode) {
->  			retval = -ENOTEMPTY;
-> -			if (!empty_dir (new_inode))
-> +			if (!empty_dir(new_dir, new_inode))
->  				goto end_rename;
->  		}
->  		retval = -EIO;
+This client tests DMA memcpy using various lengths and various offsets
+into the source and destination buffers. It will initialize both
+buffers with a repeatable pattern and verify that the DMA engine copies
+the requested region and nothing more. It will also verify that the
+bytes aren't swapped around, and that the source buffer isn't modified.
+
+The dmatest module can be configured to test a specific device, a
+specific channel. It can also test multiple channels at the same time,
+and it can start multiple threads competing for the same channel.
+
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+
+Changes since v2:
+  * Support testing multiple channels at the same time
+  * Support testing with multiple threads competing for the same channel
+  * Use counting test patterns in order to catch byte ordering issues
+
+Changes since v1:
+  * Remove extra dashes around "help"
+  * Remove "default n" from Kconfig
+  * Turn TEST_BUF_SIZE into a module parameter
+  * Return DMA_NAK instead of DMA_DUP
+  * Print unhandled events
+  * Support testing specific channels and devices
+  * Move to the end of the Makefile
+---
+ drivers/dma/Kconfig   |    7 +
+ drivers/dma/Makefile  |    1 +
+ drivers/dma/dmatest.c |  444 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 452 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/dma/dmatest.c
+
+diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+index 6239c3d..18f6ef3 100644
+--- a/drivers/dma/Kconfig
++++ b/drivers/dma/Kconfig
+@@ -61,4 +61,11 @@ config NET_DMA
+ 	  Since this is the main user of the DMA engine, it should be enabled;
+ 	  say Y here.
+ 
++config DMATEST
++	tristate "DMA Test client"
++	depends on DMA_ENGINE
++	help
++	  Simple DMA test client. Say N unless you're debugging a
++	  DMA Device driver.
++
+ endif
+diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
+index c8036d9..2ff6d7f 100644
+--- a/drivers/dma/Makefile
++++ b/drivers/dma/Makefile
+@@ -4,3 +4,4 @@ obj-$(CONFIG_INTEL_IOATDMA) += ioatdma.o
+ ioatdma-objs := ioat.o ioat_dma.o ioat_dca.o
+ obj-$(CONFIG_INTEL_IOP_ADMA) += iop-adma.o
+ obj-$(CONFIG_FSL_DMA) += fsldma.o
++obj-$(CONFIG_DMATEST) += dmatest.o
+diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
+new file mode 100644
+index 0000000..5c9fd10
+--- /dev/null
++++ b/drivers/dma/dmatest.c
+@@ -0,0 +1,444 @@
++/*
++ * DMA Engine test module
++ *
++ * Copyright (C) 2007 Atmel Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#include <linux/delay.h>
++#include <linux/dmaengine.h>
++#include <linux/init.h>
++#include <linux/kthread.h>
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/random.h>
++#include <linux/wait.h>
++
++static unsigned int test_buf_size = 16384;
++module_param(test_buf_size, uint, S_IRUGO);
++MODULE_PARM_DESC(test_buf_size, "Size of the memcpy test buffer");
++
++static char test_channel[BUS_ID_SIZE];
++module_param_string(channel, test_channel, sizeof(test_channel), S_IRUGO);
++MODULE_PARM_DESC(channel, "Bus ID of the channel to test (default: any)");
++
++static char test_device[BUS_ID_SIZE];
++module_param_string(device, test_device, sizeof(test_device), S_IRUGO);
++MODULE_PARM_DESC(device, "Bus ID of the DMA Engine to test (default: any)");
++
++static unsigned int threads_per_chan = 1;
++module_param(threads_per_chan, uint, S_IRUGO);
++MODULE_PARM_DESC(threads_per_chan,
++		"Number of threads to start per channel (default: 1)");
++
++static unsigned int max_channels;
++module_param(max_channels, uint, S_IRUGO);
++MODULE_PARM_DESC(nr_channels,
++		"Maximum number of channels to use (default: all)");
++
++/*
++ * Initialization patterns. All bytes in the source buffer has bit 7
++ * set, all bytes in the destination buffer has bit 7 cleared.
++ *
++ * Bit 6 is set for all bytes which are to be copied by the DMA
++ * engine. Bit 5 is set for all bytes which are to be overwritten by
++ * the DMA engine.
++ *
++ * The remaining bits are the inverse of a counter which increments by
++ * one for each byte address.
++ */
++#define PATTERN_SRC		0x80
++#define PATTERN_DST		0x00
++#define PATTERN_COPY		0x40
++#define PATTERN_OVERWRITE	0x20
++#define PATTERN_COUNT_MASK	0x1f
++
++struct dmatest_thread {
++	struct list_head	node;
++	struct task_struct	*task;
++	struct dma_chan		*chan;
++	u8			*srcbuf;
++	u8			*dstbuf;
++};
++
++struct dmatest_chan {
++	struct list_head	node;
++	struct dma_chan		*chan;
++	struct list_head	threads;
++};
++
++/*
++ * These are protected by dma_list_mutex since they're only used by
++ * the DMA client event callback
++ */
++static LIST_HEAD(dmatest_channels);
++static unsigned int nr_channels;
++
++static bool dmatest_match_channel(struct dma_chan *chan)
++{
++	if (test_channel[0] == '\0')
++		return true;
++	return strcmp(chan->dev.bus_id, test_channel) == 0;
++}
++
++static bool dmatest_match_device(struct dma_device *device)
++{
++	if (test_device[0] == '\0')
++		return true;
++	return strcmp(device->dev->bus_id, test_device) == 0;
++}
++
++static unsigned long dmatest_random(void)
++{
++	unsigned long buf;
++
++	get_random_bytes(&buf, sizeof(buf));
++	return buf;
++}
++
++static void dmatest_init_srcbuf(u8 *buf, unsigned int start, unsigned int len)
++{
++	unsigned int i;
++
++	for (i = 0; i < start; i++)
++		buf[i] = PATTERN_SRC | (~i & PATTERN_COUNT_MASK);
++	for ( ; i < start + len; i++)
++		buf[i] = PATTERN_SRC | PATTERN_COPY
++			| (~i & PATTERN_COUNT_MASK);;
++	for ( ; i < test_buf_size; i++)
++		buf[i] = PATTERN_SRC | (~i & PATTERN_COUNT_MASK);
++}
++
++static void dmatest_init_dstbuf(u8 *buf, unsigned int start, unsigned int len)
++{
++	unsigned int i;
++
++	for (i = 0; i < start; i++)
++		buf[i] = PATTERN_DST | (~i & PATTERN_COUNT_MASK);
++	for ( ; i < start + len; i++)
++		buf[i] = PATTERN_DST | PATTERN_OVERWRITE
++			| (~i & PATTERN_COUNT_MASK);
++	for ( ; i < test_buf_size; i++)
++		buf[i] = PATTERN_DST | (~i & PATTERN_COUNT_MASK);
++}
++
++static void dmatest_mismatch(u8 actual, u8 pattern, unsigned int index,
++		unsigned int counter, bool is_srcbuf)
++{
++	u8		diff = actual ^ pattern;
++	u8		expected = pattern | (~counter & PATTERN_COUNT_MASK);
++	const char	*thread_name = current->comm;
++
++	if (is_srcbuf)
++		pr_warning("%s: srcbuf[0x%x] overwritten!"
++				" Expected %02x, got %02x\n",
++				thread_name, index, expected, actual);
++	else if ((pattern & PATTERN_COPY)
++			&& (diff & (PATTERN_COPY | PATTERN_OVERWRITE)))
++		pr_warning("%s: dstbuf[0x%x] not copied!"
++				" Expected %02x, got %02x\n",
++				thread_name, index, expected, actual);
++	else if (diff & PATTERN_SRC)
++		pr_warning("%s: dstbuf[0x%x] was copied!"
++				" Expected %02x, got %02x\n",
++				thread_name, index, expected, actual);
++	else
++		pr_warning("%s: dstbuf[0x%x] mismatch!"
++				" Expected %02x, got %02x\n",
++				thread_name, index, expected, actual);
++}
++
++static unsigned int dmatest_verify(u8 *buf, unsigned int start,
++		unsigned int end, unsigned int counter, u8 pattern,
++		bool is_srcbuf)
++{
++	unsigned int i;
++	unsigned int error_count = 0;
++	u8 actual;
++
++	for (i = start; i < end; i++) {
++		actual = buf[i];
++		if (actual != (pattern | (~counter & PATTERN_COUNT_MASK))) {
++			if (error_count < 32)
++				dmatest_mismatch(actual, pattern, i, counter,
++						is_srcbuf);
++			error_count++;
++		}
++		counter++;
++	}
++
++	if (error_count > 32)
++		pr_warning("%s: %u errors suppressed\n",
++			current->comm, error_count - 32);
++
++	return error_count;
++}
++
++/*
++ * This function repeatedly tests DMA transfers of various lengths and
++ * offsets until it is told to exit by kthread_stop(). There may be
++ * multiple threads running this function in parallel for a single
++ * channel, and there may be multiple channels being tested in
++ * parallel.
++ *
++ * Before each test, the source and destination buffer is initialized
++ * with a known pattern. This pattern is different depending on
++ * whether it's in an area which is supposed to be copied or
++ * overwritten, and different in the source and destination buffers.
++ * So if the DMA engine doesn't copy exactly what we tell it to copy,
++ * we'll notice.
++ */
++static int dmatest_func(void *data)
++{
++	struct dmatest_thread	*thread = data;
++	struct dma_chan		*chan;
++	const char		*thread_name;
++	unsigned int		src_off, dst_off, len;
++	unsigned int		error_count;
++	unsigned int		failed_tests = 0;
++	unsigned int		total_tests = 0;
++	dma_cookie_t		cookie;
++	enum dma_status		status;
++	int			ret;
++
++	thread_name = current->comm;
++
++	ret = -ENOMEM;
++	thread->srcbuf = kmalloc(test_buf_size, GFP_KERNEL);
++	if (!thread->srcbuf)
++		goto err_srcbuf;
++	thread->dstbuf = kmalloc(test_buf_size, GFP_KERNEL);
++	if (!thread->dstbuf)
++		goto err_dstbuf;
++
++	smp_rmb();
++	chan = thread->chan;
++	dma_chan_get(chan);
++
++	while (!kthread_should_stop()) {
++		total_tests++;
++
++		len = dmatest_random() % test_buf_size + 1;
++		src_off = dmatest_random() % (test_buf_size - len + 1);
++		dst_off = dmatest_random() % (test_buf_size - len + 1);
++
++		dmatest_init_srcbuf(thread->srcbuf, src_off, len);
++		dmatest_init_dstbuf(thread->dstbuf, dst_off, len);
++
++		cookie = dma_async_memcpy_buf_to_buf(chan,
++				thread->dstbuf + dst_off,
++				thread->srcbuf + src_off,
++				len);
++		if (dma_submit_error(cookie)) {
++			pr_warning("%s: #%u: submit error %d with src_off=0x%x "
++					"dst_off=0x%x len=0x%x\n",
++					thread_name, total_tests - 1, cookie,
++					src_off, dst_off, len);
++			msleep(100);
++			failed_tests++;
++			continue;
++		}
++		dma_async_memcpy_issue_pending(chan);
++
++		do {
++			msleep(1);
++			status = dma_async_memcpy_complete(
++					chan, cookie, NULL, NULL);
++		} while (status == DMA_IN_PROGRESS);
++
++		if (status == DMA_ERROR) {
++			pr_warning("%s: #%u: error during copy\n",
++					thread_name, total_tests - 1);
++			failed_tests++;
++			continue;
++		}
++
++		error_count = 0;
++
++		pr_debug("%s: verifying source buffer...\n", thread_name);
++		error_count += dmatest_verify(thread->srcbuf, 0, src_off,
++				0, PATTERN_SRC, true);
++		error_count += dmatest_verify(thread->srcbuf, src_off,
++				src_off + len, src_off,
++				PATTERN_SRC | PATTERN_COPY, true);
++		error_count += dmatest_verify(thread->srcbuf, src_off + len,
++				test_buf_size, src_off + len,
++				PATTERN_SRC, true);
++
++		pr_debug("%s: verifying dest buffer...\n",
++				thread->task->comm);
++		error_count += dmatest_verify(thread->dstbuf, 0, dst_off,
++				0, PATTERN_DST, false);
++		error_count += dmatest_verify(thread->dstbuf, dst_off,
++				dst_off + len, src_off,
++				PATTERN_SRC | PATTERN_COPY, false);
++		error_count += dmatest_verify(thread->dstbuf, dst_off + len,
++				test_buf_size, dst_off + len,
++				PATTERN_DST, false);
++
++		if (error_count) {
++			pr_warning("%s: #%u: %u errors with "
++				"src_off=0x%x dst_off=0x%x len=0x%x\n",
++				thread_name, total_tests - 1, error_count,
++				src_off, dst_off, len);
++			failed_tests++;
++		} else {
++			pr_debug("%s: #%u: No errors with "
++				"src_off=0x%x dst_off=0x%x len=0x%x\n",
++				thread_name, total_tests - 1,
++				src_off, dst_off, len);
++		}
++	}
++
++	ret = 0;
++	dma_chan_put(chan);
++	kfree(thread->dstbuf);
++err_dstbuf:
++	kfree(thread->srcbuf);
++err_srcbuf:
++	pr_notice("%s: terminating after %u tests, %u failures (status %d)\n",
++			thread_name, total_tests, failed_tests, ret);
++	return ret;
++}
++
++static void dmatest_cleanup_channel(struct dmatest_chan *dtc)
++{
++	struct dmatest_thread	*thread;
++	struct dmatest_thread	*_thread;
++	int			ret;
++
++	list_for_each_entry_safe(thread, _thread, &dtc->threads, node) {
++		ret = kthread_stop(thread->task);
++		pr_debug("dmatest: thread %s exited with status %d\n",
++				thread->task->comm, ret);
++		list_del(&thread->node);
++		kfree(thread);
++	}
++	kfree(dtc);
++}
++
++static enum dma_state_client dmatest_add_channel(struct dma_chan *chan)
++{
++	struct dmatest_chan	*dtc;
++	struct dmatest_thread	*thread;
++	unsigned int		i;
++
++	dtc = kmalloc(sizeof(struct dmatest_chan), GFP_ATOMIC);
++	if (!dtc) {
++		pr_warning("dmatest: No memory for %s\n", chan->dev.bus_id);
++		return DMA_NAK;
++	}
++
++	dtc->chan = chan;
++	INIT_LIST_HEAD(&dtc->threads);
++
++	for (i = 0; i < threads_per_chan; i++) {
++		thread = kzalloc(sizeof(struct dmatest_thread), GFP_KERNEL);
++		if (!thread) {
++			pr_warning("dmatest: No memory for %s-test%u\n",
++					chan->dev.bus_id, i);
++			break;
++		}
++		thread->chan = dtc->chan;
++		smp_wmb();
++		thread->task = kthread_run(dmatest_func, thread, "%s-test%u",
++				chan->dev.bus_id, i);
++		if (IS_ERR(thread->task)) {
++			pr_warning("dmatest: Failed to run thread %s-test%u\n",
++					chan->dev.bus_id, i);
++			kfree(thread);
++			break;
++		}
++
++		/* srcbuf and dstbuf are allocated by the thread itself */
++
++		list_add_tail(&thread->node, &dtc->threads);
++	}
++
++	pr_info("dmatest: Started %u threads using %s\n", i, chan->dev.bus_id);
++
++	list_add_tail(&dtc->node, &dmatest_channels);
++	nr_channels++;
++
++	return DMA_ACK;
++}
++
++static enum dma_state_client dmatest_remove_channel(struct dma_chan *chan)
++{
++	struct dmatest_chan	*dtc, *_dtc;
++
++	list_for_each_entry_safe(dtc, _dtc, &dmatest_channels, node) {
++		if (dtc->chan == chan) {
++			list_del(&dtc->node);
++			dmatest_cleanup_channel(dtc);
++			pr_debug("dmatest: lost channel %s\n",
++					chan->dev.bus_id);
++			return DMA_ACK;
++		}
++	}
++
++	return DMA_DUP;
++}
++
++/*
++ * Start testing threads as new channels are assigned to us, and kill
++ * them when the channels go away.
++ *
++ * When we unregister the client, all channels are removed so this
++ * will also take care of cleaning things up when the module is
++ * unloaded.
++ */
++static enum dma_state_client
++dmatest_event(struct dma_client *client, struct dma_chan *chan,
++		enum dma_state state)
++{
++	enum dma_state_client	ack = DMA_NAK;
++
++	switch (state) {
++	case DMA_RESOURCE_AVAILABLE:
++		if (dmatest_match_channel(chan)
++				&& dmatest_match_device(chan->device)
++				&& (!max_channels
++					|| nr_channels < max_channels))
++			ack = dmatest_add_channel(chan);
++		else
++			ack = DMA_DUP;
++		break;
++
++	case DMA_RESOURCE_REMOVED:
++		ack = dmatest_remove_channel(chan);
++		break;
++
++	default:
++		pr_info("dmatest: Unhandled event %u (%s)\n",
++				state, chan->dev.bus_id);
++		break;
++	}
++
++	return ack;
++}
++
++static struct dma_client dmatest_client = {
++	.event_callback	= dmatest_event,
++};
++
++static int __init dmatest_init(void)
++{
++	dma_cap_set(DMA_MEMCPY, dmatest_client.cap_mask);
++	dma_async_client_register(&dmatest_client);
++	dma_async_client_chan_request(&dmatest_client);
++
++	return 0;
++}
++module_init(dmatest_init);
++
++static void __exit dmatest_exit(void)
++{
++	dma_async_client_unregister(&dmatest_client);
++}
++module_exit(dmatest_exit);
++
++MODULE_AUTHOR("Haavard Skinnemoen <hskinnemoen@atmel.com>");
++MODULE_LICENSE("GPL v2");
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+1.5.5.4
+
