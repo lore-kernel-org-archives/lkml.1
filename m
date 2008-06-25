@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbYFYKSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbYFYKcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020AbYFYKSt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 06:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbYFYKSi
+	id S1755570AbYFYKcE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 06:32:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYFYKbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 06:18:38 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:33954 "EHLO tim.rpsys.net"
+	Wed, 25 Jun 2008 06:31:53 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:42348 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754109AbYFYKSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 06:18:38 -0400
-Subject: Re: [PATCH] leds: make sure led->trigger is valid before calling
-	trigger->activate
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080625095046.GB6950@doriath.ww600.siemens.net>
-References: <20080619114847.GA13752@doriath.ww600.siemens.net>
-	 <20080624140235.ef3f4d52.akpm@linux-foundation.org>
-	 <20080625095046.GB6950@doriath.ww600.siemens.net>
-Content-Type: text/plain
-Date: Wed, 25 Jun 2008 11:18:22 +0100
-Message-Id: <1214389102.5211.25.camel@dax.rpnet.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	id S1752726AbYFYKbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 06:31:52 -0400
+Message-ID: <48621E83.3060608@pobox.com>
+Date: Wed, 25 Jun 2008 06:31:31 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>, ben-linux@fluff.org
+Subject: Re: Removal of BAST IDE driver
+References: <20080625090953.GA26556@flint.arm.linux.org.uk> <200806251214.14749.bzolnier@gmail.com>
+In-Reply-To: <200806251214.14749.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-06-25 at 13:50 +0400, Dmitry Baryshkov wrote:
-> On Tue, Jun 24, 2008 at 02:02:35PM -0700, Andrew Morton wrote:
-> > 
-> > The changelog tells us what the patch does, but it doesn't tell us
-> > why it does it.
-> > 
-> > This matters.  For a start, there is no way in which I (at least)
-> > am able to determine whether this change is needed in 2.6.26 nor
-> > in 2.6.25.x.
+Bartlomiej Zolnierkiewicz wrote:
+> series) so when later Jeff merged:
 > 
-> I hope this is better. This isn't an 2.6.25.x material. And probably not
-> an 2.6.26.
+> commit cc18e0fea7907e7a96b7df71b81838d518bc074e
+> Author: Ben Dooks <ben-linux@fluff.org>
+> Date:   Mon Jun 16 12:16:26 2008 +0100
 > 
-> From 4ce3598c6ce5e6b529a05432b18996a99cc5bf0d Mon Sep 17 00:00:00 2001
-> From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-> Date: Wed, 25 Jun 2008 13:48:07 +0400
-> Subject: [PATCH] leds: make sure led->trigger is valid before calling trigger->activate
+>     LIBATA: Add HAVE_PATA_PLATFORM to select PATA_PLATFORM driver
+> ...
 > 
-> This is necessary if one wants to use the led->trigger field during
-> trigger activation for a led (e.g. to set up the state of the led).
-> No current drivers depend on this.
+> which was patch #1/2 in the series I was under impression that now we
+> have both new and old driver with the old driver being the default because
+> of the link order.  Seems I was wrong after all as other things are moving
+> slower than IDE/ATA. ;)
+> 
+> Sorry for messing things up.  Russell/Ben: how should we proceed with
+> fixing it (arch part in or ide part out)?
 
-I seem to remember actively making the code work the way it does when I
-originally wrote it, what I can't remember is why I did that :/.
 
-Anyhow, I have no objections to the change and will probably queue it
-for the next merge window, its post 2.6.26 material.
+Ben's change merely adds a knob that a platform may set, in order to 
+enable the existing pata_platform driver, which is pretty safe by itself.
 
-Cheers,
+The next piece -- once not in 2.6.26 AFAIK -- is arch-specific code 
+selecting HAVE_PATA_PLATFORM.  BAST IDE, I assume, can go away once 
+relevant platforms start turning on HAVE_PATA_PLATFORM.
 
-Richard
-
+	Jeff
 
 
