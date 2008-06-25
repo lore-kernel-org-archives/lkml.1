@@ -1,125 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbYFYR5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbYFYSEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755179AbYFYR5w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 13:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYFYR5m
+	id S1754804AbYFYSEo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 14:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbYFYSEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 13:57:42 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:48931 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751631AbYFYR5l (ORCPT
+	Wed, 25 Jun 2008 14:04:35 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:35421 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752124AbYFYSEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 13:57:41 -0400
-Message-ID: <4862873C.3070507@keyaccess.nl>
-Date: Wed, 25 Jun 2008 19:58:20 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] PNP: have quirk_system_pci_resources() include io resources.
-Content-Type: multipart/mixed;
- boundary="------------090803080205080807040809"
-X-Spam-Score: -0.5 (/)
+	Wed, 25 Jun 2008 14:04:34 -0400
+Subject: Re: [PATCH 1/2] cleanup e820_setup_gap v2
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "lenb@kernel.org" <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       the arch/x86 maintainers <x86@kernel.org>
+In-Reply-To: <20080625160817.GC24967@elte.hu>
+References: <1214333310.27577.26.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080625160817.GC24967@elte.hu>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Wed, 25 Jun 2008 11:02:42 -0700
+Message-Id: <1214416962.27577.74.camel@promb-2n-dhcp368.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090803080205080807040809
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+On Wed, 2008-06-25 at 09:08 -0700, Ingo Molnar wrote:
+> * Alok Kataria <akataria@vmware.com> wrote:
+> 
+> > This is a preparatory patch for the next patch in series.
+> > Moves some code from e820_setup_gap to a new function e820_search_gap.
+> > This patch is a part of a bug fix where we walk the ACPI table to calculate
+> > a gap for PCI optional devices.
+> >
+> > v1->v2: Patch on top of tip/master.
+> >       Fixes a bug introduced in the last patch about the typeof "last".
+> >       Also the new function e820_search_gap now returns if we found a gap in
+> >       e820_map.
+> 
+> applied to tip/x86/setup-memory - thanks Alok.
 
-Hi Andrew.
+Hi Ingo,
 
-quirk_system_pci_resources() disables a PnP mem resource that overlaps a
-PCI BAR so as to not keep the PCI driver from claiming the resource.
-Have it do the same for io resources.
+As mentioned in this mail,
+http://marc.info/?l=linux-kernel&m=121441312409978&w=2
 
-Here, ACPI claims ports that overlap with my soundcard causing the
-soundcard driver to fail to load. It's unknown why my ACPI BIOS claims
-those ports; it did not use to but this is not a (kernel) regression.
-Some odd BIOS reconfig triggered by temporarily removing the card seems
-to have brought this on.
+I have also added a end_addr parameter to e820_search_gap to search only
+till the CRS objects end_addr instead of 2^32. In the normal case via
+e820_setup_gap we search till 2^32.
 
-This is not urgent -- I now all of a sudden need this on any kernel 
-anyway. It applies on top of Bjorn's PNP patches you have in the tree. 
-Strictly, Bjorn's ACK was on another version of this that rolled its own 
-private pnp_resource_type_name(), an interface introduced by those new 
-PNP patches. I took the liberty to consider that trivial enough of a 
-change to keep it though.
+Please apply this too.
+Patch on top of tip/master
+--
 
-Rene.
+e820_search_gap also take a end_addr parameter to limit search from
+start_addr to end_addr.
 
---------------090803080205080807040809
-Content-Type: text/plain;
- name="0001-PNP-have-quirk_system_pci_resources-include-io-re.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-PNP-have-quirk_system_pci_resources-include-io-re.patch"
+Signed-off-by: AloK N Kataria <akataria@vmware.com>
 
->From 4c6191498771b0e2b087db988f74e4b902b99d32 Mon Sep 17 00:00:00 2001
-From: Rene Herman <rene.herman@gmail.com>
-Date: Wed, 25 Jun 2008 19:45:41 +0200
-Subject: [PATCH] PNP: have quirk_system_pci_resources() include io resources.
-
-quirk_system_pci_resources() disables a PnP mem resource that overlaps
-a PCI BAR so as to not keep the PCI driver from claiming the resource.
-Have it do the same for io resources.
-
-Here, ACPI claims ports that overlap with my soundcard causing the
-soundcard driver to fail to load.  It's unknown why my ACPI BIOS
-claims those ports; it did not use to but this is not a (kernel)
-regression. Some odd BIOS reconfig triggered by temporarily removing
-the card seems to have brought this on.
-
-Signed-off-by: Rene Herman <rene.herman@gmail.com>
-Acked-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
----
- drivers/pnp/quirks.c |   13 ++++++++-----
- 1 files changed, 8 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/pnp/quirks.c b/drivers/pnp/quirks.c
-index 55f55ed..0bdf9b8 100644
---- a/drivers/pnp/quirks.c
-+++ b/drivers/pnp/quirks.c
-@@ -245,15 +245,17 @@ static void quirk_system_pci_resources(struct pnp_dev *dev)
- 	 */
- 	for_each_pci_dev(pdev) {
- 		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--			if (!(pci_resource_flags(pdev, i) & IORESOURCE_MEM) ||
--			    pci_resource_len(pdev, i) == 0)
-+			unsigned int type;
+Index: linux-x86-tree.git/arch/x86/kernel/e820.c
+===================================================================
+--- linux-x86-tree.git.orig/arch/x86/kernel/e820.c	2008-06-25 10:05:21.000000000 -0700
++++ linux-x86-tree.git/arch/x86/kernel/e820.c	2008-06-25 10:07:30.000000000 -0700
+@@ -486,17 +486,19 @@
+ 	printk(KERN_INFO "modified physical RAM map:\n");
+ 	e820_print_map("modified");
+ }
+-
++#define MAX_GAP_END 0x100000000ull
+ /*
+- * Search for a gap in the e820 memory space from start_addr to 2^32.
++ * Search for a gap in the e820 memory space from start_addr to end_addr.
+  */
+ __init int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
+-		unsigned long start_addr)
++		unsigned long start_addr, unsigned long long end_addr)
+ {
+-	unsigned long long last = 0x100000000ull;
++	unsigned long long last;
+ 	int i = e820.nr_map;
+ 	int found = 0;
+ 
++	last = (end_addr && end_addr < MAX_GAP_END) ? end_addr : MAX_GAP_END;
 +
-+			type = pci_resource_flags(pdev, i) &
-+					(IORESOURCE_IO | IORESOURCE_MEM);
-+			if (!type || pci_resource_len(pdev, i) == 0)
- 				continue;
+ 	while (--i >= 0) {
+ 		unsigned long long start = e820.map[i].addr;
+ 		unsigned long long end = start + e820.map[i].size;
+@@ -536,7 +538,7 @@
  
- 			pci_start = pci_resource_start(pdev, i);
- 			pci_end = pci_resource_end(pdev, i);
- 			for (j = 0;
--			     (res = pnp_get_resource(dev, IORESOURCE_MEM, j));
--			     j++) {
-+			     (res = pnp_get_resource(dev, type, j)); j++) {
- 				if (res->start == 0 && res->end == 0)
- 					continue;
+ 	gapstart = 0x10000000;
+ 	gapsize = 0x400000;
+-	found  = e820_search_gap(&gapstart, &gapsize, 0);
++	found  = e820_search_gap(&gapstart, &gapsize, 0, MAX_GAP_END);
  
-@@ -283,9 +285,10 @@ static void quirk_system_pci_resources(struct pnp_dev *dev)
- 				 * the PCI region, and that might prevent a PCI
- 				 * driver from requesting its resources.
- 				 */
--				dev_warn(&dev->dev, "mem resource "
-+				dev_warn(&dev->dev, "%s resource "
- 					"(0x%llx-0x%llx) overlaps %s BAR %d "
- 					"(0x%llx-0x%llx), disabling\n",
-+					pnp_resource_type_name(res),
- 					(unsigned long long) pnp_start,
- 					(unsigned long long) pnp_end,
- 					pci_name(pdev), i,
--- 
-1.5.5
+ #ifdef CONFIG_X86_64
+ 	if (!found) {
+Index: linux-x86-tree.git/include/asm-x86/e820.h
+===================================================================
+--- linux-x86-tree.git.orig/include/asm-x86/e820.h	2008-06-25 10:05:21.000000000 -0700
++++ linux-x86-tree.git/include/asm-x86/e820.h	2008-06-25 10:06:17.000000000 -0700
+@@ -72,7 +72,7 @@
+ extern void update_e820(void);
+ extern void e820_setup_gap(void);
+ extern int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
+-				unsigned long start_addr);
++			unsigned long start_addr, unsigned long long end_addr);
+ struct setup_data;
+ extern void parse_e820_ext(struct setup_data *data, unsigned long pa_data);
+ 
 
 
---------------090803080205080807040809--
+
