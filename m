@@ -1,84 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760218AbYFYOqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbYFYOto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760218AbYFYOqQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 10:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760055AbYFYOpW
+	id S1755421AbYFYOto (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 10:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbYFYOtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 10:45:22 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44484 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751250AbYFYOpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 10:45:20 -0400
-Date: Wed, 25 Jun 2008 16:45:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: introduce init_memory_mapping for 32bit
-Message-ID: <20080625144504.GA18796@elte.hu>
-References: <200806231951.10898.yhlu.kernel@gmail.com> <200806240410.47856.yhlu.kernel@gmail.com> <20080624113049.GA7731@elte.hu> <86802c440806241222h574c2a1cidf4191f7f6f3f372@mail.gmail.com>
+	Wed, 25 Jun 2008 10:49:35 -0400
+Received: from wx-out-0506.google.com ([66.249.82.239]:26189 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750708AbYFYOte (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 10:49:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=AAGm0TWwL4YP17epn4LI8yew+/zgE9M69I8rl/Oz/NNWSb8PtUkbMcwPecVjEiMaOC
+         W5U81JCXr8HDAaXK+YXRuPQRGhnecOHD1Onbg1a2LQa4WHDeIsiVtqS60Qnl9ShVtAKn
+         v3NhBhy/+4sSCOTvJ915zR0VvdXSCBU/GWf5Y=
+Message-ID: <cfd18e0f0806250749od875635r9e533d9f834bd8c4@mail.gmail.com>
+Date: Wed, 25 Jun 2008 16:49:33 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>, "Oleg Nesterov" <oleg@tv-sign.ru>
+Subject: [patch] make siginfo_t si_utime + si_sstime report times in USER_HZ, not HZ
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Bart Van Assche" <bart.vanassche@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <86802c440806241222h574c2a1cidf4191f7f6f3f372@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Oleg, Thomas,
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+In the switch to configurable HZ in 2.6, the treatment of the si_utime
+and si_stime fields that are exposed to userland via the siginfo
+structure looks to have been botched.  As things stand, these fields
+report times in units of HZ, so that userland gets information that
+varies depending on the HZ that the kernel was configured with.  This
+(trivial, untested) patch changes the reported values to use USER_HZ
+units.  What do you think of making this change?
 
-> On Tue, Jun 24, 2008 at 4:30 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >
-> >> so could use mem below max_low_pfn as early. could move several
-> >> function more early instead of waiting after paging_init including
-> >> moving relocate_initrd early, and kva related early done in
-> >> initmem_init
-> >
-> > applied to tip/x86/setup-memory - thanks Yinghai.
-> >
-> > a sidenote:
-> >
-> >>  6 files changed, 128 insertions(+), 74 deletions(-)
-> >
-> > this patch is too large - if it causes any problems it will not be very
-> > easy to figure out which exact change caused the problems.
-> >
-> > Lets hope it goes all fine - but in the future lets try doing
-> > more+smaller patches, especially if they change some known-dangerous
-> > area of the kernel.
-> >
-> > For example here a better splitup would have been to do 5 or more
-> > patches:
-> >
-> >  1) first introduce init_memory_mapping() [but dont use it anywhere]
-> >  2) add the init_memory_mapping() call to setup_arch()
-> >  3) move remap_numa_kva()
-> >  4) move relocate_initrd()
-> >  5) remove the now unnecessary setup from paging_init()
-> >
-> > ... or something like that. The point is to manage risk: if there's
-> > multiple problem areas that a change is touching, try to isolate them
-> > from each other and introduce the change gradually.
-> >
-> > The end result is still exactly the same, but much more
-> > reviewable/debuggable/bisectable.
-> 
-> split into 3 patches, please use them to replace the old one if you 
-> like.
+Signed-off-by: Michael Kerrisk <mtk.manpages@gmail.com>
 
-i've applied them to tip/x86/setup-memory, replacing the larger patch - 
-thanks Yinghai.
+--- /home/mtk/ARCHIVE/KERNEL/linux-2.6.26-rc7/kernel/signal.c.orig	2008-06-24
+16:20:39.000000000 +0200
++++ /home/mtk/ARCHIVE/KERNEL/linux-2.6.26-rc7/kernel/signal.c	2008-06-24
+16:22:17.000000000 +0200
+@@ -1379,10 +1379,9 @@
 
-	Ingo
+ 	info.si_uid = tsk->uid;
+
+-	/* FIXME: find out whether or not this is supposed to be c*time. */
+-	info.si_utime = cputime_to_jiffies(cputime_add(tsk->utime,
++	info.si_utime = cputime_to_clock_t(cputime_add(tsk->utime,
+ 						       tsk->signal->utime));
+-	info.si_stime = cputime_to_jiffies(cputime_add(tsk->stime,
++	info.si_stime = cputime_to_clock_t(cputime_add(tsk->stime,
+ 						       tsk->signal->stime));
+
+ 	info.si_status = tsk->exit_code & 0x7f;
+@@ -1450,9 +1449,8 @@
+
+ 	info.si_uid = tsk->uid;
+
+-	/* FIXME: find out whether or not this is supposed to be c*time. */
+-	info.si_utime = cputime_to_jiffies(tsk->utime);
+-	info.si_stime = cputime_to_jiffies(tsk->stime);
++	info.si_utime = cputime_to_clock_t(tsk->utime);
++	info.si_stime = cputime_to_clock_t(tsk->stime);
+
+  	info.si_code = why;
+  	switch (why) {
