@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbYFYVQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbYFYVVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835AbYFYVQp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 17:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbYFYVQf
+	id S1754559AbYFYVVE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 17:21:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYFYVUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 17:16:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34053 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751762AbYFYVQe (ORCPT
+	Wed, 25 Jun 2008 17:20:54 -0400
+Received: from outbound-mail-22.bluehost.com ([69.89.21.17]:57384 "HELO
+	outbound-mail-22.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752095AbYFYVUy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 17:16:34 -0400
-Date: Wed, 25 Jun 2008 14:16:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: bjorn.helgaas@hp.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PNP: have quirk_system_pci_resources() include io
- resources.
-Message-Id: <20080625141621.28639b58.akpm@linux-foundation.org>
-In-Reply-To: <4862873C.3070507@keyaccess.nl>
-References: <4862873C.3070507@keyaccess.nl>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 25 Jun 2008 17:20:54 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: David Vrabel <david.vrabel@csr.com>
+Subject: Re: PCI: MSI interrupts masked using prohibited method
+Date: Wed, 25 Jun 2008 14:20:51 -0700
+User-Agent: KMail/1.9.9
+Cc: Kernel development list <linux-kernel@vger.kernel.org>
+References: <4860D09D.4060801@csr.com>
+In-Reply-To: <4860D09D.4060801@csr.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="windows-1252"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806251420.51751.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jun 2008 19:58:20 +0200
-Rene Herman <rene.herman@keyaccess.nl> wrote:
+On Tuesday, June 24, 2008 3:46 am David Vrabel wrote:
+> PCI MSI interrupts are masked and unmasked using a method (by writing
+> the MSI Enable capability bit) that is prohibited by the PCI specification.
 
-> +			unsigned int type;
-> +
-> +			type = pci_resource_flags(pdev, i) &
-> +					(IORESOURCE_IO | IORESOURCE_MEM);
+Yeah, it's probably quite a bit slower too (I assume you're talking about 
+io_apic_64's msi_mask_irq).  Seems like masking this at the ioapic level 
+would make more sense anyway...
 
-pci_resource_flags() returns an unsigned long.
+> This behaviour can cause missed interrupts with some devices if the
+> interrupt is asserted by the hardware while MSI is disabled.
+>
+> I believe the interrupt should be masked/unmasked on the interrupt
+> controller (the APIC on x86, for example).   I'm going to test this now
+> and see if it works.
 
-But I think you're right and resource.flags is wrong.  Because there's
-no way in which we'll ever be able to use bits 32-63 of that field
-anyway.
+Great, thanks.
 
-I suppose that Someone(tm) should convert resource.flags to a u32 or
-something.  Minor issue.
-
+Jesse
