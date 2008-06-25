@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbYFYSb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbYFYSgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755995AbYFYSb3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 14:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbYFYSbR
+	id S1756679AbYFYSgL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 14:36:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYFYSf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 14:31:17 -0400
-Received: from mga14.intel.com ([143.182.124.37]:23779 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752424AbYFYSbP convert rfc822-to-8bit (ORCPT
+	Wed, 25 Jun 2008 14:35:56 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:58049 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752424AbYFYSfz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 14:31:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,703,1204531200"; 
-   d="scan'208";a="2590929"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 1/2] net: Add the CPU id to skb->queue_mapping's upper 8 bits
-Date: Wed, 25 Jun 2008 11:31:01 -0700
-Message-ID: <D5C1322C3E673F459512FB59E0DDC329054E55AF@orsmsx414.amr.corp.intel.com>
-In-Reply-To: <20080624.163742.224488012.davem@davemloft.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/2] net: Add the CPU id to skb->queue_mapping's upper 8 bits
-Thread-Index: AcjWU0xl8fKOrAwjSlGxhR1zudaLUwAmVhww
-References: <20080624232545.11654.65805.stgit@localhost.localdomain> <20080624.163742.224488012.davem@davemloft.net>
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: "David Miller" <davem@davemloft.net>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>
-Cc: <jeff@garzik.org>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 25 Jun 2008 18:31:07.0148 (UTC) FILETIME=[A1E23CC0:01C8D6F1]
+	Wed, 25 Jun 2008 14:35:55 -0400
+To: jamie@shareable.org
+CC: torvalds@linux-foundation.org, miklos@szeredi.hu, jens.axboe@oracle.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hugh@veritas.com,
+       nickpiggin@yahoo.com.au
+In-reply-to: <20080625173837.GA10005@shareable.org> (message from Jamie Lokier
+	on Wed, 25 Jun 2008 18:38:38 +0100)
+Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in invalidate_complete_page2()
+References: <20080625124038.103406301@szeredi.hu> <20080625124121.839734708@szeredi.hu> <alpine.LFD.1.10.0806250757150.4733@hp.linux-foundation.org> <20080625173837.GA10005@shareable.org>
+Message-Id: <E1KBZqG-0008OZ-Pw@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 25 Jun 2008 20:35:40 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Well:
->
->1) All of this multiqueue stuff is going away with my changes in
->   net-tx-2.6
+> > I also really don't think this even fixes the problems you have with 
+> > FUSE/NFSD - because you'll still be reading zeroes for a truncated file. 
+> > Yes, you get the rigth counts, but you don't get the right data.
+> ...
+> > That's "correct" from a splice() kind of standpoint (it's essentially a 
+> > temporary mmap() with MAP_PRIVATE), but the thing is, it just sounds like 
+> > the whole "page went away" thing is a more fundamental issue. It sounds 
+> > like nfds should hold a read-lock on the file while it has any IO in 
+> > flight, or something like that.
+> 
+> I'm thinking any kind of user-space server using splice() will not
+> want to transmit zeros either, when another process truncates the file.
+> E.g. Apache, Samba, etc.
+> 
+> Does this problem affect sendfile() users?
 
-Do you have a guestimate of which kernel you'll be targeting these
-changes?  I'm very interested in this schedule.
+AFAICS it does.
 
->2) This CPU number is going to be wrong half of the time.
->
->For #2, when TCP is processing ACKs, it sends packets out from
->whichever CPU the ACK landed on.
->
->So you could end up retargetting the RX flow back and forth between
->cpus.  The cpu that sends the packet into the device layer is far
->from the cpu that should be used to target the RX flow at.
->
->So this idea is pretty seriously flawed and the infrastructure it's
->using is going away anyways.
+And I agree, that splice should handle truncation better.  But as I
+said, this affects every single filesystem out there.  And yes, my
+original patch wouldn't solve this (although it wouldn't make it
+harder to solve either).
 
-The whole point is to identify the flow and redirect your Rx filtering
-to the CPU it came from.  So if you did this properly, the ACKs would be
-landing on the CPU that originally opened the TCP flow.  I don't follow
-why the scheduler would move the process if the Rx traffic is returning
-to that core.
+However the page invalidation issue is completely orthogonal, and only
+affects a few filesystems which call invalidate_complete_page2(),
+namely: 9p, afs, fuse and nfs.
 
-I also understand the infrastructure is going away.  But without knowing
-when things are being changed, we can't be expected to delay sending in
-patches to this area of the kernel if there is something we see a
-potential benefit for.  We have seen benefit in our labs of keeping
-flows on dedicated CPUs and Tx/Rx queue pairs.  I think the concept is
-also sensible.  But if my method of getting it working in the kernel is
-flawed, then that's fine.  Is there an alternative we can use, or is
-this something we can influence the new Tx flow design with?
-
->It also adds all sorts of arbitray limitations (256 queues and cpus? I
->already have systems coming to me with more than 256 cpus)
-
-I was trying to fit this into existing infrastructure to support the
-more common case, which is probably 4-64 CPUs.  Plus I'm not aware of
-any NICs out there that support upwards of 256 Tx queues in the physical
-function, but I guess I wouldn't be surprised if there are some on the
-market.
-
--PJ Waskiewicz
+Miklos
