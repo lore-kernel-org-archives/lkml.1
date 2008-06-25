@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbYFYPHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758360AbYFYPIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757019AbYFYPHP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 11:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYFYPHE
+	id S1758360AbYFYPIB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 11:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYFYPHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 11:07:04 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:54568 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751288AbYFYPHC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 11:07:02 -0400
-Message-ID: <48625F0E.7000603@sgi.com>
-Date: Wed, 25 Jun 2008 08:06:54 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Adrian Bunk <bunk@kernel.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Gautham R Shenoy <ego@in.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
-References: <20080622125633.GA8166@damson.getinternet.no> <200806242314.51656.rusty@rustcorp.com.au> <4861085D.8020506@sgi.com> <200806251538.45795.rusty@rustcorp.com.au>
-In-Reply-To: <200806251538.45795.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 25 Jun 2008 11:07:52 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36811 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750923AbYFYPHw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 11:07:52 -0400
+Subject: Re: [PATCH 6/6] futex: fix miss ordered wakeups
+From: Peter Zijlstra <peterz@infradead.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1214404611.21035.20.camel@localhost.localdomain>
+References: <20080624232018.817822790@mvista.com>
+	 <20080624232020.505470899@mvista.com>  <1214371767.16881.5.camel@twins>
+	 <1214404611.21035.20.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 25 Jun 2008 17:07:31 +0200
+Message-Id: <1214406451.24356.13.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Wednesday 25 June 2008 00:44:45 Mike Travis wrote:
->> Rusty Russell wrote:
->> ...
->>
->>> Nice catch.  Basically, cpu_possible_map should only be cleared at boot,
->>> and probably not even then.
->> One thing that should be avoided, is clearing anything but the last bit in
->> the cpu_possible_map.  This is because num_possible_cpus != nr_cpu_ids when
->> there are holes in the map.  (nr_cpu_ids = highest possible cpu # + 1).
+On Wed, 2008-06-25 at 07:36 -0700, Daniel Walker wrote:
+> On Wed, 2008-06-25 at 07:29 +0200, Peter Zijlstra wrote:
 > 
-> It's ok if nr_cpu_ids is an overestimate, isn't it?
-
-Yes.  As I see it, nr_cpu_ids is the max index (+1) into anything dealing with
-cpu's.  
+> > Daniel, I'm not sure what to think,.. you were told how broken this
+> > approach was, you were told to give proper justification for this
+> > change. You did neither and just reposted the same old broken shite
+> > again.
 > 
-> But for this corner case, I think clearing cpu_possible_map is wrong.
+> Broken approach ? Never heard that before, 
 
-Yes, I agree.  If for some reason, ACPI discovers a "possible" cpu but it faults
-when brought online, then it simply stays offline.  It may never come online, or
-with some trick hardware, it could be replaced on the running system and then
-a new attempt can be made to bring it online.
+I suggest you re-read some of Thomas' emails from last time...
 
-Thanks,
-Mike
+  http://lkml.org/lkml/2008/6/12/275
+
+> in fact the problem is
+> whether or not the changes are needed (not weather their broken).. I
+> gave justification in the last thread, and I'm not sure why it's unclear
+> to you..
+
+You failed to convince, also justification goes in the changelog, not in
+random lkml threads.
+
+
 
