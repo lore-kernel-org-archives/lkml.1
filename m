@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760951AbYFYOpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761087AbYFYOpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760951AbYFYOpe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 10:45:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760176AbYFYOmb
+	id S1761087AbYFYOpw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 10:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758781AbYFYOnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 10:42:31 -0400
-Received: from shadow.wildlava.net ([67.40.138.81]:60029 "EHLO
-	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760164AbYFYOma (ORCPT
+	Wed, 25 Jun 2008 10:43:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43938 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759471AbYFYOnP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 10:42:30 -0400
-Message-ID: <48625953.2070101@skyrush.com>
-Date: Wed, 25 Jun 2008 08:42:27 -0600
-From: Joe Peterson <joe@skyrush.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080620)
+	Wed, 25 Jun 2008 10:43:15 -0400
+Date: Wed, 25 Jun 2008 07:42:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Paul Jackson <pj@sgi.com>, yhlu.kernel@gmail.com,
+       akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
+       steiner@sgi.com, travis@sgi.com, linux-kernel@vger.kernel.org,
+       ying.huang@intel.com, andi@firstfloor.org
+Subject: Re: [PATCH 4/5 v2] x86 boot: show pfn addresses in hex not decimal
+ in some kernel info printks
+In-Reply-To: <4861D10F.2010308@zytor.com>
+Message-ID: <alpine.LFD.1.10.0806250740460.4733@hp.linux-foundation.org>
+References: <20080622142151.5591.4139.sendpatchset@polaris-admin.engr.sgi.com> <20080622142212.5591.64592.sendpatchset@polaris-admin.engr.sgi.com> <86802c440806221238g78300952t2fc7f406c1842273@mail.gmail.com> <20080623060939.6b6b3183.pj@sgi.com>
+ <86802c440806241429s7f5e899dn67d42303247f618@mail.gmail.com> <20080624203252.f932c631.pj@sgi.com> <4861A5DF.5010104@zytor.com> <20080624211711.8c6d5105.pj@sgi.com> <4861AAEF.3020103@zytor.com> <alpine.LFD.1.10.0806241949030.13106@hp.linux-foundation.org>
+ <20080624220810.b2ec0c6a.pj@sgi.com> <alpine.LFD.1.10.0806242101460.20369@hp.linux-foundation.org> <4861D10F.2010308@zytor.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: free_beer_for_all@yahoo.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] UTC timestamp option for FAT filesystems
-References: <223222.41388.qm@web46108.mail.sp1.yahoo.com>
-In-Reply-To: <223222.41388.qm@web46108.mail.sp1.yahoo.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-barry bouwsma wrote:
-> May I just add a resounding YES-YES-YES...
 
-Thanks for your feedback and support!
 
-> In addition, may I request that not only the option `-o utc,...' be
-> accepted, but also as an alternate, the string `gmt', not because it's
-> more accurate (it isn't) but because it seems to be tradition to use
-> GMT+/-xxxx in lots of places.
+On Tue, 24 Jun 2008, H. Peter Anvin wrote:
+> 
+> Any reason we can't just re-define %p to print the 0x prefix, just as glibc
+> does?  It'd be easy enough to go and sed out all the 0x%p's currently in the
+> kernel.
 
-I do understand what you are saying, however I would suggest not making
-"gmt" a synonym for the following reasons:
+You didn't listen. I want #p to do the _symbolic_ address. The thing we 
+have in the backtraces etc. With nice symbol offset information etc.
 
-1) Better to keep the options simple and less cluttered
-2) GMT is not strictly the same as UTC (according to Wikipedia, it
-   usually is used to mean the same thing, but it can also mean
-   "UT1" (or the less exact "UT"), which is not exactly equal to UTC).
-   So UTC is the more precise term.
+The '0x<hex>' thing isn't all that interesting. You can do it by adding 
+the '0x' by hand, or by using a cast and using %#lx instead.
 
-> Another justification which wasn't mentioned, but which I would put
-> forth, is that last time I checked, the BSDen were using UTC as their
-> MSDOS timestamp base, so such an option would make it easier to
-> exchange data between BSD and Linux machines with a normal USB stick
-> or flash card.  And I was doing that a year or three ago when I hacked
-> my hack.
-
-Ah, then that is, indeed, another good reason.
-
-						-Thanks, Joe
+		Linus
