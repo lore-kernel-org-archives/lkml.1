@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbYFYWe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755794AbYFYWjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756159AbYFYWe3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 18:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbYFYWeV
+	id S1755794AbYFYWjj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 18:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbYFYWjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 18:34:21 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:36028 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752736AbYFYWeV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 18:34:21 -0400
-To: Joe Peterson <joe@skyrush.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] UTC timestamp option for FAT filesystems
-From: Andi Kleen <andi@firstfloor.org>
-References: <4861D685.4070308@skyrush.com>
-Date: Thu, 26 Jun 2008 00:33:43 +0200
-In-Reply-To: <4861D685.4070308@skyrush.com> (Joe Peterson's message of "Tue, 24 Jun 2008 23:24:21 -0600")
-Message-ID: <87od5pqh4o.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 25 Jun 2008 22:26:26.0830 (UTC) FILETIME=[81DEBAE0:01C8D712]
+	Wed, 25 Jun 2008 18:39:31 -0400
+Received: from vena.lwn.net ([206.168.112.25]:53236 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751256AbYFYWja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 18:39:30 -0400
+Date: Wed, 25 Jun 2008 16:39:28 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: David Brownell <david-b@pacbell.net>
+Cc: lkml <linux-kernel@vger.kernel.org>, rtc-linux@googlegroups.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] rtc: remove BKL for ioctl()
+Message-ID: <20080625163928.4da1f4a0@bike.lwn.net>
+In-Reply-To: <200806221955.42597.david-b@pacbell.net>
+References: <200806221955.42597.david-b@pacbell.net>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Peterson <joe@skyrush.com> writes:
+On Sun, 22 Jun 2008 19:55:42 -0700
+David Brownell <david-b@pacbell.net> wrote:
 
-> Attached is a patch to provide a new mount option ("utc") for DOS
-> (vfat/msdos) filesystems, allowing timestamps to be in universal
-> coordinated time (UTC) rather than local time in applications where
-> doing this is advantageous.
+> Remove implicit use of BKL in ioctl() from the RTC framework.
 
-The time zone handling seems racy. e.g. consider the case DST 
-changes on that day. You convert before the switch over 
-and suddenly the time offset is different.
+Looks good, I'll happily put it into the bkl-removal tree.  One
+question, though:
 
-I'm actually not sure someone in user space is even updating the kernel
-idea of the timezone for DST on a switch (generally it was assumed it's some
-obsolete BSD concept and that all real programs only use the 
-user space glibc implementation that knows all the rules). So 
-DST might not be supported at all.
+> +	err = mutex_lock_interruptible(&rtc->ops_lock);
+> +	if (err)
+> +		return -EBUSY;
+> +
 
-Also even if it worked it seems very limited. If you do that why not
-have an option to set an arbitary time zone offset?
+Shouldn't that be -EINTR?
 
--Andi
+Thanks,
+
+jon
