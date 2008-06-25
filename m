@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760447AbYFYQ2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760296AbYFYQ1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760447AbYFYQ2N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 12:28:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758845AbYFYQ1X
+	id S1760296AbYFYQ1v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 12:27:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758080AbYFYQ1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 12:27:23 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:42926 "EHLO smtp6.pp.htv.fi"
+	Wed, 25 Jun 2008 12:27:17 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:46149 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758808AbYFYQ1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 12:27:22 -0400
-Date: Wed, 25 Jun 2008 19:25:17 +0300
+	id S1757899AbYFYQ1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 12:27:16 -0400
+Date: Wed, 25 Jun 2008 19:25:11 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: takata@linux-m32r.org
-Cc: linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+To: linux-kernel@vger.kernel.org
+Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] m32r: remove the unused NOHIGHMEM option
-Message-ID: <20080625162516.GF10285@cs181140183.pp.htv.fi>
+Subject: [2.6 patch] remove unused UNIX98_PTY_COUNT options
+Message-ID: <20080625162511.GE10285@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -25,25 +24,66 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the unused NOHIGHMEM option.
+The h8300 and sparc options somehow survived when the code stopped using 
+CONFIG_UNIX98_PTY_COUNT.
 
 Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-adea6f9163987adf9c5a63b5a257ed3554add9d7 diff --git a/arch/m32r/Kconfig b/arch/m32r/Kconfig
-index de153de..e2e3661 100644
---- a/arch/m32r/Kconfig
-+++ b/arch/m32r/Kconfig
-@@ -216,10 +216,6 @@ config MEMORY_SIZE
- 	default "01000000" if PLAT_M32104UT
- 	default "00800000" if PLAT_OAKS32R
+
+ arch/h8300/Kconfig |   14 --------------
+ arch/sparc/Kconfig |   14 --------------
+ 2 files changed, 28 deletions(-)
+
+153f95e9cbfc5292daf1b115392e5fb231490aaf diff --git a/arch/h8300/Kconfig b/arch/h8300/Kconfig
+index 085dc6e..396ab05 100644
+--- a/arch/h8300/Kconfig
++++ b/arch/h8300/Kconfig
+@@ -203,20 +203,6 @@ config UNIX98_PTYS
+ 	  Read the instructions in <file:Documentation/Changes> pertaining to
+ 	  pseudo terminals. It's safe to say N.
  
--config NOHIGHMEM
--	bool
--	default y
+-config UNIX98_PTY_COUNT
+-	int "Maximum number of Unix98 PTYs in use (0-2048)"
+-	depends on UNIX98_PTYS
+-	default "256"
+-	help
+-	  The maximum number of Unix98 PTYs that can be used at any one time.
+-	  The default is 256, and should be enough for desktop systems. Server
+-	  machines which support incoming telnet/rlogin/ssh connections and/or
+-	  serve several X terminals may want to increase this: every incoming
+-	  connection and every xterm uses up one PTY.
 -
- config ARCH_DISCONTIGMEM_ENABLE
- 	bool "Internal RAM Support"
- 	depends on CHIP_M32700 || CHIP_M32102 || CHIP_VDEC2 || CHIP_OPSP || CHIP_M32104
+-	  When not in use, each additional set of 256 PTYs occupy
+-	  approximately 8 KB of kernel memory on 32-bit architectures.
+-
+ source "drivers/char/pcmcia/Kconfig"
+ 
+ source "drivers/serial/Kconfig"
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 789724e..375de7c 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -298,20 +298,6 @@ config UNIX98_PTYS
+ 	  Read the instructions in <file:Documentation/Changes> pertaining to
+ 	  pseudo terminals. It's safe to say N.
+ 
+-config UNIX98_PTY_COUNT
+-	int "Maximum number of Unix98 PTYs in use (0-2048)"
+-	depends on UNIX98_PTYS
+-	default "256"
+-	help
+-	  The maximum number of Unix98 PTYs that can be used at any one time.
+-	  The default is 256, and should be enough for desktop systems. Server
+-	  machines which support incoming telnet/rlogin/ssh connections and/or
+-	  serve several X terminals may want to increase this: every incoming
+-	  connection and every xterm uses up one PTY.
+-
+-	  When not in use, each additional set of 256 PTYs occupy
+-	  approximately 8 KB of kernel memory on 32-bit architectures.
+-
+ endmenu
+ 
+ source "fs/Kconfig"
 
