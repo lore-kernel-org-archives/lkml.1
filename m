@@ -1,116 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754358AbYFYG6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbYFYHD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754358AbYFYG6f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 02:58:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbYFYG62
+	id S1754127AbYFYHD3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 03:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbYFYHDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 02:58:28 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:54547 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751768AbYFYG61 (ORCPT
+	Wed, 25 Jun 2008 03:03:21 -0400
+Received: from argonath.las.ic.unicamp.br ([143.106.60.116]:47801 "EHLO
+	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751928AbYFYHDU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 02:58:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=S10ZH6644d1RAX/uKGwRcyCd2TVp1BYhMqwE+9LfTNyzWBo+CUY3iJoUqwauhQE9h8
-         rNvByXKB/Vl6rqKG00ToiWMiQcIsEQciAurBmdNDrQtqVPoKiQWpGBws0xkUl2mcyTjL
-         Pc7BTNa45VRG/EEyRWn9kaVfR2I8BmqvnN9mo=
-Message-ID: <28c262360806242358q348e18a4vb9c48b4b853b0384@mail.gmail.com>
-Date: Wed, 25 Jun 2008 15:58:26 +0900
-From: "MinChan Kim" <minchan.kim@gmail.com>
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH] prevent incorrect oom under split_lru
-Cc: "Rik van Riel" <riel@redhat.com>, linux-mm <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>, akpm@linux-foundation.org,
-       "Takenori Nagano" <t-nagano@ah.jp.nec.com>
-In-Reply-To: <28c262360806242356n3f7e02abwfee1f6acf0fd2c61@mail.gmail.com>
+	Wed, 25 Jun 2008 03:03:20 -0400
+Date: Wed, 25 Jun 2008 04:03:19 -0300
+From: Gustavo Fernando Padovan <gustavo@las.ic.unicamp.br>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@osdl.org
+Subject: [PATCH] x86: remove unnecessary #ifdef CONFIG_X86_32...#else
+Message-ID: <20080625070319.GA15059@quasar.las>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080624092824.4f0440ca@bree.surriel.com>
-	 <28c262360806242259k3ac308c4n7cee29b72456e95b@mail.gmail.com>
-	 <20080625150141.D845.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <28c262360806242356n3f7e02abwfee1f6acf0fd2c61@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 3:56 PM, MinChan Kim <minchan.kim@gmail.com> wrote:
-> On Wed, Jun 25, 2008 at 3:08 PM, KOSAKI Motohiro
-> <kosaki.motohiro@jp.fujitsu.com> wrote:
->> Hi Kim-san,
->>
->>> >> So, if priority==0, We should try to reclaim all page for prevent OOM.
->>> >
->>> > You are absolutely right.  Good catch.
->>>
->>> I have a concern about application latency.
->>> If lru list have many pages, it take a very long time to scan pages.
->>> More system have many ram, More many time to scan pages.
->>
->> No problem.
->>
->> priority==0 indicate emergency.
->> it doesn't happend on typical workload.
->>
->
-> I see :)
->
-> But if such emergency happen in embedded system, application can't be
-> executed for some time.
-> I am not sure how long time it take.
-> But In some application, schedule period is very important than memory
-> reclaim latency.
->
-> Now, In your patch, when such emergency happen, it continue to reclaim
-> page until it will scan entire page of lru list.
-> It
 
-with my mistake, I omit following message. :(
+Remove the #ifdef conditional because this comparison is already done in
+user_mode_vm().
 
-So, we need cut-off mechanism to reduce application latency.
-So In my opinion, If we modify some code of Takenori's patch, we can
-apply his idea to prevent latency probelm.
-
->>> Of course I know this is trade-off between memory efficiency VS latency.
->>> But In embedded, some application think latency is more important
->>> thing than memory efficiency.
->>> We need some mechanism to cut off scanning time.
->>>
->>> I think Takenori Nagano's "memory reclaim more efficiently patch" is
->>> proper to reduce application latency in this case If we modify some
->>> code.
->>
->> I think this is off-topic.
->>
->> but Yes.
->> both my page reclaim throttle and nagano-san's patch provide
->> reclaim cut off mechanism.
->>
->>
->> and more off-topic,
->> nagano-san's patch improve only priority==12.
->> So, typical embedded doesn't improve so big because
->> embedded system does't have so large memory.
->>
->>
->>
->>
->
->
->
-> --
-> Kinds regards,
-> MinChan Kim
->
+Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
 
 
-
--- 
-Kinds regards,
-MinChan Kim
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -55,11 +55,7 @@ static inline int notify_page_fault(struct pt_regs *regs)
+ 	int ret = 0;
+ 
+ 	/* kprobe_running() needs smp_processor_id() */
+-#ifdef CONFIG_X86_32
+ 	if (!user_mode_vm(regs)) {
+-#else
+-	if (!user_mode(regs)) {
+-#endif
+ 		preempt_disable();
+ 		if (kprobe_running() && kprobe_fault_handler(regs, 14))
+ 			ret = 1;
