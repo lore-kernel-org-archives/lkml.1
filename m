@@ -1,283 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758307AbYFYTZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758199AbYFYTab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758307AbYFYTZW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 15:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbYFYTZJ
+	id S1758199AbYFYTab (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 15:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbYFYTaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 15:25:09 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:50960 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476AbYFYTZH (ORCPT
+	Wed, 25 Jun 2008 15:30:17 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:12374 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752576AbYFYTaP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 15:25:07 -0400
-Date: Wed, 25 Jun 2008 12:24:52 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, josh@freedesktop.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       dino@in.ibm.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, vegard.nossum@gmail.com,
-       adobriyan@gmail.com, oleg@tv-sign.ru, bunk@kernel.org, rjw@sisk.pl
-Subject: [PATCH -tip-rcu] Make rcutorture more vicious: invoke RCU readers from irq handlers (timers)
-Message-ID: <20080625192452.GA12754@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080618122144.GA27143@linux.vnet.ibm.com> <20080618162649.GA18326@linux.vnet.ibm.com> <20080622200638.GA25328@linux.vnet.ibm.com>
+	Wed, 25 Jun 2008 15:30:15 -0400
+Message-ID: <48629CB5.4070509@hp.com>
+Date: Wed, 25 Jun 2008 15:29:57 -0400
+From: Mark Seger <Mark.Seger@hp.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080622200638.GA25328@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org
+Subject: Inconsistencies in the way process memory is being reported in /proc
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows torturing RCU from irq handlers (timers, in this case).
-A new module parameter irqreader enables such additional torturing,
-and is enabled by default.  Variants of RCU that do not tolerate readers
-being called from irq handlers (e.g., SRCU) ignore irqreader.
+I have seen past postings on this topic and there still seems to be 
+issues.  Since adding process i/o stats to collectl I've been looking 
+more closely at process stats in general and have been digging deeper 
+into how memory is being accounted for on my current test system which 
+is running a 2.6.23 kernel on top of a rhel4.2 distribution and have 
+been using 'man proc' as a guide.
 
-(No failures observed, but only short tests thus far.  And no failures
-observed thus far from about 10 hours of running stock rcutorture in
-parallel with 170 kernel builds on a two-CPU machine.)
+Specifically, I realize stats are reported in /proc/pid/stat, 
+/proc/pid/statm and /proc/pid/status and according to the manpage 
+'status' is mainly a summary of many of the data from the other 2 in 
+more human readable form.  That said I wrote a little script that grabs 
+all these structures as once and reports them in a way that lets me 
+compare them all along with 'ps' outptu and when I do this I start 
+getting dizzy.  For example, when I do a ps I see:
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+USER       PID %CPU %MEM   VSZ  RSS TTY      STAT START   TIME COMMAND
+root     29216  0.0  0.3 81836 15160 ?       Ss   11:11   0:09 
+/usr/bin/perl -w /usr/sbin/collectl -D
 
- Documentation/RCU/torture.txt |   23 +++++++------
- kernel/rcutorture.c           |   74 +++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 84 insertions(+), 13 deletions(-)
+statm contains, after multiplying by 4 since these are in pages:
+total:       81836
+resident:    15160
+sharedpages: 1280
+text:        16
+data/stack:  0
+library:     14292
+dirty:       0
 
-diff -urpNa -X dontdiff linux-2.6.26-rc4-rcut4-procqp/Documentation/RCU/torture.txt linux-2.6.26-rc4-rcut5-timer/Documentation/RCU/torture.txt
---- linux-2.6.26-rc4-rcut4-procqp/Documentation/RCU/torture.txt	2008-06-22 10:29:04.000000000 -0700
-+++ linux-2.6.26-rc4-rcut5-timer/Documentation/RCU/torture.txt	2008-06-25 11:44:51.000000000 -0700
-@@ -30,10 +30,10 @@ MODULE PARAMETERS
- 
- This module has the following parameters:
- 
--nreaders	This is the number of RCU reading threads supported.
--		The default is twice the number of CPUs.  Why twice?
--		To properly exercise RCU implementations with preemptible
--		read-side critical sections.
-+irqreaders	Says to invoke RCU readers from irq level.  This is currently
-+		done via timers.  Defaults to "1" for variants of RCU that
-+		permit this.  (Or, more accurately, variants of RCU that do
-+		-not- permit this know to ignore this variable.)
- 
- nfakewriters	This is the number of RCU fake writer threads to run.  Fake
- 		writer threads repeatedly use the synchronous "wait for
-@@ -44,6 +44,16 @@ nfakewriters	This is the number of RCU f
- 		to trigger special cases caused by multiple writers, such as
- 		the synchronize_srcu() early return optimization.
- 
-+nreaders	This is the number of RCU reading threads supported.
-+		The default is twice the number of CPUs.  Why twice?
-+		To properly exercise RCU implementations with preemptible
-+		read-side critical sections.
-+
-+shuffle_interval
-+		The number of seconds to keep the test threads affinitied
-+		to a particular subset of the CPUs, defaults to 3 seconds.
-+		Used in conjunction with test_no_idle_hz.
-+
- stat_interval	The number of seconds between output of torture
- 		statistics (via printk()).  Regardless of the interval,
- 		statistics are printed when the module is unloaded.
-@@ -51,11 +61,6 @@ stat_interval	The number of seconds betw
- 		be printed -only- when the module is unloaded, and this
- 		is the default.
- 
--shuffle_interval
--		The number of seconds to keep the test threads affinitied
--		to a particular subset of the CPUs, defaults to 3 seconds.
--		Used in conjunction with test_no_idle_hz.
--
- stutter		The length of time to run the test before pausing for this
- 		same period of time.  Defaults to "stutter=5", so as
- 		to run and pause for (roughly) five-second intervals.
-diff -urpNa -X dontdiff linux-2.6.26-rc4-rcut4-procqp/kernel/rcutorture.c linux-2.6.26-rc4-rcut5-timer/kernel/rcutorture.c
---- linux-2.6.26-rc4-rcut4-procqp/kernel/rcutorture.c	2008-06-25 11:39:58.000000000 -0700
-+++ linux-2.6.26-rc4-rcut5-timer/kernel/rcutorture.c	2008-06-25 11:47:14.000000000 -0700
-@@ -59,6 +59,7 @@ static int verbose;		/* Print more debug
- static int test_no_idle_hz;	/* Test RCU's support for tickless idle CPUs. */
- static int shuffle_interval = 3; /* Interval between shuffles (in sec)*/
- static int stutter = 5;		/* Start/stop testing interval (in sec) */
-+static int irqreader = 1;	/* RCU readers from irq (timers). */
- static char *torture_type = "rcu"; /* What RCU implementation to torture. */
- 
- module_param(nreaders, int, 0444);
-@@ -75,6 +76,8 @@ module_param(shuffle_interval, int, 0444
- MODULE_PARM_DESC(shuffle_interval, "Number of seconds between shuffles");
- module_param(stutter, int, 0444);
- MODULE_PARM_DESC(stutter, "Number of seconds to run/halt test");
-+module_param(irqreader, int, 0444);
-+MODULE_PARM_DESC(irqreader, "Allow RCU readers from irq handlers");
- module_param(torture_type, charp, 0444);
- MODULE_PARM_DESC(torture_type, "Type of RCU to torture (rcu, rcu_bh, srcu)");
- 
-@@ -121,6 +124,7 @@ static atomic_t n_rcu_torture_alloc_fail
- static atomic_t n_rcu_torture_free;
- static atomic_t n_rcu_torture_mberror;
- static atomic_t n_rcu_torture_error;
-+static long n_rcu_torture_timers = 0;
- static struct list_head rcu_torture_removed;
- 
- static int stutter_pause_test = 0;
-@@ -216,6 +220,7 @@ struct rcu_torture_ops {
- 	void (*deferredfree)(struct rcu_torture *p);
- 	void (*sync)(void);
- 	int (*stats)(char *page);
-+	int irqcapable;
- 	char *name;
- };
- static struct rcu_torture_ops *cur_ops = NULL;
-@@ -289,6 +294,7 @@ static struct rcu_torture_ops rcu_ops = 
- 	.deferredfree = rcu_torture_deferred_free,
- 	.sync = synchronize_rcu,
- 	.stats = NULL,
-+	.irqcapable = 1,
- 	.name = "rcu"
- };
- 
-@@ -328,6 +334,7 @@ static struct rcu_torture_ops rcu_sync_o
- 	.deferredfree = rcu_sync_torture_deferred_free,
- 	.sync = synchronize_rcu,
- 	.stats = NULL,
-+	.irqcapable = 1,
- 	.name = "rcu_sync"
- };
- 
-@@ -388,6 +395,7 @@ static struct rcu_torture_ops rcu_bh_ops
- 	.deferredfree = rcu_bh_torture_deferred_free,
- 	.sync = rcu_bh_torture_synchronize,
- 	.stats = NULL,
-+	.irqcapable = 1,
- 	.name = "rcu_bh"
- };
- 
-@@ -401,6 +409,7 @@ static struct rcu_torture_ops rcu_bh_syn
- 	.deferredfree = rcu_sync_torture_deferred_free,
- 	.sync = rcu_bh_torture_synchronize,
- 	.stats = NULL,
-+	.irqcapable = 1,
- 	.name = "rcu_bh_sync"
- };
- 
-@@ -520,6 +529,7 @@ static struct rcu_torture_ops sched_ops 
- 	.deferredfree = rcu_sync_torture_deferred_free,
- 	.sync = sched_torture_synchronize,
- 	.stats = NULL,
-+	.irqcapable = 1,
- 	.name = "sched"
- };
- 
-@@ -594,6 +604,52 @@ rcu_torture_fakewriter(void *arg)
- }
- 
- /*
-+ * RCU torture reader from timer handler.  Dereferences rcu_torture_current,
-+ * incrementing the corresponding element of the pipeline array.  The
-+ * counter in the element should never be greater than 1, otherwise, the
-+ * RCU implementation is broken.
-+ */
-+static void rcu_torture_timer(unsigned long unused)
-+{
-+	int idx;
-+	int completed;
-+	static DEFINE_RCU_RANDOM(rand);
-+	static DEFINE_SPINLOCK(rand_lock);
-+	struct rcu_torture *p;
-+	int pipe_count;
-+
-+	idx = cur_ops->readlock();
-+	completed = cur_ops->completed();
-+	p = rcu_dereference(rcu_torture_current);
-+	if (p == NULL) {
-+		/* Leave because rcu_torture_writer is not yet underway */
-+		cur_ops->readunlock(idx);
-+		return;
-+	}
-+	if (p->rtort_mbtest == 0)
-+		atomic_inc(&n_rcu_torture_mberror);
-+	spin_lock(&rand_lock);
-+	cur_ops->readdelay(&rand);
-+	n_rcu_torture_timers++;
-+	spin_unlock(&rand_lock);
-+	preempt_disable();
-+	pipe_count = p->rtort_pipe_count;
-+	if (pipe_count > RCU_TORTURE_PIPE_LEN) {
-+		/* Should not happen, but... */
-+		pipe_count = RCU_TORTURE_PIPE_LEN;
-+	}
-+	++__get_cpu_var(rcu_torture_count)[pipe_count];
-+	completed = cur_ops->completed() - completed;
-+	if (completed > RCU_TORTURE_PIPE_LEN) {
-+		/* Should not happen, but... */
-+		completed = RCU_TORTURE_PIPE_LEN;
-+	}
-+	++__get_cpu_var(rcu_torture_batch)[completed];
-+	preempt_enable();
-+	cur_ops->readunlock(idx);
-+}
-+
-+/*
-  * RCU torture reader kthread.  Repeatedly dereferences rcu_torture_current,
-  * incrementing the corresponding element of the pipeline array.  The
-  * counter in the element should never be greater than 1, otherwise, the
-@@ -607,11 +663,18 @@ rcu_torture_reader(void *arg)
- 	DEFINE_RCU_RANDOM(rand);
- 	struct rcu_torture *p;
- 	int pipe_count;
-+	struct timer_list t;
- 
- 	VERBOSE_PRINTK_STRING("rcu_torture_reader task started");
- 	set_user_nice(current, 19);
-+	if (irqreader && cur_ops->irqcapable)
-+		setup_timer_on_stack(&t, rcu_torture_timer, 0);
- 
- 	do {
-+		if (irqreader && cur_ops->irqcapable) {
-+			if (!timer_pending(&t))
-+				mod_timer(&t, 1);
-+		}
- 		idx = cur_ops->readlock();
- 		completed = cur_ops->completed();
- 		p = rcu_dereference(rcu_torture_current);
-@@ -643,6 +706,8 @@ rcu_torture_reader(void *arg)
- 		rcu_stutter_wait();
- 	} while (!kthread_should_stop() && !fullstop);
- 	VERBOSE_PRINTK_STRING("rcu_torture_reader task stopping");
-+	if (irqreader && cur_ops->irqcapable)
-+		del_timer_sync(&t);
- 	while (!kthread_should_stop())
- 		schedule_timeout_uninterruptible(1);
- 	return 0;
-@@ -673,14 +738,15 @@ rcu_torture_printk(char *page)
- 	cnt += sprintf(&page[cnt], "%s%s ", torture_type, TORTURE_FLAG);
- 	cnt += sprintf(&page[cnt],
- 		       "rtc: %p ver: %ld tfle: %d rta: %d rtaf: %d rtf: %d "
--		       "rtmbe: %d",
-+		       "rtmbe: %d nt: %ld",
- 		       rcu_torture_current,
- 		       rcu_torture_current_version,
- 		       list_empty(&rcu_torture_freelist),
- 		       atomic_read(&n_rcu_torture_alloc),
- 		       atomic_read(&n_rcu_torture_alloc_fail),
- 		       atomic_read(&n_rcu_torture_free),
--		       atomic_read(&n_rcu_torture_mberror));
-+		       atomic_read(&n_rcu_torture_mberror),
-+		       n_rcu_torture_timers);
- 	if (atomic_read(&n_rcu_torture_mberror) != 0)
- 		cnt += sprintf(&page[cnt], " !!!");
- 	cnt += sprintf(&page[cnt], "\n%s%s ", torture_type, TORTURE_FLAG);
-@@ -835,10 +901,10 @@ rcu_torture_print_module_parms(char *tag
- 	printk(KERN_ALERT "%s" TORTURE_FLAG
- 		"--- %s: nreaders=%d nfakewriters=%d "
- 		"stat_interval=%d verbose=%d test_no_idle_hz=%d "
--		"shuffle_interval=%d stutter=%d\n",
-+		"shuffle_interval=%d stutter=%d irqreader=%d\n",
- 		torture_type, tag, nrealreaders, nfakewriters,
- 		stat_interval, verbose, test_no_idle_hz, shuffle_interval,
--		stutter);
-+		stutter, irqreader);
- }
- 
- static void
+and status contains:
+VmPeak:    81836 kB
+VmSize:    81836 kB
+VmLck:         0 kB
+VmHWM:     15160 kB
+VmRSS:     15160 kB
+VmData:    14208 kB
+VmStk:        84 kB
+VmExe:        16 kB
+VmLib:      3620 kB
+VmPTE:       108 kB
+
+I only saw VSS and RSS in stat and happily they agree with all the other 
+2 structures as well as ps
+
+However, that's where the good news stops.  For example, statm says the 
+data/stack size is 0 but status shows them as non-zero.  Furthermore, it 
+looks like if I add the data and stacksize from 'status' I get the 
+'library' size in statm.  The library size in 'status' is 3260 and I 
+don't see any way to correlate that with anything!  I also don't see 
+mention of some of the other fields reorted in 'status'.  I'm guessing 
+peak/hwm are both highwater marks for vss and rss, but what about 
+VmLck?  Can that be derived from anything in 'stat'?  I'm also assuming 
+the size of the exe is constant and probably not particularly useful.
+
+Can anyone shed any light on what numbers to believe or should I only 
+count on vss/rss being correct?  If someone can provide more detailed 
+definitions I'll be happy to add them to collectl's documentation.
+
+And speaking of collectl, when it run as a daemon it continuously 
+records all these files (and I'm hoping I can stop grabbing 'status' if 
+someone can tell me how to derive these numbers from the other 2 data 
+structures in a believable form) and a number of ways to later display 
+the data.  In one form, it simply reports a bunch of fields from 
+'status' as shown below:
+
+# PID  User     S VmSize  VmLck  VmRSS VmData  VmStk  VmExe  VmLib MajF 
+MinF Command
+ 3203  root     S 19940K      0   436K   416K    84K    48K  3800K    
+0    0 rpc.idmapd
+ 3291  root     S  2876K      0   360K   240K    84K   208K  1276K    
+0    0 /usr/sbin/smartd
+ 3395  root     S 22016K      0  1284K   444K    84K   324K  3496K    
+0    0 /usr/sbin/sshd
+ 3410  root     S  8792K      0   792K   376K    84K   152K  1972K    
+0    0 xinetd
+ 3420  root     S  4260K      0   336K   188K    84K    84K  1808K    
+0    0 gpm
+ 3435  root     S 57132K      0   968K   436K   520K    40K  1492K    
+0    0 crond
+
+but I also admit these aren't necessarily the most useful fields to 
+report, especially now that I've been digging deeper.  So my second 
+question is if anyone cares to recommend some alternative fields to 
+report under the category of 'process memory utilitization', I'd be 
+happy to consider changing what I'm reporting.  Of course all that 
+assume there is something more interesting than just vss and rss which 
+I'm sure there must be.
+
+
+sorry for being so long winded...
+-mark
+
