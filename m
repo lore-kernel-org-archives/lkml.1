@@ -1,143 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbYFYNFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbYFYNLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756837AbYFYNFu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 09:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbYFYNFm
+	id S1757124AbYFYNLS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 09:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbYFYNLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 09:05:42 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:39762 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754697AbYFYNFl (ORCPT
+	Wed, 25 Jun 2008 09:11:08 -0400
+Received: from mail161.messagelabs.com ([216.82.253.115]:52764 "EHLO
+	mail161.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755375AbYFYNLH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 09:05:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=hdxIAp1R9+D5L1UzHyIi+Bq1J6G0WM1u9tHdOjnAYqC4KmWFcorMMg52E4RMI8htCH
-         4dRBzW9nYLl5DQ8WcBlLF0u4tg5FudBzyPKcmTHIesP/qmllGywn1VUQpGEFx8+0swB6
-         FSHoP3RrGbh9pzCgGpGTh/wj8bSWTuZkv//Ww=
-Message-ID: <28c262360806250605le31ba48ma8bb16f996783142@mail.gmail.com>
-Date: Wed, 25 Jun 2008 22:05:40 +0900
-From: "MinChan Kim" <minchan.kim@gmail.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: [RFC][PATCH] prevent incorrect oom under split_lru
-Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Rik van Riel" <riel@redhat.com>, linux-mm <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>, akpm@linux-foundation.org,
-       "Takenori Nagano" <t-nagano@ah.jp.nec.com>
-In-Reply-To: <1214395885.15232.17.camel@twins>
+	Wed, 25 Jun 2008 09:11:07 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-2.tower-161.messagelabs.com!1214399464!12996202!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Date: Wed, 25 Jun 2008 15:11:01 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] handle failure of irqchip->set_type in setup_irq
+Message-ID: <20080625131101.GA6205@digi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-References: <20080624092824.4f0440ca@bree.surriel.com>
-	 <28c262360806242259k3ac308c4n7cee29b72456e95b@mail.gmail.com>
-	 <20080625150141.D845.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <28c262360806242356n3f7e02abwfee1f6acf0fd2c61@mail.gmail.com>
-	 <1214395885.15232.17.camel@twins>
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 25 Jun 2008 13:11:02.0155 (UTC) FILETIME=[EAD0DDB0:01C8D6C4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 9:11 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Wed, 2008-06-25 at 15:56 +0900, MinChan Kim wrote:
->> On Wed, Jun 25, 2008 at 3:08 PM, KOSAKI Motohiro
->> <kosaki.motohiro@jp.fujitsu.com> wrote:
->> > Hi Kim-san,
->> >
->> >> >> So, if priority==0, We should try to reclaim all page for prevent OOM.
->> >> >
->> >> > You are absolutely right.  Good catch.
->> >>
->> >> I have a concern about application latency.
->> >> If lru list have many pages, it take a very long time to scan pages.
->> >> More system have many ram, More many time to scan pages.
->> >
->> > No problem.
->> >
->> > priority==0 indicate emergency.
->> > it doesn't happend on typical workload.
->> >
->>
->> I see :)
->>
->> But if such emergency happen in embedded system, application can't be
->> executed for some time.
->> I am not sure how long time it take.
->> But In some application, schedule period is very important than memory
->> reclaim latency.
->>
->> Now, In your patch, when such emergency happen, it continue to reclaim
->> page until it will scan entire page of lru list.
->> It
->
-> IMHO embedded real-time apps shoud mlockall() and not do anything that
-> can result in memory allocations in their fast (deterministic) paths.
-Hi peter,
+set_type returns an int but currently setup_irq ignores that.
 
-I agree with you.  but if application's virtual address space is big,
-we have a hard problem with mlockall since memory pressure might be a
-big.
-Of course, It will be a RT application design problem.
+To save me from undoing some changes setting the IRQ_NO_BALANCING bit in
+desc->flags, setting IRQ_PER_CPU in desc->status and adding the new
+action to desc is only done after set_type succeeded.
 
-> The much more important case is desktop usage - that is where we run non
-> real-time code, but do expect 'low' latency due to user-interaction.
->
-> >From hitting swap on my 512M laptop (rather frequent occurance) I know
-> we can do better here,..
->
-
-Absolutely. It is another example. So, I suggest following patch.
-It's based on idea of Takenori Nagano's memory reclaim more efficiently.
-
-I expect It will reduce application latency and will not have a regression.
-How about you ?
-
-Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
+Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
 ---
- mm/vmscan.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+Hello,
 
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 9a5e423..07477cc 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1460,9 +1460,12 @@ static unsigned long shrink_zone(int priority,
-struct zone *zone,
-                         * kernel will slowly sift through each list.
-                         */
-                        scan = zone_page_state(zone, NR_LRU_BASE + l);
--                       scan >>= priority;
--                       scan = (scan * percent[file]) / 100;
-+                       if (priority) {
-+                               scan >>= priority;
-+                               scan = (scan * percent[file])/10;
-+                       }
-                        zone->lru[l].nr_scan += scan + 1;
+in my case set_type returns an error because gpio-key tries to use
+IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING and my irq-chip can only do
+one of these.
+
+Best regards
+Uwe
+
+ kernel/irq/manage.c |   38 ++++++++++++++++++++++++--------------
+ 1 files changed, 24 insertions(+), 14 deletions(-)
+
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 46d6611..bc990a1 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -281,6 +281,7 @@ int setup_irq(unsigned int irq, struct irqaction *new)
+ 	const char *old_name = NULL;
+ 	unsigned long flags;
+ 	int shared = 0;
++	int ret;
+ 
+ 	if (irq >= NR_IRQS)
+ 		return -EINVAL;
+@@ -338,26 +339,23 @@ int setup_irq(unsigned int irq, struct irqaction *new)
+ 		shared = 1;
+ 	}
+ 
+-	*p = new;
+-
+-	/* Exclude IRQ from balancing */
+-	if (new->flags & IRQF_NOBALANCING)
+-		desc->status |= IRQ_NO_BALANCING;
+-
+ 	if (!shared) {
+ 		irq_chip_set_defaults(desc->chip);
+ 
+-#if defined(CONFIG_IRQ_PER_CPU)
+-		if (new->flags & IRQF_PERCPU)
+-			desc->status |= IRQ_PER_CPU;
+-#endif
+-
+ 		/* Setup the type (level, edge polarity) if configured: */
+ 		if (new->flags & IRQF_TRIGGER_MASK) {
+-			if (desc->chip && desc->chip->set_type)
+-				desc->chip->set_type(irq,
++			if (desc->chip && desc->chip->set_type) {
++				ret = desc->chip->set_type(irq,
+ 						new->flags & IRQF_TRIGGER_MASK);
+-			else
++				if (ret) {
++					pr_err("setting flow type for irq %u "
++							"failed\n", irq);
++					spin_unlock_irqrestore(&desc->lock,
++							flags);
++					return ret;
++				}
 +
-                        nr[l] = zone->lru[l].nr_scan;
-                        if (nr[l] >= sc->swap_cluster_max)
-                                zone->lru[l].nr_scan = 0;
-@@ -1489,6 +1492,9 @@ static unsigned long shrink_zone(int priority,
-struct zone *zone,
-
-                                nr_reclaimed += shrink_list(l, nr_to_scan,
-                                                        zone, sc, priority);
-+                               if (priority == 0 && !current_is_kswapd() &&
-+                                       nr_reclaimed >= sc->swap_cluster_max)
-+                                       break;
-                        }
-                }
-        }
++			} else
+ 				/*
+ 				 * IRQF_TRIGGER_* but the PIC does not support
+ 				 * multiple flow-types?
+@@ -369,6 +367,11 @@ int setup_irq(unsigned int irq, struct irqaction *new)
+ 		} else
+ 			compat_irq_chip_set_default_handler(desc);
+ 
++#if defined(CONFIG_IRQ_PER_CPU)
++		if (new->flags & IRQF_PERCPU)
++			desc->status |= IRQ_PER_CPU;
++#endif
++
+ 		desc->status &= ~(IRQ_AUTODETECT | IRQ_WAITING |
+ 				  IRQ_INPROGRESS | IRQ_SPURIOUS_DISABLED);
+ 
+@@ -383,6 +386,13 @@ int setup_irq(unsigned int irq, struct irqaction *new)
+ 			/* Undo nested disables: */
+ 			desc->depth = 1;
+ 	}
++
++	*p = new;
++
++	/* Exclude IRQ from balancing */
++	if (new->flags & IRQF_NOBALANCING)
++		desc->status |= IRQ_NO_BALANCING;
++
+ 	/* Reset broken irq detection when installing new handler */
+ 	desc->irq_count = 0;
+ 	desc->irqs_unhandled = 0;
 -- 
-1.5.4.3
-
-
+1.5.6
 
 
 -- 
-Kinds regards,
-MinChan Kim
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
