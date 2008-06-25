@@ -1,100 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbYFYNPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757665AbYFYNTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757464AbYFYNPp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 09:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755660AbYFYNPg
+	id S1757665AbYFYNTW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 09:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbYFYNTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 09:15:36 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:54838 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754187AbYFYNPf (ORCPT
+	Wed, 25 Jun 2008 09:19:15 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:28718 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755305AbYFYNTO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 09:15:35 -0400
-Message-ID: <486244FF.8060805@ru.mvista.com>
-Date: Wed, 25 Jun 2008 17:15:43 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Cc: Ingo Molnar <mingo@elte.hu>, linux-ide@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH -rt] ide: fix interrupts processing issue with	preempt-able
- hardirqs
-References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu> <20080624000016.GA12547@polina.dev.rtsoft.ru> <20080625123431.GA25452@polina.dev.rtsoft.ru>
-In-Reply-To: <20080625123431.GA25452@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Jun 2008 09:19:14 -0400
+Message-Id: <48620D8E.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Wed, 25 Jun 2008 07:19:10 -0600
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: <mingo@elte.hu>, <rostedt@goodmis.org>, <tglx@linutronix.de>,
+       "Gregory Haskins" <GHaskins@novell.com>
+Cc: <peterz@infradead.org>, "David Bahi" <DBahi@novell.com>, <npiggin@suse.de>,
+       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH 1/3] sched: limit "all_pinned" balance attempts to
+	sd->span
+References: <20080624141527.28487.77778.stgit@lsg.lsg.lab.novell.com>
+ <20080624141602.28487.81775.stgit@lsg.lsg.lab.novell.com>
+In-Reply-To: <20080624141602.28487.81775.stgit@lsg.lsg.lab.novell.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+>>> On Tue, Jun 24, 2008 at 10:16 AM, in message
+<20080624141602.28487.81775.stgit@lsg.lsg.lab.novell.com>, Gregory Haskins
+<ghaskins@novell.com> wrote: 
+> Load-balancing will never terminate if all cpus are "all_pinned" with
+> the current algorithm.  This would be pretty unlikely to occur, but we
+> should protect against it nonetheless.
 
-Anton Vorontsov wrote:
+Hmm...after thinking about this some more, I think I was wrong and this is unfounded.
 
->>>>IDE interrupt handler relies on the fact that, if necessary, hardirqs 
->>>>will re-trigger on ISR exit. With fully preemtable IRQs this seems to 
->>>>be not true, since if hardirq thread is currently running, and the 
->>>>same IRQ raised again, then this IRQ will be simply lost.
+The code would eventually terminate when the f_b_g()/f_b_q() cant find a good target.
 
->>>actually no, that should not happen - if -rt loses an IRQ then something 
->>>broke in the threaded IRQ code. It's supposed to be a drop-in, 
->>>compatible IRQ flow with no driver changes needed.
+Pls ignore this patch.
 
->>..just as I thought, the bug somewhere deeper... heh.
+Regards,
+-Greg
 
-> Ok, a bit more investigation showed that this is indeed not RT specific
-> per see, but issue emerges only on RT-style IRQ handlers + alim15x3 IDE
-> controller (for example, PDC20269 works ok).
+> 
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> ---
+> 
+>  kernel/sched.c |   19 ++++++++++---------
+>  1 files changed, 10 insertions(+), 9 deletions(-)
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 31f91d9..54b27b4 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -3178,7 +3178,8 @@ static int load_balance(int this_cpu, struct rq 
+> *this_rq,
+>  	struct sched_group *group;
+>  	unsigned long imbalance;
+>  	struct rq *busiest;
+> -	cpumask_t cpus = CPU_MASK_ALL;
+> +	cpumask_t cpus = sd->span;
+> +	int remain = cpus_weight(sd->span) - 1;
+>  	unsigned long flags;
+>  
+>  	/*
+> @@ -3237,11 +3238,10 @@ redo:
+>  			resched_cpu(this_cpu);
+>  
+>  		/* All tasks on this runqueue were pinned by CPU affinity */
+> -		if (unlikely(all_pinned)) {
+> +		if (unlikely(all_pinned && remain)) {
+>  			cpu_clear(cpu_of(busiest), cpus);
+> -			if (!cpus_empty(cpus))
+> -				goto redo;
+> -			goto out_balanced;
+> +			remain--;
+> +			goto redo;
+>  		}
+>  	}
+>  
+> @@ -3332,7 +3332,8 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, 
+> struct sched_domain *sd)
+>  	int ld_moved = 0;
+>  	int sd_idle = 0;
+>  	int all_pinned = 0;
+> -	cpumask_t cpus = CPU_MASK_ALL;
+> +	cpumask_t cpus = sd->span;
+> +	int remain = cpus_weight(sd->span) - 1;
+>  
+>  	/*
+>  	 * When power savings policy is enabled for the parent domain, idle
+> @@ -3375,10 +3376,10 @@ redo:
+>  					&all_pinned);
+>  		spin_unlock(&busiest->lock);
+>  
+> -		if (unlikely(all_pinned)) {
+> +		if (unlikely(all_pinned && remain)) {
+>  			cpu_clear(cpu_of(busiest), cpus);
+> -			if (!cpus_empty(cpus))
+> -				goto redo;
+> +			remain--;
+> +			goto redo;
+>  		}
+>  	}
+>  
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-    Does it happen only with ATAPI devices also or with ATA disks too?
 
-> The difference is that that with RT: low-level (non-threaded) IRQ
-> handler masks IDE IRQ, then wakes up appropriate IRQ thread, which calls
-> IDE handler, and then, after IDE handler exits, thread routine unmasks
-> IDE IRQ.
-
-> Without RT: low-level non-threaded IRQ handler does not mask specific
-> IRQ, but disables local interrupts, and calls IDE handler directly.
-
-    Hm, handle_level_irq() (and PCI IRQs are level-triggered) calls 
-mask_ack_irq() which should *mask* IRQ and send EOI (at least on i8259). By 
-IRQ18 I can assume it's I/O APIC -- this one may be using different methods of 
-handling IRQ depending on whether hardirq preemption is on or off (at least it 
-was so in 2.6.18-rt time). The default, "fasteoi" path doesn't mask off the 
-IRQ indeed (it should be disabled from re-occuring anyway until the code 
-issues EOI)...
-    So, which machine and PIC you have?
-
-> The bug, as I see it, in the alim15x3 (ULi M5228) hardware: for some
-> reason it does not hold IRQ line, but rises it for some short period
-> of time (while the drive itself rises and holds it correctly -- I'm
-> seeing it via oscilloscope).
-
-    That's surely an invalid behavior for a level triggered interrupt that can 
-also result in spurious IRQs...  I'm not even sure how it can reliably work 
-without masking since there should be no latching for level triggered interupts...
-
-> So this scheme does not work:
-> mask_irq()
-> ...do something that will trigger IDE interrupt...
-> unmask_irq()
-
-> Also, further testing showed that this issue isn't drive-specific, i.e.
-> with a delay inserted before the unmask_irq(), the bug shows with any
-> drive I have.
-
-    So, "shit happens" even with the ATA drives?
-
-> So, in summary: I think that the patch is still correct as a hw bug
-> workaround (I'll need to correct its comments and description though).
-
-   Well, the patch seemed sane (and the hardware absolutely insane :-)...
-
-WBR, Sergei
