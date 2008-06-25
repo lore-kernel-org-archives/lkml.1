@@ -1,81 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbYFYB04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbYFYBcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755388AbYFYB04 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jun 2008 21:26:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbYFYB0p
+	id S1755388AbYFYBcT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 21:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753808AbYFYBcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jun 2008 21:26:45 -0400
-Received: from mga11.intel.com ([192.55.52.93]:1119 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751130AbYFYB0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jun 2008 21:26:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,699,1204531200"; 
-   d="scan'208";a="581625965"
-Subject: Re: [PATCH] ACPI: don't walk tables if ACPI was disabled
-From: Zhao Yakui <yakui.zhao@intel.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-In-Reply-To: <19f34abd0806240452w2561040uc2b1b1d35562db71@mail.gmail.com>
-References: <20080620135639.GA5073@damson.getinternet.no>
-	 <alpine.LFD.1.10.0806201458500.3027@localhost.localdomain>
-	 <19f34abd0806201340t502ce471n578dd2498a5f1992@mail.gmail.com>
-	 <19f34abd0806201427h740ca3e7gc2f01c7e34616fd4@mail.gmail.com>
-	 <19f34abd0806210119o64a1c9ban78710651a01530cf@mail.gmail.com>
-	 <20080624114139.GC21890@elte.hu>
-	 <19f34abd0806240452w2561040uc2b1b1d35562db71@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 25 Jun 2008 09:37:37 +0800
-Message-Id: <1214357857.9800.20.camel@yakui_zhao.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+	Tue, 24 Jun 2008 21:32:11 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52998 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752290AbYFYBcJ (ORCPT
+	<rfc822;@sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 24 Jun 2008 21:32:09 -0400
+Message-ID: <4861A00E.6040801@sgi.com>
+Date: Wed, 25 Jun 2008 11:31:58 +1000
+From: Timothy Shimmin <tes@sgi.com>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+MIME-Version: 1.0
+To: xfs-masters@oss.sgi.com, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [xfs-masters] Re: linux-next: Tree for June 24 (XFS x2)
+References: <20080624175612.cdf29651.sfr@canb.auug.org.au> <20080624171809.42bbdf68.randy.dunlap@oracle.com> <20080625003751.GP29319@disturbed>
+In-Reply-To: <20080625003751.GP29319@disturbed>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-24 at 13:52 +0200, Vegard Nossum wrote:
-> On 6/24/08, Ingo Molnar <mingo@elte.hu> wrote:
-> > i havent seen the warning reappear with your fix after thousands of
-> > bootups - so i guess we can consider it fixed.
-> >
-> > Len, please consider the patch below. (it's in tip/out-of-tree)
+Dave Chinner wrote:
+> On Tue, Jun 24, 2008 at 05:18:09PM -0700, Randy Dunlap wrote:
+>> XFS shows 2 build problems today.
+>>
+>> 1. xfs_stats.h problem
+>>
+>>   CC      fs/xfs/xfs_rtalloc.o
+>> In file included from /local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_linux.h:91,
+>>                  from /local/linsrc/linux-next-20080624/fs/xfs/xfs.h:44,
+>>                  from /local/linsrc/linux-next-20080624/fs/xfs/xfs_rtalloc.c:18:
+>> /local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_stats.h: In function 'xfs_init_procfs':
+>> /local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_stats.h:150: error: expected ';' before '}' token
+>> make[3]: *** [fs/xfs/xfs_rtalloc.o] Error 1
 > 
-> No, please don't :-)
+> This will be a !CONFIG_PROC_FS change.
 > 
-> It fixes your particular case (the acpi_rtc_init() hunk of the patch),
-> but the acpi_walk_namespace() part should be changed to a WARN(). But
-> that is likely to cause a lot of "spurious" reports, so the other acpi
-> drivers should be fixed as well.
-In fact this issue is related with the following factors:
-   a. when acpi is disabled, OS won't initialize the ACPI mutex, which
-is accessed by many ACPI interface functions. For example:
-acpi_walk_namespace, acpi_install_fixed_event_handler.
-   b. When acpi is disabled, some drivers will call the ACPI interface
-functions. For example: The acpi_walk_namespace is called in
-dock_init/bay_init. The acpi_install_fixed_event_handler is called in
-the acpi_rtc_init.
-   
-  
-   Although the following warning message is harmless, it is still
-confusing.
-   > [    3.980213] ACPI Exception (utmutex-0263): AE_BAD_PARAMETER,
-Thread F7C50000 could not acquire Mutex [3] [20080321]
+> Lachlan/Niv - This is the guilty party:
+> 
+> http://oss.sgi.com/cgi-bin/gitweb.cgi?p=xfs/xfs-2.6.git;a=commit;h=e0fe783155e4f1c7106f3579c258b9f995330c19
+> 
+> The commit log is:
+> 
+> [XFS]
+>  
+>  SGI-PV: 111111
+>  SGI-Modid: xfs-linux-melb:xfs-kern:31210a
+>  
+>  Signed-off-by: Niv Sardi <xaiki@sgi.com>
+>  Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+> ---
+> 
+> What the hell happened here? Where's the commit title, description
+> so this can be tracked back to a real patch?  That PV# is also bogus....
 
-   Maybe it is reasonable that the flag of acpi_disabled should be used
-in the drivers using ACPI interface functions. Of course it will be safe
-to use the flag of acpi_disabled in the function of acpi_walk_namespace.
+tcsh> p_modinfo -h xfs-linux-melb:xfs-kern:31210a
 
-Thanks.
-   Yakui.
-> I was waiting for Len to reply, but maybe I can submit the proper fix too.
-> 
-> 
-> Vegard
-> 
+mod xfs-linux-melb:xfs-kern:31210a header
+==========================================
+ - SM_Location:	 longdrop.melbourne.sgi.com:/isms/linux/2.6.x-xfs-melb
+ - Workarea:	 itchy.melbourne.sgi.com:/home/xaiki/Wrk/git/pmod2git
+ - xfs-linux-melb:xfs-kern:31210a 05/21/08
+ - PV Incidents affected:
+ - Inspected by:
+ - Description:
+ - Files affected:  xfs_da_btree.c 1.179, xfs_vfsops.c 1.567,
+   xfs_mount.h 1.269, xfs_error.c 1.60, xfs_error.h 1.49,
+   support/uuid.h 1.13, support/uuid.c 1.21,
+   linux-2.6/xfs_stats.c 1.23, linux-2.6/xfs_stats.h 1.15,
+   linux-2.6/xfs_super.c 1.428, linux-2.6/xfs_sysctl.c 1.43,
+   linux-2.6/xfs_sysctl.h 1.28, xfs_mru_cache.c 1.6,
+   xfs_filestream.c 1.5
+ - Author:	 xaiki
 
+Well there wasn't much in the ptools checkin either.
+No pv, inspected-by or description. One for Niv...
+
+> 
+> I suspect that it is this patch:
+> 
+> http://oss.sgi.com/archives/xfs/2008-05/msg00322.html
+> 
+> Which means that the Signed-Off-By list is incorrect as well as the original
+> patch came from Christoph. This can't go to mainline like this - the commit log
+> needs to be fixed up.
+> 
+The signed-off, because there was no description or inspected-by, would just fall back
+to the author and who checked it in.
+The ptools checkin was stuffed.
+
+>> 2. ACL's undefined
+>>
+>>   CC      fs/xfs/linux-2.6/xfs_xattr.o
+>> /local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_xattr.c: In function 'xfs_decode_acl':
+>> /local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_xattr.c:40: error: '_ACL_TYPE_ACCESS' undeclared (first use in this function)
+>> /local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_xattr.c:40: error: (Each undeclared identifier is reported only once
+>> /local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_xattr.c:40: error: for each function it appears in.)
+>> /local/linsrc/linux-next-20080624/fs/xfs/linux-2.6/xfs_xattr.c:42: error: '_ACL_TYPE_DEFAULT' undeclared (first use in this function)
+>> make[3]: *** [fs/xfs/linux-2.6/xfs_xattr.o] Error 1
+> 
+> And this will be a !CONFIG_XFS_POSIX_ACL build, I think.
+> 
+Yep. I didn't test the hch patch without CONFIG_XFS_POSIX_ACL. Oops.
+
+xfs_acl.h:
+
+#ifdef CONFIG_XFS_POSIX_ACL
+...
+#define _ACL_TYPE_ACCESS        1
+#define _ACL_TYPE_DEFAULT       2
+...
+#endif
+
+There is a bunch of ACL code in linux-2.6/xfs_xattr.c.
+Possibly we could just modify xfs_acl.h as I think most other calls
+have the non CONFIG'ed versions.
+I'll have a look.
+
+> Christoph - this is part of your change to use the generic ACL stuff,
+> can you have a look?
+> 
+--Tim
