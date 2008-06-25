@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759200AbYFYP0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758727AbYFYPaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759200AbYFYP0c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 11:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750960AbYFYP0T
+	id S1758727AbYFYPaO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 11:30:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYFYPaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 11:26:19 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:2660 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753120AbYFYP0S (ORCPT
+	Wed, 25 Jun 2008 11:30:01 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:60140 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753313AbYFYPaB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 11:26:18 -0400
-Date: Wed, 25 Jun 2008 19:26:15 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-ide@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH -rt] ide: fix interrupts processing issue with
-	preempt-able hardirqs
-Message-ID: <20080625152615.GA18241@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu> <20080624000016.GA12547@polina.dev.rtsoft.ru> <20080625123431.GA25452@polina.dev.rtsoft.ru> <486244FF.8060805@ru.mvista.com> <20080625142249.GA21630@polina.dev.rtsoft.ru> <20080625153212.611c3766@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20080625153212.611c3766@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 25 Jun 2008 11:30:01 -0400
+To: torvalds@linux-foundation.org
+CC: miklos@szeredi.hu, jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hugh@veritas.com, nickpiggin@yahoo.com.au
+In-reply-to: <alpine.LFD.1.10.0806250757150.4733@hp.linux-foundation.org>
+	(message from Linus Torvalds on Wed, 25 Jun 2008 08:11:07 -0700 (PDT))
+Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in
+ invalidate_complete_page2()
+References: <20080625124038.103406301@szeredi.hu> <20080625124121.839734708@szeredi.hu> <alpine.LFD.1.10.0806250757150.4733@hp.linux-foundation.org>
+Message-Id: <E1KBWwW-0006nf-Qp@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 25 Jun 2008 17:29:56 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 03:32:12PM +0100, Alan Cox wrote:
-> > Note: I don't have any specifications on that ULi bridge, neither I have
-> > any schematics for that board (so far, let's hope). So I can't say
-> > exactly how things are inter-connected or what these PCI quirks are
-> > actually doing (despite few comments in them).
+> > Clearing the uptodate page flag will cause page_cache_pipe_buf_confirm()
+> > to return -ENODATA if that page was in the buffer.  This in turn will cause
+> > splice() to return a short or zero count.
 > 
-> So you don't for example know if the bridge is correctly configured for
-> that device to be edge or level triggered ?
+> I really think we should just change splice itself at this point.
 
-Nope. But I don't think that I can configure it anyway. The thing is
-that this particular setup doesn't use ULi's i8259 PIC (it is disabled by
-one of PCI quirks), and IDE interrupt is a sideband PCI-E interrupt (also
-configured by the PCI quirk). So IDE interrupt is "directly" connected to
-OpenPIC interrupt line (through the SOC PCI-E controller, of course).
+We discussed this yesterday.  My conclusion was (which I still think
+is true) that it can't be fixed in page_cache_pipe_buf_confirm(),
+because due to current practice of not setting PG_error for I/O errors
+for read, it is impossible to distinguish between a never-been-uptodate
+page and a was-uptodate-before-invalidation page.
 
-If that ULi bridge (M1575) provides some other means of configuring, I
-could try it... with the specifications.
+And it's not just an nfsd issue.  Userspace might also expect that if
+a zero count is returned, that means it went beyond EOF, and not that
+it should retry the splice, maybe it has better luck this time.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+So no, this is not just a fuse/nfsd issue, it applies to all
+filesystems that do invalidate_inode_pages2 (there are 4-5 of them I
+think).
+
+And I don't see what I would be ignoring.  This is _not_ about
+truncate(2), that is shared by all filesystems, and bugs wrt splice
+would affect not just fuse.
+
+Miklos
