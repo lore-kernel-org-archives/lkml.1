@@ -1,69 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbYFYPVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbYFYPJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758548AbYFYPVZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 11:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbYFYPVR
+	id S1758190AbYFYPJd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 11:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYFYPJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 11:21:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47264 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752355AbYFYPVQ (ORCPT
+	Wed, 25 Jun 2008 11:09:23 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:39307 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409AbYFYPJW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 11:21:16 -0400
-Date: Wed, 25 Jun 2008 08:19:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-cc: Paul Jackson <pj@sgi.com>, hpa@zytor.com, yhlu.kernel@gmail.com,
-       akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
-       steiner@sgi.com, travis@sgi.com, linux-kernel@vger.kernel.org,
-       ying.huang@intel.com, andi@firstfloor.org
-Subject: Re: [PATCH 4/5 v2] x86 boot: show pfn addresses in hex not decimal
- in some kernel info printks
-In-Reply-To: <1214406026.21847.25.camel@johannes.berg>
-Message-ID: <alpine.LFD.1.10.0806250813030.4733@hp.linux-foundation.org>
-References: <20080622142151.5591.4139.sendpatchset@polaris-admin.engr.sgi.com>  <20080622142212.5591.64592.sendpatchset@polaris-admin.engr.sgi.com>  <86802c440806221238g78300952t2fc7f406c1842273@mail.gmail.com>  <20080623060939.6b6b3183.pj@sgi.com> 
- <86802c440806241429s  <alpine.LFD.1.10.0806242101460.20369@hp.linux-foundation.org> <1214406026.21847.25.camel@johannes.berg>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 25 Jun 2008 11:09:22 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Zhao Yakui <yakui.zhao@intel.com>
+Subject: Re: [PATCH] ACPI: don't walk tables if ACPI was disabled
+Date: Wed, 25 Jun 2008 09:08:58 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+References: <20080620135639.GA5073@damson.getinternet.no> <19f34abd0806240452w2561040uc2b1b1d35562db71@mail.gmail.com> <1214357857.9800.20.camel@yakui_zhao.sh.intel.com>
+In-Reply-To: <1214357857.9800.20.camel@yakui_zhao.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806250908.59315.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 24 June 2008 07:37:37 pm Zhao Yakui wrote:
+> On Tue, 2008-06-24 at 13:52 +0200, Vegard Nossum wrote:
+> > On 6/24/08, Ingo Molnar <mingo@elte.hu> wrote:
+> > > i havent seen the warning reappear with your fix after thousands of
+> > > bootups - so i guess we can consider it fixed.
+> > >
+> > > Len, please consider the patch below. (it's in tip/out-of-tree)
+> > 
+> > No, please don't :-)
+> > 
+> > It fixes your particular case (the acpi_rtc_init() hunk of the patch),
+> > but the acpi_walk_namespace() part should be changed to a WARN(). But
+> > that is likely to cause a lot of "spurious" reports, so the other acpi
+> > drivers should be fixed as well.
+> In fact this issue is related with the following factors:
+>    a. when acpi is disabled, OS won't initialize the ACPI mutex, which
+> is accessed by many ACPI interface functions. For example:
+> acpi_walk_namespace, acpi_install_fixed_event_handler.
+>    b. When acpi is disabled, some drivers will call the ACPI interface
+> functions. For example: The acpi_walk_namespace is called in
+> dock_init/bay_init.
+
+I think most current uses of acpi_walk_namespace() are indications
+that the ACPI or PNP core is missing something.
+
+In dock_init() and bay_init(), it's used to bind a driver to a
+device.  I think it would be better if we could figure out how to
+use the usual acpi_bus_register_driver() interface.  Actually, it
+looks like this is already 90% done: acpi_dock_match() does the
+same thing as is_dock(), so it looks like dock_init() could easily
+be converted to register as a driver for ACPI_DOCK_HID.
+
+bay_init() looks similar, with acpi_bay_match(), is_ejectable_bay(),
+ACPI_BAY_HID, etc.
+
+Other users of acpi_walk_namespace() are often to install notify
+handlers to deal with add/remove events.  I think these are telling
+us that we need to implement the "TBD: Handle device insertion/removal"
+pieces in acpi_bus_check_device().
+
+> The acpi_install_fixed_event_handler is called in 
+> the acpi_rtc_init.
+
+Yes (via rtc_wake_setup()).  I think this should be moved into the
+RTC driver itself.  I have some ideas on how to do this; I'll post
+a patch in a few days.  But for 2.6.26, I think the minimal fix of
+checking acpi_disabled in acpi_rtc_init() is better.
+
+Bjorn
 
 
-On Wed, 25 Jun 2008, Johannes Berg wrote:
-> 
-> In networking, we've gone through various incarnations of print_mac()
-> which is similar to the sym() macro Paul proposed, and it turned out to
-> be undesirable because of the way it interacts with static inlines that
-> only optionally contain code at all, the print_mac() function call is
-> still emitted by the compiler. People experimented with marking it
-> __pure but that had other problems.
-
-You don't even have to go that esoteric.
-
-Just printing things like "sector_t" or "u64" is painful, because the 
-exact type depends on config options and/or architecture.
-
-> It would be nice to be able to say
-> 
-> u8 *eaddr;
-> 
-> printk(... %M ..., eaddr);
-
-For special things, I do think we should extend the format more, and 
-forget about single-character names. It would be lovely to do them as
-%[mac], %[u64], %[symbol] or similar. Because once you don't rely on gcc 
-checking the string, you can do it.
-
-The problem is that right now we absolutely _do_ rely on gcc checking the 
-string, and as such we're forced to use standard patterns, and standard 
-patterns _only_. And that means that %M isn't an option, but also that if 
-we want symbolic names we'd have to use %p, and not some extension.
-
-But once you drop the 'standard patterns' requirement, I do think you 
-should drop it _entirely_, and not just extend it with some pissant 
-single-character unreadable mess.
-
-				Linus
