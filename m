@@ -1,95 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756571AbYFYWpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755295AbYFYWsE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756571AbYFYWpX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 18:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbYFYWpJ
+	id S1755295AbYFYWsE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 18:48:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYFYWr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 18:45:09 -0400
-Received: from elasmtp-kukur.atl.sa.earthlink.net ([209.86.89.65]:50980 "EHLO
-	elasmtp-kukur.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752362AbYFYWpH (ORCPT
+	Wed, 25 Jun 2008 18:47:56 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60369 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750836AbYFYWrz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 18:45:07 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=earthlink.net;
-  b=gc+0DE+sFZSus0I4aUd06SorrbWZJjlRD3J6OVSH1OSFHYXHg5uiq1pHYGHKEWxh;
-  h=Received:Message-ID:From:To:Cc:References:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE:X-ELNK-Trace:X-Originating-IP;
-Message-ID: <01ca01c8d715$1b127a60$0125a8c0@wednesday>
-From: "jdow" <jdow@earthlink.net>
-To: "Willy Tarreau" <w@1wt.eu>, "Matthew" <jackdachef@gmail.com>
-Cc: <greg@kroah.com>, "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-References: <e85b9d30806230602m10b5aa06m2f1c83e1a90a7dac@mail.gmail.com> <20080623132118.GC1369@1wt.eu>
-Subject: Re: [ANNOUNCE] Position Statement on Linux Kernel Modules
-Date: Wed, 25 Jun 2008 15:45:01 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+	Wed, 25 Jun 2008 18:47:55 -0400
+Date: Wed, 25 Jun 2008 23:30:17 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: David Brownell <david-b@pacbell.net>, lkml <linux-kernel@vger.kernel.org>,
+       rtc-linux@googlegroups.com
+Subject: Re: [PATCH] rtc: remove BKL for ioctl()
+Message-ID: <20080625233017.5b207e94@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080625163928.4da1f4a0@bike.lwn.net>
+References: <200806221955.42597.david-b@pacbell.net>
+	<20080625163928.4da1f4a0@bike.lwn.net>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-X-ELNK-Trace: bb89ecdb26a8f9f24d2b10475b57112035973a4c788463ce0e0139a688a2efcde34702530bcce501350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 68.183.103.112
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Willy Tarreau" <w@1wt.eu>
-Sent: Monday, 2008, June 23 06:21
+On Wed, 25 Jun 2008 16:39:28 -0600
+Jonathan Corbet <corbet@lwn.net> wrote:
 
-
-> On Mon, Jun 23, 2008 at 03:02:58PM +0200, Matthew wrote:
->> Hi Greg,
->> 
->> I largely agree to this statement,
->> 
->> there are however some downsides if you're preventing driver
->> manufacturers (e.g. nvidia, ...) from the possibility to offer their
->> customers proprietary drivers:
->> 
->> 1) One big and important point for me (and more and more future
->> linux-users) is powersaving features on GPUs like powermizer (by
->> nvidia) and powerplay (by AMD/ATI) or other hardware. I haven't seen
->> this working on newer graphics cards models with the opensource
->> drivers to the present day :(
+> On Sun, 22 Jun 2008 19:55:42 -0700
+> David Brownell <david-b@pacbell.net> wrote:
 > 
-> I think that's one of the reasons of Greg's post.
+> > Remove implicit use of BKL in ioctl() from the RTC framework.
 > 
-> (...)
->> if those companies can't use their own closed proprietary drivers
->> utilizing patented routines they are "forced" to use
+> Looks good, I'll happily put it into the bkl-removal tree.  One
+> question, though:
 > 
-> You're wrong here. If they have patented routines, they don't need
-> their drivers to be closed, since there routines are protected by
-> patents. And even if they are not patented, not releasing the source
-> will not prevent a competitor from disassembling the code anyway.
-> So there's really no point in remaining closed. Some of them might
-> have signed NDAs before using some technologies, but by this time,
-> they should have sorted that our.
-
-Willy, you make a bold assertion here. Your assertion would hold a
-lot more weight if you defended it with some facts.
-
->> they might think over it and switch to another operating system ...
+> > +	err = mutex_lock_interruptible(&rtc->ops_lock);
+> > +	if (err)
+> > +		return -EBUSY;
+> > +
 > 
-> Do you know many products with closed Linux drivers which are not
-> supported by at least one closed OS ? If they chose to support
-> Linux, it's not for your pleasure, just because they know they will
-> sell 5-10% more when a penguin is stuck on the box.
+> Shouldn't that be -EINTR?
 
-That is why there are the closed, and flakey, drivers for so many
-products. Rather than make ideological assertions sit down and prove
-your points. Address cases where there is an intellectual property
-holder involved who has chosen Trade Secret rather than Patent as a
-protection on their proprietary code. Show how they will stay in
-business if they give away their code. Presume that their modules are
-in clean enough shape that making money with a profitable service desk
-is not going to fly.
+For an ioctl case which should never be blocking for long periods it
+shouldn't be _interruptible in the first place, that will just introduce
+bizarre and weird bugs in application code.
 
-> Willy
+If there are slow ops they should drop and retake the lock.
 
-{^_^}   Jo
+Alan
