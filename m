@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbYFYXl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756263AbYFYXvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757240AbYFYXl4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 19:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756397AbYFYXll
+	id S1756263AbYFYXvu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 19:51:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbYFYXvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 19:41:41 -0400
-Received: from vena.lwn.net ([206.168.112.25]:59976 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755863AbYFYXlk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 19:41:40 -0400
-Date: Wed, 25 Jun 2008 17:41:39 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: David Brownell <david-b@pacbell.net>, lkml <linux-kernel@vger.kernel.org>,
-       rtc-linux@googlegroups.com
-Subject: Re: [PATCH] rtc: remove BKL for ioctl()
-Message-ID: <20080625174139.62a0d07f@bike.lwn.net>
-In-Reply-To: <20080625233017.5b207e94@lxorguk.ukuu.org.uk>
-References: <200806221955.42597.david-b@pacbell.net>
-	<20080625163928.4da1f4a0@bike.lwn.net>
-	<20080625233017.5b207e94@lxorguk.ukuu.org.uk>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 25 Jun 2008 19:51:41 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:43020 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753092AbYFYXvk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 19:51:40 -0400
+Message-ID: <4862DA05.7000902@linux.vnet.ibm.com>
+Date: Thu, 26 Jun 2008 05:21:33 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: yamamoto@valinux.co.jp, menage@google.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [2/2] memrlimit fix usage of tmp as a parameter name
+References: <20080620150132.16094.29151.sendpatchset@localhost.localdomain> <20080620150152.16094.76790.sendpatchset@localhost.localdomain> <20080625164121.9146fb56.akpm@linux-foundation.org>
+In-Reply-To: <20080625164121.9146fb56.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jun 2008 23:30:17 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Andrew Morton wrote:
+> On Fri, 20 Jun 2008 20:31:52 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+>> Fix the variable tmp being used in write_strategy. This patch replaces tmp
+>> with val, the fact that it is an output parameter can be interpreted from
+>> the pass by reference.
+> 
+> Paul's "CGroup Files: Convert res_counter_write() to be a cgroups
+> write_string() handler"
+> (memrlimit-setup-the-memrlimit-controller-cgroup-files-convert-res_counter_write-to-be-a-cgroups-write_string-handler-memrlimitcgroup.patch)
+> deleted memrlimit_cgroup_write_strategy(), so problem solved ;)
 
-> For an ioctl case which should never be blocking for long periods it
-> shouldn't be _interruptible in the first place, that will just
-> introduce bizarre and weird bugs in application code.
+Yes, I remember reviewing those patches. Nice to have problems solved
+automatically :)
 
-OTOH, my sysadmin youth left me with some painful memories of having to
-reboot important systems to get rid of a process with some vital
-resource in a D-state death grip.  So I have a certain aversion to
-putting uninterruptible waits in places where they aren't really
-necessary.
-
-Perhaps this is a good candidate for mutex_lock_killable()?
-
-jon
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
