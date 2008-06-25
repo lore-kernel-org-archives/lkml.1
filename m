@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbYFYHrE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbYFYIFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754895AbYFYHrE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 03:47:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbYFYHqv
+	id S1754455AbYFYIFY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 04:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbYFYIFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 03:46:51 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56694 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753064AbYFYHqu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 03:46:50 -0400
-Date: Wed, 25 Jun 2008 08:46:02 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       cooloney@kernel.org, dev-etrax@axis.com, dhowells@redhat.com,
-       gerg@uclinux.org, yasutake.koichi@jp.panasonic.com,
-       linux-parisc@vger.kernel.org, paulus@samba.org, linuxppc-dev@ozlabs.org,
-       linux-sh@vger.kernel.org, chris@zankel.net, linux-mips@linux-mips.org,
-       ysato@users.sourceforge.jp, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [2.6 patch] asm/ptrace.h userspace headers cleanup
-Message-ID: <20080625074602.GA14791@flint.arm.linux.org.uk>
-References: <20080623174809.GE4756@cs181140183.pp.htv.fi>
+	Wed, 25 Jun 2008 04:05:07 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:56520 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751130AbYFYIFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 04:05:03 -0400
+Date: Wed, 25 Jun 2008 03:04:56 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: hpa@zytor.com, yhlu.kernel@gmail.com, akpm@linux-foundation.org,
+       mingo@elte.hu, tglx@linutronix.de, steiner@sgi.com, travis@sgi.com,
+       linux-kernel@vger.kernel.org, ying.huang@intel.com, andi@firstfloor.org
+Subject: Re: [PATCH 4/5 v2] x86 boot: show pfn addresses in hex not decimal
+ in some kernel info printks
+Message-Id: <20080625030456.cab9ec3e.pj@sgi.com>
+In-Reply-To: <alpine.LFD.1.10.0806242101460.20369@hp.linux-foundation.org>
+References: <20080622142151.5591.4139.sendpatchset@polaris-admin.engr.sgi.com>
+	<20080622142212.5591.64592.sendpatchset@polaris-admin.engr.sgi.com>
+	<86802c440806221238g78300952t2fc7f406c1842273@mail.gmail.com>
+	<20080623060939.6b6b3183.pj@sgi.com>
+	<86802c440806241429s7f5e899dn67d42303247f618@mail.gmail.com>
+	<20080624203252.f932c631.pj@sgi.com>
+	<4861A5DF.5010104@zytor.com>
+	<20080624211711.8c6d5105.pj@sgi.com>
+	<4861AAEF.3020103@zytor.com>
+	<alpine.LFD.1.10.0806241949030.13106@hp.linux-foundation.org>
+	<20080624220810.b2ec0c6a.pj@sgi.com>
+	<alpine.LFD.1.10.0806242101460.20369@hp.linux-foundation.org>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080623174809.GE4756@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 08:48:09PM +0300, Adrian Bunk wrote:
-> diff --git a/include/asm-arm/ptrace.h b/include/asm-arm/ptrace.h
-> index 7aaa206..8382b75 100644
-> --- a/include/asm-arm/ptrace.h
-> +++ b/include/asm-arm/ptrace.h
-> @@ -139,8 +139,6 @@ static inline int valid_user_regs(struct pt_regs *regs)
->  	return 0;
->  }
->  
-> -#endif	/* __KERNEL__ */
-> -
->  #define pc_pointer(v) \
->  	((v) & ~PCMASK)
->  
-> @@ -153,10 +151,10 @@ extern unsigned long profile_pc(struct pt_regs *regs);
->  #define profile_pc(regs) instruction_pointer(regs)
->  #endif
->  
-> -#ifdef __KERNEL__
->  #define predicate(x)		((x) & 0xf0000000)
->  #define PREDICATE_ALWAYS	0xe0000000
-> -#endif
-> +
-> +#endif /* __KERNEL__ */
->  
->  #endif /* __ASSEMBLY__ */
->  
+Linux, replying to pj:
+> > I'd be inclined instead to use "%P" for symbolic addrs.
+> 
+> That doesn't work - gcc warns about it.
+> 
+> That turns out to be a problem with %#p too. 
 
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Ah so.
+
+How about the following "sym(addr, buf)" macro?  This could make it
+more practical to include kernel symbols within ordinary printk's.
+
+On a silly little test with:
+
+	{
+		char b1[32], b2[32], b3[32];
+		printk(">>>>>> Testing sym(): A. %s, B. %s, C. %s\n",
+			sym(&pid_max, b1),
+			sym(0xffffffff80615750, b2),		/* an addr in my System.map */
+			sym(0, b3));
+	}
+
+the kernel printed:
+
+	>>>>>> Testing sym(): A. pid_max+0x0/0x4, B. trampoline_base+0x0/0x10, C. 0x0
+
+===========================================================================
+
+--- linux.orig/include/linux/kallsyms.h	2008-06-23 15:16:49.885666712 -0700
++++ linux/include/linux/kallsyms.h	2008-06-25 00:48:09.446807842 -0700
+@@ -32,6 +32,12 @@ extern int sprint_symbol(char *buffer, u
+ /* Look up a kernel symbol and print it to the kernel messages. */
+ extern void __print_symbol(const char *fmt, unsigned long address);
+ 
++/* Convert address to kernel symbol; can printk result with "%s" format */
++#define sym(address, namebuf) ({				\
++	sprint_symbol((namebuf), (unsigned long)(address));	\
++	(namebuf);						\
++})
++
+ int lookup_symbol_name(unsigned long addr, char *symname);
+ int lookup_symbol_attrs(unsigned long addr, unsigned long *size, unsigned long *offset, char *modname, char *name);
+ 
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
