@@ -1,51 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756868AbYFYFjD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbYFYF7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756868AbYFYFjD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 01:39:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbYFYFiy
+	id S1754716AbYFYF7i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 01:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbYFYF72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 01:38:54 -0400
-Received: from ozlabs.org ([203.10.76.45]:46850 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754007AbYFYFix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 01:38:53 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mike Travis <travis@sgi.com>
-Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
-Date: Wed, 25 Jun 2008 15:38:45 +1000
-User-Agent: KMail/1.9.9
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Adrian Bunk <bunk@kernel.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Gautham R Shenoy <ego@in.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-References: <20080622125633.GA8166@damson.getinternet.no> <200806242314.51656.rusty@rustcorp.com.au> <4861085D.8020506@sgi.com>
-In-Reply-To: <4861085D.8020506@sgi.com>
+	Wed, 25 Jun 2008 01:59:28 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:65031 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750923AbYFYF71 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 01:59:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=rPkEajPSpklmcmJHHfeDv7RA45YJrQy9wiHRXVYbYbfRP4oV4waAKRkUyPaSliowTP
+         7JjAoYBMCucDxHY4E8OpUjnzUWUGUTdjhFYejpIfwXiAmFmlvwavEIbjDzD5Bxz6WyLz
+         RZa0+KsYTwmr+HVFwp1r7k0xB+1hdn1UgkNGo=
+Message-ID: <28c262360806242259k3ac308c4n7cee29b72456e95b@mail.gmail.com>
+Date: Wed, 25 Jun 2008 14:59:26 +0900
+From: "MinChan Kim" <minchan.kim@gmail.com>
+To: "Rik van Riel" <riel@redhat.com>,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH] prevent incorrect oom under split_lru
+Cc: linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
+       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>, akpm@linux-foundation.org,
+       "Takenori Nagano" <t-nagano@ah.jp.nec.com>
+In-Reply-To: <20080624092824.4f0440ca@bree.surriel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806251538.45795.rusty@rustcorp.com.au>
+References: <20080624171816.D835.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080624092824.4f0440ca@bree.surriel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 June 2008 00:44:45 Mike Travis wrote:
-> Rusty Russell wrote:
-> ...
+On Tue, Jun 24, 2008 at 10:28 PM, Rik van Riel <riel@redhat.com> wrote:
+> On Tue, 24 Jun 2008 17:31:54 +0900
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 >
-> > Nice catch.  Basically, cpu_possible_map should only be cleared at boot,
-> > and probably not even then.
+>> if zone->recent_scanned parameter become inbalanceing anon and file,
+>> OOM killer can happened although swappable page exist.
+>>
+>> So, if priority==0, We should try to reclaim all page for prevent OOM.
 >
-> One thing that should be avoided, is clearing anything but the last bit in
-> the cpu_possible_map.  This is because num_possible_cpus != nr_cpu_ids when
-> there are holes in the map.  (nr_cpu_ids = highest possible cpu # + 1).
+> You are absolutely right.  Good catch.
 
-It's ok if nr_cpu_ids is an overestimate, isn't it?
+I have a concern about application latency.
+If lru list have many pages, it take a very long time to scan pages.
+More system have many ram, More many time to scan pages.
 
-But for this corner case, I think clearing cpu_possible_map is wrong.
+Of course I know this is trade-off between memory efficiency VS latency.
+But In embedded, some application think latency is more important
+thing than memory efficiency.
+We need some mechanism to cut off scanning time.
 
-Cheers,
-Rusty.
+
+I think Takenori Nagano's "memory reclaim more efficiently patch" is
+proper to reduce application latency in this case If we modify some
+code.
+
+What do you think about it ?
+
+>> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>
+> Acked-by: Rik van Riel <riel@redhat.com>
+>
+>> ---
+>>  mm/vmscan.c |    6 ++++--
+>>  1 file changed, 4 insertions(+), 2 deletions(-)
+>>
+>> Index: b/mm/vmscan.c
+>> ===================================================================
+>> --- a/mm/vmscan.c
+>> +++ b/mm/vmscan.c
+>> @@ -1464,8 +1464,10 @@ static unsigned long shrink_zone(int pri
+>>                        * kernel will slowly sift through each list.
+>>                        */
+>>                       scan = zone_page_state(zone, NR_LRU_BASE + l);
+>> -                     scan >>= priority;
+>> -                     scan = (scan * percent[file]) / 100;
+>> +                     if (priority) {
+>> +                             scan >>= priority;
+>> +                             scan = (scan * percent[file]) / 100;
+>> +                     }
+>>                       zone->lru[l].nr_scan += scan + 1;
+>>                       nr[l] = zone->lru[l].nr_scan;
+>>                       if (nr[l] >= sc->swap_cluster_max)
+>>
+>
+>
+> --
+> All rights reversed.
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
+
+
+
+-- 
+Kinds regards,
+MinChan Kim
