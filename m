@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbYFYFiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756868AbYFYFjD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758107AbYFYFiW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 01:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbYFYFiP
+	id S1756868AbYFYFjD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 01:39:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbYFYFiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 01:38:15 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55892 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754116AbYFYFiO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 01:38:14 -0400
-Date: Tue, 24 Jun 2008 22:36:10 -0700
-From: Greg KH <greg@kroah.com>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add diffconfig utility (v2)
-Message-ID: <20080625053609.GA9048@kroah.com>
-References: <484ED902.9040000@am.sony.com> <20080610212158.GB23855@uranus.ravnborg.org> <484F1B8F.9000804@am.sony.com> <Pine.LNX.4.64.0806111328150.13310@vixen.sonytel.be> <48501836.10900@am.sony.com> <20080612131931.GB13702@uranus.ravnborg.org> <48613536.2000708@am.sony.com>
+	Wed, 25 Jun 2008 01:38:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:46850 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754007AbYFYFix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 01:38:53 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mike Travis <travis@sgi.com>
+Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
+Date: Wed, 25 Jun 2008 15:38:45 +1000
+User-Agent: KMail/1.9.9
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Adrian Bunk <bunk@kernel.org>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Gautham R Shenoy <ego@in.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+References: <20080622125633.GA8166@damson.getinternet.no> <200806242314.51656.rusty@rustcorp.com.au> <4861085D.8020506@sgi.com>
+In-Reply-To: <4861085D.8020506@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48613536.2000708@am.sony.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200806251538.45795.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 24, 2008 at 10:56:06AM -0700, Tim Bird wrote:
-> Sam Ravnborg wrote:
-> > When you consider it stabilized could you please drop me a
-> > new mail including full changelog and updated patch.
-> > 
-> > And please cc: linux-kbuild@vger.kernel.org + linux-kernel on the
-> > submission.
-> 
-> Sam,
-> 
-> I haven't gotten any more feedback, and I believe I've addressed
-> all previous feedback.
-> 
-> As for the ChangeLog, here's some information about history and
-> recent changes.  I can put this in the patch/script if desired.
+On Wednesday 25 June 2008 00:44:45 Mike Travis wrote:
+> Rusty Russell wrote:
+> ...
+>
+> > Nice catch.  Basically, cpu_possible_map should only be cleared at boot,
+> > and probably not even then.
+>
+> One thing that should be avoided, is clearing anything but the last bit in
+> the cpu_possible_map.  This is because num_possible_cpus != nr_cpu_ids when
+> there are holes in the map.  (nr_cpu_ids = highest possible cpu # + 1).
 
-Very cool tool, I like it a lot, thanks for pushing this.
+It's ok if nr_cpu_ids is an overestimate, isn't it?
 
-greg k-h
+But for this corner case, I think clearing cpu_possible_map is wrong.
+
+Cheers,
+Rusty.
