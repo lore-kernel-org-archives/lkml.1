@@ -1,78 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbYFYW0J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbYFYWaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756251AbYFYW0J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 18:26:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbYFYWZ4
+	id S1755963AbYFYWaV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 18:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbYFYWaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 18:25:56 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55391 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752388AbYFYWZz (ORCPT
+	Wed, 25 Jun 2008 18:30:08 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56643
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751130AbYFYWaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 18:25:55 -0400
-Date: Wed, 25 Jun 2008 17:25:53 -0500
-From: Russ Anderson <rja@sgi.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 3/3] ia64: Call migration code on correctable errors v6
-Message-ID: <20080625222553.GA29402@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-References: <20080609162015.GD14939@sgi.com> <20080623121721.37CA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 25 Jun 2008 18:30:07 -0400
+Date: Wed, 25 Jun 2008 15:30:07 -0700 (PDT)
+Message-Id: <20080625.153007.207008169.davem@davemloft.net>
+To: vda.linux@googlemail.com
+Cc: mpatocka@redhat.com, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org
+Subject: Re: [3/10 PATCH] inline wake_up_bit
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200806251617.40871.vda.linux@googlemail.com>
+References: <Pine.LNX.4.64.0806240154140.27784@engineering.redhat.com>
+	<Pine.LNX.4.64.0806240156230.27784@engineering.redhat.com>
+	<200806251617.40871.vda.linux@googlemail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080623121721.37CA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 12:25:40PM +0900, KOSAKI Motohiro wrote:
-> Hi
-> 
-> > +static ssize_t
-> > +badpage_show(struct kobject *kobj,
-> > +	     struct kobj_attribute *attr, char *buf)
-> > +
-> > +{
-> > +	struct page *page, *page2;
-> > +	int i = 0, cnt = 0;
-> > +	char *bufend = buf + PAGE_SIZE;
-> > +
-> > +	cnt = snprintf(buf, bufend - (buf + cnt),
-> > +			"Bad RAM: %d kB, %d pages marked bad\n"
-> > +			"List of bad physical pages\n",
-> > +			total_badpages << (PAGE_SHIFT - 10), total_badpages);
-> > +
-> > +	list_for_each_entry_safe(page, page2, &badpagelist, lru) {
-> > +		if (bufend - (buf + cnt) < 20)
-> > +			break;		/* Avoid overflowing the buffer */
-> > +		cnt += snprintf(buf + cnt, bufend - (buf + cnt),
-> > +				" 0x%011lx", page_to_phys(page));
-> > +		if (!(++i % 5))
-> > +			cnt += snprintf(buf + cnt, bufend - (buf + cnt), "\n");
-> > +	}
-> > +	cnt += snprintf(buf + cnt, bufend - (buf + cnt), "\n");
-> > +
-> > +	return cnt;
-> > +}
-> 
-> it seems /proc/meminfo is better.
-> because badpage is architecture independent concept.
-> 
-> nonsense?
+From: Denys Vlasenko <vda.linux@googlemail.com>
+Date: Wed, 25 Jun 2008 16:17:40 +0200
 
-The original patch used /proc/ (/proc/meminfo had badpage summary info
-and /proc/badram had detailed info.  It was suggested that /sys was
-a better place.
+> And you know what? This is likely not the end yet! It's possible
+> spin_lock_irqXXX, __wake_up_common, waitqueue_active or bit_waitqueue
+> are inlines - I didn't check.
 
-FWIW, I'm more than happy to put it anywhere deemed "best" by
-the community.  It is currently /sys/kernel/badram.
-
-Thanks,
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+The thing to do in these kinds of scenerios is to provide top-level
+routes in kernel/sched.c where all the inlining occurs, rather
+than doing it in header files and thus expanding this stuff in
+multiple places.
