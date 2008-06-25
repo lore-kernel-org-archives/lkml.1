@@ -1,78 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758727AbYFYPWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758693AbYFYPZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758727AbYFYPWy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 11:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYFYPWr
+	id S1758693AbYFYPZO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 11:25:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbYFYPZB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 11:22:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60968 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752591AbYFYPWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 11:22:46 -0400
-Date: Wed, 25 Jun 2008 17:22:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
-       Mark McLoughlin <markmc@redhat.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Nick Piggin <npiggin@suse.de>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH 00 of 36] x86/paravirt: groundwork for 64-bit Xen
-	support
-Message-ID: <20080625152212.GA3442@elte.hu>
-References: <patchbomb.1214367536@localhost> <20080625084253.GA11524@elte.hu>
+	Wed, 25 Jun 2008 11:25:01 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:19129 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752977AbYFYPZB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 11:25:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=nGd5S2uquf1KF17biqR167t94WkbyopXeZavIRfCnstZSLu+i1nBFBeR4ykV/gwZND
+         EfdItGxU83jzLUrb3fl+n03qi8OVFLRa48+q12oaulwFwQrexXj0pitLtJjj61q22vha
+         X8pmCZ1X0gQylO1AvHFIZLauHAkLwJwV2IucI=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Subject: Re: [3/10 PATCH] inline wake_up_bit
+Date: Wed, 25 Jun 2008 17:24:57 +0200
+User-Agent: KMail/1.8.2
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+       davem@davemloft.net
+References: <Pine.LNX.4.64.0806240136200.27784@engineering.redhat.com> <200806251617.40871.vda.linux@googlemail.com> <Pine.LNX.4.64.0806251031330.7542@engineering.redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0806251031330.7542@engineering.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080625084253.GA11524@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200806251724.57689.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 25 June 2008 16:36, Mikulas Patocka wrote:
+> > On Tuesday 24 June 2008 07:57, Mikulas Patocka wrote:
+> >> Inline wake_up_bit. The function just pases arguments around.
+> >>
+> >> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+> >>
+> >>   int __wait_on_bit_lock(wait_queue_head_t *, struct wait_bit_queue *, int (*)(void *), unsigned);
+> >> -void wake_up_bit(void *, int);
+> >>   int out_of_line_wait_on_bit(void *, int, int (*)(void *), unsigned);
+> >
+> >> +static __always_inline void wake_up_bit(void *word, int bit)
+> >> +{
+> >> +	__wake_up_bit(bit_waitqueue(word, bit), word, bit);
+> >> +}
+> >
+> > So now every call to wake_up_bit(word, bit) now is converted to:
+> >
+> > __wake_up_bit(bit_waitqueue(word, bit), word, bit);
+> >
+> > which is in turn converted to (looking into your next patch):
+> >
+> > {
+> >       wait_queue_head_t *wq = bit_waitqueue(word, bit);
+> >       struct wait_bit_key key = __WAIT_BIT_KEY_INITIALIZER(word, bit);
+> >       if (waitqueue_active(wq))
+> >               __wake_up(wq, TASK_NORMAL, 1, &key);
+> > }
+> >
+> > which is in turn converted to (looking into your other patch):
+> >
+> > {
+> >       wait_queue_head_t *wq = bit_waitqueue(word, bit);
+> >       struct wait_bit_key key = __WAIT_BIT_KEY_INITIALIZER(word, bit);
+> >       if (waitqueue_active(wq))
+> >               {
+> >                      unsigned long flags;
+> >                      spin_lock_irqsave(&qw->lock, flags);
+> >                      __wake_up_common(wq, TASK_NORMAL, 1, 0, &key);
+> >                      spin_unlock_irqrestore(&wq->lock, flags);
+> >               }
+> > }
+> >
+> > And you know what? This is likely not the end yet! It's possible
+> > spin_lock_irqXXX, __wake_up_common, waitqueue_active or bit_waitqueue
+> > are inlines - I didn't check.
+> > --
+> > vda
+> 
+> Yes, that's 0.2% code size increase
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+...In just 17 callsites in entire kernel.
 
-> Anyway, that's all theory - i'll try out your patchset in -tip to see 
-> what breaks in practice ;-)
+> (or none increase, if drop  
+> inline-__wake_up_bit.patch and apply only the other patches).
 
-i've put the commits (and a good number of dependent commits) into the 
-new tip/x86/xen-64bit topic branch.
+Now this is a better approach - to actually see how many
+callsites are there, and inlining only where makes sense.
+But in practice it's hard to do and also is changing all the time
+during development. What is optimal today won't be optimal in
+2.6.45 :)
 
-It quickly broke the build in testing:
+Ingo's suggestion to talk to gcc people to remedy
+insane call convention sounds as a more workable solution.
 
- include/asm/pgalloc.h: In function ‘paravirt_pgd_free':
- include/asm/pgalloc.h:14: error: parameter name omitted
- arch/x86/kernel/entry_64.S: In file included from 
- arch/x86/kernel/traps_64.c:51:include/asm/pgalloc.h: In function ‘paravirt_pgd_free':
- include/asm/pgalloc.h:14: error: parameter name omitted
- [...]
+BTW, i386 uses regparm call convention, is similar trick
+possible for sparc64?
 
-with this config:
+> To me it  
+> seems crazy, how this code was refactored again and again over time, up to 
+> 8 levels of functions (including passing a pointer to a method). In 2.0.x 
+> kernel series, it was just a single call to wake up a queue.
 
-  http://redhat.com/~mingo/misc/config-Wed_Jun_25_16_37_51_CEST_2008.bad
-
-this could easily be some integration mistake on my part, so please 
-double-check the end result.
-
-Merging it into tip/master is a bit tricky, due to various interactions. 
-This should work fine if you check out the latest tip/master:
-
-  git-merge tip/x86/xen-64bit
-  [ ... fix up the trivial merge conflict ... ]
-
-i've already merged tip/x86/xen-64bit-base topic into master, to make it 
-easier. (there were a few preconditions for the 64-bit Xen patches which 
-arent carried in linux-next - such as the nmi-safe changes.)
-
-	Ingo
+Yes, probably... If you can simplify it, everyone will be glad.
+--
+vda
