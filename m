@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbYFYX3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755851AbYFYXcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755883AbYFYX3X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 19:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbYFYX3K
+	id S1755851AbYFYXcD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 19:32:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbYFYXby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 19:29:10 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:37475 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754061AbYFYX3I (ORCPT
+	Wed, 25 Jun 2008 19:31:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57224 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751628AbYFYXbx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 19:29:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=iBG6Fg8ewVteVsdP79OzWNLn0fnNE1kDVKQkoYwu2uBDmEsyg7uVm3f322HPeW6EYo
-         qI2wMRuCfa8nT1iT3KsOnDUL/s5liAVKV1JWbOJgrc3flUX+hDdqgCTpja4SvbhgiRJy
-         1GWrwtDWERb50qb8Cg72eOmyPNQF0RvLj/PhM=
-Message-ID: <dd18b0c30806251629q78abef79sb5b3d5a1ab17a004@mail.gmail.com>
-Date: Wed, 25 Jun 2008 23:29:07 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: stuck tcp connections 2.6.26-rc7
-Cc: ray-lk@madrabbit.org, didier@raboud.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20080625.152447.178284093.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 25 Jun 2008 19:31:53 -0400
+Date: Wed, 25 Jun 2008 16:30:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: dhowells@redhat.com, serue@us.ibm.com, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] capabilities: refactor kernel code + bugfix
+Message-Id: <20080625163035.b409d693.akpm@linux-foundation.org>
+In-Reply-To: <485BCEEB.30105@kernel.org>
+References: <485BCEEB.30105@kernel.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30806241303g755e3881y4ea7d403eb2922fc@mail.gmail.com>
-	 <dd18b0c30806242325j4f6d1b1bw1cdde7ea08ad12e2@mail.gmail.com>
-	 <2c0942db0806250816r123affb4x4ef17f4773180a10@mail.gmail.com>
-	 <20080625.152447.178284093.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 10:24 PM, David Miller <davem@davemloft.net> wrote:
-> From: "Ray Lee" <ray-lk@madrabbit.org>
-> Date: Wed, 25 Jun 2008 08:16:20 -0700
->
->> On my system, I've noticed that the flashplugin can manage to starve
->> other processes in a pure scheduler sort of way, so you might try
->> running latencytop to see if there's some sort of issue there. OTOH,
->> I've noticed firefox itself hang for 3-15 seconds in the middle of a
->> read (just as you describe), with nothing else going on in the system,
->> so <shrug>. I've been blaming firefox, but I could be wrong.
->
-> See if firefox is stuck in disk wait when things get wedged like
-> this.
->
+On Fri, 20 Jun 2008 08:38:19 -0700
+"Andrew G. Morgan" <morgan@kernel.org> wrote:
 
-Hello; Thanks for the response. I must admit I need to figure out how
-to do that(disk wait mode with firefox).
-Aside from that, it seems there are reports of this with the latest
-and so forth. As a note
-This explains why and when I plugged in an older kernel that had no
-problems at all,
-was suddenly giving me problems, leading me to believe  that my
-service provider(was bandwidth limiting), or a script kiddie
-was messing with the line, but this did not seem to be the case; Thankfully.
-I'll look into it and let you know.
-regards;
+> From 8a2bffcb5363295ea43ef42c84c121a8e8c7ffa0 Mon Sep 17 00:00:00 2001
+> From: Andrew G. Morgan <morgan@kernel.org>
+> Date: Fri, 20 Jun 2008 08:16:06 -0700
+> Subject: [PATCH] Refactor filesystem capability support in main kernel.
+> 
+> To date, we've tried hard to confine filesystem support for capabilities
+> to the security modules. This has left a lot of the code in
+> kernel/capability.c in a state where it looks like it supports something
+> that filesystem support for capabilities actually suppresses when the
+> LSM security/commmoncap.c code runs. What is left is a lot of code that
+> uses sub-optimal locking in the main kernel. With this change we refactor
+> the main kernel code and make it explicit which locks are needed and that
+> the only remaining kernel races in this area are associated with
+> non-filesystem capability code.
+> 
+> This commit also includes a bugfix for the fragile setuid fixup
+> code in the case that filesystem capabilities are supported (in access()).
+> The effect of this fix is gated on filesystem capability support because
+> changing securebits is only supported when filesystem capabilities support
+> is configured.)
+> 
+> Signed-off-by: Andrew G. Morgan <morgan@kernel.org>
+> ---
+>  fs/open.c                  |   38 +++--
+>  include/linux/capability.h |    2 +
+>  include/linux/securebits.h |   15 +-
+>  kernel/capability.c        |  359 +++++++++++++++++++++++++++++--------------
 
--- 
-Justin P. Mattock
+This is one helluva large (security!) patch for so late in -rc.
+
+Could we please split out the bugfix for 2.6.26 (is it needed in 2.6.25
+too?) and hold the refactoring back for 2.6.27?
+
