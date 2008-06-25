@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbYFYQAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbYFYQBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758718AbYFYQAi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 12:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbYFYQAb
+	id S1759300AbYFYQBR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 12:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYFYQBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 12:00:31 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37678 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751778AbYFYQAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 12:00:30 -0400
-Date: Wed, 25 Jun 2008 18:00:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Johannes Weiner <hannes@saeurebad.de>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] softlockup: show irqtrace
-Message-ID: <20080625160016.GA24967@elte.hu>
-References: <20080625071323.GA7987@damson.getinternet.no>
+	Wed, 25 Jun 2008 12:01:07 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:22659 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752726AbYFYQBG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 12:01:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=C8RdG4OJhYA3/JDWs9AKJpTaeyHC101f+4BNqdfc+B8kSKEYLcAkzUHcfAkCeX2Vuv
+         0cok7tDvuG1LdXqiXr9KsQXzxfuiooLOz00WMRVGNrV5D8YA2caUzqOIO98GPi0Py6Ee
+         jYCX3gttnqMMr7Hd2NlkWABvuBlKC05U6XpKQ=
+Message-ID: <86802c440806250901n68278ab1ma1add38c165122af@mail.gmail.com>
+Date: Wed, 25 Jun 2008 09:01:05 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Bernhard Walle" <bwalle@suse.de>
+Subject: Re: [PATCH 3/3] Limit E820 map when a user-defined memory map is specified
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, vgoyal@redhat.com,
+       kexec@lists.infradead.org
+In-Reply-To: <1214395342-20375-4-git-send-email-bwalle@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080625071323.GA7987@damson.getinternet.no>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <1214395342-20375-1-git-send-email-bwalle@suse.de>
+	 <1214395342-20375-4-git-send-email-bwalle@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jun 25, 2008 at 5:02 AM, Bernhard Walle <bwalle@suse.de> wrote:
+> This patch brings back limiting of the E820 map when a user-defined
+> E820 map is specified. While the behaviour of i386 (32 bit) was to limit
+> the E820 map (and /proc/iomem), the behaviour of x86-64 (64 bit) was not to
+> limit.
+>
+> That patch limits the E820 map again for both x86 architectures.
+>
+> Code was tested for compilation and booting on a 32 bit and 64 bit system.
+>
+>
+> Signed-off-by: Bernhard Walle <bwalle@suse.de>
+> ---
+>  arch/x86/kernel/e820.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+> index 7d1109b..19b7f05 100644
+> --- a/arch/x86/kernel/e820.c
+> +++ b/arch/x86/kernel/e820.c
+> @@ -979,6 +979,8 @@ static int __init parse_memopt(char *p)
+>
+>        mem_size = memparse(p, &p);
+>        end_user_pfn = mem_size>>PAGE_SHIFT;
+> +       e820_update_range(mem_size, ULLONG_MAX, E820_RAM, E820_RESERVED);
+> +
+>        return 0;
+>  }
+>  early_param("mem", parse_memopt);
+> @@ -1023,6 +1025,7 @@ static int __init parse_memmap_opt(char *p)
+>                e820_add_region(start_at, mem_size, E820_RESERVED);
+>        } else {
+>                end_user_pfn = (mem_size >> PAGE_SHIFT);
+> +               e820_update_range(mem_size, ULLONG_MAX, E820_RAM, E820_RESERVED);
+>        }
+>        return *p == '\0' ? 0 : -EINVAL;
+>  }
+> --
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+only this one is needed now. but please change ULLONG_MAX to
+ULLONG_MAX - mem_size
 
-> Hi,
-> 
-> Ingo, can you please drop the "softirq softlockup debugging" patch and 
-> apply this instead? This much, much prettier, reuses existing 
-> debugging infrastructure, and is a lot more generic.
-
-applied to tip/core/softlockup, thanks Vegard.
-
-> (Compile tested on allyesconfig, allnoconfig, allnoconfig + softlockup 
-> debugging.)
-
-hm, that must have taken quite some time to do on your desktop, right?
-
-FYI, there's no mandatory need to go through that buerocratic testing 
-hassle with patches submitted to -tip - especially with small patches 
-that look obvious and have a high chance of being right. We do non-stop 
-allyes/allno/allmod+randconfig 64-bit/32-bit build and boot testing for 
-every single patch added to the repository.
-
-Building, booting and testing it in the environment where you expect it 
-to be used primarily should be more than enough.
-
-	Ingo
+YH
