@@ -1,78 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758679AbYFYOi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758547AbYFYOjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758679AbYFYOi2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 10:38:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757645AbYFYOg2
+	id S1758547AbYFYOjA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 10:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbYFYOgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 10:36:28 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:63129 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756488AbYFYOgT (ORCPT
+	Wed, 25 Jun 2008 10:36:37 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:2091 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756622AbYFYOgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 10:36:19 -0400
-Message-Id: <20080625143615.246159609@de.ibm.com>
+	Wed, 25 Jun 2008 10:36:21 -0400
+Message-Id: <20080625143613.663567264@de.ibm.com>
 References: <20080625143459.100139455@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 25 Jun 2008 16:35:14 +0200
+Date: Wed, 25 Jun 2008 16:35:08 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Michael Holzheu <holzheu@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 15/21] Cleanup s390 debug feature print messages.
-Content-Disposition: inline; filename=814-printk-debug.diff
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 09/21] Cleanup vmwatch printk messages.
+Content-Disposition: inline; filename=808-printk-vmwatchdog.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Holzheu <holzheu@de.ibm.com>
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-Signed-off-by: Michael Holzheu <holzheu@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- arch/s390/kernel/debug.c |    9 ---------
- 1 file changed, 9 deletions(-)
+ drivers/s390/char/vmwatchdog.c |   16 +++-------------
+ 1 file changed, 3 insertions(+), 13 deletions(-)
 
-Index: quilt-2.6/arch/s390/kernel/debug.c
+Index: quilt-2.6/drivers/s390/char/vmwatchdog.c
 ===================================================================
---- quilt-2.6.orig/arch/s390/kernel/debug.c
-+++ quilt-2.6/arch/s390/kernel/debug.c
-@@ -1079,7 +1079,6 @@ __init debug_init(void)
- 	s390dbf_sysctl_header = register_sysctl_table(s390dbf_dir_table);
- 	mutex_lock(&debug_mutex);
- 	debug_debugfs_root_entry = debugfs_create_dir(DEBUG_DIR_ROOT,NULL);
--	printk(KERN_INFO "debug: Initialization complete\n");
- 	initialized = 1;
- 	mutex_unlock(&debug_mutex);
+--- quilt-2.6.orig/drivers/s390/char/vmwatchdog.c
++++ quilt-2.6/drivers/s390/char/vmwatchdog.c
+@@ -92,23 +92,15 @@ static int vmwdt_keepalive(void)
  
-@@ -1193,7 +1192,6 @@ debug_get_uint(char *buf)
- 	for(; isspace(*buf); buf++);
- 	rc = simple_strtoul(buf, &buf, 10);
- 	if(*buf){
--		printk("debug: no integer specified!\n");
- 		rc = -EINVAL;
- 	}
- 	return rc;
-@@ -1340,19 +1338,12 @@ static void debug_flush(debug_info_t* id
-                         	memset(id->areas[i][j], 0, PAGE_SIZE);
- 			}
- 		}
--                printk(KERN_INFO "debug: %s: all areas flushed\n",id->name);
-         } else if(area >= 0 && area < id->nr_areas) {
-                 id->active_entries[area] = 0;
- 		id->active_pages[area] = 0;
- 		for(i = 0; i < id->pages_per_area; i++) {
-                 	memset(id->areas[area][i],0,PAGE_SIZE);
- 		}
--                printk(KERN_INFO "debug: %s: area %i has been flushed\n",
--                        id->name, area);
--        } else {
--                printk(KERN_INFO
--                      "debug: %s: area %i cannot be flushed (range: %i - %i)\n",
--                        id->name, area, 0, id->nr_areas-1);
-         }
-         spin_unlock_irqrestore(&id->lock,flags);
+ 	func = vmwdt_conceal ? (wdt_init | wdt_conceal) : wdt_init;
+ 	ret = __diag288(func, vmwdt_interval, ebc_cmd, len);
++	WARN_ON(ret != 0);
+ 	kfree(ebc_cmd);
+-
+-	if (ret) {
+-		printk(KERN_WARNING "%s: problem setting interval %d, "
+-			"cmd %s\n", __func__, vmwdt_interval,
+-			vmwdt_cmd);
+-	}
+ 	return ret;
  }
+ 
+ static int vmwdt_disable(void)
+ {
+ 	int ret = __diag288(wdt_cancel, 0, "", 0);
+-	if (ret) {
+-		printk(KERN_WARNING "%s: problem disabling watchdog\n",
+-			__func__);
+-	}
++	WARN_ON(ret != 0);
+ 	return ret;
+ }
+ 
+@@ -121,10 +113,8 @@ static int __init vmwdt_probe(void)
+ 	static char __initdata ebc_begin[] = {
+ 		194, 197, 199, 201, 213
+ 	};
+-	if (__diag288(wdt_init, 15, ebc_begin, sizeof(ebc_begin)) != 0) {
+-		printk(KERN_INFO "z/VM watchdog not available\n");
++	if (__diag288(wdt_init, 15, ebc_begin, sizeof(ebc_begin)) != 0)
+ 		return -EINVAL;
+-	}
+ 	return vmwdt_disable();
+ }
+ 
 
 -- 
 blue skies,
