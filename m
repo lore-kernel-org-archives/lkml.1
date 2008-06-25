@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbYFYPrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758885AbYFYPxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758069AbYFYPrp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 11:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759764AbYFYPrd
+	id S1758885AbYFYPxd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 11:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbYFYPx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 11:47:33 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:38080 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756679AbYFYPrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 11:47:32 -0400
-Date: Wed, 25 Jun 2008 19:47:13 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       hugh@veritas.com, nickpiggin@yahoo.com.au
-Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in invalidate_complete_page2()
-Message-ID: <20080625154713.GA18682@2ka.mipt.ru>
-References: <20080625124038.103406301@szeredi.hu> <20080625124121.839734708@szeredi.hu> <20080625131117.GA28136@2ka.mipt.ru> <E1KBV7H-0005nv-Gl@pomaz-ex.szeredi.hu> <20080625141654.GA4803@2ka.mipt.ru> <E1KBWBK-0006Lp-03@pomaz-ex.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 25 Jun 2008 11:53:27 -0400
+Received: from wx-out-0506.google.com ([66.249.82.228]:60020 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754121AbYFYPx0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 11:53:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=X4b55PemEaZcV98caIWGYFDedONTHOWbAKDxM9K8oa0wquHbWPumYzUYsZCcGrvqjl
+         3COgmMFeHtbYNl953J1kzIY12H+5JUbnH/MbfAB1GPiSSSb9izqbDOc6bNIxvgClJqe6
+         AqPd5JU1Di27I4vsUbR3jiLxJdAxv15+gNANM=
+Message-ID: <d00698fb0806250853t4e28c69aod1bc039296987ad8@mail.gmail.com>
+Date: Wed, 25 Jun 2008 17:53:24 +0200
+From: noah <noah123@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: apic=debug report for 2.6.24 (32-bit) with Intel 3GHz on MSI 7173
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1KBWBK-0006Lp-03@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 04:41:10PM +0200, Miklos Szeredi (miklos@szeredi.hu) wrote:
-> > Is this nfs/fuse problem you described:
-> > http://marc.info/?l=linux-fsdevel&m=121396920822693&w=2
-> 
-> Yes.
+Motherboard: MSI 7173 Ver 1A
+CPU: Intel 3.00GHz (HT enabled)
+Kernel 2.6.24 (Ubuntu: linux-image-2.6.24-19-server 2.6.24-19.34) 32-bit
 
-I do not know fuse good enough, but it looks like if your patch only
-fixes issue for pages which are in splice buffer during invalidation,
-any subsequent call for splice() will get correct new data (at least
-invoke readpage(s)), but in the description of error there was a
-long timeout between reading and writing, so it was a fresh splice()
-call, which suddenly started to return errors.
+(i wrote this off the screen; i don't have access to a serial console)
+SMP alternatives: switching to SMP mcode
+Booting processor 1/1 eip 3000
+Initializing CPU#1
+masked ExtINT ON CPU#1
+Calibrating delay using timer specific routine ....
+monitor/mwait feature present
+CPU: Tracecache: 12K uops, L1 D cache: 16K
+CPU: L2 cache: 2048K
+CPU: Physical Processor ID: 0
+CPU1: Intel(R) Pentium(R) 4 CPU 3.00GHz stepping 0a
+Total of 2 processors activated
+ENABLING IO-APIC IRQs
+..Timer: vector=0x31 apic1=0 pin1=2 apic2=-1 pin=-1
+..MP-BIOS bug: 8254 timer not connected to IO-APIC
+...trying to set up timer (IRQ0) through the 8295A ... failed
+...trying to set up timer as Virtual Wire IRQ ... failed.
+...trying to set up timer as ExtINT IRQ ... failed. :(
 
-Is it possible that by having uptodate bit in place, but page was
-actually freed but not removed from all trees and so on, so it
-masked read errors? This may be not the right conclusion though :)
-
--- 
-	Evgeniy Polyakov
+Booting with noapic works.
