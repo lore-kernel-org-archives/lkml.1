@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbYFYL1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbYFYL3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756226AbYFYL1s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 07:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYFYL1j
+	id S1756550AbYFYL3K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 07:29:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbYFYL27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 07:27:39 -0400
-Received: from nebensachen.de ([195.34.83.29]:45144 "EHLO mail.nebensachen.de"
+	Wed, 25 Jun 2008 07:28:59 -0400
+Received: from nebensachen.de ([195.34.83.29]:35090 "EHLO mail.nebensachen.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752774AbYFYL1i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 07:27:38 -0400
-X-Hashcash: 1:20:080625:bzolnier@gmail.com::gWg6QCjOi43QXes8:00000000000000000000000000000000000000000001yQT
-X-Hashcash: 1:20:080625:alan@lxorguk.ukuu.org.uk::Eo1kIBdVDGXo4sW+:00000000000000000000000000000000000003zkg
-X-Hashcash: 1:20:080625:linux-ide@vger.kernel.org::Df0VM2Nso01jYO/I:00000000000000000000000000000000000083yt
-X-Hashcash: 1:20:080625:linux-kernel@vger.kernel.org::1yec9CB/WCCkqfdO:0000000000000000000000000000000009Kdc
-X-Hashcash: 1:20:080625:randy.dunlap@oracle.com::gbtOu+o1jxr7gOsH:000000000000000000000000000000000000004MiH
+	id S1752036AbYFYL25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 07:28:57 -0400
+X-Hashcash: 1:20:080625:bzolnier@gmail.com::ACFnH4XRgrGaPMK2:000000000000000000000000000000000000000000002lg
+X-Hashcash: 1:20:080625:alan@lxorguk.ukuu.org.uk::HD94+ktTn+WxmWVS:00000000000000000000000000000000000004QPK
+X-Hashcash: 1:20:080625:linux-ide@vger.kernel.org::V2CTtePLG8zaBN12:00000000000000000000000000000000000093dW
+X-Hashcash: 1:20:080625:linux-kernel@vger.kernel.org::mlIeHacN+0Hdp4qc:0000000000000000000000000000000000Ve2
+X-Hashcash: 1:20:080625:randy.dunlap@oracle.com::vKNa07cqMupGohHc:000000000000000000000000000000000000002Fr0
 From: Elias Oltmanns <eo@nebensachen.de>
 To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
 Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
        linux-kernel@vger.kernel.org, "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: [PATCH 1/4 v2] IDE: Fix HDIO_DRIVE_RESET handling
+Subject: [PATCH 2/4 v2] IDE: Remove unused code
 References: <87k5gmz596.fsf@denkblock.local>
 	<200806240041.42796.bzolnier@gmail.com>
 	<87skv3s3d9.fsf@denkblock.local>
@@ -28,10 +28,10 @@ References: <87k5gmz596.fsf@denkblock.local>
 	<20080624143548.24dcf511@lxorguk.ukuu.org.uk>
 	<58cb370e0806240719o4a70537p4a6fb64e9086e2d8@mail.gmail.com>
 	<87k5gdn4fq.fsf@denkblock.local>
-Date: Wed, 25 Jun 2008 13:27:32 +0200
+Date: Wed, 25 Jun 2008 13:28:49 +0200
 In-Reply-To: <87k5gdn4fq.fsf@denkblock.local> (Elias Oltmanns's message of
 	"Wed, 25 Jun 2008 13:23:53 +0200")
-Message-ID: <87ej6ln49n.fsf_-_@denkblock.local>
+Message-ID: <87abh9n47i.fsf_-_@denkblock.local>
 User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -39,203 +39,191 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, the code path executing an HDIO_DRIVE_RESET ioctl is broken
-in various ways.  Most importantly, it is treated as an out of band
-request in an illegal way which may very likely lead to system lock ups.
-Use the drive's request queue to avoid this problem (and fix a locking
-issue for free along the way).
+Remove some code which has been made obsolete and hasn't worked properly
+before anyway.  Part of the infrastructure may be reintroduced in a
+follow up patch to implement a working command aborting facility.
 
 Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
 ---
 
- drivers/ide/ide-io.c   |   23 ++++++++++++++++++++++-
- drivers/ide/ide-iops.c |   18 +++++++++++++-----
- drivers/ide/ide.c      |   41 +++++++++++++++--------------------------
- include/linux/ide.h    |    6 ++++++
- 4 files changed, 56 insertions(+), 32 deletions(-)
+ drivers/ide/ide-cd.c     |    1 -
+ drivers/ide/ide-disk.c   |    1 -
+ drivers/ide/ide-floppy.c |    1 -
+ drivers/ide/ide-io.c     |   49 ----------------------------------------------
+ drivers/ide/ide-tape.c   |    1 -
+ drivers/scsi/ide-scsi.c  |   14 -------------
+ include/linux/ide.h      |    7 -------
+ 7 files changed, 0 insertions(+), 74 deletions(-)
 
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index b5ec249..26e8972 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -1940,7 +1940,6 @@ static ide_driver_t ide_cdrom_driver = {
+ 	.do_request		= ide_cd_do_request,
+ 	.end_request		= ide_end_request,
+ 	.error			= __ide_error,
+-	.abort			= __ide_abort,
+ #ifdef CONFIG_IDE_PROC_FS
+ 	.proc			= idecd_proc,
+ #endif
+diff --git a/drivers/ide/ide-disk.c b/drivers/ide/ide-disk.c
+index 5f49a4a..3a2e802 100644
+--- a/drivers/ide/ide-disk.c
++++ b/drivers/ide/ide-disk.c
+@@ -985,7 +985,6 @@ static ide_driver_t idedisk_driver = {
+ 	.do_request		= ide_do_rw_disk,
+ 	.end_request		= ide_end_request,
+ 	.error			= __ide_error,
+-	.abort			= __ide_abort,
+ #ifdef CONFIG_IDE_PROC_FS
+ 	.proc			= idedisk_proc,
+ #endif
+diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
+index c7e4433..011d720 100644
+--- a/drivers/ide/ide-floppy.c
++++ b/drivers/ide/ide-floppy.c
+@@ -1129,7 +1129,6 @@ static ide_driver_t idefloppy_driver = {
+ 	.do_request		= idefloppy_do_request,
+ 	.end_request		= idefloppy_end_request,
+ 	.error			= __ide_error,
+-	.abort			= __ide_abort,
+ #ifdef CONFIG_IDE_PROC_FS
+ 	.proc			= idefloppy_proc,
+ #endif
 diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-index 2805774..2b33c12 100644
+index 2b33c12..661b75a 100644
 --- a/drivers/ide/ide-io.c
 +++ b/drivers/ide/ide-io.c
-@@ -766,6 +766,18 @@ static ide_startstop_t execute_drive_cmd (ide_drive_t *drive,
-  	return ide_stopped;
- }
+@@ -504,55 +504,6 @@ ide_startstop_t ide_error (ide_drive_t *drive, const char *msg, u8 stat)
  
-+static ide_startstop_t ide_special_rq(ide_drive_t *drive, struct request *rq)
-+{
-+	switch (rq->cmd[0]) {
-+	case REQ_DRIVE_RESET:
-+		return ide_do_reset(drive);
-+	default:
-+		blk_dump_rq_flags(rq, "ide_special_rq - bad request");
-+		ide_end_request(drive, 0, 0);
-+		return ide_stopped;
-+	}
-+}
-+
- static void ide_check_pm_state(ide_drive_t *drive, struct request *rq)
+ EXPORT_SYMBOL_GPL(ide_error);
+ 
+-ide_startstop_t __ide_abort(ide_drive_t *drive, struct request *rq)
+-{
+-	if (drive->media != ide_disk)
+-		rq->errors |= ERROR_RESET;
+-
+-	ide_kill_rq(drive, rq);
+-
+-	return ide_stopped;
+-}
+-
+-EXPORT_SYMBOL_GPL(__ide_abort);
+-
+-/**
+- *	ide_abort	-	abort pending IDE operations
+- *	@drive: drive the error occurred on
+- *	@msg: message to report
+- *
+- *	ide_abort kills and cleans up when we are about to do a 
+- *	host initiated reset on active commands. Longer term we
+- *	want handlers to have sensible abort handling themselves
+- *
+- *	This differs fundamentally from ide_error because in 
+- *	this case the command is doing just fine when we
+- *	blow it away.
+- */
+- 
+-ide_startstop_t ide_abort(ide_drive_t *drive, const char *msg)
+-{
+-	struct request *rq;
+-
+-	if (drive == NULL || (rq = HWGROUP(drive)->rq) == NULL)
+-		return ide_stopped;
+-
+-	/* retry only "normal" I/O: */
+-	if (!blk_fs_request(rq)) {
+-		rq->errors = 1;
+-		ide_end_drive_cmd(drive, BUSY_STAT, 0);
+-		return ide_stopped;
+-	}
+-
+-	if (rq->rq_disk) {
+-		ide_driver_t *drv;
+-
+-		drv = *(ide_driver_t **)rq->rq_disk->private_data;
+-		return drv->abort(drive, rq);
+-	} else
+-		return __ide_abort(drive, rq);
+-}
+-
+ static void ide_tf_set_specify_cmd(ide_drive_t *drive, struct ide_taskfile *tf)
  {
- 	struct request_pm_state *pm = rq->data;
-@@ -869,7 +881,16 @@ static ide_startstop_t start_request (ide_drive_t *drive, struct request *rq)
- 			    pm->pm_step == ide_pm_state_completed)
- 				ide_complete_pm_request(drive, rq);
- 			return startstop;
--		}
-+		} else if (!rq->rq_disk && blk_special_request(rq))
-+			/*
-+			 * TODO: Once all ULDs have been modified to
-+			 * check for specific op codes rather than
-+			 * blindly accepting any special request, the
-+			 * check for ->rq_disk above may be replaced
-+			 * by a more suitable mechanism or even
-+			 * dropped entirely.
-+			 */
-+			return ide_special_rq(drive, rq);
- 
- 		drv = *(ide_driver_t **)rq->rq_disk->private_data;
- 		return drv->do_request(drive, rq, block);
-diff --git a/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
-index 66e39e5..80e782b 100644
---- a/drivers/ide/ide-iops.c
-+++ b/drivers/ide/ide-iops.c
-@@ -905,6 +905,14 @@ void ide_execute_pkt_cmd(ide_drive_t *drive)
- }
- EXPORT_SYMBOL_GPL(ide_execute_pkt_cmd);
- 
-+static inline void ide_complete_drive_reset(ide_drive_t *drive)
-+{
-+	struct request *rq = drive->hwif->hwgroup->rq;
-+
-+	if (rq && blk_special_request(rq) && rq->cmd[0] == REQ_DRIVE_RESET)
-+		ide_end_request(drive, 1, 0);
-+}
-+
- /* needed below */
- static ide_startstop_t do_reset1 (ide_drive_t *, int);
- 
-@@ -940,7 +948,7 @@ static ide_startstop_t atapi_reset_pollfunc (ide_drive_t *drive)
- 	}
- 	/* done polling */
- 	hwgroup->polling = 0;
--	hwgroup->resetting = 0;
-+	ide_complete_drive_reset(drive);
+ 	tf->nsect   = drive->sect;
+diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+index 2deb23d..353dd11 100644
+--- a/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -2591,7 +2591,6 @@ static ide_driver_t idetape_driver = {
+ 	.do_request		= idetape_do_request,
+ 	.end_request		= idetape_end_request,
+ 	.error			= __ide_error,
+-	.abort			= __ide_abort,
+ #ifdef CONFIG_IDE_PROC_FS
+ 	.proc			= idetape_proc,
+ #endif
+diff --git a/drivers/scsi/ide-scsi.c b/drivers/scsi/ide-scsi.c
+index 683bce3..f843c13 100644
+--- a/drivers/scsi/ide-scsi.c
++++ b/drivers/scsi/ide-scsi.c
+@@ -258,19 +258,6 @@ idescsi_atapi_error(ide_drive_t *drive, struct request *rq, u8 stat, u8 err)
  	return ide_stopped;
  }
  
-@@ -961,7 +969,7 @@ static ide_startstop_t reset_pollfunc (ide_drive_t *drive)
- 		if (port_ops->reset_poll(drive)) {
- 			printk(KERN_ERR "%s: host reset_poll failure for %s.\n",
- 				hwif->name, drive->name);
--			return ide_stopped;
-+			goto out;
- 		}
- 	}
- 
-@@ -1004,7 +1012,8 @@ static ide_startstop_t reset_pollfunc (ide_drive_t *drive)
- 		}
- 	}
- 	hwgroup->polling = 0;	/* done polling */
--	hwgroup->resetting = 0; /* done reset attempt */
-+out:
-+	ide_complete_drive_reset(drive);
- 	return ide_stopped;
- }
- 
-@@ -1090,7 +1099,6 @@ static ide_startstop_t do_reset1 (ide_drive_t *drive, int do_not_try_atapi)
- 
- 	/* For an ATAPI device, first try an ATAPI SRST. */
- 	if (drive->media != ide_disk && !do_not_try_atapi) {
--		hwgroup->resetting = 1;
- 		pre_reset(drive);
- 		SELECT_DRIVE(drive);
- 		udelay (20);
-@@ -1112,10 +1120,10 @@ static ide_startstop_t do_reset1 (ide_drive_t *drive, int do_not_try_atapi)
- 
- 	if (io_ports->ctl_addr == 0) {
- 		spin_unlock_irqrestore(&ide_lock, flags);
-+		ide_complete_drive_reset(drive);
- 		return ide_stopped;
- 	}
- 
--	hwgroup->resetting = 1;
- 	/*
- 	 * Note that we also set nIEN while resetting the device,
- 	 * to mask unwanted interrupts from the interface during the reset.
-diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
-index b0739c9..dbedb02 100644
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -529,6 +529,19 @@ static int generic_ide_resume(struct device *dev)
- 	return err;
- }
- 
-+static void generic_drive_reset(ide_drive_t *drive)
-+{
-+	struct request *rq;
-+
-+	rq = blk_get_request(drive->queue, READ, __GFP_WAIT);
-+	rq->cmd_type = REQ_TYPE_SPECIAL;
-+	rq->cmd_len = 1;
-+	rq->cmd[0] = REQ_DRIVE_RESET;
-+	rq->cmd_flags |= REQ_SOFTBARRIER;
-+	blk_execute_rq(drive->queue, NULL, rq, 1);
-+	blk_put_request(rq);
-+}
-+
- int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device *bdev,
- 			unsigned int cmd, unsigned long arg)
+-static ide_startstop_t
+-idescsi_atapi_abort(ide_drive_t *drive, struct request *rq)
+-{
+-	debug_log("%s called for %lu\n", __func__,
+-		((struct ide_atapi_pc *) rq->special)->scsi_cmd->serial_number);
+-
+-	rq->errors |= ERROR_MAX;
+-
+-	idescsi_end_request(drive, 0, 0);
+-
+-	return ide_stopped;
+-}
+-
+ static int idescsi_end_request (ide_drive_t *drive, int uptodate, int nrsecs)
  {
-@@ -603,33 +616,9 @@ int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device
- 			if (!capable(CAP_SYS_ADMIN))
- 				return -EACCES;
- 
--			/*
--			 *	Abort the current command on the
--			 *	group if there is one, taking
--			 *	care not to allow anything else
--			 *	to be queued and to die on the
--			 *	spot if we miss one somehow
--			 */
--
--			spin_lock_irqsave(&ide_lock, flags);
--
--			if (HWGROUP(drive)->resetting) {
--				spin_unlock_irqrestore(&ide_lock, flags);
--				return -EBUSY;
--			}
--
--			ide_abort(drive, "drive reset");
--
--			BUG_ON(HWGROUP(drive)->handler);
--
--			/* Ensure nothing gets queued after we
--			   drop the lock. Reset will clear the busy */
--
--			HWGROUP(drive)->busy = 1;
--			spin_unlock_irqrestore(&ide_lock, flags);
--			(void) ide_do_reset(drive);
--
-+			generic_drive_reset(drive);
- 			return 0;
-+
- 		case HDIO_GET_BUSSTATE:
- 			if (!capable(CAP_SYS_ADMIN))
- 				return -EACCES;
+ 	idescsi_scsi_t *scsi = drive_to_idescsi(drive);
+@@ -524,7 +511,6 @@ static ide_driver_t idescsi_driver = {
+ 	.do_request		= idescsi_do_request,
+ 	.end_request		= idescsi_end_request,
+ 	.error                  = idescsi_atapi_error,
+-	.abort                  = idescsi_atapi_abort,
+ #ifdef CONFIG_IDE_PROC_FS
+ 	.proc			= idescsi_proc,
+ #endif
 diff --git a/include/linux/ide.h b/include/linux/ide.h
-index 5ddae9b..8fbe838 100644
+index 8fbe838..25f4c65 100644
 --- a/include/linux/ide.h
 +++ b/include/linux/ide.h
-@@ -139,6 +139,12 @@ struct ide_io_ports {
- #define WAIT_MIN_SLEEP	(2*HZ/100)	/* 20msec - minimum sleep time */
+@@ -556,8 +556,6 @@ typedef struct hwgroup_s {
+ 	unsigned int sleeping	: 1;
+ 		/* BOOL: polling active & poll_timeout field valid */
+ 	unsigned int polling	: 1;
+-	 	/* BOOL: in a polling reset situation. Must not trigger another reset yet */
+-	unsigned int resetting  : 1;
  
- /*
-+ * Op codes for special requests to be handled by ide_special_rq().
-+ * Values should be in the range of 0x20 to 0x3f.
-+ */
-+#define REQ_DRIVE_RESET		0x20
-+
-+/*
-  * Check for an interrupt and acknowledge the interrupt status
-  */
- struct hwif_s;
+ 		/* current drive */
+ 	ide_drive_t *drive;
+@@ -777,7 +775,6 @@ struct ide_driver_s {
+ 	ide_startstop_t	(*do_request)(ide_drive_t *, struct request *, sector_t);
+ 	int		(*end_request)(ide_drive_t *, int, int);
+ 	ide_startstop_t	(*error)(ide_drive_t *, struct request *rq, u8, u8);
+-	ide_startstop_t	(*abort)(ide_drive_t *, struct request *rq);
+ 	struct device_driver	gen_driver;
+ 	int		(*probe)(ide_drive_t *);
+ 	void		(*remove)(ide_drive_t *);
+@@ -819,10 +816,6 @@ ide_startstop_t __ide_error(ide_drive_t *, struct request *, u8, u8);
+ 
+ ide_startstop_t ide_error (ide_drive_t *drive, const char *msg, byte stat);
+ 
+-ide_startstop_t __ide_abort(ide_drive_t *, struct request *);
+-
+-extern ide_startstop_t ide_abort(ide_drive_t *, const char *);
+-
+ extern void ide_fix_driveid(struct hd_driveid *);
+ 
+ extern void ide_fixstring(u8 *, const int, const int);
