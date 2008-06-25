@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYFYLtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbYFYMCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755309AbYFYLtf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 07:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbYFYLtX
+	id S1757273AbYFYMCb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 08:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbYFYMBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 07:49:23 -0400
-Received: from gw.goop.org ([64.81.55.164]:36590 "EHLO mail.goop.org"
+	Wed, 25 Jun 2008 08:01:46 -0400
+Received: from mx1.suse.de ([195.135.220.2]:51072 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756873AbYFYLtW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 07:49:22 -0400
-Message-ID: <4862309E.601@goop.org>
-Date: Wed, 25 Jun 2008 07:48:46 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
-       Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [PATCH 36 of 36] x86_64/paravirt: Make load_gs_index() a	paravirt
- operation
-References: <patchbomb.1214367536@localhost> <30130237d2ea98577dd4.1214367572@localhost> <20080625084700.GB11524@elte.hu>
-In-Reply-To: <20080625084700.GB11524@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1754113AbYFYMBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 08:01:45 -0400
+From: Bernhard Walle <bwalle@suse.de>
+To: x86@kernel.org
+Cc: linux-kernel@vger.kernel.org, vgoyal@redhat.com, kexec@lists.infradead.org,
+       yhlu.kernel@gmail.com
+Subject: Limit E820 map when specifying mem parameter
+Date: Wed, 25 Jun 2008 14:02:19 +0200
+Message-Id: <1214395342-20375-1-git-send-email-bwalle@suse.de>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->   
->> Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
->> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
->>     
->
-> patch logistics detail: the signoff order suggests it's been authored by 
-> Eduardo - but there's no From line to that effect - should i change it 
-> accordingly?
+This patch modifies the E820 map when specifying the mem kernel command line
+parameter. That's the behaviour i386 had before the merging work in the
+current "tip" tree.
 
-Yes, it's Eduardo's.  Huh, I have the From line here; must have got 
-stripped off by my script...
+As Yinghai Lu pointed out in email discussion, e820_update_range() should be
+used for the updating instead of an own function. Two modifications in
+e820_update_range() are necessary:
 
-    J
+ 1. Fix a small bug that prevented the partically covered entry from
+    being stripped (size is not updated).
+ 
+ 2. Small API extension to be able to specify size == ULLONG_MAX to 
+    update the whole map from size to the end.
+
+The modification is necessary that kexec can build the ELF core headers only
+for the used memory. Once the exporting of the real, unmodified memory map is
+in the kernel, kexec can use the raw map and still reboot with full memory
+size.
+
+The patch is against 2.6.26-rc7-tip and has been successfully tested on i386
+and x86-64, with and without "mem" parameter.
+
+
 
