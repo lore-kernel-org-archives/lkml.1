@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758747AbYFYS4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbYFYTCH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758747AbYFYS4N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 14:56:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758527AbYFYSz5
+	id S1758266AbYFYTCH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 15:02:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYFYTB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 14:55:57 -0400
-Received: from smtp.eu.citrix.com ([62.200.22.115]:50493 "EHLO
-	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758052AbYFYSz4 (ORCPT
+	Wed, 25 Jun 2008 15:01:56 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43605 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753128AbYFYTBz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 14:55:56 -0400
-X-Greylist: delayed 606 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Jun 2008 14:55:56 EDT
-X-IronPort-AV: E=Sophos;i="4.27,703,1204502400"; 
-   d="scan'208";a="758412"
-User-Agent: Microsoft-Entourage/11.4.0.080122
-Date: Wed, 25 Jun 2008 19:45:36 +0100
-Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for
- 64-bit Xen support
-From: Keir Fraser <keir.fraser@eu.citrix.com>
-To: Andi Kleen <andi@firstfloor.org>, Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Mark McLoughlin <markmc@redhat.com>,
+	Wed, 25 Jun 2008 15:01:55 -0400
+Date: Wed, 25 Jun 2008 21:13:15 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Keir Fraser <keir.fraser@eu.citrix.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Mark McLoughlin <markmc@redhat.com>,
        xen-devel <xen-devel@lists.xensource.com>,
        Eduardo Habkost <ehabkost@redhat.com>,
        LKML <linux-kernel@vger.kernel.org>, Stephen Tweedie <sct@redhat.com>
-Message-ID: <C48850E0.231A8%keir.fraser@eu.citrix.com>
-Thread-Topic: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork
- for 64-bit Xen support
-Thread-Index: AcjW86fC5gcDXELmEd2ISwAX8io7RQ==
-In-Reply-To: <87skv1r8ln.fsf@basil.nowhere.org>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
-X-OriginalArrivalTime: 25 Jun 2008 18:45:45.0007 (UTC) FILETIME=[AD20E3F0:01C8D6F3]
+Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for 64-bit Xen support
+Message-ID: <20080625191315.GD6708@one.firstfloor.org>
+References: <87skv1r8ln.fsf@basil.nowhere.org> <C48850E0.231A8%keir.fraser@eu.citrix.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <C48850E0.231A8%keir.fraser@eu.citrix.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25/6/08 13:40, "Andi Kleen" <andi@firstfloor.org> wrote:
+> What does Linux expect to scale up to? Reserving 16 PML4 entries leaves the
+> kernel with 120TB of available 'negative' address space. Should be plenty, I
+> would think.
 
->> to 0xffff880000000000.  I have no general justification for this: th
-> 
-> This will significantly decrease the maximum amount of physical
-> memory supported by Linux longer term.
+There are already (ok non x86-64) systems shipping today with 10+TB of 
+addressable memory. 100+TB is not that far away with typical
+growth rates. Besides there has to be much more in the negative address
+space than just direct mapping.
 
-What does Linux expect to scale up to? Reserving 16 PML4 entries leaves the
-kernel with 120TB of available 'negative' address space. Should be plenty, I
-would think.
+So far we always that 64bit Linux can support upto 1/4*max VA memory.
+With your change that formula would be not true anymore.
 
- -- Keir
+-Andi 
 
 
