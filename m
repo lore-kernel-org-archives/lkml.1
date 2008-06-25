@@ -1,101 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbYFYWnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbYFYWoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755625AbYFYWnF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 18:43:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbYFYWmz
+	id S1756015AbYFYWoa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 18:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbYFYWoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 18:42:55 -0400
-Received: from mga14.intel.com ([143.182.124.37]:61376 "EHLO mga14.intel.com"
+	Wed, 25 Jun 2008 18:44:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60902 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753344AbYFYWmy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 18:42:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,704,1204531200"; 
-   d="scan'208";a="2697932"
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "caglar@pardus.org.tr" <caglar@pardus.org.tr>,
-       Dave Jones <davej@redhat.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Date: Wed, 25 Jun 2008 15:46:21 -0700
-Subject: RE: Intel 8100 Error inserting acpi_cpufreq
-Thread-Topic: Intel 8100 Error inserting acpi_cpufreq
-Thread-Index: AcjWH3dnhH7FS9VtTwqrkxj2w8I3RAA9Wsbg
-Message-ID: <7E82351C108FA840AB1866AC776AEC4606577D9A@orsmsx505.amr.corp.intel.com>
-References: <200806242025.04252.caglar@pardus.org.tr>
-In-Reply-To: <200806242025.04252.caglar@pardus.org.tr>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="iso-8859-9"
-Content-Transfer-Encoding: 8BIT
+	id S1752388AbYFYWoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 18:44:22 -0400
+Date: Wed, 25 Jun 2008 18:43:01 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
+       yhlu.kernel@gmail.com
+Subject: Re: [PATCH 1/2] Add /sys/firmware/memmap
+Message-ID: <20080625224301.GE32344@redhat.com>
+References: <1214423826-12628-1-git-send-email-bwalle@suse.de> <1214423826-12628-2-git-send-email-bwalle@suse.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1214423826-12628-2-git-send-email-bwalle@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jun 25, 2008 at 09:57:05PM +0200, Bernhard Walle wrote:
+> This patch adds /sys/firmware/memmap interface that represents the BIOS
+> (or Firmware) provided memory map. The tree looks like:
+> 
+>     /sys/firmware/memmap/0/start   (hex number)
+>                            end     (hex number)
+>                            type    (string)
+>     ...                 /1/start
+>                            end
+>                            type
+> 
+> With the following shell snippet one can print the memory map in the same form
+> the kernel prints itself when booting on x86 (the E820 map).
+> 
+>   --------- 8< --------------------------
+>     #!/bin/sh
+>     cd /sys/firmware/memmap
+>     for dir in * ; do
+>         start=$(cat $dir/start)
+>         end=$(cat $dir/end)
+>         type=$(cat $dir/type)
+>         printf "%016x-%016x (%s)\n" $start $[ $end +1] "$type"
+>     done
+>   --------- >8 --------------------------
+> 
+> That patch only provides the needed interface:
+> 
+>  1. The sysfs interface.
+>  2. The structure and enumeration definition.
+>  3. The function firmware_map_add() and firmware_map_add_early()
+>     that should be called from architecture code (E820/EFI, for
+>     example) to add the contents to the interface.
+> 
+> If the kernel is compiled without CONFIG_FIRMWARE_MEMMAP, the interface does
+> nothing without cluttering the architecture-specific code with #ifdef's.
+> 
 
+Hi Bernhard,
 
-Most likely BIOS is not exporting relevant ACPI tables for the driver to detect the frequencies and such.
-Latest BIOS and enabling Speedstep in BIOS options will be the things to check.
+Thanks for the patch. Couple of thoughts.
 
-Thanks,
-Venki
+Do we really need another CONFIG option (CONFIG_FIRMWARE_MEMMAP)? To,
+me this does not seem to be a big chunk of code at the same time I am
+assuming that most of the people will use it (because of kexec). So
+probably, it might not make lot of sense to put additional CONFIG option.
 
->-----Original Message-----
->From: linux-kernel-owner@vger.kernel.org
->[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of S.Çaglar Onur
->Sent: Tuesday, June 24, 2008 10:25 AM
->To: Dave Jones
->Cc: linux-kernel@vger.kernel.org; Len Brown
->Subject: Intel 8100 Error inserting acpi_cpufreq
->
->Hi;
->
->We received a bug report from one of our users, reporter says
->"modprobe acpi-cpufreq" ends up with following
->
->FATAL: Error inserting acpi_cpufreq
->(/lib/modules/2.6.25.5-97/kernel/arch/x86/kernel/cpu/cpufreq/ac
->pi-cpufreq.ko):
->No such device
->
->and after that try dmesg [1] starts to show
->
->[...]
->ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
->padlock: VIA PadLock not detected.
->wlan0: no IPv6 routers present
->ACPI Error (psargs-0355): [\_PR_.CPU0._PSS] Namespace lookup
->failure, AE_NOT_FOUND
->ACPI Error (psparse-0537): Method parse/execution failed
->[\_PR_.CPU1._PSS] (Node f74c7060), AE_NOT_FOUND
->ACPI Exception (processor_perflib-0255): AE_NOT_FOUND,
->Evaluating _PSS  [20070126]
->[...]
->
->Although original report against 2.6.25.5 reporter also tried
->2.6.25.8 without success.
->
->Any tips really appreciated and if anything else is needed
->please just tell...
->
->[1] http://bugs.pardus.org.tr/attachment.cgi?id=2801
->
->Cheers
->--
->S.Çaðlar Onur <caglar@pardus.org.tr>
->http://cekirdek.pardus.org.tr/~caglar/
->
->Linux is like living in a teepee. No Windows, no Gates and an
->Apache in house!
->--
->To unsubscribe from this list: send the line "unsubscribe
->linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
->
+[..]
+> +#include <linux/string.h>
+> +#include <linux/firmware-map.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/types.h>
+> +#include <linux/bootmem.h>
+> +
+> +/*
+> + * String representation of enum firmware_map_type from
+> + * <linux/firmware-map.h>.
+> + */
+> +const char *type_to_string_map[] = {
+> +	"RAM",				/* MAP_RAM */
+> +	"Reserved",			/* MAP_RESERVED */
+> +	"ACPI Tables",			/* MAP_ACPI */
+> +	"Non-volatile Storage",		/* MAP_NVS */
+> +};
+> +
+
+How about leaving the decision of memory type on arch dependent code? How
+about letting arch code pass you an string while adding entry and that
+string will contain the type of memory. The way request_resource() is
+implemented. 
+
+I think that would be easier and provide more flexibility to arch
+dependent code. For example, I see so many additional memory types for
+EFI code. It will be good to give EFI code flexibility that how does
+he perceive a particular memory region and then let kexec-tools deal 
+with various memory types.
+ 
+Thanks
+Vivek
