@@ -1,117 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759696AbYFYPpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759921AbYFYPpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759696AbYFYPpO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 11:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750989AbYFYPpB
+	id S1759921AbYFYPpg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 11:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758810AbYFYPpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 11:45:01 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:12991 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750968AbYFYPpA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 11:45:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=HjgjxD9/WWuSqHlpx2Rr41e5UttTKtrlhgGToJrzRiSyAJTluPf6yIwX8D+o9sSW8E
-         Z94TmHrUBM7SjRgcvltUDJwc/ehISsA/EyVwIoiI4jA9L3GDl8iM2f5SBAHYTdUBEF16
-         kk98MPEhuqmOQ/fe8joV3QTVjIOW/BWXIt2lc=
-Message-ID: <86802c440806250844s51b50311va1c8e9c9fc1da510@mail.gmail.com>
-Date: Wed, 25 Jun 2008 08:44:59 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Merge setup_32/64.c into setup.c
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080625153614.GB18796@elte.hu>
+	Wed, 25 Jun 2008 11:45:22 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34801 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751549AbYFYPpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 11:45:20 -0400
+Date: Wed, 25 Jun 2008 17:44:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, x86@kernel.org, vgoyal@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] e820_update_range(): Allow specifying ULLONG_MAX
+Message-ID: <20080625154459.GD18796@elte.hu>
+References: <1214318125-32619-1-git-send-email-bwalle@suse.de> <1214318125-32619-3-git-send-email-bwalle@suse.de> <86802c440806241301x4d124335h2888de9e915208ae@mail.gmail.com> <86802c440806241321g6c5cd64eoe504d6029de6fe5a@mail.gmail.com> <20080625140511.6660ff68@halley.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200806242213.15310.yhlu.kernel@gmail.com>
-	 <200806242214.09503.yhlu.kernel@gmail.com>
-	 <200806250114.09858.yhlu.kernel@gmail.com>
-	 <20080625153614.GB18796@elte.hu>
+In-Reply-To: <20080625140511.6660ff68@halley.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 8:36 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->>
->> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->>
->> ---
->>  arch/x86/kernel/Makefile   |    2
->>  arch/x86/kernel/setup.c    |  676 ++++++++++++++++++++++++++++++++++++++++++++-
->>  arch/x86/kernel/setup_32.c |  543 ------------------------------------
->>  arch/x86/kernel/setup_64.c |  381 -------------------------
->>  include/asm-x86/setup.h    |    2
->>  5 files changed, 670 insertions(+), 934 deletions(-)
->
-> very nice!
->
-> could we please split this up into several, gradual steps that bring
-> setup_32.c and setup_64.c to exactly the same content - where the final
-> patch just renames arch/x86/kernel/setup_32.c to arch/x86/kernel/setup.c
-> and deletes arch/x86/kernel/setup_64.c ?
 
-OK,  someone (Mike Triavis) already stole setup.c for X86_NUMA.
+* Bernhard Walle <bwalle@suse.de> wrote:
 
-You need to change that setup.c to other name. or split it away...
+> * Yinghai Lu [2008-06-24 13:21]:
+> >
+> > > it seems we should let the caller to use
+> > > e820_update_range(start, ULLONG_MAX - size,....)
+> > >
+> > > so you don't need to touch this func.
+> > 
+> > or add sanitary check before using size in this func like
+> > if (size > ULLONG_MAX - start)
+> >      size = ULLONG_MAX - start;
+> > 
+> > e820_remove_range need to the same thing
+> 
+> I like that. I think the complexity should be in the function, and not 
+> in the caller's function.
 
->
-> it would still result in exactly the same end result - but is much more
-> bisectable (and reviewable, etc.). A bit like how arch/x86/mm/ioremap.c
-> or arch/x86/mm/pageattr.c was unified.
->
-> maybe it can be done in less than 10 patches - but it guess it should be
-> rather something in the neighborhood of 20 patches. Changes like this:
->
-> -       /*
-> -        * NOTE: before this point _nobody_ is allowed to allocate
-> -        * any memory using the bootmem allocator.  Although the
-> -        * allocator is now initialised only the first 8Mb of the kernel
-> -        * virtual address space has been mapped.  All allocations before
-> -        * paging_init() has completed must use the alloc_bootmem_low_pages()
-> -        * variant (which allocates DMA'able memory) and care must be taken
-> -        * not to exceed the 8Mb limit.
-> -        */
->
-> should be in a separate patch - you removed this restriction from the
-> x86 architecture via your earlier patches, so the removal of the comment
-> comes from that (and deserves a separate commit), not purely from the
-> mechanic unification in the end.
+ok - i'll wait for v2 of these patches, which will have the feedback 
+from Yinghai incorporated - agreed? (Please Cc: Yinghai on the next 
+submission of this series) Thanks,
 
-OK.
-
->
-> other changes like this:
->
-> -#ifdef CONFIG_X86_FIND_SMP_CONFIG
-> +#if defined(CONFIG_X86_FIND_SMP_CONFIG) && defined(CONFIG_X86_32) || \
-> +    defined(CONFIG_X86_MPPARSE) && defined(CONFIG_X86_64)
->
-> here you fix coding style:
->
-> -        /*
-> -         * Parse SRAT to discover nodes.
-> -         */
-> -        acpi_numa_init();
-> +       /*
-> +        * Parse SRAT to discover nodes.
-> +        */
-> +       acpi_numa_init();
->
-
-OK
-
-> etc. etc. You do a lot more very useful work than the plain single
-> unification patch you sent tells us - all these changes should be split
-> up.
-
-YH
+	Ingo
