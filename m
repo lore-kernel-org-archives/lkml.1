@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbYFYWcI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbYFYWe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756626AbYFYWcI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 18:32:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753739AbYFYWb5
+	id S1756159AbYFYWe3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 18:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbYFYWeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 18:31:57 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48145 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753003AbYFYWb4 (ORCPT
+	Wed, 25 Jun 2008 18:34:21 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:36028 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752736AbYFYWeV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 18:31:56 -0400
-Date: Wed, 25 Jun 2008 15:31:36 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       x86@kernel.org, xen-devel <xen-devel@lists.xensource.com>,
-       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
-       Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [PATCH 03 of 36] x86: add memory barriers to wrmsr
-Message-ID: <20080625153136.2b3b6737@infradead.org>
-In-Reply-To: <4862B3E9.50601@goop.org>
-References: <patchbomb.1214367536@localhost>
-	<93c7057b1f4acae501b2.1214367539@localhost>
-	<20080624214441.13202f12@infradead.org>
-	<4862B3E9.50601@goop.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 25 Jun 2008 18:34:21 -0400
+To: Joe Peterson <joe@skyrush.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] UTC timestamp option for FAT filesystems
+From: Andi Kleen <andi@firstfloor.org>
+References: <4861D685.4070308@skyrush.com>
+Date: Thu, 26 Jun 2008 00:33:43 +0200
+In-Reply-To: <4861D685.4070308@skyrush.com> (Joe Peterson's message of "Tue, 24 Jun 2008 23:24:21 -0600")
+Message-ID: <87od5pqh4o.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 25 Jun 2008 22:26:26.0830 (UTC) FILETIME=[81DEBAE0:01C8D712]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jun 2008 14:08:57 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Joe Peterson <joe@skyrush.com> writes:
 
-> Arjan van de Ven wrote:
-> > it's more readable for several of these cases to stick a barrier();
-> > in front and after it to be honest; that makes it more explicit that
-> > these are deliberate compiler barriers rather than "actual" memory
-> > access...
-> >
-> >   
-> 
-> I suppose, though I would be inclined to put the barriers in the
-> wrmsr macro itself to act as documentation. 
+> Attached is a patch to provide a new mount option ("utc") for DOS
+> (vfat/msdos) filesystems, allowing timestamps to be in universal
+> coordinated time (UTC) rather than local time in applications where
+> doing this is advantageous.
 
+The time zone handling seems racy. e.g. consider the case DST 
+changes on that day. You convert before the switch over 
+and suddenly the time offset is different.
 
-yeah I meant like this:
+I'm actually not sure someone in user space is even updating the kernel
+idea of the timezone for DST on a switch (generally it was assumed it's some
+obsolete BSD concept and that all real programs only use the 
+user space glibc implementation that knows all the rules). So 
+DST might not be supported at all.
 
-static inline void native_write_msr(unsigned int msr,
- 				    unsigned low, unsigned high)
-{
-	barrier();
-	asm volatile("wrmsr" : : "c" (msr), "a"(low), "d" (high));
-	barrier();
-}
+Also even if it worked it seems very limited. If you do that why not
+have an option to set an arbitary time zone offset?
 
-or in the same in the thing that calls this.
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+-Andi
