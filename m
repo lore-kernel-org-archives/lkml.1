@@ -1,100 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbYFYXDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYFYXFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756152AbYFYXDZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 19:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYFYXDQ
+	id S1755958AbYFYXFA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 19:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYFYXEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 19:03:16 -0400
-Received: from outbound-mail-112.bluehost.com ([69.89.24.2]:58435 "HELO
-	outbound-mail-112.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751118AbYFYXDP (ORCPT
+	Wed, 25 Jun 2008 19:04:53 -0400
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:30184 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751072AbYFYXEw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 19:03:15 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] remove pcibios_update_resource() functions
-Date: Wed, 25 Jun 2008 16:02:49 -0700
+	Wed, 25 Jun 2008 19:04:52 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=s3nsyBBg4bpOFnH6upkd+Uhni0uwt7tNo9TOJ8tDCdPn00los0OiIlnU69whcPerJxobJxg0rzMTd0MkWxtaxObK5l3kVt9egXxVKW8Y+Kgveb0ExBCK2WpbVNHvY8x3GU4VbgLM/IE8A6VU7ZdFDNtzzBMAryX/uNK/Pab+mBs=  ;
+X-YMail-OSG: 2vqQWTgVM1n7pJZQwYK5Pq07We73msX04ywKbtp6AYFd0jvY_G9PsVd.W5ydUk07tdkk0Ie5.isO_gveAjMD7Py9_hKRR1IGWnWTQ7.nQRqB.X43xEuG45XPuyUmbytHE68-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] rtc: remove BKL for ioctl()
+Date: Wed, 25 Jun 2008 16:04:49 -0700
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       dhowells@redhat.com, gerg@uclinux.org, ralf@linux-mips.org,
-       linux-mips@linux-mips.org, lethal@linux-sh.org,
-       linux-sh@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>
-References: <20080617223332.GM25911@cs181133002.pp.htv.fi>
-In-Reply-To: <20080617223332.GM25911@cs181133002.pp.htv.fi>
+Cc: Jonathan Corbet <corbet@lwn.net>, lkml <linux-kernel@vger.kernel.org>,
+       rtc-linux@googlegroups.com
+References: <200806221955.42597.david-b@pacbell.net> <20080625163928.4da1f4a0@bike.lwn.net> <20080625233017.5b207e94@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080625233017.5b207e94@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806251602.49856.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+Message-Id: <200806251604.49995.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, June 17, 2008 3:33 pm Adrian Bunk wrote:
-> Russell King did the following back in 2003:
->
-> <--  snip  -->
->
->     [PCI] pci-9: Kill per-architecture pcibios_update_resource()
->
->     Kill pcibios_update_resource(), replacing it with
-> pci_update_resource(). pci_update_resource() uses pcibios_resource_to_bus()
-> to convert a resource to a device BAR - the transformation should be
-> exactly the same as the transformation used for the PCI bridges.
+On Wednesday 25 June 2008, Alan Cox wrote:
+> > 
+> > Shouldn't that be -EINTR?
+> 
+> For an ioctl case which should never be blocking for long periods it
+> shouldn't be _interruptible in the first place, that will just introduce
+> bizarre and weird bugs in application code.
+> 
+> If there are slow ops they should drop and retake the lock.
 
-Ralf, I assume you're ok with this?
+What's a "long period"?
 
-Thanks,
-Jesse
+RTCs that connect using I2C or SPI will need to queue for access to
+that particular serial bus, and then there are transfer costs.
+The busses are frequently, but of course not always, idle.  For I2C
+at 100 KHz, RTC transfers might take a millisecond or so.
 
-> diff --git a/arch/mips/pmc-sierra/yosemite/ht.c
-> b/arch/mips/pmc-sierra/yosemite/ht.c index 6380662..678388f 100644
-> --- a/arch/mips/pmc-sierra/yosemite/ht.c
-> +++ b/arch/mips/pmc-sierra/yosemite/ht.c
-> @@ -345,42 +345,6 @@ int pcibios_enable_device(struct pci_dev *dev, int
-> mask) return pcibios_enable_resources(dev);
->  }
->
-> -
-> -
-> -void pcibios_update_resource(struct pci_dev *dev, struct resource *root,
-> -                             struct resource *res, int resource)
-> -{
-> -        u32 new, check;
-> -        int reg;
-> -
-> -        return;
-> -
-> -        new = res->start | (res->flags & PCI_REGION_FLAG_MASK);
-> -        if (resource < 6) {
-> -                reg = PCI_BASE_ADDRESS_0 + 4 * resource;
-> -        } else if (resource == PCI_ROM_RESOURCE) {
-> -		res->flags |= IORESOURCE_ROM_ENABLE;
-> -                reg = dev->rom_base_reg;
-> -        } else {
-> -                /*
-> -                 * Somebody might have asked allocation of a non-standard
-> -                 * resource
-> -                 */
-> -                return;
-> -        }
-> -
-> -        pci_write_config_dword(dev, reg, new);
-> -        pci_read_config_dword(dev, reg, &check);
-> -        if ((new ^ check) &
-> -            ((new & PCI_BASE_ADDRESS_SPACE_IO) ? PCI_BASE_ADDRESS_IO_MASK
-> : -             PCI_BASE_ADDRESS_MEM_MASK)) {
-> -                printk(KERN_ERR "PCI: Error while updating region "
-> -                       "%s/%d (%08x != %08x)\n", pci_name(dev), resource,
-> -                       new, check);
-> -        }
-> -}
-> -
-> -
->  void pcibios_align_resource(void *data, struct resource *res,
->                              resource_size_t size, resource_size_t align)
->  {
+I'd be tempted to say those are all quick enough that the ops don't
+need to be interruptible.
 
+- Dave
