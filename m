@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758860AbYFYQOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759952AbYFYQPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758860AbYFYQOX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 12:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755421AbYFYQOP
+	id S1759952AbYFYQPT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 12:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756586AbYFYQPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 12:14:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59499 "EHLO mx2.mail.elte.hu"
+	Wed, 25 Jun 2008 12:15:05 -0400
+Received: from main.gmane.org ([80.91.229.2]:59870 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752857AbYFYQOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 12:14:14 -0400
-Date: Wed, 25 Jun 2008 18:14:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederik Schwarzer <schwarzerf@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] some typo fixes in docs and comments
-Message-ID: <20080625161404.GE24967@elte.hu>
-References: <200806241611.17959.schwarzerf@gmail.com>
-MIME-Version: 1.0
+	id S1756457AbYFYQPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 12:15:04 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bernd Schubert <bernd-schubert@gmx.de>
+Subject: Re: [GIT PULL] KVM fixes for 2.6.26-rc7
+Followup-To: gmane.comp.emulators.kvm.devel
+Date: Wed, 25 Jun 2008 18:13:05 +0200
+Message-ID: <g3tqqh$dt5$1@ger.gmane.org>
+References: <48616182.9030902@qumranet.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200806241611.17959.schwarzerf@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: stgt-4d03bb48.pool.mediaways.net
+User-Agent: KNode/0.10.9
+Cc: kvm@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Avi Kivity wrote:
 
-* Frederik Schwarzer <schwarzerf@gmail.com> wrote:
-
-> Hi,
+> Linus, please pull from the repo and branch at:
 > 
-> while reading the help of a kernel module config, I found a typo. 
-> Since this is a quite common typo, I looked for it further and fixed 
-> it where I found it.
-> 
-> I hope this is the right address for this kind of things.
-> 
-> Regards,
-> Frederik
-> 
-> ---
->  Documentation/dell_rbu.txt              |    4 ++--
->  Documentation/laptops/thinkpad-acpi.txt |    2 +-
->  Documentation/networking/tuntap.txt     |    2 +-
->  arch/m68k/kernel/traps.c                |    2 +-
->  drivers/acpi/executer/exprep.c          |    2 +-
->  drivers/acpi/executer/exresolv.c        |    2 +-
->  drivers/acpi/executer/exstore.c         |    2 +-
->  drivers/acpi/resources/rscreate.c       |    2 +-
->  drivers/acpi/utilities/utobject.c       |    4 ++--
->  drivers/char/epca.c                     |    2 +-
->  drivers/cpufreq/Kconfig                 |    4 ++--
->  drivers/input/keyboard/atkbd.c          |    2 +-
->  drivers/macintosh/Kconfig               |    2 +-
->  drivers/misc/phantom.c                  |    2 +-
->  fs/ncpfs/ioctl.c                        |    2 +-
->  include/acpi/acmacros.h                 |    2 +-
->  include/acpi/actypes.h                  |    2 +-
->  include/asm-x86/desc_defs.h             |    2 +-
->  include/linux/ncp_fs.h                  |    2 +-
->  mm/slub.c                               |    2 +-
->  sound/oss/aedsp16.c                     |    2 +-
->  21 files changed, 24 insertions(+), 24 deletions(-)
+>   git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git
+> kvm-updates-2.6.26
 
-the x86 bits are looking fine - and the other ones seem OK too.
+I just pulled from Linus and now it stalls to boot at
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+[    0.616031] pnp: PnP ACPI init
+[    0.628031] ACPI: bus type pnp registered
+[    0.640031] pnp: PnP ACPI: found 7 devices
+[    0.652031] ACPI: ACPI bus type pnp unregistered
+[    0.660031] SCSI subsystem initialized
+[    0.664031] PCI: Using ACPI for IRQ routing
+[    0.692031] PCI-GART: No AMD northbridge found.
 
-	Ingo
+The kvm process is at 100% time. Taking the many problems I already reported
+about, 2.6.26 probably will be entirely broken regarding kvm :(
+
+
+Thanks,
+Bernd
+
+
+
+
