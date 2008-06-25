@@ -1,63 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752479AbYFYGdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbYFYGhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752479AbYFYGdF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 02:33:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYFYGcx
+	id S1755328AbYFYGhb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 02:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbYFYGhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 02:32:53 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:16462 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753293AbYFYGcw (ORCPT
+	Wed, 25 Jun 2008 02:37:18 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57152 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752201AbYFYGhQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 02:32:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OihIJ5yH4ZcG/8dwIQXBbMNRdU0HpTeQUVCVuc2Rt824kvCOOjzyNJVWVwCdK8L2w/
-         PzOG2fGnmogdEbshi+q6wcdRVgSgXmqu1WMafGxbg4Xp2Ghuymp3+d4brxPtrC3QuJ8o
-         +z1ePnoxZNQHToFna6KqGY08jjqm121d0s6Q4=
-Message-ID: <e2e108260806242332i2138f7f7t63626d45a33fdce2@mail.gmail.com>
-Date: Wed, 25 Jun 2008 08:32:50 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Subject: Re: When did High-Resolution Timers hit mainline?
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Roman Zippel" <zippel@linux-m68k.org>,
-       "john stultz" <johnstul@us.ibm.com>
-In-Reply-To: <cfd18e0f0806242108s79ccc948n73e2ad5f694ecdaf@mail.gmail.com>
+	Wed, 25 Jun 2008 02:37:16 -0400
+Message-Id: <27A96BE5FB224E9A876DA3326A6A6B27@nsl.ad.nec.co.jp>
+From: "Takashi Sato" <t-sato@yk.jp.nec.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <viro@ZenIV.linux.org.uk>, <linux-ext4@vger.kernel.org>, <xfs@oss.sgi.com>,
+       <dm-devel@redhat.com>, <linux-fsdevel@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <axboe@kernel.dk>,
+       <mtk.manpages@googlemail.com>
+References: <20080624155919t-sato@mail.jp.nec.com> <20080624143840.c183d0d9.akpm@linux-foundation.org>
+In-Reply-To: <20080624143840.c183d0d9.akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/3] freeze feature ver 1.6
+Date: Wed, 25 Jun 2008 15:36:40 +0900
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	format=flowed;
+	charset="ISO-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <cfd18e0f0806232335p3e05d690o5a5cef8c9626fae7@mail.gmail.com>
-	 <cfd18e0f0806242108s79ccc948n73e2ad5f694ecdaf@mail.gmail.com>
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Windows Mail 6.0.6000.16480
+X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6000.16545
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 6:08 AM, Michael Kerrisk
-<mtk.manpages@googlemail.com> wrote:
->   The Software Clock, HZ, and Jiffies
->       The accuracy of various system calls that set timeouts,  (e.g.,
->       select(2),   sigtimedwait(2))   and  measure  CPU  time  (e.g.,
->       getrusage(2)) is limited by  the  resolution  of  the  software
->       clock,  a clock maintained by the kernel which measures time in
->       jiffies.  The size of a jiffy is determined by the value of the
->       kernel constant HZ.
+Hi,
 
-Maybe "size of a jiffy" should be replaced by "duration of a jiffy" ?
+> umm, OK, but nowhere in this patch series can I find a justification or
+> reason for making these changes to Linux.  Why do we want to do this?
+> What is the benefit?  What is the motivation.  What are the use-cases,
+> etc?
 
-An explanation of the impact of CONFIG_NO_HZ is missing.
+Currently, ext3 in mainline Linux doesn't have the freeze feature which
+suspends write requests.  So, we cannot take a backup which keeps
+the filesystem's consistency with the storage device's features
+(snapshot and replication) while it is mounted.
+In many case, a commercial filesystem (e.g. VxFS) has
+the freeze feature and it would be used to get the consistent backup.
+If Linux's standard filesytem ext3 has the freeze feature, we can do it
+without a commercial filesystem.
 
-You also missed the fact that since the 2.6 kernel there are two
-constants related to time resolution, namely HZ and USER_HZ. HZ is the
-frequency of the timer interrupt, and 1/USER_HZ is the time resolution
-for system calls that use jiffies as time unit (e.g. the five values
-returned by the times() system call). The time resolution of e.g. the
-select() and poll() system calls is 1.0/HZ since the timeout for these
-system calls is specified as a struct timeval or struct timespec.
+So I have implemented the ioctls of the freeze feature.
+I think we can take the consistent backup with the following steps.
+1. Freeze the filesystem with the freeze ioctl.
+2. Separate the replication volume or create the snapshot
+   with the storage device's feature.
+3. Unfreeze the filesystem with the unfreeze ioctl.
+4. Take the backup from the separated replication volume
+   or the snapshot.
 
-Bart.
+Cheers, Takashi
+
+> On Tue, 24 Jun 2008 15:59:19 +0900
+> Takashi Sato <t-sato@yk.jp.nec.com> wrote:
+> 
+>> Hi Andrew and Alexander,
+>> 
+>> I have implemented the ioctls for the filesystem freeze feature
+>> and discussed its implementation on the ML (linux-ext4, xfs,
+>> linux-fsdevel, linux-kernel) for five months.  All of the comments are
+>> addressed in my patch-set.
+>> Could you consider merging it into Linux?
+>> 
+>> The filesystem freeze feature can suspend accesses to the filesystem
+>> keeping the filesystem's consistency.  We can take the consistent backup
+>> with it cooperating with the backup software.
+>> 
+>> The patches are re-based from linux-2.6.26-rc3 to linux-2.6.26-rc7
+>> There is no functional change from the previous version.
+>> The patch-set consists of the following three patches.
+>> 
+>> [PATCH 1/3] Implement generic freeze feature
+>>   I have modified to set the suitable error number (EOPNOTSUPP)
+>>   in case the filesystem doesn't support the freeze feature.
+>> 
+>>   The ioctls for the generic freeze feature are below.
+>>   o Freeze the filesystem
+>>     int ioctl(int fd, int FIFREEZE, arg)
+>>       fd: The file descriptor of the mountpoint
+>>       FIFREEZE: request code for the freeze
+>>       arg: Ignored
+>>       Return value: 0 if the operation succeeds. Otherwise, -1
+>> 
+>>   o Unfreeze the filesystem
+>>     int ioctl(int fd, int FITHAW, arg)
+>>       fd: The file descriptor of the mountpoint
+>>       FITHAW: request code for unfreeze
+>>       arg: Ignored
+>>       Return value: 0 if the operation succeeds. Otherwise, -1
+>> 
+>> [PATCH 2/3] Remove XFS specific ioctl interfaces for freeze feature
+>>   It removes XFS specific ioctl interfaces and request codes
+>>   for freeze feature.
+>>   This patch has been supplied by David Chinner.
+>> 
+>> [PATCH 3/3] Add timeout feature
+>>   The timeout feature is added to freeze ioctl.  And new ioctl
+>>   to reset the timeout period is added.
+>>   o Freeze the filesystem
+>>     int ioctl(int fd, int FIFREEZE, long *timeval)
+>>       fd: The file descriptor of the mountpoint
+>>       FIFREEZE: request code for the freeze
+>>       timeval: the timeout period in seconds
+>>                If it's 0 or 1, the timeout isn't set.
+>>                This special case of "1" is implemented to keep
+>>                the compatibility with XFS applications.
+>>       Return value: 0 if the operation succeeds. Otherwise, -1
+>> 
+>>   o Reset the timeout period
+>>     This is useful for the application to set the timeval more accurately.
+>>     For example, the freezer resets the timeval to 10 seconds every 5
+>>     seconds.  In this approach, even if the freezer causes a deadlock
+>>     by accessing the frozen filesystem, it will be solved by the timeout
+>>     in 10 seconds and the freezer can recognize that at the next reset
+>>     of timeval.
+>>     int ioctl(int fd, int FIFREEZE_RESET_TIMEOUT, long *timeval)
+>>       fd:file descriptor of mountpoint
+>>       FIFREEZE_RESET_TIMEOUT: request code for reset of timeout period
+>>       timeval: new timeout period in seconds
+>>       Return value: 0 if the operation succeeds. Otherwise, -1
+>>       Error number: If the filesystem has already been unfrozen,
+>>                     errno is set to EINVAL.
+>> 
+>> Any comments are very welcome.
+> 
+> umm, OK, but nowhere in this patch series can I find a justification or
+> reason for making these changes to Linux.  Why do we want to do this? 
+> What is the benefit?  What is the motivation.  What are the use-cases,
+> etc?
+> 
+> Thanks.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
