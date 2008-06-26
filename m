@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758324AbYFZMvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760541AbYFZMvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758324AbYFZMvf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 08:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758517AbYFZMhM
+	id S1760541AbYFZMvQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 08:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758513AbYFZMhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:37:12 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:20676 "EHLO
+	Thu, 26 Jun 2008 08:37:03 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:20646 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753997AbYFZMhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:37:08 -0400
+	id S1758918AbYFZMg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:36:59 -0400
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
@@ -17,11 +17,11 @@ Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
        hpa@zytor.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 25/60] microblaze_v4: process and init task function
-Date: Thu, 26 Jun 2008 14:29:54 +0200
-Message-Id: <1214483429-32360-26-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 11/60] microblaze_v4: cache support
+Date: Thu, 26 Jun 2008 14:29:40 +0200
+Message-Id: <1214483429-32360-12-git-send-email-monstr@seznam.cz>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <1214483429-32360-25-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-11-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-2-git-send-email-monstr@seznam.cz>
  <1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -33,20 +33,6 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-9-git-send-email-monstr@seznam.cz>
  <1214483429-32360-10-git-send-email-monstr@seznam.cz>
  <1214483429-32360-11-git-send-email-monstr@seznam.cz>
- <1214483429-32360-12-git-send-email-monstr@seznam.cz>
- <1214483429-32360-13-git-send-email-monstr@seznam.cz>
- <1214483429-32360-14-git-send-email-monstr@seznam.cz>
- <1214483429-32360-15-git-send-email-monstr@seznam.cz>
- <1214483429-32360-16-git-send-email-monstr@seznam.cz>
- <1214483429-32360-17-git-send-email-monstr@seznam.cz>
- <1214483429-32360-18-git-send-email-monstr@seznam.cz>
- <1214483429-32360-19-git-send-email-monstr@seznam.cz>
- <1214483429-32360-20-git-send-email-monstr@seznam.cz>
- <1214483429-32360-21-git-send-email-monstr@seznam.cz>
- <1214483429-32360-22-git-send-email-monstr@seznam.cz>
- <1214483429-32360-23-git-send-email-monstr@seznam.cz>
- <1214483429-32360-24-git-send-email-monstr@seznam.cz>
- <1214483429-32360-25-git-send-email-monstr@seznam.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -56,179 +42,406 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/init_task.c |   28 ++++++++
- arch/microblaze/kernel/process.c   |  127 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 155 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/init_task.c
- create mode 100644 arch/microblaze/kernel/process.c
+ arch/microblaze/kernel/cpu/cache.c  |  255 +++++++++++++++++++++++++++++++++++
+ include/asm-microblaze/cache.h      |   44 ++++++
+ include/asm-microblaze/cacheflush.h |   75 ++++++++++
+ 3 files changed, 374 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/cpu/cache.c
+ create mode 100644 include/asm-microblaze/cache.h
+ create mode 100644 include/asm-microblaze/cacheflush.h
 
-diff --git a/arch/microblaze/kernel/init_task.c b/arch/microblaze/kernel/init_task.c
+diff --git a/arch/microblaze/kernel/cpu/cache.c b/arch/microblaze/kernel/cpu/cache.c
 new file mode 100644
-index 0000000..c841b55
+index 0000000..9dcf3e9
 --- /dev/null
-+++ b/arch/microblaze/kernel/init_task.c
-@@ -0,0 +1,28 @@
++++ b/arch/microblaze/kernel/cpu/cache.c
+@@ -0,0 +1,255 @@
 +/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * Cache control for MicroBlaze cache memories
 + *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
++ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2007 PetaLogix
++ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ *
 + */
 +
-+#include <linux/module.h>
-+#include <linux/sched.h>
-+#include <linux/init_task.h>
-+#include <linux/fs.h>
-+#include <linux/mqueue.h>
++#include <asm/cacheflush.h>
++#include <asm/cache.h>
++#include <asm/cpuinfo.h>
 +
-+#include <asm/pgtable.h>
++/* Exported functions */
 +
-+static struct fs_struct init_fs = INIT_FS;
-+static struct signal_struct init_signals = INIT_SIGNALS(init_signals);
-+static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
-+struct mm_struct init_mm = INIT_MM(init_mm);
-+EXPORT_SYMBOL(init_mm);
-+
-+union thread_union init_thread_union
-+	__attribute__((__section__(".data.init_task"))) =
-+{ INIT_THREAD_INFO(init_task) };
-+
-+struct task_struct init_task = INIT_TASK(init_task);
-+EXPORT_SYMBOL(init_task);
-diff --git a/arch/microblaze/kernel/process.c b/arch/microblaze/kernel/process.c
-new file mode 100644
-index 0000000..c8e6bef
---- /dev/null
-+++ b/arch/microblaze/kernel/process.c
-@@ -0,0 +1,127 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/sched.h>
-+#include <linux/pm.h>
-+
-+#include <asm/system.h>
-+
-+/* FIXME */
-+void show_regs(struct pt_regs *regs)
++void _enable_icache(void)
 +{
-+	unsigned long *p;
-+	int i;
-+	printk(KERN_INFO "pc:\t0x%08lx\tsp:\t0x%08lx\n", regs->pc, regs->r1);
-+	printk(KERN_INFO
-+		"flags:\t0x%08lx\tear:\t0x%08lx\tesr:\t"
-+		"0x%08lx\tfsr:\t0x%08lx\n",
-+		regs->msr, regs->ear, regs->esr, regs->fsr);
-+	printk(KERN_INFO
-+		"r0:\t0x%08lx\tr1:\t0x%08lx\tr2:\t0x%08lx\tr3\t0x%08lx\n",
-+		0L, regs->r1, regs->r2, regs->r3);
-+	for (i = 4, p = &(regs->r4); i < 32; i += 4, p += 4) {
-+		printk(KERN_INFO "r%i:\t0x%08lx\tr%i:\t0x%08lx\tr%i:\t"
-+			"0x%08lx\tr%i:\t0x%08lx\n",
-+			i, *p, i+1, *(p+1), i+2, *(p+2), i+3, *(p+3));
-+	}
-+	printk(KERN_INFO "\n");
-+}
-+
-+void (*pm_power_off)(void) = NULL;
-+EXPORT_SYMBOL(pm_power_off);
-+
-+void cpu_idle(void)
-+{
-+	set_thread_flag(TIF_POLLING_NRFLAG);
-+
-+	while (1) {
-+		while (!need_resched())
-+			cpu_relax();
-+
-+		preempt_enable_no_resched();
-+		schedule();
-+		preempt_disable();
++	if (cpuinfo.use_icache) {
++#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
++		__asm__ __volatile__ ("					\
++				msrset	r0, %0;				\
++				nop; "					\
++				:					\
++				: "i" (MSR_ICE)				\
++				: "memory");
++#else
++		__asm__ __volatile__ ("					\
++				mfs	r12, rmsr;			\
++				ori	r12, r12, %0;			\
++				mts	rmsr, r12;			\
++				nop; "					\
++				:					\
++				: "i" (MSR_ICE)				\
++				: "memory", "r12");
++#endif
 +	}
 +}
 +
-+void flush_thread(void)
++void _disable_icache(void)
 +{
++	if (cpuinfo.use_icache) {
++#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
++		__asm__ __volatile__ ("					\
++				msrclr r0, %0;				\
++				nop; "					\
++				:					\
++				: "i" (MSR_ICE)				\
++				: "memory");
++#else
++		__asm__ __volatile__ ("					\
++				mfs	r12, rmsr;			\
++				andi	r12, r12, ~%0;			\
++				mts	rmsr, r12;			\
++				nop; "					\
++				:					\
++				: "i" (MSR_ICE)				\
++				: "memory", "r12");
++#endif
++	}
 +}
 +
-+int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
-+		unsigned long unused,
-+		struct task_struct *p, struct pt_regs *regs)
++void _invalidate_icache(unsigned int addr)
 +{
-+	struct pt_regs *childregs = task_pt_regs(p);
-+	struct thread_info *ti = task_thread_info(p);
-+
-+	*childregs = *regs;
-+
-+	if (user_mode(regs))
-+		childregs->r1 = usp;
-+	else
-+		childregs->r1 = ((unsigned long) ti) + THREAD_SIZE;
-+
-+	memset(&ti->cpu_context, 0, sizeof(struct cpu_context));
-+	ti->cpu_context.r1 = (unsigned long)childregs;
-+	ti->cpu_context.msr = (unsigned long)childregs->msr;
-+	ti->cpu_context.r15 = (unsigned long)ret_from_fork - 8;
-+
-+	if (clone_flags & CLONE_SETTLS)
-+		;/* FIXME: not sure what to do */
-+
-+	return 0;
++	if (cpuinfo.use_icache) {
++		__asm__ __volatile__ ("					\
++				wic	%0, r0"				\
++				:					\
++				: "r" (addr));
++	}
 +}
++
++void _enable_dcache(void)
++{
++	if (cpuinfo.use_dcache) {
++#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
++		__asm__ __volatile__ ("					\
++				msrset	r0, %0;				\
++				nop; "					\
++				:					\
++				: "i" (MSR_DCE)				\
++				: "memory");
++#else
++		__asm__ __volatile__ ("					\
++				mfs	r12, rmsr;			\
++				ori	r12, r12, %0;			\
++				mts	rmsr, r12;			\
++				nop; "					\
++				:					\
++				: "i" (MSR_DCE)			\
++				: "memory", "r12");
++#endif
++	}
++}
++
++void _disable_dcache(void)
++{
++	if (cpuinfo.use_dcache) {
++#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
++		__asm__ __volatile__ ("					\
++				msrclr	r0, %0;				\
++				nop; "					\
++				:					\
++				: "i" (MSR_DCE)			\
++				: "memory");
++#else
++		__asm__ __volatile__ ("					\
++				mfs	r12, rmsr;			\
++				andi	r12, r12, ~%0;			\
++				mts	rmsr, r12;			\
++				nop; "					\
++				:					\
++				: "i" (MSR_DCE)			\
++				: "memory", "r12");
++#endif
++	}
++}
++
++void _invalidate_dcache(unsigned int addr)
++{
++	if (cpuinfo.use_dcache)
++		__asm__ __volatile__ ("					\
++				wdc	%0, r0"				\
++				:					\
++				: "r" (addr));
++}
++
++void __invalidate_icache_all(void)
++{
++	unsigned int i;
++	unsigned flags;
++
++	if (cpuinfo.use_icache) {
++		local_irq_save(flags);
++		__disable_icache();
++
++		/* Just loop through cache size and invalidate, no need to add
++			CACHE_BASE address */
++		for (i = 0; i < cpuinfo.icache_size;
++			i += cpuinfo.icache_line)
++				__invalidate_icache(i);
++
++		__enable_icache();
++		local_irq_restore(flags);
++	}
++}
++
++void __invalidate_icache_range(unsigned long start, unsigned long end)
++{
++	unsigned int i;
++	unsigned flags;
++	unsigned int align;
++
++	if (cpuinfo.use_icache) {
++		/*
++		 * No need to cover entire cache range,
++		 * just cover cache footprint
++		 */
++		end = min(start + cpuinfo.icache_size, end);
++		align = ~(cpuinfo.icache_line - 1);
++		start &= align; /* Make sure we are aligned */
++		/* Push end up to the next cache line */
++		end = ((end & align) + cpuinfo.icache_line);
++
++		local_irq_save(flags);
++		__disable_icache();
++
++		for (i = start; i < end; i += cpuinfo.icache_line)
++			__invalidate_icache(i);
++
++		__enable_icache();
++		local_irq_restore(flags);
++	}
++}
++
++void __invalidate_icache_page(struct vm_area_struct *vma, struct page *page)
++{
++	__invalidate_icache_all();
++}
++
++void __invalidate_icache_user_range(struct vm_area_struct *vma,
++				struct page *page, unsigned long adr,
++				int len)
++{
++	__invalidate_icache_all();
++}
++
++void __invalidate_cache_sigtramp(unsigned long addr)
++{
++	__invalidate_icache_range(addr, addr + 8);
++}
++
++void __invalidate_dcache_all(void)
++{
++	unsigned int i;
++	unsigned flags;
++
++	if (cpuinfo.use_dcache) {
++		local_irq_save(flags);
++		__disable_dcache();
++
++		/*
++		 * Just loop through cache size and invalidate,
++		 * no need to add CACHE_BASE address
++		 */
++		for (i = 0; i < cpuinfo.dcache_size;
++			i += cpuinfo.dcache_line)
++				__invalidate_dcache(i);
++
++		__enable_dcache();
++		local_irq_restore(flags);
++	}
++}
++
++void __invalidate_dcache_range(unsigned long start, unsigned long end)
++{
++	unsigned int i;
++	unsigned flags;
++	unsigned int align;
++
++	if (cpuinfo.use_dcache) {
++		/*
++		 * No need to cover entire cache range,
++		 * just cover cache footprint
++		 */
++		end = min(start + cpuinfo.dcache_size, end);
++		align = ~(cpuinfo.dcache_line - 1);
++		start &= align; /* Make sure we are aligned */
++		/* Push end up to the next cache line */
++		end = ((end & align) + cpuinfo.dcache_line);
++		local_irq_save(flags);
++		__disable_dcache();
++
++		for (i = start; i < end; i += cpuinfo.dcache_line)
++			__invalidate_dcache(i);
++
++		__enable_dcache();
++		local_irq_restore(flags);
++	}
++}
++
++void __invalidate_dcache_page(struct vm_area_struct *vma, struct page *page)
++{
++	__invalidate_dcache_all();
++}
++
++void __invalidate_dcache_user_range(struct vm_area_struct *vma,
++				struct page *page, unsigned long adr,
++				int len)
++{
++	__invalidate_dcache_all();
++}
+diff --git a/include/asm-microblaze/cache.h b/include/asm-microblaze/cache.h
+new file mode 100644
+index 0000000..08828ec
+--- /dev/null
++++ b/include/asm-microblaze/cache.h
+@@ -0,0 +1,44 @@
++/*
++ * Cache operations
++ *
++ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2003 John Williams <jwilliams@itee.uq.edu.au>
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_CACHE_H
++#define _ASM_MICROBLAZE_CACHE_H
++
++#include <asm/registers.h>
++#include <linux/autoconf.h>
++
++#ifndef L1_CACHE_BYTES
++/* word-granular cache in microblaze */
++#define L1_CACHE_BYTES		4
++#endif
++
++void _enable_icache(void);
++void _disable_icache(void);
++void _invalidate_icache(unsigned int addr);
++
++#define __enable_icache()		_enable_icache()
++#define __disable_icache()		_disable_icache()
++#define __invalidate_icache(addr)	_invalidate_icache(addr)
++
++void _enable_dcache(void);
++void _disable_dcache(void);
++void _invalidate_dcache(unsigned int addr);
++
++#define __enable_dcache()		_enable_dcache()
++#define __disable_dcache()		_disable_dcache()
++#define __invalidate_dcache(addr)	_invalidate_dcache(addr)
++
++/* FIXME - I don't think this is right */
++#ifdef CONFIG_XILINX_UNCACHED_SHADOW
++#define UNCACHED_SHADOW_MASK (CONFIG_XILINX_ERAM_SIZE)
++#endif
++
++#endif /* _ASM_MICROBLAZE_CACHE_H */
+diff --git a/include/asm-microblaze/cacheflush.h b/include/asm-microblaze/cacheflush.h
+new file mode 100644
+index 0000000..6afe017
+--- /dev/null
++++ b/include/asm-microblaze/cacheflush.h
+@@ -0,0 +1,75 @@
++/*
++ * Copyright (C) 2007 PetaLogix
++ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ * based on v850 version which was
++ * Copyright (C) 2001,02,03 NEC Electronics Corporation
++ * Copyright (C) 2001,02,03 Miles Bader <miles@gnu.org>
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ *
++ */
++
++#ifndef _ASM_MICROBLAZE_CACHEFLUSH_H
++#define _ASM_MICROBLAZE_CACHEFLUSH_H
++
++/* Somebody depends on this; sigh... */
++#include <linux/mm.h>
 +
 +/*
-+ * Return saved PC of a blocked thread.
-+ * FIXME this needs to be checked
++ * Cache handling functions.
++ * Microblaze has a write-through data cache, and no icache snooping of dcache
 + */
-+unsigned long thread_saved_pc(struct task_struct *tsk)
-+{
-+	struct cpu_context *ctx =
-+		&(((struct thread_info *)(tsk->stack))->cpu_context);
 +
-+	/* Check whether the thread is blocked in resume() */
-+	if (in_sched_functions(ctx->r15))
-+		return ((unsigned long)ctx->r15);
-+	else
-+		return ctx->r14;
++#define flush_cache_all()			__invalidate_cache_all()
++#define flush_cache_mm(mm)			do { } while (0)
++#define flush_cache_range(vma, start, end)	__invalidate_cache_all()
++#define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
++
++#define flush_dcache_range(start, end)	__invalidate_dcache_range(start, end)
++#define flush_dcache_page(page)			do { } while (0)
++#define flush_dcache_mmap_lock(mapping)		do { } while (0)
++#define flush_dcache_mmap_unlock(mapping)	do { } while (0)
++
++#define flush_icache_range(start, len)	__invalidate_icache_range(start, len)
++#define flush_icache_page(vma, pg)		do { } while (0)
++
++#define flush_cache_vmap(start, end)		do { } while (0)
++#define flush_cache_vunmap(start, end)		do { } while (0)
++
++struct page;
++struct mm_struct;
++struct vm_area_struct;
++
++/* see arch/microblaze/kernel/cache.c */
++extern void __invalidate_icache_all(void);
++extern void __invalidate_icache_range(unsigned long start, unsigned long end);
++extern void __invalidate_icache_page(struct vm_area_struct *vma, struct page *page);
++extern void __invalidate_icache_user_range(struct vm_area_struct *vma,
++				struct page *page,
++				unsigned long adr, int len);
++extern void __invalidate_cache_sigtramp(unsigned long addr);
++
++extern void __invalidate_dcache_all(void);
++extern void __invalidate_dcache_range(unsigned long start, unsigned long end);
++extern void __invalidate_dcache_page(struct vm_area_struct *vma, struct page *page);
++extern void __invalidate_dcache_user_range(struct vm_area_struct *vma,
++				struct page *page,
++				unsigned long adr, int len);
++
++extern inline void __invalidate_cache_all(void)
++{
++	__invalidate_icache_all();
++	__invalidate_dcache_all();
 +}
 +
-+static void kernel_thread_helper(int (*fn)(void *), void *arg)
-+{
-+	fn(arg);
-+	do_exit(-1);
-+}
++#define copy_to_user_page(vma, page, vaddr, dst, src, len) \
++do { memcpy((dst), (src), (len)); \
++	flush_icache_range((unsigned) (dst), (unsigned) (dst) + (len)); \
++} while (0)
 +
-+int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
-+{
-+	struct pt_regs regs;
-+	int ret;
++#define copy_from_user_page(vma, page, vaddr, dst, src, len) \
++	memcpy((dst), (src), (len))
 +
-+	memset(&regs, 0, sizeof(regs));
-+	/* store them in non-volatile registers */
-+	regs.r5 = (unsigned long)fn;
-+	regs.r6 = (unsigned long)arg;
-+	local_save_flags(regs.msr);
-+	regs.pc = (unsigned long)kernel_thread_helper;
-+	regs.kernel_mode = 1;
-+
-+	ret = do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0,
-+			&regs, 0, NULL, NULL);
-+
-+	return ret;
-+}
-+
-+unsigned long get_wchan(struct task_struct *p)
-+{
-+/* TBD (used by procfs) */
-+	return 0;
-+}
++#endif /* _ASM_MICROBLAZE_CACHEFLUSH_H */
 -- 
 1.5.4.GIT
 
