@@ -1,141 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757112AbYFZEuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbYFZFCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757112AbYFZEuv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 00:50:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756013AbYFZEuQ
+	id S1755288AbYFZFCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 01:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbYFZFCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 00:50:16 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:36488 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754656AbYFZEuL (ORCPT
+	Thu, 26 Jun 2008 01:02:08 -0400
+Received: from fk-out-0910.google.com ([209.85.128.184]:60410 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751467AbYFZFCG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 00:50:11 -0400
-From: "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>
-To: "'Ryo Tsuruta'" <ryov@valinux.co.jp>
-Cc: <axboe@kernel.dk>, <vtaras@openvz.org>,
-       <containers@lists.linux-foundation.org>, <tom-sugawara@ap.jp.nec.com>,
-       <linux-kernel@vger.kernel.org>, <m-takahashi@ex.jp.nec.com>
-References: <003701c8bc80$3a5f9ec0$af1edc40$@jp.nec.com>	<20080526.114627.104044752.ryov@valinux.co.jp>	<004f01c8bfed$640fa380$2c2eea80$@jp.nec.com> <20080603.171535.246514860.ryov@valinux.co.jp>
-In-Reply-To: <20080603.171535.246514860.ryov@valinux.co.jp>
-Subject: RE: [RFC][v2][patch 0/12][CFQ-cgroup]Yet another I/O bandwidth controlling subsystem for CGroups based on CFQ
-Date: Thu, 26 Jun 2008 13:49:20 +0900
-Message-Id: <002001c8d747$ffe5a8b0$ffb0fa10$@jp.nec.com>
+	Thu, 26 Jun 2008 01:02:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=pH7HLklBYuH4jQBbWC+ziX/wqibJG/qjXHezGb6mEnT6G2/Y8Uvey9YsYSWyHxzC3m
+         THxvCtaLEJtCARl26liRWGQHdtRwuJL4DQjz8DdjRIgKQx4df3Ce6uw29idP3GEh16W9
+         9R7n2p9t2pAJxq0FMCcOWSUuV7Z+Sm2bwNvRQ=
+Message-ID: <21d7e9970806252202i10de9c82lb4637d9f1064f0b0@mail.gmail.com>
+Date: Thu, 26 Jun 2008 15:02:04 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: kmap_atomic_pfn for PCI BAR access?
+Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Keith Packard" <keithp@keithp.com>, "Dave Airlie" <airlied@linux.ie>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080625213603.0e82805b@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AcjFUgAdaenoUHgfT32fW+DBrgsQYQR9eGmA
-Content-language: ja
+Content-Disposition: inline
+References: <1214242487.11887.35.camel@koto.keithp.com>
+	 <4862EE4C.4060009@goop.org>
+	 <21d7e9970806251823q3405e192q13d4944bd0cc3291@mail.gmail.com>
+	 <20080625213603.0e82805b@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Tsuruta.
+On Thu, Jun 26, 2008 at 2:36 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Thu, 26 Jun 2008 11:23:11 +1000
+> "Dave Airlie" <airlied@gmail.com> wrote:
+>
+>> On Thu, Jun 26, 2008 at 11:18 AM, Jeremy Fitzhardinge
+>> <jeremy@goop.org> wrote:
+>> > Keith Packard wrote:
+>> >>
+>> >> The graphics memory BAR is generally fairly good sized; on Intel
+>> >> chips, it's between 256M and 1G (and growing). I want to write
+>> >> data into this region from kernel space, but it's really too big
+>> >> to map the whole thing into kernel address space, especially on
+>> >> 32-bit systems. ioremap is not a good option here -- it's way too
+>> >> slow.
+>> >>
+>> >> With CONFIG_HIGHMEM enabled, I can use kmap_atomic_pfn (well,
+>> >> actually the kmap_atomic_proc_pfn included in the DRM tree) and
+>> >> things work quite well -- performance is good, with barely any
+>> >> measurable time spent in the PTE whacking (~1%).
+>> >>
+>> >> However, with CONFIG_HIGHMEM disabled, there aren't any PTEs
+>> >> reserved for this kind of mapping fun. This makes me suspect that
+>> >> abusing kmap_atomic for this operation would not be appreciated.
+>> >> Should I use kmap_atomic_pfn to reach my PCI BAR like this?
+>> >>
+>> >> Would it be reasonable to supply a patch that made this work even
+>> >> without CONFIG_HIGHMEM?
+>> >>
+>> >
+>> > Usually people use ioremap to map device memory.  Wouldn't that
+>> > work in this case?
+>> >
+>>
+>> "but it's really too big to map the whole thing
+>> into kernel address space, especially on 32-bit systems. ioremap is
+>> not a good option here -- it's way too slow."
+>>
+>> >From the original mail.
+>>
+>> doing tlb flush for iounmap is slow as all hell if you do it a lot,
+>> and we can't afford to mmap the whole aperture it can 1GB.
+>
+> well kmap does a tlb flush as well... you can't get away from doing a
+> flush if you change cpu mapping.
+> What you CAN do is play tricks and flush only once in a while and make
+> sure you don't recycle mappings in the mean time (like kmap does).
+>
+> I can totally see doing an iounmap_lazy() and then have an
+> iounmap_flush_lazy() thing or something like that....
+>
 
-> In addition, I got the following message during test #2. Program
-> "ioload", our benchmark program, was blocked more than 120 seconds.
-> Do you see any problems?
+Thats why keithp wants something like kmap_atomic but for ioremap
+instead of kmaps.
 
-No.
-I tried to test in  environment which runs from 1 to 200 processes
-per group.
-However, such message was not output.
+This would be for short temporary ioremaps like kmap_atomic is.
 
-> The result of test #1 is close to your estimation, but the result
-> of test #2 is not, the gap between the estimation and the result
-> increased.
-
-In the above my test, the gap between the estimation and the result
-is increasing as a process increases.
-
-And, in native CFQ with ionice command, this situation is a similar.
-These circumstances are shown in the case of more than processes of total 200.
-
-I'll investigate this problem continuously.
-
-
-Thanks,
-  Satoshi Uchida.
-
-> -----Original Message-----
-> From: Ryo Tsuruta [mailto:ryov@valinux.co.jp]
-> Sent: Tuesday, June 03, 2008 5:16 PM
-> To: s-uchida@ap.jp.nec.com
-> Cc: axboe@kernel.dk; vtaras@openvz.org;
-> containers@lists.linux-foundation.org; tom-sugawara@ap.jp.nec.com;
-> linux-kernel@vger.kernel.org
-> Subject: Re: [RFC][v2][patch 0/12][CFQ-cgroup]Yet another I/O bandwidth
-> controlling subsystem for CGroups based on CFQ
-> 
-> Hi Uchida-san,
-> 
-> > I report my tests.
-> 
-> I did a similar test to yours. I increased the number of I/Os
-> which are issued simultaneously up to 100 per cgroup.
-> 
->   Procedures:
->     o Prepare 300 files which size is 250MB on 1 partition sdb3
->     o Create three groups with priority 0, 4 and 7.
->     o Run many processes issuing random direct I/O with 4KB data on each
->       files in three groups.
->           #1 Run  25 processes issuing read I/O only per group.
->           #2 Run 100 processes issuing read I/O only per group.
->     o Count up the number of I/Os which have done in 10 minutes.
-> 
->                The number of I/Os (percentage to total I/O)
->      --------------------------------------------------------------
->     | group       |  group 1   |  group 2   |  group 3   |  total  |
->     | priority    | 0(highest) |     4      |  7(lowest) |  I/Os   |
->     |-------------+------------+------------+------------+---------|
->     | Estimate    |            |            |            |         |
->     | Performance |    61.5%   |    30.8%   |    7.7%    |         |
->     |-------------+------------+------------+------------|---------|
->     | #1  25procs | 52763(57%) | 30811(33%) |  9575(10%) |  93149  |
->     | #2 100procs | 24949(40%) | 21325(34%) | 16508(26%) |  62782  |
->      --------------------------------------------------------------
-> 
-> The result of test #1 is close to your estimation, but the result
-> of test #2 is not, the gap between the estimation and the result
-> increased.
-> 
-> In addition, I got the following message during test #2. Program
-> "ioload", our benchmark program, was blocked more than 120 seconds.
-> Do you see any problems?
-> 
-> INFO: task ioload:8456 blocked for more than 120 seconds.
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> ioload        D 00000008  2772  8456   8419
->        f72eb740 00200082 c34862c0 00000008 c3565170 c35653c0 c2009d80
->        00000001
->        c1d1bea0 00200046 ffffffff f6ee039c 00000000 00000000 00000000
->        c2009d80
->        018db000 00000000 f71a6a00 c0604fb6 00000000 f71a6bc8 c04876a4
->        00000000
-> Call Trace:
->  [<c0604fb6>] io_schedule+0x4a/0x81
->  [<c04876a4>] __blockdev_direct_IO+0xa04/0xb54
->  [<c04a3aa2>] ext2_direct_IO+0x35/0x3a
->  [<c04a4757>] ext2_get_block+0x0/0x603
->  [<c044ab81>] generic_file_direct_IO+0x103/0x118
->  [<c044abe6>] generic_file_direct_write+0x50/0x13d
->  [<c044b59e>] __generic_file_aio_write_nolock+0x375/0x4c3
->  [<c046e571>] link_path_walk+0x86/0x8f
->  [<c044a1e8>] find_lock_page+0x19/0x6d
->  [<c044b73e>] generic_file_aio_write+0x52/0xa9
->  [<c0466256>] do_sync_write+0xbf/0x100
->  [<c042ca44>] autoremove_wake_function+0x0/0x2d
->  [<c0413366>] update_curr+0x83/0x116
->  [<c0605280>] mutex_lock+0xb/0x1a
->  [<c04b653b>] security_file_permission+0xc/0xd
->  [<c0466197>] do_sync_write+0x0/0x100
->  [<c046695d>] vfs_write+0x83/0xf6
->  [<c0466ea9>] sys_write+0x3c/0x63
->  [<c04038de>] syscall_call+0x7/0xb
->  [<c0600000>] print_cpu_info+0x27/0x92
->  =======================
-> 
-> Thanks,
-> Ryo Tsuruta
-
+Dave.
