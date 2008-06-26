@@ -1,144 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756759AbYFZIOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbYFZIPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756759AbYFZIOz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 04:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541AbYFZIN4
+	id S1756898AbYFZIPW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 04:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756728AbYFZIOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 04:13:56 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:45394 "EHLO mx2.suse.de"
+	Thu, 26 Jun 2008 04:14:52 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51931 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751848AbYFZINu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 04:13:50 -0400
+	id S1754831AbYFZIOt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 04:14:49 -0400
+Date: Thu, 26 Jun 2008 10:15:26 +0200
 From: Bernhard Walle <bwalle@suse.de>
-To: x86@kernel.org
-Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
-       yhlu.kernel@gmail.com, vgoyal@redhat.com,
-       Bernhard Walle <bwalle@suse.de>
-Subject: [PATCH 2/2] Use FIRMWARE_MEMMAP on x86/E820
-Date: Thu, 26 Jun 2008 10:14:27 +0200
-Message-Id: <1214468067-1231-3-git-send-email-bwalle@suse.de>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1214468067-1231-1-git-send-email-bwalle@suse.de>
-References: <1214468067-1231-1-git-send-email-bwalle@suse.de>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
+       yhlu.kernel@gmail.com
+Subject: Re: [PATCH 1/2] Add /sys/firmware/memmap
+Message-ID: <20080626101526.780af0c0@halley.suse.de>
+In-Reply-To: <20080625224301.GE32344@redhat.com>
+References: <1214423826-12628-1-git-send-email-bwalle@suse.de>
+	<1214423826-12628-2-git-send-email-bwalle@suse.de>
+	<20080625224301.GE32344@redhat.com>
+Organization: SUSE Linux Products GmbH
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch uses the /sys/firmware/memmap interface provided in the last patch
-on the x86 architecture when E820 is used. The patch copies the E820
-memory map very early, and registers the E820 map afterwards via
-firmware_map_add_early().
+* Vivek Goyal [2008-06-25 18:43]:
+>
+> Thanks for the patch. Couple of thoughts.
+> 
+> Do we really need another CONFIG option (CONFIG_FIRMWARE_MEMMAP)? To,
+> me this does not seem to be a big chunk of code at the same time I am
+> assuming that most of the people will use it (because of kexec). So
+> probably, it might not make lot of sense to put additional CONFIG option.
+
+Agreed.
+
+> [..]
+> > +#include <linux/string.h>
+> > +#include <linux/firmware-map.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/module.h>
+> > +#include <linux/types.h>
+> > +#include <linux/bootmem.h>
+> > +
+> > +/*
+> > + * String representation of enum firmware_map_type from
+> > + * <linux/firmware-map.h>.
+> > + */
+> > +const char *type_to_string_map[] = {
+> > +	"RAM",				/* MAP_RAM */
+> > +	"Reserved",			/* MAP_RESERVED */
+> > +	"ACPI Tables",			/* MAP_ACPI */
+> > +	"Non-volatile Storage",		/* MAP_NVS */
+> > +};
+> > +
+> 
+> How about leaving the decision of memory type on arch dependent code? How
+> about letting arch code pass you an string while adding entry and that
+> string will contain the type of memory. The way request_resource() is
+> implemented. 
+
+Also agreed, see the resent patch.
 
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
----
- arch/x86/kernel/e820.c |   42 ++++++++++++++++++++++++++++++++++++------
- include/asm-x86/e820.h |    2 ++
- 2 files changed, 38 insertions(+), 6 deletions(-)
-
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index 3771386..c27863e 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -19,6 +19,7 @@
- #include <linux/mm.h>
- #include <linux/pfn.h>
- #include <linux/suspend.h>
-+#include <linux/firmware-map.h>
- 
- #include <asm/pgtable.h>
- #include <asm/page.h>
-@@ -27,7 +28,22 @@
- #include <asm/setup.h>
- #include <asm/trampoline.h>
- 
-+/*
-+ * The e820 map is the map that gets modified e.g. with command line parameters
-+ * and that is also registered with modifications in the kernel resource tree
-+ * with the iomem_resource as parent.
-+ *
-+ * The e820_saved is directly saved after the BIOS-provided memory map is
-+ * copied. It doesn't get modified afterwards. It's registered for the
-+ * /sys/firmware/memmap interface.
-+ *
-+ * That memory map is not modified and is used as base for kexec. The kexec'd
-+ * kernel should get the same memory map as the firmware provides. Then the
-+ * user can e.g. boot the original kernel with mem=1G while still booting the
-+ * next kernel with full memory.
-+ */
- struct e820map e820;
-+struct e820map e820_saved;
- 
- /* For PCI or other memory-mapped resources */
- unsigned long pci_mem_start = 0xaeedbabe;
-@@ -1056,6 +1072,16 @@ void __init finish_e820_parsing(void)
- 	}
- }
- 
-+static inline const char *e820_type_to_string(int e820_type)
-+{
-+	switch (e820_type) {
-+	case E820_RAM:	return "System RAM";
-+	case E820_ACPI:	return "ACPI Tables";
-+	case E820_NVS:	return "ACPI Non-volatile Storage";
-+	default:	return "reserved";
-+	}
-+}
-+
- /*
-  * Mark e820 reserved areas as busy for the resource manager.
-  */
-@@ -1066,12 +1092,7 @@ void __init e820_reserve_resources(void)
- 
- 	res = alloc_bootmem_low(sizeof(struct resource) * e820.nr_map);
- 	for (i = 0; i < e820.nr_map; i++) {
--		switch (e820.map[i].type) {
--		case E820_RAM:	res->name = "System RAM"; break;
--		case E820_ACPI:	res->name = "ACPI Tables"; break;
--		case E820_NVS:	res->name = "ACPI Non-volatile Storage"; break;
--		default:	res->name = "reserved";
--		}
-+		res->name = e820_type_to_string(e820.map[i].type);
- 		res->start = e820.map[i].addr;
- 		res->end = res->start + e820.map[i].size - 1;
- #ifndef CONFIG_RESOURCES_64BIT
-@@ -1084,6 +1105,13 @@ void __init e820_reserve_resources(void)
- 		insert_resource(&iomem_resource, res);
- 		res++;
- 	}
-+
-+	for (i = 0; i < e820_saved.nr_map; i++) {
-+		struct e820entry *entry = &e820_saved.map[i];
-+		firmware_map_add_early(entry->addr,
-+			entry->addr + entry->size - 1,
-+			e820_type_to_string(entry->type));
-+	}
- }
- 
- char *__init default_machine_specific_memory_setup(void)
-@@ -1119,6 +1147,8 @@ char *__init default_machine_specific_memory_setup(void)
- 		e820_add_region(HIGH_MEMORY, mem_size << 10, E820_RAM);
- 	}
- 
-+	memcpy(&e820_saved, &e820, sizeof(struct e820map));
-+
- 	/* In case someone cares... */
- 	return who;
- }
-diff --git a/include/asm-x86/e820.h b/include/asm-x86/e820.h
-index 13a0a5f..607f940 100644
---- a/include/asm-x86/e820.h
-+++ b/include/asm-x86/e820.h
-@@ -56,7 +56,9 @@ struct e820map {
- 	struct e820entry map[E820_X_MAX];
- };
- 
-+/* see comment in arch/x86/kernel/e820.c */
- extern struct e820map e820;
-+extern struct e820map e820_saved;
- 
- extern int e820_any_mapped(u64 start, u64 end, unsigned type);
- extern int e820_all_mapped(u64 start, u64 end, unsigned type);
+Bernhard
 -- 
-1.5.6
-
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
