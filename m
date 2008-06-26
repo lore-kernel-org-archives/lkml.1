@@ -1,159 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758785AbYFZOae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758958AbYFZOcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758785AbYFZOae (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 10:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYFZOaZ
+	id S1758958AbYFZOcj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 10:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbYFZOcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 10:30:25 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:45732 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752979AbYFZOaX (ORCPT
+	Thu, 26 Jun 2008 10:32:31 -0400
+Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:41251 "EHLO
+	bh-buildlin1.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753980AbYFZOca (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 10:30:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=pOYzIgtU4NH9I82Vyvm8YKnfuwh7Xpvq7EQwaWLruHOkXP+1V242czuAD/UiRazBWE
-         DaSMsKhB+L5Lf0gkKAcA3H2uw2ka4I0fiTZSo5ufhSpNV0OBW+FelN0LMBionmwKvwk4
-         g/vfQ3G74ZBZNyUhpzgw4pwinCkegbFjItvdM=
-Message-ID: <82e4877d0806260730w5fb2640bwa38547153ab42ee4@mail.gmail.com>
-Date: Thu, 26 Jun 2008 10:30:22 -0400
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: Jie.Yang@Atheros.com
-Subject: Re: [PATCH 2.6.25.3 5/5] atl1e: Atheros L1E Gigabit Ethernet driver
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+	Thu, 26 Jun 2008 10:32:30 -0400
+X-Greylist: delayed 2426 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Jun 2008 10:32:28 EDT
+From: Benny Halevy <bhalevy@panasas.com>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Benny Halevy <bhalevy@panasas.com>
+Subject: [PATCH] fix extern inline errors with gcc 4.3.0
+Date: Thu, 26 Jun 2008 16:50:51 +0300
+Message-Id: <1214488251-20927-1-git-send-email-bhalevy@panasas.com>
+X-Mailer: git-send-email 1.5.6.GIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jie Yang <Jie.Yang <at> Atheros.com> writes:
+gcc 4.3.0 needs -funit-at-a-time for extern inline functions
+otherwise it doesn't find their body.
 
+For example:
+$ gcc --version
+gcc (GCC) 4.3.0 20080428 (Red Hat 4.3.0-8)
 
-> +static int atl1e_get_eeprom_len(struct net_device *netdev)
-> +{
-> +       struct atl1e_adapter *adapter = netdev_priv(netdev);
-> +
-> +       if (!check_eeprom_exist(&adapter->hw))
-> +               return 512;
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/fs/buffer.c: In function ‘alloc_page_buffers’:
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/fs/buffer.c:51: sorry, unimplemented: inlining failed in call to ‘init_buffer’: function body not available
+/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/fs/buffer.c:948: sorry, unimplemented: called from here
 
-Please #define ATL1E_EEPROM_LEN 512 - it is used below too.
+Fix follows the lines of commit 22eecde2f9034764a3fd095eecfa3adfb8ec9a98
+that was reverted by commit c0a18111e571138747a98af18b3a2124df56a0d1,
+just limiting the flag for pre- gcc 4.3.0 rather than 4.0.
 
-> +       else
-> +               return 0;
-> +}
-> +
+Signed-off-by: Benny Halevy <bhalevy@panasas.com>
+---
+ arch/um/Makefile |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-> +static int atl1e_get_eeprom(struct net_device *netdev,
-> +               struct ethtool_eeprom *eeprom, u8 *bytes)
-> +{
-> +       struct atl1e_adapter *adapter = netdev_priv(netdev);
-> +       struct atl1e_hw *hw = &adapter->hw;
-> +       u32 *eeprom_buff;
-> +       int first_dword, last_dword;
-> +       int ret_val = 0;
-> +       int i;
-> +
-> +       if (eeprom->len == 0)
-> +               return -EINVAL;
-> +
-> +       if (check_eeprom_exist(hw))
-> +               return -EINVAL;
-> +
-> +       eeprom->magic = hw->vendor_id | (hw->device_id << 16);
-> +
-> +       first_dword = eeprom->offset >> 2;
-> +       last_dword = (eeprom->offset + eeprom->len - 1) >> 2;
-> +
-> +       eeprom_buff = kmalloc(sizeof(u32) *
-> +                       (last_dword - first_dword + 1), GFP_KERNEL);
-> +       if (eeprom_buff == NULL)
-> +               return -ENOMEM;
-> +
-> +       for (i = first_dword; i < last_dword; i++) {
-> +               if (!read_eeprom(hw, i * 4, &(eeprom_buff[i-first_dword])))
-> +                       return -EIO;
+diff --git a/arch/um/Makefile b/arch/um/Makefile
+index dbeab15..e7ed37b 100644
+--- a/arch/um/Makefile
++++ b/arch/um/Makefile
+@@ -77,7 +77,11 @@ include $(srctree)/$(ARCH_DIR)/Makefile-os-$(OS)
+ KERNEL_DEFINES = $(strip -Derrno=kernel_errno -Dsigprocmask=kernel_sigprocmask \
+ 			 -Dmktime=kernel_mktime $(ARCH_KERNEL_DEFINES))
+ KBUILD_CFLAGS += $(KERNEL_DEFINES)
+-KBUILD_CFLAGS += $(call cc-option,-fno-unit-at-a-time,)
++# Disable unit-at-a-time mode on pre-gcc-4.3 compilers, it makes gcc use
++# a lot more stack due to the lack of sharing of stacklots:
++# gcc 4.3.0 needs -funit-at-a-time for extern inline functions
++KBUILD_CFLAGS += $(shell if [ $(call cc-version) -lt 0403 ] ; then \
++			echo $(call cc-option,-fno-unit-at-a-time); fi ;)
+ 
+ PHONY += linux
+ 
+-- 
+1.5.6.GIT
 
-eeprom_buff is leaked here if read_eeprom fails.
-
-> +       }
-> +
-> +       memcpy(bytes, (u8 *)eeprom_buff + (eeprom->offset & 3),
-> +                       eeprom->len);
-> +       kfree(eeprom_buff);
-> +
-> +       return ret_val;
-> +}
-> +
-
-> +static int atl1e_set_eeprom(struct net_device *netdev,
-> +               struct ethtool_eeprom *eeprom, u8 *bytes)
-> +{
-> +       struct atl1e_adapter *adapter = netdev_priv(netdev);
-> +       struct atl1e_hw *hw = &adapter->hw;
-> +       u32 *eeprom_buff;
-> +       u32 *ptr;
-> +       int max_len, first_dword, last_dword, ret_val = 0;
-> +       int i;
-> +
-> +       if (eeprom->len == 0)
-> +               return -EOPNOTSUPP;
-> +
-> +       if (eeprom->magic != (hw->vendor_id | (hw->device_id << 16)))
-> +               return -EFAULT;
-
-This should probably be -EINVAL?
-
-> +
-> +       max_len = 512;
-
-Better to replace with a #define as mentioned above.
-
-> +
-> +       first_dword = eeprom->offset >> 2;
-> +       last_dword = (eeprom->offset + eeprom->len - 1) >> 2;
-> +       eeprom_buff = kmalloc(max_len, GFP_KERNEL);
-> +       if (!eeprom_buff)
-> +               return -ENOMEM;
-> +
-> +       ptr = (u32 *)eeprom_buff;
-> +
-> +       if (eeprom->offset & 3) {
-> +               /* need read/modify/write of first changed EEPROM word */
-> +               /* only the second byte of the word is being modified */
-> +               if (!read_eeprom(hw, first_dword * 4, &(eeprom_buff[0])))
-> +                       return -EIO;
-
-eeprom_buff is leaked again if read_eeprom() fails.
-
-> +               ptr++;
-> +       }
-> +       if (((eeprom->offset + eeprom->len) & 3)) {
-> +               /* need read/modify/write of last changed EEPROM word */
-> +               /* only the first byte of the word is being modified */
-> +
-> +               if (!read_eeprom(hw, last_dword * 4,
-> +                               &(eeprom_buff[last_dword - first_dword])))
-> +                       return -EIO;
-eeprom_buff is leaked again if read_eeprom() fails.
-
-> +       }
-> +
-> +       /* Device's eeprom is always little-endian, word addressable */
-> +       memcpy(ptr, bytes, eeprom->len);
-> +
-> +       for (i = 0; i < last_dword - first_dword + 1; i++) {
-> +               if (!write_eeprom(hw, ((first_dword + i) * 4), eeprom_buff[i]))
-> +                       return -EIO;
-eeprom_buff is leaked again if read_eeprom() fails.
-
-> +       }
-> +
-> +       kfree(eeprom_buff);
-> +       return ret_val;
-> +}
-> +
