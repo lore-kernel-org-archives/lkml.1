@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759692AbYFZMqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbYFZMpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759692AbYFZMqF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 08:46:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbYFZM37
+	id S1759705AbYFZMpg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 08:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbYFZM35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:29:59 -0400
-Received: from il.qumranet.com ([212.179.150.194]:32376 "EHLO il.qumranet.com"
+	Thu, 26 Jun 2008 08:29:57 -0400
+Received: from il.qumranet.com ([212.179.150.194]:32338 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752085AbYFZM2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:28:38 -0400
+	id S1752038AbYFZM2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:28:39 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 13/50] KVM: MMU: Fix false flooding when a pte points to page table
-Date: Thu, 26 Jun 2008 15:27:55 +0300
-Message-Id: <1214483312-9265-14-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Sheng Yang <sheng.yang@intel.com>
+Subject: [PATCH 18/50] KVM: IOAPIC/LAPIC: Enable NMI support
+Date: Thu, 26 Jun 2008 15:28:00 +0300
+Message-Id: <1214483312-9265-19-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1214483312-9265-1-git-send-email-avi@qumranet.com>
 References: <1214483312-9265-1-git-send-email-avi@qumranet.com>
@@ -22,100 +22,123 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The KVM MMU tries to detect when a speculative pte update is not actually
-used by demand fault, by checking the accessed bit of the shadow pte.  If
-the shadow pte has not been accessed, we deem that page table flooded and
-remove the shadow page table, allowing further pte updates to proceed
-without emulation.
+From: Sheng Yang <sheng.yang@intel.com>
 
-However, if the pte itself points at a page table and only used for write
-operations, the accessed bit will never be set since all access will happen
-through the emulator.
+[avi: fix ia64 build breakage]
 
-This is exactly what happens with kscand on old (2.4.x) HIGHMEM kernels.
-The kernel points a kmap_atomic() pte at a page table, and then
-proceeds with read-modify-write operations to look at the dirty and accessed
-bits.  We get a false flood trigger on the kmap ptes, which results in the
-mmu spending all its time setting up and tearing down shadows.
-
-Fix by setting the shadow accessed bit on emulated accesses.
-
+Signed-off-by: Sheng Yang <sheng.yang@intel.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/mmu.c         |   17 ++++++++++++++++-
- arch/x86/kvm/mmu.h         |    3 ++-
- include/asm-x86/kvm_host.h |    1 +
- 3 files changed, 19 insertions(+), 2 deletions(-)
+ arch/x86/kvm/lapic.c        |    3 ++-
+ arch/x86/kvm/x86.c          |    6 ++++++
+ include/asm-ia64/kvm_host.h |    2 ++
+ include/asm-x86/kvm_host.h  |    4 ++++
+ virt/kvm/ioapic.c           |   20 ++++++++++++++++++--
+ 5 files changed, 32 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index 8e449db..53f1ed8 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -1122,8 +1122,10 @@ static void mmu_set_spte(struct kvm_vcpu *vcpu, u64 *shadow_pte,
- 		else
- 			kvm_release_pfn_clean(pfn);
- 	}
--	if (!ptwrite || !*ptwrite)
-+	if (speculative) {
- 		vcpu->arch.last_pte_updated = shadow_pte;
-+		vcpu->arch.last_pte_gfn = gfn;
-+	}
+diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+index f9201fb..e48d193 100644
+--- a/arch/x86/kvm/lapic.c
++++ b/arch/x86/kvm/lapic.c
+@@ -356,8 +356,9 @@ static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
+ 	case APIC_DM_SMI:
+ 		printk(KERN_DEBUG "Ignoring guest SMI\n");
+ 		break;
++
+ 	case APIC_DM_NMI:
+-		printk(KERN_DEBUG "Ignoring guest NMI\n");
++		kvm_inject_nmi(vcpu);
+ 		break;
+ 
+ 	case APIC_DM_INIT:
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 28642c4..2c308f0 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -173,6 +173,12 @@ void kvm_inject_page_fault(struct kvm_vcpu *vcpu, unsigned long addr,
+ 	kvm_queue_exception_e(vcpu, PF_VECTOR, error_code);
  }
  
- static void nonpaging_new_cr3(struct kvm_vcpu *vcpu)
-@@ -1671,6 +1673,18 @@ static void mmu_guess_page_from_pte_write(struct kvm_vcpu *vcpu, gpa_t gpa,
- 	vcpu->arch.update_pte.pfn = pfn;
- }
- 
-+static void kvm_mmu_access_page(struct kvm_vcpu *vcpu, gfn_t gfn)
++void kvm_inject_nmi(struct kvm_vcpu *vcpu)
 +{
-+	u64 *spte = vcpu->arch.last_pte_updated;
-+
-+	if (spte
-+	    && vcpu->arch.last_pte_gfn == gfn
-+	    && shadow_accessed_mask
-+	    && !(*spte & shadow_accessed_mask)
-+	    && is_shadow_present_pte(*spte))
-+		set_bit(PT_ACCESSED_SHIFT, (unsigned long *)spte);
++	vcpu->arch.nmi_pending = 1;
 +}
++EXPORT_SYMBOL_GPL(kvm_inject_nmi);
 +
- void kvm_mmu_pte_write(struct kvm_vcpu *vcpu, gpa_t gpa,
- 		       const u8 *new, int bytes)
+ void kvm_queue_exception_e(struct kvm_vcpu *vcpu, unsigned nr, u32 error_code)
  {
-@@ -1694,6 +1708,7 @@ void kvm_mmu_pte_write(struct kvm_vcpu *vcpu, gpa_t gpa,
- 	pgprintk("%s: gpa %llx bytes %d\n", __func__, gpa, bytes);
- 	mmu_guess_page_from_pte_write(vcpu, gpa, new, bytes);
- 	spin_lock(&vcpu->kvm->mmu_lock);
-+	kvm_mmu_access_page(vcpu, gfn);
- 	kvm_mmu_free_some_pages(vcpu);
- 	++vcpu->kvm->stat.mmu_pte_write;
- 	kvm_mmu_audit(vcpu, "pre pte write");
-diff --git a/arch/x86/kvm/mmu.h b/arch/x86/kvm/mmu.h
-index 1730757..258e5d5 100644
---- a/arch/x86/kvm/mmu.h
-+++ b/arch/x86/kvm/mmu.h
-@@ -15,7 +15,8 @@
- #define PT_USER_MASK (1ULL << 2)
- #define PT_PWT_MASK (1ULL << 3)
- #define PT_PCD_MASK (1ULL << 4)
--#define PT_ACCESSED_MASK (1ULL << 5)
-+#define PT_ACCESSED_SHIFT 5
-+#define PT_ACCESSED_MASK (1ULL << PT_ACCESSED_SHIFT)
- #define PT_DIRTY_MASK (1ULL << 6)
- #define PT_PAGE_SIZE_MASK (1ULL << 7)
- #define PT_PAT_MASK (1ULL << 7)
+ 	WARN_ON(vcpu->arch.exception.pending);
+diff --git a/include/asm-ia64/kvm_host.h b/include/asm-ia64/kvm_host.h
+index c082c20..5c958b0 100644
+--- a/include/asm-ia64/kvm_host.h
++++ b/include/asm-ia64/kvm_host.h
+@@ -521,4 +521,6 @@ int kvm_emulate_halt(struct kvm_vcpu *vcpu);
+ int kvm_pal_emul(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run);
+ void kvm_sal_emul(struct kvm_vcpu *vcpu);
+ 
++static inline void kvm_inject_nmi(struct kvm_vcpu *vcpu) {}
++
+ #endif
 diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
-index 844f2a8..c2d066e 100644
+index 4bcdc7d..b666219 100644
 --- a/include/asm-x86/kvm_host.h
 +++ b/include/asm-x86/kvm_host.h
-@@ -243,6 +243,7 @@ struct kvm_vcpu_arch {
- 	gfn_t last_pt_write_gfn;
- 	int   last_pt_write_count;
- 	u64  *last_pte_updated;
-+	gfn_t last_pte_gfn;
+@@ -288,6 +288,8 @@ struct kvm_vcpu_arch {
+ 	unsigned int hv_clock_tsc_khz;
+ 	unsigned int time_offset;
+ 	struct page *time_page;
++
++	bool nmi_pending;
+ };
  
- 	struct {
- 		gfn_t gfn;	/* presumed gfn during guest pte update */
+ struct kvm_mem_alias {
+@@ -515,6 +517,8 @@ void kvm_queue_exception_e(struct kvm_vcpu *vcpu, unsigned nr, u32 error_code);
+ void kvm_inject_page_fault(struct kvm_vcpu *vcpu, unsigned long cr2,
+ 			   u32 error_code);
+ 
++void kvm_inject_nmi(struct kvm_vcpu *vcpu);
++
+ void fx_init(struct kvm_vcpu *vcpu);
+ 
+ int emulator_read_std(unsigned long addr,
+diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
+index 1dcf9f3..cb8a20b 100644
+--- a/virt/kvm/ioapic.c
++++ b/virt/kvm/ioapic.c
+@@ -146,6 +146,11 @@ static int ioapic_inj_irq(struct kvm_ioapic *ioapic,
+ 	return kvm_apic_set_irq(vcpu, vector, trig_mode);
+ }
+ 
++static void ioapic_inj_nmi(struct kvm_vcpu *vcpu)
++{
++	kvm_inject_nmi(vcpu);
++}
++
+ static u32 ioapic_get_delivery_bitmask(struct kvm_ioapic *ioapic, u8 dest,
+ 				       u8 dest_mode)
+ {
+@@ -239,8 +244,19 @@ static int ioapic_deliver(struct kvm_ioapic *ioapic, int irq)
+ 			}
+ 		}
+ 		break;
+-
+-		/* TODO: NMI */
++	case IOAPIC_NMI:
++		for (vcpu_id = 0; deliver_bitmask != 0; vcpu_id++) {
++			if (!(deliver_bitmask & (1 << vcpu_id)))
++				continue;
++			deliver_bitmask &= ~(1 << vcpu_id);
++			vcpu = ioapic->kvm->vcpus[vcpu_id];
++			if (vcpu)
++				ioapic_inj_nmi(vcpu);
++			else
++				ioapic_debug("NMI to vcpu %d failed\n",
++						vcpu->vcpu_id);
++		}
++		break;
+ 	default:
+ 		printk(KERN_WARNING "Unsupported delivery mode %d\n",
+ 		       delivery_mode);
 -- 
 1.5.6
 
