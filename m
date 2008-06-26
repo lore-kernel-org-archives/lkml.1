@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757098AbYFZPwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbYFZPzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757098AbYFZPwi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 11:52:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbYFZPw2
+	id S1756887AbYFZPzK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 11:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbYFZPyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 11:52:28 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:58855 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752711AbYFZPw1 (ORCPT
+	Thu, 26 Jun 2008 11:54:53 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:54381 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752031AbYFZPyw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 11:52:27 -0400
-Date: Thu, 26 Jun 2008 11:52:25 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-cc: Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: 2.6.26-rc1 regression since 2.6.25 - problem in 2.6.26-rc8 again
-In-Reply-To: <20080626153740.GG4486@ics.muni.cz>
-Message-ID: <Pine.LNX.4.44L0.0806261147030.3104-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 26 Jun 2008 11:54:52 -0400
+Subject: [PATCH] Fix netxen module device table
+From: Ben Collins <ben.collins@canonical.com>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: Canonical
+Date: Thu, 26 Jun 2008 11:54:46 -0400
+Message-Id: <1214495686.7150.7.camel@cunning>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jun 2008, Lukas Hejtmanek wrote:
+This was broken because PCI_DEVICE_CLASS() was duplicating (and
+overwriting) .vendor and .device to PCI_ANY.
 
-> Hello,
-> 
-> I have another USB problem with Lenovo T61 Thinkpad.
-> 
-> I'm using kernel 2.6.26-rc8. I do use CONFIG_USB_SUSPEND.
-> 
-> If I attach USB disk (using EHCI driver), the disk is found and it is working.
-> If I remove the disk, undock the laptop, dock the laptop again and plug the
-> disk, the disk is not found at all until I remove and reinsert the EHCI
-> driver.
-> 
-> I noticed that if I do not unplug the disk berofe undocking, it works after
-> docking back.
+Signed-off-by: Ben Collins <ben.collins@canonical.com>
 
-What happens if instead of reloading ehci-hcd, you unplug and replug
-the disk?
+diff --git a/drivers/net/netxen/netxen_nic_main.c b/drivers/net/netxen/netxen_nic_main.c
+index 6797ed0..0ab5e27 100644
+--- a/drivers/net/netxen/netxen_nic_main.c
++++ b/drivers/net/netxen/netxen_nic_main.c
+@@ -70,15 +70,18 @@ static void netxen_nic_poll_controller(struct net_device *netdev);
+ static irqreturn_t netxen_intr(int irq, void *data);
+ static irqreturn_t netxen_msi_intr(int irq, void *data);
+ 
++#define NETXEN_DEVICE_CLASS \
++	.class = 0x020000, .class_mask = ~0
++
+ /*  PCI Device ID Table  */
+-static struct pci_device_id netxen_pci_tbl[] __devinitdata = {
+-	{PCI_DEVICE(0x4040, 0x0001), PCI_DEVICE_CLASS(0x020000, ~0)},
+-	{PCI_DEVICE(0x4040, 0x0002), PCI_DEVICE_CLASS(0x020000, ~0)},
+-	{PCI_DEVICE(0x4040, 0x0003), PCI_DEVICE_CLASS(0x020000, ~0)},
+-	{PCI_DEVICE(0x4040, 0x0004), PCI_DEVICE_CLASS(0x020000, ~0)},
+-	{PCI_DEVICE(0x4040, 0x0005), PCI_DEVICE_CLASS(0x020000, ~0)},
+-	{PCI_DEVICE(0x4040, 0x0024), PCI_DEVICE_CLASS(0x020000, ~0)},
+-	{PCI_DEVICE(0x4040, 0x0025), PCI_DEVICE_CLASS(0x020000, ~0)},
++static DEFINE_PCI_DEVICE_TABLE(netxen_pci_tbl) = {
++	{PCI_DEVICE(0x4040, 0x0001), NETXEN_DEVICE_CLASS},
++	{PCI_DEVICE(0x4040, 0x0002), NETXEN_DEVICE_CLASS},
++	{PCI_DEVICE(0x4040, 0x0003), NETXEN_DEVICE_CLASS},
++	{PCI_DEVICE(0x4040, 0x0004), NETXEN_DEVICE_CLASS},
++	{PCI_DEVICE(0x4040, 0x0005), NETXEN_DEVICE_CLASS},
++	{PCI_DEVICE(0x4040, 0x0024), NETXEN_DEVICE_CLASS},
++	{PCI_DEVICE(0x4040, 0x0025), NETXEN_DEVICE_CLASS},
+ 	{0,}
+ };
 
-What happens if you undock with the disk plugged in, then unplug the 
-disk, then dock the laptop, and then plug in the disk?
-
-> any ideas?
-
-What does usbmon reveal when you dock the laptop again and then plug in
-the disk (see Documentation/usb/usbmon.txt)?
-
-Can you provide a comparable usbmon log for 2.6.25?
-
-Did the problem go away at any time between 2.6.26-rc1 and -rc8?
-
-Alan Stern
 
