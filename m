@@ -1,106 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760781AbYFZTHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbYFZTK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760781AbYFZTHh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 15:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbYFZTH1
+	id S1757300AbYFZTK0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 15:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbYFZTKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 15:07:27 -0400
-Received: from n78.bullet.mail.sp1.yahoo.com ([98.136.44.42]:35991 "HELO
-	n78.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753960AbYFZTHZ (ORCPT
+	Thu, 26 Jun 2008 15:10:16 -0400
+Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:35684
+	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752187AbYFZTKO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 15:07:25 -0400
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 2397.3814.bm@omp210.mail.sp1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=S+1Cw5HzquR+hk5VrUBnkuCJfKciOyPsO+MZrlW+tQ1BH7aDUmHkCL2dWfaH7MoT9W1Q7cXfbLdsgVaK1wFIhqjXmePMLk2T3aYRTS+F0mWyqgpOnbj6lkKeCMZO6883hHpGBQ4Llp5X0q6pt481KrKTdXr5XtvmcJl3EMQBWmI=;
-X-Mailer: YahooMailWebService/0.7.199
-Date: Thu, 26 Jun 2008 12:07:24 -0700 (PDT)
-From: barry bouwsma <free_beer_for_all@yahoo.com>
-Reply-To: free_beer_for_all@yahoo.com
-Subject: Re: [PATCH] UTC timestamp option for FAT filesystems
-To: Joe Peterson <joe@skyrush.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <48631A01.1020009@skyrush.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <864214.60964.qm@web46107.mail.sp1.yahoo.com>
+	Thu, 26 Jun 2008 15:10:14 -0400
+Date: Thu, 26 Jun 2008 12:10:10 -0700
+From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+To: Ben Collins <ben.collins@canonical.com>
+Cc: usb-storage <usb-storage@lists.one-eyed-alien.net>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [usb-storage] Ambiguous dupe in libusual device list
+Message-ID: <20080626191010.GD31004@one-eyed-alien.net>
+Mail-Followup-To: Ben Collins <ben.collins@canonical.com>,
+	usb-storage <usb-storage@lists.one-eyed-alien.net>,
+	kernel list <linux-kernel@vger.kernel.org>
+References: <1214501556.7150.36.camel@cunning>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="1LKvkjL3sHcu1TtY"
+Content-Disposition: inline
+In-Reply-To: <1214501556.7150.36.camel@cunning>
+User-Agent: Mutt/1.4.2.3i
+Organization: One Eyed Alien Networks
+X-Copyright: (C) 2008 Matthew Dharm, all rights reserved.
+X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Thu, 26 Jun 2008 12:10:10 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- On Thu, 6/26/08, Joe Peterson <joe@skyrush.com> wrote:
 
-> > (in my present time zone), so I wonder if in different languages,
-> > there's a preference for casual use of the phrase GMT (a quick
-> > look in my dictionary shows an entry for GMT, nothing for UTC,
+--1LKvkjL3sHcu1TtY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Well, your question certainly prompted me to go and read up on it
-> again.
+On Thu, Jun 26, 2008 at 01:32:36PM -0400, Ben Collins wrote:
+> In unusual_devs.h, there are these two entries:
+>=20
+> #ifdef CONFIG_USB_STORAGE_DATAFAB
+> /* Submitted by Olaf Hering <olh@suse.de> */
+> UNUSUAL_DEV(  0x07c4, 0xa109, 0x0000, 0xffff,
 
-Oops, didn't mean to...  Very sorry.
+> #ifdef CONFIG_USB_STORAGE_SDDR55
+> /* SM part - aeb <Andries.Brouwer@cwi.nl> */
+> UNUSUAL_DEV(  0x07c4, 0xa109, 0x0000, 0xffff,
 
-Thinking more about my hack (dates back to at least Aug.2005,
-if not before -- can't find older code I ran), originally I
-wanted to be able to allow the user to specify the timezone/
-offset -- for example, if you were, hypothetically, to visit
-me where I am now, and your camera had been set to your local
-time, there's no way I'd easily be seeing the correct times.
+> If I'm not mistaken (and because libusual is pretty well abstracted, I
+> might be) this is an ambiguous dupe that isn't resolved with any
+> checking (IOW, the second entry is likely never used), at least when
+> both config options are enabled.
 
-Fortunately, I began to think better of it after realizing how
-much work and bother it would be, and decided that if my friends
-were to be giving me USB sticks and whatnot to mount that weren't
-with UTC timestamps or in my local timezone, then they weren't
-going to remain my friends for much longer.  Unless they meant
-to give me those sticks without expecting them back, in which
-case I'd compromise and let them remain my friends just to see
-what else they might have up their sleeves to give me.
+Reading the code, it looks like it's a bit more complex than that.
 
+The first entry enables use of a driver (if it's compiled it) which can
+drive both slots on a dual-slot device.
 
-> In my work (unmanned space missions - solar system stuff), we deal with
-> many representations of time, and so I am used to being anal about it.
-> For example, there is GMT, UTC, TDT, ET, etc.  They all differ ever so
-> slightly.
+The first entry enables use of a driver (if it's compiled it) which can
+only drive one slot on a dual-slot device.
 
-Agreed.  And technically UTC is correct.  And while for you, the
-difference between UTC and GMT by now would be the difference
-between a probe floating gently down to the surface of the sun
-(oops, make that some planet) or embedding itself a metre or
-two under the surface, for too many casual users, GMT and UTC
-are interchangeable.  In the case of my camera, technically it's
-drifted to something that's neither UTC or GMT.  If this notebook
-doesn't get it's NTP sync from my other machine's radio clock,
-it rapidly becomes far removed from either.
+This is really the type of thing which shows that we need some sort of
+semi-generic "preference" mechanism for driver binding...
 
-Unfortunately, even the Linux filesystem codes are either careless
-about referring to GMT (I too am guilty, rereading the comment to
-explain my hack which I wrote, before I decided to add `gmt' as an
-inaccurate alternative), or are indeed accurate and some filesystems
-are in fact based on GMT, not UTC -- I don't wish to know.  I see
-some 35-odd references to GMT in the fs/*/* files, try a grep
-just for, well, to see whether people are as careful with UTC/GMT
-as they should be.
+Matt
 
-And it's even worse in the next timezone over from me -- I've seen
-websites referring to broadcasts in GMT -- no, they are in *local*
-*British* time, whether summer or winter time.  Arrgh.  NURSE!
+--=20
+Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
+net=20
+Maintainer, Linux USB Mass Storage Driver
 
-As it's a new option, no need to cater to (or encourage) inaccurate
-usage.  I'd rather advocate and see compatibility in userspace
-utilities for my BSD-afflicted brain, like `mount -u' == `mount
--o remount -o rw' and `patch -C' == `patch --dry-run', but that's
-off-topic, as is this whole discussion.  Blacklist this e-mail,
-please?
+M:  No, Windows doesn't have any nag screens.
+C:  Then what are those blue and white screens I get every day?
+					-- Mike and Cobb
+User Friendly, 1/4/1999
 
+--1LKvkjL3sHcu1TtY
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-Anyway, thanks for trying to get this patch (probably 3 1/2 years
-old by me, if I find my oldest source) into the kernel, and I'll
-shut up now.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-barry bouwsma
+iD8DBQFIY+mSHL9iwnUZqnkRAo19AKCz6FNyQRizSbv9dC4ctBE6QPeA6gCcDCxh
+Sd9xNuCVx6gq+FZ001MV2Ow=
+=cH16
+-----END PGP SIGNATURE-----
 
-
-      
-
+--1LKvkjL3sHcu1TtY--
