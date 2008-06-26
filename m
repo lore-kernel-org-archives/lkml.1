@@ -1,101 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760798AbYFZNYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761156AbYFZNY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760798AbYFZNYL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:24:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYFZNXv
+	id S1761156AbYFZNY3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760320AbYFZNXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 26 Jun 2008 09:23:53 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:59174 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752025AbYFZNXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Jun 2008 09:23:51 -0400
-Received: from shadow.wildlava.net ([67.40.138.81]:53439 "EHLO
-	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751930AbYFZNXu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 09:23:50 -0400
-Message-ID: <48639863.808@skyrush.com>
-Date: Thu, 26 Jun 2008 07:23:47 -0600
-From: Joe Peterson <joe@skyrush.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080620)
-MIME-Version: 1.0
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] UTC timestamp option for FAT filesystems
-References: <4861D685.4070308@skyrush.com> <87od5pqh4o.fsf@basil.nowhere.org>	<4862DB28.3050001@skyrush.com> <48630286.2050006@skyrush.com> <87wskck5wi.fsf@devron.myhome.or.jp>
-In-Reply-To: <87wskck5wi.fsf@devron.myhome.or.jp>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Dan Williams <dan.j.williams@intel.com>,
+       Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       kernel@avr32linux.org, shannon.nelson@intel.com,
+       David Brownell <david-b@pacbell.net>,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: [PATCH v4 1/6] dmaengine: Add dma_client parameter to device_alloc_chan_resources
+Date: Thu, 26 Jun 2008 15:23:18 +0200
+Message-Id: <1214486603-23655-2-git-send-email-haavard.skinnemoen@atmel.com>
+X-Mailer: git-send-email 1.5.5.4
+In-Reply-To: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com>
+References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com>
+X-OriginalArrivalTime: 26 Jun 2008 13:23:06.0619 (UTC) FILETIME=[C50B0CB0:01C8D78F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OGAWA Hirofumi wrote:
->> So FAT filesystem timestamps make sense in one of two modes for a given
->> volume: local time or UTC.  The former handles volumes used under
->> Windows well, and the latter would be extremely useful for other devices
->> which use FAT filesystems but need to have a more sensible "real" time
->> format (like, as I pointed out, digital cameras).
-> 
-> Um, so how does the camera show the timestamp of file? UTC seems to be
-> hack for changing FAT for Linux. Arbitrary value is more useful and
-> correct option, I think.
+A DMA controller capable of doing slave transfers may need to know a
+few things about the slave when preparing the channel. We don't want
+to add this information to struct dma_channel since the channel hasn't
+yet been bound to a client at this point.
 
-Since the camera does not have a concept of time zone, the camera's
-clock, itself, would show UTC.  You are correct that one could, instead,
-choose an arbitrary time offset when setting the camera's clock, and if
-an option existed in Linux to always use this fixed offset on mount, the
-Linux timestamp could be correct in this case as well.
+Instead, pass a reference to the client requesting the channel to the
+driver's device_alloc_chan_resources hook so that it can pick the
+necessary information from the dma_client struct by itself.
 
-However, there are some issues I see with choosing to do this:
+Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+---
+ drivers/dma/dmaengine.c   |    3 ++-
+ drivers/dma/ioat_dma.c    |    5 +++--
+ drivers/dma/iop-adma.c    |    7 ++++---
+ include/linux/dmaengine.h |    3 ++-
+ 4 files changed, 11 insertions(+), 7 deletions(-)
 
-1) It is more confusing than using UTC (the user, in essence, is
-defining a new absolute reference time similar to UTC but not UTC (and
-that matches his local time, at least for 1/2 the year).
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index 99c22b4..a57c337 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -174,7 +174,8 @@ static void dma_client_chan_alloc(struct dma_client *client)
+ 			if (!dma_chan_satisfies_mask(chan, client->cap_mask))
+ 				continue;
+ 
+-			desc = chan->device->device_alloc_chan_resources(chan);
++			desc = chan->device->device_alloc_chan_resources(
++					chan, client);
+ 			if (desc >= 0) {
+ 				ack = client->event_callback(client,
+ 						chan,
+diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+index 318e8a2..90e5b0a 100644
+--- a/drivers/dma/ioat_dma.c
++++ b/drivers/dma/ioat_dma.c
+@@ -452,7 +452,8 @@ static void ioat2_dma_massage_chan_desc(struct ioat_dma_chan *ioat_chan)
+  * ioat_dma_alloc_chan_resources - returns the number of allocated descriptors
+  * @chan: the channel to be filled out
+  */
+-static int ioat_dma_alloc_chan_resources(struct dma_chan *chan)
++static int ioat_dma_alloc_chan_resources(struct dma_chan *chan,
++					 struct dma_client *client)
+ {
+ 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
+ 	struct ioat_desc_sw *desc;
+@@ -1049,7 +1050,7 @@ static int ioat_dma_self_test(struct ioatdma_device *device)
+ 	dma_chan = container_of(device->common.channels.next,
+ 				struct dma_chan,
+ 				device_node);
+-	if (device->common.device_alloc_chan_resources(dma_chan) < 1) {
++	if (device->common.device_alloc_chan_resources(dma_chan, NULL) < 1) {
+ 		dev_err(&device->pdev->dev,
+ 			"selftest cannot allocate chan resource\n");
+ 		err = -ENODEV;
+diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
+index 0ec0f43..2664ea5 100644
+--- a/drivers/dma/iop-adma.c
++++ b/drivers/dma/iop-adma.c
+@@ -444,7 +444,8 @@ static void iop_chan_start_null_memcpy(struct iop_adma_chan *iop_chan);
+ static void iop_chan_start_null_xor(struct iop_adma_chan *iop_chan);
+ 
+ /* returns the number of allocated descriptors */
+-static int iop_adma_alloc_chan_resources(struct dma_chan *chan)
++static int iop_adma_alloc_chan_resources(struct dma_chan *chan,
++					 struct dma_client *client)
+ {
+ 	char *hw_desc;
+ 	int idx;
+@@ -838,7 +839,7 @@ static int __devinit iop_adma_memcpy_self_test(struct iop_adma_device *device)
+ 	dma_chan = container_of(device->common.channels.next,
+ 				struct dma_chan,
+ 				device_node);
+-	if (iop_adma_alloc_chan_resources(dma_chan) < 1) {
++	if (iop_adma_alloc_chan_resources(dma_chan, NULL) < 1) {
+ 		err = -ENODEV;
+ 		goto out;
+ 	}
+@@ -936,7 +937,7 @@ iop_adma_xor_zero_sum_self_test(struct iop_adma_device *device)
+ 	dma_chan = container_of(device->common.channels.next,
+ 				struct dma_chan,
+ 				device_node);
+-	if (iop_adma_alloc_chan_resources(dma_chan) < 1) {
++	if (iop_adma_alloc_chan_resources(dma_chan, NULL) < 1) {
+ 		err = -ENODEV;
+ 		goto out;
+ 	}
+diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+index d08a5c5..cffb95f 100644
+--- a/include/linux/dmaengine.h
++++ b/include/linux/dmaengine.h
+@@ -279,7 +279,8 @@ struct dma_device {
+ 	int dev_id;
+ 	struct device *dev;
+ 
+-	int (*device_alloc_chan_resources)(struct dma_chan *chan);
++	int (*device_alloc_chan_resources)(struct dma_chan *chan,
++			struct dma_client *client);
+ 	void (*device_free_chan_resources)(struct dma_chan *chan);
+ 
+ 	struct dma_async_tx_descriptor *(*device_prep_dma_memcpy)(
+-- 
+1.5.5.4
 
-2) If the user moves, either the camera and mount offset could be left
-at the "wrong" setting that would now be less meaningful than UTC, or
-the user could change both.
-
-3) When the daylight saving time switch happens, the camera's time will
-now be wrong, even though the Linux time will still be OK - they will
-differ by 1 hour unless corrected.  If the camera could (and did) adjust
-for DST automatically, then this would give a bad Linux time and
-potentially go unnoticed until the fixed offset were corrected (note
-that my camera does not ever auto-adjust; I'm not sure if any can).
-
-So in cases 2 and 3, the user would end up needing to change the offset,
-perhaps twice a year.  This is one thing I am trying to avoid by just
-using UTC.  Using UTC as the "fixed offset" is the only one that makes
-sense in that if one is to choose some arbitrary "universal time", it
-might as well be UTC (and there are no DST issues with UTC).
-
-> It will be specified the timezone of FAT on one disk. So, the timestamp
-> is right for specified timezone on Windows always, on Linux should be
-> always right...
-> 
-> No?
-
-Not really.  Here's an example:
-
-1) Create a folder on FAT in Windows in winter at local 12:00
-2) Create a folder on FAT in Windows in summer at local 12:00
-3) Notice that in Windows, they both will read "12:00"
-4) Mount the volume under Linux with the default "local time" behavior,
-   and you will notice the times are off by one hour (because Linux
-   adjusts both by the same offset in the kernel, but userland
-   correctly adjusts them differently due to different DST status)
-
-This is one case in which Linux's method of FAT local time correction
-breaks down, and the real root of the problem is that FAT is not using
-UTC.  If, in Linux, the same FAT partition were looked at 6 months
-later, the two times would still differ by one hour, but they would both
-also be shifted by one hour due to the kernel's different DST correction
-(i.e. the "other one" would now read "12:00".
-
-As I mentioned, local time is not a realistic way to handle time anyway,
-but the paradigm has existed in DOS/Windows FAT throughout its history
-(note that NTFS, on the other hand, behaves more like a real fs).
-
-So, if one were to, instead of UTC, use an arbitrary "fixed" offset when
-mounting a FAT partition, the same issue would occur (Linux and Windows
-would not agree always).
-
-						-Joe
