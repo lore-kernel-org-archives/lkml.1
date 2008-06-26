@@ -1,85 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbYFZJAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757002AbYFZJBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756271AbYFZJAZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 05:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbYFZJAM
+	id S1757002AbYFZJBZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 05:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbYFZJBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 05:00:12 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:51286 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751513AbYFZJAK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 05:00:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=RvB16tIksTQZhVGdTLWWUdCTV6IW+l4WJqoaBa8HAxyyonMkhjihf5uf0h5nbewOA3
-         YDTSxtVXO833ixakYfH/07h3vuJ4AT3KJfcrhsneV8w8AHl8i9gLtdXjeZhijvCrS7Es
-         Vgovj+UiDaibSk6g54TJcY0bexYueu+d+XSlA=
-Message-ID: <19f34abd0806260200r40b46012q9bb4ba8783e8d935@mail.gmail.com>
-Date: Thu, 26 Jun 2008 11:00:10 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Mike Travis" <travis@sgi.com>,
-       "Adrian Bunk" <bunk@kernel.org>,
-       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org,
-       "Gautham R Shenoy" <ego@in.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "Heiko Carstens" <heiko.carstens@de.ibm.com>,
-       "Rusty Russell" <rusty@rustcorp.com.au>
-In-Reply-To: <20080625191535.e6e60432.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 26 Jun 2008 05:01:17 -0400
+Received: from gate.crashing.org ([63.228.1.57]:38941 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750866AbYFZJBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 05:01:16 -0400
+Subject: Re: [PATCH 1/4] ide-pmac: media-bay support fixes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200806261051.34733.bzolnier@gmail.com>
+References: <200806162124.43005.bzolnier@gmail.com>
+	 <200806242055.12042.bzolnier@gmail.com> <1214456094.8011.438.camel@pasglop>
+	 <200806261051.34733.bzolnier@gmail.com>
+Content-Type: text/plain
+Date: Thu, 26 Jun 2008 19:01:08 +1000
+Message-Id: <1214470868.8011.455.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080622125633.GA8166@damson.getinternet.no>
-	 <200806231326.11328.rusty@rustcorp.com.au> <485FD644.80208@sgi.com>
-	 <200806241136.52430.rusty@rustcorp.com.au>
-	 <1214294783.25608.75.camel@ymzhang>
-	 <1214441979.25608.86.camel@ymzhang>
-	 <20080625191535.e6e60432.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 4:15 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> Could.  But arch/x86/kernel/smpboot.c is an x86-tree file.  I'd expect
-> the x86 maintainers would like a usable changelog and a Tested-by: (if
-> indeed Vegard tested it).
+On Thu, 2008-06-26 at 10:51 +0200, Bartlomiej Zolnierkiewicz wrote:
+> 
+> The latest patches in one place:
+> 
+> http://www.kernel.org/pub/linux/kernel/people/bart/pata-2.6/
+> 
+> pmac-media-bay-support-fixes-take-3.patch
+> pmac-store-pmif-instead-of-hwif-in-driver_data-take-2.patch
+> pmac-add-init_dev-method-take-3.patch
+> pmac-move-ide_find_port-call-to-pmac_ide_setup_device-take-2.patch
+> 
+> IMO they are quite small and straightforward so setting git tree would
+> be overdoing it but if there are still problems I will set one.
 
-Hi,
+That's ok, just tell me a tree and an SHA1 ID of a commit on top of
+which they apply, that will make my life easier :-)
 
-I had the patch (on top of v2.6.26-rc8) in testing for a couple of
-hours now, but like I expected, the APIC error is really hard to
-reproduce. So I fear that we never hit the failure case in the first
-place. On the other hand... I hit a number of (other?) problems:
+I'll test them tomorrow morning.
 
-1. Spontaneous reboot. This could have been the APIC error thing, I
-have no way to know. I've never seen this before.
-2. NULL pointer dereference in pick_next_task_fair(). Not new.
-3. NULL pointer dereference in page_cgroup_zoneinfo. Never seen this
-before (see screenshot #1).
-4. Page fault in I'm guessing configure_kgdbts() during boot. Never
-seen this before either (screenshot #2).
-
-So even though I'm inclined to believe the patch is correct, I will
-not ack it or claim successful test coverage.
-
-The screenshots:
-
-#1: http://www.kernel.org/pub/linux/kernel/people/vegard/kernels/20080626/DSCF3017.JPG
-#2: http://www.kernel.org/pub/linux/kernel/people/vegard/kernels/20080626/DSCF3018.JPG
+Cheers,
+Ben.
 
 
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
