@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbYFZMcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbYFZMdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757918AbYFZMcZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 08:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbYFZM2q
+	id S1757487AbYFZMdZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 08:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYFZM2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:28:46 -0400
+	Thu, 26 Jun 2008 08:28:54 -0400
 Received: from il.qumranet.com ([212.179.150.194]:32377 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752084AbYFZM2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:28:38 -0400
+	id S1752359AbYFZM2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:28:42 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 14/50] KVM: Handle virtualization instruction #UD faults during reboot
-Date: Thu, 26 Jun 2008 15:27:56 +0300
-Message-Id: <1214483312-9265-15-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Laurent Vivier <Laurent.Vivier@bull.net>
+Subject: [PATCH 33/50] KVM: kvm_io_device: extend in_range() to manage len and write attribute
+Date: Thu, 26 Jun 2008 15:28:15 +0300
+Message-Id: <1214483312-9265-34-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1214483312-9265-1-git-send-email-avi@qumranet.com>
 References: <1214483312-9265-1-git-send-email-avi@qumranet.com>
@@ -22,261 +22,274 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KVM turns off hardware virtualization extensions during reboot, in order
-to disassociate the memory used by the virtualization extensions from the
-processor, and in order to have the system in a consistent state.
-Unfortunately virtual machines may still be running while this goes on,
-and once virtualization extensions are turned off, any virtulization
-instruction will #UD on execution.
+From: Laurent Vivier <Laurent.Vivier@bull.net>
 
-Fix by adding an exception handler to virtualization instructions; if we get
-an exception during reboot, we simply spin waiting for the reset to complete.
-If it's a true exception, BUG() so we can have our stack trace.
+Modify member in_range() of structure kvm_io_device to pass length and the type
+of the I/O (write or read).
 
+This modification allows to use kvm_io_device with coalesced MMIO.
+
+Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/svm.c         |   20 +++++++++++---------
- arch/x86/kvm/vmx.c         |   25 ++++++++++++++-----------
- include/asm-x86/kvm_host.h |   24 ++++++++++++++++++++++++
- virt/kvm/kvm_main.c        |   15 +++++++++++++++
- 4 files changed, 64 insertions(+), 20 deletions(-)
+ arch/ia64/kvm/kvm-ia64.c |    6 +++---
+ arch/x86/kvm/i8254.c     |    6 ++++--
+ arch/x86/kvm/i8259.c     |    3 ++-
+ arch/x86/kvm/lapic.c     |    3 ++-
+ arch/x86/kvm/x86.c       |   28 +++++++++++++++++-----------
+ include/linux/kvm_host.h |    3 ++-
+ virt/kvm/ioapic.c        |    3 ++-
+ virt/kvm/iodev.h         |    8 +++++---
+ virt/kvm/kvm_main.c      |    5 +++--
+ 9 files changed, 40 insertions(+), 25 deletions(-)
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 992ab71..9390a31 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -27,6 +27,8 @@
- 
- #include <asm/desc.h>
- 
-+#define __ex(x) __kvm_handle_fault_on_reboot(x)
-+
- MODULE_AUTHOR("Qumranet");
- MODULE_LICENSE("GPL");
- 
-@@ -129,17 +131,17 @@ static inline void push_irq(struct kvm_vcpu *vcpu, u8 irq)
- 
- static inline void clgi(void)
- {
--	asm volatile (SVM_CLGI);
-+	asm volatile (__ex(SVM_CLGI));
+diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
+index adb74f7..b59231b 100644
+--- a/arch/ia64/kvm/kvm-ia64.c
++++ b/arch/ia64/kvm/kvm-ia64.c
+@@ -195,11 +195,11 @@ int kvm_dev_ioctl_check_extension(long ext)
  }
  
- static inline void stgi(void)
+ static struct kvm_io_device *vcpu_find_mmio_dev(struct kvm_vcpu *vcpu,
+-					gpa_t addr)
++					gpa_t addr, int len, int is_write)
  {
--	asm volatile (SVM_STGI);
-+	asm volatile (__ex(SVM_STGI));
+ 	struct kvm_io_device *dev;
+ 
+-	dev = kvm_io_bus_find_dev(&vcpu->kvm->mmio_bus, addr);
++	dev = kvm_io_bus_find_dev(&vcpu->kvm->mmio_bus, addr, len, is_write);
+ 
+ 	return dev;
+ }
+@@ -231,7 +231,7 @@ static int handle_mmio(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 	kvm_run->exit_reason = KVM_EXIT_MMIO;
+ 	return 0;
+ mmio:
+-	mmio_dev = vcpu_find_mmio_dev(vcpu, p->addr);
++	mmio_dev = vcpu_find_mmio_dev(vcpu, p->addr, p->size, !p->dir);
+ 	if (mmio_dev) {
+ 		if (!p->dir)
+ 			kvm_iodevice_write(mmio_dev, p->addr, p->size,
+diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
+index 60074dc..9e3391e 100644
+--- a/arch/x86/kvm/i8254.c
++++ b/arch/x86/kvm/i8254.c
+@@ -460,7 +460,8 @@ static void pit_ioport_read(struct kvm_io_device *this,
+ 	mutex_unlock(&pit_state->lock);
  }
  
- static inline void invlpga(unsigned long addr, u32 asid)
+-static int pit_in_range(struct kvm_io_device *this, gpa_t addr)
++static int pit_in_range(struct kvm_io_device *this, gpa_t addr,
++			int len, int is_write)
  {
--	asm volatile (SVM_INVLPGA :: "a"(addr), "c"(asid));
-+	asm volatile (__ex(SVM_INVLPGA) :: "a"(addr), "c"(asid));
+ 	return ((addr >= KVM_PIT_BASE_ADDRESS) &&
+ 		(addr < KVM_PIT_BASE_ADDRESS + KVM_PIT_MEM_LENGTH));
+@@ -501,7 +502,8 @@ static void speaker_ioport_read(struct kvm_io_device *this,
+ 	mutex_unlock(&pit_state->lock);
  }
  
- static inline unsigned long kvm_read_cr2(void)
-@@ -1758,17 +1760,17 @@ static void svm_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 		/* Enter guest mode */
- 		"push %%rax \n\t"
- 		"mov %c[vmcb](%[svm]), %%rax \n\t"
--		SVM_VMLOAD "\n\t"
--		SVM_VMRUN "\n\t"
--		SVM_VMSAVE "\n\t"
-+		__ex(SVM_VMLOAD) "\n\t"
-+		__ex(SVM_VMRUN) "\n\t"
-+		__ex(SVM_VMSAVE) "\n\t"
- 		"pop %%rax \n\t"
- #else
- 		/* Enter guest mode */
- 		"push %%eax \n\t"
- 		"mov %c[vmcb](%[svm]), %%eax \n\t"
--		SVM_VMLOAD "\n\t"
--		SVM_VMRUN "\n\t"
--		SVM_VMSAVE "\n\t"
-+		__ex(SVM_VMLOAD) "\n\t"
-+		__ex(SVM_VMRUN) "\n\t"
-+		__ex(SVM_VMSAVE) "\n\t"
- 		"pop %%eax \n\t"
- #endif
- 
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 1b286fa..fa4ea2e 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -30,6 +30,8 @@
- #include <asm/io.h>
- #include <asm/desc.h>
- 
-+#define __ex(x) __kvm_handle_fault_on_reboot(x)
-+
- MODULE_AUTHOR("Qumranet");
- MODULE_LICENSE("GPL");
- 
-@@ -278,7 +280,7 @@ static inline void __invvpid(int ext, u16 vpid, gva_t gva)
- 	u64 gva;
-     } operand = { vpid, 0, gva };
- 
--    asm volatile (ASM_VMX_INVVPID
-+    asm volatile (__ex(ASM_VMX_INVVPID)
- 		  /* CF==1 or ZF==1 --> rc = -1 */
- 		  "; ja 1f ; ud2 ; 1:"
- 		  : : "a"(&operand), "c"(ext) : "cc", "memory");
-@@ -290,7 +292,7 @@ static inline void __invept(int ext, u64 eptp, gpa_t gpa)
- 		u64 eptp, gpa;
- 	} operand = {eptp, gpa};
- 
--	asm volatile (ASM_VMX_INVEPT
-+	asm volatile (__ex(ASM_VMX_INVEPT)
- 			/* CF==1 or ZF==1 --> rc = -1 */
- 			"; ja 1f ; ud2 ; 1:\n"
- 			: : "a" (&operand), "c" (ext) : "cc", "memory");
-@@ -311,7 +313,7 @@ static void vmcs_clear(struct vmcs *vmcs)
- 	u64 phys_addr = __pa(vmcs);
- 	u8 error;
- 
--	asm volatile (ASM_VMX_VMCLEAR_RAX "; setna %0"
-+	asm volatile (__ex(ASM_VMX_VMCLEAR_RAX) "; setna %0"
- 		      : "=g"(error) : "a"(&phys_addr), "m"(phys_addr)
- 		      : "cc", "memory");
- 	if (error)
-@@ -378,7 +380,7 @@ static unsigned long vmcs_readl(unsigned long field)
+-static int speaker_in_range(struct kvm_io_device *this, gpa_t addr)
++static int speaker_in_range(struct kvm_io_device *this, gpa_t addr,
++			    int len, int is_write)
  {
- 	unsigned long value;
- 
--	asm volatile (ASM_VMX_VMREAD_RDX_RAX
-+	asm volatile (__ex(ASM_VMX_VMREAD_RDX_RAX)
- 		      : "=a"(value) : "d"(field) : "cc");
- 	return value;
+ 	return (addr == KVM_SPEAKER_BASE_ADDRESS);
  }
-@@ -413,7 +415,7 @@ static void vmcs_writel(unsigned long field, unsigned long value)
- {
- 	u8 error;
- 
--	asm volatile (ASM_VMX_VMWRITE_RAX_RDX "; setna %0"
-+	asm volatile (__ex(ASM_VMX_VMWRITE_RAX_RDX) "; setna %0"
- 		       : "=q"(error) : "a"(value), "d"(field) : "cc");
- 	if (unlikely(error))
- 		vmwrite_error(field, value);
-@@ -621,7 +623,7 @@ static void vmx_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- 		u8 error;
- 
- 		per_cpu(current_vmcs, cpu) = vmx->vmcs;
--		asm volatile (ASM_VMX_VMPTRLD_RAX "; setna %0"
-+		asm volatile (__ex(ASM_VMX_VMPTRLD_RAX) "; setna %0"
- 			      : "=g"(error) : "a"(&phys_addr), "m"(phys_addr)
- 			      : "cc");
- 		if (error)
-@@ -1030,13 +1032,14 @@ static void hardware_enable(void *garbage)
- 		       MSR_IA32_FEATURE_CONTROL_LOCKED |
- 		       MSR_IA32_FEATURE_CONTROL_VMXON_ENABLED);
- 	write_cr4(read_cr4() | X86_CR4_VMXE); /* FIXME: not cpu hotplug safe */
--	asm volatile (ASM_VMX_VMXON_RAX : : "a"(&phys_addr), "m"(phys_addr)
-+	asm volatile (ASM_VMX_VMXON_RAX
-+		      : : "a"(&phys_addr), "m"(phys_addr)
- 		      : "memory", "cc");
+diff --git a/arch/x86/kvm/i8259.c b/arch/x86/kvm/i8259.c
+index ab29cf2..5857f59 100644
+--- a/arch/x86/kvm/i8259.c
++++ b/arch/x86/kvm/i8259.c
+@@ -346,7 +346,8 @@ static u32 elcr_ioport_read(void *opaque, u32 addr1)
+ 	return s->elcr;
  }
  
- static void hardware_disable(void *garbage)
+-static int picdev_in_range(struct kvm_io_device *this, gpa_t addr)
++static int picdev_in_range(struct kvm_io_device *this, gpa_t addr,
++			   int len, int is_write)
  {
--	asm volatile (ASM_VMX_VMXOFF : : : "cc");
-+	asm volatile (__ex(ASM_VMX_VMXOFF) : : : "cc");
- 	write_cr4(read_cr4() & ~X86_CR4_VMXE);
+ 	switch (addr) {
+ 	case 0x20:
+diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+index e48d193..180ba73 100644
+--- a/arch/x86/kvm/lapic.c
++++ b/arch/x86/kvm/lapic.c
+@@ -785,7 +785,8 @@ static void apic_mmio_write(struct kvm_io_device *this,
+ 
  }
  
-@@ -2834,7 +2837,7 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 		"push %%edx; push %%ebp;"
- 		"push %%ecx \n\t"
- #endif
--		ASM_VMX_VMWRITE_RSP_RDX "\n\t"
-+		__ex(ASM_VMX_VMWRITE_RSP_RDX) "\n\t"
- 		/* Check if vmlaunch of vmresume is needed */
- 		"cmpl $0, %c[launched](%0) \n\t"
- 		/* Load guest registers.  Don't clobber flags. */
-@@ -2869,9 +2872,9 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- #endif
- 		/* Enter guest mode */
- 		"jne .Llaunched \n\t"
--		ASM_VMX_VMLAUNCH "\n\t"
-+		__ex(ASM_VMX_VMLAUNCH) "\n\t"
- 		"jmp .Lkvm_vmx_return \n\t"
--		".Llaunched: " ASM_VMX_VMRESUME "\n\t"
-+		".Llaunched: " __ex(ASM_VMX_VMRESUME) "\n\t"
- 		".Lkvm_vmx_return: "
- 		/* Save guest registers, load host registers, keep flags */
- #ifdef CONFIG_X86_64
-diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
-index c2d066e..0df9d5f 100644
---- a/include/asm-x86/kvm_host.h
-+++ b/include/asm-x86/kvm_host.h
-@@ -692,4 +692,28 @@ enum {
- 	trace_mark(kvm_trace_##name, "%u %p %u %u %u %u %u %u", KVM_TRC_##evt, \
- 						vcpu, 0, 0, 0, 0, 0, 0)
+-static int apic_mmio_range(struct kvm_io_device *this, gpa_t addr)
++static int apic_mmio_range(struct kvm_io_device *this, gpa_t addr,
++			   int len, int size)
+ {
+ 	struct kvm_lapic *apic = (struct kvm_lapic *)this->private;
+ 	int ret = 0;
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 51810d8..00333b6 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -1797,13 +1797,14 @@ static void kvm_init_msr_list(void)
+  * Only apic need an MMIO device hook, so shortcut now..
+  */
+ static struct kvm_io_device *vcpu_find_pervcpu_dev(struct kvm_vcpu *vcpu,
+-						gpa_t addr)
++						gpa_t addr, int len,
++						int is_write)
+ {
+ 	struct kvm_io_device *dev;
  
-+#ifdef CONFIG_64BIT
-+#define KVM_EX_ENTRY ".quad"
-+#else
-+#define KVM_EX_ENTRY ".long"
-+#endif
-+
-+/*
-+ * Hardware virtualization extension instructions may fault if a
-+ * reboot turns off virtualization while processes are running.
-+ * Trap the fault and ignore the instruction if that happens.
-+ */
-+asmlinkage void kvm_handle_fault_on_reboot(void);
-+
-+#define __kvm_handle_fault_on_reboot(insn) \
-+	"666: " insn "\n\t" \
-+	".pushsection .text.fixup, \"ax\" \n" \
-+	"667: \n\t" \
-+	"push $666b \n\t" \
-+	"jmp kvm_handle_fault_on_reboot \n\t" \
-+	".popsection \n\t" \
-+	".pushsection __ex_table, \"a\" \n\t" \
-+	KVM_EX_ENTRY " 666b, 667b \n\t" \
-+	".popsection"
-+
- #endif
+ 	if (vcpu->arch.apic) {
+ 		dev = &vcpu->arch.apic->dev;
+-		if (dev->in_range(dev, addr))
++		if (dev->in_range(dev, addr, len, is_write))
+ 			return dev;
+ 	}
+ 	return NULL;
+@@ -1811,13 +1812,15 @@ static struct kvm_io_device *vcpu_find_pervcpu_dev(struct kvm_vcpu *vcpu,
+ 
+ 
+ static struct kvm_io_device *vcpu_find_mmio_dev(struct kvm_vcpu *vcpu,
+-						gpa_t addr)
++						gpa_t addr, int len,
++						int is_write)
+ {
+ 	struct kvm_io_device *dev;
+ 
+-	dev = vcpu_find_pervcpu_dev(vcpu, addr);
++	dev = vcpu_find_pervcpu_dev(vcpu, addr, len, is_write);
+ 	if (dev == NULL)
+-		dev = kvm_io_bus_find_dev(&vcpu->kvm->mmio_bus, addr);
++		dev = kvm_io_bus_find_dev(&vcpu->kvm->mmio_bus, addr, len,
++					  is_write);
+ 	return dev;
+ }
+ 
+@@ -1885,7 +1888,7 @@ mmio:
+ 	 * Is this MMIO handled locally?
+ 	 */
+ 	mutex_lock(&vcpu->kvm->lock);
+-	mmio_dev = vcpu_find_mmio_dev(vcpu, gpa);
++	mmio_dev = vcpu_find_mmio_dev(vcpu, gpa, bytes, 0);
+ 	if (mmio_dev) {
+ 		kvm_iodevice_read(mmio_dev, gpa, bytes, val);
+ 		mutex_unlock(&vcpu->kvm->lock);
+@@ -1940,7 +1943,7 @@ mmio:
+ 	 * Is this MMIO handled locally?
+ 	 */
+ 	mutex_lock(&vcpu->kvm->lock);
+-	mmio_dev = vcpu_find_mmio_dev(vcpu, gpa);
++	mmio_dev = vcpu_find_mmio_dev(vcpu, gpa, bytes, 1);
+ 	if (mmio_dev) {
+ 		kvm_iodevice_write(mmio_dev, gpa, bytes, val);
+ 		mutex_unlock(&vcpu->kvm->lock);
+@@ -2317,9 +2320,10 @@ static void pio_string_write(struct kvm_io_device *pio_dev,
+ }
+ 
+ static struct kvm_io_device *vcpu_find_pio_dev(struct kvm_vcpu *vcpu,
+-					       gpa_t addr)
++					       gpa_t addr, int len,
++					       int is_write)
+ {
+-	return kvm_io_bus_find_dev(&vcpu->kvm->pio_bus, addr);
++	return kvm_io_bus_find_dev(&vcpu->kvm->pio_bus, addr, len, is_write);
+ }
+ 
+ int kvm_emulate_pio(struct kvm_vcpu *vcpu, struct kvm_run *run, int in,
+@@ -2351,7 +2355,7 @@ int kvm_emulate_pio(struct kvm_vcpu *vcpu, struct kvm_run *run, int in,
+ 
+ 	kvm_x86_ops->skip_emulated_instruction(vcpu);
+ 
+-	pio_dev = vcpu_find_pio_dev(vcpu, port);
++	pio_dev = vcpu_find_pio_dev(vcpu, port, size, !in);
+ 	if (pio_dev) {
+ 		kernel_pio(pio_dev, vcpu, vcpu->arch.pio_data);
+ 		complete_pio(vcpu);
+@@ -2433,7 +2437,9 @@ int kvm_emulate_pio_string(struct kvm_vcpu *vcpu, struct kvm_run *run, int in,
+ 		}
+ 	}
+ 
+-	pio_dev = vcpu_find_pio_dev(vcpu, port);
++	pio_dev = vcpu_find_pio_dev(vcpu, port,
++				    vcpu->arch.pio.cur_count,
++				    !vcpu->arch.pio.in);
+ 	if (!vcpu->arch.pio.in) {
+ 		/* string PIO write */
+ 		ret = pio_copy_data(vcpu);
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 865dcbc..499ff06 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -52,7 +52,8 @@ struct kvm_io_bus {
+ 
+ void kvm_io_bus_init(struct kvm_io_bus *bus);
+ void kvm_io_bus_destroy(struct kvm_io_bus *bus);
+-struct kvm_io_device *kvm_io_bus_find_dev(struct kvm_io_bus *bus, gpa_t addr);
++struct kvm_io_device *kvm_io_bus_find_dev(struct kvm_io_bus *bus,
++					  gpa_t addr, int len, int is_write);
+ void kvm_io_bus_register_dev(struct kvm_io_bus *bus,
+ 			     struct kvm_io_device *dev);
+ 
+diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
+index cb8a20b..9d02136 100644
+--- a/virt/kvm/ioapic.c
++++ b/virt/kvm/ioapic.c
+@@ -307,7 +307,8 @@ void kvm_ioapic_update_eoi(struct kvm *kvm, int vector)
+ 			__kvm_ioapic_update_eoi(ioapic, i);
+ }
+ 
+-static int ioapic_in_range(struct kvm_io_device *this, gpa_t addr)
++static int ioapic_in_range(struct kvm_io_device *this, gpa_t addr,
++			   int len, int is_write)
+ {
+ 	struct kvm_ioapic *ioapic = (struct kvm_ioapic *)this->private;
+ 
+diff --git a/virt/kvm/iodev.h b/virt/kvm/iodev.h
+index c14e642..55e8846 100644
+--- a/virt/kvm/iodev.h
++++ b/virt/kvm/iodev.h
+@@ -27,7 +27,8 @@ struct kvm_io_device {
+ 		      gpa_t addr,
+ 		      int len,
+ 		      const void *val);
+-	int (*in_range)(struct kvm_io_device *this, gpa_t addr);
++	int (*in_range)(struct kvm_io_device *this, gpa_t addr, int len,
++			int is_write);
+ 	void (*destructor)(struct kvm_io_device *this);
+ 
+ 	void             *private;
+@@ -49,9 +50,10 @@ static inline void kvm_iodevice_write(struct kvm_io_device *dev,
+ 	dev->write(dev, addr, len, val);
+ }
+ 
+-static inline int kvm_iodevice_inrange(struct kvm_io_device *dev, gpa_t addr)
++static inline int kvm_iodevice_inrange(struct kvm_io_device *dev,
++				       gpa_t addr, int len, int is_write)
+ {
+-	return dev->in_range(dev, addr);
++	return dev->in_range(dev, addr, len, is_write);
+ }
+ 
+ static inline void kvm_iodevice_destructor(struct kvm_io_device *dev)
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 4d30ac5..67af90c 100644
+index e8f9fda..d602700 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -65,6 +65,8 @@ struct dentry *kvm_debugfs_dir;
- static long kvm_vcpu_ioctl(struct file *file, unsigned int ioctl,
- 			   unsigned long arg);
- 
-+bool kvm_rebooting;
-+
- static inline int valid_vcpu(int n)
- {
- 	return likely(n >= 0 && n < KVM_MAX_VCPUS);
-@@ -1301,6 +1303,18 @@ static int kvm_cpu_hotplug(struct notifier_block *notifier, unsigned long val,
- 	return NOTIFY_OK;
+@@ -1350,14 +1350,15 @@ void kvm_io_bus_destroy(struct kvm_io_bus *bus)
+ 	}
  }
  
-+
-+asmlinkage void kvm_handle_fault_on_reboot(void)
-+{
-+	if (kvm_rebooting)
-+		/* spin while reset goes on */
-+		while (true)
-+			;
-+	/* Fault while not rebooting.  We want the trace. */
-+	BUG();
-+}
-+EXPORT_SYMBOL_GPL(kvm_handle_fault_on_reboot);
-+
- static int kvm_reboot(struct notifier_block *notifier, unsigned long val,
- 		      void *v)
+-struct kvm_io_device *kvm_io_bus_find_dev(struct kvm_io_bus *bus, gpa_t addr)
++struct kvm_io_device *kvm_io_bus_find_dev(struct kvm_io_bus *bus,
++					  gpa_t addr, int len, int is_write)
  {
-@@ -1310,6 +1324,7 @@ static int kvm_reboot(struct notifier_block *notifier, unsigned long val,
- 		 * in vmx root mode.
- 		 */
- 		printk(KERN_INFO "kvm: exiting hardware virtualization\n");
-+		kvm_rebooting = true;
- 		on_each_cpu(hardware_disable, NULL, 0, 1);
+ 	int i;
+ 
+ 	for (i = 0; i < bus->dev_count; i++) {
+ 		struct kvm_io_device *pos = bus->devs[i];
+ 
+-		if (pos->in_range(pos, addr))
++		if (pos->in_range(pos, addr, len, is_write))
+ 			return pos;
  	}
- 	return NOTIFY_OK;
+ 
 -- 
 1.5.6
 
