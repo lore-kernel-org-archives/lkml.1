@@ -1,109 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754339AbYFZIp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757723AbYFZIpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754339AbYFZIp0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 04:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbYFZIos
+	id S1757723AbYFZIpq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 04:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbYFZIoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 04:44:48 -0400
-Received: from cantor.suse.de ([195.135.220.2]:55171 "EHLO mx1.suse.de"
+	Thu, 26 Jun 2008 04:44:55 -0400
+Received: from mga01.intel.com ([192.55.52.88]:13960 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752147AbYFZIor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 04:44:47 -0400
-Date: Thu, 26 Jun 2008 10:45:24 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: Vivek Goyal <vgoyal@redhat.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
-       yhlu.kernel@gmail.com
-Subject: Re: [PATCH 1/2] Add /sys/firmware/memmap
-Message-ID: <20080626104524.2d7ed1ab@halley.suse.de>
-In-Reply-To: <18531.20387.111875.576837@harpo.it.uu.se>
-References: <1214423826-12628-1-git-send-email-bwalle@suse.de>
-	<1214423826-12628-2-git-send-email-bwalle@suse.de>
-	<20080625224301.GE32344@redhat.com>
-	<18531.20387.111875.576837@harpo.it.uu.se>
-Organization: SUSE Linux Products GmbH
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
- D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
- vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
- pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1755615AbYFZIoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 04:44:54 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,707,1204531200"; 
+   d="scan'208";a="345756194"
+Subject: Re: [PATCH 2/2] x86 boot: early_res_to_e820
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+In-Reply-To: <86802c440806260029l35b68e4fh89264e1796e7863b@mail.gmail.com>
+References: <1214461980.10809.7.camel@caritas-dev.intel.com>
+	 <86802c440806260013u447d15d8v94df7bb7bd00da19@mail.gmail.com>
+	 <1214465232.11346.18.camel@caritas-dev.intel.com>
+	 <86802c440806260029l35b68e4fh89264e1796e7863b@mail.gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Thu, 26 Jun 2008 16:03:31 +0800
+Message-Id: <1214467411.11346.34.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+X-OriginalArrivalTime: 26 Jun 2008 07:59:44.0564 (UTC) FILETIME=[98846740:01C8D762]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mikael Pettersson [2008-06-26 10:13]:
->
-> Vivek Goyal writes:
->  > On Wed, Jun 25, 2008 at 09:57:05PM +0200, Bernhard Walle wrote:
->  > > This patch adds /sys/firmware/memmap interface that represents the BIOS
->  > > (or Firmware) provided memory map. The tree looks like:
->  > > 
->  > >     /sys/firmware/memmap/0/start   (hex number)
->  > >                            end     (hex number)
->  > >                            type    (string)
->  > >     ...                 /1/start
->  > >                            end
->  > >                            type
->  > > 
->  > > With the following shell snippet one can print the memory map in the same form
->  > > the kernel prints itself when booting on x86 (the E820 map).
->  > > 
->  > >   --------- 8< --------------------------
->  > >     #!/bin/sh
->  > >     cd /sys/firmware/memmap
->  > >     for dir in * ; do
->  > >         start=$(cat $dir/start)
->  > >         end=$(cat $dir/end)
->  > >         type=$(cat $dir/type)
->  > >         printf "%016x-%016x (%s)\n" $start $[ $end +1] "$type"
->  > >     done
->  > >   --------- >8 --------------------------
->  > > 
->  > > That patch only provides the needed interface:
->  > > 
->  > >  1. The sysfs interface.
->  > >  2. The structure and enumeration definition.
->  > >  3. The function firmware_map_add() and firmware_map_add_early()
->  > >     that should be called from architecture code (E820/EFI, for
->  > >     example) to add the contents to the interface.
->  > > 
->  > > If the kernel is compiled without CONFIG_FIRMWARE_MEMMAP, the interface does
->  > > nothing without cluttering the architecture-specific code with #ifdef's.
->  > > 
->  > 
->  > Hi Bernhard,
->  > 
->  > Thanks for the patch. Couple of thoughts.
->  > 
->  > Do we really need another CONFIG option (CONFIG_FIRMWARE_MEMMAP)? To,
->  > me this does not seem to be a big chunk of code
+On Thu, 2008-06-26 at 00:29 -0700, Yinghai Lu wrote:
+[...]
+> >
+> > For example, if EFI memory map is allocated in highmem area by
+> > boot-loader, it need to be reserved in kernel. But on i386, bootmem can
+> > only reserve memory area below max_low_pfn. So I think this is needed.
+> >
+> > In general, I think it is needed to provide a reservation mechanism for
+> > highmem area on i386. Because some memory area from BIOS or boot-loader
+> > may in highmem area.
 > 
-> It should be configurable. Whether it's done via CONFIG_KEXEC or its own
-> option I don't care.
+> I mean call reserve_setup_data right after finish_e820_parsing,  and
+> it could call e820_update_range directly.
 
-Ok, changed:
+e820_update_range() can only be used after finish_e820_parsing()?
 
-diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
-index 1008737..73fcc59 100644
---- a/drivers/firmware/Kconfig
-+++ b/drivers/firmware/Kconfig
-@@ -28,7 +28,7 @@ config EDD_OFF
- 
- config FIRMWARE_MEMMAP
-     def_bool y
--    depends on X86_64 || X86_32
-+    depends on (X86_64 || X86_32) && KEXEC
- 
- config EFI_VARS
-        tristate "EFI Variable Support via sysfs"
+parse_setup_data() should be called before parse_early_param() to let
+early_param override settings in setup_data. Which is before
+finish_e820_parsing(). It seems a little wired to use the data before
+reserve it.
 
-I will wait with resending the patch for other feedback.
+And this means find_e820_area() should not be called before
+e820_update_range()?
 
+Best Regards,
+Huang Ying
 
-Bernhard
--- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
