@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbYFZSXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761491AbYFZSYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757055AbYFZSXO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:23:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756855AbYFZSWq
+	id S1761491AbYFZSYU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbYFZSYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:22:46 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:53220 "EHLO
-	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755430AbYFZSWp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:22:45 -0400
-X-BigFish: VPS-4(zz98dR62a3L7efVzz10d3izzz32i6bh87il43j)
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K331PG-01-807-01
-Date: Thu, 26 Jun 2008 20:22:35 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: rename setup.c to setup_percpu.c
-Message-ID: <20080626182235.GF1620@erda.amd.com>
-References: <200806251037.11391.yhlu.kernel@gmail.com> <20080626170918.GE1620@erda.amd.com> <86802c440806261107t6d2d1d66r4222017d9da29fbc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <86802c440806261107t6d2d1d66r4222017d9da29fbc@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 26 Jun 2008 18:22:35.0511 (UTC) FILETIME=[9B566070:01C8D7B9]
+	Thu, 26 Jun 2008 14:24:04 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34210 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754937AbYFZSYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 14:24:01 -0400
+Date: Thu, 26 Jun 2008 20:23:58 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: "H. Peter Anvin" <hpa@kernel.org>, Vivek Goyal <vgoyal@redhat.com>,
+       x86@kernel.org, linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
+       yhlu.kernel@gmail.com
+Subject: Re: [PATCH 1/2] Add /sys/firmware/memmap
+Message-ID: <20080626202358.13066e6b@kopernikus.site>
+In-Reply-To: <4863D930.2040300@kernel.org>
+References: <1214423826-12628-1-git-send-email-bwalle@suse.de>
+	<1214423826-12628-2-git-send-email-bwalle@suse.de>
+	<20080625224301.GE32344@redhat.com>
+	<18531.20387.111875.576837@harpo.it.uu.se>
+	<20080626104524.2d7ed1ab@halley.suse.de>
+	<18531.23894.572847.322265@harpo.it.uu.se>
+	<4863D930.2040300@kernel.org>
+Organization: SUSE LINUX Products GmbH
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i686-pc-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26.06.08 11:07:15, Yinghai Lu wrote:
-> we want to keep track of setup_32.c
+* "H. Peter Anvin" <hpa@kernel.org> [2008-06-26 11:00]:
+> 
+> Making this depend on KEXEC would be most unfortunate.  This is valuable 
+> information for finding all kinds of issues even in the absence of KEXEC.
+> 
+> I really don't see a point in making this configurable, except perhaps 
+> under CONFIG_EMBEDDED.
 
-I have seen your patch series afterwards. You are moving back some
-parts of the code. I assume setup_percpu.c will only contain per-cpu
-code in the end?
+Now we have all opinions about how making that interface
+configurable. Mikael, should an option under CONFIG_EMBEDDED be
+acceptable for you?
 
--Robert
+Then I can repost the patch, Cc Greg KH and see if the sysfs structure
+would be ok for him.
 
+
+
+Bernhard
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
