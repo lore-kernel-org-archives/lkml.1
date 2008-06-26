@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763660AbYFZN05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764233AbYFZN2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763660AbYFZN05 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbYFZN0o
+	id S1764233AbYFZN2d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763755AbYFZN2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 09:26:44 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:24099 "EHLO
+	Thu, 26 Jun 2008 09:28:15 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:24116 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753646AbYFZN0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 09:26:42 -0400
+	id S1754058AbYFZN2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 09:28:13 -0400
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
@@ -17,13 +17,26 @@ Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
        hpa@zytor.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 02/60] microblaze_v4: Makefiles for Microblaze cpu
-Date: Thu, 26 Jun 2008 14:29:31 +0200
-Message-Id: <1214483429-32360-3-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 15/60] microblaze_v4: PVR support, cpuinfo support
+Date: Thu, 26 Jun 2008 14:29:44 +0200
+Message-Id: <1214483429-32360-16-git-send-email-monstr@seznam.cz>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <1214483429-32360-2-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-15-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-2-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-3-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-4-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-5-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-6-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-7-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-8-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-9-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-10-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-11-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-12-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-13-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-14-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-15-git-send-email-monstr@seznam.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,196 +46,220 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/Makefile                  |   63 +++++++++++++++++++++++++++++
- arch/microblaze/boot/Makefile             |   17 ++++++++
- arch/microblaze/kernel/Makefile           |   17 ++++++++
- arch/microblaze/kernel/cpu/Makefile       |    8 ++++
- arch/microblaze/lib/Makefile              |    5 ++
- arch/microblaze/mm/Makefile               |    5 ++
- arch/microblaze/platform/Makefile         |    6 +++
- arch/microblaze/platform/generic/Makefile |    3 +
- 8 files changed, 124 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/Makefile
- create mode 100644 arch/microblaze/boot/Makefile
- create mode 100644 arch/microblaze/kernel/Makefile
- create mode 100644 arch/microblaze/kernel/cpu/Makefile
- create mode 100644 arch/microblaze/lib/Makefile
- create mode 100644 arch/microblaze/mm/Makefile
- create mode 100644 arch/microblaze/platform/Makefile
- create mode 100644 arch/microblaze/platform/generic/Makefile
+ arch/microblaze/kernel/cpu/mb.c  |  115 ++++++++++++++++++++++++++++++++++++++
+ arch/microblaze/kernel/cpu/pvr.c |   81 ++++++++++++++++++++++++++
+ 2 files changed, 196 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/cpu/mb.c
+ create mode 100644 arch/microblaze/kernel/cpu/pvr.c
 
-diff --git a/arch/microblaze/Makefile b/arch/microblaze/Makefile
+diff --git a/arch/microblaze/kernel/cpu/mb.c b/arch/microblaze/kernel/cpu/mb.c
 new file mode 100644
-index 0000000..7e9e1b4
+index 0000000..0124112
 --- /dev/null
-+++ b/arch/microblaze/Makefile
-@@ -0,0 +1,63 @@
-+UTS_SYSNAME = -DUTS_SYSNAME=\"uClinux\"
++++ b/arch/microblaze/kernel/cpu/mb.c
+@@ -0,0 +1,115 @@
++/*
++ * CPU-version specific code
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 PetaLogix
++ */
 +
-+# What CPU vesion are we building for, and crack it open
-+# as major.minor.rev
-+CPU_VER=$(subst ",,$(CONFIG_XILINX_MICROBLAZE0_HW_VER) )
-+CPU_MAJOR=$(shell echo $(CPU_VER) | cut -d '.' -f 1)
-+CPU_MINOR=$(shell echo $(CPU_VER) | cut -d '.' -f 2)
-+CPU_REV=$(shell echo $(CPU_VER) | cut -d '.' -f 3)
++#include <linux/init.h>
++#include <linux/string.h>
++#include <linux/seq_file.h>
++#include <linux/cpu.h>
++#include <linux/initrd.h>
 +
-+export CPU_VER CPU_MAJOR CPU_MINOR CPU_REV
++#include <asm/cpuinfo.h>
++#include <asm/setup.h>
++#include <asm/sections.h>
++#include <asm/page.h>
++#include <asm/io.h>
++#include <asm/bug.h>
++#include <asm/param.h>
++#include <asm/delay.h>
 +
-+# Use cpu-related CONFIG_ vars to set compile options.
++static int show_cpuinfo(struct seq_file *m, void *v)
++{
++	int count = 0;
++	char *fpga_family = "Unknown";
++	char *cpu_ver = "Unknown";
++	int i;
++	printk("%s\n", __func__);
 +
-+# Work out HW multipler support.  This is icky.
-+# 1. Spartan2 has no HW multiplers.
-+# 2. MicroBlaze v3.x always uses them, except in Spartan 2
-+# 3. All other FPGa/CPU ver combos, we can trust the CONFIG_ settings
-+ifeq (,$(findstring spartan2,$(CONFIG_XILINX_MICROBLAZE0_FAMILY)))
-+  ifeq ($(CPU_MAJOR),3)
-+    CPUFLAGS-1 += -mno-xl-soft-mul
-+  else
-+    # USE_HW_MUL can be 0, 1, or 2, defining a heirarchy of HW Mul support.
-+    CPUFLAGS-$(subst 1,,$(CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL)) += -mxl-multiply-high
-+    CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL) += -mno-xl-soft-mul
-+  endif
-+endif
-+CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_DIV) += -mno-xl-soft-div
-+CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_BARREL) += -mxl-barrel-shift
-+CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_PCMP) += -mxl-pattern-compare
++	/* Denormalised to get the fpga family string */
++	for (i = 0; family_string_lookup[i].s != NULL; i++) {
++		if (cpuinfo.fpga_family_code == family_string_lookup[i].k) {
++			fpga_family = (char *)family_string_lookup[i].s;
++			break;
++		}
++	}
 +
-+CPUFLAGS-1 += $(call cc-option,-mcpu=v$(CPU_VER))
++	/* Denormalised to get the hw version string */
++	for (i = 0; cpu_ver_lookup[i].s != NULL; i++) {
++		if (cpuinfo.ver_code == cpu_ver_lookup[i].k) {
++			cpu_ver = (char *)cpu_ver_lookup[i].s;
++			break;
++		}
++	}
 +
-+# The various CONFIG_XILINX cpu features options are integers 0/1/2...
-+# rather than bools y/n
-+CFLAGS += $(CPUFLAGS-1)
-+CFLAGS += $(CPUFLAGS-2)
++	count = seq_printf(m,
++			"CPU-Family:	MicroBlaze\n"
++			"FPGA-Arch:	%s\n"
++			"CPU-Ver:	%s\n"
++			"CPU-MHz:	%d.%02d\n"
++			"BogoMips:	%lu.%02lu\n",
++			fpga_family,
++			cpu_ver,
++			cpuinfo.cpu_clock_freq /
++			1000000,
++			cpuinfo.cpu_clock_freq %
++			1000000,
++			loops_per_jiffy / (500000 / HZ),
++			(loops_per_jiffy / (5000 / HZ)) % 100);
 +
-+# r31 holds current when in kernel mode
-+CFLAGS += -ffixed-r31
++	count += seq_printf(m,
++			"HW-Div:\t\t%s\n"
++			"HW-Shift:\t%s\n",
++			cpuinfo.use_divider ? "yes" : "no",
++			cpuinfo.use_barrel ? "yes" : "no");
 +
-+LDFLAGS_BLOB := --format binary --oformat elf32-microblaze
++	if (cpuinfo.use_icache)
++		count += seq_printf(m,
++				"Icache:\t\t%ukB\n",
++				cpuinfo.icache_size >> 10);
++	else
++		count += seq_printf(m, "Icache:\t\tno\n");
 +
-+LIBGCC := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
++	if (cpuinfo.use_dcache)
++		count += seq_printf(m,
++				"Dcache:\t\t%ukB\n",
++				cpuinfo.dcache_size >> 10);
++	else
++		count += seq_printf(m, "Dcache:\t\tno\n");
 +
-+head-y		:= arch/microblaze/kernel/head.o
-+libs-y		+= arch/microblaze/lib/ $(LIBGCC)
-+core-y		+= arch/microblaze/kernel/ arch/microblaze/mm/ \
-+		   arch/microblaze/platform/
++	count += seq_printf(m,
++			"HW-Debug:\t%s\n",
++			cpuinfo.hw_debug ? "yes" : "no");
 +
-+boot := arch/$(ARCH)/boot
++	return 0;
++}
 +
-+all: linux.bin
++static void *c_start(struct seq_file *m, loff_t *pos)
++{
++	int i = *pos;
 +
-+archclean:
-+	$(Q)$(MAKE) $(clean)=$(boot)
++	return i < NR_CPUS ? (void *) (i + 1) : NULL;
++}
 +
-+linux.bin linux.bin.gz: vmlinux
-+	$(Q)$(MAKE) $(build)=$(boot) $(boot)/$@
++static void *c_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	++*pos;
++	return c_start(m, pos);
++}
 +
-+define archhelp
-+  echo  '* linux.bin    - Create raw binary'
-+  echo  '  linux.bin.gz - Create compressed raw binary'
-+endef
-diff --git a/arch/microblaze/boot/Makefile b/arch/microblaze/boot/Makefile
++static void c_stop(struct seq_file *m, void *v)
++{
++}
++
++struct seq_operations cpuinfo_op = {
++	.start = c_start,
++	.next = c_next,
++	.stop = c_stop,
++	.show = show_cpuinfo,
++};
+diff --git a/arch/microblaze/kernel/cpu/pvr.c b/arch/microblaze/kernel/cpu/pvr.c
 new file mode 100644
-index 0000000..844edf4
+index 0000000..0b117bd
 --- /dev/null
-+++ b/arch/microblaze/boot/Makefile
-@@ -0,0 +1,17 @@
-+#
-+# arch/microblaze/boot/Makefile
-+#
++++ b/arch/microblaze/kernel/cpu/pvr.c
+@@ -0,0 +1,81 @@
++/*
++ * Support for MicroBlaze PVR (processor version register)
++ *
++ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ * Copyright (C) 2007 PetaLogix
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
 +
-+targets := linux.bin linux.bin.gz
++#include <linux/kernel.h>
++#include <linux/compiler.h>
++#include <asm/system.h>
++#include <asm/exceptions.h>
++#include <asm/pvr.h>
 +
-+OBJCOPYFLAGS_linux.bin  := -O binary
++/*
++ * Until we get an assembler that knows about the pvr registers,
++ * this horrible cruft will have to do.
++ * That hardcoded opcode is mfs r3, rpvrNN
++ */
 +
-+$(obj)/linux.bin: vmlinux FORCE
-+	$(call if_changed,objcopy)
-+	@echo 'Kernel: $@ is ready' ' (#'`cat .version`')'
++#define get_single_pvr(pvrid, val)				\
++{								\
++	register unsigned tmp __asm__("r3");			\
++	tmp = 0x0;	/* Prevent warning about unused */	\
++	__asm__ __volatile__ (					\
++			".byte 0x94,0x60,0xa0, " #pvrid "\n\t"	\
++			: "=r" (tmp):: "memory"); 		\
++	val = tmp;						\
++}
 +
-+$(obj)/linux.bin.gz: $(obj)/linux.bin FORCE
-+	$(call if_changed,gzip)
-+	@echo 'Kernel: $@ is ready' ' (#'`cat .version`')'
++/*
++ * Does the CPU support the PVR register?
++ * return value:
++ * 0: no PVR
++ * 1: simple PVR
++ * 2: full PVR
++ *
++ * This must work on all CPU versions, including those before the
++ * PVR was even an option.
++ */
 +
-+clean-kernel += linux.bin linux.bin.gz
-diff --git a/arch/microblaze/kernel/Makefile b/arch/microblaze/kernel/Makefile
-new file mode 100644
-index 0000000..f7a6bb8
---- /dev/null
-+++ b/arch/microblaze/kernel/Makefile
-@@ -0,0 +1,17 @@
-+#
-+# Makefile
-+#
++int cpu_has_pvr(void)
++{
++	unsigned flags;
++	unsigned pvr0;
 +
-+extra-y := head.o vmlinux.lds
++	local_save_flags(flags);
 +
-+obj-y += entry.o exceptions.o \
-+	hw_exception_handler.o init_task.o intc.o irq.o of_device.o \
-+	process.o prom.o ptrace.o \
-+	setup.o signal.o sys_microblaze.o timer.o traps.o
++	/* PVR bit in MSR tells us if there is any support */
++	if (!(flags & PVR_MSR_BIT))
++		return 0;
 +
-+obj-y += cpu/
++	get_single_pvr(0x00, pvr0);
++	pr_debug("%s: pvr0 is 0x%08x\n", __func__, pvr0);
 +
-+obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
-+obj-$(CONFIG_SELFMOD)		+= selfmod.o
-+obj-$(CONFIG_HEART_BEAT)	+= heartbeat.o
-+obj-$(CONFIG_MODULES)		+= microblaze_ksyms.o module.o
-diff --git a/arch/microblaze/kernel/cpu/Makefile b/arch/microblaze/kernel/cpu/Makefile
-new file mode 100644
-index 0000000..20646e5
---- /dev/null
-+++ b/arch/microblaze/kernel/cpu/Makefile
-@@ -0,0 +1,8 @@
-+#
-+# Build the appropriate CPU version support
-+#
++	if (pvr0 & PVR0_PVR_FULL_MASK)
++		return 1;
 +
-+EXTRA_CFLAGS += -DCPU_MAJOR=$(CPU_MAJOR) -DCPU_MINOR=$(CPU_MINOR) \
-+		-DCPU_REV=$(CPU_REV)
++	/* for partial PVR use static cpuinfo */
++	return 2;
++}
 +
-+obj-y += cache.o cpuinfo.o cpuinfo-pvr-full.o cpuinfo-static.o mb.o pvr.o
-diff --git a/arch/microblaze/lib/Makefile b/arch/microblaze/lib/Makefile
-new file mode 100644
-index 0000000..f0c36ff
---- /dev/null
-+++ b/arch/microblaze/lib/Makefile
-@@ -0,0 +1,5 @@
-+#
-+# Makefile
-+#
-+
-+lib-y := memcpy.o memmove.o memset.o uaccess.o
-diff --git a/arch/microblaze/mm/Makefile b/arch/microblaze/mm/Makefile
-new file mode 100644
-index 0000000..bf9e447
---- /dev/null
-+++ b/arch/microblaze/mm/Makefile
-@@ -0,0 +1,5 @@
-+#
-+# Makefile
-+#
-+
-+obj-y := init.o
-diff --git a/arch/microblaze/platform/Makefile b/arch/microblaze/platform/Makefile
-new file mode 100644
-index 0000000..ea1b75c
---- /dev/null
-+++ b/arch/microblaze/platform/Makefile
-@@ -0,0 +1,6 @@
-+#
-+# Makefile for arch/microblaze/platform directory
-+#
-+#obj-$(CONFIG_PLATFORM_GENERIC) += generic/
-+
-+obj-y	+= platform.o
-diff --git a/arch/microblaze/platform/generic/Makefile b/arch/microblaze/platform/generic/Makefile
-new file mode 100644
-index 0000000..9a8b1bd
---- /dev/null
-+++ b/arch/microblaze/platform/generic/Makefile
-@@ -0,0 +1,3 @@
-+#
-+# Empty Makefile to keep make clean happy
-+#
++void get_pvr(struct pvr_s *p)
++{
++	get_single_pvr(0, p->pvr[0]);
++	get_single_pvr(1, p->pvr[1]);
++	get_single_pvr(2, p->pvr[2]);
++	get_single_pvr(3, p->pvr[3]);
++	get_single_pvr(4, p->pvr[4]);
++	get_single_pvr(5, p->pvr[5]);
++	get_single_pvr(6, p->pvr[6]);
++	get_single_pvr(7, p->pvr[7]);
++	get_single_pvr(8, p->pvr[8]);
++	get_single_pvr(9, p->pvr[9]);
++	get_single_pvr(10, p->pvr[10]);
++	get_single_pvr(11, p->pvr[11]);
++}
 -- 
 1.5.4.GIT
 
