@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759450AbYFZU4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760005AbYFZU6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759450AbYFZU4m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 16:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbYFZU4d
+	id S1760005AbYFZU6B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 16:58:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbYFZU5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 16:56:33 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:22925 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752085AbYFZU4c (ORCPT
+	Thu, 26 Jun 2008 16:57:49 -0400
+Received: from mail.rz.uni-duesseldorf.de ([134.99.128.30]:49475 "EHLO
+	mail.rz.uni-duesseldorf.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753811AbYFZU5s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 16:56:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=E0YTHD3V5ywgdLC56VuN0YECN+UFlW6IZpgKAFxGHC9PYioLDTUnNARK1EvRJEUQtY
-         yE51DYBo2ItZ3/PDlCayPbPez0wHURUcA1dBo9ExHnBhA8LaPJeU1pkqZHINgtcwf4dS
-         1GaC5vz+5m3DlDbgdWhqH2zm3cJg9JGV1Ijcs=
-Message-ID: <48239d390806261356m57acbe4er4dd3d928c1493b88@mail.gmail.com>
-Date: Fri, 27 Jun 2008 00:56:26 +0400
-From: "Sergey Lapin" <slapinid@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Half-duplex rs-485 on full-duplex UART.
-In-Reply-To: <48239d390806261343y6bafbefap6cdaaecaf1969a89@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48239d390806261343y6bafbefap6cdaaecaf1969a89@mail.gmail.com>
+	Thu, 26 Jun 2008 16:57:48 -0400
+Date: Thu, 26 Jun 2008 22:57:41 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Subject: Re: [2.6 patch] remove the dead ATARI_SCC{,_DMA} options
+In-reply-to: <Pine.LNX.4.64.0806260909490.30924@anakin>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+       Adrian Bunk <bunk@kernel.org>, zippel@linux-m68k.org,
+       linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>
+Message-id: <alpine.DEB.1.00.0806262240480.9169@zirkon.biophys.uni-duesseldorf.de>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+References: <20080625162536.GH10285@cs181140183.pp.htv.fi>
+ <alpine.DEB.1.00.0806260644080.30738@zirkon.biophys.uni-duesseldorf.de>
+ <Pine.LNX.4.64.0806260909490.30924@anakin>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, all!
+Hi Geert,
 
-I have a device with normal serial ports (at91sam9260-based) and
-RS-485 half-duplex transceiver
-installed for it and 1 GPIO for duplex control, 1=writing, 0=reading.
-A problem is that I need to hack serial driver to support this GPIO
-control, which I don't like.
-I just need to set it to 1 before transmission and back to 0 when
-transmission ends.
+>> A revived Atari SCC serial driver should be in Geert's patch queue, or in the
+>
+> ... which needs some rework before it can be submitted, I'm afraid (I can
+> take care of the checkpatch warnings, though ;-)
 
-Most important thing is to set this bit to 1 before transfer starts,
-so I can't just poll UART registers
-from tasklet. So I had to hack into serial driver for that.
+What sort of work, apart from checkpatch cleanup?
 
-So questions are:
+>> m68k kernel tree. The SCC_DMA option, however, is dead and can be removed.
+>
+> So I think it's safe to apply the whole patch, and readd
+> CONFIG_ATARI_SCC together with the new driver.
 
-1. Is there some generic enough mechanism in kernel to handle such
-tasks? so I mean external
-serial transcievers support?
+Just remember to add the option to my patch :-)
 
-2. Is there any way to implement this task without touching, in my
-case, drivers/serial/atmel_serial.c?
+Thanks,
 
-Thanks a lot,
-S.
+ 	Michael
+
