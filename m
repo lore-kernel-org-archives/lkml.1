@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYFZQOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758466AbYFZQOh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbYFZQOT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 12:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbYFZQOE
+	id S1758466AbYFZQOh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 12:14:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbYFZQOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 12:14:04 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:51329 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751649AbYFZQOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 12:14:03 -0400
-Date: Thu, 26 Jun 2008 19:11:52 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Ben Collins <ben.collins@canonical.com>
-Cc: Linus Torvalds <torvalds@osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>, flamingice@sourmilk.net,
-       linux-wireless@vger.kernel.org
-Subject: Re: [PATCH] Comment out duplicate device entry
-Message-ID: <20080626161152.GE22025@cs181140183.pp.htv.fi>
-References: <1214495838.7150.10.camel@cunning>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1214495838.7150.10.camel@cunning>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 26 Jun 2008 12:14:08 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:46666 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753388AbYFZQOG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 12:14:06 -0400
+Subject: [PATCH] option: Remove duplicate device entry
+From: Ben Collins <ben.collins@canonical.com>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: Canonical
+Date: Thu, 26 Jun 2008 12:00:19 -0400
+Message-Id: <1214496019.7150.17.camel@cunning>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 11:57:18AM -0400, Ben Collins wrote:
-> Left it commented instead of removing since it referenced a different
-> model name. Just avoid it getting back in by mistake, and to document
-> that it is supported.
+Signed-off-by: Ben Collins <ben.collins@canonical.com>
 
-No, it's the same the same model name (MD stands for Medion).
+diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
+index 43cfde8..efb1ea9 100644
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -190,9 +190,6 @@ static int  option_send_setup(struct usb_serial_port *port);
+ #define BANDRICH_PRODUCT_C100_1			0x1002
+ #define BANDRICH_PRODUCT_C100_2			0x1003
+ 
+-#define AMOI_VENDOR_ID			0x1614
+-#define AMOI_PRODUCT_9508			0x0800
+-
+ #define QUALCOMM_VENDOR_ID			0x05C6
+ 
+ #define MAXON_VENDOR_ID				0x16d8
+@@ -255,7 +252,6 @@ static struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1417, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1418, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1419, 0xff, 0xff, 0xff) },
+-	{ USB_DEVICE(AMOI_VENDOR_ID, AMOI_PRODUCT_9508) },
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_V640) }, /* Novatel Merlin V640/XV620 */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_V620) }, /* Novatel Merlin V620/S620 */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_V740) }, /* Novatel Merlin EX720/V740/X720 */
 
-But it shouldn't be listed as both version 1 and version 2 device.
-
-I've added the driver maintainer to the Cc.
-
-> Signed-off-by: Ben Collins <ben.collins@canonical.com>
-> 
-> diff --git a/drivers/net/wireless/p54/p54usb.c b/drivers/net/wireless/p54/p54usb.c
-> index 1610a73..f0369d0 100644
-> --- a/drivers/net/wireless/p54/p54usb.c
-> +++ b/drivers/net/wireless/p54/p54usb.c
-> @@ -60,7 +60,7 @@ static struct usb_device_id p54u_table[] __devinitdata = {
->  	{USB_DEVICE(0x0915, 0x2002)},	/* Cohiba Proto board */
->  	{USB_DEVICE(0x0baf, 0x0118)},   /* U.S. Robotics U5 802.11g Adapter*/
->  	{USB_DEVICE(0x0bf8, 0x1009)},   /* FUJITSU E-5400 USB D1700*/
-> -	{USB_DEVICE(0x0cde, 0x0006)},   /* Medion MD40900 */
-> +// DUPE	{USB_DEVICE(0x0cde, 0x0006)},   /* Medion MD40900 */
->  	{USB_DEVICE(0x0cde, 0x0008)},	/* Sagem XG703A */
->  	{USB_DEVICE(0x0d8e, 0x3762)},	/* DLink DWL-G120 Cohiba */
->  	{USB_DEVICE(0x09aa, 0x1000)},	/* Spinnaker Proto board */
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
