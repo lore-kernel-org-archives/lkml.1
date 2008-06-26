@@ -1,85 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYFZKC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbYFZKEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032AbYFZKC1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 06:02:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbYFZKCS
+	id S1756518AbYFZKEd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 06:04:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbYFZKEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 06:02:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33908 "EHLO mx3.mail.elte.hu"
+	Thu, 26 Jun 2008 06:04:25 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:50578 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751771AbYFZKCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 06:02:17 -0400
-Date: Thu, 26 Jun 2008 12:02:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 00/16] x86: merge setup_32/64.c
-Message-ID: <20080626100200.GA15291@elte.hu>
-References: <200806251748.06743.yhlu.kernel@gmail.com> <20080626094743.GA19573@elte.hu>
+	id S1752277AbYFZKEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 06:04:23 -0400
+Date: Thu, 26 Jun 2008 12:03:08 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, kernel-testers@vger.kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: linux-next: Tree for June 25
+In-Reply-To: <200806260859.26270.rjw@sisk.pl>
+Message-ID: <alpine.LRH.1.10.0806261201420.10290@twin.jikos.cz>
+References: <20080626003554.b2623aba.sfr@canb.auug.org.au> <20080626120212.c8caa005.sfr@canb.auug.org.au> <200806260801.13131.rjw@sisk.pl> <200806260859.26270.rjw@sisk.pl>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080626094743.GA19573@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 26 Jun 2008, Rafael J. Wysocki wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+> BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+> IP: [<ffffffff80264230>] find_symbol+0x230/0x260
+> PGD 5c817067 PUD 5cccf067 PMD 0
+> Oops: 0002 [1] SMP DEBUG_PAGEALLOC
+> last sysfs file:
+> CPU 0
+> Modules linked in:
+> Pid: 912, comm: modprobe Not tainted 2.6.26-rc7-next #4
+> RIP: 0010:[<ffffffff80264230>]  [<ffffffff80264230>] find_symbol+0x230/0x260
+> RSP: 0018:ffff81005cbddc68  EFLAGS: 00010202
+> RAX: 0000000000000000 RBX: 000000000000003d RCX: ffffffff805b8568
+> RDX: 0000000000000000 RSI: ffffffff80573e0f RDI: ffffffff805c0bcc
+> RBP: ffff81005cbddda8 R08: ffff81005cbddd48 R09: 0000000000000001
+> R10: 0000000000000000 R11: 000000000000003c R12: fffffffffffffff2
+> R13: 00000000000b2507 R14: 00000000006181e0 R15: ffffc20000689240
+> FS:  00007f5820fed6f0(0000) GS:ffffffff80613f40(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> CR2: 0000000000000000 CR3: 000000005c87f000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process modprobe (pid: 912, threadinfo ffff81005cbdc000, task ffff81005c9f6840)
+> Stack:  ffff81005c9f6840 0000000000000000 0000000000000000 00000000006180f8
+> ffff81005cbddf40 0000000000000000 ffff81005c9f6840 ffffffff8049728f
+> 00000000000b2507 00000000006181e0 ffff81005cbddcd8 ffffffff8025c70a
+> Call Trace:
+> [<ffffffff8049728f>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> [<ffffffff8025c70a>] ? trace_hardirqs_on_caller+0xca/0x160
+> [<ffffffff8049728f>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> [<ffffffff8020f167>] ? do_softirq+0x47/0xa0
+> [<ffffffff8020bc9f>] ? restore_args+0x0/0x30
+> [<ffffffff80263c80>] ? struct_module+0x0/0x10
+> [<ffffffff802648f3>] ? find_sec+0x53/0x70
+> [<ffffffff80265c04>] sys_init_module+0x6b4/0x1e00
+> [<ffffffff802afc11>] ? do_sync_read+0xf1/0x130
+> [<ffffffff802505e0>] ? autoremove_wake_function+0x0/0x40
+> [<ffffffff80323791>] ? security_file_permission+0x11/0x20
+> [<ffffffff8049728f>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> [<ffffffff8025c70a>] ? trace_hardirqs_on_caller+0xca/0x160
+> [<ffffffff8049728f>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> [<ffffffff8020b65b>] system_call_after_swapgs+0x7b/0x80
+>
+>
+> Code: 49 8b 43 08 0f 18 08 49 8d 43 08 48 3d c0 a5 5d 80 0f 85 47 fe ff ff 48 c7 c0 fe ff ff ff eb 20 48 8b 45 b0 48 8b 95 e8 fe ff ff <48> 89 02 48
+> RIP  [<ffffffff80264230>] find_symbol+0x230/0x260
+> RSP <ffff81005cbddc68>
+> CR2: 0000000000000000
+> ---[ end trace 81cec6311b0e1cee ]---
 
->       x86: rename setup.c to setup_percpu.c
+I guess this got in through Rusty's tree, right?
 
-this brought a build failure:
+Does the patch below fix it please?
 
- arch/x86/kernel/setup.c: In function ‘setup_arch':
- arch/x86/kernel/setup.c:561: error: implicit declaration of function ‘efi_reserve_early'
 
-09865f3049050458a5c236e5b4630f137d9b179d is first bad commit
-commit 09865f3049050458a5c236e5b4630f137d9b179d
-Author: Yinghai Lu <yhlu.kernel@gmail.com>
-Date:   Wed Jun 25 17:48:14 2008 -0700
 
-    x86: rename setup.c to setup_percpu.c
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: [PATCH] module: fix NULL pointer dereference in find_symbol()
 
-we lost an asm/efi.h include. (which, a bit illogically, is not implicit 
-via the existing linux/efi.h include.) Fixed below.
+The patch that introduces each_symbol() iterator forgets to
+test the NULL value of the output parameters (which the original
+code did).
 
-	Ingo
+This patch restores the correct checks.
 
--------------->
-commit 9faea5db92f5ff3b39e7b66656f847dcb9618caa
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Thu Jun 26 12:02:01 2008 +0200
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+---
+  kernel/module.c |    6 ++++--
+  1 files changed, 4 insertions(+), 2 deletions(-)
 
-    x86: build fix
-    
-    fix:
-    
-    arch/x86/kernel/setup.c: In function ‘setup_arch':
-    arch/x86/kernel/setup.c:561: error: implicit declaration of function ‘efi_reserve_early'
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+diff --git a/kernel/module.c b/kernel/module.c
+index 880409f..a3354ca 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -304,8 +304,10 @@ static unsigned long find_symbol(const char *name,
+  	fsa.warn = warn;
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index a3f2263..29f04da 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -79,6 +79,7 @@
- #include <asm/mpspec.h>
- #include <asm/setup.h>
- #include <asm/arch_hooks.h>
-+#include <asm/efi.h>
- #include <asm/sections.h>
- #include <asm/dmi.h>
- #include <asm/io_apic.h>
+  	if (each_symbol(find_symbol_in_section, &fsa)) {
+-		*owner = fsa.owner;
+-		*crc = fsa.crc;
++		if (owner)
++			*owner = fsa.owner;
++		if (crc)
++			*crc = fsa.crc;
+  		return fsa.value;
+  	}
+
+-- 
+Jiri Kosina
+SUSE Labs
+
