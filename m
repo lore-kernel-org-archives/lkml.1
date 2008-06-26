@@ -1,94 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbYFZSvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757565AbYFZSxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758617AbYFZSvO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:51:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbYFZSu5
+	id S1757565AbYFZSxT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbYFZSxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:50:57 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:48559 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752272AbYFZSu4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:50:56 -0400
-Date: Fri, 27 Jun 2008 00:22:54 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: balbir@linux.vnet.ibm.com, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Vatsa <vatsa@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [RFC v1] Tunable sched_mc_power_savings=n
-Message-ID: <20080626185254.GA12416@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-Mail-Followup-To: Andi Kleen <andi@firstfloor.org>,
-	balbir@linux.vnet.ibm.com,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Suresh B Siddha <suresh.b.siddha@intel.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Ingo Molnar <mingo@elte.hu>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Dipankar Sarma <dipankar@in.ibm.com>,
-	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>
-References: <20080625191100.GI21892@dirshya.in.ibm.com> <87k5gcqpbm.fsf@basil.nowhere.org> <4863AF57.3040005@linux.vnet.ibm.com> <4863DB29.1020304@firstfloor.org>
+	Thu, 26 Jun 2008 14:53:06 -0400
+Received: from mxl.seznam.cz ([77.75.72.44]:54947 "EHLO mxl.seznam.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752356AbYFZSxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 14:53:05 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=beta; d=seznam.cz;
+	h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Smtpd:X-Seznam-User:X-QM-Mark;
+	b=ET/wY31GlAI1ZdyErQzRnrqSgJQIxe+aBMlP0wz+yHdGDbha9mcJOUKS/z2Vt1VKS
+	VzbcRYZwpyc27QSPl0RK2mj9gvCL2XE6JEiXIcy40SzMOJe2OjRK4JH+coonJAEQVz6
+	lhEsN9kyP8wwJ9TSAcL2QZf3z9gG2Fz6Dj5U0Ns=
+Message-ID: <4863E4FD.6040803@seznam.cz>
+Date: Thu, 26 Jun 2008 20:50:37 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <4863DB29.1020304@firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Adrian Bunk <bunk@kernel.org>
+CC: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
+       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
+       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
+       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
+       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com
+Subject: Re: Microblaze init port v4
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <20080626150121.GB22025@cs181140183.pp.htv.fi>
+In-Reply-To: <20080626150121.GB22025@cs181140183.pp.htv.fi>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+X-Smtpd: 1.1.1@13338
+X-Seznam-User: monstr@seznam.cz
+X-QM-Mark: email-qm3<130501742>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andi Kleen <andi@firstfloor.org> [2008-06-26 20:08:41]:
+Hi Adrian,
 
+> On Thu, Jun 26, 2008 at 02:29:29PM +0200, monstr@seznam.cz wrote:
+>> Hi everybody,
+>>
+>> current linux version is 2.6.26-rc8 and I think this is the right time
+>> to send latest patches againts rc8 for Microblaze CPU.
+>> ...
 > 
-> > A user could be an application and certain applications can predict their
-> > workload.
+> Thanks for your work on getting the architecture included.
 > 
-> So you expect the applications to run suid root and change a sysctl?
-> And what happens when two applications run that do that and they have differing
-> requirements? Will they fight over the sysctl?
+> I have two questions:
+> 
+> Where can I find a toolchain for compiling a Microblaze kernel?
+I personally use petalogix toolchain from www.petalogix.com.
 
-System management software and workload monitoring and managing
-software can potentially control the tunable on behalf of the
-applications for best overall power savings and performance.
+> What is the status of Microblaze support in upstream binutils and gcc?
 
-Applications with conflicting goals should resolve among themselves.
-The application with highest performance requirement should win.  The
-power QoS framework set_acceptable_latency() ensures that the lowest
-latency set across the system wins.  This tunable can also be based on
-the similar approach.
+I don't have any information about. We will discuss with John Williams and guys
+from Xilinx
+what we can do for it.
 
- 
-> > For example, a database, a file indexer, etc can predict their workload.
+M
+
+>> Best regards,
+>> Michal Simek
+> 
+> TIA
+> Adrian
 > 
 > 
-> A file indexer should run with a high nice level and low priority would ideally always
-> prefer power saving. But it doesn't currently. Perhaps it should?
-
-Power management settings affect the entire system.  It may not be
-based on per application priority or nice value.  However if the
-priority of all the applications currently running in the system
-indicate power savings, then the kernel can goto more aggressive power
-saving state.
-
-> > 
-> > Policies are best known in user land and the best controlled from there.
-> > Consider a case where the end user might select a performance based policy or a
-> > policy to aggressively save power (during peak tariff times). With
 > 
-> How many users are going to do that? Seems like a unrealistic case to me.
-
-System management software should do this.  Certainly manual
-intervention to change these settings will not be popular.  Given the
-trends in virtualisation and modular systems, most datacenters will
-use some form of systems management software and infrastructure that
-is empowered to make policy based decisions on provisioning and
-systems configuration.
-
-In a small-scale datacenters, peak and off-peak hour settings can be
-potentially done through simple cron jobs.  
-
---Vaidy
+> ------------------------------------------------------------------------
+> 
+> 
+> No virus found in this incoming message.
+> Checked by AVG. 
+> Version: 8.0.101 / Virus Database: 270.4.1/1519 - Release Date: 25.6.2008 04:13
