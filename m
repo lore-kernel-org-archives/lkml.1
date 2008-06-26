@@ -1,82 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757694AbYFZR4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751953AbYFZR4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757694AbYFZR4d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 13:56:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYFZR4Y
+	id S1751953AbYFZR4t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 13:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYFZR4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 13:56:24 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:35532 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752137AbYFZR4X (ORCPT
+	Thu, 26 Jun 2008 13:56:25 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:50354 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752235AbYFZR4Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 13:56:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=fTsDHvpiDckX8JBF6CTW2Xs/wkfu4BWB5hKD4oEb1fkZ5ktCzWomrAwGN3T1nqEsSc
-         NJQkheADnolG8jOoybvdGRwvlCq6S4kVz+uQumA81+30GIfVKhGYZww9wzjbF+GKBYQh
-         oIHDWUu/nbu9OoUIzlzTKdRYIl/kr8v4h/hvw=
-Message-ID: <19f34abd0806260953h504ff85dmf11a59171df3442b@mail.gmail.com>
-Date: Thu, 26 Jun 2008 18:53:12 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: more header fixes
-Cc: linux-kernel@vger.kernel.org, "the arch/x86 maintainers" <x86@kernel.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-In-Reply-To: <20080626120202.GH29619@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 26 Jun 2008 13:56:24 -0400
+Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Pavel Machek <pavel@suse.cz>
+Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Daniel Hecht <dhecht@vmware.com>,
+       Tim Mann <mann@vmware.com>, Zach Amsden <zach@vmware.com>,
+       Sahil Rihan <srihan@vmware.com>
+In-Reply-To: <20080624175753.GG5642@ucw.cz>
+References: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080603182014.79a38d03@infradead.org>
+	 <35f686220806032101h103152dat841818982aaa5052@mail.gmail.com>
+	 <20080604061637.6bab3f67@infradead.org>
+	 <1213924953.27983.52.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080620113922.GG7439@elte.hu>
+	 <1213999593.31598.52.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080624175753.GG5642@ucw.cz>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Thu, 26 Jun 2008 10:20:31 -0700
+Message-Id: <1214500831.3351.10.camel@promb-2n-dhcp368.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080610214544.GA14824@damson.getinternet.no>
-	 <20080618103006.GF15255@elte.hu>
-	 <19f34abd0806180919v5a8c21e7ua7e1f928d8a53ab4@mail.gmail.com>
-	 <20080626120202.GH29619@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 2008-06-24 at 10:57 -0700, Pavel Machek wrote:
+> Hi!
+> 
+> > On X86 platform we can use the value of tsc_khz computed during tsc calibration
+> > to calculate the loops_per_jiffy value. Its very important to keep the error in
+> > lpj values to minimum as any error in that may result in kernel panic in
+> > check_timer.
+> > In virtualization environment, On a highly overloaded host the guest delay
+> > calibration may sometimes result in errors beyond the ~50% that timer_irq_works
+> > can handle, resulting in the guest panicking.
+> 
+> How did you adress 'khz has nothing to do with loops per jiffie'
+> comment?
+> 
+> Some cpus can do loop in cycle , some need two cycles, some need half.
 
-On Thu, Jun 26, 2008 at 2:02 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> thanks Vegard, these changes are looking rather good. I've created a
-> tip/x86/header-guards topic for it and did a test-merge. There were 30+
-> trivial conflicts with tip/master that were easy to fix - find the list
-> of conflicting files below.
->
-> Lets keep these changes out of tip/master for now though, to reduce the
-> churn - i'll do a merge/rebase in the v2.6.27-rc1 timeframe, ok?
->
-> or perhaps we could include it in tip/master right now as well, if you
-> did another branch that excluded the files below. That would make
-> merging a lot easier - and we could do a second phase in v2.6.27-rc1.
-> Hm?
+Hi Pavel, 
 
-I don't think we really need to resolve conflicts at all. What we can
-do is simply to re-run the scripts against tip/master whenever you
-want the update.
+When you say loops per jiffies has nothing to do with khz, by khz you
+mean the cpu frequency, right ?
 
-I have created a 'for-tip' branch at
-git://git.kernel.org/pub/scm/linux/kernel/git/vegard/linux-2.6-headers.git
-which is a re-run against the most recent tip/master. (The previous
-link was against something rather old like -rc6.)
+AFAIU in calibrate_delay_direct too we measure the amount by which timer
+has ticked until DELAY_CALIBRATION_TICKS amount of jiffies has passed.
+So IMO the code there too assumes that there is one loop per timer
+cycle ?
 
-I am not sure this is what you wanted. In either case, re-running is
-not a problem, and neither is excluding a set of files. Please do this
-with as little pain for yourself as possible. The purpose of the
-script is to avoid manual work.
+If that's not the case then i fail to understand how does the current
+code figures out how many loops occur in a cycle ?
 
-Also, by the way: Can -tip now be cloned with --shared to save space
-as long as I only have branches with references to commits in
-tip/master? Or is this still to be considered unsafe?
+Thanks,
+Alok
 
+> 
+>                                                                 Pavel
+> 
+> > @@ -421,6 +422,10 @@
+> >               return;
+> >       }
+> >
+> > +     lpj = ((u64)tsc_khz * 1000);
+> > +     do_div(lpj, HZ);
+> > +     lpj_tsc = lpj;
+> > +
+> >       printk("Detected %lu.%03lu MHz processor.\n",
+> >                               (unsigned long)cpu_khz / 1000,
+> >                               (unsigned long)cpu_khz % 1000);
+> >
+> 
+> 
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
