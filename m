@@ -1,102 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbYFZRmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752537AbYFZRmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755957AbYFZRmV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 13:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbYFZRmD
+	id S1752537AbYFZRmp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 13:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbYFZRmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 13:42:03 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:18484 "EHLO kernel.dk"
+	Thu, 26 Jun 2008 13:42:32 -0400
+Received: from mga14.intel.com ([143.182.124.37]:9401 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752025AbYFZRmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 13:42:01 -0400
-Date: Thu, 26 Jun 2008 19:41:58 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, andi@firstfloor.org,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       antonio.lin@alcormicro.com, david.vrabel@csr.com
-Subject: Re: Scatter-gather list constraints
-Message-ID: <20080626174157.GE20851@kernel.dk>
-References: <20080626123936.GV20851@kernel.dk> <Pine.LNX.4.44L0.0806261105370.3104-100000@iolanthe.rowland.org>
+	id S1752485AbYFZRmb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 13:42:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,709,1204531200"; 
+   d="scan'208";a="3098569"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0806261105370.3104-100000@iolanthe.rowland.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Scatter-gather list constraints
+Date: Thu, 26 Jun 2008 09:43:51 -0700
+Message-ID: <C72DEB015BA7724783363DE1AF6B0F980510C8BB@orsmsx417.amr.corp.intel.com>
+In-Reply-To: <Pine.LNX.4.44L0.0806251023100.2578-100000@iolanthe.rowland.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Scatter-gather list constraints
+Thread-Index: AcjWzz4jvqiBIAuAQJmGgOldLfYRrAAlGbBg
+References: <C72DEB015BA7724783363DE1AF6B0F980510BAC2@orsmsx417.amr.corp.intel.com> <Pine.LNX.4.44L0.0806251023100.2578-100000@iolanthe.rowland.org>
+From: "Perez-Gonzalez, Inaky" <inaky.perez-gonzalez@intel.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Cc: "David Vrabel" <david.vrabel@csr.com>,
+       "Kernel development list" <linux-kernel@vger.kernel.org>,
+       "AntonioLin" <antonio.lin@alcormicro.com>, <linux-usb@vger.kernel.org>,
+       <inaky@linux.intel.com>
+X-OriginalArrivalTime: 26 Jun 2008 16:43:51.0384 (UTC) FILETIME=[D0485580:01C8D7AB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26 2008, Alan Stern wrote:
-> On Thu, 26 Jun 2008, Jens Axboe wrote:
-> 
-> > Alan, in what specific cases have you observed IO requests that violate
-> > the rules you gave? The example of:
-> > 
-> > "For example, suppose an I/O request starts out with two S-G elements of
-> > 1536 bytes and 2048 bytes respectively, and the DMA requirement is"
-> > 
-> > really sounds concocted, have you ever seen something like that?
-> 
-> It really was observed, though not by me.  Here's the email message in
-> which it was reported (for some reason this doesn't seem to have made 
-> it into the list archives):
-> 
-> > From antonio.lin@alcormicro.com Thu Jun 26 11:05:30 2008
-> > Date: Wed, 11 Jun 2008 20:51:52 +0800
-> > From: AntonioLin <antonio.lin@alcormicro.com>
-> > To: Alan Stern <stern@rowland.harvard.edu>
-> > Cc: David Vrabel <david.vrabel@csr.com>, linux-usb@vger.kernel.org
-> > Subject: Re: [S] Re: [linux-uwb] packet size problem
-> > 
-> > Hi All,
-> > 
-> > I checked srb->device->request_queue->dma_alignment in usb_stor_bulk_Bulk_transport() routine. , the value is 1023.
-> > 
-> > But in usb_stor_bulk_transfer_sglist, the length of first element in sg array is 3584 which is not divisible by 1024.
-> > 
-> > 
-> > Can you post your /proc/bus/usb/devices ?
-> > 
-> > I don't know how to do this, could you descript moe about it ?
-> > (Sorry,I have few experience about Linux.)
-> > 
-> > Thanks.
-> > 
-> > Jun 11 16:43:14 localhost kernel: [ 1959.320234] usb-storage: *** thread sleeping.
-> > Jun 11 16:43:14 localhost kernel: [ 1959.320271] usb-storage: queuecommand called
-> > Jun 11 16:43:14 localhost kernel: [ 1959.320288] usb-storage: *** thread awakened.
-> > Jun 11 16:43:14 localhost kernel: [ 1959.320294] usb-storage: Command READ_10 (10 bytes)
-> > Jun 11 16:43:14 localhost kernel: [ 1959.320297] usb-storage:  28 00 00 00 a8 91 00 00 1f 00
-> > Jun 11 16:43:14 localhost kernel: [ 1959.320316] usb_stor_Bulk_transport:dma_alignment:1023
-> > Jun 11 16:43:14 localhost kernel: [ 1959.320322] usb-storage: Bulk Command S 0x43425355 T 0x2f L 15872 F 128 Trg 0 LUN 0 CL 10
-> > Jun 11 16:43:14 localhost kernel: [ 1959.320327] usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
-> > Jun 11 16:43:14 localhost kernel: [ 1959.320333] hwahc_op_urb_enqueue
-> > Jun 11 16:43:14 localhost kernel: [ 1959.320340] xfer d3202dc0 urb d30e6780 pipe 0xc0008200 [31 bytes] dma outbound inline
-> > Jun 11 16:43:14 localhost kernel: [ 1956.597834] giveback d3202dc0 0
-> > Jun 11 16:43:14 localhost kernel: [ 1959.323583] usb-storage: Status code 0; transferred 31/31
-> > Jun 11 16:43:14 localhost kernel: [ 1959.323588] usb-storage: -- transfer complete
-> > Jun 11 16:43:14 localhost kernel: [ 1959.323593] usb-storage: Bulk command transfer result=0
-> > Jun 11 16:43:14 localhost kernel: [ 1959.323598] usb-storage: usb_stor_bulk_transfer_sglist: xfer 15872 bytes, 4 entries
-> > Jun 11 16:43:14 localhost kernel: [ 1959.323611] hwahc_op_urb_enqueue
-> > Jun 11 16:43:14 localhost kernel: [ 1959.323618] xfer d3202000 urb d30e6c00 pipe 0xc0008280 [3584 bytes] dma inbound deferred
-> > Jun 11 16:43:14 localhost kernel: [ 1959.323633] hwahc_op_urb_enqueue
-> > Jun 11 16:43:14 localhost kernel: [ 1959.323640] xfer d32020c0 urb d30e6180 pipe 0xc0008280 [4096 bytes] dma inbound deferred
-> > Jun 11 16:43:14 localhost kernel: [ 1959.323647] hwahc_op_urb_enqueue
-> > Jun 11 16:43:14 localhost kernel: [ 1959.323652] xfer d3202780 urb d30e6900 pipe 0xc0008280 [4096 bytes] dma inbound deferred
-> > Jun 11 16:43:14 localhost kernel: [ 1959.323659] hwahc_op_urb_enqueue
-> > Jun 11 16:43:14 localhost kernel: [ 1959.323665] xfer d3202800 urb d30e6100 pipe 0xc0008280 [4096 bytes] dma inbound deferred
-> > Jun 11 16:43:14 localhost kernel: [ 1956.607877] hwa-hc 1-4:1.1: DTI: xfer d3202000#0 failed (0x87)
-> > Jun 11 16:43:14 localhost kernel: [ 1956.607877] giveback d3202000 -84
-> 
-> As you can see, the S-G element lengths for this I/O request were 3584, 
-> 4096, 4096, 4096, totalling 15872 bytes.  I don't know what workload 
-> caused this request to be generated; maybe Antonio can tell us.
 
-OK, I can see that happening for fs IO if the block alignment odd. The
-1kb block size would definitely fix that, but cause SCSI to treat you as
-such and cause problems as well. Alright, I'll write something up for
-you to bounce such a request.
 
--- 
-Jens Axboe
+>From: Alan Stern [mailto:stern@rowland.harvard.edu]
+>
+>> >> I suppose we could add a field to struct urb and add a flag
+>> indicating
+>> >> whether the controller driver supports S-G lists.
+>> >
+>> >This is what I was thinking.
+>>
+>> That would simplify a *LOT* of WUSB wire-adapter code which now is a
+>> horrible kludge.
+>
+>In what way would it simplify the code?
+>
+>Note that usbcore already contains a scatter-gather library.
+>(Unfortunately the library is limited in usefulness because it needs to
+>run in process context.)
+>
+>Alan Stern
+
+For WA, when we get a buffer to be sent from a URB, it has to be split
+in chunks, each chunk has a header added. So we end up with a list of
+chunks, most of them quite small. Each requires a single URB to send.
+resources galore.
+
+If we could queue all those, the overhead would be reduced to allocating
+the headers (possibly in a continuous array) and the sg "descriptors"
+to describe the whole thing.
+
+However, the alignment stuff somebody mentioned in another email in this
+thread might cause problems.
+
+At the end it might not be all that doable (I might be missing some
+subtle isssues), but it is well worth a look.
+
+>Note that usbcore already contains a scatter-gather library.
+>(Unfortunately the library is limited in usefulness because it needs to
+>run in process context.)
+
+And the overhead of one URB per sg "node" kills it's usability for
+WAs.
 
