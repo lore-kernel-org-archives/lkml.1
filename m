@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbYFZLYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757973AbYFZL0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757912AbYFZLYR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 07:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbYFZLYE
+	id S1757973AbYFZL0i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 07:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755617AbYFZL03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 07:24:04 -0400
-Received: from styx.suse.cz ([82.119.242.94]:54246 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755131AbYFZLYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 07:24:01 -0400
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, reiserfs-devel@vger.kernel.org,
-       Jan Kara <jack@suse.cz>
-Subject: [PATCH] reiserfs: Add missing unlock to an error path in reiserfs_quota_write()
-Date: Thu, 26 Jun 2008 13:24:00 +0200
-Message-Id: <1214479440759-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: n
-References: n
+	Thu, 26 Jun 2008 07:26:29 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:35198 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755345AbYFZL03 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 07:26:29 -0400
+Date: Thu, 26 Jun 2008 05:26:12 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Dave Chinner <david@fromorbit.com>
+Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] Extend completions to provide XFS object flush requirements
+Message-ID: <20080626112612.GW4392@parisc-linux.org>
+References: <1214455277-6387-1-git-send-email-david@fromorbit.com> <1214455277-6387-2-git-send-email-david@fromorbit.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1214455277-6387-2-git-send-email-david@fromorbit.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When write in reiserfs_quota_write() fails, we have to properly release
-i_mutex. One error path has been missing the unlock...
+On Thu, Jun 26, 2008 at 02:41:12PM +1000, Dave Chinner wrote:
+> XFS object flushing doesn't quite match existing completion semantics.  It
+> mixed exclusive access with completion. That is, we need to mark an object as
+> being flushed before flushing it to disk, and then block any other attempt to
+> flush it until the completion occurs.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/reiserfs/super.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+This sounds like mutex semantics.  Why are the existing mutexes not
+appropriate for your needs?
 
-diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
-index ed424d7..1d40f2b 100644
---- a/fs/reiserfs/super.c
-+++ b/fs/reiserfs/super.c
-@@ -2165,8 +2165,10 @@ static ssize_t reiserfs_quota_write(struct super_block *sb, int type,
- 		blk++;
- 	}
- out:
--	if (len == towrite)
-+	if (len == towrite) {
-+		mutex_unlock(&inode->i_mutex);
- 		return err;
-+	}
- 	if (inode->i_size < off + len - towrite)
- 		i_size_write(inode, off + len - towrite);
- 	inode->i_version++;
 -- 
-1.5.2.4
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
