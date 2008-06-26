@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758958AbYFZOcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759208AbYFZOej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758958AbYFZOcj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 10:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbYFZOcb
+	id S1759208AbYFZOej (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 10:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbYFZOe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 10:32:31 -0400
-Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:41251 "EHLO
-	bh-buildlin1.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753980AbYFZOca (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 10:32:30 -0400
-X-Greylist: delayed 2426 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Jun 2008 10:32:28 EDT
-From: Benny Halevy <bhalevy@panasas.com>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Benny Halevy <bhalevy@panasas.com>
-Subject: [PATCH] fix extern inline errors with gcc 4.3.0
-Date: Thu, 26 Jun 2008 16:50:51 +0300
-Message-Id: <1214488251-20927-1-git-send-email-bhalevy@panasas.com>
-X-Mailer: git-send-email 1.5.6.GIT
+	Thu, 26 Jun 2008 10:34:28 -0400
+Received: from gw.goop.org ([64.81.55.164]:52212 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754225AbYFZOe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 10:34:27 -0400
+Message-ID: <4863A8E6.1010807@goop.org>
+Date: Thu, 26 Jun 2008 07:34:14 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+To: Ingo Molnar <mingo@elte.hu>
+CC: Nick Piggin <npiggin@suse.de>, Mark McLoughlin <markmc@redhat.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Eduardo Habkost <ehabkost@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Stephen Tweedie <sct@redhat.com>, x86@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for
+ 64-bit Xen support
+References: <patchbomb.1214367536@localhost> <20080625084253.GA11524@elte.hu>	<20080625152212.GA3442@elte.hu> <4862A6A9.1030109@goop.org>	<20080626105722.GA12640@elte.hu> <20080626105818.GA13805@elte.hu>
+In-Reply-To: <20080626105818.GA13805@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-gcc 4.3.0 needs -funit-at-a-time for extern inline functions
-otherwise it doesn't find their body.
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+>
+>   
+>> that fixed the build but now we've got a boot crash with this config:
+>>     
+>
+> plus -tip auto-testing found another build failure with:
+>
+>  http://redhat.com/~mingo/misc/config-Thu_Jun_26_12_46_46_CEST_2008.bad
+>
+> arch/x86/kernel/entry_64.S: Assembler messages:
+> arch/x86/kernel/entry_64.S:1201: Error: invalid character '_' in mnemonic
+> arch/x86/kernel/entry_64.S:1205: Error: invalid character '_' in mnemonic
+> arch/x86/kernel/entry_64.S:1209: Error: invalid character '_' in mnemonic
+> arch/x86/kernel/entry_64.S:1213: Error: invalid character '_' in mnemonic
+>
+>   
 
-For example:
-$ gcc --version
-gcc (GCC) 4.3.0 20080428 (Red Hat 4.3.0-8)
+I'm confused.  How did this config both crash and not build?
 
-/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/fs/buffer.c: In function ‘alloc_page_buffers’:
-/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/fs/buffer.c:51: sorry, unimplemented: inlining failed in call to ‘init_buffer’: function body not available
-/usr0/export/dev/bhalevy/git/linux-pnfs-bh-nfs41/fs/buffer.c:948: sorry, unimplemented: called from here
-
-Fix follows the lines of commit 22eecde2f9034764a3fd095eecfa3adfb8ec9a98
-that was reverted by commit c0a18111e571138747a98af18b3a2124df56a0d1,
-just limiting the flag for pre- gcc 4.3.0 rather than 4.0.
-
-Signed-off-by: Benny Halevy <bhalevy@panasas.com>
----
- arch/um/Makefile |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/arch/um/Makefile b/arch/um/Makefile
-index dbeab15..e7ed37b 100644
---- a/arch/um/Makefile
-+++ b/arch/um/Makefile
-@@ -77,7 +77,11 @@ include $(srctree)/$(ARCH_DIR)/Makefile-os-$(OS)
- KERNEL_DEFINES = $(strip -Derrno=kernel_errno -Dsigprocmask=kernel_sigprocmask \
- 			 -Dmktime=kernel_mktime $(ARCH_KERNEL_DEFINES))
- KBUILD_CFLAGS += $(KERNEL_DEFINES)
--KBUILD_CFLAGS += $(call cc-option,-fno-unit-at-a-time,)
-+# Disable unit-at-a-time mode on pre-gcc-4.3 compilers, it makes gcc use
-+# a lot more stack due to the lack of sharing of stacklots:
-+# gcc 4.3.0 needs -funit-at-a-time for extern inline functions
-+KBUILD_CFLAGS += $(shell if [ $(call cc-version) -lt 0403 ] ; then \
-+			echo $(call cc-option,-fno-unit-at-a-time); fi ;)
- 
- PHONY += linux
- 
--- 
-1.5.6.GIT
+    J
 
