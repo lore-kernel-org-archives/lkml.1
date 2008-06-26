@@ -1,63 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbYFZPnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbYFZPqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756872AbYFZPnX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 11:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbYFZPnO
+	id S1756105AbYFZPqG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 11:46:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYFZPpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 11:43:14 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:55486 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752774AbYFZPnN convert rfc822-to-8bit (ORCPT
+	Thu, 26 Jun 2008 11:45:54 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:47023 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752991AbYFZPpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 11:43:13 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@seznam.cz
-Subject: Re: [PATCH 52/60] microblaze_v4: fcntl.h sockios.h ucontext.h
-Date: Thu, 26 Jun 2008 17:43:09 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
-       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com,
-       Michal Simek <monstr@monstr.eu>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <1214483429-32360-52-git-send-email-monstr@seznam.cz> <1214483429-32360-53-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-53-git-send-email-monstr@seznam.cz>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 26 Jun 2008 11:45:54 -0400
+Message-ID: <4863B9AF.4080105@skyrush.com>
+Date: Thu, 26 Jun 2008 09:45:51 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080620)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200806261743.10441.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18tXG1jvhI9XukhYsqzhzL3pGudDJasYPnc7Ud
- HCAdwcEKxWXDEzvrTpie6IUwHZC7HrfbgWzycotStyADINklbV
- lriKiyxywZ+JSsfpxFkdg==
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] UTC timestamp option for FAT filesystems
+References: <4861D685.4070308@skyrush.com> <87od5pqh4o.fsf@basil.nowhere.org>	<4862DB28.3050001@skyrush.com> <48630286.2050006@skyrush.com>	<87wskck5wi.fsf@devron.myhome.or.jp> <48639863.808@skyrush.com> <877iccxnwi.fsf@devron.myhome.or.jp>
+In-Reply-To: <877iccxnwi.fsf@devron.myhome.or.jp>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 June 2008, monstr@seznam.cz wrote:
->  include/asm-generic/sockios.h     |   23 +++++++++++++++++++++++
->  include/asm-generic/ucontext.h    |   24 ++++++++++++++++++++++++
->  include/asm-microblaze/fcntl.h    |    1 +
->  include/asm-microblaze/sockios.h  |   23 +++++++++++++++++++++++
->  include/asm-microblaze/ucontext.h |    1 +
+OGAWA Hirofumi wrote:
+>> Since the camera does not have a concept of time zone, the camera's
+>> clock, itself, would show UTC.  You are correct that one could, instead,
+>> choose an arbitrary time offset when setting the camera's clock, and if
+>> an option existed in Linux to always use this fixed offset on mount, the
+>> Linux timestamp could be correct in this case as well.
+> 
+> It means the timestamp of FAT on the camera is just wrong.
 
-The grouping of files seems rather arbitrary here. What would be really
-good here is if you had all the new asm-generic files as separate patches,
-i.e. as a series adding them independent of the microblaze patches so
-that the other arch maintainers could look at them and start using
-the same files, and then add all your trivial wrappers in a single
-patch.
+I am not sure what you mean.
 
-Also, the sockios file here looks like it should be in asm-generic.
+> Of course, UTC is right design for on disk format. But, this is FAT, the
+> writing UTC means you modified the design of FAT. It is not a correct
+> option, it is just a hack like I said, right?
 
-The contents of the files in this patch all look good, they are
-identical to the majority of the other architectures.
+I do not consider this modifying the design of FAT.  FAT does not have
+the concept of time zone, DST, or UTC.  It is just a date/time (stamped
+on the volume with no info about what that means).  It is customary to
+say these times are in local time, and Windows happens to use it as if
+it's straight local time (Linux tries to emulate this).  But using FAT
+to store UTC instead is not changing the design, it is just using it
+differently.  I agree this would not be a good idea when sharing a
+volume with Windows, but for cameras, e.g., why not?
 
-	Arnd <><
+I do see what you are saying, in that the semantics of using FAT imply
+using local time, but I'm not sure this is reason enough to not allow
+someone to adjust how they use the timestamps.  After all, if someone in
+Iceland, Morocco, or Algeria writes a file to a FAT filesystem using
+Windows, those timestamps *will* be equivalent to UTC.  There is an
+inherent problem with using local time anyway (since someone receiving a
+disk has no idea which time zone was used when writing the file), so I'm
+not sure why it would be wrong to adjust how a particular volume is used.
+
+> However, I can accept that hack for many broken devices on realworld,
+> but, the modifying design is not right option. Do you see what I want
+> to say?
+
+If it is a hack (and I do not consider it to be so), I still do not see
+why the utc option is a design change - how else would you get the
+desired behavior?
+
+> Yes. And sys_tz is wrong and needs to fix.
+
+I agree it would be good to fix this, but it is probably not trivial,
+and this is a completely independent issue (even if it were fixed,
+things like dealing with DST or moving around with a camera are still
+problematic).
+
+Also, as I understand it, sys_tz is obsolete, but is still used for
+these legacy things, meaning a new way to flag something as "local time"
+should probably be used ultimately to fix the sys_tz issue.
+
+>> So, if one were to, instead of UTC, use an arbitrary "fixed" offset when
+>> mounting a FAT partition, the same issue would occur
+> 
+> Yes. To store localtime, complex one is needed.
+
+Right, and I see that as a separate issue.  Back to your original point,
+I do not see that letting a user specify a "fixed" arbitrary offset has
+any advantage.
+
+Summary: I believe it would be nice if the current local time mode were
+fixed to match Windows behavior, but it would also be handy to have the
+utc option for situations where that has advantages.
+
+						-Joe
