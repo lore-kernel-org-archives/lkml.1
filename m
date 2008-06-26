@@ -1,98 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759252AbYFZS3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbYFZSgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759252AbYFZS3x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbYFZS3l
+	id S1757338AbYFZSgY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbYFZSgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:29:41 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:39711 "EHLO
-	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752305AbYFZS3k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:29:40 -0400
-Date: Fri, 27 Jun 2008 00:01:33 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Dipankar Sarma <dipankar@in.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [RFC v1] Tunable sched_mc_power_savings=n
-Message-ID: <20080626183133.GN21892@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-Mail-Followup-To: Dipankar Sarma <dipankar@in.ibm.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Suresh B Siddha <suresh.b.siddha@intel.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Ingo Molnar <mingo@elte.hu>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>
-References: <20080625191100.GI21892@dirshya.in.ibm.com> <87k5gcqpbm.fsf@basil.nowhere.org> <20080626150100.GA26167@in.ibm.com>
+	Thu, 26 Jun 2008 14:36:15 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:8235 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752465AbYFZSgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 14:36:14 -0400
+Date: Thu, 26 Jun 2008 20:36:11 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Arnd Bergmann <arnd@arndb.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Oops when using growisofs
+Message-ID: <20080626183610.GI20851@kernel.dk>
+References: <200806221818.24372.mb@bu3sch.de> <20080626170513.GE23386@duck.suse.cz> <20080626181142.GH20851@kernel.dk> <200806262021.32140.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080626150100.GA26167@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200806262021.32140.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dipankar Sarma <dipankar@in.ibm.com> [2008-06-26 20:31:00]:
-
-> On Thu, Jun 26, 2008 at 03:49:01PM +0200, Andi Kleen wrote:
-> > Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> writes:
-> > >
-> > > The idea being proposed is to enhance the tunable with varied degrees
-> > > of consolidation that can work best for different workload
-> > > characteristics.  echo 2 > /sys/.../sched_mc_power_savings could
-> > > enable more aggressive consolidation than the default.
+On Thu, Jun 26 2008, Michael Buesch wrote:
+> On Thursday 26 June 2008 20:11:42 Jens Axboe wrote:
+> > On Thu, Jun 26 2008, Jan Kara wrote:
+> > > On Wed 25-06-08 11:46:29, Michael Buesch wrote:
+> > > > On Wednesday 25 June 2008 11:37:00 Jan Kara wrote:
+> > > > > > Yeah the IO error is the trigger.
+> > > > > > I noticed that it had obvious troubles accessing the DVD that was in the drive.
+> > > > > > It sweeped over it for several seconds, then hung the system for 2 or 3 seconds
+> > > > > > and then oopsed. But after that everything continued to work as usual.
+> > > > > > (Except kded of course)
+> > > > >   Hmm, by "accessing" do you mean that you've mounted the burned DVD and when
+> > > > > browsing it the IO error and the oops occured or that IO error happened
+> > > > > when burning? It is important because in the first case i_blkbits would be
+> > > > > taken from some ISOFS inode desribing some file while in the second case
+> > > > > i_blkbits are from the inode of the device...
+> > > > I don't know. kded, which caused the oops, is always running. It is a KDE daemon
+> > > > that polls device state and so on. So yeah, it might have accessed the drive
+> > > > while growisofs was writing to it.
+> > > > 
+> > > > However with "accessing" I mean the DVD drive motor was spinning up and down
+> > > > and the laser lens was moving like crazy. The sound that happens, if you put
+> > > > a completely scratched DVD into the drive and it is unable to make sense of it.
+> > > > However, this was not scratched. It was a new DVD with one session on it that
+> > > > I just burnt 5 minutes before that. So I wanted to append another session to it
+> > > > and it crashed and resulted in IO errors in growisofs.
+> > >   I've been looking into this problem for some time. The only way how
+> > >   I see blocksize can be set so big is in cdrom_read_capacity() in
+> > >   drivers/ide/ide-cd.c. That basically blindly fills in
+> > >   queue->hardsect_size with what the drive returns and this can
+> > >   propagate in bd_set_size() to i_blkbits.  Jens, do you think that is
+> > >   possible? Shouldn't ide_cd_read_toc() do some sanity checks of the
+> > >   blocksize returned?
 > > 
-> > It would be better to fix the single power saving default to work
-> > better with bursty workloads too than to add more tunables. Tunables
-> > are basically "we give up, let's push the problem to the user"
-> > which is not nice. I suspect a lot of users won't even know if their
-> > workloads are bursty or not.  Or they might have workloads which
-> > are both bursty and not bursty.
-> > 
-> > Or did you try that and failed?
+> > It can't hurt, the value should be >= 512b and <= 4kb. Normally it would
+> > be 2kb, but some devices have a 512b switch so that is also seen. Not
+> > sure that 1kb and 4kb are valid, but at least it would still point to
+> > the drive possibly returning valid data and not garbage. So accept all
+> > those, reject (and complain) if it isn't one of those and default to 2kb.
 > 
-> I think we have a reasonable default with sched_mc_power_savings=1.
-> Beyond that it hard to figure out how much work you can group together
-> and run in a small number of physical CPU packages. The approach
-> we are taking is to let system administrators decide what level
-> of power savings they want. If they want power savings at the cost
-> of performance, they should be able to do so using a higher
-> value of sched_mc_power_savings. If they see that they can pack
-> more work without affecting their transaction time, they should
-> be able to adjust the level of packing. Beyond a sane default,
-> it is hard to do this inside the kernel.
+> I agree with the need for a hardware sanity check and I would happily test
+> any RFC patch :)
 
-Hi Andi,
+Something like this, totally untested...
 
-Aggressive grouping and consolidation may hurt performance to some
-extent depending on the workload. The default setting could have least
-performance impact and moderate power savings.  We certainly need
-user/application input on how much 'potential' performance hit the
-application is willing to take in order to save considerable power
-under low system utilisation.  As Dipankar has mentioned, the proposed
-idea is to use sched_mc_power_savings as a power-savings and
-performance trade-off tunable parameter.
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index 68e7f19..5c1e663 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -1308,13 +1308,29 @@ static int cdrom_read_capacity(ide_drive_t *drive, unsigned long *capacity,
+ 	req.cmd_flags |= REQ_QUIET;
+ 
+ 	stat = ide_cd_queue_pc(drive, &req);
+-	if (stat == 0) {
+-		*capacity = 1 + be32_to_cpu(capbuf.lba);
+-		*sectors_per_frame =
+-			be32_to_cpu(capbuf.blocklen) >> SECTOR_BITS;
++	if (stat)
++		return stat;
++
++	/*
++	 * Sanity check the given block size
++	 */
++	switch (capbuf.blocklen) {
++	case 512:
++	case 1024:
++	case 2048:
++	case 4096:
++		break;
++	default:
++		printk(KERN_ERR "ide-cd: weird block size %u\n",
++							capbuf.blocklen);
++		printk(KERN_ERR "ide-cd: default to 2kb block size\n");
++		capbuf.blocklen = 2048;
++		break;
+ 	}
+ 
+-	return stat;
++	*capacity = 1 + be32_to_cpu(capbuf.lba);
++	*sectors_per_frame = be32_to_cpu(capbuf.blocklen) >> SECTOR_BITS;
++	return 0;
+ }
+ 
+ static int cdrom_read_tocentry(ide_drive_t *drive, int trackno, int msf_flag,
 
-We tried to tweak wakeup logic to move tasks to one package at idle,
-it works great at idle, but could potentially cause too much redundant
-load balancing at certain system utilisation.  Every technique used to
-consolidate tasks has its benefits at particular utilisation level and
-also depends on nature of workload.  I agree that we should avoid
-tunable as far as possible, but we still need make the changes
-available to community so that we can compare the different methods
-across various workloads and system configuration.  One of the
-settings in the tunable can very well be 'let the kernel decide what
-is best'
-
---Vaidy
+-- 
+Jens Axboe
 
