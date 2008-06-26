@@ -1,75 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbYFZXhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757137AbYFZX66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758094AbYFZXhq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 19:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754413AbYFZXhf
+	id S1757137AbYFZX66 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 19:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbYFZX6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 19:37:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33759 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754200AbYFZXhe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 19:37:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: Tree for June 26
-Date: Fri, 27 Jun 2008 01:38:52 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kernel-testers@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Jaswinder Singh <jaswinder@infradead.org>,
-       David Woodhouse <David.Woodhouse@intel.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-References: <20080627010842.e1a0c4b5.sfr@canb.auug.org.au>
-In-Reply-To: <20080627010842.e1a0c4b5.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 26 Jun 2008 19:58:47 -0400
+Received: from mail-in-13.arcor-online.net ([151.189.21.53]:40019 "EHLO
+	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751538AbYFZX6q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 19:58:46 -0400
+Subject: Re: [v4l-dvb-maintainer] saa7134 duplicate device in module, but
+	different device_data?
+From: hermann pitton <hermann-pitton@arcor.de>
+To: Ben Collins <ben.collins@canonical.com>,
+       Hartmut Hackmann <hartmut.hackmann@t-online.de>
+Cc: v4l-dvb-maintainer@linuxtv.org, kernel list <linux-kernel@vger.kernel.org>,
+       video4linux-list@redhat.com
+In-Reply-To: <1214501094.7150.29.camel@cunning>
+References: <1214501094.7150.29.camel@cunning>
+Content-Type: text/plain
+Date: Fri, 27 Jun 2008 01:56:20 +0200
+Message-Id: <1214524580.4480.32.camel@pc10.localdom.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806270138.53895.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 26 of June 2008, Stephen Rothwell wrote:
-> Hi all,
-> 
-> Changes since next-20080625:
-> 
-> The tip-core tree lost its three conflicts against Linus' tree.
-> 
-> The pci tree gained two conflicts against the x86 tree.
-> 
-> The v4l-dvb tree had the second revert undone.  We will see if this is
-> right.
-> 
-> The net tree gained a conflict against the wireless-current tree.
-> 
-> The vfs tree lost its conflict against the sched tree.
-> 
-> The arm tree lost its conflict against Linus' tree.
-> 
-> The rr tree gained a patch for a build problem instead the revert.
-> 
-> The firmware tree lost a conflict against the usb tree.
+Hello,
 
-commit 423c982fffb1cd95c8cdd654ce5ab59351ba41f5
-Author: Jaswinder Singh <jaswinder@infradead.org>
-Date:   Wed Jun 18 19:58:33 2008 +0530
+Am Donnerstag, den 26.06.2008, 13:24 -0400 schrieb Ben Collins:
+> In the saa7134 module, there are these two entries in
+> MODULE_DEVICE_TABLE():
+> 
+> 
+>         },{
+>                 .vendor       = PCI_VENDOR_ID_PHILIPS,
+>                 .device       = PCI_DEVICE_ID_PHILIPS_SAA7133,
+>                 .subvendor    = 0x185b,
+>                 .subdevice    = 0xc100,
+>                 .driver_data  = SAA7134_BOARD_VIDEOMATE_TV,
+>         },{
+>                 .vendor       = PCI_VENDOR_ID_PHILIPS,
+>                 .device       = PCI_DEVICE_ID_PHILIPS_SAA7133,
+>                 .subvendor    = 0x185b,
+>                 .subdevice    = 0xc100,
+>                 .driver_data  = SAA7134_BOARD_VIDEOMATE_TV_GOLD_PLUS,
+>         },{
+> 
+> Both will exactly match, and I assume only the first one will ever be
+> used, hence the second is just a wasted dupe. At least, I would assume
+> if not for the differing driver_data. Anyway to clear up this ambiguity?
+> 
 
-    firmware: convert tg3 driver to request_firmware()
+there are even more devices with the same PCI device and subsystem ID
+from that vendor and the problem goes also over saa7133 and saa7135
+devices, for which we have no means to detect them as different, but the
+saa7133 does only NTSC-M system TV sound decoding and saa7135 and the
+even later saa7131e global analog TV sound.
 
-breaks my nx6325.
+For the early saa7133 SAA7134_BOARD_VIDEOMATE_TV we don't have eeprom
+readout data and the contributor doesn't have the card anymore.
+A request for helping out with such on the list had no result so far.
 
-Apparently, with this patch applied the tg3 has a NULL pointer dereference
-somewhere, but I can only see the first line of the oops, afterwards the box
-hangs solid.
+As of now, we can't try to separate them by eeprom differences, which
+would be the best attempt and is done for some other Compro products
+with similar flaws already.
 
-Please drop it if possible.
+Before that likely possible eeprom detection ever happens, we have two
+options left to make you feel better.
 
-Also, arch/x86/kernel/io_apic_64.c seems wrong at the moment, as it checks
-for conditions that are never satisfied etc.
+Kick both out of the auto detection and the users will get a list of
+supported devices printed out, from which they have to choose.
 
-Thanks,
-Rafael
+Leave the oldest one in and print some warnings that they have to look
+it up for their newer cards. Naming is quite consistent, except some
+early Gold Plus II variants seen first in New Zealand coming with Gold
+Plus only stickers. They also come with different tuners, latest have a
+separate silicon radio tuner and all such usual ...
+
+Patches are always welcome.
+
+Internally it was only a reminder for missing eeprom data to be
+investigated.
+
+Cheers,
+Hermann
+
+
+
+
