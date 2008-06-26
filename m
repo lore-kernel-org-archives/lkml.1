@@ -1,124 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761629AbYFZNAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbYFZM73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761629AbYFZNAz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759181AbYFZMlj
+	id S1758290AbYFZM73 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 08:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759631AbYFZMla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:41:39 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:57390 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755331AbYFZMld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:41:33 -0400
-Date: Thu, 26 Jun 2008 07:41:25 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: tglx@linutronix.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>, "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [bug] Re: [PATCH] - Fix stack overflow for large values of MAX_APICS
-Message-ID: <20080626124125.GA25484@sgi.com>
-References: <20080620025104.GA25571@sgi.com> <20080620103921.GC32500@elte.hu> <20080624102401.GA27614@elte.hu> <20080625205628.GA17411@sgi.com> <20080626123231.GP29619@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080626123231.GP29619@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 26 Jun 2008 08:41:30 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:22595 "EHLO
+	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758047AbYFZMlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:41:19 -0400
+From: monstr@seznam.cz
+To: linux-kernel@vger.kernel.org
+Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
+       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
+       linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
+       hpa@zytor.com, Michal Simek <monstr@monstr.eu>
+Subject: [PATCH 33/60] microblaze_v4: includes SHM*, msgbuf
+Date: Thu, 26 Jun 2008 14:30:02 +0200
+Message-Id: <1214483429-32360-34-git-send-email-monstr@seznam.cz>
+X-Mailer: git-send-email 1.5.4.GIT
+In-Reply-To: <1214483429-32360-33-git-send-email-monstr@seznam.cz>
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-2-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-3-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-4-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-5-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-6-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-7-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-8-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-9-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-10-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-11-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-12-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-13-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-14-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-15-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-16-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-17-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-18-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-19-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-20-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-21-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-22-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-23-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-24-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-25-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-26-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-27-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-28-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-29-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-30-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-31-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-32-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-33-git-send-email-monstr@seznam.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 02:32:31PM +0200, Ingo Molnar wrote:
-> 
-> * Jack Steiner <steiner@sgi.com> wrote:
-> 
-> > >> I added trace code & isolated the hang to a call to 
-> > >> synchronize_rcu(). Usually from netlink_change_ngroups().
-> > >> 
-> > >> If I boot with "maxcpus=1, it never hangs (obviously) but always fails
-> > >> to mount /root.
-> > >> 
-> > >> Next I changed NR_CPUS to 128. I still see random hangs.
-> > >> 
-> > >> 
-> > >> I'll chase this more tomorrow. Has anyone else seen any failures that might be
-> > >> related???
-> > >> 
-> > >> 
-> > 
-> > Is this already fixed? I see a number of patches to this area have been merged
-> > since the failure occurred.
-> > 
-> > I added enough hacks to get backtraces on threads at the time a hang occurs.
-> > show_state() shows 79 "kstopmachine" tasks. Most have one of the following backtraces:
-> > 
-> > 
-> > 	<6>kstopmachine  R  running task     6400   375    369
-> > 	 ffff8101ad28bd80 ffffffff8068c5c6 ffff8101ad28bb20 0000000000000002
-> > 	 0000000000000046 0000000000000000 0000000000002f42 ffff8101ad28c8b8
-> > 	 ffff8101ad28bb90 ffffffff80254fac 0000000100000000 0000000000000000
-> > 	Call Trace:
-> > 	   [<ffffffff8068c5c6>] ? thread_return+0x4d/0xbd
-> > 	   [<ffffffff80254fac>] ? __lock_acquire+0x643/0x6ad
-> > 	   [<ffffffff80212507>] ? sched_clock+0x9/0xc
-> > 	   [<ffffffff8022cf41>] ? update_curr_rt+0x111/0x11a
-> > 	   [<ffffffff80212507>] ? sched_clock+0x9/0xc
-> > 	   [<ffffffff8068c5f2>] ? thread_return+0x79/0xbd
-> > 	   [<ffffffff8068ef48>] ? _spin_unlock_irq+0x2b/0x37
-> > 	   [<ffffffff8068c5f2>] ? thread_return+0x79/0xbd
-> > 	   [<ffffffff80254fac>] ? __lock_acquire+0x643/0x6ad
-> > 	   [<ffffffff80212507>] ? sched_clock+0x9/0xc
-> > 	   [<ffffffff8068c806>] wait_for_common+0x150/0x160
-> > 	   [<ffffffff8068ef48>] ? _spin_unlock_irq+0x2b/0x37
-> > 	   [<ffffffff80254fac>] ? __lock_acquire+0x643/0x6ad
-> > 	   [<ffffffff80212507>] ? sched_clock+0x9/0xc
-> > 	   [<ffffffff8023422b>] ? sys_sched_yield+0x0/0x6e
-> > 	   [<ffffffff8026736d>] ? stopmachine+0xaf/0xda
-> > 	   [<ffffffff8020d558>] ? child_rip+0xa/0x12
-> > 	   [<ffffffff802672be>] ? stopmachine+0x0/0xda
-> > 	   [<ffffffff8020d54e>] ? child_rip+0x0/0x12
-> > 
-> > 	<6>kstopmachine  ? 0000000000000000  6400   367      1
-> > 	  ffff8101af9b9ee0 0000000000000046 0000000000000000 0000000000000000
-> > 	  0000000000000000 ffff8101af9b4000 ffff8101afdc0000 ffff8101af9b4540
-> > 	  0000000600000000 00000000ffff909f ffffffffffffffff ffffffffffffffff
-> > 	Call Trace:
-> > 	     [<ffffffff8023be98>] do_exit+0x6fe/0x702
-> > 	     [<ffffffff8020d55f>] child_rip+0x11/0x12
-> > 	     [<ffffffff802672be>] ? stopmachine+0x0/0xda
-> > 	     [<ffffffff8020d54e>] ? child_rip+0x0/0x12
-> > 
-> > 
-> > The boot thread shows:
-> > 	 <6>swapper       D 0000000000000002  2640     1      0
-> > 	  ffff8101afc3fcd0 0000000000000046 ffffffff807d8341 0000000000000200
-> > 	  ffffffff807d8335 ffff8101afc40000 ffff8101ad284000 ffff8101afc40540
-> > 	  00000005afc3faa0 ffffffff8021e837 ffff8101afc3fab0 ffff8101afc3fd50
-> > 
-> > 	 [<ffffffff8068c961>] schedule_timeout+0x27/0xb9
-> > 	 [<ffffffff8068ef48>] ? _spin_unlock_irq+0x2b/0x37
-> > 	 [<ffffffff8068c79c>] wait_for_common+0xe6/0x160
-> > 	 [<ffffffff8022d88a>] ? default_wake_function+0x0/0xf
-> > 	 [<ffffffff8068c8a0>] wait_for_completion+0x18/0x1a
-> > 	 [<ffffffff8024981a>] synchronize_rcu+0x3a/0x41
-> > 	 [<ffffffff802498a3>] ? wakeme_after_rcu+0x0/0x15
-> > 	 [<ffffffff805d8e1b>] netlink_change_ngroups+0xce/0xfc
-> > 	 [<ffffffff805da2c9>] genl_register_mc_group+0xfd/0x160
-> > 	 [<ffffffff80ac6d5d>] ? acpi_event_init+0x0/0x57
-> > 	 [<ffffffff80ac6d92>] acpi_event_init+0x35/0x57
-> > 	 [<ffffffff80aaca8c>] kernel_init+0x1c5/0x31f
-> > 
-> > 
-> > Is this hang already fixed or should I dig deeper?
-> 
-> there's no known hang in tip/master. I.e. removing your MAX_APICS patch 
-> clearly resolved that crash.
+From: Michal Simek <monstr@monstr.eu>
 
-Hmmm.  I'm puzzled. With the tip/master tree that I built earlier this week, I was
-able to get hangs both with & without the MAX_APICS patch. Although less frequent,
-I also got hangs with NR_CPUS=128 & without the MAX_APICS patch. I'm not certain
-that all hangs were identical to the above backtraces, but they all hung at
-about the same spot.
 
-I'll build a new tip/master tree, apply the MAX_APICS patch and retest using
-your random config & boot options that caused the problem.
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+---
+ include/asm-microblaze/msgbuf.h   |   39 ++++++++++++++++++++++++++++
+ include/asm-microblaze/shmbuf.h   |   50 +++++++++++++++++++++++++++++++++++++
+ include/asm-microblaze/shmparam.h |   14 ++++++++++
+ 3 files changed, 103 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/msgbuf.h
+ create mode 100644 include/asm-microblaze/shmbuf.h
+ create mode 100644 include/asm-microblaze/shmparam.h
 
---- jack
+diff --git a/include/asm-microblaze/msgbuf.h b/include/asm-microblaze/msgbuf.h
+new file mode 100644
+index 0000000..8172bc9
+--- /dev/null
++++ b/include/asm-microblaze/msgbuf.h
+@@ -0,0 +1,39 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_MSGBUF_H
++#define _ASM_MICROBLAZE_MSGBUF_H
++
++/*
++ * The msqid64_ds structure for microblaze architecture.
++ * Note extra padding because this structure is passed back and forth
++ * between kernel and user space.
++ *
++ * Pad space is left for:
++ * - 64-bit time_t to solve y2038 problem
++ * - 2 miscellaneous 32-bit values
++ */
++
++struct msqid64_ds {
++	struct ipc64_perm msg_perm;
++	__kernel_time_t msg_stime; /* last msgsnd time */
++	unsigned long __unused1;
++	__kernel_time_t msg_rtime; /* last msgrcv time */
++	unsigned long __unused2;
++	__kernel_time_t msg_ctime; /* last change time */
++	unsigned long __unused3;
++	unsigned long msg_cbytes; /* current number of bytes on queue */
++	unsigned long msg_qnum; /* number of messages in queue */
++	unsigned long msg_qbytes; /* max number of bytes on queue */
++	__kernel_pid_t msg_lspid; /* pid of last msgsnd */
++	__kernel_pid_t msg_lrpid; /* last receive pid */
++	unsigned long __unused4;
++	unsigned long __unused5;
++};
++
++#endif /* _ASM_MICROBLAZE_MSGBUF_H */
+diff --git a/include/asm-microblaze/shmbuf.h b/include/asm-microblaze/shmbuf.h
+new file mode 100644
+index 0000000..a460e36
+--- /dev/null
++++ b/include/asm-microblaze/shmbuf.h
+@@ -0,0 +1,50 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_SHMBUF_H
++#define _ASM_MICROBLAZE_SHMBUF_H
++
++/*
++ * The shmid64_ds structure for microblaze architecture.
++ * Note extra padding because this structure is passed back and forth
++ * between kernel and user space.
++ *
++ * Pad space is left for:
++ * - 64-bit time_t to solve y2038 problem
++ * - 2 miscellaneous 32-bit values
++ */
++
++struct shmid64_ds {
++	struct ipc64_perm	shm_perm; /* operation perms */
++	size_t			shm_segsz; /* size of segment (bytes) */
++	__kernel_time_t		shm_atime; /* last attach time */
++	unsigned long		__unused1;
++	__kernel_time_t		shm_dtime; /* last detach time */
++	unsigned long		__unused2;
++	__kernel_time_t		shm_ctime; /* last change time */
++	unsigned long		__unused3;
++	__kernel_pid_t		shm_cpid; /* pid of creator */
++	__kernel_pid_t		shm_lpid; /* pid of last operator */
++	unsigned long		shm_nattch; /* no. of current attaches */
++	unsigned long		__unused4;
++	unsigned long		__unused5;
++};
++
++struct shminfo64 {
++	unsigned long	shmmax;
++	unsigned long	shmmin;
++	unsigned long	shmmni;
++	unsigned long	shmseg;
++	unsigned long	shmall;
++	unsigned long	__unused1;
++	unsigned long	__unused2;
++	unsigned long	__unused3;
++	unsigned long	__unused4;
++};
++
++#endif /* _ASM_MICROBLAZE_SHMBUF_H */
+diff --git a/include/asm-microblaze/shmparam.h b/include/asm-microblaze/shmparam.h
+new file mode 100644
+index 0000000..719bbed
+--- /dev/null
++++ b/include/asm-microblaze/shmparam.h
+@@ -0,0 +1,14 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_SHMPARAM_H
++#define _ASM_MICROBLAZE_SHMPARAM_H
++
++#define SHMLBA	PAGE_SIZE /* attach addr a multiple of this */
++
++#endif /* _ASM_MICROBLAZE_SHMPARAM_H */
+-- 
+1.5.4.GIT
+
