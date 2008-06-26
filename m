@@ -1,124 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759013AbYFZTGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760781AbYFZTHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759013AbYFZTGn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 15:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755289AbYFZTGd
+	id S1760781AbYFZTHh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 15:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbYFZTH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 15:06:33 -0400
-Received: from mxl.seznam.cz ([77.75.72.44]:38894 "EHLO mxl.seznam.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755221AbYFZTGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 15:06:32 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=beta; d=seznam.cz;
-	h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Smtpd:X-Seznam-User:X-QM-Mark;
-	b=Z34+VhPib2WOZpAxznJf0vf8w2kMgAzmpJeA94xWpV1jfDW0HHECX5d6gBHy6ZoOZ
-	EQeJ12JEsMTd9D+5ScFwsx1p6saaFgWPUQ8ZyTE8jpCmEBIH19fNxQZmu8LvaQbeLT2
-	1aqPcVP37bKFYX+pm51WJE6mRgx2FaYHon+ViXo=
-Message-ID: <4863E8F2.5080608@seznam.cz>
-Date: Thu, 26 Jun 2008 21:07:30 +0200
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: monstr@seznam.cz
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 26 Jun 2008 15:07:27 -0400
+Received: from n78.bullet.mail.sp1.yahoo.com ([98.136.44.42]:35991 "HELO
+	n78.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753960AbYFZTHZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 15:07:25 -0400
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 2397.3814.bm@omp210.mail.sp1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=S+1Cw5HzquR+hk5VrUBnkuCJfKciOyPsO+MZrlW+tQ1BH7aDUmHkCL2dWfaH7MoT9W1Q7cXfbLdsgVaK1wFIhqjXmePMLk2T3aYRTS+F0mWyqgpOnbj6lkKeCMZO6883hHpGBQ4Llp5X0q6pt481KrKTdXr5XtvmcJl3EMQBWmI=;
+X-Mailer: YahooMailWebService/0.7.199
+Date: Thu, 26 Jun 2008 12:07:24 -0700 (PDT)
+From: barry bouwsma <free_beer_for_all@yahoo.com>
+Reply-To: free_beer_for_all@yahoo.com
+Subject: Re: [PATCH] UTC timestamp option for FAT filesystems
+To: Joe Peterson <joe@skyrush.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <48631A01.1020009@skyrush.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
-       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com,
-       Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH 58/60] microblaze_v4: sys_microblaze.c
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <1214483429-32360-58-git-send-email-monstr@seznam.cz> <1214483429-32360-59-git-send-email-monstr@seznam.cz> <200806261748.30698.arnd@arndb.de>
-In-Reply-To: <200806261748.30698.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-X-Smtpd: 1.1.1@13338
-X-Seznam-User: monstr@seznam.cz
-X-QM-Mark: email-qm2<174336182>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <864214.60964.qm@web46107.mail.sp1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--- On Thu, 6/26/08, Joe Peterson <joe@skyrush.com> wrote:
 
->> +
->> +/*
->> + * sys_ipc() is the de-multiplexer for the SysV IPC calls..
->> + *
->> + * This is really horribly ugly.
->> + */
-> 
-> If it's so horribly ugly, don't do it this way ;-)
+> > (in my present time zone), so I wonder if in different languages,
+> > there's a preference for casual use of the phrase GMT (a quick
+> > look in my dictionary shows an entry for GMT, nothing for UTC,
 
-:-) this is not my part of code. I'll remove it with syscall changes.
+> Well, your question certainly prompted me to go and read up on it
+> again.
 
->> +int
->> +sys_ipc(uint call, int first, int second, int third, void *ptr, long fifth)
->> +{
->> +	int version, ret;
->> +
->> +	version = call >> 16; /* hack for backward compatibility */
->> +	call &= 0xffff;
-> 
-> Backwards compatibility with what?
+Oops, didn't mean to...  Very sorry.
 
-I don't know.
-John: I suppose this is your comment.
+Thinking more about my hack (dates back to at least Aug.2005,
+if not before -- can't find older code I ran), originally I
+wanted to be able to allow the user to specify the timezone/
+offset -- for example, if you were, hypothetically, to visit
+me where I am now, and your camera had been set to your local
+time, there's no way I'd easily be seeing the correct times.
 
->> +static inline unsigned long
->> +do_mmap2(unsigned long addr, size_t len,
->> +	unsigned long prot, unsigned long flags,
->> +	unsigned long fd, unsigned long pgoff)
->> +{
->> +	struct file *file = NULL;
->> +	int ret = -EBADF;
->> +
->> +	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
->> +	if (!(flags & MAP_ANONYMOUS))
->> +		if (!(file = fget(fd))) {
->> +			printk(KERN_INFO "no fd in mmap\r\n");
->> +			goto out;
->> +		}
->> +
->> +	down_write(&current->mm->mmap_sem);
->> +	ret = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
->> +	up_write(&current->mm->mmap_sem);
->> +	if (file)
->> +		fput(file);
->> +out:
->> +	return ret;
->> +}
->> +
->> +unsigned long sys_mmap2(unsigned long addr, size_t len,
->> +			unsigned long prot, unsigned long flags,
->> +			unsigned long fd, unsigned long pgoff)
->> +{
->> +	return do_mmap2(addr, len, prot, flags, fd, pgoff);
->> +}
->> +
->> +unsigned long sys_mmap(unsigned long addr, size_t len,
->> +			unsigned long prot, unsigned long flags,
->> +			unsigned long fd, off_t offset)
->> +{
->> +	int err = -EINVAL;
->> +
->> +	if (offset & ~PAGE_MASK) {
->> +		printk(KERN_INFO "no pagemask in mmap\r\n");
->> +		goto out;
->> +	}
->> +
->> +	err = do_mmap2(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
->> +out:
->> +	return err;
->> +}
-> 
-> Which mmap is uClibc really using? I suppose you only need mmap2, even for
-> compatibility with any binary ever built for microblaze.
+Fortunately, I began to think better of it after realizing how
+much work and bother it would be, and decided that if my friends
+were to be giving me USB sticks and whatnot to mount that weren't
+with UTC timestamps or in my local timezone, then they weren't
+going to remain my friends for much longer.  Unless they meant
+to give me those sticks without expecting them back, in which
+case I'd compromise and let them remain my friends just to see
+what else they might have up their sleeves to give me.
 
-I don't know. Microblaze should be compiled with uClibc and glibc. In case you
-need mmap2 for uClibc and mmap for glibc it is ok.
 
-M
+> In my work (unmanned space missions - solar system stuff), we deal with
+> many representations of time, and so I am used to being anal about it.
+> For example, there is GMT, UTC, TDT, ET, etc.  They all differ ever so
+> slightly.
 
-> 	Arnd <><
+Agreed.  And technically UTC is correct.  And while for you, the
+difference between UTC and GMT by now would be the difference
+between a probe floating gently down to the surface of the sun
+(oops, make that some planet) or embedding itself a metre or
+two under the surface, for too many casual users, GMT and UTC
+are interchangeable.  In the case of my camera, technically it's
+drifted to something that's neither UTC or GMT.  If this notebook
+doesn't get it's NTP sync from my other machine's radio clock,
+it rapidly becomes far removed from either.
+
+Unfortunately, even the Linux filesystem codes are either careless
+about referring to GMT (I too am guilty, rereading the comment to
+explain my hack which I wrote, before I decided to add `gmt' as an
+inaccurate alternative), or are indeed accurate and some filesystems
+are in fact based on GMT, not UTC -- I don't wish to know.  I see
+some 35-odd references to GMT in the fs/*/* files, try a grep
+just for, well, to see whether people are as careful with UTC/GMT
+as they should be.
+
+And it's even worse in the next timezone over from me -- I've seen
+websites referring to broadcasts in GMT -- no, they are in *local*
+*British* time, whether summer or winter time.  Arrgh.  NURSE!
+
+As it's a new option, no need to cater to (or encourage) inaccurate
+usage.  I'd rather advocate and see compatibility in userspace
+utilities for my BSD-afflicted brain, like `mount -u' == `mount
+-o remount -o rw' and `patch -C' == `patch --dry-run', but that's
+off-topic, as is this whole discussion.  Blacklist this e-mail,
+please?
+
+
+Anyway, thanks for trying to get this patch (probably 3 1/2 years
+old by me, if I find my oldest source) into the kernel, and I'll
+shut up now.
+
+barry bouwsma
+
+
+      
 
