@@ -1,101 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbYFZQAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759428AbYFZQAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758654AbYFZQAe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 12:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbYFZQAY
+	id S1759428AbYFZQAr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 12:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540AbYFZQA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 12:00:24 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:46137 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752043AbYFZQAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 12:00:23 -0400
-Date: Thu, 26 Jun 2008 11:03:20 -0500
-From: Michael Halcrow <mhalcrow@us.ibm.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] eCryptfs: Remove unnecessary mux from
-	ecryptfs_init_ecryptfs_miscdev()
-Message-ID: <20080626160320.GA7408@halcrowt61p.austin.ibm.com>
-Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
-References: <20080626135904.GC7018@cvg>
+	Thu, 26 Jun 2008 12:00:27 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:36214 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754393AbYFZQA0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 12:00:26 -0400
+Message-ID: <4863BD15.302@s5r6.in-berlin.de>
+Date: Thu, 26 Jun 2008 18:00:21 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080626135904.GC7018@cvg>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Tomas M <tomas@slax.org>
+CC: Jan Engelhardt <jengelh@medozas.de>, linux-kernel@vger.kernel.org
+Subject: Re: LZMA compression algorithm in Kernel - any chance to allow it?
+References: <48634BA7.6030902@slax.org> <alpine.LNX.1.10.0806261430470.12725@fbirervta.pbzchgretzou.qr> <48639B88.1020704@slax.org>
+In-Reply-To: <48639B88.1020704@slax.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 05:59:04PM +0400, Cyrill Gorcunov wrote:
-> Some analisys shows the following interesting things -
+Tomas M wrote:
+>> The bad thing is, they won't tell you before you submitted it.
 > 
-> Call chain (if being compiled into the kernel)
-> ----------------------------------------------
-> 
-> ecryptfs_init
-> 	ecryptfs_init_messaging
-> 		ecryptfs_init_ecryptfs_miscdev
-> 			mutex_lock(&ecryptfs_daemon_hash_mux);
-> 			misc_register(&ecryptfs_miscdev);
-> 				mutex_lock(&misc_mtx);
-> 				mutex_unlock(&misc_mtx);
-> 1 --->
-> 			mutex_unlock(&ecryptfs_daemon_hash_mux);
-> 
-> As only we have misc device registered it is valid to open it.
-> And that is happened by another proccess
-> 
-> chrdev_open
-> 	misc_open
-> 		mutex_lock(&misc_mtx);
-> 			ecryptfs_miscdev_open
-> 				mutex_lock(&ecryptfs_daemon_hash_mux);
-> 			
-> 
-> If this happens at point (1) /ie chrdev_open called at this point/
-> we are getting to circular warning as on top.
+> By 'they' you mean who?
+> Who decides what is accepted anyway?
 
-It appears to be only a warning and that deadlock cannot occur due to
-the fact that ecryptfs_miscdev_open() cannot be called until after
-mutex_unlock(&misc_mtx) occurs while under
-ecryptfs_init_ecryptfs_miscdev(). However, on second glance, given the
-call sequence detail you provided here, I think I am being
-over-zealous in my hash table locking with ecryptfs_daemon_hash_mux in
-ecryptfs_init_ecryptfs_miscdev(). The misc_mtx should provide all the
-protection required to keep the daemon hash table sane during miscdev
-registration.
+Major contributors (reviewers, maintainers) do, and ultimately Linus.
 
----
-
-The misc_mtx should provide all the protection required to keep the
-daemon hash table sane during miscdev registration. Since this mutex
-is causing gratuitous lockdep warnings, this patch removes it.
-
-Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
----
- fs/ecryptfs/miscdev.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/fs/ecryptfs/miscdev.c b/fs/ecryptfs/miscdev.c
-index 6560da1..a9926a4 100644
---- a/fs/ecryptfs/miscdev.c
-+++ b/fs/ecryptfs/miscdev.c
-@@ -577,13 +577,11 @@ int ecryptfs_init_ecryptfs_miscdev(void)
- 	int rc;
- 
- 	atomic_set(&ecryptfs_num_miscdev_opens, 0);
--	mutex_lock(&ecryptfs_daemon_hash_mux);
- 	rc = misc_register(&ecryptfs_miscdev);
- 	if (rc)
- 		printk(KERN_ERR "%s: Failed to register miscellaneous device "
- 		       "for communications with userspace daemons; rc = [%d]\n",
- 		       __func__, rc);
--	mutex_unlock(&ecryptfs_daemon_hash_mux);
- 	return rc;
- }
- 
+You said LZMA is already used by out-of-tree code in the embedded
+domain.  So I suppose a submission of an LZMA implementation should
+rather be part of a submission of code which actually uses it.
 -- 
-1.5.3.7
-
+Stefan Richter
+-=====-==--- -==- ==-=-
+http://arcgraph.de/sr/
