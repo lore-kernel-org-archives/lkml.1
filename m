@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbYFZH0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbYFZH11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756306AbYFZH0i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 03:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756432AbYFZH0Y
+	id S1756306AbYFZH11 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 03:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbYFZH1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 03:26:24 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:51895 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756361AbYFZH0W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 03:26:22 -0400
-Subject: Re: [patch 07/21] Cleanup sclp printk messages.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Bastian Blank <bastian@waldi.eu.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-In-Reply-To: <20080625151544.GA12945@wavehammer.waldi.eu.org>
-References: <20080625143459.100139455@de.ibm.com>
-	 <20080625143613.141370129@de.ibm.com>
-	 <20080625151544.GA12945@wavehammer.waldi.eu.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Thu, 26 Jun 2008 09:26:16 +0200
-Message-Id: <1214465176.12809.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jun 2008 03:27:19 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59297 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753323AbYFZH1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 03:27:18 -0400
+Date: Thu, 26 Jun 2008 09:22:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, josh@freedesktop.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, dino@in.ibm.com, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, vegard.nossum@gmail.com,
+       adobriyan@gmail.com, oleg@tv-sign.ru, bunk@kernel.org, rjw@sisk.pl
+Subject: Re: [PATCH -tip-rcu] Make rcutorture more vicious: invoke RCU
+	readers from irq handlers (timers)
+Message-ID: <20080626072239.GB3160@elte.hu>
+References: <20080618122144.GA27143@linux.vnet.ibm.com> <20080618162649.GA18326@linux.vnet.ibm.com> <20080622200638.GA25328@linux.vnet.ibm.com> <20080625192452.GA12754@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080625192452.GA12754@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-25 at 17:15 +0200, Bastian Blank wrote:
-> On Wed, Jun 25, 2008 at 04:35:06PM +0200, Martin Schwidefsky wrote:
-> > +	if (finished_sccb != (u32) (addr_t) sclp_init_sccb)
-> > +		panic("sclp: unsolicited interrupt for buffer at 0x%x\n",
-> > +		      finished_sccb);
+
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+
+> This patch allows torturing RCU from irq handlers (timers, in this 
+> case). A new module parameter irqreader enables such additional 
+> torturing, and is enabled by default.  Variants of RCU that do not 
+> tolerate readers being called from irq handlers (e.g., SRCU) ignore 
+> irqreader.
 > 
-> Does that really need to be a panic?
+> (No failures observed, but only short tests thus far.  And no failures 
+> observed thus far from about 10 hours of running stock rcutorture in 
+> parallel with 170 kernel builds on a two-CPU machine.)
 
-Yes, that should be a panic. The point is that we got an unsolicited
-interrupt from sclp at boot time. That means that there has been an sclp
-request around from the last incarnation of the system. An sclp request
-can do a lot of things, in particular it can change memory. Not a good
-start for the new system ..
+applied to tip/core/rcu - thanks Paul.
 
--- 
-blue skies,
-  Martin.
+> +static int irqreader = 1;	/* RCU readers from irq (timers). */
 
-"Reality continues to ruin my life." - Calvin.
+Good - this means that in bzImage type of tests (built-in rcutorture, no 
+modules) this new test variant will be activated by default, right?
 
-
+	Ingo
