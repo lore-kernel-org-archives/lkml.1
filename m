@@ -1,53 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759953AbYFZNKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760680AbYFZNKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759953AbYFZNKb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:10:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762695AbYFZM4i
+	id S1760680AbYFZNKv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761359AbYFZM5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:56:38 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51621 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758491AbYFZM4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:56:37 -0400
-From: Bernhard Walle <bwalle@suse.de>
-To: linuxppc-dev@ozlabs.org
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org, vgoyal@redhat.com,
-       Bernhard Walle <bwalle@suse.de>
-Subject: [PATCH] Remove experimental status of kdump on PPC64
-Date: Thu, 26 Jun 2008 14:57:15 +0200
-Message-Id: <1214485035-26041-1-git-send-email-bwalle@suse.de>
-X-Mailer: git-send-email 1.5.6
+	Thu, 26 Jun 2008 08:57:18 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:45227 "EHLO
+	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762750AbYFZM5Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:57:16 -0400
+Date: Thu, 26 Jun 2008 18:28:20 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Mike Travis <travis@sgi.com>, Vegard Nossum <vegard.nossum@gmail.com>,
+       Adrian Bunk <bunk@kernel.org>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer
+	dereference
+Message-ID: <20080626125820.GA30144@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20080622125633.GA8166@damson.getinternet.no> <200806241136.52430.rusty@rustcorp.com.au> <1214294783.25608.75.camel@ymzhang> <200806242314.51656.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200806242314.51656.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the experimental status of kdump on IA64. kdump is on IA64
-now since more than one year and it has proven to be stable.
+On Tue, Jun 24, 2008 at 11:14:51PM +1000, Rusty Russell wrote:
+> On Tuesday 24 June 2008 18:06:23 Zhang, Yanmin wrote:
+> > On Tue, 2008-06-24 at 11:36 +1000, Rusty Russell wrote:
+> > > On Tuesday 24 June 2008 02:58:44 Mike Travis wrote:
+> > > > Rusty Russell wrote:
+> > > > > On Monday 23 June 2008 02:29:07 Vegard Nossum wrote:
+> > > > >> And the (cpu < nr_cpu_ids) fails because the CPU has just been
+> > > > >> offlined (or failed to initialize, but it's the same thing), while
+> > > > >> NR_CPUS is the value that was compiled in as CONFIG_NR_CPUS (so the
+> > > > >> former check will always be true).
+> > > > >>
+> > > > >> I don't think it is valid to ask for a per_cpu() variable on a CPU
+> > > > >> which does not exist, though
+> > > > >
+> > > > > Yes it is.  As long as cpu_possible(cpu), per_cpu(cpu) is valid.
+> > > > >
+> > > > > The number check should be removed: checking cpu_possible() is
+> > > > > sufficient.
+> > > > >
+> > > > > Hope that helps,
+> > > > > Rusty.
+> > > >
+> > > > I don't see a check for index being out of range in cpu_possible().
+> > >
+> > > You're right.  It assumes cpu is < NR_CPUS.  Hmm, I have no idea what's
+> > > going on.  nr_cpu_ids (ignore that it's a horrible name for a bad idea)
+> > > should be fine to test against.
+> > >
+> > > Vegard's analysis is flawed: just because cpu is offline, it still must
+> > > be < nr_cpu_ids, which is based on possible cpus.  Unless something crazy
+> > > is happening, but a quick grep doesn't reveal anyone manipulating
+> > > nr_cpu_ids.
+> > >
+> > > If changing this fixes the bug, something else is badly wrong...
+> > > Rusty.
+> >
+> > In function _cpu_up, the panic happens when calling
+> > __raw_notifier_call_chain at the second time. Kernel doesn't panic when
+> > calling it at the first time. If just say because ﻿of nr_cpu_ids, that's
+> > not right.
+> >
+> > By checking source codes, I find function do_boot_cpu is the culprit.
+> > Consider below call chain:
+> >  _cpu_up=>__cpu_up=>smp_ops.cpu_up=>native_cpu_up=>do_boot_cpu.
+> >
+> > So ﻿do_boot_cpu is called in the end. In ﻿do_boot_cpu, if boot_error==true,
+> > cpu_clear(cpu, cpu_possible_map) is executed. So later on, when ﻿_cpu_up
+> > calls ﻿__raw_notifier_call_chain at the second time to report
+> > CPU_UP_CANCELED, because this cpu is already cleared from
+> > ﻿cpu_possible_map, get_cpu_sysdev returns NULL.
+> >
+> > Many resources are related to ﻿cpu_possible_map, so it's better not to
+> > change it.
+> >
+> > Below patch against 2.6.26-rc7 fixes it by removing the bit clearing in
+> > ﻿cpu_possible_map.
+> >
+> > Vegard, would you like to help test it?
+> >
+> > ﻿﻿﻿Signed-off-by: Zhang Yanmin ﻿<yanmin_zhang@linux.intel.com>
+> >
+> > ---
+> >
+> > diff -Nraup linux-2.6.26-rc7/arch/x86/kernel/smpboot.c
+> > linux-2.6.26-rc7_cpuhotplug/arch/x86/kernel/smpboot.c ---
+> > linux-2.6.26-rc7/arch/x86/kernel/smpboot.c	2008-06-24 09:03:54.000000000
+> > +0800 +++ linux-2.6.26-rc7_cpuhotplug/arch/x86/kernel/smpboot.c	2008-06-24
+> > 09:04:45.000000000 +0800 @@ -996,7 +996,6 @@ do_rest:
+> >  #endif
+> >  		cpu_clear(cpu, cpu_callout_map); /* was set by do_boot_cpu() */
+> >  		cpu_clear(cpu, cpu_initialized); /* was set by cpu_init() */
+> > -		cpu_clear(cpu, cpu_possible_map);
+> >  		cpu_clear(cpu, cpu_present_map);
 
-For i386/x86_64, a similar patch has been accepted by Ingo Molnar and Vivek
-Goyal.
+Nice catch.
 
+While we're at it, is the clearing of cpu from the cpu_present_map
+necessary if cpu_up failed for 'cpu' ?
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
----
- arch/powerpc/Kconfig |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> >  		per_cpu(x86_cpu_to_apicid, cpu) = BAD_APICID;
+> >  	}
+> 
+> Nice catch.  Basically, cpu_possible_map should only be cleared at boot, and 
+> probably not even then.
+> 
+> Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> Thanks,
+> Rusty.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 3934e26..2a116b9 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -308,8 +308,8 @@ config KEXEC
- 	  strongly in flux, so no good recommendation can be made.
- 
- config CRASH_DUMP
--	bool "Build a kdump crash kernel (EXPERIMENTAL)"
--	depends on PPC_MULTIPLATFORM && PPC64 && EXPERIMENTAL
-+	bool "Build a kdump crash kernel"
-+	depends on PPC_MULTIPLATFORM && PPC64
- 	help
- 	  Build a kernel suitable for use as a kdump capture kernel.
- 	  The kernel will be linked at a different address than normal, and
 -- 
-1.5.6
-
+Thanks and Regards
+gautham
