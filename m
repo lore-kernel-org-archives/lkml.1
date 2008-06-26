@@ -1,54 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756370AbYFZXBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575AbYFZXKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756370AbYFZXBr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 19:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYFZXBi
+	id S1756575AbYFZXKp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 19:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753040AbYFZXKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 19:01:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38772 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751239AbYFZXBh (ORCPT
+	Thu, 26 Jun 2008 19:10:35 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:37979 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752649AbYFZXKf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 19:01:37 -0400
-Date: Thu, 26 Jun 2008 15:59:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: righi.andrea@gmail.com
-Cc: balbir@linux.vnet.ibm.com, menage@google.com, chlunde@ping.uio.no,
-       axboe@kernel.dk, matt@bluehost.com, roberto@unbit.it,
-       randy.dunlap@oracle.com, dpshah@google.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] i/o bandwidth controller infrastructure
-Message-Id: <20080626155948.34f30751.akpm@linux-foundation.org>
-In-Reply-To: <486419FE.6070600@gmail.com>
-References: <1213956335-29866-3-git-send-email-righi.andrea@gmail.com>
-	<20080625172900.6cfe79cf.akpm@linux-foundation.org>
-	<486419FE.6070600@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 26 Jun 2008 19:10:35 -0400
+Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Pavel Machek <pavel@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Dan Hecht <dhecht@vmware.com>
+In-Reply-To: <20080626221634.GE18719@elf.ucw.cz>
+References: <20080603182014.79a38d03@infradead.org>
+	 <35f686220806032101h103152dat841818982aaa5052@mail.gmail.com>
+	 <20080604061637.6bab3f67@infradead.org>
+	 <1213924953.27983.52.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080620113922.GG7439@elte.hu>
+	 <1213999593.31598.52.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080624175753.GG5642@ucw.cz>
+	 <1214500831.3351.10.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080626173536.GA16783@elf.ucw.cz>
+	 <1214503849.3351.35.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080626221634.GE18719@elf.ucw.cz>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Thu, 26 Jun 2008 16:10:34 -0700
+Message-Id: <1214521834.3351.54.camel@promb-2n-dhcp368.eng.vmware.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jun 2008 00:36:46 +0200
-Andrea Righi <righi.andrea@gmail.com> wrote:
-
-> > Does all this code treat /dev/sda1 as a separate device from /dev/sda2?
-> >  If so, that would be broken.
+On Thu, 2008-06-26 at 15:16 -0700, Pavel Machek wrote:
+> Hi!
 > 
-> Yes, all the partitions are treated as separate devices with
-> (potentially) different limiting rules, but I don't understand why it
-> would be broken... dev_t has both minor and major numbers, so it would
-> be possible to select single partitions as well.
+> > > > > Some cpus can do loop in cycle , some need two cycles, some need half.
+> > > >
+> > > > Hi Pavel,
+> > > >
+> > > > When you say loops per jiffies has nothing to do with khz, by khz you
+> > > > mean the cpu frequency, right ?
+> > >
+> > > Yes.
+> > >
+> > > > AFAIU in calibrate_delay_direct too we measure the amount by which timer
+> > > > has ticked until DELAY_CALIBRATION_TICKS amount of jiffies has passed.
+> > > > So IMO the code there too assumes that there is one loop per timer
+> > > > cycle ?
+> > >
+> > > On my machine, it reports:
+> > >
+> > > delay using timer specific routine.. 3661.98 BogoMIPS (lpj=7323971)
+> > > ...
+> > > Detected 1828.828 MHz processor.
+> > >
+> > > (/proc/cpuinfo)
+> > > model name      : Genuine Intel(R) CPU           T2400  @ 1.83GHz
+> > > ...
+> > > cpu MHz         : 1000.000
+> > How is it 1000 here ? shouldn't this be 1830.xx
+> 
+> cpufreq effect, I believe.
+> 
+> > > bogomips        : 3657.54
+> > >
+> > > So you'd break it by setting lpj (aka bogomips) to cpu_khz, right?
+> >
+> > We are not setting it to cpu_khz but to tsc_khz, i am assuming that in
+> > this case tsc_khz will be different than cpu_khz. Can you please mail me
+> > the full dmesg log.
+> 
+> Yes, but neither cpu_khz nor tsc_khz will be 3657 bogoMips, right?
 
-Well it's functionally broken, isn't it?  A physical disk has a fixed
-IO bandwidth and when the administrator wants to partition that
-bandwidth amongst control groups he will need to consider the entire
-device when doing so?
+Hi Pavel,
 
-I mean, the whole point of this feature and of control groups as a
-whole is isolation.  But /dev/sda1 and /dev/sda2 are very much _not_
-isolated.  Whereas /dev/sda and /dev/sdb are (to a large degree)
-isolated.
+Thanks for the dmesg. The HZ value that you are using on this system is
+250, right ?
+
+If you note the calculations
+> +     lpj = ((u64)tsc_khz * 1000);
+> +     do_div(lpj, HZ);
+
+We are dividing by HZ over here. So you are right in saying that tsc_khz
+wont be equal to bogoMips but lpj_fine will surely be computed correct
+since we do consider the HZ value.
+
+Please let me know if you still have any doubts.
+Or can i safely assume that you will ACK the patch ;-)
+
+Thanks,
+Alok
+
+
+
+> 
+> Anyway, here are my boot messages.
+>                                                                 Pavel
+> 
+
 
