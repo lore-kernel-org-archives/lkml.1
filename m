@@ -1,82 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYFZF0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbYFZFde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755249AbYFZF0A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 01:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbYFZFZu
+	id S1755862AbYFZFde (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 01:33:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbYFZFdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 01:25:50 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:65067 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751519AbYFZFZt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 01:25:49 -0400
-Message-ID: <486327F9.6030004@ah.jp.nec.com>
-Date: Thu, 26 Jun 2008 14:24:09 +0900
-From: Takenori Nagano <t-nagano@ah.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: MinChan Kim <minchan.kim@gmail.com>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, linux-mm <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, akpm@linux-foundation.org
-Subject: Re: [RFC][PATCH] prevent incorrect oom under split_lru
-References: <20080624092824.4f0440ca@bree.surriel.com>	 <28c262360806242259k3ac308c4n7cee29b72456e95b@mail.gmail.com>	 <20080625150141.D845.KOSAKI.MOTOHIRO@jp.fujitsu.com>	 <28c262360806242356n3f7e02abwfee1f6acf0fd2c61@mail.gmail.com>	 <1214395885.15232.17.camel@twins>	 <28c262360806250605le31ba48ma8bb16f996783142@mail.gmail.com>	 <4862F5BB.9030200@ah.jp.nec.com> <28c262360806252137j78a90480n6c3973cd489c1ef2@mail.gmail.com>
-In-Reply-To: <28c262360806252137j78a90480n6c3973cd489c1ef2@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jun 2008 01:33:23 -0400
+Received: from home.keithp.com ([63.227.221.253]:3693 "EHLO keithp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751494AbYFZFdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 01:33:22 -0400
+Subject: Re: kmap_atomic_pfn for PCI BAR access?
+From: Keith Packard <keithp@keithp.com>
+To: Dave Airlie <airlied@gmail.com>
+Cc: keithp@keithp.com, Arjan van de Ven <arjan@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Dave Airlie <airlied@linux.ie>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <21d7e9970806252202i10de9c82lb4637d9f1064f0b0@mail.gmail.com>
+References: <1214242487.11887.35.camel@koto.keithp.com>
+	 <4862EE4C.4060009@goop.org>
+	 <21d7e9970806251823q3405e192q13d4944bd0cc3291@mail.gmail.com>
+	 <20080625213603.0e82805b@infradead.org>
+	 <21d7e9970806252202i10de9c82lb4637d9f1064f0b0@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-SzqGExkRK4K6m7iCPLyR"
+Date: Wed, 25 Jun 2008 22:33:13 -0700
+Message-Id: <1214458393.1044.42.camel@koto.keithp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MinChan Kim wrote:
-> On Thu, Jun 26, 2008 at 10:49 AM, Takenori Nagano
-> <t-nagano@ah.jp.nec.com> wrote:
->> MinChan Kim wrote:
->>> Hi peter,
->>>
->>> I agree with you.  but if application's virtual address space is big,
->>> we have a hard problem with mlockall since memory pressure might be a
->>> big.
->>> Of course, It will be a RT application design problem.
->>>
->>>> The much more important case is desktop usage - that is where we run non
->>>> real-time code, but do expect 'low' latency due to user-interaction.
->>>>
->>>> >From hitting swap on my 512M laptop (rather frequent occurance) I know
->>>> we can do better here,..
->>>>
->>> Absolutely. It is another example. So, I suggest following patch.
->>> It's based on idea of Takenori Nagano's memory reclaim more efficiently.
->> Hi Kim-san,
->>
->> Thank you for agreeing with me.
->>
->> I have one question.
->> My patch don't mind priority. Why do you need "priority == 0"?
-> 
-> Hi, Takenori-san.
-> 
-> Now, Kosaiki-san's patch didn't consider application latency.
-> That patch scan all lru[x] pages when memory pressure is very high.
-> (ie, priority == 0)
-> It will cause application latency to high as peter and me notice that.
-> We need a idea which prevent big scanning overhead
-> I modified your idea to prevent big scanning overhead only when memory
-> pressure is very big.
 
-Hi, Kim-san.
+--=-SzqGExkRK4K6m7iCPLyR
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Thank you for your explanation.
-I understand your opinion.
+On Thu, 2008-06-26 at 15:02 +1000, Dave Airlie wrote:
 
-But...your patch is not enough for me. :-(
-Our Xeon box has 128GB memory, application latency will be very large if
-priority goes to be zero.
-So, I would like to use "cut off" on every priority.
+> Thats why keithp wants something like kmap_atomic but for ioremap
+> instead of kmaps.
 
-I would like to delete "priority == 0", Can you?
+Right, the usage is precisely the same as kmap_atomic -- reading and
+writing from a wide range of physical addresses without needing either
+permanent map nor taking the huge cost of TLB flushing.
 
-Thanks,
-  Takenori
+The existing kmap_atomic_pfn is exactly what I need (modulo the lack of
+prot bits), except that it only handles non-memory pages on kernels with
+CONFIG_HIGHMEM set.
+
+It seems like making this function work on non-HIGHMEM kernels would
+require only the reservation of the same few PTEs that HIGHMEM kernels
+use, along with suitable hacking to make them work.
+
+> This would be for short temporary ioremaps like kmap_atomic is.
+
+For an integrated graphics device, this is just an optimization. I take
+physical pages, map them to the graphics GTT which makes them visible to
+the CPU up in I/O space. Then, I map address in the GTT back to the CPU
+with kmap_atomic_pfn and viola -- WC mapped access to regular pages, all
+without touching the low memory mappings.
+
+Before trying this, we just mapped the 'real' address of the page and
+then used clflush to get the contents out to memory where the graphics
+device could pick it up. However, the clflush is fairly expensive,
+enough so that using the WC mapping turns out to be faster in practice.
+
+Beyond simple integrated graphics performance benefits, we're looking
+towards discrete graphics cards where we need to write to VRAM which can
+only be made visible through the aperture; in that environment, we're
+stuck choosing between ioremap (urf) or the same kmap_atomic_pfn as
+above. In this case, there's no question that kmap_atomic_pfn will be a
+huge performance benefit.
+
+--=20
+keith.packard@intel.com
+
+--=-SzqGExkRK4K6m7iCPLyR
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQBIYyoZQp8BWwlsTdMRAtGHAJ9SwssxRzjs8WjznJiqUi4u9MMMSgCgwns/
+iUgc+jjVquxf40QOdob/X/g=
+=lJEB
+-----END PGP SIGNATURE-----
+
+--=-SzqGExkRK4K6m7iCPLyR--
+
