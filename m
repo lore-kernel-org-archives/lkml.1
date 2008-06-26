@@ -1,358 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762430AbYFZNG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbYFZNGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762430AbYFZNG1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:06:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760803AbYFZMr2
+	id S1760154AbYFZNGo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760005AbYFZMsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:47:28 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:23889 "EHLO
-	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759988AbYFZMrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:47:25 -0400
-From: monstr@seznam.cz
-To: linux-kernel@vger.kernel.org
-Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
-       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
-       will.newton@gmail.com, drepper@redhat.com,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
-       linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
-       hpa@zytor.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
-Date: Thu, 26 Jun 2008 14:29:41 +0200
-Message-Id: <1214483429-32360-13-git-send-email-monstr@seznam.cz>
-X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <1214483429-32360-12-git-send-email-monstr@seznam.cz>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
- <1214483429-32360-2-git-send-email-monstr@seznam.cz>
- <1214483429-32360-3-git-send-email-monstr@seznam.cz>
- <1214483429-32360-4-git-send-email-monstr@seznam.cz>
- <1214483429-32360-5-git-send-email-monstr@seznam.cz>
- <1214483429-32360-6-git-send-email-monstr@seznam.cz>
- <1214483429-32360-7-git-send-email-monstr@seznam.cz>
- <1214483429-32360-8-git-send-email-monstr@seznam.cz>
- <1214483429-32360-9-git-send-email-monstr@seznam.cz>
- <1214483429-32360-10-git-send-email-monstr@seznam.cz>
- <1214483429-32360-11-git-send-email-monstr@seznam.cz>
- <1214483429-32360-12-git-send-email-monstr@seznam.cz>
+	Thu, 26 Jun 2008 08:48:32 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:60632 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758303AbYFZMsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:48:30 -0400
+X-Greylist: delayed 679 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Jun 2008 08:48:30 EDT
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [linux-pm] Linux Power Management Mini-Summit -- Ottawa --
+	July 22, 2008
+From: Nigel Cunningham <ncunningham@crca.org.au>
+To: Len Brown <lenb@kernel.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0806251358060.3014@localhost.localdomain>
+References: <alpine.LFD.1.10.0806251358060.3014@localhost.localdomain>
+Content-Type: text/plain
+Organization: Christian Reformed Churches of Australia
+Date: Thu, 26 Jun 2008 22:37:02 +1000
+Message-Id: <1214483822.13177.29.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Simek <monstr@monstr.eu>
+Hi.
 
+On Wed, 2008-06-25 at 14:44 -0400, Len Brown wrote:
+> This is an open invitation to participate in
+> a Linux Power Management mini-summit
+> 9AM Tuesday July 22, 2008 in Ottawa.
+> 
+> This is the day before the Ottawa Linux Symposium.
+> OLS is generously supporting Linux mini-summits by providing the room
+> and projector: http://www.linuxsymposium.org/2008/minisummits.php
+> 
+> The meeting format will be round-table discussion.
+> There will be no phone bridge or audio/video recording.
+> However, there will be written minutes as there
+> were last year:  http://lwn.net/Articles/249019
+> 
+> Send suggestions for topics to linux-pm@lists.osdl.org,
+> whether you plan to attend or not.  The attendees will
+> form the agenda by consensus at the start of the session.
+> 
+> If you would like to attend, please send a note to
+> linux-pm@lists.osdl.org announcing your intent,
+> and what you would like to discuss.
+> 
+> Last year we were were cautious about presentations, for fear they
+> would not support discussion.  But the short ones we had actually
+> facilitied discussion, so we'll allow them again this year.
+> 
+> thanks,
+> -Len
+> 
+> ps. There is an opportunity for your company to help sponsor
+> the event -- for right now we are on our own for food.
+> If you are interseted, please contact me and OLS.
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
----
- arch/microblaze/platform/generic/system.dts |  300 +++++++++++++++++++++++++++
- 1 files changed, 300 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/platform/generic/system.dts
+All I can say is "Have fun, guys." I'm interested in developments, and
+would love to contribute but there's no way I'd be able to get there and
+I have little time to do anything.
 
-diff --git a/arch/microblaze/platform/generic/system.dts b/arch/microblaze/platform/generic/system.dts
-new file mode 100644
-index 0000000..724a037
---- /dev/null
-+++ b/arch/microblaze/platform/generic/system.dts
-@@ -0,0 +1,300 @@
-+/*
-+ * (C) Copyright 2007-2008 Xilinx, Inc.
-+ * (C) Copyright 2007-2008 Michal Simek
-+ *
-+ * Michal SIMEK <monstr@monstr.eu>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+ * MA 02111-1307 USA
-+ *
-+ * CAUTION: This file is automatically generated by libgen.
-+ * Version: Xilinx EDK 9.2.02 EDK_Jm_SP2.3
-+ * Generate by FDT v1.00.a
-+ */
-+
-+/ {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	compatible = "xlnx,microblaze";
-+	model = "testing";
-+	DDR_SDRAM_32Mx16: memory@20000000 {
-+		device_type = "memory";
-+		reg = < 20000000 2000000 >;
-+	} ;
-+	chosen {
-+		bootargs = "console=ttyUL0,115200 loglevel=15";
-+		linux,stdout-path = "/plb@0/serial@40100000";
-+	} ;
-+	cpus {
-+		#address-cells = <1>;
-+		#cpus = <1>;
-+		#size-cells = <0>;
-+		microblaze_0: cpu@0 {
-+			clock-frequency = <2faf080>;
-+			compatible = "xlnx,microblaze-7.00.a";
-+			d-cache-baseaddr = <20000000>;
-+			d-cache-highaddr = <21ffffff>;
-+			d-cache-line-size = <10>;
-+			d-cache-size = <4000>;
-+			device_type = "cpu";
-+			i-cache-baseaddr = <20000000>;
-+			i-cache-highaddr = <21ffffff>;
-+			i-cache-line-size = <10>;
-+			i-cache-size = <4000>;
-+			model = "microblaze,7.00.a";
-+			reg = <0>;
-+			timebase-frequency = <2faf080>;
-+			xlnx,addr-tag-bits = <b>;
-+			xlnx,allow-dcache-wr = <1>;
-+			xlnx,allow-icache-wr = <1>;
-+			xlnx,area-optimized = <0>;
-+			xlnx,cache-byte-size = <4000>;
-+			xlnx,d-lmb = <1>;
-+			xlnx,d-opb = <0>;
-+			xlnx,d-plb = <1>;
-+			xlnx,data-size = <20>;
-+			xlnx,dcache-addr-tag = <b>;
-+			xlnx,dcache-byte-size = <4000>;
-+			xlnx,dcache-line-len = <4>;
-+			xlnx,dcache-use-fsl = <1>;
-+			xlnx,debug-enabled = <1>;
-+			xlnx,div-zero-exception = <1>;
-+			xlnx,dopb-bus-exception = <0>;
-+			xlnx,dynamic-bus-sizing = <1>;
-+			xlnx,edge-is-positive = <1>;
-+			xlnx,family = "spartan3e";
-+			xlnx,fpu-exception = <1>;
-+			xlnx,fsl-data-size = <20>;
-+			xlnx,fsl-exception = <0>;
-+			xlnx,fsl-links = <1>;
-+			xlnx,i-lmb = <1>;
-+			xlnx,i-opb = <0>;
-+			xlnx,i-plb = <1>;
-+			xlnx,icache-line-len = <4>;
-+			xlnx,icache-use-fsl = <1>;
-+			xlnx,ill-opcode-exception = <1>;
-+			xlnx,instance = "microblaze_0";
-+			xlnx,interconnect = <1>;
-+			xlnx,interrupt-is-edge = <0>;
-+			xlnx,iopb-bus-exception = <0>;
-+			xlnx,mmu-dtlb-size = <4>;
-+			xlnx,mmu-itlb-size = <2>;
-+			xlnx,mmu-tlb-access = <3>;
-+			xlnx,mmu-zones = <2>;
-+			xlnx,number-of-pc-brk = <2>;
-+			xlnx,number-of-rd-addr-brk = <0>;
-+			xlnx,number-of-wr-addr-brk = <0>;
-+			xlnx,opcode-0x0-illegal = <1>;
-+			xlnx,pvr = <2>;
-+			xlnx,pvr-user1 = <12>;
-+			xlnx,pvr-user2 = <12345678>;
-+			xlnx,reset-msr = <0>;
-+			xlnx,sco = <0>;
-+			xlnx,unaligned-exceptions = <1>;
-+			xlnx,use-barrel = <1>;
-+			xlnx,use-dcache = <1>;
-+			xlnx,use-div = <1>;
-+			xlnx,use-extended-fsl-instr = <0>;
-+			xlnx,use-fpu = <2>;
-+			xlnx,use-hw-mul = <2>;
-+			xlnx,use-icache = <1>;
-+			xlnx,use-mmu = <3>;
-+			xlnx,use-msr-instr = <1>;
-+			xlnx,use-pcmp-instr = <1>;
-+		} ;
-+	} ;
-+	mb_plb: plb@0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "xlnx,plb-v46-1.00.a", "simple-bus";
-+		ranges ;
-+		Buttons_3Bit: gpio@40800000 {
-+			compatible = "xlnx,xps-gpio-1.00.a";
-+			interrupt-parent = <&xps_intc_0>;
-+			interrupts = < 6 2 >;
-+			reg = < 40800000 100000 >;
-+			xlnx,all-inputs = <1>;
-+			xlnx,all-inputs-2 = <0>;
-+			xlnx,dout-default = <0>;
-+			xlnx,dout-default-2 = <0>;
-+			xlnx,family = "spartan3e";
-+			xlnx,gpio-width = <3>;
-+			xlnx,interrupt-present = <1>;
-+			xlnx,is-bidir = <0>;
-+			xlnx,is-bidir-2 = <1>;
-+			xlnx,is-dual = <0>;
-+			xlnx,tri-default = <ffffffff>;
-+			xlnx,tri-default-2 = <ffffffff>;
-+		} ;
-+		Character_LCD_2x16: gpio@40900000 {
-+			compatible = "xlnx,xps-gpio-1.00.a";
-+			reg = < 40900000 100000 >;
-+			xlnx,all-inputs = <0>;
-+			xlnx,all-inputs-2 = <0>;
-+			xlnx,dout-default = <0>;
-+			xlnx,dout-default-2 = <0>;
-+			xlnx,family = "spartan3e";
-+			xlnx,gpio-width = <7>;
-+			xlnx,interrupt-present = <0>;
-+			xlnx,is-bidir = <1>;
-+			xlnx,is-bidir-2 = <1>;
-+			xlnx,is-dual = <0>;
-+			xlnx,tri-default = <ffffffff>;
-+			xlnx,tri-default-2 = <ffffffff>;
-+		} ;
-+		DIP_Switches_4Bit: gpio@40700000 {
-+			compatible = "xlnx,xps-gpio-1.00.a";
-+			interrupt-parent = <&xps_intc_0>;
-+			interrupts = < 7 2 >;
-+			reg = < 40700000 100000 >;
-+			xlnx,all-inputs = <1>;
-+			xlnx,all-inputs-2 = <0>;
-+			xlnx,dout-default = <0>;
-+			xlnx,dout-default-2 = <0>;
-+			xlnx,family = "spartan3e";
-+			xlnx,gpio-width = <4>;
-+			xlnx,interrupt-present = <1>;
-+			xlnx,is-bidir = <0>;
-+			xlnx,is-bidir-2 = <1>;
-+			xlnx,is-dual = <0>;
-+			xlnx,tri-default = <ffffffff>;
-+			xlnx,tri-default-2 = <ffffffff>;
-+		} ;
-+		Ethernet_MAC: ethernet@40c00000 {
-+			compatible = "xlnx,xps-ethernetlite-1.00.a";
-+			device_type = "network";
-+			interrupt-parent = <&xps_intc_0>;
-+			interrupts = < 2 0 >;
-+			local-mac-address = [ 02 00 00 00 00 00 ];
-+			reg = < 40c00000 100000 >;
-+			xlnx,duplex = <1>;
-+			xlnx,family = "spartan3e";
-+			xlnx,rx-ping-pong = <0>;
-+			xlnx,tx-ping-pong = <0>;
-+		} ;
-+		LEDs_8Bit: gpio@40600000 {
-+			compatible = "xlnx,xps-gpio-1.00.a";
-+			reg = < 40600000 100000 >;
-+			xlnx,all-inputs = <0>;
-+			xlnx,all-inputs-2 = <0>;
-+			xlnx,dout-default = <0>;
-+			xlnx,dout-default-2 = <0>;
-+			xlnx,family = "spartan3e";
-+			xlnx,gpio-width = <8>;
-+			xlnx,interrupt-present = <0>;
-+			xlnx,is-bidir = <0>;
-+			xlnx,is-bidir-2 = <1>;
-+			xlnx,is-dual = <0>;
-+			xlnx,tri-default = <ffffffff>;
-+			xlnx,tri-default-2 = <ffffffff>;
-+		} ;
-+		RS232_DCE: serial@40200000 {
-+			clock-frequency = <2faf080>;
-+			compatible = "xlnx,xps-uart16550-1.00.a", "ns16550";
-+			current-speed = <2580>;
-+			device_type = "serial";
-+			interrupt-parent = <&xps_intc_0>;
-+			interrupts = < 4 2 >;
-+			reg = < 40200000 100000 >;
-+			reg-offset = <3>;
-+			reg-shift = <2>;
-+			xlnx,family = "spartan3e";
-+			xlnx,has-external-rclk = <0>;
-+			xlnx,has-external-xin = <0>;
-+			xlnx,is-a-16550 = <1>;
-+		} ;
-+		RS232_DTE: serial@40100000 {
-+			clock-frequency = <2faf080>;
-+			compatible = "xlnx,xps-uartlite-1.00.a";
-+			device_type = "serial";
-+			interrupt-parent = <&xps_intc_0>;
-+			interrupts = < 3 0 >;
-+			port-number = <0>;
-+			reg = < 40100000 100000 >;
-+			xlnx,baudrate = <1c200>;
-+			xlnx,data-bits = <8>;
-+			xlnx,family = "spartan3e";
-+			xlnx,odd-parity = <0>;
-+			xlnx,use-parity = <0>;
-+		} ;
-+		SPI_FLASH: xps-spi@40a00000 {
-+			compatible = "xlnx,xps-spi-1.00.a";
-+			interrupt-parent = <&xps_intc_0>;
-+			interrupts = < 5 2 >;
-+			reg = < 40a00000 100000 >;
-+			xlnx,family = "spartan3e";
-+			xlnx,fifo-exist = <1>;
-+			xlnx,num-offchip-ss-bits = <4>;
-+			xlnx,num-ss-bits = <4>;
-+			xlnx,sck-ratio = <20>;
-+		} ;
-+		debug_module: debug@40300000 {
-+			compatible = "xlnx,mdm-1.00.a";
-+			reg = < 40300000 100000 >;
-+			xlnx,family = "spartan3e";
-+			xlnx,interconnect = <1>;
-+			xlnx,jtag-chain = <2>;
-+			xlnx,mb-dbg-ports = <1>;
-+			xlnx,uart-width = <8>;
-+			xlnx,use-uart = <1>;
-+			xlnx,write-fsl-ports = <1>;
-+		} ;
-+		mpmc@20000000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "xlnx,mpmc-3.00.a";
-+		} ;
-+		xps_intc_0: interrupt-controller@40000000 {
-+			#interrupt-cells = <2>;
-+			compatible = "xlnx,xps-intc-1.00.a";
-+			interrupt-controller ;
-+			reg = < 40000000 100000 >;
-+			xlnx,kind-of-edge = <0>;
-+			xlnx,num-intr-inputs = <8>;
-+		} ;
-+		xps_timer_0: timer@40400000 {
-+			compatible = "xlnx,xps-timer-1.00.a";
-+			interrupt-parent = <&xps_intc_0>;
-+			interrupts = < 0 2 >;
-+			reg = < 40400000 100000 >;
-+			xlnx,count-width = <20>;
-+			xlnx,family = "spartan3e";
-+			xlnx,gen0-assert = <1>;
-+			xlnx,gen1-assert = <1>;
-+			xlnx,one-timer-only = <0>;
-+			xlnx,trig0-assert = <1>;
-+			xlnx,trig1-assert = <1>;
-+		} ;
-+		xps_timer_1: timer@40500000 {
-+			compatible = "xlnx,xps-timer-1.00.a";
-+			interrupt-parent = <&xps_intc_0>;
-+			interrupts = < 1 2 >;
-+			reg = < 40500000 100000 >;
-+			xlnx,count-width = <20>;
-+			xlnx,family = "spartan3e";
-+			xlnx,gen0-assert = <1>;
-+			xlnx,gen1-assert = <1>;
-+			xlnx,one-timer-only = <1>;
-+			xlnx,trig0-assert = <1>;
-+			xlnx,trig1-assert = <1>;
-+		} ;
-+/*		sysace_compactflash: sysace@d0030100 {
-+			compatible = "xlnx,xps-sysace-1.00.a";
-+			reg = < E0000000 100000 >;
-+			xlnx,family = "spartan3e";
-+			xlnx,mem-width = <10>;
-+		} ;*/
-+	} ;
-+}  ;
--- 
-1.5.4.GIT
+I'd be interested (of course) to hear the fruit of discussions re
+hibernation.
+
+Regards,
+
+Nigel
 
