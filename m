@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760389AbYFZSVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761475AbYFZSVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760389AbYFZSVc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755246AbYFZSVV
+	id S1761475AbYFZSVu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756688AbYFZSVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:21:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60554 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753170AbYFZSVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:21:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: Tree for June 25
-Date: Thu, 26 Jun 2008 20:23:10 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Jiri Kosina <jkosina@suse.cz>, kernel-testers@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-References: <20080626003554.b2623aba.sfr@canb.auug.org.au> <200806261249.24340.rjw@sisk.pl> <20080627002100.396d5cbb.sfr@canb.auug.org.au>
-In-Reply-To: <20080627002100.396d5cbb.sfr@canb.auug.org.au>
+	Thu, 26 Jun 2008 14:21:23 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:47150 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755761AbYFZSVW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 14:21:22 -0400
+Message-ID: <4863CB8A.7000204@zytor.com>
+Date: Thu, 26 Jun 2008 10:02:02 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Arnd Bergmann <arnd@arndb.de>
+CC: monstr@seznam.cz, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
+       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
+       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
+       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
+       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
+       Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH 59/60] microblaze_v4: syscall_table.S and unistd.h
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <1214483429-32360-59-git-send-email-monstr@seznam.cz> <1214483429-32360-60-git-send-email-monstr@seznam.cz> <200806261831.19187.arnd@arndb.de>
+In-Reply-To: <200806261831.19187.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806262023.11338.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 26 of June 2008, Stephen Rothwell wrote:
-> On Thu, 26 Jun 2008 12:49:23 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> >
-> > > I guess this got in through Rusty's tree, right?
-> > > 
-> > > Does the patch below fix it please?
-> > 
-> > Yes, it does.
+Arnd Bergmann wrote:
 > 
-> I have applied this patch to today's linux-next tree.
+> You still set __NR_fork. There is no point defining the number if you
+> can't actually call the syscall in the first place.
+> 
 
-Thanks!
+Worse, it is actively *harmful* to set the number; klibc or anything 
+that uses similar kinds of scripts for portability will see the symbol 
+and think the system call is available.
+
+	-hpa
