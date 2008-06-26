@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761241AbYFZPEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760243AbYFZPDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761241AbYFZPEb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 11:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760484AbYFZPDy
+	id S1760243AbYFZPDr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 11:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbYFZPDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 11:03:54 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:48963 "EHLO e1.ny.us.ibm.com"
+	Thu, 26 Jun 2008 11:03:33 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:48139 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755118AbYFZPDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 11:03:51 -0400
-Date: Thu, 26 Jun 2008 20:31:00 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, svaidy@linux.vnet.ibm.com,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [RFC v1] Tunable sched_mc_power_savings=n
-Message-ID: <20080626150100.GA26167@in.ibm.com>
-Reply-To: dipankar@in.ibm.com
-References: <20080625191100.GI21892@dirshya.in.ibm.com> <87k5gcqpbm.fsf@basil.nowhere.org>
+	id S1759751AbYFZPDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 11:03:31 -0400
+Date: Thu, 26 Jun 2008 18:01:21 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: monstr@seznam.cz
+Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
+       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
+       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
+       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
+       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com
+Subject: Re: Microblaze init port v4
+Message-ID: <20080626150121.GB22025@cs181140183.pp.htv.fi>
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <87k5gcqpbm.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 03:49:01PM +0200, Andi Kleen wrote:
-> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> writes:
-> >
-> > The idea being proposed is to enhance the tunable with varied degrees
-> > of consolidation that can work best for different workload
-> > characteristics.  echo 2 > /sys/.../sched_mc_power_savings could
-> > enable more aggressive consolidation than the default.
+On Thu, Jun 26, 2008 at 02:29:29PM +0200, monstr@seznam.cz wrote:
+> Hi everybody,
 > 
-> It would be better to fix the single power saving default to work
-> better with bursty workloads too than to add more tunables. Tunables
-> are basically "we give up, let's push the problem to the user"
-> which is not nice. I suspect a lot of users won't even know if their
-> workloads are bursty or not.  Or they might have workloads which
-> are both bursty and not bursty.
-> 
-> Or did you try that and failed?
+> current linux version is 2.6.26-rc8 and I think this is the right time
+> to send latest patches againts rc8 for Microblaze CPU.
+>...
 
-I think we have a reasonable default with sched_mc_power_savings=1.
-Beyond that it hard to figure out how much work you can group together
-and run in a small number of physical CPU packages. The approach
-we are taking is to let system administrators decide what level
-of power savings they want. If they want power savings at the cost
-of performance, they should be able to do so using a higher
-value of sched_mc_power_savings. If they see that they can pack
-more work without affecting their transaction time, they should
-be able to adjust the level of packing. Beyond a sane default,
-it is hard to do this inside the kernel.
+Thanks for your work on getting the architecture included.
 
-Thanks
-Dipankar
+I have two questions:
+
+Where can I find a toolchain for compiling a Microblaze kernel?
+What is the status of Microblaze support in upstream binutils and gcc?
+
+> Best regards,
+> Michal Simek
+
+TIA
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
