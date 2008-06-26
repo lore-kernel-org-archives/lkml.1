@@ -1,97 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759827AbYFZSLB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbYFZSLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759827AbYFZSLB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:11:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbYFZSKv
+	id S1758746AbYFZSLz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYFZSLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:10:51 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:59008 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751128AbYFZSKu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:10:50 -0400
-Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080626173536.GA16783@elf.ucw.cz>
-References: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com>
-	 <20080603182014.79a38d03@infradead.org>
-	 <35f686220806032101h103152dat841818982aaa5052@mail.gmail.com>
-	 <20080604061637.6bab3f67@infradead.org>
-	 <1213924953.27983.52.camel@promb-2n-dhcp368.eng.vmware.com>
-	 <20080620113922.GG7439@elte.hu>
-	 <1213999593.31598.52.camel@promb-2n-dhcp368.eng.vmware.com>
-	 <20080624175753.GG5642@ucw.cz>
-	 <1214500831.3351.10.camel@promb-2n-dhcp368.eng.vmware.com>
-	 <20080626173536.GA16783@elf.ucw.cz>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Thu, 26 Jun 2008 11:10:49 -0700
-Message-Id: <1214503849.3351.35.camel@promb-2n-dhcp368.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jun 2008 14:11:46 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:23422 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752736AbYFZSLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 14:11:45 -0400
+Date: Thu, 26 Jun 2008 20:11:42 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Michael Buesch <mb@bu3sch.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Arnd Bergmann <arnd@arndb.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Oops when using growisofs
+Message-ID: <20080626181142.GH20851@kernel.dk>
+References: <200806221818.24372.mb@bu3sch.de> <200806242039.18755.mb@bu3sch.de> <20080625093700.GB15865@duck.suse.cz> <200806251146.30142.mb@bu3sch.de> <20080626170513.GE23386@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080626170513.GE23386@duck.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-26 at 10:35 -0700, Pavel Machek wrote:
-> On Thu 2008-06-26 10:20:31, Alok Kataria wrote:
-> > On Tue, 2008-06-24 at 10:57 -0700, Pavel Machek wrote:
-> > > Hi!
-> > >
-> > > > On X86 platform we can use the value of tsc_khz computed during tsc calibration
-> > > > to calculate the loops_per_jiffy value. Its very important to keep the error in
-> > > > lpj values to minimum as any error in that may result in kernel panic in
-> > > > check_timer.
-> > > > In virtualization environment, On a highly overloaded host the guest delay
-> > > > calibration may sometimes result in errors beyond the ~50% that timer_irq_works
-> > > > can handle, resulting in the guest panicking.
-> > >
-> > > How did you adress 'khz has nothing to do with loops per jiffie'
-> > > comment?
-> > >
-> > > Some cpus can do loop in cycle , some need two cycles, some need half.
-> >
-> > Hi Pavel,
-> >
-> > When you say loops per jiffies has nothing to do with khz, by khz you
-> > mean the cpu frequency, right ?
-> 
-> Yes.
-> 
-> > AFAIU in calibrate_delay_direct too we measure the amount by which timer
-> > has ticked until DELAY_CALIBRATION_TICKS amount of jiffies has passed.
-> > So IMO the code there too assumes that there is one loop per timer
-> > cycle ?
-> 
-> On my machine, it reports:
-> 
-> delay using timer specific routine.. 3661.98 BogoMIPS (lpj=7323971)
-> ...
-> Detected 1828.828 MHz processor.
-> 
-> (/proc/cpuinfo)
-> model name      : Genuine Intel(R) CPU           T2400  @ 1.83GHz
-> ...
-> cpu MHz         : 1000.000
-How is it 1000 here ? shouldn't this be 1830.xx
-> ...
-> bogomips        : 3657.54
-> 
-> So you'd break it by setting lpj (aka bogomips) to cpu_khz, right?
+On Thu, Jun 26 2008, Jan Kara wrote:
+> On Wed 25-06-08 11:46:29, Michael Buesch wrote:
+> > On Wednesday 25 June 2008 11:37:00 Jan Kara wrote:
+> > > > Yeah the IO error is the trigger.
+> > > > I noticed that it had obvious troubles accessing the DVD that was in the drive.
+> > > > It sweeped over it for several seconds, then hung the system for 2 or 3 seconds
+> > > > and then oopsed. But after that everything continued to work as usual.
+> > > > (Except kded of course)
+> > >   Hmm, by "accessing" do you mean that you've mounted the burned DVD and when
+> > > browsing it the IO error and the oops occured or that IO error happened
+> > > when burning? It is important because in the first case i_blkbits would be
+> > > taken from some ISOFS inode desribing some file while in the second case
+> > > i_blkbits are from the inode of the device...
+> > I don't know. kded, which caused the oops, is always running. It is a KDE daemon
+> > that polls device state and so on. So yeah, it might have accessed the drive
+> > while growisofs was writing to it.
+> > 
+> > However with "accessing" I mean the DVD drive motor was spinning up and down
+> > and the laser lens was moving like crazy. The sound that happens, if you put
+> > a completely scratched DVD into the drive and it is unable to make sense of it.
+> > However, this was not scratched. It was a new DVD with one session on it that
+> > I just burnt 5 minutes before that. So I wanted to append another session to it
+> > and it crashed and resulted in IO errors in growisofs.
+>   I've been looking into this problem for some time. The only way how
+>   I see blocksize can be set so big is in cdrom_read_capacity() in
+>   drivers/ide/ide-cd.c. That basically blindly fills in
+>   queue->hardsect_size with what the drive returns and this can
+>   propagate in bd_set_size() to i_blkbits.  Jens, do you think that is
+>   possible? Shouldn't ide_cd_read_toc() do some sanity checks of the
+>   blocksize returned?
 
-We are not setting it to cpu_khz but to tsc_khz, i am assuming that in
-this case tsc_khz will be different than cpu_khz. Can you please mail me
-the full dmesg log.
+It can't hurt, the value should be >= 512b and <= 4kb. Normally it would
+be 2kb, but some devices have a 512b switch so that is also seen. Not
+sure that 1kb and 4kb are valid, but at least it would still point to
+the drive possibly returning valid data and not garbage. So accept all
+those, reject (and complain) if it isn't one of those and default to 2kb.
 
-Thanks,
-Alok
-> 
->                                                         Pavel
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-- 
+Jens Axboe
 
