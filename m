@@ -1,79 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757565AbYFZSxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756071AbYFZS4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757565AbYFZSxT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbYFZSxG
+	id S1756071AbYFZS4S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbYFZS4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:53:06 -0400
-Received: from mxl.seznam.cz ([77.75.72.44]:54947 "EHLO mxl.seznam.cz"
+	Thu, 26 Jun 2008 14:56:03 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:58168 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752356AbYFZSxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:53:05 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=beta; d=seznam.cz;
-	h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Smtpd:X-Seznam-User:X-QM-Mark;
-	b=ET/wY31GlAI1ZdyErQzRnrqSgJQIxe+aBMlP0wz+yHdGDbha9mcJOUKS/z2Vt1VKS
-	VzbcRYZwpyc27QSPl0RK2mj9gvCL2XE6JEiXIcy40SzMOJe2OjRK4JH+coonJAEQVz6
-	lhEsN9kyP8wwJ9TSAcL2QZf3z9gG2Fz6Dj5U0Ns=
-Message-ID: <4863E4FD.6040803@seznam.cz>
-Date: Thu, 26 Jun 2008 20:50:37 +0200
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: monstr@seznam.cz
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
-       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com
-Subject: Re: Microblaze init port v4
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <20080626150121.GB22025@cs181140183.pp.htv.fi>
-In-Reply-To: <20080626150121.GB22025@cs181140183.pp.htv.fi>
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-X-Smtpd: 1.1.1@13338
-X-Seznam-User: monstr@seznam.cz
-X-QM-Mark: email-qm3<130501742>
+	id S1750877AbYFZS4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 14:56:00 -0400
+Date: Thu, 26 Jun 2008 20:56:46 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Support arch/$ARCH/include in kbuild
+Message-ID: <20080626185645.GA13699@uranus.ravnborg.org>
+References: <20080621220703.GA12279@uranus.ravnborg.org> <20080622220508.GA8957@uranus.ravnborg.org> <200806241732.58449.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200806241732.58449.arnd@arndb.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian,
+On Tue, Jun 24, 2008 at 05:32:57PM +0200, Arnd Bergmann wrote:
+> On Monday 23 June 2008, Sam Ravnborg wrote:
+> 
+> > Any comments are welcome!
+> > Patches will follow as reply to this one, but they
+> > are only sent to kbuild and lkml.
+> 
+> I think you need to fix up all instances of #include <asm-$ARCH/$FILE>,
+> 
+> grep ^#[:ws:]*include.*[\"\<]asm-[^g].*/ `git-ls-files`
+> 
+> Documentation/lguest/lguest.c:#include "asm-x86/bootparam.h"
+> arch/ia64/ia32/audit.c:#include <asm-x86/unistd_32.h>
+> arch/ia64/kernel/asm-offsets.c:#include <asm-ia64/processor.h>
+> arch/ia64/kernel/asm-offsets.c:#include <asm-ia64/ptrace.h>
+> arch/ia64/kernel/asm-offsets.c:#include <asm-ia64/siginfo.h>
+> arch/ia64/kernel/asm-offsets.c:#include <asm-ia64/sigcontext.h>
+> arch/ia64/kernel/asm-offsets.c:#include <asm-ia64/mca.h>
+> arch/ia64/kernel/jprobes.S:#include <asm-ia64/break.h>
+> arch/mips/mips-boards/generic/amon.c:#include <asm-mips/addrspace.h>
+> arch/mips/mips-boards/generic/amon.c:#include <asm-mips/mips-boards/launch.h>
+> arch/mips/mips-boards/generic/amon.c:#include <asm-mips/mipsmtregs.h>
+> arch/powerpc/platforms/86xx/mpc86xx_smp.c:#include <asm-powerpc/mpic.h>
+> arch/sparc64/kernel/compat_audit.c:#include <asm-sparc/unistd.h>
+> arch/um/sys-x86_64/syscall_table.c:#include <asm-x86/unistd_64.h>
+> arch/um/sys-x86_64/syscall_table.c:#include <asm-x86/unistd_64.h>
+> drivers/char/agp/parisc-agp.c:#include <asm-parisc/parisc-device.h>
+> drivers/char/agp/parisc-agp.c:#include <asm-parisc/ropes.h>
+> drivers/infiniband/hw/ehca/ehca_reqs.c:#include <asm-powerpc/system.h>
+> drivers/s390/net/qeth_core_main.c:#include <asm-s390/ebcdic.h>
+> drivers/s390/net/qeth_core_main.c:#include <asm-s390/io.h>
+> include/asm-arm/arch-omap/board.h:#include <asm-arm/arch-omap/board-nokia.h>
+> include/asm-blackfin/gpio.h:#include <asm-blackfin/mach-bf548/gpio.h>
+> include/asm-m68knommu: lots of #include <asm-m68k/*>
+> include/asm-parisc/ropes.h:#include <asm-parisc/parisc-device.h>
+> include/asm-powerpc/irqflags.h:#include <asm-powerpc/hw_irq.h>
+> include/asm-sparc64: lots of #include <asm-sparc/*>
+> 
+> most of these are obvious, the interesting ones being sparc64, m68knommu
+> and arch/um as well as arch/ia64/ia32/audit.c.
+> 
+> The best idea I have for sparc64 and m68knommu would be to use
+> "gcc -Iarch/sparc64/include -Iarch/sparc/include" and then remove the
+> respective files from sparc64. On m68knommu, this works as well, except
+> for the pci.h and setup.h files that include the m68k one and then
+> do some more.
 
-> On Thu, Jun 26, 2008 at 02:29:29PM +0200, monstr@seznam.cz wrote:
->> Hi everybody,
->>
->> current linux version is 2.6.26-rc8 and I think this is the right time
->> to send latest patches againts rc8 for Microblaze CPU.
->> ...
-> 
-> Thanks for your work on getting the architecture included.
-> 
-> I have two questions:
-> 
-> Where can I find a toolchain for compiling a Microblaze kernel?
-I personally use petalogix toolchain from www.petalogix.com.
+For sparc64 I have taken a bit more drastic approach and I am
+merging the header files of sparc and sparc64.
 
-> What is the status of Microblaze support in upstream binutils and gcc?
+My goal is to get sparc converted to use arch/sparc/include/asm
+for 2.6.27.
 
-I don't have any information about. We will discuss with John Williams and guys
-from Xilinx
-what we can do for it.
-
-M
-
->> Best regards,
->> Michal Simek
-> 
-> TIA
-> Adrian
-> 
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> 
-> No virus found in this incoming message.
-> Checked by AVG. 
-> Version: 8.0.101 / Virus Database: 270.4.1/1519 - Release Date: 25.6.2008 04:13
+	Sam
