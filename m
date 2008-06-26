@@ -1,84 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752537AbYFZRmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbYFZRoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752537AbYFZRmp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 13:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbYFZRmc
+	id S1755451AbYFZRoz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 13:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYFZRos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 13:42:32 -0400
-Received: from mga14.intel.com ([143.182.124.37]:9401 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752485AbYFZRmb convert rfc822-to-8bit (ORCPT
+	Thu, 26 Jun 2008 13:44:48 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59128 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751723AbYFZRor (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 13:42:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,709,1204531200"; 
-   d="scan'208";a="3098569"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 26 Jun 2008 13:44:47 -0400
+Date: Thu, 26 Jun 2008 19:35:36 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Alok Kataria <akataria@vmware.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
+Message-ID: <20080626173536.GA16783@elf.ucw.cz>
+References: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com> <20080603182014.79a38d03@infradead.org> <35f686220806032101h103152dat841818982aaa5052@mail.gmail.com> <20080604061637.6bab3f67@infradead.org> <1213924953.27983.52.camel@promb-2n-dhcp368.eng.vmware.com> <20080620113922.GG7439@elte.hu> <1213999593.31598.52.camel@promb-2n-dhcp368.eng.vmware.com> <20080624175753.GG5642@ucw.cz> <1214500831.3351.10.camel@promb-2n-dhcp368.eng.vmware.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Scatter-gather list constraints
-Date: Thu, 26 Jun 2008 09:43:51 -0700
-Message-ID: <C72DEB015BA7724783363DE1AF6B0F980510C8BB@orsmsx417.amr.corp.intel.com>
-In-Reply-To: <Pine.LNX.4.44L0.0806251023100.2578-100000@iolanthe.rowland.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Scatter-gather list constraints
-Thread-Index: AcjWzz4jvqiBIAuAQJmGgOldLfYRrAAlGbBg
-References: <C72DEB015BA7724783363DE1AF6B0F980510BAC2@orsmsx417.amr.corp.intel.com> <Pine.LNX.4.44L0.0806251023100.2578-100000@iolanthe.rowland.org>
-From: "Perez-Gonzalez, Inaky" <inaky.perez-gonzalez@intel.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Cc: "David Vrabel" <david.vrabel@csr.com>,
-       "Kernel development list" <linux-kernel@vger.kernel.org>,
-       "AntonioLin" <antonio.lin@alcormicro.com>, <linux-usb@vger.kernel.org>,
-       <inaky@linux.intel.com>
-X-OriginalArrivalTime: 26 Jun 2008 16:43:51.0384 (UTC) FILETIME=[D0485580:01C8D7AB]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1214500831.3351.10.camel@promb-2n-dhcp368.eng.vmware.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu 2008-06-26 10:20:31, Alok Kataria wrote:
+> On Tue, 2008-06-24 at 10:57 -0700, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > On X86 platform we can use the value of tsc_khz computed during tsc calibration
+> > > to calculate the loops_per_jiffy value. Its very important to keep the error in
+> > > lpj values to minimum as any error in that may result in kernel panic in
+> > > check_timer.
+> > > In virtualization environment, On a highly overloaded host the guest delay
+> > > calibration may sometimes result in errors beyond the ~50% that timer_irq_works
+> > > can handle, resulting in the guest panicking.
+> > 
+> > How did you adress 'khz has nothing to do with loops per jiffie'
+> > comment?
+> > 
+> > Some cpus can do loop in cycle , some need two cycles, some need half.
+> 
+> Hi Pavel, 
+> 
+> When you say loops per jiffies has nothing to do with khz, by khz you
+> mean the cpu frequency, right ?
 
+Yes.
 
->From: Alan Stern [mailto:stern@rowland.harvard.edu]
->
->> >> I suppose we could add a field to struct urb and add a flag
->> indicating
->> >> whether the controller driver supports S-G lists.
->> >
->> >This is what I was thinking.
->>
->> That would simplify a *LOT* of WUSB wire-adapter code which now is a
->> horrible kludge.
->
->In what way would it simplify the code?
->
->Note that usbcore already contains a scatter-gather library.
->(Unfortunately the library is limited in usefulness because it needs to
->run in process context.)
->
->Alan Stern
+> AFAIU in calibrate_delay_direct too we measure the amount by which timer
+> has ticked until DELAY_CALIBRATION_TICKS amount of jiffies has passed.
+> So IMO the code there too assumes that there is one loop per timer
+> cycle ?
 
-For WA, when we get a buffer to be sent from a URB, it has to be split
-in chunks, each chunk has a header added. So we end up with a list of
-chunks, most of them quite small. Each requires a single URB to send.
-resources galore.
+On my machine, it reports:
 
-If we could queue all those, the overhead would be reduced to allocating
-the headers (possibly in a continuous array) and the sg "descriptors"
-to describe the whole thing.
+delay using timer specific routine.. 3661.98 BogoMIPS (lpj=7323971)
+...
+Detected 1828.828 MHz processor.
 
-However, the alignment stuff somebody mentioned in another email in this
-thread might cause problems.
+(/proc/cpuinfo)
+model name	: Genuine Intel(R) CPU           T2400  @ 1.83GHz
+...
+cpu MHz		: 1000.000
+...
+bogomips	: 3657.54
 
-At the end it might not be all that doable (I might be missing some
-subtle isssues), but it is well worth a look.
+So you'd break it by setting lpj (aka bogomips) to cpu_khz, right?
 
->Note that usbcore already contains a scatter-gather library.
->(Unfortunately the library is limited in usefulness because it needs to
->run in process context.)
-
-And the overhead of one URB per sg "node" kills it's usability for
-WAs.
-
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
