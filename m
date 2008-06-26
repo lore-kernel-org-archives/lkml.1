@@ -1,67 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757438AbYFZIfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbYFZIgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757438AbYFZIfh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 04:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbYFZIf2
+	id S1757441AbYFZIgD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 04:36:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbYFZIfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 04:35:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56971 "EHLO ogre.sisk.pl"
+	Thu, 26 Jun 2008 04:35:52 -0400
+Received: from mga01.intel.com ([192.55.52.88]:9007 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752949AbYFZIf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 04:35:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-Date: Thu, 26 Jun 2008 10:37:19 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806201422.12659.rjw@sisk.pl> <20080624091516.GA5642@ucw.cz>
-In-Reply-To: <20080624091516.GA5642@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806261037.20108.rjw@sisk.pl>
+	id S1754320AbYFZIfu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 04:35:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,707,1204531200"; 
+   d="scan'208";a="345752875"
+Subject: Re: [PATCH 1/2] x86 boot: add E820_RESVD_KERN
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+In-Reply-To: <86802c440806260025v3fc1970aq682b568cccba4b4e@mail.gmail.com>
+References: <1214461978.10809.6.camel@caritas-dev.intel.com>
+	 <86802c440806260025v3fc1970aq682b568cccba4b4e@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Date: Thu, 26 Jun 2008 15:48:33 +0800
+Message-Id: <1214466513.11346.30.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+X-OriginalArrivalTime: 26 Jun 2008 07:44:46.0666 (UTC) FILETIME=[81540AA0:01C8D760]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 24 of June 2008, Pavel Machek wrote:
-> Hi!
+On Thu, 2008-06-26 at 00:25 -0700, Yinghai Lu wrote:
+[...]
+> >                if (pfn >= limit_pfn)
+> > @@ -977,7 +978,7 @@ u64 __init early_reserve_e820(u64 startt
+> >                return 0;
+> >
+> >        addr = round_down(start + size - sizet, align);
+> > -       e820_update_range(addr, sizet, E820_RAM, E820_RESERVED);
+> > +       e820_update_range(addr, sizet, E820_RAM, E820_RESVD_KERN);
 > 
-> > > What does ACPI claim the trip points are set to in this case? On the 
-> > > 6125, if IRQ 2 is enabled in the APIC then the DSDT sets all the thermal 
-> > > trip points to 16 degrees C. I suspect this means that enabling IRQ 2 is 
-> > > the wrong thing to do on this chipset.
-> > 
-> > Ah, indeed, thanks for the hint.  This is the output of
-> > 
-> > $ cat /proc/acpi/thermal_zone/TZ*/trip_points
-> > 
-> > in the failing case:
-> > 
-> > critical (S5):           105 C
-> > passive:                 16 C: tc1=1 tc2=2 tsp=100 devices=C000 C001 
-> > active[0]:               16 C: devices=C34F 
-> > active[1]:               16 C: devices=C350 
-> > active[2]:               16 C: devices=C351 
-> > active[3]:               16 C: devices=C352 
-> > critical (S5):           100 C
-> > passive:                 16 C: tc1=1 tc2=2 tsp=300 devices=C000 C001 
-> > critical (S5):           100 C
-> > passive:                 16 C: tc1=1 tc2=2 tsp=300 devices=C000 C001 
+> this line is not needed.
+
+Why? Memory reserved by early_rserved_e820 should not be saved during
+hibernation? shoudl not be saved by kdump?
+
+> >        printk(KERN_INFO "update e820 for early_reserve_e820\n");
+> >        update_e820();
+> >
+> > @@ -1191,6 +1192,7 @@ void __init e820_reserve_resources(void)
+> >        res = alloc_bootmem_low(sizeof(struct resource) * e820.nr_map);
+> >        for (i = 0; i < e820.nr_map; i++) {
+> >                switch (e820.map[i].type) {
+> > +               case E820_RESVD_KERN:
+> >                case E820_RAM:  res->name = "System RAM"; break;
+> >                case E820_ACPI: res->name = "ACPI Tables"; break;
+> >                case E820_NVS:  res->name = "ACPI Non-volatile Storage"; break;
+> >
+> > --
 > 
-> Can we call the ACPI BIOS to be terminally broken at this point?
+> please  move reserve_setup_data() from head.c/head64.c to setup32/64.c
+> or merged setup.c
 
-It is broken, but the configuration worked before the patch.  Consequently,
-the patch introduces a regression.
+OK.
 
-Thanks,
-Rafael
+> also need to change reserve_early in reserve_setup_data to
+> e820_update_range(,,E820_RAM, E820_RESEVED_EXTRA).
+
+﻿Does this means reserve_early() should be replaced by
+e820_update_range()?
+
+> calling reserve_setup_data() should around early_reserve_e820_mpc_new.
+
+I think reserve_xxx should be called before first find_e820_area() to
+minimize the possibility of conflict.
+
+> we don't need early_res_to_e820.
+
+Best Regards,
+Huang Ying
+
