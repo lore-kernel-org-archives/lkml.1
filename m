@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762926AbYFZNhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764656AbYFZNhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762926AbYFZNhq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763420AbYFZNhI
+	id S1764656AbYFZNhV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763875AbYFZNg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 09:37:08 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:24182 "EHLO
-	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759638AbYFZNhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 09:37:05 -0400
-From: monstr@seznam.cz
-To: linux-kernel@vger.kernel.org
-Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
-       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
-       will.newton@gmail.com, drepper@redhat.com,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
-       linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
-       hpa@zytor.com
-Subject: Microblaze init port v4
-Date: Thu, 26 Jun 2008 14:29:29 +0200
-Message-Id: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-X-Mailer: git-send-email 1.5.4.GIT
+	Thu, 26 Jun 2008 09:36:57 -0400
+Received: from ns1.bluetone.cz ([212.158.128.13]:41035 "EHLO ns1.bluetone.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759131AbYFZNgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 09:36:55 -0400
+Message-ID: <48639B88.1020704@slax.org>
+Date: Thu, 26 Jun 2008 15:37:12 +0200
+From: Tomas M <tomas@slax.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@medozas.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: LZMA compression algorithm in Kernel - any chance to allow it?
+References: <48634BA7.6030902@slax.org> <alpine.LNX.1.10.0806261430470.12725@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LNX.1.10.0806261430470.12725@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everybody,
+> The bad thing is, they won't tell you before you submitted it.
 
-current linux version is 2.6.26-rc8 and I think this is the right time
-to send latest patches againts rc8 for Microblaze CPU.
+By 'they' you mean who?
+Who decides what is accepted anyway?
 
-I fixed there some issues which were reported to me.
+    *  H. Peter Anvin, President ?
+    * Jeff Uphoff, Treasurer ?
+    * Chris Wright, Secretary ?
+    * Kees Cook, Board Member ?
+    * Linus Torvalds, Board Member ?
 
-We have there still problem with syscalls and we don't have chance to 
-fix it to stable version, this is not part which I can do yourself. 
-Microblaze will be n + 1 platform which use some old syscalls. 
-I hope you understand.
-
-I am sending more than 50 patches and I would like to see ACKs for patches
-which are good and comments for patches which are bad.
-
-Thanks for your time and review.
-
-Best regards,
-Michal Simek
-www.monstr.eu
+[names quoted from http://kernel.org/nonprofit.html:]
 
 
+> The good thing is, that it may get accepted nevertheless if sent
+> often enough.
+
+Well that point is very interesting and useful indeed :)
+
+
+Tomas M
+slax.org
