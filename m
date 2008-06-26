@@ -1,91 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765138AbYFZNLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765280AbYFZNLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765138AbYFZNLi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763623AbYFZNCJ
+	id S1765280AbYFZNLz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762047AbYFZNC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 09:02:09 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:43720 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763614AbYFZNCI (ORCPT
+	Thu, 26 Jun 2008 09:02:28 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36965 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761934AbYFZNC0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 09:02:08 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmIDANQtY0h5LG+uZWdsb2JhbACSYRICHp9e
-X-IronPort-AV: E=Sophos;i="4.27,708,1204464600"; 
-   d="scan'208";a="135860174"
-Date: Thu, 26 Jun 2008 23:02:04 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] Extend completions to provide XFS object flush
-	requirements
-Message-ID: <20080626130204.GR29319@disturbed>
-Mail-Followup-To: Matthew Wilcox <matthew@wil.cx>, xfs@oss.sgi.com,
-	linux-kernel@vger.kernel.org
-References: <1214455277-6387-1-git-send-email-david@fromorbit.com> <1214455277-6387-2-git-send-email-david@fromorbit.com> <20080626112612.GW4392@parisc-linux.org> <20080626113209.GK11558@disturbed> <20080626114242.GX4392@parisc-linux.org> <20080626122112.GL11558@disturbed> <20080626124009.GY4392@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080626124009.GY4392@parisc-linux.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 26 Jun 2008 09:02:26 -0400
+Date: Thu, 26 Jun 2008 06:02:16 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Dave Airlie <airlied@linux.ie>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Keith Packard <keithp@keithp.com>, Dave Airlie <airlied@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: kmap_atomic_pfn for PCI BAR access?
+Message-ID: <20080626060216.1fe210c4@infradead.org>
+In-Reply-To: <20080626033614.0ef55f9d@infradead.org>
+References: <1214242487.11887.35.camel@koto.keithp.com>
+	<4862EE4C.4060009@goop.org>
+	<21d7e9970806251823q3405e192q13d4944bd0cc3291@mail.gmail.com>
+	<20080625213603.0e82805b@infradead.org>
+	<1214458589.1044.45.camel@koto.keithp.com>
+	<48633057.1040106@goop.org>
+	<alpine.DEB.0.82.0806260701260.25035@skynet.skynet.ie>
+	<20080626033614.0ef55f9d@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 06:40:09AM -0600, Matthew Wilcox wrote:
-> On Thu, Jun 26, 2008 at 10:21:12PM +1000, Dave Chinner wrote:
-> > On Thu, Jun 26, 2008 at 05:42:42AM -0600, Matthew Wilcox wrote:
-> > > Then let's leave it as a semaphore.  You can get rid of the sema_t if
-> > > you like, but I don't think that turning completions into semaphores is
-> > > a good idea (because it's confusing).
-> > 
-> > So remind me what the point of the semaphore removal tree is again?
+On Thu, 26 Jun 2008 03:36:14 -0700
+Arjan van de Ven <arjan@infradead.org> wrote:
+
+> On Thu, 26 Jun 2008 07:02:15 +0100 (IST)
+> Dave Airlie <airlied@linux.ie> wrote:
 > 
-> To remove the semaphores which don't need to be semaphores any more.
-
-Or shouldn't be semaphores in the first place?
-
-> > As Christoph suggested, I can put this under another API that
-> > is implemented using completions. If I have to do that in XFS,
-> > so be it....
+> > > >   
+> > > 
+> > > Anything that does any kind of pagetable manipulation needs to do
+> > > tlb flushes. kunmap_atomic handles the flushing.
+> > 
+> > It doesn't however need to do an IPI dance which is the worst part
+> > of doing a tlb flush on SMP machines.
+> > 
+> > flushing local CPU tlbs is bad, but doing IPIs and waiting for
+> > everyone else is brutal.
 > 
-> You could, yes.  But you could just use completions directly ...
+> but you only do IPI's for the multithreaded case to cpus where you're
+> running; otoh I guess games are multithreaded nowadays
+eh never mind this is total bogus
+yes a full ipi is needed.
 
-Not that I can see.
+note that with ioremap you may need certain tricks as well to deal with
+cache type aliasing, depending on the type of ioremap you want (wc?)
 
-> > The main reason for this that we've just uncovered the fact that the
-> > way XFS uses semaphores is completely unsafe [*] on x86/x86_64 for
-> > kernels prior to the new generic semaphores.
-> > 
-> > [*] 2.6.20 panics in up() because of this race when I/O completion
-> > (the up call) races with a simultaneous down() (iowaiter):
-> > 
-> > 	T1		T2
-> > 	up()		down()
-> > 			kmem_free()
-> > 
-> > When the down() call completes, the up() call can still be
-> > referencing the semaphore, and hence if we free the structure after
-> > the down call then the up() will reference freed memory.  This is
-> > probably the cause of many unexplained log replay or unmount panics
-> > that we've been hitting for years with buffers that been freed while
-> > apparently still in use....
 > 
-> This is exactly the kind of thing completions were supposed to be used
-> for.  T1 should be calling complete() and T2 should be calling
-> wait_for_completion().
+> > 
+> > Dave.
+> 
+> 
 
-Yes, certainly. But as should be obvious by now completions don't
-quite fit the bill for XFS - they only work for *synchronisation*
-after the I/O. XFS needs *exclusion* during the I/O as well as
-*synchronisation* after the I/O. The completion extensions provided the
-exclusion part of the deal. How else do you suggest I implement
-this?
 
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-david@fromorbit.com
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
