@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbYFZCAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYFZCCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754889AbYFZCAX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 22:00:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYFZCAI
+	id S1755249AbYFZCCq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 22:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbYFZCCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 22:00:08 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34983 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751693AbYFZCAH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 22:00:07 -0400
-Date: Thu, 26 Jun 2008 10:57:01 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] make register_page_bootmem_info_section() static
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080625162540.GI10285@cs181140183.pp.htv.fi>
-References: <20080625162540.GI10285@cs181140183.pp.htv.fi>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080626105530.E3A0.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+	Wed, 25 Jun 2008 22:02:38 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:41460 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752227AbYFZCCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 22:02:37 -0400
+Date: Thu, 26 Jun 2008 12:02:12 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: kernel-testers@vger.kernel.org, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: Tree for June 25
+Message-Id: <20080626120212.c8caa005.sfr@canb.auug.org.au>
+In-Reply-To: <200806260228.38674.rjw@sisk.pl>
+References: <20080626003554.b2623aba.sfr@canb.auug.org.au>
+	<200806260228.38674.rjw@sisk.pl>
+X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__26_Jun_2008_12_02_12_+1000_vtaUkFvpL134Dlba"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This patch makes the needlessly global 
-> register_page_bootmem_info_section() static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+--Signature=_Thu__26_Jun_2008_12_02_12_+1000_vtaUkFvpL134Dlba
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ah, yes. Thanks!
+Hi Rafael,
 
-Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+On Thu, 26 Jun 2008 02:28:38 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+>
+> This tree is completely broken on my test box (x86-64 HP nx6325) and I ca=
+n't
+> even bisect it. :-(
 
+Config?
 
-> ---
-> 
-> This patch has been sent on:
-> - 5 May 2008
-> 
-> 070dc3db481a222a79755b6a06fb300f022ff56e diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index b3fd604..6a9a28a 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -86,7 +86,7 @@ void put_page_bootmem(struct page *page)
->  
->  }
->  
-> -void register_page_bootmem_info_section(unsigned long start_pfn)
-> +static void register_page_bootmem_info_section(unsigned long start_pfn)
->  {
->  	unsigned long *usemap, mapsize, section_nr, i;
->  	struct mem_section *ms;
-> 
+> It hits a NULL pointer dereference in find_symbol during boot, but when I=
+ tried
+> to bisect this issue, I hit another one that made the box hang solid duri=
+ng
+> boot (early, no messages available).
+>=20
+> If things continue going this way, 2.6.27 will be a disaster ...
 
--- 
-Yasunori Goto 
+None of us want that.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Thu__26_Jun_2008_12_02_12_+1000_vtaUkFvpL134Dlba
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhi+KUACgkQTgG2atn1QN94SgCfXJSPJ0Xx0vYGQOXgrLQYXBxg
+l30An0LROxAdBf+61O4kr4Sv31qPRR1b
+=TQcQ
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__26_Jun_2008_12_02_12_+1000_vtaUkFvpL134Dlba--
