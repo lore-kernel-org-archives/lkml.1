@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758482AbYFZSAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759776AbYFZSB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758482AbYFZSAb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbYFZSAW
+	id S1759776AbYFZSB1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbYFZSBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:00:22 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:39492 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752010AbYFZSAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:00:21 -0400
-Date: Thu, 26 Jun 2008 19:30:12 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] x86: more header fixes
-Message-ID: <20080626173012.GA13139@uranus.ravnborg.org>
-References: <20080610214544.GA14824@damson.getinternet.no> <20080618103006.GF15255@elte.hu> <19f34abd0806180919v5a8c21e7ua7e1f928d8a53ab4@mail.gmail.com> <20080626120202.GH29619@elte.hu> <20080626133047.GA11762@uranus.ravnborg.org> <19f34abd0806260644s30698d34jd227c170aae8278c@mail.gmail.com>
-Mime-Version: 1.0
+	Thu, 26 Jun 2008 14:01:14 -0400
+Received: from styx.suse.cz ([82.119.242.94]:43334 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751953AbYFZSBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 14:01:13 -0400
+Date: Thu, 26 Jun 2008 19:05:14 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <axboe@kernel.dk>
+Cc: Michael Buesch <mb@bu3sch.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Arnd Bergmann <arnd@arndb.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Oops when using growisofs
+Message-ID: <20080626170513.GE23386@duck.suse.cz>
+References: <200806221818.24372.mb@bu3sch.de> <200806242039.18755.mb@bu3sch.de> <20080625093700.GB15865@duck.suse.cz> <200806251146.30142.mb@bu3sch.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19f34abd0806260644s30698d34jd227c170aae8278c@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200806251146.30142.mb@bu3sch.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 03:44:51PM +0200, Vegard Nossum wrote:
-> On Thu, Jun 26, 2008 at 3:30 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > Can I ask you to chase all uses of #include <asm-x86/xxx.h>
-> > and convert them to #include <asm/xxx.h>
-> >
-> > When we move include/asm-x86 to arch/x86/include/asm this is needed and
-> > better to fix these sooner.
+On Wed 25-06-08 11:46:29, Michael Buesch wrote:
+> On Wednesday 25 June 2008 11:37:00 Jan Kara wrote:
+> > > Yeah the IO error is the trigger.
+> > > I noticed that it had obvious troubles accessing the DVD that was in the drive.
+> > > It sweeped over it for several seconds, then hung the system for 2 or 3 seconds
+> > > and then oopsed. But after that everything continued to work as usual.
+> > > (Except kded of course)
+> >   Hmm, by "accessing" do you mean that you've mounted the burned DVD and when
+> > browsing it the IO error and the oops occured or that IO error happened
+> > when burning? It is important because in the first case i_blkbits would be
+> > taken from some ISOFS inode desribing some file while in the second case
+> > i_blkbits are from the inode of the device...
+> I don't know. kded, which caused the oops, is always running. It is a KDE daemon
+> that polls device state and so on. So yeah, it might have accessed the drive
+> while growisofs was writing to it.
 > 
-> Hm. I can't really seem to find many:
-> 
-> ./Documentation/lguest/lguest.c:#include "asm-x86/bootparam.h"
-> ./arch/um/sys-x86_64/syscall_table.c:#include <asm-x86/unistd_64.h>
-> ./arch/um/sys-x86_64/syscall_table.c:#include <asm-x86/unistd_64.h>
-> ./arch/ia64/ia32/audit.c:#include <asm-x86/unistd_32.h>
-> 
-> ..and I don't even know how to fix them. It seems that we might want
-> to use filesystem links here instead? (Git should be able to handle
-> that.)
+> However with "accessing" I mean the DVD drive motor was spinning up and down
+> and the laser lens was moving like crazy. The sound that happens, if you put
+> a completely scratched DVD into the drive and it is unable to make sense of it.
+> However, this was not scratched. It was a new DVD with one session on it that
+> I just burnt 5 minutes before that. So I wanted to append another session to it
+> and it crashed and resulted in IO errors in growisofs.
+  I've been looking into this problem for some time. The only way how I see
+blocksize can be set so big is in cdrom_read_capacity() in
+drivers/ide/ide-cd.c. That basically blindly fills in queue->hardsect_size with what
+the drive returns and this can propagate in bd_set_size() to i_blkbits.
+Jens, do you think that is possible? Shouldn't ide_cd_read_toc() do some
+sanity checks of the blocksize returned?
 
-Looking at the list again you are right that this is not the type of
-'bugs' that I initially thought it was.
-We should leave them as is for now and fix it up when
-we decide to move the headers.
-
-
-> E.g. so that arch/ia64/include/asm/unistd_32.h ->
-> arch/x86/include/asm/unistd_32.h. Then arch/ia64/ia32/audit.c can
-> #include <asm/unistd_32.h>.
-It is better to be explicit in the include than trying to do clever
-tricks behind the bag og gcc.
-
-	Sam
+										Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
