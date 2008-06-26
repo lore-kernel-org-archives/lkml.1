@@ -1,72 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752800AbYFZKF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbYFZKGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752800AbYFZKF1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 06:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753923AbYFZKFP
+	id S1756812AbYFZKGR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 06:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYFZKGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 06:05:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50331 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753047AbYFZKFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 06:05:13 -0400
-Date: Thu, 26 Jun 2008 12:04:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
+	Thu, 26 Jun 2008 06:06:04 -0400
+Received: from po-out-1718.google.com ([72.14.252.153]:33534 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbYFZKGB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 06:06:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jYakRc29pCxq4BWCnkVka8TgCr950YRtaz4CXKZ1vFEySrf7HK5QD4tXPW2ZwrDouh
+         TO7LKHEyxXaIJOUyGxE2sDjK0qOdBdT7fXHrgRMICwESi4IHKCNjX9PPFTG4FubyFfY2
+         V/cW/ZakjzMdgGEbm5P0GDXlxzEaPhjwBfkfY=
+Message-ID: <86802c440806260306o419f2369od90f1cb3c801311e@mail.gmail.com>
+Date: Thu, 26 Jun 2008 03:06:01 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 00/16] x86: merge setup_32/64.c
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: remove end_pfn in 64bit
-Message-ID: <20080626100457.GC19573@elte.hu>
-References: <200806242213.15310.yhlu.kernel@gmail.com> <200806242214.09503.yhlu.kernel@gmail.com> <20080625154138.GC18796@elte.hu> <4862B915.3010001@goop.org>
+In-Reply-To: <20080626100200.GA15291@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4862B915.3010001@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <200806251748.06743.yhlu.kernel@gmail.com>
+	 <20080626094743.GA19573@elte.hu> <20080626100200.GA15291@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> Ingo Molnar wrote:
->> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->>
->>   
->>> and use max_pfn directly.
->>>
->>> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->>>     
->>
->> applied to tip/x86/setup-memory - thanks Yinghai. I have picked up 
->> these patches:
->>
->> Ingo Molnar (1):
->>       Merge branch 'x86/setup-memory'
->>
->> Yinghai Lu (6):
->>       x86: fix e820_update_range size when overlapping
->>       x86: get max_pfn_mapped in init_memory_mapping
->>       x86: add table_top check for alloc_low_page in 64 bit
->>       x86: change size if e820_update/remove_range
->>       x86: numa 32 using apicid_2_node to get node for logical_apicid
->>       x86: remove end_pfn in 64bit
->>   
+On Thu, Jun 26, 2008 at 3:02 AM, Ingo Molnar <mingo@elte.hu> wrote:
 >
-> Did you CC: this to me to indicate that "x86_64: replace end_pfn with 
-> num_physpages" conflicts massively with this patch?  Fortunately I 
-> don't depend on it, so I don't mind much.
+> * Ingo Molnar <mingo@elte.hu> wrote:
+>
+>>       x86: rename setup.c to setup_percpu.c
+>
+> this brought a build failure:
+>
+>  arch/x86/kernel/setup.c: In function 'setup_arch':
+>  arch/x86/kernel/setup.c:561: error: implicit declaration of function 'efi_reserve_early'
+>
+> 09865f3049050458a5c236e5b4630f137d9b179d is first bad commit
+> commit 09865f3049050458a5c236e5b4630f137d9b179d
+> Author: Yinghai Lu <yhlu.kernel@gmail.com>
+> Date:   Wed Jun 25 17:48:14 2008 -0700
+>
+>    x86: rename setup.c to setup_percpu.c
+>
+> we lost an asm/efi.h include. (which, a bit illogically, is not implicit
+> via the existing linux/efi.h include.) Fixed below.
+>
+>        Ingo
+>
+> -------------->
+> commit 9faea5db92f5ff3b39e7b66656f847dcb9618caa
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Thu Jun 26 12:02:01 2008 +0200
+>
+>    x86: build fix
+>
+>    fix:
+>
+>    arch/x86/kernel/setup.c: In function 'setup_arch':
+>    arch/x86/kernel/setup.c:561: error: implicit declaration of function 'efi_reserve_early'
+>
+>    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index a3f2263..29f04da 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -79,6 +79,7 @@
+>  #include <asm/mpspec.h>
+>  #include <asm/setup.h>
+>  #include <asm/arch_hooks.h>
+> +#include <asm/efi.h>
+>  #include <asm/sections.h>
+>  #include <asm/dmi.h>
+>  #include <asm/io_apic.h>
 
-yeah, wanted to notify you, in case you were wondering about interaction 
-in this area :)
+checkpatch.pl want me to remove that.
 
-	Ingo
+YH
