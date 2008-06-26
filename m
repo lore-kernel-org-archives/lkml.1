@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760448AbYFZSEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759845AbYFZSGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760448AbYFZSEk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbYFZSE3
+	id S1759845AbYFZSGE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:06:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbYFZSFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:04:29 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:52963 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753636AbYFZSE1 (ORCPT
+	Thu, 26 Jun 2008 14:05:52 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:41445 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751118AbYFZSFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:04:27 -0400
-Message-ID: <4863D87F.5060103@zytor.com>
-Date: Thu, 26 Jun 2008 10:57:19 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Adrian Bunk <bunk@kernel.org>, monstr@seznam.cz,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
-       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
-       Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH 48/60] microblaze_v4: headers simple files - empty or
- redirect to asm-generic
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <200806261735.12738.arnd@arndb.de> <20080626162118.GG22025@cs181140183.pp.htv.fi> <200806261838.33787.arnd@arndb.de>
-In-Reply-To: <200806261838.33787.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jun 2008 14:05:51 -0400
+From: Louis Rilling <louis.rilling@kerlabs.com>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+       Louis Rilling <louis.rilling@kerlabs.com>
+Subject: [BUGFIX][PATCH 0/2] configfs: Fix cleanup after mkdir() failure
+Date: Thu, 26 Jun 2008 20:05:47 +0200
+Message-Id: <1214503549-15678-1-git-send-email-louis.rilling@kerlabs.com>
+X-Mailer: git-send-email 1.5.5.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Thursday 26 June 2008, Adrian Bunk wrote:
->> The comment could be nuked (as well as the #ifdef __KERNEL__), but for 
->> the one #define an asm-generic header would IMHO be overkill.
-> 
-> I agree that it doesn't technically make sense to have a one-line
-> asm-generic header, but I like the idea of reducing the number of
-> asm/*.h files that actually contain anything other that
-> #include <asm-generic/$FILE.h>, mostly for documentation purposes.
-> 
-> If we can eventually agree on a way to get rid of the requirement
-> for explicit redirection, we can remove a larger number of source
-> files completely.
-> 
+ [ applies on top of http://lkml.org/lkml/2008/6/23/145 aka symlink() fixes ]
 
-The sanest way to do that would probably be something along the lines of:
+Hi,
 
--> Change include/asm-xxx to arch/xxx/include/asm
--> Create arch/generic
--> Make sure arch/xxx/include/asm and arch/generic/include/asm are both 
-in the include path, in that order.
+This patchset fixes two kinds of bugs happening when
+configfs_attach_group()/configfs_attach_item() fail and userspace races with
+mkdir() or symlink().
 
-That would also get rid of the symlink.
+Please read the first patch header for a detailed scenario explaining the bugs.
 
-On the other hand, the redirection isn't all that bad.
+Louis
 
-	-hpa
+Summary (2):
+  configfs: Prevent userspace from creating new entries under attaching
+    directories
+  configfs: Lock new directory inodes before removing on cleanup after
+    failure
+
+ fs/configfs/configfs_internal.h |    1 +
+ fs/configfs/dir.c               |  127 +++++++++++++++++++++++++++++++--------
+ fs/configfs/symlink.c           |   17 +++++-
+ 3 files changed, 118 insertions(+), 27 deletions(-)
+
+-- 
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
