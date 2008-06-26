@@ -1,40 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755724AbYFZElc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753585AbYFZElo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755724AbYFZElc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 00:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbYFZElX
+	id S1753585AbYFZElo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 00:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYFZElY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 00:41:23 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:43355 "EHLO
+	Thu, 26 Jun 2008 00:41:24 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:43362 "EHLO
 	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752539AbYFZElW (ORCPT
+	by vger.kernel.org with ESMTP id S1752788AbYFZElX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 00:41:22 -0400
+	Thu, 26 Jun 2008 00:41:23 -0400
 X-IronPort-Anti-Spam-Filtered: true
 X-IronPort-Anti-Spam-Result: AjQDAEOGYkh5LG+uZWdsb2JhbACSXhICHqAH
 X-IronPort-AV: E=Sophos;i="4.27,706,1204464600"; 
-   d="scan'208";a="135640682"
+   d="scan'208";a="135640688"
 From: Dave Chinner <david@fromorbit.com>
 To: xfs@oss.sgi.com
-Cc: matthew@wil.cx, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/6] Remove most users of semaphores from XFS.
-Date: Thu, 26 Jun 2008 14:41:11 +1000
-Message-Id: <1214455277-6387-1-git-send-email-david@fromorbit.com>
+Cc: matthew@wil.cx, linux-kernel@vger.kernel.org,
+       Dave Chinner <david@fromorbit.com>
+Subject: [PATCH 1/6] Extend completions to provide XFS object flush requirements
+Date: Thu, 26 Jun 2008 14:41:12 +1000
+Message-Id: <1214455277-6387-2-git-send-email-david@fromorbit.com>
 X-Mailer: git-send-email 1.5.5.4
+In-Reply-To: <1214455277-6387-1-git-send-email-david@fromorbit.com>
+References: <1214455277-6387-1-git-send-email-david@fromorbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This series aims to convert all but one of the remaining users of
-semaphores in the XFS code to use completions. Two of these
-semaphores don't quite match to completion semantics, but a small
-amount of additional code on top of the completions fixes this
-problem. I'm open to suggestions on different/better ways to implement
-this.
+XFS object flushing doesn't quite match existing completion semantics.  It
+mixed exclusive access with completion. That is, we need to mark an object as
+being flushed before flushing it to disk, and then block any other attempt to
+flush it until the completion occurs.
 
-The patch series does not touch the b_lock semaphore in the
-xfs_buf_t. At this point I'm not sure what we want to do with that
-semaphore so I've ignored that for now. Also, this lock uses
-linux primitives, not the xfs sema_t primitives so  it doesn't
-need changing to allow me to remove the sema_t.
+To do this we introduce:
+
+void init_completion_flush(struct completion *x)
+	which initialises x->done = 1
+
+void completion_flush_start(struct completion *x)
+	which blocks if done == 0, otherwise decrements done to zero and
+	allows the caller to continue.
+
+bool completion_flush_start_nowait(struct completion *x)
+	returns a failure status if done == 0, otherwise decrements done
+	to zero and returns a "flush started" status. This is provided
+	to allow flushing to begin safely while holding object locks in
+	inverted order.
+
+This replaces the use of semaphores for providing this exclusion
+and completion mechanism.
+
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ include/linux/completion.h |   65 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 65 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/completion.h b/include/linux/completion.h
+index d2961b6..82d9fa4 100644
+--- a/include/linux/completion.h
++++ b/include/linux/completion.h
+@@ -55,4 +55,69 @@ extern void complete_all(struct completion *);
+ 
+ #define INIT_COMPLETION(x)	((x).done = 0)
+ 
++/*
++ * Give completions flush lock semantics.
++ *
++ * A flush lock is a completion that allows only a single thread to be flushing
++ * a queue. That is, the first thread does not block on the completion, but
++ * forces all subsequent threads to block until the first thread issues a
++ * complete().  This allows only a single I/O at a time on an object protected
++ * by such a completion queue.
++ *
++ * Rather than make the code using this confusing by calling
++ * "wait_for_completion()", introduce a new interface that "starts
++ * a flush." In some cases, we may want to try to start a flush
++ * but not do so if it would involve sleeping, so allow those
++ * semantics as well.
++ */
++
++static inline void init_completion_flush(struct completion *x)
++{
++	x->done = 1;
++	init_waitqueue_head(&x->wait);
++}
++
++
++static inline void completion_flush_start(struct completion *x)
++{
++	wait_for_completion(x);
++}
++
++/*
++ * Start a flush without blocking if possible.
++ *
++ * Returns 0 if a completion is in progress without
++ * modifying the done counter. Otherwise, take a count
++ * so that others will see a completion in progress and
++ * return 1 to indicate a flush can be started.
++ */
++static inline bool completion_flush_start_nowait(struct completion *x)
++{
++	int ret = 1;
++
++	spin_lock_irq(&x->wait.lock);
++	if (!x->done)
++		ret = 0;
++	else
++		x->done--;
++	spin_unlock_irq(&x->wait.lock);
++	return ret;
++}
++
++/*
++ * Test to see if a flush is in progress.
++ *
++ * Returns 1 if a flush is in progress, otherwise 0.
++ */
++static inline bool completion_flush_inprogress(struct completion *x)
++{
++	int ret = 0;
++
++	spin_lock_irq(&x->wait.lock);
++	if (!x->done)
++		ret = 1;
++	spin_unlock_irq(&x->wait.lock);
++	return ret;
++}
++
+ #endif
+-- 
+1.5.5.4
 
