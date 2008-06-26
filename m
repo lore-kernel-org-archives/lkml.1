@@ -1,78 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763326AbYFZNfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763386AbYFZNgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763326AbYFZNfd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:35:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761467AbYFZNfI
+	id S1763386AbYFZNgx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbYFZNgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 09:35:08 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:35912 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760878AbYFZNfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 09:35:05 -0400
-Date: Thu, 26 Jun 2008 20:37:46 +0700
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
-       e1000-devel@lists.sourceforge.net, varunc@linux.vnet.ibm.com,
-       jbarnes@virtuousgeek.org, greg@kroah.com, jesse.brandeburg@intel.com
-Subject: Re: Strange problem with e1000 driver - ping packet loss
-Message-ID: <20080626133746.GB3635@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <fa.QBOn2aWyqGnBJJticG4h09lpxD0@ifi.uio.no> <485A9678.5000707@shaw.ca> <20080620123054.GH3548@linux.vnet.ibm.com> <alpine.LFD.1.10.0806251455500.3014@localhost.localdomain> <alpine.LFD.1.10.0806251502000.3014@localhost.localdomain>
+	Thu, 26 Jun 2008 09:36:44 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:55232 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbYFZNgn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 09:36:43 -0400
+Date: Thu, 26 Jun 2008 19:06:11 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] make sched_{fair,rt}.c ifdefs more readable
+Message-ID: <20080626133611.GB5326@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0806251502000.3014@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 03:04:59PM -0400, Len Brown wrote:
-> On Wed, 25 Jun 2008, Len Brown wrote:
-> 
-> > > Linux version 2.6.18-53.el5
-> 
-> can you find out if the latest upstream kernel still has this problem?
+Hi Ingo,
 
-Len,
-	We'd tried 2.6.25 and found it doesnt help.
+Another patch to make the ifdef jungle more readable :)
 
-> > > ACPI: PCI Interrupt 0000:00:1d.1[B] -> GSI 19 (level, low) -> IRQ 177
-> > > PCI: Setting latency timer of device 0000:00:1d.1 to 64
-> > > uhci_hcd 0000:00:1d.1: UHCI Host Controller
-> > > uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 2
-> > > uhci_hcd 0000:00:1d.1: irq 177, io base 0x0000e880
-> > 
-> > > SELinux: initialized (dev sysfs, type sysfs), uses genfs_contexts
-> > > audit(1213972202.305:3): policy loaded auid=4294967295
-> > > Intel(R) PRO/1000 Network Driver - version 7.3.20-k2-NAPI
-> > > Copyright (c) 1999-2006 Intel Corporation.
-> > > ACPI: PCI Interrupt 0000:02:02.0[B] -> GSI 18 (level, low) -> IRQ 193
-> > > e1000: 0000:02:02.0: e1000_probe: (PCI-X:66MHz:64-bit) 00:04:23:00:90:ab
-> > > e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
-> > > ACPI: PCI Interrupt 0000:02:02.1[B] -> GSI 18 (level, low) -> IRQ 193
-> > > e1000: 0000:02:02.1: e1000_probe: (PCI-X:66MHz:64-bit) 00:04:23:00:90:aa
-> > > e1000: eth1: e1000_probe: Intel(R) PRO/1000 Network Connection
-> 
-> your /proc/interrutps showed just eth1, and it was on IRQ 177 --
-> was that from a different boot than this dmesg?
+Thanks,
 
-Yes the dmesg and /proc/interrupts output I'd sent was from different
-boot instances.
 
-> in any case, when you boot these on a new kernel
-> they should both show up on IRQ 18 (because they're on GSI 18).
+sched: Make sched_{rt,fair}.c ifdefs more readable
 
-hmm ok. we can verify.
 
-> Also, these IOAPIC interrupts are not programmable -- they
-> are hard-coded, so the issue is not in the ACPI PCI interrupt
-> link programming code.
+Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
 
-So is the issue likely with the e1000 device itself then? I have sent
-ethregs output to Jesse ...hopefully that will give us some clues.
-
+Index: linux-2.6-tip/kernel/sched_rt.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/sched_rt.c	2008-06-23 21:52:33.000000000 +0530
++++ linux-2.6-tip/kernel/sched_rt.c	2008-06-24 22:48:34.000000000 +0530
+@@ -161,7 +161,7 @@ static inline struct rt_bandwidth *sched
+ 	return &rt_rq->tg->rt_bandwidth;
+ }
+ 
+-#else
++#else /* !CONFIG_RT_GROUP_SCHED */
+ 
+ static inline u64 sched_rt_runtime(struct rt_rq *rt_rq)
+ {
+@@ -226,7 +226,7 @@ static inline struct rt_bandwidth *sched
+ 	return &def_rt_bandwidth;
+ }
+ 
+-#endif
++#endif /* CONFIG_RT_GROUP_SCHED */
+ 
+ #ifdef CONFIG_SMP
+ static int do_balance_runtime(struct rt_rq *rt_rq)
+@@ -375,12 +375,12 @@ static int balance_runtime(struct rt_rq 
+ 
+ 	return more;
+ }
+-#else
++#else /* !CONFIG_SMP */
+ static inline int balance_runtime(struct rt_rq *rt_rq)
+ {
+ 	return 0;
+ }
+-#endif
++#endif /* CONFIG_SMP */
+ 
+ static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun)
+ {
+@@ -1470,4 +1470,4 @@ static void print_rt_stats(struct seq_fi
+ 		print_rt_rq(m, cpu, rt_rq);
+ 	rcu_read_unlock();
+ }
+-#endif
++#endif /* CONFIG_SCHED_DEBUG */
+Index: linux-2.6-tip/kernel/sched_fair.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/sched_fair.c	2008-06-23 21:52:33.000000000 +0530
++++ linux-2.6-tip/kernel/sched_fair.c	2008-06-24 22:55:07.000000000 +0530
+@@ -832,7 +832,7 @@ static void hrtick_start_fair(struct rq 
+ 		hrtick_start(rq, delta, requeue);
+ 	}
+ }
+-#else
++#else /* !CONFIG_SCHED_HRTICK */
+ static inline void
+ hrtick_start_fair(struct rq *rq, struct task_struct *p)
+ {
+@@ -973,7 +973,7 @@ static int wake_idle(int cpu, struct tas
+ 	}
+ 	return cpu;
+ }
+-#else
++#else /* !ARCH_HAS_SCHED_WAKE_IDLE*/
+ static inline int wake_idle(int cpu, struct task_struct *p)
+ {
+ 	return cpu;
+@@ -1318,7 +1318,7 @@ static int cfs_rq_best_prio(struct cfs_r
+ 
+ 	return p->prio;
+ }
+-#endif
++#endif /* CONFIG_FAIR_GROUP_SCHED */
+ 
+ static unsigned long
+ load_balance_fair(struct rq *this_rq, int this_cpu, struct rq *busiest,
+@@ -1351,7 +1351,7 @@ load_balance_fair(struct rq *this_rq, in
+ 		maxload = min(rem_load_move, imbalance);
+ 
+ 		*this_best_prio = cfs_rq_best_prio(this_cfs_rq);
+-#else
++#else /* !CONFIG_FAIR_GROUP_SCHED */
+ # define maxload rem_load_move
+ #endif
+ 		/*
+@@ -1394,7 +1394,7 @@ move_one_task_fair(struct rq *this_rq, i
+ 
+ 	return 0;
+ }
+-#endif
++#endif /* CONFIG_SMP */
+ 
+ /*
+  * scheduler tick hitting a task of our scheduling class:
 -- 
-Regards,
-vatsa
+regards,
+Dhaval
