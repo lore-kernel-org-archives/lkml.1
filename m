@@ -1,115 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbYFZSgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758146AbYFZShm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757338AbYFZSgY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbYFZSgP
+	id S1758146AbYFZShm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYFZShc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:36:15 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:8235 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752465AbYFZSgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:36:14 -0400
-Date: Thu, 26 Jun 2008 20:36:11 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Oops when using growisofs
-Message-ID: <20080626183610.GI20851@kernel.dk>
-References: <200806221818.24372.mb@bu3sch.de> <20080626170513.GE23386@duck.suse.cz> <20080626181142.GH20851@kernel.dk> <200806262021.32140.mb@bu3sch.de>
+	Thu, 26 Jun 2008 14:37:32 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:46488 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751662AbYFZSha (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 14:37:30 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Zhao Yakui <yakui.zhao@intel.com>
+Subject: Re: [PATCH] ACPI: don't walk tables if ACPI was disabled
+Date: Thu, 26 Jun 2008 10:44:01 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+References: <20080620135639.GA5073@damson.getinternet.no> <200806250908.59315.bjorn.helgaas@hp.com> <1214449368.7055.29.camel@yakui_zhao.sh.intel.com>
+In-Reply-To: <1214449368.7055.29.camel@yakui_zhao.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200806262021.32140.mb@bu3sch.de>
+Message-Id: <200806261044.02285.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26 2008, Michael Buesch wrote:
-> On Thursday 26 June 2008 20:11:42 Jens Axboe wrote:
-> > On Thu, Jun 26 2008, Jan Kara wrote:
-> > > On Wed 25-06-08 11:46:29, Michael Buesch wrote:
-> > > > On Wednesday 25 June 2008 11:37:00 Jan Kara wrote:
-> > > > > > Yeah the IO error is the trigger.
-> > > > > > I noticed that it had obvious troubles accessing the DVD that was in the drive.
-> > > > > > It sweeped over it for several seconds, then hung the system for 2 or 3 seconds
-> > > > > > and then oopsed. But after that everything continued to work as usual.
-> > > > > > (Except kded of course)
-> > > > >   Hmm, by "accessing" do you mean that you've mounted the burned DVD and when
-> > > > > browsing it the IO error and the oops occured or that IO error happened
-> > > > > when burning? It is important because in the first case i_blkbits would be
-> > > > > taken from some ISOFS inode desribing some file while in the second case
-> > > > > i_blkbits are from the inode of the device...
-> > > > I don't know. kded, which caused the oops, is always running. It is a KDE daemon
-> > > > that polls device state and so on. So yeah, it might have accessed the drive
-> > > > while growisofs was writing to it.
+On Wednesday 25 June 2008 09:02:48 pm Zhao Yakui wrote:
+> On Wed, 2008-06-25 at 09:08 -0600, Bjorn Helgaas wrote:
+> > On Tuesday 24 June 2008 07:37:37 pm Zhao Yakui wrote:
+> > > On Tue, 2008-06-24 at 13:52 +0200, Vegard Nossum wrote:
+> > > > On 6/24/08, Ingo Molnar <mingo@elte.hu> wrote:
+> > > > > i havent seen the warning reappear with your fix after thousands of
+> > > > > bootups - so i guess we can consider it fixed.
+> > > > >
+> > > > > Len, please consider the patch below. (it's in tip/out-of-tree)
 > > > > 
-> > > > However with "accessing" I mean the DVD drive motor was spinning up and down
-> > > > and the laser lens was moving like crazy. The sound that happens, if you put
-> > > > a completely scratched DVD into the drive and it is unable to make sense of it.
-> > > > However, this was not scratched. It was a new DVD with one session on it that
-> > > > I just burnt 5 minutes before that. So I wanted to append another session to it
-> > > > and it crashed and resulted in IO errors in growisofs.
-> > >   I've been looking into this problem for some time. The only way how
-> > >   I see blocksize can be set so big is in cdrom_read_capacity() in
-> > >   drivers/ide/ide-cd.c. That basically blindly fills in
-> > >   queue->hardsect_size with what the drive returns and this can
-> > >   propagate in bd_set_size() to i_blkbits.  Jens, do you think that is
-> > >   possible? Shouldn't ide_cd_read_toc() do some sanity checks of the
-> > >   blocksize returned?
+> > > > No, please don't :-)
+> > > > 
+> > > > It fixes your particular case (the acpi_rtc_init() hunk of the patch),
+> > > > but the acpi_walk_namespace() part should be changed to a WARN(). But
+> > > > that is likely to cause a lot of "spurious" reports, so the other acpi
+> > > > drivers should be fixed as well.
+> > > In fact this issue is related with the following factors:
+> > >    a. when acpi is disabled, OS won't initialize the ACPI mutex, which
+> > > is accessed by many ACPI interface functions. For example:
+> > > acpi_walk_namespace, acpi_install_fixed_event_handler.
+> > >    b. When acpi is disabled, some drivers will call the ACPI interface
+> > > functions. For example: The acpi_walk_namespace is called in
+> > > dock_init/bay_init.
 > > 
-> > It can't hurt, the value should be >= 512b and <= 4kb. Normally it would
-> > be 2kb, but some devices have a 512b switch so that is also seen. Not
-> > sure that 1kb and 4kb are valid, but at least it would still point to
-> > the drive possibly returning valid data and not garbage. So accept all
-> > those, reject (and complain) if it isn't one of those and default to 2kb.
-> 
-> I agree with the need for a hardware sanity check and I would happily test
-> any RFC patch :)
+> > I think most current uses of acpi_walk_namespace() are indications
+> > that the ACPI or PNP core is missing something.
+> I don't think so. The acpi_walk_namespace is used to enumerate the ACPI
+> tree and execute some specific operations. For example: Add the device
+> notification function for some type of device; call the INI method for
+> all the device.
 
-Something like this, totally untested...
+There are exceptions, and obviously acpi_walk_namespace() will be
+needed some places.
 
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index 68e7f19..5c1e663 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -1308,13 +1308,29 @@ static int cdrom_read_capacity(ide_drive_t *drive, unsigned long *capacity,
- 	req.cmd_flags |= REQ_QUIET;
- 
- 	stat = ide_cd_queue_pc(drive, &req);
--	if (stat == 0) {
--		*capacity = 1 + be32_to_cpu(capbuf.lba);
--		*sectors_per_frame =
--			be32_to_cpu(capbuf.blocklen) >> SECTOR_BITS;
-+	if (stat)
-+		return stat;
-+
-+	/*
-+	 * Sanity check the given block size
-+	 */
-+	switch (capbuf.blocklen) {
-+	case 512:
-+	case 1024:
-+	case 2048:
-+	case 4096:
-+		break;
-+	default:
-+		printk(KERN_ERR "ide-cd: weird block size %u\n",
-+							capbuf.blocklen);
-+		printk(KERN_ERR "ide-cd: default to 2kb block size\n");
-+		capbuf.blocklen = 2048;
-+		break;
- 	}
- 
--	return stat;
-+	*capacity = 1 + be32_to_cpu(capbuf.lba);
-+	*sectors_per_frame = be32_to_cpu(capbuf.blocklen) >> SECTOR_BITS;
-+	return 0;
- }
- 
- static int cdrom_read_tocentry(ide_drive_t *drive, int trackno, int msf_flag,
+One example where I think acpi_walk_namespace() should not be used
+is to register notification functions for device addition/removal.
+I think the ACPI core should be handling those notify events and
+turning them into add()/remove() calls to the driver.
 
--- 
-Jens Axboe
+> > In dock_init() and bay_init(), it's used to bind a driver to a
+> > device.  I think it would be better if we could figure out how to
+> > use the usual acpi_bus_register_driver() interface.  Actually, it
+> > looks like this is already 90% done: acpi_dock_match() does the
+> > same thing as is_dock(), so it looks like dock_init() could easily
+> > be converted to register as a driver for ACPI_DOCK_HID.
+> Maybe what you said is reasonable if the dock/bay device exists and is
+> added to Linux ACPI device tree. But if the status of bay/dock device
+> doesn't exist , it won't be added into the Linux ACPI device tree. In
+> such case the dock/bay driver won't be loaded for it. So it will be
+> reasonable to enumerate the acpi tree to install the notification
+> function for the dock device so that OS can receive the notification
+> event when the dock device is hotplugged. 
+
+If the bay/dock device doesn't exist, we shouldn't need a driver
+for it.  The normal scenario for non-ACPI drivers is that we load
+a driver when a device appears.  That doesn't work very well in
+this case because the ACPI core is missing the "TBD: Handle device
+insertion/removal" stuff I mentioned earlier.
+
+I know it's not very useful for me to talk about this without
+providing any patches, so I'll shut up now.
+
+Bjorn
 
