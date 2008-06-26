@@ -1,257 +1,285 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbYFZOs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758872AbYFZOvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756548AbYFZOs6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 10:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbYFZOss
+	id S1758872AbYFZOvQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 10:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbYFZOvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 10:48:48 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:60400 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752125AbYFZOsr (ORCPT
+	Thu, 26 Jun 2008 10:51:00 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:25636 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753500AbYFZOu7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 10:48:47 -0400
-Message-ID: <4863AC5E.1070305@bull.net>
-Date: Thu, 26 Jun 2008 16:49:02 +0200
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Solofo.Ramangalahy@bull.net, linux-kernel@vger.kernel.org,
-       matthltc@us.ibm.com, cmm@us.ibm.com, manfred@colorfullife.com,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH -mm 1/3] sysv ipc: increase msgmnb default value wrt.
- the number of cpus
-References: <20080624093452.946878437@bull.net>	<20080624093453.201071209@bull.net> <20080624143120.9bed4f18.akpm@linux-foundation.org>
-In-Reply-To: <20080624143120.9bed4f18.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu, 26 Jun 2008 10:50:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=Jo+MHiR3HdzpNcAt0abIvNw++KAI3izaIgxAxa2M1zEdp2oGcg9IflxAVFTtqcVKvP
+         H3sZ50PqKfbGVA7JwidD1/0uTUWwBBjax1dbQKQZgUyZGsAyJBtpsehDGMAVyZVLifFY
+         LOw/DcOAuu79FVDW/BcTWkPw2c5FEq3I1nE6g=
+Subject: [PATCH, RFC] mfd: add clock API support to asic3 using clocklib
+From: Philipp Zabel <philipp.zabel@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Samuel Ortiz <sameo@openedhand.com>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>
+Content-Type: text/plain
+Date: Thu, 26 Jun 2008 16:50:52 +0200
+Message-Id: <1214491852.30078.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 24 Jun 2008 11:34:53 +0200
-> <Solofo.Ramangalahy@bull.net> wrote:
-> 
-> 
->>From: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
->>
->>Initialize msgmnb value to
->>min(MSGMNB * num_online_cpus(), MSGMNB * MSG_CPU_SCALE)
->>to increase the default value for larger machines.
->>
->>MSG_CPU_SCALE scaling factor is defined to be 4, as 16384 x 4 = 65536
->>is an already used and recommended value.
->>
->>The msgmni value is made dependant of msgmnb to keep the memory
->>dedicated to message queues within the 1/MSG_MEM_SCALE of lowmem
->>bound.
->>
->>Unlike msgmni, the value is not scaled (down) with respect to the
->>number of ipc namespaces for simplicity.
->>
->>To disable recomputation when user explicitely set a value,
->>we reuse the callback defined for msgmni.
->>
->>As msgmni and msgmnb are correlated, user settings of any of the two
->>disable recomputation of both, for now. This is refined in a later
->>patch.
->>
->>When a negative value is put in /proc/sys/kernel/msgmnb
->>automatic recomputing is re-enabled.
->>
-> 
-> 
-> Thanks for taking the time to describe this work so well.
-> 
-> 
->>---
->> Documentation/sysctl/kernel.txt |   28 ++++++++++++++++++++++++++++
->> include/linux/msg.h             |    6 ++++++
->> ipc/ipc_sysctl.c                |    5 +++--
->> ipc/msg.c                       |   17 +++++++++++++----
->> 4 files changed, 50 insertions(+), 6 deletions(-)
->>
->>Index: b/ipc/msg.c
->>===================================================================
->>--- a/ipc/msg.c
->>+++ b/ipc/msg.c
->>@@ -38,6 +38,7 @@
->> #include <linux/rwsem.h>
->> #include <linux/nsproxy.h>
->> #include <linux/ipc_namespace.h>
->>+#include <linux/cpumask.h>
->> 
->> #include <asm/current.h>
->> #include <asm/uaccess.h>
->>@@ -92,7 +93,7 @@ void recompute_msgmni(struct ipc_namespa
->> 
->> 	si_meminfo(&i);
->> 	allowed = (((i.totalram - i.totalhigh) / MSG_MEM_SCALE) * i.mem_unit)
->>-		/ MSGMNB;
->>+		/ ns->msg_ctlmnb;
->> 	nb_ns = atomic_read(&nr_ipc_ns);
->> 	allowed /= nb_ns;
->> 
->>@@ -108,11 +109,19 @@ void recompute_msgmni(struct ipc_namespa
->> 
->> 	ns->msg_ctlmni = allowed;
->> }
->>+/*
->>+ * Scale msgmnb with the number of online cpus, up to 4x MSGMNB.
->>+ */
->>+void recompute_msgmnb(struct ipc_namespace *ns)
->>+{
->>+	ns->msg_ctlmnb =
->>+		min(MSGMNB * num_online_cpus(), MSGMNB * MSG_CPU_SCALE);
->>+}
->> 
->> void msg_init_ns(struct ipc_namespace *ns)
->> {
->> 	ns->msg_ctlmax = MSGMAX;
->>-	ns->msg_ctlmnb = MSGMNB;
->>+	recompute_msgmnb(ns);
->> 
->> 	recompute_msgmni(ns);
->> 
->>@@ -132,8 +141,8 @@ void __init msg_init(void)
->> {
->> 	msg_init_ns(&init_ipc_ns);
->> 
->>-	printk(KERN_INFO "msgmni has been set to %d\n",
->>-		init_ipc_ns.msg_ctlmni);
->>+	printk(KERN_INFO "msgmni has been set to %d, msgmnb to %d\n",
->>+	       init_ipc_ns.msg_ctlmni, init_ipc_ns.msg_ctlmnb);
->> 
->> 	ipc_init_proc_interface("sysvipc/msg",
->> 				"       key      msqid perms      cbytes       qnum lspid lrpid   uid   gid  cuid  cgid      stime      rtime      ctime\n",
->>Index: b/include/linux/msg.h
->>===================================================================
->>--- a/include/linux/msg.h
->>+++ b/include/linux/msg.h
->>@@ -58,6 +58,12 @@ struct msginfo {
->>  * more than 16 GB : msgmni = 32K (IPCMNI)
->>  */
->> #define MSG_MEM_SCALE 32
->>+/*
->>+ * Scaling factor to compute msgmnb: ns->msg_ctlmnb is between MSGMNB
->>+ * and MSGMNB * MSG_CPU_SCALE. This leads to a max msgmnb value of
->>+ * 65536 which is an already used and recommended value.
->>+ */
->>+#define MSG_CPU_SCALE 4
->> 
->> #define MSGMNI    16   /* <= IPCMNI */     /* max # of msg queue identifiers */
->> #define MSGMAX  8192   /* <= INT_MAX */   /* max size of message (bytes) */
->>Index: b/ipc/ipc_sysctl.c
->>===================================================================
->>--- a/ipc/ipc_sysctl.c
->>+++ b/ipc/ipc_sysctl.c
->>@@ -42,6 +42,7 @@ static void tunable_set_callback(int val
->> 		 * Re-enable automatic recomputing only if not already
->> 		 * enabled.
->> 		 */
->>+		recompute_msgmnb(current->nsproxy->ipc_ns);
->> 		recompute_msgmni(current->nsproxy->ipc_ns);
->> 		cond_register_ipcns_notifier(current->nsproxy->ipc_ns);
->> 	}
->>@@ -210,8 +211,8 @@ static struct ctl_table ipc_kern_table[]
->> 		.data		= &init_ipc_ns.msg_ctlmnb,
->> 		.maxlen		= sizeof (init_ipc_ns.msg_ctlmnb),
->> 		.mode		= 0644,
->>-		.proc_handler	= proc_ipc_dointvec,
->>-		.strategy	= sysctl_ipc_data,
->>+		.proc_handler	= proc_ipc_callback_dointvec,
->>+		.strategy	= sysctl_ipc_registered_data,
->> 	},
->> 	{
->> 		.ctl_name	= KERN_SEM,
->>Index: b/Documentation/sysctl/kernel.txt
->>===================================================================
->>--- a/Documentation/sysctl/kernel.txt
->>+++ b/Documentation/sysctl/kernel.txt
->>@@ -179,6 +179,34 @@ kernel stack.
->> 
->> ==============================================================
->> 
->>+msgmnb
->>+
->>+Maximum size in bytes (not in message count) of a single SystemV IPC
->>+message queue (b stands for bytes).
->>+
->>+This value is dynamic and depends on the online cpu count of the
->>+machine (taking cpu hotplug into account).
->>+
->>+Computed values are between MSGMNB and MSGMNB*MSG_CPU_SCALE #define
->>+constants (currently [16384,65536]).
->>+
->>+The exact value is automatically (re)computed, but:
->>+. If the value is positioned from user space (via procfs or sysctl()),
->>+  to a positive value then the automatic recomputation is
->>+  disabled. This leaves control to user space. E.g.
->>+
->>+  # echo 16384 > /proc/sys/kernel/msgmnb
->>+
->>+. If the value is positioned from user space to a negative value, then
->>+  the computation is reenabled. E.g.
->>+
->>+  # echo -1 > /proc/sys/kernel/msgmnb
->>+
->>+See recompute_msgmnb() function in ipc/ directory for details.
->>+The value of msgmnb is coupled with the value of msgmni.
->>+
-> 
-> 
-> The magical positive-versus-negative number trick is a bit obscure, and
-> I don't think there's any precedent for it in the kernel ABI (which is
-> what this is).
-> 
-> Is there anything we can do to reduce the unusualness of this
-> interface?  Say, add a new /proc/sys/kernel/automatic-msgmnb which
-> contains the automatic scaling and leave /proc/sys/kernel/msgmnb
-> containing the manual scaling?  Or something like that?
+This patch adds basic clock API support for ASIC3 clocks using Dmitry
+Baryshkov's clocklib (http://lkml.org/lkml/2008/6/26/278).
+The CDEX clocks can be enabled/disabled and the SD host and bus clock 
+rates can be changed. Also the clock settings comment for SD HCLK and 
+BCLK in asic3.h is moved to the right place.
 
-Well, I don't know if I well understood your proposal: is it 1 value in 
-automatic-msgmnb and another one in msgmnb?
-I don't clearly see how this could work.
+I am missing information about the spi, pwm, led, smbus and cx clock's
+rates, and I'm not sure if the SOURCE0/1 bits in CLOCK_CDEX should be
+handled here somehow. The CLOCK_SEL_CX bit in CLOCK_SEL is only used
+internally by the IRQ controller, so I guess not handling that is fine.
 
-IMHO, we should keep /proc/sys/kernel/msgmnb as a way to externalize the 
-current tunable value (whether it is automatically recomputed or not).
+Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
+---
+ drivers/mfd/Kconfig       |    2 +-
+ drivers/mfd/asic3.c       |  146 ++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/mfd/asic3.h |    2 +-
+ 3 files changed, 147 insertions(+), 3 deletions(-)
 
-Also keep the current strategy: as soon as a value is written into that 
-file, give up with the automatic recomputing.
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index 5f87a28..a0da724 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -17,7 +17,7 @@ config MFD_SM501
+ 
+ config MFD_ASIC3
+ 	bool "Support for Compaq ASIC3"
+-	depends on GENERIC_HARDIRQS && HAVE_GPIO_LIB && ARM
++	depends on GENERIC_HARDIRQS && HAVE_GPIO_LIB && HAVE_CLOCKLIB && ARM
+ 	 ---help---
+ 	  This driver supports the ASIC3 multifunction chip found on many
+ 	  PDAs (mainly iPAQ and HTC based ones)
+diff --git a/drivers/mfd/asic3.c b/drivers/mfd/asic3.c
+index 50c773c..ced53c8 100644
+--- a/drivers/mfd/asic3.c
++++ b/drivers/mfd/asic3.c
+@@ -18,11 +18,13 @@
+ 
+ #include <linux/version.h>
+ #include <linux/kernel.h>
++#include <linux/platform_device.h>
++#include <linux/clk.h>
++#include <linux/clocklib.h>
+ #include <linux/irq.h>
+ #include <linux/gpio.h>
+ #include <linux/io.h>
+ #include <linux/spinlock.h>
+-#include <linux/platform_device.h>
+ 
+ #include <linux/mfd/asic3.h>
+ 
+@@ -53,6 +55,132 @@ static inline u32 asic3_read_register(struct asic3 *asic,
+ 			(reg >> asic->bus_shift));
+ }
+ 
++/* clocks */
++struct clk_cdex {
++	unsigned int cdex;
++	unsigned long rate;
++	struct asic3 *asic;
++	struct clk clk;
++};
++
++static int asic3_clock_cdex_enable(struct clk *clk)
++{
++	struct clk_cdex *cclk = container_of(clk, struct clk_cdex, clk);
++	struct asic3 *asic = cclk->asic;
++        int cdex = cclk->cdex;
++	unsigned long flags, val;
++
++	local_irq_save(flags);
++
++	val = asic3_read_register(asic, ASIC3_OFFSET(CLOCK, CDEX));
++	val |= cdex;
++	asic3_write_register(asic, ASIC3_OFFSET(CLOCK, CDEX), val);
++
++	local_irq_restore(flags);
++
++	return 0;
++}
++
++static void asic3_clock_cdex_disable(struct clk *clk)
++{
++	struct clk_cdex *cclk = container_of(clk, struct clk_cdex, clk);
++	struct asic3 *asic = cclk->asic;
++        int cdex = cclk->cdex;
++	unsigned long flags, val;
++
++	local_irq_save(flags);
++
++	val = asic3_read_register(asic, ASIC3_OFFSET(CLOCK, CDEX));
++	val &= ~cdex;
++	asic3_write_register(asic, ASIC3_OFFSET(CLOCK, CDEX), val);
++
++	local_irq_restore(flags);
++}
++
++static unsigned long asic3_clock_cdex_get_rate(struct clk *clk)
++{
++	struct clk_cdex *cclk = container_of(clk, struct clk_cdex, clk);
++
++	return cclk->rate;
++}
++
++static long asic3_clock_cdex_round_rate(struct clk *clk, unsigned long hz,
++					bool apply)
++{
++	struct clk_cdex *cclk = container_of(clk, struct clk_cdex, clk);
++	unsigned long bit = 0;
++	long rate;
++
++	if (cclk->cdex == CLOCK_CDEX_SD_HOST)
++		bit = CLOCK_SEL_SD_HCLK_SEL;
++	if (cclk->cdex == CLOCK_CDEX_SD_BUS)
++		bit = CLOCK_SEL_SD_BCLK_SEL;
++
++	if (!bit) {
++		rate = cclk->rate;
++
++		if (apply && hz != rate)
++			return -EINVAL;
++
++		return rate;
++	}
++
++	if (hz < 18432000) /* (12.288 MHz + 24.576 MHz)/2 */
++		rate = 12288000;
++	else
++		rate = 24576000;
++
++	if (apply) {
++		struct asic3 *asic = cclk->asic;
++		unsigned long flags, val;
++
++		local_irq_save(flags);
++		val = asic3_read_register(asic, ASIC3_OFFSET(CLOCK, SEL));
++		if (hz < 18432000)
++			val &= ~bit;
++		else
++			val |= bit;
++		asic3_write_register(asic, ASIC3_OFFSET(CLOCK, SEL), val);
++		local_irq_restore(flags);
++		cclk->rate = rate;
++	}
++
++	return rate;
++}
++
++static struct clk_ops clk_cdex_ops = {
++	.enable = asic3_clock_cdex_enable,
++	.disable = asic3_clock_cdex_disable,
++	.get_rate = asic3_clock_cdex_get_rate,
++	.round_rate = asic3_clock_cdex_round_rate,
++};
++
++#define INIT_CLOCK_CDEX(_name, _cdex, _rate)		\
++	&(struct clk_cdex) {				\
++		.cdex = CLOCK_CDEX_##_cdex,		\
++		.rate = _rate,				\
++		.clk = {				\
++			.name = _name,			\
++			.ops  = &clk_cdex_ops,		\
++		},					\
++	}.clk
++
++static struct clk *asic3_clks[] = {
++	INIT_CLOCK_CDEX("spi", SPI, 0),
++	INIT_CLOCK_CDEX("ds1wm", OWM, 5000000),
++	INIT_CLOCK_CDEX("pwm0", PWM0, 0),
++	INIT_CLOCK_CDEX("pwm1", PWM1, 0),
++	INIT_CLOCK_CDEX("led0", LED0, 0),
++	INIT_CLOCK_CDEX("led1", LED1, 0),
++	INIT_CLOCK_CDEX("led2", LED2, 0),
++	INIT_CLOCK_CDEX("sdhost", SD_HOST, 12288000),
++	INIT_CLOCK_CDEX("sdbus", SD_BUS, 12288000),
++	INIT_CLOCK_CDEX("smbus", SMBUS, 0),
++	INIT_CLOCK_CDEX("cx", CONTROL_CX, 0),
++	INIT_CLOCK_CDEX("ex0", EX0, 32768),
++	INIT_CLOCK_CDEX("ex1", EX1, 24576000),
++};
++
+ /* IRQs */
+ #define MAX_ASIC_ISR_LOOPS    20
+ #define ASIC3_GPIO_BASE_INCR \
+@@ -533,6 +661,7 @@ static int __init asic3_probe(struct platform_device *pdev)
+ 	struct resource *mem;
+ 	unsigned long clksel;
+ 	int ret = 0;
++	int i;
+ 
+ 	asic = kzalloc(sizeof(struct asic3), GFP_KERNEL);
+ 	if (asic == NULL) {
+@@ -569,6 +698,17 @@ static int __init asic3_probe(struct platform_device *pdev)
+ 	clksel = 0;
+ 	asic3_write_register(asic, ASIC3_OFFSET(CLOCK, SEL), clksel);
+ 
++	/* Register ASIC3's clocks. */
++	for (i = 0; i < ARRAY_SIZE(asic3_clks); i++) {
++		struct clk_cdex *cclk = container_of(asic3_clks[i], struct clk_cdex, clk);
++		cclk->asic = asic;
++		ret = clk_register(asic3_clks[i]);
++		if (ret < 0)
++			dev_err(asic->dev,
++			       "failed to register clock %s (%d)\n",
++			       asic3_clks[i]->name, ret);
++	}
++
+ 	ret = asic3_irq_probe(pdev);
+ 	if (ret < 0) {
+ 		dev_err(asic->dev, "Couldn't probe IRQs\n");
+@@ -608,6 +748,7 @@ static int __init asic3_probe(struct platform_device *pdev)
+ 
+ static int asic3_remove(struct platform_device *pdev)
+ {
++	int i;
+ 	int ret;
+ 	struct asic3 *asic = platform_get_drvdata(pdev);
+ 
+@@ -616,6 +757,9 @@ static int asic3_remove(struct platform_device *pdev)
+ 		return ret;
+ 	asic3_irq_remove(pdev);
+ 
++	for (i = 0; i < ARRAY_SIZE(asic3_clks); i++)
++		clk_unregister(asic3_clks[i]);
++
+ 	asic3_write_register(asic, ASIC3_OFFSET(CLOCK, SEL), 0);
+ 
+ 	iounmap(asic->mapping);
+diff --git a/include/linux/mfd/asic3.h b/include/linux/mfd/asic3.h
+index 6461a2a..0610449 100644
+--- a/include/linux/mfd/asic3.h
++++ b/include/linux/mfd/asic3.h
+@@ -152,7 +152,6 @@ struct asic3_platform_data {
+ #define CLOCK_CDEX_LED1         (1 << 7)
+ #define CLOCK_CDEX_LED2         (1 << 8)
+ 
+-/* Clocks settings: 1 for 24.576 MHz, 0 for 12.288Mhz */
+ #define CLOCK_CDEX_SD_HOST      (1 << 9)   /* R/W: SD host clock source */
+ #define CLOCK_CDEX_SD_BUS       (1 << 10)  /* R/W: SD bus clock source ctrl */
+ #define CLOCK_CDEX_SMBUS        (1 << 11)
+@@ -161,6 +160,7 @@ struct asic3_platform_data {
+ #define CLOCK_CDEX_EX0          (1 << 13)  /* R/W: 32.768 kHz crystal */
+ #define CLOCK_CDEX_EX1          (1 << 14)  /* R/W: 24.576 MHz crystal */
+ 
++/* Clocks settings: 1 for 24.576 MHz, 0 for 12.288Mhz */
+ #define CLOCK_SEL_SD_HCLK_SEL   (1 << 0)   /* R/W: SDIO host clock select */
+ #define CLOCK_SEL_SD_BCLK_SEL   (1 << 1)   /* R/W: SDIO bus clock select */
+ 
+-- 
+1.5.5.4
 
-And use the file you propose as a way to go back and forth between 
-automatic recomputing and manual setting.
 
-So the process would be the following:
-1) kernel boots in "automatic recomputing mode"
-    /proc/kernel/sys/msgmni contains whatever value has been computed
-    /proc/kernel/sys/automatic-msgmnb contains "ON"
-
-2) echo <val> > /proc/kernel/sys/msgmnb
-    . sets msg_ctlmnb to <val>
-    . de-activates automatic recomputing (i.e. if, say, a cpu disappears
-      it won't be recompiuted anymore)
-    . /proc/kernel/sys/automatic-msgmnb now contains "OFF"
-
-Echoing "OFF" into /proc/kernel/sys/automatic-msgmnb would have the same 
-effect (except that msg_ctlmnb's value would stay blocked at its current 
-value)
-
-3) echo "ON" > /proc/kernel/sys/automatic-msgmnb
-    . recomputes msgmnb's value based on the current available resources
-    . re-activates automatic recomputing for msgmnb.
-
-Of course, all this should be applied to msgmni too.
-And may be this automatic-xxx file should be located under sysfs?
-   --> create /sys/kernel/automatic directory and have 1 file per 
-tunable to be scalled (who knows, may be we are adding other ones in th 
-future?)
-
-Now, may be this is what you actually proposed and I completely 
-misunderstod it?
-
-Regards,
-Nadia
