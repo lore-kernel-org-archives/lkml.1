@@ -1,71 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbYFZPst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbYFZPti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755261AbYFZPst (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 11:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbYFZPsl
+	id S1757551AbYFZPti (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 11:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbYFZPt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 11:48:41 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:41324 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751358AbYFZPsk (ORCPT
+	Thu, 26 Jun 2008 11:49:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:63914 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752189AbYFZPt1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 11:48:40 -0400
-Date: Thu, 26 Jun 2008 08:48:33 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, josh@freedesktop.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, dino@in.ibm.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, vegard.nossum@gmail.com,
-       adobriyan@gmail.com, oleg@tv-sign.ru, bunk@kernel.org, rjw@sisk.pl
-Subject: Re: [PATCH -tip-rcu] Make rcutorture more vicious: invoke RCU readers from irq handlers (timers)
-Message-ID: <20080626154833.GB10859@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080618122144.GA27143@linux.vnet.ibm.com> <20080618162649.GA18326@linux.vnet.ibm.com> <20080622200638.GA25328@linux.vnet.ibm.com> <20080625192452.GA12754@linux.vnet.ibm.com> <20080626072239.GB3160@elte.hu>
+	Thu, 26 Jun 2008 11:49:27 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@seznam.cz
+Subject: Re: [PATCH 58/60] microblaze_v4: sys_microblaze.c
+Date: Thu, 26 Jun 2008 17:48:29 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
+       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
+       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
+       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
+       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com,
+       Michal Simek <monstr@monstr.eu>
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <1214483429-32360-58-git-send-email-monstr@seznam.cz> <1214483429-32360-59-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-59-git-send-email-monstr@seznam.cz>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080626072239.GB3160@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200806261748.30698.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18G9neEH5WDobakhBTZmbFEnidRREyXql6of9R
+ 34MgkwPKr21a1fzA839ITRpciRBOKGh//57KUnjp3dkwp+JoxL
+ 5rIMAnkR10qbjtIDaT5iQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 09:22:39AM +0200, Ingo Molnar wrote:
-> 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > This patch allows torturing RCU from irq handlers (timers, in this 
-> > case). A new module parameter irqreader enables such additional 
-> > torturing, and is enabled by default.  Variants of RCU that do not 
-> > tolerate readers being called from irq handlers (e.g., SRCU) ignore 
-> > irqreader.
-> > 
-> > (No failures observed, but only short tests thus far.  And no failures 
-> > observed thus far from about 10 hours of running stock rcutorture in 
-> > parallel with 170 kernel builds on a two-CPU machine.)
-> 
-> applied to tip/core/rcu - thanks Paul.
-> 
-> > +static int irqreader = 1;	/* RCU readers from irq (timers). */
-> 
-> Good - this means that in bzImage type of tests (built-in rcutorture, no 
-> modules) this new test variant will be activated by default, right?
+On Thursday 26 June 2008, monstr@seznam.cz wrote:
+> +
+> +/*
+> + * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+> + *
+> + * This is really horribly ugly.
+> + */
 
-Ah, I knew I was forgetting to test something...
+If it's so horribly ugly, don't do it this way ;-)
 
-OK, checked it out by booting with rcutorture.stat_interval=100 so that
-I can see the statistics.  I enabled rcutorture after the machine booted
-with "echo 1 > /proc/sys/kernel/rcutorture_runnable".  Then I saw the
-following in dmesg:
+> +int
+> +sys_ipc(uint call, int first, int second, int third, void *ptr, long fifth)
+> +{
+> +	int version, ret;
+> +
+> +	version = call >> 16; /* hack for backward compatibility */
+> +	call &= 0xffff;
 
-rcu-torture: rtc: ffffffff8098b9a0 ver: 16961 tfle: 0 rta: 16961 rtaf: 0 rtf: 16922 rtmbe: 0 nt: 121139
-rcu-torture: Reader Pipe:  93315610 6300 0 0 0 0 0 0 0 0 0
-rcu-torture: Reader Batch:  93315670 6240 0 0 0 0 0 0 0 0 0
-rcu-torture: Free-Block Circulation:  16960 16960 16960 16960 16959 16951 16943 16936 16928 16922 0
+Backwards compatibility with what?
 
-The "nt: 121139" is the count of the number of times that an RCU read-side
-critical section has been invoked from an rcutorture timer handler.
 
-So yes, it does work.  ;-)
+> +static inline unsigned long
+> +do_mmap2(unsigned long addr, size_t len,
+> +	unsigned long prot, unsigned long flags,
+> +	unsigned long fd, unsigned long pgoff)
+> +{
+> +	struct file *file = NULL;
+> +	int ret = -EBADF;
+> +
+> +	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+> +	if (!(flags & MAP_ANONYMOUS))
+> +		if (!(file = fget(fd))) {
+> +			printk(KERN_INFO "no fd in mmap\r\n");
+> +			goto out;
+> +		}
+> +
+> +	down_write(&current->mm->mmap_sem);
+> +	ret = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+> +	up_write(&current->mm->mmap_sem);
+> +	if (file)
+> +		fput(file);
+> +out:
+> +	return ret;
+> +}
+> +
+> +unsigned long sys_mmap2(unsigned long addr, size_t len,
+> +			unsigned long prot, unsigned long flags,
+> +			unsigned long fd, unsigned long pgoff)
+> +{
+> +	return do_mmap2(addr, len, prot, flags, fd, pgoff);
+> +}
+> +
+> +unsigned long sys_mmap(unsigned long addr, size_t len,
+> +			unsigned long prot, unsigned long flags,
+> +			unsigned long fd, off_t offset)
+> +{
+> +	int err = -EINVAL;
+> +
+> +	if (offset & ~PAGE_MASK) {
+> +		printk(KERN_INFO "no pagemask in mmap\r\n");
+> +		goto out;
+> +	}
+> +
+> +	err = do_mmap2(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
+> +out:
+> +	return err;
+> +}
 
-							Thanx, Paul
+Which mmap is uClibc really using? I suppose you only need mmap2, even for
+compatibility with any binary ever built for microblaze.
+
+	Arnd <><
