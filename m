@@ -1,56 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760765AbYFZTwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761291AbYFZTxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760765AbYFZTwH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 15:52:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755199AbYFZTvw
+	id S1761291AbYFZTxk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 15:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755486AbYFZTxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 15:51:52 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:40657 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754896AbYFZTvv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 15:51:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=HQsU+im6l2Ru1UK1AZ7BrbqenxK01YUTCJzU18wpOP3VL2WeL25Ds2Y1jnIDx1s4Ev
-         OTKQiebQXq0WqxszHY1ePdFVwPc67ZjXyjvX/3HcE1yELD8SYOKvIqz6zXQYI0MnHOjz
-         B8BIR6IHyqKe3RcqWUqoP7PltAhUn2bg+DosE=
-Message-ID: <cd73a99e0806261251w175f9021h3a84c2232f369c28@mail.gmail.com>
-Date: Thu, 26 Jun 2008 21:51:51 +0200
-From: "Andrew Victor" <avictor.za@gmail.com>
-To: "Sedji Gaouaou" <sedji.gaouaou@atmel.com>
-Subject: Re: [PATCH 1/2] Support for the at91sam9g20 : Atmel 400Mhz ARM 926ej-s SOC
-Cc: linux-arm-kernel@lists.arm.linux.org.uk,
-       "VILCHEZ Patrice" <Patrice.VILCHEZ@atmel.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <486358C5.2070503@atmel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4852324C.9000604@atmel.com> <486358C5.2070503@atmel.com>
+	Thu, 26 Jun 2008 15:53:31 -0400
+Received: from ns2.suse.de ([195.135.220.15]:40929 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750783AbYFZTxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 15:53:30 -0400
+From: Bernhard Walle <bwalle@suse.de>
+To: kexec@lists.infradead.org
+Cc: vgoyal@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org,
+       Bernhard Walle <bwalle@suse.de>
+Subject: [PATCH] x86: Find offset for crashkernel reservation automatically
+Date: Thu, 26 Jun 2008 21:54:08 +0200
+Message-Id: <1214510048-21215-1-git-send-email-bwalle@suse.de>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi Sedji,
+This patch removes the need of the crashkernel=...@offset parameter to define
+a fixed offset for crashkernel reservation. That feature can be used together
+with a relocatable kernel where the kexec-tools relocate the kernel and
+get the actual offset from /proc/iomem.
 
-> I have submitted a patch for the new at91sam9g20 and I would like to know if
-> some people in the mailing list have had the time to have a look at it, and
-> if anybody got any feedback to give.
-> In whish case I would like to know if we can submit it to the patch system?
+The use case is a kernel where the .text+.data+.bss is after 16M physical
+memory (debug kernel with lockdep on x86_64 can cause that) which caused a
+major pain in autoconfiguration in our distribution.
 
-Looks fine, except you're also changing the NAND timing for the SAM9260.
-Patrice has already submitted a patch to update the NAND timings for
-all the SAM9's [**], so just verify this with him.
+Also, that patch unifies crashdump architectures a bit since IA64 has
+that semantics from the very beginning of the kdump port.
 
-[**]  http://kerneltrap.org/mailarchive/linux-kernel/2008/6/6/2048714
-
-Acked-by: Andrew Victor <linux@maxim.org.za>
+Please provide feedback!
 
 
-Regards,
-  Andrew Victor
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+---
+ arch/x86/kernel/setup.c |   70 +++++++++++++++++++++++++++++++++++------------
+ 1 files changed, 52 insertions(+), 18 deletions(-)
+
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index a81d82c..c30bb7b 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -435,6 +435,34 @@ static inline unsigned long long get_total_mem(void)
+ }
+ 
+ #ifdef CONFIG_KEXEC
++
++/**
++ * Reserve @size bytes of crashkernel memory at any suitable offset.
++ *
++ * @size: Size of the crashkernel memory to reserve.
++ * Returns the base address on success, and -1ULL on failure.
++ */
++unsigned long long find_and_reserve_crashkernel(unsigned long long size)
++{
++	const unsigned long long alignment = 16<<20; 	/* 16M */
++	unsigned long long start = 0LL;
++
++	while (1) {
++		int ret;
++
++		start = find_e820_area(start, ULONG_MAX, size, alignment);
++		if (start == -1ULL)
++			return start;
++
++		/* try to reserve it */
++		ret = reserve_bootmem_generic(start, size, BOOTMEM_EXCLUSIVE);
++		if (ret >= 0)
++			return start;
++
++		start += alignment;
++	}
++}
++
+ void __init reserve_crashkernel(void)
+ {
+ 	unsigned long long total_mem;
+@@ -445,30 +473,36 @@ void __init reserve_crashkernel(void)
+ 
+ 	ret = parse_crashkernel(boot_command_line, total_mem,
+ 			&crash_size, &crash_base);
+-	if (ret == 0 && crash_size > 0) {
+-		if (crash_base <= 0) {
+-			printk(KERN_INFO "crashkernel reservation failed - "
+-					"you have to specify a base address\n");
++	if (ret != 0 || crash_size <= 0)
++		return;
++
++	/* 0 means: find the address automatically */
++	if (crash_base <= 0) {
++		crash_base = find_and_reserve_crashkernel(crash_size);
++		if (crash_base == -1ULL) {
++			pr_info("crashkernel reservation failed. "
++				"No suitable area found.\n");
+ 			return;
+ 		}
+-
+-		if (reserve_bootmem_generic(crash_base, crash_size,
+-					BOOTMEM_EXCLUSIVE) < 0) {
+-			printk(KERN_INFO "crashkernel reservation failed - "
+-					"memory is in use\n");
++	} else {
++		ret = reserve_bootmem_generic(crash_base, crash_size,
++					BOOTMEM_EXCLUSIVE);
++		if (ret < 0) {
++			pr_info("crashkernel reservation failed - "
++				"memory is in use\n");
+ 			return;
+ 		}
++	}
+ 
+-		printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
+-				"for crashkernel (System RAM: %ldMB)\n",
+-				(unsigned long)(crash_size >> 20),
+-				(unsigned long)(crash_base >> 20),
+-				(unsigned long)(total_mem >> 20));
++	printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
++			"for crashkernel (System RAM: %ldMB)\n",
++			(unsigned long)(crash_size >> 20),
++			(unsigned long)(crash_base >> 20),
++			(unsigned long)(total_mem >> 20));
+ 
+-		crashk_res.start = crash_base;
+-		crashk_res.end   = crash_base + crash_size - 1;
+-		insert_resource(&iomem_resource, &crashk_res);
+-	}
++	crashk_res.start = crash_base;
++	crashk_res.end   = crash_base + crash_size - 1;
++	insert_resource(&iomem_resource, &crashk_res);
+ }
+ #else
+ void __init reserve_crashkernel(void)
+-- 
+1.5.6
+
