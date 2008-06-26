@@ -1,57 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbYFZRpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbYFZRqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758187AbYFZRpu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 13:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYFZRpK
+	id S1754658AbYFZRqN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 13:46:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYFZRp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 13:45:10 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:49186 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756601AbYFZRpH (ORCPT
+	Thu, 26 Jun 2008 13:45:28 -0400
+Received: from over.ny.us.ibm.com ([32.97.182.150]:50992 "EHLO
+	over.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757754AbYFZRp0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 13:45:07 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH 48/60] microblaze_v4: headers simple files - empty or redirect to asm-generic
-Date: Thu, 26 Jun 2008 18:38:32 +0200
-User-Agent: KMail/1.9.9
-Cc: monstr@seznam.cz, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
-       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com,
-       Michal Simek <monstr@monstr.eu>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <200806261735.12738.arnd@arndb.de> <20080626162118.GG22025@cs181140183.pp.htv.fi>
-In-Reply-To: <20080626162118.GG22025@cs181140183.pp.htv.fi>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 26 Jun 2008 13:45:26 -0400
+Date: Thu, 26 Jun 2008 11:31:24 -0500
+From: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Michael Halcrow <mhalcrow@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] eCryptfs: Discard ecryptfsd registration messages in
+	miscdev
+Message-ID: <20080626163121.GA21002@boomer>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806261838.33787.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19WdSVzjKNv9jbR9liSEQx8ATUwqe0i4OG7w9E
- FL/7iTeUI4uwezOijXEMs+P63LmOwjuE/OpXs+Ip6JrFhnmB6u
- zdwUr+38QFpRBIUfBkaZg==
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 June 2008, Adrian Bunk wrote:
-> The comment could be nuked (as well as the #ifdef __KERNEL__), but for 
-> the one #define an asm-generic header would IMHO be overkill.
+The userspace eCryptfs daemon sends HELO and QUIT messages to
+the kernel for per-user daemon (un)registration. These messages
+are required when netlink is used as the transport, but
+(un)registration is handled by opening and closing the device
+file when miscdev is the transport. These messages should be
+discarded in the miscdev transport so that a daemon isn't
+registered twice.
 
-I agree that it doesn't technically make sense to have a one-line
-asm-generic header, but I like the idea of reducing the number of
-asm/*.h files that actually contain anything other that
-#include <asm-generic/$FILE.h>, mostly for documentation purposes.
+Signed-off-by: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+---
+ fs/ecryptfs/miscdev.c |   59 -------------------------------------------------
+ 1 files changed, 0 insertions(+), 59 deletions(-)
 
-If we can eventually agree on a way to get rid of the requirement
-for explicit redirection, we can remove a larger number of source
-files completely.
+diff --git a/fs/ecryptfs/miscdev.c b/fs/ecryptfs/miscdev.c
+index 50c994a..98aa4a1 100644
+--- a/fs/ecryptfs/miscdev.c
++++ b/fs/ecryptfs/miscdev.c
+@@ -358,46 +358,6 @@ out_unlock_daemon:
+ }
+ 
+ /**
+- * ecryptfs_miscdev_helo
+- * @euid: effective user id of miscdevess sending helo packet
+- * @user_ns: The namespace in which @euid applies
+- * @pid: miscdevess id of miscdevess sending helo packet
+- *
+- * Returns zero on success; non-zero otherwise
+- */
+-static int ecryptfs_miscdev_helo(uid_t euid, struct user_namespace *user_ns,
+-				 struct pid *pid)
+-{
+-	int rc;
+-
+-	rc = ecryptfs_process_helo(ECRYPTFS_TRANSPORT_MISCDEV, euid, user_ns,
+-				   pid);
+-	if (rc)
+-		printk(KERN_WARNING "Error processing HELO; rc = [%d]\n", rc);
+-	return rc;
+-}
+-
+-/**
+- * ecryptfs_miscdev_quit
+- * @euid: effective user id of miscdevess sending quit packet
+- * @user_ns: The namespace in which @euid applies
+- * @pid: miscdevess id of miscdevess sending quit packet
+- *
+- * Returns zero on success; non-zero otherwise
+- */
+-static int ecryptfs_miscdev_quit(uid_t euid, struct user_namespace *user_ns,
+-				 struct pid *pid)
+-{
+-	int rc;
+-
+-	rc = ecryptfs_process_quit(euid, user_ns, pid);
+-	if (rc)
+-		printk(KERN_WARNING
+-		       "Error processing QUIT message; rc = [%d]\n", rc);
+-	return rc;
+-}
+-
+-/**
+  * ecryptfs_miscdev_response - miscdevess response to message previously sent to daemon
+  * @data: Bytes comprising struct ecryptfs_message
+  * @data_size: sizeof(struct ecryptfs_message) + data len
+@@ -512,26 +472,7 @@ ecryptfs_miscdev_write(struct file *file, const char __user *buf,
+ 			       __func__, rc);
+ 		break;
+ 	case ECRYPTFS_MSG_HELO:
+-		rc = ecryptfs_miscdev_helo(current->euid,
+-					   current->nsproxy->user_ns,
+-					   task_pid(current));
+-		if (rc) {
+-			printk(KERN_ERR "%s: Error attempting to process "
+-			       "helo from pid [0x%p]; rc = [%d]\n", __func__,
+-			       task_pid(current), rc);
+-			goto out_free;
+-		}
+-		break;
+ 	case ECRYPTFS_MSG_QUIT:
+-		rc = ecryptfs_miscdev_quit(current->euid,
+-					   current->nsproxy->user_ns,
+-					   task_pid(current));
+-		if (rc) {
+-			printk(KERN_ERR "%s: Error attempting to process "
+-			       "quit from pid [0x%p]; rc = [%d]\n", __func__,
+-			       task_pid(current), rc);
+-			goto out_free;
+-		}
+ 		break;
+ 	default:
+ 		ecryptfs_printk(KERN_WARNING, "Dropping miscdev "
+-- 
+1.5.3.7
 
-	Arnd <><
