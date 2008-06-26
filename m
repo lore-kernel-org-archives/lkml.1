@@ -1,32 +1,62 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758692AbYFNJay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1761377AbYFZN13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758692AbYFNJay (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Sat, 14 Jun 2008 05:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755148AbYFNJal
+	id S1761377AbYFZN13 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 26 Jun 2008 09:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763627AbYFZN0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 05:30:41 -0400
-Received: from web94501.mail.in2.yahoo.com ([203.104.16.241]:25090 "HELO
-	web94501.mail.in2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754928AbYFNJal convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 05:30:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.co.in;
-  h=Received:X-Mailer:Date:From:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=u3gWIeQl6el+cmX+6R5O1LCYIdAavmVdTB0TyMK3pOPN80GqGaNXKUvtbDd0gsSsLIqmWYoUyrGPjEh5bASW41VyavQVHFX91fv+AYJtawLfvxR2dY4iPgfmlo6IehaWDGmStEf+XKJgOWZeBQ9flvsaLOVVTpPEEBHnLZ5cyF4=;
-X-Mailer: YahooMailRC/975.45 YahooMailWebService/0.7.199
-Date: Sat, 14 Jun 2008 15:00:37 +0530 (IST)
-From: vinoth kumar <boovino@yahoo.co.in>
-To: linuxkernel mailinglist <linux-kernel@vger.kernel.org>
+	Thu, 26 Jun 2008 09:26:55 -0400
+Received: from mx.sjtu.edu.cn ([202.112.26.52]:57255 "EHLO mx2.sjtu.edu.cn"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763616AbYFZN0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 09:26:54 -0400
+X-Greylist: delayed 1799 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Jun 2008 09:26:53 EDT
+Message-ID: <20080626205650.9ifra13zswgoo0ow@webmail1.sjtu.edu.cn>
+Date: Thu, 26 Jun 2008 20:56:50 +0800
+From: =?gb2312?b?z8TBwQ==?= <xiaiaxaxi@sjtu.edu.cn>
+To: linux-kernel@vger.kernel.org
+Subject: Can I use yield in this way
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Message-ID: <57901.73393.qm@web94501.mail.in2.yahoo.com>
+Content-Type: text/plain;
+	charset=GB2312;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have heard that initrd filesystem gets loaded after the kernel gets loaded. But i cant clearly get the significance of this funda. Could anyone explain me what it is. or point me to some link which clears me
+Hello,
 
+        I'd like to ask a question about the use of a kernel function,  
+yield(); I am working on Intel Core Duo, running Linux 2.6.21 I want  
+to let current process be off the cpu when the temperature of cpu is  
+too high. I add a function called thermal_balance in the timer  
+interrupt. My program is as following,
 
-      Unlimited freedom, unlimited storage. Get it now, on http://help.yahoo.com/l/in/yahoo/mail/yahoomail/tools/tools-08.html/
+scheduler_tick()
+{
+       static int count = 0;
+       count++;
+       if(count % 100 == 0)
+           thermal_balance();
+}
+
+static int thermal_balance(void)
+{
+       int cpu = smp_processor_id();
+       struct task_struct* task;
+       Get CPU temperature.
+
+       if (temperature is too high){
+               task = cpu_rq(cpu)->curr;
+               yield();
+               Move task to other cpu.
+       }
+}
+
+       Can yield() be used as above. After I compile the kernel and  
+run again. Kernel is not working just as it meets deadlock. And if I  
+comment yield(), it runs ok. Could anyone help me?Thanks!
+
