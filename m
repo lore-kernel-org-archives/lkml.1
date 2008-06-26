@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760895AbYFZSDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760448AbYFZSEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760895AbYFZSDs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760274AbYFZSDL
+	id S1760448AbYFZSEk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbYFZSE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:03:11 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:50522 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760166AbYFZSDJ (ORCPT
+	Thu, 26 Jun 2008 14:04:29 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:52963 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753636AbYFZSE1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:03:09 -0400
-Date: Thu, 26 Jun 2008 18:13:02 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25.6  kernel BUG at mm/highmem.c:319!
-In-Reply-To: <20080626083749.4fd0b403@infradead.org>
-Message-ID: <Pine.LNX.4.64.0806261756160.32336@blonde.site>
-References: <20080626145942.GA25295@redhat.com> <20080626083749.4fd0b403@infradead.org>
+	Thu, 26 Jun 2008 14:04:27 -0400
+Message-ID: <4863D87F.5060103@zytor.com>
+Date: Thu, 26 Jun 2008 10:57:19 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Adrian Bunk <bunk@kernel.org>, monstr@seznam.cz,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
+       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
+       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
+       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
+       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
+       Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH 48/60] microblaze_v4: headers simple files - empty or
+ redirect to asm-generic
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <200806261735.12738.arnd@arndb.de> <20080626162118.GG22025@cs181140183.pp.htv.fi> <200806261838.33787.arnd@arndb.de>
+In-Reply-To: <200806261838.33787.arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jun 2008, Arjan van de Ven wrote:
-> On Thu, 26 Jun 2008 10:59:42 -0400
-> Dave Jones <davej@redhat.com> wrote:
+Arnd Bergmann wrote:
+> On Thursday 26 June 2008, Adrian Bunk wrote:
+>> The comment could be nuked (as well as the #ifdef __KERNEL__), but for 
+>> the one #define an asm-generic header would IMHO be overkill.
 > 
-> > Anyone know how this can happen ?
-> > We just got a report from a user who is hitting the 
-> > 
-> >         BUG_ON(!PageHighMem(page));
-> > 
-> > in set_page_address().
+> I agree that it doesn't technically make sense to have a one-line
+> asm-generic header, but I like the idea of reducing the number of
+> asm/*.h files that actually contain anything other that
+> #include <asm-generic/$FILE.h>, mostly for documentation purposes.
 > 
-> we discussed this 2 or 3 weeks ago as part of the kerneloops reports...
-> everyone is puzzled... it's the number 20 report right now.
+> If we can eventually agree on a way to get rid of the requirement
+> for explicit redirection, we can remove a larger number of source
+> files completely.
 > 
-> http://www.kerneloops.org/search.php?search=set_page_address
-> 
-> it seems that fuse is a very popular module when this hits...
 
-I'm as puzzled now as back then.  And fuse isn't in Dave's list.
-But I did notice after reporting back on it, that i915 appears in all
-of the reports I looked at; and Fedora does have some drm/i915
-patches, which do involve kmap.
+The sanest way to do that would probably be something along the lines of:
 
-I know precious little about drm, but didn't spot anything in those
-patches which was likely to cause this: they might be a good place
-for Dave to start looking though.
+-> Change include/asm-xxx to arch/xxx/include/asm
+-> Create arch/generic
+-> Make sure arch/xxx/include/asm and arch/generic/include/asm are both 
+in the include path, in that order.
 
-If this user is suffering from it repeatedly, might s/he be prepared
-to run a kernel with more debug in it?  Though at this moment,
-I don't know what it is that I'd like to be looking for anyway -
-it's always easier to come up with debug patches when you've a
-hypothesis as to what's going on, which I don't have.
+That would also get rid of the symlink.
 
-Hugh
+On the other hand, the redirection isn't all that bad.
+
+	-hpa
