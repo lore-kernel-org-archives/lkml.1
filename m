@@ -1,78 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbYFZWj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757628AbYFZWkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758200AbYFZWj6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 18:39:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754505AbYFZWjn
+	id S1757628AbYFZWkk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 18:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbYFZWkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 18:39:43 -0400
-Received: from mga12.intel.com ([143.182.124.36]:33883 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755362AbYFZWjl (ORCPT
+	Thu, 26 Jun 2008 18:40:19 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:6662 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754193AbYFZWkP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 18:39:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,710,1204531200"; 
-   d="scan'208";a="3267967"
-From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
-To: linux-usb-devel@lists.sourceforge.net
-Subject: Re: Scatter-gather list constraints
-Date: Thu, 26 Jun 2008 15:39:25 -0700
-User-Agent: KMail/1.9.9
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       David Vrabel <david.vrabel@csr.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       AntonioLin <antonio.lin@alcormicro.com>, linux-usb@vger.kernel.org
-References: <Pine.LNX.4.44L0.0806261531440.3893-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0806261531440.3893-100000@iolanthe.rowland.org>
-Organization: Intel Corporation
+	Thu, 26 Jun 2008 18:40:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=HqXxgcxp/a+wNgrAxuQXAxm5dBBXTF9lx5lxtk16dszb4h1nXYvBmm+UA8+nYIfj3K
+         R66s/ByK49NAtjw1YFiU0lUQeWq7MYAILEdqbzyPSyktwU4I5xVFErQ9zJvZAGhaKMUw
+         1gCBvMy0E1BCnjmwhMSAEEFJVYTWuScD0Vl+c=
+Message-ID: <dd18b0c30806261540l56d68868p1d32597b2f5cb171@mail.gmail.com>
+Date: Thu, 26 Jun 2008 22:40:14 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: stuck tcp connections 2.6.26-rc7
+Cc: ray-lk@madrabbit.org, didier@raboud.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <dd18b0c30806260054p654e4ca9o57bf3e9b20f75907@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806261539.27469.inaky@linux.intel.com>
+References: <dd18b0c30806241303g755e3881y4ea7d403eb2922fc@mail.gmail.com>
+	 <dd18b0c30806242325j4f6d1b1bw1cdde7ea08ad12e2@mail.gmail.com>
+	 <2c0942db0806250816r123affb4x4ef17f4773180a10@mail.gmail.com>
+	 <20080625.152447.178284093.davem@davemloft.net>
+	 <dd18b0c30806251629q78abef79sb5b3d5a1ab17a004@mail.gmail.com>
+	 <dd18b0c30806260054p654e4ca9o57bf3e9b20f75907@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 June 2008, Alan Stern wrote:
-> On Thu, 26 Jun 2008, Perez-Gonzalez, Inaky wrote:
-> 
-> > For WA, when we get a buffer to be sent from a URB, it has to be split
-> > in chunks, each chunk has a header added. So we end up with a list of
-> > chunks, most of them quite small. Each requires a single URB to send.
-> > resources galore.
-> > 
-> > If we could queue all those, the overhead would be reduced to allocating
-> > the headers (possibly in a continuous array) and the sg "descriptors"
-> > to describe the whole thing.
-> > 
-> > However, the alignment stuff somebody mentioned in another email in this
-> > thread might cause problems.
-> > 
-> > At the end it might not be all that doable (I might be missing some
-> > subtle isssues), but it is well worth a look.
-> > 
-> > >Note that usbcore already contains a scatter-gather library.
-> > >(Unfortunately the library is limited in usefulness because it needs to
-> > >run in process context.)
-> > 
-> > And the overhead of one URB per sg "node" kills it's usability for
-> > WAs.
-> 
-> For this case (lots of small chunks making up a single URB), using a 
-> bounce buffer might well be the easiest solution.  It depends on the 
-> size of the URB and the number and sizes of the small chunks.  There 
-> would be a lot less overhead -- only one URB -- and one large memory
-> allocation instead of lots of small ones.
+On Thu, Jun 26, 2008 at 7:54 AM, Justin Mattock <justinmattock@gmail.com> wrote:
+> On Wed, Jun 25, 2008 at 11:29 PM, Justin Mattock
+> <justinmattock@gmail.com> wrote:
+>> On Wed, Jun 25, 2008 at 10:24 PM, David Miller <davem@davemloft.net> wrote:
+>>> From: "Ray Lee" <ray-lk@madrabbit.org>
+>>> Date: Wed, 25 Jun 2008 08:16:20 -0700
+>>>
+>>>> On my system, I've noticed that the flashplugin can manage to starve
+>>>> other processes in a pure scheduler sort of way, so you might try
+>>>> running latencytop to see if there's some sort of issue there. OTOH,
+>>>> I've noticed firefox itself hang for 3-15 seconds in the middle of a
+>>>> read (just as you describe), with nothing else going on in the system,
+>>>> so <shrug>. I've been blaming firefox, but I could be wrong.
+>>>
+>>> See if firefox is stuck in disk wait when things get wedged like
+>>> this.
+>>>
+>>
+>> Hello; Thanks for the response. I must admit I need to figure out how
+>> to do that(disk wait mode with firefox).
+>> Aside from that, it seems there are reports of this with the latest
+>> and so forth. As a note
+>> This explains why and when I plugged in an older kernel that had no
+>> problems at all,
+>> was suddenly giving me problems, leading me to believe  that my
+>> service provider(was bandwidth limiting), or a script kiddie
+>> was messing with the line, but this did not seem to be the case; Thankfully.
+>> I'll look into it and let you know.
+>> regards;
+>>
+>> --
+>> Justin P. Mattock
+>>
+>
+> Hello;
+> I must be mature too admit when I'm wrong, (I'm very wrong, and stupid);
+>  I was too quick to judge. : (          (apologize firefox)
+> I had overlooked one aspect of the situation: "wpa_supplicant",
+> After watching wpa_supplicant do it's job, I had noticed that it keeps
+> CTRL-EVENT-DISCONNECT - Disconnect event - remove keys,
+> and CTRL-EVENT-SCAN-RESULTS and trying to associate with
+> XX:XX:XX:XX:XX (SSID= XX freq= 2462 MHz).
+> anyways despite the manual jargon of wpa_supplicant; basically
+> whenever wpa_supplicant disconnects  and reconnects  the keys
+> I had noticed flash player, and any other connection's to stop or even
+> pause during the playback, depending on how well the transmission was.
+> So for now as for what I can see: wpa_supplicant is the main cause of
+> my troubles.
+> regards,
+>
+>
+>
+> --
+> Justin P. Mattock
+>
 
-That's what we have right now (if I rememeber correctly); the issue
-is that you end up copying A LOT. I don't know, maybe I am just being
-overperfectionist. The data chunks (segments) can be up to (digs)
-3584 [from 512, in 512 increments] if I am reading the spec right 
-(WUSB1.0 4.5.1). Interleaving that with small chunks and change...
-I don't know if that much copying will end up being that good, along
-with the allocations it requires, etc.
-
+Yep that resolved the issue. i.e. madwifi latest svn and previous
+versions has a bug in it to where it is causing wpa_supplicant
+to constantly disconnect and connect (re keying event) under heavy
+loads resulting in horrible internet connections.
+loaded an older version prior to march 08 and voila no problems(knock on wood)
+I'll monitor this for a few days, and see what results of it.
 -- 
-Inaky
+Justin P. Mattock
