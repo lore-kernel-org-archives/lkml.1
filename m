@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbYFZJj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757126AbYFZJnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756460AbYFZJj3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 05:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbYFZJjU
+	id S1757126AbYFZJnt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 05:43:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYFZJnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 05:39:20 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:5524 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754210AbYFZJjT (ORCPT
+	Thu, 26 Jun 2008 05:43:41 -0400
+Received: from po-out-1718.google.com ([72.14.252.153]:6143 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753204AbYFZJnk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 05:39:19 -0400
+	Thu, 26 Jun 2008 05:43:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=ZunC5fAKT5HcGXqas1aW5QU9llgT8uLJA+da2P8AdGTaiADThXUGbURPBmN8L/2dS8
-         JqszsqpJ0a5Fw4cNXsfa5RYTtPGg9toONVfDu7guFEap6sLuDKJZRCQY22kgkFJkOhj1
-         8qtm6DO4Kg6j6tZQr4yLfYft1V/I9DtiMVhiU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/4] ide-pmac: media-bay support fixes
-Date: Thu, 26 Jun 2008 11:40:39 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200806162124.43005.bzolnier@gmail.com> <200806261051.34733.bzolnier@gmail.com> <1214470868.8011.455.camel@pasglop>
-In-Reply-To: <1214470868.8011.455.camel@pasglop>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=PDjvBNEj2dpr7alDZRPcDkJaRK0G5SKGZ2aJdEhUldBRT26iyj/aKqTls1jN8VnLbn
+         imdjO7xpoZN/wfojrMjTVBsJ+w8Su1fdHA5cgnsyymr36Xwjmq5ATu0MJXUjAONBldHd
+         GVFGBgw0iixcKRODFwYafbe9FO3P8oZSagvLA=
+Message-ID: <86802c440806260243m5fe9fff2r3fc3cdeb7090eabf@mail.gmail.com>
+Date: Thu, 26 Jun 2008 02:43:40 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 2/2] x86 boot: early_res_to_e820
+Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+In-Reply-To: <1214467411.11346.34.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200806261140.39531.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1214461980.10809.7.camel@caritas-dev.intel.com>
+	 <86802c440806260013u447d15d8v94df7bb7bd00da19@mail.gmail.com>
+	 <1214465232.11346.18.camel@caritas-dev.intel.com>
+	 <86802c440806260029l35b68e4fh89264e1796e7863b@mail.gmail.com>
+	 <1214467411.11346.34.camel@caritas-dev.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 June 2008, Benjamin Herrenschmidt wrote:
-> On Thu, 2008-06-26 at 10:51 +0200, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > The latest patches in one place:
-> > 
-> > http://www.kernel.org/pub/linux/kernel/people/bart/pata-2.6/
-> > 
-> > pmac-media-bay-support-fixes-take-3.patch
-> > pmac-store-pmif-instead-of-hwif-in-driver_data-take-2.patch
-> > pmac-add-init_dev-method-take-3.patch
-> > pmac-move-ide_find_port-call-to-pmac_ide_setup_device-take-2.patch
-> > 
-> > IMO they are quite small and straightforward so setting git tree would
-> > be overdoing it but if there are still problems I will set one.
-> 
-> That's ok, just tell me a tree and an SHA1 ID of a commit on top of
-> which they apply, that will make my life easier :-)
+On Thu, Jun 26, 2008 at 1:03 AM, Huang, Ying <ying.huang@intel.com> wrote:
+> On Thu, 2008-06-26 at 00:29 -0700, Yinghai Lu wrote:
+> [...]
+>> >
+>> > For example, if EFI memory map is allocated in highmem area by
+>> > boot-loader, it need to be reserved in kernel. But on i386, bootmem can
+>> > only reserve memory area below max_low_pfn. So I think this is needed.
+>> >
+>> > In general, I think it is needed to provide a reservation mechanism for
+>> > highmem area on i386. Because some memory area from BIOS or boot-loader
+>> > may in highmem area.
+>>
+>> I mean call reserve_setup_data right after finish_e820_parsing,  and
+>> it could call e820_update_range directly.
+>
+> e820_update_range() can only be used after finish_e820_parsing()?
 
-They are still for *linux-next* (since they depend on other IDE changes)
-and apply fine on top of -20080625.
+you could call that just after setup_memory_map
 
-SHA1 ID is: 9ab50ba2f4958b593802ce91395d07148b611b71 but I don't know
-whether it is useful in linux-next context.
+>
+> parse_setup_data() should be called before parse_early_param() to let
+> early_param override settings in setup_data. Which is before
+> finish_e820_parsing(). It seems a little wired to use the data before
+> reserve it.
 
-> I'll test them tomorrow morning.
+that is ok, because no one use find_e820_area yet and e820 is a static
+array. so it is safe.
 
-Thanks.
+>
+> And this means find_e820_area() should not be called before
+> e820_update_range()?
 
-Bart
+Yes.. no one use it....first user is supposed for bootmap?
+
+YH
