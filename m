@@ -1,129 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760680AbYFZNKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763019AbYFZNLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760680AbYFZNKv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761359AbYFZM5S
+	id S1763019AbYFZNLO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761885AbYFZNAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:57:18 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:45227 "EHLO
-	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762750AbYFZM5Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:57:16 -0400
-Date: Thu, 26 Jun 2008 18:28:20 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Mike Travis <travis@sgi.com>, Vegard Nossum <vegard.nossum@gmail.com>,
-       Adrian Bunk <bunk@kernel.org>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer
-	dereference
-Message-ID: <20080626125820.GA30144@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20080622125633.GA8166@damson.getinternet.no> <200806241136.52430.rusty@rustcorp.com.au> <1214294783.25608.75.camel@ymzhang> <200806242314.51656.rusty@rustcorp.com.au>
+	Thu, 26 Jun 2008 09:00:38 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:26220 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760664AbYFZNAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 09:00:37 -0400
+Date: Thu, 26 Jun 2008 15:00:34 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, stern@rowland.harvard.edu,
+       linux-kernel@vger.kernel.org, antonio.lin@alcormicro.com,
+       david.vrabel@csr.com
+Subject: Re: Scatter-gather list constraints
+Message-ID: <20080626130034.GX20851@kernel.dk>
+References: <20080626110615U.fujita.tomonori@lab.ntt.co.jp> <20080626143928P.fujita.tomonori@lab.ntt.co.jp> <20080626063559.GJ20851@kernel.dk> <20080626155834I.fujita.tomonori@lab.ntt.co.jp> <20080626123936.GV20851@kernel.dk> <48639180.2090005@firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200806242314.51656.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <48639180.2090005@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 24, 2008 at 11:14:51PM +1000, Rusty Russell wrote:
-> On Tuesday 24 June 2008 18:06:23 Zhang, Yanmin wrote:
-> > On Tue, 2008-06-24 at 11:36 +1000, Rusty Russell wrote:
-> > > On Tuesday 24 June 2008 02:58:44 Mike Travis wrote:
-> > > > Rusty Russell wrote:
-> > > > > On Monday 23 June 2008 02:29:07 Vegard Nossum wrote:
-> > > > >> And the (cpu < nr_cpu_ids) fails because the CPU has just been
-> > > > >> offlined (or failed to initialize, but it's the same thing), while
-> > > > >> NR_CPUS is the value that was compiled in as CONFIG_NR_CPUS (so the
-> > > > >> former check will always be true).
-> > > > >>
-> > > > >> I don't think it is valid to ask for a per_cpu() variable on a CPU
-> > > > >> which does not exist, though
-> > > > >
-> > > > > Yes it is.  As long as cpu_possible(cpu), per_cpu(cpu) is valid.
-> > > > >
-> > > > > The number check should be removed: checking cpu_possible() is
-> > > > > sufficient.
-> > > > >
-> > > > > Hope that helps,
-> > > > > Rusty.
-> > > >
-> > > > I don't see a check for index being out of range in cpu_possible().
-> > >
-> > > You're right.  It assumes cpu is < NR_CPUS.  Hmm, I have no idea what's
-> > > going on.  nr_cpu_ids (ignore that it's a horrible name for a bad idea)
-> > > should be fine to test against.
-> > >
-> > > Vegard's analysis is flawed: just because cpu is offline, it still must
-> > > be < nr_cpu_ids, which is based on possible cpus.  Unless something crazy
-> > > is happening, but a quick grep doesn't reveal anyone manipulating
-> > > nr_cpu_ids.
-> > >
-> > > If changing this fixes the bug, something else is badly wrong...
-> > > Rusty.
-> >
-> > In function _cpu_up, the panic happens when calling
-> > __raw_notifier_call_chain at the second time. Kernel doesn't panic when
-> > calling it at the first time. If just say because ﻿of nr_cpu_ids, that's
-> > not right.
-> >
-> > By checking source codes, I find function do_boot_cpu is the culprit.
-> > Consider below call chain:
-> >  _cpu_up=>__cpu_up=>smp_ops.cpu_up=>native_cpu_up=>do_boot_cpu.
-> >
-> > So ﻿do_boot_cpu is called in the end. In ﻿do_boot_cpu, if boot_error==true,
-> > cpu_clear(cpu, cpu_possible_map) is executed. So later on, when ﻿_cpu_up
-> > calls ﻿__raw_notifier_call_chain at the second time to report
-> > CPU_UP_CANCELED, because this cpu is already cleared from
-> > ﻿cpu_possible_map, get_cpu_sysdev returns NULL.
-> >
-> > Many resources are related to ﻿cpu_possible_map, so it's better not to
-> > change it.
-> >
-> > Below patch against 2.6.26-rc7 fixes it by removing the bit clearing in
-> > ﻿cpu_possible_map.
-> >
-> > Vegard, would you like to help test it?
-> >
-> > ﻿﻿﻿Signed-off-by: Zhang Yanmin ﻿<yanmin_zhang@linux.intel.com>
-> >
-> > ---
-> >
-> > diff -Nraup linux-2.6.26-rc7/arch/x86/kernel/smpboot.c
-> > linux-2.6.26-rc7_cpuhotplug/arch/x86/kernel/smpboot.c ---
-> > linux-2.6.26-rc7/arch/x86/kernel/smpboot.c	2008-06-24 09:03:54.000000000
-> > +0800 +++ linux-2.6.26-rc7_cpuhotplug/arch/x86/kernel/smpboot.c	2008-06-24
-> > 09:04:45.000000000 +0800 @@ -996,7 +996,6 @@ do_rest:
-> >  #endif
-> >  		cpu_clear(cpu, cpu_callout_map); /* was set by do_boot_cpu() */
-> >  		cpu_clear(cpu, cpu_initialized); /* was set by cpu_init() */
-> > -		cpu_clear(cpu, cpu_possible_map);
-> >  		cpu_clear(cpu, cpu_present_map);
-
-Nice catch.
-
-While we're at it, is the clearing of cpu from the cpu_present_map
-necessary if cpu_up failed for 'cpu' ?
-
-> >  		per_cpu(x86_cpu_to_apicid, cpu) = BAD_APICID;
-> >  	}
+On Thu, Jun 26 2008, Andi Kleen wrote:
 > 
-> Nice catch.  Basically, cpu_possible_map should only be cleared at boot, and 
-> probably not even then.
+> > On the fs side, just setting a hw block size of 1k should fix the
+> > problem, since that'd be your minimum transfer size AND alignment there
+> > even for O_DIRECT IO.
 > 
-> Acked-by: Rusty Russell <rusty@rustcorp.com.au>
-> 
-> Thanks,
-> Rusty.
+> XFS used to force 512 byte IOs for its log IO. Not sure
+> that was ever fixed. If it was fixed it likely required a disk format
+> change (I think s390 ran into a problem like this)
+
+Issuing IO less than the hardware block size is illegal, so if they do
+that then they can't be supported on hardware with > 512b block sizes.
+Someone has to do the RMW for such an operation and we don't do it in
+drivers.
 
 -- 
-Thanks and Regards
-gautham
+Jens Axboe
+
