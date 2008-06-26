@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762614AbYFZM4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762692AbYFZM4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762614AbYFZM4Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 08:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbYFZMlA
+	id S1762692AbYFZM4h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 08:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758115AbYFZMlC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:41:00 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:22353 "EHLO
+	Thu, 26 Jun 2008 08:41:02 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:22403 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759550AbYFZMk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:40:57 -0400
+	id S1759584AbYFZMk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:40:58 -0400
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
@@ -17,11 +17,11 @@ Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
        hpa@zytor.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 41/60] microblaze_v4: atomic.h bitops.h byteorder.h
-Date: Thu, 26 Jun 2008 14:30:10 +0200
-Message-Id: <1214483429-32360-42-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 52/60] microblaze_v4: fcntl.h sockios.h ucontext.h
+Date: Thu, 26 Jun 2008 14:30:21 +0200
+Message-Id: <1214483429-32360-53-git-send-email-monstr@seznam.cz>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <1214483429-32360-41-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-52-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-2-git-send-email-monstr@seznam.cz>
  <1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -63,6 +63,17 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-39-git-send-email-monstr@seznam.cz>
  <1214483429-32360-40-git-send-email-monstr@seznam.cz>
  <1214483429-32360-41-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-42-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-43-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-44-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-45-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-46-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-47-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-48-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-49-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-50-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-51-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-52-git-send-email-monstr@seznam.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -72,20 +83,24 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/atomic.h    |  106 ++++++++++++++++++++++++++++++++++++
- include/asm-microblaze/bitops.h    |   27 +++++++++
- include/asm-microblaze/byteorder.h |   21 +++++++
- 3 files changed, 154 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/atomic.h
- create mode 100644 include/asm-microblaze/bitops.h
- create mode 100644 include/asm-microblaze/byteorder.h
+ include/asm-generic/sockios.h     |   23 +++++++++++++++++++++++
+ include/asm-generic/ucontext.h    |   24 ++++++++++++++++++++++++
+ include/asm-microblaze/fcntl.h    |    1 +
+ include/asm-microblaze/sockios.h  |   23 +++++++++++++++++++++++
+ include/asm-microblaze/ucontext.h |    1 +
+ 5 files changed, 72 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-generic/sockios.h
+ create mode 100644 include/asm-generic/ucontext.h
+ create mode 100644 include/asm-microblaze/fcntl.h
+ create mode 100644 include/asm-microblaze/sockios.h
+ create mode 100644 include/asm-microblaze/ucontext.h
 
-diff --git a/include/asm-microblaze/atomic.h b/include/asm-microblaze/atomic.h
+diff --git a/include/asm-generic/sockios.h b/include/asm-generic/sockios.h
 new file mode 100644
-index 0000000..754688a
+index 0000000..9dc86e6
 --- /dev/null
-+++ b/include/asm-microblaze/atomic.h
-@@ -0,0 +1,106 @@
++++ b/include/asm-generic/sockios.h
+@@ -0,0 +1,23 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -94,110 +109,64 @@ index 0000000..754688a
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_ATOMIC_H
-+#define _ASM_MICROBLAZE_ATOMIC_H
++#ifndef _ASM_GENERIC_SOCKIOS_H
++#define _ASM_GENERIC_SOCKIOS_H
 +
-+#include <linux/compiler.h> /* likely */
-+#include <asm/system.h> /* local_irq_XXX and friends */
++#include <asm-generic/ioctl.h>
 +
-+typedef struct { volatile int counter; } atomic_t;
++/* Socket-level I/O control calls. */
++#define FIOSETOWN	0x8901
++#define SIOCSPGRP	0x8902
++#define FIOGETOWN	0x8903
++#define SIOCGPGRP	0x8904
++#define SIOCATMARK	0x8905
++#define SIOCGSTAMP	0x8906		/* Get stamp (timeval) */
++#define SIOCGSTAMPNS	0x8907		/* Get stamp (timespec) */
 +
-+#define ATOMIC_INIT(i)		{ (i) }
-+#define atomic_read(v)		((v)->counter)
-+#define atomic_set(v, i)	(((v)->counter) = (i))
-+
-+#define atomic_inc(v)		(atomic_add_return(1, (v)))
-+#define atomic_dec(v)		(atomic_sub_return(1, (v)))
-+
-+#define atomic_add(i, v)	(atomic_add_return(i, (v)))
-+#define atomic_sub(i, v)	(atomic_sub_return(i, (v)))
-+
-+#define atomic_inc_return(v)	(atomic_add_return(1, (v)))
-+#define atomic_dec_return(v)	(atomic_sub_return(1, (v)))
-+
-+#define atomic_inc_and_test(v)	(atomic_add_return(1, (v)) == 0)
-+#define atomic_dec_and_test(v)	(atomic_sub_return(1, (v)) == 0)
-+
-+#define atomic_inc_not_zero(v)	(atomic_add_unless((v), 1, 0))
-+
-+#define atomic_sub_and_test(i, v) (atomic_sub_return((i), (v)) == 0)
-+
-+static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
-+{
-+	int ret;
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	ret = v->counter;
-+	if (likely(ret == old))
-+		v->counter = new;
-+	local_irq_restore(flags);
-+
-+	return ret;
-+}
-+
-+static inline int atomic_add_unless(atomic_t *v, int a, int u)
-+{
-+	int c, old;
-+
-+	c = atomic_read(v);
-+	while (c != u && (old = atomic_cmpxchg((v), c, c + a)) != c)
-+		c = old;
-+	return c != u;
-+}
-+
-+static inline void atomic_clear_mask(unsigned long mask, unsigned long *addr)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	*addr &= ~mask;
-+	local_irq_restore(flags);
-+}
-+
-+/**
-+ * atomic_add_return - add and return
-+ * @i: integer value to add
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically adds @i to @v and returns @i + @v
-+ */
-+static inline int atomic_add_return(int i, atomic_t *v)
-+{
-+	unsigned long flags;
-+	int val;
-+
-+	local_irq_save(flags);
-+	val = v->counter;
-+	v->counter = val += i;
-+	local_irq_restore(flags);
-+
-+	return val;
-+}
-+
-+static inline int atomic_sub_return(int i, atomic_t *v)
-+{
-+	return atomic_add_return(-i, v);
-+}
-+
-+#define atomic_add_negative(a, v)	(atomic_add_return((a), (v)) < 0)
-+#define atomic_xchg(v, new) (xchg(&((v)->counter), new))
-+
-+/* Atomic operations are already serializing */
-+#define smp_mb__before_atomic_dec()	barrier()
-+#define smp_mb__after_atomic_dec()	barrier()
-+#define smp_mb__before_atomic_inc()	barrier()
-+#define smp_mb__after_atomic_inc()	barrier()
-+
-+#include <asm-generic/atomic.h>
-+
-+#endif /* _ASM_MICROBLAZE_ATOMIC_H */
-diff --git a/include/asm-microblaze/bitops.h b/include/asm-microblaze/bitops.h
++#endif /* _ASM_GENERIC_SOCKIOS_H */
+diff --git a/include/asm-generic/ucontext.h b/include/asm-generic/ucontext.h
 new file mode 100644
-index 0000000..98ffb61
+index 0000000..3e718c2
 --- /dev/null
-+++ b/include/asm-microblaze/bitops.h
-@@ -0,0 +1,27 @@
++++ b/include/asm-generic/ucontext.h
+@@ -0,0 +1,24 @@
++/*
++ * include/asm-generic/ucontext.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
++
++#ifndef _ASM_GENERIC_UCONTEXT_H
++#define _ASM_GENERIC_UCONTEXT_H
++
++#include <asm/sigcontext.h>
++
++struct ucontext {
++	unsigned long		uc_flags;
++	struct ucontext		*uc_link;
++	stack_t			uc_stack;
++	struct sigcontext	uc_mcontext;
++	sigset_t		uc_sigmask; /* mask last for extensibility */
++};
++
++#endif /* _ASM_GENERIC_UCONTEXT_H */
+diff --git a/include/asm-microblaze/fcntl.h b/include/asm-microblaze/fcntl.h
+new file mode 100644
+index 0000000..46ab12d
+--- /dev/null
++++ b/include/asm-microblaze/fcntl.h
+@@ -0,0 +1 @@
++#include <asm-generic/fcntl.h>
+diff --git a/include/asm-microblaze/sockios.h b/include/asm-microblaze/sockios.h
+new file mode 100644
+index 0000000..41d1a0c
+--- /dev/null
++++ b/include/asm-microblaze/sockios.h
+@@ -0,0 +1,23 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -206,52 +175,28 @@ index 0000000..98ffb61
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_BITOPS_H
-+#define _ASM_MICROBLAZE_BITOPS_H
++#ifndef _ASM_MICROBLAZE_SOCKIOS_H
++#define _ASM_MICROBLAZE_SOCKIOS_H
 +
-+/*
-+ * Copyright 1992, Linus Torvalds.
-+ */
++#include <asm/ioctl.h>
 +
-+#include <linux/autoconf.h>
-+#include <asm/byteorder.h> /* swab32 */
-+#include <asm/system.h> /* save_flags */
++/* Socket-level I/O control calls. */
++#define FIOSETOWN	0x8901
++#define SIOCSPGRP	0x8902
++#define FIOGETOWN	0x8903
++#define SIOCGPGRP	0x8904
++#define SIOCATMARK	0x8905
++#define SIOCGSTAMP	0x8906		/* Get stamp (timeval) */
++#define SIOCGSTAMPNS	0x8907		/* Get stamp (timespec) */
 +
-+/*
-+ * clear_bit() doesn't provide any barrier for the compiler.
-+ */
-+#define smp_mb__before_clear_bit()	barrier()
-+#define smp_mb__after_clear_bit()	barrier()
-+#include <asm-generic/bitops.h>
-+
-+#endif /* _ASM_MICROBLAZE_BITOPS_H */
-diff --git a/include/asm-microblaze/byteorder.h b/include/asm-microblaze/byteorder.h
++#endif /* _ASM_MICROBLAZE_SOCKIOS_H */
+diff --git a/include/asm-microblaze/ucontext.h b/include/asm-microblaze/ucontext.h
 new file mode 100644
-index 0000000..dad9204
+index 0000000..9bc07b9
 --- /dev/null
-+++ b/include/asm-microblaze/byteorder.h
-@@ -0,0 +1,21 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_BYTEORDER_H
-+#define _ASM_MICROBLAZE_BYTEORDER_H
-+
-+#include <asm/types.h>
-+
-+#if defined(__GNUC__) && !defined(__STRICT_ANSI__) || defined(__KERNEL__)
-+#define __BYTEORDER_HAS_U64__
-+#define __SWAB_64_THRU_32__
-+#endif
-+
-+#include <linux/byteorder/big_endian.h>
-+
-+#endif /* _ASM_MICROBLAZE_BYTEORDER_H */
++++ b/include/asm-microblaze/ucontext.h
+@@ -0,0 +1 @@
++#include <asm-generic/ucontext.h>
 -- 
 1.5.4.GIT
 
