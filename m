@@ -1,124 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757387AbYFZKs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbYFZK56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757387AbYFZKs0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 06:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbYFZKsP
+	id S1756639AbYFZK56 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 06:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYFZK5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 06:48:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58038 "EHLO ogre.sisk.pl"
+	Thu, 26 Jun 2008 06:57:48 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35470 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752800AbYFZKsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 06:48:13 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: linux-next: Tree for June 25
-Date: Thu, 26 Jun 2008 12:49:23 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, kernel-testers@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-References: <20080626003554.b2623aba.sfr@canb.auug.org.au> <200806260859.26270.rjw@sisk.pl> <alpine.LRH.1.10.0806261201420.10290@twin.jikos.cz>
-In-Reply-To: <alpine.LRH.1.10.0806261201420.10290@twin.jikos.cz>
+	id S1751265AbYFZK5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 06:57:47 -0400
+Date: Thu, 26 Jun 2008 12:57:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
+       Mark McLoughlin <markmc@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Nick Piggin <npiggin@suse.de>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH 00 of 36] x86/paravirt: groundwork for 64-bit Xen support
+Message-ID: <20080626105722.GA12640@elte.hu>
+References: <patchbomb.1214367536@localhost> <20080625084253.GA11524@elte.hu> <20080625152212.GA3442@elte.hu> <4862A6A9.1030109@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200806261249.24340.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4862A6A9.1030109@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 26 of June 2008, Jiri Kosina wrote:
-> On Thu, 26 Jun 2008, Rafael J. Wysocki wrote:
-> 
-> > BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
-> > IP: [<ffffffff80264230>] find_symbol+0x230/0x260
-> > PGD 5c817067 PUD 5cccf067 PMD 0
-> > Oops: 0002 [1] SMP DEBUG_PAGEALLOC
-> > last sysfs file:
-> > CPU 0
-> > Modules linked in:
-> > Pid: 912, comm: modprobe Not tainted 2.6.26-rc7-next #4
-> > RIP: 0010:[<ffffffff80264230>]  [<ffffffff80264230>] find_symbol+0x230/0x260
-> > RSP: 0018:ffff81005cbddc68  EFLAGS: 00010202
-> > RAX: 0000000000000000 RBX: 000000000000003d RCX: ffffffff805b8568
-> > RDX: 0000000000000000 RSI: ffffffff80573e0f RDI: ffffffff805c0bcc
-> > RBP: ffff81005cbddda8 R08: ffff81005cbddd48 R09: 0000000000000001
-> > R10: 0000000000000000 R11: 000000000000003c R12: fffffffffffffff2
-> > R13: 00000000000b2507 R14: 00000000006181e0 R15: ffffc20000689240
-> > FS:  00007f5820fed6f0(0000) GS:ffffffff80613f40(0000) knlGS:0000000000000000
-> > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > CR2: 0000000000000000 CR3: 000000005c87f000 CR4: 00000000000006e0
-> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > Process modprobe (pid: 912, threadinfo ffff81005cbdc000, task ffff81005c9f6840)
-> > Stack:  ffff81005c9f6840 0000000000000000 0000000000000000 00000000006180f8
-> > ffff81005cbddf40 0000000000000000 ffff81005c9f6840 ffffffff8049728f
-> > 00000000000b2507 00000000006181e0 ffff81005cbddcd8 ffffffff8025c70a
-> > Call Trace:
-> > [<ffffffff8049728f>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-> > [<ffffffff8025c70a>] ? trace_hardirqs_on_caller+0xca/0x160
-> > [<ffffffff8049728f>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-> > [<ffffffff8020f167>] ? do_softirq+0x47/0xa0
-> > [<ffffffff8020bc9f>] ? restore_args+0x0/0x30
-> > [<ffffffff80263c80>] ? struct_module+0x0/0x10
-> > [<ffffffff802648f3>] ? find_sec+0x53/0x70
-> > [<ffffffff80265c04>] sys_init_module+0x6b4/0x1e00
-> > [<ffffffff802afc11>] ? do_sync_read+0xf1/0x130
-> > [<ffffffff802505e0>] ? autoremove_wake_function+0x0/0x40
-> > [<ffffffff80323791>] ? security_file_permission+0x11/0x20
-> > [<ffffffff8049728f>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-> > [<ffffffff8025c70a>] ? trace_hardirqs_on_caller+0xca/0x160
-> > [<ffffffff8049728f>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-> > [<ffffffff8020b65b>] system_call_after_swapgs+0x7b/0x80
-> >
-> >
-> > Code: 49 8b 43 08 0f 18 08 49 8d 43 08 48 3d c0 a5 5d 80 0f 85 47 fe ff ff 48 c7 c0 fe ff ff ff eb 20 48 8b 45 b0 48 8b 95 e8 fe ff ff <48> 89 02 48
-> > RIP  [<ffffffff80264230>] find_symbol+0x230/0x260
-> > RSP <ffff81005cbddc68>
-> > CR2: 0000000000000000
-> > ---[ end trace 81cec6311b0e1cee ]---
-> 
-> I guess this got in through Rusty's tree, right?
-> 
-> Does the patch below fix it please?
 
-Yes, it does.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Thanks,
-Rafael
+>> It quickly broke the build in testing:
+>>
+>>  include/asm/pgalloc.h: In function ‘paravirt_pgd_free':
+>>  include/asm/pgalloc.h:14: error: parameter name omitted
+>>  arch/x86/kernel/entry_64.S: In file included from  
+>> arch/x86/kernel/traps_64.c:51:include/asm/pgalloc.h: In function 
+>> ‘paravirt_pgd_free':
+>>  include/asm/pgalloc.h:14: error: parameter name omitted
+>>   
+>
+> No, looks like my fault.  The non-PARAVIRT version of  
+> paravirt_pgd_free() is:
+>
+> static inline void paravirt_pgd_free(struct mm_struct *mm, pgd_t *) {}
+>
+> but C doesn't like missing parameter names, even if unused.
+>
+> This should fix it:
 
+that fixed the build but now we've got a boot crash with this config:
 
-> From: Jiri Kosina <jkosina@suse.cz>
-> Subject: [PATCH] module: fix NULL pointer dereference in find_symbol()
-> 
-> The patch that introduces each_symbol() iterator forgets to
-> test the NULL value of the output parameters (which the original
-> code did).
-> 
-> This patch restores the correct checks.
-> 
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> ---
->   kernel/module.c |    6 ++++--
->   1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/module.c b/kernel/module.c
-> index 880409f..a3354ca 100644
-> --- a/kernel/module.c
-> +++ b/kernel/module.c
-> @@ -304,8 +304,10 @@ static unsigned long find_symbol(const char *name,
->   	fsa.warn = warn;
-> 
->   	if (each_symbol(find_symbol_in_section, &fsa)) {
-> -		*owner = fsa.owner;
-> -		*crc = fsa.crc;
-> +		if (owner)
-> +			*owner = fsa.owner;
-> +		if (crc)
-> +			*crc = fsa.crc;
->   		return fsa.value;
->   	}
-> 
+ time.c: Detected 2010.304 MHz processor.
+ spurious 8259A interrupt: IRQ7.
+ BUG: unable to handle kernel NULL pointer dereference at  0000000000000000
+ IP: [<0000000000000000>]
+ PGD 0
+ Thread overran stack, or stack corrupted
+ Oops: 0010 [1] SMP
+ CPU 0
+
+with:
+
+  http://redhat.com/~mingo/misc/config-Thu_Jun_26_12_46_46_CEST_2008.bad
+
+i've pushed out the current tip/xen-64bit branch, so that you can see 
+how things look like at the moment, but i cannot put it into tip/master 
+yet.
+
+	Ingo
