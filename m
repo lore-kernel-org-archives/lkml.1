@@ -1,88 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbYFZVOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758817AbYFZVRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758794AbYFZVOK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 17:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbYFZVNx
+	id S1758817AbYFZVRy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 17:17:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbYFZVRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 17:13:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50476 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753681AbYFZVNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 17:13:51 -0400
-Date: Thu, 26 Jun 2008 17:06:24 -0400
-From: Dave Jones <davej@redhat.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Chris Snook <csnook@redhat.com>,
-       Dave Jones <davej@codemonkey.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: GFP_ATOMIC page allocation failures.
-Message-ID: <20080626210624.GA11816@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Nick Piggin <nickpiggin@yahoo.com.au>,
-	Chris Snook <csnook@redhat.com>,
-	Dave Jones <davej@codemonkey.org.uk>,
-	Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-	Peter Zijlstra <peterz@infradead.org>
-References: <20080401235609.GA6947@codemonkey.org.uk> <200804022012.58760.nickpiggin@yahoo.com.au> <20080402085437.7d9abf1f.akpm@linux-foundation.org> <200804031622.26973.nickpiggin@yahoo.com.au> <20080402223254.5ac50337.akpm@linux-foundation.org> <20080403085922.GA10874@2ka.mipt.ru>
+	Thu, 26 Jun 2008 17:17:44 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:28049 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754081AbYFZVRo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 17:17:44 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=Z5+qNZgm2X4yMycRzWac/Ad07LDIw0VA34Byr0VeWGZBEVPmue7I/q5QLPcIh0l4l
+	8nAoQW4G0bNMPrLAMutzg==
+Message-ID: <6599ad830806261417u3015a9b2i6318841de866d768@mail.gmail.com>
+Date: Thu, 26 Jun 2008 14:17:35 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Max Krasnyansky" <maxk@qualcomm.com>
+Subject: Re: [RFC][PATCH] CPUSets: Move most calls to rebuild_sched_domains() to the workqueue
+Cc: "Vegard Nossum" <vegard.nossum@gmail.com>, "Paul Jackson" <pj@sgi.com>,
+       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       "Gautham shenoy" <ego@in.ibm.com>
+In-Reply-To: <6599ad830806261334y6def5f7an57ac8f071a08eb4b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080403085922.GA10874@2ka.mipt.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <48634BC1.8@google.com>
+	 <19f34abd0806260234y7616bab2k54bc019dfb0c6305@mail.gmail.com>
+	 <6599ad830806260250m39d700a5haf0f32d999cd2129@mail.gmail.com>
+	 <4863E4C8.9050705@qualcomm.com>
+	 <6599ad830806261334y6def5f7an57ac8f071a08eb4b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This thread seemed to die out with no resolution..
+On Thu, Jun 26, 2008 at 1:34 PM, Paul Menage <menage@google.com> wrote:
+>
+> void get_online_cpus(void)
+> {
+>        might_sleep();
+>        if (cpu_hotplug.active_writer == current)
+>                return;
+>        down_read(&cpu_hotplug.lock);
+> }
+>
+> void put_online_cpus(void)
+> {
+>        if (cpu_hotplug.active_writer == current)
+>                return;
+>        up_read(&cpu_hotplug.lock);
+> }
+>
+> static void cpu_hotplug_begin(void)
+> {
+>        down_write(&cpu_hotplug.lock);
+>        cpu_hotplug.active_writer = current;
+> }
+>
+> static void cpu_hotplug_done(void)
+> {
+>        cpu_hotplug.active_writer = NULL;
+>        up_write(&cpu_hotplug.lock);
+> }
+>
+> I think that combined with moving the async rebuild_sched_domains to a
+> separate thread should solve the problem, but I'm wondering why
+> cpu_hotplug.lock was implemented this way in the first place.
 
-On Thu, Apr 03, 2008 at 12:59:22PM +0400, Evgeniy Polyakov wrote:
- > On Wed, Apr 02, 2008 at 10:32:54PM -0700, Andrew Morton (akpm@linux-foundation.org) wrote:
- > > > > It also tells us when we mucked up the net driver - I doubt if we (or at
- > > > > least, I) would have discovered that e1000 does a 32k allocation for a
- > > > > 5k(?) frame if this warning wasn't coming out.
- > > > 
- > > > Is that right? If it is allocating for 9K MTU, then the slab allocator
- > > > (slub in this case) will bump that up to the 16K kmalloc slab. If it is
- > > > a 5K frame, then it would get the 8K kmalloc slab I think.
- > > > 
- > > > Oh, but SLUB's default MIN_OBJECTS is 4, so 4*8 is 32 indeed. So slub
- > > > is probably deciding to round the kmalloc-8192 allocations up to order-3.
- > > > I think. How did you know it was a 5k frame? :)
- > > 
- > > urgh, it was a while ago, and I don't know if e1000e retains the behaviour.
- > > 
- > > iirc the issue was with some errant versions of the hardware needing
- > > exorbitant alignment and additional padding at the end because of
- > > occasional DMA overruns.  Something like that.
- > 
- > e1000 hardware does require power-of-two alignment, network stack adds
- > additional structure at the end, so with e1000 it ends up with two
- > rounds to the higher power of two.
- > 5k ends up with 16k allocations, 9k - to 32k.
- > 
- > This problem is known for years already and number of fixes was
- > proposed, but the really good one is to rewrite e1000 allocation path to
- > use fragments, which I believe was done in the new e1000 driver.
+Oh, I guess that doesn't work because of recursive calls to
+get_online_cpus(). Maybe we need a down_read_recursive() that skips
+ahead of waiting writers if the lock is already held in read mode?
 
-So this morning, we got a fresh report from this in 2.6.25.6's e1000 driver
-https://bugzilla.redhat.com/show_bug.cgi?id=453010
-Pages and pages of spew, which make users freak out.
-This stuff might be 'nice to know', but if it isn't getting fixed,
-I can see why some distros have been shipping the 'silence GFP_ATOMIC failures'
-patches for some time.
-
-	Dave
-
- > And as a side note: shuting allocation failures is a very bad step,
- > since it hides allocation problems for drivers. if people do care about
- > it add __GFP_SMALL_WARN flag which will just print that allocation
- > failed, its order and function where it happend.
-
-
-
--- 
-http://www.codemonkey.org.uk
+Paul
