@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761756AbYFZNAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762430AbYFZNG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761756AbYFZNAM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:00:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759653AbYFZMlf
+	id S1762430AbYFZNG1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:06:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760803AbYFZMr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:41:35 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:22650 "EHLO
+	Thu, 26 Jun 2008 08:47:28 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:23889 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759142AbYFZMlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:41:25 -0400
+	id S1759988AbYFZMrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:47:25 -0400
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
@@ -17,11 +17,11 @@ Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
        hpa@zytor.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 56/60] microblaze_v4: IPC headers
-Date: Thu, 26 Jun 2008 14:30:25 +0200
-Message-Id: <1214483429-32360-57-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
+Date: Thu, 26 Jun 2008 14:29:41 +0200
+Message-Id: <1214483429-32360-13-git-send-email-monstr@seznam.cz>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <1214483429-32360-56-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-12-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-2-git-send-email-monstr@seznam.cz>
  <1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -34,50 +34,6 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-10-git-send-email-monstr@seznam.cz>
  <1214483429-32360-11-git-send-email-monstr@seznam.cz>
  <1214483429-32360-12-git-send-email-monstr@seznam.cz>
- <1214483429-32360-13-git-send-email-monstr@seznam.cz>
- <1214483429-32360-14-git-send-email-monstr@seznam.cz>
- <1214483429-32360-15-git-send-email-monstr@seznam.cz>
- <1214483429-32360-16-git-send-email-monstr@seznam.cz>
- <1214483429-32360-17-git-send-email-monstr@seznam.cz>
- <1214483429-32360-18-git-send-email-monstr@seznam.cz>
- <1214483429-32360-19-git-send-email-monstr@seznam.cz>
- <1214483429-32360-20-git-send-email-monstr@seznam.cz>
- <1214483429-32360-21-git-send-email-monstr@seznam.cz>
- <1214483429-32360-22-git-send-email-monstr@seznam.cz>
- <1214483429-32360-23-git-send-email-monstr@seznam.cz>
- <1214483429-32360-24-git-send-email-monstr@seznam.cz>
- <1214483429-32360-25-git-send-email-monstr@seznam.cz>
- <1214483429-32360-26-git-send-email-monstr@seznam.cz>
- <1214483429-32360-27-git-send-email-monstr@seznam.cz>
- <1214483429-32360-28-git-send-email-monstr@seznam.cz>
- <1214483429-32360-29-git-send-email-monstr@seznam.cz>
- <1214483429-32360-30-git-send-email-monstr@seznam.cz>
- <1214483429-32360-31-git-send-email-monstr@seznam.cz>
- <1214483429-32360-32-git-send-email-monstr@seznam.cz>
- <1214483429-32360-33-git-send-email-monstr@seznam.cz>
- <1214483429-32360-34-git-send-email-monstr@seznam.cz>
- <1214483429-32360-35-git-send-email-monstr@seznam.cz>
- <1214483429-32360-36-git-send-email-monstr@seznam.cz>
- <1214483429-32360-37-git-send-email-monstr@seznam.cz>
- <1214483429-32360-38-git-send-email-monstr@seznam.cz>
- <1214483429-32360-39-git-send-email-monstr@seznam.cz>
- <1214483429-32360-40-git-send-email-monstr@seznam.cz>
- <1214483429-32360-41-git-send-email-monstr@seznam.cz>
- <1214483429-32360-42-git-send-email-monstr@seznam.cz>
- <1214483429-32360-43-git-send-email-monstr@seznam.cz>
- <1214483429-32360-44-git-send-email-monstr@seznam.cz>
- <1214483429-32360-45-git-send-email-monstr@seznam.cz>
- <1214483429-32360-46-git-send-email-monstr@seznam.cz>
- <1214483429-32360-47-git-send-email-monstr@seznam.cz>
- <1214483429-32360-48-git-send-email-monstr@seznam.cz>
- <1214483429-32360-49-git-send-email-monstr@seznam.cz>
- <1214483429-32360-50-git-send-email-monstr@seznam.cz>
- <1214483429-32360-51-git-send-email-monstr@seznam.cz>
- <1214483429-32360-52-git-send-email-monstr@seznam.cz>
- <1214483429-32360-53-git-send-email-monstr@seznam.cz>
- <1214483429-32360-54-git-send-email-monstr@seznam.cz>
- <1214483429-32360-55-git-send-email-monstr@seznam.cz>
- <1214483429-32360-56-git-send-email-monstr@seznam.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -87,61 +43,316 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/ipc.h    |    1 +
- include/asm-microblaze/ipcbuf.h |   36 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 37 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/ipc.h
- create mode 100644 include/asm-microblaze/ipcbuf.h
+ arch/microblaze/platform/generic/system.dts |  300 +++++++++++++++++++++++++++
+ 1 files changed, 300 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/platform/generic/system.dts
 
-diff --git a/include/asm-microblaze/ipc.h b/include/asm-microblaze/ipc.h
+diff --git a/arch/microblaze/platform/generic/system.dts b/arch/microblaze/platform/generic/system.dts
 new file mode 100644
-index 0000000..a46e3d9
+index 0000000..724a037
 --- /dev/null
-+++ b/include/asm-microblaze/ipc.h
-@@ -0,0 +1 @@
-+#include <asm-generic/ipc.h>
-diff --git a/include/asm-microblaze/ipcbuf.h b/include/asm-microblaze/ipcbuf.h
-new file mode 100644
-index 0000000..b056fa4
---- /dev/null
-+++ b/include/asm-microblaze/ipcbuf.h
-@@ -0,0 +1,36 @@
++++ b/arch/microblaze/platform/generic/system.dts
+@@ -0,0 +1,300 @@
 +/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * (C) Copyright 2007-2008 Xilinx, Inc.
++ * (C) Copyright 2007-2008 Michal Simek
 + *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
++ * Michal SIMEK <monstr@monstr.eu>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ *
++ * CAUTION: This file is automatically generated by libgen.
++ * Version: Xilinx EDK 9.2.02 EDK_Jm_SP2.3
++ * Generate by FDT v1.00.a
 + */
 +
-+#ifndef _ASM_MICROBLAZE_IPCBUF_H
-+#define _ASM_MICROBLAZE_IPCBUF_H
-+
-+/*
-+ * The user_ipc_perm structure for microblaze architecture.
-+ * Note extra padding because this structure is passed back and forth
-+ * between kernel and user space.
-+ *
-+ * Pad space is left for:
-+ * - 32-bit mode_t and seq
-+ * - 2 miscellaneous 32-bit values
-+ */
-+
-+struct ipc64_perm {
-+	__kernel_key_t		key;
-+	__kernel_uid32_t	uid;
-+	__kernel_gid32_t	gid;
-+	__kernel_uid32_t	cuid;
-+	__kernel_gid32_t	cgid;
-+	__kernel_mode_t		mode;
-+	unsigned short		__pad1;
-+	unsigned short		seq;
-+	unsigned short		__pad2;
-+	unsigned long		__unused1;
-+	unsigned long		__unused2;
-+};
-+
-+#endif /* _ASM_MICROBLAZE_IPCBUF_H */
++/ {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	compatible = "xlnx,microblaze";
++	model = "testing";
++	DDR_SDRAM_32Mx16: memory@20000000 {
++		device_type = "memory";
++		reg = < 20000000 2000000 >;
++	} ;
++	chosen {
++		bootargs = "console=ttyUL0,115200 loglevel=15";
++		linux,stdout-path = "/plb@0/serial@40100000";
++	} ;
++	cpus {
++		#address-cells = <1>;
++		#cpus = <1>;
++		#size-cells = <0>;
++		microblaze_0: cpu@0 {
++			clock-frequency = <2faf080>;
++			compatible = "xlnx,microblaze-7.00.a";
++			d-cache-baseaddr = <20000000>;
++			d-cache-highaddr = <21ffffff>;
++			d-cache-line-size = <10>;
++			d-cache-size = <4000>;
++			device_type = "cpu";
++			i-cache-baseaddr = <20000000>;
++			i-cache-highaddr = <21ffffff>;
++			i-cache-line-size = <10>;
++			i-cache-size = <4000>;
++			model = "microblaze,7.00.a";
++			reg = <0>;
++			timebase-frequency = <2faf080>;
++			xlnx,addr-tag-bits = <b>;
++			xlnx,allow-dcache-wr = <1>;
++			xlnx,allow-icache-wr = <1>;
++			xlnx,area-optimized = <0>;
++			xlnx,cache-byte-size = <4000>;
++			xlnx,d-lmb = <1>;
++			xlnx,d-opb = <0>;
++			xlnx,d-plb = <1>;
++			xlnx,data-size = <20>;
++			xlnx,dcache-addr-tag = <b>;
++			xlnx,dcache-byte-size = <4000>;
++			xlnx,dcache-line-len = <4>;
++			xlnx,dcache-use-fsl = <1>;
++			xlnx,debug-enabled = <1>;
++			xlnx,div-zero-exception = <1>;
++			xlnx,dopb-bus-exception = <0>;
++			xlnx,dynamic-bus-sizing = <1>;
++			xlnx,edge-is-positive = <1>;
++			xlnx,family = "spartan3e";
++			xlnx,fpu-exception = <1>;
++			xlnx,fsl-data-size = <20>;
++			xlnx,fsl-exception = <0>;
++			xlnx,fsl-links = <1>;
++			xlnx,i-lmb = <1>;
++			xlnx,i-opb = <0>;
++			xlnx,i-plb = <1>;
++			xlnx,icache-line-len = <4>;
++			xlnx,icache-use-fsl = <1>;
++			xlnx,ill-opcode-exception = <1>;
++			xlnx,instance = "microblaze_0";
++			xlnx,interconnect = <1>;
++			xlnx,interrupt-is-edge = <0>;
++			xlnx,iopb-bus-exception = <0>;
++			xlnx,mmu-dtlb-size = <4>;
++			xlnx,mmu-itlb-size = <2>;
++			xlnx,mmu-tlb-access = <3>;
++			xlnx,mmu-zones = <2>;
++			xlnx,number-of-pc-brk = <2>;
++			xlnx,number-of-rd-addr-brk = <0>;
++			xlnx,number-of-wr-addr-brk = <0>;
++			xlnx,opcode-0x0-illegal = <1>;
++			xlnx,pvr = <2>;
++			xlnx,pvr-user1 = <12>;
++			xlnx,pvr-user2 = <12345678>;
++			xlnx,reset-msr = <0>;
++			xlnx,sco = <0>;
++			xlnx,unaligned-exceptions = <1>;
++			xlnx,use-barrel = <1>;
++			xlnx,use-dcache = <1>;
++			xlnx,use-div = <1>;
++			xlnx,use-extended-fsl-instr = <0>;
++			xlnx,use-fpu = <2>;
++			xlnx,use-hw-mul = <2>;
++			xlnx,use-icache = <1>;
++			xlnx,use-mmu = <3>;
++			xlnx,use-msr-instr = <1>;
++			xlnx,use-pcmp-instr = <1>;
++		} ;
++	} ;
++	mb_plb: plb@0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "xlnx,plb-v46-1.00.a", "simple-bus";
++		ranges ;
++		Buttons_3Bit: gpio@40800000 {
++			compatible = "xlnx,xps-gpio-1.00.a";
++			interrupt-parent = <&xps_intc_0>;
++			interrupts = < 6 2 >;
++			reg = < 40800000 100000 >;
++			xlnx,all-inputs = <1>;
++			xlnx,all-inputs-2 = <0>;
++			xlnx,dout-default = <0>;
++			xlnx,dout-default-2 = <0>;
++			xlnx,family = "spartan3e";
++			xlnx,gpio-width = <3>;
++			xlnx,interrupt-present = <1>;
++			xlnx,is-bidir = <0>;
++			xlnx,is-bidir-2 = <1>;
++			xlnx,is-dual = <0>;
++			xlnx,tri-default = <ffffffff>;
++			xlnx,tri-default-2 = <ffffffff>;
++		} ;
++		Character_LCD_2x16: gpio@40900000 {
++			compatible = "xlnx,xps-gpio-1.00.a";
++			reg = < 40900000 100000 >;
++			xlnx,all-inputs = <0>;
++			xlnx,all-inputs-2 = <0>;
++			xlnx,dout-default = <0>;
++			xlnx,dout-default-2 = <0>;
++			xlnx,family = "spartan3e";
++			xlnx,gpio-width = <7>;
++			xlnx,interrupt-present = <0>;
++			xlnx,is-bidir = <1>;
++			xlnx,is-bidir-2 = <1>;
++			xlnx,is-dual = <0>;
++			xlnx,tri-default = <ffffffff>;
++			xlnx,tri-default-2 = <ffffffff>;
++		} ;
++		DIP_Switches_4Bit: gpio@40700000 {
++			compatible = "xlnx,xps-gpio-1.00.a";
++			interrupt-parent = <&xps_intc_0>;
++			interrupts = < 7 2 >;
++			reg = < 40700000 100000 >;
++			xlnx,all-inputs = <1>;
++			xlnx,all-inputs-2 = <0>;
++			xlnx,dout-default = <0>;
++			xlnx,dout-default-2 = <0>;
++			xlnx,family = "spartan3e";
++			xlnx,gpio-width = <4>;
++			xlnx,interrupt-present = <1>;
++			xlnx,is-bidir = <0>;
++			xlnx,is-bidir-2 = <1>;
++			xlnx,is-dual = <0>;
++			xlnx,tri-default = <ffffffff>;
++			xlnx,tri-default-2 = <ffffffff>;
++		} ;
++		Ethernet_MAC: ethernet@40c00000 {
++			compatible = "xlnx,xps-ethernetlite-1.00.a";
++			device_type = "network";
++			interrupt-parent = <&xps_intc_0>;
++			interrupts = < 2 0 >;
++			local-mac-address = [ 02 00 00 00 00 00 ];
++			reg = < 40c00000 100000 >;
++			xlnx,duplex = <1>;
++			xlnx,family = "spartan3e";
++			xlnx,rx-ping-pong = <0>;
++			xlnx,tx-ping-pong = <0>;
++		} ;
++		LEDs_8Bit: gpio@40600000 {
++			compatible = "xlnx,xps-gpio-1.00.a";
++			reg = < 40600000 100000 >;
++			xlnx,all-inputs = <0>;
++			xlnx,all-inputs-2 = <0>;
++			xlnx,dout-default = <0>;
++			xlnx,dout-default-2 = <0>;
++			xlnx,family = "spartan3e";
++			xlnx,gpio-width = <8>;
++			xlnx,interrupt-present = <0>;
++			xlnx,is-bidir = <0>;
++			xlnx,is-bidir-2 = <1>;
++			xlnx,is-dual = <0>;
++			xlnx,tri-default = <ffffffff>;
++			xlnx,tri-default-2 = <ffffffff>;
++		} ;
++		RS232_DCE: serial@40200000 {
++			clock-frequency = <2faf080>;
++			compatible = "xlnx,xps-uart16550-1.00.a", "ns16550";
++			current-speed = <2580>;
++			device_type = "serial";
++			interrupt-parent = <&xps_intc_0>;
++			interrupts = < 4 2 >;
++			reg = < 40200000 100000 >;
++			reg-offset = <3>;
++			reg-shift = <2>;
++			xlnx,family = "spartan3e";
++			xlnx,has-external-rclk = <0>;
++			xlnx,has-external-xin = <0>;
++			xlnx,is-a-16550 = <1>;
++		} ;
++		RS232_DTE: serial@40100000 {
++			clock-frequency = <2faf080>;
++			compatible = "xlnx,xps-uartlite-1.00.a";
++			device_type = "serial";
++			interrupt-parent = <&xps_intc_0>;
++			interrupts = < 3 0 >;
++			port-number = <0>;
++			reg = < 40100000 100000 >;
++			xlnx,baudrate = <1c200>;
++			xlnx,data-bits = <8>;
++			xlnx,family = "spartan3e";
++			xlnx,odd-parity = <0>;
++			xlnx,use-parity = <0>;
++		} ;
++		SPI_FLASH: xps-spi@40a00000 {
++			compatible = "xlnx,xps-spi-1.00.a";
++			interrupt-parent = <&xps_intc_0>;
++			interrupts = < 5 2 >;
++			reg = < 40a00000 100000 >;
++			xlnx,family = "spartan3e";
++			xlnx,fifo-exist = <1>;
++			xlnx,num-offchip-ss-bits = <4>;
++			xlnx,num-ss-bits = <4>;
++			xlnx,sck-ratio = <20>;
++		} ;
++		debug_module: debug@40300000 {
++			compatible = "xlnx,mdm-1.00.a";
++			reg = < 40300000 100000 >;
++			xlnx,family = "spartan3e";
++			xlnx,interconnect = <1>;
++			xlnx,jtag-chain = <2>;
++			xlnx,mb-dbg-ports = <1>;
++			xlnx,uart-width = <8>;
++			xlnx,use-uart = <1>;
++			xlnx,write-fsl-ports = <1>;
++		} ;
++		mpmc@20000000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "xlnx,mpmc-3.00.a";
++		} ;
++		xps_intc_0: interrupt-controller@40000000 {
++			#interrupt-cells = <2>;
++			compatible = "xlnx,xps-intc-1.00.a";
++			interrupt-controller ;
++			reg = < 40000000 100000 >;
++			xlnx,kind-of-edge = <0>;
++			xlnx,num-intr-inputs = <8>;
++		} ;
++		xps_timer_0: timer@40400000 {
++			compatible = "xlnx,xps-timer-1.00.a";
++			interrupt-parent = <&xps_intc_0>;
++			interrupts = < 0 2 >;
++			reg = < 40400000 100000 >;
++			xlnx,count-width = <20>;
++			xlnx,family = "spartan3e";
++			xlnx,gen0-assert = <1>;
++			xlnx,gen1-assert = <1>;
++			xlnx,one-timer-only = <0>;
++			xlnx,trig0-assert = <1>;
++			xlnx,trig1-assert = <1>;
++		} ;
++		xps_timer_1: timer@40500000 {
++			compatible = "xlnx,xps-timer-1.00.a";
++			interrupt-parent = <&xps_intc_0>;
++			interrupts = < 1 2 >;
++			reg = < 40500000 100000 >;
++			xlnx,count-width = <20>;
++			xlnx,family = "spartan3e";
++			xlnx,gen0-assert = <1>;
++			xlnx,gen1-assert = <1>;
++			xlnx,one-timer-only = <1>;
++			xlnx,trig0-assert = <1>;
++			xlnx,trig1-assert = <1>;
++		} ;
++/*		sysace_compactflash: sysace@d0030100 {
++			compatible = "xlnx,xps-sysace-1.00.a";
++			reg = < E0000000 100000 >;
++			xlnx,family = "spartan3e";
++			xlnx,mem-width = <10>;
++		} ;*/
++	} ;
++}  ;
 -- 
 1.5.4.GIT
 
