@@ -1,41 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762947AbYFZNJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759953AbYFZNKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762947AbYFZNJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762179AbYFZMy3
+	id S1759953AbYFZNKb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762695AbYFZM4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:54:29 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57239 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762182AbYFZMy2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:54:28 -0400
-Message-ID: <48639180.2090005@firstfloor.org>
-Date: Thu, 26 Jun 2008 14:54:24 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, stern@rowland.harvard.edu,
-       linux-kernel@vger.kernel.org, antonio.lin@alcormicro.com,
-       david.vrabel@csr.com
-Subject: Re: Scatter-gather list constraints
-References: <20080626110615U.fujita.tomonori@lab.ntt.co.jp> <20080626143928P.fujita.tomonori@lab.ntt.co.jp> <20080626063559.GJ20851@kernel.dk> <20080626155834I.fujita.tomonori@lab.ntt.co.jp> <20080626123936.GV20851@kernel.dk>
-In-Reply-To: <20080626123936.GV20851@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jun 2008 08:56:38 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51621 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758491AbYFZM4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:56:37 -0400
+From: Bernhard Walle <bwalle@suse.de>
+To: linuxppc-dev@ozlabs.org
+Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org, vgoyal@redhat.com,
+       Bernhard Walle <bwalle@suse.de>
+Subject: [PATCH] Remove experimental status of kdump on PPC64
+Date: Thu, 26 Jun 2008 14:57:15 +0200
+Message-Id: <1214485035-26041-1-git-send-email-bwalle@suse.de>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch removes the experimental status of kdump on IA64. kdump is on IA64
+now since more than one year and it has proven to be stable.
 
-> On the fs side, just setting a hw block size of 1k should fix the
-> problem, since that'd be your minimum transfer size AND alignment there
-> even for O_DIRECT IO.
+For i386/x86_64, a similar patch has been accepted by Ingo Molnar and Vivek
+Goyal.
 
-XFS used to force 512 byte IOs for its log IO. Not sure
-that was ever fixed. If it was fixed it likely required a disk format
-change (I think s390 ran into a problem like this)
 
--Andi
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+---
+ arch/powerpc/Kconfig |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 3934e26..2a116b9 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -308,8 +308,8 @@ config KEXEC
+ 	  strongly in flux, so no good recommendation can be made.
+ 
+ config CRASH_DUMP
+-	bool "Build a kdump crash kernel (EXPERIMENTAL)"
+-	depends on PPC_MULTIPLATFORM && PPC64 && EXPERIMENTAL
++	bool "Build a kdump crash kernel"
++	depends on PPC_MULTIPLATFORM && PPC64
+ 	help
+ 	  Build a kernel suitable for use as a kdump capture kernel.
+ 	  The kernel will be linked at a different address than normal, and
+-- 
+1.5.6
 
