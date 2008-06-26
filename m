@@ -1,70 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbYFZBC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbYFZBC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756114AbYFZBC2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 21:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbYFZBBj
+	id S1758055AbYFZBC6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 21:02:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYFZBBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 21:01:39 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:2779 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754685AbYFZBBf (ORCPT
+	Wed, 25 Jun 2008 21:01:41 -0400
+Received: from mga06.intel.com ([134.134.136.21]:22137 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754881AbYFZBBh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 21:01:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=VsHDu3E52PZRnaH5TWkd7BAucEoTnxHjXVZ5uXtuBNg+UTem+WhSzUvMwhvZRWR01M
-         qZOLMf5DCDU5VFM78NcsnTZmE0qPztxudyTN8z/VU3hZRuhGjR49zgGy+paYKC3kOHnV
-         yEhPXMxVR7zd9bCPxKX1kNw4K3awKJ4S3D0GA=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 02/16] x86: we can use full bootmem after have init_memory_mapping
-Date: Wed, 25 Jun 2008 17:48:23 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806251744.02246.yhlu.kernel@gmail.com>
-In-Reply-To: <200806251744.02246.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200806251748.23711.yhlu.kernel@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Jun 2008 21:01:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,705,1204531200"; 
+   d="scan'208";a="299632097"
+Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer
+	dereference
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: Mike Travis <travis@sgi.com>, Vegard Nossum <vegard.nossum@gmail.com>,
+       Adrian Bunk <bunk@kernel.org>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       linux-kernel@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+In-Reply-To: <1214294783.25608.75.camel@ymzhang>
+References: <20080622125633.GA8166@damson.getinternet.no>
+	 <200806231326.11328.rusty@rustcorp.com.au> <485FD644.80208@sgi.com>
+	 <200806241136.52430.rusty@rustcorp.com.au>
+	 <1214294783.25608.75.camel@ymzhang>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 26 Jun 2008 08:59:39 +0800
+Message-Id: <1214441979.25608.86.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-So remove outdated comments
+On Tue, 2008-06-24 at 16:06 +0800, Zhang, Yanmin wrote:
+> On Tue, 2008-06-24 at 11:36 +1000, Rusty Russell wrote:
+> > On Tuesday 24 June 2008 02:58:44 Mike Travis wrote:
+> > > Rusty Russell wrote:
+> > > > On Monday 23 June 2008 02:29:07 Vegard Nossum wrote:
+> > > >> And the (cpu < nr_cpu_ids) fails because the CPU has just been
+> > > >> offlined (or failed to initialize, but it's the same thing), while
+> > > >> NR_CPUS is the value that was compiled in as CONFIG_NR_CPUS (so the
+> > > >> former check will always be true).
+> > > >>
+> > > >> I don't think it is valid to ask for a per_cpu() variable on a CPU
+> > > >> which does not exist, though
+> > > >
+> > > > Yes it is.  As long as cpu_possible(cpu), per_cpu(cpu) is valid.
+> > > >
+> > > > The number check should be removed: checking cpu_possible() is
+> > > > sufficient.
+> > > >
+> > > > Hope that helps,
+> > > > Rusty.
+> > >
+> > > I don't see a check for index being out of range in cpu_possible().
+> > 
+> > You're right.  It assumes cpu is < NR_CPUS.  Hmm, I have no idea what's going 
+> > on.  nr_cpu_ids (ignore that it's a horrible name for a bad idea) should be 
+> > fine to test against.
+> > 
+> > Vegard's analysis is flawed: just because cpu is offline, it still must be < 
+> > nr_cpu_ids, which is based on possible cpus.  Unless something crazy is 
+> > happening, but a quick grep doesn't reveal anyone manipulating nr_cpu_ids.
+> > 
+> > If changing this fixes the bug, something else is badly wrong...
+> > Rusty.
+> 
+> In function _cpu_up, the panic happens when calling __raw_notifier_call_chain
+> at the second time. Kernel doesn't panic when calling it at the first time. If
+> just say because ﻿of nr_cpu_ids, that's not right.
+> 
+> By checking source codes, I find function do_boot_cpu is the culprit.
+> Consider below call chain:
+>  _cpu_up=>__cpu_up=>smp_ops.cpu_up=>native_cpu_up=>do_boot_cpu.
+> 
+> So ﻿do_boot_cpu is called in the end. In ﻿do_boot_cpu, if boot_error==true,
+> cpu_clear(cpu, cpu_possible_map) is executed. So later on, when ﻿_cpu_up
+> calls ﻿__raw_notifier_call_chain at the second time to report CPU_UP_CANCELED,
+> because this cpu is already cleared from ﻿cpu_possible_map, get_cpu_sysdev returns
+> NULL.
+> 
+> Many resources are related to ﻿cpu_possible_map, so it's better not to change it.
+> 
+> Below patch against 2.6.26-rc7 fixes it by removing the bit clearing in ﻿cpu_possible_map.
+> 
+> Vegard, would you like to help test it?
+> 
+> ﻿﻿﻿Signed-off-by: Zhang Yanmin ﻿<yanmin_zhang@linux.intel.com>
+> 
+> ---
+> 
+> diff -Nraup linux-2.6.26-rc7/arch/x86/kernel/smpboot.c linux-2.6.26-rc7_cpuhotplug/arch/x86/kernel/smpboot.c
+> --- linux-2.6.26-rc7/arch/x86/kernel/smpboot.c	2008-06-24 09:03:54.000000000 +0800
+> +++ linux-2.6.26-rc7_cpuhotplug/arch/x86/kernel/smpboot.c	2008-06-24 09:04:45.000000000 +0800
+> @@ -996,7 +996,6 @@ do_rest:
+>  #endif
+>  		cpu_clear(cpu, cpu_callout_map); /* was set by do_boot_cpu() */
+>  		cpu_clear(cpu, cpu_initialized); /* was set by cpu_init() */
+> -		cpu_clear(cpu, cpu_possible_map);
+>  		cpu_clear(cpu, cpu_present_map);
+>  		per_cpu(x86_cpu_to_apicid, cpu) = BAD_APICID;
+>  	}
+> 
+Andrew,
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Would you like to pick up this patch? ﻿Rusty Russell <rusty@rustcorp.com.au> acked it.
 
----
- arch/x86/kernel/setup_32.c |    9 ---------
- 1 file changed, 9 deletions(-)
+Thanks,
+yanmin
 
-Index: linux-2.6/arch/x86/kernel/setup_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_32.c
-+++ linux-2.6/arch/x86/kernel/setup_32.c
-@@ -476,15 +476,6 @@ void __init setup_arch(char **cmdline_p)
- 	 */
- 	vmi_init();
- #endif
--	/*
--	 * NOTE: before this point _nobody_ is allowed to allocate
--	 * any memory using the bootmem allocator.  Although the
--	 * allocator is now initialised only the first 8Mb of the kernel
--	 * virtual address space has been mapped.  All allocations before
--	 * paging_init() has completed must use the alloc_bootmem_low_pages()
--	 * variant (which allocates DMA'able memory) and care must be taken
--	 * not to exceed the 8Mb limit.
--	 */
- 
- 	paging_init();
- 
 
