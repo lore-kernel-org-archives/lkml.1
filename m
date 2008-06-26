@@ -1,98 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762662AbYFZTeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762735AbYFZTew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762662AbYFZTeb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 15:34:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760886AbYFZT2w
+	id S1762735AbYFZTew (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 15:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbYFZT3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 15:28:52 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:12965 "EHLO
-	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760776AbYFZT2t (ORCPT
+	Thu, 26 Jun 2008 15:29:04 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:4096 "EHLO
+	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761280AbYFZT3B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 15:28:49 -0400
-X-BigFish: VPS4(zzzz10d3izzz32i43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K334R2-04-UNI-01
+	Thu, 26 Jun 2008 15:29:01 -0400
+X-BigFish: VPS4(zzzz10d3izzz32i43j63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0K334RU-04-UON-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: tglx@linutronix.de, mingo@redhat.com
 CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
        bhavna.sarathy@amd.com, Sebastian.Biemueller@amd.com,
        robert.richter@amd.com, joro@8bytes.org,
        Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 29/34] AMD IOMMU: add dma_ops initialization function
-Date: Thu, 26 Jun 2008 21:28:05 +0200
-Message-ID: <1214508490-29683-30-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 33/34] AMD IOMMU: add MAINTAINERS entry
+Date: Thu, 26 Jun 2008 21:28:09 +0200
+Message-ID: <1214508490-29683-34-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
 References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 26 Jun 2008 19:28:12.0190 (UTC) FILETIME=[C5C7EBE0:01C8D7C2]
+X-OriginalArrivalTime: 26 Jun 2008 19:28:12.0299 (UTC) FILETIME=[C5D88DB0:01C8D7C2]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the function to initialize the dma_ops for the AMD IOMMU.
+Add an entry to the MAINTAINERS file for AMD IOMMU.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kernel/amd_iommu.c |   46 +++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 46 insertions(+), 0 deletions(-)
+ MAINTAINERS |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index bed5f82..c282bde 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -906,3 +906,49 @@ void prealloc_protection_domains(void)
- 	}
- }
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 8f0ec46..5e89cea 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -376,6 +376,12 @@ L:	linux-geode@lists.infradead.org (moderated for non-subscribers)
+ W:	http://www.amd.com/us-en/ConnectivitySolutions/TechnicalResources/0,,50_2334_2452_11363,00.html
+ S:	Supported
  
-+static struct dma_mapping_ops amd_iommu_dma_ops = {
-+	.alloc_coherent = alloc_coherent,
-+	.free_coherent = free_coherent,
-+	.map_single = map_single,
-+	.unmap_single = unmap_single,
-+	.map_sg = map_sg,
-+	.unmap_sg = unmap_sg,
-+};
++AMD IOMMU (AMD-VI)
++P:	Joerg Roedel
++M:	joerg.roedel@amd.com
++L:	iommu@lists.linux-foundation.org
++S:	Supported
 +
-+int __init amd_iommu_init_dma_ops(void)
-+{
-+	struct amd_iommu *iommu;
-+	int order = amd_iommu_aperture_order;
-+	int ret;
-+
-+	list_for_each_entry(iommu, &amd_iommu_list, list) {
-+		iommu->default_dom = dma_ops_domain_alloc(iommu, order);
-+		if (iommu->default_dom == NULL)
-+			return -ENOMEM;
-+		ret = iommu_init_unity_mappings(iommu);
-+		if (ret)
-+			goto free_domains;
-+	}
-+
-+	if (amd_iommu_isolate)
-+		prealloc_protection_domains();
-+
-+	iommu_detected = 1;
-+	force_iommu = 1;
-+	bad_dma_address = 0;
-+	gart_iommu_aperture_disabled = 1;
-+	gart_iommu_aperture = 0;
-+
-+	dma_ops = &amd_iommu_dma_ops;
-+
-+	return 0;
-+
-+free_domains:
-+
-+	list_for_each_entry(iommu, &amd_iommu_list, list) {
-+		if (iommu->default_dom)
-+			dma_ops_domain_free(iommu->default_dom);
-+	}
-+
-+	return ret;
-+}
+ AMS (Apple Motion Sensor) DRIVER
+ P:	Stelian Pop
+ M:	stelian@popies.net
 -- 
 1.5.3.7
 
