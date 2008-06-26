@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbYFZM32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbYFZM3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754307AbYFZM32 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 08:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbYFZM2f
+	id S1754960AbYFZM3x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 08:29:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbYFZM2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:28:35 -0400
-Received: from il.qumranet.com ([212.179.150.194]:32312 "EHLO il.qumranet.com"
+	Thu, 26 Jun 2008 08:28:36 -0400
+Received: from il.qumranet.com ([212.179.150.194]:32314 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751282AbYFZM2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751466AbYFZM2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Jun 2008 08:28:33 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 03/50] KVM: VMX: move APIC_ACCESS trace entry to generic code
-Date: Thu, 26 Jun 2008 15:27:45 +0300
-Message-Id: <1214483312-9265-4-git-send-email-avi@qumranet.com>
+Subject: [PATCH 04/50] KVM: SVM: implement dedicated NMI exit handler
+Date: Thu, 26 Jun 2008 15:27:46 +0300
+Message-Id: <1214483312-9265-5-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1214483312-9265-1-git-send-email-avi@qumranet.com>
 References: <1214483312-9265-1-git-send-email-avi@qumranet.com>
@@ -24,51 +24,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-This patch moves the trace entry for APIC accesses from the VMX code to the
-generic lapic code. This way APIC accesses from SVM will also be traced.
+With an exit handler for NMI intercepts its possible to account them using
+kvmtrace.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/lapic.c |    4 ++++
- arch/x86/kvm/vmx.c   |    2 --
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ arch/x86/kvm/svm.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-index ebc03f5..f9201fb 100644
---- a/arch/x86/kvm/lapic.c
-+++ b/arch/x86/kvm/lapic.c
-@@ -572,6 +572,8 @@ static u32 __apic_read(struct kvm_lapic *apic, unsigned int offset)
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 6b0d5fa..8a2118b 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -1081,6 +1081,11 @@ static int io_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+ 	return kvm_emulate_pio(&svm->vcpu, kvm_run, in, size, port);
+ }
+ 
++static int nmi_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
++{
++	return 1;
++}
++
+ static int nop_on_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
  {
- 	u32 val = 0;
- 
-+	KVMTRACE_1D(APIC_ACCESS, apic->vcpu, (u32)offset, handler);
-+
- 	if (offset >= LAPIC_MMIO_LENGTH)
- 		return 0;
- 
-@@ -695,6 +697,8 @@ static void apic_mmio_write(struct kvm_io_device *this,
- 
- 	offset &= 0xff0;
- 
-+	KVMTRACE_1D(APIC_ACCESS, apic->vcpu, (u32)offset, handler);
-+
- 	switch (offset) {
- 	case APIC_ID:		/* Local APIC ID */
- 		apic_set_reg(apic, APIC_ID, val);
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index bc3452a..158a7d8 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -2554,8 +2554,6 @@ static int handle_apic_access(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 	exit_qualification = vmcs_read64(EXIT_QUALIFICATION);
- 	offset = exit_qualification & 0xffful;
- 
--	KVMTRACE_1D(APIC_ACCESS, vcpu, (u32)offset, handler);
--
- 	er = emulate_instruction(vcpu, kvm_run, 0, 0, 0);
- 
- 	if (er !=  EMULATE_DONE) {
+ 	return 1;
+@@ -1365,7 +1370,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+ 	[SVM_EXIT_EXCP_BASE + NM_VECTOR] 	= nm_interception,
+ 	[SVM_EXIT_EXCP_BASE + MC_VECTOR] 	= mc_interception,
+ 	[SVM_EXIT_INTR] 			= nop_on_interception,
+-	[SVM_EXIT_NMI]				= nop_on_interception,
++	[SVM_EXIT_NMI]				= nmi_interception,
+ 	[SVM_EXIT_SMI]				= nop_on_interception,
+ 	[SVM_EXIT_INIT]				= nop_on_interception,
+ 	[SVM_EXIT_VINTR]			= interrupt_window_interception,
 -- 
 1.5.6
 
