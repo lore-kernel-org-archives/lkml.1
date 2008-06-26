@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761536AbYFZSZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761371AbYFZS0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761536AbYFZSZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbYFZSZS
+	id S1761371AbYFZS0Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbYFZS0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:25:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54436 "EHLO mx1.redhat.com"
+	Thu, 26 Jun 2008 14:26:13 -0400
+Received: from gw.goop.org ([64.81.55.164]:50350 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752424AbYFZSZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:25:17 -0400
-Date: Thu, 26 Jun 2008 14:18:41 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: "H. Peter Anvin" <hpa@kernel.org>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, Bernhard Walle <bwalle@suse.de>,
-       x86@kernel.org, linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
-       yhlu.kernel@gmail.com
-Subject: Re: [PATCH 1/2] Add /sys/firmware/memmap
-Message-ID: <20080626181841.GE3878@redhat.com>
-References: <1214423826-12628-1-git-send-email-bwalle@suse.de> <1214423826-12628-2-git-send-email-bwalle@suse.de> <20080625224301.GE32344@redhat.com> <18531.20387.111875.576837@harpo.it.uu.se> <20080626104524.2d7ed1ab@halley.suse.de> <18531.23894.572847.322265@harpo.it.uu.se> <4863D930.2040300@kernel.org>
+	id S1751768AbYFZS0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 14:26:12 -0400
+Message-ID: <4863DF32.50105@goop.org>
+Date: Thu, 26 Jun 2008 11:25:54 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4863D930.2040300@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
+       Mark McLoughlin <markmc@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Nick Piggin <npiggin@suse.de>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH 00 of 36] x86/paravirt: groundwork for 64-bit Xen support
+References: <patchbomb.1214367536@localhost> <20080625084253.GA11524@elte.hu> <20080625152212.GA3442@elte.hu> <4862A6A9.1030109@goop.org> <20080626105722.GA12640@elte.hu>
+In-Reply-To: <20080626105722.GA12640@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 11:00:16AM -0700, H. Peter Anvin wrote:
-> Mikael Pettersson wrote:
->> Bernhard Walle writes:
->>  > > It should be configurable. Whether it's done via CONFIG_KEXEC or its own
->>  > > option I don't care.
->>  >  > Ok, changed:
->>  >  > diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
->>  > index 1008737..73fcc59 100644
->>  > --- a/drivers/firmware/Kconfig
->>  > +++ b/drivers/firmware/Kconfig
->>  > @@ -28,7 +28,7 @@ config EDD_OFF
->>  >   >  config FIRMWARE_MEMMAP
->>  >      def_bool y
->>  > -    depends on X86_64 || X86_32
->>  > +    depends on (X86_64 || X86_32) && KEXEC
->>  >   >  config EFI_VARS
->>  >         tristate "EFI Variable Support via sysfs"
->>
->> Yep, thanks.
->>
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 >
-> Making this depend on KEXEC would be most unfortunate.  This is valuable  
-> information for finding all kinds of issues even in the absence of KEXEC.
+>   
+>>> It quickly broke the build in testing:
+>>>
+>>>  include/asm/pgalloc.h: In function ‘paravirt_pgd_free':
+>>>  include/asm/pgalloc.h:14: error: parameter name omitted
+>>>  arch/x86/kernel/entry_64.S: In file included from  
+>>> arch/x86/kernel/traps_64.c:51:include/asm/pgalloc.h: In function 
+>>> ‘paravirt_pgd_free':
+>>>  include/asm/pgalloc.h:14: error: parameter name omitted
+>>>   
+>>>       
+>> No, looks like my fault.  The non-PARAVIRT version of  
+>> paravirt_pgd_free() is:
+>>
+>> static inline void paravirt_pgd_free(struct mm_struct *mm, pgd_t *) {}
+>>
+>> but C doesn't like missing parameter names, even if unused.
+>>
+>> This should fix it:
+>>     
 >
+> that fixed the build but now we've got a boot crash with this config:
+>
+>  time.c: Detected 2010.304 MHz processor.
+>  spurious 8259A interrupt: IRQ7.
+>  BUG: unable to handle kernel NULL pointer dereference at  0000000000000000
+>  IP: [<0000000000000000>]
+>  PGD 0
+>  Thread overran stack, or stack corrupted
+>  Oops: 0010 [1] SMP
+>  CPU 0
+>   
 
-Agreed.
+What stage during boot?  I'm seeing an initrd problem, but that's 
+relatively late.
 
-> I really don't see a point in making this configurable, except perhaps  
-> under CONFIG_EMBEDDED.
-
-I think we should just not put this functionality under any CONFIG option.
-If we put it under CONFIG_EMBEDDED,  then even for using kexec, one
-shall have to turn CONFIG_EMBEDDED on which probably does not make much
-sense.
-
-Thanks
-Vivek
+    J
