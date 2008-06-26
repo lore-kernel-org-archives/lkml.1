@@ -1,60 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756765AbYFZIa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbYFZIdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756765AbYFZIa1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 04:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYFZIaO
+	id S1757212AbYFZIdV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 04:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbYFZIdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 04:30:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40541 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754027AbYFZIaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 04:30:12 -0400
-Date: Thu, 26 Jun 2008 10:29:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>,
-       Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] x86 ACPI: normalize segment descriptor register on
-	resume
-Message-ID: <20080626082943.GC10973@elte.hu>
-References: <200806242303.49498.rjw@sisk.pl> <20080624214610.GC18679@elf.ucw.cz> <20080625170126.GA2482@elte.hu> <200806252217.27059.rjw@sisk.pl> <20080626011716.e8c412dd.akpm@linux-foundation.org>
+	Thu, 26 Jun 2008 04:33:13 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:38740 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752800AbYFZIdM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 04:33:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=OudVWm17N9/iLGK3f0icz3OmHyOCLT3kcLIDScAFbd5bIHYZyLuIaW0JBbtHTfP7wy
+         3Qb0bgIXaZ3OeAC40Ob29eGPaPU6njmL7b2gMnsB7he01XSHWX1rH4QmF0762g5+IqEv
+         XF0Nto+tl2RfJqJ/FhuRQpG0GjZEKJR+DwJwk=
+Message-ID: <ac8af0be0806260133u68a5692flab65e4bb6dcf2a13@mail.gmail.com>
+Date: Thu, 26 Jun 2008 16:33:11 +0800
+From: "Zhao Forrest" <forrest.zhao@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: A question about group CFS scheduling
+Cc: vatsa@linux.vnet.ibm.com, mingo@elte.hu, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1214468112.2794.9.camel@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080626011716.e8c412dd.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <ac8af0be0806260019q45fa7285oa0fc79fb02254d28@mail.gmail.com>
+	 <1214468112.2794.9.camel@twins.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>
+> Let me explain the cgroup case (the sanest option IMHO):
+>
+> initially all your tasks will belong to the root cgroup, eg:
+>
+> assuming:
+> mkdir -p /cgroup/cpu
+> mount none /cgroup/cpu -t cgroup -o cpu
+>
+> Then the root cgroup (cgroup:/) is /cgroup/cpu/ and all tasks will be
+> found in /cgroup/cpu/tasks.
+>
+> You can then create new groups as sibling from this root group, eg:
+>
+> cgroup:/foo
+> cgroup:/bar
+>
+> They will get a weigth of 1024 by default, exactly as heavy as a nice 0
+> task.
+>
+> That means that no matter how many tasks you stuff into foo, their
+> combined cpu time will be as much as a single tasks in cgroup:/ would
+> get.
+>
+> This is fully recursive, so you can also create:
+>
+> cgroup:/foo/bar and its tasks in turn will get as much combined cpu time
+> as a single task in cgroup:/foo would get.
+>
+> In theory this should go on indefinitely, in practise we'll run into
+> serious numerical issues quite quickly.
+>
+>
+> The USER grouping basically creates a fake root and all uids (including
+> 0) are its siblings. The only special case is that uid-0 (aka root) will
+> get twice the weight of the others.
+>
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Thank you for your detailed explanation! I have one more question:
+cgrouping and USER grouping is mutual exclusive, am I right? That is,
+when enabling cgrouping, USER grouping need to be disabled, vice
+versa.
 
-> Len seems to think that Rafael seems to think that Ingo seems to think 
-> that this patch broke one of his boxes.
-> 
-> Is it so?
-
-No! :-)
-
-it found a pre-existing suspend+resume breakage on a testbox. (I.e. the 
-debug patch worked as i'd expect it to work. Every good debug patch 
-starts its lifetime with a sharp spike of breakages it finds.)
-
-( my kernel test-setup does in excess of 100,000 random kernel bootups 
-  per year and me not having to hit the keyboard or close+open the lid a 
-  hundred thousand times, day and night, to find the occasional 
-  suspend+resume regression is a not to be under-estimated plus. )
-
-	Ingo
+Thanks,
+Forrest
