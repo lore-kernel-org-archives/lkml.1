@@ -1,150 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761225AbYFZTc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762315AbYFZTdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761225AbYFZTc5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 15:32:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760479AbYFZT2o
+	id S1762315AbYFZTdY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 15:33:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760622AbYFZT2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 15:28:44 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:25122 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760615AbYFZT2l (ORCPT
+	Thu, 26 Jun 2008 15:28:45 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:2802 "EHLO
+	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760508AbYFZT2l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Jun 2008 15:28:41 -0400
-X-BigFish: VPS4(zzzz10d3izzz32i43j)
-X-WSS-ID: 0K334R0-04-UNH-01
+X-BigFish: VPS4(zzzz10d3izzz32i43j64h)
+X-Spam-TCS-SCL: 3:0
+X-WSS-ID: 0K334QX-04-UN1-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: tglx@linutronix.de, mingo@redhat.com
 CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
        bhavna.sarathy@amd.com, Sebastian.Biemueller@amd.com,
        robert.richter@amd.com, joro@8bytes.org,
        Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 26/34] AMD IOMMU: add mapping functions for scatter gather lists
-Date: Thu, 26 Jun 2008 21:28:02 +0200
-Message-ID: <1214508490-29683-27-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 07/34] AMD IOMMU: add functions for mapping/unmapping the MMIO space
+Date: Thu, 26 Jun 2008 21:27:43 +0200
+Message-ID: <1214508490-29683-8-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
 References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 26 Jun 2008 19:28:12.0096 (UTC) FILETIME=[C5B99400:01C8D7C2]
+X-OriginalArrivalTime: 26 Jun 2008 19:28:11.0533 (UTC) FILETIME=[C563ABD0:01C8D7C2]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the dma_ops functions for mapping and unmapping scatter gather
-lists.
+This patch contains two functions to map and unmap the MMIO region of an IOMMU.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kernel/amd_iommu.c |   98 +++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 98 insertions(+), 0 deletions(-)
+ arch/x86/kernel/amd_iommu_init.c |   23 +++++++++++++++++++++++
+ 1 files changed, 23 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index b4079f6..f4747fe 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -700,3 +700,101 @@ static void unmap_single(struct device *dev, dma_addr_t dma_addr,
- 	spin_unlock_irqrestore(&domain->lock, flags);
- }
+diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
+index ee0b2da..3147e69 100644
+--- a/arch/x86/kernel/amd_iommu_init.c
++++ b/arch/x86/kernel/amd_iommu_init.c
+@@ -117,6 +117,29 @@ static u32 dev_table_size;
+ static u32 alias_table_size;
+ static u32 rlookup_table_size;
  
-+static int map_sg_no_iommu(struct device *dev, struct scatterlist *sglist,
-+			   int nelems, int dir)
++static u8 * __init iommu_map_mmio_space(u64 address)
 +{
-+	struct scatterlist *s;
-+	int i;
++	u8 *ret;
 +
-+	for_each_sg(sglist, s, nelems, i) {
-+		s->dma_address = (dma_addr_t)sg_phys(s);
-+		s->dma_length  = s->length;
-+	}
++	if (!request_mem_region(address, MMIO_REGION_LENGTH, "amd_iommu"))
++		return NULL;
 +
-+	return nelems;
++	ret = ioremap_nocache(address, MMIO_REGION_LENGTH);
++	if (ret != NULL)
++		return ret;
++
++	release_mem_region(address, MMIO_REGION_LENGTH);
++
++	return NULL;
 +}
 +
-+static int map_sg(struct device *dev, struct scatterlist *sglist,
-+		  int nelems, int dir)
++static void __init iommu_unmap_mmio_space(struct amd_iommu *iommu)
 +{
-+	unsigned long flags;
-+	struct amd_iommu *iommu;
-+	struct protection_domain *domain;
-+	u16 devid;
-+	int i;
-+	struct scatterlist *s;
-+	phys_addr_t paddr;
-+	int mapped_elems = 0;
-+
-+	get_device_resources(dev, &iommu, &domain, &devid);
-+
-+	if (!iommu || !domain)
-+		return map_sg_no_iommu(dev, sglist, nelems, dir);
-+
-+	spin_lock_irqsave(&domain->lock, flags);
-+
-+	for_each_sg(sglist, s, nelems, i) {
-+		paddr = sg_phys(s);
-+
-+		s->dma_address = __map_single(dev, iommu, domain->priv,
-+					      paddr, s->length, dir);
-+
-+		if (s->dma_address) {
-+			s->dma_length = s->length;
-+			mapped_elems++;
-+		} else
-+			goto unmap;
-+		if (iommu_has_npcache(iommu))
-+			iommu_flush_pages(iommu, domain->id, s->dma_address,
-+					  s->dma_length);
-+	}
-+
-+	if (iommu->need_sync)
-+		iommu_completion_wait(iommu);
-+
-+out:
-+	spin_unlock_irqrestore(&domain->lock, flags);
-+
-+	return mapped_elems;
-+unmap:
-+	for_each_sg(sglist, s, mapped_elems, i) {
-+		if (s->dma_address)
-+			__unmap_single(iommu, domain->priv, s->dma_address,
-+				       s->dma_length, dir);
-+		s->dma_address = s->dma_length = 0;
-+	}
-+
-+	mapped_elems = 0;
-+
-+	goto out;
++	if (iommu->mmio_base)
++		iounmap(iommu->mmio_base);
++	release_mem_region(iommu->mmio_phys, MMIO_REGION_LENGTH);
 +}
 +
-+static void unmap_sg(struct device *dev, struct scatterlist *sglist,
-+		     int nelems, int dir)
-+{
-+	unsigned long flags;
-+	struct amd_iommu *iommu;
-+	struct protection_domain *domain;
-+	struct scatterlist *s;
-+	u16 devid;
-+	int i;
-+
-+	if (!get_device_resources(dev, &iommu, &domain, &devid))
-+		return;
-+
-+	spin_lock_irqsave(&domain->lock, flags);
-+
-+	for_each_sg(sglist, s, nelems, i) {
-+		__unmap_single(iommu, domain->priv, s->dma_address,
-+			       s->dma_length, dir);
-+		iommu_flush_pages(iommu, domain->id, s->dma_address,
-+				  s->dma_length);
-+		s->dma_address = s->dma_length = 0;
-+	}
-+
-+	if (iommu->need_sync)
-+		iommu_completion_wait(iommu);
-+
-+	spin_unlock_irqrestore(&domain->lock, flags);
-+}
-+
+ static int __init find_last_devid_on_pci(int bus, int dev, int fn, int cap_ptr)
+ {
+ 	u32 cap;
 -- 
 1.5.3.7
 
