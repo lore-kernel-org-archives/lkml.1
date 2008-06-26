@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760584AbYFZS6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbYFZTA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760584AbYFZS6Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYFZS6N
+	id S1755999AbYFZTA5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 15:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbYFZTAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:58:13 -0400
-Received: from mxl.seznam.cz ([77.75.72.44]:35240 "EHLO mxl.seznam.cz"
+	Thu, 26 Jun 2008 15:00:46 -0400
+Received: from mxl.seznam.cz ([77.75.72.44]:34419 "EHLO mxl.seznam.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752513AbYFZS6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:58:11 -0400
+	id S1754471AbYFZTAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 15:00:45 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=beta; d=seznam.cz;
 	h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Smtpd:X-Seznam-User:X-QM-Mark;
-	b=B2LfJkw4G+fMOg++LOEiAH/bLpDrQLRgzaUHCEoox6DuKF7bja8VtQIuQrrJ6CIc4
-	5lHeuw+xUdkG5GIslLWU+blE1bAftoqli40KM9mjJHrAvWkYTVJhBB+0HxAj4yvRcGr
-	mEYzf4QlC9P1qKRL/WtZPJ1ewciLL6otFed5KEE=
-Message-ID: <4863E70A.2060108@seznam.cz>
-Date: Thu, 26 Jun 2008 20:59:22 +0200
+	b=RLBWssDqUxhwdKF+fg6sAjZdoU8UN9/Lh51+7/B9oUXVA7YyAdf+n1aSgBlNaLimp
+	oLGBQOdvGlj4cnO9cWeffXG/6PQaQW0pObFG6vIl2VViQisDEzQFGKcGqKqSI/xgl2W
+	D0dkLdNDnepYbrJO5T40VVfNzuwcpxAYfoZvkaM=
+Message-ID: <4863E370.9020205@seznam.cz>
+Date: Thu, 26 Jun 2008 20:44:00 +0200
 From: Michal Simek <monstr@seznam.cz>
 Reply-To: monstr@seznam.cz
 User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk, vapier.adi@gmail.com,
-       matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
-       linux-kernel@vger.kernel.org, drepper@redhat.com,
-       linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
-       John.Linn@xilinx.com, john.williams@petalogix.com
-Subject: Re: Microblaze init port v4
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <200806261709.37045.arnd@arndb.de>
-In-Reply-To: <200806261709.37045.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-2
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
+       vapier.adi@gmail.com, arnd@arndb.de, matthew@wil.cx,
+       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+       drepper@redhat.com, linuxppc-dev@ozlabs.org, will.newton@gmail.com,
+       hpa@zytor.com, John.Linn@xilinx.com, john.williams@petalogix.com
+Subject: Re: [PATCH 46/60] microblaze_v4: termbits.h termios.h
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>	<1214483429-32360-32-git-send-email-monstr@seznam.cz>	<1214483429-32360-33-git-send-email-monstr@seznam.cz>	<1214483429-32360-34-git-send-email-monstr@seznam.cz>	<1214483429-32360-35-git-send-email-monstr@seznam.cz>	<1214483429-32360-36-git-send-email-monstr@seznam.cz>	<1214483429-32360-37-git-send-email-monstr@seznam.cz>	<1214483429-32360-38-git-send-email-monstr@seznam.cz>	<1214483429-32360-39-git-send-email-monstr@seznam.cz>	<1214483429-32360-40-git-send-email-monstr@seznam.cz>	<1214483429-32360-41-git-send-email-monstr@seznam.cz>	<1214483429-32360-42-git-send-email-monstr@seznam.cz>	<1214483429-32360-43-git-send-email-monstr@seznam.cz>	<1214483429-32360-44-git-send-email-monstr@seznam.cz>	<1214483429-32360-45-git-send-email-monstr@seznam.cz>	<1214483429-32360-46-git-send-email-monstr@seznam.cz>	<1214483429-32360-47-git-send-email-monstr@seznam.cz> <20080626141837.0f8f439d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080626141837.0f8f439d@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 X-Smtpd: 1.1.1@13338
 X-Seznam-User: monstr@seznam.cz
-X-QM-Mark: email-qm4<127183698>
+X-QM-Mark: email-qm1<165039430>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arnd,
-
-> On Thursday 26 June 2008, monstr@seznam.cz wrote:
->> We have there still problem with syscalls and we don't have chance to 
->> fix it to stable version, this is not part which I can do yourself. 
->> Microblaze will be n + 1 platform which use some old syscalls. 
->> I hope you understand.
-> 
-> That still leaves the problem that a lot of your syscalls have bugs
-> copied from other platforms. If you need to maintain backwards compatibility
-> with your existing binaries, that's fine, but please fix the code you are
-> adding.
-
-This is for now. I'll remove when I will have new toolchain.
-
-I saw an email from you about.
+OK.I'll fix it.
 
 M
+
+>> +++ b/include/asm-generic/termbits.h
+>> @@ -0,0 +1,200 @@
+> 
+>> +/* c_cflag bit meaning */
+>> +
+>> +#define CBAUD	0010017
+>> +#define B0	0000000 /* hang up */
+> 
+> You need BOTHER in here as well - especially if it is going to be generic.
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+
