@@ -1,77 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761051AbYFZMzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762575AbYFZMz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761051AbYFZMzR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 08:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758692AbYFZMkM
+	id S1762575AbYFZMz4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 08:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759580AbYFZMk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:40:12 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:51189 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758880AbYFZMkL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:40:11 -0400
-Date: Thu, 26 Jun 2008 06:40:09 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] Extend completions to provide XFS object flush requirements
-Message-ID: <20080626124009.GY4392@parisc-linux.org>
-References: <1214455277-6387-1-git-send-email-david@fromorbit.com> <1214455277-6387-2-git-send-email-david@fromorbit.com> <20080626112612.GW4392@parisc-linux.org> <20080626113209.GK11558@disturbed> <20080626114242.GX4392@parisc-linux.org> <20080626122112.GL11558@disturbed>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080626122112.GL11558@disturbed>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 26 Jun 2008 08:40:56 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:22354 "EHLO
+	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759552AbYFZMkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:40:53 -0400
+From: monstr@seznam.cz
+To: linux-kernel@vger.kernel.org
+Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
+       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
+       linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
+       hpa@zytor.com, Michal Simek <monstr@monstr.eu>
+Subject: [PATCH 42/60] microblaze_v4: headers pgalloc.h pgtable.h
+Date: Thu, 26 Jun 2008 14:30:11 +0200
+Message-Id: <1214483429-32360-43-git-send-email-monstr@seznam.cz>
+X-Mailer: git-send-email 1.5.4.GIT
+In-Reply-To: <1214483429-32360-42-git-send-email-monstr@seznam.cz>
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-2-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-3-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-4-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-5-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-6-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-7-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-8-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-9-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-10-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-11-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-12-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-13-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-14-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-15-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-16-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-17-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-18-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-19-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-20-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-21-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-22-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-23-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-24-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-25-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-26-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-27-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-28-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-29-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-30-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-31-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-32-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-33-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-34-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-35-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-36-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-37-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-38-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-39-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-40-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-41-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-42-git-send-email-monstr@seznam.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 10:21:12PM +1000, Dave Chinner wrote:
-> On Thu, Jun 26, 2008 at 05:42:42AM -0600, Matthew Wilcox wrote:
-> > Then let's leave it as a semaphore.  You can get rid of the sema_t if
-> > you like, but I don't think that turning completions into semaphores is
-> > a good idea (because it's confusing).
-> 
-> So remind me what the point of the semaphore removal tree is again?
+From: Michal Simek <monstr@monstr.eu>
 
-To remove the semaphores which don't need to be semaphores any more.
 
-> As Christoph suggested, I can put this under another API that
-> is implemented using completions. If I have to do that in XFS,
-> so be it....
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+---
+ include/asm-microblaze/pgalloc.h |   14 +++++++++++
+ include/asm-microblaze/pgtable.h |   48 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 62 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/pgalloc.h
+ create mode 100644 include/asm-microblaze/pgtable.h
 
-You could, yes.  But you could just use completions directly ...
-
-> The main reason for this that we've just uncovered the fact that the
-> way XFS uses semaphores is completely unsafe [*] on x86/x86_64 for
-> kernels prior to the new generic semaphores.
-> 
-> [*] 2.6.20 panics in up() because of this race when I/O completion
-> (the up call) races with a simultaneous down() (iowaiter):
-> 
-> 	T1		T2
-> 	up()		down()
-> 			kmem_free()
-> 
-> When the down() call completes, the up() call can still be
-> referencing the semaphore, and hence if we free the structure after
-> the down call then the up() will reference freed memory.  This is
-> probably the cause of many unexplained log replay or unmount panics
-> that we've been hitting for years with buffers that been freed while
-> apparently still in use....
-
-This is exactly the kind of thing completions were supposed to be used
-for.  T1 should be calling complete() and T2 should be calling
-wait_for_completion().
-
-> Hence I'd prefer just to move completely away from semaphores for
-> this flush interface.  I'd like to start with getting the upstream
-> code fixed in a sane manner so all the backports to older kernels
-> start from the same series of commits.
-
-That's sane.
-
+diff --git a/include/asm-microblaze/pgalloc.h b/include/asm-microblaze/pgalloc.h
+new file mode 100644
+index 0000000..2a4b354
+--- /dev/null
++++ b/include/asm-microblaze/pgalloc.h
+@@ -0,0 +1,14 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_PGALLOC_H
++#define _ASM_MICROBLAZE_PGALLOC_H
++
++#define check_pgt_cache()	do {} while (0)
++
++#endif /* _ASM_MICROBLAZE_PGALLOC_H */
+diff --git a/include/asm-microblaze/pgtable.h b/include/asm-microblaze/pgtable.h
+new file mode 100644
+index 0000000..0354908
+--- /dev/null
++++ b/include/asm-microblaze/pgtable.h
+@@ -0,0 +1,48 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_PGTABLE_H
++#define _ASM_MICROBLAZE_PGTABLE_H
++
++#define pgd_present(pgd)	(1) /* pages are always present on NO_MM */
++#define pgd_none(pgd)		(0)
++#define pgd_bad(pgd)		(0)
++#define pgd_clear(pgdp)
++#define kern_addr_valid(addr)	(1)
++#define	pmd_offset(a, b)	((void *) 0)
++
++#define PAGE_NONE		__pgprot(0) /* these mean nothing to NO_MM */
++#define PAGE_SHARED		__pgprot(0) /* these mean nothing to NO_MM */
++#define PAGE_COPY		__pgprot(0) /* these mean nothing to NO_MM */
++#define PAGE_READONLY		__pgprot(0) /* these mean nothing to NO_MM */
++#define PAGE_KERNEL		__pgprot(0) /* these mean nothing to NO_MM */
++
++#define __swp_type(x)		(0)
++#define __swp_offset(x)		(0)
++#define __swp_entry(typ, off)	((swp_entry_t) { ((typ) | ((off) << 7)) })
++#define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val(pte) })
++#define __swp_entry_to_pte(x)	((pte_t) { (x).val })
++
++#ifndef __ASSEMBLY__
++static inline int pte_file(pte_t pte) { return 0; }
++#endif
++
++#define ZERO_PAGE(vaddr)	({ BUG(); NULL; })
++
++#define swapper_pg_dir ((pgd_t *) NULL)
++
++#define pgtable_cache_init()	do {} while (0)
++
++#define io_remap_pfn_range(vma, vaddr, pfn, size, prot)		\
++		remap_pfn_range(vma, vaddr, pfn, size, prot)
++
++#define arch_enter_lazy_cpu_mode()	do {} while (0)
++
++void paging_init(void);
++
++#endif /* _ASM_MICROBLAZE_PGTABLE_H */
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+1.5.4.GIT
+
