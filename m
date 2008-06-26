@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758817AbYFZVRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYFZVa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758817AbYFZVRy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 17:17:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbYFZVRo
+	id S1754892AbYFZVa0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 17:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbYFZVaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 17:17:44 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:28049 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754081AbYFZVRo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 17:17:44 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Z5+qNZgm2X4yMycRzWac/Ad07LDIw0VA34Byr0VeWGZBEVPmue7I/q5QLPcIh0l4l
-	8nAoQW4G0bNMPrLAMutzg==
-Message-ID: <6599ad830806261417u3015a9b2i6318841de866d768@mail.gmail.com>
-Date: Thu, 26 Jun 2008 14:17:35 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Max Krasnyansky" <maxk@qualcomm.com>
-Subject: Re: [RFC][PATCH] CPUSets: Move most calls to rebuild_sched_domains() to the workqueue
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>, "Paul Jackson" <pj@sgi.com>,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       "Gautham shenoy" <ego@in.ibm.com>
-In-Reply-To: <6599ad830806261334y6def5f7an57ac8f071a08eb4b@mail.gmail.com>
+	Thu, 26 Jun 2008 17:30:11 -0400
+Received: from mxl.seznam.cz ([77.75.72.44]:59023 "EHLO mxl.seznam.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751358AbYFZVaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 17:30:10 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=beta; d=seznam.cz;
+	h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Smtpd:X-Seznam-User:X-QM-Mark;
+	b=UwC6nzhp+2MXQhrEB9tYY7xrlyvZtx0tr65jCPdnLvcQWPSXCJ+4LZj7iJVQeUVY0
+	K+eWOffcI6jUsvAVHN1uoth8HMjFzDQ/18p9d3dekROf0Srr+IHrKG691z5N8MhL19Q
+	f/azXSUiZMmwLa9+EnXS5ocHnyRpe1NQBIoV77c=
+Message-ID: <48640A88.8070402@seznam.cz>
+Date: Thu, 26 Jun 2008 23:30:48 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       Adrian Bunk <bunk@kernel.org>, vapier.adi@gmail.com, arnd@arndb.de,
+       matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
+       linux-kernel@vger.kernel.org, drepper@redhat.com,
+       linuxppc-dev@ozlabs.org, will.newton@gmail.com, John.Linn@xilinx.com,
+       john.williams@petalogix.com
+Subject: Re: [PATCH 30/60] microblaze_v4: support for a.out
+References: <1214483429-32360-22-git-send-email-monstr@seznam.cz>	<1214483429-32360-23-git-send-email-monstr@seznam.cz>	<1214483429-32360-24-git-send-email-monstr@seznam.cz>	<1214483429-32360-25-git-send-email-monstr@seznam.cz>	<1214483429-32360-26-git-send-email-monstr@seznam.cz>	<1214483429-32360-27-git-send-email-monstr@seznam.cz>	<1214483429-32360-28-git-send-email-monstr@seznam.cz>	<1214483429-32360-29-git-send-email-monstr@seznam.cz>	<1214483429-32360-30-git-send-email-monstr@seznam.cz>	<1214483429-32360-31-git-send-email-monstr@seznam.cz>	<20080626143713.GE30954@cs181140183.pp.htv.fi>	<4863ECCE.2000407@seznam.cz> <4863ED98.50608@zytor.com>
+In-Reply-To: <4863ED98.50608@zytor.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48634BC1.8@google.com>
-	 <19f34abd0806260234y7616bab2k54bc019dfb0c6305@mail.gmail.com>
-	 <6599ad830806260250m39d700a5haf0f32d999cd2129@mail.gmail.com>
-	 <4863E4C8.9050705@qualcomm.com>
-	 <6599ad830806261334y6def5f7an57ac8f071a08eb4b@mail.gmail.com>
+X-Smtpd: 1.1.1@13338
+X-Seznam-User: monstr@seznam.cz
+X-QM-Mark: email-qm5<124916665>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 1:34 PM, Paul Menage <menage@google.com> wrote:
->
-> void get_online_cpus(void)
-> {
->        might_sleep();
->        if (cpu_hotplug.active_writer == current)
->                return;
->        down_read(&cpu_hotplug.lock);
-> }
->
-> void put_online_cpus(void)
-> {
->        if (cpu_hotplug.active_writer == current)
->                return;
->        up_read(&cpu_hotplug.lock);
-> }
->
-> static void cpu_hotplug_begin(void)
-> {
->        down_write(&cpu_hotplug.lock);
->        cpu_hotplug.active_writer = current;
-> }
->
-> static void cpu_hotplug_done(void)
-> {
->        cpu_hotplug.active_writer = NULL;
->        up_write(&cpu_hotplug.lock);
-> }
->
-> I think that combined with moving the async rebuild_sched_domains to a
-> separate thread should solve the problem, but I'm wondering why
-> cpu_hotplug.lock was implemented this way in the first place.
 
-Oh, I guess that doesn't work because of recursive calls to
-get_online_cpus(). Maybe we need a down_read_recursive() that skips
-ahead of waiting writers if the lock is already held in read mode?
+> Michal Simek wrote:
+>> I expect it but I haven't information about. I'll check it.
+> 
+> I'm assuming Microblaze doesn't actually add a.out support, does it?
+> 
+>     -hpa
 
-Paul
+I think that any support were there but I assume that no one use it.
+
+M
