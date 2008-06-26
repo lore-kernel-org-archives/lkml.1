@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761506AbYFZTyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbYFZUEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761506AbYFZTyu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 15:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755894AbYFZTyl
+	id S1757965AbYFZUEX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 16:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbYFZUEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 15:54:41 -0400
-Received: from cantor.suse.de ([195.135.220.2]:33379 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755054AbYFZTyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 15:54:40 -0400
-From: Bernhard Walle <bwalle@suse.de>
-To: kexec@lists.infradead.org
-Cc: vgoyal@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org,
-       Bernhard Walle <bwalle@suse.de>
-Subject: [PATCH] x86: Fix documentation bug about relocatability
-Date: Thu, 26 Jun 2008 21:55:18 +0200
-Message-Id: <1214510118-21405-1-git-send-email-bwalle@suse.de>
-X-Mailer: git-send-email 1.5.6
+	Thu, 26 Jun 2008 16:04:06 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:46724 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753428AbYFZUEE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 16:04:04 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=lkWSFAA3slU6iBdmT0ZzIl5mf5esgGU5L6rq09zzp5VXCabeFT6jGgR2EQf9bVRdnfO8aHaJxGJ/IUlzEHQ8VeaxU9hj2rCzslQ8g42UFlbDSS9cz3CoS+HOV4QkJfsoHyipOfiOhpR/UT8m/2pvnaknR3ae8b82Qp41CE/fQuQ=  ;
+X-YMail-OSG: Swu5HnwVM1mWSQTxNlfA5a7O6f1cyTINr9d40c6Uk1aoowVp_w380owivfuvfhyIVAXmiTUjrQpNUzDIPlXBXCmQzFJhfcEKyfniR8pMA9Yburs0_HHOjZOb9uzoiHCx7d4-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: Re: [PATCH v4 4/6] dmaengine: Make DMA Engine menu visible for AVR32 users
+Date: Thu, 26 Jun 2008 13:04:00 -0700
+User-Agent: KMail/1.9.9
+Cc: Dan Williams <dan.j.williams@intel.com>,
+       Pierre Ossman <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org, kernel@avr32linux.org,
+       shannon.nelson@intel.com, Adrian Bunk <bunk@stusta.de>
+References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com> <1214486603-23655-4-git-send-email-haavard.skinnemoen@atmel.com> <1214486603-23655-5-git-send-email-haavard.skinnemoen@atmel.com>
+In-Reply-To: <1214486603-23655-5-git-send-email-haavard.skinnemoen@atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200806261304.00695.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a small bug in documentation: x86_64 also has now
-the ability to build a relocatable kernel.
+On Thursday 26 June 2008, Haavard Skinnemoen wrote:
+> So, while this patch solves my immediate problem of making DMA Engines
+> available on AVR32, I'd much rather remove the whole arch dependency
+> list because I think it's bogus. Comments?
 
+Alternatively, "depends on HAVE_DMA_ENGINE" which arch code selects.
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
----
- Documentation/kdump/kdump.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/kdump/kdump.txt b/Documentation/kdump/kdump.txt
-index b8e52c0..9691c7f 100644
---- a/Documentation/kdump/kdump.txt
-+++ b/Documentation/kdump/kdump.txt
-@@ -109,7 +109,7 @@ There are two possible methods of using Kdump.
- 2) Or use the system kernel binary itself as dump-capture kernel and there is
-    no need to build a separate dump-capture kernel. This is possible
-    only with the architecutres which support a relocatable kernel. As
--   of today i386 and ia64 architectures support relocatable kernel.
-+   of today, i386, x86_64 and ia64 architectures support relocatable kernel.
- 
- Building a relocatable kernel is advantageous from the point of view that
- one does not have to build a second kernel for capturing the dump. But
--- 
-1.5.6
+> -       depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX || PPC
+> +       depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX || PPC || AVR32
 
