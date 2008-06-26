@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762118AbYFZPMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbYFZPM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762118AbYFZPMk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 11:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758323AbYFZPMN
+	id S1754791AbYFZPM4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 11:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761027AbYFZPMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 11:12:13 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:56363 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756222AbYFZPML (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 11:12:11 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@seznam.cz
-Subject: Re: Microblaze init port v4
-Date: Thu, 26 Jun 2008 17:09:36 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
-       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jun 2008 11:12:25 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4753 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760472AbYFZPMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 11:12:23 -0400
+Date: Thu, 26 Jun 2008 17:09:10 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Elias Oltmanns <eo@nebensachen.de>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Kyle Moffett <mrmacman_g4@mac.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, xfs-masters@oss.sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: freeze vs freezer
+Message-ID: <20080626150910.GK5642@ucw.cz>
+References: <4744FD87.7010301@goop.org> <200711262253.35420.rjw@sisk.pl> <20071127053846.GA28884@srcf.ucam.org> <200711271840.24825.rjw@sisk.pl> <8B00F353-983F-40E7-931B-EA73CCD32F0A@mac.com> <20080623071601.GA1553@elf.ucw.cz> <20080623140012.GA11899@khazad-dum.debian.net> <87od5rs1am.fsf@denkblock.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806261709.37045.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/UtpV3kVqFeodrQ2pnHbn2BM/IvQH5TfLonZp
- D8oBiOD5k/vHOcW/jnExgNdGYo3pERpkwrmr5avPmlAaYbv1y1
- BFWvKh0MXKPw0jvjaWSyQ==
+In-Reply-To: <87od5rs1am.fsf@denkblock.local>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 June 2008, monstr@seznam.cz wrote:
-> We have there still problem with syscalls and we don't have chance to 
-> fix it to stable version, this is not part which I can do yourself. 
-> Microblaze will be n + 1 platform which use some old syscalls. 
-> I hope you understand.
+Hi!
 
-That still leaves the problem that a lot of your syscalls have bugs
-copied from other platforms. If you need to maintain backwards compatibility
-with your existing binaries, that's fine, but please fix the code you are
-adding.
+> >> Patch would be welcome, actually. It turns out blocking new
+> >> IO-requests is not completely trivial.
+> 
+> Quite. But I'm not sure I see what this is all about yet. From the IDE
+> and SCSI subsystems I remember that they block all I/O from higher levels
+> once the suspend callbacks have been executed. I haven't made an effort
+> to understand the freezer (or indeed anything related to hibernation)
+> yet since I don't even use hibernation myself (only s2ram). Do you have
 
-	Arnd <><
+s2ram also uses freezer these days. Difference is s2ram does not
+really need it.
+
+> any suggestion where to start reading up on things so I can get an idea
+> what the issues are and what you would like IDE / SCSI / ... to do?
+
+I'd like block layer to block any process that tries to do I/O.
+
+> > Is this the same thing the per-device IO-queue-freeze patches for
+> >HDAPS also
+> > need to do?  If so, you may want to talk to Elias Oltmanns
+> > <eo@nebensachen.de> about it.  Added to CC.
+> 
+> Thanks for the heads up Henrique. Even though these issues seem to be
+> related up to a certain degree, there probably are some important
+> differences. When suspending a system, the emphasis is on leaving the
+> system in a consistent state (think of journalled file systems), whereas
+> disk shock protection is mainly concerned with stopping I/O as soon as
+> possible. As yet, I cannot possibly say to what extend these two
+> concepts can be reconciled in the sense of sharing some common code.
+
+Actually, I believe requirements are same.
+
+'don't do i/o in dangerous period'.
+
+swsusp will just do sync() before entering dangerous period. That
+provides consistent-enough state...
+							Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
