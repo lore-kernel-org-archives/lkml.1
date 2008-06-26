@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756268AbYFZTTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYFZTUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756268AbYFZTTZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 15:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYFZTTO
+	id S1754189AbYFZTUS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 15:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbYFZTTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 15:19:14 -0400
-Received: from mxl.seznam.cz ([77.75.72.44]:60965 "EHLO mxl.seznam.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751598AbYFZTTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 15:19:13 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=beta; d=seznam.cz;
-	h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Smtpd:X-Seznam-User:X-QM-Mark;
-	b=EsIQD+iC3vm7OBnXZqSqEByYExlXkd+ofMq1azgu2VzOFqLslmbY+gzrCULynZ+qo
-	lrt44MYwa/uaCVjaHJq0paFBpN7yWI2VxXZvAatiwfVc2LnZ0cj70C+rSpdYMKLjZqb
-	9WxsRGkNAac4iFlBzsGnBTXx+TA4LKX7voWjBKg=
-Message-ID: <4863EBD9.1010601@seznam.cz>
-Date: Thu, 26 Jun 2008 21:19:53 +0200
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: monstr@seznam.cz
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-CC: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
-       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com,
-       Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH 08/60] microblaze_v4: exception handling
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>	 <1214483429-32360-2-git-send-email-monstr@seznam.cz>	 <1214483429-32360-3-git-send-email-monstr@seznam.cz>	 <1214483429-32360-4-git-send-email-monstr@seznam.cz>	 <1214483429-32360-5-git-send-email-monstr@seznam.cz>	 <1214483429-32360-6-git-send-email-monstr@seznam.cz>	 <1214483429-32360-7-git-send-email-monstr@seznam.cz>	 <1214483429-32360-8-git-send-email-monstr@seznam.cz>	 <1214483429-32360-9-git-send-email-monstr@seznam.cz> <2c0942db0806260935p51564a7et6517b39e9a6706dc@mail.gmail.com>
-In-Reply-To: <2c0942db0806260935p51564a7et6517b39e9a6706dc@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-2
+	Thu, 26 Jun 2008 15:19:53 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:10673 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754189AbYFZTTR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 15:19:17 -0400
+Subject: Re: [RFC][PATCH] CPUSets: Move most calls to
+	rebuild_sched_domains() to the workqueue
+From: Peter Zijlstra <peterz@infradead.org>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: Paul Menage <menage@google.com>, Vegard Nossum <vegard.nossum@gmail.com>,
+       Paul Jackson <pj@sgi.com>, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>
+In-Reply-To: <4863E4C8.9050705@qualcomm.com>
+References: <48634BC1.8@google.com>
+	 <19f34abd0806260234y7616bab2k54bc019dfb0c6305@mail.gmail.com>
+	 <6599ad830806260250m39d700a5haf0f32d999cd2129@mail.gmail.com>
+	 <4863E4C8.9050705@qualcomm.com>
+Content-Type: text/plain
+Date: Thu, 26 Jun 2008 21:19:05 +0200
+Message-Id: <1214507945.12265.7.camel@twins.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Smtpd: 1.1.1@13338
-X-Seznam-User: monstr@seznam.cz
-X-QM-Mark: email-qm1<165082998>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-06-26 at 11:49 -0700, Max Krasnyansky wrote:
 
-
-
-> On Thu, Jun 26, 2008 at 5:29 AM,  <monstr@seznam.cz> wrote:
->> +ex_sw:
->> +       /* Get the destination register number into r5 */
->> +       lbui    r5, r0, ex_reg_op;
->> +       /* Form store_word jump table offset (sw_table + (8 * regnum)) */
->> +       la      r6, r0, sw_table;
->> +       add     r5, r5, r5;
->> +       add     r5, r5, r5;
->> +       add     r5, r5, r5;
->> +       add     r5, r5, r6;
->> +       bra     r5;
+> > Does that mean that you can't ever call get_online_cpus() from a
+> > workqueue thread?
 > 
-> Possibly stupid question: This is part of the unaligned store word
-> exception handler, yes? Shouldn't the above add's be addk's to
-> preserve the state of the carry register pre/post store?
+> In general it should be ok (no different from user-space task calling 
+> it). But there is still circular dependency because we're calling into
+> domain partitioning code.
+> Below is more detailed lockdep report with your patch applied on top of 
+> -rc8.
+> Looks like this might be a good time to rethink overall locking in there.
 
-I don't think that addk is important. I have some tests for exception, I want to
-cover full exception handling.
+Gautham has been working on some of this recently. Perhaps he can share
+his patch-stack again.
 
-M
+
 
