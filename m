@@ -1,50 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762596AbYFZNJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762947AbYFZNJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762596AbYFZNJj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:09:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761850AbYFZMwf
+	id S1762947AbYFZNJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:09:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762179AbYFZMy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:52:35 -0400
-Received: from ns2.suse.de ([195.135.220.15]:39913 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759967AbYFZMwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:52:33 -0400
-From: Bernhard Walle <bwalle@suse.de>
-To: linux-ia64@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, vgoyal@redhat.com, kexec@lists.infradead.org,
-       Bernhard Walle <bwalle@suse.de>
-Subject: [PATCH] Remove experimental status of kdump on IA64
-Date: Thu, 26 Jun 2008 14:53:11 +0200
-Message-Id: <1214484791-25439-1-git-send-email-bwalle@suse.de>
-X-Mailer: git-send-email 1.5.6
+	Thu, 26 Jun 2008 08:54:29 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:57239 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762182AbYFZMy2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:54:28 -0400
+Message-ID: <48639180.2090005@firstfloor.org>
+Date: Thu, 26 Jun 2008 14:54:24 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, stern@rowland.harvard.edu,
+       linux-kernel@vger.kernel.org, antonio.lin@alcormicro.com,
+       david.vrabel@csr.com
+Subject: Re: Scatter-gather list constraints
+References: <20080626110615U.fujita.tomonori@lab.ntt.co.jp> <20080626143928P.fujita.tomonori@lab.ntt.co.jp> <20080626063559.GJ20851@kernel.dk> <20080626155834I.fujita.tomonori@lab.ntt.co.jp> <20080626123936.GV20851@kernel.dk>
+In-Reply-To: <20080626123936.GV20851@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the experimental status of kdump on IA64. kdump is on IA64
-now since more than one year and it has proven to be stable.
 
+> On the fs side, just setting a hw block size of 1k should fix the
+> problem, since that'd be your minimum transfer size AND alignment there
+> even for O_DIRECT IO.
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
----
- arch/ia64/Kconfig |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+XFS used to force 512 byte IOs for its log IO. Not sure
+that was ever fixed. If it was fixed it likely required a disk format
+change (I think s390 ran into a problem like this)
 
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 16be414..f548e43 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -539,8 +539,8 @@ config KEXEC
- 	  strongly in flux, so no good recommendation can be made.
- 
- config CRASH_DUMP
--	  bool "kernel crash dumps (EXPERIMENTAL)"
--	  depends on EXPERIMENTAL && IA64_MCA_RECOVERY && !IA64_HP_SIM && (!SMP || HOTPLUG_CPU)
-+	  bool "kernel crash dumps"
-+	  depends on IA64_MCA_RECOVERY && !IA64_HP_SIM && (!SMP || HOTPLUG_CPU)
- 	  help
- 	    Generate crash dump after being started by kexec.
- 
--- 
-1.5.6
+-Andi
 
