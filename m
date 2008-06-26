@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757002AbYFZJBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbYFZJGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757002AbYFZJBZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 05:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbYFZJBR
+	id S1755943AbYFZJGb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 05:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYFZJGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 05:01:17 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38941 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750866AbYFZJBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 05:01:16 -0400
-Subject: Re: [PATCH 1/4] ide-pmac: media-bay support fixes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <200806261051.34733.bzolnier@gmail.com>
-References: <200806162124.43005.bzolnier@gmail.com>
-	 <200806242055.12042.bzolnier@gmail.com> <1214456094.8011.438.camel@pasglop>
-	 <200806261051.34733.bzolnier@gmail.com>
-Content-Type: text/plain
-Date: Thu, 26 Jun 2008 19:01:08 +1000
-Message-Id: <1214470868.8011.455.camel@pasglop>
+	Thu, 26 Jun 2008 05:06:23 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41147
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751513AbYFZJGW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 05:06:22 -0400
+Date: Thu, 26 Jun 2008 02:06:21 -0700 (PDT)
+Message-Id: <20080626.020621.45250426.davem@davemloft.net>
+To: bart.vanassche@gmail.com
+Cc: mpatocka@redhat.com, helge.hafting@aitel.hist.no,
+       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+       gcc@gcc.gnu.org
+Subject: Re: [10 PATCHES] inline functions to avoid stack overflow
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <e2e108260806252332k3ffe3c63o29556f5b9d89c4a3@mail.gmail.com>
+References: <Pine.LNX.4.64.0806250843460.20379@engineering.redhat.com>
+	<20080625.150931.182895076.davem@davemloft.net>
+	<e2e108260806252332k3ffe3c63o29556f5b9d89c4a3@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-26 at 10:51 +0200, Bartlomiej Zolnierkiewicz wrote:
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+Date: Thu, 26 Jun 2008 08:32:35 +0200
+
+> On Thu, Jun 26, 2008 at 12:09 AM, David Miller <davem@davemloft.net> wrote:
+> > The extra 16 bytes of space allocated is so that GCC can perform a
+> > secondary reload of a quad floating point value.  It always has to be
+> > present, because we can't satisfy a secondary reload by emitting yet
+> > another reload, it's the end of the possible level of recursions
+> > allowed by the reload pass.
 > 
-> The latest patches in one place:
-> 
-> http://www.kernel.org/pub/linux/kernel/people/bart/pata-2.6/
-> 
-> pmac-media-bay-support-fixes-take-3.patch
-> pmac-store-pmif-instead-of-hwif-in-driver_data-take-2.patch
-> pmac-add-init_dev-method-take-3.patch
-> pmac-move-ide_find_port-call-to-pmac_ide_setup_device-take-2.patch
-> 
-> IMO they are quite small and straightforward so setting git tree would
-> be overdoing it but if there are still problems I will set one.
+> Is there any floating-point code present in the Linux kernel ?
 
-That's ok, just tell me a tree and an SHA1 ID of a commit on top of
-which they apply, that will make my life easier :-)
+Yes, but not coming from C compiled code.  Floating point is
+used in most of the memcpy/memset implementations of the
+sparc64 kernel.
 
-I'll test them tomorrow morning.
+> Would it be a good idea to add an option to gcc that tells gcc that
+> the compiled code does not contain floating-point instructions, such
+> that gcc knows that no space has to be provided for a quad floating
+> point value ?
 
-Cheers,
-Ben.
-
-
+I think it exists already, it's called -mno-fpu :-)
