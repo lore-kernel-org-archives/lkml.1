@@ -1,70 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759533AbYFZNFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761839AbYFZNAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759533AbYFZNFp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758312AbYFZMqd
+	id S1761839AbYFZNAl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759059AbYFZMlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:46:33 -0400
-Received: from mail.windriver.com ([147.11.1.11]:47632 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758778AbYFZMqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:46:31 -0400
-Message-ID: <48638E38.5080605@windriver.com>
-Date: Thu, 26 Jun 2008 07:40:24 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
-       Adrian Bunk <bunk@kernel.org>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       linux-kernel@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
-References: <20080622125633.GA8166@damson.getinternet.no>	 <200806231326.11328.rusty@rustcorp.com.au> <485FD644.80208@sgi.com>	 <200806241136.52430.rusty@rustcorp.com.au>	 <1214294783.25608.75.camel@ymzhang>	 <1214441979.25608.86.camel@ymzhang>	 <20080625191535.e6e60432.akpm@linux-foundation.org> <19f34abd0806260200r40b46012q9bb4ba8783e8d935@mail.gmail.com>
-In-Reply-To: <19f34abd0806260200r40b46012q9bb4ba8783e8d935@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Jun 2008 12:40:24.0217 (UTC) FILETIME=[CDBB8890:01C8D789]
+	Thu, 26 Jun 2008 08:41:37 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:22527 "EHLO
+	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758680AbYFZMlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:41:32 -0400
+From: monstr@seznam.cz
+To: linux-kernel@vger.kernel.org
+Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
+       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
+       linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
+       hpa@zytor.com, Michal Simek <monstr@monstr.eu>
+Subject: [PATCH 39/60] microblaze_v4: dma support
+Date: Thu, 26 Jun 2008 14:30:08 +0200
+Message-Id: <1214483429-32360-40-git-send-email-monstr@seznam.cz>
+X-Mailer: git-send-email 1.5.4.GIT
+In-Reply-To: <1214483429-32360-39-git-send-email-monstr@seznam.cz>
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-2-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-3-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-4-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-5-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-6-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-7-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-8-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-9-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-10-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-11-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-12-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-13-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-14-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-15-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-16-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-17-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-18-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-19-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-20-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-21-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-22-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-23-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-24-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-25-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-26-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-27-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-28-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-29-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-30-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-31-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-32-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-33-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-34-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-35-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-36-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-37-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-38-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-39-git-send-email-monstr@seznam.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> On Thu, Jun 26, 2008 at 4:15 AM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
->   
->> Could.  But arch/x86/kernel/smpboot.c is an x86-tree file.  I'd expect
->> the x86 maintainers would like a usable changelog and a Tested-by: (if
->> indeed Vegard tested it).
->>     
->
-> Hi,
->
-> I had the patch (on top of v2.6.26-rc8) in testing for a couple of
-> hours now, but like I expected, the APIC error is really hard to
-> reproduce. So I fear that we never hit the failure case in the first
-> place. On the other hand... I hit a number of (other?) problems:
->
-> 1. Spontaneous reboot. This could have been the APIC error thing, I
-> have no way to know. I've never seen this before.
-> 2. NULL pointer dereference in pick_next_task_fair(). Not new.
-> 3. NULL pointer dereference in page_cgroup_zoneinfo. Never seen this
-> before (see screenshot #1).
-> 4. Page fault in I'm guessing configure_kgdbts() during boot. Never
-> seen this before either (screenshot #2).
->   
+From: Michal Simek <monstr@monstr.eu>
 
-How often does #4 occur?
 
-Perhaps you can email me directly the .config and kernel boot arguments
-you used?  It would be good to determine if the #4 is a victim or
-culprit of the crash.  If it is a culprit I would like to try and fix it.
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+---
+ include/asm-microblaze/dma-mapping.h |    1 +
+ include/asm-microblaze/dma.h         |   18 ++++++++++++++++++
+ include/asm-microblaze/scatterlist.h |   26 ++++++++++++++++++++++++++
+ 3 files changed, 45 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/dma-mapping.h
+ create mode 100644 include/asm-microblaze/dma.h
+ create mode 100644 include/asm-microblaze/scatterlist.h
 
-Thanks,
-Jason.
+diff --git a/include/asm-microblaze/dma-mapping.h b/include/asm-microblaze/dma-mapping.h
+new file mode 100644
+index 0000000..e7e1690
+--- /dev/null
++++ b/include/asm-microblaze/dma-mapping.h
+@@ -0,0 +1 @@
++#include <asm-generic/dma-mapping.h>
+diff --git a/include/asm-microblaze/dma.h b/include/asm-microblaze/dma.h
+new file mode 100644
+index 0000000..6ab357b
+--- /dev/null
++++ b/include/asm-microblaze/dma.h
+@@ -0,0 +1,18 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_DMA_H
++#define _ASM_MICROBLAZE_DMA_H
++
++/* we don't have dma address limit. define it as zero to be
++ * unlimited. */
++#define MAX_DMA_ADDRESS		(0)
++
++#define ISA_DMA_THRESHOLD	(0)
++
++#endif /* _ASM_MICROBLAZE_DMA_H */
+diff --git a/include/asm-microblaze/scatterlist.h b/include/asm-microblaze/scatterlist.h
+new file mode 100644
+index 0000000..bbe73e6
+--- /dev/null
++++ b/include/asm-microblaze/scatterlist.h
+@@ -0,0 +1,26 @@
++/*
++ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_SCATTERLIST_H
++#define _ASM_MICROBLAZE_SCATTERLIST_H
++
++struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long	sg_magic;
++#endif
++	unsigned long	page_link;
++	dma_addr_t	dma_address;
++	unsigned int	offset;
++	unsigned int	length;
++};
++
++#define sg_dma_address(sg)      ((sg)->dma_address)
++#define sg_dma_len(sg)          ((sg)->length)
++
++#endif /* _ASM_MICROBLAZE_SCATTERLIST_H */
+-- 
+1.5.4.GIT
 
