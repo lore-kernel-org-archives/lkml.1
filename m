@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYFZCCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbYFZCGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755249AbYFZCCq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 22:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbYFZCCi
+	id S1755267AbYFZCGv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 22:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYFZCGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 22:02:38 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:41460 "EHLO smtps.tip.net.au"
+	Wed, 25 Jun 2008 22:06:43 -0400
+Received: from sh.osrg.net ([192.16.179.4]:35098 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752227AbYFZCCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 22:02:37 -0400
-Date: Thu, 26 Jun 2008 12:02:12 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: kernel-testers@vger.kernel.org, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: Tree for June 25
-Message-Id: <20080626120212.c8caa005.sfr@canb.auug.org.au>
-In-Reply-To: <200806260228.38674.rjw@sisk.pl>
-References: <20080626003554.b2623aba.sfr@canb.auug.org.au>
-	<200806260228.38674.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
+	id S1751832AbYFZCGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 22:06:43 -0400
+Date: Thu, 26 Jun 2008 11:06:03 +0900
+To: stern@rowland.harvard.edu
+Cc: fujita.tomonori@lab.ntt.co.jp, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, antonio.lin@alcormicro.com,
+       david.vrabel@csr.com
+Subject: Re: Scatter-gather list constraints
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <Pine.LNX.4.44L0.0806251017320.2578-100000@iolanthe.rowland.org>
+References: <20080625091813Z.fujita.tomonori@lab.ntt.co.jp>
+	<Pine.LNX.4.44L0.0806251017320.2578-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__26_Jun_2008_12_02_12_+1000_vtaUkFvpL134Dlba"
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080626110615U.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__26_Jun_2008_12_02_12_+1000_vtaUkFvpL134Dlba
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 25 Jun 2008 10:23:00 -0400 (EDT)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-Hi Rafael,
+> On Wed, 25 Jun 2008, FUJITA Tomonori wrote:
+> 
+> > > For example, suppose an I/O request starts out with two S-G elements
+> > > of 1536 bytes and 2048 bytes respectively, and the DMA requirement is
+> > > that all elements except the last must have length divisible by 1024.  
+> > > Then the request could be broken up into three requests of 1024, 512,
+> > > and 2048 bytes.
+> > 
+> > I can't say that it's easy to implement a clean mechanism to break up
+> > a request into multiple requests until I see a patch.
+> 
+> And I can't write a patch without learning a lot more about how the
+> block core works.
+> 
+> > What I said is that you think that this is about extending something
+> > in the block layer but it's about adding a new concept to the block
+> > layer.
+> 
+> Is it?  What does the block layer do when it receives an I/O request
+> that don't satisfy the other constraints (max_sectors or
+> dma_alignment_mask, for example)?
 
-On Thu, 26 Jun 2008 02:28:38 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
->
-> This tree is completely broken on my test box (x86-64 HP nx6325) and I ca=
-n't
-> even bisect it. :-(
+As I explained, you need something new.
 
-Config?
+I don't think that max_sectors works as you expect.
 
-> It hits a NULL pointer dereference in find_symbol during boot, but when I=
- tried
-> to bisect this issue, I hit another one that made the box hang solid duri=
-ng
-> boot (early, no messages available).
->=20
-> If things continue going this way, 2.6.27 will be a disaster ...
+dma_alignment_mask is not used in the FS path. And I think that
+dma_alignment_mask doens't solve your problems.
 
-None of us want that.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Thu__26_Jun_2008_12_02_12_+1000_vtaUkFvpL134Dlba
-Content-Type: application/pgp-signature
+> > > Is it reasonable to have 120-KB bounce buffers?
+> > 
+> > The block layer does. Why do you think that USB can't?
+> 
+> Why do you think I think that USB can't?  I didn't ask whether it was
+> _possible_; I asked whether it was _reasonable_.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhi+KUACgkQTgG2atn1QN94SgCfXJSPJ0Xx0vYGQOXgrLQYXBxg
-l30An0LROxAdBf+61O4kr4Sv31qPRR1b
-=TQcQ
------END PGP SIGNATURE-----
-
---Signature=_Thu__26_Jun_2008_12_02_12_+1000_vtaUkFvpL134Dlba--
+What the block layer does is reasonable with regard to this, I think.
