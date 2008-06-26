@@ -1,45 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbYFZFGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYFZF0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756159AbYFZFGS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 01:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbYFZFGF
+	id S1755249AbYFZF0A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 01:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbYFZFZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 01:06:05 -0400
-Received: from gate.crashing.org ([63.228.1.57]:46309 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750763AbYFZFGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 01:06:04 -0400
-Subject: Re: [PATCH 1/4] ide-pmac: media-bay support fixes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <200806242055.12042.bzolnier@gmail.com>
-References: <200806162124.43005.bzolnier@gmail.com>
-	 <1214303693.8011.345.camel@pasglop> <200806242051.22207.bzolnier@gmail.com>
-	 <200806242055.12042.bzolnier@gmail.com>
-Content-Type: text/plain
-Date: Thu, 26 Jun 2008 14:54:54 +1000
-Message-Id: <1214456094.8011.438.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Thu, 26 Jun 2008 01:25:50 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:65067 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751519AbYFZFZt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 01:25:49 -0400
+Message-ID: <486327F9.6030004@ah.jp.nec.com>
+Date: Thu, 26 Jun 2008 14:24:09 +0900
+From: Takenori Nagano <t-nagano@ah.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: MinChan Kim <minchan.kim@gmail.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, linux-mm <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, akpm@linux-foundation.org
+Subject: Re: [RFC][PATCH] prevent incorrect oom under split_lru
+References: <20080624092824.4f0440ca@bree.surriel.com>	 <28c262360806242259k3ac308c4n7cee29b72456e95b@mail.gmail.com>	 <20080625150141.D845.KOSAKI.MOTOHIRO@jp.fujitsu.com>	 <28c262360806242356n3f7e02abwfee1f6acf0fd2c61@mail.gmail.com>	 <1214395885.15232.17.camel@twins>	 <28c262360806250605le31ba48ma8bb16f996783142@mail.gmail.com>	 <4862F5BB.9030200@ah.jp.nec.com> <28c262360806252137j78a90480n6c3973cd489c1ef2@mail.gmail.com>
+In-Reply-To: <28c262360806252137j78a90480n6c3973cd489c1ef2@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BTW (usual problem), I'm having a very hard time applying your patches..
+MinChan Kim wrote:
+> On Thu, Jun 26, 2008 at 10:49 AM, Takenori Nagano
+> <t-nagano@ah.jp.nec.com> wrote:
+>> MinChan Kim wrote:
+>>> Hi peter,
+>>>
+>>> I agree with you.  but if application's virtual address space is big,
+>>> we have a hard problem with mlockall since memory pressure might be a
+>>> big.
+>>> Of course, It will be a RT application design problem.
+>>>
+>>>> The much more important case is desktop usage - that is where we run non
+>>>> real-time code, but do expect 'low' latency due to user-interaction.
+>>>>
+>>>> >From hitting swap on my 512M laptop (rather frequent occurance) I know
+>>>> we can do better here,..
+>>>>
+>>> Absolutely. It is another example. So, I suggest following patch.
+>>> It's based on idea of Takenori Nagano's memory reclaim more efficiently.
+>> Hi Kim-san,
+>>
+>> Thank you for agreeing with me.
+>>
+>> I have one question.
+>> My patch don't mind priority. Why do you need "priority == 0"?
+> 
+> Hi, Takenori-san.
+> 
+> Now, Kosaiki-san's patch didn't consider application latency.
+> That patch scan all lru[x] pages when memory pressure is very high.
+> (ie, priority == 0)
+> It will cause application latency to high as peter and me notice that.
+> We need a idea which prevent big scanning overhead
+> I modified your idea to prevent big scanning overhead only when memory
+> pressure is very big.
 
-It looks like the 2 replacement ones you sent are no longer against
-whatever merge point I found in linux-next history for your tree, so
-I applied against linux-next 20080620, where 1/4 applies, 2/4 applies
-with offsets and 3 fails...
+Hi, Kim-san.
 
-For some reason, every time you send me new patches, I need more time
-figuring out what they are supposed to apply to than actually testing
-them :-)
+Thank you for your explanation.
+I understand your opinion.
 
-Cheers,
-Ben.
+But...your patch is not enough for me. :-(
+Our Xeon box has 128GB memory, application latency will be very large if
+priority goes to be zero.
+So, I would like to use "cut off" on every priority.
 
+I would like to delete "priority == 0", Can you?
 
+Thanks,
+  Takenori
