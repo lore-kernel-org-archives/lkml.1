@@ -1,49 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757825AbYFZIVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbYFZIXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757825AbYFZIVg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 04:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757553AbYFZIVD
+	id S1757293AbYFZIXR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 04:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbYFZIXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 04:21:03 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:45972 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755884AbYFZIU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 04:20:59 -0400
-Date: Thu, 26 Jun 2008 10:21:37 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Pavel Machek <pavel@suse.cz>
-Cc: kexec@lists.infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org,
-       vgoyal@redhat.com, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 2/3] Use /proc/firmware_mem for x86 (e820)
-Message-ID: <20080626102137.53cb95ad@halley.suse.de>
-In-Reply-To: <20080624182817.GI5642@ucw.cz>
-References: <1213977420-1555-1-git-send-email-bwalle@suse.de>
-	<1213977420-1555-3-git-send-email-bwalle@suse.de>
-	<20080624182817.GI5642@ucw.cz>
-Organization: SUSE Linux Products GmbH
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
- D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
- vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
- pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 26 Jun 2008 04:23:05 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:26140 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751731AbYFZIXB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 04:23:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=DsTIhxiywV3jGNoy2N0uH1SqllygNT4pDPLdUrf3jFhAYDj8hrngGXhEvN31TLzNJ2
+         mOiAyYQsa9r1YO2U0+2TocitRX/19ihx+Jeb2RsrueWlpr96wXbq+aZBieg9nzJrtG/U
+         Ou6tVvOrk/b6xGrb7CIgxYt+NyEad6bxctaTI=
+Message-ID: <86802c440806260123t3da4760bnc7dcef8d0251c983@mail.gmail.com>
+Date: Thu, 26 Jun 2008 01:23:00 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Pavel Machek" <pavel@suse.cz>
+Subject: Re: [PATCH] x86: check command line when CONFIG_X86_MPPARSE is not set
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080624121234.GB5642@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200805041823.57198.yhlu.kernel@gmail.com>
+	 <200806191213.10312.yhlu.kernel@gmail.com>
+	 <200806191215.01538.yhlu.kernel@gmail.com>
+	 <200806200742.36226.yhlu.kernel@gmail.com>
+	 <20080624121234.GB5642@ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pavel Machek [2008-06-24 20:28]:
+On Tue, Jun 24, 2008 at 5:12 AM, Pavel Machek <pavel@suse.cz> wrote:
+> Hi!
 >
-> > This patch copies the E820 map very early, before the kernel applies various
-> > operations. That copy is used later to register only the BIOS-provided E820
-> > map later in the resource tree for /proc/firmware_mem.
-> 
-> It is not process related -> it should not go to /proc. Talk to Greg.
+>> we can not use acpi=off, acpi=noirq and pci=noacpi when mps support is
+>> not there
+>>
+>> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>>
+>> ---
+>>  arch/x86/kernel/acpi/boot.c |   12 ++++++++++++
+>>  arch/x86/kernel/setup_32.c  |    2 ++
+>>  arch/x86/kernel/setup_64.c  |    2 ++
+>>  include/linux/acpi.h        |    5 +++++
+>>  4 files changed, 21 insertions(+)
+>>
+>> Index: linux-2.6/arch/x86/kernel/acpi/boot.c
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
+>> +++ linux-2.6/arch/x86/kernel/acpi/boot.c
+>> @@ -1740,6 +1740,18 @@ static int __init parse_pci(char *arg)
+>>  }
+>>  early_param("pci", parse_pci);
+>>
+>> +void __init acpi_mps_check(void)
+>> +{
+>> +#if defined(CONFIG_X86_LOCAL_APIC) && !defined(CONFIG_X86_MPPARSE)
+>> +/* mptable code is not built-in*/
+>> +     if (acpi_disabled || acpi_noirq) {
+>> +             printk(KERN_ERR "MPS support code is not built-in\n",
+>> +                    "so can not use acpi=off or acpi=noirq or pci=noacpi\n");
+>> +             panic("MPS support is not built-in\n");
+>> +     }
+>> +#endif
+>
+> I'd say this is good enough reason not to make X86_MPPARSE optional.
+>
 
-http://lkml.org/lkml/2008/6/26/75
+new patch in tip/master, it will disable smp instead of panic.
 
-
-Bernhard
--- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
+YH
