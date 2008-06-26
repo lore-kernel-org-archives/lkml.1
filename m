@@ -1,130 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbYFZS5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760325AbYFZS5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755603AbYFZS5F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:57:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbYFZS4w
+	id S1760325AbYFZS5e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYFZS5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:56:52 -0400
-Received: from mxl.seznam.cz ([77.75.72.44]:38073 "EHLO mxl.seznam.cz"
+	Thu, 26 Jun 2008 14:57:22 -0400
+Received: from saeurebad.de ([85.214.36.134]:57253 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752186AbYFZS4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:56:51 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=beta; d=seznam.cz;
-	h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Smtpd:X-Seznam-User:X-QM-Mark;
-	b=Bz3bmr5h3sTuKv8mzH3jOy0CDfsUlCOTpn9UAJdQPJSOr5RUxMYVkPRUhBkr2hFy9
-	LGNH5DujIv9IBmvYpR4LcK7JP4qH+InN82H3mYUdCYtwnomga4TMi8vE/zDkEjmm8y/
-	UPkeej6G1CSqfpU1dBiXKXqvLr7Z3br1v4PgwvE=
-Message-ID: <4863E68C.30802@seznam.cz>
-Date: Thu, 26 Jun 2008 20:57:16 +0200
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: monstr@seznam.cz
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	id S1752238AbYFZS5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 14:57:21 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix new alloc_bootmem_core (Re: [PATCH -mm 08/14] bootmem: clean up alloc_bootmem_core)
+References: <20080605224940.434439989@saeurebad.de>
+	<20080605225720.616014665@saeurebad.de>
+	<20080617173021.C1FE.E1E9C6FF@jp.fujitsu.com>
+Date: Thu, 26 Jun 2008 20:56:52 +0200
+In-Reply-To: <20080617173021.C1FE.E1E9C6FF@jp.fujitsu.com> (Yasunori Goto's
+	message of "Tue, 17 Jun 2008 18:34:09 +0900")
+Message-ID: <87hcbg10uj.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Jon Loeliger <jdl@freescale.com>
-CC: linux-arch@vger.kernel.org, arnd@arndb.de, vapier.adi@gmail.com,
-       matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
-       linux-kernel@vger.kernel.org, John.Linn@xilinx.com,
-       linuxppc-dev@ozlabs.org, will.newton@gmail.com,
-       john.williams@petalogix.com, hpa@zytor.com, drepper@redhat.com,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>	<1214483429-32360-2-git-send-email-monstr@seznam.cz>	<1214483429-32360-3-git-send-email-monstr@seznam.cz>	<1214483429-32360-4-git-send-email-monstr@seznam.cz>	<1214483429-32360-5-git-send-email-monstr@seznam.cz>	<1214483429-32360-6-git-send-email-monstr@seznam.cz>	<1214483429-32360-7-git-send-email-monstr@seznam.cz>	<1214483429-32360-8-git-send-email-monstr@seznam.cz>	<1214483429-32360-9-git-send-email-monstr@seznam.cz>	<1214483429-32360-10-git-send-email-monstr@seznam.cz>	<1214483429-32360-11-git-send-email-monstr@seznam.cz>	<1214483429-32360-12-git-send-email-monstr@seznam.cz>	<1214483429-32360-13-git-send-email-monstr@seznam.cz> <4863B096.7020309@freescale.com>
-In-Reply-To: <4863B096.7020309@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Smtpd: 1.1.1@13338
-X-Seznam-User: monstr@seznam.cz
-X-QM-Mark: email-qm1<165055146>
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK. We have to change fdt generator with Steve.
+Hi,
 
-Steve: can you look at it?
+Yasunori Goto <y-goto@jp.fujitsu.com> writes:
 
-M
+> Hi Johannes-san.
+>
+> I found a bug in this patch.
+>
+>
+>> -	eidx = end_pfn - PFN_DOWN(node_boot_start);
+>> +	if (goal && goal < max)
+>> +		start = ALIGN(goal, step);
+>> +	else
+>> +		start = ALIGN(min, step);
+>
+> Here should check (min < goal) too.
+>
+> If not, start can becomes smaller than min. and sidx doesn't point
+> correct index.
+> alloc_bootmem_node() almost allocates pages of other node,
+> when node's min address is over MAX_DMA_ADDRESS.
 
+Andrew, could you pull that into -mm?
 
-> monstr@seznam.cz wrote:
->> From: Michal Simek <monstr@monstr.eu>
->>
->>
->> Signed-off-by: Michal Simek <monstr@monstr.eu>
->> ---
->>  arch/microblaze/platform/generic/system.dts |  300
->> +++++++++++++++++++++++++++
->>  1 files changed, 300 insertions(+), 0 deletions(-)
->>  create mode 100644 arch/microblaze/platform/generic/system.dts
->>
->> diff --git a/arch/microblaze/platform/generic/system.dts
->> b/arch/microblaze/platform/generic/system.dts
->> new file mode 100644
->> index 0000000..724a037
->> --- /dev/null
->> +++ b/arch/microblaze/platform/generic/system.dts
->> @@ -0,0 +1,300 @@
->> +/*
->> + * (C) Copyright 2007-2008 Xilinx, Inc.
->> + * (C) Copyright 2007-2008 Michal Simek
->> + *
->> + * Michal SIMEK <monstr@monstr.eu>
->> + *
->> + * This program is free software; you can redistribute it and/or
->> + * modify it under the terms of the GNU General Public License as
->> + * published by the Free Software Foundation; either version 2 of
->> + * the License, or (at your option) any later version.
->> + *
->> + * This program is distributed in the hope that it will be useful,
->> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
->> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
->> + * GNU General Public License for more details.
->> + *
->> + * You should have received a copy of the GNU General Public License
->> + * along with this program; if not, write to the Free Software
->> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
->> + * MA 02111-1307 USA
->> + *
->> + * CAUTION: This file is automatically generated by libgen.
->> + * Version: Xilinx EDK 9.2.02 EDK_Jm_SP2.3
->> + * Generate by FDT v1.00.a
->> + */
->> +
->> +/ {
->> +    #address-cells = <1>;
->> +    #size-cells = <1>;
->> +    compatible = "xlnx,microblaze";
->> +    model = "testing";
->> +    DDR_SDRAM_32Mx16: memory@20000000 {
->> +        device_type = "memory";
->> +        reg = < 20000000 2000000 >;
->> +    } ;
->> +    chosen {
->> +        bootargs = "console=ttyUL0,115200 loglevel=15";
->> +        linux,stdout-path = "/plb@0/serial@40100000";
->> +    } ;
->> +    cpus {
->> +        #address-cells = <1>;
->> +        #cpus = <1>;
->> +        #size-cells = <0>;
->> +        microblaze_0: cpu@0 {
->> +            clock-frequency = <2faf080>;
-> 
-> 
-> This should really be using the /dts-v1/ format now.
-> 
-> Thanks,
-> jdl
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> 
-> No virus found in this incoming message.
-> Checked by AVG. 
-> Version: 8.0.101 / Virus Database: 270.4.1/1519 - Release Date: 25.6.2008 04:13
+	Hannes
