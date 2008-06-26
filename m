@@ -1,77 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbYFZRoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753586AbYFZRp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbYFZRoz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 13:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYFZRos
+	id S1753586AbYFZRp1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 13:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756581AbYFZRpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 13:44:48 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59128 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751723AbYFZRor (ORCPT
+	Thu, 26 Jun 2008 13:45:07 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:20677 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756563AbYFZRpE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 13:44:47 -0400
-Date: Thu, 26 Jun 2008 19:35:36 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Alok Kataria <akataria@vmware.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
-Message-ID: <20080626173536.GA16783@elf.ucw.cz>
-References: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com> <20080603182014.79a38d03@infradead.org> <35f686220806032101h103152dat841818982aaa5052@mail.gmail.com> <20080604061637.6bab3f67@infradead.org> <1213924953.27983.52.camel@promb-2n-dhcp368.eng.vmware.com> <20080620113922.GG7439@elte.hu> <1213999593.31598.52.camel@promb-2n-dhcp368.eng.vmware.com> <20080624175753.GG5642@ucw.cz> <1214500831.3351.10.camel@promb-2n-dhcp368.eng.vmware.com>
+	Thu, 26 Jun 2008 13:45:04 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5326"; a="4078536"
+Message-ID: <4863D59E.3070604@qualcomm.com>
+Date: Thu, 26 Jun 2008 10:45:02 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1214500831.3351.10.camel@promb-2n-dhcp368.eng.vmware.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Paul Menage <menage@google.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Paul Jackson <pj@sgi.com>
+Subject: Re: v2.6.26-rc7/cgroups: circular locking dependency
+References: <20080621173859.GA6846@damson.getinternet.no>	 <2f11576a0806220834m3572ee80i72229cb9a1613558@mail.gmail.com>	 <1214149823.3223.313.camel@lappy.programming.kicks-ass.net>	 <48609441.2030901@qualcomm.com> <6599ad830806260025u27458a47j47175ad778ca48a9@mail.gmail.com>
+In-Reply-To: <6599ad830806260025u27458a47j47175ad778ca48a9@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-06-26 10:20:31, Alok Kataria wrote:
-> On Tue, 2008-06-24 at 10:57 -0700, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > On X86 platform we can use the value of tsc_khz computed during tsc calibration
-> > > to calculate the loops_per_jiffy value. Its very important to keep the error in
-> > > lpj values to minimum as any error in that may result in kernel panic in
-> > > check_timer.
-> > > In virtualization environment, On a highly overloaded host the guest delay
-> > > calibration may sometimes result in errors beyond the ~50% that timer_irq_works
-> > > can handle, resulting in the guest panicking.
-> > 
-> > How did you adress 'khz has nothing to do with loops per jiffie'
-> > comment?
-> > 
-> > Some cpus can do loop in cycle , some need two cycles, some need half.
-> 
-> Hi Pavel, 
-> 
-> When you say loops per jiffies has nothing to do with khz, by khz you
-> mean the cpu frequency, right ?
+Paul Menage wrote:
+> Second idea - can we just punt the call to rebuild_sched_domains() to
+> a workqueue thread if it's due to a flag or cpumask change? Does it
+> matter if the call doesn't happen synchronously? The work handler
+> could easily nest the cgroup_lock() call inside get_online_cpus() and
+> then call rebuild_sched_domains()
 
-Yes.
+I was thinking about exactly the same thing. I kind of don't like async 
+nature of it. Maybe it's ok but there might be some interesting races 
+with async domain updates.
 
-> AFAIU in calibrate_delay_direct too we measure the amount by which timer
-> has ticked until DELAY_CALIBRATION_TICKS amount of jiffies has passed.
-> So IMO the code there too assumes that there is one loop per timer
-> cycle ?
-
-On my machine, it reports:
-
-delay using timer specific routine.. 3661.98 BogoMIPS (lpj=7323971)
-...
-Detected 1828.828 MHz processor.
-
-(/proc/cpuinfo)
-model name	: Genuine Intel(R) CPU           T2400  @ 1.83GHz
-...
-cpu MHz		: 1000.000
-...
-bogomips	: 3657.54
-
-So you'd break it by setting lpj (aka bogomips) to cpu_khz, right?
-
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Max
