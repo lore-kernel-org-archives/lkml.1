@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbYFZNSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbYFZNSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757506AbYFZNSG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:18:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYFZNRw
+	id S1759284AbYFZNSp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYFZNSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 09:17:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57920 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751823AbYFZNRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 09:17:51 -0400
-Date: Thu, 26 Jun 2008 15:17:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       Trivial patch monkey <trivial@kernel.org>
-Subject: Re: pci-gart_64.c: could we get better explanation?
-Message-ID: <20080626131734.GA18444@elte.hu>
-References: <20080526184703.GA17369@elf.ucw.cz> <1211831499.3286.2.camel@pasglop> <20080625222543.GD1844@elf.ucw.cz>
+	Thu, 26 Jun 2008 09:18:33 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:50862 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752001AbYFZNSc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 09:18:32 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmIDANQtY0h5LG+uZWdsb2JhbACSYRICHp9e
+X-IronPort-AV: E=Sophos;i="4.27,708,1204464600"; 
+   d="scan'208";a="135867909"
+Date: Thu, 26 Jun 2008 23:18:29 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: xfs@oss.sgi.com, matthew@wil.cx, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] Extend completions to provide XFS object flush
+	requirements
+Message-ID: <20080626131829.GT29319@disturbed>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+	matthew@wil.cx, linux-kernel@vger.kernel.org
+References: <1214455277-6387-1-git-send-email-david@fromorbit.com> <1214455277-6387-2-git-send-email-david@fromorbit.com> <20080626074636.GB7064@infradead.org> <20080626112133.GJ11558@disturbed> <20080626130700.GA24325@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080625222543.GD1844@elf.ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080626130700.GA24325@infradead.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 26, 2008 at 09:07:00AM -0400, Christoph Hellwig wrote:
+> On Thu, Jun 26, 2008 at 09:21:33PM +1000, Dave Chinner wrote:
+> > Ok, so that involves exactly what? A new header file, a new API name
+> > (ideas anyone?) and kerneldoc comments?
+> 
+> Yes, probably just a new header with properly documented functions.
+> Thew two non-trivial ones you added should probably not be inlines,
+> btw.
 
-* Pavel Machek <pavel@suse.cz> wrote:
+Yeah, they grew a little bigger than expected...
 
-> Add better explanation to pci-gart.
+> flush_lock_init/flush_lock/flush_trylock/flush_done/flush_is_locked?
 
-applied to tip/x86/gart - thanks Pavel.
+Ok, I was thinking along those lines. I'll redo the patch series
+using that interface tomorrow.
 
-	Ingo
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
