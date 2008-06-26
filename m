@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764108AbYFZN2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764003AbYFZN1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764108AbYFZN2E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:28:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763936AbYFZN1g
+	id S1764003AbYFZN1n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763685AbYFZN1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 09:27:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60591 "EHLO mx3.mail.elte.hu"
+	Thu, 26 Jun 2008 09:27:03 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60463 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763928AbYFZN1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 09:27:34 -0400
-Date: Thu, 26 Jun 2008 15:27:24 +0200
+	id S1763675AbYFZN1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 09:27:01 -0400
+Date: Thu, 26 Jun 2008 15:26:49 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <yhlu.kernel@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: move fix mapping page table range early
-Message-ID: <20080626132724.GG18444@elte.hu>
-References: <200806251748.06743.yhlu.kernel@gmail.com> <200806252151.29028.yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] x86: clean up ARCH_SETUP
+Message-ID: <20080626132649.GF18444@elte.hu>
+References: <200806251748.06743.yhlu.kernel@gmail.com> <200806251952.16257.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200806252151.29028.yhlu.kernel@gmail.com>
+In-Reply-To: <200806251952.16257.yhlu.kernel@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,9 +37,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> do that in init_memory_mapping
-> 
-> also remove one init_ohci1394_dma_on_all_controllers
+> asm-x86/paravirt.h already have protection with CONFIG_PARAVIRT inside
 
 applied to tip/x86/unify-setup - thanks Yinghai.
 
