@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760541AbYFZMvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761694AbYFZMvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760541AbYFZMvQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 08:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758513AbYFZMhD
+	id S1761694AbYFZMvy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 08:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756003AbYFZMhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:37:03 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:20646 "EHLO
+	Thu, 26 Jun 2008 08:37:16 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:20703 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758918AbYFZMg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:36:59 -0400
+	id S1758483AbYFZMhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:37:09 -0400
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
@@ -17,11 +17,11 @@ Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
        hpa@zytor.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 11/60] microblaze_v4: cache support
-Date: Thu, 26 Jun 2008 14:29:40 +0200
-Message-Id: <1214483429-32360-12-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 18/60] microblaze_v4: supported function for memory - kernel/lib
+Date: Thu, 26 Jun 2008 14:29:47 +0200
+Message-Id: <1214483429-32360-19-git-send-email-monstr@seznam.cz>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <1214483429-32360-11-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-18-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-2-git-send-email-monstr@seznam.cz>
  <1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -33,6 +33,13 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-9-git-send-email-monstr@seznam.cz>
  <1214483429-32360-10-git-send-email-monstr@seznam.cz>
  <1214483429-32360-11-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-12-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-13-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-14-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-15-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-16-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-17-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-18-git-send-email-monstr@seznam.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -42,406 +49,444 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/cpu/cache.c  |  255 +++++++++++++++++++++++++++++++++++
- include/asm-microblaze/cache.h      |   44 ++++++
- include/asm-microblaze/cacheflush.h |   75 ++++++++++
- 3 files changed, 374 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/cpu/cache.c
- create mode 100644 include/asm-microblaze/cache.h
- create mode 100644 include/asm-microblaze/cacheflush.h
+ arch/microblaze/lib/memcpy.c  |  160 +++++++++++++++++++++++++++++++++++++
+ arch/microblaze/lib/memmove.c |  174 +++++++++++++++++++++++++++++++++++++++++
+ arch/microblaze/lib/memset.c  |   78 ++++++++++++++++++
+ 3 files changed, 412 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/lib/memcpy.c
+ create mode 100644 arch/microblaze/lib/memmove.c
+ create mode 100644 arch/microblaze/lib/memset.c
 
-diff --git a/arch/microblaze/kernel/cpu/cache.c b/arch/microblaze/kernel/cpu/cache.c
+diff --git a/arch/microblaze/lib/memcpy.c b/arch/microblaze/lib/memcpy.c
 new file mode 100644
-index 0000000..9dcf3e9
+index 0000000..199668d
 --- /dev/null
-+++ b/arch/microblaze/kernel/cpu/cache.c
-@@ -0,0 +1,255 @@
++++ b/arch/microblaze/lib/memcpy.c
+@@ -0,0 +1,160 @@
 +/*
-+ * Cache control for MicroBlaze cache memories
++ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
 + *
-+ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2007 PetaLogix
-+ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ * Reasonably optimised generic C-code for memcpy on Microblaze
++ * This is generic C code to do efficient, alignment-aware memcpy.
 + *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
++ * It is based on demo code originally Copyright 2001 by Intel Corp, taken from
++ * http://www.embedded.com/showArticle.jhtml?articleID=19205567
 + *
++ * Attempts were made, unsuccesfully, to contact the original
++ * author of this code (Michael Morrow, Intel).  Below is the original
++ * copyright notice.
++ *
++ * This software has been developed by Intel Corporation.
++ * Intel specifically disclaims all warranties, express or
++ * implied, and all liability, including consequential and
++ * other indirect damages, for the use of this program, including
++ * liability for infringement of any proprietary rights,
++ * and including the warranties of merchantability and fitness
++ * for a particular purpose. Intel does not assume any
++ * responsibility for and errors which may appear in this program
++ * not any responsibility to update it.
 + */
 +
-+#include <asm/cacheflush.h>
-+#include <asm/cache.h>
-+#include <asm/cpuinfo.h>
++#include <linux/types.h>
++#include <linux/stddef.h>
++#include <linux/compiler.h>
++#include <linux/module.h>
 +
-+/* Exported functions */
++#include <asm/string.h>
++#include <asm/system.h>
 +
-+void _enable_icache(void)
++#ifdef __HAVE_ARCH_MEMCPY
++void *memcpy(void *v_dst, const void *v_src, __kernel_size_t c)
 +{
-+	if (cpuinfo.use_icache) {
-+#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
-+		__asm__ __volatile__ ("					\
-+				msrset	r0, %0;				\
-+				nop; "					\
-+				:					\
-+				: "i" (MSR_ICE)				\
-+				: "memory");
++	const char *src = v_src;
++	char *dst = v_dst;
++#ifndef CONFIG_OPT_LIB_FUNCTION
++	/* Simple, byte oriented memcpy. */
++	while (c--)
++		*dst++ = *src++;
++
++	return v_dst;
 +#else
-+		__asm__ __volatile__ ("					\
-+				mfs	r12, rmsr;			\
-+				ori	r12, r12, %0;			\
-+				mts	rmsr, r12;			\
-+				nop; "					\
-+				:					\
-+				: "i" (MSR_ICE)				\
-+				: "memory", "r12");
++	/* The following code tries to optimize the copy by using unsigned
++	 * alignment. This will work fine if both source and destination are
++	 * aligned on the same boundary. However, if they are aligned on
++	 * different boundaries shifts will be necessary. This might result in
++	 * bad performance on MicroBlaze systems without a barrel shifter.
++	 */
++	const uint32_t *i_src;
++	uint32_t *i_dst;
++
++	if (c >= 4) {
++		unsigned  value, buf_hold;
++
++		/* Align the dstination to a word boundry. */
++		/* This is done in an endian independant manner. */
++		switch ((unsigned long)dst & 3) {
++		case 1:
++			*dst++ = *src++;
++			--c;
++		case 2:
++			*dst++ = *src++;
++			--c;
++		case 3:
++			*dst++ = *src++;
++			--c;
++		}
++
++		i_dst = (void *)dst;
++
++		/* Choose a copy scheme based on the source */
++		/* alignment relative to dstination. */
++		switch ((unsigned long)src & 3) {
++		case 0x0:	/* Both byte offsets are aligned */
++			i_src  = (const void *)src;
++
++			for (; c >= 4; c -= 4)
++				*i_dst++ = *i_src++;
++
++			src  = (const void *)i_src;
++			break;
++		case 0x1:	/* Unaligned - Off by 1 */
++			/* Word align the source */
++			i_src = (const void *) ((unsigned)src & ~3);
++
++			/* Load the holding buffer */
++			buf_hold = *i_src++ << 8;
++
++			for (; c >= 4; c -= 4) {
++				value = *i_src++;
++				*i_dst++ = buf_hold | value >> 24;
++				buf_hold = value << 8;
++			}
++
++			/* Realign the source */
++			src = (const void *)i_src;
++			src -= 3;
++			break;
++		case 0x2:	/* Unaligned - Off by 2 */
++			/* Word align the source */
++			i_src = (const void *) ((unsigned)src & ~3);
++
++			/* Load the holding buffer */
++			buf_hold = *i_src++ << 16;
++
++			for (; c >= 4; c -= 4) {
++				value = *i_src++;
++				*i_dst++ = buf_hold | value >> 16;
++				buf_hold = value << 16;
++			}
++
++			/* Realign the source */
++			src = (const void *)i_src;
++			src -= 2;
++			break;
++		case 0x3:	/* Unaligned - Off by 3 */
++			/* Word align the source */
++			i_src = (const void *) ((unsigned)src & ~3);
++
++			/* Load the holding buffer */
++			buf_hold = *i_src++ << 24;
++
++			for (; c >= 4; c -= 4) {
++				value = *i_src++;
++				*i_dst++ = buf_hold | value >> 8;
++				buf_hold = value << 24;
++			}
++
++			/* Realign the source */
++			src = (const void *)i_src;
++			src -= 1;
++			break;
++		}
++		dst = (void *)i_dst;
++	}
++
++	/* Finish off any remaining bytes */
++	/* simple fast copy, ... unless a cache boundry is crossed */
++	switch (c) {
++	case 3:
++		*dst++ = *src++;
++	case 2:
++		*dst++ = *src++;
++	case 1:
++		*dst++ = *src++;
++	}
++
++	return v_dst;
 +#endif
-+	}
 +}
++EXPORT_SYMBOL(memcpy);
++#endif /* __HAVE_ARCH_MEMCPY */
 +
-+void _disable_icache(void)
++
++void *cacheable_memcpy(void *d, const void *s, __kernel_size_t c)
 +{
-+	if (cpuinfo.use_icache) {
-+#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
-+		__asm__ __volatile__ ("					\
-+				msrclr r0, %0;				\
-+				nop; "					\
-+				:					\
-+				: "i" (MSR_ICE)				\
-+				: "memory");
-+#else
-+		__asm__ __volatile__ ("					\
-+				mfs	r12, rmsr;			\
-+				andi	r12, r12, ~%0;			\
-+				mts	rmsr, r12;			\
-+				nop; "					\
-+				:					\
-+				: "i" (MSR_ICE)				\
-+				: "memory", "r12");
-+#endif
-+	}
++	return memcpy(d, s, c);
 +}
-+
-+void _invalidate_icache(unsigned int addr)
-+{
-+	if (cpuinfo.use_icache) {
-+		__asm__ __volatile__ ("					\
-+				wic	%0, r0"				\
-+				:					\
-+				: "r" (addr));
-+	}
-+}
-+
-+void _enable_dcache(void)
-+{
-+	if (cpuinfo.use_dcache) {
-+#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
-+		__asm__ __volatile__ ("					\
-+				msrset	r0, %0;				\
-+				nop; "					\
-+				:					\
-+				: "i" (MSR_DCE)				\
-+				: "memory");
-+#else
-+		__asm__ __volatile__ ("					\
-+				mfs	r12, rmsr;			\
-+				ori	r12, r12, %0;			\
-+				mts	rmsr, r12;			\
-+				nop; "					\
-+				:					\
-+				: "i" (MSR_DCE)			\
-+				: "memory", "r12");
-+#endif
-+	}
-+}
-+
-+void _disable_dcache(void)
-+{
-+	if (cpuinfo.use_dcache) {
-+#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
-+		__asm__ __volatile__ ("					\
-+				msrclr	r0, %0;				\
-+				nop; "					\
-+				:					\
-+				: "i" (MSR_DCE)			\
-+				: "memory");
-+#else
-+		__asm__ __volatile__ ("					\
-+				mfs	r12, rmsr;			\
-+				andi	r12, r12, ~%0;			\
-+				mts	rmsr, r12;			\
-+				nop; "					\
-+				:					\
-+				: "i" (MSR_DCE)			\
-+				: "memory", "r12");
-+#endif
-+	}
-+}
-+
-+void _invalidate_dcache(unsigned int addr)
-+{
-+	if (cpuinfo.use_dcache)
-+		__asm__ __volatile__ ("					\
-+				wdc	%0, r0"				\
-+				:					\
-+				: "r" (addr));
-+}
-+
-+void __invalidate_icache_all(void)
-+{
-+	unsigned int i;
-+	unsigned flags;
-+
-+	if (cpuinfo.use_icache) {
-+		local_irq_save(flags);
-+		__disable_icache();
-+
-+		/* Just loop through cache size and invalidate, no need to add
-+			CACHE_BASE address */
-+		for (i = 0; i < cpuinfo.icache_size;
-+			i += cpuinfo.icache_line)
-+				__invalidate_icache(i);
-+
-+		__enable_icache();
-+		local_irq_restore(flags);
-+	}
-+}
-+
-+void __invalidate_icache_range(unsigned long start, unsigned long end)
-+{
-+	unsigned int i;
-+	unsigned flags;
-+	unsigned int align;
-+
-+	if (cpuinfo.use_icache) {
-+		/*
-+		 * No need to cover entire cache range,
-+		 * just cover cache footprint
-+		 */
-+		end = min(start + cpuinfo.icache_size, end);
-+		align = ~(cpuinfo.icache_line - 1);
-+		start &= align; /* Make sure we are aligned */
-+		/* Push end up to the next cache line */
-+		end = ((end & align) + cpuinfo.icache_line);
-+
-+		local_irq_save(flags);
-+		__disable_icache();
-+
-+		for (i = start; i < end; i += cpuinfo.icache_line)
-+			__invalidate_icache(i);
-+
-+		__enable_icache();
-+		local_irq_restore(flags);
-+	}
-+}
-+
-+void __invalidate_icache_page(struct vm_area_struct *vma, struct page *page)
-+{
-+	__invalidate_icache_all();
-+}
-+
-+void __invalidate_icache_user_range(struct vm_area_struct *vma,
-+				struct page *page, unsigned long adr,
-+				int len)
-+{
-+	__invalidate_icache_all();
-+}
-+
-+void __invalidate_cache_sigtramp(unsigned long addr)
-+{
-+	__invalidate_icache_range(addr, addr + 8);
-+}
-+
-+void __invalidate_dcache_all(void)
-+{
-+	unsigned int i;
-+	unsigned flags;
-+
-+	if (cpuinfo.use_dcache) {
-+		local_irq_save(flags);
-+		__disable_dcache();
-+
-+		/*
-+		 * Just loop through cache size and invalidate,
-+		 * no need to add CACHE_BASE address
-+		 */
-+		for (i = 0; i < cpuinfo.dcache_size;
-+			i += cpuinfo.dcache_line)
-+				__invalidate_dcache(i);
-+
-+		__enable_dcache();
-+		local_irq_restore(flags);
-+	}
-+}
-+
-+void __invalidate_dcache_range(unsigned long start, unsigned long end)
-+{
-+	unsigned int i;
-+	unsigned flags;
-+	unsigned int align;
-+
-+	if (cpuinfo.use_dcache) {
-+		/*
-+		 * No need to cover entire cache range,
-+		 * just cover cache footprint
-+		 */
-+		end = min(start + cpuinfo.dcache_size, end);
-+		align = ~(cpuinfo.dcache_line - 1);
-+		start &= align; /* Make sure we are aligned */
-+		/* Push end up to the next cache line */
-+		end = ((end & align) + cpuinfo.dcache_line);
-+		local_irq_save(flags);
-+		__disable_dcache();
-+
-+		for (i = start; i < end; i += cpuinfo.dcache_line)
-+			__invalidate_dcache(i);
-+
-+		__enable_dcache();
-+		local_irq_restore(flags);
-+	}
-+}
-+
-+void __invalidate_dcache_page(struct vm_area_struct *vma, struct page *page)
-+{
-+	__invalidate_dcache_all();
-+}
-+
-+void __invalidate_dcache_user_range(struct vm_area_struct *vma,
-+				struct page *page, unsigned long adr,
-+				int len)
-+{
-+	__invalidate_dcache_all();
-+}
-diff --git a/include/asm-microblaze/cache.h b/include/asm-microblaze/cache.h
+diff --git a/arch/microblaze/lib/memmove.c b/arch/microblaze/lib/memmove.c
 new file mode 100644
-index 0000000..08828ec
+index 0000000..4db1ea6
 --- /dev/null
-+++ b/include/asm-microblaze/cache.h
-@@ -0,0 +1,44 @@
++++ b/arch/microblaze/lib/memmove.c
+@@ -0,0 +1,174 @@
 +/*
-+ * Cache operations
++ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
 + *
-+ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2003 John Williams <jwilliams@itee.uq.edu.au>
++ * Reasonably optimised generic C-code for memcpy on Microblaze
++ * This is generic C code to do efficient, alignment-aware memmove.
 + *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
++ * It is based on demo code originally Copyright 2001 by Intel Corp, taken from
++ * http://www.embedded.com/showArticle.jhtml?articleID=19205567
++ *
++ * Attempts were made, unsuccesfully, to contact the original
++ * author of this code (Michael Morrow, Intel).  Below is the original
++ * copyright notice.
++ *
++ * This software has been developed by Intel Corporation.
++ * Intel specifically disclaims all warranties, express or
++ * implied, and all liability, including consequential and
++ * other indirect damages, for the use of this program, including
++ * liability for infringement of any proprietary rights,
++ * and including the warranties of merchantability and fitness
++ * for a particular purpose. Intel does not assume any
++ * responsibility for and errors which may appear in this program
++ * not any responsibility to update it.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_CACHE_H
-+#define _ASM_MICROBLAZE_CACHE_H
++#include <linux/types.h>
++#include <linux/stddef.h>
++#include <linux/compiler.h>
++#include <linux/module.h>
 +
-+#include <asm/registers.h>
-+#include <linux/autoconf.h>
++#include <asm/string.h>
 +
-+#ifndef L1_CACHE_BYTES
-+/* word-granular cache in microblaze */
-+#define L1_CACHE_BYTES		4
-+#endif
-+
-+void _enable_icache(void);
-+void _disable_icache(void);
-+void _invalidate_icache(unsigned int addr);
-+
-+#define __enable_icache()		_enable_icache()
-+#define __disable_icache()		_disable_icache()
-+#define __invalidate_icache(addr)	_invalidate_icache(addr)
-+
-+void _enable_dcache(void);
-+void _disable_dcache(void);
-+void _invalidate_dcache(unsigned int addr);
-+
-+#define __enable_dcache()		_enable_dcache()
-+#define __disable_dcache()		_disable_dcache()
-+#define __invalidate_dcache(addr)	_invalidate_dcache(addr)
-+
-+/* FIXME - I don't think this is right */
-+#ifdef CONFIG_XILINX_UNCACHED_SHADOW
-+#define UNCACHED_SHADOW_MASK (CONFIG_XILINX_ERAM_SIZE)
-+#endif
-+
-+#endif /* _ASM_MICROBLAZE_CACHE_H */
-diff --git a/include/asm-microblaze/cacheflush.h b/include/asm-microblaze/cacheflush.h
-new file mode 100644
-index 0000000..6afe017
---- /dev/null
-+++ b/include/asm-microblaze/cacheflush.h
-@@ -0,0 +1,75 @@
-+/*
-+ * Copyright (C) 2007 PetaLogix
-+ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
-+ * based on v850 version which was
-+ * Copyright (C) 2001,02,03 NEC Electronics Corporation
-+ * Copyright (C) 2001,02,03 Miles Bader <miles@gnu.org>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ *
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_CACHEFLUSH_H
-+#define _ASM_MICROBLAZE_CACHEFLUSH_H
-+
-+/* Somebody depends on this; sigh... */
-+#include <linux/mm.h>
-+
-+/*
-+ * Cache handling functions.
-+ * Microblaze has a write-through data cache, and no icache snooping of dcache
-+ */
-+
-+#define flush_cache_all()			__invalidate_cache_all()
-+#define flush_cache_mm(mm)			do { } while (0)
-+#define flush_cache_range(vma, start, end)	__invalidate_cache_all()
-+#define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
-+
-+#define flush_dcache_range(start, end)	__invalidate_dcache_range(start, end)
-+#define flush_dcache_page(page)			do { } while (0)
-+#define flush_dcache_mmap_lock(mapping)		do { } while (0)
-+#define flush_dcache_mmap_unlock(mapping)	do { } while (0)
-+
-+#define flush_icache_range(start, len)	__invalidate_icache_range(start, len)
-+#define flush_icache_page(vma, pg)		do { } while (0)
-+
-+#define flush_cache_vmap(start, end)		do { } while (0)
-+#define flush_cache_vunmap(start, end)		do { } while (0)
-+
-+struct page;
-+struct mm_struct;
-+struct vm_area_struct;
-+
-+/* see arch/microblaze/kernel/cache.c */
-+extern void __invalidate_icache_all(void);
-+extern void __invalidate_icache_range(unsigned long start, unsigned long end);
-+extern void __invalidate_icache_page(struct vm_area_struct *vma, struct page *page);
-+extern void __invalidate_icache_user_range(struct vm_area_struct *vma,
-+				struct page *page,
-+				unsigned long adr, int len);
-+extern void __invalidate_cache_sigtramp(unsigned long addr);
-+
-+extern void __invalidate_dcache_all(void);
-+extern void __invalidate_dcache_range(unsigned long start, unsigned long end);
-+extern void __invalidate_dcache_page(struct vm_area_struct *vma, struct page *page);
-+extern void __invalidate_dcache_user_range(struct vm_area_struct *vma,
-+				struct page *page,
-+				unsigned long adr, int len);
-+
-+extern inline void __invalidate_cache_all(void)
++#ifdef __HAVE_ARCH_MEMMOVE
++void *memmove(void *v_dst, const void *v_src, __kernel_size_t c)
 +{
-+	__invalidate_icache_all();
-+	__invalidate_dcache_all();
++	const char *src = v_src;
++	char *dst = v_dst;
++
++#ifdef CONFIG_OPT_LIB_FUNCTION
++	const uint32_t *i_src;
++	uint32_t *i_dst;
++#endif
++
++	if (!c)
++		return v_dst;
++
++	/* Use memcpy when source is higher than dest */
++	if (v_dst <= v_src)
++		return memcpy(v_dst, v_src, c);
++
++#ifndef CONFIG_OPT_LIB_FUNCTION
++	/* copy backwards, from end to beginning */
++	src += c;
++	dst += c;
++
++	/* Simple, byte oriented memmove. */
++	while (c--)
++		*--dst = *--src;
++
++	return v_dst;
++#else
++	/* The following code tries to optimize the copy by using unsigned
++	 * alignment. This will work fine if both source and destination are
++	 * aligned on the same boundary. However, if they are aligned on
++	 * different boundaries shifts will be necessary. This might result in
++	 * bad performance on MicroBlaze systems without a barrel shifter.
++	 */
++	/* FIXME this part needs more test */
++	/* Do a descending copy - this is a bit trickier! */
++	dst += c;
++	src += c;
++
++	if (c >= 4) {
++		unsigned  value, buf_hold;
++
++		/* Align the destination to a word boundry. */
++		/* This is done in an endian independant manner. */
++
++		switch ((unsigned long)dst & 3) {
++		case 3:
++			*--dst = *--src;
++			--c;
++		case 2:
++			*--dst = *--src;
++			--c;
++		case 1:
++			*--dst = *--src;
++			--c;
++		}
++
++		i_dst = (void *)dst;
++		/* Choose a copy scheme based on the source */
++		/* alignment relative to dstination. */
++		switch ((unsigned long)src & 3) {
++		case 0x0:	/* Both byte offsets are aligned */
++
++			i_src  = (const void *)src;
++
++			for (; c >= 4; c -= 4)
++				*--i_dst = *--i_src;
++
++			src  = (const void *)i_src;
++			break;
++		case 0x1:	/* Unaligned - Off by 1 */
++			/* Word align the source */
++			i_src = (const void *) (((unsigned)src + 4) & ~3);
++
++			/* Load the holding buffer */
++			buf_hold = *--i_src >> 24;
++
++			for (; c >= 4; c -= 4) {
++				value = *--i_src;
++				*--i_dst = buf_hold << 8 | value;
++				buf_hold = value >> 24;
++			}
++
++			/* Realign the source */
++			src = (const void *)i_src;
++			src += 1;
++			break;
++		case 0x2:	/* Unaligned - Off by 2 */
++			/* Word align the source */
++			i_src = (const void *) (((unsigned)src + 4) & ~3);
++
++			/* Load the holding buffer */
++			buf_hold = *--i_src >> 16;
++
++			for (; c >= 4; c -= 4) {
++				value = *--i_src;
++				*--i_dst = buf_hold << 16 | value;
++				buf_hold = value >> 16;
++			}
++
++			/* Realign the source */
++			src = (const void *)i_src;
++			src += 2;
++			break;
++		case 0x3:	/* Unaligned - Off by 3 */
++			/* Word align the source */
++			i_src = (const void *) (((unsigned)src + 4) & ~3);
++
++			/* Load the holding buffer */
++			buf_hold = *--i_src >> 8;
++
++			for (; c >= 4; c -= 4) {
++				value = *--i_src;
++				*--i_dst = buf_hold << 24 | value;
++				buf_hold = value >> 8;
++			}
++
++			/* Realign the source */
++			src = (const void *)i_src;
++			src += 3;
++			break;
++		}
++		dst = (void *)i_dst;
++	}
++
++	/* simple fast copy, ... unless a cache boundry is crossed */
++	/* Finish off any remaining bytes */
++	switch (c) {
++	case 4:
++		*--dst = *--src;
++	case 3:
++		*--dst = *--src;
++	case 2:
++		*--dst = *--src;
++	case 1:
++		*--dst = *--src;
++	}
++	return v_dst;
++#endif
 +}
++EXPORT_SYMBOL(memmove);
++#endif /* __HAVE_ARCH_MEMMOVE */
+diff --git a/arch/microblaze/lib/memset.c b/arch/microblaze/lib/memset.c
+new file mode 100644
+index 0000000..6a2f4e5
+--- /dev/null
++++ b/arch/microblaze/lib/memset.c
+@@ -0,0 +1,78 @@
++/*
++ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
++ *
++ * Reasonably optimised generic C-code for memset on Microblaze
++ * This is generic C code to do efficient, alignment-aware memcpy.
++ *
++ * It is based on demo code originally Copyright 2001 by Intel Corp, taken from
++ * http://www.embedded.com/showArticle.jhtml?articleID=19205567
++ *
++ * Attempts were made, unsuccesfully, to contact the original
++ * author of this code (Michael Morrow, Intel).  Below is the original
++ * copyright notice.
++ *
++ * This software has been developed by Intel Corporation.
++ * Intel specifically disclaims all warranties, express or
++ * implied, and all liability, including consequential and
++ * other indirect damages, for the use of this program, including
++ * liability for infringement of any proprietary rights,
++ * and including the warranties of merchantability and fitness
++ * for a particular purpose. Intel does not assume any
++ * responsibility for and errors which may appear in this program
++ * not any responsibility to update it.
++ */
 +
-+#define copy_to_user_page(vma, page, vaddr, dst, src, len) \
-+do { memcpy((dst), (src), (len)); \
-+	flush_icache_range((unsigned) (dst), (unsigned) (dst) + (len)); \
-+} while (0)
++#include <linux/types.h>
++#include <linux/stddef.h>
++#include <linux/compiler.h>
++#include <linux/module.h>
 +
-+#define copy_from_user_page(vma, page, vaddr, dst, src, len) \
-+	memcpy((dst), (src), (len))
++#include <asm/string.h>
 +
-+#endif /* _ASM_MICROBLAZE_CACHEFLUSH_H */
++#ifdef __HAVE_ARCH_MEMSET
++void *memset(void *v_src, int c, __kernel_size_t n)
++{
++
++	char *src = v_src;
++#ifdef CONFIG_OPT_LIB_FUNCTION
++	uint32_t *i_src;
++	uint32_t w32;
++#endif
++	/* Truncate c to 8 bits */
++	c = (c & 0xFF);
++
++#ifdef CONFIG_OPT_LIB_FUNCTION
++	/* Make a repeating word out of it */
++	w32 = c;
++	w32 |= w32 << 8;
++	w32 |= w32 << 16;
++
++	if (n >= 4) {
++		/* Align the destination to a word boundary */
++		/* This is done in an endian independant manner */
++		switch ((unsigned) src & 3) {
++		case 1: *src++ = c;
++			--n;
++		case 2: *src++ = c;
++			--n;
++		case 3: *src++ = c;
++			--n;
++		}
++
++		i_src  = (void *)src;
++
++		/* Do as many full-word copies as we can */
++		for (; n >= 4; n -= 4)
++			*i_src++ = w32;
++
++		src  = (void *)i_src;
++	}
++#endif
++	/* Simple, byte oriented memset or the rest of count. */
++	while (n--)
++		*src++ = c;
++
++	return v_src;
++}
++EXPORT_SYMBOL(memset);
++#endif /* __HAVE_ARCH_MEMSET */
 -- 
 1.5.4.GIT
 
