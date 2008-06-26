@@ -1,96 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761519AbYFZPKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761834AbYFZPKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761519AbYFZPKB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 11:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbYFZPJx
+	id S1761834AbYFZPKk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 11:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbYFZPKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 11:09:53 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:1967 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752951AbYFZPJw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 11:09:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=A3eGEkyHzl2iw2k7GXb5sSPkOMePOQfmeuwG4M6OUVKumuIDpQGwl41l881hZ3/z5r
-         e7/pbceDWMPkb2GZvJu4ftOlRhn3urHf+XGEeOeCAGYGiqI6TSG1La7m+mV+Kr0JFBdN
-         tqPXSFiu0f5YQQWJUTNUjx02rBogPXqB0Jo0c=
-Message-ID: <cfd18e0f0806260809n4370c6eqc07c05ff93029658@mail.gmail.com>
-Date: Thu, 26 Jun 2008 17:09:48 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Oleg Nesterov" <oleg@tv-sign.ru>
-Subject: Re: [patch] make siginfo_t si_utime + si_sstime report times in USER_HZ, not HZ
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Bart Van Assche" <bart.vanassche@gmail.com>,
-       "Roland McGrath" <roland@redhat.com>
-In-Reply-To: <20080625153806.GA499@tv-sign.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 26 Jun 2008 11:10:30 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:60947 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751592AbYFZPK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 11:10:29 -0400
+Date: Thu, 26 Jun 2008 16:46:01 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Dan Williams <dan.j.williams@intel.com>,
+       Pierre Ossman <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org, kernel@avr32linux.org,
+       shannon.nelson@intel.com, David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH v4 4/6] dmaengine: Make DMA Engine menu visible for
+ AVR32 users
+Message-ID: <20080626164601.712bf048@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <20080626141552.GB30954@cs181140183.pp.htv.fi>
+References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214486603-23655-2-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214486603-23655-3-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214486603-23655-4-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214486603-23655-5-git-send-email-haavard.skinnemoen@atmel.com>
+	<20080626141552.GB30954@cs181140183.pp.htv.fi>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <cfd18e0f0806250749od875635r9e533d9f834bd8c4@mail.gmail.com>
-	 <20080625153806.GA499@tv-sign.ru>
+X-OriginalArrivalTime: 26 Jun 2008 14:45:45.0716 (UTC) FILETIME=[50E53340:01C8D79B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 5:38 PM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> On 06/25, Michael Kerrisk wrote:
->>
->> --- /home/mtk/ARCHIVE/KERNEL/linux-2.6.26-rc7/kernel/signal.c.orig    2008-06-24
->> 16:20:39.000000000 +0200
->> +++ /home/mtk/ARCHIVE/KERNEL/linux-2.6.26-rc7/kernel/signal.c 2008-06-24
->> 16:22:17.000000000 +0200
->> @@ -1379,10 +1379,9 @@
->>
->>       info.si_uid = tsk->uid;
->>
->> -     /* FIXME: find out whether or not this is supposed to be c*time. */
->> -     info.si_utime = cputime_to_jiffies(cputime_add(tsk->utime,
->> +     info.si_utime = cputime_to_clock_t(cputime_add(tsk->utime,
->>                                                      tsk->signal->utime));
->> -     info.si_stime = cputime_to_jiffies(cputime_add(tsk->stime,
->> +     info.si_stime = cputime_to_clock_t(cputime_add(tsk->stime,
->>                                                      tsk->signal->stime));
->>
->>       info.si_status = tsk->exit_code & 0x7f;
->> @@ -1450,9 +1449,8 @@
->>
->>       info.si_uid = tsk->uid;
->>
->> -     /* FIXME: find out whether or not this is supposed to be c*time. */
->> -     info.si_utime = cputime_to_jiffies(tsk->utime);
->> -     info.si_stime = cputime_to_jiffies(tsk->stime);
->> +     info.si_utime = cputime_to_clock_t(tsk->utime);
->> +     info.si_stime = cputime_to_clock_t(tsk->stime);
->>
->>       info.si_code = why;
->>       switch (why) {
->
-> This looks like the obviously good fix to me.
+Adrian Bunk <bunk@kernel.org> wrote:
+> That discussion is mixing two different things I suggested besides other 
+> things before the Kconfig file was added [1]:
+> - have DMA_ENGINE select'ed when a device gets enabled by the user,
+>   and not be an independent option
+> - switch to menuconfig and don't offer an empty kconfig menu
+> 
+> There seems to be no disagreement about the former (which could 
+> otherwise easily lead to users mistakenly enabling NET_DMA).
+> 
+> The latter is more a cosmetical kconfig UI thing, and I already said
+> back then that it "could be dropped if it would become a problem" [2].
 
-Tested now, and it does what I expect.
+Ok, thanks for explaining. The menu does appear empty if I remove the
+architecture dependency without adding the driver...if that's a problem
+maybe we should do the HAVE_DMA_DEVICE thing...
 
-> The patch also deletes the comment about signal_struct->cXtime,
-> this also looks right: why should we use cutime/cstime ?
+> So if you want to remove the architecture dependency from the DMADEVICES 
+> menu that's OK with me.
 
-Hmmm -- maybe I was wrong to delete that comment.  I think the point
-of the comment was: should the time returned vie these fields of the
-signinfo structure also include the times for (grand)children of the
-process that had terminated and been wait()ed for.  My first take on
-that was "no".  But now I'm not 100% sure.  A quick test on Solaris 8
-suggests that these fields *do* include the times of waited for
-children.  (None of this is specified in POSIX.1, which doesn't
-specify si_utime and si_stime.)  I've not yet tested FreeBSD (not sure
-if it supports these fields or not).
+Ok, I'm gonna wait for Dan and others to respond. If it's fine with
+them, I'll post a patch removing the arch dependency.
 
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Haavard
