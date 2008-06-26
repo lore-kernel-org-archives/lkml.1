@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762626AbYFZNqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763596AbYFZNqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762626AbYFZNqH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbYFZNps
+	id S1763596AbYFZNqg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:46:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761100AbYFZNqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 09:45:48 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:24266 "EHLO
+	Thu, 26 Jun 2008 09:46:18 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:24271 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756307AbYFZNpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 09:45:45 -0400
+	id S1762661AbYFZNqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 09:46:15 -0400
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
@@ -17,11 +17,11 @@ Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
        hpa@zytor.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 10/60] microblaze_v4: Interrupt handling, timer support, supported function
-Date: Thu, 26 Jun 2008 14:29:39 +0200
-Message-Id: <1214483429-32360-11-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 16/60] microblaze_v4: defconfig file
+Date: Thu, 26 Jun 2008 14:29:45 +0200
+Message-Id: <1214483429-32360-17-git-send-email-monstr@seznam.cz>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <1214483429-32360-10-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-16-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-2-git-send-email-monstr@seznam.cz>
  <1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -32,6 +32,12 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-8-git-send-email-monstr@seznam.cz>
  <1214483429-32360-9-git-send-email-monstr@seznam.cz>
  <1214483429-32360-10-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-11-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-12-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-13-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-14-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-15-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-16-git-send-email-monstr@seznam.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -41,588 +47,714 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/intc.c    |  163 ++++++++++++++++++++++++++++++++++++++
- arch/microblaze/kernel/irq.c     |   93 ++++++++++++++++++++++
- arch/microblaze/kernel/selfmod.c |   76 ++++++++++++++++++
- arch/microblaze/kernel/timer.c   |  136 +++++++++++++++++++++++++++++++
- include/asm-microblaze/irq.h     |   40 +++++++++
- include/asm-microblaze/selfmod.h |   24 ++++++
- 6 files changed, 532 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/intc.c
- create mode 100644 arch/microblaze/kernel/irq.c
- create mode 100644 arch/microblaze/kernel/selfmod.c
- create mode 100644 arch/microblaze/kernel/timer.c
- create mode 100644 include/asm-microblaze/irq.h
- create mode 100644 include/asm-microblaze/selfmod.h
+ arch/microblaze/defconfig |  698 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 698 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/defconfig
 
-diff --git a/arch/microblaze/kernel/intc.c b/arch/microblaze/kernel/intc.c
+diff --git a/arch/microblaze/defconfig b/arch/microblaze/defconfig
 new file mode 100644
-index 0000000..3a6529d
+index 0000000..ba24c6b
 --- /dev/null
-+++ b/arch/microblaze/kernel/intc.c
-@@ -0,0 +1,163 @@
-+/*
-+ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+#include <linux/init.h>
-+#include <linux/irq.h>
-+#include <linux/autoconf.h>
-+#include <asm/page.h>
-+#include <asm/io.h>
-+
-+#include <asm/prom.h>
-+#include <asm/irq.h>
-+
-+#ifdef CONFIG_SELFMOD_INTC
-+#include <asm/selfmod.h>
-+#define INTC_BASE	BARRIER_BASE_ADDR
-+#else
-+static unsigned int intc_baseaddr;
-+#define INTC_BASE	intc_baseaddr
-+#endif
-+
-+unsigned int nr_irq;
-+
-+/* No one else should require these constants, so define them locally here. */
-+#define ISR 0x00			/* Interrupt Status Register */
-+#define IPR 0x04			/* Interrupt Pending Register */
-+#define IER 0x08			/* Interrupt Enable Register */
-+#define IAR 0x0c			/* Interrupt Acknowledge Register */
-+#define SIE 0x10			/* Set Interrupt Enable bits */
-+#define CIE 0x14			/* Clear Interrupt Enable bits */
-+#define IVR 0x18			/* Interrupt Vector Register */
-+#define MER 0x1c			/* Master Enable Register */
-+
-+#define MER_ME (1<<0)
-+#define MER_HIE (1<<1)
-+
-+static void intc_enable(unsigned int irq)
-+{
-+	unsigned int mask = (0x00000001 << (irq & 31));
-+	pr_debug("enable: %d\n", irq);
-+	iowrite32(mask, INTC_BASE + SIE);
-+}
-+
-+static void intc_disable(unsigned int irq)
-+{
-+	unsigned long mask = (0x00000001 << (irq & 31));
-+	pr_debug("disable: %d\n", irq);
-+	iowrite32(mask, INTC_BASE + CIE);
-+}
-+
-+static void intc_disable_and_ack(unsigned int irq)
-+{
-+	unsigned long mask = (0x00000001 << (irq & 31));
-+	pr_debug("disable_and_ack: %d\n", irq);
-+	iowrite32(mask, INTC_BASE + CIE);
-+	/* ack edge triggered intr */
-+	if (!(irq_desc[irq].status & IRQ_LEVEL))
-+		iowrite32(mask, INTC_BASE + IAR);
-+}
-+
-+static void intc_end(unsigned int irq)
-+{
-+	unsigned long mask = (0x00000001 << (irq & 31));
-+
-+	pr_debug("end: %d\n", irq);
-+	if (!(irq_desc[irq].status & (IRQ_DISABLED | IRQ_INPROGRESS))) {
-+		iowrite32(mask, INTC_BASE + SIE);
-+		/* ack level sensitive intr */
-+		if (irq_desc[irq].status & IRQ_LEVEL)
-+			iowrite32(mask, INTC_BASE + IAR);
-+	}
-+}
-+
-+static struct irq_chip intc_dev = {
-+	.name = "INTC",
-+	.enable = intc_enable,
-+	.disable = intc_disable,
-+	.mask_ack  = intc_disable_and_ack,
-+	.end = intc_end,
-+};
-+
-+unsigned int get_irq(struct pt_regs *regs)
-+{
-+	int irq;
-+
-+	/*
-+	 * NOTE: This function is the one that needs to be improved in
-+	 * order to handle multiple interrupt controllers. It currently
-+	 * is hardcoded to check for interrupts only on the first INTC.
-+	 */
-+	irq = ioread32(INTC_BASE + IVR);
-+	pr_debug("get_irq: %d\n", irq);
-+
-+	return irq;
-+}
-+
-+void __init init_IRQ(void)
-+{
-+	int i, j, intr_type;
-+	struct device_node *intc = NULL;
-+#ifdef CONFIG_SELFMOD_INTC
-+	unsigned int intc_baseaddr = 0;
-+	static int arr_func[] = {
-+				(int)&get_irq,
-+				(int)&intc_enable,
-+				(int)&intc_disable,
-+				(int)&intc_disable_and_ack,
-+				(int)&intc_end,
-+				0
-+			};
-+#endif
-+	static char *intc_list[] = {
-+				"xlnx,xps-intc-1.00.a",
-+				"xlnx,opb-intc-1.00.c",
-+				"xlnx,opb-intc-1.00.b",
-+				"xlnx,opb-intc-1.00.a",
-+				NULL
-+			};
-+
-+	for (j = 0; intc_list[j] != NULL; j++) {
-+		intc = of_find_compatible_node(NULL, NULL, intc_list[j]);
-+		if (intc)
-+			break;
-+	}
-+
-+	intc_baseaddr = *(int *) of_get_property(intc, "reg", NULL);
-+	intc_baseaddr = (unsigned long) ioremap(intc_baseaddr, PAGE_SIZE);
-+	nr_irq = *(int *) of_get_property(intc, "xlnx,num-intr-inputs", NULL);
-+	intr_type = *(int *) of_get_property(intc, "xlnx,kind-of-edge", NULL);
-+#ifdef CONFIG_SELFMOD_INTC
-+	selfmod_function((int *) arr_func, intc_baseaddr);
-+#endif
-+	printk(KERN_INFO "%s #0 at 0x%08x, num_irq=%d, edge=0x%x\n",
-+		intc_list[j], intc_baseaddr, nr_irq, intr_type);
-+
-+	/*
-+	 * Disable all external interrupts until they are
-+	 * explicity requested.
-+	 */
-+	iowrite32(0, intc_baseaddr + IER);
-+
-+	/* Acknowledge any pending interrupts just in case. */
-+	iowrite32(0xffffffff, intc_baseaddr + IAR);
-+
-+	/* Turn on the Master Enable. */
-+	iowrite32(MER_HIE | MER_ME, intc_baseaddr + MER);
-+
-+	for (i = 0; i < nr_irq; ++i) {
-+		if (intr_type & (0x00000001 << i)) {
-+			set_irq_chip_and_handler_name(i, &intc_dev,
-+				handle_edge_irq, intc_dev.name);
-+			irq_desc[i].status &= ~IRQ_LEVEL;
-+		} else {
-+			set_irq_chip_and_handler_name(i, &intc_dev,
-+				handle_level_irq, intc_dev.name);
-+			irq_desc[i].status |= IRQ_LEVEL;
-+		}
-+	}
-+}
-diff --git a/arch/microblaze/kernel/irq.c b/arch/microblaze/kernel/irq.c
-new file mode 100644
-index 0000000..63e8994
---- /dev/null
-+++ b/arch/microblaze/kernel/irq.c
-@@ -0,0 +1,93 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/hardirq.h>
-+#include <linux/interrupt.h>
-+#include <linux/irqflags.h>
-+#include <linux/seq_file.h>
-+#include <linux/kernel_stat.h>
-+#include <linux/irq.h>
-+
-+#include <asm/prom.h>
-+
-+unsigned int irq_of_parse_and_map(struct device_node *dev, int index)
-+{
-+	struct of_irq oirq;
-+
-+	if (of_irq_map_one(dev, index, &oirq))
-+		return NO_IRQ;
-+
-+	return oirq.specifier[0];
-+}
-+EXPORT_SYMBOL_GPL(irq_of_parse_and_map);
-+
-+/*
-+ * 'what should we do if we get a hw irq event on an illegal vector'.
-+ * each architecture has to answer this themselves.
-+ */
-+void ack_bad_irq(unsigned int irq)
-+{
-+	printk(KERN_WARNING "unexpected IRQ trap at vector %02x\n", irq);
-+}
-+
-+void do_IRQ(struct pt_regs *regs)
-+{
-+	unsigned int irq;
-+	struct irq_desc *desc;
-+
-+	irq_enter();
-+	set_irq_regs(regs);
-+	irq = get_irq(regs);
-+	BUG_ON(irq == -1U);
-+	desc = irq_desc + irq;
-+	desc->handle_irq(irq, desc);
-+	desc->chip->end(irq);
-+	irq_exit();
-+}
-+
-+int show_interrupts(struct seq_file *p, void *v)
-+{
-+	int i = *(loff_t *) v, j;
-+	struct irqaction *action;
-+	unsigned long flags;
-+
-+	if (i == 0) {
-+		seq_printf(p, "		");
-+		for_each_online_cpu(j)
-+			seq_printf(p, "CPU%-8d", j);
-+		seq_putc(p, '\n');
-+	}
-+
-+	if (i < nr_irq) {
-+		spin_lock_irqsave(&irq_desc[i].lock, flags);
-+		action = irq_desc[i].action;
-+		if (!action)
-+			goto skip;
-+		seq_printf(p, "%3d: ", i);
-+#ifndef CONFIG_SMP
-+		seq_printf(p, "%10u ", kstat_irqs(i));
-+#else
-+		for_each_online_cpu(j)
-+			seq_printf(p, "%10u ", kstat_cpu(j).irqs[i]);
-+#endif
-+		seq_printf(p, " %8s", irq_desc[i].status &
-+					IRQ_LEVEL ? "level": "edge");
-+		seq_printf(p, " %8s", irq_desc[i].chip->name);
-+		seq_printf(p, "  %s", action->name);
-+
-+		for (action = action->next; action; action = action->next)
-+			seq_printf(p, ", %s", action->name);
-+
-+		seq_putc(p, '\n');
-+skip:
-+		spin_unlock_irqrestore(&irq_desc[i].lock, flags);
-+	}
-+	return 0;
-+}
-diff --git a/arch/microblaze/kernel/selfmod.c b/arch/microblaze/kernel/selfmod.c
-new file mode 100644
-index 0000000..3c4cd25
---- /dev/null
-+++ b/arch/microblaze/kernel/selfmod.c
-@@ -0,0 +1,76 @@
-+/*
-+ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#include <linux/interrupt.h>
-+#include <asm/selfmod.h>
-+
-+#undef DEBUG
-+
-+#define OPCODE_IMM		0xB0000000
-+#define OPCODE_LWI		0xE8000000
-+#define OPCODE_LWI_MASK		0xEC000000
-+#define OPCODE_RTSD		0xB60F0008 /* return from func: rtsd r15, 8 */
-+#define OPCODE_ADDIK		0x30000000
-+#define OPCODE_ADDIK_MASK	0xFC000000
-+
-+#define IMM_BASE	(OPCODE_IMM | (BARRIER_BASE_ADDR >> 16))
-+#define LWI_BASE	(OPCODE_LWI | (BARRIER_BASE_ADDR & 0x0000ff00))
-+#define LWI_BASE_MASK	(OPCODE_LWI_MASK | (BARRIER_BASE_ADDR & 0x0000ff00))
-+#define ADDIK_BASE	(OPCODE_ADDIK | (BARRIER_BASE_ADDR & 0x0000ff00))
-+#define ADDIK_BASE_MASK	(OPCODE_ADDIK_MASK | (BARRIER_BASE_ADDR & 0x0000ff00))
-+
-+#define MODIFY_INSTR	{						\
-+	pr_debug("%s: curr instr, (%d):0x%x, next(%d):0x%x\n",		\
-+		__func__, i, addr[i], i + 1, addr[i + 1]);		\
-+	addr[i] = OPCODE_IMM + (base >> 16);				\
-+	/* keep instruction opcode and add only last 16bits */		\
-+	addr[i + 1] = (addr[i + 1] & 0xffff00ff) + (base & 0xffff);	\
-+	__invalidate_icache(addr[i]);					\
-+	__invalidate_icache(addr[i + 1]);				\
-+	pr_debug("%s: hack instr, (%d):0x%x, next(%d):0x%x\n",		\
-+		__func__, i, addr[i], i + 1, addr[i + 1]);		\
-+	}
-+
-+/* NOTE
-+ * self-modified part of code for improvement of interrupt controller
-+ * save instruction in interrupt rutine
-+ */
-+void selfmod_function(const int *arr_fce, const unsigned int base)
-+{
-+	unsigned int flags, i, j, *addr = NULL;
-+
-+	local_irq_save(flags);
-+	__disable_icache();
-+
-+	/* zero terminated array */
-+	for (j = 0; arr_fce[j] != 0; j++) {
-+		/* get start address of function */
-+		addr = (unsigned int *) arr_fce[j];
-+		pr_debug("%s: func(%d) at 0x%x\n",
-+					__func__, j, (unsigned int) addr);
-+		for (i = 0; ; i++) {
-+			pr_debug("%s: instruction code at %d: 0x%x\n",
-+						__func__, i, addr[i]);
-+			if (addr[i] == IMM_BASE) {
-+				/* detecting of lwi (0xE8) or swi (0xF8) instr
-+				 * I can detect both opcode with one mask */
-+				if ((addr[i + 1] & LWI_BASE_MASK) == LWI_BASE) {
-+					MODIFY_INSTR;
-+				} else /* detection addik for ack */
-+				if ((addr[i + 1] & ADDIK_BASE_MASK)
-+							== ADDIK_BASE)
-+					MODIFY_INSTR;
-+			} else if (addr[i] == OPCODE_RTSD) {
-+				/* return from function means end of function */
-+				pr_debug("%s: end of array %d\n", __func__, i);
-+				break;
-+			}
-+		}
-+	}
-+	local_irq_restore(flags);
-+} /* end of self-modified code */
-diff --git a/arch/microblaze/kernel/timer.c b/arch/microblaze/kernel/timer.c
-new file mode 100644
-index 0000000..35c7d59
---- /dev/null
-+++ b/arch/microblaze/kernel/timer.c
-@@ -0,0 +1,136 @@
-+/*
-+ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/param.h>
-+#include <linux/interrupt.h>
-+#include <linux/profile.h>
-+#include <linux/irq.h>
-+#include <asm/io.h>
-+#include <asm/cpuinfo.h>
-+#include <asm/setup.h>
-+
-+#include <asm/prom.h>
-+#include <asm/irq.h>
-+
-+#ifdef CONFIG_SELFMOD_TIMER
-+#include <asm/selfmod.h>
-+#define TIMER_BASE	BARRIER_BASE_ADDR
-+#else
-+static unsigned int timer_baseaddr;
-+#define TIMER_BASE	timer_baseaddr
-+#endif
-+
-+#define TCSR0	(0x00)
-+#define TLR0	(0x04)
-+#define TCR0	(0x08)
-+#define TCSR1	(0x10)
-+#define TLR1	(0x14)
-+#define TCR1	(0x18)
-+
-+#define TCSR_MDT	(1<<0)
-+#define TCSR_UDT	(1<<1)
-+#define TCSR_GENT	(1<<2)
-+#define TCSR_CAPT	(1<<3)
-+#define TCSR_ARHT	(1<<4)
-+#define TCSR_LOAD	(1<<5)
-+#define TCSR_ENIT	(1<<6)
-+#define TCSR_ENT	(1<<7)
-+#define TCSR_TINT	(1<<8)
-+#define TCSR_PWMA	(1<<9)
-+#define TCSR_ENALL	(1<<10)
-+
-+static void timer_ack(void)
-+{
-+	iowrite32(ioread32(TIMER_BASE + TCSR0), TIMER_BASE + TCSR0);
-+}
-+
-+irqreturn_t timer_interrupt(int irq, void *dev_id)
-+{
-+#ifdef CONFIG_HEART_BEAT
-+	heartbeat();
-+#endif
-+	timer_ack();
-+
-+	write_seqlock(&xtime_lock);
-+
-+	do_timer(1);
-+	update_process_times(user_mode(get_irq_regs()));
-+	profile_tick(CPU_PROFILING);
-+
-+	write_sequnlock(&xtime_lock);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static struct irqaction timer_irqaction = {
-+	.handler = timer_interrupt,
-+	.flags = IRQF_DISABLED,
-+	.name = "timer",
-+};
-+
-+void time_init(void)
-+{
-+	int irq, j = 0;
-+	struct device_node *timer = NULL;
-+#ifdef CONFIG_SELFMOD_TIMER
-+	unsigned int timer_baseaddr = 0;
-+	int arr_func[] = {
-+				(int)&timer_ack,
-+				0
-+			};
-+#endif
-+	char *timer_list[] = {
-+				"xlnx,xps-timer-1.00.a",
-+				"xlnx,opb-timer-1.00.b",
-+				"xlnx,opb-timer-1.00.a",
-+				NULL
-+			};
-+
-+	for (j = 0; timer_list[j] != NULL; j++) {
-+		timer = of_find_compatible_node(NULL, NULL, timer_list[j]);
-+		if (timer)
-+			break;
-+	}
-+
-+	timer_baseaddr = *(int *) of_get_property(timer, "reg", NULL);
-+	timer_baseaddr = (unsigned long) ioremap(timer_baseaddr, PAGE_SIZE);
-+	irq = *(int *) of_get_property(timer, "interrupts", NULL);
-+#ifdef CONFIG_SELFMOD_TIMER
-+	selfmod_function((int *) arr_func, timer_baseaddr);
-+#endif
-+	printk(KERN_INFO "%s #0 at 0x%08x, irq=%d\n",
-+		timer_list[j], timer_baseaddr, irq);
-+
-+	/* set the initial value to the load register */
-+	iowrite32(cpuinfo.cpu_clock_freq/HZ, timer_baseaddr + TLR0);
-+
-+	/* load the initial value */
-+	iowrite32(TCSR_LOAD, timer_baseaddr + TCSR0);
-+
-+	/* see timer data sheet for detail
-+	 * !ENALL - don't enable 'em all
-+	 * !PWMA - disable pwm
-+	 * TINT - clear interrupt status
-+	 * ENT- enable timer itself
-+	 * EINT - enable interrupt
-+	 * !LOAD - clear the bit to let go
-+	 * ARHT - auto reload
-+	 * !CAPT - no external trigger
-+	 * !GENT - no external signal
-+	 * UDT - set the timer as down counter
-+	 * !MDT0 - generate mode
-+	 *
-+	 */
-+	iowrite32(TCSR_TINT|TCSR_ENT|TCSR_ENIT|TCSR_ARHT|TCSR_UDT,
-+			timer_baseaddr + TCSR0);
-+
-+	setup_irq(irq, &timer_irqaction);
-+}
-diff --git a/include/asm-microblaze/irq.h b/include/asm-microblaze/irq.h
-new file mode 100644
-index 0000000..12a6b14
---- /dev/null
-+++ b/include/asm-microblaze/irq.h
-@@ -0,0 +1,40 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_IRQ_H
-+#define _ASM_MICROBLAZE_IRQ_H
-+
-+#define NR_IRQS 32
-+
-+#include <linux/interrupt.h>
-+
-+extern unsigned int nr_irq;
-+
-+#define NO_IRQ (-1)
-+
-+static inline int irq_canonicalize(int irq)
-+{
-+	return irq;
-+}
-+
-+struct pt_regs;
-+extern void do_IRQ(struct pt_regs *regs);
-+extern void __init init_IRQ(void);
-+irqreturn_t timer_interrupt(int irq, void *dev_id);
-+
-+/* irq_of_parse_and_map - Parse and Map an interrupt into linux virq space
-+ * @device: Device node of the device whose interrupt is to be mapped
-+ * @index: Index of the interrupt to map
-+ *
-+ * This function is a wrapper that chains of_irq_map_one() and
-+ * irq_create_of_mapping() to make things easier to callers
-+ */
-+struct device_node;
-+extern unsigned int irq_of_parse_and_map(struct device_node *dev, int index);
-+
-+#endif /* _ASM_MICROBLAZE_IRQ_H */
-diff --git a/include/asm-microblaze/selfmod.h b/include/asm-microblaze/selfmod.h
-new file mode 100644
-index 0000000..c42aff2
---- /dev/null
-+++ b/include/asm-microblaze/selfmod.h
-@@ -0,0 +1,24 @@
-+/*
-+ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_SELFMOD_H
-+#define _ASM_MICROBLAZE_SELFMOD_H
-+
-+/*
-+ * BARRIER_BASE_ADDR is constant address for selfmod function.
-+ * do not change this value - selfmod function is in
-+ * arch/microblaze/kernel/selfmod.c: selfmod_function()
-+ *
-+ * last 16 bits is used for storing register offset
-+ */
-+
-+#define BARRIER_BASE_ADDR	0x1234ff00
-+
-+void selfmod_function(const int *arr_fce, const unsigned int base);
-+
-+#endif /* _ASM_MICROBLAZE_SELFMOD_H */
++++ b/arch/microblaze/defconfig
+@@ -0,0 +1,698 @@
++#
++# Automatically generated make config: don't edit
++# Linux kernel version: 2.6.26-rc8
++# Thu Jun 26 12:13:43 2008
++#
++CONFIG_MICROBLAZE=y
++# CONFIG_MMU is not set
++# CONFIG_SWAP is not set
++CONFIG_RWSEM_GENERIC_SPINLOCK=y
++# CONFIG_ARCH_HAS_ILOG2_U32 is not set
++# CONFIG_ARCH_HAS_ILOG2_U64 is not set
++CONFIG_GENERIC_FIND_NEXT_BIT=y
++CONFIG_GENERIC_HWEIGHT=y
++CONFIG_GENERIC_HARDIRQS=y
++CONFIG_GENERIC_IRQ_PROBE=y
++CONFIG_GENERIC_CALIBRATE_DELAY=y
++CONFIG_GENERIC_TIME=y
++# CONFIG_PCI is not set
++CONFIG_NO_DMA=y
++CONFIG_GENERIC_CSUM=y
++CONFIG_HZ=100
++CONFIG_DEFCONFIG_LIST="arch/$ARCH/defconfig"
++
++#
++# General setup
++#
++CONFIG_EXPERIMENTAL=y
++CONFIG_BROKEN_ON_SMP=y
++CONFIG_INIT_ENV_ARG_LIMIT=32
++CONFIG_LOCALVERSION="-mONStR"
++CONFIG_LOCALVERSION_AUTO=y
++CONFIG_SYSVIPC=y
++CONFIG_SYSVIPC_SYSCTL=y
++# CONFIG_POSIX_MQUEUE is not set
++# CONFIG_BSD_PROCESS_ACCT is not set
++# CONFIG_TASKSTATS is not set
++# CONFIG_AUDIT is not set
++# CONFIG_IKCONFIG is not set
++CONFIG_LOG_BUF_SHIFT=17
++# CONFIG_CGROUPS is not set
++# CONFIG_GROUP_SCHED is not set
++CONFIG_SYSFS_DEPRECATED=y
++CONFIG_SYSFS_DEPRECATED_V2=y
++# CONFIG_RELAY is not set
++# CONFIG_NAMESPACES is not set
++# CONFIG_BLK_DEV_INITRD is not set
++CONFIG_CC_OPTIMIZE_FOR_SIZE=y
++CONFIG_SYSCTL=y
++CONFIG_EMBEDDED=y
++CONFIG_SYSCTL_SYSCALL=y
++CONFIG_SYSCTL_SYSCALL_CHECK=y
++CONFIG_KALLSYMS=y
++CONFIG_KALLSYMS_ALL=y
++CONFIG_KALLSYMS_EXTRA_PASS=y
++# CONFIG_HOTPLUG is not set
++CONFIG_PRINTK=y
++CONFIG_BUG=y
++CONFIG_ELF_CORE=y
++CONFIG_COMPAT_BRK=y
++# CONFIG_BASE_FULL is not set
++CONFIG_FUTEX=y
++CONFIG_ANON_INODES=y
++CONFIG_EPOLL=y
++CONFIG_SIGNALFD=y
++CONFIG_TIMERFD=y
++CONFIG_EVENTFD=y
++CONFIG_VM_EVENT_COUNTERS=y
++CONFIG_SLAB=y
++# CONFIG_SLUB is not set
++# CONFIG_SLOB is not set
++# CONFIG_PROFILING is not set
++# CONFIG_MARKERS is not set
++# CONFIG_HAVE_OPROFILE is not set
++# CONFIG_HAVE_KPROBES is not set
++# CONFIG_HAVE_KRETPROBES is not set
++# CONFIG_HAVE_DMA_ATTRS is not set
++CONFIG_SLABINFO=y
++CONFIG_RT_MUTEXES=y
++CONFIG_TINY_SHMEM=y
++CONFIG_BASE_SMALL=1
++CONFIG_MODULES=y
++# CONFIG_MODULE_FORCE_LOAD is not set
++CONFIG_MODULE_UNLOAD=y
++# CONFIG_MODULE_FORCE_UNLOAD is not set
++# CONFIG_MODVERSIONS is not set
++# CONFIG_MODULE_SRCVERSION_ALL is not set
++# CONFIG_KMOD is not set
++CONFIG_BLOCK=y
++# CONFIG_LBD is not set
++# CONFIG_BLK_DEV_IO_TRACE is not set
++# CONFIG_LSF is not set
++# CONFIG_BLK_DEV_BSG is not set
++
++#
++# IO Schedulers
++#
++CONFIG_IOSCHED_NOOP=y
++CONFIG_IOSCHED_AS=y
++CONFIG_IOSCHED_DEADLINE=y
++CONFIG_IOSCHED_CFQ=y
++# CONFIG_DEFAULT_AS is not set
++# CONFIG_DEFAULT_DEADLINE is not set
++CONFIG_DEFAULT_CFQ=y
++# CONFIG_DEFAULT_NOOP is not set
++CONFIG_DEFAULT_IOSCHED="cfq"
++CONFIG_CLASSIC_RCU=y
++
++#
++# Platform options
++#
++CONFIG_PLATFORM_GENERIC=y
++CONFIG_SELFMOD=y
++CONFIG_SELFMOD_INTC=y
++CONFIG_SELFMOD_TIMER=y
++CONFIG_OPT_LIB_FUNCTION=y
++CONFIG_ALLOW_EDIT_AUTO=y
++
++#
++# Automatic platform settings from Kconfig.auto
++#
++
++#
++# Definitions for MICROBLAZE0
++#
++CONFIG_KERNEL_BASE_ADDR=0x20000000
++CONFIG_XILINX_MICROBLAZE0_FAMILY="spartan3e"
++CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR=1
++CONFIG_XILINX_MICROBLAZE0_USE_BARREL=1
++CONFIG_XILINX_MICROBLAZE0_USE_DIV=1
++CONFIG_XILINX_MICROBLAZE0_USE_HW_MULT=2
++CONFIG_XILINX_MICROBLAZE0_USE_FPU=0
++CONFIG_XILINX_MICROBLAZE0_HW_VER="7.00.b"
++
++#
++# Processor type and features
++#
++# CONFIG_PREEMPT is not set
++# CONFIG_LARGE_ALLOCS is not set
++# CONFIG_GENERIC_CLOCKEVENTS is not set
++
++#
++# Boot options
++#
++CONFIG_CMDLINE="root=/dev/mtdblock0"
++CONFIG_CMDLINE_FORCE=y
++CONFIG_OF=y
++CONFIG_OF_DEVICE=y
++CONFIG_PROC_DEVICETREE=y
++CONFIG_SELECT_MEMORY_MODEL=y
++CONFIG_FLATMEM_MANUAL=y
++# CONFIG_DISCONTIGMEM_MANUAL is not set
++# CONFIG_SPARSEMEM_MANUAL is not set
++CONFIG_FLATMEM=y
++CONFIG_FLAT_NODE_MEM_MAP=y
++# CONFIG_SPARSEMEM_STATIC is not set
++# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
++CONFIG_PAGEFLAGS_EXTENDED=y
++CONFIG_SPLIT_PTLOCK_CPUS=4
++# CONFIG_RESOURCES_64BIT is not set
++CONFIG_ZONE_DMA_FLAG=0
++CONFIG_VIRT_TO_BUS=y
++
++#
++# Exectuable file formats
++#
++CONFIG_BINFMT_FLAT=y
++# CONFIG_BINFMT_ZFLAT is not set
++# CONFIG_BINFMT_SHARED_FLAT is not set
++# CONFIG_BINFMT_MISC is not set
++
++#
++# Networking
++#
++CONFIG_NET=y
++
++#
++# Networking options
++#
++CONFIG_PACKET=y
++# CONFIG_PACKET_MMAP is not set
++CONFIG_UNIX=y
++CONFIG_XFRM=y
++# CONFIG_XFRM_USER is not set
++# CONFIG_XFRM_SUB_POLICY is not set
++# CONFIG_XFRM_MIGRATE is not set
++# CONFIG_XFRM_STATISTICS is not set
++# CONFIG_NET_KEY is not set
++CONFIG_INET=y
++# CONFIG_IP_MULTICAST is not set
++# CONFIG_IP_ADVANCED_ROUTER is not set
++CONFIG_IP_FIB_HASH=y
++# CONFIG_IP_PNP is not set
++# CONFIG_NET_IPIP is not set
++# CONFIG_NET_IPGRE is not set
++# CONFIG_ARPD is not set
++# CONFIG_SYN_COOKIES is not set
++# CONFIG_INET_AH is not set
++# CONFIG_INET_ESP is not set
++# CONFIG_INET_IPCOMP is not set
++# CONFIG_INET_XFRM_TUNNEL is not set
++# CONFIG_INET_TUNNEL is not set
++CONFIG_INET_XFRM_MODE_TRANSPORT=y
++CONFIG_INET_XFRM_MODE_TUNNEL=y
++CONFIG_INET_XFRM_MODE_BEET=y
++# CONFIG_INET_LRO is not set
++CONFIG_INET_DIAG=y
++CONFIG_INET_TCP_DIAG=y
++# CONFIG_TCP_CONG_ADVANCED is not set
++CONFIG_TCP_CONG_CUBIC=y
++CONFIG_DEFAULT_TCP_CONG="cubic"
++# CONFIG_TCP_MD5SIG is not set
++# CONFIG_IPV6 is not set
++# CONFIG_NETWORK_SECMARK is not set
++# CONFIG_NETFILTER is not set
++# CONFIG_IP_DCCP is not set
++# CONFIG_IP_SCTP is not set
++# CONFIG_TIPC is not set
++# CONFIG_ATM is not set
++# CONFIG_BRIDGE is not set
++# CONFIG_VLAN_8021Q is not set
++# CONFIG_DECNET is not set
++# CONFIG_LLC2 is not set
++# CONFIG_IPX is not set
++# CONFIG_ATALK is not set
++# CONFIG_X25 is not set
++# CONFIG_LAPB is not set
++# CONFIG_ECONET is not set
++# CONFIG_WAN_ROUTER is not set
++# CONFIG_NET_SCHED is not set
++
++#
++# Network testing
++#
++# CONFIG_NET_PKTGEN is not set
++# CONFIG_HAMRADIO is not set
++# CONFIG_CAN is not set
++# CONFIG_IRDA is not set
++# CONFIG_BT is not set
++# CONFIG_AF_RXRPC is not set
++
++#
++# Wireless
++#
++# CONFIG_CFG80211 is not set
++# CONFIG_WIRELESS_EXT is not set
++# CONFIG_MAC80211 is not set
++# CONFIG_IEEE80211 is not set
++# CONFIG_RFKILL is not set
++# CONFIG_NET_9P is not set
++
++#
++# Device Drivers
++#
++
++#
++# Generic Driver Options
++#
++CONFIG_STANDALONE=y
++# CONFIG_PREVENT_FIRMWARE_BUILD is not set
++# CONFIG_DEBUG_DRIVER is not set
++# CONFIG_DEBUG_DEVRES is not set
++# CONFIG_SYS_HYPERVISOR is not set
++# CONFIG_CONNECTOR is not set
++CONFIG_MTD=y
++# CONFIG_MTD_DEBUG is not set
++CONFIG_MTD_CONCAT=y
++CONFIG_MTD_PARTITIONS=y
++# CONFIG_MTD_REDBOOT_PARTS is not set
++CONFIG_MTD_CMDLINE_PARTS=y
++# CONFIG_MTD_AR7_PARTS is not set
++
++#
++# User Modules And Translation Layers
++#
++CONFIG_MTD_CHAR=y
++CONFIG_MTD_BLKDEVS=y
++CONFIG_MTD_BLOCK=y
++# CONFIG_FTL is not set
++# CONFIG_NFTL is not set
++# CONFIG_INFTL is not set
++# CONFIG_RFD_FTL is not set
++# CONFIG_SSFDC is not set
++# CONFIG_MTD_OOPS is not set
++
++#
++# RAM/ROM/Flash chip drivers
++#
++CONFIG_MTD_CFI=y
++# CONFIG_MTD_JEDECPROBE is not set
++CONFIG_MTD_GEN_PROBE=y
++# CONFIG_MTD_CFI_ADV_OPTIONS is not set
++CONFIG_MTD_MAP_BANK_WIDTH_1=y
++CONFIG_MTD_MAP_BANK_WIDTH_2=y
++CONFIG_MTD_MAP_BANK_WIDTH_4=y
++# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
++# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
++# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
++CONFIG_MTD_CFI_I1=y
++CONFIG_MTD_CFI_I2=y
++# CONFIG_MTD_CFI_I4 is not set
++# CONFIG_MTD_CFI_I8 is not set
++CONFIG_MTD_CFI_INTELEXT=y
++CONFIG_MTD_CFI_AMDSTD=y
++# CONFIG_MTD_CFI_STAA is not set
++CONFIG_MTD_CFI_UTIL=y
++CONFIG_MTD_RAM=y
++# CONFIG_MTD_ROM is not set
++# CONFIG_MTD_ABSENT is not set
++
++#
++# Mapping drivers for chip access
++#
++# CONFIG_MTD_COMPLEX_MAPPINGS is not set
++# CONFIG_MTD_PHYSMAP is not set
++CONFIG_MTD_UCLINUX=y
++# CONFIG_MTD_PLATRAM is not set
++
++#
++# Self-contained MTD device drivers
++#
++# CONFIG_MTD_SLRAM is not set
++# CONFIG_MTD_PHRAM is not set
++# CONFIG_MTD_MTDRAM is not set
++# CONFIG_MTD_BLOCK2MTD is not set
++
++#
++# Disk-On-Chip Device Drivers
++#
++# CONFIG_MTD_DOC2000 is not set
++# CONFIG_MTD_DOC2001 is not set
++# CONFIG_MTD_DOC2001PLUS is not set
++# CONFIG_MTD_NAND is not set
++# CONFIG_MTD_ONENAND is not set
++
++#
++# UBI - Unsorted block images
++#
++# CONFIG_MTD_UBI is not set
++# CONFIG_PARPORT is not set
++CONFIG_BLK_DEV=y
++# CONFIG_BLK_DEV_COW_COMMON is not set
++# CONFIG_BLK_DEV_LOOP is not set
++CONFIG_BLK_DEV_NBD=y
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_COUNT=16
++CONFIG_BLK_DEV_RAM_SIZE=4096
++# CONFIG_BLK_DEV_XIP is not set
++# CONFIG_CDROM_PKTCDVD is not set
++# CONFIG_ATA_OVER_ETH is not set
++# CONFIG_XILINX_SYSACE is not set
++CONFIG_MISC_DEVICES=y
++# CONFIG_EEPROM_93CX6 is not set
++# CONFIG_ENCLOSURE_SERVICES is not set
++# CONFIG_HAVE_IDE is not set
++
++#
++# SCSI device support
++#
++# CONFIG_RAID_ATTRS is not set
++# CONFIG_SCSI is not set
++# CONFIG_SCSI_DMA is not set
++# CONFIG_SCSI_NETLINK is not set
++# CONFIG_ATA is not set
++# CONFIG_MD is not set
++# CONFIG_NETDEVICES is not set
++# CONFIG_ISDN is not set
++# CONFIG_PHONE is not set
++
++#
++# Input device support
++#
++# CONFIG_INPUT is not set
++
++#
++# Hardware I/O ports
++#
++# CONFIG_SERIO is not set
++# CONFIG_GAMEPORT is not set
++
++#
++# Character devices
++#
++# CONFIG_VT is not set
++CONFIG_DEVKMEM=y
++# CONFIG_SERIAL_NONSTANDARD is not set
++
++#
++# Serial drivers
++#
++# CONFIG_SERIAL_8250 is not set
++
++#
++# Non-8250 serial port support
++#
++CONFIG_SERIAL_UARTLITE=y
++CONFIG_SERIAL_UARTLITE_CONSOLE=y
++CONFIG_SERIAL_CORE=y
++CONFIG_SERIAL_CORE_CONSOLE=y
++CONFIG_UNIX98_PTYS=y
++CONFIG_LEGACY_PTYS=y
++CONFIG_LEGACY_PTY_COUNT=256
++# CONFIG_IPMI_HANDLER is not set
++CONFIG_HW_RANDOM=y
++# CONFIG_RTC is not set
++# CONFIG_GEN_RTC is not set
++# CONFIG_XILINX_HWICAP is not set
++# CONFIG_R3964 is not set
++# CONFIG_RAW_DRIVER is not set
++# CONFIG_TCG_TPM is not set
++# CONFIG_I2C is not set
++# CONFIG_SPI is not set
++# CONFIG_W1 is not set
++# CONFIG_POWER_SUPPLY is not set
++# CONFIG_HWMON is not set
++# CONFIG_THERMAL is not set
++# CONFIG_WATCHDOG is not set
++
++#
++# Sonics Silicon Backplane
++#
++CONFIG_SSB_POSSIBLE=y
++# CONFIG_SSB is not set
++
++#
++# Multifunction device drivers
++#
++# CONFIG_MFD_SM501 is not set
++# CONFIG_HTC_PASIC3 is not set
++
++#
++# Multimedia devices
++#
++
++#
++# Multimedia core support
++#
++# CONFIG_VIDEO_DEV is not set
++# CONFIG_DVB_CORE is not set
++# CONFIG_VIDEO_MEDIA is not set
++
++#
++# Multimedia drivers
++#
++CONFIG_DAB=y
++
++#
++# Graphics support
++#
++# CONFIG_VGASTATE is not set
++CONFIG_VIDEO_OUTPUT_CONTROL=y
++# CONFIG_FB is not set
++# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++
++#
++# Display device support
++#
++# CONFIG_DISPLAY_SUPPORT is not set
++
++#
++# Sound
++#
++# CONFIG_SOUND is not set
++CONFIG_USB_SUPPORT=y
++# CONFIG_USB_ARCH_HAS_HCD is not set
++# CONFIG_USB_ARCH_HAS_OHCI is not set
++# CONFIG_USB_ARCH_HAS_EHCI is not set
++# CONFIG_USB_OTG_WHITELIST is not set
++# CONFIG_USB_OTG_BLACKLIST_HUB is not set
++
++#
++# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
++#
++# CONFIG_USB_GADGET is not set
++# CONFIG_MMC is not set
++# CONFIG_MEMSTICK is not set
++# CONFIG_NEW_LEDS is not set
++# CONFIG_ACCESSIBILITY is not set
++# CONFIG_RTC_CLASS is not set
++# CONFIG_UIO is not set
++
++#
++# File systems
++#
++# CONFIG_EXT2_FS is not set
++# CONFIG_EXT3_FS is not set
++# CONFIG_EXT4DEV_FS is not set
++# CONFIG_REISERFS_FS is not set
++# CONFIG_JFS_FS is not set
++# CONFIG_FS_POSIX_ACL is not set
++# CONFIG_XFS_FS is not set
++# CONFIG_OCFS2_FS is not set
++# CONFIG_DNOTIFY is not set
++# CONFIG_INOTIFY is not set
++# CONFIG_QUOTA is not set
++# CONFIG_AUTOFS_FS is not set
++# CONFIG_AUTOFS4_FS is not set
++# CONFIG_FUSE_FS is not set
++
++#
++# CD-ROM/DVD Filesystems
++#
++# CONFIG_ISO9660_FS is not set
++# CONFIG_UDF_FS is not set
++
++#
++# DOS/FAT/NT Filesystems
++#
++# CONFIG_MSDOS_FS is not set
++# CONFIG_VFAT_FS is not set
++# CONFIG_NTFS_FS is not set
++
++#
++# Pseudo filesystems
++#
++CONFIG_PROC_FS=y
++CONFIG_PROC_SYSCTL=y
++CONFIG_SYSFS=y
++# CONFIG_TMPFS is not set
++# CONFIG_HUGETLB_PAGE is not set
++# CONFIG_CONFIGFS_FS is not set
++
++#
++# Miscellaneous filesystems
++#
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
++# CONFIG_JFFS2_FS is not set
++CONFIG_CRAMFS=y
++# CONFIG_VXFS_FS is not set
++# CONFIG_MINIX_FS is not set
++# CONFIG_HPFS_FS is not set
++# CONFIG_QNX4FS_FS is not set
++CONFIG_ROMFS_FS=y
++# CONFIG_SYSV_FS is not set
++# CONFIG_UFS_FS is not set
++CONFIG_NETWORK_FILESYSTEMS=y
++# CONFIG_NFS_FS is not set
++# CONFIG_NFSD is not set
++# CONFIG_SMB_FS is not set
++# CONFIG_CIFS is not set
++# CONFIG_NCP_FS is not set
++# CONFIG_CODA_FS is not set
++# CONFIG_AFS_FS is not set
++
++#
++# Partition Types
++#
++# CONFIG_PARTITION_ADVANCED is not set
++CONFIG_MSDOS_PARTITION=y
++# CONFIG_NLS is not set
++# CONFIG_DLM is not set
++
++#
++# Kernel hacking
++#
++# CONFIG_PRINTK_TIME is not set
++CONFIG_ENABLE_WARN_DEPRECATED=y
++CONFIG_ENABLE_MUST_CHECK=y
++CONFIG_FRAME_WARN=1024
++# CONFIG_MAGIC_SYSRQ is not set
++CONFIG_UNUSED_SYMBOLS=y
++# CONFIG_DEBUG_FS is not set
++# CONFIG_HEADERS_CHECK is not set
++CONFIG_DEBUG_KERNEL=y
++CONFIG_DEBUG_SHIRQ=y
++# CONFIG_DETECT_SOFTLOCKUP is not set
++CONFIG_SCHED_DEBUG=y
++CONFIG_SCHEDSTATS=y
++CONFIG_TIMER_STATS=y
++CONFIG_DEBUG_OBJECTS=y
++CONFIG_DEBUG_OBJECTS_SELFTEST=y
++CONFIG_DEBUG_OBJECTS_FREE=y
++CONFIG_DEBUG_OBJECTS_TIMERS=y
++# CONFIG_DEBUG_SLAB is not set
++# CONFIG_DEBUG_RT_MUTEXES is not set
++# CONFIG_RT_MUTEX_TESTER is not set
++# CONFIG_DEBUG_SPINLOCK is not set
++# CONFIG_DEBUG_MUTEXES is not set
++# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
++# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
++# CONFIG_DEBUG_KOBJECT is not set
++CONFIG_DEBUG_INFO=y
++# CONFIG_DEBUG_VM is not set
++# CONFIG_DEBUG_WRITECOUNT is not set
++CONFIG_DEBUG_LIST=y
++CONFIG_DEBUG_SG=y
++# CONFIG_BOOT_PRINTK_DELAY is not set
++# CONFIG_RCU_TORTURE_TEST is not set
++# CONFIG_BACKTRACE_SELF_TEST is not set
++# CONFIG_FAULT_INJECTION is not set
++# CONFIG_SAMPLES is not set
++CONFIG_EARLY_PRINTK=y
++CONFIG_EARLY_PRINTK_UARTLITE_ADDRESS=0x40100000
++CONFIG_HEART_BEAT=y
++CONFIG_HEART_BEAT_ADDRESS=0x40600000
++# CONFIG_DEBUG_BOOTMEM is not set
++
++#
++# Security options
++#
++# CONFIG_KEYS is not set
++# CONFIG_SECURITY is not set
++# CONFIG_SECURITY_FILE_CAPABILITIES is not set
++CONFIG_CRYPTO=y
++
++#
++# Crypto core or helper
++#
++# CONFIG_CRYPTO_MANAGER is not set
++# CONFIG_CRYPTO_GF128MUL is not set
++# CONFIG_CRYPTO_NULL is not set
++# CONFIG_CRYPTO_CRYPTD is not set
++# CONFIG_CRYPTO_AUTHENC is not set
++# CONFIG_CRYPTO_TEST is not set
++
++#
++# Authenticated Encryption with Associated Data
++#
++# CONFIG_CRYPTO_CCM is not set
++# CONFIG_CRYPTO_GCM is not set
++# CONFIG_CRYPTO_SEQIV is not set
++
++#
++# Block modes
++#
++# CONFIG_CRYPTO_CBC is not set
++# CONFIG_CRYPTO_CTR is not set
++# CONFIG_CRYPTO_CTS is not set
++# CONFIG_CRYPTO_ECB is not set
++# CONFIG_CRYPTO_LRW is not set
++# CONFIG_CRYPTO_PCBC is not set
++# CONFIG_CRYPTO_XTS is not set
++
++#
++# Hash modes
++#
++# CONFIG_CRYPTO_HMAC is not set
++# CONFIG_CRYPTO_XCBC is not set
++
++#
++# Digest
++#
++# CONFIG_CRYPTO_CRC32C is not set
++# CONFIG_CRYPTO_MD4 is not set
++# CONFIG_CRYPTO_MD5 is not set
++# CONFIG_CRYPTO_MICHAEL_MIC is not set
++# CONFIG_CRYPTO_SHA1 is not set
++# CONFIG_CRYPTO_SHA256 is not set
++# CONFIG_CRYPTO_SHA512 is not set
++# CONFIG_CRYPTO_TGR192 is not set
++# CONFIG_CRYPTO_WP512 is not set
++
++#
++# Ciphers
++#
++# CONFIG_CRYPTO_AES is not set
++# CONFIG_CRYPTO_ANUBIS is not set
++# CONFIG_CRYPTO_ARC4 is not set
++# CONFIG_CRYPTO_BLOWFISH is not set
++# CONFIG_CRYPTO_CAMELLIA is not set
++# CONFIG_CRYPTO_CAST5 is not set
++# CONFIG_CRYPTO_CAST6 is not set
++# CONFIG_CRYPTO_DES is not set
++# CONFIG_CRYPTO_FCRYPT is not set
++# CONFIG_CRYPTO_KHAZAD is not set
++# CONFIG_CRYPTO_SALSA20 is not set
++# CONFIG_CRYPTO_SEED is not set
++# CONFIG_CRYPTO_SERPENT is not set
++# CONFIG_CRYPTO_TEA is not set
++# CONFIG_CRYPTO_TWOFISH is not set
++
++#
++# Compression
++#
++# CONFIG_CRYPTO_DEFLATE is not set
++# CONFIG_CRYPTO_LZO is not set
++CONFIG_CRYPTO_HW=y
++
++#
++# Library routines
++#
++# CONFIG_GENERIC_FIND_FIRST_BIT is not set
++# CONFIG_CRC_CCITT is not set
++# CONFIG_CRC16 is not set
++# CONFIG_CRC_ITU_T is not set
++# CONFIG_CRC32 is not set
++# CONFIG_CRC7 is not set
++# CONFIG_LIBCRC32C is not set
++CONFIG_ZLIB_INFLATE=y
++CONFIG_PLIST=y
++CONFIG_HAS_IOMEM=y
++CONFIG_HAS_IOPORT=y
++CONFIG_HAVE_LMB=y
 -- 
 1.5.4.GIT
 
