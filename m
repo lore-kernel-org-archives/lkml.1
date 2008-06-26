@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762057AbYFZMxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760813AbYFZMyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762057AbYFZMxl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 08:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758952AbYFZMhl
+	id S1760813AbYFZMyW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 08:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758058AbYFZMht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:37:41 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:20892 "EHLO
+	Thu, 26 Jun 2008 08:37:49 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:20913 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758922AbYFZMhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:37:36 -0400
+	id S1758665AbYFZMhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:37:43 -0400
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
@@ -17,11 +17,11 @@ Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
        hpa@zytor.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 29/60] microblaze_v4: traps support
-Date: Thu, 26 Jun 2008 14:29:58 +0200
-Message-Id: <1214483429-32360-30-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 36/60] microblaze_v4: ioctl support
+Date: Thu, 26 Jun 2008 14:30:05 +0200
+Message-Id: <1214483429-32360-37-git-send-email-monstr@seznam.cz>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <1214483429-32360-29-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-36-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-2-git-send-email-monstr@seznam.cz>
  <1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -51,6 +51,13 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-27-git-send-email-monstr@seznam.cz>
  <1214483429-32360-28-git-send-email-monstr@seznam.cz>
  <1214483429-32360-29-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-30-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-31-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-32-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-33-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-34-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-35-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-36-git-send-email-monstr@seznam.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -60,16 +67,25 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/traps.c |   86 ++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 86 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/traps.c
+ include/asm-microblaze/ioctl.h  |    1 +
+ include/asm-microblaze/ioctls.h |   91 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 92 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/ioctl.h
+ create mode 100644 include/asm-microblaze/ioctls.h
 
-diff --git a/arch/microblaze/kernel/traps.c b/arch/microblaze/kernel/traps.c
+diff --git a/include/asm-microblaze/ioctl.h b/include/asm-microblaze/ioctl.h
 new file mode 100644
-index 0000000..69d75ee
+index 0000000..b279fe0
 --- /dev/null
-+++ b/arch/microblaze/kernel/traps.c
-@@ -0,0 +1,86 @@
++++ b/include/asm-microblaze/ioctl.h
+@@ -0,0 +1 @@
++#include <asm-generic/ioctl.h>
+diff --git a/include/asm-microblaze/ioctls.h b/include/asm-microblaze/ioctls.h
+new file mode 100644
+index 0000000..76c963f
+--- /dev/null
++++ b/include/asm-microblaze/ioctls.h
+@@ -0,0 +1,91 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -78,84 +94,89 @@ index 0000000..69d75ee
 + * for more details.
 + */
 +
-+#include <linux/kernel.h>
-+#include <linux/kallsyms.h>
-+#include <linux/module.h>
-+#include <linux/sched.h>
++#ifndef _ASM_MICROBLAZE_IOCTLS_H
++#define _ASM_MICROBLAZE_IOCTLS_H
 +
-+#include <asm/exceptions.h>
-+#include <asm/system.h>
++#include <asm/ioctl.h>
 +
-+void trap_init(void)
-+{
-+	initialize_exception_handlers();
-+	__enable_hw_exceptions();
-+}
++/* 0x54 is just a magic number to make these relatively unique ('T') */
 +
-+void __bad_xchg(volatile void *ptr, int size)
-+{
-+	printk(KERN_INFO "xchg: bad data size: pc 0x%p, ptr 0x%p, size %d\n",
-+		__builtin_return_address(0), ptr, size);
-+	BUG();
-+}
-+EXPORT_SYMBOL(__bad_xchg);
++#define TCGETS		0x5401
++#define TCSETS		0x5402
++#define TCSETSW		0x5403
++#define TCSETSF		0x5404
++#define TCGETA		0x5405
++#define TCSETA		0x5406
++#define TCSETAW		0x5407
++#define TCSETAF		0x5408
++#define TCSBRK		0x5409
++#define TCXONC		0x540A
++#define TCFLSH		0x540B
++#define TIOCEXCL	0x540C
++#define TIOCNXCL	0x540D
++#define TIOCSCTTY	0x540E
++#define TIOCGPGRP	0x540F
++#define TIOCSPGRP	0x5410
++#define TIOCOUTQ	0x5411
++#define TIOCSTI		0x5412
++#define TIOCGWINSZ	0x5413
++#define TIOCSWINSZ	0x5414
++#define TIOCMGET	0x5415
++#define TIOCMBIS	0x5416
++#define TIOCMBIC	0x5417
++#define TIOCMSET	0x5418
++#define TIOCGSOFTCAR	0x5419
++#define TIOCSSOFTCAR	0x541A
++#define FIONREAD	0x541B
++#define TIOCINQ		FIONREAD
++#define TIOCLINUX	0x541C
++#define TIOCCONS	0x541D
++#define TIOCGSERIAL	0x541E
++#define TIOCSSERIAL	0x541F
++#define TIOCPKT		0x5420
++#define FIONBIO		0x5421
++#define TIOCNOTTY	0x5422
++#define TIOCSETD	0x5423
++#define TIOCGETD	0x5424
++#define TCSBRKP		0x5425 /* Needed for POSIX tcsendbreak() */
++#define TIOCTTYGSTRUCT	0x5426 /* For debugging only */
++#define TIOCSBRK	0x5427 /* BSD compatibility */
++#define TIOCCBRK	0x5428 /* BSD compatibility */
++#define TIOCGSID	0x5429 /* Return the session ID of FD */
++/* Get Pty Number (of pty-mux device) */
++#define TIOCGPTN	_IOR('T', 0x30, unsigned int)
++#define TIOCSPTLCK	_IOW('T', 0x31, int) /* Lock/unlock Pty */
 +
-+static int kstack_depth_to_print = 24;
++#define FIONCLEX	0x5450 /* these numbers need to be adjusted. */
++#define FIOCLEX		0x5451
++#define FIOASYNC	0x5452
++#define TIOCSERCONFIG	0x5453
++#define TIOCSERGWILD	0x5454
++#define TIOCSERSWILD	0x5455
++#define TIOCGLCKTRMIOS	0x5456
++#define TIOCSLCKTRMIOS	0x5457
++#define TIOCSERGSTRUCT	0x5458 /* For debugging only */
++#define TIOCSERGETLSR	0x5459 /* Get line status register */
++#define TIOCSERGETMULTI 0x545A /* Get multiport config */
++#define TIOCSERSETMULTI 0x545B /* Set multiport config */
 +
-+void show_trace(struct task_struct *task, unsigned long *stack)
-+{
-+	unsigned long addr;
++#define TIOCMIWAIT	0x545C /* wait for a change on serial input line(s) */
++#define TIOCGICOUNT	0x545D /* read serial port inline interrupt counts */
 +
-+	if (!stack)
-+		stack = (unsigned long *)&stack;
++#define	FIOQSIZE	0x545E
 +
-+	printk(KERN_INFO "Call Trace: ");
-+#ifdef CONFIG_KALLSYMS
-+	printk(KERN_INFO "\n");
-+#endif
-+	while (!kstack_end(stack)) {
-+		addr = *stack++;
-+		if (__kernel_text_address(addr)) {
-+			printk(KERN_INFO "[<%08lx>] ", addr);
-+			print_symbol("%s\n", addr);
-+		}
-+	}
-+	printk(KERN_INFO "\n");
-+}
++/* Used for packet mode */
++#define TIOCPKT_DATA		0
++#define TIOCPKT_FLUSHREAD	1
++#define TIOCPKT_FLUSHWRITE	2
++#define TIOCPKT_STOP		4
++#define TIOCPKT_START		8
++#define TIOCPKT_NOSTOP		16
++#define TIOCPKT_DOSTOP		32
 +
-+void show_stack(struct task_struct *task, unsigned long *sp)
-+{
-+	unsigned long *stack;
-+	int i;
++#define TIOCSER_TEMT	0x01 /* Transmitter physically empty */
 +
-+	if (sp == NULL) {
-+		if (task)
-+			sp = (unsigned long *) ((struct thread_info *)
-+						(task->stack))->cpu_context.r1;
-+		else
-+			sp = (unsigned long *)&sp;
-+	}
-+
-+	stack = sp;
-+
-+	printk(KERN_INFO "\nStack:\n  ");
-+
-+	for (i = 0; i < kstack_depth_to_print; i++) {
-+		if (kstack_end(sp))
-+			break;
-+		if (i && ((i % 8) == 0))
-+			printk("\n  ");
-+		printk("%08lx ", *sp++);
-+	}
-+	printk("\n");
-+	show_trace(task, stack);
-+}
-+
-+void dump_stack(void)
-+{
-+	show_stack(NULL, NULL);
-+}
-+EXPORT_SYMBOL(dump_stack);
++#endif /* _ASM_MICROBLAZE_IOCTLS_H */
 -- 
 1.5.4.GIT
 
