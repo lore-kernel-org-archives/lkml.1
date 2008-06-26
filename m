@@ -1,45 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764116AbYFZNaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752305AbYFZNbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764116AbYFZNaq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760314AbYFZNaG
+	id S1752305AbYFZNbk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYFZNb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 09:30:06 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:42104 "EHLO pasmtpA.tele.dk"
+	Thu, 26 Jun 2008 09:31:29 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:59310 "EHLO bagnes.atmel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756957AbYFZNaC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 09:30:02 -0400
-Date: Thu, 26 Jun 2008 15:30:47 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>, Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] x86: more header fixes
-Message-ID: <20080626133047.GA11762@uranus.ravnborg.org>
-References: <20080610214544.GA14824@damson.getinternet.no> <20080618103006.GF15255@elte.hu> <19f34abd0806180919v5a8c21e7ua7e1f928d8a53ab4@mail.gmail.com> <20080626120202.GH29619@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080626120202.GH29619@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	id S1751818AbYFZNb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 09:31:28 -0400
+X-Greylist: delayed 457 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Jun 2008 09:31:28 EDT
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Dan Williams <dan.j.williams@intel.com>,
+       Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       kernel@avr32linux.org, shannon.nelson@intel.com,
+       David Brownell <david-b@pacbell.net>,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: [PATCH v4 4/6] dmaengine: Make DMA Engine menu visible for AVR32 users
+Date: Thu, 26 Jun 2008 15:23:21 +0200
+Message-Id: <1214486603-23655-5-git-send-email-haavard.skinnemoen@atmel.com>
+X-Mailer: git-send-email 1.5.5.4
+In-Reply-To: <1214486603-23655-4-git-send-email-haavard.skinnemoen@atmel.com>
+References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com>
+ <1214486603-23655-2-git-send-email-haavard.skinnemoen@atmel.com>
+ <1214486603-23655-3-git-send-email-haavard.skinnemoen@atmel.com>
+ <1214486603-23655-4-git-send-email-haavard.skinnemoen@atmel.com>
+X-OriginalArrivalTime: 26 Jun 2008 13:23:06.0822 (UTC) FILETIME=[C52A0660:01C8D78F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 02:02:02PM +0200, Ingo Molnar wrote:
-> 
-> * Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> 
-> > Vegard (a.k.a. "The Churninator")
+This makes the DMA Engine menu visible on AVR32 by adding AVR32 to the
+(growing) list of architectures DMADEVICES depends on. Though I'd prefer
+to remove that whole "depends" line entirely...
 
-Hi Vegard.
+The DMADEVICES menu used to be available for all architectures, but at
+some point, we started building a huge dependency list with all the
+architectures that might have support for this kind of hardware.
 
-Can I ask you to chase all uses of #include <asm-x86/xxx.h>
-and convert them to #include <asm/xxx.h>
+According to Dan Williams:
 
-When we move include/asm-x86 to arch/x86/include/asm this is needed and
-better to fix these sooner.
+> Adrian had concerns about users enabling NET_DMA when the hardware
+> capability is relatively rare.
 
-	Sam
+which seems very strange as long as (PCI && X86) is enough to enable
+this menu. In other words, the vast majority of users will see the menu
+even though the hardware is rare.
+
+Also, all DMA clients depend on DMA_ENGINE being set. This symbol is
+selected by each DMA Engine driver, so users can't select a DMA client
+without selecting a specific DMA Engine driver first.
+
+So, while this patch solves my immediate problem of making DMA Engines
+available on AVR32, I'd much rather remove the whole arch dependency
+list because I think it's bogus. Comments?
+
+Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: Adrian Bunk <bunk@stusta.de>
+---
+ drivers/dma/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+index 18f6ef3..2ac09be 100644
+--- a/drivers/dma/Kconfig
++++ b/drivers/dma/Kconfig
+@@ -4,7 +4,7 @@
+ 
+ menuconfig DMADEVICES
+ 	bool "DMA Engine support"
+-	depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX || PPC
++	depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX || PPC || AVR32
+ 	depends on !HIGHMEM64G
+ 	help
+ 	  DMA engines can do asynchronous data transfers without
+-- 
+1.5.5.4
 
