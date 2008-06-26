@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758840AbYFZSP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbYFZSR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758840AbYFZSP1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbYFZSPR
+	id S1758746AbYFZSR0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbYFZSRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:15:17 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:42521 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752348AbYFZSPP (ORCPT
+	Thu, 26 Jun 2008 14:17:16 -0400
+Received: from smtp-01.mandic.com.br ([200.225.81.132]:48557 "EHLO
+	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753538AbYFZSRP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:15:15 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Joe Peterson <joe@skyrush.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] UTC timestamp option for FAT filesystems
-References: <4861D685.4070308@skyrush.com> <87od5pqh4o.fsf@basil.nowhere.org>
-	<4862DB28.3050001@skyrush.com> <48630286.2050006@skyrush.com>
-	<87wskck5wi.fsf@devron.myhome.or.jp> <48639863.808@skyrush.com>
-	<877iccxnwi.fsf@devron.myhome.or.jp> <4863B9AF.4080105@skyrush.com>
-	<87zlp8w4br.fsf@devron.myhome.or.jp> <4863D037.90504@skyrush.com>
-Date: Fri, 27 Jun 2008 03:15:10 +0900
-In-Reply-To: <4863D037.90504@skyrush.com> (Joe Peterson's message of "Thu, 26
-	Jun 2008 11:21:59 -0600")
-Message-ID: <87k5gct64x.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 26 Jun 2008 14:17:15 -0400
+Message-ID: <4863DCB8.7070108@diamondcut.com.br>
+Date: Thu, 26 Jun 2008 15:15:20 -0300
+From: "Renato S. Yamane" <yamane@diamondcut.com.br>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+To: Phillip Killewald <killewald.1@osu.edu>
+CC: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, lenb@kernel.org,
+       greg@kroah.com
+Subject: Re: Toshiba laptop bluetooth power control patch
+References: <486382D7.6010105@osu.edu>
+In-Reply-To: <486382D7.6010105@osu.edu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Peterson <joe@skyrush.com> writes:
+Phillip Killewald wrote:
+> This is my first post to the kernel mailing list. I have found many
+> people having the same problem with Toshiba laptops and their bluetooth
+> devices.
 
-> OGAWA Hirofumi wrote:
->> If so, I'd like to see "tz=xxx" or something for the future, instead of
->> "utc", don't you think so? I really hate to add the random options.
->
-> One question: do you see the "tz=" option having "xxx" being a numerical
-> offset or a time zone.
+If you wanna, is possible find some documentation from Toshiba at:
+<http://linux.toshiba-dme.co.jp/linux/eng/develop.htm>
 
-Ah, sorry. I was imagining, e.g. POSIX TZ string like
-"EST5EDT,M3.2.0/2,M11.1.0 " or something, it is not a simple numerical.
-
-> If the latter, then the DST situation could be
-> solved (and tz=UTC could be used to get the behavior I like, but I still
-> wonder if a timezone feature on FAT is useful.  Also, would it not
-> require the kernel to look up timezone info and keep track of DST
-> changes? I thought the trend was to push that kind of thing into
-> userland...
-
-Yes. If it can do in userland (on embeded system too), it's very
-good. (also, nls stuff is same situation.) But, I'm not sure yet,
-need to think about it.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Best regards,
+Renato S. Yamane
