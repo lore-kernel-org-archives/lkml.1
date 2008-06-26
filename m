@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbYFZFkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbYFZFmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758017AbYFZFkn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 01:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756595AbYFZFkD
+	id S1757532AbYFZFmV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 01:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbYFZFmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 01:40:03 -0400
-Received: from sh.osrg.net ([192.16.179.4]:57872 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754750AbYFZFkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 01:40:01 -0400
-Date: Thu, 26 Jun 2008 14:39:31 +0900
-To: stern@rowland.harvard.edu
-Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org,
-       antonio.lin@alcormicro.com, david.vrabel@csr.com
-Subject: Re: Scatter-gather list constraints
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080626110615U.fujita.tomonori@lab.ntt.co.jp>
-References: <20080625091813Z.fujita.tomonori@lab.ntt.co.jp>
-	<Pine.LNX.4.44L0.0806251017320.2578-100000@iolanthe.rowland.org>
-	<20080626110615U.fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080626143928P.fujita.tomonori@lab.ntt.co.jp>
+	Thu, 26 Jun 2008 01:42:11 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49642 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754109AbYFZFmJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 01:42:09 -0400
+Date: Wed, 25 Jun 2008 22:39:59 -0700
+From: Greg KH <greg@kroah.com>
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
+Subject: Re: 2.6.26-rc2 WARNING from usb-serial, and then my gps is dead
+Message-ID: <20080626053959.GA25731@kroah.com>
+References: <485E984B.1030306@aitel.hist.no> <20080622184253.GB18502@kroah.com> <20080622210113.9971488b.akpm@linux-foundation.org> <48622546.6070505@aitel.hist.no>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48622546.6070505@aitel.hist.no>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jun 2008 11:06:03 +0900
-FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+On Wed, Jun 25, 2008 at 01:00:22PM +0200, Helge Hafting wrote:
 
-> On Wed, 25 Jun 2008 10:23:00 -0400 (EDT)
-> Alan Stern <stern@rowland.harvard.edu> wrote:
-> 
-> > On Wed, 25 Jun 2008, FUJITA Tomonori wrote:
-> > 
-> > > > For example, suppose an I/O request starts out with two S-G elements
-> > > > of 1536 bytes and 2048 bytes respectively, and the DMA requirement is
-> > > > that all elements except the last must have length divisible by 1024.  
-> > > > Then the request could be broken up into three requests of 1024, 512,
-> > > > and 2048 bytes.
-> > > 
-> > > I can't say that it's easy to implement a clean mechanism to break up
-> > > a request into multiple requests until I see a patch.
-> > 
-> > And I can't write a patch without learning a lot more about how the
-> > block core works.
-> > 
-> > > What I said is that you think that this is about extending something
-> > > in the block layer but it's about adding a new concept to the block
-> > > layer.
-> > 
-> > Is it?  What does the block layer do when it receives an I/O request
-> > that don't satisfy the other constraints (max_sectors or
-> > dma_alignment_mask, for example)?
-> 
-> As I explained, you need something new.
-> 
-> I don't think that max_sectors works as you expect.
+> The problem is triggered by bending the USB cable - likely a cable fault. 
+> Sometimes I merely get a plain USB device disconnect. (This also
+> aborts my gps logging as the gps tend to reconnect to /dev/ttyUSB1 instead 
+> of /dev/ttyUSB0, but I guess that is a userland issue, not a kernel 
+> problem. Or is this a race condition?)
 
-The block layer looks at max_sectors when merging two things (or add
-one to another). So the test fails, it doesn't merge them.
+That is because your userspace program still has ttyUSB0 open, so it
+creates the next valid device, ttyUSB1.  There is no way to connect the
+new device to the old one as it has no idea it should do so.
 
+Flaky hardware connections are not nice on drivers at times, although we
+should not be crashing :)
 
-> dma_alignment_mask is not used in the FS path. And I think that
-> dma_alignment_mask doens't solve your problems.
+We are probably just not handling the fact that the device is still open
+properly, although I thought all of those errors were long since fixed,
+perhaps the tty layer changes are now showing other inadequacies of the
+usb-serial core up...
 
-If dma_alignment_mask test fails, the block layer allocates temporary
-buffers and does memory copies.
+Those debug logs would be most helpful in tracking this down.
+
+thanks,
+
+greg k-h
