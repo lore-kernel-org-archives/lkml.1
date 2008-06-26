@@ -1,60 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbYFZQF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759093AbYFZQFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757368AbYFZQF1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 12:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYFZQFN
+	id S1759093AbYFZQFn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 12:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbYFZQFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 12:05:13 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:55868 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751810AbYFZQFL convert rfc822-to-8bit (ORCPT
+	Thu, 26 Jun 2008 12:05:21 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:11788 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755273AbYFZQFT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 12:05:11 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@seznam.cz
-Subject: Re: [PATCH 58/60] microblaze_v4: sys_microblaze.c
-Date: Thu, 26 Jun 2008 18:04:24 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
-       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com,
-       Michal Simek <monstr@monstr.eu>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <1214483429-32360-58-git-send-email-monstr@seznam.cz> <1214483429-32360-59-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-59-git-send-email-monstr@seznam.cz>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 26 Jun 2008 12:05:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Ctk3q8XAvB2rrzxKqO43u5SRjHReYcbjVFcZVhWTeZExHWv3p2JmHiBZ26fwb/N7P0
+         A8Ci7WSpjsAB32R20mDROHttWW3gWI+w7opygjp17HKbrVS8JwtKIrS+1cV8+WlwTV49
+         Iw1I77nJrNIztnlN818KqMa9iLYs2GB9vN2NM=
+Date: Thu, 26 Jun 2008 20:04:48 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Michael Halcrow <mhalcrow@us.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] eCryptfs: Remove unnecessary mux from
+	ecryptfs_init_ecryptfs_miscdev()
+Message-ID: <20080626160448.GD7018@cvg>
+References: <20080626135904.GC7018@cvg> <20080626160320.GA7408@halcrowt61p.austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806261804.25344.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+RNkgsBbc1VxxXmKGCoItfxlyD5RRzWqwEf9t
- PnSqRlkoOwlcyaVsa4z/rMvgsiqcaLsuqt6wG0w3abjls6l6jn
- 8GqRrG7qRhkESSwRCT7Zw==
+In-Reply-To: <20080626160320.GA7408@halcrowt61p.austin.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 June 2008, monstr@seznam.cz wrote:
-> +
-> +int sys_uname(struct old_utsname *name)
-> +{
-> +       int err = -EFAULT;
-> +
-> +       down_read(&uts_sem);
-> +       if (name && !copy_to_user(name, utsname(), sizeof(*name)))
-> +               err = 0;
-> +       up_read(&uts_sem);
-> +       return err;
-> +}
+[Michael Halcrow - Thu, Jun 26, 2008 at 11:03:20AM -0500]
+| On Thu, Jun 26, 2008 at 05:59:04PM +0400, Cyrill Gorcunov wrote:
+| > Some analisys shows the following interesting things -
+| > 
+| > Call chain (if being compiled into the kernel)
+| > ----------------------------------------------
+| > 
+| > ecryptfs_init
+| > 	ecryptfs_init_messaging
+| > 		ecryptfs_init_ecryptfs_miscdev
+| > 			mutex_lock(&ecryptfs_daemon_hash_mux);
+| > 			misc_register(&ecryptfs_miscdev);
+| > 				mutex_lock(&misc_mtx);
+| > 				mutex_unlock(&misc_mtx);
+| > 1 --->
+| > 			mutex_unlock(&ecryptfs_daemon_hash_mux);
+| > 
+| > As only we have misc device registered it is valid to open it.
+| > And that is happened by another proccess
+| > 
+| > chrdev_open
+| > 	misc_open
+| > 		mutex_lock(&misc_mtx);
+| > 			ecryptfs_miscdev_open
+| > 				mutex_lock(&ecryptfs_daemon_hash_mux);
+| > 			
+| > 
+| > If this happens at point (1) /ie chrdev_open called at this point/
+| > we are getting to circular warning as on top.
+| 
+| It appears to be only a warning and that deadlock cannot occur due to
+| the fact that ecryptfs_miscdev_open() cannot be called until after
+| mutex_unlock(&misc_mtx) occurs while under
+| ecryptfs_init_ecryptfs_miscdev(). However, on second glance, given the
+| call sequence detail you provided here, I think I am being
+| over-zealous in my hash table locking with ecryptfs_daemon_hash_mux in
+| ecryptfs_init_ecryptfs_miscdev(). The misc_mtx should provide all the
+| protection required to keep the daemon hash table sane during miscdev
+| registration.
+| 
+| ---
+| 
+| The misc_mtx should provide all the protection required to keep the
+| daemon hash table sane during miscdev registration. Since this mutex
+| is causing gratuitous lockdep warnings, this patch removes it.
+| 
+| Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
+| ---
+|  fs/ecryptfs/miscdev.c |    2 --
+|  1 files changed, 0 insertions(+), 2 deletions(-)
+| 
+| diff --git a/fs/ecryptfs/miscdev.c b/fs/ecryptfs/miscdev.c
+| index 6560da1..a9926a4 100644
+| --- a/fs/ecryptfs/miscdev.c
+| +++ b/fs/ecryptfs/miscdev.c
+| @@ -577,13 +577,11 @@ int ecryptfs_init_ecryptfs_miscdev(void)
+|  	int rc;
+|  
+|  	atomic_set(&ecryptfs_num_miscdev_opens, 0);
+| -	mutex_lock(&ecryptfs_daemon_hash_mux);
+|  	rc = misc_register(&ecryptfs_miscdev);
+|  	if (rc)
+|  		printk(KERN_ERR "%s: Failed to register miscellaneous device "
+|  		       "for communications with userspace daemons; rc = [%d]\n",
+|  		       __func__, rc);
+| -	mutex_unlock(&ecryptfs_daemon_hash_mux);
+|  	return rc;
+|  }
+|  
+| -- 
+| 1.5.3.7
+| 
 
-This actually seems to be dead code, as your sys_call_table only contains
-sys_newuname but not sys_uname.
+Yes, it was only warning, but it was a bit annoying you know :)
+Thanks a lot, Michael!
 
-	Arnd <><
+		- Cyrill -
