@@ -1,64 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbYFZOZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbYFZO3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756733AbYFZOZq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 10:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYFZOZh
+	id S1758213AbYFZO3S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 10:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbYFZO3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 10:25:37 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:40145 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751932AbYFZOZf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 10:25:35 -0400
-Date: Thu, 26 Jun 2008 10:25:35 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Stefan Becker <Stefan.Becker@nokia.com>
-cc: linux-kernel@vger.kernel.org, <linux-usb@vger.kernel.org>
-Subject: Re: [REGRESSION] 2.6.24/25: random lockups when accessing external
- USB harddrive
-In-Reply-To: <486337D4.1000904@nokia.com>
-Message-ID: <Pine.LNX.4.44L0.0806261018340.2811-100000@iolanthe.rowland.org>
+	Thu, 26 Jun 2008 10:29:07 -0400
+Received: from gw.goop.org ([64.81.55.164]:55825 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751606AbYFZO3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 10:29:06 -0400
+Message-ID: <4863A7A3.201@goop.org>
+Date: Thu, 26 Jun 2008 07:28:51 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
+       Mark McLoughlin <markmc@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Nick Piggin <npiggin@suse.de>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH 00 of 36] x86/paravirt: groundwork for 64-bit Xen support
+References: <patchbomb.1214367536@localhost> <20080625084253.GA11524@elte.hu> <20080625152212.GA3442@elte.hu> <4862A6A9.1030109@goop.org> <20080626105722.GA12640@elte.hu>
+In-Reply-To: <20080626105722.GA12640@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jun 2008, Stefan Becker wrote:
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>>> It quickly broke the build in testing:
+>>>
+>>>  include/asm/pgalloc.h: In function ‘paravirt_pgd_free':
+>>>  include/asm/pgalloc.h:14: error: parameter name omitted
+>>>  arch/x86/kernel/entry_64.S: In file included from  
+>>> arch/x86/kernel/traps_64.c:51:include/asm/pgalloc.h: In function 
+>>> ‘paravirt_pgd_free':
+>>>  include/asm/pgalloc.h:14: error: parameter name omitted
+>>>   
+>>>       
+>> No, looks like my fault.  The non-PARAVIRT version of  
+>> paravirt_pgd_free() is:
+>>
+>> static inline void paravirt_pgd_free(struct mm_struct *mm, pgd_t *) {}
+>>
+>> but C doesn't like missing parameter names, even if unused.
+>>
+>> This should fix it:
+>>     
+>
+> that fixed the build but now we've got a boot crash with this config:
+>
+>  time.c: Detected 2010.304 MHz processor.
+>  spurious 8259A interrupt: IRQ7.
+>  BUG: unable to handle kernel NULL pointer dereference at  0000000000000000
+>  IP: [<0000000000000000>]
+>  PGD 0
+>  Thread overran stack, or stack corrupted
+>  Oops: 0010 [1] SMP
+>  CPU 0
+>
+> with:
+>
+>   http://redhat.com/~mingo/misc/config-Thu_Jun_26_12_46_46_CEST_2008.bad
+>   
 
-> Hi,
-> 
-> ext Alan Stern wrote:
-> > On Wed, 25 Jun 2008, Stefan Becker wrote:
-> > 
-> >> HCD URB list locked by usb_hcd_link_urb_to_ep!
-> >>
-> >> As far as I understand the matter this only can happen if 
-> >> usb_hcd_link_urb_to_ep() gets interrupted while holding the spinlock. 
-> >> But according to the contract at the header of the function it should be 
-> >> called with interrupts disabled!
-> > 
-> > So it should.  Do you know how to test whether interrupts are enabled?  
-> > There's a routine called raw_irqs_disabled() defined in 
-> > include/asm/irqflags.h.  Stick it inside usb_hcd_link_urb_to_ep, and 
-> > the first time it returns nonzero, do a dump_stack().
+Blerg, a contextless NULL rip.  Have you done any bisection on it?  
+Could you try again with the same config, but with 
+"CONFIG_PARAVIRT_DEBUG" enabled as well?  That will BUG if it turns out 
+to be trying to call a NULL paravirt-op
 
-Typo: I should have said "the first time it returns zero..."
+I'll try to repro here anyway.
 
-Do you have any of the RT patches installed?
+> i've pushed out the current tip/xen-64bit branch, so that you can see 
+> how things look like at the moment, but i cannot put it into tip/master 
+> yet.
 
-> Tried both and got nothing. So either our reasoning is wrong or 
-> something really weird is going on. I'll try to improve my debugging 
-> code and use dump_stack() at the place where it locks up.
+Yeah, I was expecting things to break somewhere with this lot :/
 
-Well, it would be pretty surprising if spin_lock_irq or 
-spin_lock_irqsave were misbehaving.
+Could you add this patch?  I don't think it will help this case, but 
+it's a bugfix.
 
-Something else you should try is clearing your "owner" string just
-before the spinlock is released.  You could also add a check after the
-release; if the spinlock can't be locked again immediately then
-something is wrong.
+    J
 
-Alan Stern
+Subject: x86_64: use SWAPGS_UNSAFE_STACK in ia32entry.S
+
+Use SWAPGS_UNSAFE_STACK in ia32entry.S in the places where the active
+stack is the usermode stack.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/ia32/ia32entry.S |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+===================================================================
+--- a/arch/x86/ia32/ia32entry.S
++++ b/arch/x86/ia32/ia32entry.S
+@@ -98,7 +98,7 @@
+ 	CFI_SIGNAL_FRAME
+ 	CFI_DEF_CFA	rsp,0
+ 	CFI_REGISTER	rsp,rbp
+-	SWAPGS
++	SWAPGS_UNSAFE_STACK
+ 	movq	%gs:pda_kernelstack, %rsp
+ 	addq	$(PDA_STACKOFFSET),%rsp	
+ 	/*
+@@ -210,7 +210,7 @@
+ 	CFI_DEF_CFA	rsp,PDA_STACKOFFSET
+ 	CFI_REGISTER	rip,rcx
+ 	/*CFI_REGISTER	rflags,r11*/
+-	SWAPGS
++	SWAPGS_UNSAFE_STACK
+ 	movl	%esp,%r8d
+ 	CFI_REGISTER	rsp,r8
+ 	movq	%gs:pda_kernelstack,%rsp
+
 
