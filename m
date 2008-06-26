@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755647AbYFZPf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295AbYFZPh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755647AbYFZPf4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 11:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYFZPfp
+	id S1756295AbYFZPh7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 11:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbYFZPhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 11:35:45 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:61013 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751513AbYFZPfo (ORCPT
+	Thu, 26 Jun 2008 11:37:50 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43023 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751197AbYFZPht (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 11:35:44 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@seznam.cz
-Subject: Re: [PATCH 48/60] microblaze_v4: headers simple files - empty or redirect to asm-generic
-Date: Thu, 26 Jun 2008 17:35:11 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
-       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com,
-       Michal Simek <monstr@monstr.eu>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <1214483429-32360-48-git-send-email-monstr@seznam.cz> <1214483429-32360-49-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-49-git-send-email-monstr@seznam.cz>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 26 Jun 2008 11:37:49 -0400
+Date: Thu, 26 Jun 2008 08:37:49 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Dave Jones <davej@redhat.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25.6  kernel BUG at mm/highmem.c:319!
+Message-ID: <20080626083749.4fd0b403@infradead.org>
+In-Reply-To: <20080626145942.GA25295@redhat.com>
+References: <20080626145942.GA25295@redhat.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806261735.12738.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+kDBFSMPUYw2iUK3N0k5dyyWiv+2aIQF4WMq/
- F1PmO8bytZc9keCotDNdoQDn+pL31z9QbghEJLMyjvEjgfk4AI
- 5voUbktdfgM4Ammxa6/gQ==
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 June 2008, monstr@seznam.cz wrote:
-> +
-> +#ifndef _ASM_MICROBLAZE_NAMEI_H
-> +#define _ASM_MICROBLAZE_NAMEI_H
-> +
-> +#ifdef __KERNEL__
-> +
-> +/* This dummy routine maybe changed to something useful
-> + * for /usr/gnemul/ emulation stuff.
-> + * Look at asm-sparc/namei.h for details.
-> + */
-> +#define __emul_prefix() NULL
-> +
-> +#endif /* __KERNEL__ */
-> +
-> +#endif /* _ASM_MICROBLAZE_NAMEI_H */
+On Thu, 26 Jun 2008 10:59:42 -0400
+Dave Jones <davej@redhat.com> wrote:
 
-Could you move this to asm-generic? Note that the comment is wrong,
-asm-sparc doesn't actually implement it any more, only ia64, mips and
-arm have an implementation that actually does something interesting
-here.
+> Anyone know how this can happen ?
+> We just got a report from a user who is hitting the 
+> 
+>         BUG_ON(!PageHighMem(page));
+> 
+> in set_page_address().
 
-	Arnd <><
+we discussed this 2 or 3 weeks ago as part of the kerneloops reports...
+everyone is puzzled... it's the number 20 report right now.
+
+http://www.kerneloops.org/search.php?search=set_page_address
+
+it seems that fuse is a very popular module when this hits...
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
