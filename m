@@ -1,103 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761180AbYFZUef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761559AbYFZUfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761180AbYFZUef (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 16:34:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbYFZUe0
+	id S1761559AbYFZUfg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 16:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbYFZUf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 16:34:26 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:22151 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753474AbYFZUeZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 16:34:25 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=rDx/rkpftGljAd9PmkrAPs0pOyznGo54xqwJ16Pbuf2L/3xJaCx7DbbW3RLTl/MXI
-	UfjZ/Qq8fS20eH7RbpHCw==
-Message-ID: <6599ad830806261334y6def5f7an57ac8f071a08eb4b@mail.gmail.com>
-Date: Thu, 26 Jun 2008 13:34:11 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Max Krasnyansky" <maxk@qualcomm.com>
-Subject: Re: [RFC][PATCH] CPUSets: Move most calls to rebuild_sched_domains() to the workqueue
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>, "Paul Jackson" <pj@sgi.com>,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       "Gautham shenoy" <ego@in.ibm.com>
-In-Reply-To: <4863E4C8.9050705@qualcomm.com>
+	Thu, 26 Jun 2008 16:35:27 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33050 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752954AbYFZUf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 16:35:26 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Subject: Re: [PATCH 00/34] AMD IOMMU driver
+Date: Thu, 26 Jun 2008 22:37:14 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <48634BC1.8@google.com>
-	 <19f34abd0806260234y7616bab2k54bc019dfb0c6305@mail.gmail.com>
-	 <6599ad830806260250m39d700a5haf0f32d999cd2129@mail.gmail.com>
-	 <4863E4C8.9050705@qualcomm.com>
+Message-Id: <200806262237.15864.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 11:49 AM, Max Krasnyansky <maxk@qualcomm.com> wrote:
->>
->> Does that mean that you can't ever call get_online_cpus() from a
->> workqueue thread?
->
-> In general it should be ok (no different from user-space task calling it).
+On Thursday, 26 of June 2008, Joerg Roedel wrote:
+> Hi,
 
-No, I think it is a problem.
+Hi,
 
-When a CPU goes down, the hotplug code holds cpu_hotplug.lock and
-calls cleanup_workqueue_thread() which waits for any running work on
-that thread to finish.
+> this is the first post of the initial driver for AMD IOMMU hardware. The driver
+> is tested on hardware with various loads (disk and network) and showed no
+> problems.
+> 
+> It currently supports DMA remapping using the dma_ops API in the x86
+> architecture code. It also supports isolation of device DMA address spaces as
+> far as the hardware allows that (means each device can get its own DMA address
+> space and can't access the DMA memory of other devices).
+> 
+> Please give this code a good review and send me your comments about it so that
+> I can fix all possible bugs and objections and move this driver forward to
+> merging quality.
 
-So if the workqueue thread running on that CPU calls get_online_cpus()
-while the hotplug thread is waiting for it, it will deadlock. (It's
-not clear to me how lockdep figured this out - I guess it's something
-to do with the *_acquire() annotations that tell lockdep to treat the
-workqueue structure as a pseudo-lock?)
+Do you implement suspend/resume callbacks for the IOMMU and if so, which patch
+in the series does introduce them?
 
-I guess the fix for that would be to have a non-workqueue thread to
-handle the async domain rebuilding, which isn't tied to a particular
-cpu the way workqueue threads are.
-
-> But there is still circular dependency because we're calling into
-> domain partitioning code.
-
-OK, so the problem is that since cpu_hotplug contains a hand-rolled
-rwsem, lockdep is going to spot false deadlocks.
-
-Is there any reason not to replace cpu_hotplug.lock and
-cpu_hotplug.refcount with an rw_semaphore, and have the following:
-
-void get_online_cpus(void)
-{
-        might_sleep();
-        if (cpu_hotplug.active_writer == current)
-                return;
-        down_read(&cpu_hotplug.lock);
-}
-
-void put_online_cpus(void)
-{
-        if (cpu_hotplug.active_writer == current)
-                return;
-        up_read(&cpu_hotplug.lock);
-}
-
-static void cpu_hotplug_begin(void)
-{
-        down_write(&cpu_hotplug.lock);
-        cpu_hotplug.active_writer = current;
-}
-
-static void cpu_hotplug_done(void)
-{
-        cpu_hotplug.active_writer = NULL;
-        up_write(&cpu_hotplug.lock);
-}
-
-I think that combined with moving the async rebuild_sched_domains to a
-separate thread should solve the problem, but I'm wondering why
-cpu_hotplug.lock was implemented this way in the first place.
-
-Paul
+Rafael
