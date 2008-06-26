@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760005AbYFZU6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbYFZVAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760005AbYFZU6B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 16:58:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbYFZU5t
+	id S1760074AbYFZVAp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 17:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754993AbYFZVAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 16:57:49 -0400
-Received: from mail.rz.uni-duesseldorf.de ([134.99.128.30]:49475 "EHLO
-	mail.rz.uni-duesseldorf.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753811AbYFZU5s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 16:57:48 -0400
-Date: Thu, 26 Jun 2008 22:57:41 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Subject: Re: [2.6 patch] remove the dead ATARI_SCC{,_DMA} options
-In-reply-to: <Pine.LNX.4.64.0806260909490.30924@anakin>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-       Adrian Bunk <bunk@kernel.org>, zippel@linux-m68k.org,
-       linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>
-Message-id: <alpine.DEB.1.00.0806262240480.9169@zirkon.biophys.uni-duesseldorf.de>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; format=flowed; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-References: <20080625162536.GH10285@cs181140183.pp.htv.fi>
- <alpine.DEB.1.00.0806260644080.30738@zirkon.biophys.uni-duesseldorf.de>
- <Pine.LNX.4.64.0806260909490.30924@anakin>
+	Thu, 26 Jun 2008 17:00:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33215 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754093AbYFZVAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 17:00:37 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Subject: Re: [PATCH 00/34] AMD IOMMU driver
+Date: Thu, 26 Jun 2008 23:02:03 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <200806262237.15864.rjw@sisk.pl> <20080626203758.GK1303@amd.com>
+In-Reply-To: <20080626203758.GK1303@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806262302.04412.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Geert,
+On Thursday, 26 of June 2008, Joerg Roedel wrote:
+> On Thu, Jun 26, 2008 at 10:37:14PM +0200, Rafael J. Wysocki wrote:
+> > On Thursday, 26 of June 2008, Joerg Roedel wrote:
+> > > Hi,
+> > 
+> > Hi,
+> > 
+> > > this is the first post of the initial driver for AMD IOMMU hardware. The driver
+> > > is tested on hardware with various loads (disk and network) and showed no
+> > > problems.
+> > > 
+> > > It currently supports DMA remapping using the dma_ops API in the x86
+> > > architecture code. It also supports isolation of device DMA address spaces as
+> > > far as the hardware allows that (means each device can get its own DMA address
+> > > space and can't access the DMA memory of other devices).
+> > > 
+> > > Please give this code a good review and send me your comments about it so that
+> > > I can fix all possible bugs and objections and move this driver forward to
+> > > merging quality.
+> > 
+> > Do you implement suspend/resume callbacks for the IOMMU and if so, which patch
+> > in the series does introduce them?
+> 
+> No, These callbacks are not implemented yet. But I plan to do so in a
+> later version.
 
->> A revived Atari SCC serial driver should be in Geert's patch queue, or in the
->
-> ... which needs some rework before it can be submitted, I'm afraid (I can
-> take care of the checkpatch warnings, though ;-)
+OK, thanks.
 
-What sort of work, apart from checkpatch cleanup?
-
->> m68k kernel tree. The SCC_DMA option, however, is dead and can be removed.
->
-> So I think it's safe to apply the whole patch, and readd
-> CONFIG_ATARI_SCC together with the new driver.
-
-Just remember to add the option to my patch :-)
-
-Thanks,
-
- 	Michael
-
+Rafael
