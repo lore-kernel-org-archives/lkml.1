@@ -1,214 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbYFZW6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756370AbYFZXBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755757AbYFZW6X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 18:58:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYFZW6L
+	id S1756370AbYFZXBr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 19:01:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYFZXBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 18:58:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34548 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751239AbYFZW6J (ORCPT
+	Thu, 26 Jun 2008 19:01:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38772 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751239AbYFZXBh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 18:58:09 -0400
-Date: Thu, 26 Jun 2008 17:58:02 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>
-Subject: Re: [bug] Re: [PATCH] - Fix stack overflow for large values of MAX_APICS
-Message-ID: <20080626225802.GA17863@sgi.com>
-References: <20080620025104.GA25571@sgi.com> <20080620103921.GC32500@elte.hu> <20080624102401.GA27614@elte.hu> <20080625205628.GA17411@sgi.com> <20080626123231.GP29619@elte.hu> <20080626124125.GA25484@sgi.com> <20080626223855.GE10859@linux.vnet.ibm.com>
+	Thu, 26 Jun 2008 19:01:37 -0400
+Date: Thu, 26 Jun 2008 15:59:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: righi.andrea@gmail.com
+Cc: balbir@linux.vnet.ibm.com, menage@google.com, chlunde@ping.uio.no,
+       axboe@kernel.dk, matt@bluehost.com, roberto@unbit.it,
+       randy.dunlap@oracle.com, dpshah@google.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] i/o bandwidth controller infrastructure
+Message-Id: <20080626155948.34f30751.akpm@linux-foundation.org>
+In-Reply-To: <486419FE.6070600@gmail.com>
+References: <1213956335-29866-3-git-send-email-righi.andrea@gmail.com>
+	<20080625172900.6cfe79cf.akpm@linux-foundation.org>
+	<486419FE.6070600@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080626223855.GE10859@linux.vnet.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 03:38:55PM -0700, Paul E. McKenney wrote:
-> On Thu, Jun 26, 2008 at 07:41:25AM -0500, Jack Steiner wrote:
-> > On Thu, Jun 26, 2008 at 02:32:31PM +0200, Ingo Molnar wrote:
-> > > 
-> > > * Jack Steiner <steiner@sgi.com> wrote:
-> > > 
-> > > > >> I added trace code & isolated the hang to a call to 
-> > > > >> synchronize_rcu(). Usually from netlink_change_ngroups().
-> > > > >> 
-> > > > >> If I boot with "maxcpus=1, it never hangs (obviously) but always fails
-> > > > >> to mount /root.
-> > > > >> 
-> > > > >> Next I changed NR_CPUS to 128. I still see random hangs.
-> > > > >> 
-> > > > >> 
-> > > > >> I'll chase this more tomorrow. Has anyone else seen any failures that might be
-> > > > >> related???
-> > > > >> 
-> > > > >> 
-> > > > 
-> > > > Is this already fixed? I see a number of patches to this area have been merged
-> > > > since the failure occurred.
-> > > > 
-> > > > I added enough hacks to get backtraces on threads at the time a hang occurs.
-> > > > show_state() shows 79 "kstopmachine" tasks. Most have one of the following backtraces:
-> > > > 
-> > > > 
-> > > > 	<6>kstopmachine  R  running task     6400   375    369
-> > > > 	 ffff8101ad28bd80 ffffffff8068c5c6 ffff8101ad28bb20 0000000000000002
-> > > > 	 0000000000000046 0000000000000000 0000000000002f42 ffff8101ad28c8b8
-> > > > 	 ffff8101ad28bb90 ffffffff80254fac 0000000100000000 0000000000000000
-> > > > 	Call Trace:
-> > > > 	   [<ffffffff8068c5c6>] ? thread_return+0x4d/0xbd
-> > > > 	   [<ffffffff80254fac>] ? __lock_acquire+0x643/0x6ad
-> > > > 	   [<ffffffff80212507>] ? sched_clock+0x9/0xc
-> > > > 	   [<ffffffff8022cf41>] ? update_curr_rt+0x111/0x11a
-> > > > 	   [<ffffffff80212507>] ? sched_clock+0x9/0xc
-> > > > 	   [<ffffffff8068c5f2>] ? thread_return+0x79/0xbd
-> > > > 	   [<ffffffff8068ef48>] ? _spin_unlock_irq+0x2b/0x37
-> > > > 	   [<ffffffff8068c5f2>] ? thread_return+0x79/0xbd
-> > > > 	   [<ffffffff80254fac>] ? __lock_acquire+0x643/0x6ad
-> > > > 	   [<ffffffff80212507>] ? sched_clock+0x9/0xc
-> > > > 	   [<ffffffff8068c806>] wait_for_common+0x150/0x160
-> > > > 	   [<ffffffff8068ef48>] ? _spin_unlock_irq+0x2b/0x37
-> > > > 	   [<ffffffff80254fac>] ? __lock_acquire+0x643/0x6ad
-> > > > 	   [<ffffffff80212507>] ? sched_clock+0x9/0xc
-> > > > 	   [<ffffffff8023422b>] ? sys_sched_yield+0x0/0x6e
-> > > > 	   [<ffffffff8026736d>] ? stopmachine+0xaf/0xda
-> > > > 	   [<ffffffff8020d558>] ? child_rip+0xa/0x12
-> > > > 	   [<ffffffff802672be>] ? stopmachine+0x0/0xda
-> > > > 	   [<ffffffff8020d54e>] ? child_rip+0x0/0x12
-> > > > 
-> > > > 	<6>kstopmachine  ? 0000000000000000  6400   367      1
-> > > > 	  ffff8101af9b9ee0 0000000000000046 0000000000000000 0000000000000000
-> > > > 	  0000000000000000 ffff8101af9b4000 ffff8101afdc0000 ffff8101af9b4540
-> > > > 	  0000000600000000 00000000ffff909f ffffffffffffffff ffffffffffffffff
-> > > > 	Call Trace:
-> > > > 	     [<ffffffff8023be98>] do_exit+0x6fe/0x702
-> > > > 	     [<ffffffff8020d55f>] child_rip+0x11/0x12
-> > > > 	     [<ffffffff802672be>] ? stopmachine+0x0/0xda
-> > > > 	     [<ffffffff8020d54e>] ? child_rip+0x0/0x12
-> > > > 
-> > > > 
-> > > > The boot thread shows:
-> > > > 	 <6>swapper       D 0000000000000002  2640     1      0
-> > > > 	  ffff8101afc3fcd0 0000000000000046 ffffffff807d8341 0000000000000200
-> > > > 	  ffffffff807d8335 ffff8101afc40000 ffff8101ad284000 ffff8101afc40540
-> > > > 	  00000005afc3faa0 ffffffff8021e837 ffff8101afc3fab0 ffff8101afc3fd50
-> > > > 
-> > > > 	 [<ffffffff8068c961>] schedule_timeout+0x27/0xb9
-> > > > 	 [<ffffffff8068ef48>] ? _spin_unlock_irq+0x2b/0x37
-> > > > 	 [<ffffffff8068c79c>] wait_for_common+0xe6/0x160
-> > > > 	 [<ffffffff8022d88a>] ? default_wake_function+0x0/0xf
-> > > > 	 [<ffffffff8068c8a0>] wait_for_completion+0x18/0x1a
-> > > > 	 [<ffffffff8024981a>] synchronize_rcu+0x3a/0x41
-> > > > 	 [<ffffffff802498a3>] ? wakeme_after_rcu+0x0/0x15
-> > > > 	 [<ffffffff805d8e1b>] netlink_change_ngroups+0xce/0xfc
-> > > > 	 [<ffffffff805da2c9>] genl_register_mc_group+0xfd/0x160
-> > > > 	 [<ffffffff80ac6d5d>] ? acpi_event_init+0x0/0x57
-> > > > 	 [<ffffffff80ac6d92>] acpi_event_init+0x35/0x57
-> > > > 	 [<ffffffff80aaca8c>] kernel_init+0x1c5/0x31f
-> > > > 
-> > > > 
-> > > > Is this hang already fixed or should I dig deeper?
-> > > 
-> > > there's no known hang in tip/master. I.e. removing your MAX_APICS patch 
-> > > clearly resolved that crash.
-> > 
-> > Hmmm.  I'm puzzled. With the tip/master tree that I built earlier this week, I was
-> > able to get hangs both with & without the MAX_APICS patch. Although less frequent,
-> > I also got hangs with NR_CPUS=128 & without the MAX_APICS patch. I'm not certain
-> > that all hangs were identical to the above backtraces, but they all hung at
-> > about the same spot.
-> > 
-> > I'll build a new tip/master tree, apply the MAX_APICS patch and retest using
-> > your random config & boot options that caused the problem.
+On Fri, 27 Jun 2008 00:36:46 +0200
+Andrea Righi <righi.andrea@gmail.com> wrote:
+
+> > Does all this code treat /dev/sda1 as a separate device from /dev/sda2?
+> >  If so, that would be broken.
 > 
-> Is the kstopmachine related to the synchronize_rcu()?  A task that is
-> running in a tight loop with irqs disabled (as stopmachine() seems to do,
-> judging from the source code) will absolutely prevent RCU grace periods
-> from completing.
-> 
-> So if the stop_machine() sequence gets stuck for whatever reason, RCU
-> grace periods will get stuck as well.
+> Yes, all the partitions are treated as separate devices with
+> (potentially) different limiting rules, but I don't understand why it
+> would be broken... dev_t has both minor and major numbers, so it would
+> be possible to select single partitions as well.
 
-I'm still debugging. (I'm learning a lot about debugging x86 systems - up to now
-I've worked mostly with IA64). Stopmachine is definitely part of the problem.
+Well it's functionally broken, isn't it?  A physical disk has a fixed
+IO bandwidth and when the administrator wants to partition that
+bandwidth amongst control groups he will need to consider the entire
+device when doing so?
 
-The failure mode is not always the same. In the most recent failure, RCU
-is not involved. The hang in stopmachine().
+I mean, the whole point of this feature and of control groups as a
+whole is isolation.  But /dev/sda1 and /dev/sda2 are very much _not_
+isolated.  Whereas /dev/sda and /dev/sdb are (to a large degree)
+isolated.
 
-
-I see the following task spinning on cpu 7 at the time of the hang:
-
-HUNG: registers 7
-CPU 7:
-Modules linked in:
-Pid: 259, comm: kstopmachine Not tainted 2.6.26-rc8-tip-bug3 #8
-Stime: 31957, LastSwitch 0, SwitchCount 0
-RIP: 0010:[<ffffffff80688368>]  [<ffffffff80688368>] _spin_unlock_irq+0x33/0x37
-RSP: 0000:ffff8101af50dc40  EFLAGS: 00000282
-RAX: 0000000000000007 RBX: ffff8101af50dc50 RCX: 0000000000000000
-RDX: 000000000000dee9 RSI: 00000000000002c1 RDI: 0000000000000000
-RBP: ffff8101af508870 R08: 0000000000000001 R09: 0000000000000001
-R10: 0000000000000001 R11: 0000000000000000 R12: ffff8101af508870
-R13: 0000000000000002 R14: ffff8101af50dbc0 R15: ffffffff8022ccb1
-FS:  0000000000000000(0000) GS:ffff8101afd226e0(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006a0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-
-Call Trace:
- [<ffffffff80685a0a>] ? thread_return+0x79/0xbd
- [<ffffffff80254d74>] ? __lock_acquire+0x643/0x6ad
- [<ffffffff802125af>] ? sched_clock+0x9/0xc
- [<ffffffff80685c1e>] ? wait_for_common+0x150/0x160
- [<ffffffff80688360>] ? _spin_unlock_irq+0x2b/0x37
- [<ffffffff80254d74>] ? __lock_acquire+0x643/0x6ad
- [<ffffffff802125af>] ? sched_clock+0x9/0xc
- [<ffffffff80233f9f>] ? sys_sched_yield+0x0/0x6e
- [<ffffffff80234007>] ? sys_sched_yield+0x68/0x6e
- [<ffffffff80685cd1>] ? yield+0x17/0x19
- [<ffffffff80267133>] ? stopmachine+0xad/0xda
- [<ffffffff8020d618>] ? child_rip+0xa/0x12
- [<ffffffff80267086>] ? stopmachine+0x0/0xda
- [<ffffffff8020d60e>] ? child_rip+0x0/0x12
-
-Another task is:
-
-kstopmachine  R  running task     6016   251      2 2
- ffff8101af53dec0 0000000000000046 00000000000000fd ffff8101af538870
- ffff8101af53dcb0 ffff8101af538000 ffff8101afcac000 ffff8101af538548
- 0000000200000000 ffff8101af538000 ffff8101af53dc90 0000000000000046
-Call Trace:
- [<ffffffff802125af>] ? sched_clock+0x9/0xc
- [<ffffffff8023523d>] ? wake_up_new_task+0xef/0xf8
- [<ffffffff8023523d>] ? wake_up_new_task+0xef/0xf8
- [<ffffffff80237301>] ? do_fork+0x1b8/0x284
- [<ffffffff80254d74>] ? __lock_acquire+0x643/0x6ad
- [<ffffffff802125af>] ? sched_clock+0x9/0xc
- [<ffffffff80233f9f>] ? sys_sched_yield+0x0/0x6e
- [<ffffffff80234007>] sys_sched_yield+0x68/0x6e
- [<ffffffff80685cd1>] yield+0x17/0x19
- [<ffffffff80266fd3>] do_stop+0x87/0x13a
- [<ffffffff80266f4c>] ? do_stop+0x0/0x13a
- [<ffffffff80266f4c>] ? do_stop+0x0/0x13a
- [<ffffffff8024b7fe>] kthread+0x4e/0x7c
- [<ffffffff8020d618>] child_rip+0xa/0x12
- [<ffffffff8024b7b0>] ? kthread+0x0/0x7c
- [<ffffffff8020d60e>] ? child_rip+0x0/0x12
-
-
-AFAICT, it is spinning in stopmachine() in the following loop:
-
-	while (stopmachine_state != STOPMACHINE_EXIT)
-
-stopmachine_state = 0
-stopmachine_num_threads = 8
-stopmachine_thread_ack = 7
-
-Still looking. Should know more tomorrow.
-
-
---- jack
