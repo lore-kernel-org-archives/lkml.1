@@ -1,330 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbYFZJff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbYFZJj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757555AbYFZJff (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 05:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYFZJf1
+	id S1756460AbYFZJj3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 05:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbYFZJjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 05:35:27 -0400
-Received: from mga11.intel.com ([192.55.52.93]:22900 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751661AbYFZJfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 05:35:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,707,1204531200"; 
-   d="scan'208";a="582174274"
-Subject: Re: FIO: kjournald blocked for more than 120 seconds
-From: Lin Ming <ming.m.lin@intel.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080617093119.GL20851@kernel.dk>
-References: <1213581875.7398.32.camel@minggr>
-	 <20080616192950.GZ20851@kernel.dk>
-	 <37E52D09333DE2469A03574C88DBF40F02011751@pdsmsx414.ccr.corp.intel.com>
-	 <20080617083600.GE20851@kernel.dk> <1213693347.21721.8.camel@minggr>
-	 <20080617093119.GL20851@kernel.dk>
-Content-Type: text/plain
-Date: Thu, 26 Jun 2008 17:33:43 +0800
-Message-Id: <1214472823.3057.7.camel@minggr.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
+	Thu, 26 Jun 2008 05:39:20 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:5524 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754210AbYFZJjT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 05:39:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=ZunC5fAKT5HcGXqas1aW5QU9llgT8uLJA+da2P8AdGTaiADThXUGbURPBmN8L/2dS8
+         JqszsqpJ0a5Fw4cNXsfa5RYTtPGg9toONVfDu7guFEap6sLuDKJZRCQY22kgkFJkOhj1
+         8qtm6DO4Kg6j6tZQr4yLfYft1V/I9DtiMVhiU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 1/4] ide-pmac: media-bay support fixes
+Date: Thu, 26 Jun 2008 11:40:39 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200806162124.43005.bzolnier@gmail.com> <200806261051.34733.bzolnier@gmail.com> <1214470868.8011.455.camel@pasglop>
+In-Reply-To: <1214470868.8011.455.camel@pasglop>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200806261140.39531.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens,
-
-How about below patch?
-
-If cfqd->sync_flight > 0, we still allow async queue to be dispached,
-and its slice time would be decreased. So sync queue never starve async
-queue.
-
-Introduce a sysfs interface cfq_slice_async_penalty to adjust the
-percentages of slice that will be decreased.
-
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
----
- block/cfq-iosched.c |   33 ++++++++++++++++++++++++++++++++-
- 1 files changed, 32 insertions(+), 1 deletions(-)
-
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index d01b411..8bdc931 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -26,6 +26,12 @@ static const int cfq_slice_sync = HZ / 10;
- static int cfq_slice_async = HZ / 25;
- static const int cfq_slice_async_rq = 2;
- static int cfq_slice_idle = HZ / 125;
-+/*
-+ * penalty of dispatching async queue
-+ * if there are unfinished requests in sync queue
-+ * by default, 50% of time slice decreased
-+ */
-+static int cfq_slice_async_penalty = 50;
- 
- /*
-  * offset from end of service tree
-@@ -114,6 +120,7 @@ struct cfq_data {
- 	unsigned int cfq_slice[2];
- 	unsigned int cfq_slice_async_rq;
- 	unsigned int cfq_slice_idle;
-+	unsigned int cfq_slice_async_penalty;
- 
- 	struct list_head cic_list;
- };
-@@ -288,6 +295,25 @@ static inline int cfq_slice_used(struct cfq_queue
-*cfqq)
- }
- 
- /*
-+ * Get the slice time to be decreased
-+ * when async queue is dispatched and
-+ * there are unfinished requests in sync queue
-+ */
-+static inline int
-+cfq_async_penalty(struct cfq_data *cfqd, struct cfq_queue *cfqq)
-+{
-+	int penalty;
-+
-+	if (cfq_cfqq_sync(cfqq))
-+		return 0;
-+
-+	penalty = (cfqq->slice_end - jiffies) *
-+			cfqd->cfq_slice_async_penalty / 100;
-+
-+	return penalty;
-+}
-+
-+/*
-  * Lifted from AS - choose which of rq1 and rq2 that is best served
-now.
-  * We choose the request that is closest to the head right now.
-Distance
-  * behind the head is penalized and only allowed to a certain extent.
-@@ -1103,7 +1129,7 @@ static int cfq_dispatch_requests(struct
-request_queue *q, int force)
- 		}
- 
- 		if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
--			break;
-+			cfqq->slice_end -= cfq_async_penalty(cfqd, cfqq);
- 
- 		cfq_clear_cfqq_must_dispatch(cfqq);
- 		cfq_clear_cfqq_wait_request(cfqq);
-@@ -2143,6 +2169,7 @@ static void *cfq_init_queue(struct request_queue
-*q)
- 	cfqd->cfq_slice[1] = cfq_slice_sync;
- 	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
- 	cfqd->cfq_slice_idle = cfq_slice_idle;
-+	cfqd->cfq_slice_async_penalty = cfq_slice_async_penalty;
- 
- 	return cfqd;
- }
-@@ -2211,6 +2238,7 @@ SHOW_FUNCTION(cfq_slice_idle_show,
-cfqd->cfq_slice_idle, 1);
- SHOW_FUNCTION(cfq_slice_sync_show, cfqd->cfq_slice[1], 1);
- SHOW_FUNCTION(cfq_slice_async_show, cfqd->cfq_slice[0], 1);
- SHOW_FUNCTION(cfq_slice_async_rq_show, cfqd->cfq_slice_async_rq, 0);
-+SHOW_FUNCTION(cfq_slice_async_penalty_show,
-cfqd->cfq_slice_async_penalty, 0);
- #undef SHOW_FUNCTION
- 
- #define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV)			\
-@@ -2242,6 +2270,8 @@ STORE_FUNCTION(cfq_slice_sync_store,
-&cfqd->cfq_slice[1], 1, UINT_MAX, 1);
- STORE_FUNCTION(cfq_slice_async_store, &cfqd->cfq_slice[0], 1, UINT_MAX,
-1);
- STORE_FUNCTION(cfq_slice_async_rq_store, &cfqd->cfq_slice_async_rq, 1,
- 		UINT_MAX, 0);
-+STORE_FUNCTION(cfq_slice_async_penalty_store,
-&cfqd->cfq_slice_async_penalty, 0,
-+		100, 0);
- #undef STORE_FUNCTION
- 
- #define CFQ_ATTR(name) \
-@@ -2257,6 +2287,7 @@ static struct elv_fs_entry cfq_attrs[] = {
- 	CFQ_ATTR(slice_async),
- 	CFQ_ATTR(slice_async_rq),
- 	CFQ_ATTR(slice_idle),
-+	CFQ_ATTR(slice_async_penalty),
- 	__ATTR_NULL
- };
- 
-Lin Ming
-
-On Tue, 2008-06-17 at 11:31 +0200, Jens Axboe wrote:
-> On Tue, Jun 17 2008, Lin Ming wrote:
+On Thursday 26 June 2008, Benjamin Herrenschmidt wrote:
+> On Thu, 2008-06-26 at 10:51 +0200, Bartlomiej Zolnierkiewicz wrote:
 > > 
-> > On Tue, 2008-06-17 at 10:36 +0200, Jens Axboe wrote:
-> > > On Tue, Jun 17 2008, Zhang, Yanmin wrote:
-> > > > >>-----Original Message-----
-> > > > >>From: Jens Axboe [mailto:jens.axboe@oracle.com]
-> > > > >>Sent: Tuesday, June 17, 2008 3:30 AM
-> > > > >>To: Lin, Ming M
-> > > > >>Cc: Zhang, Yanmin; Linux Kernel Mailing List
-> > > > >>Subject: Re: FIO: kjournald blocked for more than 120 seconds
-> > > > >>
-> > > > >>On Mon, Jun 16 2008, Lin Ming wrote:
-> > > > >>> Hi, Jens
-> > > > >>>
-> > > > >>> When runnig FIO benchmark, kjournald blocked for more than 120
-> > > > seconds.
-> > > > >>> Detailed root cause analysis and proposed solutions as below.
-> > > > >>>
-> > > > >>> Any comment is appreciated.
-> > > > >>>
-> > > > >>> Hardware Environment
-> > > > >>> ---------------------
-> > > > >>> 13 SEAGATE ST373307FC disks in a JBOD, connected by a Qlogic ISP2312
-> > > > >>> Fibe Channel HBA.
-> > > > >>>
-> > > > >>> Bug description
-> > > > >>> ----------------
-> > > > >>> fio vsync random read 4K in 13 disks, 4 processes per disk, fio
-> > > > global
-> > > > >>> paramter as below,
-> > > > >>> Tested 4 IO schedulers, issue is only seen in CFQ.
-> > > > >>>
-> > > > >>> INFO: task kjournald:20558 blocked for more than 120 seconds.
-> > > > >>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this
-> > > > >>> message.
-> > > > >>> kjournald     D ffff810010820978  6712 20558      2
-> > > > >>> ffff81022ddb1d10 0000000000000046 ffff81022e7baa10 ffffffff803ba6f2
-> > > > >>> ffff81022ecd0000 ffff8101e6dc9160 ffff81022ecd0348 000000008048b6cb
-> > > > >>> 0000000000000086 ffff81022c4e8d30 0000000000000000 ffffffff80247537
-> > > > >>> Call Trace:
-> > > > >>> [<ffffffff803ba6f2>] kobject_get+0x12/0x17
-> > > > >>> The disks of my testing machine are tagged devices, so the CFQ idle
-> > > > >>> window is disabled. In other words, the active queue of tagged
-> > > > >>> devices(cfqd->hw_tag=1) never idle for a new request.
-> > > > >>>
-> > > > >>> This causes active queue be expired immediately if it's empty,
-> > > > although
-> > > > >>> it has not run out of time. CFQ will select next queue as active
-> > > > queue.
-> > > > >>> In this testcase, there are thousands of FIO read requests in sync
-> > > > >>> queues, only a few write requests by journal_write_commit_record in
-> > > > >>> async queues.
-> > > > >>>
-> > > > >>> In the other hand, all processes use the default io class and
-> > > > priority.
-> > > > >>> They share the async queue for the same device, but have their own
-> > > > sync
-> > > > >>> queue, so the sync queue number is 4 while asyn queue number is just
-> > > > 1
-> > > > >>> for the same device.
-> > > > >>>
-> > > > >>> So sync queue has much more chances be selected as new active queue
-> > > > than
-> > > > >>> async queue.
-> > > > >>>
-> > > > >>> Sync queues do not idle and they are dispatched all the time. This
-> > > > leads
-> > > > >>> to many unfinished requests in external queue,
-> > > > >>> namely, cfqd->sync_flight > 0.
-> > > > >>>
-> > > > >>> static int cfq_dispatch_requests (...) {
-> > > > >>> 	....
-> > > > >>> 	while ((cfqq = cfq_select_queue(cfqd)) != NULL) {
-> > > > >>> 	....
-> > > > >>> 	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
-> > > > >>> 		break;
-> > > > >>> 		....
-> > > > >>> 		__cfq_dispatch_requests(cfqq)
-> > > > >>> 	}
-> > > > >>> 	....
-> > > > >>> }
-> > > > >>>
-> > > > >>> When cfq_select_queue selects the async queue which includes
-> > > > kjournald's
-> > > > >>> write request, this selected async queue will never be dispatched
-> > > > since
-> > > > >>> cfqd->sync_flight > 0, so kjournald is blocked.
-> > > > >>>
-> > > > >>> Proposed 3 solutions
-> > > > >>> ------------------
-> > > > >>> 1. Do not check cfqd->sync_flight
-> > > > >>>
-> > > > >>> -               if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
-> > > > >>> -                       break;
-> > > > >>>
-> > > > >>> 2. If we do need to check cfqd->sync_flight, then for tagged
-> > > > devices, we
-> > > > >>> should give a little more chances to async queue to be dispatched.
-> > > > >>>
-> > > > >>> @@ -1102,7 +1102,7 @@ static int cfq_dispatch_requests(struct
-> > > > >>> request_queue *q, int force)
-> > > > >>>                                 break;
-> > > > >>>                 }
-> > > > >>>
-> > > > >>> -               if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
-> > > > >>> +               if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq) && !
-> > > > >>> cfqd->hw_tag)
-> > > > >>>                         break;
-> > > > >>>
-> > > > >>> 3. Force write request issued by journal_write_commit_record as sync
-> > > > >>> request. As a matter of fact, it looks like most write requests
-> > > > >>> submitted by kjournald is async request. We need convert them to
-> > > > sync
-> > > > >>> requests.
-> > > > >>
-> > > > >>Thanks for the very detailed analysis of the problem, complete with
-> > > > >>suggestions. While I think that any code that does:
-> > > > >>
-> > > > >>        submit async io
-> > > > >>        wait for it
-> > > > >>
-> > > > >>should be issuing sync IO (or, better, automatically upgrade the
-> > > > request
-> > > > >>from async -> sync), we cannot rely on that.
-> > > > [YM] We can talk case by case. We could convert some important async io
-> > > > codes
-> > > >  to sync io codes at least. For example, kjournald calls
-> > > > sync_dirty_buffer what 
-> > > > we captured in this case.
-> > > 
-> > > I agree, we should fix the obvious cases. My point was merely that there
-> > > will probably always be missed cases, so we should attempt to handle it
-> > > in the scheduler as well. Does the below buffer patch make it any
-> > > better?
+> > The latest patches in one place:
 > > 
-> > Yes, kjournald blocked issue is gone with below patch applied.
+> > http://www.kernel.org/pub/linux/kernel/people/bart/pata-2.6/
+> > 
+> > pmac-media-bay-support-fixes-take-3.patch
+> > pmac-store-pmif-instead-of-hwif-in-driver_data-take-2.patch
+> > pmac-add-init_dev-method-take-3.patch
+> > pmac-move-ide_find_port-call-to-pmac_ide_setup_device-take-2.patch
+> > 
+> > IMO they are quite small and straightforward so setting git tree would
+> > be overdoing it but if there are still problems I will set one.
 > 
-> I think it's obviously the right thing to do, but I'm also a bit worried
-> about applying it so close to 2.6.26 release. OTOH, we need to do
-> SOMETHING for 2.6.26 release, so...
-> 
-> > 
-> > Lin Ming
-> > 
-> > > 
-> > > > Another case is writeback. If processes do mmapped I/O and they might
-> > > > stop in 
-> > > > page fault to wait writeback finishing. Or a buffer write might trigger
-> > > > a dirty 
-> > > > page balance. As the latest kernel is more aggressive to start
-> > > > writeback, it might 
-> > > > be an issue now.
-> > > 
-> > > Sync process getting stuck in async writeout is another problem of the
-> > > same variety.
-> > > 
-> > > diff --git a/fs/buffer.c b/fs/buffer.c
-> > > index a073f3f..1957a8f 100644
-> > > --- a/fs/buffer.c
-> > > +++ b/fs/buffer.c
-> > > @@ -2978,7 +2978,7 @@ int sync_dirty_buffer(struct buffer_head *bh)
-> > >  	if (test_clear_buffer_dirty(bh)) {
-> > >  		get_bh(bh);
-> > >  		bh->b_end_io = end_buffer_write_sync;
-> > > -		ret = submit_bh(WRITE, bh);
-> > > +		ret = submit_bh(WRITE_SYNC, bh);
-> > >  		wait_on_buffer(bh);
-> > >  		if (buffer_eopnotsupp(bh)) {
-> > >  			clear_buffer_eopnotsupp(bh);
-> > > 
-> > 
-> 
+> That's ok, just tell me a tree and an SHA1 ID of a commit on top of
+> which they apply, that will make my life easier :-)
 
+They are still for *linux-next* (since they depend on other IDE changes)
+and apply fine on top of -20080625.
+
+SHA1 ID is: 9ab50ba2f4958b593802ce91395d07148b611b71 but I don't know
+whether it is useful in linux-next context.
+
+> I'll test them tomorrow morning.
+
+Thanks.
+
+Bart
