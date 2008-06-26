@@ -1,150 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758285AbYFZLJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbYFZLKD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758285AbYFZLJt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 07:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754791AbYFZLJk
+	id S1755691AbYFZLKD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 07:10:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755626AbYFZLJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 07:09:40 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:57506 "EHLO bagnes.atmel.com"
+	Thu, 26 Jun 2008 07:09:41 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:57505 "EHLO bagnes.atmel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754875AbYFZLJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755471AbYFZLJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Jun 2008 07:09:39 -0400
 From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 To: Pierre Ossman <drzeus-mmc@drzeus.cx>
 Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [PATCH 2/3] mmc: Export ios settings for a host through debugfs
-Date: Thu, 26 Jun 2008 13:09:48 +0200
-Message-Id: <1214478589-21291-2-git-send-email-haavard.skinnemoen@atmel.com>
+Subject: [PATCH 1/3] mmc: Export internal host state through debugfs
+Date: Thu, 26 Jun 2008 13:09:47 +0200
+Message-Id: <1214478589-21291-1-git-send-email-haavard.skinnemoen@atmel.com>
 X-Mailer: git-send-email 1.5.5.4
-In-Reply-To: <1214478589-21291-1-git-send-email-haavard.skinnemoen@atmel.com>
-References: <1214478589-21291-1-git-send-email-haavard.skinnemoen@atmel.com>
-X-OriginalArrivalTime: 26 Jun 2008 11:09:32.0526 (UTC) FILETIME=[1C4580E0:01C8D77D]
+X-OriginalArrivalTime: 26 Jun 2008 11:09:32.0463 (UTC) FILETIME=[1C3BE3F0:01C8D77D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-Export all the fields in struct mmc_ios under /sys/kernel/debug/<host>/ios
+This adds a new config option, MMC_DEBUG_FS which will, when enabled,
+create a few files under /sys/kernel/debug containing information
+about an mmc host's internal state.
+
+Host drivers can add additional files and directories under the host's
+root directory by passing the debugfs_root field in struct mmc_host as
+the 'parent' parameter to debugfs_create_*.
+
+Unfinished: No files are actually created yet.
 
 Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 ---
- drivers/mmc/core/host.c  |   55 ++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/mmc/host.h |   13 +++++++++++
- 2 files changed, 68 insertions(+), 0 deletions(-)
+ drivers/mmc/Kconfig      |   12 ++++++++++++
+ drivers/mmc/core/host.c  |   39 +++++++++++++++++++++++++++++++++++++++
+ include/linux/mmc/host.h |    3 +++
+ 3 files changed, 54 insertions(+), 0 deletions(-)
 
+diff --git a/drivers/mmc/Kconfig b/drivers/mmc/Kconfig
+index c0b41e8..434ee2d 100644
+--- a/drivers/mmc/Kconfig
++++ b/drivers/mmc/Kconfig
+@@ -18,6 +18,18 @@ config MMC_DEBUG
+ 	  This is an option for use by developers; most people should
+ 	  say N here.  This enables MMC core and driver debugging.
+ 
++config MMC_DEBUG_FS
++	bool "Debugging information files in debugfs"
++	depends on MMC && DEBUG_FS
++	help
++	  Enable this option to export some of the internal MMC state
++	  through files under /sys/kernel/debug/. This may help
++	  troubleshooting a buggy driver or when you're bringing up a
++	  driver on a new board.
++
++	  This debug option is relatively unintrusive, but most people
++	  don't need this. If in doubt, say N.
++
+ if MMC
+ 
+ source "drivers/mmc/core/Kconfig"
 diff --git a/drivers/mmc/core/host.c b/drivers/mmc/core/host.c
-index 93da502..2977f26 100644
+index 1d795c5..93da502 100644
 --- a/drivers/mmc/core/host.c
 +++ b/drivers/mmc/core/host.c
-@@ -25,6 +25,54 @@
- #ifdef CONFIG_MMC_DEBUG_FS
- #include <linux/debugfs.h>
+@@ -22,6 +22,41 @@
+ #include "core.h"
+ #include "host.h"
  
-+static void mmc_remove_ios_debugfs(struct mmc_ios *ios)
++#ifdef CONFIG_MMC_DEBUG_FS
++#include <linux/debugfs.h>
++
++static void mmc_add_host_debugfs(struct mmc_host *host)
 +{
-+	if (ios->dbg_root) {
-+		debugfs_remove(ios->dbg_clock);
-+		debugfs_remove(ios->dbg_vdd);
-+		debugfs_remove(ios->dbg_bus_mode);
-+		debugfs_remove(ios->dbg_chip_select);
-+		debugfs_remove(ios->dbg_power_mode);
-+		debugfs_remove(ios->dbg_bus_width);
-+		debugfs_remove(ios->dbg_timing);
-+		debugfs_remove(ios->dbg_root);
-+		ios->dbg_root = NULL;
-+	}
++	struct dentry *root;
++
++	root = debugfs_create_dir(mmc_hostname(host), NULL);
++	if (IS_ERR(root) || !root)
++		goto err_root;
++	host->debugfs_root = root;
++
++	return;
++
++err_root:
++	dev_err(&host->class_dev, "failed to initialize debugfs\n");
 +}
 +
-+static int mmc_add_ios_debugfs(struct mmc_ios *ios, struct dentry *parent)
++static void mmc_remove_host_debugfs(struct mmc_host *host)
 +{
-+	struct dentry *dir;
-+
-+	dir = debugfs_create_dir("ios", parent);
-+	if (!dir)
-+		return -EBUSY;	/* or whatever */
-+	ios->dbg_root = dir;
-+
-+	ios->dbg_clock = debugfs_create_u32("clock", 0400, dir, &ios->clock);
-+	ios->dbg_vdd = debugfs_create_u16("vdd", 0400, dir, &ios->vdd);
-+	ios->dbg_bus_mode = debugfs_create_u8("bus_mode", 0400, dir,
-+					      &ios->bus_mode);
-+	ios->dbg_chip_select = debugfs_create_u8("chip_select", 0400, dir,
-+						 &ios->chip_select);
-+	ios->dbg_power_mode = debugfs_create_u8("power_mode", 0400, dir,
-+						&ios->power_mode);
-+	ios->dbg_bus_width = debugfs_create_u8("bus_width", 0400, dir,
-+					       &ios->bus_width);
-+	ios->dbg_timing = debugfs_create_u8("timing", 0400, dir, &ios->timing);
-+
-+	if (!ios->dbg_clock || !ios->dbg_vdd || !ios->dbg_bus_mode
-+			|| !ios->dbg_chip_select || !ios->dbg_power_mode
-+			|| !ios->dbg_bus_width || !ios->dbg_timing)
-+		goto err;
-+
-+	return 0;
-+
-+err:
-+	mmc_remove_ios_debugfs(ios);
-+	return -EBUSY;
++	debugfs_remove(host->debugfs_root);
 +}
 +
- static void mmc_add_host_debugfs(struct mmc_host *host)
- {
- 	struct dentry *root;
-@@ -34,14 +82,21 @@ static void mmc_add_host_debugfs(struct mmc_host *host)
- 		goto err_root;
- 	host->debugfs_root = root;
- 
-+	if (mmc_add_ios_debugfs(&host->ios, root))
-+		goto err_ios;
++#else
++static inline void mmc_add_host_debugfs(struct mmc_host *host)
++{
 +
- 	return;
++}
++
++static inline void mmc_remove_host_debugfs(struct mmc_host *host)
++{
++
++}
++#endif
++
+ #define cls_dev_to_mmc_host(d)	container_of(d, struct mmc_host, class_dev)
  
-+err_ios:
-+	debugfs_remove(root);
-+	host->debugfs_root = NULL;
- err_root:
- 	dev_err(&host->class_dev, "failed to initialize debugfs\n");
- }
+ static void mmc_host_classdev_release(struct device *dev)
+@@ -127,6 +162,8 @@ int mmc_add_host(struct mmc_host *host)
+ 	if (err)
+ 		return err;
  
- static void mmc_remove_host_debugfs(struct mmc_host *host)
++	mmc_add_host_debugfs(host);
++
+ 	mmc_start_host(host);
+ 
+ 	return 0;
+@@ -146,6 +183,8 @@ void mmc_remove_host(struct mmc_host *host)
  {
-+	mmc_remove_ios_debugfs(&host->ios);
- 	debugfs_remove(host->debugfs_root);
- }
+ 	mmc_stop_host(host);
  
++	mmc_remove_host_debugfs(host);
++
+ 	device_del(&host->class_dev);
+ 
+ 	led_trigger_unregister_simple(host->led);
 diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-index 31002e7..1ba2723 100644
+index 7ab962f..31002e7 100644
 --- a/include/linux/mmc/host.h
 +++ b/include/linux/mmc/host.h
-@@ -47,6 +47,17 @@ struct mmc_ios {
- #define MMC_TIMING_LEGACY	0
- #define MMC_TIMING_MMC_HS	1
- #define MMC_TIMING_SD_HS	2
-+
+@@ -134,6 +134,9 @@ struct mmc_host {
+ #ifdef CONFIG_LEDS_TRIGGERS
+ 	struct led_trigger	*led;		/* activity led */
+ #endif
 +#ifdef CONFIG_MMC_DEBUG_FS
-+	struct dentry		*dbg_root;
-+	struct dentry		*dbg_clock;
-+	struct dentry		*dbg_vdd;
-+	struct dentry		*dbg_bus_mode;
-+	struct dentry		*dbg_chip_select;
-+	struct dentry		*dbg_power_mode;
-+	struct dentry		*dbg_bus_width;
-+	struct dentry		*dbg_timing;
++	struct dentry		*debugfs_root;
 +#endif
- };
- 
- struct mmc_host_ops {
-@@ -136,6 +147,8 @@ struct mmc_host {
- #endif
- #ifdef CONFIG_MMC_DEBUG_FS
- 	struct dentry		*debugfs_root;
-+	struct dentry		*debugfs_ios;
-+	struct dentry		*debugfs_ios_clock;
- #endif
  
  	unsigned long		private[0] ____cacheline_aligned;
+ };
 -- 
 1.5.5.4
 
