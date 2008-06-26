@@ -1,87 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757670AbYFZIgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbYFZIiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757670AbYFZIgz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 04:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbYFZIgs
+	id S1757598AbYFZIiU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 04:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbYFZIiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 04:36:48 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:41962 "EHLO aun.it.uu.se"
+	Thu, 26 Jun 2008 04:38:10 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56992 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750866AbYFZIgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 04:36:46 -0400
+	id S1750866AbYFZIiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 04:38:08 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86 ACPI: normalize segment descriptor register on resume
+Date: Thu, 26 Jun 2008 10:39:59 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@suse.cz>,
+       Len Brown <lenb@kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200806242303.49498.rjw@sisk.pl> <20080626011716.e8c412dd.akpm@linux-foundation.org> <20080626082943.GC10973@elte.hu>
+In-Reply-To: <20080626082943.GC10973@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18531.20387.111875.576837@harpo.it.uu.se>
-Date: Thu, 26 Jun 2008 10:13:23 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Bernhard Walle <bwalle@suse.de>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
-       yhlu.kernel@gmail.com
-Subject: Re: [PATCH 1/2] Add /sys/firmware/memmap
-In-Reply-To: <20080625224301.GE32344@redhat.com>
-References: <1214423826-12628-1-git-send-email-bwalle@suse.de>
-	<1214423826-12628-2-git-send-email-bwalle@suse.de>
-	<20080625224301.GE32344@redhat.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Disposition: inline
+Message-Id: <200806261040.00646.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal writes:
- > On Wed, Jun 25, 2008 at 09:57:05PM +0200, Bernhard Walle wrote:
- > > This patch adds /sys/firmware/memmap interface that represents the BIOS
- > > (or Firmware) provided memory map. The tree looks like:
- > > 
- > >     /sys/firmware/memmap/0/start   (hex number)
- > >                            end     (hex number)
- > >                            type    (string)
- > >     ...                 /1/start
- > >                            end
- > >                            type
- > > 
- > > With the following shell snippet one can print the memory map in the same form
- > > the kernel prints itself when booting on x86 (the E820 map).
- > > 
- > >   --------- 8< --------------------------
- > >     #!/bin/sh
- > >     cd /sys/firmware/memmap
- > >     for dir in * ; do
- > >         start=$(cat $dir/start)
- > >         end=$(cat $dir/end)
- > >         type=$(cat $dir/type)
- > >         printf "%016x-%016x (%s)\n" $start $[ $end +1] "$type"
- > >     done
- > >   --------- >8 --------------------------
- > > 
- > > That patch only provides the needed interface:
- > > 
- > >  1. The sysfs interface.
- > >  2. The structure and enumeration definition.
- > >  3. The function firmware_map_add() and firmware_map_add_early()
- > >     that should be called from architecture code (E820/EFI, for
- > >     example) to add the contents to the interface.
- > > 
- > > If the kernel is compiled without CONFIG_FIRMWARE_MEMMAP, the interface does
- > > nothing without cluttering the architecture-specific code with #ifdef's.
- > > 
- > 
- > Hi Bernhard,
- > 
- > Thanks for the patch. Couple of thoughts.
- > 
- > Do we really need another CONFIG option (CONFIG_FIRMWARE_MEMMAP)? To,
- > me this does not seem to be a big chunk of code
+On Thursday, 26 of June 2008, Ingo Molnar wrote:
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > Len seems to think that Rafael seems to think that Ingo seems to think 
+> > that this patch broke one of his boxes.
+> > 
+> > Is it so?
+> 
+> No! :-)
+> 
+> it found a pre-existing suspend+resume breakage on a testbox. (I.e. the 
+> debug patch worked as i'd expect it to work. Every good debug patch 
+> starts its lifetime with a sharp spike of breakages it finds.)
 
-It should be configurable. Whether it's done via CONFIG_KEXEC or its own
-option I don't care.
+Does it mean that the $subject patch doesn't break your test box after all?
 
- > at the same time I am
- > assuming that most of the people will use it (because of kexec). So
- > probably, it might not make lot of sense to put additional CONFIG option.
-
-I question that assumption. Even if (and that's a big if) "most"
-people use kexec (I don't), Linux is not about forcing unwanted
-stuff down peoples' throats, we allow knowledgeable users to tune
-their kernels.
+Rafael
