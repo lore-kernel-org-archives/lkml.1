@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbYFZTA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760040AbYFZTDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755999AbYFZTA5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 15:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbYFZTAq
+	id S1760040AbYFZTDT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 15:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbYFZTDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 15:00:46 -0400
-Received: from mxl.seznam.cz ([77.75.72.44]:34419 "EHLO mxl.seznam.cz"
+	Thu, 26 Jun 2008 15:03:09 -0400
+Received: from gw.goop.org ([64.81.55.164]:41974 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754471AbYFZTAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 15:00:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=beta; d=seznam.cz;
-	h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Smtpd:X-Seznam-User:X-QM-Mark;
-	b=RLBWssDqUxhwdKF+fg6sAjZdoU8UN9/Lh51+7/B9oUXVA7YyAdf+n1aSgBlNaLimp
-	oLGBQOdvGlj4cnO9cWeffXG/6PQaQW0pObFG6vIl2VViQisDEzQFGKcGqKqSI/xgl2W
-	D0dkLdNDnepYbrJO5T40VVfNzuwcpxAYfoZvkaM=
-Message-ID: <4863E370.9020205@seznam.cz>
-Date: Thu, 26 Jun 2008 20:44:00 +0200
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: monstr@seznam.cz
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	id S1753389AbYFZTDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 15:03:07 -0400
+Message-ID: <4863E7D9.7090307@goop.org>
+Date: Thu, 26 Jun 2008 12:02:49 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
-       vapier.adi@gmail.com, arnd@arndb.de, matthew@wil.cx,
-       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-       drepper@redhat.com, linuxppc-dev@ozlabs.org, will.newton@gmail.com,
-       hpa@zytor.com, John.Linn@xilinx.com, john.williams@petalogix.com
-Subject: Re: [PATCH 46/60] microblaze_v4: termbits.h termios.h
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>	<1214483429-32360-32-git-send-email-monstr@seznam.cz>	<1214483429-32360-33-git-send-email-monstr@seznam.cz>	<1214483429-32360-34-git-send-email-monstr@seznam.cz>	<1214483429-32360-35-git-send-email-monstr@seznam.cz>	<1214483429-32360-36-git-send-email-monstr@seznam.cz>	<1214483429-32360-37-git-send-email-monstr@seznam.cz>	<1214483429-32360-38-git-send-email-monstr@seznam.cz>	<1214483429-32360-39-git-send-email-monstr@seznam.cz>	<1214483429-32360-40-git-send-email-monstr@seznam.cz>	<1214483429-32360-41-git-send-email-monstr@seznam.cz>	<1214483429-32360-42-git-send-email-monstr@seznam.cz>	<1214483429-32360-43-git-send-email-monstr@seznam.cz>	<1214483429-32360-44-git-send-email-monstr@seznam.cz>	<1214483429-32360-45-git-send-email-monstr@seznam.cz>	<1214483429-32360-46-git-send-email-monstr@seznam.cz>	<1214483429-32360-47-git-send-email-monstr@seznam.cz> <20080626141837.0f8f439d@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080626141837.0f8f439d@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
+       Mark McLoughlin <markmc@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Nick Piggin <npiggin@suse.de>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH 00 of 36] x86/paravirt: groundwork for 64-bit Xen support
+References: <patchbomb.1214367536@localhost> <20080625084253.GA11524@elte.hu> <20080625152212.GA3442@elte.hu> <4862A6A9.1030109@goop.org> <20080626105722.GA12640@elte.hu>
+In-Reply-To: <20080626105722.GA12640@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Smtpd: 1.1.1@13338
-X-Seznam-User: monstr@seznam.cz
-X-QM-Mark: email-qm1<165039430>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK.I'll fix it.
+Ingo Molnar wrote:
+> that fixed the build but now we've got a boot crash with this config:
+>
+>  time.c: Detected 2010.304 MHz processor.
+>  spurious 8259A interrupt: IRQ7.
+>  BUG: unable to handle kernel NULL pointer dereference at  0000000000000000
+>  IP: [<0000000000000000>]
+>  PGD 0
+>  Thread overran stack, or stack corrupted
+>  Oops: 0010 [1] SMP
+>  CPU 0
+>   
 
-M
+I don't know if this will fix this bug, but it's definitely a bugfix.  
+It was trashing random pages by overwriting them with pagetables...
 
->> +++ b/include/asm-generic/termbits.h
->> @@ -0,0 +1,200 @@
-> 
->> +/* c_cflag bit meaning */
->> +
->> +#define CBAUD	0010017
->> +#define B0	0000000 /* hang up */
-> 
-> You need BOTHER in here as well - especially if it is going to be generic.
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+Subject: x86_64: memory mapping: don't trash large pmd mapping
+
+Don't trash a large pmd's data when mapping physical memory.
+This is a bugfix for "x86_64: adjust mapping of physical pagetables
+to work with Xen".
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/mm/init_64.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+===================================================================
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -311,7 +311,8 @@
+ 		}
+ 
+ 		if (pmd_val(*pmd)) {
+-			phys_pte_update(pmd, address, end);
++			if (!pmd_large(*pmd))
++				phys_pte_update(pmd, address, end);
+ 			continue;
+ 		}
+ 
+
 
