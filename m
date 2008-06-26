@@ -1,106 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYFZCwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbYFZDL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754209AbYFZCwI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 22:52:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754186AbYFZCvw
+	id S1755439AbYFZDL2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 23:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYFZDLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 22:51:52 -0400
-Received: from mga11.intel.com ([192.55.52.93]:11276 "EHLO mga11.intel.com"
+	Wed, 25 Jun 2008 23:11:18 -0400
+Received: from gw.goop.org ([64.81.55.164]:54313 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752306AbYFZCvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 22:51:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,706,1204531200"; 
-   d="scan'208";a="345664746"
-Subject: Re: [PATCH] ACPI: don't walk tables if ACPI was disabled
-From: Zhao Yakui <yakui.zhao@intel.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-In-Reply-To: <200806250908.59315.bjorn.helgaas@hp.com>
-References: <20080620135639.GA5073@damson.getinternet.no>
-	 <19f34abd0806240452w2561040uc2b1b1d35562db71@mail.gmail.com>
-	 <1214357857.9800.20.camel@yakui_zhao.sh.intel.com>
-	 <200806250908.59315.bjorn.helgaas@hp.com>
-Content-Type: text/plain
-Date: Thu, 26 Jun 2008 11:02:48 +0800
-Message-Id: <1214449368.7055.29.camel@yakui_zhao.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+	id S1752258AbYFZDLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 23:11:17 -0400
+Message-ID: <486308C9.5070709@goop.org>
+Date: Wed, 25 Jun 2008 20:11:05 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Dave Airlie <airlied@gmail.com>
+CC: Keith Packard <keithp@keithp.com>, Dave Airlie <airlied@linux.ie>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: kmap_atomic_pfn for PCI BAR access?
+References: <1214242487.11887.35.camel@koto.keithp.com>	 <4862EE4C.4060009@goop.org> <21d7e9970806251823q3405e192q13d4944bd0cc3291@mail.gmail.com>
+In-Reply-To: <21d7e9970806251823q3405e192q13d4944bd0cc3291@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-25 at 09:08 -0600, Bjorn Helgaas wrote:
-> On Tuesday 24 June 2008 07:37:37 pm Zhao Yakui wrote:
-> > On Tue, 2008-06-24 at 13:52 +0200, Vegard Nossum wrote:
-> > > On 6/24/08, Ingo Molnar <mingo@elte.hu> wrote:
-> > > > i havent seen the warning reappear with your fix after thousands of
-> > > > bootups - so i guess we can consider it fixed.
-> > > >
-> > > > Len, please consider the patch below. (it's in tip/out-of-tree)
-> > > 
-> > > No, please don't :-)
-> > > 
-> > > It fixes your particular case (the acpi_rtc_init() hunk of the patch),
-> > > but the acpi_walk_namespace() part should be changed to a WARN(). But
-> > > that is likely to cause a lot of "spurious" reports, so the other acpi
-> > > drivers should be fixed as well.
-> > In fact this issue is related with the following factors:
-> >    a. when acpi is disabled, OS won't initialize the ACPI mutex, which
-> > is accessed by many ACPI interface functions. For example:
-> > acpi_walk_namespace, acpi_install_fixed_event_handler.
-> >    b. When acpi is disabled, some drivers will call the ACPI interface
-> > functions. For example: The acpi_walk_namespace is called in
-> > dock_init/bay_init.
-> 
-> I think most current uses of acpi_walk_namespace() are indications
-> that the ACPI or PNP core is missing something.
-I don't think so. The acpi_walk_namespace is used to enumerate the ACPI
-tree and execute some specific operations. For example: Add the device
-notification function for some type of device; call the INI method for
-all the device.
-> In dock_init() and bay_init(), it's used to bind a driver to a
-> device.  I think it would be better if we could figure out how to
-> use the usual acpi_bus_register_driver() interface.  Actually, it
-> looks like this is already 90% done: acpi_dock_match() does the
-> same thing as is_dock(), so it looks like dock_init() could easily
-> be converted to register as a driver for ACPI_DOCK_HID.
-Maybe what you said is reasonable if the dock/bay device exists and is
-added to Linux ACPI device tree. But if the status of bay/dock device
-doesn't exist , it won't be added into the Linux ACPI device tree. In
-such case the dock/bay driver won't be loaded for it. So it will be
-reasonable to enumerate the acpi tree to install the notification
-function for the dock device so that OS can receive the notification
-event when the dock device is hotplugged. 
+Dave Airlie wrote:
+> On Thu, Jun 26, 2008 at 11:18 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>   
+>> Keith Packard wrote:
+>>     
+>>> The graphics memory BAR is generally fairly good sized; on Intel chips,
+>>> it's between 256M and 1G (and growing). I want to write data into this
+>>> region from kernel space, but it's really too big to map the whole thing
+>>> into kernel address space, especially on 32-bit systems. ioremap is not
+>>> a good option here -- it's way too slow.
+>>>
+>>> With CONFIG_HIGHMEM enabled, I can use kmap_atomic_pfn (well, actually
+>>> the kmap_atomic_proc_pfn included in the DRM tree) and things work quite
+>>> well -- performance is good, with barely any measurable time spent in
+>>> the PTE whacking (~1%).
+>>>
+>>> However, with CONFIG_HIGHMEM disabled, there aren't any PTEs reserved
+>>> for this kind of mapping fun. This makes me suspect that abusing
+>>> kmap_atomic for this operation would not be appreciated.
+>>> Should I use kmap_atomic_pfn to reach my PCI BAR like this?
+>>>
+>>> Would it be reasonable to supply a patch that made this work even
+>>> without CONFIG_HIGHMEM?
+>>>
+>>>       
+>> Usually people use ioremap to map device memory.  Wouldn't that work in this
+>> case?
+>>
+>>     
+>
+> "but it's really too big to map the whole thing
+> into kernel address space, especially on 32-bit systems. ioremap is not
+> a good option here -- it's way too slow."
+>
+> From the original mail.
+>   
 
-If acpi is disabled, it is unnecessary for OS to find the dock/bay
-device again. In such case it will be reasonable to use the flag of
-acpi_disabled in the function of dock_init/bay_init.
+Uh, yep.
 
-Best regards.
-   Yakui.
-> bay_init() looks similar, with acpi_bay_match(), is_ejectable_bay(),
-> ACPI_BAY_HID, etc.
-> 
-> Other users of acpi_walk_namespace() are often to install notify
-> handlers to deal with add/remove events.  I think these are telling
-> us that we need to implement the "TBD: Handle device insertion/removal"
-> pieces in acpi_bus_check_device().
-> 
-> > The acpi_install_fixed_event_handler is called in 
-> > the acpi_rtc_init.
-> 
-> Yes (via rtc_wake_setup()).  I think this should be moved into the
-> RTC driver itself.  I have some ideas on how to do this; I'll post
-> a patch in a few days.  But for 2.6.26, I think the minimal fix of
-> checking acpi_disabled in acpi_rtc_init() is better.
-> 
-> Bjorn
-> 
-> 
+> doing tlb flush for iounmap is slow as all hell if you do it a lot,
+> and we can't afford to mmap the whole aperture it can 1GB.
+>   
 
+Maybe Nick's vmap reimplementation would help here.  It effectively 
+allows you to map stuff into the vmalloc space, and do lazy tlb flushes 
+to mitigate the cost of map/unmap.  He posted the patches week or so ago.
+
+    J
