@@ -1,76 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760778AbYFZUdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761180AbYFZUef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760778AbYFZUdl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 16:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbYFZUdc
+	id S1761180AbYFZUef (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 16:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbYFZUe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 16:33:32 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:21639 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752954AbYFZUdb (ORCPT
+	Thu, 26 Jun 2008 16:34:26 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:22151 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753474AbYFZUeZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 16:33:31 -0400
-Subject: Re: [PATCH 1/6] Extend completions to provide XFS object flush
-	requirements
-From: Daniel Walker <dwalker@mvista.com>
-To: Dave Chinner <david@fromorbit.com>
-Cc: xfs@oss.sgi.com, matthew@wil.cx, linux-kernel@vger.kernel.org
-In-Reply-To: <1214455277-6387-2-git-send-email-david@fromorbit.com>
-References: <1214455277-6387-1-git-send-email-david@fromorbit.com>
-	 <1214455277-6387-2-git-send-email-david@fromorbit.com>
-Content-Type: text/plain
-Date: Thu, 26 Jun 2008 13:33:25 -0700
-Message-Id: <1214512405.21035.110.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+	Thu, 26 Jun 2008 16:34:25 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=rDx/rkpftGljAd9PmkrAPs0pOyznGo54xqwJ16Pbuf2L/3xJaCx7DbbW3RLTl/MXI
+	UfjZ/Qq8fS20eH7RbpHCw==
+Message-ID: <6599ad830806261334y6def5f7an57ac8f071a08eb4b@mail.gmail.com>
+Date: Thu, 26 Jun 2008 13:34:11 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Max Krasnyansky" <maxk@qualcomm.com>
+Subject: Re: [RFC][PATCH] CPUSets: Move most calls to rebuild_sched_domains() to the workqueue
+Cc: "Vegard Nossum" <vegard.nossum@gmail.com>, "Paul Jackson" <pj@sgi.com>,
+       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       "Gautham shenoy" <ego@in.ibm.com>
+In-Reply-To: <4863E4C8.9050705@qualcomm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48634BC1.8@google.com>
+	 <19f34abd0806260234y7616bab2k54bc019dfb0c6305@mail.gmail.com>
+	 <6599ad830806260250m39d700a5haf0f32d999cd2129@mail.gmail.com>
+	 <4863E4C8.9050705@qualcomm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 26, 2008 at 11:49 AM, Max Krasnyansky <maxk@qualcomm.com> wrote:
+>>
+>> Does that mean that you can't ever call get_online_cpus() from a
+>> workqueue thread?
+>
+> In general it should be ok (no different from user-space task calling it).
 
-On Thu, 2008-06-26 at 14:41 +1000, Dave Chinner wrote:
-> XFS object flushing doesn't quite match existing completion semantics.  It
-> mixed exclusive access with completion. That is, we need to mark an object as
-> being flushed before flushing it to disk, and then block any other attempt to
-> flush it until the completion occurs.
-> 
-> To do this we introduce:
-> 
-> void init_completion_flush(struct completion *x)
-> 	which initialises x->done = 1
-> 
-> void completion_flush_start(struct completion *x)
-> 	which blocks if done == 0, otherwise decrements done to zero and
-> 	allows the caller to continue.
-> 
-> bool completion_flush_start_nowait(struct completion *x)
-> 	returns a failure status if done == 0, otherwise decrements done
-> 	to zero and returns a "flush started" status. This is provided
-> 	to allow flushing to begin safely while holding object locks in
-> 	inverted order.
-> 
-> This replaces the use of semaphores for providing this exclusion
-> and completion mechanism.
+No, I think it is a problem.
 
-I think there is some basis to make the changes that you have here.
-Specifically this email and thread,
+When a CPU goes down, the hotplug code holds cpu_hotplug.lock and
+calls cleanup_workqueue_thread() which waits for any running work on
+that thread to finish.
 
-http://lkml.org/lkml/2008/4/15/232
+So if the workqueue thread running on that CPU calls get_online_cpus()
+while the hotplug thread is waiting for it, it will deadlock. (It's
+not clear to me how lockdep figured this out - I guess it's something
+to do with the *_acquire() annotations that tell lockdep to treat the
+workqueue structure as a pseudo-lock?)
 
-However, I don't like how your implementing this as specifically a
-"flush" mechanism for XFS, and the count is limited to just 1 .. There
-are several other places that do this kind of counting with semaphores,
-and have counts above 1..
+I guess the fix for that would be to have a non-workqueue thread to
+handle the async domain rebuilding, which isn't tied to a particular
+cpu the way workqueue threads are.
 
-> +
-> +static inline void completion_flush_start(struct completion *x)
-> +{
-> +	wait_for_completion(x);
-> +}
+> But there is still circular dependency because we're calling into
+> domain partitioning code.
 
-Above seems completely pointless.. I would just call
-wait_for_completion(), and make the rest of the interface generic.
+OK, so the problem is that since cpu_hotplug contains a hand-rolled
+rwsem, lockdep is going to spot false deadlocks.
 
-Daniel
+Is there any reason not to replace cpu_hotplug.lock and
+cpu_hotplug.refcount with an rw_semaphore, and have the following:
 
+void get_online_cpus(void)
+{
+        might_sleep();
+        if (cpu_hotplug.active_writer == current)
+                return;
+        down_read(&cpu_hotplug.lock);
+}
+
+void put_online_cpus(void)
+{
+        if (cpu_hotplug.active_writer == current)
+                return;
+        up_read(&cpu_hotplug.lock);
+}
+
+static void cpu_hotplug_begin(void)
+{
+        down_write(&cpu_hotplug.lock);
+        cpu_hotplug.active_writer = current;
+}
+
+static void cpu_hotplug_done(void)
+{
+        cpu_hotplug.active_writer = NULL;
+        up_write(&cpu_hotplug.lock);
+}
+
+I think that combined with moving the async rebuild_sched_domains to a
+separate thread should solve the problem, but I'm wondering why
+cpu_hotplug.lock was implemented this way in the first place.
+
+Paul
