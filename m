@@ -1,373 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760172AbYFZUTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbYFZU1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760172AbYFZUTf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 16:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758736AbYFZUS2
+	id S1758141AbYFZU1q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 16:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYFZU1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 16:18:28 -0400
-Received: from mx2.suse.de ([195.135.220.15]:42569 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758101AbYFZUSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 16:18:25 -0400
-From: Bernhard Walle <bwalle@suse.de>
-To: x86@kernel.org
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org, vgoyal@redhat.com,
-       yhlu.kernel@gmail.com, gregkh@suse.de, Bernhard Walle <bwalle@suse.de>
-Subject: [PATCH 1/2] Add /sys/firmware/memmap
-Date: Thu, 26 Jun 2008 22:19:01 +0200
-Message-Id: <1214511542-28458-2-git-send-email-bwalle@suse.de>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1214511542-28458-1-git-send-email-bwalle@suse.de>
-References: <1214511542-28458-1-git-send-email-bwalle@suse.de>
+	Thu, 26 Jun 2008 16:27:34 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:35922 "EHLO
+	VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751583AbYFZU1d convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 16:27:33 -0400
+X-BigFish: VPS-55(zz542N1432R98dR14ffO7efV1805M1469K103dKzzzz15cbj5a6ciz2dh6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Microblaze init port v4
+Date: Thu, 26 Jun 2008 13:27:29 -0700
+In-Reply-To: <20080626194301.GD22827@cs181140183.pp.htv.fi>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Microblaze init port v4
+Thread-Index: AcjXxSwxByn/AnfRRImZfs+PmPu/RQABOL8w
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <20080626150121.GB22025@cs181140183.pp.htv.fi> <4863E4FD.6040803@seznam.cz> <20080626194301.GD22827@cs181140183.pp.htv.fi>
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: "Adrian Bunk" <bunk@kernel.org>, "Michal Simek" <monstr@seznam.cz>
+CC: <linux-kernel@vger.kernel.org>, <arnd@arndb.de>,
+       <linux-arch@vger.kernel.org>, "John Linn" <linnj@xilinx.com>,
+       <john.williams@petalogix.com>, <matthew@wil.cx>,
+       <will.newton@gmail.com>, <drepper@redhat.com>,
+       <microblaze-uclinux@itee.uq.edu.au>, <grant.likely@secretlab.ca>,
+       <linuxppc-dev@ozlabs.org>, <vapier.adi@gmail.com>,
+       <alan@lxorguk.ukuu.org.uk>, <hpa@zytor.com>
+X-OriginalArrivalTime: 26 Jun 2008 20:27:30.0145 (UTC) FILETIME=[0E7CC510:01C8D7CB]
+Message-ID: <20080626202730.CEE063C0061@mail98-va3.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds /sys/firmware/memmap interface that represents the BIOS
-(or Firmware) provided memory map. The tree looks like:
 
-    /sys/firmware/memmap/0/start   (hex number)
-                           end     (hex number)
-                           type    (string)
-    ...                 /1/start
-                           end
-                           type
+We're looking at putting a microblaze toolchain on git.xilinx.com, which
+will be slightly easier than grabbing all of petalinux, if people just
+want to compile test it.  
 
-With the following shell snippet one can print the memory map in the same form
-the kernel prints itself when booting on x86 (the E820 map).
+At the moment, we would very much like to push the microblaze
+architecture code to the gcc mainline.  I believe the main barrier is
+that we don't have someone with the bandwidth to interact with the gcc
+community at the moment, although hiring someone to work on it may be in
+the works. (Anyone interested?)
 
-  --------- 8< --------------------------
-    #!/bin/sh
-    cd /sys/firmware/memmap
-    for dir in * ; do
-        start=$(cat $dir/start)
-        end=$(cat $dir/end)
-        type=$(cat $dir/type)
-        printf "%016x-%016x (%s)\n" $start $[ $end +1] "$type"
-    done
-  --------- >8 --------------------------
+Steve
 
-That patch only provides the needed interface:
+> -----Original Message-----
+> From: Adrian Bunk [mailto:bunk@kernel.org]
+> Sent: Thursday, June 26, 2008 12:43 PM
+> To: Michal Simek
+> Cc: linux-kernel@vger.kernel.org; arnd@arndb.de;
+linux-arch@vger.kernel.org; Stephen Neuendorffer;
+> John Linn; john.williams@petalogix.com; matthew@wil.cx;
+will.newton@gmail.com; drepper@redhat.com;
+> microblaze-uclinux@itee.uq.edu.au; grant.likely@secretlab.ca;
+linuxppc-dev@ozlabs.org;
+> vapier.adi@gmail.com; alan@lxorguk.ukuu.org.uk; hpa@zytor.com
+> Subject: Re: Microblaze init port v4
+> 
+> On Thu, Jun 26, 2008 at 08:50:37PM +0200, Michal Simek wrote:
+> > Hi Adrian,
+> >
+> > > On Thu, Jun 26, 2008 at 02:29:29PM +0200, monstr@seznam.cz wrote:
+> > >> Hi everybody,
+> > >>
+> > >> current linux version is 2.6.26-rc8 and I think this is the right
+time
+> > >> to send latest patches againts rc8 for Microblaze CPU.
+> > >> ...
+> > >
+> > > Thanks for your work on getting the architecture included.
+> > >
+> > > I have two questions:
+> > >
+> > > Where can I find a toolchain for compiling a Microblaze kernel?
+> > I personally use petalogix toolchain from www.petalogix.com.
+> >
+> > > What is the status of Microblaze support in upstream binutils and
+gcc?
+> >
+> > I don't have any information about. We will discuss with John
+Williams and guys
+> > from Xilinx
+> > what we can do for it.
+> 
+> Thanks!
+> 
+> > M
+> 
+> cu
+> Adrian
+> 
+> --
+> 
+>        "Is there not promise of rain?" Ling Tan asked suddenly out
+>         of the darkness. There had been need of rain for many days.
+>        "Only a promise," Lao Er said.
+>                                        Pearl S. Buck - Dragon Seed
+> 
 
- 1. The sysfs interface.
- 2. The structure and enumeration definition.
- 3. The function firmware_map_add() and firmware_map_add_early()
-    that should be called from architecture code (E820/EFI, for
-    example) to add the contents to the interface.
 
-If the kernel is compiled without CONFIG_FIRMWARE_MEMMAP, the interface does
-nothing without cluttering the architecture-specific code with #ifdef's.
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
 
-The purpose of the new interface is kexec: While /proc/iomem represents
-the *used* memory map (e.g. modified via kernel parameters like 'memmap'
-and 'mem'), the /sys/firmware/memmap tree represents the unmodified memory
-map provided via the firmware. So kexec can:
-
- - use the original memory map for rebooting,
- - use the /proc/iomem for setting up the ELF core headers for kdump
-   case that should only represent the memory of the system.
-
-The patch has been tested on i386 and x86_64.
-
-
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
----
- drivers/firmware/Kconfig     |    8 ++
- drivers/firmware/Makefile    |    1 +
- drivers/firmware/memmap.c    |  164 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/firmware-map.h |   84 +++++++++++++++++++++
- 4 files changed, 257 insertions(+), 0 deletions(-)
- create mode 100644 drivers/firmware/memmap.c
- create mode 100644 include/linux/firmware-map.h
-
-diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
-index dc2cec6..b9cea0e 100644
---- a/drivers/firmware/Kconfig
-+++ b/drivers/firmware/Kconfig
-@@ -26,6 +26,14 @@ config EDD_OFF
- 	  kernel. Say N if you want EDD enabled by default. EDD can be dynamically set
- 	  using the kernel parameter 'edd={on|skipmbr|off}'.
- 
-+config FIRMWARE_MEMMAP
-+    bool "Add firmware-provided memory map to sysfs" if EMBEDDED
-+    default (X86_64 || X86_32)
-+    help
-+      Add the firmware-provided (unmodified) memory map to /sys/firmware/memmap.
-+      That memory map is used for example by kexec to set up parameter area
-+      for the next kernel, but can also be used for debugging purposes.
-+
- config EFI_VARS
- 	tristate "EFI Variable Support via sysfs"
- 	depends on EFI
-diff --git a/drivers/firmware/Makefile b/drivers/firmware/Makefile
-index 4c91471..1c3c173 100644
---- a/drivers/firmware/Makefile
-+++ b/drivers/firmware/Makefile
-@@ -10,3 +10,4 @@ obj-$(CONFIG_DCDBAS)		+= dcdbas.o
- obj-$(CONFIG_DMIID)		+= dmi-id.o
- obj-$(CONFIG_ISCSI_IBFT_FIND)	+= iscsi_ibft_find.o
- obj-$(CONFIG_ISCSI_IBFT)	+= iscsi_ibft.o
-+obj-$(CONFIG_FIRMWARE_MEMMAP)	+= memmap.o
-diff --git a/drivers/firmware/memmap.c b/drivers/firmware/memmap.c
-new file mode 100644
-index 0000000..998166a
---- /dev/null
-+++ b/drivers/firmware/memmap.c
-@@ -0,0 +1,164 @@
-+/*
-+ * linux/drivers/firmware/memmap.c
-+ *  Copyright (C) 2008 SUSE LINUX Products GmbH
-+ *  by Bernhard Walle <bwalle@suse.de>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License v2.0 as published by
-+ * the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+
-+#include <linux/string.h>
-+#include <linux/firmware-map.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/bootmem.h>
-+
-+/*
-+ * Registration functions ------------------------------------------------------
-+ */
-+
-+/*
-+ * Firmware memory map entries
-+ */
-+LIST_HEAD(map_entries);
-+
-+/**
-+ * Common implementation of firmware_map_add() and firmware_map_add_early()
-+ * which expects a pre-allocated struct firmware_map_entry.
-+ *
-+ * @start: Start of the memory range.
-+ * @end:   End of the memory range (inclusive).
-+ * @type:  Type of the memory range.
-+ * @entry: Pre-allocated (either kmalloc() or bootmem allocator), uninitialised
-+ *         entry.
-+ */
-+static int firmware_map_add_entry(resource_size_t start, resource_size_t end,
-+				  const char *type,
-+				  struct firmware_map_entry *entry)
-+{
-+	BUG_ON(start > end);
-+
-+	entry->start = start;
-+	entry->end = end;
-+	entry->type = type;
-+	INIT_LIST_HEAD(&entry->list);
-+
-+	list_add_tail(&entry->list, &map_entries);
-+
-+	return 0;
-+}
-+
-+int firmware_map_add(resource_size_t start, resource_size_t end,
-+		     const char *type)
-+{
-+	struct firmware_map_entry *entry;
-+
-+	entry = kmalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
-+	WARN_ON(!entry);
-+	if (!entry)
-+		return -ENOMEM;
-+
-+	return firmware_map_add_entry(start, end, type, entry);
-+}
-+
-+int firmware_map_add_early(resource_size_t start, resource_size_t end,
-+			   const char *type)
-+{
-+	struct firmware_map_entry *entry;
-+
-+	entry = alloc_bootmem_low(sizeof(struct firmware_map_entry));
-+	WARN_ON(!entry);
-+	if (!entry)
-+		return -ENOMEM;
-+
-+	return firmware_map_add_entry(start, end, type, entry);
-+}
-+
-+/*
-+ * Sysfs functions
-+ */
-+
-+struct memmap_attribute {
-+	struct attribute attr;
-+	ssize_t (*show)(struct firmware_map_entry *entry, char *buf);
-+};
-+
-+static ssize_t start_show(struct firmware_map_entry *entry, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "0x%llx\n", entry->start);
-+}
-+
-+static ssize_t end_show(struct firmware_map_entry *entry, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "0x%llx\n", entry->end);
-+}
-+
-+static ssize_t type_show(struct firmware_map_entry *entry, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%s\n", entry->type);
-+}
-+
-+struct memmap_attribute memmap_start_attr = __ATTR_RO(start);
-+struct memmap_attribute memmap_end_attr   = __ATTR_RO(end);
-+struct memmap_attribute memmap_type_attr  = __ATTR_RO(type);
-+
-+/*
-+ * These are default attributes that are added for every memmap entry.
-+ */
-+static struct attribute *def_attrs[] = {
-+	&memmap_start_attr.attr,
-+	&memmap_end_attr.attr,
-+	&memmap_type_attr.attr,
-+	NULL
-+};
-+
-+#define to_memmap_attr(_attr) container_of(_attr, struct memmap_attribute, attr)
-+#define to_memmap_entry(obj) container_of(obj, struct firmware_map_entry, kobj)
-+
-+static ssize_t memmap_attr_show(struct kobject *kobj,
-+				struct attribute *attr, char *buf)
-+{
-+	struct firmware_map_entry *entry = to_memmap_entry(kobj);
-+	struct memmap_attribute *memmap_attr = to_memmap_attr(attr);
-+
-+	return memmap_attr->show(entry, buf);
-+}
-+
-+static struct sysfs_ops memmap_attr_ops = {
-+	.show = memmap_attr_show,
-+};
-+
-+static struct kobj_type memmap_ktype = {
-+	.sysfs_ops	= &memmap_attr_ops,
-+	.default_attrs	= def_attrs,
-+};
-+
-+static int __init memmap_init(void)
-+{
-+	int i = 0;
-+	struct firmware_map_entry *entry;
-+	struct kset *memmap_kset;
-+
-+	memmap_kset = kset_create_and_add("memmap", NULL, firmware_kobj);
-+	WARN_ON(!memmap_kset);
-+	if (!memmap_kset)
-+		return -ENOMEM;
-+
-+	list_for_each_entry(entry, &map_entries, list) {
-+		entry->kobj.kset = memmap_kset;
-+		kobject_init_and_add(&entry->kobj, &memmap_ktype,
-+			NULL, "%d", i++);
-+	}
-+
-+	return 0;
-+}
-+late_initcall(memmap_init);
-+
-diff --git a/include/linux/firmware-map.h b/include/linux/firmware-map.h
-new file mode 100644
-index 0000000..b2564a3
---- /dev/null
-+++ b/include/linux/firmware-map.h
-@@ -0,0 +1,84 @@
-+/*
-+ * include/linux/firmware-map.h:
-+ *  Copyright (C) 2008 SUSE LINUX Products GmbH
-+ *  by Bernhard Walle <bwalle@suse.de>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License v2.0 as published by
-+ * the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+#ifndef _LINUX_FIRMWARE_MAP_H
-+#define _LINUX_FIRMWARE_MAP_H
-+
-+#include <linux/list.h>
-+#include <linux/kobject.h>
-+
-+
-+/*
-+ * Firmware map entry. Because firmware memory maps are flat and not
-+ * hierarchical, it's ok to organise them in a linked list. No parent
-+ * information is necessary as for the resource tree.
-+ */
-+struct firmware_map_entry {
-+	resource_size_t		start;	/* start of the memory range */
-+	resource_size_t		end;	/* end of the memory range (incl.) */
-+	const char		*type;	/* type of the memory range */
-+	struct list_head	list;	/* entry for the linked list */
-+	struct kobject		kobj;   /* kobject for each entry */
-+};
-+
-+/*
-+ * provide a dummy interface if CONFIG_FIRMWARE_MEMMAP is disabled
-+ */
-+#ifdef CONFIG_FIRMWARE_MEMMAP
-+
-+/**
-+ * Adds a firmware mapping entry. This function uses kmalloc() for memory
-+ * allocation. Use firmware_map_add_early() if you want to use the bootmem
-+ * allocator.
-+ *
-+ * @start: Start of the memory range.
-+ * @end:   End of the memory range (inclusive).
-+ * @type:  Type of the memory range.
-+ *
-+ * Returns 0 on success, or -ENOMEM if no memory could be allocated.
-+ */
-+int firmware_map_add(resource_size_t start, resource_size_t end,
-+		     const char *type);
-+
-+/**
-+ * Adds a firmware mapping entry. This function uses the bootmem allocator
-+ * for memory allocation. Use firmware_map_add() if you want to use kmalloc().
-+ *
-+ * @start: Start of the memory range.
-+ * @end:   End of the memory range (inclusive).
-+ * @type:  Type of the memory range.
-+ *
-+ * Returns 0 on success, or -ENOMEM if no memory could be allocated.
-+ */
-+int firmware_map_add_early(resource_size_t start, resource_size_t end,
-+			   const char *type);
-+
-+#else /* CONFIG_FIRMWARE_MEMMAP */
-+
-+static inline int firmware_map_add(resource_size_t start, resource_size_t end,
-+				   const char *type)
-+{
-+	return 0;
-+}
-+
-+static inline int firmware_map_add_early(resource_size_t start,
-+					 resource_size_t end, const char *type)
-+{
-+	return 0;
-+}
-+
-+#endif /* CONFIG_FIRMWARE_MEMMAP */
-+
-+#endif /* _LINUX_FIRMWARE_MAP_H */
--- 
-1.5.6
 
