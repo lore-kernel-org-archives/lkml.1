@@ -1,83 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756071AbYFZS4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbYFZS5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756071AbYFZS4S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbYFZS4D
+	id S1755603AbYFZS5F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:57:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbYFZS4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:56:03 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:58168 "EHLO pasmtpA.tele.dk"
+	Thu, 26 Jun 2008 14:56:52 -0400
+Received: from mxl.seznam.cz ([77.75.72.44]:38073 "EHLO mxl.seznam.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750877AbYFZS4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:56:00 -0400
-Date: Thu, 26 Jun 2008 20:56:46 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Support arch/$ARCH/include in kbuild
-Message-ID: <20080626185645.GA13699@uranus.ravnborg.org>
-References: <20080621220703.GA12279@uranus.ravnborg.org> <20080622220508.GA8957@uranus.ravnborg.org> <200806241732.58449.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200806241732.58449.arnd@arndb.de>
-User-Agent: Mutt/1.4.2.1i
+	id S1752186AbYFZS4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 14:56:51 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=beta; d=seznam.cz;
+	h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Smtpd:X-Seznam-User:X-QM-Mark;
+	b=Bz3bmr5h3sTuKv8mzH3jOy0CDfsUlCOTpn9UAJdQPJSOr5RUxMYVkPRUhBkr2hFy9
+	LGNH5DujIv9IBmvYpR4LcK7JP4qH+InN82H3mYUdCYtwnomga4TMi8vE/zDkEjmm8y/
+	UPkeej6G1CSqfpU1dBiXKXqvLr7Z3br1v4PgwvE=
+Message-ID: <4863E68C.30802@seznam.cz>
+Date: Thu, 26 Jun 2008 20:57:16 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Jon Loeliger <jdl@freescale.com>
+CC: linux-arch@vger.kernel.org, arnd@arndb.de, vapier.adi@gmail.com,
+       matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
+       linux-kernel@vger.kernel.org, John.Linn@xilinx.com,
+       linuxppc-dev@ozlabs.org, will.newton@gmail.com,
+       john.williams@petalogix.com, hpa@zytor.com, drepper@redhat.com,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>	<1214483429-32360-2-git-send-email-monstr@seznam.cz>	<1214483429-32360-3-git-send-email-monstr@seznam.cz>	<1214483429-32360-4-git-send-email-monstr@seznam.cz>	<1214483429-32360-5-git-send-email-monstr@seznam.cz>	<1214483429-32360-6-git-send-email-monstr@seznam.cz>	<1214483429-32360-7-git-send-email-monstr@seznam.cz>	<1214483429-32360-8-git-send-email-monstr@seznam.cz>	<1214483429-32360-9-git-send-email-monstr@seznam.cz>	<1214483429-32360-10-git-send-email-monstr@seznam.cz>	<1214483429-32360-11-git-send-email-monstr@seznam.cz>	<1214483429-32360-12-git-send-email-monstr@seznam.cz>	<1214483429-32360-13-git-send-email-monstr@seznam.cz> <4863B096.7020309@freescale.com>
+In-Reply-To: <4863B096.7020309@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Smtpd: 1.1.1@13338
+X-Seznam-User: monstr@seznam.cz
+X-QM-Mark: email-qm1<165055146>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 24, 2008 at 05:32:57PM +0200, Arnd Bergmann wrote:
-> On Monday 23 June 2008, Sam Ravnborg wrote:
-> 
-> > Any comments are welcome!
-> > Patches will follow as reply to this one, but they
-> > are only sent to kbuild and lkml.
-> 
-> I think you need to fix up all instances of #include <asm-$ARCH/$FILE>,
-> 
-> grep ^#[:ws:]*include.*[\"\<]asm-[^g].*/ `git-ls-files`
-> 
-> Documentation/lguest/lguest.c:#include "asm-x86/bootparam.h"
-> arch/ia64/ia32/audit.c:#include <asm-x86/unistd_32.h>
-> arch/ia64/kernel/asm-offsets.c:#include <asm-ia64/processor.h>
-> arch/ia64/kernel/asm-offsets.c:#include <asm-ia64/ptrace.h>
-> arch/ia64/kernel/asm-offsets.c:#include <asm-ia64/siginfo.h>
-> arch/ia64/kernel/asm-offsets.c:#include <asm-ia64/sigcontext.h>
-> arch/ia64/kernel/asm-offsets.c:#include <asm-ia64/mca.h>
-> arch/ia64/kernel/jprobes.S:#include <asm-ia64/break.h>
-> arch/mips/mips-boards/generic/amon.c:#include <asm-mips/addrspace.h>
-> arch/mips/mips-boards/generic/amon.c:#include <asm-mips/mips-boards/launch.h>
-> arch/mips/mips-boards/generic/amon.c:#include <asm-mips/mipsmtregs.h>
-> arch/powerpc/platforms/86xx/mpc86xx_smp.c:#include <asm-powerpc/mpic.h>
-> arch/sparc64/kernel/compat_audit.c:#include <asm-sparc/unistd.h>
-> arch/um/sys-x86_64/syscall_table.c:#include <asm-x86/unistd_64.h>
-> arch/um/sys-x86_64/syscall_table.c:#include <asm-x86/unistd_64.h>
-> drivers/char/agp/parisc-agp.c:#include <asm-parisc/parisc-device.h>
-> drivers/char/agp/parisc-agp.c:#include <asm-parisc/ropes.h>
-> drivers/infiniband/hw/ehca/ehca_reqs.c:#include <asm-powerpc/system.h>
-> drivers/s390/net/qeth_core_main.c:#include <asm-s390/ebcdic.h>
-> drivers/s390/net/qeth_core_main.c:#include <asm-s390/io.h>
-> include/asm-arm/arch-omap/board.h:#include <asm-arm/arch-omap/board-nokia.h>
-> include/asm-blackfin/gpio.h:#include <asm-blackfin/mach-bf548/gpio.h>
-> include/asm-m68knommu: lots of #include <asm-m68k/*>
-> include/asm-parisc/ropes.h:#include <asm-parisc/parisc-device.h>
-> include/asm-powerpc/irqflags.h:#include <asm-powerpc/hw_irq.h>
-> include/asm-sparc64: lots of #include <asm-sparc/*>
-> 
-> most of these are obvious, the interesting ones being sparc64, m68knommu
-> and arch/um as well as arch/ia64/ia32/audit.c.
-> 
-> The best idea I have for sparc64 and m68knommu would be to use
-> "gcc -Iarch/sparc64/include -Iarch/sparc/include" and then remove the
-> respective files from sparc64. On m68knommu, this works as well, except
-> for the pci.h and setup.h files that include the m68k one and then
-> do some more.
+OK. We have to change fdt generator with Steve.
 
-For sparc64 I have taken a bit more drastic approach and I am
-merging the header files of sparc and sparc64.
+Steve: can you look at it?
 
-My goal is to get sparc converted to use arch/sparc/include/asm
-for 2.6.27.
+M
 
-	Sam
+
+> monstr@seznam.cz wrote:
+>> From: Michal Simek <monstr@monstr.eu>
+>>
+>>
+>> Signed-off-by: Michal Simek <monstr@monstr.eu>
+>> ---
+>>  arch/microblaze/platform/generic/system.dts |  300
+>> +++++++++++++++++++++++++++
+>>  1 files changed, 300 insertions(+), 0 deletions(-)
+>>  create mode 100644 arch/microblaze/platform/generic/system.dts
+>>
+>> diff --git a/arch/microblaze/platform/generic/system.dts
+>> b/arch/microblaze/platform/generic/system.dts
+>> new file mode 100644
+>> index 0000000..724a037
+>> --- /dev/null
+>> +++ b/arch/microblaze/platform/generic/system.dts
+>> @@ -0,0 +1,300 @@
+>> +/*
+>> + * (C) Copyright 2007-2008 Xilinx, Inc.
+>> + * (C) Copyright 2007-2008 Michal Simek
+>> + *
+>> + * Michal SIMEK <monstr@monstr.eu>
+>> + *
+>> + * This program is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU General Public License as
+>> + * published by the Free Software Foundation; either version 2 of
+>> + * the License, or (at your option) any later version.
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+>> + * GNU General Public License for more details.
+>> + *
+>> + * You should have received a copy of the GNU General Public License
+>> + * along with this program; if not, write to the Free Software
+>> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+>> + * MA 02111-1307 USA
+>> + *
+>> + * CAUTION: This file is automatically generated by libgen.
+>> + * Version: Xilinx EDK 9.2.02 EDK_Jm_SP2.3
+>> + * Generate by FDT v1.00.a
+>> + */
+>> +
+>> +/ {
+>> +    #address-cells = <1>;
+>> +    #size-cells = <1>;
+>> +    compatible = "xlnx,microblaze";
+>> +    model = "testing";
+>> +    DDR_SDRAM_32Mx16: memory@20000000 {
+>> +        device_type = "memory";
+>> +        reg = < 20000000 2000000 >;
+>> +    } ;
+>> +    chosen {
+>> +        bootargs = "console=ttyUL0,115200 loglevel=15";
+>> +        linux,stdout-path = "/plb@0/serial@40100000";
+>> +    } ;
+>> +    cpus {
+>> +        #address-cells = <1>;
+>> +        #cpus = <1>;
+>> +        #size-cells = <0>;
+>> +        microblaze_0: cpu@0 {
+>> +            clock-frequency = <2faf080>;
+> 
+> 
+> This should really be using the /dts-v1/ format now.
+> 
+> Thanks,
+> jdl
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+> 
+> No virus found in this incoming message.
+> Checked by AVG. 
+> Version: 8.0.101 / Virus Database: 270.4.1/1519 - Release Date: 25.6.2008 04:13
