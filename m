@@ -1,41 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763292AbYFZNMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761737AbYFZNND@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763292AbYFZNMm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762641AbYFZNHE
+	id S1761737AbYFZNND (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:13:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764714AbYFZNH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 09:07:04 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50419 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764675AbYFZNHB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 09:07:01 -0400
-Date: Thu, 26 Jun 2008 09:07:00 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com, matthew@wil.cx,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] Extend completions to provide XFS object flush
-	requirements
-Message-ID: <20080626130700.GA24325@infradead.org>
-References: <1214455277-6387-1-git-send-email-david@fromorbit.com> <1214455277-6387-2-git-send-email-david@fromorbit.com> <20080626074636.GB7064@infradead.org> <20080626112133.GJ11558@disturbed>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080626112133.GJ11558@disturbed>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 26 Jun 2008 09:07:28 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:23937 "EHLO
+	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1764709AbYFZNHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 09:07:25 -0400
+From: monstr@seznam.cz
+To: linux-kernel@vger.kernel.org
+Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
+       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
+       linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
+       hpa@zytor.com, Michal Simek <monstr@monstr.eu>
+Subject: [PATCH 54/60] microblaze_v4: Kbuild file
+Date: Thu, 26 Jun 2008 14:30:23 +0200
+Message-Id: <1214483429-32360-55-git-send-email-monstr@seznam.cz>
+X-Mailer: git-send-email 1.5.4.GIT
+In-Reply-To: <1214483429-32360-54-git-send-email-monstr@seznam.cz>
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-2-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-3-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-4-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-5-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-6-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-7-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-8-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-9-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-10-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-11-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-12-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-13-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-14-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-15-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-16-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-17-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-18-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-19-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-20-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-21-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-22-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-23-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-24-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-25-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-26-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-27-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-28-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-29-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-30-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-31-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-32-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-33-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-34-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-35-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-36-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-37-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-38-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-39-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-40-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-41-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-42-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-43-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-44-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-45-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-46-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-47-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-48-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-49-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-50-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-51-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-52-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-53-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-54-git-send-email-monstr@seznam.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 09:21:33PM +1000, Dave Chinner wrote:
-> Ok, so that involves exactly what? A new header file, a new API name
-> (ideas anyone?) and kerneldoc comments?
+From: Michal Simek <monstr@monstr.eu>
 
-Yes, probably just a new header with properly documented functions.
-Thew two non-trivial ones you added should probably not be inlines,
-btw.
 
-flush_lock_init/flush_lock/flush_trylock/flush_done/flush_is_locked?
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+---
+ include/asm-microblaze/Kbuild |   24 ++++++++++++++++++++++++
+ 1 files changed, 24 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/Kbuild
+
+diff --git a/include/asm-microblaze/Kbuild b/include/asm-microblaze/Kbuild
+new file mode 100644
+index 0000000..783296d
+--- /dev/null
++++ b/include/asm-microblaze/Kbuild
+@@ -0,0 +1,24 @@
++include include/asm-generic/Kbuild.asm
++
++header-y += auxvec.h
++header-y += cpuinfo.h
++header-y += errno.h
++header-y += fcntl.h
++header-y += ioctl.h
++header-y += ioctls.h
++header-y += ipcbuf.h
++header-y += linkage.h
++header-y += mman.h
++header-y += msgbuf.h
++header-y += poll.h
++header-y += resource.h
++header-y += sembuf.h
++header-y += shmbuf.h
++header-y += sigcontext.h
++header-y += siginfo.h
++header-y += socket.h
++header-y += sockios.h
++header-y += statfs.h
++header-y += stat.h
++header-y += termbits.h
++header-y += ucontext.h
+-- 
+1.5.4.GIT
 
