@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758819AbYFZM6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760446AbYFZM7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758819AbYFZM6d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 08:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759047AbYFZMlV
+	id S1760446AbYFZM7H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 08:59:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759629AbYFZMl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:41:21 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:22447 "EHLO
+	Thu, 26 Jun 2008 08:41:27 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:22432 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759584AbYFZMlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:41:14 -0400
+	id S1758034AbYFZMlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:41:17 -0400
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
@@ -17,11 +17,11 @@ Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
        hpa@zytor.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 32/60] microblaze_v4: page.h, segment.h, unaligned.h
-Date: Thu, 26 Jun 2008 14:30:01 +0200
-Message-Id: <1214483429-32360-33-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 51/60] microblaze_v4: pool.h socket.h
+Date: Thu, 26 Jun 2008 14:30:20 +0200
+Message-Id: <1214483429-32360-52-git-send-email-monstr@seznam.cz>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <1214483429-32360-32-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-51-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-2-git-send-email-monstr@seznam.cz>
  <1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -54,6 +54,25 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-30-git-send-email-monstr@seznam.cz>
  <1214483429-32360-31-git-send-email-monstr@seznam.cz>
  <1214483429-32360-32-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-33-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-34-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-35-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-36-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-37-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-38-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-39-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-40-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-41-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-42-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-43-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-44-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-45-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-46-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-47-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-48-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-49-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-50-git-send-email-monstr@seznam.cz>
+ <1214483429-32360-51-git-send-email-monstr@seznam.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -63,20 +82,20 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/page.h      |  117 ++++++++++++++++++++++++++++++++++++
- include/asm-microblaze/segment.h   |   39 ++++++++++++
- include/asm-microblaze/unaligned.h |   19 ++++++
- 3 files changed, 175 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/page.h
- create mode 100644 include/asm-microblaze/segment.h
- create mode 100644 include/asm-microblaze/unaligned.h
+ include/asm-generic/socket.h    |   66 +++++++++++++++++++++++++++++++++++++++
+ include/asm-microblaze/poll.h   |    1 +
+ include/asm-microblaze/socket.h |    1 +
+ 3 files changed, 68 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-generic/socket.h
+ create mode 100644 include/asm-microblaze/poll.h
+ create mode 100644 include/asm-microblaze/socket.h
 
-diff --git a/include/asm-microblaze/page.h b/include/asm-microblaze/page.h
+diff --git a/include/asm-generic/socket.h b/include/asm-generic/socket.h
 new file mode 100644
-index 0000000..f7ed024
+index 0000000..3f3430e
 --- /dev/null
-+++ b/include/asm-microblaze/page.h
-@@ -0,0 +1,117 @@
++++ b/include/asm-generic/socket.h
+@@ -0,0 +1,66 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -85,185 +104,78 @@ index 0000000..f7ed024
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_PAGE_H
-+#define _ASM_MICROBLAZE_PAGE_H
++#ifndef _ASM_GENERIC_SOCKET_H
++#define _ASM_GENERIC_SOCKET_H
 +
-+#include <linux/autoconf.h>
-+#include <linux/pfn.h>
++#include <asm/sockios.h>
 +
-+/* PAGE_SHIFT determines the page size */
++/* For setsockoptions(2) */
++#define SOL_SOCKET	1
 +
-+#define PAGE_SHIFT	(12)
-+#define PAGE_SIZE	(1UL << PAGE_SHIFT)
-+#define PAGE_MASK	(~(PAGE_SIZE-1))
++#define SO_DEBUG	1
++#define SO_REUSEADDR	2
++#define SO_TYPE		3
++#define SO_ERROR	4
++#define SO_DONTROUTE	5
++#define SO_BROADCAST	6
++#define SO_SNDBUF	7
++#define SO_RCVBUF	8
++#define SO_SNDBUFFORCE	32
++#define SO_RCVBUFFORCE	33
++#define SO_KEEPALIVE	9
++#define SO_OOBINLINE	10
++#define SO_NO_CHECK	11
++#define SO_PRIORITY	12
++#define SO_LINGER	13
++#define SO_BSDCOMPAT	14
++/* To add :#define SO_REUSEPORT 15 */
++#define SO_PASSCRED	16
++#define SO_PEERCRED	17
++#define SO_RCVLOWAT	18
++#define SO_SNDLOWAT	19
++#define SO_RCVTIMEO	20
++#define SO_SNDTIMEO	21
 +
-+#ifdef __KERNEL__
++/* Security levels - as per NRL IPv6 - don't actually do anything */
++#define SO_SECURITY_AUTHENTICATION		22
++#define SO_SECURITY_ENCRYPTION_TRANSPORT	23
++#define SO_SECURITY_ENCRYPTION_NETWORK		24
 +
-+#include <asm/setup.h>
++#define SO_BINDTODEVICE	25
 +
-+#ifndef __ASSEMBLY__
++/* Socket filtering */
++#define SO_ATTACH_FILTER	26
++#define SO_DETACH_FILTER	27
 +
-+#define get_user_page(vaddr)			__get_free_page(GFP_KERNEL)
-+#define free_user_page(page, addr)		free_page(addr)
++#define SO_PEERNAME		28
++#define SO_TIMESTAMP		29
++#define SCM_TIMESTAMP		SO_TIMESTAMP
 +
-+#define clear_page(pgaddr)			memset((pgaddr), 0, PAGE_SIZE)
-+#define copy_page(to, from)			memcpy((to), (from), PAGE_SIZE)
++#define SO_ACCEPTCONN		30
 +
-+#define clear_user_page(pgaddr, vaddr, page)	memset((pgaddr), 0, PAGE_SIZE)
-+#define copy_user_page(vto, vfrom, vaddr, topg) \
-+			memcpy((vto), (vfrom), PAGE_SIZE)
++#define SO_PEERSEC		31
++#define SO_PASSSEC		34
 +
-+/*
-+ * These are used to make use of C type-checking..
-+ */
-+typedef struct { unsigned long	pte; }		pte_t;
-+typedef struct { unsigned long	ste[64]; }	pmd_t;
-+typedef struct { pmd_t		pue[1]; }	pud_t;
-+typedef struct { pud_t		pge[1]; }	pgd_t;
-+typedef struct { unsigned long	pgprot; }	pgprot_t;
-+typedef struct page *pgtable_t;
++#define SO_TIMESTAMPNS		35
++#define SCM_TIMESTAMPNS		SO_TIMESTAMPNS
 +
-+#define pte_val(x)	((x).pte)
-+#define pmd_val(x)	((x).ste[0])
-+#define pud_val(x)	((x).pue[0])
-+#define pgd_val(x)	((x).pge[0])
-+#define pgprot_val(x)	((x).pgprot)
++#define SO_MARK			36
 +
-+#define __pte(x)	((pte_t) { (x) })
-+#define __pmd(x)	((pmd_t) { (x) })
-+#define __pgd(x)	((pgd_t) { (x) })
-+#define __pgprot(x)	((pgprot_t) { (x) })
-+
-+/* align addr on a size boundary - adjust address up/down if needed */
-+#define _ALIGN_UP(addr, size)	(((addr)+((size)-1))&(~((size)-1)))
-+#define _ALIGN_DOWN(addr, size)	((addr)&(~((size)-1)))
-+
-+/* align addr on a size boundary - adjust address up if needed */
-+#define _ALIGN(addr, size)	_ALIGN_UP(addr, size)
-+
-+/* to align the pointer to the (next) page boundary */
-+#define PAGE_ALIGN(addr)	(((addr) + PAGE_SIZE - 1) & PAGE_MASK)
-+
-+extern unsigned int __page_offset;
-+#define PAGE_OFFSET __page_offset
-+
-+/**
-+ * Conversions for virtual address, physical address, pfn, and struct
-+ * page are defined in the following files.
-+ *
-+ * virt -+
-+ *	 | asm-microblaze/page.h
-+ * phys -+
-+ *	 | linux/pfn.h
-+ *  pfn -+
-+ *	 | asm-generic/memory_model.h
-+ * page -+
-+ *
-+ */
-+
-+extern unsigned long max_low_pfn;
-+extern unsigned long min_low_pfn;
-+extern unsigned long max_pfn;
-+
-+#define __pa(vaddr)		((unsigned long) (vaddr))
-+#define __va(paddr)		((void *) (paddr))
-+
-+#define phys_to_pfn(phys)	(PFN_DOWN(phys))
-+#define pfn_to_phys(pfn)	(PFN_PHYS(pfn))
-+
-+#define virt_to_pfn(vaddr)	(phys_to_pfn((__pa(vaddr))))
-+#define pfn_to_virt(pfn)	__va(pfn_to_phys((pfn)))
-+
-+#define virt_to_page(vaddr)	(pfn_to_page(virt_to_pfn(vaddr)))
-+#define page_to_virt(page)	(pfn_to_virt(page_to_pfn(page)))
-+
-+#define page_to_phys(page)	(pfn_to_phys(page_to_pfn(page)))
-+#define page_to_bus(page)	(page_to_phys(page))
-+#define phys_to_page(paddr)	(pfn_to_page(phys_to_pfn(paddr)))
-+
-+#define pfn_valid(pfn)		((pfn) >= min_low_pfn && (pfn) < max_mapnr)
-+#define	virt_addr_valid(vaddr)	(pfn_valid(virt_to_pfn(vaddr)))
-+
-+#define ARCH_PFN_OFFSET		(PAGE_OFFSET >> PAGE_SHIFT)
-+
-+#endif /* __ASSEMBLY__ */
-+
-+#endif /* __KERNEL__ */
-+
-+#include <asm-generic/memory_model.h>
-+#include <asm-generic/page.h>
-+
-+#endif /* _ASM_MICROBLAZE_PAGE_H */
-diff --git a/include/asm-microblaze/segment.h b/include/asm-microblaze/segment.h
++#endif /* _ASM_GENERIC_SOCKET_H */
+diff --git a/include/asm-microblaze/poll.h b/include/asm-microblaze/poll.h
 new file mode 100644
-index 0000000..670a099
+index 0000000..c98509d
 --- /dev/null
-+++ b/include/asm-microblaze/segment.h
-@@ -0,0 +1,39 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_SEGMENT_H
-+#define _ASM_MICROBLAZE_SEGMENT_H
-+
-+#ifndef __ASSEMBLY__
-+
-+typedef struct {
-+	unsigned long seg;
-+} mm_segment_t;
-+
-+/*
-+ * The fs value determines whether argument validity checking should be
-+ * performed or not. If get_fs() == USER_DS, checking is performed, with
-+ * get_fs() == KERNEL_DS, checking is bypassed.
-+ *
-+ * For historical reasons, these macros are grossly misnamed.
-+ *
-+ * For non-MMU arch like Microblaze, KERNEL_DS and USER_DS is equal.
-+ */
-+#define KERNEL_DS	((mm_segment_t){0})
-+#define USER_DS		KERNEL_DS
-+
-+#define get_ds()	(KERNEL_DS)
-+#define get_fs()	(current_thread_info()->addr_limit)
-+#define set_fs(x) \
-+		do { current_thread_info()->addr_limit = (x); } while (0)
-+
-+#define segment_eq(a, b)		((a).seg == (b).seg)
-+
-+#endif /* __ASSEMBLY__ */
-+
-+#endif /* _ASM_MICROBLAZE_SEGMENT_H */
-diff --git a/include/asm-microblaze/unaligned.h b/include/asm-microblaze/unaligned.h
++++ b/include/asm-microblaze/poll.h
+@@ -0,0 +1 @@
++#include <asm-generic/poll.h>
+diff --git a/include/asm-microblaze/socket.h b/include/asm-microblaze/socket.h
 new file mode 100644
-index 0000000..ad8bd76
+index 0000000..6b71384
 --- /dev/null
-+++ b/include/asm-microblaze/unaligned.h
-@@ -0,0 +1,19 @@
-+/*
-+ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_UNALIGNED_H
-+#define _ASM_MICROBLAZE_UNALIGNED_H
-+
-+#include <linux/unaligned/access_ok.h>
-+#include <linux/unaligned/generic.h>
-+
-+#define get_unaligned	__get_unaligned_be
-+#define put_unaligned	__put_unaligned_be
-+
-+#endif /* _ASM_MICROBLAZE_UNALIGNED_H */
++++ b/include/asm-microblaze/socket.h
+@@ -0,0 +1 @@
++#include <asm-generic/socket.h>
 -- 
 1.5.4.GIT
 
