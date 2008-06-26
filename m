@@ -1,91 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759277AbYFZTtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759969AbYFZTu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759277AbYFZTtp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 15:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbYFZTtg
+	id S1759969AbYFZTu6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 15:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbYFZTus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 15:49:36 -0400
-Received: from igw3.br.ibm.com ([32.104.18.26]:41956 "EHLO igw3.br.ibm.com"
+	Thu, 26 Jun 2008 15:50:48 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:32768 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752946AbYFZTtf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 15:49:35 -0400
-Message-ID: <4863F2CC.1030907@linux.vnet.ibm.com>
-Date: Thu, 26 Jun 2008 16:49:32 -0300
-From: Breno Leitao <leitao@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	id S1754364AbYFZTuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 15:50:46 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+Date: Thu, 26 Jun 2008 21:52:00 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <Pine.LNX.4.55.0806202241120.19614@cliff.in.clinika.pl> <20080621014047.GA20908@srcf.ucam.org>
+In-Reply-To: <20080621014047.GA20908@srcf.ucam.org>
 MIME-Version: 1.0
-To: Nathan Lynch <ntl@pobox.com>
-CC: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Anton Blanchard <anton@samba.org>
-Subject: Re: [RFC/PATCH 0/3] sched: allow arch override of cpu power
-References: <1213835374-10868-1-git-send-email-ntl@pobox.com>
-In-Reply-To: <1213835374-10868-1-git-send-email-ntl@pobox.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806262152.02099.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nathan,
+On Saturday, 21 of June 2008, Matthew Garrett wrote:
+> On Sat, Jun 21, 2008 at 02:09:00AM +0100, Maciej W. Rozycki wrote:
+> 
+> >  Meanwhile we may consider implementing a workaround.  I think one that 
+> > does not hurt competent vendors would be preferable.  The DSDT containing 
+> > the rubbish described here is marked with an OEM ID: "HP    " and OEM 
+> > Table ID: "SB400".  These keys could be used to remove IRQ0 information
+> > from the IRQ tables.  Our code is prepared to handle such a case.  
+> > Something easy to do for a seasoned ACPI fiddler, I suppose. ;)
+> 
+> Something roughly like the following? Entirely untested, my 6125 is in a 
+> box somewhere. My recollection is that skip_timer_override will disable 
+> the IRQ 0->2 mapping, which I believe is what's broken here?
 
-Nathan Lynch wrote:
-> There is an "interesting" quality of POWER6 cores, which each have 2
-> hardware threads: assuming one thread on the core is idle, the primary
-> thread is a little "faster" than the secondary thread.  To illustrate:
->   
-I found this feature interesting and decided to do some tests.
-After some tests I found that the example you post really runs fast in 
-the first CPU, but a more "elaborated" application runs slower on the 
-first CPU.
-Here is a small example:
+Well, actually, I'm not sure that will work.  I have only found
+acpi_skip_timer_override being set to 1 in two places, but it doesn't seem to
+be read anywhere.  What am I missing?
 
-# taskset 0x1 time -f "%e,  %U, %S" ./a.out ; taskset 0x2 time -f "%e, 
-%U, %S" ./a.out
-10.77,  10.72, 0.01
-10.53, 10.48, 0.01
 
-# taskset 0x2 time -f "%e,  %U, %S" ./a.out ; taskset 0x1 time -f "%e, 
-%U, %S" ./a.out
-10.55,  10.50, 0.01
-10.77, 10.72, 0.01
-
-# cat calc.c
-#include <stdio.h>
-
-int main(){
-    int j = 0;
-    float i = 42;
-   
-    srand(123);
-    while (j++ < 100000000){
-        i = i*i + i;
-        i = i/2 + random(2);
-    }
-
-    printf("%d\n", i);
-    return 0;
-}
-# cat /proc/cpuinfo
-processor    : 0
-cpu        : POWER6 (architected), altivec supported
-clock        : 5000.001000MHz
-revision    : 3.2 (pvr 003e 0302)
-
-processor    : 1
-cpu        : POWER6 (architected), altivec supported
-clock        : 5000.001000MHz
-revision    : 3.2 (pvr 003e 0302)
-...
-
-Note that the IRQ are balanced among the 8 CPUs, and the machine is idle.
-Do you know why I get this difference? Something wrong with the test?
-
-Thanks
-
-- 
-Breno Leitao
-Linux Technology Center Brazil
-Phone: +55-16-8115-3915 (T/L: 839-1293)
-leitao@linux.vnet.ibm.com
-
+> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> index 33c5216..6ca5eff 100644
+> --- a/arch/x86/kernel/acpi/boot.c
+> +++ b/arch/x86/kernel/acpi/boot.c
+> @@ -1060,6 +1060,16 @@ static int __init force_acpi_ht(const struct dmi_system_id *d)
+>  	return 0;
+>  }
+>  
+> +#ifdef CONFIG_X86_IO_APIC
+> +static int __init force_skip_timer_override(const struct dmi_system_id *d)
+> +{
+> +	printk(KERN_NOTICE "%s detected: disabling timer overrides",
+> +	       d->ident);
+> +	acpi_skip_timer_override = 1;
+> +	return 0;
+> +}
+> +#endif
+> +
+>  /*
+>   * If your system is blacklisted here, but you find that acpi=force
+>   * works for you, please contact acpi-devel@sourceforge.net
+> @@ -1227,6 +1237,24 @@ static struct dmi_system_id __initdata acpi_dmi_table[] = {
+>  		     DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 360"),
+>  		     },
+>  	 },
+> +#ifdef CONFIG_X86_IO_APIC
+> +	{
+> +	 .callback = force_skip_timer_override,
+> +	 .ident = "HP NX6125 laptop",
+> +	 .matches = {
+> +		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+> +		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6125"),
+> +		     },
+> +	 },
+> +	{
+> +	 .callback = force_skip_timer_override,
+> +	 .ident = "HP NX6325 laptop",
+> +	 .matches = {
+> +		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+> +		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6325"),
+> +		     },
+> +	 },
+> +#endif
+>  	{}
+>  };
+> 
