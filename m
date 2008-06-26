@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759017AbYFZRrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759286AbYFZRsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759017AbYFZRrx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 13:47:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbYFZRrn
+	id S1759286AbYFZRsU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 13:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbYFZRsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 13:47:43 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:61953 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751598AbYFZRrm convert rfc822-to-8bit (ORCPT
+	Thu, 26 Jun 2008 13:48:03 -0400
+Received: from ti-out-0910.google.com ([209.85.142.190]:56560 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759093AbYFZRsA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 13:47:42 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@seznam.cz
-Subject: Re: [PATCH 52/60] microblaze_v4: fcntl.h sockios.h ucontext.h
-Date: Thu, 26 Jun 2008 18:46:12 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
-       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com,
-       Michal Simek <monstr@monstr.eu>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <1214483429-32360-53-git-send-email-monstr@seznam.cz> <200806261743.10441.arnd@arndb.de>
-In-Reply-To: <200806261743.10441.arnd@arndb.de>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 26 Jun 2008 13:48:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ajHmOv0izzC7tK+/LHQS2gfMfUbKtyOjDy68lCCKw6JAWzsUqSPnc5BZPV9IMApHhz
+         1uyU7fMbpyEbZUvVstzIVwitUXR2w96rcD0w5V2tYJcjUwmnuDxvvv+kHvpeSDBqH9gV
+         5WWYdTFTcjUPUn1FltGoVCdxgXEj1KWBEMRpU=
+Message-ID: <4863D02F.4070205@gmail.com>
+Date: Thu, 26 Jun 2008 22:51:51 +0530
+From: Abhishek Sagar <sagar.abhishek@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200806261846.13599.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/IEGEhOG3o9MV9iE8eqa82eoVeJLpdZp4sTWz
- ampNsJZBBr2+/FKduvEHm2VzpgisXpnINrBkmPPDcf57j//bwU
- C2DLUOFq6Unu1R6C0hU+g==
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/4] ftrace: prevent ftrace modifications while being
+ kprobe'd
+References: <485D45AB.3000405@gmail.com> <20080623201525.GA10386@elte.hu> <863e9df20806232029x6621ff13qd584591214e93d7f@mail.gmail.com> <20080626123329.GQ29619@elte.hu>
+In-Reply-To: <20080626123329.GQ29619@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 June 2008, Arnd Bergmann wrote:
-> On Thursday 26 June 2008, monstr@seznam.cz wrote:
-> >  include/asm-generic/sockios.h     |   23 +++++++++++++++++++++++
-> >  include/asm-generic/ucontext.h    |   24 ++++++++++++++++++++++++
-> >  include/asm-microblaze/fcntl.h    |    1 +
-> >  include/asm-microblaze/sockios.h  |   23 +++++++++++++++++++++++
-> >  include/asm-microblaze/ucontext.h |    1 +
-> 
-> Also, the sockios file here looks like it should be in asm-generic.
+Ingo Molnar wrote:
+> best would be a delta patch against tip/master to fix up whatever is 
+> still missing.
 
-I just realized that you are adding the same sockios file to both
-asm-generic and asm-microblaze, so I guess that is just an oversight
-and you meant the microblaze file to be just a redirection.
+Here is the merge fixup for tip/master (and tip/tracing/ftrace).
 
-Note that when you add an asm-generic header file that contains
-a user interface, you need to add it to asm-generic/Kbuild as well
-in order to get it installed correctly with make headers_install.
+Signed-off-by: Abhishek Sagar <sagar.abhishek@gmail.com>
+---
 
-Running make headers_check should tell you about this problem if
-it exists in other places.
-
-	Arnd <><
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 85e8413..0f271c4 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -502,8 +502,12 @@ static void ftrace_replace_code(int enable)
+ 				continue;
+ 
+ 			/* ignore updates to this record's mcount site */
+-			if (get_kprobe((void *)rec->ip))
++			if (get_kprobe((void *)rec->ip)) {
++				freeze_record(rec);
+ 				continue;
++			} else {
++				unfreeze_record(rec);
++			}
+ 
+ 			failed = __ftrace_replace_code(rec, old, new, enable);
+ 			if (failed && (rec->flags & FTRACE_FL_CONVERTED)) {
+@@ -740,7 +744,10 @@ static int __ftrace_update_code(void *ignore)
+ 				ftrace_del_hash(p);
+ 				INIT_HLIST_NODE(&p->node);
+ 				hlist_add_head(&p->node, &temp_list);
++				freeze_record(p);
+ 				continue;
++			} else {
++				unfreeze_record(p);
+ 			}
+ 
+ 			/* convert record (i.e, patch mcount-call with NOP) */
