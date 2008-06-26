@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbYFZHTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbYFZHTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755870AbYFZHTU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 03:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbYFZHTL
+	id S1753943AbYFZHTh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 03:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461AbYFZHTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 03:19:11 -0400
-Received: from harold.telenet-ops.be ([195.130.133.65]:58983 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752034AbYFZHTJ (ORCPT
+	Thu, 26 Jun 2008 03:19:16 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:36336 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754609AbYFZHTP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 03:19:09 -0400
-Date: Thu, 26 Jun 2008 09:19:07 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Adrian Bunk <bunk@kernel.org>
-cc: zippel@linux-m68k.org, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: Re: [2.6 patch] remove the dead ATARI_SCC{,_DMA} options
-In-Reply-To: <20080625162536.GH10285@cs181140183.pp.htv.fi>
-Message-ID: <Pine.LNX.4.64.0806260918550.30924@anakin>
-References: <20080625162536.GH10285@cs181140183.pp.htv.fi>
+	Thu, 26 Jun 2008 03:19:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=TKj1ZADt+ftZeubO2APGUY3b1DBA9lDplmwyktL557B96EnIelk+Wf8skOm7UDJYCF
+         Q8xydW5aE51P6Am8w2n0GyuKX1eH0vhJFUIE8zPN3VMuod9PsZxwxy63FVJLfD6v0a0g
+         0gUY13tuzbTwQQGfK/qnMdKHEBmaTX/JJJrdI=
+Message-ID: <ac8af0be0806260019q45fa7285oa0fc79fb02254d28@mail.gmail.com>
+Date: Thu, 26 Jun 2008 15:19:15 +0800
+From: "Zhao Forrest" <forrest.zhao@gmail.com>
+To: vatsa@linux.vnet.ibm.com, mingo@elte.hu, containers@lists.osdl.org
+Subject: A question about group CFS scheduling
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jun 2008, Adrian Bunk wrote:
-> It seems the driver was removed back in kernel 2.3 but the options were 
-> forgotten.
-> 
-> Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Hi experts,
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+In Documentation/sched-design-CFS.txt it reads:
+Group scheduler tunables:
 
-(queued for 2.6.27)
+When CONFIG_FAIR_USER_SCHED is defined, a directory is created in sysfs for
+each new user and a "cpu_share" file is added in that directory.
+        # cd /sys/kernel/uids
+        # cat 512/cpu_share             # Display user 512's CPU share
+        1024
+        # echo 2048 > 512/cpu_share     # Modify user 512's CPU share
+        # cat 512/cpu_share             # Display user 512's CPU share
+        2048
+        #
+CPU bandwidth between two users are divided in the ratio of their CPU shares.
+For ex: if you would like user "root" to get twice the bandwidth of user
+"guest", then set the cpu_share for both the users such that "root"'s
+cpu_share is twice "guest"'s cpu_share.
 
-Gr{oetje,eeting}s,
+My question is: how is CPU bandwidth divided between cgroup and
+regular processes?
+For example,
+1 the cpu_share of user "root" is set to 2048
+2 the cpu_share of user "guest" is set to 1024
+3 there're many processes owned by other users, which don't belong to any cgroup
+if the relative CPU bandwidth allocated to cgroup of "root" is 2,
+allocated to cgroup of "guest" is 1, then what's the relative CPU
+bandwidth allocated to other regular processes? 2 or 1?
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Thanks,
+Forrest
