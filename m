@@ -1,37 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbYFZG33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbYFZG3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754592AbYFZG33 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 02:29:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbYFZG3T
+	id S1753298AbYFZG3o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 02:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYFZG3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 02:29:19 -0400
-Received: from mga11.intel.com ([192.55.52.93]:43531 "EHLO mga11.intel.com"
+	Thu, 26 Jun 2008 02:29:23 -0400
+Received: from mga09.intel.com ([134.134.136.24]:50547 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752528AbYFZG3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 02:29:18 -0400
+	id S1752821AbYFZG3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 02:29:22 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.27,707,1204531200"; 
-   d="scan'208";a="582119813"
-Subject: [PATCH 2/2] x86 boot: early_res_to_e820
+   d="scan'208";a="299706564"
+Subject: [PATCH 1/2] x86 boot: add E820_RESVD_KERN
 From: "Huang, Ying" <ying.huang@intel.com>
 To: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
        tglx@linutronix.de
 Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Thu, 26 Jun 2008 14:33:00 +0800
-Message-Id: <1214461980.10809.7.camel@caritas-dev.intel.com>
+Date: Thu, 26 Jun 2008 14:32:58 +0800
+Message-Id: <1214461978.10809.6.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.2 
-X-OriginalArrivalTime: 26 Jun 2008 06:29:13.0696 (UTC) FILETIME=[F377B600:01C8D755]
+X-OriginalArrivalTime: 26 Jun 2008 06:29:12.0503 (UTC) FILETIME=[F2C1AC70:01C8D755]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch reserves some memory areas of early_res in E820 as
-E820_RESVD_KERN. This is used mainly on i386, for some memory area
-from boot-loader and in highmem, such as linked list of setup_data,
-EFI memory map, etc.
+This patch add a new type to E820 table named E820_RESVD_KERN, which
+is used for memory area reserved for kernel itself instead of BIOS.
 
 This patch is based on latest x86/master branch of git-x86 tree and
 has been tested on i386 and x86_64 platform.
@@ -39,61 +37,56 @@ has been tested on i386 and x86_64 platform.
 Signed-off-by: Huang Ying <ying.huang@intel.com>
 
 ---
- arch/x86/kernel/e820.c     |   22 ++++++++++++++++++++++
- arch/x86/kernel/setup_32.c |    2 ++
- include/asm-x86/e820.h     |    1 +
- 3 files changed, 25 insertions(+)
+ arch/x86/kernel/e820.c |    6 ++++--
+ include/asm-x86/e820.h |    3 +++
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -844,6 +844,28 @@ void __init early_res_to_bootmem(u64 sta
- 	}
- }
- 
-+void __init early_res_to_e820(u64 start, u64 end)
-+{
-+	int i, changed = 0;
-+	u64 final_start, final_end;
-+	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++) {
-+		struct early_res *r = &early_res[i];
-+		final_start = max(start, r->start);
-+		final_end = min(end, r->end);
-+		if (final_start >= final_end)
-+			continue;
-+		printk(KERN_INFO "  early res: %d [%llx-%llx] %s\n", i,
-+			final_start, final_end - 1, r->name);
-+		e820_update_range(final_start, final_end - final_start,
-+				  E820_RAM, E820_RESVD_KERN);
-+		changed = 1;
-+	}
-+	if (changed) {
-+		printk(KERN_INFO "update e820 for early_res\n");
-+		update_e820();
-+	}
-+}
-+
- /* Check for already reserved areas */
- static inline int __init bad_addr(u64 *addrp, u64 size, u64 align)
- {
 --- a/include/asm-x86/e820.h
 +++ b/include/asm-x86/e820.h
-@@ -96,6 +96,7 @@ extern void reserve_early(u64 start, u64
- extern void reserve_early_overlap_ok(u64 start, u64 end, char *name);
- extern void free_early(u64 start, u64 end);
- extern void early_res_to_bootmem(u64 start, u64 end);
-+extern void early_res_to_e820(u64 start, u64 end);
- extern u64 early_reserve_e820(u64 startt, u64 sizet, u64 align);
+@@ -44,6 +44,9 @@
+ #define E820_ACPI	3
+ #define E820_NVS	4
  
- extern unsigned long e820_end_of_ram(void);
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -447,6 +447,8 @@ void __init setup_arch(char **cmdline_p)
-         acpi_numa_init();
- #endif
- 
-+	early_res_to_e820(max_low_pfn<<PAGE_SHIFT, -1);
++/* reserved RAM used by kernel itself */
++#define E820_RESVD_KERN	128
 +
- 	initmem_init(0, max_pfn);
+ #ifndef __ASSEMBLY__
+ struct e820entry {
+ 	__u64 addr;	/* start of memory segment */
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -120,6 +120,7 @@ void __init e820_print_map(char *who)
+ 		       (e820.map[i].addr + e820.map[i].size));
+ 		switch (e820.map[i].type) {
+ 		case E820_RAM:
++		case E820_RESVD_KERN:
+ 			printk(KERN_CONT "(usable)\n");
+ 			break;
+ 		case E820_RESERVED:
+@@ -611,7 +612,7 @@ void __init e820_mark_nosave_regions(uns
+ 			register_nosave_region(pfn, PFN_UP(ei->addr));
  
- #ifdef CONFIG_ACPI_SLEEP
+ 		pfn = PFN_DOWN(ei->addr + ei->size);
+-		if (ei->type != E820_RAM)
++		if (ei->type != E820_RAM && ei->type != E820_RESVD_KERN)
+ 			register_nosave_region(PFN_UP(ei->addr), pfn);
+ 
+ 		if (pfn >= limit_pfn)
+@@ -977,7 +978,7 @@ u64 __init early_reserve_e820(u64 startt
+ 		return 0;
+ 
+ 	addr = round_down(start + size - sizet, align);
+-	e820_update_range(addr, sizet, E820_RAM, E820_RESERVED);
++	e820_update_range(addr, sizet, E820_RAM, E820_RESVD_KERN);
+ 	printk(KERN_INFO "update e820 for early_reserve_e820\n");
+ 	update_e820();
+ 
+@@ -1191,6 +1192,7 @@ void __init e820_reserve_resources(void)
+ 	res = alloc_bootmem_low(sizeof(struct resource) * e820.nr_map);
+ 	for (i = 0; i < e820.nr_map; i++) {
+ 		switch (e820.map[i].type) {
++		case E820_RESVD_KERN:
+ 		case E820_RAM:	res->name = "System RAM"; break;
+ 		case E820_ACPI:	res->name = "ACPI Tables"; break;
+ 		case E820_NVS:	res->name = "ACPI Non-volatile Storage"; break;
 
