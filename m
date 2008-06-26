@@ -1,112 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbYFZHNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755829AbYFZHOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754983AbYFZHNj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 03:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbYFZHNb
+	id S1755829AbYFZHOA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 03:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbYFZHNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 03:13:31 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:44038 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750862AbYFZHNa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 03:13:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=taQm5pMc+us4bq0yO7uIN2dGbPe4OiGsm0AhM9+FLR/x8ihNUjZLAg9Tqu8eRYhemb
-         DbVY1jorKkz7n+jmhhRZ4r/wzsnmropnZM+96Ph8oEUP4Z6/5jo7NScobwcizZT4b0so
-         V4yzQnfrEHzqvomYt2AcKk+KqLob65UCcy6e8=
-Message-ID: <86802c440806260013u447d15d8v94df7bb7bd00da19@mail.gmail.com>
-Date: Thu, 26 Jun 2008 00:13:29 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH 2/2] x86 boot: early_res_to_e820
-Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-In-Reply-To: <1214461980.10809.7.camel@caritas-dev.intel.com>
+	Thu, 26 Jun 2008 03:13:51 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:35209 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751981AbYFZHNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 03:13:49 -0400
+Date: Thu, 26 Jun 2008 10:11:41 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Tim Schmielau <T.Schmielau@shu.ac.uk>
+Cc: David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>, geert@linux-m68k.org,
+       zippel@linux-m68k.org
+Subject: Re: [PATCH] Speed up "make headers_*"
+Message-ID: <20080626071141.GN10285@cs181140183.pp.htv.fi>
+References: <5DC8DBC2-AA22-448B-8646-06D5788C00FE@shu.ac.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <1214461980.10809.7.camel@caritas-dev.intel.com>
+In-Reply-To: <5DC8DBC2-AA22-448B-8646-06D5788C00FE@shu.ac.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 11:33 PM, Huang, Ying <ying.huang@intel.com> wrote:
-> This patch reserves some memory areas of early_res in E820 as
-> E820_RESVD_KERN. This is used mainly on i386, for some memory area
-> from boot-loader and in highmem, such as linked list of setup_data,
-> EFI memory map, etc.
+On Thu, Jun 26, 2008 at 02:59:21AM +0100, Tim Schmielau wrote:
+> [apologies for the late reply, I do not follow lkml anymore]
 >
-> This patch is based on latest x86/master branch of git-x86 tree and
-> has been tested on i386 and x86_64 platform.
->
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
->
-> ---
->  arch/x86/kernel/e820.c     |   22 ++++++++++++++++++++++
->  arch/x86/kernel/setup_32.c |    2 ++
->  include/asm-x86/e820.h     |    1 +
->  3 files changed, 25 insertions(+)
->
-> --- a/arch/x86/kernel/e820.c
-> +++ b/arch/x86/kernel/e820.c
-> @@ -844,6 +844,28 @@ void __init early_res_to_bootmem(u64 sta
->        }
->  }
->
-> +void __init early_res_to_e820(u64 start, u64 end)
-> +{
-> +       int i, changed = 0;
-> +       u64 final_start, final_end;
-> +       for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++) {
-> +               struct early_res *r = &early_res[i];
-> +               final_start = max(start, r->start);
-> +               final_end = min(end, r->end);
-> +               if (final_start >= final_end)
-> +                       continue;
-> +               printk(KERN_INFO "  early res: %d [%llx-%llx] %s\n", i,
-> +                       final_start, final_end - 1, r->name);
-> +               e820_update_range(final_start, final_end - final_start,
-> +                                 E820_RAM, E820_RESVD_KERN);
-> +               changed = 1;
-> +       }
-> +       if (changed) {
-> +               printk(KERN_INFO "update e820 for early_res\n");
-> +               update_e820();
-> +       }
-> +}
-> +
->  /* Check for already reserved areas */
->  static inline int __init bad_addr(u64 *addrp, u64 size, u64 align)
->  {
-> --- a/include/asm-x86/e820.h
-> +++ b/include/asm-x86/e820.h
-> @@ -96,6 +96,7 @@ extern void reserve_early(u64 start, u64
->  extern void reserve_early_overlap_ok(u64 start, u64 end, char *name);
->  extern void free_early(u64 start, u64 end);
->  extern void early_res_to_bootmem(u64 start, u64 end);
-> +extern void early_res_to_e820(u64 start, u64 end);
->  extern u64 early_reserve_e820(u64 startt, u64 sizet, u64 align);
->
->  extern unsigned long e820_end_of_ram(void);
-> --- a/arch/x86/kernel/setup_32.c
-> +++ b/arch/x86/kernel/setup_32.c
-> @@ -447,6 +447,8 @@ void __init setup_arch(char **cmdline_p)
->         acpi_numa_init();
->  #endif
->
-> +       early_res_to_e820(max_low_pfn<<PAGE_SHIFT, -1);
-> +
->        initmem_init(0, max_pfn);
->
->  #ifdef CONFIG_ACPI_SLEEP
->
-> --
+> On Sun, 2008-06-08 at 14:17 +0100, David Woodhouse wrote:
+>> On Sun, 2008-06-08 at 13:17 +0200, Sam Ravnborg wrote:
+>> > #if !defined(CONFIG_M68K) || !defined(__KERNEL__)
+>>
+>> That's just scary, and broken for m68k where in userspace neither
+>> CONFIG_M68K nor __KERNEL__ will be defined, so the unwanted ac_ahz
+>> member will actually show up and break the binary compatibility.
+>> Assuming we _don't_ want the ac_ahz member to be included on m68k,  
+>> this
+>> should fix it (is __mc68000__ the right thing to use?)...
+>>
+>> diff --git a/include/linux/acct.h b/include/linux/acct.h
+>> index e8cae54..228473b 100644
+>> --- a/include/linux/acct.h
+>> +++ b/include/linux/acct.h
+>> @@ -58,8 +58,7 @@ struct acct
+>>         comp_t          ac_minflt;              /* Minor Pagefaults */
+>>         comp_t          ac_majflt;              /* Major Pagefaults */
+>>         comp_t          ac_swaps;               /* Number of Swaps */
+>> -/* m68k had no padding here. */
+>> -#if !defined(CONFIG_M68K) || !defined(__KERNEL__)
+>> +#ifndef __mc68000__ /* m68k had no padding here. */
+>>         __u16           ac_ahz;                 /* AHZ */
+>>  #endif
+>>         __u32           ac_exitcode;            /* Exitcode */
 
-this one is not needed.
+struct acct as provided by the kernel anyway differs from the one 
+shipped by glibc in /usr/include/sys/acct.h since your
+"BSD accounting format rework" patch back in 2004.
 
-YH
+Does the pre-v3 stuff actually work?
+My first impression is that it doesn't and should therefore be removed.
+
+> This would make cross-compiled m68k kernels silently write wrong
+> accounting files.
+>...
+
+Cross-compiling can't make any difference here.
+
+> Tim
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
