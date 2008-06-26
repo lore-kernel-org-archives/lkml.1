@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752257AbYFZNaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761370AbYFZN3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752257AbYFZNaX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYFZN37
+	id S1761370AbYFZN3p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbYFZN3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 09:29:59 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:24137 "EHLO
+	Thu, 26 Jun 2008 09:29:35 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:24132 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751468AbYFZN36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 09:29:58 -0400
+	id S1752311AbYFZN3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 09:29:33 -0400
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
@@ -17,11 +17,11 @@ Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
        hpa@zytor.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 24/60] microblaze_v4: asm-offsets
-Date: Thu, 26 Jun 2008 14:29:53 +0200
-Message-Id: <1214483429-32360-25-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 23/60] microblaze_v4: setup.c - system setting
+Date: Thu, 26 Jun 2008 14:29:52 +0200
+Message-Id: <1214483429-32360-24-git-send-email-monstr@seznam.cz>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <1214483429-32360-24-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-23-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-2-git-send-email-monstr@seznam.cz>
  <1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -45,7 +45,6 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-21-git-send-email-monstr@seznam.cz>
  <1214483429-32360-22-git-send-email-monstr@seznam.cz>
  <1214483429-32360-23-git-send-email-monstr@seznam.cz>
- <1214483429-32360-24-git-send-email-monstr@seznam.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -55,18 +54,18 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/asm-offsets.c |  116 ++++++++++++++++++++++++++++++++++
- 1 files changed, 116 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/asm-offsets.c
+ arch/microblaze/kernel/setup.c |  187 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 187 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/setup.c
 
-diff --git a/arch/microblaze/kernel/asm-offsets.c b/arch/microblaze/kernel/asm-offsets.c
+diff --git a/arch/microblaze/kernel/setup.c b/arch/microblaze/kernel/setup.c
 new file mode 100644
-index 0000000..522f8ff
+index 0000000..95d6eae
 --- /dev/null
-+++ b/arch/microblaze/kernel/asm-offsets.c
-@@ -0,0 +1,116 @@
++++ b/arch/microblaze/kernel/setup.c
+@@ -0,0 +1,187 @@
 +/*
-+ * Copyright (C) 2007 PetaLogix
++ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
@@ -74,112 +73,183 @@ index 0000000..522f8ff
 + * for more details.
 + */
 +
-+#include <linux/stddef.h>
-+#include <linux/sched.h>
-+#include <linux/kernel_stat.h>
-+#include <linux/ptrace.h>
-+#include <linux/hardirq.h>
-+#include <linux/thread_info.h>
++#include <linux/init.h>
++#include <linux/string.h>
++#include <linux/seq_file.h>
++#include <linux/cpu.h>
++#include <linux/initrd.h>
++#include <linux/console.h>
++#include <linux/debugfs.h>
 +
-+#define DEFINE(sym, val) asm volatile("\n->" #sym " %0 " #val : : "i" (val))
-+#define BLANK() asm volatile("\n->" : :)
++#include <asm/setup.h>
++#include <asm/sections.h>
++#include <asm/page.h>
++#include <asm/io.h>
++#include <asm/bug.h>
++#include <asm/param.h>
++#include <asm/cache.h>
++#include <asm/cacheflush.h>
++#include <asm/entry.h>
++#include <asm/cpuinfo.h>
 +
-+int main(int argc, char *argv[])
++#include <asm/system.h>
++#include <asm/prom.h>
++#include <asm/pgtable.h>
++
++DEFINE_PER_CPU(unsigned int, KSP);	/* Saved kernel stack pointer */
++DEFINE_PER_CPU(unsigned int, KM);	/* Kernel/user mode */
++DEFINE_PER_CPU(unsigned int, ENTRY_SP);	/* Saved SP on kernel entry */
++DEFINE_PER_CPU(unsigned int, R11_SAVE);	/* Temp variable for entry */
++DEFINE_PER_CPU(unsigned int, CURRENT_SAVE);	/* Saved current pointer */
++
++int have_of = 1;
++unsigned int boot_cpuid;
++char cmd_line[COMMAND_LINE_SIZE];
++static char default_command_line[COMMAND_LINE_SIZE] __initdata = CONFIG_CMDLINE;
++
++void __init setup_arch(char **cmdline_p)
 +{
-+	/* struct pt_regs */
-+	DEFINE(PT_SIZE, sizeof(struct pt_regs));
-+	DEFINE(PT_MSR, offsetof(struct pt_regs, msr));
-+	DEFINE(PT_EAR, offsetof(struct pt_regs, ear));
-+	DEFINE(PT_ESR, offsetof(struct pt_regs, esr));
-+	DEFINE(PT_FSR, offsetof(struct pt_regs, fsr));
-+	DEFINE(PT_PC, offsetof(struct pt_regs, pc));
-+	DEFINE(PT_R0, offsetof(struct pt_regs, r0));
-+	DEFINE(PT_R1, offsetof(struct pt_regs, r1));
-+	DEFINE(PT_R2, offsetof(struct pt_regs, r2));
-+	DEFINE(PT_R3, offsetof(struct pt_regs, r3));
-+	DEFINE(PT_R4, offsetof(struct pt_regs, r4));
-+	DEFINE(PT_R5, offsetof(struct pt_regs, r5));
-+	DEFINE(PT_R6, offsetof(struct pt_regs, r6));
-+	DEFINE(PT_R7, offsetof(struct pt_regs, r7));
-+	DEFINE(PT_R8, offsetof(struct pt_regs, r8));
-+	DEFINE(PT_R9, offsetof(struct pt_regs, r9));
-+	DEFINE(PT_R10, offsetof(struct pt_regs, r10));
-+	DEFINE(PT_R11, offsetof(struct pt_regs, r11));
-+	DEFINE(PT_R12, offsetof(struct pt_regs, r12));
-+	DEFINE(PT_R13, offsetof(struct pt_regs, r13));
-+	DEFINE(PT_R14, offsetof(struct pt_regs, r14));
-+	DEFINE(PT_R15, offsetof(struct pt_regs, r15));
-+	DEFINE(PT_R16, offsetof(struct pt_regs, r16));
-+	DEFINE(PT_R17, offsetof(struct pt_regs, r17));
-+	DEFINE(PT_R18, offsetof(struct pt_regs, r18));
-+	DEFINE(PT_R19, offsetof(struct pt_regs, r19));
-+	DEFINE(PT_R20, offsetof(struct pt_regs, r20));
-+	DEFINE(PT_R21, offsetof(struct pt_regs, r21));
-+	DEFINE(PT_R22, offsetof(struct pt_regs, r22));
-+	DEFINE(PT_R23, offsetof(struct pt_regs, r23));
-+	DEFINE(PT_R24, offsetof(struct pt_regs, r24));
-+	DEFINE(PT_R25, offsetof(struct pt_regs, r25));
-+	DEFINE(PT_R26, offsetof(struct pt_regs, r26));
-+	DEFINE(PT_R27, offsetof(struct pt_regs, r27));
-+	DEFINE(PT_R28, offsetof(struct pt_regs, r28));
-+	DEFINE(PT_R29, offsetof(struct pt_regs, r29));
-+	DEFINE(PT_R30, offsetof(struct pt_regs, r30));
-+	DEFINE(PT_R31, offsetof(struct pt_regs, r31));
-+	DEFINE(PT_MODE, offsetof(struct pt_regs, kernel_mode));
-+	BLANK();
++	console_verbose();
 +
-+	/* Magic offsets for PTRACE PEEK/POKE etc */
-+	DEFINE(PT_TEXT_ADDR, sizeof(struct pt_regs) + 1);
-+	DEFINE(PT_TEXT_LEN, sizeof(struct pt_regs) + 2);
-+	DEFINE(PT_DATA_ADDR, sizeof(struct pt_regs) + 3);
-+	BLANK();
++	unflatten_device_tree();
++	/* NOTE I think that this function is not necessary to call */
++	/* irq_early_init(); */
++	setup_cpuinfo();
 +
-+	/* struct task_struct */
-+	DEFINE(TS_THREAD_INFO, offsetof(struct task_struct, stack));
++	__invalidate_icache_all();
++	__enable_icache();
 +
-+	/* struct thread_info */
-+	DEFINE(TI_TASK, offsetof(struct thread_info, task));
-+	DEFINE(TI_EXEC_DOMAIN, offsetof(struct thread_info, exec_domain));
-+	DEFINE(TI_FLAGS, offsetof(struct thread_info, flags));
-+	DEFINE(TI_STATUS, offsetof(struct thread_info, status));
-+	DEFINE(TI_CPU, offsetof(struct thread_info, cpu));
-+	DEFINE(TI_PRE_COUNT, offsetof(struct thread_info, preempt_count));
-+	DEFINE(TI_ADDR_LIMIT, offsetof(struct thread_info, addr_limit));
-+	DEFINE(TI_RESTART_BLOCK, offsetof(struct thread_info, restart_block));
-+	DEFINE(TI_CPU_CONTEXT, offsetof(struct thread_info, cpu_context));
-+	BLANK();
++	__invalidate_dcache_all();
++	__enable_dcache();
 +
-+	/* struct cpu_context */
-+	DEFINE(CC_SP, offsetof(struct cpu_context, r1)); /* r1 */
-+	DEFINE(CC_R2, offsetof(struct cpu_context, r2));
-+	/* dedicated registers */
-+	DEFINE(CC_R13, offsetof(struct cpu_context, r13));
-+	DEFINE(CC_R14, offsetof(struct cpu_context, r14));
-+	DEFINE(CC_R15, offsetof(struct cpu_context, r15));
-+	DEFINE(CC_R16, offsetof(struct cpu_context, r16));
-+	DEFINE(CC_R17, offsetof(struct cpu_context, r17));
-+	DEFINE(CC_R18, offsetof(struct cpu_context, r18));
-+	/* non-volatile registers */
-+	DEFINE(CC_R19, offsetof(struct cpu_context, r19));
-+	DEFINE(CC_R20, offsetof(struct cpu_context, r20));
-+	DEFINE(CC_R21, offsetof(struct cpu_context, r21));
-+	DEFINE(CC_R22, offsetof(struct cpu_context, r22));
-+	DEFINE(CC_R23, offsetof(struct cpu_context, r23));
-+	DEFINE(CC_R24, offsetof(struct cpu_context, r24));
-+	DEFINE(CC_R25, offsetof(struct cpu_context, r25));
-+	DEFINE(CC_R26, offsetof(struct cpu_context, r26));
-+	DEFINE(CC_R27, offsetof(struct cpu_context, r27));
-+	DEFINE(CC_R28, offsetof(struct cpu_context, r28));
-+	DEFINE(CC_R29, offsetof(struct cpu_context, r29));
-+	DEFINE(CC_R30, offsetof(struct cpu_context, r30));
-+	/* special purpose registers */
-+	DEFINE(CC_MSR, offsetof(struct cpu_context, msr));
-+	DEFINE(CC_EAR, offsetof(struct cpu_context, ear));
-+	DEFINE(CC_ESR, offsetof(struct cpu_context, esr));
-+	DEFINE(CC_FSR, offsetof(struct cpu_context, fsr));
-+	BLANK();
++	panic_timeout = 120;
 +
++	setup_memory();
++	paging_init();
++
++#if defined(CONFIG_SELFMOD_INTC) || defined(CONFIG_SELFMOD_TIMER)
++	printk(KERN_NOTICE "Self modified code enable\n");
++#endif
++
++#ifdef CONFIG_VT
++#if defined(CONFIG_XILINX_CONSOLE)
++	conswitchp = &xil_con;
++#elif defined(CONFIG_DUMMY_CONSOLE)
++	conswitchp = &dummy_con;
++#endif
++#endif
++}
++
++#ifdef CONFIG_MTD_UCLINUX
++/* Handle both romfs and cramfs types, without generating unnecessary
++ code (ie no point checking for CRAMFS if it's not even enabled) */
++inline unsigned get_romfs_len(unsigned *addr)
++{
++#ifdef CONFIG_ROMFS_FS
++	if (memcmp(&addr[0], "-rom1fs-", 8) == 0) /* romfs */
++		return be32_to_cpu(addr[2]);
++#endif
++
++#ifdef CONFIG_CRAMFS
++	if (addr[0] == le32_to_cpu(0x28cd3d45)) /* cramfs */
++		return le32_to_cpu(addr[1]);
++#endif
 +	return 0;
++}
++#endif	/* CONFIG_MTD_UCLINUX_EBSS */
++
++void __init machine_early_init(const char *cmdline, unsigned int ram,
++		unsigned int fdt)
++{
++	unsigned long *src, *dst = (unsigned long *)0x0;
++	early_printk("Ramdisk addr 0x%08x, FDT 0x%08x\n", ram, fdt);
++
++#ifdef CONFIG_MTD_UCLINUX
++	{
++		int size;
++		unsigned int romfs_base;
++		romfs_base = (ram ? ram : (unsigned int)&__init_end);
++		/* if CONFIG_MTD_UCLINUX_EBSS is defined, assume ROMFS is at the
++		 * end of kernel, which is ROMFS_LOCATION defined above. */
++		size = PAGE_ALIGN(get_romfs_len((unsigned *)romfs_base));
++		early_printk("Found romfs @ 0x%08x (0x%08x)\n",
++				romfs_base, size);
++		early_printk("#### klimit %p ####\n", klimit);
++		BUG_ON(size < 0); /* What else can we do? */
++
++		/* Use memmove to handle likely case of memory overlap */
++		early_printk("Moving 0x%08x bytes from 0x%08x to 0x%08x\n",
++			size, romfs_base, (unsigned)&_ebss);
++		memmove(&_ebss, (int *)romfs_base, size);
++
++		/* update klimit */
++		klimit += PAGE_ALIGN(size);
++		early_printk("New klimit: 0x%08x\n", (unsigned)klimit);
++	}
++#endif
++
++	memset(__bss_start, 0, __bss_stop-__bss_start);
++	memset(_ssbss, 0, _esbss-_ssbss);
++
++	printk(KERN_NOTICE "Found FDT at 0x%08x\n", fdt);
++	early_init_devtree((void *)fdt);
++
++	/* Copy command line passed from bootloader, or use default
++	 if none provided, or forced */
++#ifndef CONFIG_CMDLINE_FORCE
++	if (cmdline && cmdline[0] != '\0')
++		strlcpy(cmd_line, cmdline, COMMAND_LINE_SIZE);
++	else
++#endif
++		strlcpy(cmd_line, default_command_line, COMMAND_LINE_SIZE);
++
++	for (src = __ivt_start; src < __ivt_end; src++, dst++)
++		*dst = *src;
++
++	/* Initialize global data */
++	per_cpu(KM, 0) = 0x1;	/* We start in kernel mode */
++	per_cpu(CURRENT_SAVE, 0) = (unsigned long)current;
++}
++
++#ifdef CONFIG_DEBUG_FS
++struct dentry *of_debugfs_root;
++
++static int microblaze_debugfs_init(void)
++{
++	of_debugfs_root = debugfs_create_dir("microblaze", NULL);
++
++	return of_debugfs_root == NULL;
++}
++arch_initcall(microblaze_debugfs_init);
++#endif
++
++void machine_restart(char *cmd)
++{
++	printk(KERN_NOTICE "Machine restart...\n");
++	dump_stack();
++	while (1)
++		;
++}
++
++void machine_shutdown(void)
++{
++	printk(KERN_NOTICE "Machine shutdown...\n");
++	while (1)
++		;
++}
++
++void machine_halt(void)
++{
++	printk(KERN_NOTICE "Machine halt...\n");
++	while (1)
++		;
++}
++
++void machine_power_off(void)
++{
++	printk(KERN_NOTICE "Machine power off...\n");
++	while (1)
++		;
 +}
 -- 
 1.5.4.GIT
