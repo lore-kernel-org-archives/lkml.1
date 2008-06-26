@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759132AbYFZMl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759754AbYFZMlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759132AbYFZMl2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 08:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbYFZM3h
+	id S1759754AbYFZMlz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 08:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbYFZM3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:29:37 -0400
-Received: from il.qumranet.com ([212.179.150.194]:32338 "EHLO il.qumranet.com"
+	Thu, 26 Jun 2008 08:29:39 -0400
+Received: from il.qumranet.com ([212.179.150.194]:32363 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752847AbYFZM2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:28:44 -0400
+	id S1752292AbYFZM2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:28:40 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Laurent Vivier <Laurent.Vivier@bull.net>
-Subject: [PATCH 36/50] KVM: Add coalesced MMIO support (powerpc part)
-Date: Thu, 26 Jun 2008 15:28:18 +0300
-Message-Id: <1214483312-9265-37-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 28/50] KVM: MMU: Optimize prefetch_page()
+Date: Thu, 26 Jun 2008 15:28:10 +0300
+Message-Id: <1214483312-9265-29-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1214483312-9265-1-git-send-email-avi@qumranet.com>
 References: <1214483312-9265-1-git-send-email-avi@qumranet.com>
@@ -22,59 +22,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Laurent Vivier <Laurent.Vivier@bull.net>
+Instead of reading each pte individually, read 256 bytes worth of ptes and
+batch process them.
 
-This patch enables coalesced MMIO for powerpc architecture.
-It defines KVM_MMIO_PAGE_OFFSET and KVM_CAP_COALESCED_MMIO.
-It enables the compilation of coalesced_mmio.c.
-
-Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/powerpc/kvm/Makefile      |    2 +-
- arch/powerpc/kvm/powerpc.c     |    3 +++
- include/asm-powerpc/kvm_host.h |    2 ++
- 3 files changed, 6 insertions(+), 1 deletions(-)
+ arch/x86/kvm/paging_tmpl.h |   28 +++++++++++++++-------------
+ 1 files changed, 15 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-index d0d358d..04e3449 100644
---- a/arch/powerpc/kvm/Makefile
-+++ b/arch/powerpc/kvm/Makefile
-@@ -4,7 +4,7 @@
+diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
+index 934c7b6..4d91822 100644
+--- a/arch/x86/kvm/paging_tmpl.h
++++ b/arch/x86/kvm/paging_tmpl.h
+@@ -460,8 +460,9 @@ static gpa_t FNAME(gva_to_gpa)(struct kvm_vcpu *vcpu, gva_t vaddr)
+ static void FNAME(prefetch_page)(struct kvm_vcpu *vcpu,
+ 				 struct kvm_mmu_page *sp)
+ {
+-	int i, offset = 0, r = 0;
+-	pt_element_t pt;
++	int i, j, offset, r;
++	pt_element_t pt[256 / sizeof(pt_element_t)];
++	gpa_t pte_gpa;
  
- EXTRA_CFLAGS += -Ivirt/kvm -Iarch/powerpc/kvm
+ 	if (sp->role.metaphysical
+ 	    || (PTTYPE == 32 && sp->role.level > PT_PAGE_TABLE_LEVEL)) {
+@@ -469,19 +470,20 @@ static void FNAME(prefetch_page)(struct kvm_vcpu *vcpu,
+ 		return;
+ 	}
  
--common-objs = $(addprefix ../../../virt/kvm/, kvm_main.o)
-+common-objs = $(addprefix ../../../virt/kvm/, kvm_main.o coalesced_mmio.o)
+-	if (PTTYPE == 32)
++	pte_gpa = gfn_to_gpa(sp->gfn);
++	if (PTTYPE == 32) {
+ 		offset = sp->role.quadrant << PT64_LEVEL_BITS;
++		pte_gpa += offset * sizeof(pt_element_t);
++	}
  
- kvm-objs := $(common-objs) powerpc.o emulate.o booke_guest.o
- obj-$(CONFIG_KVM) += kvm.o
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 0513b35..b850d24 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -145,6 +145,9 @@ int kvm_dev_ioctl_check_extension(long ext)
- 	case KVM_CAP_USER_MEMORY:
- 		r = 1;
- 		break;
-+	case KVM_CAP_COALESCED_MMIO:
-+		r = KVM_COALESCED_MMIO_PAGE_OFFSET;
-+		break;
- 	default:
- 		r = 0;
- 		break;
-diff --git a/include/asm-powerpc/kvm_host.h b/include/asm-powerpc/kvm_host.h
-index 81a69d7..2655e2a 100644
---- a/include/asm-powerpc/kvm_host.h
-+++ b/include/asm-powerpc/kvm_host.h
-@@ -31,6 +31,8 @@
- /* memory slots that does not exposed to userspace */
- #define KVM_PRIVATE_MEM_SLOTS 4
- 
-+#define KVM_COALESCED_MMIO_PAGE_OFFSET 1
-+
- /* We don't currently support large pages. */
- #define KVM_PAGES_PER_HPAGE (1<<31)
+-	for (i = 0; i < PT64_ENT_PER_PAGE; ++i) {
+-		gpa_t pte_gpa = gfn_to_gpa(sp->gfn);
+-		pte_gpa += (i+offset) * sizeof(pt_element_t);
+-
+-		r = kvm_read_guest_atomic(vcpu->kvm, pte_gpa, &pt,
+-					  sizeof(pt_element_t));
+-		if (r || is_present_pte(pt))
+-			sp->spt[i] = shadow_trap_nonpresent_pte;
+-		else
+-			sp->spt[i] = shadow_notrap_nonpresent_pte;
++	for (i = 0; i < PT64_ENT_PER_PAGE; i += ARRAY_SIZE(pt)) {
++		r = kvm_read_guest_atomic(vcpu->kvm, pte_gpa, pt, sizeof pt);
++		pte_gpa += ARRAY_SIZE(pt) * sizeof(pt_element_t);
++		for (j = 0; j < ARRAY_SIZE(pt); ++j)
++			if (r || is_present_pte(pt[j]))
++				sp->spt[i+j] = shadow_trap_nonpresent_pte;
++			else
++				sp->spt[i+j] = shadow_notrap_nonpresent_pte;
+ 	}
+ }
  
 -- 
 1.5.6
