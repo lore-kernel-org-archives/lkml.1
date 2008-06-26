@@ -1,122 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbYFZRqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbYFZRqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754658AbYFZRqN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 13:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYFZRp2
+	id S1758866AbYFZRqc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 13:46:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758247AbYFZRpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 13:45:28 -0400
-Received: from over.ny.us.ibm.com ([32.97.182.150]:50992 "EHLO
-	over.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757754AbYFZRp0 (ORCPT
+	Thu, 26 Jun 2008 13:45:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60444 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758258AbYFZRpv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 13:45:26 -0400
-Date: Thu, 26 Jun 2008 11:31:24 -0500
-From: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Michael Halcrow <mhalcrow@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] eCryptfs: Discard ecryptfsd registration messages in
-	miscdev
-Message-ID: <20080626163121.GA21002@boomer>
+	Thu, 26 Jun 2008 13:45:51 -0400
+Date: Thu, 26 Jun 2008 09:30:12 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+cc: Anton Arapov <aarapov@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Fix copy_user on x86_64
+In-Reply-To: <m3prq4dw7i.fsf@gravicappa.englab.brq.redhat.com>
+Message-ID: <alpine.LFD.1.10.0806260925220.14031@hp.linux-foundation.org>
+References: <m3myl9hf0o.fsf@gravicappa.englab.brq.redhat.com> <48635DA0.80102@redhat.com> <alpine.LFD.1.10.0806260837290.10755@hp.linux-foundation.org> <m3prq4dw7i.fsf@gravicappa.englab.brq.redhat.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The userspace eCryptfs daemon sends HELO and QUIT messages to
-the kernel for per-user daemon (un)registration. These messages
-are required when netlink is used as the transport, but
-(un)registration is handled by opening and closing the device
-file when miscdev is the transport. These messages should be
-discarded in the miscdev transport so that a daemon isn't
-registered twice.
 
-Signed-off-by: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
----
- fs/ecryptfs/miscdev.c |   59 -------------------------------------------------
- 1 files changed, 0 insertions(+), 59 deletions(-)
 
-diff --git a/fs/ecryptfs/miscdev.c b/fs/ecryptfs/miscdev.c
-index 50c994a..98aa4a1 100644
---- a/fs/ecryptfs/miscdev.c
-+++ b/fs/ecryptfs/miscdev.c
-@@ -358,46 +358,6 @@ out_unlock_daemon:
- }
- 
- /**
-- * ecryptfs_miscdev_helo
-- * @euid: effective user id of miscdevess sending helo packet
-- * @user_ns: The namespace in which @euid applies
-- * @pid: miscdevess id of miscdevess sending helo packet
-- *
-- * Returns zero on success; non-zero otherwise
-- */
--static int ecryptfs_miscdev_helo(uid_t euid, struct user_namespace *user_ns,
--				 struct pid *pid)
--{
--	int rc;
--
--	rc = ecryptfs_process_helo(ECRYPTFS_TRANSPORT_MISCDEV, euid, user_ns,
--				   pid);
--	if (rc)
--		printk(KERN_WARNING "Error processing HELO; rc = [%d]\n", rc);
--	return rc;
--}
--
--/**
-- * ecryptfs_miscdev_quit
-- * @euid: effective user id of miscdevess sending quit packet
-- * @user_ns: The namespace in which @euid applies
-- * @pid: miscdevess id of miscdevess sending quit packet
-- *
-- * Returns zero on success; non-zero otherwise
-- */
--static int ecryptfs_miscdev_quit(uid_t euid, struct user_namespace *user_ns,
--				 struct pid *pid)
--{
--	int rc;
--
--	rc = ecryptfs_process_quit(euid, user_ns, pid);
--	if (rc)
--		printk(KERN_WARNING
--		       "Error processing QUIT message; rc = [%d]\n", rc);
--	return rc;
--}
--
--/**
-  * ecryptfs_miscdev_response - miscdevess response to message previously sent to daemon
-  * @data: Bytes comprising struct ecryptfs_message
-  * @data_size: sizeof(struct ecryptfs_message) + data len
-@@ -512,26 +472,7 @@ ecryptfs_miscdev_write(struct file *file, const char __user *buf,
- 			       __func__, rc);
- 		break;
- 	case ECRYPTFS_MSG_HELO:
--		rc = ecryptfs_miscdev_helo(current->euid,
--					   current->nsproxy->user_ns,
--					   task_pid(current));
--		if (rc) {
--			printk(KERN_ERR "%s: Error attempting to process "
--			       "helo from pid [0x%p]; rc = [%d]\n", __func__,
--			       task_pid(current), rc);
--			goto out_free;
--		}
--		break;
- 	case ECRYPTFS_MSG_QUIT:
--		rc = ecryptfs_miscdev_quit(current->euid,
--					   current->nsproxy->user_ns,
--					   task_pid(current));
--		if (rc) {
--			printk(KERN_ERR "%s: Error attempting to process "
--			       "quit from pid [0x%p]; rc = [%d]\n", __func__,
--			       task_pid(current), rc);
--			goto out_free;
--		}
- 		break;
- 	default:
- 		ecryptfs_printk(KERN_WARNING, "Dropping miscdev "
--- 
-1.5.3.7
+On Thu, 26 Jun 2008, Vitaly Mayatskikh wrote:
+> 
+> Seems reasonable. However, we still need specialized memset() routine,
+> because, again, destination can fail. Thanks for the review, Linus!
 
+Actually, the "zero at the end" case is only for copy_from_user() (at 
+least it _should_ be), so for the clearing-at-end you should be able to 
+use a regular memset().
+
+But it's not a big deal either way. As long as we only get into the fixup 
+routine at exception time, and handle all the common cases fast (ie do the 
+32-byte unrolled thing etc optimally), the fixup routine can do everything 
+a byte at a time with "get_user()" and "put_user()" etc. The "fault at 
+copy_*_user()" case really isn't all that performance-sensitive, because 
+it really happens essentially _never_.
+
+(That's obviously why nobody even noticed how broken they were for 
+essentially what must have been _years_. It's not just not a performance 
+sensitive area, it's one that is entered so seldom that it's hard to ever 
+hit any correctness issues either)
+
+		Linus
