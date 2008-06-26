@@ -1,1104 +1,1327 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757438AbYFZAqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757646AbYFZAqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757438AbYFZAqb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 20:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756169AbYFZApd
+	id S1757646AbYFZAqt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 20:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756406AbYFZAqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 20:45:33 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:33765
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755249AbYFZAp1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 20:45:27 -0400
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+	Wed, 25 Jun 2008 20:46:16 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:58191 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757310AbYFZAqC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 20:46:02 -0400
+Subject: Re: Performance of ext4
+From: Mingming <cmm@us.ibm.com>
+To: Holger Kiehl <Holger.Kiehl@dwd.de>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
+       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0806250856160.16081@diagnostix.dwd.de>
+References: <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de>
+	 <20080619155645.GA8582@mit.edu> <485A8C2D.1090806@redhat.com>
+	 <20080619174211.GB9119@mit.edu>
+	 <Pine.LNX.4.64.0806200812340.3383@diagnostix.dwd.de>
+	 <20080620085922.GH9119@mit.edu>
+	 <Pine.LNX.4.64.0806200905070.3383@diagnostix.dwd.de>
+	 <20080623174508.GA7216@skywalker>
+	 <1214267492.27507.285.camel@BVR-FS.beaverton.ibm.com>
+	 <20080624030721.GB10469@skywalker> <20080624033349.GD10469@skywalker>
+	 <Pine.LNX.4.64.0806242103370.14795@diagnostix.dwd.de>
+	 <1214348318.27507.330.camel@BVR-FS.beaverton.ibm.com>
+	 <Pine.LNX.4.64.0806250856160.16081@diagnostix.dwd.de>
+Content-Type: text/plain
+Date: Wed, 25 Jun 2008 17:46:39 -0700
+Message-Id: <1214441199.27507.351.camel@BVR-FS.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 3 of 3] mmu-notifier-core
-X-Mercurial-Node: 6fd7f58efb21ee00473f8d593cc67545aa80fd1c
-Message-Id: <6fd7f58efb21ee00473f.1214440019@duo.random>
-In-Reply-To: <patchbomb.1214440016@duo.random>
-Date: Thu, 26 Jun 2008 02:26:59 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, kvm@vger.kernel.org,
-       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Izik Eidus <izike@qumranet.com>, Anthony Liguori <aliguori@us.ibm.com>,
-       Rik van Riel <riel@redhat.com>
-Cc: andrea@qumranet.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrea Arcangeli <andrea@qumranet.com>
 
-With KVM/GFP/XPMEM there isn't just the primary CPU MMU pointing to
-pages. There are secondary MMUs (with secondary sptes and secondary
-tlbs) too. sptes in the kvm case are shadow pagetables, but when I say
-spte in mmu-notifier context, I mean "secondary pte". In GRU case
-there's no actual secondary pte and there's only a secondary tlb
-because the GRU secondary MMU has no knowledge about sptes and every
-secondary tlb miss event in the MMU always generates a page fault that
-has to be resolved by the CPU (this is not the case of KVM where the a
-secondary tlb miss will walk sptes in hardware and it will refill the
-secondary tlb transparently to software if the corresponding spte is
-present). The same way zap_page_range has to invalidate the pte before
-freeing the page, the spte (and secondary tlb) must also be
-invalidated before any page is freed and reused.
+On Wed, 2008-06-25 at 09:09 +0000, Holger Kiehl wrote:
+> On Tue, 24 Jun 2008, Mingming wrote:
+> 
+> >
+> > On Tue, 2008-06-24 at 21:12 +0000, Holger Kiehl wrote:
+> >> Yes, with this patch applied on top of latest patch queue I no longer
+> >> get truncated files, after running a short test. Tomorrow I will do some
+> >> more thorough testing and use the patch you have send to me in a separate
+> >> mail. The above patch did not apply but it was easy to apply by hand.
+> >
+> >
+> > Thanks for quick response and test. I have updated the patch queue with
+> > above patch merged. Please let me know if you still see apply issue and
+> > file size update issue with current patch queue.
+> >
+> Thanks, it applies without any problems. However I still hit an oops. What
+> I find strange is that I got the oops just as the benchmark is done and
+> all process where shutting down. The same behaviour I reported here:
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0806.2/2113.html
+> Only this time I got just one oops. This is on x86_64 system (4 Opteron CPU's
+> and SW Raid 1+0). I have not seen this on my home system x86 (1 Dual Core
+> and HW Raid). Anyway, here the dmesg output:
+> 
+> kjournald2 starting.  Commit interval 15 seconds
+> EXT4 FS on md7, internal journal
+> EXT4-fs: mounted filesystem with ordered data mode.
+> EXT4-fs: file extents enabled
+> EXT4-fs: mballoc enabled
+> JBD: barrier-based sync failed on md7 - disabling barriers
+> ------------[ cut here ]------------
+> kernel BUG at fs/ext4/inode.c:1667!
 
-Currently we take a page_count pin on every page mapped by sptes, but
-that means the pages can't be swapped whenever they're mapped by any
-spte because they're part of the guest working set. Furthermore a spte
-unmap event can immediately lead to a page to be freed when the pin is
-released (so requiring the same complex and relatively slow tlb_gather
-smp safe logic we have in zap_page_range and that can be avoided
-completely if the spte unmap event doesn't require an unpin of the
-page previously mapped in the secondary MMU).
+Did not get a chance to look more closely today, but it's point to this
+code in ext4_da_writepage()
 
-The mmu notifiers allow kvm/GRU/XPMEM to attach to the tsk->mm and
-know when the VM is swapping or freeing or doing anything on the
-primary MMU so that the secondary MMU code can drop sptes before the
-pages are freed, avoiding all page pinning and allowing 100% reliable
-swapping of guest physical address space. Furthermore it avoids the
-code that teardown the mappings of the secondary MMU, to implement a
-logic like tlb_gather in zap_page_range that would require many IPI to
-flush other cpu tlbs, for each fixed number of spte unmapped.
+ page_bufs = page_buffers(page);
 
-To make an example: if what happens on the primary MMU is a protection
-downgrade (from writeable to wrprotect) the secondary MMU mappings
-will be invalidated, and the next secondary-mmu-page-fault will call
-get_user_pages and trigger a do_wp_page through get_user_pages if it
-called get_user_pages with write=1, and it'll re-establishing an
-updated spte or secondary-tlb-mapping on the copied page. Or it will
-setup a readonly spte or readonly tlb mapping if it's a guest-read, if
-it calls get_user_pages with write=0. This is just an example.
+and appearently it's BUG_ON at 
+ BUG_ON(!PagePrivate(page)); in page_buffers().
 
-This allows to map any page pointed by any pte (and in turn visible in
-the primary CPU MMU), into a secondary MMU (be it a pure tlb like GRU,
-or an full MMU with both sptes and secondary-tlb like the
-shadow-pagetable layer with kvm), or a remote DMA in software like
-XPMEM (hence needing of schedule in XPMEM code to send the invalidate
-to the remote node, while no need to schedule in kvm/gru as it's an
-immediate event like invalidating primary-mmu pte).
 
-At least for KVM without this patch it's impossible to swap guests
-reliably. And having this feature and removing the page pin allows
-several other optimizations that simplify life considerably.
+Mingming
 
-Dependencies:
+> invalid opcode: 0000 [1] SMP 
+> CPU 3 
+> Modules linked in: w83627hf lm85 hwmon_vid bonding nf_conntrack_ftp ipt_REJECT xt_tcpudp nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables binfmt_misc sg floppy k8temp ohci_hcd i2c_amd756 i2c_core button usbcore
+> Pid: 2661, comm: kjournald2 Not tainted 2.6.26-rc6 #1
+> RIP: 0010:[<ffffffff802dd314>]  [<ffffffff802dd314>] ext4_da_writepage+0x30/0xf4
+> RSP: 0018:ffff81027d737c10  EFLAGS: 00010246
+> RAX: 010000000001002d RBX: ffffe200017e9218 RCX: 00000000ffffffe8
+> RDX: 0000000000004278 RSI: ffff81027d737e00 RDI: ffffe200017e9218
+> RBP: ffff81021dad66e8 R08: ffff81027ff05440 R09: ffff81027d737b50
+> R10: ffff81020fe54480 R11: ffff81020fe54400 R12: ffff81027d737e00
+> R13: 0000000000000001 R14: 0000000000000000 R15: ffff8101ff0b8120
+> FS:  00007f53ed10b6f0(0000) GS:ffff81027ff13000(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 000000000081a000 CR3: 0000000166f03000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process kjournald2 (pid: 2661, threadinfo ffff81027d736000, task ffff81027ed93210)
+> Stack:  ffff81021dad67f8 ffff81027d737e00 0000000000000000 ffffffff80261816
+>   ffffe200017e9218 ffffffff80261f8c ffff81021dad67f8 ffffffff8026180c
+>   ffff81021dad67f8 0000000280224f0c 0000000000000004 000000007d737fd8
+> Call Trace:
+>   [<ffffffff80261816>] ? __writepage+0xa/0x27
+>   [<ffffffff80261f8c>] ? write_cache_pages+0x174/0x2be
+>   [<ffffffff8026180c>] ? __writepage+0x0/0x27
+>   [<ffffffff802ff1ed>] ? jbd2_journal_commit_transaction+0x343/0xe6a
+>   [<ffffffff802411a8>] ? hrtimer_start+0x100/0x122
+>   [<ffffffff802357ba>] ? try_to_del_timer_sync+0x52/0x5b
+>   [<ffffffff80302972>] ? kjournald2+0xdf/0x202
+>   [<ffffffff8023e74a>] ? autoremove_wake_function+0x0/0x2e
+>   [<ffffffff80302893>] ? kjournald2+0x0/0x202
+>   [<ffffffff8023e43b>] ? kthread+0x47/0x73
+>   [<ffffffff8020bf78>] ? child_rip+0xa/0x12
+>   [<ffffffff8023e3f4>] ? kthread+0x0/0x73
+>   [<ffffffff8020bf6e>] ? child_rip+0x0/0x12
+> 
+> 
+> Code: 55 53 48 8b 47 18 48 89 fb 48 8b 28 65 48 8b 04 25 00 00 00 00 48 83 b8 d0 04 00 00 00 75 5f 48 8b 07 48 8b 55 68 f6 c4 08 75 04 <0f> 0b eb fe 48 89 d0 81 e2 ff 0f 00 00 48 8b 77 10 48 c1 f8 0c 
+> RIP  [<ffffffff802dd314>] ext4_da_writepage+0x30/0xf4
+>   RSP <ffff81027d737c10>
+> ---[ end trace efaf3891d582feb1 ]---
+> SysRq : Show Blocked State
+>    task                        PC stack   pid father
+> pdflush       D 00000000ffffffff     0   242      2
+>   ffff81007f319bb8 0000000000000046 ffffffff8031682e 000000000000000e
+>   ffffffff80600cc0 000000000000000e ffff81007f319bf0 ffff81007fbbbd30
+>   ffff8101fff33210 ffff81007fbbbf68 00000002802aa2a6 ffff81007fbbbf68
+> Call Trace:
+>   [<ffffffff8031682e>] submit_bio+0xc4/0xcb
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff802fde7f>] jbd2_journal_stop+0x191/0x19d
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dd7e8>] ext4_da_writepages+0x75/0x173
+>   [<ffffffff80262112>] do_writepages+0x20/0x2d
+>   [<ffffffff8029f6da>] __writeback_single_inode+0x16f/0x35e
+>   [<ffffffff8029fcf7>] sync_sb_inodes+0x283/0x3b8
+>   [<ffffffff802a0080>] writeback_inodes+0x89/0xde
+>   [<ffffffff80262252>] wb_kupdate+0x9f/0x116
+>   [<ffffffff80262ca0>] pdflush+0x122/0x1c9
+>   [<ffffffff802621b3>] wb_kupdate+0x0/0x116
+>   [<ffffffff80262b7e>] pdflush+0x0/0x1c9
+>   [<ffffffff8023e43b>] kthread+0x47/0x73
+>   [<ffffffff8022ae6a>] schedule_tail+0x27/0x5c
+>   [<ffffffff8020bf78>] child_rip+0xa/0x12
+>   [<ffffffff8023e3f4>] kthread+0x0/0x73
+>   [<ffffffff8020bf6e>] child_rip+0x0/0x12
+> 
+> init_afd      D 00000000ffffffff     0  7974      1
+>   ffff8101050d3b30 0000000000000082 ffff810055f08230 0000000000080768
+>   ffffffff80600cc0 ffff8101ff8509c0 ffffffff802a38d5 ffff8101050aac80
+>   ffff8101fff342c0 ffff8101050aaeb8 000000038023e66b ffff8101050aaeb8
+> Call Trace:
+>   [<ffffffff802a38d5>] __find_get_block_slow+0xcf/0xdb
+>   [<ffffffff802fe4bb>] do_get_write_access+0x3ab/0x3ed
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff80224a97>] __wake_up+0x38/0x4f
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff80269428>] do_wp_page+0x45b/0x4ba
+>   [<ffffffff8026aaed>] handle_mm_fault+0x62d/0x6a3
+>   [<ffffffff8022a72f>] hrtick_set+0x8b/0x10a
+>   [<ffffffff8021ed0c>] do_page_fault+0x435/0x825
+>   [<ffffffff80242fdc>] getnstimeofday+0x38/0x92
+>   [<ffffffff80240fcb>] lock_hrtimer_base+0x1b/0x3c
+>   [<ffffffff80241089>] hrtimer_try_to_cancel+0x61/0x6a
+>   [<ffffffff8024109e>] hrtimer_cancel+0xc/0x16
+>   [<ffffffff8046687e>] do_nanosleep+0x6c/0xa6
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff80467779>] error_exit+0x0/0x51
+> 
+> system_log    D 00000000ffffffff     0  7975   7974
+>   ffff81002d533ad0 0000000000000086 ffffffff8028fce8 ffff81007ed55e90
+>   ffffffff80600cc0 0000000000000100 ffff81027d7cae40 ffff81007ed55e90
+>   ffff8101fff342c0 ffff81007ed560c8 000000032d533f50 ffff81007ed560c8
+> Call Trace:
+>   [<ffffffff8028fce8>] poll_freewait+0x36/0x87
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8025c7ae>] generic_file_buffered_write+0x22c/0x658
+>   [<ffffffff802dc663>] ext4_mark_inode_dirty+0x134/0x147
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff80295a76>] touch_atime+0x12/0xfa
+>   [<ffffffff80224b5b>] __wake_up_sync+0x3a/0x56
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8021ed48>] do_page_fault+0x471/0x825
+>   [<ffffffff8026f499>] mmap_region+0x41a/0x505
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> receive_log   D 00000000ffffffff     0  7977   7974
+>   ffff81002d4ffad0 0000000000000082 ffffffff8028fce8 ffff81007ed55900
+>   ffffffff80600cc0 0000000000000100 ffff81007e86ed80 ffff81007ed55900
+>   ffffffff8054d350 ffff81007ed55b38 000000002d4fff50 ffff81007ed55b38
+> Call Trace:
+>   [<ffffffff8028fce8>] poll_freewait+0x36/0x87
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff802ec6a2>] __ext4_journal_dirty_metadata+0x1e/0x46
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff8028ad96>] do_lookup+0x63/0x1a1
+>   [<ffffffff80293dd5>] dput+0x21/0x10a
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff80286f41>] cp_new_stat+0xe9/0xfc
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> archive_watch D 00000000ffffffff     0  7980   7974
+>   ffff81007ecabce0 0000000000000082 ffffffff802de7cd ffff810000000001
+>   ffffffff80600cc0 ffff810000000001 ffffffff8027ce42 ffff81007ed537a0
+>   ffff8101fff33210 ffff81007ed539d8 00000002802d9b7a ffff81007ed539d8
+> Call Trace:
+>   [<ffffffff802de7cd>] ext4_getblk+0xb4/0x170
+>   [<ffffffff8027ce42>] get_partial_node+0x15/0x78
+>   [<ffffffff80294b15>] __d_lookup+0xbd/0x107
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8028c917>] __link_path_walk+0x6e0/0xdd4
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802e3350>] ext4_unlink+0x3f/0x1fe
+>   [<ffffffff8028b364>] may_delete+0x5e/0x135
+>   [<ffffffff8028b9af>] vfs_unlink+0x5e/0xa3
+>   [<ffffffff8028d985>] do_unlinkat+0xc1/0x142
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff8020b26e>] tracesys+0x71/0xda
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> amg           D ffff81007e8b3cf8     0  7986   7974
+>   ffff81002d50bb60 0000000000000086 0000000000000000 0000000000000100
+>   ffffffff80600cc0 0000000000000000 0000000000000000 ffff81007ed50000
+>   ffff8101050acde0 ffff81007ed50238 0000000100000000 ffff81007ed50238
+> Call Trace:
+>   [<ffffffff80224f1d>] default_wake_function+0x0/0xe
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8028a28d>] pipe_write+0x4bc/0x4ce
+>   [<ffffffff8029925e>] mntput_no_expire+0x27/0x11e
+>   [<ffffffff8028d0ba>] path_walk+0xaf/0xb9
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff80286f41>] cp_new_stat+0xe9/0xfc
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> dir_check     D ffff81007e8b1690     0  7988   7986
+>   ffff81002d625d70 0000000000000082 ffff81002d625d38 ffff81007edfcb00
+>   ffffffff80600cc0 0000000000000101 ffffffff80293dd5 ffff81007ed542c0
+>   ffff81007ed574d0 ffff81007ed544f8 000000028028c917 ffff81007ed544f8
+> Call Trace:
+>   [<ffffffff80293dd5>] dput+0x21/0x10a
+>   [<ffffffff8028cee0>] __link_path_walk+0xca9/0xdd4
+>   [<ffffffff8029925e>] mntput_no_expire+0x27/0x11e
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff8028ac53>] lock_rename+0x35/0xc5
+>   [<ffffffff8028d545>] do_rename+0x98/0x1b2
+>   [<ffffffff80286f41>] cp_new_stat+0xe9/0xfc
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff8028d6ab>] sys_renameat+0x4c/0x6b
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> afd_stat      D 00000000ffffffff     0  7989   7974
+>   ffff81002d461b30 0000000000000082 ffff81002d461da8 ffff81002d461da8
+>   ffffffff80600cc0 ffff81002d461da8 ffffffff802a38d5 ffff81007ed57a60
+>   ffffffff8054d350 ffff81007ed57c98 000000008023e66b ffff81007ed57c98
+> Call Trace:
+>   [<ffffffff802a38d5>] __find_get_block_slow+0xcf/0xdb
+>   [<ffffffff80290dfd>] __pollwait+0x0/0xe3
+>   [<ffffffff802fe4bb>] do_get_write_access+0x3ab/0x3ed
+>   [<ffffffff80242fdc>] getnstimeofday+0x38/0x92
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff80262dda>] pdflush_operation+0x93/0x9d
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff80269428>] do_wp_page+0x45b/0x4ba
+>   [<ffffffff8026aaed>] handle_mm_fault+0x62d/0x6a3
+>   [<ffffffff8022a745>] hrtick_set+0xa1/0x10a
+>   [<ffffffff8021ed0c>] do_page_fault+0x435/0x825
+>   [<ffffffff8020ac45>] do_notify_resume+0x81f/0x840
+>   [<ffffffff802411a8>] hrtimer_start+0x100/0x122
+>   [<ffffffff802258bb>] hrtick_start_fair+0x139/0x18a
+>   [<ffffffff8022a745>] hrtick_set+0xa1/0x10a
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff80467779>] error_exit+0x0/0x51
+> 
+> init_afd      D ffff81007e8b3cf8     0  7997      1
+>   ffff81027ee41b30 0000000000000086 ffff81027ee41dd0 ffff81027ee41da8
+>   ffffffff80600cc0 ffff81027ee41db8 0000000000000010 ffff81027ecca160
+>   ffff8101bbec1640 ffff81027ecca398 0000000000000000 ffff81027ecca398
+> Call Trace:
+>   [<ffffffff80290dfd>] __pollwait+0x0/0xe3
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff80269428>] do_wp_page+0x45b/0x4ba
+>   [<ffffffff8026aaed>] handle_mm_fault+0x62d/0x6a3
+>   [<ffffffff8021ed0c>] do_page_fault+0x435/0x825
+>   [<ffffffff8029925e>] mntput_no_expire+0x27/0x11e
+>   [<ffffffff80286f41>] cp_new_stat+0xe9/0xfc
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff80467779>] error_exit+0x0/0x51
+> 
+> transfer_log  D 00000000ffffffff     0  8001   7997
+>   ffff81002d681ad0 0000000000000082 ffffffff8028fce8 ffff81007fb8f4d0
+>   ffffffff80600cc0 0000000000000100 ffff8101b1362540 ffff81007fb8f4d0
+>   ffff8101fff33210 ffff81007fb8f708 000000022d681f50 ffff81007fb8f708
+> Call Trace:
+>   [<ffffffff8028fce8>] poll_freewait+0x36/0x87
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8025c7ae>] generic_file_buffered_write+0x22c/0x658
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff80295a76>] touch_atime+0x12/0xfa
+>   [<ffffffff80224b5b>] __wake_up_sync+0x3a/0x56
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8021ed48>] do_page_fault+0x471/0x825
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> archive_watch D 00000000ffffffff     0  8003   7997
+>   ffff81002d49dce0 0000000000000086 ffffffff802de7cd ffff810000000001
+>   ffffffff80600cc0 ffff810000000001 ffffffff8027ce42 ffff81007fb8ef40
+>   ffff8101fff32160 ffff81007fb8f178 00000001802d9b7a ffff81007fb8f178
+> Call Trace:
+>   [<ffffffff802de7cd>] ext4_getblk+0xb4/0x170
+>   [<ffffffff8027ce42>] get_partial_node+0x15/0x78
+>   [<ffffffff80294b15>] __d_lookup+0xbd/0x107
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8028c917>] __link_path_walk+0x6e0/0xdd4
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802e3350>] ext4_unlink+0x3f/0x1fe
+>   [<ffffffff8028b364>] may_delete+0x5e/0x135
+>   [<ffffffff8028b9af>] vfs_unlink+0x5e/0xa3
+>   [<ffffffff8028d985>] do_unlinkat+0xc1/0x142
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff8020b26e>] tracesys+0x71/0xda
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> input_log     D 00000000ffffffff     0  8004   7997
+>   ffff81002d419ad0 0000000000000086 ffffffff8028fce8 ffff81007fb8de90
+>   ffffffff80600cc0 0000000000000100 ffff81027f76aa80 ffff81007fb8de90
+>   ffff8101fff32160 ffff81007fb8e0c8 000000012d419f50 ffff81007fb8e0c8
+> Call Trace:
+>   [<ffffffff8028fce8>] poll_freewait+0x36/0x87
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8025c7ae>] generic_file_buffered_write+0x22c/0x658
+>   [<ffffffff802dc663>] ext4_mark_inode_dirty+0x134/0x147
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff80295a76>] touch_atime+0x12/0xfa
+>   [<ffffffff80224b5b>] __wake_up_sync+0x3a/0x56
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> output_log    D ffff81007e8b3cf8     0  8005   7997
+>   ffff81002d4fdad0 0000000000000086 ffffffff8028fce8 ffff81007fbbc2c0
+>   ffffffff80600cc0 0000000000000100 ffff81017ff649c0 ffff81007fbbc2c0
+>   ffff81001ce46420 ffff81007fbbc4f8 000000012d4fdf50 ffff81007fbbc4f8
+> Call Trace:
+>   [<ffffffff8028fce8>] poll_freewait+0x36/0x87
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8025c7ae>] generic_file_buffered_write+0x22c/0x658
+>   [<ffffffff802dc663>] ext4_mark_inode_dirty+0x134/0x147
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff80295a76>] touch_atime+0x12/0xfa
+>   [<ffffffff80224b5b>] __wake_up_sync+0x3a/0x56
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> production_lo D ffff81007e8b3cf8     0  8007   7997
+>   ffff81002d615ad0 0000000000000082 ffffffff8028fce8 ffff81007d939bd0
+>   ffffffff80600cc0 0000000000000100 ffff81027f76a3c0 ffff81007d939bd0
+>   ffff81007ed50590 ffff81007d939e08 000000012d615f50 ffff81007d939e08
+> Call Trace:
+>   [<ffffffff8028fce8>] poll_freewait+0x36/0x87
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8025c7ae>] generic_file_buffered_write+0x22c/0x658
+>   [<ffffffff802dc663>] ext4_mark_inode_dirty+0x134/0x147
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff80295a76>] touch_atime+0x12/0xfa
+>   [<ffffffff80224b5b>] __wake_up_sync+0x3a/0x56
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8026f499>] mmap_region+0x41a/0x505
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> distribution_ D 00000000ffffffff     0  8008   7997
+>   ffff81002d53fad0 0000000000000086 ffffffff8028fce8 ffff81007d93ac80
+>   ffffffff80600cc0 0000000000000100 ffff81007f300600 ffff81007d93ac80
+>   ffff8101fff33210 ffff81007d93aeb8 000000022d53ff50 ffff81007d93aeb8
+> Call Trace:
+>   [<ffffffff8028fce8>] poll_freewait+0x36/0x87
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8025c7ae>] generic_file_buffered_write+0x22c/0x658
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff80295a76>] touch_atime+0x12/0xfa
+>   [<ffffffff80224b5b>] __wake_up_sync+0x3a/0x56
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff8022a745>] hrtick_set+0xa1/0x10a
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> dir_check     D ffff81007e8b1690     0  8011   8009
+>   ffff8101e1359d70 0000000000000082 ffff8101e1359d38 ffff81007edfcb00
+>   ffffffff80600cc0 0000000000000101 ffffffff80293dd5 ffff8101bbec10b0
+>   ffff81007fb8de90 ffff8101bbec12e8 000000018028c917 ffff8101bbec12e8
+> Call Trace:
+>   [<ffffffff80293dd5>] dput+0x21/0x10a
+>   [<ffffffff8028cee0>] __link_path_walk+0xca9/0xdd4
+>   [<ffffffff8029925e>] mntput_no_expire+0x27/0x11e
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff8028ac53>] lock_rename+0x35/0xc5
+>   [<ffffffff8028d545>] do_rename+0x98/0x1b2
+>   [<ffffffff80286f41>] cp_new_stat+0xe9/0xfc
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff8028d6ab>] sys_renameat+0x4c/0x6b
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> afd_stat      D ffff81007e8b3cf8     0  8012   7997
+>   ffff81002d69bb30 0000000000000082 ffff81002d69bda8 ffff81002d69bda8
+>   ffffffff80600cc0 ffff81002d69bda8 ffffffff802a38d5 ffff81007d93c2c0
+>   ffff81027eccd900 ffff81007d93c4f8 000000008023e66b ffff81007d93c4f8
+> Call Trace:
+>   [<ffffffff802a38d5>] __find_get_block_slow+0xcf/0xdb
+>   [<ffffffff80290dfd>] __pollwait+0x0/0xe3
+>   [<ffffffff802fe4bb>] do_get_write_access+0x3ab/0x3ed
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff80224a97>] __wake_up+0x38/0x4f
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff80269428>] do_wp_page+0x45b/0x4ba
+>   [<ffffffff8026aaed>] handle_mm_fault+0x62d/0x6a3
+>   [<ffffffff8022a745>] hrtick_set+0xa1/0x10a
+>   [<ffffffff8021ed0c>] do_page_fault+0x435/0x825
+>   [<ffffffff8020ac45>] do_notify_resume+0x81f/0x840
+>   [<ffffffff802411a8>] hrtimer_start+0x100/0x122
+>   [<ffffffff802258bb>] hrtick_start_fair+0x139/0x18a
+>   [<ffffffff8022a745>] hrtick_set+0xa1/0x10a
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff80467779>] error_exit+0x0/0x51
+> 
+> init_afd      D 00000000ffffffff     0  8020      1
+>   ffff8101bbdd5b30 0000000000000086 ffff8101bbdd5dd0 ffff8101bbdd5da8
+>   ffffffff80600cc0 ffff8101bbdd5db8 0000000000000010 ffff8101bbec1640
+>   ffffffff8054d350 ffff8101bbec1878 0000000000000000 ffff8101bbec1878
+> Call Trace:
+>   [<ffffffff80290dfd>] __pollwait+0x0/0xe3
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff80269428>] do_wp_page+0x45b/0x4ba
+>   [<ffffffff8026aaed>] handle_mm_fault+0x62d/0x6a3
+>   [<ffffffff8021ed0c>] do_page_fault+0x435/0x825
+>   [<ffffffff8029925e>] mntput_no_expire+0x27/0x11e
+>   [<ffffffff80286f41>] cp_new_stat+0xe9/0xfc
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff80467779>] error_exit+0x0/0x51
+> 
+> receive_log   D 00000000ffffffff     0  8023   8020
+>   ffff81027ee1bad0 0000000000000086 ffffffff8028fce8 ffff81027eccc2c0
+>   ffffffff80600cc0 0000000000000100 ffff81007f300000 ffff81027eccc2c0
+>   ffff8101fff33210 ffff81027eccc4f8 000000027ee1bf50 ffff81027eccc4f8
+> Call Trace:
+>   [<ffffffff8028fce8>] poll_freewait+0x36/0x87
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff802ec6a2>] __ext4_journal_dirty_metadata+0x1e/0x46
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff8028ad96>] do_lookup+0x63/0x1a1
+>   [<ffffffff80295a76>] touch_atime+0x12/0xfa
+>   [<ffffffff80224b5b>] __wake_up_sync+0x3a/0x56
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff80286f41>] cp_new_stat+0xe9/0xfc
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> transfer_log  D 00000000ffffffff     0  8024   8020
+>   ffff81027f799ad0 0000000000000086 ffffffff8028fce8 ffff81027eccc850
+>   ffffffff80600cc0 0000000000000100 ffff81027d7443c0 ffff81027eccc850
+>   ffffffff8054d350 ffff81027eccca88 000000007f799f50 ffff81027eccca88
+> Call Trace:
+>   [<ffffffff8028fce8>] poll_freewait+0x36/0x87
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8025c7ae>] generic_file_buffered_write+0x22c/0x658
+>   [<ffffffff802dc663>] ext4_mark_inode_dirty+0x134/0x147
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff80295a76>] touch_atime+0x12/0xfa
+>   [<ffffffff80224b5b>] __wake_up_sync+0x3a/0x56
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8021ed48>] do_page_fault+0x471/0x825
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff8022a745>] hrtick_set+0xa1/0x10a
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> archive_watch D 00000000ffffffff     0  8026   8020
+>   ffff81027f7ddce0 0000000000000082 ffffffff802de7cd ffff810200000001
+>   ffffffff80600cc0 ffff810000000001 ffffffff8027ce42 ffff81027ecc90b0
+>   ffff8101fff33210 ffff81027ecc92e8 00000002802d9b7a ffff81027ecc92e8
+> Call Trace:
+>   [<ffffffff802de7cd>] ext4_getblk+0xb4/0x170
+>   [<ffffffff8027ce42>] get_partial_node+0x15/0x78
+>   [<ffffffff80294b15>] __d_lookup+0xbd/0x107
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8028c917>] __link_path_walk+0x6e0/0xdd4
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802e3350>] ext4_unlink+0x3f/0x1fe
+>   [<ffffffff8028b364>] may_delete+0x5e/0x135
+>   [<ffffffff8028b9af>] vfs_unlink+0x5e/0xa3
+>   [<ffffffff8028d985>] do_unlinkat+0xc1/0x142
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff8020b26e>] tracesys+0x71/0xda
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> input_log     D ffff81007e8b3cf8     0  8027   8020
+>   ffff81027eed1ad0 0000000000000082 ffffffff8028fce8 ffff81027ecca6f0
+>   ffffffff80600cc0 0000000000000100 ffff81027d744e40 ffff81027ecca6f0
+>   ffff81007fb8de90 ffff81027ecca928 000000017eed1f50 ffff81027ecca928
+> Call Trace:
+>   [<ffffffff8028fce8>] poll_freewait+0x36/0x87
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8025c7ae>] generic_file_buffered_write+0x22c/0x658
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff80295a76>] touch_atime+0x12/0xfa
+>   [<ffffffff80224b5b>] __wake_up_sync+0x3a/0x56
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff8022a745>] hrtick_set+0xa1/0x10a
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> output_log    D ffff81007e8b3cf8     0  8028   8020
+>   ffff81027d64dad0 0000000000000086 ffffffff8028fce8 ffff81027eccac80
+>   ffffffff80600cc0 0000000000000100 ffff81010508c840 ffff81027eccac80
+>   ffff81007ed574d0 ffff81027eccaeb8 000000027d64df50 ffff81027eccaeb8
+> Call Trace:
+>   [<ffffffff8028fce8>] poll_freewait+0x36/0x87
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8025c7ae>] generic_file_buffered_write+0x22c/0x658
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff80295a76>] touch_atime+0x12/0xfa
+>   [<ffffffff80224b5b>] __wake_up_sync+0x3a/0x56
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff8022a745>] hrtick_set+0xa1/0x10a
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> distribution_ D 00000000ffffffff     0  8031   8020
+>   ffff81027ee1dad0 0000000000000086 ffffffff8028fce8 ffff81027ecc8590
+>   ffffffff80600cc0 0000000000000100 ffff810105128a80 ffff81027ecc8590
+>   ffff8101fff33210 ffff81027ecc87c8 000000027ee1df50 ffff81027ecc87c8
+> Call Trace:
+>   [<ffffffff8028fce8>] poll_freewait+0x36/0x87
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8025c7ae>] generic_file_buffered_write+0x22c/0x658
+>   [<ffffffff802dc663>] ext4_mark_inode_dirty+0x134/0x147
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff80295a76>] touch_atime+0x12/0xfa
+>   [<ffffffff80224b5b>] __wake_up_sync+0x3a/0x56
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> dir_check     D 00000000ffffffff     0  8034   8032
+>   ffff81027ec01d70 0000000000000082 ffff81027ec01d38 ffff81007edfcb00
+>   ffffffff80600cc0 0000000000000101 ffffffff80293dd5 ffff81027eccb210
+>   ffff8101fff33210 ffff81027eccb448 000000028028c917 ffff81027eccb448
+> Call Trace:
+>   [<ffffffff80293dd5>] dput+0x21/0x10a
+>   [<ffffffff8028cee0>] __link_path_walk+0xca9/0xdd4
+>   [<ffffffff8029925e>] mntput_no_expire+0x27/0x11e
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff8028ac53>] lock_rename+0x35/0xc5
+>   [<ffffffff8028d545>] do_rename+0x98/0x1b2
+>   [<ffffffff80286f41>] cp_new_stat+0xe9/0xfc
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff8028d6ab>] sys_renameat+0x4c/0x6b
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> afd_stat      D ffff81007e8b3cf8     0  8035   8020
+>   ffff81027edebb30 0000000000000082 ffff81027edebda8 ffff81027edebda8
+>   ffffffff80600cc0 ffff81027edebda8 ffffffff802a38d5 ffff81027eccd900
+>   ffff81007ed57a60 ffff81027eccdb38 000000008023e66b ffff81027eccdb38
+> Call Trace:
+>   [<ffffffff802a38d5>] __find_get_block_slow+0xcf/0xdb
+>   [<ffffffff80290dfd>] __pollwait+0x0/0xe3
+>   [<ffffffff802fe4bb>] do_get_write_access+0x3ab/0x3ed
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff80224a97>] __wake_up+0x38/0x4f
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff80269428>] do_wp_page+0x45b/0x4ba
+>   [<ffffffff8026aaed>] handle_mm_fault+0x62d/0x6a3
+>   [<ffffffff8022a745>] hrtick_set+0xa1/0x10a
+>   [<ffffffff8021ed0c>] do_page_fault+0x435/0x825
+>   [<ffffffff8020ac45>] do_notify_resume+0x81f/0x840
+>   [<ffffffff802411a8>] hrtimer_start+0x100/0x122
+>   [<ffffffff802258bb>] hrtick_start_fair+0x139/0x18a
+>   [<ffffffff8022a745>] hrtick_set+0xa1/0x10a
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff80467779>] error_exit+0x0/0x51
+> 
+> fd            D ffff81007e8b3cf8     0  8037   8020
+>   ffff81027ededb30 0000000000000086 ffff81027ededdd0 ffff81027ededda8
+>   ffffffff80600cc0 ffff81027ededdb8 00000000000007e0 ffff81027eccde90
+>   ffff81027ed937a0 ffff81027ecce0c8 0000000200000000 ffff81027ecce0c8
+> Call Trace:
+>   [<ffffffff80290dfd>] __pollwait+0x0/0xe3
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff80269428>] do_wp_page+0x45b/0x4ba
+>   [<ffffffff8026aaed>] handle_mm_fault+0x62d/0x6a3
+>   [<ffffffff8021ed0c>] do_page_fault+0x435/0x825
+>   [<ffffffff8022f67f>] release_task+0x2cb/0x2dd
+>   [<ffffffff80230175>] do_wait+0xae4/0xb88
+>   [<ffffffff80286e19>] vfs_stat_fd+0x1b/0x4a
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff80467779>] error_exit+0x0/0x51
+> 
+> afd           D 00000000ffffffff     0 25970   2891
+>   ffff81017fae7ad0 0000000000000086 ffffffff8028fce8 0000000000000246
+>   ffffffff80600cc0 0000000000000100 ffff81020fe5dc00 ffff8101050ab210
+>   ffff8101fff342c0 ffff8101050ab448 000000037fae7f50 ffff8101050ab448
+> Call Trace:
+>   [<ffffffff8028fce8>] poll_freewait+0x36/0x87
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff80268f85>] __do_fault+0x321/0x369
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8021ed48>] do_page_fault+0x471/0x825
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff80237d9a>] group_send_sig_info+0x62/0x6f
+>   [<ffffffff80237dd8>] kill_pid_info+0x31/0x3b
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> sf_ftp        D ffff81007e8b3cf8     0 26537   8037
+>   ffff8101ff7b1b70 0000000000000086 ffffffff802411a8 000000000000148d
+>   ffffffff80600cc0 0000000000000286 00000000ffffffff ffff8101bbec26f0
+>   ffff81027eccb210 ffff8101bbec2928 00000002ffffffff ffff8101bbec2928
+> Call Trace:
+>   [<ffffffff802411a8>] hrtimer_start+0x100/0x122
+>   [<ffffffff8022a745>] hrtick_set+0xa1/0x10a
+>   [<ffffffff80466148>] thread_return+0x63/0xbb
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802e2b08>] ext4_rename+0x4d/0x64a
+>   [<ffffffff804082ac>] sock_common_recvmsg+0x30/0x45
+>   [<ffffffff8028bc5c>] vfs_rename+0x1fd/0x376
+>   [<ffffffff8028d5fe>] do_rename+0x151/0x1b2
+>   [<ffffffff802921db>] __posix_lock_file+0x43d/0x44e
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff8028d6ab>] sys_renameat+0x4c/0x6b
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> sf_ftp        D ffff81007e8b1690     0 26543   8037
+>   ffff8101ddec3d70 0000000000000086 ffff8101ddec3d38 ffff81007edfcb00
+>   ffffffff80600cc0 0000000000000101 ffffffff80293dd5 ffff8101bbec3210
+>   ffff81007ed542c0 ffff8101bbec3448 000000028028c917 ffff8101bbec3448
+> Call Trace:
+>   [<ffffffff80293dd5>] dput+0x21/0x10a
+>   [<ffffffff804082ac>] sock_common_recvmsg+0x30/0x45
+>   [<ffffffff8029925e>] mntput_no_expire+0x27/0x11e
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff8028ac53>] lock_rename+0x35/0xc5
+>   [<ffffffff8028d545>] do_rename+0x98/0x1b2
+>   [<ffffffff802921db>] __posix_lock_file+0x43d/0x44e
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff8028d6ab>] sys_renameat+0x4c/0x6b
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> sf_ftp        D ffff81007e8b3cf8     0 26559   8037
+>   ffff8101b11ddb60 0000000000000086 ffff8101bfc0b4d0 0000000000000202
+>   ffffffff80600cc0 ffff8101bfc0b4d0 00007f1ea612f000 ffff8101bbec74d0
+>   ffff81007ed574d0 ffff8101bbec7708 0000000200000000 ffff8101bbec7708
+> Call Trace:
+>   [<ffffffff80224f1d>] default_wake_function+0x0/0xe
+>   [<ffffffff8042e751>] ip_queue_xmit+0x2a2/0x2f8
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff80467779>] error_exit+0x0/0x51
+>   [<ffffffff8025bae5>] find_lock_page+0x29/0x87
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8028a28d>] pipe_write+0x4bc/0x4ce
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8021ed48>] do_page_fault+0x471/0x825
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff80273714>] free_pages_and_swap_cache+0x70/0x8b
+>   [<ffffffff8026d535>] unmap_region+0x10f/0x125
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> sf_ftp        D 00000000ffffffff     0 26569   8013
+>   ffff8101f40c1b60 0000000000000082 ffff81013b896b00 0000000000000206
+>   ffffffff80600cc0 ffff81013b896b00 00007f31838c7000 ffff8101bbec6f40
+>   ffff8101fff32160 ffff8101bbec7178 0000000100000000 ffff8101bbec7178
+> Call Trace:
+>   [<ffffffff80224f1d>] default_wake_function+0x0/0xe
+>   [<ffffffff8042e751>] ip_queue_xmit+0x2a2/0x2f8
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff80467779>] error_exit+0x0/0x51
+>   [<ffffffff8025bae5>] find_lock_page+0x29/0x87
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8028a28d>] pipe_write+0x4bc/0x4ce
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8021ed48>] do_page_fault+0x471/0x825
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff80273714>] free_pages_and_swap_cache+0x70/0x8b
+>   [<ffffffff8026d535>] unmap_region+0x10f/0x125
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> sf_ftp        D ffff81007e8b3cf8     0 26583   8013
+>   ffff8101bbf9fb60 0000000000000086 ffff81010c703160 0000000000000202
+>   ffffffff80600cc0 ffff81010c703160 00007ffac6bd2000 ffff8101bbec6420
+>   ffff81007d93fa60 ffff8101bbec6658 0000000100000000 ffff8101bbec6658
+> Call Trace:
+>   [<ffffffff80224f1d>] default_wake_function+0x0/0xe
+>   [<ffffffff80411b14>] dev_queue_xmit+0x21a/0x232
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff80467779>] error_exit+0x0/0x51
+>   [<ffffffff8025bae5>] find_lock_page+0x29/0x87
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8028a28d>] pipe_write+0x4bc/0x4ce
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8021ed48>] do_page_fault+0x471/0x825
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff80273714>] free_pages_and_swap_cache+0x70/0x8b
+>   [<ffffffff8026d535>] unmap_region+0x10f/0x125
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> vsftpd        D ffff810208bf59f8     0 26589  26567
+>   ffff810208bf59d8 0000000000000082 ffff810163233090 ffffffff802e9b05
+>   ffffffff80600cc0 ffffffff00058011 ffff810208bf5af8 ffff81027ecce420
+>   ffff81001ce40000 ffff81027ecce658 0000000208bf5b58 ffff81027ecce658
+> Call Trace:
+>   [<ffffffff802e9b05>] ext4_ext_find_extent+0x67/0x26f
+>   [<ffffffff80224a97>] __wake_up+0x38/0x4f
+>   [<ffffffff803023b0>] jbd2_log_wait_commit+0xb6/0x108
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff80300c3c>] jbd2_log_do_checkpoint+0x12d/0x3bd
+>   [<ffffffff802a38d5>] __find_get_block_slow+0xcf/0xdb
+>   [<ffffffff802a3c4d>] __find_get_block+0x14c/0x15c
+>   [<ffffffff802a3c7b>] __getblk+0x1e/0x28d
+>   [<ffffffff802de7cd>] ext4_getblk+0xb4/0x170
+>   [<ffffffff802e6fb3>] ext4fs_dirhash+0x10d/0x1d2
+>   [<ffffffff802e04cf>] dx_probe+0xa1/0x29e
+>   [<ffffffff802e1b3a>] ext4_find_entry+0x293/0x592
+>   [<ffffffff80300f53>] __jbd2_log_wait_for_space+0x87/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8029535a>] d_alloc+0x1f/0x189
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802e24bd>] ext4_create+0x4c/0x105
+>   [<ffffffff802e27c3>] ext4_lookup+0x97/0xc1
+>   [<ffffffff8028b805>] vfs_create+0x7d/0xed
+>   [<ffffffff8028e3ac>] do_filp_open+0x1ed/0x832
+>   [<ffffffff8028290c>] do_sys_open+0x46/0xc3
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> vsftpd        D ffff81007e8b3cf8     0 26595  26584
+>   ffff8101b1307ad0 0000000000000086 ffffffff8042530e ffff81014256f5d0
+>   ffffffff80600cc0 ffff81017fa8fa00 ffffffff80242fdc ffff8101ff6d8b20
+>   ffff81001ce46420 ffff8101ff6d8d58 000000018024153d ffff8101ff6d8d58
+> Call Trace:
+>   [<ffffffff8042530e>] nf_iterate+0x41/0x7d
+>   [<ffffffff80242fdc>] getnstimeofday+0x38/0x92
+>   [<ffffffff8039d0b6>] loopback_xmit+0x80/0x86
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> vsftpd        D ffff81007e8b3cf8     0 26602  26590
+>   ffff81025dcf1c60 0000000000000082 ffffffff802e6fb3 0000000000000020
+>   ffffffff80600cc0 ffff81014256f090 00000000000300aa ffff81027ed942c0
+>   ffff81007d93e420 ffff81027ed944f8 000000017ae2b000 ffff81027ed944f8
+> Call Trace:
+>   [<ffffffff802e6fb3>] ext4fs_dirhash+0x10d/0x1d2
+>   [<ffffffff802e04cf>] dx_probe+0xa1/0x29e
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8029925e>] mntput_no_expire+0x27/0x11e
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802e24bd>] ext4_create+0x4c/0x105
+>   [<ffffffff802e27c3>] ext4_lookup+0x97/0xc1
+>   [<ffffffff8028b805>] vfs_create+0x7d/0xed
+>   [<ffffffff8028e3ac>] do_filp_open+0x1ed/0x832
+>   [<ffffffff8028290c>] do_sys_open+0x46/0xc3
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> sf_ftp        D 00000000ffffffff     0 26605   8013
+>   ffff81001cdc9b60 0000000000000086 ffff8101bfc0b4d0 0000000000000216
+>   ffffffff80600cc0 ffff8101bfc0b4d0 00007f628a734000 ffff81001ce43d30
+>   ffff8101fff33210 ffff81001ce43f68 0000000200000000 ffff81001ce43f68
+> Call Trace:
+>   [<ffffffff80224f1d>] default_wake_function+0x0/0xe
+>   [<ffffffff8042e751>] ip_queue_xmit+0x2a2/0x2f8
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff80467779>] error_exit+0x0/0x51
+>   [<ffffffff8025bae5>] find_lock_page+0x29/0x87
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8028a28d>] pipe_write+0x4bc/0x4ce
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8021ed48>] do_page_fault+0x471/0x825
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff80273714>] free_pages_and_swap_cache+0x70/0x8b
+>   [<ffffffff8026d535>] unmap_region+0x10f/0x125
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> sf_ftp        D ffff81007e8b1690     0 26608   8013
+>   ffff81003eb4fd70 0000000000000082 ffff81003eb4fd38 ffff81007edfcb00
+>   ffffffff80600cc0 0000000000000101 ffffffff80293dd5 ffff81001ce43210
+>   ffff81001ce410b0 ffff81001ce43448 000000018028c917 ffff81001ce43448
+> Call Trace:
+>   [<ffffffff80293dd5>] dput+0x21/0x10a
+>   [<ffffffff804082ac>] sock_common_recvmsg+0x30/0x45
+>   [<ffffffff8029925e>] mntput_no_expire+0x27/0x11e
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff8028ac53>] lock_rename+0x35/0xc5
+>   [<ffffffff8028d545>] do_rename+0x98/0x1b2
+>   [<ffffffff802921db>] __posix_lock_file+0x43d/0x44e
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff8028d6ab>] sys_renameat+0x4c/0x6b
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> sf_ftp        D ffff81007e8b1690     0 26609   8013
+>   ffff81003eb63d70 0000000000000082 ffff81003eb63d38 ffff81007edfcb00
+>   ffffffff80600cc0 0000000000000101 ffffffff80293dd5 ffff81001ce442c0
+>   ffff81017faea160 ffff81001ce444f8 000000008028c917 ffff81001ce444f8
+> Call Trace:
+>   [<ffffffff80293dd5>] dput+0x21/0x10a
+>   [<ffffffff804082ac>] sock_common_recvmsg+0x30/0x45
+>   [<ffffffff8029925e>] mntput_no_expire+0x27/0x11e
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff8028ac53>] lock_rename+0x35/0xc5
+>   [<ffffffff8028d545>] do_rename+0x98/0x1b2
+>   [<ffffffff802921db>] __posix_lock_file+0x43d/0x44e
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff8028d6ab>] sys_renameat+0x4c/0x6b
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> sf_ftp        D ffff81007e8b1690     0 26610   8013
+>   ffff81003e98dd70 0000000000000082 ffff81003e98dd38 ffff81007edfcb00
+>   ffffffff80600cc0 0000000000000101 ffffffff80293dd5 ffff81001ce42c80
+>   ffff81017fae8590 ffff81001ce42eb8 000000028028c917 ffff81001ce42eb8
+> Call Trace:
+>   [<ffffffff80293dd5>] dput+0x21/0x10a
+>   [<ffffffff804082ac>] sock_common_recvmsg+0x30/0x45
+>   [<ffffffff8029925e>] mntput_no_expire+0x27/0x11e
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff8028ac53>] lock_rename+0x35/0xc5
+>   [<ffffffff8028d545>] do_rename+0x98/0x1b2
+>   [<ffffffff802921db>] __posix_lock_file+0x43d/0x44e
+>   [<ffffffff8027ce42>] get_partial_node+0x15/0x78
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff8028d6ab>] sys_renameat+0x4c/0x6b
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> sf_ftp        D 00000000ffffffff     0 26611   8013
+>   ffff81001ced3b60 0000000000000082 ffff81002d7fa0d0 ffff81002d7fa0d0
+>   ffffffff80600cc0 00000000486202ae 0000000210e7c865 ffff81001ce41640
+>   ffffffff8054d350 ffff81001ce41878 0000000000000003 ffff81001ce41878
+> Call Trace:
+>   [<ffffffff80411b14>] dev_queue_xmit+0x21a/0x232
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8028a28d>] pipe_write+0x4bc/0x4ce
+>   [<ffffffff8028d0ba>] path_walk+0xaf/0xb9
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff80282afc>] __dentry_open+0x141/0x226
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> sf_ftp        D 00000000ffffffff     0 26613   8013
+>   ffff8101e1321b30 0000000000000082 0000000000000296 00000000662df001
+>   ffffffff80600cc0 ffff8101d40c9e90 ffffffff80242fdc ffff8101ff6dc850
+>   ffff8101fff33210 ffff8101ff6dca88 000000028024153d ffff8101ff6dca88
+> Call Trace:
+>   [<ffffffff80242fdc>] getnstimeofday+0x38/0x92
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffffa0070d34>] :nf_conntrack:nf_ct_deliver_cached_events+0x4d/0x7d
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff80269428>] do_wp_page+0x45b/0x4ba
+>   [<ffffffff8026aaed>] handle_mm_fault+0x62d/0x6a3
+>   [<ffffffff8021ed0c>] do_page_fault+0x435/0x825
+>   [<ffffffff80286f41>] cp_new_stat+0xe9/0xfc
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff80467779>] error_exit+0x0/0x51
+> 
+> vsftpd        D ffff81007e8b3cf8     0 26614  26606
+>   ffff8100588b1c90 0000000000000086 ffffffff802411a8 000000000000148d
+>   ffffffff80600cc0 0000000000000286 00000000ffffffff ffff81001ce40000
+>   ffff8101ff6dd900 ffff81001ce40238 00000002ffffffff ffff81001ce40238
+> Call Trace:
+>   [<ffffffff802411a8>] hrtimer_start+0x100/0x122
+>   [<ffffffff8022a745>] hrtick_set+0xa1/0x10a
+>   [<ffffffff80466148>] thread_return+0x63/0xbb
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80296e64>] inode_setattr+0x103/0x10a
+>   [<ffffffff802dc9b0>] ext4_setattr+0x1eb/0x244
+>   [<ffffffff80296fbb>] notify_change+0x150/0x26d
+>   [<ffffffff80283568>] do_truncate+0x5e/0x79
+>   [<ffffffff80256c42>] audit_syscall_entry+0x11f/0x152
+>   [<ffffffff80283664>] sys_ftruncate+0xe1/0xfd
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> bzip2         D 00000000ffffffff     0 26616  26615
+>   ffff8102043d9ad0 0000000000000082 ffffffff80278233 ffff810256ebc660
+>   ffffffff80600cc0 00007f5eba717000 0000000000000002 ffff81027ed91640
+>   ffff8101fff342c0 ffff81027ed91878 000000038026a789 ffff81027ed91878
+> Call Trace:
+>   [<ffffffff80278233>] alloc_page_vma+0x154/0x221
+>   [<ffffffff802a3c7b>] __getblk+0x1e/0x28d
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff80260c63>] rmqueue_bulk+0x42/0x8a
+>   [<ffffffff80266f91>] zone_statistics+0x3c/0x90
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff80268f85>] __do_fault+0x321/0x369
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8021ed48>] do_page_fault+0x471/0x825
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff8022a745>] hrtick_set+0xa1/0x10a
+>   [<ffffffff80466148>] thread_return+0x63/0xbb
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> sf_ftp        D ffff81007e8b3cf8     0 26621   8037
+>   ffff8101b1103b60 0000000000000082 ffff81013b896b00 0000000000000206
+>   ffffffff80600cc0 ffff81013b896b00 00007f4f1e28e000 ffff8101ff6df4d0
+>   ffff8101bbec6f40 ffff8101ff6df708 0000000100000000 ffff8101ff6df708
+> Call Trace:
+>   [<ffffffff80224f1d>] default_wake_function+0x0/0xe
+>   [<ffffffff8042e751>] ip_queue_xmit+0x2a2/0x2f8
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff80467779>] error_exit+0x0/0x51
+>   [<ffffffff8025bae5>] find_lock_page+0x29/0x87
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8028a28d>] pipe_write+0x4bc/0x4ce
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8021ed48>] do_page_fault+0x471/0x825
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff80273714>] free_pages_and_swap_cache+0x70/0x8b
+>   [<ffffffff8026d535>] unmap_region+0x10f/0x125
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> vsftpd        D ffff81007e8b3cf8     0 26625  26617
+>   ffff810039cf9b70 0000000000000082 ffff810270718a80 ffff81022646e2a0
+>   ffffffff80600cc0 ffff810039cf9d44 0000000000000000 ffff81001ce469b0
+>   ffff81001ce41640 ffff81001ce46be8 00000000802a3c7b ffff81001ce46be8
+> Call Trace:
+>   [<ffffffff802de7cd>] ext4_getblk+0xb4/0x170
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff80294b15>] __d_lookup+0xbd/0x107
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802e2b08>] ext4_rename+0x4d/0x64a
+>   [<ffffffff804082ac>] sock_common_recvmsg+0x30/0x45
+>   [<ffffffff8028bc5c>] vfs_rename+0x1fd/0x376
+>   [<ffffffff8028d5fe>] do_rename+0x151/0x1b2
+>   [<ffffffff802614c3>] __alloc_pages_internal+0xd2/0x40c
+>   [<ffffffff80256944>] audit_syscall_exit+0x2ee/0x30c
+>   [<ffffffff8028d6ab>] sys_renameat+0x4c/0x6b
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> vsftpd        D 00000000ffffffff     0 26632  26626
+>   ffff8101dddc3c60 0000000000000082 ffffffff802e6fb3 0000000000000020
+>   ffffffff80600cc0 ffff8101d40c8610 0000000000031014 ffff8101ff6dd900
+>   ffff8101fff33210 ffff8101ff6ddb38 000000021d4e6000 ffff8101ff6ddb38
+> Call Trace:
+>   [<ffffffff802e6fb3>] ext4fs_dirhash+0x10d/0x1d2
+>   [<ffffffff802e04cf>] dx_probe+0xa1/0x29e
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff8029925e>] mntput_no_expire+0x27/0x11e
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802e24bd>] ext4_create+0x4c/0x105
+>   [<ffffffff802e27c3>] ext4_lookup+0x97/0xc1
+>   [<ffffffff8028b805>] vfs_create+0x7d/0xed
+>   [<ffffffff8028e3ac>] do_filp_open+0x1ed/0x832
+>   [<ffffffff8028290c>] do_sys_open+0x46/0xc3
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> vsftpd        D 00000000ffffffff     0 26635  26633
+>   ffff8100066c9dd0 0000000000000086 ffffffff804082ac ffff8100066c9d34
+>   ffffffff80600cc0 0000000e9aa3566f ffff81007edfcbc8 ffff81007d93e420
+>   ffff8101fff32160 ffff81007d93e658 0000000100000000 ffff81007d93e658
+> Call Trace:
+>   [<ffffffff804082ac>] sock_common_recvmsg+0x30/0x45
+>   [<ffffffff8028d0ba>] path_walk+0xaf/0xb9
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff8028e2cb>] do_filp_open+0x10c/0x832
+>   [<ffffffff80282837>] get_unused_fd_flags+0x7f/0x10e
+>   [<ffffffff8028290c>] do_sys_open+0x46/0xc3
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> bzip2         D 00000000ffffffff     0 26638  26637
+>   ffff8101427cdad0 0000000000000082 ffffffff80278233 ffff8101f6fa70c0
+>   ffffffff80600cc0 00007f0c65f4e000 0000000000000002 ffff81017faec850
+>   ffffffff8054d350 ffff81017faeca88 000000008026a789 ffff81017faeca88
+> Call Trace:
+>   [<ffffffff80278233>] alloc_page_vma+0x154/0x221
+>   [<ffffffff802a3c7b>] __getblk+0x1e/0x28d
+>   [<ffffffff804666c5>] __mutex_lock_slowpath+0x6a/0xa0
+>   [<ffffffff80466561>] mutex_lock+0xa/0xb
+>   [<ffffffff80300f1e>] __jbd2_log_wait_for_space+0x52/0xac
+>   [<ffffffff802feac7>] start_this_handle+0x2eb/0x370
+>   [<ffffffff80260c63>] rmqueue_bulk+0x42/0x8a
+>   [<ffffffff802fecae>] jbd2_journal_start+0x9a/0xce
+>   [<ffffffff802dc772>] ext4_dirty_inode+0x28/0x7b
+>   [<ffffffff802a00fe>] __mark_inode_dirty+0x29/0x187
+>   [<ffffffff80295a1f>] file_update_time+0xaf/0xf4
+>   [<ffffffff8025d031>] __generic_file_aio_write_nolock+0x265/0x37e
+>   [<ffffffff80268f85>] __do_fault+0x321/0x369
+>   [<ffffffff8025d815>] generic_file_aio_write+0x64/0xc4
+>   [<ffffffff802d9d8c>] ext4_file_write+0x96/0x11a
+>   [<ffffffff80283eb3>] do_sync_write+0xce/0x113
+>   [<ffffffff8021ed48>] do_page_fault+0x471/0x825
+>   [<ffffffff8023e74a>] autoremove_wake_function+0x0/0x2e
+>   [<ffffffff8022a72f>] hrtick_set+0x8b/0x10a
+>   [<ffffffff80466148>] thread_return+0x63/0xbb
+>   [<ffffffff802846d8>] vfs_write+0xad/0x136
+>   [<ffffffff8028481d>] sys_write+0x45/0x6e
+>   [<ffffffff8020b2d2>] tracesys+0xd5/0xda
+> 
+> I used ext4-patch-queue-b5db22ef52ed53d8e3fa978a5a29e1609c9333aa.tar.gz and
+> a clean linux-2.6.26-rc6 with no other patches.
+> 
+> Holger
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-1) mm_take_all_locks() to register the mmu notifier when the whole VM
-   isn't doing anything with "mm". This allows mmu notifier users to
-   keep track if the VM is in the middle of the
-   invalidate_range_begin/end critical section with an atomic counter
-   incraese in range_begin and decreased in range_end. No secondary
-   MMU page fault is allowed to map any spte or secondary tlb
-   reference, while the VM is in the middle of range_begin/end as any
-   page returned by get_user_pages in that critical section could
-   later immediately be freed without any further ->invalidate_page
-   notification (invalidate_range_begin/end works on ranges and
-   ->invalidate_page isn't called immediately before freeing the
-   page). To stop all page freeing and pagetable overwrites the
-   mmap_sem must be taken in write mode and all other anon_vma/i_mmap
-   locks must be taken too.
-
-2) It'd be a waste to add branches in the VM if nobody could possibly
-   run KVM/GRU/XPMEM on the kernel, so mmu notifiers will only enabled
-   if CONFIG_KVM=m/y. In the current kernel kvm won't yet take
-   advantage of mmu notifiers, but this already allows to compile a
-   KVM external module against a kernel with mmu notifiers enabled and
-   from the next pull from kvm.git we'll start using them. And
-   GRU/XPMEM will also be able to continue the development by enabling
-   KVM=m in their config, until they submit all GRU/XPMEM GPLv2 code
-   to the mainline kernel. Then they can also enable MMU_NOTIFIERS in
-   the same way KVM does it (even if KVM=n). This guarantees nobody
-   selects MMU_NOTIFIER=y if KVM and GRU and XPMEM are all =n.
-
-The mmu_notifier_register call can fail because mm_take_all_locks may
-be interrupted by a signal and return -EINTR. Because
-mmu_notifier_reigster is used when a driver startup, a failure can be
-gracefully handled. Here an example of the change applied to kvm to
-register the mmu notifiers. Usually when a driver startups other
-allocations are required anyway and -ENOMEM failure paths exists
-already.
-
- struct  kvm *kvm_arch_create_vm(void)
- {
-        struct kvm *kvm = kzalloc(sizeof(struct kvm), GFP_KERNEL);
-+       int err;
-
-        if (!kvm)
-                return ERR_PTR(-ENOMEM);
-
-        INIT_LIST_HEAD(&kvm->arch.active_mmu_pages);
-
-+       kvm->arch.mmu_notifier.ops = &kvm_mmu_notifier_ops;
-+       err = mmu_notifier_register(&kvm->arch.mmu_notifier, current->mm);
-+       if (err) {
-+               kfree(kvm);
-+               return ERR_PTR(err);
-+       }
-+
-        return kvm;
- }
-
-mmu_notifier_unregister returns void and it's reliable.
-
-The patch also adds a few needed but missing includes that would prevent kernel
-to compile after these changes on non-x86 archs (x86 didn't need them by luck).
-
-Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
----
-
-diff -r 167f154fa536 -r 6fd7f58efb21 arch/x86/kvm/Kconfig
---- a/arch/x86/kvm/Kconfig	Wed Jun 25 03:34:14 2008 +0200
-+++ b/arch/x86/kvm/Kconfig	Wed Jun 25 03:34:17 2008 +0200
-@@ -21,6 +21,7 @@ config KVM
- 	tristate "Kernel-based Virtual Machine (KVM) support"
- 	depends on HAVE_KVM
- 	select PREEMPT_NOTIFIERS
-+	select MMU_NOTIFIER
- 	select ANON_INODES
- 	---help---
- 	  Support hosting fully virtualized guest machines using hardware
-diff -r 167f154fa536 -r 6fd7f58efb21 include/linux/mm_types.h
---- a/include/linux/mm_types.h	Wed Jun 25 03:34:14 2008 +0200
-+++ b/include/linux/mm_types.h	Wed Jun 25 03:34:17 2008 +0200
-@@ -10,6 +10,7 @@
- #include <linux/rbtree.h>
- #include <linux/rwsem.h>
- #include <linux/completion.h>
-+#include <linux/cpumask.h>
- #include <asm/page.h>
- #include <asm/mmu.h>
- 
-@@ -244,6 +245,9 @@ struct mm_struct {
- 	struct file *exe_file;
- 	unsigned long num_exe_file_vmas;
- #endif
-+#ifdef CONFIG_MMU_NOTIFIER
-+	struct mmu_notifier_mm *mmu_notifier_mm;
-+#endif
- };
- 
- #endif /* _LINUX_MM_TYPES_H */
-diff -r 167f154fa536 -r 6fd7f58efb21 include/linux/mmu_notifier.h
---- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/include/linux/mmu_notifier.h	Wed Jun 25 03:34:17 2008 +0200
-@@ -0,0 +1,279 @@
-+#ifndef _LINUX_MMU_NOTIFIER_H
-+#define _LINUX_MMU_NOTIFIER_H
-+
-+#include <linux/list.h>
-+#include <linux/spinlock.h>
-+#include <linux/mm_types.h>
-+
-+struct mmu_notifier;
-+struct mmu_notifier_ops;
-+
-+#ifdef CONFIG_MMU_NOTIFIER
-+
-+/*
-+ * The mmu notifier_mm structure is allocated and installed in
-+ * mm->mmu_notifier_mm inside the mm_take_all_locks() protected
-+ * critical section and it's released only when mm_count reaches zero
-+ * in mmdrop().
-+ */
-+struct mmu_notifier_mm {
-+	/* all mmu notifiers registerd in this mm are queued in this list */
-+	struct hlist_head list;
-+	/* to serialize the list modifications and hlist_unhashed */
-+	spinlock_t lock;
-+};
-+
-+struct mmu_notifier_ops {
-+	/*
-+	 * Called either by mmu_notifier_unregister or when the mm is
-+	 * being destroyed by exit_mmap, always before all pages are
-+	 * freed. This can run concurrently with other mmu notifier
-+	 * methods (the ones invoked outside the mm context) and it
-+	 * should tear down all secondary mmu mappings and freeze the
-+	 * secondary mmu. If this method isn't implemented you've to
-+	 * be sure that nothing could possibly write to the pages
-+	 * through the secondary mmu by the time the last thread with
-+	 * tsk->mm == mm exits.
-+	 *
-+	 * As side note: the pages freed after ->release returns could
-+	 * be immediately reallocated by the gart at an alias physical
-+	 * address with a different cache model, so if ->release isn't
-+	 * implemented because all _software_ driven memory accesses
-+	 * through the secondary mmu are terminated by the time the
-+	 * last thread of this mm quits, you've also to be sure that
-+	 * speculative _hardware_ operations can't allocate dirty
-+	 * cachelines in the cpu that could not be snooped and made
-+	 * coherent with the other read and write operations happening
-+	 * through the gart alias address, so leading to memory
-+	 * corruption.
-+	 */
-+	void (*release)(struct mmu_notifier *mn,
-+			struct mm_struct *mm);
-+
-+	/*
-+	 * clear_flush_young is called after the VM is
-+	 * test-and-clearing the young/accessed bitflag in the
-+	 * pte. This way the VM will provide proper aging to the
-+	 * accesses to the page through the secondary MMUs and not
-+	 * only to the ones through the Linux pte.
-+	 */
-+	int (*clear_flush_young)(struct mmu_notifier *mn,
-+				 struct mm_struct *mm,
-+				 unsigned long address);
-+
-+	/*
-+	 * Before this is invoked any secondary MMU is still ok to
-+	 * read/write to the page previously pointed to by the Linux
-+	 * pte because the page hasn't been freed yet and it won't be
-+	 * freed until this returns. If required set_page_dirty has to
-+	 * be called internally to this method.
-+	 */
-+	void (*invalidate_page)(struct mmu_notifier *mn,
-+				struct mm_struct *mm,
-+				unsigned long address);
-+
-+	/*
-+	 * invalidate_range_start() and invalidate_range_end() must be
-+	 * paired and are called only when the mmap_sem and/or the
-+	 * locks protecting the reverse maps are held. The subsystem
-+	 * must guarantee that no additional references are taken to
-+	 * the pages in the range established between the call to
-+	 * invalidate_range_start() and the matching call to
-+	 * invalidate_range_end().
-+	 *
-+	 * Invalidation of multiple concurrent ranges may be
-+	 * optionally permitted by the driver. Either way the
-+	 * establishment of sptes is forbidden in the range passed to
-+	 * invalidate_range_begin/end for the whole duration of the
-+	 * invalidate_range_begin/end critical section.
-+	 *
-+	 * invalidate_range_start() is called when all pages in the
-+	 * range are still mapped and have at least a refcount of one.
-+	 *
-+	 * invalidate_range_end() is called when all pages in the
-+	 * range have been unmapped and the pages have been freed by
-+	 * the VM.
-+	 *
-+	 * The VM will remove the page table entries and potentially
-+	 * the page between invalidate_range_start() and
-+	 * invalidate_range_end(). If the page must not be freed
-+	 * because of pending I/O or other circumstances then the
-+	 * invalidate_range_start() callback (or the initial mapping
-+	 * by the driver) must make sure that the refcount is kept
-+	 * elevated.
-+	 *
-+	 * If the driver increases the refcount when the pages are
-+	 * initially mapped into an address space then either
-+	 * invalidate_range_start() or invalidate_range_end() may
-+	 * decrease the refcount. If the refcount is decreased on
-+	 * invalidate_range_start() then the VM can free pages as page
-+	 * table entries are removed.  If the refcount is only
-+	 * droppped on invalidate_range_end() then the driver itself
-+	 * will drop the last refcount but it must take care to flush
-+	 * any secondary tlb before doing the final free on the
-+	 * page. Pages will no longer be referenced by the linux
-+	 * address space but may still be referenced by sptes until
-+	 * the last refcount is dropped.
-+	 */
-+	void (*invalidate_range_start)(struct mmu_notifier *mn,
-+				       struct mm_struct *mm,
-+				       unsigned long start, unsigned long end);
-+	void (*invalidate_range_end)(struct mmu_notifier *mn,
-+				     struct mm_struct *mm,
-+				     unsigned long start, unsigned long end);
-+};
-+
-+/*
-+ * The notifier chains are protected by mmap_sem and/or the reverse map
-+ * semaphores. Notifier chains are only changed when all reverse maps and
-+ * the mmap_sem locks are taken.
-+ *
-+ * Therefore notifier chains can only be traversed when either
-+ *
-+ * 1. mmap_sem is held.
-+ * 2. One of the reverse map locks is held (i_mmap_lock or anon_vma->lock).
-+ * 3. No other concurrent thread can access the list (release)
-+ */
-+struct mmu_notifier {
-+	struct hlist_node hlist;
-+	const struct mmu_notifier_ops *ops;
-+};
-+
-+static inline int mm_has_notifiers(struct mm_struct *mm)
-+{
-+	return unlikely(mm->mmu_notifier_mm);
-+}
-+
-+extern int mmu_notifier_register(struct mmu_notifier *mn,
-+				 struct mm_struct *mm);
-+extern int __mmu_notifier_register(struct mmu_notifier *mn,
-+				   struct mm_struct *mm);
-+extern void mmu_notifier_unregister(struct mmu_notifier *mn,
-+				    struct mm_struct *mm);
-+extern void __mmu_notifier_mm_destroy(struct mm_struct *mm);
-+extern void __mmu_notifier_release(struct mm_struct *mm);
-+extern int __mmu_notifier_clear_flush_young(struct mm_struct *mm,
-+					  unsigned long address);
-+extern void __mmu_notifier_invalidate_page(struct mm_struct *mm,
-+					  unsigned long address);
-+extern void __mmu_notifier_invalidate_range_start(struct mm_struct *mm,
-+				  unsigned long start, unsigned long end);
-+extern void __mmu_notifier_invalidate_range_end(struct mm_struct *mm,
-+				  unsigned long start, unsigned long end);
-+
-+static inline void mmu_notifier_release(struct mm_struct *mm)
-+{
-+	if (mm_has_notifiers(mm))
-+		__mmu_notifier_release(mm);
-+}
-+
-+static inline int mmu_notifier_clear_flush_young(struct mm_struct *mm,
-+					  unsigned long address)
-+{
-+	if (mm_has_notifiers(mm))
-+		return __mmu_notifier_clear_flush_young(mm, address);
-+	return 0;
-+}
-+
-+static inline void mmu_notifier_invalidate_page(struct mm_struct *mm,
-+					  unsigned long address)
-+{
-+	if (mm_has_notifiers(mm))
-+		__mmu_notifier_invalidate_page(mm, address);
-+}
-+
-+static inline void mmu_notifier_invalidate_range_start(struct mm_struct *mm,
-+				  unsigned long start, unsigned long end)
-+{
-+	if (mm_has_notifiers(mm))
-+		__mmu_notifier_invalidate_range_start(mm, start, end);
-+}
-+
-+static inline void mmu_notifier_invalidate_range_end(struct mm_struct *mm,
-+				  unsigned long start, unsigned long end)
-+{
-+	if (mm_has_notifiers(mm))
-+		__mmu_notifier_invalidate_range_end(mm, start, end);
-+}
-+
-+static inline void mmu_notifier_mm_init(struct mm_struct *mm)
-+{
-+	mm->mmu_notifier_mm = NULL;
-+}
-+
-+static inline void mmu_notifier_mm_destroy(struct mm_struct *mm)
-+{
-+	if (mm_has_notifiers(mm))
-+		__mmu_notifier_mm_destroy(mm);
-+}
-+
-+/*
-+ * These two macros will sometime replace ptep_clear_flush.
-+ * ptep_clear_flush is impleemnted as macro itself, so this also is
-+ * implemented as a macro until ptep_clear_flush will converted to an
-+ * inline function, to diminish the risk of compilation failure. The
-+ * invalidate_page method over time can be moved outside the PT lock
-+ * and these two macros can be later removed.
-+ */
-+#define ptep_clear_flush_notify(__vma, __address, __ptep)		\
-+({									\
-+	pte_t __pte;							\
-+	struct vm_area_struct *___vma = __vma;				\
-+	unsigned long ___address = __address;				\
-+	__pte = ptep_clear_flush(___vma, ___address, __ptep);		\
-+	mmu_notifier_invalidate_page(___vma->vm_mm, ___address);	\
-+	__pte;								\
-+})
-+
-+#define ptep_clear_flush_young_notify(__vma, __address, __ptep)		\
-+({									\
-+	int __young;							\
-+	struct vm_area_struct *___vma = __vma;				\
-+	unsigned long ___address = __address;				\
-+	__young = ptep_clear_flush_young(___vma, ___address, __ptep);	\
-+	__young |= mmu_notifier_clear_flush_young(___vma->vm_mm,	\
-+						  ___address);		\
-+	__young;							\
-+})
-+
-+#else /* CONFIG_MMU_NOTIFIER */
-+
-+static inline void mmu_notifier_release(struct mm_struct *mm)
-+{
-+}
-+
-+static inline int mmu_notifier_clear_flush_young(struct mm_struct *mm,
-+					  unsigned long address)
-+{
-+	return 0;
-+}
-+
-+static inline void mmu_notifier_invalidate_page(struct mm_struct *mm,
-+					  unsigned long address)
-+{
-+}
-+
-+static inline void mmu_notifier_invalidate_range_start(struct mm_struct *mm,
-+				  unsigned long start, unsigned long end)
-+{
-+}
-+
-+static inline void mmu_notifier_invalidate_range_end(struct mm_struct *mm,
-+				  unsigned long start, unsigned long end)
-+{
-+}
-+
-+static inline void mmu_notifier_mm_init(struct mm_struct *mm)
-+{
-+}
-+
-+static inline void mmu_notifier_mm_destroy(struct mm_struct *mm)
-+{
-+}
-+
-+#define ptep_clear_flush_young_notify ptep_clear_flush_young
-+#define ptep_clear_flush_notify ptep_clear_flush
-+
-+#endif /* CONFIG_MMU_NOTIFIER */
-+
-+#endif /* _LINUX_MMU_NOTIFIER_H */
-diff -r 167f154fa536 -r 6fd7f58efb21 kernel/fork.c
---- a/kernel/fork.c	Wed Jun 25 03:34:14 2008 +0200
-+++ b/kernel/fork.c	Wed Jun 25 03:34:17 2008 +0200
-@@ -54,6 +54,7 @@
- #include <linux/tty.h>
- #include <linux/proc_fs.h>
- #include <linux/blkdev.h>
-+#include <linux/mmu_notifier.h>
- 
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
-@@ -386,6 +387,7 @@ static struct mm_struct * mm_init(struct
- 
- 	if (likely(!mm_alloc_pgd(mm))) {
- 		mm->def_flags = 0;
-+		mmu_notifier_mm_init(mm);
- 		return mm;
- 	}
- 
-@@ -418,6 +420,7 @@ void __mmdrop(struct mm_struct *mm)
- 	BUG_ON(mm == &init_mm);
- 	mm_free_pgd(mm);
- 	destroy_context(mm);
-+	mmu_notifier_mm_destroy(mm);
- 	free_mm(mm);
- }
- EXPORT_SYMBOL_GPL(__mmdrop);
-diff -r 167f154fa536 -r 6fd7f58efb21 mm/Kconfig
---- a/mm/Kconfig	Wed Jun 25 03:34:14 2008 +0200
-+++ b/mm/Kconfig	Wed Jun 25 03:34:17 2008 +0200
-@@ -205,3 +205,6 @@ config VIRT_TO_BUS
- config VIRT_TO_BUS
- 	def_bool y
- 	depends on !ARCH_NO_VIRT_TO_BUS
-+
-+config MMU_NOTIFIER
-+	bool
-diff -r 167f154fa536 -r 6fd7f58efb21 mm/Makefile
---- a/mm/Makefile	Wed Jun 25 03:34:14 2008 +0200
-+++ b/mm/Makefile	Wed Jun 25 03:34:17 2008 +0200
-@@ -33,4 +33,5 @@ obj-$(CONFIG_SMP) += allocpercpu.o
- obj-$(CONFIG_SMP) += allocpercpu.o
- obj-$(CONFIG_QUICKLIST) += quicklist.o
- obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o
-+obj-$(CONFIG_MMU_NOTIFIER) += mmu_notifier.o
- 
-diff -r 167f154fa536 -r 6fd7f58efb21 mm/filemap_xip.c
---- a/mm/filemap_xip.c	Wed Jun 25 03:34:14 2008 +0200
-+++ b/mm/filemap_xip.c	Wed Jun 25 03:34:17 2008 +0200
-@@ -188,7 +188,7 @@ __xip_unmap (struct address_space * mapp
- 		if (pte) {
- 			/* Nuke the page table entry. */
- 			flush_cache_page(vma, address, pte_pfn(*pte));
--			pteval = ptep_clear_flush(vma, address, pte);
-+			pteval = ptep_clear_flush_notify(vma, address, pte);
- 			page_remove_rmap(page, vma);
- 			dec_mm_counter(mm, file_rss);
- 			BUG_ON(pte_dirty(pteval));
-diff -r 167f154fa536 -r 6fd7f58efb21 mm/fremap.c
---- a/mm/fremap.c	Wed Jun 25 03:34:14 2008 +0200
-+++ b/mm/fremap.c	Wed Jun 25 03:34:17 2008 +0200
-@@ -15,6 +15,7 @@
- #include <linux/rmap.h>
- #include <linux/module.h>
- #include <linux/syscalls.h>
-+#include <linux/mmu_notifier.h>
- 
- #include <asm/mmu_context.h>
- #include <asm/cacheflush.h>
-@@ -214,7 +215,9 @@ asmlinkage long sys_remap_file_pages(uns
- 		spin_unlock(&mapping->i_mmap_lock);
- 	}
- 
-+	mmu_notifier_invalidate_range_start(mm, start, start + size);
- 	err = populate_range(mm, vma, start, size, pgoff);
-+	mmu_notifier_invalidate_range_end(mm, start, start + size);
- 	if (!err && !(flags & MAP_NONBLOCK)) {
- 		if (unlikely(has_write_lock)) {
- 			downgrade_write(&mm->mmap_sem);
-diff -r 167f154fa536 -r 6fd7f58efb21 mm/hugetlb.c
---- a/mm/hugetlb.c	Wed Jun 25 03:34:14 2008 +0200
-+++ b/mm/hugetlb.c	Wed Jun 25 03:34:17 2008 +0200
-@@ -14,6 +14,7 @@
- #include <linux/mempolicy.h>
- #include <linux/cpuset.h>
- #include <linux/mutex.h>
-+#include <linux/mmu_notifier.h>
- 
- #include <asm/page.h>
- #include <asm/pgtable.h>
-@@ -823,6 +824,7 @@ void __unmap_hugepage_range(struct vm_ar
- 	BUG_ON(start & ~HPAGE_MASK);
- 	BUG_ON(end & ~HPAGE_MASK);
- 
-+	mmu_notifier_invalidate_range_start(mm, start, end);
- 	spin_lock(&mm->page_table_lock);
- 	for (address = start; address < end; address += HPAGE_SIZE) {
- 		ptep = huge_pte_offset(mm, address);
-@@ -843,6 +845,7 @@ void __unmap_hugepage_range(struct vm_ar
- 	}
- 	spin_unlock(&mm->page_table_lock);
- 	flush_tlb_range(vma, start, end);
-+	mmu_notifier_invalidate_range_end(mm, start, end);
- 	list_for_each_entry_safe(page, tmp, &page_list, lru) {
- 		list_del(&page->lru);
- 		put_page(page);
-diff -r 167f154fa536 -r 6fd7f58efb21 mm/memory.c
---- a/mm/memory.c	Wed Jun 25 03:34:14 2008 +0200
-+++ b/mm/memory.c	Wed Jun 25 03:34:17 2008 +0200
-@@ -51,6 +51,7 @@
- #include <linux/init.h>
- #include <linux/writeback.h>
- #include <linux/memcontrol.h>
-+#include <linux/mmu_notifier.h>
- 
- #include <asm/pgalloc.h>
- #include <asm/uaccess.h>
-@@ -649,6 +650,7 @@ int copy_page_range(struct mm_struct *ds
- 	unsigned long next;
- 	unsigned long addr = vma->vm_start;
- 	unsigned long end = vma->vm_end;
-+	int ret;
- 
- 	/*
- 	 * Don't copy ptes where a page fault will fill them correctly.
-@@ -664,17 +666,33 @@ int copy_page_range(struct mm_struct *ds
- 	if (is_vm_hugetlb_page(vma))
- 		return copy_hugetlb_page_range(dst_mm, src_mm, vma);
- 
-+	/*
-+	 * We need to invalidate the secondary MMU mappings only when
-+	 * there could be a permission downgrade on the ptes of the
-+	 * parent mm. And a permission downgrade will only happen if
-+	 * is_cow_mapping() returns true.
-+	 */
-+	if (is_cow_mapping(vma->vm_flags))
-+		mmu_notifier_invalidate_range_start(src_mm, addr, end);
-+
-+	ret = 0;
- 	dst_pgd = pgd_offset(dst_mm, addr);
- 	src_pgd = pgd_offset(src_mm, addr);
- 	do {
- 		next = pgd_addr_end(addr, end);
- 		if (pgd_none_or_clear_bad(src_pgd))
- 			continue;
--		if (copy_pud_range(dst_mm, src_mm, dst_pgd, src_pgd,
--						vma, addr, next))
--			return -ENOMEM;
-+		if (unlikely(copy_pud_range(dst_mm, src_mm, dst_pgd, src_pgd,
-+					    vma, addr, next))) {
-+			ret = -ENOMEM;
-+			break;
-+		}
- 	} while (dst_pgd++, src_pgd++, addr = next, addr != end);
--	return 0;
-+
-+	if (is_cow_mapping(vma->vm_flags))
-+		mmu_notifier_invalidate_range_end(src_mm,
-+						  vma->vm_start, end);
-+	return ret;
- }
- 
- static unsigned long zap_pte_range(struct mmu_gather *tlb,
-@@ -878,7 +896,9 @@ unsigned long unmap_vmas(struct mmu_gath
- 	unsigned long start = start_addr;
- 	spinlock_t *i_mmap_lock = details? details->i_mmap_lock: NULL;
- 	int fullmm = (*tlbp)->fullmm;
-+	struct mm_struct *mm = vma->vm_mm;
- 
-+	mmu_notifier_invalidate_range_start(mm, start_addr, end_addr);
- 	for ( ; vma && vma->vm_start < end_addr; vma = vma->vm_next) {
- 		unsigned long end;
- 
-@@ -929,6 +949,7 @@ unsigned long unmap_vmas(struct mmu_gath
- 		}
- 	}
- out:
-+	mmu_notifier_invalidate_range_end(mm, start_addr, end_addr);
- 	return start;	/* which is now the end (or restart) address */
- }
- 
-@@ -1589,10 +1610,11 @@ int apply_to_page_range(struct mm_struct
- {
- 	pgd_t *pgd;
- 	unsigned long next;
--	unsigned long end = addr + size;
-+	unsigned long start = addr, end = addr + size;
- 	int err;
- 
- 	BUG_ON(addr >= end);
-+	mmu_notifier_invalidate_range_start(mm, start, end);
- 	pgd = pgd_offset(mm, addr);
- 	do {
- 		next = pgd_addr_end(addr, end);
-@@ -1600,6 +1622,7 @@ int apply_to_page_range(struct mm_struct
- 		if (err)
- 			break;
- 	} while (pgd++, addr = next, addr != end);
-+	mmu_notifier_invalidate_range_end(mm, start, end);
- 	return err;
- }
- EXPORT_SYMBOL_GPL(apply_to_page_range);
-@@ -1800,7 +1823,7 @@ gotten:
- 		 * seen in the presence of one thread doing SMC and another
- 		 * thread doing COW.
- 		 */
--		ptep_clear_flush(vma, address, page_table);
-+		ptep_clear_flush_notify(vma, address, page_table);
- 		set_pte_at(mm, address, page_table, entry);
- 		update_mmu_cache(vma, address, entry);
- 		lru_cache_add_active(new_page);
-diff -r 167f154fa536 -r 6fd7f58efb21 mm/mmap.c
---- a/mm/mmap.c	Wed Jun 25 03:34:14 2008 +0200
-+++ b/mm/mmap.c	Wed Jun 25 03:34:17 2008 +0200
-@@ -26,6 +26,7 @@
- #include <linux/mount.h>
- #include <linux/mempolicy.h>
- #include <linux/rmap.h>
-+#include <linux/mmu_notifier.h>
- 
- #include <asm/uaccess.h>
- #include <asm/cacheflush.h>
-@@ -2054,6 +2055,7 @@ void exit_mmap(struct mm_struct *mm)
- 
- 	/* mm's last user has gone, and its about to be pulled down */
- 	arch_exit_mmap(mm);
-+	mmu_notifier_release(mm);
- 
- 	lru_add_drain();
- 	flush_cache_mm(mm);
-diff -r 167f154fa536 -r 6fd7f58efb21 mm/mmu_notifier.c
---- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/mm/mmu_notifier.c	Wed Jun 25 03:34:17 2008 +0200
-@@ -0,0 +1,276 @@
-+/*
-+ *  linux/mm/mmu_notifier.c
-+ *
-+ *  Copyright (C) 2008  Qumranet, Inc.
-+ *  Copyright (C) 2008  SGI
-+ *             Christoph Lameter <clameter@sgi.com>
-+ *
-+ *  This work is licensed under the terms of the GNU GPL, version 2. See
-+ *  the COPYING file in the top-level directory.
-+ */
-+
-+#include <linux/mmu_notifier.h>
-+#include <linux/module.h>
-+#include <linux/mm.h>
-+#include <linux/err.h>
-+#include <linux/rcupdate.h>
-+#include <linux/sched.h>
-+
-+/*
-+ * This function can't run concurrently against mmu_notifier_register
-+ * because mm->mm_users > 0 during mmu_notifier_register and exit_mmap
-+ * runs with mm_users == 0. Other tasks may still invoke mmu notifiers
-+ * in parallel despite there being no task using this mm any more,
-+ * through the vmas outside of the exit_mmap context, such as with
-+ * vmtruncate. This serializes against mmu_notifier_unregister with
-+ * the mmu_notifier_mm->lock in addition to RCU and it serializes
-+ * against the other mmu notifiers with RCU. struct mmu_notifier_mm
-+ * can't go away from under us as exit_mmap holds an mm_count pin
-+ * itself.
-+ */
-+void __mmu_notifier_release(struct mm_struct *mm)
-+{
-+	struct mmu_notifier *mn;
-+
-+	spin_lock(&mm->mmu_notifier_mm->lock);
-+	while (unlikely(!hlist_empty(&mm->mmu_notifier_mm->list))) {
-+		mn = hlist_entry(mm->mmu_notifier_mm->list.first,
-+				 struct mmu_notifier,
-+				 hlist);
-+		/*
-+		 * We arrived before mmu_notifier_unregister so
-+		 * mmu_notifier_unregister will do nothing other than
-+		 * to wait ->release to finish and
-+		 * mmu_notifier_unregister to return.
-+		 */
-+		hlist_del_init_rcu(&mn->hlist);
-+		/*
-+		 * RCU here will block mmu_notifier_unregister until
-+		 * ->release returns.
-+		 */
-+		rcu_read_lock();
-+		spin_unlock(&mm->mmu_notifier_mm->lock);
-+		/*
-+		 * if ->release runs before mmu_notifier_unregister it
-+		 * must be handled as it's the only way for the driver
-+		 * to flush all existing sptes and stop the driver
-+		 * from establishing any more sptes before all the
-+		 * pages in the mm are freed.
-+		 */
-+		if (mn->ops->release)
-+			mn->ops->release(mn, mm);
-+		rcu_read_unlock();
-+		spin_lock(&mm->mmu_notifier_mm->lock);
-+	}
-+	spin_unlock(&mm->mmu_notifier_mm->lock);
-+
-+	/*
-+	 * synchronize_rcu here prevents mmu_notifier_release to
-+	 * return to exit_mmap (which would proceed freeing all pages
-+	 * in the mm) until the ->release method returns, if it was
-+	 * invoked by mmu_notifier_unregister.
-+	 *
-+	 * The mmu_notifier_mm can't go away from under us because one
-+	 * mm_count is hold by exit_mmap.
-+	 */
-+	synchronize_rcu();
-+}
-+
-+/*
-+ * If no young bitflag is supported by the hardware, ->clear_flush_young can
-+ * unmap the address and return 1 or 0 depending if the mapping previously
-+ * existed or not.
-+ */
-+int __mmu_notifier_clear_flush_young(struct mm_struct *mm,
-+					unsigned long address)
-+{
-+	struct mmu_notifier *mn;
-+	struct hlist_node *n;
-+	int young = 0;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(mn, n, &mm->mmu_notifier_mm->list, hlist) {
-+		if (mn->ops->clear_flush_young)
-+			young |= mn->ops->clear_flush_young(mn, mm, address);
-+	}
-+	rcu_read_unlock();
-+
-+	return young;
-+}
-+
-+void __mmu_notifier_invalidate_page(struct mm_struct *mm,
-+					  unsigned long address)
-+{
-+	struct mmu_notifier *mn;
-+	struct hlist_node *n;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(mn, n, &mm->mmu_notifier_mm->list, hlist) {
-+		if (mn->ops->invalidate_page)
-+			mn->ops->invalidate_page(mn, mm, address);
-+	}
-+	rcu_read_unlock();
-+}
-+
-+void __mmu_notifier_invalidate_range_start(struct mm_struct *mm,
-+				  unsigned long start, unsigned long end)
-+{
-+	struct mmu_notifier *mn;
-+	struct hlist_node *n;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(mn, n, &mm->mmu_notifier_mm->list, hlist) {
-+		if (mn->ops->invalidate_range_start)
-+			mn->ops->invalidate_range_start(mn, mm, start, end);
-+	}
-+	rcu_read_unlock();
-+}
-+
-+void __mmu_notifier_invalidate_range_end(struct mm_struct *mm,
-+				  unsigned long start, unsigned long end)
-+{
-+	struct mmu_notifier *mn;
-+	struct hlist_node *n;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(mn, n, &mm->mmu_notifier_mm->list, hlist) {
-+		if (mn->ops->invalidate_range_end)
-+			mn->ops->invalidate_range_end(mn, mm, start, end);
-+	}
-+	rcu_read_unlock();
-+}
-+
-+static int do_mmu_notifier_register(struct mmu_notifier *mn,
-+				    struct mm_struct *mm,
-+				    int take_mmap_sem)
-+{
-+	struct mmu_notifier_mm * mmu_notifier_mm;
-+	int ret;
-+
-+	BUG_ON(atomic_read(&mm->mm_users) <= 0);
-+
-+	ret = -ENOMEM;
-+	mmu_notifier_mm = kmalloc(sizeof(struct mmu_notifier_mm), GFP_KERNEL);
-+	if (unlikely(!mmu_notifier_mm))
-+		goto out;
-+
-+	if (take_mmap_sem)
-+		down_write(&mm->mmap_sem);
-+	ret = mm_take_all_locks(mm);
-+	if (unlikely(ret))
-+		goto out_cleanup;
-+
-+	if (!mm_has_notifiers(mm)) {
-+		INIT_HLIST_HEAD(&mmu_notifier_mm->list);
-+		spin_lock_init(&mmu_notifier_mm->lock);
-+		mm->mmu_notifier_mm = mmu_notifier_mm;
-+		mmu_notifier_mm = NULL;
-+	}
-+	atomic_inc(&mm->mm_count);
-+
-+	/*
-+	 * Serialize the update against mmu_notifier_unregister. A
-+	 * side note: mmu_notifier_release can't run concurrently with
-+	 * us because we hold the mm_users pin (either implicitly as
-+	 * current->mm or explicitly with get_task_mm() or similar).
-+	 * We can't race against any other mmu notifier method either
-+	 * thanks to mm_take_all_locks().
-+	 */
-+	spin_lock(&mm->mmu_notifier_mm->lock);
-+	hlist_add_head(&mn->hlist, &mm->mmu_notifier_mm->list);
-+	spin_unlock(&mm->mmu_notifier_mm->lock);
-+
-+	mm_drop_all_locks(mm);
-+out_cleanup:
-+	if (take_mmap_sem)
-+		up_write(&mm->mmap_sem);
-+	/* kfree() does nothing if mmu_notifier_mm is NULL */
-+	kfree(mmu_notifier_mm);
-+out:
-+	BUG_ON(atomic_read(&mm->mm_users) <= 0);
-+	return ret;
-+}
-+
-+/*
-+ * Must not hold mmap_sem nor any other VM related lock when calling
-+ * this registration function. Must also ensure mm_users can't go down
-+ * to zero while this runs to avoid races with mmu_notifier_release,
-+ * so mm has to be current->mm or the mm should be pinned safely such
-+ * as with get_task_mm(). If the mm is not current->mm, the mm_users
-+ * pin should be released by calling mmput after mmu_notifier_register
-+ * returns. mmu_notifier_unregister must be always called to
-+ * unregister the notifier. mm_count is automatically pinned to allow
-+ * mmu_notifier_unregister to safely run at any time later, before or
-+ * after exit_mmap. ->release will always be called before exit_mmap
-+ * frees the pages.
-+ */
-+int mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm)
-+{
-+	return do_mmu_notifier_register(mn, mm, 1);
-+}
-+EXPORT_SYMBOL_GPL(mmu_notifier_register);
-+
-+/*
-+ * Same as mmu_notifier_register but here the caller must hold the
-+ * mmap_sem in write mode.
-+ */
-+int __mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm)
-+{
-+	return do_mmu_notifier_register(mn, mm, 0);
-+}
-+EXPORT_SYMBOL_GPL(__mmu_notifier_register);
-+
-+/* this is called after the last mmu_notifier_unregister() returned */
-+void __mmu_notifier_mm_destroy(struct mm_struct *mm)
-+{
-+	BUG_ON(!hlist_empty(&mm->mmu_notifier_mm->list));
-+	kfree(mm->mmu_notifier_mm);
-+	mm->mmu_notifier_mm = LIST_POISON1; /* debug */
-+}
-+
-+/*
-+ * This releases the mm_count pin automatically and frees the mm
-+ * structure if it was the last user of it. It serializes against
-+ * running mmu notifiers with RCU and against mmu_notifier_unregister
-+ * with the unregister lock + RCU. All sptes must be dropped before
-+ * calling mmu_notifier_unregister. ->release or any other notifier
-+ * method may be invoked concurrently with mmu_notifier_unregister,
-+ * and only after mmu_notifier_unregister returned we're guaranteed
-+ * that ->release or any other method can't run anymore.
-+ */
-+void mmu_notifier_unregister(struct mmu_notifier *mn, struct mm_struct *mm)
-+{
-+	BUG_ON(atomic_read(&mm->mm_count) <= 0);
-+
-+	spin_lock(&mm->mmu_notifier_mm->lock);
-+	if (!hlist_unhashed(&mn->hlist)) {
-+		hlist_del_rcu(&mn->hlist);
-+
-+		/*
-+		 * RCU here will force exit_mmap to wait ->release to finish
-+		 * before freeing the pages.
-+		 */
-+		rcu_read_lock();
-+		spin_unlock(&mm->mmu_notifier_mm->lock);
-+		/*
-+		 * exit_mmap will block in mmu_notifier_release to
-+		 * guarantee ->release is called before freeing the
-+		 * pages.
-+		 */
-+		if (mn->ops->release)
-+			mn->ops->release(mn, mm);
-+		rcu_read_unlock();
-+	} else
-+		spin_unlock(&mm->mmu_notifier_mm->lock);
-+
-+	/*
-+	 * Wait any running method to finish, of course including
-+	 * ->release if it was run by mmu_notifier_relase instead of us.
-+	 */
-+	synchronize_rcu();
-+
-+	BUG_ON(atomic_read(&mm->mm_count) <= 0);
-+
-+	mmdrop(mm);
-+}
-+EXPORT_SYMBOL_GPL(mmu_notifier_unregister);
-diff -r 167f154fa536 -r 6fd7f58efb21 mm/mprotect.c
---- a/mm/mprotect.c	Wed Jun 25 03:34:14 2008 +0200
-+++ b/mm/mprotect.c	Wed Jun 25 03:34:17 2008 +0200
-@@ -21,6 +21,7 @@
- #include <linux/syscalls.h>
- #include <linux/swap.h>
- #include <linux/swapops.h>
-+#include <linux/mmu_notifier.h>
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
- #include <asm/cacheflush.h>
-@@ -207,10 +208,12 @@ success:
- 		dirty_accountable = 1;
- 	}
- 
-+	mmu_notifier_invalidate_range_start(mm, start, end);
- 	if (is_vm_hugetlb_page(vma))
- 		hugetlb_change_protection(vma, start, end, vma->vm_page_prot);
- 	else
- 		change_protection(vma, start, end, vma->vm_page_prot, dirty_accountable);
-+	mmu_notifier_invalidate_range_end(mm, start, end);
- 	vm_stat_account(mm, oldflags, vma->vm_file, -nrpages);
- 	vm_stat_account(mm, newflags, vma->vm_file, nrpages);
- 	return 0;
-diff -r 167f154fa536 -r 6fd7f58efb21 mm/mremap.c
---- a/mm/mremap.c	Wed Jun 25 03:34:14 2008 +0200
-+++ b/mm/mremap.c	Wed Jun 25 03:34:17 2008 +0200
-@@ -18,6 +18,7 @@
- #include <linux/highmem.h>
- #include <linux/security.h>
- #include <linux/syscalls.h>
-+#include <linux/mmu_notifier.h>
- 
- #include <asm/uaccess.h>
- #include <asm/cacheflush.h>
-@@ -74,7 +75,11 @@ static void move_ptes(struct vm_area_str
- 	struct mm_struct *mm = vma->vm_mm;
- 	pte_t *old_pte, *new_pte, pte;
- 	spinlock_t *old_ptl, *new_ptl;
-+	unsigned long old_start;
- 
-+	old_start = old_addr;
-+	mmu_notifier_invalidate_range_start(vma->vm_mm,
-+					    old_start, old_end);
- 	if (vma->vm_file) {
- 		/*
- 		 * Subtle point from Rajesh Venkatasubramanian: before
-@@ -116,6 +121,7 @@ static void move_ptes(struct vm_area_str
- 	pte_unmap_unlock(old_pte - 1, old_ptl);
- 	if (mapping)
- 		spin_unlock(&mapping->i_mmap_lock);
-+	mmu_notifier_invalidate_range_end(vma->vm_mm, old_start, old_end);
- }
- 
- #define LATENCY_LIMIT	(64 * PAGE_SIZE)
-diff -r 167f154fa536 -r 6fd7f58efb21 mm/rmap.c
---- a/mm/rmap.c	Wed Jun 25 03:34:14 2008 +0200
-+++ b/mm/rmap.c	Wed Jun 25 03:34:17 2008 +0200
-@@ -49,6 +49,7 @@
- #include <linux/module.h>
- #include <linux/kallsyms.h>
- #include <linux/memcontrol.h>
-+#include <linux/mmu_notifier.h>
- 
- #include <asm/tlbflush.h>
- 
-@@ -287,7 +288,7 @@ static int page_referenced_one(struct pa
- 	if (vma->vm_flags & VM_LOCKED) {
- 		referenced++;
- 		*mapcount = 1;	/* break early from loop */
--	} else if (ptep_clear_flush_young(vma, address, pte))
-+	} else if (ptep_clear_flush_young_notify(vma, address, pte))
- 		referenced++;
- 
- 	/* Pretend the page is referenced if the task has the
-@@ -457,7 +458,7 @@ static int page_mkclean_one(struct page 
- 		pte_t entry;
- 
- 		flush_cache_page(vma, address, pte_pfn(*pte));
--		entry = ptep_clear_flush(vma, address, pte);
-+		entry = ptep_clear_flush_notify(vma, address, pte);
- 		entry = pte_wrprotect(entry);
- 		entry = pte_mkclean(entry);
- 		set_pte_at(mm, address, pte, entry);
-@@ -717,14 +718,14 @@ static int try_to_unmap_one(struct page 
- 	 * skipped over this mm) then we should reactivate it.
- 	 */
- 	if (!migration && ((vma->vm_flags & VM_LOCKED) ||
--			(ptep_clear_flush_young(vma, address, pte)))) {
-+			(ptep_clear_flush_young_notify(vma, address, pte)))) {
- 		ret = SWAP_FAIL;
- 		goto out_unmap;
- 	}
- 
- 	/* Nuke the page table entry. */
- 	flush_cache_page(vma, address, page_to_pfn(page));
--	pteval = ptep_clear_flush(vma, address, pte);
-+	pteval = ptep_clear_flush_notify(vma, address, pte);
- 
- 	/* Move the dirty bit to the physical page now the pte is gone. */
- 	if (pte_dirty(pteval))
-@@ -849,12 +850,12 @@ static void try_to_unmap_cluster(unsigne
- 		page = vm_normal_page(vma, address, *pte);
- 		BUG_ON(!page || PageAnon(page));
- 
--		if (ptep_clear_flush_young(vma, address, pte))
-+		if (ptep_clear_flush_young_notify(vma, address, pte))
- 			continue;
- 
- 		/* Nuke the page table entry. */
- 		flush_cache_page(vma, address, pte_pfn(*pte));
--		pteval = ptep_clear_flush(vma, address, pte);
-+		pteval = ptep_clear_flush_notify(vma, address, pte);
- 
- 		/* If nonlinear, store the file page offset in the pte. */
- 		if (page->index != linear_page_index(vma, address))
