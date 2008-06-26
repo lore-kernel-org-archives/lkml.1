@@ -1,43 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761202AbYFZSHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760856AbYFZSHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761202AbYFZSHB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760729AbYFZSGW
+	id S1760856AbYFZSHv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:07:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754955AbYFZSHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:06:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60457 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754680AbYFZSGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:06:21 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] Linux Power Management Mini-Summit -- Ottawa -- July 22, 2008
-Date: Thu, 26 Jun 2008 20:07:47 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Len Brown <lenb@kernel.org>,
-       Linux Power Management List <linux-pm@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0806261007130.2811-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0806261007130.2811-100000@iolanthe.rowland.org>
+	Thu, 26 Jun 2008 14:07:09 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:52976 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758387AbYFZSHG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 14:07:06 -0400
+Message-ID: <4863D930.2040300@kernel.org>
+Date: Thu, 26 Jun 2008 11:00:16 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: Bernhard Walle <bwalle@suse.de>, Vivek Goyal <vgoyal@redhat.com>,
+       x86@kernel.org, linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
+       yhlu.kernel@gmail.com
+Subject: Re: [PATCH 1/2] Add /sys/firmware/memmap
+References: <1214423826-12628-1-git-send-email-bwalle@suse.de>	<1214423826-12628-2-git-send-email-bwalle@suse.de>	<20080625224301.GE32344@redhat.com>	<18531.20387.111875.576837@harpo.it.uu.se>	<20080626104524.2d7ed1ab@halley.suse.de> <18531.23894.572847.322265@harpo.it.uu.se>
+In-Reply-To: <18531.23894.572847.322265@harpo.it.uu.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806262007.47840.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 26 of June 2008, Alan Stern wrote:
-> On Wed, 25 Jun 2008, Len Brown wrote:
+Mikael Pettersson wrote:
+> Bernhard Walle writes:
+>  > > It should be configurable. Whether it's done via CONFIG_KEXEC or its own
+>  > > option I don't care.
+>  > 
+>  > Ok, changed:
+>  > 
+>  > diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
+>  > index 1008737..73fcc59 100644
+>  > --- a/drivers/firmware/Kconfig
+>  > +++ b/drivers/firmware/Kconfig
+>  > @@ -28,7 +28,7 @@ config EDD_OFF
+>  >  
+>  >  config FIRMWARE_MEMMAP
+>  >      def_bool y
+>  > -    depends on X86_64 || X86_32
+>  > +    depends on (X86_64 || X86_32) && KEXEC
+>  >  
+>  >  config EFI_VARS
+>  >         tristate "EFI Variable Support via sysfs"
 > 
-> > If you would like to attend, please send a note to
-> > linux-pm@lists.osdl.org announcing your intent,
-> > and what you would like to discuss.
+> Yep, thanks.
 > 
-> I plan to attend, and my proposed topic is Runtime PM implementation.
 
-That sounds interesting. :-)
+Making this depend on KEXEC would be most unfortunate.  This is valuable 
+information for finding all kinds of issues even in the absence of KEXEC.
 
-Rafael
+I really don't see a point in making this configurable, except perhaps 
+under CONFIG_EMBEDDED.
+
+	-hpa
