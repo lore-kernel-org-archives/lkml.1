@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759009AbYFZMjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759331AbYFZMj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759009AbYFZMjn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 08:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754414AbYFZM32
+	id S1759331AbYFZMj0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 08:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbYFZM3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:29:28 -0400
-Received: from il.qumranet.com ([212.179.150.194]:32383 "EHLO il.qumranet.com"
+	Thu, 26 Jun 2008 08:29:25 -0400
+Received: from il.qumranet.com ([212.179.150.194]:32343 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752115AbYFZM2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:28:46 -0400
+	id S1753336AbYFZM2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:28:47 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Tan, Li" <li.tan@intel.com>
-Subject: [PATCH 40/50] KVM: Support mixed endian machines
-Date: Thu, 26 Jun 2008 15:28:22 +0300
-Message-Id: <1214483312-9265-41-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 41/50] KVM: Use printk_rlimit() instead of reporting emulation failures just once
+Date: Thu, 26 Jun 2008 15:28:23 +0300
+Message-Id: <1214483312-9265-42-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1214483312-9265-1-git-send-email-avi@qumranet.com>
 References: <1214483312-9265-1-git-send-email-avi@qumranet.com>
@@ -22,80 +22,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tan, Li <li.tan@intel.com>
+Emulation failure reports are useful, so allow more than one per the lifetime
+of the module.
 
-Currently kvmtrace is not portable. This will prevent from copying a
-trace file from big-endian target to little-endian workstation for analysis.
-In the patch, kernel outputs metadata containing a magic number to trace
-log, and changes 64-bit words to be u64 instead of a pair of u32s.
-
-Signed-off-by: Tan Li <li.tan@intel.com>
-Acked-by: Jerone Young <jyoung5@us.ibm.com>
-Acked-by: Hollis Blanchard <hollisb@us.ibm.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- include/linux/kvm.h  |    4 ++--
- virt/kvm/kvm_trace.c |   18 ++++++++++++------
- 2 files changed, 14 insertions(+), 8 deletions(-)
+ arch/x86/kvm/x86.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 1c908ac..0ea064c 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -318,14 +318,14 @@ struct kvm_trace_rec {
- 	__u32 vcpu_id;
- 	union {
- 		struct {
--			__u32 cycle_lo, cycle_hi;
-+			__u64 cycle_u64;
- 			__u32 extra_u32[KVM_TRC_EXTRA_MAX];
- 		} cycle;
- 		struct {
- 			__u32 extra_u32[KVM_TRC_EXTRA_MAX];
- 		} nocycle;
- 	} u;
--};
-+} __attribute__((packed));
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 82196c3..ccb4e1e 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -2076,12 +2076,11 @@ int emulator_set_dr(struct x86_emulate_ctxt *ctxt, int dr, unsigned long value)
  
- #define KVMIO 0xAE
- 
-diff --git a/virt/kvm/kvm_trace.c b/virt/kvm/kvm_trace.c
-index 0e49547..58141f3 100644
---- a/virt/kvm/kvm_trace.c
-+++ b/virt/kvm/kvm_trace.c
-@@ -72,11 +72,7 @@ static void kvm_add_trace(void *probe_private, void *call_data,
- 	rec.cycle_in 	= p->cycle_in;
- 
- 	if (rec.cycle_in) {
--		u64 cycle = 0;
--
--		cycle = get_cycles();
--		rec.u.cycle.cycle_lo = (u32)cycle;
--		rec.u.cycle.cycle_hi = (u32)(cycle >> 32);
-+		rec.u.cycle.cycle_u64 = get_cycles();
- 
- 		for (i = 0; i < rec.extra_u32; i++)
- 			rec.u.cycle.extra_u32[i] = va_arg(*args, u32);
-@@ -114,8 +110,18 @@ static int kvm_subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
+ void kvm_report_emulation_failure(struct kvm_vcpu *vcpu, const char *context)
  {
- 	struct kvm_trace *kt;
+-	static int reported;
+ 	u8 opcodes[4];
+ 	unsigned long rip = vcpu->arch.rip;
+ 	unsigned long rip_linear;
  
--	if (!relay_buf_full(buf))
-+	if (!relay_buf_full(buf)) {
-+		if (!prev_subbuf) {
-+			/*
-+			 * executed only once when the channel is opened
-+			 * save metadata as first record
-+			 */
-+			subbuf_start_reserve(buf, sizeof(u32));
-+			*(u32 *)subbuf = 0x12345678;
-+		}
-+
- 		return 1;
-+	}
+-	if (reported)
++	if (!printk_ratelimit())
+ 		return;
  
- 	kt = buf->chan->private_data;
- 	atomic_inc(&kt->lost_records);
+ 	rip_linear = rip + get_segment_base(vcpu, VCPU_SREG_CS);
+@@ -2090,7 +2089,6 @@ void kvm_report_emulation_failure(struct kvm_vcpu *vcpu, const char *context)
+ 
+ 	printk(KERN_ERR "emulation failed (%s) rip %lx %02x %02x %02x %02x\n",
+ 	       context, rip, opcodes[0], opcodes[1], opcodes[2], opcodes[3]);
+-	reported = 1;
+ }
+ EXPORT_SYMBOL_GPL(kvm_report_emulation_failure);
+ 
 -- 
 1.5.6
 
