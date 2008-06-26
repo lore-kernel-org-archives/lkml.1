@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYFZRsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758511AbYFZRtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbYFZRsg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 13:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759317AbYFZRsW
+	id S1758511AbYFZRtW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 13:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYFZRtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 13:48:22 -0400
-Received: from viefep20-int.chello.at ([62.179.121.40]:43588 "EHLO
-	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759254AbYFZRsU (ORCPT
+	Thu, 26 Jun 2008 13:49:07 -0400
+Received: from zcars04f.nortel.com ([47.129.242.57]:37551 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751097AbYFZRtE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 13:48:20 -0400
-Subject: Re: Spinlocks: Factor our GENERIC_LOCKBREAK in order to avoid spin
-	with irqs disable
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Petr Tesarik <ptesarik@suse.cz>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <Pine.LNX.4.64.0806261001310.7369@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com>
-	 <20080507073017.GJ32195@elte.hu>
-	 <Pine.LNX.4.64.0805071002330.3110@schroedinger.engr.sgi.com>
-	 <Pine.LNX.4.64.0805071022230.3173@schroedinger.engr.sgi.com>
-	 <Pine.LNX.4.64.0805071148240.8441@schroedinger.engr.sgi.com>
-	 <1214241561.19392.21.camel@elijah.suse.cz>
-	 <Pine.LNX.4.64.0806231115420.22557@schroedinger.engr.sgi.com>
-	 <1214253593.11254.30.camel@twins>
-	 <Pine.LNX.4.64.0806231345001.28304@schroedinger.engr.sgi.com>
-	 <1214254730.11254.34.camel@twins>  <48630420.1090102@goop.org>
-	 <1214471867.17319.8.camel@elijah.suse.cz>
-	 <Pine.LNX.4.64.0806261001310.7369@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Thu, 26 Jun 2008 19:48:10 +0200
-Message-Id: <1214502490.10371.44.camel@twins.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+	Thu, 26 Jun 2008 13:49:04 -0400
+Message-ID: <4863C86A.4080903@nortel.com>
+Date: Thu, 26 Jun 2008 10:48:42 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: wacky select timeout behaviour in strace
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Jun 2008 16:48:46.0520 (UTC) FILETIME=[80328380:01C8D7AC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-26 at 10:02 -0700, Christoph Lameter wrote:
-> On Thu, 26 Jun 2008, Petr Tesarik wrote:
-> 
-> > We should probably re-think the whole locking scheme, because spinlocks
-> > were designed to be held for a short period of time. This was a fair
-> > assumption when they were introduced, but obviously it is now false in
-> > many cases (such as virtualization).
-> 
-> And NUMA.
-> 
-> > Ticket-based spinlocks have actually already changed the original
-> > design, so why not implement a generic "lock scheduler" on top of
-> > spinlock_t and rwlock_t?
-> 
-> How about making the semaphore / mutex code as fast as spinlocks and just 
-> use that?
+I've got something odd in a couple of recent strace logs (running on an 
+older kernel, I haven't yet tried to reproduce in mainline).
 
-Hehe, please have a look at a recent -rt tree and possibly test some of
-that if you're interested.
+First case:
 
-It has adaptive spins for rt_mutex. Which is to say, as long as the lock
-owner is current on its cpu, we'll spin trying to acquire the lock. The
-reasoning here is that as long as the owner is running, there is a fair
-chance it'll release the lock soonish.
+20418 22:06:50.583303 select(19, [7 11 12 13 14 15 16 17 18], NULL, 
+NULL, {0, 498508}) = 1 (in [11], left {0, 0}) <5.074137>
 
-This is another case where semaphores can never match, due to their lack
-of ownership.
+select() was called with a timeout of half a second.  Five seconds later 
+it returns with zero time left and a single socket readable.  Why 
+wouldn't it have returned after half a second with a timeout?
 
+
+
+Second case:
+
+18383 01:46:23.572951 select(16, [15], NULL, NULL, {1, 0}) = 1 (in [15], 
+left {0, 732000}) <1.337443>
+
+Here we call select with a timeout of 1 sec, then 1.3337 sec later we 
+return saying that we have 732ms left to sleep.
+
+In addition, there was an interval timer set up to fire every 500ms, and 
+it didn't interrupt the select call.  It did fire 60ms after the select 
+call returned.  Interestingly, the timing of that firing (x.97 sec) 
+didn't match the normal times (x.07 and x.57), but it then returned to 
+the normal times after the single abnormal firing.
+
+Anyone have any ideas what's going on?  This doesn't appear to be an 
+strace artifact, as I can reproduce it without tracing the process in 
+question.  It also doesn't appear to be a system-wide artifact as I know 
+from instrumentation that other tasks are running during this interval.
+
+Thanks,
+
+Chris
