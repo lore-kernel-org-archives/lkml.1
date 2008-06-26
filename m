@@ -1,103 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757769AbYFZKk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757387AbYFZKs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757769AbYFZKk7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 06:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbYFZKku
+	id S1757387AbYFZKs0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 06:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbYFZKsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 06:40:50 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:50041 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752800AbYFZKkt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 06:40:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=JM9RYnhYoaD3jEN71QQNEhXpYXjE01di4kKUVrbwu7Mii70nUOsL9FoKAD+yd+wH6k
-         zYKeJB2zBV9KFzn/Jncc7awP7r2I/kKBCXyTjne9QJVXpLHNbHHdyYpOmrqnZl5w9oiH
-         oPgKXekkwoILpLOuZmF+WLY6gm371VrGPubL4=
-Message-ID: <7c86c4470806260340w5779b9e7p419bde3c039ea6d7@mail.gmail.com>
-Date: Thu, 26 Jun 2008 12:40:48 +0200
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: [patch 05/19] perfmon2 minimal v2: X86 generic code
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080624021120.2bcca593.sfr@canb.auug.org.au>
+	Thu, 26 Jun 2008 06:48:15 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58038 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752800AbYFZKsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 06:48:13 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: linux-next: Tree for June 25
+Date: Thu, 26 Jun 2008 12:49:23 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, kernel-testers@vger.kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+References: <20080626003554.b2623aba.sfr@canb.auug.org.au> <200806260859.26270.rjw@sisk.pl> <alpine.LRH.1.10.0806261201420.10290@twin.jikos.cz>
+In-Reply-To: <alpine.LRH.1.10.0806261201420.10290@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4858346e.0c58560a.394e.3498@mx.google.com>
-	 <20080624021120.2bcca593.sfr@canb.auug.org.au>
+Message-Id: <200806261249.24340.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen,
+On Thursday, 26 of June 2008, Jiri Kosina wrote:
+> On Thu, 26 Jun 2008, Rafael J. Wysocki wrote:
+> 
+> > BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+> > IP: [<ffffffff80264230>] find_symbol+0x230/0x260
+> > PGD 5c817067 PUD 5cccf067 PMD 0
+> > Oops: 0002 [1] SMP DEBUG_PAGEALLOC
+> > last sysfs file:
+> > CPU 0
+> > Modules linked in:
+> > Pid: 912, comm: modprobe Not tainted 2.6.26-rc7-next #4
+> > RIP: 0010:[<ffffffff80264230>]  [<ffffffff80264230>] find_symbol+0x230/0x260
+> > RSP: 0018:ffff81005cbddc68  EFLAGS: 00010202
+> > RAX: 0000000000000000 RBX: 000000000000003d RCX: ffffffff805b8568
+> > RDX: 0000000000000000 RSI: ffffffff80573e0f RDI: ffffffff805c0bcc
+> > RBP: ffff81005cbddda8 R08: ffff81005cbddd48 R09: 0000000000000001
+> > R10: 0000000000000000 R11: 000000000000003c R12: fffffffffffffff2
+> > R13: 00000000000b2507 R14: 00000000006181e0 R15: ffffc20000689240
+> > FS:  00007f5820fed6f0(0000) GS:ffffffff80613f40(0000) knlGS:0000000000000000
+> > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> > CR2: 0000000000000000 CR3: 000000005c87f000 CR4: 00000000000006e0
+> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > Process modprobe (pid: 912, threadinfo ffff81005cbdc000, task ffff81005c9f6840)
+> > Stack:  ffff81005c9f6840 0000000000000000 0000000000000000 00000000006180f8
+> > ffff81005cbddf40 0000000000000000 ffff81005c9f6840 ffffffff8049728f
+> > 00000000000b2507 00000000006181e0 ffff81005cbddcd8 ffffffff8025c70a
+> > Call Trace:
+> > [<ffffffff8049728f>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> > [<ffffffff8025c70a>] ? trace_hardirqs_on_caller+0xca/0x160
+> > [<ffffffff8049728f>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> > [<ffffffff8020f167>] ? do_softirq+0x47/0xa0
+> > [<ffffffff8020bc9f>] ? restore_args+0x0/0x30
+> > [<ffffffff80263c80>] ? struct_module+0x0/0x10
+> > [<ffffffff802648f3>] ? find_sec+0x53/0x70
+> > [<ffffffff80265c04>] sys_init_module+0x6b4/0x1e00
+> > [<ffffffff802afc11>] ? do_sync_read+0xf1/0x130
+> > [<ffffffff802505e0>] ? autoremove_wake_function+0x0/0x40
+> > [<ffffffff80323791>] ? security_file_permission+0x11/0x20
+> > [<ffffffff8049728f>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> > [<ffffffff8025c70a>] ? trace_hardirqs_on_caller+0xca/0x160
+> > [<ffffffff8049728f>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> > [<ffffffff8020b65b>] system_call_after_swapgs+0x7b/0x80
+> >
+> >
+> > Code: 49 8b 43 08 0f 18 08 49 8d 43 08 48 3d c0 a5 5d 80 0f 85 47 fe ff ff 48 c7 c0 fe ff ff ff eb 20 48 8b 45 b0 48 8b 95 e8 fe ff ff <48> 89 02 48
+> > RIP  [<ffffffff80264230>] find_symbol+0x230/0x260
+> > RSP <ffff81005cbddc68>
+> > CR2: 0000000000000000
+> > ---[ end trace 81cec6311b0e1cee ]---
+> 
+> I guess this got in through Rusty's tree, right?
+> 
+> Does the patch below fix it please?
 
-The patch series is currently structured in such a way that the stack
-is not build-able at each step.
-I should add this to the introduction but you have a first "plateau"
-at perfmon-syscalls. You cannot
-build before that.
+Yes, it does.
+
+Thanks,
+Rafael
 
 
-As for the linux-next, I do not use it currently, I am still on
-mainline, maybe that's a mistake.
-I will look into this tree.
-
-As for IPI, I hope they have maintained a smp_call_function_single()
-kind of functionality.
-
-Thanks for your feedback and keep it coming.
-
-On Mon, Jun 23, 2008 at 6:11 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi Stephane,
->
-> On Tue, 17 Jun 2008 15:02:22 -0700 (PDT) eranian@googlemail.com wrote:
->>
->> This patch adds the X86 generic perfmon2 code. It is in charge of
->> implementing certain key functionalities required by the generic
->> code such as read/write of the PMU registers, low-level interrupt
->> handling.
->
-> After applying patches 1-5, building an x86_64 allmodconfig produces
-> these errors:
->
-> In file included from include/linux/perfmon_kern.h:167,
->                 from arch/x86/perfmon/perfmon.c:25:
-> include/linux/perfmon_pmu.h:92: warning: 'struct pfarg_pmc' declared inside parameter list
-> include/linux/perfmon_pmu.h:92: warning: its scope is only this definition or declaration, which is probably not what you want
-> include/linux/perfmon_pmu.h:96: warning: 'struct pfarg_pmd' declared inside parameter list
->
-> Those structures aren't defined until patch 11.
->
-> In file included from arch/x86/perfmon/perfmon.c:25:
-> include/linux/perfmon_kern.h: In function 'pfm_copy_thread':
-> include/linux/perfmon_kern.h:199: error: 'TIF_PERFMON_CTXSW' undeclared (first use in this function)
-> arch/x86/perfmon/perfmon.c: In function 'smp_pmu_interrupt':
-> arch/x86/perfmon/perfmon.c:338: error: 'LOCAL_PERFMON_VECTOR' undeclared (first use in this function)
-> arch/x86/perfmon/perfmon.c: In function 'pfm_arch_resend_irq':
-> arch/x86/perfmon/perfmon.c:451: error: 'LOCAL_PERFMON_VECTOR' undeclared (first use in this function)
-> arch/x86/perfmon/perfmon.c: In function 'pfm_arch_pmu_acquire_percpu':
-> arch/x86/perfmon/perfmon.c:475: error: 'LOCAL_PERFMON_VECTOR' undeclared (first use in this function)
->
-> These are not defined until patch 7.
->
-> So I think some rearrangement is still required.
->
-> Also, some of the x86 files that you are modifying have had their 32 and
-> 64 bit versions combined in linux-next (which is the stuff of the next
-> merge window) so just a heads up that there will be more merge work then.
-> Lastly, some of this will clash with the generic IPIs work.
->
-> I don't want to put you off, you have done great work here, thanks.
->
-> --
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
->
+> From: Jiri Kosina <jkosina@suse.cz>
+> Subject: [PATCH] module: fix NULL pointer dereference in find_symbol()
+> 
+> The patch that introduces each_symbol() iterator forgets to
+> test the NULL value of the output parameters (which the original
+> code did).
+> 
+> This patch restores the correct checks.
+> 
+> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> ---
+>   kernel/module.c |    6 ++++--
+>   1 files changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/module.c b/kernel/module.c
+> index 880409f..a3354ca 100644
+> --- a/kernel/module.c
+> +++ b/kernel/module.c
+> @@ -304,8 +304,10 @@ static unsigned long find_symbol(const char *name,
+>   	fsa.warn = warn;
+> 
+>   	if (each_symbol(find_symbol_in_section, &fsa)) {
+> -		*owner = fsa.owner;
+> -		*crc = fsa.crc;
+> +		if (owner)
+> +			*owner = fsa.owner;
+> +		if (crc)
+> +			*crc = fsa.crc;
+>   		return fsa.value;
+>   	}
+> 
