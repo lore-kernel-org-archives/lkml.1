@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbYFZES6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbYFZEYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754524AbYFZES6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 00:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbYFZESq
+	id S1754771AbYFZEYq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 00:24:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYFZEYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 00:18:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38289
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751336AbYFZESq (ORCPT
+	Thu, 26 Jun 2008 00:24:36 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:45167 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751494AbYFZEYg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 00:18:46 -0400
-Date: Wed, 25 Jun 2008 21:18:46 -0700 (PDT)
-Message-Id: <20080625.211846.227713352.davem@davemloft.net>
-To: vda.linux@googlemail.com
-Cc: mpatocka@redhat.com, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org
-Subject: Re: [3/10 PATCH] inline wake_up_bit
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200806260535.59306.vda.linux@googlemail.com>
-References: <200806252237.58046.vda.linux@googlemail.com>
-	<20080625.172838.242554644.davem@davemloft.net>
-	<200806260535.59306.vda.linux@googlemail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 26 Jun 2008 00:24:36 -0400
+Message-ID: <48631A01.1020009@skyrush.com>
+Date: Wed, 25 Jun 2008 22:24:33 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080620)
+MIME-Version: 1.0
+To: free_beer_for_all@yahoo.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] UTC timestamp option for FAT filesystems
+References: <943360.32984.qm@web46103.mail.sp1.yahoo.com>
+In-Reply-To: <943360.32984.qm@web46103.mail.sp1.yahoo.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Denys Vlasenko <vda.linux@googlemail.com>
-Date: Thu, 26 Jun 2008 05:35:59 +0200
+barry bouwsma wrote:
+> I think 100% of it refers to GMT+2
+> (in my present time zone), so I wonder if in different languages,
+> there's a preference for casual use of the phrase GMT (a quick
+> look in my dictionary shows an entry for GMT, nothing for UTC,
+> but then, it has no entry for `operating system' or its translated
+> equivalent.
 
-> On Thursday 26 June 2008 02:28, David Miller wrote:
-> > From: Denys Vlasenko <vda.linux@googlemail.com>
-> > Date: Wed, 25 Jun 2008 22:37:58 +0200
-> > > > Sparc64 has register windows: it passes arguments in registers, but it 
-> > > > must allocate space for that registers. If the call stack is too deep (8 
-> > > > levels), the CPU runs out of registers and starts spilling the registers 
-> > > > of the function 8-levels-deep to the stack.
-> > > > 
-> > > > The stack usage could be reduced to 176 bytes with little work from gcc 
-> > > > developers and to 128 bytes with more work (ABI change). If you wanted to 
-> > > 
-> > > Wow, it's nearly x2 reduction.
-> > > 
-> > > ABI change in not a problem for kernel, since it is a "freestanding
-> > > application". Exactly like i386 switched to regparm, which is a different ABI.
-> > 
-> > Except that nobody has written this code and therefore being about to
-> > use this unimplemented compiler facility to get correctness is not
-> > tenable.
+Well, your question certainly prompted me to go and read up on it again.
+ In my work (unmanned space missions - solar system stuff), we deal with
+many representations of time, and so I am used to being anal about it.
+For example, there is GMT, UTC, TDT, ET, etc.  They all differ ever so
+slightly.
+
+> --- /mnt/usr/local/src/linux-2.6.24/fs/fat/inode.c-DIST 2008-01-30 10:59:19.000000000 +0100
+> +++ /mnt/usr/local/src/linux-2.6.24/fs/fat/inode.c      2008-04-13 07:09:10.000000000 +0200
+> @@ -826,6 +829,9 @@ static int fat_show_options(struct seq_f
+>                 seq_puts(m, ",showexec");
+>         if (opts->sys_immutable)
+>                 seq_puts(m, ",sys_immutable");
+> +/* XXX HACK */
+> +       if (opts->utc)
+> +               seq_puts(m, ",utc");
+>         if (!isvfat) {
+>                 if (opts->dotsOK)
+>                         seq_puts(m, ",dotsOK=yes");
 > 
-> Inlining everything is even less tenable.
 
-I never suggested this.  Although I do support inlining the
-cases which merely adjust the ordering of arguments being
-passed to function calls, because such inlines are essentially
-of zero cost and of gain to all platforms.
+Indeed!  Thanks, I'll put this in the patch.  The above is actually not
+needed for the mount command or /etc/mtab, but it *is* used for, e.g.,
+/proc/mounts.
 
-> I am all for fixing code where there are extra useless levels of calls,
-> but in this example I pointed out that patch adds inlines too liberally.
-> Do you agree that blowing up every wake_up_bit() into half a dozen
-> or more C lines is not what we want?
-
-I stated my suggested alternative to this in another posting, so of
-course I do not support it as-is.
+						-Joe
