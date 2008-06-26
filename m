@@ -1,89 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbYFZEgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYFZEhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754997AbYFZEgZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 00:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYFZEgP
+	id S1755958AbYFZEhk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 00:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbYFZEhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 00:36:15 -0400
-Received: from casper.infradead.org ([85.118.1.10]:59891 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752039AbYFZEgP (ORCPT
+	Thu, 26 Jun 2008 00:37:31 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:43175 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751519AbYFZEha (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 00:36:15 -0400
-Date: Wed, 25 Jun 2008 21:36:03 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Dave Airlie" <airlied@gmail.com>
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Keith Packard" <keithp@keithp.com>, "Dave Airlie" <airlied@linux.ie>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kmap_atomic_pfn for PCI BAR access?
-Message-ID: <20080625213603.0e82805b@infradead.org>
-In-Reply-To: <21d7e9970806251823q3405e192q13d4944bd0cc3291@mail.gmail.com>
-References: <1214242487.11887.35.camel@koto.keithp.com>
-	<4862EE4C.4060009@goop.org>
-	<21d7e9970806251823q3405e192q13d4944bd0cc3291@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 26 Jun 2008 00:37:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=nVHzRjhxEC1JXBrOFyz3FHiK8CO/xQ4PkmfOo6rhdrjxE+2kmUIPjhNSojHa9aOMXB
+         g2zNEmqctbrkAf7/7kKGd+/9vU+sHxLmwvlwyb7wh1jlrD7d3XbohrWCulWH4IPI8O4g
+         z37E4vyUE5YILp9xTQclsaQpdZLr0p22nHfuQ=
+Message-ID: <28c262360806252137j78a90480n6c3973cd489c1ef2@mail.gmail.com>
+Date: Thu, 26 Jun 2008 13:37:29 +0900
+From: "MinChan Kim" <minchan.kim@gmail.com>
+To: "Takenori Nagano" <t-nagano@ah.jp.nec.com>
+Subject: Re: [RFC][PATCH] prevent incorrect oom under split_lru
+Cc: "Peter Zijlstra" <peterz@infradead.org>,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "Rik van Riel" <riel@redhat.com>, linux-mm <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>, akpm@linux-foundation.org
+In-Reply-To: <4862F5BB.9030200@ah.jp.nec.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <20080624092824.4f0440ca@bree.surriel.com>
+	 <28c262360806242259k3ac308c4n7cee29b72456e95b@mail.gmail.com>
+	 <20080625150141.D845.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <28c262360806242356n3f7e02abwfee1f6acf0fd2c61@mail.gmail.com>
+	 <1214395885.15232.17.camel@twins>
+	 <28c262360806250605le31ba48ma8bb16f996783142@mail.gmail.com>
+	 <4862F5BB.9030200@ah.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jun 2008 11:23:11 +1000
-"Dave Airlie" <airlied@gmail.com> wrote:
+On Thu, Jun 26, 2008 at 10:49 AM, Takenori Nagano
+<t-nagano@ah.jp.nec.com> wrote:
+> MinChan Kim wrote:
+>> Hi peter,
+>>
+>> I agree with you.  but if application's virtual address space is big,
+>> we have a hard problem with mlockall since memory pressure might be a
+>> big.
+>> Of course, It will be a RT application design problem.
+>>
+>>> The much more important case is desktop usage - that is where we run non
+>>> real-time code, but do expect 'low' latency due to user-interaction.
+>>>
+>>> >From hitting swap on my 512M laptop (rather frequent occurance) I know
+>>> we can do better here,..
+>>>
+>>
+>> Absolutely. It is another example. So, I suggest following patch.
+>> It's based on idea of Takenori Nagano's memory reclaim more efficiently.
+>
+> Hi Kim-san,
+>
+> Thank you for agreeing with me.
+>
+> I have one question.
+> My patch don't mind priority. Why do you need "priority == 0"?
 
-> On Thu, Jun 26, 2008 at 11:18 AM, Jeremy Fitzhardinge
-> <jeremy@goop.org> wrote:
-> > Keith Packard wrote:
-> >>
-> >> The graphics memory BAR is generally fairly good sized; on Intel
-> >> chips, it's between 256M and 1G (and growing). I want to write
-> >> data into this region from kernel space, but it's really too big
-> >> to map the whole thing into kernel address space, especially on
-> >> 32-bit systems. ioremap is not a good option here -- it's way too
-> >> slow.
-> >>
-> >> With CONFIG_HIGHMEM enabled, I can use kmap_atomic_pfn (well,
-> >> actually the kmap_atomic_proc_pfn included in the DRM tree) and
-> >> things work quite well -- performance is good, with barely any
-> >> measurable time spent in the PTE whacking (~1%).
-> >>
-> >> However, with CONFIG_HIGHMEM disabled, there aren't any PTEs
-> >> reserved for this kind of mapping fun. This makes me suspect that
-> >> abusing kmap_atomic for this operation would not be appreciated.
-> >> Should I use kmap_atomic_pfn to reach my PCI BAR like this?
-> >>
-> >> Would it be reasonable to supply a patch that made this work even
-> >> without CONFIG_HIGHMEM?
-> >>
-> >
-> > Usually people use ioremap to map device memory.  Wouldn't that
-> > work in this case?
-> >
-> 
-> "but it's really too big to map the whole thing
-> into kernel address space, especially on 32-bit systems. ioremap is
-> not a good option here -- it's way too slow."
-> 
-> >From the original mail.
-> 
-> doing tlb flush for iounmap is slow as all hell if you do it a lot,
-> and we can't afford to mmap the whole aperture it can 1GB.
+Hi, Takenori-san.
 
-well kmap does a tlb flush as well... you can't get away from doing a
-flush if you change cpu mapping.
-What you CAN do is play tricks and flush only once in a while and make
-sure you don't recycle mappings in the mean time (like kmap does).
+Now, Kosaiki-san's patch didn't consider application latency.
+That patch scan all lru[x] pages when memory pressure is very high.
+(ie, priority == 0)
+It will cause application latency to high as peter and me notice that.
+We need a idea which prevent big scanning overhead
+I modified your idea to prevent big scanning overhead only when memory
+pressure is very big.
 
-I can totally see doing an iounmap_lazy() and then have an
-iounmap_flush_lazy() thing or something like that....
+
+> Thanks,
+>  Takenori
+>
+
 
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Kinds regards,
+MinChan Kim
