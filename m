@@ -1,124 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbYFZO3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758785AbYFZOae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758213AbYFZO3S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 10:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbYFZO3H
+	id S1758785AbYFZOae (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 10:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYFZOaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 10:29:07 -0400
-Received: from gw.goop.org ([64.81.55.164]:55825 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751606AbYFZO3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 10:29:06 -0400
-Message-ID: <4863A7A3.201@goop.org>
-Date: Thu, 26 Jun 2008 07:28:51 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 26 Jun 2008 10:30:25 -0400
+Received: from wx-out-0506.google.com ([66.249.82.235]:45732 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752979AbYFZOaX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 10:30:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=pOYzIgtU4NH9I82Vyvm8YKnfuwh7Xpvq7EQwaWLruHOkXP+1V242czuAD/UiRazBWE
+         DaSMsKhB+L5Lf0gkKAcA3H2uw2ka4I0fiTZSo5ufhSpNV0OBW+FelN0LMBionmwKvwk4
+         g/vfQ3G74ZBZNyUhpzgw4pwinCkegbFjItvdM=
+Message-ID: <82e4877d0806260730w5fb2640bwa38547153ab42ee4@mail.gmail.com>
+Date: Thu, 26 Jun 2008 10:30:22 -0400
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: Jie.Yang@Atheros.com
+Subject: Re: [PATCH 2.6.25.3 5/5] atl1e: Atheros L1E Gigabit Ethernet driver
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
-       Mark McLoughlin <markmc@redhat.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Nick Piggin <npiggin@suse.de>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH 00 of 36] x86/paravirt: groundwork for 64-bit Xen support
-References: <patchbomb.1214367536@localhost> <20080625084253.GA11524@elte.hu> <20080625152212.GA3442@elte.hu> <4862A6A9.1030109@goop.org> <20080626105722.GA12640@elte.hu>
-In-Reply-To: <20080626105722.GA12640@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->   
->>> It quickly broke the build in testing:
->>>
->>>  include/asm/pgalloc.h: In function ‘paravirt_pgd_free':
->>>  include/asm/pgalloc.h:14: error: parameter name omitted
->>>  arch/x86/kernel/entry_64.S: In file included from  
->>> arch/x86/kernel/traps_64.c:51:include/asm/pgalloc.h: In function 
->>> ‘paravirt_pgd_free':
->>>  include/asm/pgalloc.h:14: error: parameter name omitted
->>>   
->>>       
->> No, looks like my fault.  The non-PARAVIRT version of  
->> paravirt_pgd_free() is:
->>
->> static inline void paravirt_pgd_free(struct mm_struct *mm, pgd_t *) {}
->>
->> but C doesn't like missing parameter names, even if unused.
->>
->> This should fix it:
->>     
->
-> that fixed the build but now we've got a boot crash with this config:
->
->  time.c: Detected 2010.304 MHz processor.
->  spurious 8259A interrupt: IRQ7.
->  BUG: unable to handle kernel NULL pointer dereference at  0000000000000000
->  IP: [<0000000000000000>]
->  PGD 0
->  Thread overran stack, or stack corrupted
->  Oops: 0010 [1] SMP
->  CPU 0
->
-> with:
->
->   http://redhat.com/~mingo/misc/config-Thu_Jun_26_12_46_46_CEST_2008.bad
->   
-
-Blerg, a contextless NULL rip.  Have you done any bisection on it?  
-Could you try again with the same config, but with 
-"CONFIG_PARAVIRT_DEBUG" enabled as well?  That will BUG if it turns out 
-to be trying to call a NULL paravirt-op
-
-I'll try to repro here anyway.
-
-> i've pushed out the current tip/xen-64bit branch, so that you can see 
-> how things look like at the moment, but i cannot put it into tip/master 
-> yet.
-
-Yeah, I was expecting things to break somewhere with this lot :/
-
-Could you add this patch?  I don't think it will help this case, but 
-it's a bugfix.
-
-    J
-
-Subject: x86_64: use SWAPGS_UNSAFE_STACK in ia32entry.S
-
-Use SWAPGS_UNSAFE_STACK in ia32entry.S in the places where the active
-stack is the usermode stack.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/ia32/ia32entry.S |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-===================================================================
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -98,7 +98,7 @@
- 	CFI_SIGNAL_FRAME
- 	CFI_DEF_CFA	rsp,0
- 	CFI_REGISTER	rsp,rbp
--	SWAPGS
-+	SWAPGS_UNSAFE_STACK
- 	movq	%gs:pda_kernelstack, %rsp
- 	addq	$(PDA_STACKOFFSET),%rsp	
- 	/*
-@@ -210,7 +210,7 @@
- 	CFI_DEF_CFA	rsp,PDA_STACKOFFSET
- 	CFI_REGISTER	rip,rcx
- 	/*CFI_REGISTER	rflags,r11*/
--	SWAPGS
-+	SWAPGS_UNSAFE_STACK
- 	movl	%esp,%r8d
- 	CFI_REGISTER	rsp,r8
- 	movq	%gs:pda_kernelstack,%rsp
+Jie Yang <Jie.Yang <at> Atheros.com> writes:
 
 
+> +static int atl1e_get_eeprom_len(struct net_device *netdev)
+> +{
+> +       struct atl1e_adapter *adapter = netdev_priv(netdev);
+> +
+> +       if (!check_eeprom_exist(&adapter->hw))
+> +               return 512;
+
+Please #define ATL1E_EEPROM_LEN 512 - it is used below too.
+
+> +       else
+> +               return 0;
+> +}
+> +
+
+> +static int atl1e_get_eeprom(struct net_device *netdev,
+> +               struct ethtool_eeprom *eeprom, u8 *bytes)
+> +{
+> +       struct atl1e_adapter *adapter = netdev_priv(netdev);
+> +       struct atl1e_hw *hw = &adapter->hw;
+> +       u32 *eeprom_buff;
+> +       int first_dword, last_dword;
+> +       int ret_val = 0;
+> +       int i;
+> +
+> +       if (eeprom->len == 0)
+> +               return -EINVAL;
+> +
+> +       if (check_eeprom_exist(hw))
+> +               return -EINVAL;
+> +
+> +       eeprom->magic = hw->vendor_id | (hw->device_id << 16);
+> +
+> +       first_dword = eeprom->offset >> 2;
+> +       last_dword = (eeprom->offset + eeprom->len - 1) >> 2;
+> +
+> +       eeprom_buff = kmalloc(sizeof(u32) *
+> +                       (last_dword - first_dword + 1), GFP_KERNEL);
+> +       if (eeprom_buff == NULL)
+> +               return -ENOMEM;
+> +
+> +       for (i = first_dword; i < last_dword; i++) {
+> +               if (!read_eeprom(hw, i * 4, &(eeprom_buff[i-first_dword])))
+> +                       return -EIO;
+
+eeprom_buff is leaked here if read_eeprom fails.
+
+> +       }
+> +
+> +       memcpy(bytes, (u8 *)eeprom_buff + (eeprom->offset & 3),
+> +                       eeprom->len);
+> +       kfree(eeprom_buff);
+> +
+> +       return ret_val;
+> +}
+> +
+
+> +static int atl1e_set_eeprom(struct net_device *netdev,
+> +               struct ethtool_eeprom *eeprom, u8 *bytes)
+> +{
+> +       struct atl1e_adapter *adapter = netdev_priv(netdev);
+> +       struct atl1e_hw *hw = &adapter->hw;
+> +       u32 *eeprom_buff;
+> +       u32 *ptr;
+> +       int max_len, first_dword, last_dword, ret_val = 0;
+> +       int i;
+> +
+> +       if (eeprom->len == 0)
+> +               return -EOPNOTSUPP;
+> +
+> +       if (eeprom->magic != (hw->vendor_id | (hw->device_id << 16)))
+> +               return -EFAULT;
+
+This should probably be -EINVAL?
+
+> +
+> +       max_len = 512;
+
+Better to replace with a #define as mentioned above.
+
+> +
+> +       first_dword = eeprom->offset >> 2;
+> +       last_dword = (eeprom->offset + eeprom->len - 1) >> 2;
+> +       eeprom_buff = kmalloc(max_len, GFP_KERNEL);
+> +       if (!eeprom_buff)
+> +               return -ENOMEM;
+> +
+> +       ptr = (u32 *)eeprom_buff;
+> +
+> +       if (eeprom->offset & 3) {
+> +               /* need read/modify/write of first changed EEPROM word */
+> +               /* only the second byte of the word is being modified */
+> +               if (!read_eeprom(hw, first_dword * 4, &(eeprom_buff[0])))
+> +                       return -EIO;
+
+eeprom_buff is leaked again if read_eeprom() fails.
+
+> +               ptr++;
+> +       }
+> +       if (((eeprom->offset + eeprom->len) & 3)) {
+> +               /* need read/modify/write of last changed EEPROM word */
+> +               /* only the first byte of the word is being modified */
+> +
+> +               if (!read_eeprom(hw, last_dword * 4,
+> +                               &(eeprom_buff[last_dword - first_dword])))
+> +                       return -EIO;
+eeprom_buff is leaked again if read_eeprom() fails.
+
+> +       }
+> +
+> +       /* Device's eeprom is always little-endian, word addressable */
+> +       memcpy(ptr, bytes, eeprom->len);
+> +
+> +       for (i = 0; i < last_dword - first_dword + 1; i++) {
+> +               if (!write_eeprom(hw, ((first_dword + i) * 4), eeprom_buff[i]))
+> +                       return -EIO;
+eeprom_buff is leaked again if read_eeprom() fails.
+
+> +       }
+> +
+> +       kfree(eeprom_buff);
+> +       return ret_val;
+> +}
+> +
