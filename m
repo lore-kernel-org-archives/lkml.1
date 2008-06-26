@@ -1,172 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbYFZAF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755863AbYFZANo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755739AbYFZAF3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jun 2008 20:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbYFZAFP
+	id S1755863AbYFZANo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jun 2008 20:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbYFZANd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jun 2008 20:05:15 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:39864 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751827AbYFZAFN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jun 2008 20:05:13 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiYFAK9zYkhMQWVt/2dsb2JhbACBW7Fo
-Date: Wed, 25 Jun 2008 19:55:07 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       "'Alexey Dobriyan'" <adobriyan@gmail.com>,
-       "'Peter Zijlstra'" <peterz@infradead.org>,
-       "'Steven Rostedt'" <rostedt@goodmis.org>,
-       "'Frank Ch. Eigler'" <fche@redhat.com>, "'Ingo Molnar'" <mingo@elte.hu>,
-       "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'systemtap-ml'" <systemtap@sources.redhat.com>,
-       "'Hideo AOKI'" <haoki@redhat.com>
-Subject: [RFC PATCH] Tracepoint sched probes
-Message-ID: <20080625235507.GB14249@Krystal>
-References: <007601c8d5ca$18fa0e10$4aee2a30$@css.fujitsu.com> <48611B03.1000003@redhat.com> <20080625011951.D83E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48612879.5090809@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <48612879.5090809@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 19:52:16 up 21 days,  4:33,  3 users,  load average: 2.47, 1.65,
-	1.41
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 25 Jun 2008 20:13:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45040 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750770AbYFZANc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jun 2008 20:13:32 -0400
+Date: Wed, 25 Jun 2008 20:13:16 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH 1/2] Avoid bio_endio recursion
+In-Reply-To: <20080625082421.GU20851@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0806252008380.11130@engineering.redhat.com>
+References: <Pine.LNX.4.64.0806240118250.24220@engineering.redhat.com>
+ <20080624080744.GL20851@kernel.dk> <Pine.LNX.4.64.0806241017390.23052@engineering.redhat.com>
+ <20080625082421.GU20851@kernel.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-** note : early RFC. This patch applies on a unreleased LTTng for
-2.6.26-rc8 patchset.
+On Wed, 25 Jun 2008, Jens Axboe wrote:
 
-Scheduler tracepoint probes
+> On Tue, Jun 24 2008, Mikulas Patocka wrote:
+>>
+>>
+>> On Tue, 24 Jun 2008, Jens Axboe wrote:
+>>
+>>> On Tue, Jun 24 2008, Mikulas Patocka wrote:
+>>>> Hi
+>>>>
+>>>> bio_endio calls bi_end_io callback. In case of stacked devices (raid, dm),
+>>>> bio_end_io may call bio_endio again, up to an unspecified length.
+>>>>
+>>>> The crash because of stack overflow was really observed on sparc64. And
+>>>> this recursion was one of the contributing factors (using 9 stack frames
+>>>> --- that is 1728 bytes).
+>>>
+>>> Looks good, I like the concept. Can you please make it a little less
+>>> goto driven, though? The next_bio and goto next_bio could just be a
+>>> while().
+>>>
+>>> --
+>>> Jens Axboe
+>>>
+>>
+>> Hi.
+>>
+>> This is the patch, slightly de-goto-ized. (it still contains one, I think
+>> that while (1) { ... break ... } is no better readable than goto).
+>
+> Sure, that looks better.
+>
+>> I found another problem in my previous patch, I forgot about the "error"
+>> variable (it would cause misbehavior for example if disk fails, submits an
+>> error and raid driver turns this failure into success). We need to save
+>> the error variable somewhere in the bio, there is no other place where it
+>> could be placed. I temporarily saved it to bi_idx, because it's unused at
+>> this place.
+>
+> I don't think bi_idx is a fantastic idea, I could easily imagine the
+> bi_end_io function wanting to do a segment loop on the bio. Use
+> bi_phys_segments instead (or bi_hw_segemnts, no difference), they should
+> only be used when queuing and building IO, not for completion purposes.
+> And put a big fat comment there explaining the overload. Plus they are
+> just a cache, so if you use either of those and at the same time clear
+> BIO_SEG_VALID in bi_flags, then it's guarenteed to be safe.
 
-Only a single probe is implement as a POC.
+Here is new patch that uses bi_phys_segments.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: 'Peter Zijlstra' <peterz@infradead.org>
-CC: "Frank Ch. Eigler" <fche@redhat.com>
-CC: 'Ingo Molnar' <mingo@elte.hu>
-CC: 'Hideo AOKI' <haoki@redhat.com>
-CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-CC: 'Steven Rostedt' <rostedt@goodmis.org>
+> Also please put the per-cpu definition outside of bio_endio(). And I
+> don't think you need to disable interrupts, a plain preempt_disable() /
+> preempt_enable() should be enough.
+
+Disabling interrupts is needed. If you disable only preempt, interrupt can 
+come at any point and add anything to the queue. You'd have to use local_t 
+and local_cmpxchg tricks then and the code would be much more ugly. I 
+found that the code is called with interrupts disabled most time, so it 
+doesn't matter if I disable them again.
+
+Mikulas
+
+> -- 
+> Jens Axboe
+
+Avoid recursion on bio_endio. bio_endio calls bio->bi_end_io which may in turn
+call bio_endio again. When this recursion happens, put the new bio to the queue
+and process it later, from the top-level bio_endio.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+
 ---
- init/Kconfig         |    7 +++++++
- kernel/Makefile      |    1 +
- kernel/sched-trace.c |   28 ++++++++++++++++++++++++++++
- kernel/sched-trace.h |   11 +++++++++++
- kernel/sched.c       |    5 +++--
- 5 files changed, 50 insertions(+), 2 deletions(-)
+  fs/bio.c            |   38 +++++++++++++++++++++++++++++++++++---
+  include/linux/bio.h |    3 +++
+  2 files changed, 38 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.26-rc7-lttng/kernel/sched-trace.c
+Index: linux-2.6.26-rc7-devel/fs/bio.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.26-rc7-lttng/kernel/sched-trace.c	2008-06-25 18:36:11.000000000 -0400
-@@ -0,0 +1,28 @@
-+#include <linux/module.h>
-+#include "sched-trace.h"
+--- linux-2.6.26-rc7-devel.orig/fs/bio.c	2008-06-23 13:49:45.000000000 +0200
++++ linux-2.6.26-rc7-devel/fs/bio.c	2008-06-25 18:09:48.000000000 +0200
+@@ -1166,15 +1166,47 @@ void bio_check_pages_dirty(struct bio *b
+   *   bio unless they own it and thus know that it has an end_io
+   *   function.
+   **/
++static DEFINE_PER_CPU(struct bio **, bio_end_queue) = { NULL };
 +
-+static void probe_sched_switch(void *private_data, struct task_struct *prev,
-+	struct task_struct *next)
-+{
-+	trace_mark(kernel_sched_schedule,
-+		"prev_pid %d next_pid %d prev_state %ld",
-+		prev->pid, next->pid, prev->state);
-+}
+  void bio_endio(struct bio *bio, int error)
+  {
++	struct bio ***bio_end_queue_ptr;
++	struct bio *bio_queue;
 +
-+int __init sched_trace_init(void)
-+{
-+	return register_trace_sched_switch(probe_sched_switch, NULL);
-+}
++	unsigned long flags;
 +
-+module_init(sched_trace_init);
++	bio->bi_phys_segments = error;
+  	if (error)
+  		clear_bit(BIO_UPTODATE, &bio->bi_flags);
+  	else if (!test_bit(BIO_UPTODATE, &bio->bi_flags))
+-		error = -EIO;
++		bio->bi_phys_segments = -EIO;
 +
-+void __exit sched_trace_exit(void)
-+{
-+	unregister_trace_sched_switch(probe_sched_switch, NULL);
-+}
++	local_irq_save(flags);
++	bio_end_queue_ptr = &__get_cpu_var(bio_end_queue);
 +
-+module_exit(sched_trace_exit);
++	if (*bio_end_queue_ptr) {
++		**bio_end_queue_ptr = bio;
++		*bio_end_queue_ptr = &bio->bi_next;
++		bio->bi_next = NULL;
++	} else {
++		bio_queue = NULL;
++		*bio_end_queue_ptr = &bio_queue;
 +
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Mathieu Desnoyers");
-+MODULE_DESCRIPTION("Scheduler Tracpoint Probes");
-Index: linux-2.6.26-rc7-lttng/kernel/sched-trace.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.26-rc7-lttng/kernel/sched-trace.h	2008-06-25 18:36:11.000000000 -0400
-@@ -0,0 +1,11 @@
-+#ifndef _KERNEL_SCHED_TRACE_H
-+#define _KERNEL_SCHED_TRACE_H
++next_bio:
++		if (bio->bi_end_io)
++			bio->bi_end_io(bio, (short)bio->bi_phys_segments);
 +
-+#include <linux/sched.h>
-+#include <linux/tracepoint.h>
-+
-+DEFINE_TRACE(sched_switch,
-+	TPPROTO(struct task_struct *prev, struct task_struct *next),
-+	TPARGS(prev, next));
-+
-+#endif
-Index: linux-2.6.26-rc7-lttng/kernel/sched.c
-===================================================================
---- linux-2.6.26-rc7-lttng.orig/kernel/sched.c	2008-06-25 18:35:42.000000000 -0400
-+++ linux-2.6.26-rc7-lttng/kernel/sched.c	2008-06-25 18:36:11.000000000 -0400
-@@ -75,6 +75,8 @@
- #include <asm/tlb.h>
- #include <asm/irq_regs.h>
- 
-+#include "sched-trace.h"
-+
- /*
-  * Convert user-nice values [ -20 ... 0 ... 19 ]
-  * to static priority [ MAX_RT_PRIO..MAX_PRIO-1 ],
-@@ -2458,8 +2460,7 @@
- 	struct mm_struct *mm, *oldmm;
- 
- 	prepare_task_switch(rq, prev, next);
--	trace_mark(internal_kernel_sched_schedule,
--		"prev %p next %p", prev, next);
-+	trace_sched_switch(prev, next);
- 	mm = next->mm;
- 	oldmm = prev->active_mm;
- 	/*
-Index: linux-2.6.26-rc7-lttng/kernel/Makefile
-===================================================================
---- linux-2.6.26-rc7-lttng.orig/kernel/Makefile	2008-06-25 18:35:42.000000000 -0400
-+++ linux-2.6.26-rc7-lttng/kernel/Makefile	2008-06-25 18:36:11.000000000 -0400
-@@ -70,6 +70,7 @@
- obj-$(USE_IMMEDIATE) += immediate.o
- obj-$(CONFIG_MARKERS) += marker.o
- obj-$(CONFIG_TRACEPOINTS) += tracepoint.o
-+obj-$(CONFIG_SCHED_TRACE) += sched-trace.o
- obj-$(CONFIG_LATENCYTOP) += latencytop.o
- 
- ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
-Index: linux-2.6.26-rc7-lttng/init/Kconfig
-===================================================================
---- linux-2.6.26-rc7-lttng.orig/init/Kconfig	2008-06-25 18:36:07.000000000 -0400
-+++ linux-2.6.26-rc7-lttng/init/Kconfig	2008-06-25 18:36:26.000000000 -0400
-@@ -789,6 +789,13 @@
- 	  Place an empty function call at each tracepoint site. Can be
- 	  dynamically changed for a probe function.
- 
-+config SCHED_TRACE
-+	depends on TRACEPOINTS
-+	tristate "Scheduler tracing"
-+	default y
-+	help
-+	  Build the scheduler tracing probes.
-+
- config MARKERS
- 	bool "Activate markers"
- 	help
++		if (bio_queue) {
++			bio = bio_queue;
++			bio_queue = bio->bi_next;
++			if (!bio_queue)
++				*bio_end_queue_ptr = &bio_queue;
++			goto next_bio;
++		}
++		*bio_end_queue_ptr = NULL;
++	}
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+-	if (bio->bi_end_io)
+-		bio->bi_end_io(bio, error);
++	local_irq_restore(flags);
+  }
+
+  void bio_pair_release(struct bio_pair *bp)
+Index: linux-2.6.26-rc7-devel/include/linux/bio.h
+===================================================================
+--- linux-2.6.26-rc7-devel.orig/include/linux/bio.h	2008-06-25 18:06:59.000000000 +0200
++++ linux-2.6.26-rc7-devel/include/linux/bio.h	2008-06-25 18:08:08.000000000 +0200
+@@ -86,6 +86,9 @@ struct bio {
+
+  	/* Number of segments in this BIO after
+  	 * physical address coalescing is performed.
++	 *
++	 * When ending a bio request in bio_endio, this field is temporarily
++	 * (ab)used to keep the error code.
+  	 */
+  	unsigned short		bi_phys_segments;
+
