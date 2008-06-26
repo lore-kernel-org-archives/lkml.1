@@ -1,77 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758121AbYFZJan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757586AbYFZJbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758121AbYFZJan (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 05:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757340AbYFZJ3X
+	id S1757586AbYFZJbi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 05:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYFZJba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 05:29:23 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:48383 "EHLO e4.ny.us.ibm.com"
+	Thu, 26 Jun 2008 05:31:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36968 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757279AbYFZJ3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 05:29:22 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Hugh Dickins <hugh@veritas.com>, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Thu, 26 Jun 2008 14:59:18 +0530
-Message-Id: <20080626092918.16841.74883.sendpatchset@balbir-laptop>
-In-Reply-To: <20080626092815.16841.54817.sendpatchset@balbir-laptop>
-References: <20080626092815.16841.54817.sendpatchset@balbir-laptop>
-Subject: [5/5] memrlimit correct mremap and move_vma accounting
+	id S1750866AbYFZJb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 05:31:29 -0400
+Date: Thu, 26 Jun 2008 11:31:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Len Brown <lenb@kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Exner <dex@dragonslave.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: let MPS support selectable
+Message-ID: <20080626093103.GB20697@elte.hu>
+References: <200805041823.57198.yhlu.kernel@gmail.com> <200806181432.57204.yhlu.kernel@gmail.com> <200806181729.31464.yhlu.kernel@gmail.com> <200806190018.45944.yhlu.kernel@gmail.com> <Pine.LNX.4.55.0806191600290.12929@cliff.in.clinika.pl> <86802c440806191039q5c6a2266p82d319a61a3bba3c@mail.gmail.com> <alpine.LFD.1.10.0806191350530.3040@localhost.localdomain> <Pine.LNX.4.55.0806191920080.12929@cliff.in.clinika.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.55.0806191920080.12929@cliff.in.clinika.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Maciej W. Rozycki <macro@linux-mips.org> wrote:
 
-The memrlimit patches did not account for move_vma() since we account for
-address space usage in do_mremap(). The code flow actually increments
-total_vm twice (once in do_mremap() and once in move_vma()), the excess
-is removed in remove_vma_list() via do_munmap(). Since we did not do the
-duplicate accounting, the code was seeing the extra uncharge, causing
-our accounting to break. This patch fixes the problem
+> > However, I think that adding CONFIG_MPS before removing ACPI's 
+> > depencency on mpparse.c has all risk and no value.
+> 
+>  Agreed.
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+that should be sorted out mostly in -tip/x86, Alexey Starikovskiy went 
+through a marathon session decoupling them, about two months ago:
 
- mm/mremap.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ $ git-shortlog --stat --author=astarikovskiy linus/master..tip/master
 
-diff -puN mm/mremap.c~memrlimit-fix-move-vma-accounting mm/mremap.c
---- linux-2.6.26-rc5/mm/mremap.c~memrlimit-fix-move-vma-accounting	2008-06-26 14:48:25.000000000 +0530
-+++ linux-2.6.26-rc5-balbir/mm/mremap.c	2008-06-26 14:48:25.000000000 +0530
-@@ -177,10 +177,15 @@ static unsigned long move_vma(struct vm_
- 	if (mm->map_count >= sysctl_max_map_count - 3)
- 		return -ENOMEM;
- 
-+	if (memrlimit_cgroup_charge_as(mm, new_len >> PAGE_SHIFT))
-+		return -ENOMEM;
-+
- 	new_pgoff = vma->vm_pgoff + ((old_addr - vma->vm_start) >> PAGE_SHIFT);
- 	new_vma = copy_vma(&vma, new_addr, new_len, new_pgoff);
--	if (!new_vma)
-+	if (!new_vma) {
-+		memrlimit_cgroup_uncharge_as(mm, new_len >> PAGE_SHIFT);
- 		return -ENOMEM;
-+	}
- 
- 	moved_len = move_page_tables(vma, old_addr, new_vma, new_addr, old_len);
- 	if (moved_len < old_len) {
-@@ -386,6 +391,8 @@ unsigned long do_mremap(unsigned long ad
- 		}
- 	}
- 
-+	memrlimit_cgroup_uncharge_as(mm, (new_len - old_len) >> PAGE_SHIFT);
-+
- 	/*
- 	 * We weren't able to just expand or shrink the area,
- 	 * we need to create a new one and move it..
-_
+ Alexey Starikovskiy (12):
+      x86: move es7000_plat out of mpparse.c
+      x86: complete move ACPI from mpparse.c
+      x86: make mp_ioapic_routing definition local
+      x86: make struct config_ioapic not MPspec specific
+      x86: make config_irqsrc not MPspec specific
+      x86: fix mpparse/acpi interaction
+      x86: Set pic_mode only if local apic code is present
+      x86: move pic_mode to apic_32.c
+      x86: move smp_found_config
+      x86: mp_bus_id_to_pci_bus is not needed
+      x86: move mp_bus_not_pci from mpparse.c
+      x86: allow MPPARSE to be deselected in SMP configs
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+      22 files changed, 524 insertions(+), 501 deletions(-)
+
+it's all in linux-next as well.
+
+	Ingo
