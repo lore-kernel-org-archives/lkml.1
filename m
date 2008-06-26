@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbYFZSLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760729AbYFZSMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758746AbYFZSLz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 14:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYFZSLq
+	id S1760729AbYFZSMr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 14:12:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbYFZSMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 14:11:46 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:23422 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752736AbYFZSLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 14:11:45 -0400
-Date: Thu, 26 Jun 2008 20:11:42 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Michael Buesch <mb@bu3sch.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Oops when using growisofs
-Message-ID: <20080626181142.GH20851@kernel.dk>
-References: <200806221818.24372.mb@bu3sch.de> <200806242039.18755.mb@bu3sch.de> <20080625093700.GB15865@duck.suse.cz> <200806251146.30142.mb@bu3sch.de> <20080626170513.GE23386@duck.suse.cz>
+	Thu, 26 Jun 2008 14:12:37 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:48202 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752612AbYFZSMg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 14:12:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=BMFeA5hNprvW4Q8QF0249DSNJ4+m294cTW7kFp6sZNDf9PqWq1GRBvx8DyWQv8jrrC
+         s6zcEoah3n8zjjvtrYO1ar5JgXqEY9K31ixeVCPllt8tMUcY6l8/yHqiLD36UpV9P8Rs
+         u5vpND0yuGuIXze90Wm5P0GxJ/h++88k+8t0s=
+Message-ID: <a4423d670806261112n3a5073dcn476f0a3da963aa36@mail.gmail.com>
+Date: Thu, 26 Jun 2008 22:12:34 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: linux-next@vger.kernel.org, xfs-masters@oss.sgi.com, xfs@oss.sgi.com,
+       "kernel list" <linux-kernel@vger.kernel.org>, hch@infradead.org,
+       tes@sgi.com, lachlan@sgi.com
+Subject: next-20080626: compiling error in XFS
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080626170513.GE23386@duck.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26 2008, Jan Kara wrote:
-> On Wed 25-06-08 11:46:29, Michael Buesch wrote:
-> > On Wednesday 25 June 2008 11:37:00 Jan Kara wrote:
-> > > > Yeah the IO error is the trigger.
-> > > > I noticed that it had obvious troubles accessing the DVD that was in the drive.
-> > > > It sweeped over it for several seconds, then hung the system for 2 or 3 seconds
-> > > > and then oopsed. But after that everything continued to work as usual.
-> > > > (Except kded of course)
-> > >   Hmm, by "accessing" do you mean that you've mounted the burned DVD and when
-> > > browsing it the IO error and the oops occured or that IO error happened
-> > > when burning? It is important because in the first case i_blkbits would be
-> > > taken from some ISOFS inode desribing some file while in the second case
-> > > i_blkbits are from the inode of the device...
-> > I don't know. kded, which caused the oops, is always running. It is a KDE daemon
-> > that polls device state and so on. So yeah, it might have accessed the drive
-> > while growisofs was writing to it.
-> > 
-> > However with "accessing" I mean the DVD drive motor was spinning up and down
-> > and the laser lens was moving like crazy. The sound that happens, if you put
-> > a completely scratched DVD into the drive and it is unable to make sense of it.
-> > However, this was not scratched. It was a new DVD with one session on it that
-> > I just burnt 5 minutes before that. So I wanted to append another session to it
-> > and it crashed and resulted in IO errors in growisofs.
->   I've been looking into this problem for some time. The only way how
->   I see blocksize can be set so big is in cdrom_read_capacity() in
->   drivers/ide/ide-cd.c. That basically blindly fills in
->   queue->hardsect_size with what the drive returns and this can
->   propagate in bd_set_size() to i_blkbits.  Jens, do you think that is
->   possible? Shouldn't ide_cd_read_toc() do some sanity checks of the
->   blocksize returned?
+Hi
 
-It can't hurt, the value should be >= 512b and <= 4kb. Normally it would
-be 2kb, but some devices have a 512b switch so that is also seen. Not
-sure that 1kb and 4kb are valid, but at least it would still point to
-the drive possibly returning valid data and not garbage. So accept all
-those, reject (and complain) if it isn't one of those and default to 2kb.
+  CC      fs/xfs/linux-2.6/xfs_xattr.o
+fs/xfs/linux-2.6/xfs_xattr.c: In function 'xfs_decode_acl':
+fs/xfs/linux-2.6/xfs_xattr.c:40: error: '_ACL_TYPE_ACCESS' undeclared
+(first use in this function)
+fs/xfs/linux-2.6/xfs_xattr.c:40: error: (Each undeclared identifier is
+reported only once
+fs/xfs/linux-2.6/xfs_xattr.c:40: error: for each function it appears in.)
+fs/xfs/linux-2.6/xfs_xattr.c:42: error: '_ACL_TYPE_DEFAULT' undeclared
+(first use in this function)
 
--- 
-Jens Axboe
 
+CONFIG_XFS_POSIX_ACL is disabled, so _ACL_TYPE_ACCESS was not defined.
