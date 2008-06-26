@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760825AbYFZNsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761186AbYFZNuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760825AbYFZNsv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:48:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbYFZNsj
+	id S1761186AbYFZNuH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbYFZNtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 09:48:39 -0400
-Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:24285 "EHLO
+	Thu, 26 Jun 2008 09:49:51 -0400
+Received: from 238.225.broadband7.iol.cz ([88.102.225.238]:24294 "EHLO
 	monstr.eu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751540AbYFZNsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 09:48:35 -0400
+	id S1754917AbYFZNtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 09:49:47 -0400
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
@@ -17,20 +17,17 @@ Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
        hpa@zytor.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 09/60] microblaze_v4: Signal support
-Date: Thu, 26 Jun 2008 14:29:38 +0200
-Message-Id: <1214483429-32360-10-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 06/60] microblaze_v4: Open firmware common files
+Date: Thu, 26 Jun 2008 14:29:35 +0200
+Message-Id: <1214483429-32360-7-git-send-email-monstr@seznam.cz>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <1214483429-32360-9-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-6-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
  <1214483429-32360-2-git-send-email-monstr@seznam.cz>
  <1214483429-32360-3-git-send-email-monstr@seznam.cz>
  <1214483429-32360-4-git-send-email-monstr@seznam.cz>
  <1214483429-32360-5-git-send-email-monstr@seznam.cz>
  <1214483429-32360-6-git-send-email-monstr@seznam.cz>
- <1214483429-32360-7-git-send-email-monstr@seznam.cz>
- <1214483429-32360-8-git-send-email-monstr@seznam.cz>
- <1214483429-32360-9-git-send-email-monstr@seznam.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -40,750 +37,1434 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/signal.c |  531 +++++++++++++++++++++++++++++++++++++++
- include/asm-microblaze/signal.h |  195 ++++++++++++++
- 2 files changed, 726 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/signal.c
- create mode 100644 include/asm-microblaze/signal.h
+ drivers/of/Makefile         |    2 +-
+ drivers/of/device.c         |  128 ++++++
+ drivers/of/platform.c       |  175 ++++++++
+ drivers/of/prom_parse.c     | 1025 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/of_device.h   |    9 +
+ include/linux/of_platform.h |   25 +
+ 6 files changed, 1363 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/of/prom_parse.c
 
-diff --git a/arch/microblaze/kernel/signal.c b/arch/microblaze/kernel/signal.c
-new file mode 100644
-index 0000000..6f133e3
---- /dev/null
-+++ b/arch/microblaze/kernel/signal.c
-@@ -0,0 +1,531 @@
-+/*
-+ * Signal handling
-+ *
-+ * Copyright (C) 2003,2004 John Williams <jwilliams@itee.uq.edu.au>
-+ * Copyright (C) 2001 NEC Corporation
-+ * Copyright (C) 2001 Miles Bader <miles@gnu.org>
-+ * Copyright (C) 1999,2000 Niibe Yutaka & Kaz Kojima
-+ * Copyright (C) 1991,1992 Linus Torvalds
-+ *
-+ * 1997-11-28 Modified for POSIX.1b signals by Richard Henderson
-+ *
-+ * This file was was derived from the sh version, arch/sh/kernel/signal.c
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ */
+diff --git a/drivers/of/Makefile b/drivers/of/Makefile
+index 548772e..8d4961c 100644
+--- a/drivers/of/Makefile
++++ b/drivers/of/Makefile
+@@ -1,4 +1,4 @@
+ obj-y = base.o
+-obj-$(CONFIG_OF_DEVICE) += device.o platform.o
++obj-$(CONFIG_OF_DEVICE) += device.o platform.o prom_parse.o
+ obj-$(CONFIG_OF_GPIO)   += gpio.o
+ obj-$(CONFIG_OF_I2C)	+= of_i2c.o
+diff --git a/drivers/of/device.c b/drivers/of/device.c
+index 29681c4..ef735ee 100644
+--- a/drivers/of/device.c
++++ b/drivers/of/device.c
+@@ -100,3 +100,131 @@ void of_device_unregister(struct of_device *ofdev)
+ 	device_unregister(&ofdev->dev);
+ }
+ EXPORT_SYMBOL(of_device_unregister);
 +
-+#include <linux/sched.h>
-+#include <linux/mm.h>
-+#include <linux/smp.h>
-+#include <linux/smp_lock.h>
-+#include <linux/kernel.h>
-+#include <linux/signal.h>
-+#include <linux/errno.h>
-+#include <linux/wait.h>
-+#include <linux/ptrace.h>
-+#include <linux/unistd.h>
-+#include <linux/stddef.h>
-+#include <linux/personality.h>
-+#include <linux/percpu.h>
-+#include <asm/entry.h>
-+#include <asm/ucontext.h>
-+#include <asm/uaccess.h>
-+#include <asm/pgtable.h>
-+#include <asm/pgalloc.h>
-+#include <asm/signal.h>
-+#include <asm/cacheflush.h>
 +
-+#define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
-+
-+asmlinkage int do_signal(struct pt_regs *regs, sigset_t *oldset, int in_sycall);
-+
-+/*
-+ * Atomically swap in the new signal mask, and wait for a signal.
-+ */
-+asmlinkage int
-+sys_sigsuspend(old_sigset_t mask, struct pt_regs *regs)
++struct of_device *of_device_alloc(struct device_node *np,
++				  const char *bus_id,
++				  struct device *parent)
 +{
-+	sigset_t saveset;
++	struct of_device *dev;
 +
-+	mask &= _BLOCKABLE;
-+	spin_lock_irq(&current->sighand->siglock);
-+	saveset = current->blocked;
-+	siginitset(&current->blocked, mask);
-+	recalc_sigpending();
-+	spin_unlock_irq(&current->sighand->siglock);
++	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
++	if (!dev)
++		return NULL;
 +
-+	regs->r3 = -EINTR;
-+	while (1) {
-+		current->state = TASK_INTERRUPTIBLE;
-+		schedule();
-+		if (do_signal(regs, &saveset, 1))
-+			return -EINTR;
++	dev->node = of_node_get(np);
++	dev->dev.dma_mask = &dev->dma_mask;
++	dev->dev.parent = parent;
++	dev->dev.release = of_release_dev;
++	dev->dev.archdata.of_node = np;
++#ifdef CONFIG_NUMA
++	dev->dev.archdata.numa_node = of_node_to_nid(np);
++#endif
++
++	if (bus_id)
++		strlcpy(dev->dev.bus_id, bus_id, BUS_ID_SIZE);
++	else
++		of_device_make_bus_id(dev);
++
++	return dev;
++}
++EXPORT_SYMBOL(of_device_alloc);
++
++ssize_t of_device_get_modalias(struct of_device *ofdev,
++				char *str, ssize_t len)
++{
++	const char *compat;
++	int cplen, i;
++	ssize_t tsize, csize, repend;
++
++	/* Name & Type */
++	csize = snprintf(str, len, "of:N%sT%s",
++				ofdev->node->name, ofdev->node->type);
++
++	/* Get compatible property if any */
++	compat = of_get_property(ofdev->node, "compatible", &cplen);
++	if (!compat)
++		return csize;
++
++	/* Find true end (we tolerate multiple \0 at the end */
++	for (i = (cplen-1); i >= 0 && !compat[i]; i--)
++		cplen--;
++	if (!cplen)
++		return csize;
++	cplen++;
++
++	/* Check space (need cplen+1 chars including final \0) */
++	tsize = csize + cplen;
++	repend = tsize;
++
++	/* @ the limit, all is already filled */
++	if (csize >= len)
++		return tsize;
++
++	/* limit compat list */
++	if (tsize >= len) {
++		cplen = len - csize - 1;
++		repend = len;
 +	}
++
++	/* Copy and do char replacement */
++	memcpy(&str[csize+1], compat, cplen);
++	for (i = csize; i < repend; i++) {
++		char c = str[i];
++		if (c == '\0')
++			str[i] = 'C';
++		else if (c == ' ')
++			str[i] = '_';
++	}
++
++	return tsize;
++}
++EXPORT_SYMBOL(of_device_get_modalias);
++
++int of_device_uevent(struct device *dev, struct kobj_uevent_env *env)
++{
++	struct of_device *ofdev;
++	const char *compat;
++	int seen = 0, cplen, sl;
++
++	if (!dev)
++		return -ENODEV;
++
++	ofdev = to_of_device(dev);
++
++	if (add_uevent_var(env, "OF_NAME=%s", ofdev->node->name))
++		return -ENOMEM;
++
++	if (add_uevent_var(env, "OF_TYPE=%s", ofdev->node->type))
++		return -ENOMEM;
++
++	/* Since the compatible field can contain pretty much anything
++	 * it's not really legal to split it out with commas. We split it
++	 * up using a number of environment variables instead. */
++
++	compat = of_get_property(ofdev->node, "compatible", &cplen);
++	while (compat && *compat && cplen > 0) {
++		if (add_uevent_var(env, "OF_COMPATIBLE_%d=%s", seen, compat))
++			return -ENOMEM;
++
++		sl = strlen(compat) + 1;
++		compat += sl;
++		cplen -= sl;
++		seen++;
++	}
++
++	if (add_uevent_var(env, "OF_COMPATIBLE_N=%d", seen))
++		return -ENOMEM;
++
++	/* modalias is trickier, we add it in 2 steps */
++	if (add_uevent_var(env, "MODALIAS="))
++		return -ENOMEM;
++	sl = of_device_get_modalias(ofdev, &env->buf[env->buflen-1],
++				    sizeof(env->buf) - env->buflen);
++	if (sl >= (sizeof(env->buf) - env->buflen))
++		return -ENOMEM;
++	env->buflen += sl;
++
++	return 0;
++}
++EXPORT_SYMBOL(of_device_uevent);
+diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+index ca09a63..06581e4 100644
+--- a/drivers/of/platform.c
++++ b/drivers/of/platform.c
+@@ -17,6 +17,17 @@
+ #include <linux/of_device.h>
+ #include <linux/of_platform.h>
+ 
++struct bus_type of_platform_bus_type = {
++       .uevent	= of_device_uevent,
++};
++EXPORT_SYMBOL(of_platform_bus_type);
++
++static int __init of_bus_driver_init(void)
++{
++	return of_bus_type_init(&of_platform_bus_type, "of_platform");
++}
++postcore_initcall(of_bus_driver_init);
++
+ static int of_platform_bus_match(struct device *dev, struct device_driver *drv)
+ {
+ 	struct of_device *of_dev = to_of_device(dev);
+@@ -125,3 +136,167 @@ void of_unregister_driver(struct of_platform_driver *drv)
+ 	driver_unregister(&drv->driver);
+ }
+ EXPORT_SYMBOL(of_unregister_driver);
++
++
++struct of_device* of_platform_device_create(struct device_node *np,
++					    const char *bus_id,
++					    struct device *parent)
++{
++	struct of_device *dev;
++
++	dev = of_device_alloc(np, bus_id, parent);
++	if (!dev)
++		return NULL;
++
++	dev->dma_mask = 0xffffffffUL;
++	dev->dev.bus = &of_platform_bus_type;
++
++	/* We do not fill the DMA ops for platform devices by default.
++	 * This is currently the responsibility of the platform code
++	 * to do such, possibly using a device notifier
++	 */
++
++	if (of_device_register(dev) != 0) {
++		of_device_free(dev);
++		return NULL;
++	}
++
++	return dev;
++}
++EXPORT_SYMBOL(of_platform_device_create);
++
++
++
++/**
++ * of_platform_bus_create - Create an OF device for a bus node and all its
++ * children. Optionally recursively instanciate matching busses.
++ * @bus: device node of the bus to instanciate
++ * @matches: match table, NULL to use the default, OF_NO_DEEP_PROBE to
++ * disallow recursive creation of child busses
++ */
++static int of_platform_bus_create(const struct device_node *bus,
++				  const struct of_device_id *matches,
++				  struct device *parent)
++{
++	struct device_node *child;
++	struct of_device *dev;
++	int rc = 0;
++
++	for_each_child_of_node(bus, child) {
++		pr_debug("   create child: %s\n", child->full_name);
++		dev = of_platform_device_create(child, NULL, parent);
++		if (dev == NULL)
++			rc = -ENOMEM;
++		else if (!of_match_node(matches, child))
++			continue;
++		if (rc == 0) {
++			pr_debug("   and sub busses\n");
++			rc = of_platform_bus_create(child, matches, &dev->dev);
++		} if (rc) {
++			of_node_put(child);
++			break;
++		}
++	}
++	return rc;
 +}
 +
-+asmlinkage int
-+sys_rt_sigsuspend(sigset_t *unewset, size_t sigsetsize,
-+		struct pt_regs *regs)
-+{
-+	sigset_t saveset, newset;
++/**
++ * of_platform_bus_probe - Probe the device-tree for platform busses
++ * @root: parent of the first level to probe or NULL for the root of the tree
++ * @matches: match table, NULL to use the default
++ * @parent: parent to hook devices from, NULL for toplevel
++ *
++ * Note that children of the provided root are not instanciated as devices
++ * unless the specified root itself matches the bus list and is not NULL.
++ */
 +
-+	/* XXX: Don't preclude handling different sized sigset_t's. */
-+	if (sigsetsize != sizeof(sigset_t))
++int of_platform_bus_probe(struct device_node *root,
++			  const struct of_device_id *matches,
++			  struct device *parent)
++{
++	struct device_node *child;
++	struct of_device *dev;
++	int rc = 0;
++
++	if (matches == NULL)
++		matches = of_default_bus_ids;
++	if (matches == OF_NO_DEEP_PROBE)
 +		return -EINVAL;
++	if (root == NULL)
++		root = of_find_node_by_path("/");
++	else
++		of_node_get(root);
 +
-+	if (copy_from_user(&newset, unewset, sizeof(newset)))
-+		return -EFAULT;
-+	sigdelsetmask(&newset, ~_BLOCKABLE);
-+	spin_lock_irq(&current->sighand->siglock);
-+	saveset = current->blocked;
-+	current->blocked = newset;
-+	recalc_sigpending();
-+	spin_unlock_irq(&current->sighand->siglock);
++	pr_debug("of_platform_bus_probe()\n");
++	pr_debug(" starting at: %s\n", root->full_name);
 +
-+	regs->r3 = -EINTR;
-+	while (1) {
-+		current->state = TASK_INTERRUPTIBLE;
-+		schedule();
-+		if (do_signal(regs, &saveset, 1))
-+			return -EINTR;
++	/* Do a self check of bus type, if there's a match, create
++	 * children
++	 */
++	if (of_match_node(matches, root)) {
++		pr_debug(" root match, create all sub devices\n");
++		dev = of_platform_device_create(root, NULL, parent);
++		if (dev == NULL) {
++			rc = -ENOMEM;
++			goto bail;
++		}
++		pr_debug(" create all sub busses\n");
++		rc = of_platform_bus_create(root, matches, &dev->dev);
++		goto bail;
 +	}
-+}
++	for_each_child_of_node(root, child) {
++		if (!of_match_node(matches, child))
++			continue;
 +
-+asmlinkage int
-+sys_sigaction(int sig, const struct old_sigaction *act,
-+		struct old_sigaction *oact)
++		pr_debug("  match: %s\n", child->full_name);
++		dev = of_platform_device_create(child, NULL, parent);
++		if (dev == NULL)
++			rc = -ENOMEM;
++		else
++			rc = of_platform_bus_create(child, matches, &dev->dev);
++		if (rc) {
++			of_node_put(child);
++			break;
++		}
++	}
++ bail:
++	of_node_put(root);
++	return rc;
++}
++EXPORT_SYMBOL(of_platform_bus_probe);
++
++static int of_dev_node_match(struct device *dev, void *data)
 +{
-+	struct k_sigaction new_ka, old_ka;
-+	int ret;
-+
-+	if (act) {
-+		old_sigset_t mask;
-+		if (!access_ok(VERIFY_READ, act, sizeof(*act)) ||
-+			__get_user(new_ka.sa.sa_handler, &act->sa_handler) ||
-+			__get_user(new_ka.sa.sa_restorer, &act->sa_restorer))
-+			return -EFAULT;
-+		__get_user(new_ka.sa.sa_flags, &act->sa_flags);
-+		__get_user(mask, &act->sa_mask);
-+		siginitset(&new_ka.sa.sa_mask, mask);
-+	}
-+
-+	ret = do_sigaction(sig, act ? &new_ka : NULL, oact ? &old_ka : NULL);
-+
-+	if (!ret && oact) {
-+		if (!access_ok(VERIFY_WRITE, oact, sizeof(*oact)) ||
-+			__put_user(old_ka.sa.sa_handler, &oact->sa_handler) ||
-+			__put_user(old_ka.sa.sa_restorer, &oact->sa_restorer))
-+			return -EFAULT;
-+		__put_user(old_ka.sa.sa_flags, &oact->sa_flags);
-+		__put_user(old_ka.sa.sa_mask.sig[0], &oact->sa_mask);
-+	}
-+
-+	return ret;
++	return to_of_device(dev)->node == data;
 +}
 +
-+asmlinkage int
-+sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
-+		struct pt_regs *regs)
++struct of_device *of_find_device_by_node(struct device_node *np)
 +{
-+	return do_sigaltstack(uss, uoss, regs->r1);
++	struct device *dev;
++
++	dev = bus_find_device(&of_platform_bus_type,
++			      NULL, np, of_dev_node_match);
++	if (dev)
++		return to_of_device(dev);
++	return NULL;
 +}
++EXPORT_SYMBOL(of_find_device_by_node);
++
++static int of_dev_phandle_match(struct device *dev, void *data)
++{
++	phandle *ph = data;
++	return to_of_device(dev)->node->linux_phandle == *ph;
++}
++
++struct of_device *of_find_device_by_phandle(phandle ph)
++{
++	struct device *dev;
++
++	dev = bus_find_device(&of_platform_bus_type,
++			      NULL, &ph, of_dev_phandle_match);
++	if (dev)
++		return to_of_device(dev);
++	return NULL;
++}
++EXPORT_SYMBOL(of_find_device_by_phandle);
++
+diff --git a/drivers/of/prom_parse.c b/drivers/of/prom_parse.c
+new file mode 100644
+index 0000000..683c20c
+--- /dev/null
++++ b/drivers/of/prom_parse.c
+@@ -0,0 +1,1025 @@
++#undef DEBUG
++
++#include <linux/kernel.h>
++#include <linux/string.h>
++#include <linux/pci_regs.h>
++#include <linux/module.h>
++#include <linux/ioport.h>
++#include <linux/etherdevice.h>
++#include <asm/prom.h>
++#include <asm/pci-bridge.h>
++
++#define PRu64	"%llx"
++
++/* Max address size we deal with */
++#define OF_MAX_ADDR_CELLS	4
++#define OF_CHECK_COUNTS(na, ns)	((na) > 0 && (na) <= OF_MAX_ADDR_CELLS && \
++			(ns) > 0)
++
++static struct of_bus *of_match_bus(struct device_node *np);
++static int __of_address_to_resource(struct device_node *dev,
++		const u32 *addrp, u64 size, unsigned int flags,
++		struct resource *r);
++
++/* Debug utility */
++#ifdef DEBUG
++static void of_dump_addr(const char *s, const u32 *addr, int na)
++{
++	printk("%s", s);
++	while (na--)
++		printk(KERN_INFO " %08x", *(addr++));
++	printk("\n");
++}
++#else
++static void of_dump_addr(const char *s, const u32 *addr, int na) { }
++#endif
++
++/* Callbacks for bus specific translators */
++struct of_bus {
++	const char	*name;
++	const char	*addresses;
++	int		(*match)(struct device_node *parent);
++	void		(*count_cells)(struct device_node *child,
++					int *addrc, int *sizec);
++	u64		(*map)(u32 *addr, const u32 *range,
++				int na, int ns, int pna);
++	int		(*translate)(u32 *addr, u64 offset, int na);
++	unsigned int	(*get_flags)(const u32 *addr);
++};
 +
 +/*
-+ * Do a signal return; undo the signal stack.
++ * Default translator (generic bus)
 + */
 +
-+struct sigframe {
-+	struct sigcontext sc;
-+	unsigned long extramask[_NSIG_WORDS-1];
-+	unsigned long tramp[2];	/* signal trampoline */
-+};
-+
-+struct rt_sigframe {
-+	struct siginfo info;
-+	struct ucontext uc;
-+	unsigned long tramp[2];	/* signal trampoline */
-+};
-+
-+static int
-+restore_sigcontext(struct pt_regs *regs, struct sigcontext *sc, int *rval_p)
++static void of_bus_default_count_cells(struct device_node *dev,
++					int *addrc, int *sizec)
 +{
-+	unsigned int err = 0;
-+
-+#define COPY(x)		err |= __get_user(regs->x, &sc->regs.x)
-+	COPY(r0);	COPY(r1);
-+	COPY(r2);	COPY(r3);	COPY(r4);	COPY(r5);
-+	COPY(r6);	COPY(r7);	COPY(r8);	COPY(r9);
-+	COPY(r10);	COPY(r11);	COPY(r12);	COPY(r13);
-+	COPY(r14);	COPY(r15);	COPY(r16);	COPY(r17);
-+	COPY(r18);	COPY(r19);	COPY(r20);	COPY(r21);
-+	COPY(r22);	COPY(r23);	COPY(r24);	COPY(r25);
-+	COPY(r26);	COPY(r27);	COPY(r28);	COPY(r29);
-+	COPY(r30);	COPY(r31);
-+	COPY(pc);	COPY(ear);	COPY(esr);	COPY(fsr);
-+#undef COPY
-+
-+	*rval_p = regs->r3;
-+
-+	return err;
++	if (addrc)
++		*addrc = of_n_addr_cells(dev);
++	if (sizec)
++		*sizec = of_n_size_cells(dev);
 +}
 +
-+asmlinkage int sys_sigreturn(struct pt_regs *regs)
++static u64 of_bus_default_map(u32 *addr, const u32 *range,
++		int na, int ns, int pna)
 +{
-+	struct sigframe *frame = (struct sigframe *)regs->r1;
-+	sigset_t set;
-+	int rval;
++	u64 cp, s, da;
 +
-+	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
-+		goto badframe;
++	cp = of_read_number(range, na);
++	s  = of_read_number(range + na + pna, ns);
++	da = of_read_number(addr, na);
 +
-+	if (__get_user(set.sig[0], &frame->sc.oldmask)
-+		|| (_NSIG_WORDS > 1
-+		&& __copy_from_user(&set.sig[1], &frame->extramask,
-+					sizeof(frame->extramask))))
-+		goto badframe;
++	pr_debug("OF: default map, cp="PRu64", s="PRu64", da="PRu64"\n",
++		cp, s, da);
 +
-+	sigdelsetmask(&set, ~_BLOCKABLE);
++	if (da < cp || da >= (cp + s))
++		return OF_BAD_ADDR;
++	return da - cp;
++}
 +
-+	spin_lock_irq(&current->sighand->siglock);
-+	current->blocked = set;
-+	recalc_sigpending();
-+	spin_unlock_irq(&current->sighand->siglock);
++static int of_bus_default_translate(u32 *addr, u64 offset, int na)
++{
++	u64 a = of_read_number(addr, na);
++	memset(addr, 0, na * 4);
++	a += offset;
++	if (na > 1)
++		addr[na - 2] = a >> 32;
++	addr[na - 1] = a & 0xffffffffu;
 +
-+	if (restore_sigcontext(regs, &frame->sc, &rval))
-+		goto badframe;
-+	return rval;
-+
-+badframe:
-+	force_sig(SIGSEGV, current);
 +	return 0;
 +}
 +
-+asmlinkage int sys_rt_sigreturn(struct pt_regs *regs)
++static unsigned int of_bus_default_get_flags(const u32 *addr)
 +{
-+	struct rt_sigframe *frame = (struct rt_sigframe *)regs->r1;
-+	sigset_t set;
-+	stack_t st;
-+	int rval;
-+
-+	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
-+		goto badframe;
-+
-+	if (__copy_from_user(&set, &frame->uc.uc_sigmask, sizeof(set)))
-+		goto badframe;
-+
-+	sigdelsetmask(&set, ~_BLOCKABLE);
-+	spin_lock_irq(&current->sighand->siglock);
-+	current->blocked = set;
-+	recalc_sigpending();
-+	spin_unlock_irq(&current->sighand->siglock);
-+
-+	if (restore_sigcontext(regs, &frame->uc.uc_mcontext, &rval))
-+		goto badframe;
-+
-+	if (__copy_from_user((void *)&st, &frame->uc.uc_stack, sizeof(st)))
-+		goto badframe;
-+	/* It is more difficult to avoid calling this function than to
-+	 call it and ignore errors. */
-+	do_sigaltstack(&st, NULL, regs->r1);
-+
-+	return rval;
-+
-+badframe:
-+	force_sig(SIGSEGV, current);
-+	return 0;
++	return IORESOURCE_MEM;
 +}
 +
++#ifdef CONFIG_PCI
 +/*
-+ * Set up a signal frame.
++ * PCI bus specific translator
 + */
 +
-+static int
-+setup_sigcontext(struct sigcontext *sc, struct pt_regs *regs,
-+		unsigned long mask)
++static int of_bus_pci_match(struct device_node *np)
 +{
-+	int err = 0;
-+
-+#define COPY(x)		err |= __put_user(regs->x, &sc->regs.x)
-+	COPY(r0);	COPY(r1);
-+	COPY(r2);	COPY(r3);	COPY(r4);	COPY(r5);
-+	COPY(r6);	COPY(r7);	COPY(r8);	COPY(r9);
-+	COPY(r10);	COPY(r11);	COPY(r12);	COPY(r13);
-+	COPY(r14);	COPY(r15);	COPY(r16);	COPY(r17);
-+	COPY(r18);	COPY(r19);	COPY(r20);	COPY(r21);
-+	COPY(r22);	COPY(r23);	COPY(r24);	COPY(r25);
-+	COPY(r26);	COPY(r27);	COPY(r28);	COPY(r29);
-+	COPY(r30);	COPY(r31);
-+	COPY(pc);	COPY(ear);	COPY(esr);	COPY(fsr);
-+#undef COPY
-+
-+	err |= __put_user(mask, &sc->oldmask);
-+
-+	return err;
++	/* "vci" is for the /chaos bridge on 1st-gen PCI powermacs */
++	return !strcmp(np->type, "pci") || !strcmp(np->type, "vci");
 +}
 +
-+/*
-+ * Determine which stack to use..
-+ */
-+static inline void *
-+get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size)
++static void of_bus_pci_count_cells(struct device_node *np,
++				int *addrc, int *sizec)
 +{
-+	/* Default to using normal stack */
-+	unsigned long sp = regs->r1;
-+
-+	if ((ka->sa.sa_flags & SA_ONSTACK) != 0 && !on_sig_stack(sp))
-+		sp = current->sas_ss_sp + current->sas_ss_size;
-+
-+	return (void *)((sp - frame_size) & -8UL);
++	if (addrc)
++		*addrc = 3;
++	if (sizec)
++		*sizec = 2;
 +}
 +
-+static void setup_frame(int sig, struct k_sigaction *ka,
-+			sigset_t *set, struct pt_regs *regs)
++static u64 of_bus_pci_map(u32 *addr, const u32 *range, int na, int ns, int pna)
 +{
-+	struct sigframe *frame;
-+	int err = 0;
-+	int signal;
++	u64 cp, s, da;
 +
-+	frame = get_sigframe(ka, regs, sizeof(*frame));
++	/* Check address type match */
++	if ((addr[0] ^ range[0]) & 0x03000000)
++		return OF_BAD_ADDR;
 +
-+	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
-+		goto give_sigsegv;
++	/* Read address values, skipping high cell */
++	cp = of_read_number(range + 1, na - 1);
++	s  = of_read_number(range + na + pna, ns);
++	da = of_read_number(addr + 1, na - 1);
 +
-+	signal = current_thread_info()->exec_domain
-+		&& current_thread_info()->exec_domain->signal_invmap
-+		&& sig < 32
-+		? current_thread_info()->exec_domain->signal_invmap[sig]
-+		: sig;
++	pr_debug("OF: PCI map, cp="PRu64", s="PRu64", da="PRu64"\n", cp, s, da);
 +
-+	err |= setup_sigcontext(&frame->sc, regs, set->sig[0]);
-+
-+	if (_NSIG_WORDS > 1) {
-+		err |= __copy_to_user(frame->extramask, &set->sig[1],
-+					sizeof(frame->extramask));
-+	}
-+
-+	/* Set up to return from userspace. If provided, use a stub
-+	 already in userspace. */
-+	/* minus 8 is offset to cater for "rtsd r15,8" offset */
-+	if (ka->sa.sa_flags & SA_RESTORER) {
-+		regs->r15 = ((unsigned long)ka->sa.sa_restorer)-8;
-+	} else {
-+		/* Note, these encodings are _big endian_! */
-+
-+		/* addi r12, r0, __NR_sigreturn */
-+		err |= __put_user(0x31800000 | __NR_sigreturn ,
-+				frame->tramp + 0);
-+		/* brki r14, 0x8 */
-+		err |= __put_user(0xb9cc0008, frame->tramp + 1);
-+
-+		/* Return from sighandler will jump to the tramp.
-+		 Negative 8 offset because return is rtsd r15, 8 */
-+		regs->r15 = ((unsigned long)frame->tramp)-8;
-+
-+		__invalidate_cache_sigtramp((unsigned long)frame->tramp);
-+	}
-+
-+	if (err)
-+		goto give_sigsegv;
-+
-+	/* Set up registers for signal handler */
-+	regs->r1 = (unsigned long) frame;
-+	/* Signal handler args: */
-+	regs->r5 = signal; /* Arg 0: signum */
-+	regs->r6 = (unsigned long) &frame->sc; /* arg 1: sigcontext */
-+
-+	/* Offset of 4 to handle microblaze rtid r14, 0 */
-+	regs->pc = (unsigned long)ka->sa.sa_handler;
-+
-+	set_fs(USER_DS);
-+
-+#ifdef DEBUG_SIG
-+	printk(KERN_INFO "SIG deliver (%s:%d): sp=%p pc=%08lx\n",
-+		current->comm, current->pid, frame, regs->pc);
-+#endif
-+
-+	return;
-+
-+give_sigsegv:
-+	if (sig == SIGSEGV)
-+		ka->sa.sa_handler = SIG_DFL;
-+	force_sig(SIGSEGV, current);
++	if (da < cp || da >= (cp + s))
++		return OF_BAD_ADDR;
++	return da - cp;
 +}
 +
-+static void setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
-+			sigset_t *set, struct pt_regs *regs)
++static int of_bus_pci_translate(u32 *addr, u64 offset, int na)
 +{
-+	struct rt_sigframe *frame;
-+	int err = 0;
-+	int signal;
-+
-+	frame = get_sigframe(ka, regs, sizeof(*frame));
-+
-+	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
-+		goto give_sigsegv;
-+
-+	signal = current_thread_info()->exec_domain
-+		&& current_thread_info()->exec_domain->signal_invmap
-+		&& sig < 32
-+		? current_thread_info()->exec_domain->signal_invmap[sig]
-+		: sig;
-+
-+	err |= copy_siginfo_to_user(&frame->info, info);
-+
-+	/* Create the ucontext. */
-+	err |= __put_user(0, &frame->uc.uc_flags);
-+	err |= __put_user(0, &frame->uc.uc_link);
-+	err |= __put_user((void *)current->sas_ss_sp,
-+			&frame->uc.uc_stack.ss_sp);
-+	err |= __put_user(sas_ss_flags(regs->r1),
-+			&frame->uc.uc_stack.ss_flags);
-+	err |= __put_user(current->sas_ss_size, &frame->uc.uc_stack.ss_size);
-+	err |= setup_sigcontext(&frame->uc.uc_mcontext,
-+			regs, set->sig[0]);
-+	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
-+
-+	/* Set up to return from userspace. If provided, use a stub
-+	 already in userspace. */
-+	/* minus 8 is offset to cater for "rtsd r15,8" */
-+	if (ka->sa.sa_flags & SA_RESTORER) {
-+		regs->r15 = ((unsigned long)ka->sa.sa_restorer)-8;
-+	} else {
-+		/* addi r12, r0, __NR_sigreturn */
-+		err |= __put_user(0x31800000 | __NR_rt_sigreturn ,
-+				frame->tramp + 0);
-+		/* brki r14, 0x8 */
-+		err |= __put_user(0xb9cc0008, frame->tramp + 1);
-+
-+		/* Return from sighandler will jump to the tramp.
-+		 Negative 8 offset because return is rtsd r15, 8 */
-+		regs->r15 = ((unsigned long)frame->tramp)-8;
-+
-+		__invalidate_cache_sigtramp((unsigned long)frame->tramp);
-+	}
-+
-+	if (err)
-+		goto give_sigsegv;
-+
-+	/* Set up registers for signal handler */
-+	regs->r1 = (unsigned long) frame;
-+	/* Signal handler args: */
-+	regs->r5 = signal; /* arg 0: signum */
-+	regs->r6 = (unsigned long) &frame->info; /* arg 1: siginfo */
-+	regs->r7 = (unsigned long) &frame->uc; /* arg2: ucontext */
-+	/* Offset to handle microblaze rtid r14, 0 */
-+	regs->pc = (unsigned long)ka->sa.sa_handler;
-+
-+	set_fs(USER_DS);
-+
-+#ifdef DEBUG_SIG
-+	printk(KERN_INFO "SIG deliver (%s:%d): sp=%p pc=%08lx\n",
-+		current->comm, current->pid, frame, regs->pc);
-+#endif
-+
-+	return;
-+
-+give_sigsegv:
-+	if (sig == SIGSEGV)
-+		ka->sa.sa_handler = SIG_DFL;
-+	force_sig(SIGSEGV, current);
++	return of_bus_default_translate(addr + 1, offset, na - 1);
 +}
 +
-+/* Handle restarting system calls */
-+static inline void
-+handle_restart(struct pt_regs *regs, struct k_sigaction *ka, int has_handler)
++static unsigned int of_bus_pci_get_flags(const u32 *addr)
 +{
-+	switch (regs->r3) {
-+	case -ERESTART_RESTARTBLOCK:
-+	case -ERESTARTNOHAND:
-+		if (!has_handler)
-+			goto do_restart;
-+		regs->r3 = -EINTR;
++	unsigned int flags = 0;
++	u32 w = addr[0];
++
++	switch ((w >> 24) & 0x03) {
++	case 0x01:
++		flags |= IORESOURCE_IO;
 +		break;
-+	case -ERESTARTSYS:
-+		if (has_handler && !(ka->sa.sa_flags & SA_RESTART)) {
-+			regs->r3 = -EINTR;
++	case 0x02: /* 32 bits */
++	case 0x03: /* 64 bits */
++		flags |= IORESOURCE_MEM;
++		break;
++	}
++	if (w & 0x40000000)
++		flags |= IORESOURCE_PREFETCH;
++	return flags;
++}
++
++const u32 *of_get_pci_address(struct device_node *dev, int bar_no, u64 *size,
++			unsigned int *flags)
++{
++	const u32 *prop;
++	unsigned int psize;
++	struct device_node *parent;
++	struct of_bus *bus;
++	int onesize, i, na, ns;
++
++	/* Get parent & match bus type */
++	parent = of_get_parent(dev);
++	if (parent == NULL)
++		return NULL;
++	bus = of_match_bus(parent);
++	if (strcmp(bus->name, "pci")) {
++		of_node_put(parent);
++		return NULL;
++	}
++	bus->count_cells(dev, &na, &ns);
++	of_node_put(parent);
++	if (!OF_CHECK_COUNTS(na, ns))
++		return NULL;
++
++	/* Get "reg" or "assigned-addresses" property */
++	prop = of_get_property(dev, bus->addresses, &psize);
++	if (prop == NULL)
++		return NULL;
++	psize /= 4;
++
++	onesize = na + ns;
++	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++)
++		if ((prop[0] & 0xff) == ((bar_no * 4) + PCI_BASE_ADDRESS_0)) {
++			if (size)
++				*size = of_read_number(prop + na, ns);
++			if (flags)
++				*flags = bus->get_flags(prop);
++			return prop;
++		}
++	return NULL;
++}
++EXPORT_SYMBOL(of_get_pci_address);
++
++int of_pci_address_to_resource(struct device_node *dev, int bar,
++				struct resource *r)
++{
++	const u32	*addrp;
++	u64		size;
++	unsigned int	flags;
++
++	addrp = of_get_pci_address(dev, bar, &size, &flags);
++	if (addrp == NULL)
++		return -EINVAL;
++	return __of_address_to_resource(dev, addrp, size, flags, r);
++}
++EXPORT_SYMBOL_GPL(of_pci_address_to_resource);
++
++static u8 of_irq_pci_swizzle(u8 slot, u8 pin)
++{
++	return (((pin - 1) + slot) % 4) + 1;
++}
++
++int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq)
++{
++	struct device_node *dn, *ppnode;
++	struct pci_dev *ppdev;
++	u32 lspec;
++	u32 laddr[3];
++	u8 pin;
++	int rc;
++
++	/* Check if we have a device node, if yes, fallback to standard OF
++	 * parsing
++	 */
++	dn = pci_device_to_OF_node(pdev);
++	if (dn)
++		return of_irq_map_one(dn, 0, out_irq);
++
++	/* Ok, we don't, time to have fun. Let's start by building up an
++	 * interrupt spec.  we assume #interrupt-cells is 1, which is standard
++	 * for PCI. If you do different, then don't use that routine.
++	 */
++	rc = pci_read_config_byte(pdev, PCI_INTERRUPT_PIN, &pin);
++	if (rc != 0)
++		return rc;
++	/* No pin, exit */
++	if (pin == 0)
++		return -ENODEV;
++
++	/* Now we walk up the PCI tree */
++	lspec = pin;
++	for (;;) {
++		/* Get the pci_dev of our parent */
++		ppdev = pdev->bus->self;
++
++		/* Ouch, it's a host bridge... */
++		if (ppdev == NULL) {
++			struct pci_controller *host;
++			host = pci_bus_to_host(pdev->bus);
++			ppnode = host ? host->arch_data : NULL;
++			/* No node for host bridge ? give up */
++			if (ppnode == NULL)
++				return -EINVAL;
++		} else
++			/* We found a P2P bridge, check if it has a node */
++			ppnode = pci_device_to_OF_node(ppdev);
++
++		/* Ok, we have found a parent with a device-node, hand over to
++		 * the OF parsing code.
++		 * We build a unit address from the linux device to be used for
++		 * resolution. Note that we use the linux bus number which may
++		 * not match your firmware bus numbering.
++		 * Fortunately, in most cases, interrupt-map-mask doesn't
++		 * include the bus number as part of the matching.
++		 * You should still be careful about that though if you intend
++		 * to rely on this function (you ship  a firmware that doesn't
++		 * create device nodes for all PCI devices).
++		 */
++		if (ppnode)
++			break;
++
++		/* We can only get here if we hit a P2P bridge with no node,
++		 * let's do standard swizzling and try again
++		 */
++		lspec = of_irq_pci_swizzle(PCI_SLOT(pdev->devfn), lspec);
++		pdev = ppdev;
++	}
++
++	laddr[0] = (pdev->bus->number << 16)
++		| (pdev->devfn << 8);
++	laddr[1]  = laddr[2] = 0;
++	return of_irq_map_raw(ppnode, &lspec, 1, laddr, out_irq);
++}
++EXPORT_SYMBOL_GPL(of_irq_map_pci);
++#endif /* CONFIG_PCI */
++
++/*
++ * ISA bus specific translator
++ */
++
++static int of_bus_isa_match(struct device_node *np)
++{
++	return !strcmp(np->name, "isa");
++}
++
++static void of_bus_isa_count_cells(struct device_node *child,
++				int *addrc, int *sizec)
++{
++	if (addrc)
++		*addrc = 2;
++	if (sizec)
++		*sizec = 1;
++}
++
++static u64 of_bus_isa_map(u32 *addr, const u32 *range, int na, int ns, int pna)
++{
++	u64 cp, s, da;
++
++	/* Check address type match */
++	if ((addr[0] ^ range[0]) & 0x00000001)
++		return OF_BAD_ADDR;
++
++	/* Read address values, skipping high cell */
++	cp = of_read_number(range + 1, na - 1);
++	s  = of_read_number(range + na + pna, ns);
++	da = of_read_number(addr + 1, na - 1);
++
++	pr_debug("OF: ISA map, cp="PRu64", s="PRu64", da="PRu64"\n", cp, s, da);
++
++	if (da < cp || da >= (cp + s))
++		return OF_BAD_ADDR;
++	return da - cp;
++}
++
++static int of_bus_isa_translate(u32 *addr, u64 offset, int na)
++{
++	return of_bus_default_translate(addr + 1, offset, na - 1);
++}
++
++static unsigned int of_bus_isa_get_flags(const u32 *addr)
++{
++	unsigned int flags = 0;
++	u32 w = addr[0];
++
++	if (w & 1)
++		flags |= IORESOURCE_IO;
++	else
++		flags |= IORESOURCE_MEM;
++	return flags;
++}
++
++/*
++ * Array of bus specific translators
++ */
++
++static struct of_bus of_busses[] = {
++#ifdef CONFIG_PCI
++	/* PCI */
++	{
++		.name = "pci",
++		.addresses = "assigned-addresses",
++		.match = of_bus_pci_match,
++		.count_cells = of_bus_pci_count_cells,
++		.map = of_bus_pci_map,
++		.translate = of_bus_pci_translate,
++		.get_flags = of_bus_pci_get_flags,
++	},
++#endif /* CONFIG_PCI */
++	/* ISA */
++	{
++		.name = "isa",
++		.addresses = "reg",
++		.match = of_bus_isa_match,
++		.count_cells = of_bus_isa_count_cells,
++		.map = of_bus_isa_map,
++		.translate = of_bus_isa_translate,
++		.get_flags = of_bus_isa_get_flags,
++	},
++	/* Default */
++	{
++		.name = "default",
++		.addresses = "reg",
++		.match = NULL,
++		.count_cells = of_bus_default_count_cells,
++		.map = of_bus_default_map,
++		.translate = of_bus_default_translate,
++		.get_flags = of_bus_default_get_flags,
++	},
++};
++
++static struct of_bus *of_match_bus(struct device_node *np)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(of_busses); i++)
++		if (!of_busses[i].match || of_busses[i].match(np))
++			return &of_busses[i];
++	BUG();
++	return NULL;
++}
++
++static int of_translate_one(struct device_node *parent, struct of_bus *bus,
++			struct of_bus *pbus, u32 *addr,
++			int na, int ns, int pna)
++{
++	const u32 *ranges;
++	unsigned int rlen;
++	int rone;
++	u64 offset = OF_BAD_ADDR;
++
++	/* Normally, an absence of a "ranges" property means we are
++	 * crossing a non-translatable boundary, and thus the addresses
++	 * below the current not cannot be converted to CPU physical ones.
++	 * Unfortunately, while this is very clear in the spec, it's not
++	 * what Apple understood, and they do have things like /uni-n or
++	 * /ht nodes with no "ranges" property and a lot of perfectly
++	 * useable mapped devices below them. Thus we treat the absence of
++	 * "ranges" as equivalent to an empty "ranges" property which means
++	 * a 1:1 translation at that level. It's up to the caller not to try
++	 * to translate addresses that aren't supposed to be translated in
++	 * the first place. --BenH.
++	 */
++	ranges = of_get_property(parent, "ranges", (int *) &rlen);
++	if (ranges == NULL || rlen == 0) {
++		offset = of_read_number(addr, na);
++		memset(addr, 0, pna * 4);
++		pr_debug("OF: no ranges, 1:1 translation\n");
++		goto finish;
++	}
++
++	pr_debug("OF: walking ranges...\n");
++
++	/* Now walk through the ranges */
++	rlen /= 4;
++	rone = na + pna + ns;
++	for (; rlen >= rone; rlen -= rone, ranges += rone) {
++		offset = bus->map(addr, ranges, na, ns, pna);
++		if (offset != OF_BAD_ADDR)
 +			break;
 +	}
-+	/* fallthrough */
-+	case -ERESTARTNOINTR:
-+do_restart:
-+		/* offset of 4 bytes to re-execute trap (brki) instruction */
-+		regs->pc -= 4;
-+		break;
++	if (offset == OF_BAD_ADDR) {
++		pr_debug("OF: not found !\n");
++		return 1;
 +	}
++	memcpy(addr, ranges + na, 4 * pna);
++
++ finish:
++	of_dump_addr("OF: parent translation for:", addr, pna);
++	pr_debug("OF: with offset: "PRu64"\n", offset);
++
++	/* Translate it into parent bus space */
++	return pbus->translate(addr, offset, pna);
 +}
 +
 +/*
-+ * OK, we're invoking a handler
-+ */
-+
-+static void
-+handle_signal(unsigned long sig, struct k_sigaction *ka,
-+		siginfo_t *info, sigset_t *oldset, struct pt_regs *regs)
-+{
-+	/* Set up the stack frame */
-+	if (ka->sa.sa_flags & SA_SIGINFO)
-+		setup_rt_frame(sig, ka, info, oldset, regs);
-+	else
-+		setup_frame(sig, ka, oldset, regs);
-+
-+	if (ka->sa.sa_flags & SA_ONESHOT)
-+		ka->sa.sa_handler = SIG_DFL;
-+
-+	if (!(ka->sa.sa_flags & SA_NODEFER)) {
-+		spin_lock_irq(&current->sighand->siglock);
-+		sigorsets(&current->blocked,
-+				&current->blocked, &ka->sa.sa_mask);
-+		sigaddset(&current->blocked, sig);
-+		recalc_sigpending();
-+		spin_unlock_irq(&current->sighand->siglock);
-+	}
-+}
-+
-+/*
-+ * Note that 'init' is a special process: it doesn't get signals it doesn't
-+ * want to handle. Thus you cannot kill init even with a SIGKILL even by
-+ * mistake.
++ * Translate an address from the device-tree into a CPU physical address,
++ * this walks up the tree and applies the various bus mappings on the
++ * way.
 + *
-+ * Note that we go through the signals twice: once to check the signals that
-+ * the kernel can handle, and then we build all the user-level signal handling
-+ * stack-frames in one go after that.
++ * Note: We consider that crossing any level with #size-cells == 0 to mean
++ * that translation is impossible (that is we are not dealing with a value
++ * that can be mapped to a cpu physical address). This is not really specified
++ * that way, but this is traditionally the way IBM at least do things
 + */
-+int do_signal(struct pt_regs *regs, sigset_t *oldset, int in_syscall)
++u64 of_translate_address(struct device_node *dev, const u32 *in_addr)
 +{
-+	siginfo_t info;
-+	int signr;
-+	struct k_sigaction ka;
-+#ifdef DEBUG_SIG
-+	printk(KERN_INFO "do signal: %p %p %d\n", regs, oldset, in_syscall);
-+	printk(KERN_INFO "do signal2: %lx %lx %ld [%lx]\n", regs->pc, regs->r1,
-+			regs->r12, current_thread_info()->flags);
-+#endif
-+	/*
-+	 * We want the common case to go fast, which
-+	 * is why we may in certain cases get here from
-+	 * kernel mode. Just return without doing anything
-+	 * if so.
-+	 */
-+	if (!user_mode(regs))
-+		return 1;
++	struct device_node *parent = NULL;
++	struct of_bus *bus, *pbus;
++	u32 addr[OF_MAX_ADDR_CELLS];
++	int na, ns, pna, pns;
++	u64 result = OF_BAD_ADDR;
 +
-+	if (!oldset)
-+		oldset = &current->blocked;
++	pr_debug("OF: ** translation for device %s **\n", dev->full_name);
 +
-+	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
-+	if (signr > 0) {
-+		/* Whee! Actually deliver the signal. */
-+		if (in_syscall)
-+			handle_restart(regs, &ka, 1);
-+		handle_signal(signr, &ka, &info, oldset, regs);
-+		return 1;
++	/* Increase refcount at current level */
++	of_node_get(dev);
++
++	/* Get parent & match bus type */
++	parent = of_get_parent(dev);
++	if (parent == NULL)
++		goto bail;
++	bus = of_match_bus(parent);
++
++	/* Cound address cells & copy address locally */
++	bus->count_cells(dev, &na, &ns);
++	if (!OF_CHECK_COUNTS(na, ns)) {
++		printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
++			dev->full_name);
++		goto bail;
 +	}
++	memcpy(addr, in_addr, na * 4);
 +
-+	if (in_syscall)
-+		handle_restart(regs, NULL, 0);
++	pr_debug("OF: bus is %s (na=%d, ns=%d) on %s\n",
++		bus->name, na, ns, parent->full_name);
++	of_dump_addr("OF: translating address:", addr, na);
 +
-+	/* Did we come from a system call? */
++	/* Translate */
++	for (;;) {
++		/* Switch to parent bus */
++		of_node_put(dev);
++		dev = parent;
++		parent = of_get_parent(dev);
++
++		/* If root, we have finished */
++		if (parent == NULL) {
++			pr_debug("OF: reached root node\n");
++			result = of_read_number(addr, na);
++			break;
++		}
++
++		/* Get new parent bus and counts */
++		pbus = of_match_bus(parent);
++		pbus->count_cells(dev, &pna, &pns);
++		if (!OF_CHECK_COUNTS(pna, pns)) {
++			printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
++				dev->full_name);
++			break;
++		}
++
++		pr_debug("OF: parent bus is %s (na=%d, ns=%d) on %s\n",
++			pbus->name, pna, pns, parent->full_name);
++
++		/* Apply bus translation */
++		if (of_translate_one(dev, bus, pbus, addr, na, ns, pna))
++			break;
++
++		/* Complete the move up one level */
++		na = pna;
++		ns = pns;
++		bus = pbus;
++
++		of_dump_addr("OF: one level translation:", addr, na);
++	}
++ bail:
++	of_node_put(parent);
++	of_node_put(dev);
++
++	return result;
++}
++EXPORT_SYMBOL(of_translate_address);
++
++const u32 *of_get_address(struct device_node *dev, int index, u64 *size,
++			unsigned int *flags)
++{
++	const u32 *prop;
++	unsigned int psize;
++	struct device_node *parent;
++	struct of_bus *bus;
++	int onesize, i, na, ns;
++
++	/* Get parent & match bus type */
++	parent = of_get_parent(dev);
++	if (parent == NULL)
++		return NULL;
++	bus = of_match_bus(parent);
++	bus->count_cells(dev, &na, &ns);
++	of_node_put(parent);
++	if (!OF_CHECK_COUNTS(na, ns))
++		return NULL;
++
++	/* Get "reg" or "assigned-addresses" property */
++	prop = of_get_property(dev, bus->addresses, (int *) &psize);
++	if (prop == NULL)
++		return NULL;
++	psize /= 4;
++
++	onesize = na + ns;
++	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++)
++		if (i == index) {
++			if (size)
++				*size = of_read_number(prop + na, ns);
++			if (flags)
++				*flags = bus->get_flags(prop);
++			return prop;
++		}
++	return NULL;
++}
++EXPORT_SYMBOL(of_get_address);
++
++static int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
++				u64 size, unsigned int flags,
++				struct resource *r)
++{
++	u64 taddr;
++
++	if ((flags & (IORESOURCE_IO | IORESOURCE_MEM)) == 0)
++		return -EINVAL;
++	taddr = of_translate_address(dev, addrp);
++	if (taddr == OF_BAD_ADDR)
++		return -EINVAL;
++	memset(r, 0, sizeof(struct resource));
++	if (flags & IORESOURCE_IO) {
++		unsigned long port;
++		port = -1; /* pci_address_to_pio(taddr); */
++		if (port == (unsigned long)-1)
++			return -EINVAL;
++		r->start = port;
++		r->end = port + size - 1;
++	} else {
++		r->start = taddr;
++		r->end = taddr + size - 1;
++	}
++	r->flags = flags;
++	r->name = dev->name;
 +	return 0;
 +}
-diff --git a/include/asm-microblaze/signal.h b/include/asm-microblaze/signal.h
-new file mode 100644
-index 0000000..63c05af
---- /dev/null
-+++ b/include/asm-microblaze/signal.h
-@@ -0,0 +1,195 @@
++
++int of_address_to_resource(struct device_node *dev, int index,
++			struct resource *r)
++{
++	const u32	*addrp;
++	u64		size;
++	unsigned int	flags;
++
++	addrp = of_get_address(dev, index, &size, &flags);
++	if (addrp == NULL)
++		return -EINVAL;
++	return __of_address_to_resource(dev, addrp, size, flags, r);
++}
++EXPORT_SYMBOL_GPL(of_address_to_resource);
++
++void of_parse_dma_window(struct device_node *dn, const void *dma_window_prop,
++		unsigned long *busno, unsigned long *phys, unsigned long *size)
++{
++	const u32 *dma_window;
++	u32 cells;
++	const unsigned char *prop;
++
++	dma_window = dma_window_prop;
++
++	/* busno is always one cell */
++	*busno = *(dma_window++);
++
++	prop = of_get_property(dn, "ibm,#dma-address-cells", NULL);
++	if (!prop)
++		prop = of_get_property(dn, "#address-cells", NULL);
++
++	cells = prop ? *(u32 *)prop : of_n_addr_cells(dn);
++	*phys = of_read_number(dma_window, cells);
++
++	dma_window += cells;
++
++	prop = of_get_property(dn, "ibm,#dma-size-cells", NULL);
++	cells = prop ? *(u32 *)prop : of_n_size_cells(dn);
++	*size = of_read_number(dma_window, cells);
++}
++
 +/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *	Yasushi SHOJI <yashi@atmark-techno.com>
-+ *	Tetsuya OHKAWA <tetsuya@atmark-techno.com>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
++ * Interrupt remapper
 + */
 +
-+#ifndef _ASM_MICROBLAZE_SIGNAL_H
-+#define _ASM_MICROBLAZE_SIGNAL_H
++static unsigned int of_irq_workarounds;
++static struct device_node *of_irq_dflt_pic;
 +
-+#ifndef __ASSEMBLY__
-+#include <linux/types.h>
-+#include <linux/linkage.h>
++static struct device_node *of_irq_find_parent(struct device_node *child)
++{
++	struct device_node *p;
++	const phandle *parp;
 +
-+/* Avoid too many header ordering problems. */
-+struct siginfo;
++	if (!of_node_get(child))
++		return NULL;
 +
-+#ifdef __KERNEL__
++	do {
++		parp = of_get_property(child, "interrupt-parent", NULL);
++		if (parp == NULL)
++			p = of_get_parent(child);
++		else {
++			if (of_irq_workarounds & OF_IMAP_NO_PHANDLE)
++				p = of_node_get(of_irq_dflt_pic);
++			else
++				p = of_find_node_by_phandle(*parp);
++		}
++		of_node_put(child);
++		child = p;
++	} while (p && of_get_property(p, "#interrupt-cells", NULL) == NULL);
 +
-+/* Most things should be clean enough to redefine this at will, if care
-+ is taken to make libc match. */
-+#define _NSIG		64
-+#define _NSIG_BPW	32
-+#define _NSIG_WORDS	(_NSIG / _NSIG_BPW)
++	return p;
++}
 +
-+typedef unsigned long old_sigset_t; /* at least 32 bits */
++/* This doesn't need to be called if you don't have any special workaround
++ * flags to pass
++ */
++void of_irq_map_init(unsigned int flags)
++{
++	of_irq_workarounds = flags;
 +
-+typedef struct {
-+	unsigned long sig[_NSIG_WORDS];
-+} sigset_t;
++	/* OldWorld, don't bother looking at other things */
++	if (flags & OF_IMAP_OLDWORLD_MAC)
++		return;
 +
-+#else /* !__KERNEL__ */
++	/* If we don't have phandles, let's try to locate a default interrupt
++	 * controller (happens when booting with BootX). We do a first match
++	 * here, hopefully, that only ever happens on machines with one
++	 * controller.
++	 */
++	if (flags & OF_IMAP_NO_PHANDLE) {
++		struct device_node *np;
 +
-+/* Here we must cater to libcs that poke about in kernel headers. */
++		for (np = NULL; (np = of_find_all_nodes(np)) != NULL;) {
++			if (of_get_property(np, "interrupt-controller", NULL)
++				== NULL)
++				continue;
++			/* Skip /chosen/interrupt-controller */
++			if (strcmp(np->name, "chosen") == 0)
++				continue;
++			/* It seems like at least one person on this planet
++			 * wants to use BootX on a machine with an AppleKiwi
++			 * controller which happens to pretend to be an
++			 * interrupt controller too.
++			 */
++			if (strcmp(np->name, "AppleKiwi") == 0)
++				continue;
++			/* I think we found one ! */
++			of_irq_dflt_pic = np;
++			break;
++		}
++	}
 +
-+#define NSIG		32
-+typedef unsigned long sigset_t;
++}
 +
-+#endif /* __KERNEL__ */
++int of_irq_map_raw(struct device_node *parent, const u32 *intspec, u32 ointsize,
++		const u32 *addr, struct of_irq *out_irq)
++{
++	struct device_node *ipar, *tnode, *old = NULL, *newpar = NULL;
++	const u32 *tmp, *imap, *imask;
++	u32 intsize = 1, addrsize, newintsize = 0, newaddrsize = 0;
++	int imaplen, match, i;
 +
-+#endif /* __ASSEMBLY__ */
++	pr_debug("of_irq_map_raw: par=%s,intspec=[0x%08x 0x%08x...],"
++		"ointsize=%d\n",
++		parent->full_name, intspec[0], intspec[1], ointsize);
 +
-+#define SIGHUP		1
-+#define SIGINT		2
-+#define SIGQUIT		3
-+#define SIGILL		4
-+#define SIGTRAP		5
-+#define SIGABRT		6
-+#define SIGIOT		6
-+#define SIGBUS		7
-+#define SIGFPE		8
-+#define SIGKILL		9
-+#define SIGUSR1		10
-+#define SIGSEGV		11
-+#define SIGUSR2		12
-+#define SIGPIPE		13
-+#define SIGALRM		14
-+#define SIGTERM		15
-+#define SIGSTKFLT	16
-+#define SIGCHLD		17
-+#define SIGCONT		18
-+#define SIGSTOP		19
-+#define SIGTSTP		20
-+#define SIGTTIN		21
-+#define SIGTTOU		22
-+#define SIGURG		23
-+#define SIGXCPU		24
-+#define SIGXFSZ		25
-+#define SIGVTALRM	26
-+#define SIGPROF		27
-+#define SIGWINCH	28
-+#define SIGIO		29
-+#define SIGPOLL		SIGIO
-+/*
-+#define SIGLOST		29
++	ipar = of_node_get(parent);
++
++	/* First get the #interrupt-cells property of the current cursor
++	 * that tells us how to interpret the passed-in intspec. If there
++	 * is none, we are nice and just walk up the tree
++	 */
++	do {
++		tmp = of_get_property(ipar, "#interrupt-cells", NULL);
++		if (tmp != NULL) {
++			intsize = *tmp;
++			break;
++		}
++		tnode = ipar;
++		ipar = of_irq_find_parent(ipar);
++		of_node_put(tnode);
++	} while (ipar);
++	if (ipar == NULL) {
++		pr_debug(" -> no parent found !\n");
++		goto fail;
++	}
++
++	pr_debug("of_irq_map_raw: ipar=%s, size=%d\n",
++			ipar->full_name, intsize);
++
++	if (ointsize != intsize)
++		return -EINVAL;
++
++	/* Look for this #address-cells. We have to implement the old linux
++	 * trick of looking for the parent here as some device-trees rely on it
++	 */
++	old = of_node_get(ipar);
++	do {
++		tmp = of_get_property(old, "#address-cells", NULL);
++		tnode = of_get_parent(old);
++		of_node_put(old);
++		old = tnode;
++	} while (old && tmp == NULL);
++	of_node_put(old);
++	old = NULL;
++	addrsize = (tmp == NULL) ? 2 : *tmp;
++
++	pr_debug(" -> addrsize=%d\n", addrsize);
++
++	/* Now start the actual "proper" walk of the interrupt tree */
++	while (ipar != NULL) {
++		/* Now check if cursor is an interrupt-controller and if it is
++		 * then we are done
++		 */
++		if (of_get_property(ipar, "interrupt-controller", NULL) !=
++				NULL) {
++			pr_debug(" -> got it !\n");
++			memcpy(out_irq->specifier, intspec,
++				intsize * sizeof(u32));
++			out_irq->size = intsize;
++			out_irq->controller = ipar;
++			of_node_put(old);
++			return 0;
++		}
++
++		/* Now look for an interrupt-map */
++		imap = of_get_property(ipar, "interrupt-map", &imaplen);
++		/* No interrupt map, check for an interrupt parent */
++		if (imap == NULL) {
++			pr_debug(" -> no map, getting parent\n");
++			newpar = of_irq_find_parent(ipar);
++			goto skiplevel;
++		}
++		imaplen /= sizeof(u32);
++
++		/* Look for a mask */
++		imask = of_get_property(ipar, "interrupt-map-mask", NULL);
++
++		/* If we were passed no "reg" property and we attempt to parse
++		 * an interrupt-map, then #address-cells must be 0.
++		 * Fail if it's not.
++		 */
++		if (addr == NULL && addrsize != 0) {
++			pr_debug(" -> no reg passed in when needed !\n");
++			goto fail;
++		}
++
++		/* Parse interrupt-map */
++		match = 0;
++		while (imaplen > (addrsize + intsize + 1) && !match) {
++			/* Compare specifiers */
++			match = 1;
++			for (i = 0; i < addrsize && match; ++i) {
++				u32 mask = imask ? imask[i] : 0xffffffffu;
++				match = ((addr[i] ^ imap[i]) & mask) == 0;
++			}
++			for (; i < (addrsize + intsize) && match; ++i) {
++				u32 mask = imask ? imask[i] : 0xffffffffu;
++				match =
++					((intspec[i-addrsize] ^ imap[i])
++						& mask) == 0;
++			}
++			imap += addrsize + intsize;
++			imaplen -= addrsize + intsize;
++
++			pr_debug(" -> match=%d (imaplen=%d)\n", match, imaplen);
++
++			/* Get the interrupt parent */
++			if (of_irq_workarounds & OF_IMAP_NO_PHANDLE)
++				newpar = of_node_get(of_irq_dflt_pic);
++			else
++				newpar =
++					of_find_node_by_phandle((phandle)*imap);
++			imap++;
++			--imaplen;
++
++			/* Check if not found */
++			if (newpar == NULL) {
++				pr_debug(" -> imap parent not found !\n");
++				goto fail;
++			}
++
++			/* Get #interrupt-cells and #address-cells of new
++			 * parent
++			 */
++			tmp = of_get_property(newpar, "#interrupt-cells", NULL);
++			if (tmp == NULL) {
++				pr_debug(" -> parent lacks "
++						"#interrupt-cells!\n");
++				goto fail;
++			}
++			newintsize = *tmp;
++			tmp = of_get_property(newpar, "#address-cells", NULL);
++			newaddrsize = (tmp == NULL) ? 0 : *tmp;
++
++			pr_debug(" -> newintsize=%d, newaddrsize=%d\n",
++				newintsize, newaddrsize);
++
++			/* Check for malformed properties */
++			if (imaplen < (newaddrsize + newintsize))
++				goto fail;
++
++			imap += newaddrsize + newintsize;
++			imaplen -= newaddrsize + newintsize;
++
++			pr_debug(" -> imaplen=%d\n", imaplen);
++		}
++		if (!match)
++			goto fail;
++
++		of_node_put(old);
++		old = of_node_get(newpar);
++		addrsize = newaddrsize;
++		intsize = newintsize;
++		intspec = imap - intsize;
++		addr = intspec - addrsize;
++
++skiplevel:
++		/* Iterate again with new parent */
++		pr_debug(" -> new parent: %s\n",
++				newpar ? newpar->full_name : "<>");
++		of_node_put(ipar);
++		ipar = newpar;
++		newpar = NULL;
++	}
++fail:
++	of_node_put(ipar);
++	of_node_put(old);
++	of_node_put(newpar);
++
++	return -EINVAL;
++}
++EXPORT_SYMBOL_GPL(of_irq_map_raw);
++
++int of_irq_map_one(struct device_node *device,
++			int index, struct of_irq *out_irq)
++{
++	struct device_node *p;
++	const u32 *intspec, *tmp, *addr;
++	u32 intsize, intlen;
++	int res;
++
++	pr_debug("of_irq_map_one: dev=%s, index=%d\n",
++			device->full_name, index);
++
++	/* Get the interrupts property */
++	intspec = of_get_property(device, "interrupts", (int *) &intlen);
++	if (intspec == NULL)
++		return -EINVAL;
++	intlen /= sizeof(u32);
++
++	pr_debug(" intspec=%d intlen=%d\n", *intspec, intlen);
++
++	/* Get the reg property (if any) */
++	addr = of_get_property(device, "reg", NULL);
++
++	/* Look for the interrupt parent. */
++	p = of_irq_find_parent(device);
++	if (p == NULL)
++		return -EINVAL;
++
++	/* Get size of interrupt specifier */
++	tmp = of_get_property(p, "#interrupt-cells", NULL);
++	if (tmp == NULL) {
++		of_node_put(p);
++		return -EINVAL;
++	}
++	intsize = *tmp;
++
++	pr_debug(" intsize=%d intlen=%d\n", intsize, intlen);
++
++	/* Check index */
++	if ((index + 1) * intsize > intlen)
++		return -EINVAL;
++
++	/* Get new specifier and map it */
++	res = of_irq_map_raw(p, intspec + index * intsize, intsize,
++				addr, out_irq);
++	of_node_put(p);
++	return res;
++}
++EXPORT_SYMBOL_GPL(of_irq_map_one);
++
++/**
++ * Search the device tree for the best MAC address to use.  'mac-address' is
++ * checked first, because that is supposed to contain to "most recent" MAC
++ * address. If that isn't set, then 'local-mac-address' is checked next,
++ * because that is the default address.  If that isn't set, then the obsolete
++ * 'address' is checked, just in case we're using an old device tree.
++ *
++ * Note that the 'address' property is supposed to contain a virtual address of
++ * the register set, but some DTS files have redefined that property to be the
++ * MAC address.
++ *
++ * All-zero MAC addresses are rejected, because those could be properties that
++ * exist in the device tree, but were not set by U-Boot.  For example, the
++ * DTS could define 'mac-address' and 'local-mac-address', with zero MAC
++ * addresses.  Some older U-Boots only initialized 'local-mac-address'.  In
++ * this case, the real MAC is in 'local-mac-address', and 'mac-address' exists
++ * but is all zeros.
 +*/
-+#define SIGPWR		30
-+#define SIGSYS		31
-+#define	SIGUNUSED	31
++const void *of_get_mac_address(struct device_node *np)
++{
++	struct property *pp;
 +
-+/* These should not be considered constants from userland. */
-+#define SIGRTMIN	32
-+#define SIGRTMAX	_NSIG
++	pp = of_find_property(np, "mac-address", NULL);
++	if (pp && (pp->length == 6) && is_valid_ether_addr(pp->value))
++		return pp->value;
 +
-+/*
-+ * SA_FLAGS values:
-+ *
-+ * SA_ONSTACK indicates that a registered stack_t will be used.
-+ * SA_RESTART flag to get restarting signals (which were the default long ago)
-+ * SA_NOCLDSTOP flag to turn off SIGCHLD when children stop.
-+ * SA_RESETHAND clears the handler when the signal is delivered.
-+ * SA_NOCLDWAIT flag on SIGCHLD to inhibit zombies.
-+ * SA_NODEFER prevents the current signal from being masked in the handler.
-+ *
-+ * SA_ONESHOT and SA_NOMASK are the historical Linux names for the Single
-+ * Unix names RESETHAND and NODEFER respectively.
-+ */
-+#define SA_NOCLDSTOP	0x00000001
-+#define SA_NOCLDWAIT	0x00000002
-+#define SA_SIGINFO	0x00000004
-+#define SA_ONSTACK	0x08000000
-+#define SA_RESTART	0x10000000
-+#define SA_NODEFER	0x40000000
-+#define SA_RESETHAND	0x80000000
++	pp = of_find_property(np, "local-mac-address", NULL);
++	if (pp && (pp->length == 6) && is_valid_ether_addr(pp->value))
++		return pp->value;
 +
-+#define SA_NOMASK	SA_NODEFER
-+#define SA_ONESHOT	SA_RESETHAND
++	pp = of_find_property(np, "address", NULL);
++	if (pp && (pp->length == 6) && is_valid_ether_addr(pp->value))
++		return pp->value;
 +
-+#define SA_RESTORER	0x04000000
++	return NULL;
++}
++EXPORT_SYMBOL(of_get_mac_address);
 +
-+/*
-+ * sigaltstack controls
-+ */
-+#define SS_ONSTACK	1
-+#define SS_DISABLE	2
++int of_irq_to_resource(struct device_node *dev, int index, struct resource *r)
++{
++	struct of_irq out_irq;
++	int irq;
++	int res;
 +
-+#define MINSIGSTKSZ	2048
-+#define SIGSTKSZ	8192
++	res = of_irq_map_one(dev, index, &out_irq);
 +
-+#ifndef __ASSEMBLY__
-+#include <asm-generic/signal.h>
++	/* Get irq for the device */
++	if (res) {
++		pr_debug("IRQ not found... code = %d", res);
++		return NO_IRQ;
++	}
++	/* Assuming single interrupt controller... */
++	irq = out_irq.specifier[0];
 +
-+#ifdef __KERNEL__
++	pr_debug("IRQ found = %d", irq);
 +
-+struct old_sigaction {
-+	__sighandler_t sa_handler;
-+	old_sigset_t sa_mask;
-+	unsigned long sa_flags;
-+	void (*sa_restorer)(void);
-+};
++	/* Only dereference the resource if both the
++	 * resource and the irq are valid. */
++	if (r && irq != NO_IRQ) {
++		r->start = r->end = irq;
++		r->flags = IORESOURCE_IRQ;
++	}
 +
-+struct sigaction {
-+	__sighandler_t sa_handler;
-+	unsigned long sa_flags;
-+	void (*sa_restorer)(void);
-+	sigset_t sa_mask; /* mask last for extensibility */
-+};
++	return irq;
++}
++EXPORT_SYMBOL_GPL(of_irq_to_resource);
 +
-+struct k_sigaction {
-+	struct sigaction sa;
-+};
++void __iomem *of_iomap(struct device_node *np, int index)
++{
++	struct resource res;
 +
-+#else /* !__KERNEL__ */
++	if (of_address_to_resource(np, index, &res))
++		return NULL;
 +
-+/* Here we must cater to libcs that poke about in kernel headers. */
++	return ioremap(res.start, 1 + res.end - res.start);
++}
++EXPORT_SYMBOL(of_iomap);
+diff --git a/include/linux/of_device.h b/include/linux/of_device.h
+index afe3382..060612e 100644
+--- a/include/linux/of_device.h
++++ b/include/linux/of_device.h
+@@ -24,4 +24,13 @@ static inline void of_device_free(struct of_device *dev)
+ 	of_release_dev(&dev->dev);
+ }
+ 
++extern struct of_device *of_device_alloc(struct device_node *np,
++					 const char *bus_id,
++					 struct device *parent);
 +
-+struct sigaction {
-+	union {
-+	__sighandler_t _sa_handler;
-+	void (*_sa_sigaction)(int, struct siginfo *, void *);
-+	} _u;
-+	sigset_t sa_mask;
-+	unsigned long sa_flags;
-+	void (*sa_restorer)(void);
-+};
++extern ssize_t of_device_get_modalias(struct of_device *ofdev,
++					char *str, ssize_t len);
++extern int of_device_uevent(struct device *dev,
++			    struct kobj_uevent_env *env);
 +
-+#define sa_handler	_u._sa_handler
-+#define sa_sigaction	_u._sa_sigaction
+ #endif /* _LINUX_OF_DEVICE_H */
+diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
+index a8efcfe..cbcc569 100644
+--- a/include/linux/of_platform.h
++++ b/include/linux/of_platform.h
+@@ -58,4 +58,29 @@ extern struct of_device *of_find_device_by_node(struct device_node *np);
+ 
+ extern int of_bus_type_init(struct bus_type *bus, const char *name);
+ 
++/* Platform drivers register/unregister */
++static inline int of_register_platform_driver(struct of_platform_driver *drv)
++{
++	return of_register_driver(drv, &of_platform_bus_type);
++}
++static inline void of_unregister_platform_driver(struct of_platform_driver *drv)
++{
++	of_unregister_driver(drv);
++}
 +
-+#endif /* __KERNEL__ */
++/* Platform devices and busses creation */
++extern struct of_device *of_platform_device_create(struct device_node *np,
++						const char *bus_id,
++						struct device *parent);
++/* pseudo "matches" value to not do deep probe */
++#define OF_NO_DEEP_PROBE ((struct of_device_id *)-1)
 +
++extern int of_platform_bus_probe(struct device_node *root,
++				const struct of_device_id *matches,
++				struct device *parent);
 +
-+typedef struct sigaltstack {
-+	void *ss_sp;
-+	int ss_flags;
-+	size_t ss_size;
-+} stack_t;
++extern struct of_device *of_find_device_by_phandle(phandle ph);
 +
-+#ifdef __KERNEL__
++extern void of_instantiate_rtc(void);
 +
-+#include <asm/sigcontext.h>
-+#undef __HAVE_ARCH_SIG_BITOPS
-+
-+#define ptrace_signal_deliver(regs, cookie) do { } while (0)
-+
-+#endif /* __KERNEL__ */
-+
-+asmlinkage int sys_sigsuspend(old_sigset_t mask, struct pt_regs *regs);
-+asmlinkage int sys_rt_sigsuspend(sigset_t *unewset, size_t sigsetsize,
-+					struct pt_regs *regs);
-+asmlinkage int sys_sigaction(int sig, const struct old_sigaction *act,
-+					struct old_sigaction *oact);
-+asmlinkage int sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
-+					struct pt_regs *regs);
-+asmlinkage int sys_sigreturn(struct pt_regs *regs);
-+asmlinkage int sys_rt_sigreturn(struct pt_regs *regs);
-+
-+
-+
-+#endif /* __ASSEMBLY__ */
-+
-+#endif /* _ASM_MICROBLAZE_SIGNAL_H */
+ #endif	/* _LINUX_OF_PLATFORM_H */
 -- 
 1.5.4.GIT
 
