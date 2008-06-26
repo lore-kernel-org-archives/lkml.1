@@ -1,116 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762694AbYFZTh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277AbYFZThv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762694AbYFZTh3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 15:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760399AbYFZT3N
+	id S1752277AbYFZThv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 15:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760527AbYFZT3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 15:29:13 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:13765 "EHLO
-	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761306AbYFZT3F (ORCPT
+	Thu, 26 Jun 2008 15:29:15 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:31939 "EHLO
+	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756421AbYFZT3E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 15:29:05 -0400
-X-BigFish: VPS4(zzzz10d3izzz32i43j63h)
-X-Spam-TCS-SCL: 2:0
-X-WSS-ID: 0K334RU-03-2Z6-01
+	Thu, 26 Jun 2008 15:29:04 -0400
+X-BigFish: VPS4(zzzz10d3izzz32i43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K334RT-04-UOG-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: tglx@linutronix.de, mingo@redhat.com
 CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
        bhavna.sarathy@amd.com, Sebastian.Biemueller@amd.com,
        robert.richter@amd.com, joro@8bytes.org,
        Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 08/34] AMD IOMMU: add functions for programming IOMMU MMIO space
-Date: Thu, 26 Jun 2008 21:27:44 +0200
-Message-ID: <1214508490-29683-9-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 11/34] AMD IOMMU: add functions for IOMMU hardware initialization from ACPI
+Date: Thu, 26 Jun 2008 21:27:47 +0200
+Message-ID: <1214508490-29683-12-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
 References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 26 Jun 2008 19:28:11.0565 (UTC) FILETIME=[C5688DD0:01C8D7C2]
+X-OriginalArrivalTime: 26 Jun 2008 19:28:11.0643 (UTC) FILETIME=[C57474B0:01C8D7C2]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the functions required to programm the IOMMU with the MMIO
-space.
+This patch adds functions to initialize the IOMMU hardware with information
+from ACPI and PCI.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kernel/amd_iommu_init.c |   60 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 60 insertions(+), 0 deletions(-)
+ arch/x86/kernel/amd_iommu_init.c |  125 ++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 125 insertions(+), 0 deletions(-)
 
 diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index 3147e69..ffb8ac8 100644
+index 4c37abb..8ec48f1 100644
 --- a/arch/x86/kernel/amd_iommu_init.c
 +++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -117,6 +117,66 @@ static u32 dev_table_size;
- static u32 alias_table_size;
- static u32 rlookup_table_size;
+@@ -353,3 +353,128 @@ static void __init set_device_exclusion_range(u16 devid, struct ivmd_header *m)
+ 	}
+ }
  
-+static void __init iommu_set_exclusion_range(struct amd_iommu *iommu)
++static void __init init_iommu_from_pci(struct amd_iommu *iommu)
 +{
-+	u64 start = iommu->exclusion_start & PAGE_MASK;
-+	u64 limit = (start + iommu->exclusion_length) & PAGE_MASK;
-+	u64 entry;
++	int bus = PCI_BUS(iommu->devid);
++	int dev = PCI_SLOT(iommu->devid);
++	int fn  = PCI_FUNC(iommu->devid);
++	int cap_ptr = iommu->cap_ptr;
++	u32 range;
 +
-+	if (!iommu->exclusion_start)
-+		return;
++	iommu->cap = read_pci_config(bus, dev, fn, cap_ptr+MMIO_CAP_HDR_OFFSET);
 +
-+	entry = start | MMIO_EXCL_ENABLE_MASK;
-+	memcpy_toio(iommu->mmio_base + MMIO_EXCL_BASE_OFFSET,
-+			&entry, sizeof(entry));
-+
-+	entry = limit;
-+	memcpy_toio(iommu->mmio_base + MMIO_EXCL_LIMIT_OFFSET,
-+			&entry, sizeof(entry));
++	range = read_pci_config(bus, dev, fn, cap_ptr+MMIO_RANGE_OFFSET);
++	iommu->first_device = DEVID(MMIO_GET_BUS(range), MMIO_GET_FD(range));
++	iommu->last_device = DEVID(MMIO_GET_BUS(range), MMIO_GET_LD(range));
 +}
 +
-+static void __init iommu_set_device_table(struct amd_iommu *iommu)
++static void __init init_iommu_from_acpi(struct amd_iommu *iommu,
++					struct ivhd_header *h)
 +{
-+	u32 entry;
++	u8 *p = (u8 *)h;
++	u8 *end = p, flags = 0;
++	u16 dev_i, devid = 0, devid_start = 0, devid_to = 0;
++	u32 ext_flags = 0;
++	bool alias = 0;
++	struct ivhd_entry *e;
 +
-+	BUG_ON(iommu->mmio_base == NULL);
++	/*
++	 * First set the recommended feature enable bits from ACPI
++	 * into the IOMMU control registers
++	 */
++	h->flags & IVHD_FLAG_HT_TUN_EN ?
++		iommu_feature_enable(iommu, CONTROL_HT_TUN_EN) :
++		iommu_feature_disable(iommu, CONTROL_HT_TUN_EN);
 +
-+	entry = virt_to_phys(amd_iommu_dev_table);
-+	entry |= (dev_table_size >> 12) - 1;
-+	memcpy_toio(iommu->mmio_base + MMIO_DEV_TABLE_OFFSET,
-+			&entry, sizeof(entry));
++	h->flags & IVHD_FLAG_PASSPW_EN ?
++		iommu_feature_enable(iommu, CONTROL_PASSPW_EN) :
++		iommu_feature_disable(iommu, CONTROL_PASSPW_EN);
++
++	h->flags & IVHD_FLAG_RESPASSPW_EN ?
++		iommu_feature_enable(iommu, CONTROL_RESPASSPW_EN) :
++		iommu_feature_disable(iommu, CONTROL_RESPASSPW_EN);
++
++	h->flags & IVHD_FLAG_ISOC_EN ?
++		iommu_feature_enable(iommu, CONTROL_ISOC_EN) :
++		iommu_feature_disable(iommu, CONTROL_ISOC_EN);
++
++	/*
++	 * make IOMMU memory accesses cache coherent
++	 */
++	iommu_feature_enable(iommu, CONTROL_COHERENT_EN);
++
++	/*
++	 * Done. Now parse the device entries
++	 */
++	p += sizeof(struct ivhd_header);
++	end += h->length;
++
++	while (p < end) {
++		e = (struct ivhd_entry *)p;
++		switch (e->type) {
++		case IVHD_DEV_ALL:
++			for (dev_i = iommu->first_device;
++					dev_i <= iommu->last_device; ++dev_i)
++				set_dev_entry_from_acpi(dev_i, e->flags, 0);
++			break;
++		case IVHD_DEV_SELECT:
++			devid = e->devid;
++			set_dev_entry_from_acpi(devid, e->flags, 0);
++			break;
++		case IVHD_DEV_SELECT_RANGE_START:
++			devid_start = e->devid;
++			flags = e->flags;
++			ext_flags = 0;
++			alias = 0;
++			break;
++		case IVHD_DEV_ALIAS:
++			devid = e->devid;
++			devid_to = e->ext >> 8;
++			set_dev_entry_from_acpi(devid, e->flags, 0);
++			amd_iommu_alias_table[devid] = devid_to;
++			break;
++		case IVHD_DEV_ALIAS_RANGE:
++			devid_start = e->devid;
++			flags = e->flags;
++			devid_to = e->ext >> 8;
++			ext_flags = 0;
++			alias = 1;
++			break;
++		case IVHD_DEV_EXT_SELECT:
++			devid = e->devid;
++			set_dev_entry_from_acpi(devid, e->flags, e->ext);
++			break;
++		case IVHD_DEV_EXT_SELECT_RANGE:
++			devid_start = e->devid;
++			flags = e->flags;
++			ext_flags = e->ext;
++			alias = 0;
++			break;
++		case IVHD_DEV_RANGE_END:
++			devid = e->devid;
++			for (dev_i = devid_start; dev_i <= devid; ++dev_i) {
++				if (alias)
++					amd_iommu_alias_table[dev_i] = devid_to;
++				set_dev_entry_from_acpi(
++						amd_iommu_alias_table[dev_i],
++						flags, ext_flags);
++			}
++			break;
++		default:
++			break;
++		}
++
++		p += 0x04 << (e->type >> 6);
++	}
 +}
 +
-+static void __init iommu_feature_enable(struct amd_iommu *iommu, u8 bit)
++static int __init init_iommu_devices(struct amd_iommu *iommu)
 +{
-+	u32 ctrl;
++	u16 i;
 +
-+	ctrl = readl(iommu->mmio_base + MMIO_CONTROL_OFFSET);
-+	ctrl |= (1 << bit);
-+	writel(ctrl, iommu->mmio_base + MMIO_CONTROL_OFFSET);
++	for (i = iommu->first_device; i <= iommu->last_device; ++i)
++		set_iommu_for_device(iommu, i);
++
++	return 0;
 +}
 +
-+static void __init iommu_feature_disable(struct amd_iommu *iommu, u8 bit)
-+{
-+	u32 ctrl;
-+
-+	ctrl = (u64)readl(iommu->mmio_base + MMIO_CONTROL_OFFSET);
-+	ctrl &= ~(1 << bit);
-+	writel(ctrl, iommu->mmio_base + MMIO_CONTROL_OFFSET);
-+}
-+
-+void __init iommu_enable(struct amd_iommu *iommu)
-+{
-+	u32 ctrl;
-+
-+	printk(KERN_INFO "AMD IOMMU: Enabling IOMMU at ");
-+	print_devid(iommu->devid, 0);
-+	printk(" cap 0x%hx\n", iommu->cap_ptr);
-+
-+	iommu_feature_enable(iommu, CONTROL_IOMMU_EN);
-+	ctrl = readl(iommu->mmio_base + MMIO_CONTROL_OFFSET);
-+}
-+
- static u8 * __init iommu_map_mmio_space(u64 address)
- {
- 	u8 *ret;
 -- 
 1.5.3.7
 
