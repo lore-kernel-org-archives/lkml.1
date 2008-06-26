@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758511AbYFZRtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756947AbYFZRvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758511AbYFZRtW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 13:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYFZRtH
+	id S1756947AbYFZRvP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 13:51:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbYFZRu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 13:49:07 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:37551 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751097AbYFZRtE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 13:49:04 -0400
-Message-ID: <4863C86A.4080903@nortel.com>
-Date: Thu, 26 Jun 2008 10:48:42 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: wacky select timeout behaviour in strace
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 26 Jun 2008 13:50:58 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:60147 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751513AbYFZRu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 13:50:57 -0400
+Date: Thu, 26 Jun 2008 19:02:09 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, vgoyal@redhat.com
+Subject: Re: [PATCH] Remove experimental status of kdump on PPC64
+Message-ID: <20080626190209.3e046ea8@kopernikus.site>
+In-Reply-To: <1214494132.2791.0.camel@weaponx>
+References: <1214485035-26041-1-git-send-email-bwalle@suse.de>
+	<1214494132.2791.0.camel@weaponx>
+Organization: SUSE LINUX Products GmbH
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i686-pc-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Jun 2008 16:48:46.0520 (UTC) FILETIME=[80328380:01C8D7AC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've got something odd in a couple of recent strace logs (running on an 
-older kernel, I haven't yet tried to reproduce in mainline).
+* Josh Boyer <jwboyer@gmail.com> [2008-06-26 11:28]:
+>
+> On Thu, 2008-06-26 at 14:57 +0200, Bernhard Walle wrote:
+> > This patch removes the experimental status of kdump on IA64. kdump is on IA64
+> > now since more than one year and it has proven to be stable.
+> 
+> I think you mean PPC64?
 
-First case:
-
-20418 22:06:50.583303 select(19, [7 11 12 13 14 15 16 17 18], NULL, 
-NULL, {0, 498508}) = 1 (in [11], left {0, 0}) <5.074137>
-
-select() was called with a timeout of half a second.  Five seconds later 
-it returns with zero time left and a single socket readable.  Why 
-wouldn't it have returned after half a second with a timeout?
+Right. Copy & paste, I made the same patch for IA64. Resent. Sorry. :)
 
 
-
-Second case:
-
-18383 01:46:23.572951 select(16, [15], NULL, NULL, {1, 0}) = 1 (in [15], 
-left {0, 732000}) <1.337443>
-
-Here we call select with a timeout of 1 sec, then 1.3337 sec later we 
-return saying that we have 732ms left to sleep.
-
-In addition, there was an interval timer set up to fire every 500ms, and 
-it didn't interrupt the select call.  It did fire 60ms after the select 
-call returned.  Interestingly, the timing of that firing (x.97 sec) 
-didn't match the normal times (x.07 and x.57), but it then returned to 
-the normal times after the single abnormal firing.
-
-Anyone have any ideas what's going on?  This doesn't appear to be an 
-strace artifact, as I can reproduce it without tracing the process in 
-question.  It also doesn't appear to be a system-wide artifact as I know 
-from instrumentation that other tasks are running during this interval.
-
-Thanks,
-
-Chris
+Bernhard
+-- 
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
