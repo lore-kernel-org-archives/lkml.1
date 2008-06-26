@@ -1,150 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbYFZEuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757112AbYFZEuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756492AbYFZEuU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 00:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750866AbYFZEuG
+	id S1757112AbYFZEuv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 00:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756013AbYFZEuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 00:50:06 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:20368 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750862AbYFZEuE (ORCPT
+	Thu, 26 Jun 2008 00:50:16 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:36488 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754656AbYFZEuL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 00:50:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=Uu5HXGj1/bKObIUz0LmQwEAvehG44KD+DDx6FSmAMi0wW0pItD3JxU1Qe0e+1SyukJ
-         CsqRa8jtCfvkHbG6KhtLhR4o8c8LMl/BdqolA54NdBYN0RR1ByCGOJQ57cFIG4t99mc8
-         pH0qxrskCf/Lnih30nQuSYOJ+HD1ZUUmK9ixQ=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] x86: move fix mapping page table range early
-Date: Wed, 25 Jun 2008 21:51:28 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806251748.06743.yhlu.kernel@gmail.com>
-In-Reply-To: <200806251748.06743.yhlu.kernel@gmail.com>
+	Thu, 26 Jun 2008 00:50:11 -0400
+From: "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>
+To: "'Ryo Tsuruta'" <ryov@valinux.co.jp>
+Cc: <axboe@kernel.dk>, <vtaras@openvz.org>,
+       <containers@lists.linux-foundation.org>, <tom-sugawara@ap.jp.nec.com>,
+       <linux-kernel@vger.kernel.org>, <m-takahashi@ex.jp.nec.com>
+References: <003701c8bc80$3a5f9ec0$af1edc40$@jp.nec.com>	<20080526.114627.104044752.ryov@valinux.co.jp>	<004f01c8bfed$640fa380$2c2eea80$@jp.nec.com> <20080603.171535.246514860.ryov@valinux.co.jp>
+In-Reply-To: <20080603.171535.246514860.ryov@valinux.co.jp>
+Subject: RE: [RFC][v2][patch 0/12][CFQ-cgroup]Yet another I/O bandwidth controlling subsystem for CGroups based on CFQ
+Date: Thu, 26 Jun 2008 13:49:20 +0900
+Message-Id: <002001c8d747$ffe5a8b0$ffb0fa10$@jp.nec.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806252151.29028.yhlu.kernel@gmail.com>
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AcjFUgAdaenoUHgfT32fW+DBrgsQYQR9eGmA
+Content-language: ja
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, Tsuruta.
 
-do that in init_memory_mapping
+> In addition, I got the following message during test #2. Program
+> "ioload", our benchmark program, was blocked more than 120 seconds.
+> Do you see any problems?
 
-also remove one init_ohci1394_dma_on_all_controllers
+No.
+I tried to test in  environment which runs from 1 to 200 processes
+per group.
+However, such message was not output.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> The result of test #1 is close to your estimation, but the result
+> of test #2 is not, the gap between the estimation and the result
+> increased.
 
----
- arch/x86/kernel/setup.c |   23 +++++++++--------------
- arch/x86/mm/init_32.c   |   15 +++++++++++----
- 2 files changed, 20 insertions(+), 18 deletions(-)
+In the above my test, the gap between the estimation and the result
+is increasing as a process increases.
 
-Index: linux-2.6/arch/x86/kernel/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -615,11 +615,6 @@ void __init setup_arch(char **cmdline_p)
- 
- #ifdef CONFIG_X86_32
- 	probe_roms();
--#else
--# ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
--	if (init_ohci1394_dma_early)
--		init_ohci1394_dma_on_all_controllers();
--# endif
- #endif
- 
- 	/* after parse_early_param, so could debug it */
-@@ -679,6 +674,15 @@ void __init setup_arch(char **cmdline_p)
- #endif
- 	init_memory_mapping(0, (max_low_pfn << PAGE_SHIFT));
- 
-+	/*
-+	 * NOTE: On x86-32, only from this point on, fixmaps are ready for use.
-+	 */
-+
-+#ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
-+	if (init_ohci1394_dma_early)
-+		init_ohci1394_dma_on_all_controllers();
-+#endif
-+
- 	reserve_initrd();
- 
- #ifdef CONFIG_X86_64
-@@ -746,15 +750,6 @@ void __init setup_arch(char **cmdline_p)
- 	map_vsyscall();
- #endif
- 
--	/*
--	 * NOTE: On x86-32, only from this point on, fixmaps are ready for use.
--	 */
--
--#if defined(CONFIG_PROVIDE_OHCI1394_DMA_INIT) && defined(CONFIG_X86_32)
--	if (init_ohci1394_dma_early)
--		init_ohci1394_dma_on_all_controllers();
--#endif
--
- #ifdef CONFIG_X86_GENERICARCH
- 	generic_apic_probe();
- #endif
-Index: linux-2.6/arch/x86/mm/init_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/init_32.c
-+++ linux-2.6/arch/x86/mm/init_32.c
-@@ -442,13 +442,10 @@ void __init native_pagetable_setup_done(
-  * be partially populated, and so it avoids stomping on any existing
-  * mappings.
-  */
--static void __init pagetable_init(void)
-+static void __init early_ioremap_page_table_range_init(pgd_t *pgd_base)
- {
--	pgd_t *pgd_base = swapper_pg_dir;
- 	unsigned long vaddr, end;
- 
--	paravirt_pagetable_setup_start(pgd_base);
--
- 	/*
- 	 * Fixed mappings, only the page table structure has to be
- 	 * created - mappings will be set by set_fixmap():
-@@ -458,6 +455,13 @@ static void __init pagetable_init(void)
- 	end = (FIXADDR_TOP + PMD_SIZE - 1) & PMD_MASK;
- 	page_table_range_init(vaddr, end, pgd_base);
- 	early_ioremap_reset();
-+}
-+
-+static void __init pagetable_init(void)
-+{
-+	pgd_t *pgd_base = swapper_pg_dir;
-+
-+	paravirt_pagetable_setup_start(pgd_base);
- 
- 	permanent_kmaps_init(pgd_base);
- 
-@@ -783,6 +787,8 @@ unsigned long __init_refok init_memory_m
- 
- 	kernel_physical_mapping_init(pgd_base, start, end);
- 
-+	early_ioremap_page_table_range_init(pgd_base);
-+
- 	load_cr3(swapper_pg_dir);
- 
- 	__flush_tlb_all();
-@@ -794,6 +800,7 @@ unsigned long __init_refok init_memory_m
- 	return end >> PAGE_SHIFT;
- }
- 
-+
- /*
-  * paging_init() sets up the page tables - note that the first 8MB are
-  * already mapped by head.S.
+And, in native CFQ with ionice command, this situation is a similar.
+These circumstances are shown in the case of more than processes of total 200.
+
+I'll investigate this problem continuously.
+
+
+Thanks,
+  Satoshi Uchida.
+
+> -----Original Message-----
+> From: Ryo Tsuruta [mailto:ryov@valinux.co.jp]
+> Sent: Tuesday, June 03, 2008 5:16 PM
+> To: s-uchida@ap.jp.nec.com
+> Cc: axboe@kernel.dk; vtaras@openvz.org;
+> containers@lists.linux-foundation.org; tom-sugawara@ap.jp.nec.com;
+> linux-kernel@vger.kernel.org
+> Subject: Re: [RFC][v2][patch 0/12][CFQ-cgroup]Yet another I/O bandwidth
+> controlling subsystem for CGroups based on CFQ
+> 
+> Hi Uchida-san,
+> 
+> > I report my tests.
+> 
+> I did a similar test to yours. I increased the number of I/Os
+> which are issued simultaneously up to 100 per cgroup.
+> 
+>   Procedures:
+>     o Prepare 300 files which size is 250MB on 1 partition sdb3
+>     o Create three groups with priority 0, 4 and 7.
+>     o Run many processes issuing random direct I/O with 4KB data on each
+>       files in three groups.
+>           #1 Run  25 processes issuing read I/O only per group.
+>           #2 Run 100 processes issuing read I/O only per group.
+>     o Count up the number of I/Os which have done in 10 minutes.
+> 
+>                The number of I/Os (percentage to total I/O)
+>      --------------------------------------------------------------
+>     | group       |  group 1   |  group 2   |  group 3   |  total  |
+>     | priority    | 0(highest) |     4      |  7(lowest) |  I/Os   |
+>     |-------------+------------+------------+------------+---------|
+>     | Estimate    |            |            |            |         |
+>     | Performance |    61.5%   |    30.8%   |    7.7%    |         |
+>     |-------------+------------+------------+------------|---------|
+>     | #1  25procs | 52763(57%) | 30811(33%) |  9575(10%) |  93149  |
+>     | #2 100procs | 24949(40%) | 21325(34%) | 16508(26%) |  62782  |
+>      --------------------------------------------------------------
+> 
+> The result of test #1 is close to your estimation, but the result
+> of test #2 is not, the gap between the estimation and the result
+> increased.
+> 
+> In addition, I got the following message during test #2. Program
+> "ioload", our benchmark program, was blocked more than 120 seconds.
+> Do you see any problems?
+> 
+> INFO: task ioload:8456 blocked for more than 120 seconds.
+> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> ioload        D 00000008  2772  8456   8419
+>        f72eb740 00200082 c34862c0 00000008 c3565170 c35653c0 c2009d80
+>        00000001
+>        c1d1bea0 00200046 ffffffff f6ee039c 00000000 00000000 00000000
+>        c2009d80
+>        018db000 00000000 f71a6a00 c0604fb6 00000000 f71a6bc8 c04876a4
+>        00000000
+> Call Trace:
+>  [<c0604fb6>] io_schedule+0x4a/0x81
+>  [<c04876a4>] __blockdev_direct_IO+0xa04/0xb54
+>  [<c04a3aa2>] ext2_direct_IO+0x35/0x3a
+>  [<c04a4757>] ext2_get_block+0x0/0x603
+>  [<c044ab81>] generic_file_direct_IO+0x103/0x118
+>  [<c044abe6>] generic_file_direct_write+0x50/0x13d
+>  [<c044b59e>] __generic_file_aio_write_nolock+0x375/0x4c3
+>  [<c046e571>] link_path_walk+0x86/0x8f
+>  [<c044a1e8>] find_lock_page+0x19/0x6d
+>  [<c044b73e>] generic_file_aio_write+0x52/0xa9
+>  [<c0466256>] do_sync_write+0xbf/0x100
+>  [<c042ca44>] autoremove_wake_function+0x0/0x2d
+>  [<c0413366>] update_curr+0x83/0x116
+>  [<c0605280>] mutex_lock+0xb/0x1a
+>  [<c04b653b>] security_file_permission+0xc/0xd
+>  [<c0466197>] do_sync_write+0x0/0x100
+>  [<c046695d>] vfs_write+0x83/0xf6
+>  [<c0466ea9>] sys_write+0x3c/0x63
+>  [<c04038de>] syscall_call+0x7/0xb
+>  [<c0600000>] print_cpu_info+0x27/0x92
+>  =======================
+> 
+> Thanks,
+> Ryo Tsuruta
+
