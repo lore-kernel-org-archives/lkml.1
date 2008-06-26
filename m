@@ -1,73 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758270AbYFZONk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbYFZORh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758270AbYFZONk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 10:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbYFZONc
+	id S1758013AbYFZORh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 10:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbYFZOR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 10:13:32 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:38060 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752446AbYFZONa (ORCPT
+	Thu, 26 Jun 2008 10:17:26 -0400
+Received: from gv-out-0910.google.com ([216.239.58.186]:31029 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751890AbYFZORZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 10:13:30 -0400
-Date: Thu, 26 Jun 2008 07:13:24 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
-Subject: Re: [PATCH]rcu classic: update qlen when cpu offline
-Message-ID: <20080626141324.GA10859@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <4862F9B3.5030300@cn.fujitsu.com>
+	Thu, 26 Jun 2008 10:17:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:cc:subject:references:from:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type:sender;
+        b=b7vnr9yTc9nKdrr1xdnGnDTW6xD+bFRA82xK4Duf0xYfjtw1rNMEJsFUG/0t2rY0xO
+         HYnJ4nKnAiv18QPPRpRB9ZVYbV0HnhTILKB5ngc7hhGBRAaLJz73fargcU45/Homz6FQ
+         +SBtJ5Mq+R3vlcJbrIx9xP5J7IFBAF3pWOhBc=
+To: monstr@seznam.cz
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk, Michal Simek <monstr@monstr.eu>,
+       vapier.adi@gmail.com, arnd@arndb.de, matthew@wil.cx,
+       microblaze-uclinux@itee.uq.edu.au, drepper@redhat.com,
+       linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
+       John.Linn@xilinx.com, john.williams@petalogix.com
+Subject: Re: [PATCH 60/60] microblaze_v4: Enable drivers for Microblaze
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-42-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-43-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-44-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-45-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-46-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-47-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-48-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-49-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-50-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-51-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-52-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-53-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-54-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-55-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-56-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-57-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-58-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-59-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-60-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-61-git-send-email-monstr@seznam.cz>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Thu, 26 Jun 2008 16:16:39 +0200
+In-Reply-To: <1214483429-32360-61-git-send-email-monstr@seznam.cz> (monstr@seznam.cz's message of "Thu\, 26 Jun 2008 14\:30\:29 +0200")
+Message-ID: <87d4m4i8mw.fsf@macbook.be.48ers.dk>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4862F9B3.5030300@cn.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 10:06:43AM +0800, Lai Jiangshan wrote:
-> 
-> When callbacks are moved from offline cpu to this cpu,
-> the qlen field of this rdp should be updated.
+>>>>> "monstr" == monstr  <monstr@seznam.cz> writes:
 
-Good catch!!!
+ monstr> From: Michal Simek <monstr@monstr.eu>
+ monstr> Signed-off-by: Michal Simek <monstr@monstr.eu>
 
-The effect of this bug would be for force_quiescent_state() to be invoked
-when it should not and vice versa -- wasting cycles in the first case
-and letting RCU callbacks remain piled up in the second case.  The bug
-is thus "benign" in that it does not result in premature grace-period
-termination, but should of course be fixed nonetheless.
+Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
 
-Preemption is disabled by the caller's get_cpu_var(), so we are guaranteed
-to remain on the same CPU, as required.  The local_irq_disable() is indeed
-needed, otherwise, an interrupt might invoke call_rcu() or call_rcu_bh(),
-which could cause that interrupt's increment of ->qlen to be lost.
+ monstr>  config SERIAL_UARTLITE
+ monstr>  	tristate "Xilinx uartlite serial port support"
+ monstr> -	depends on PPC32
+ monstr> +	depends on PPC32 || MICROBLAZE
+ monstr>  	select SERIAL_CORE
+ monstr>  	help
 
-So this patch looks correct to me.  Good job, Jiangshan!!!
-
-Ingo, would you be willing to add this patch to tip/core/rcu?
-
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-> index f4ffbd0..42aead6 100644
-> --- a/kernel/rcuclassic.c
-> +++ b/kernel/rcuclassic.c
-> @@ -373,6 +373,10 @@ static void __rcu_offline_cpu(struct rcu_data *this_rdp,
->  	rcu_move_batch(this_rdp, rdp->donelist, rdp->donetail);
->  	rcu_move_batch(this_rdp, rdp->curlist, rdp->curtail);
->  	rcu_move_batch(this_rdp, rdp->nxtlist, rdp->nxttail);
-> +
-> +	local_irq_disable();
-> +	this_rdp->qlen += rdp->qlen;
-> +	local_irq_enable();
->  }
-> 
->  static void rcu_offline_cpu(int cpu)
-> 
-> 
+-- 
+Bye, Peter Korsgaard
