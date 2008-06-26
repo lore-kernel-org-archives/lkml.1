@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbYFZNGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764675AbYFZNHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760154AbYFZNGo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 09:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760005AbYFZMsc
+	id S1764675AbYFZNHF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 09:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759498AbYFZMtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 08:48:32 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:60632 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758303AbYFZMsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 08:48:30 -0400
-X-Greylist: delayed 679 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Jun 2008 08:48:30 EDT
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [linux-pm] Linux Power Management Mini-Summit -- Ottawa --
-	July 22, 2008
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: Len Brown <lenb@kernel.org>
-Cc: Linux Power Management List <linux-pm@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.10.0806251358060.3014@localhost.localdomain>
-References: <alpine.LFD.1.10.0806251358060.3014@localhost.localdomain>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Thu, 26 Jun 2008 22:37:02 +1000
-Message-Id: <1214483822.13177.29.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jun 2008 08:49:14 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:47012 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760242AbYFZMtM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 08:49:12 -0400
+Date: Thu, 26 Jun 2008 08:49:11 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] Extend completions to provide XFS object flush
+	requirements
+Message-ID: <20080626124911.GA19285@infradead.org>
+References: <1214455277-6387-1-git-send-email-david@fromorbit.com> <1214455277-6387-2-git-send-email-david@fromorbit.com> <20080626112612.GW4392@parisc-linux.org> <20080626113209.GK11558@disturbed> <20080626114242.GX4392@parisc-linux.org> <20080626122112.GL11558@disturbed> <20080626124009.GY4392@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080626124009.GY4392@parisc-linux.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Thu, Jun 26, 2008 at 06:40:09AM -0600, Matthew Wilcox wrote:
+> On Thu, Jun 26, 2008 at 10:21:12PM +1000, Dave Chinner wrote:
+> > On Thu, Jun 26, 2008 at 05:42:42AM -0600, Matthew Wilcox wrote:
+> > > Then let's leave it as a semaphore.  You can get rid of the sema_t if
+> > > you like, but I don't think that turning completions into semaphores is
+> > > a good idea (because it's confusing).
+> > 
+> > So remind me what the point of the semaphore removal tree is again?
+> 
+> To remove the semaphores which don't need to be semaphores any more.
+> 
+> > As Christoph suggested, I can put this under another API that
+> > is implemented using completions. If I have to do that in XFS,
+> > so be it....
+> 
+> You could, yes.  But you could just use completions directly ...
+> 
+> > The main reason for this that we've just uncovered the fact that the
+> > way XFS uses semaphores is completely unsafe [*] on x86/x86_64 for
+> > kernels prior to the new generic semaphores.
+> > 
+> > [*] 2.6.20 panics in up() because of this race when I/O completion
+> > (the up call) races with a simultaneous down() (iowaiter):
+> > 
+> > 	T1		T2
+> > 	up()		down()
+> > 			kmem_free()
+> > 
+> > When the down() call completes, the up() call can still be
+> > referencing the semaphore, and hence if we free the structure after
+> > the down call then the up() will reference freed memory.  This is
+> > probably the cause of many unexplained log replay or unmount panics
+> > that we've been hitting for years with buffers that been freed while
+> > apparently still in use....
+> 
+> This is exactly the kind of thing completions were supposed to be used
+> for.  T1 should be calling complete() and T2 should be calling
+> wait_for_completion().
 
-On Wed, 2008-06-25 at 14:44 -0400, Len Brown wrote:
-> This is an open invitation to participate in
-> a Linux Power Management mini-summit
-> 9AM Tuesday July 22, 2008 in Ottawa.
-> 
-> This is the day before the Ottawa Linux Symposium.
-> OLS is generously supporting Linux mini-summits by providing the room
-> and projector: http://www.linuxsymposium.org/2008/minisummits.php
-> 
-> The meeting format will be round-table discussion.
-> There will be no phone bridge or audio/video recording.
-> However, there will be written minutes as there
-> were last year:  http://lwn.net/Articles/249019
-> 
-> Send suggestions for topics to linux-pm@lists.osdl.org,
-> whether you plan to attend or not.  The attendees will
-> form the agenda by consensus at the start of the session.
-> 
-> If you would like to attend, please send a note to
-> linux-pm@lists.osdl.org announcing your intent,
-> and what you would like to discuss.
-> 
-> Last year we were were cautious about presentations, for fear they
-> would not support discussion.  But the short ones we had actually
-> facilitied discussion, so we'll allow them again this year.
-> 
-> thanks,
-> -Len
-> 
-> ps. There is an opportunity for your company to help sponsor
-> the event -- for right now we are on our own for food.
-> If you are interseted, please contact me and OLS.
-
-All I can say is "Have fun, guys." I'm interested in developments, and
-would love to contribute but there's no way I'd be able to get there and
-I have little time to do anything.
-
-I'd be interested (of course) to hear the fruit of discussions re
-hibernation.
-
-Regards,
-
-Nigel
-
+Please read Dave's introductionary mail.  What XFS wants if completions
+with a little bit extra, so he implemented the little bit extra.  This
+little bit extra is pretty well described in the mail starting this
+thread.
