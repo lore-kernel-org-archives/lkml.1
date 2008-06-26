@@ -1,69 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbYFZUiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbYFZUqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758683AbYFZUiW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 16:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbYFZUiN
+	id S1758585AbYFZUqU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 16:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbYFZUqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 16:38:13 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:11705 "EHLO
-	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753161AbYFZUiM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 16:38:12 -0400
-X-BigFish: VPS-35(zz1432R98dR7efV1805Mzz10d3izzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K337Z6-03-0WC-01
-Date: Thu, 26 Jun 2008 22:37:58 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
-Subject: Re: [PATCH 00/34] AMD IOMMU driver
-Message-ID: <20080626203758.GK1303@amd.com>
-References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <200806262237.15864.rjw@sisk.pl>
+	Thu, 26 Jun 2008 16:46:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37494 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752028AbYFZUqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 16:46:03 -0400
+Date: Thu, 26 Jun 2008 16:45:11 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: x86@kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       yhlu.kernel@gmail.com, gregkh@suse.de
+Subject: Re: [PATCH 1/2] Add /sys/firmware/memmap
+Message-ID: <20080626204511.GF3878@redhat.com>
+References: <1214511542-28458-1-git-send-email-bwalle@suse.de> <1214511542-28458-2-git-send-email-bwalle@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200806262237.15864.rjw@sisk.pl>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 26 Jun 2008 20:37:58.0682 (UTC) FILETIME=[851FE7A0:01C8D7CC]
+In-Reply-To: <1214511542-28458-2-git-send-email-bwalle@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 10:37:14PM +0200, Rafael J. Wysocki wrote:
-> On Thursday, 26 of June 2008, Joerg Roedel wrote:
-> > Hi,
+On Thu, Jun 26, 2008 at 10:19:01PM +0200, Bernhard Walle wrote:
+> This patch adds /sys/firmware/memmap interface that represents the BIOS
+> (or Firmware) provided memory map. The tree looks like:
 > 
-> Hi,
+>     /sys/firmware/memmap/0/start   (hex number)
+>                            end     (hex number)
+>                            type    (string)
+>     ...                 /1/start
+>                            end
+>                            type
 > 
-> > this is the first post of the initial driver for AMD IOMMU hardware. The driver
-> > is tested on hardware with various loads (disk and network) and showed no
-> > problems.
-> > 
-> > It currently supports DMA remapping using the dma_ops API in the x86
-> > architecture code. It also supports isolation of device DMA address spaces as
-> > far as the hardware allows that (means each device can get its own DMA address
-> > space and can't access the DMA memory of other devices).
-> > 
-> > Please give this code a good review and send me your comments about it so that
-> > I can fix all possible bugs and objections and move this driver forward to
-> > merging quality.
+> With the following shell snippet one can print the memory map in the same form
+> the kernel prints itself when booting on x86 (the E820 map).
 > 
-> Do you implement suspend/resume callbacks for the IOMMU and if so, which patch
-> in the series does introduce them?
+>   --------- 8< --------------------------
+>     #!/bin/sh
+>     cd /sys/firmware/memmap
+>     for dir in * ; do
+>         start=$(cat $dir/start)
+>         end=$(cat $dir/end)
+>         type=$(cat $dir/type)
+>         printf "%016x-%016x (%s)\n" $start $[ $end +1] "$type"
+>     done
+>   --------- >8 --------------------------
+> 
+> That patch only provides the needed interface:
+> 
+>  1. The sysfs interface.
+>  2. The structure and enumeration definition.
+>  3. The function firmware_map_add() and firmware_map_add_early()
+>     that should be called from architecture code (E820/EFI, for
+>     example) to add the contents to the interface.
+> 
+> If the kernel is compiled without CONFIG_FIRMWARE_MEMMAP, the interface does
+> nothing without cluttering the architecture-specific code with #ifdef's.
+> 
+> The purpose of the new interface is kexec: While /proc/iomem represents
+> the *used* memory map (e.g. modified via kernel parameters like 'memmap'
+> and 'mem'), the /sys/firmware/memmap tree represents the unmodified memory
+> map provided via the firmware. So kexec can:
+> 
+>  - use the original memory map for rebooting,
+>  - use the /proc/iomem for setting up the ELF core headers for kdump
+>    case that should only represent the memory of the system.
+> 
+> The patch has been tested on i386 and x86_64.
+> 
+> 
+> Signed-off-by: Bernhard Walle <bwalle@suse.de>
+> ---
+>  drivers/firmware/Kconfig     |    8 ++
+>  drivers/firmware/Makefile    |    1 +
+>  drivers/firmware/memmap.c    |  164 ++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/firmware-map.h |   84 +++++++++++++++++++++
+>  4 files changed, 257 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/firmware/memmap.c
+>  create mode 100644 include/linux/firmware-map.h
 
-No, These callbacks are not implemented yet. But I plan to do so in a
-later version.
+I think you also need to introduce some documentation about this new
+sysfs interface. Looks like in Documentation/ABI/ somewhere. Greg
+can tell more...
 
-Joerg
-
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
+Thanks
+Vivek
