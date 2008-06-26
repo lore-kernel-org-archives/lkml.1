@@ -1,88 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760351AbYFZVDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761254AbYFZVEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760351AbYFZVDi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 17:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbYFZVD2
+	id S1761254AbYFZVEm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 17:04:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYFZVEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 17:03:28 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:38262 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754675AbYFZVD1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 17:03:27 -0400
-Date: Fri, 27 Jun 2008 02:30:25 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: balbir@linux.vnet.ibm.com, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [RFC v1] Tunable sched_mc_power_savings=n
-Message-ID: <20080626210025.GB26167@in.ibm.com>
-Reply-To: dipankar@in.ibm.com
-References: <20080625191100.GI21892@dirshya.in.ibm.com> <87k5gcqpbm.fsf@basil.nowhere.org> <4863AF57.3040005@linux.vnet.ibm.com> <4863DB29.1020304@firstfloor.org> <20080626185254.GA12416@dirshya.in.ibm.com> <4863F93C.9040102@firstfloor.org>
+	Thu, 26 Jun 2008 17:04:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36860 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751932AbYFZVEc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 17:04:32 -0400
+Message-ID: <486403F0.4020801@redhat.com>
+Date: Thu, 26 Jun 2008 17:02:40 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4863F93C.9040102@firstfloor.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       "'Alexey Dobriyan'" <adobriyan@gmail.com>,
+       "'Peter Zijlstra'" <peterz@infradead.org>,
+       "'Steven Rostedt'" <rostedt@goodmis.org>,
+       "'Frank Ch. Eigler'" <fche@redhat.com>, "'Ingo Molnar'" <mingo@elte.hu>,
+       "'LKML'" <linux-kernel@vger.kernel.org>,
+       "'systemtap-ml'" <systemtap@sources.redhat.com>,
+       "'Hideo AOKI'" <haoki@redhat.com>
+Subject: Re: [RFC PATCH] Kernel Tracepoints
+References: <007601c8d5ca$18fa0e10$4aee2a30$@css.fujitsu.com> <48611B03.1000003@redhat.com> <20080625011951.D83E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48612879.5090809@redhat.com> <20080625235214.GA14249@Krystal>
+In-Reply-To: <20080625235214.GA14249@Krystal>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 10:17:00PM +0200, Andi Kleen wrote:
-> Vaidyanathan Srinivasan wrote:
-> > System management software and workload monitoring and managing
-> > software can potentially control the tunable on behalf of the
-> > applications for best overall power savings and performance.
-> 
-> Does it have the needed information for that? e.g. real time information
-> on what the system does? I don't think anybody is in a better position
-> to control that than the kernel.
+Hi Mathieu,
 
-Some workload managers already do that - they provision cpu and memory
-resources based on request rates and response times. Such software is
-in a better position to make a decision whether they can live with
-reduced performance due to power saving mode or not. The point I am
-making is the the kernel doesn't have any notion of transactional
-performance - so if an administrator wants to run unimportant
-transactions on a slower but low-power system, he/she should have
-the option of doing so.
+Thank you for making this so soon!
 
-> > Applications with conflicting goals should resolve among themselves.
-> 
-> That sounds wrong to me. Negotiating between conflicting requirements
-> from different applications is something that kernels are supposed
-> to do.
+Mathieu Desnoyers wrote:
+> ** note : this patch is submitted for early review. It applies after my
+> current unreleased 2.6.26-rc8 LTTng patchset. Comments are welcome.
 
-Agreed. However that is a difficult problem to solve and not the
-intention of this idea. Global power setting is a simple first step.
-I don't think we have a good understanding of cases where conflicting
-power requirements from multiple applications need to be addressed.
-We will have to look at that when the issue arises.
+Would you mean there is no tree on which we can test this patch?
 
-> > In a small-scale datacenters, peak and off-peak hour settings can be
-> > potentially done through simple cron jobs.  
-> 
-> Is there any real drawback from only controlling it through nice levels?
+>
+> Implementation of kernel tracepoints. Inspired from the Linux Kernel Markers.
 
-In a system with more than a couple of sockets, it is more beneficial
-(power-wise) to pack all work in to a small number of processors
-and let the other processors go to very low power sleep. Compared 
-to running tasks slowly and spreading them all over the processors.
+What would you think redesigning markers on tracepoints? because most of the
+logic (scaning sections, multiple probe and activation) seems very similar
+to markers.
 
-> Anyways I think the main thing I object to in your proposal is that
-> your tunable is system global, not per process. I'm also not
-> sure if a tunable is really a good idea and if the kernel couldn't
-> do a better job.
+For example, (not complete, I just thought :-))
 
-While it would be nice to have a per process tunable, I am not sure
-we are ready for that yet. A global setting is easy to implement
-and we have immediate use for it. The kernel already does a decent
-job conservatively - by packing one task per core in a package
-when sched_mc_power_savings=1 is set. Any further packing may affect 
-performance and should not therefore be the default behavior.
+ struct tracepoint {
+ 	const char *name;		/* Tracepoint name */
+ 	DEFINE_IMV(char, state);	/* Immediate value state. */
+ 	struct tracepoint_probe_closure *multi;	/* Closures */
+	void * callsite_data;		/* private date from call site */
+ } __attribute__((aligned(8)));
 
-Thanks
-Dipankar
+ #define __tracepoint_block(generic, name, data, func, args)
+ 	static const char __tpstrtab_##name[]			\
+ 	__attribute__((section("__tracepoints_strings")))	\
+ 	= #name;						\
+ 	static struct tracepoint __tracepoint_##name		\
+ 	__attribute__((section("__tracepoints"), aligned(8))) =	\
+ 	{ __tpstrtab_##name, 0, NULL, data};			\
+ 	if (!generic) {						\
+ 		if (unlikely(imv_cond(__tracepoint_##name.state))) { \
+ 			imv_cond_end();				\
+ 			func(&__tracepoint_##name, args); \
+ 		} else						\
+ 			imv_cond_end();				\
+ 	} else {						\
+ 		if (unlikely(_imv_read(__tracepoint_##name.state))) \
+ 			func(&__tracepoint_##name, args); \
+ 	}
+
+ struct marker {
+        const char *name;       /* Marker name */
+        const char *format;     /* Marker format string, describing the
+                                 * variable argument list.
+                                 */
+ } __attribute__((aligned(8)));
+
+ #define trace_mark(name, fmt, args...)			\
+ do {							\
+ 	static const char __mstrtab_##name[]		\
+ 	__attribute__((section("__markers_strings")))	\
+ 	= #name "\0" fmt;				\
+ 	static struct marker __marker_##name		\
+ 	__attribute__((section("__markers"), aligned(8))) =	\
+ 	{ __mstrtab_##name, &__mstrtab_##name[sizeof(#name)]};	\ 	
+ 	__tracepoint_block(1, name, __marker_##name, marker_probe_cb, args)	\
+ } while (0)
+
+>
+> Allows complete typing verification. No format string required.
+>
+> TODO : Documentation/tracepoint.txt
+[...]
+> +/*
+> + * Note : the empty asm volatile with read constraint is used here instead of a
+> + * "used" attribute to fix a gcc 4.1.x bug.as
+> + * Make sure the alignment of the structure in the __markers section will
+> + * not add unwanted padding between the beginning of the section and the
+> + * structure. Force alignment to the same alignment as the section start.
+
+this comment should be updated...
+
+> + *
+> + * The "generic" argument controls which marker enabling mechanism must be used.
+> + * If generic is true, a variable read is used.
+> + * If generic is false, immediate values are used.
+> + */
+> +#define DEFINE_TRACE(name, proto, args)					\
+> +	static inline void _do_trace_##name(struct tracepoint *tp, proto) \
+> +	{								\
+> +		int i;							\
+> +		struct tracepoint_probe_closure *multi;			\
+> +		preempt_disable();					\
+> +		multi = tp->multi;					\
+> +		smp_read_barrier_depends();				\
+> +		if (multi) {						\
+> +			for (i = 0; multi[i].func; i++) {		\
+> +				((void(*)(void *private_data, proto))	\
+> +				(multi[i].func))(multi[i].probe_private, args);\
+> +			}						\
+> +		}							\
+> +		preempt_enable();					\
+> +	}								\
+> +	static inline void __trace_##name(int generic, proto)		\
+> +	{								\
+> +		static const char __tpstrtab_##name[]			\
+> +		__attribute__((section("__tracepoints_strings")))	\
+> +		= #name;						\
+> +		static struct tracepoint __tracepoint_##name		\
+> +		__attribute__((section("__tracepoints"), aligned(8))) =	\
+> +		{ __tpstrtab_##name, 0, NULL };				\
+> +		if (!generic) {						\
+> +			if (unlikely(imv_cond(__tracepoint_##name.state))) { \
+> +				imv_cond_end();				\
+> +				_do_trace_##name(&__tracepoint_##name, args); \
+> +			} else						\
+> +				imv_cond_end();				\
+> +		} else {						\
+> +			if (unlikely(_imv_read(__tracepoint_##name.state))) \
+> +				_do_trace_##name(&__tracepoint_##name, args); \
+> +		}							\
+> +	}								\
+> +	static inline void trace_##name(proto)				\
+> +	{								\
+> +		__trace_##name(0, args);				\
+> +	}								\
+> +	static inline void _trace_##name(proto)				\
+> +	{								\
+> +		__trace_##name(1, args);				\
+> +	}								\
+> +	static inline int register_trace_##name(			\
+> +		void (*probe)(void *private_data, proto),		\
+> +		void *private_data)					\
+> +	{								\
+> +		return tracepoint_probe_register(#name, (void *)probe,	\
+> +			private_data);					\
+> +	}								\
+> +	static inline void unregister_trace_##name(			\
+> +		void (*probe)(void *private_data, proto),		\
+> +		void *private_data)					\
+> +	{								\
+> +		tracepoint_probe_unregister(#name, (void *)probe,	\
+> +			private_data);					\
+> +	}
+
+Out of curiousity, what the private_data is for?
+
+> +
+> +extern void tracepoint_update_probe_range(struct tracepoint *begin,
+> +	struct tracepoint *end);
+> +
+> +#else /* !CONFIG_TRACEPOINTS */
+> +#define DEFINE_TRACE(name, proto, args)			\
+> +	static inline void _do_trace_##name(struct tracepoint *tp, proto) \
+> +	{ }								\
+> +	static inline void __trace_##name(int generic, proto)		\
+> +	{ }								\
+> +	static inline void trace_##name(proto)				\
+> +	{ }								\
+> +	static inline void _trace_##name(proto)				\
+> +	{ }
+
+By the way, I think you'd better add below two inlines.
+
+	static inline int register_trace_##name(			\
+		void (*probe)(void *private_data, proto),		\
+		void *private_data)					\
+	{ return -ENOSYS; }
+	static inline void unregister_trace_##name(			\
+		void (*probe)(void *private_data, proto),		\
+		void *private_data)					\
+	{ }
+
+
+> +
+> +static inline void tracepoint_update_probe_range(struct tracepoint *begin,
+> +	struct tracepoint *end)
+> +{ }
+> +#endif /* CONFIG_TRACEPOINTS */
+> +
+> +/*
+> + * Connect a probe to a tracepoint.
+> + * Internal API, should not be used directly.
+> + */
+> +extern int tracepoint_probe_register(const char *name,
+> +	void *probe, void *probe_private);
+> +
+> +/*
+> + * Disconnect a probe from a tracepoint.
+> + * Internal API, should not be used directly.
+> + */
+> +extern int tracepoint_probe_unregister(const char *name,
+> +	void *probe, void *probe_private);
+> +
+> +struct tracepoint_iter {
+> +	struct module *module;
+> +	struct tracepoint *tracepoint;
+> +};
+> +
+> +extern void tracepoint_iter_start(struct tracepoint_iter *iter);
+> +extern void tracepoint_iter_next(struct tracepoint_iter *iter);
+> +extern void tracepoint_iter_stop(struct tracepoint_iter *iter);
+> +extern void tracepoint_iter_reset(struct tracepoint_iter *iter);
+> +extern int tracepoint_get_iter_range(struct tracepoint **tracepoint,
+> +	struct tracepoint *begin, struct tracepoint *end);
+> +
+> +#endif
+[...]
+
+
+Best regards,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
