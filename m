@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759286AbYFZRsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYFZRsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759286AbYFZRsU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 13:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbYFZRsD
+	id S1756882AbYFZRsg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 13:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759317AbYFZRsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 13:48:03 -0400
-Received: from ti-out-0910.google.com ([209.85.142.190]:56560 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759093AbYFZRsA (ORCPT
+	Thu, 26 Jun 2008 13:48:22 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:43588 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759254AbYFZRsU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 13:48:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=ajHmOv0izzC7tK+/LHQS2gfMfUbKtyOjDy68lCCKw6JAWzsUqSPnc5BZPV9IMApHhz
-         1uyU7fMbpyEbZUvVstzIVwitUXR2w96rcD0w5V2tYJcjUwmnuDxvvv+kHvpeSDBqH9gV
-         5WWYdTFTcjUPUn1FltGoVCdxgXEj1KWBEMRpU=
-Message-ID: <4863D02F.4070205@gmail.com>
-Date: Thu, 26 Jun 2008 22:51:51 +0530
-From: Abhishek Sagar <sagar.abhishek@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/4] ftrace: prevent ftrace modifications while being
- kprobe'd
-References: <485D45AB.3000405@gmail.com> <20080623201525.GA10386@elte.hu> <863e9df20806232029x6621ff13qd584591214e93d7f@mail.gmail.com> <20080626123329.GQ29619@elte.hu>
-In-Reply-To: <20080626123329.GQ29619@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 26 Jun 2008 13:48:20 -0400
+Subject: Re: Spinlocks: Factor our GENERIC_LOCKBREAK in order to avoid spin
+	with irqs disable
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Petr Tesarik <ptesarik@suse.cz>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
+In-Reply-To: <Pine.LNX.4.64.0806261001310.7369@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com>
+	 <20080507073017.GJ32195@elte.hu>
+	 <Pine.LNX.4.64.0805071002330.3110@schroedinger.engr.sgi.com>
+	 <Pine.LNX.4.64.0805071022230.3173@schroedinger.engr.sgi.com>
+	 <Pine.LNX.4.64.0805071148240.8441@schroedinger.engr.sgi.com>
+	 <1214241561.19392.21.camel@elijah.suse.cz>
+	 <Pine.LNX.4.64.0806231115420.22557@schroedinger.engr.sgi.com>
+	 <1214253593.11254.30.camel@twins>
+	 <Pine.LNX.4.64.0806231345001.28304@schroedinger.engr.sgi.com>
+	 <1214254730.11254.34.camel@twins>  <48630420.1090102@goop.org>
+	 <1214471867.17319.8.camel@elijah.suse.cz>
+	 <Pine.LNX.4.64.0806261001310.7369@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Thu, 26 Jun 2008 19:48:10 +0200
+Message-Id: <1214502490.10371.44.camel@twins.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> best would be a delta patch against tip/master to fix up whatever is 
-> still missing.
+On Thu, 2008-06-26 at 10:02 -0700, Christoph Lameter wrote:
+> On Thu, 26 Jun 2008, Petr Tesarik wrote:
+> 
+> > We should probably re-think the whole locking scheme, because spinlocks
+> > were designed to be held for a short period of time. This was a fair
+> > assumption when they were introduced, but obviously it is now false in
+> > many cases (such as virtualization).
+> 
+> And NUMA.
+> 
+> > Ticket-based spinlocks have actually already changed the original
+> > design, so why not implement a generic "lock scheduler" on top of
+> > spinlock_t and rwlock_t?
+> 
+> How about making the semaphore / mutex code as fast as spinlocks and just 
+> use that?
 
-Here is the merge fixup for tip/master (and tip/tracing/ftrace).
+Hehe, please have a look at a recent -rt tree and possibly test some of
+that if you're interested.
 
-Signed-off-by: Abhishek Sagar <sagar.abhishek@gmail.com>
----
+It has adaptive spins for rt_mutex. Which is to say, as long as the lock
+owner is current on its cpu, we'll spin trying to acquire the lock. The
+reasoning here is that as long as the owner is running, there is a fair
+chance it'll release the lock soonish.
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 85e8413..0f271c4 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -502,8 +502,12 @@ static void ftrace_replace_code(int enable)
- 				continue;
- 
- 			/* ignore updates to this record's mcount site */
--			if (get_kprobe((void *)rec->ip))
-+			if (get_kprobe((void *)rec->ip)) {
-+				freeze_record(rec);
- 				continue;
-+			} else {
-+				unfreeze_record(rec);
-+			}
- 
- 			failed = __ftrace_replace_code(rec, old, new, enable);
- 			if (failed && (rec->flags & FTRACE_FL_CONVERTED)) {
-@@ -740,7 +744,10 @@ static int __ftrace_update_code(void *ignore)
- 				ftrace_del_hash(p);
- 				INIT_HLIST_NODE(&p->node);
- 				hlist_add_head(&p->node, &temp_list);
-+				freeze_record(p);
- 				continue;
-+			} else {
-+				unfreeze_record(p);
- 			}
- 
- 			/* convert record (i.e, patch mcount-call with NOP) */
+This is another case where semaphores can never match, due to their lack
+of ownership.
+
