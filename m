@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758862AbYF0O1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbYF0O2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758862AbYF0O1f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 10:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbYF0O12
+	id S1760034AbYF0O2V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 10:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755678AbYF0O2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 10:27:28 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:1889 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754185AbYF0O11 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 10:27:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=xwa85gAyK1Z5iMV+FK0LZyAr/oDVBZLoUuH0A//b1jfhWSaP2ZmYp49aJYsj2LA7XB
-         N0pTt83gY52Hh/lRocx2liJg/iC4/tV9C82y9AoDY7mRn6qH/Do2PCoHxQQyCAh/CVTW
-         Tw8f8mLgJcEnA91IP6AYDdlYXY8b2SWyyWv5c=
-Message-ID: <b647ffbd0806270727m36ec7324odab60e0591d26891@mail.gmail.com>
-Date: Fri, 27 Jun 2008 16:27:25 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "=?GB2312?B?z8TBwQ==?=" <xiaiaxaxi@sjtu.edu.cn>
-Subject: Re: How can I migrate a currently running task?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080627211712.6cto2d1zks848c88@webmail1.sjtu.edu.cn>
+	Fri, 27 Jun 2008 10:28:13 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:35926 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755573AbYF0O2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 10:28:12 -0400
+Date: Fri, 27 Jun 2008 17:25:58 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
+Subject: Re: [PATCH 01/34] AMD IOMMU: add Kconfig entry
+Message-ID: <20080627142558.GG18644@cs181140183.pp.htv.fi>
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-2-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20080627211712.6cto2d1zks848c88@webmail1.sjtu.edu.cn>
+In-Reply-To: <1214508490-29683-2-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/6/27 夏亮 <xiaiaxaxi@sjtu.edu.cn>:
-> Hi,
->
->      I am working on Intel Duo Core with Linux OS 2.6.21, and I'd like to
-> migrate task from one cpu to another cpu.
-> In SMP systems, load_balance() function uses move_tasks() to move processes
-> from source runqueue to local runqueue, but it does not move a currently
-> running task. If I want to migrate a currently running task from source
-> runqueue to local runqueue, how can I do? Any suggestion is preferred.
-> Thanks!
+On Thu, Jun 26, 2008 at 09:27:37PM +0200, Joerg Roedel wrote:
+> This patch adds the Kconfig entry for the AMD IOMMU driver.
+> 
+> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> ---
+>  arch/x86/Kconfig |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index e0edaaa..5a82f18 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -549,6 +549,13 @@ config CALGARY_IOMMU_ENABLED_BY_DEFAULT
+>  	  Calgary anyway, pass 'iommu=calgary' on the kernel command line.
+>  	  If unsure, say Y.
+>  
+> +config AMD_IOMMU
+> +	bool "AMD IOMMU support"
+> +	select SWIOTL
+> +	depends on X86_64 && PCI
+> +	help
+> +	  Select this to get support for AMD IOMMU hardware in your system.
+> +
+>...
 
-Some high-prio task takes away CPU from a 'target' task and then
-pushes it onto another CPU. That's what 'migration_thread' does.
+This tells neither what as IOMMU is nor whether my system actually has 
+one.
 
-Take a look at use-cases of migrate_task() in sched.c.
+Please shortly describe in the help text what an IOMMU is and which
+AMD systems have an IOMMU.
 
+The goal is that a system administrator building a kernel for his system 
+gets enough information for deciding whether to enable or disable this 
+option.
 
->
->    Liang
->
+Thanks
+Adrian
 
 -- 
-Best regards,
-Dmitry Adamushko
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
