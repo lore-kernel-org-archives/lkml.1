@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbYF0RGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759548AbYF0RIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760074AbYF0RGW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 13:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYF0RGJ
+	id S1759548AbYF0RIY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 13:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYF0RIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 13:06:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37894 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753270AbYF0RGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 13:06:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: 2.6.26-rc7: BUG at kernel/power/snapshot.c:493
-Date: Fri, 27 Jun 2008 19:07:29 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-References: <1214584985.22228.15.camel@localhost>
-In-Reply-To: <1214584985.22228.15.camel@localhost>
+	Fri, 27 Jun 2008 13:08:16 -0400
+Received: from outbound-mail-113.bluehost.com ([69.89.24.3]:40030 "HELO
+	outbound-mail-113.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751128AbYF0RIP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 13:08:15 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: David Vrabel <david.vrabel@csr.com>
+Subject: Re: PCI: MSI interrupts masked using prohibited method
+Date: Fri, 27 Jun 2008 10:07:25 -0700
+User-Agent: KMail/1.9.9
+Cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+References: <4860D09D.4060801@csr.com> <200806251420.51751.jbarnes@virtuousgeek.org> <4864DA54.6000205@csr.com>
+In-Reply-To: <4864DA54.6000205@csr.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806271907.29968.rjw@sisk.pl>
+Message-Id: <200806271007.26248.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 27 of June 2008, Soeren Sonnenburg wrote:
-> Dear all,
-> 
-> Anyone else seeing this? Happened after resuming from s2both (from
-> disk)...
+On Friday, June 27, 2008 5:17 am David Vrabel wrote:
+> Jesse Barnes wrote:
+> > On Tuesday, June 24, 2008 3:46 am David Vrabel wrote:
+> >> PCI MSI interrupts are masked and unmasked using a method (by writing
+> >> the MSI Enable capability bit) that is prohibited by the PCI
+> >> specification.
+> >
+> > Yeah, it's probably quite a bit slower too (I assume you're talking about
+> > io_apic_64's msi_mask_irq).  Seems like masking this at the ioapic level
+> > would make more sense anyway...
+> >
+> >> This behaviour can cause missed interrupts with some devices if the
+> >> interrupt is asserted by the hardware while MSI is disabled.
+> >>
+> >> I believe the interrupt should be masked/unmasked on the interrupt
+> >> controller (the APIC on x86, for example).   I'm going to test this now
+> >> and see if it works.
+>
+> After further research it seems that MSI interrupts aren't routed via
+> the IO-APIC, so this cannot be done.
+>
+> I think the only solution is to not perform any sort of masking and rely
+> on the device driver being able to handle this.
 
-At what point exactly did it happen?
+On x86, they're targetted at the LAPIC block (see section 8 of the IA SDM); 
+maybe we could modify the message address or data such that it won't generate 
+an interrupt instead?  I think this latest approach is correct in the sense 
+that both the system and drivers have to take care that
+  1) we don't miss interrupts, and 
+  2) we don't generate spurious unhandled interrupts (as might happen if we 
+disable MSI and the device generates a legacy IRQ on a different vector).
 
-> VFS: Mounted root (ext2 filesystem).
-> ------------[ cut here ]------------
-> kernel BUG at kernel/power/snapshot.c:493!
-> invalid opcode: 0000 [#1] PREEMPT SMP 
-> Modules linked in:
-> 
-> Pid: 568, comm: linuxrc Not tainted (2.6.26-rc7-sonne #35)
-> EIP: 0060:[<c0157f99>] EFLAGS: 00010282 CPU: 0
-> EIP is at memory_bm_set_bit+0x29/0x30
-> EAX: fffffff2 EBX: f7165f1c ECX: 00000000 EDX: 03000200
-> ESI: f7115000 EDI: b7f2a008 EBP: f7165f28 ESP: f7165f18
->  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> Process linuxrc (pid: 568, ti=f7164000 task=f7b65f80 task.ti=f7164000)
-> Stack: f7165f1c 00000013 f7117000 00000002 f7165f5c c0158e9b bf96e5ec c02dd570 
->        00001000 c05fa980 00000008 00000008 00000000 00000000 f7000200 c05fa980 
->        b7f2a008 f7165f70 c015b3af f7000200 b7f2a008 00001000 f7165f90 c0185e28 
-> Call Trace:
->  [<c0158e9b>] ? snapshot_write_next+0xcb/0x7a0
->  [<c02dd570>] ? write_chan+0x0/0x380
->  [<c015b3af>] ? snapshot_write+0x1f/0x70
->  [<c0185e28>] ? vfs_write+0x98/0x120
->  [<c015b390>] ? snapshot_write+0x0/0x70
->  [<c0185f6d>] ? sys_write+0x3d/0x70
->  [<c010333a>] ? syscall_call+0x7/0xb
->  =======================
-> Code: 00 00 55 89 e5 53 83 ec 0c 8d 4d f8 8d 5d f4 89 1c 24 e8 4b ff ff ff 85 c0
-> EIP: [<c0157f99>] memory_bm_set_bit+0x29/0x30 SS:ESP 0068:f7165f18
-> ---[ end trace 70a926e889075b3c ]---
+But it looks like the real problem is in the system interrupt code that 
+handles MSIs.  We should only be disabling MSIs using the capability bit at 
+device enable or disable time, not during the normal course of interrupt 
+handling, since if we do we may miss device interrupts or have them routed to 
+the wrong (legacy) vector.
+
+Cc'ing Ingo & Thomas since they know the core interrupt code pretty well.
+
+Jesse
