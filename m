@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbYF0MZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759081AbYF0MeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761357AbYF0MZo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 08:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754994AbYF0MZd
+	id S1759081AbYF0MeZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 08:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756087AbYF0MeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 08:25:33 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47971 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754638AbYF0MZc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 08:25:32 -0400
-From: kamezawa.hiroyu@jp.fujitsu.com
-Message-ID: <11849640.1214569478380.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Fri, 27 Jun 2008 21:24:38 +0900 (JST)
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: Re: [-mm][PATCH 8/10] fix shmem page migration incorrectness on memcgroup
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       MinChan Kim <minchan.kim@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Rik van Riel <riel@redhat.com>
-In-Reply-To: <20080627182952.f8d2b0c3.nishimura@mxp.nes.nec.co.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: @nifty Webmail 2.0
-References: <20080627182952.f8d2b0c3.nishimura@mxp.nes.nec.co.jp>
- <20080625190750.D864.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<28c262360806262208i6791d67at446f7323ded16206@mail.gmail.com>
-	<20080627142950.7A83.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<28c262360806270057w2b2d3e56ob4dde9aacf42327b@mail.gmail.com>
-	<20080627175201.cbe86a06.kamezawa.hiroyu@jp.fujitsu.com>
+	Fri, 27 Jun 2008 08:34:14 -0400
+Received: from saeurebad.de ([85.214.36.134]:39346 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756000AbYF0MeN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 08:34:13 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 3/3] softlockup: fix watchdog task wakeup frequency
+References: <20080627000445.346130358@saeurebad.de>
+	<20080627000805.504878592@saeurebad.de>
+	<20080627120350.GB30872@elte.hu>
+Date: Fri, 27 Jun 2008 14:33:40 +0200
+In-Reply-To: <20080627120350.GB30872@elte.hu> (Ingo Molnar's message of "Fri,
+	27 Jun 2008 14:03:50 +0200")
+Message-ID: <87prq3xdjv.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message -----
+Ingo Molnar <mingo@elte.hu> writes:
 
->> But situation is a bit complicated.
->> - shmem's page is charged as file-cache.
->> - shmem's swap cache is still charged by mem_cgroup_cache_charge() because
->>   it's implicitly (to memcg) converted to swap cache. 
->> - anon's swap cache is charged by mem_cgroup_uncharge_cache_page()
->> 
->I'm sorry if I misunderstand something.
+> * Johannes Weiner <hannes@saeurebad.de> wrote:
 >
->I think anon's swap cache is:
+>> Wake up the watchdog every second instead of every second. [...]
 >
->- charged by nowhere as "cache".
-yes.
->  If anon pages are also on swap cache, charges for them remain charged
->  even when mem_cgroup_uncharge_page() is called, because it checks PG_swapca
-che.
->  So, as a result, anon's swap cache is charged.
-yes.
+> now _that_ is a real improvement ;-)
+>
+>>  	/* Wake up the high-prio watchdog task every second: */
+>> -	if (now > (touch_timestamp + 1))
+>> +	if (now > touch_timestamp)
+>>  		wake_up_process(per_cpu(watchdog_task, this_cpu));
+>
+> you mean wake up every second instead of every two seconds?
 
->- uncharged by memcgroup_uncharge_page() in __delete_from_swap_cache()
->  after clearing PG_swapcache.
->
->right?
->
-You're right. Sorry for confusion.
+Every second second :D The second `second' [adjective] refers to the
+first `second' [noun].
 
-Thanks,
--Kame
+> i think the best sleep period for the watchdog is half of the threshold. 
+> It makes no point to check sooner than that. I.e. softlockup_thresh/2 
+> would be better?
 
+Hm, it updates the timestamp, so it makes only sense if it runs at a
+maximum every second (timestamp granularity) or even less.  The check
+for hung tasks uses the cpu timestamp as well for comparison, so that
+would be okay too.
+
+Like this?
+
+diff --git a/kernel/softlockup.c b/kernel/softlockup.c
+index c828c23..b884546 100644
+--- a/kernel/softlockup.c
++++ b/kernel/softlockup.c
+@@ -106,8 +106,9 @@ void softlockup_tick(void)
+ 
+ 	now = get_timestamp(this_cpu);
+ 
+-	/* Wake up the high-prio watchdog task every second: */
+-	if (now > (touch_timestamp + 1))
++	/* Wake up the high-prio watchdog task twice per
++	 * threshold timespan. */
++	if (now > (touch_timestamp + softlockup_thresh / 2))
+ 		wake_up_process(per_cpu(watchdog_task, this_cpu));
+ 
+ 	/* Warn about unreasonable delays: */
