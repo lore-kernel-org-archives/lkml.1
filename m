@@ -1,113 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761253AbYF0RZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759468AbYF0RaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761253AbYF0RZP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 13:25:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756523AbYF0RZD
+	id S1759468AbYF0RaX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 13:30:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYF0RaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 13:25:03 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:32550 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756222AbYF0RZA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 13:25:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Et1SS62gKB8fVZYBcfb/HlsJfuioHXnW9SEaVGN518Q6NWxQoH4ctcVSISR95BelKj
-         sHRztXjxlbv2xAffdx7l2fUhlsZTMn7fsW0zD5H40AfOxQ6l/1T3CWp5VHqR5owLYOnR
-         BBi+RaI107abLs79/lMEGxNEmtXbafbcXzKCI=
-Message-ID: <19f34abd0806271024j53b383ddq33ab2b58debfbb65@mail.gmail.com>
-Date: Fri, 27 Jun 2008 19:24:59 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Mike Travis" <travis@sgi.com>
-Subject: Re: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask V3
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       mm-commits@vger.kernel.org, "Yinghai Lu" <yhlu.kernel@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <48651EF5.5090808@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200806090918.m599Ib0G012837@imap1.linux-foundation.org>
-	 <19f34abd0806090420r4100241cgb4b828441de3b102@mail.gmail.com>
-	 <20080609113547.GA1534@elte.hu> <484D54F2.4070603@sgi.com>
-	 <20080626113229.GB29619@elte.hu> <4863C334.2090007@sgi.com>
-	 <486452CC.8050502@sgi.com> <48651EF5.5090808@sgi.com>
+	Fri, 27 Jun 2008 13:30:09 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:43276 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752277AbYF0RaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 13:30:08 -0400
+Date: Fri, 27 Jun 2008 19:30:01 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Andres Salomon <dilinger@queued.net>
+Cc: akpm@linux-foundation.org, drzeus-sdhci@drzeus.cx,
+       sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [OLPC] sdhci: add quirk for the Marvell CaFe's
+ interrupt timeout
+Message-ID: <20080627193001.5925f664@mjolnir.drzeus.cx>
+In-Reply-To: <20080623101352.3bbaf5b0@xo-debian>
+References: <20080623101352.3bbaf5b0@xo-debian>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
+X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-27365-1214587209-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 7:10 PM, Mike Travis <travis@sgi.com> wrote:
-> Subject: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask V3
->
->  * When CONFIG_DEBUG_PER_CPU_MAPS is set, the node passed to
->    node_to_cpumask and node_to_cpumask_ptr should be validated.
->    If invalid, then a dump_stack is performed and a zero cpumask
->    is returned.
->
-> Based on "Fri Jun 27 10:06:06 PDT 2008" tip/master...  ;-)
->
-> Signed-off-by: Mike Travis <travis@sgi.com>
-> ---
-> V2: Slightly different version to remove a compiler warning.
-> V3: Redone to reflect moving setup.c -> setup_percpu.c
-> ---
->  arch/x86/kernel/setup_percpu.c |   26 +++++++++++++++++++++++---
->  include/asm-x86/topology.h     |    7 ++++++-
->  2 files changed, 29 insertions(+), 4 deletions(-)
->
-> --- linux-2.6.tip.orig/arch/x86/kernel/setup_percpu.c
-> +++ linux-2.6.tip/arch/x86/kernel/setup_percpu.c
-> @@ -346,6 +346,10 @@ int early_cpu_to_node(int cpu)
->        return per_cpu(x86_cpu_to_node_map, cpu);
->  }
->
-> +
-> +/* empty cpumask */
-> +static const cpumask_t cpu_mask_none;
-> +
->  /*
->  * Returns a pointer to the bitmask of CPUs on Node 'node'.
->  */
-> @@ -358,13 +362,23 @@ cpumask_t *_node_to_cpumask_ptr(int node
->                dump_stack();
->                return &cpu_online_map;
->        }
-> -       BUG_ON(node >= nr_node_ids);
-> -       return &node_to_cpumask_map[node];
-> +       if (node >= nr_node_ids) {
-> +               printk(KERN_WARNING
-> +                       "_node_to_cpumask_ptr(%d): node > nr_node_ids(%d)\n",
-> +                       node, nr_node_ids);
-> +               dump_stack();
-> +               return (cpumask_t *)&cpu_mask_none;
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Hm, I am wondering about this.
+--=_freyr.drzeus.cx-27365-1214587209-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-There exists an option DEBUG_RODATA ("Write protect kernel read-only
-data structures"). I'm guessing this RO protections means that we'll
-get page faults (and thus BUG/panic) if this "none" mask is ever
-attempted to be changed.
+On Mon, 23 Jun 2008 10:13:52 -0400
+Andres Salomon <dilinger@queued.net> wrote:
 
-So if CONFIG_DEBUG_RODATA=y, I believe we'll see first this warning,
-then a panic (after all). Would it be better to make cpu_mask_none
-non-const, in spirit of trying to continue as far as possible? I don't
-really know if it matters, though. It seems that fedora kernels at
-least ship with a default of DEBUG_RODATA=y.
+>=20
+> The CaFe chip has a hardware bug that ends up with us getting a timeout
+> value that's too small, causing the following sorts of problems:
+>=20
+> [   60.525138] mmcblk0: error -110 transferring data
+> [   60.531477] end_request: I/O error, dev mmcblk0, sector 1484353
+> [   60.533371] Buffer I/O error on device mmcblk0p2, logical block 181632
+> [   60.533371] lost page write due to I/O error on mmcblk0p2
+>=20
+> Presumably this is an off-by-one error in the hardware.  Incrementing
+> the timeout count value that we stuff into the TIMEOUT_CONTROL register
+> gets us a value that works.  This bug was originally discovered by
+> Pierre Ossman, I believe.
+>=20
+> [thanks to Robert Millan for proving that this was still a problem]
+>=20
+> Signed-off-by: Andres Salomon <dilinger@debian.org>
 
-What you could also do is to make it non-const and then zero it each
-time it is requested. Again, this is an error situation in either
-case, so maybe it's not worth fussing about.
+Hmm... I'm not entirely sure about the specifics of the workaround
+here. It's likely that we'll have an off-by-minus-one in another
+controller, and off-by-two in a third.
 
+Perhaps we should just have "broken timeout" and set the timeout to
+0xE. It doesn't cause any side-effects except that the user will have
+to wait slightly longer for requests to fail if the card has decided to
+crap out.
 
-Vegard
+> @@ -479,6 +482,13 @@ static void sdhci_prepare_data(struct sdhci_host *ho=
+st, struct mmc_data *data)
+>  			break;
+>  	}
+> =20
+> +	/*
+> +	 * Compensate for an off-by-one error in the CaFe hardware; otherwise,
+> +	 * a too-small count gives us interrupt timeouts.
+> +	 */
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Same issue with "CaFE" as the previous patch.
+
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-27365-1214587209-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkhlI5wACgkQ7b8eESbyJLhnUwCgyrED06jqUvlx+zJkaaGZ5EAX
+Vl8AnA5hpKuil8LHOcpqtVOBHmZcGMw/
+=rlgs
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-27365-1214587209-0001-2--
