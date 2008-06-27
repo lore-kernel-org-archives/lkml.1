@@ -1,97 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbYF0InT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759530AbYF0Io6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759354AbYF0InT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 04:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755592AbYF0InJ
+	id S1759530AbYF0Io6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 04:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755877AbYF0Ios
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 04:43:09 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:48946 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755580AbYF0InH (ORCPT
+	Fri, 27 Jun 2008 04:44:48 -0400
+Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:14888 "EHLO
+	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755151AbYF0Ior (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 04:43:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=o50yU7+6MOcEwRM/UEAyNLkMXMXPgPLtp4Udis55kPi91Gh06tGqq9BK7mlKjexDCy
-         t2x3yxdvb8zZfV2AvNbBT7O2pDZJWH1+wC5baZYIcCU+NmTrG3x4mlfknOssIg4L6PU8
-         L23ZJTQlo2I6XPeIRwdiIcG1d2gdsCqZv64EI=
-Message-ID: <7c86c4470806270143u42321a93g708d839166de5a1c@mail.gmail.com>
-Date: Fri, 27 Jun 2008 10:43:06 +0200
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: [patch 05/19] perfmon2 minimal v2: X86 generic code
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080624021120.2bcca593.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4858346e.0c58560a.394e.3498@mx.google.com>
-	 <20080624021120.2bcca593.sfr@canb.auug.org.au>
+	Fri, 27 Jun 2008 04:44:47 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEANexXkh5LFnm/2dsb2JhbACuPg
+X-IronPort-AV: E=Sophos;i="4.27,714,1204464600"; 
+   d="scan'208";a="144433133"
+From: Dave Chinner <david@fromorbit.com>
+To: xfs@oss.sgi.com
+Cc: linux-kernel@vger.kernel.org, matthew@wil.cx, dwalker@mvista.com,
+       Dave Chinner <david@fromorbit.com>
+Subject: [PATCH 6/6] Remove the sema_t from XFS.
+Date: Fri, 27 Jun 2008 18:44:44 +1000
+Message-Id: <1214556284-4160-7-git-send-email-david@fromorbit.com>
+X-Mailer: git-send-email 1.5.5.4
+In-Reply-To: <1214556284-4160-1-git-send-email-david@fromorbit.com>
+References: <1214556284-4160-1-git-send-email-david@fromorbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen,
+Now that all users of the sema_t are gone from XFS we
+can finally kill it.
 
-Ok, so I cloned your linux-next tree and ported by perfmon2 minimal patch
-series to it. As you said, there was a handful of files which caused problems,
-mostly because of x86 merge. But the net effect is that the series is now a bit
-smaller. I tried some simple perfmon tests and they worked fine. I did not go
-all the way to the patch which needed IPI (i.e. system-wide support).
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ fs/xfs/linux-2.6/sema.h      |   52 ------------------------------------------
+ fs/xfs/linux-2.6/xfs_linux.h |    2 +-
+ 2 files changed, 1 insertions(+), 53 deletions(-)
+ delete mode 100644 fs/xfs/linux-2.6/sema.h
 
-However I had problems with this tree and my Broadcom BMC5754 network
-card. It was not recognized by the tg3 driver so hard to use this kernel.
+diff --git a/fs/xfs/linux-2.6/sema.h b/fs/xfs/linux-2.6/sema.h
+deleted file mode 100644
+index 3abe7e9..0000000
+--- a/fs/xfs/linux-2.6/sema.h
++++ /dev/null
+@@ -1,52 +0,0 @@
+-/*
+- * Copyright (c) 2000-2002,2005 Silicon Graphics, Inc.
+- * All Rights Reserved.
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License as
+- * published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it would be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write the Free Software Foundation,
+- * Inc.,  51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+- */
+-#ifndef __XFS_SUPPORT_SEMA_H__
+-#define __XFS_SUPPORT_SEMA_H__
+-
+-#include <linux/time.h>
+-#include <linux/wait.h>
+-#include <linux/semaphore.h>
+-#include <asm/atomic.h>
+-
+-/*
+- * sema_t structure just maps to struct semaphore in Linux kernel.
+- */
+-
+-typedef struct semaphore sema_t;
+-
+-#define initnsema(sp, val, name)	sema_init(sp, val)
+-#define psema(sp, b)			down(sp)
+-#define vsema(sp)			up(sp)
+-#define freesema(sema)			do { } while (0)
+-
+-static inline int issemalocked(sema_t *sp)
+-{
+-	return down_trylock(sp) || (up(sp), 0);
+-}
+-
+-/*
+- * Map cpsema (try to get the sema) to down_trylock. We need to switch
+- * the return values since cpsema returns 1 (acquired) 0 (failed) and
+- * down_trylock returns the reverse 0 (acquired) 1 (failed).
+- */
+-static inline int cpsema(sema_t *sp)
+-{
+-	return down_trylock(sp) ? 0 : 1;
+-}
+-
+-#endif /* __XFS_SUPPORT_SEMA_H__ */
+diff --git a/fs/xfs/linux-2.6/xfs_linux.h b/fs/xfs/linux-2.6/xfs_linux.h
+index 4d45d93..4fb838f 100644
+--- a/fs/xfs/linux-2.6/xfs_linux.h
++++ b/fs/xfs/linux-2.6/xfs_linux.h
+@@ -45,13 +45,13 @@
+ #include <mrlock.h>
+ #include <sv.h>
+ #include <mutex.h>
+-#include <sema.h>
+ #include <time.h>
+ 
+ #include <support/ktrace.h>
+ #include <support/debug.h>
+ #include <support/uuid.h>
+ 
++#include <linux/semaphore.h>
+ #include <linux/mm.h>
+ #include <linux/kernel.h>
+ #include <linux/blkdev.h>
+-- 
+1.5.5.4
 
-
-On Mon, Jun 23, 2008 at 6:11 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi Stephane,
->
-> On Tue, 17 Jun 2008 15:02:22 -0700 (PDT) eranian@googlemail.com wrote:
->>
->> This patch adds the X86 generic perfmon2 code. It is in charge of
->> implementing certain key functionalities required by the generic
->> code such as read/write of the PMU registers, low-level interrupt
->> handling.
->
-> After applying patches 1-5, building an x86_64 allmodconfig produces
-> these errors:
->
-> In file included from include/linux/perfmon_kern.h:167,
->                 from arch/x86/perfmon/perfmon.c:25:
-> include/linux/perfmon_pmu.h:92: warning: 'struct pfarg_pmc' declared inside parameter list
-> include/linux/perfmon_pmu.h:92: warning: its scope is only this definition or declaration, which is probably not what you want
-> include/linux/perfmon_pmu.h:96: warning: 'struct pfarg_pmd' declared inside parameter list
->
-> Those structures aren't defined until patch 11.
->
-> In file included from arch/x86/perfmon/perfmon.c:25:
-> include/linux/perfmon_kern.h: In function 'pfm_copy_thread':
-> include/linux/perfmon_kern.h:199: error: 'TIF_PERFMON_CTXSW' undeclared (first use in this function)
-> arch/x86/perfmon/perfmon.c: In function 'smp_pmu_interrupt':
-> arch/x86/perfmon/perfmon.c:338: error: 'LOCAL_PERFMON_VECTOR' undeclared (first use in this function)
-> arch/x86/perfmon/perfmon.c: In function 'pfm_arch_resend_irq':
-> arch/x86/perfmon/perfmon.c:451: error: 'LOCAL_PERFMON_VECTOR' undeclared (first use in this function)
-> arch/x86/perfmon/perfmon.c: In function 'pfm_arch_pmu_acquire_percpu':
-> arch/x86/perfmon/perfmon.c:475: error: 'LOCAL_PERFMON_VECTOR' undeclared (first use in this function)
->
-> These are not defined until patch 7.
->
-> So I think some rearrangement is still required.
->
-> Also, some of the x86 files that you are modifying have had their 32 and
-> 64 bit versions combined in linux-next (which is the stuff of the next
-> merge window) so just a heads up that there will be more merge work then.
-> Lastly, some of this will clash with the generic IPIs work.
->
-> I don't want to put you off, you have done great work here, thanks.
->
-> --
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
->
