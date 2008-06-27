@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759819AbYF0Ntd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbYF0NzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759819AbYF0Ntd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 09:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbYF0NtB
+	id S1757504AbYF0NzY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 09:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbYF0NzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 09:49:01 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40403 "EHLO gate.crashing.org"
+	Fri, 27 Jun 2008 09:55:09 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:51723 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755337AbYF0Ns7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 09:48:59 -0400
-Cc: joseph@codesourcery.com, linux-kernel@vger.kernel.org,
-       libc-alpha@sourceware.org
-Message-Id: <477EA92C-D28C-4745-A805-387C359C51E8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20080612.212457.01943346.davem@davemloft.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: math-emu issue with fp divide
-Date: Fri, 27 Jun 2008 08:48:33 -0500
-References: <Pine.LNX.4.64.0806042134020.32021@digraph.polyomino.org.uk> <20080604.144950.117343339.davem@davemloft.net> <Pine.LNX.4.64.0806050837230.24924@blarg.am.freescale.net> <20080612.212457.01943346.davem@davemloft.net>
-X-Mailer: Apple Mail (2.924)
+	id S1755301AbYF0NzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 09:55:08 -0400
+Date: Fri, 27 Jun 2008 15:55:52 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, monstr@seznam.cz,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
+       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
+       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
+       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
+       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com,
+       Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH 48/60] microblaze_v4: headers simple files - empty or redirect to asm-generic
+Message-ID: <20080627135552.GA16485@uranus.ravnborg.org>
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <200806261838.33787.arnd@arndb.de> <20080626180530.GA22827@cs181140183.pp.htv.fi> <200806270123.06669.arnd@arndb.de> <20080627115936.GA18644@cs181140183.pp.htv.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080627115936.GA18644@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> 
+> We need either all architectures changed or none at all - we do need the 
+> arch headers to become more similar, not more different.
+> 
+> And this is why we need an agreement _before_ an asm-generic header gets 
+> added, not after it.
+We already have the agreement..
+Files which are equal among archs should be in asm-generic.
+And there is simply no gain in adding files for an arch when can put
+them in asm-generic.
+When they are in asm-generic than we can fix the other archs one-by-one.
 
-On Jun 12, 2008, at 11:24 PM, David Miller wrote:
-
-> From: Kumar Gala <galak@kernel.crashing.org>
-> Date: Thu, 5 Jun 2008 08:38:44 -0500 (CDT)
->
->> Now that I'm digging into this a bit I'm thinking my issue has to  
->> do with
->> the fix you put in place from back in Aug 2007 (commit
->> 405849610fd96b4f34cd1875c4c033228fea6c0f):
->>
->> [MATH-EMU]: Fix underflow exception reporting.
->>
->>    2) we ended up rounding back up to normal (this is the case where
->>       we set the exponent to 1 and set the fraction to zero), this
->>       should set inexact too
->> ...
->>
->>    Another example, "0x0.0000000000001p-1022 / 16.0", should signal  
->> both
->>    inexact and underflow.  The cpu implementations and ieee1754
->>    literature is very clear about this.  This is case #2 above.
->>
->> I'm not clear from your commit comment on what actual number
->> 0x0.0....01p-1022 is?
->
-> I haven't been able to look closely at this yet but I think I
-> happened to stumble over the test case that lead me to that
-> changeset you are referencing here.
-
-Have you had a chance to look at this?
-
-- k
+	Sam
