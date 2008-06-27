@@ -1,113 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYF0KYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754163AbYF0Kfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbYF0KYd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 06:24:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbYF0KYW
+	id S1754163AbYF0Kfa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 06:35:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYF0KfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 06:24:22 -0400
-Received: from styx.suse.cz ([82.119.242.94]:42687 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750882AbYF0KYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 06:24:21 -0400
-Date: Fri, 27 Jun 2008 12:24:20 +0200
-From: Jan Kara <jack@suse.cz>
-To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: Re: [PATCH 4/5] jbd: fix error handling for checkpoint io
-Message-ID: <20080627102419.GC3602@duck.suse.cz>
-References: <4843CE15.6080506@hitachi.com> <4843CFBD.7040706@hitachi.com> <20080602124409.GL30613@duck.suse.cz> <4844CB39.6060409@hitachi.com> <20080603080219.GA17936@duck.suse.cz> <485F85AE.1010704@hitachi.com> <20080623122240.GJ26743@duck.suse.cz> <4860E01B.8010806@hitachi.com> <20080624133309.GG9959@duck.suse.cz> <48649FA0.70303@hitachi.com>
+	Fri, 27 Jun 2008 06:35:19 -0400
+Received: from baikonur.stro.at ([213.239.196.228]:34515 "EHLO
+	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751776AbYF0KfR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 06:35:17 -0400
+Date: Fri, 27 Jun 2008 12:07:18 +0200
+From: maximilian attems <max@stro.at>
+To: ink@jurassic.park.msu.ru, rth@twiddle.net
+Cc: akpm@linux-foundation.org, debian-kernel@lists.debian.org,
+       linux-kernel@vger.kernel.org
+Subject: (fwd) Alpha Linux kernel fails with inconsistent kallsyms data
+Message-ID: <20080627100718.GA19274@stro.at>
+Mail-Followup-To: ink@jurassic.park.msu.ru, rth@twiddle.net,
+	akpm@linux-foundation.org, debian-kernel@lists.debian.org,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48649FA0.70303@hitachi.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+according to the build log
+http://buildd.debian.org/fetch.cgi?pkg=linux-2.6;ver=2.6.25-6;arch=alpha;stamp=1214551466
+alpha linux image built fine with belows patch,
+please have an eye.
 
-On Fri 27-06-08 17:06:56, Hidehiro Kawai wrote:
-> Jan Kara wrote:
-> 
-> > On Tue 24-06-08 20:52:59, Hidehiro Kawai wrote:
-> 
-> >>>>3. is implemented as described below.
-> >>>> (1) if log_do_checkpoint() detects an I/O error during
-> >>>>     checkpointing, it calls journal_abort() to abort the journal
-> >>>> (2) if the journal has aborted, don't update s_start and s_sequence
-> >>>>     in the on-disk journal superblock
-> >>>>
-> >>>>So, if the journal aborts, journaled data will be replayed on the
-> >>>>next mount.
-> >>>>
-> >>>>Now, please remember that some dirty metadata buffers are written
-> >>>>back to the filesystem without journaling if the journal aborted.
-> >>>>We are happy if all dirty metadata buffers are written to the disk,
-> >>>>the integrity of the filesystem will be kept.  However, replaying
-> >>>>the journaled data can overwrite the latest on-disk metadata blocks
-> >>>>partly with old data.  It would break the filesystem.
-> >>>
-> >>>  Yes, it would. But how do you think it can happen that a metadata buffer
-> >>>will be written back to the filesystem when it is a part of running
-> >>>transaction? Note that checkpointing code specifically checks whether the
-> >>>buffer being written back is part of a running transaction and if so, it
-> >>>waits for commit before writing back the buffer. So I don't think this can
-> >>>happen but maybe I miss something...
-> >>
-> >>Checkpointing code checks it and may call log_wait_commit(), but this
-> >>problem is caused by transactions which have not started checkpointing.
-> >>
-> >>For example, the tail transaction has an old update for block_B and
-> >>the running transaction has a new update for block_B.  Then, the
-> >>committing transaction fails to write the commit record, it aborts the
-> >>journal, and new block_B will be written back to the file system without
-> >>journaling.  Because this patch doesn't separate between normal abort
-> >>and checkpointing related abort, the tail transaction is left in the
-> >>journal space.  So by replaying the tail transaction, new block_B is
-> >>overwritten with old one.
-> > 
-> >   Yes, and this is expected an correct. When we cannot properly finish a
-> > transaction, we have to discard everything in it. A bug would be (and I
-> > think it could currently happen) if we already checkpointed the previous
-> > transaction and then written over block_B new data from the uncommitted
-> > transaction. I think we have to avoid that - i.e., in case we abort the
-> > journal we should not mark buffers dirty when processing the forget loop.
-> 
-> Yes.
-> 
-> > But this is not too serious since fsck has to be run anyway and it will
-> > fix the problems.
-> 
-> Yes.  The filesystem should be marked with an error, so fsck will check
-> and recover the filesystem on boot.  But this means the filesystem loses
-> some latest updates even if it was cleanly unmounted (although some file
-> data has been lost.)  I'm a bit afraid that some people would think of
-> this as a regression due to this PATCH 4/5.  At least, to avoid
-> undesirable replay, we had better keep journaled data only when the
-> journal has been aborted for checkpointing related reason.
-  I don't think this makes any difference. Look: We have transaction A
-modifying block B fully committed to the journal. Now there is a running
-(or committing, it does not really matter) transaction R also modifying block
-B. Until R gets fully committed, no block modified by R is checkpointed
-to the device - checkpointing code takes care of that and it must be so
-to satisfy journaling guarantees.
-  So if we abort journal (for whatever reason) before R is fully committed,
-no change in R will be seen on the filesystem regardless whether you
-cleanup the journal or not.
-  And you cannot do much differenly - the principle of journaling is that
-either all changes in the transaction get to disk or none of them. So until
-the transaction is properly committed, you have the only way to satisfy
-this condition - take the "none of them" choice.
-  Now fsck could of course be clever and try to use updates in not fully
-committed transaction but personally I don't think it's worth the effort.
-  Please correct me if I just misunderstood your point...
+thanks
 
-								Honza
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+maks
+
+----- Forwarded message from Bastian Blank <waldi@debian.org> -----
+
+Date: Sun, 22 Jun 2008 22:11:43 +0200
+From: Bastian Blank <waldi@debian.org>
+To: debian-kernel@lists.debian.org, rth@twiddle.net
+Cc: debian-alpha@lists.debian.org
+Subject: Alpha Linux kernel fails with inconsistent kallsyms data
+
+Hi folks
+
+The build of the Alpha Linux kernel currently fails[1] with inconsistent
+kallsyms data. As I never saw that before, I thought about hardware
+problems. But in fact it is a bug in the Linux kernel.
+
+The end of the rodata section is marked with the "__end_rodata" symbol.
+This symbol have different aligning constraints than the inittext parts
+and therefor the start marked "_sinittext". Because of that the
+__end_rodata symbol shifts between < _sinittext and == _sinittext. The
+later variant is seen as a code symbol and recorded in the kallsyms
+data.
+
+On fix would be to move the exception table a little bit and get some
+space between that two areas.
+
+Bastian
+
+[1]: http://buildd.debian.org/fetch.cgi?pkg=linux-2.6&arch=alpha&ver=2.6.25-5&stamp=1213919009&file=log&as=raw
+
+-- 
+The face of war has never changed.  Surely it is more logical to heal
+than to kill.
+		-- Surak of Vulcan, "The Savage Curtain", stardate 5906.5
+
+diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
+index f13249b..ef37fc1 100644
+--- a/arch/alpha/kernel/vmlinux.lds.S
++++ b/arch/alpha/kernel/vmlinux.lds.S
+@@ -25,6 +25,13 @@ SECTIONS
+ 	} :kernel
+ 	_etext = .;	/* End of text section */
+ 
++	NOTES :kernel :note
++	.dummy : {
++		*(.dummy)
++	} :kernel
++
++	RODATA
++
+ 	/* Exception table */
+ 	. = ALIGN(16);
+ 	__ex_table : {
+@@ -33,13 +40,6 @@ SECTIONS
+ 		__stop___ex_table = .;
+ 	}
+ 
+-	NOTES :kernel :note
+-	.dummy : {
+-		*(.dummy)
+-	} :kernel
+-
+-	RODATA
+-
+ 	/* Will be freed after init */
+ 	. = ALIGN(PAGE_SIZE);
+ 	/* Init code and data */
+
+
+
+
+----- End forwarded message -----
