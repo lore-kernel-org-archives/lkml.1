@@ -1,208 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758918AbYF0Iku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbYF0InT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758918AbYF0Iku (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 04:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755289AbYF0Ikn
+	id S1759354AbYF0InT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 04:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755592AbYF0InJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 04:40:43 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:61904 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754450AbYF0Ikl (ORCPT
+	Fri, 27 Jun 2008 04:43:09 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:48946 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755580AbYF0InH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 04:40:41 -0400
+	Fri, 27 Jun 2008 04:43:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
          :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=pE5zWaTxznO+p+tVe2Qi8mzud5q1f4Qbl8IWyrwkBJXP8bLPN6y6OqobCcHHjqQT6/
-         feOtqpOouQqWG7+E+Um9lm9PfKwKh/dbqASdd1rPO5abssf+WTANcbvZljpSzEqcF+Ya
-         FXcsIitKEvGNhdiC5mh5S00Wqos7NtddNvyf4=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: let setup_arch call init_apic_mappings for 32bit
-Date: Fri, 27 Jun 2008 01:41:56 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806251748.06743.yhlu.kernel@gmail.com> <200806252151.29028.yhlu.kernel@gmail.com> <200806262317.48716.yhlu.kernel@gmail.com>
-In-Reply-To: <200806262317.48716.yhlu.kernel@gmail.com>
+         :content-disposition:references;
+        b=o50yU7+6MOcEwRM/UEAyNLkMXMXPgPLtp4Udis55kPi91Gh06tGqq9BK7mlKjexDCy
+         t2x3yxdvb8zZfV2AvNbBT7O2pDZJWH1+wC5baZYIcCU+NmTrG3x4mlfknOssIg4L6PU8
+         L23ZJTQlo2I6XPeIRwdiIcG1d2gdsCqZv64EI=
+Message-ID: <7c86c4470806270143u42321a93g708d839166de5a1c@mail.gmail.com>
+Date: Fri, 27 Jun 2008 10:43:06 +0200
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Subject: Re: [patch 05/19] perfmon2 minimal v2: X86 generic code
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080624021120.2bcca593.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806270141.56409.yhlu.kernel@gmail.com>
+References: <4858346e.0c58560a.394e.3498@mx.google.com>
+	 <20080624021120.2bcca593.sfr@canb.auug.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Stephen,
 
-instead of calling it from trap_init()
+Ok, so I cloned your linux-next tree and ported by perfmon2 minimal patch
+series to it. As you said, there was a handful of files which caused problems,
+mostly because of x86 merge. But the net effect is that the series is now a bit
+smaller. I tried some simple perfmon tests and they worked fine. I did not go
+all the way to the patch which needed IPI (i.e. system-wide support).
 
-also move init ioapic mapping out of apic_32.c
+However I had problems with this tree and my Broadcom BMC5754 network
+card. It was not recognized by the tg3 driver so hard to use this kernel.
 
-so 32 bit do same as 64 bit
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-
----
- arch/x86/kernel/apic_32.c    |   30 ------------------------------
- arch/x86/kernel/io_apic_32.c |   32 ++++++++++++++++++++++++++++++++
- arch/x86/kernel/setup.c      |    6 ++----
- arch/x86/kernel/traps_32.c   |    4 ----
- include/asm-x86/apic.h       |    1 +
- include/asm-x86/io_apic.h    |    1 +
- 6 files changed, 36 insertions(+), 38 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/apic_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic_32.c
-+++ linux-2.6/arch/x86/kernel/apic_32.c
-@@ -1197,36 +1197,6 @@ void __init init_apic_mappings(void)
- 	if (boot_cpu_physical_apicid == -1U)
- 		boot_cpu_physical_apicid = GET_APIC_ID(read_apic_id());
- 
--#ifdef CONFIG_X86_IO_APIC
--	{
--		unsigned long ioapic_phys, idx = FIX_IO_APIC_BASE_0;
--		int i;
--
--		for (i = 0; i < nr_ioapics; i++) {
--			if (smp_found_config) {
--				ioapic_phys = mp_ioapics[i].mp_apicaddr;
--				if (!ioapic_phys) {
--					printk(KERN_ERR
--					       "WARNING: bogus zero IO-APIC "
--					       "address found in MPTABLE, "
--					       "disabling IO/APIC support!\n");
--					smp_found_config = 0;
--					skip_ioapic_setup = 1;
--					goto fake_ioapic_page;
--				}
--			} else {
--fake_ioapic_page:
--				ioapic_phys = (unsigned long)
--					      alloc_bootmem_pages(PAGE_SIZE);
--				ioapic_phys = __pa(ioapic_phys);
--			}
--			set_fixmap_nocache(idx, ioapic_phys);
--			printk(KERN_DEBUG "mapped IOAPIC to %08lx (%08lx)\n",
--			       __fix_to_virt(idx), ioapic_phys);
--			idx++;
--		}
--	}
--#endif
- }
- 
- /*
-Index: linux-2.6/arch/x86/kernel/io_apic_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/io_apic_32.c
-+++ linux-2.6/arch/x86/kernel/io_apic_32.c
-@@ -25,6 +25,7 @@
- #include <linux/init.h>
- #include <linux/delay.h>
- #include <linux/sched.h>
-+#include <linux/bootmem.h>
- #include <linux/mc146818rtc.h>
- #include <linux/compiler.h>
- #include <linux/acpi.h>
-@@ -2854,3 +2855,34 @@ static int __init parse_noapic(char *arg
- 	return 0;
- }
- early_param("noapic", parse_noapic);
-+
-+void __init ioapic_init_mappings(void)
-+{
-+	unsigned long ioapic_phys, idx = FIX_IO_APIC_BASE_0;
-+	int i;
-+
-+	for (i = 0; i < nr_ioapics; i++) {
-+		if (smp_found_config) {
-+			ioapic_phys = mp_ioapics[i].mp_apicaddr;
-+			if (!ioapic_phys) {
-+				printk(KERN_ERR
-+				       "WARNING: bogus zero IO-APIC "
-+				       "address found in MPTABLE, "
-+				       "disabling IO/APIC support!\n");
-+				smp_found_config = 0;
-+				skip_ioapic_setup = 1;
-+				goto fake_ioapic_page;
-+			}
-+		} else {
-+fake_ioapic_page:
-+			ioapic_phys = (unsigned long)
-+				      alloc_bootmem_pages(PAGE_SIZE);
-+			ioapic_phys = __pa(ioapic_phys);
-+		}
-+		set_fixmap_nocache(idx, ioapic_phys);
-+		printk(KERN_DEBUG "mapped IOAPIC to %08lx (%08lx)\n",
-+		       __fix_to_virt(idx), ioapic_phys);
-+		idx++;
-+	}
-+}
-+
-Index: linux-2.6/arch/x86/kernel/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -771,16 +771,14 @@ void __init setup_arch(char **cmdline_p)
- 		get_smp_config();
- #endif
- 
--#ifdef CONFIG_X86_64
- 	init_apic_mappings();
- 	ioapic_init_mappings();
--#else
--# if defined(CONFIG_SMP) && defined(CONFIG_X86_PC)
-+
-+#if defined(CONFIG_SMP) && defined(CONFIG_X86_PC) && defined(CONFIG_X86_32)
- 	if (def_to_bigsmp)
- 		printk(KERN_WARNING "More than 8 CPUs detected and "
- 			"CONFIG_X86_PC cannot handle it.\nUse "
- 			"CONFIG_X86_GENERICARCH or CONFIG_X86_BIGSMP.\n");
--# endif
- #endif
- 	kvm_guest_init();
- 
-Index: linux-2.6/arch/x86/kernel/traps_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/traps_32.c
-+++ linux-2.6/arch/x86/kernel/traps_32.c
-@@ -1210,10 +1210,6 @@ void __init trap_init(void)
- 	early_iounmap(p, 4);
- #endif
- 
--#ifdef CONFIG_X86_LOCAL_APIC
--	init_apic_mappings();
--#endif
--	set_trap_gate(0,  &divide_error);
- 	set_intr_gate(1,  &debug);
- 	set_intr_gate(2,  &nmi);
- 	set_system_intr_gate(3, &int3); /* int3/4 can be called from all */
-Index: linux-2.6/include/asm-x86/apic.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/apic.h
-+++ linux-2.6/include/asm-x86/apic.h
-@@ -135,6 +135,7 @@ extern int apic_is_clustered_box(void);
- #else /* !CONFIG_X86_LOCAL_APIC */
- static inline void lapic_shutdown(void) { }
- #define local_apic_timer_c2_ok		1
-+static inline void init_apic_mappings(void) { }
- 
- #endif /* !CONFIG_X86_LOCAL_APIC */
- 
-Index: linux-2.6/include/asm-x86/io_apic.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/io_apic.h
-+++ linux-2.6/include/asm-x86/io_apic.h
-@@ -196,6 +196,7 @@ extern void ioapic_init_mappings(void);
- #else  /* !CONFIG_X86_IO_APIC */
- #define io_apic_assign_pci_irqs 0
- static const int timer_through_8259 = 0;
-+static inline void ioapic_init_mappings(void) { }
- #endif
- 
- #endif
+On Mon, Jun 23, 2008 at 6:11 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi Stephane,
+>
+> On Tue, 17 Jun 2008 15:02:22 -0700 (PDT) eranian@googlemail.com wrote:
+>>
+>> This patch adds the X86 generic perfmon2 code. It is in charge of
+>> implementing certain key functionalities required by the generic
+>> code such as read/write of the PMU registers, low-level interrupt
+>> handling.
+>
+> After applying patches 1-5, building an x86_64 allmodconfig produces
+> these errors:
+>
+> In file included from include/linux/perfmon_kern.h:167,
+>                 from arch/x86/perfmon/perfmon.c:25:
+> include/linux/perfmon_pmu.h:92: warning: 'struct pfarg_pmc' declared inside parameter list
+> include/linux/perfmon_pmu.h:92: warning: its scope is only this definition or declaration, which is probably not what you want
+> include/linux/perfmon_pmu.h:96: warning: 'struct pfarg_pmd' declared inside parameter list
+>
+> Those structures aren't defined until patch 11.
+>
+> In file included from arch/x86/perfmon/perfmon.c:25:
+> include/linux/perfmon_kern.h: In function 'pfm_copy_thread':
+> include/linux/perfmon_kern.h:199: error: 'TIF_PERFMON_CTXSW' undeclared (first use in this function)
+> arch/x86/perfmon/perfmon.c: In function 'smp_pmu_interrupt':
+> arch/x86/perfmon/perfmon.c:338: error: 'LOCAL_PERFMON_VECTOR' undeclared (first use in this function)
+> arch/x86/perfmon/perfmon.c: In function 'pfm_arch_resend_irq':
+> arch/x86/perfmon/perfmon.c:451: error: 'LOCAL_PERFMON_VECTOR' undeclared (first use in this function)
+> arch/x86/perfmon/perfmon.c: In function 'pfm_arch_pmu_acquire_percpu':
+> arch/x86/perfmon/perfmon.c:475: error: 'LOCAL_PERFMON_VECTOR' undeclared (first use in this function)
+>
+> These are not defined until patch 7.
+>
+> So I think some rearrangement is still required.
+>
+> Also, some of the x86 files that you are modifying have had their 32 and
+> 64 bit versions combined in linux-next (which is the stuff of the next
+> merge window) so just a heads up that there will be more merge work then.
+> Lastly, some of this will clash with the generic IPIs work.
+>
+> I don't want to put you off, you have done great work here, thanks.
+>
+> --
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/
+>
