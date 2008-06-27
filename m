@@ -1,222 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbYF0Reo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761557AbYF0Rf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760185AbYF0Reo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 13:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbYF0Ree
+	id S1761557AbYF0Rf3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 13:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbYF0RfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 13:34:34 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:52086 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752730AbYF0Red (ORCPT
+	Fri, 27 Jun 2008 13:35:11 -0400
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:33948 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753544AbYF0RfI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 13:34:33 -0400
-Date: Fri, 27 Jun 2008 23:03:55 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH 00/30] SMP-group balancer - take 3
-Message-ID: <20080627173355.GA11381@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20080627114109.724249622@chello.nl>
+	Fri, 27 Jun 2008 13:35:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=gz7PkUigHvpfiRNKifp/WFfAnC/pEoP6Xn3C3MN3DfP+mhO9sXQou99phRnGb8n+CzrXNpmkieanLsbIqyQ4Ka5ZhCvGTIPMBAlpVWdsbM9hxq0IWJMVjvjIC2R2cmKMcxC4JryoBT1jdOKFZWoXMgLvjkOGryvS1ukjzga6rDA=  ;
+X-YMail-OSG: KfKPR7cVM1nYo6xYgNA_3Acsy1Xr0E3UISgc_GfD7pl3DhosvjWu22S1OMWFWBoEemXOQZcOXoM_xMhdUgwtTt49qPvInLmJYk08VCaiG0_H3Tj1u7nQGSZMuJMMURMi._7HPyXRass13jAIsvQNYmzP
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH v4 4/6] dmaengine: Make DMA Engine menu visible for AVR32 users
+Date: Fri, 27 Jun 2008 09:37:21 -0700
+User-Agent: KMail/1.9.9
+Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Adrian Bunk <bunk@kernel.org>, Pierre Ossman <drzeus-list@drzeus.cx>,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       kernel@avr32linux.org, "Nelson, Shannon" <shannon.nelson@intel.com>
+References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com> <20080626164601.712bf048@hskinnemo-gx745.norway.atmel.com> <1214528379.32709.51.camel@dwillia2-linux.ch.intel.com>
+In-Reply-To: <1214528379.32709.51.camel@dwillia2-linux.ch.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080627114109.724249622@chello.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200806270937.21850.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 01:41:09PM +0200, Peter Zijlstra wrote:
-> Hi,
-> 
-> Another go at SMP fairness for group scheduling.
-> 
-> This code needs some serious testing,..
-> 
-> However on my system performance doesn't tank as much as it used to.
-> I've ran sysbench and volanomark benchmarks.
-> 
-> The machine is a Quad core (Intel Q9450) with 4GB of RAM.
-> Fedora9 - x86_64
-> 
-> sysbench-0.4.8 + postgresql-8.3.3
-> volanomark-2.5.0.9 + openjdk-1.6.0
-> 
-> I've used cgroup group scheduling.
-> 
-> cgroup:/ - means all tasks are in the root group
-> cgroup:/foo - means all tasks are in a subgroup
-> 
-> mkdir /cgroup/foo
-> for i in `cat /cgroup/tasks`; do
->   echo $i > /cgroup/foo/tasks
-> done
-> 
-> The patches are against: tip/auto-sched-next of a few days ago.
-> 
-> ---
-> 
-> .25
-> 
-> [root@twins sysbench-0.4.8]# ./doit-psql-256-60sec 
->   1:     transactions:                        50514  (841.90 per sec.)
->   2:     transactions:                        98745  (1645.73 per sec.)
->   4:     transactions:                        192682 (3211.31 per sec.)
->   8:     transactions:                        192082 (3201.26 per sec.)
->  16:     transactions:                        188891 (3147.95 per sec.)
->  32:     transactions:                        182364 (3039.12 per sec.)
->  64:     transactions:                        169412 (2822.94 per sec.)
-> 128:     transactions:                        139505 (2323.95 per sec.)
-> 256:     transactions:                        131516 (2188.98 per sec.)
-> 
-> [root@twins vmark]# LOOP_CLIENT_COUNT=1000 ./loopclient.sh 2>&1 | grep Average
-> Average throughput = 113350 messages per second
-> Average throughput = 112230 messages per second
-> Average throughput = 113125 messages per second
-> 
-> 
-> .26-rc
-> 
-> cgroup:/
-> 
-> [root@twins sysbench-0.4.8]# ./doit-psql-256-60sec 
->   1:     transactions:                        50553  (842.54 per sec.)
->   2:     transactions:                        98625  (1643.74 per sec.)
->   4:     transactions:                        191351 (3189.12 per sec.)
->   8:     transactions:                        193525 (3225.32 per sec.)
->  16:     transactions:                        190516 (3175.10 per sec.)
->  32:     transactions:                        186914 (3114.96 per sec.)
->  64:     transactions:                        178940 (2981.78 per sec.)
-> 128:     transactions:                        156430 (2606.00 per sec.)
-> 256:     transactions:                        134929 (2246.63 per sec.)
-> 
-> [root@twins vmark]# LOOP_CLIENT_COUNT=1000 ./loopclient.sh 2>&1 | grep Average
-> Average throughput = 124089 messages per second
-> Average throughput = 121962 messages per second
-> Average throughput = 121223 messages per second
-> 
-> 
-> cgroup:/foo
-> 
-> [root@twins sysbench-0.4.8]# ./doit-psql-256-60sec 
->   1:     transactions:                        50246  (837.43 per sec.)
->   2:     transactions:                        97466  (1624.41 per sec.)
->   4:     transactions:                        179609 (2993.43 per sec.)
->   8:     transactions:                        190931 (3182.07 per sec.)
->  16:     transactions:                        189882 (3164.50 per sec.)
->  32:     transactions:                        184649 (3077.14 per sec.)
->  64:     transactions:                        178200 (2969.46 per sec.)
-> 128:     transactions:                        158835 (2646.14 per sec.)
-> 256:     transactions:                        142100 (2366.51 per sec.)
-> 
-> [root@twins vmark]# LOOP_CLIENT_COUNT=1000 ./loopclient.sh 2>&1 | grep Average
-> Average throughput = 117789 messages per second
-> Average throughput = 118154 messages per second
-> Average throughput = 118945 messages per second
-> 
-> 
-> .26-rc-smp-group
-> 
-> cgroup:/
-> 
-> [root@twins sysbench-0.4.8]# ./doit-psql-256-60sec 
->   1:     transactions:                        50137  (835.61 per sec.)
->   2:     transactions:                        97406  (1623.41 per sec.)
->   4:     transactions:                        170755 (2845.88 per sec.)
->   8:     transactions:                        187406 (3123.35 per sec.)
->  16:     transactions:                        186865 (3114.18 per sec.)
->  32:     transactions:                        183559 (3059.03 per sec.)
->  64:     transactions:                        176834 (2946.70 per sec.)
-> 128:     transactions:                        158882 (2647.04 per sec.)
-> 256:     transactions:                        145081 (2415.81 per sec.)
-> 
-> [root@twins vmark]# LOOP_CLIENT_COUNT=1000 ./loopclient.sh 2>&1 | grep Average
-> Average throughput = 121499 messages per second
-> Average throughput = 120181 messages per second
-> Average throughput = 119775 messages per second
-> 
-> 
-> cgroup:/foo
-> 
-> [root@twins sysbench-0.4.8]# ./doit-psql-256-60sec 
->   1:     transactions:                        49564  (826.06 per sec.)
->   2:     transactions:                        96642  (1610.67 per sec.)
->   4:     transactions:                        183081 (3051.29 per sec.)
->   8:     transactions:                        187553 (3125.79 per sec.)
->  16:     transactions:                        185435 (3090.45 per sec.)
->  32:     transactions:                        182314 (3038.25 per sec.)
->  64:     transactions:                        174527 (2908.22 per sec.)
-> 128:     transactions:                        159321 (2654.24 per sec.)
-> 256:     transactions:                        140167 (2333.82 per sec.)
-> 
-> [root@twins vmark]# LOOP_CLIENT_COUNT=1000 ./loopclient.sh 2>&1 | grep Average
-> Average throughput = 130208 messages per second
-> Average throughput = 129086 messages per second
-> Average throughput = 129362 messages per second
+On Thursday 26 June 2008, Dan Williams wrote:
+> I agree with removing the arch dependency, and I do not think we
+> necessarily need to add HAVE_DMA_ENGINE.
 
-Some fairness numbers from tip/master
+I think a HAVE_DMA_ENGINE would be better than what you're doing
+below:  moving the arch dependency into the network code, and
+adding this !HIGHMEM64G thing (which is really just a more subtle
+arch dependency).
 
-kernel compiles with even number of threads
-/cgroup/a
-[dhaval@mordor a]$ time make -j8
-real    1m53.033s
-user    1m28.785s
-sys     0m22.224s
+Note that HAS_DMA is very different from having DMA engine support...
+one is a specific interface, the other is the generic mechanism with
+any of its numerous (and often peripheral-specific) interfaces.
 
-/cgroup/b
-[dhaval@mordor b]$ time make -j16
-real    1m51.826s
-user    1m29.022s
-sys     0m21.911s
 
-kernel compile with odd number of threads
-/cgroup/a
-[dhaval@mordor a]$ time make -j7
-real    1m49.441s
-user    1m26.962s
-sys     0m21.698s
+> Taking an example from libata 
+> the SATA_FSL driver depends on FSL_SOC but the menuconfig for ATA does
+> not.  We can use "depends on HAS_DMA" to make the menu disappear on
+> archs that will never have a dmaegine.  So I propose the following:
+> 
+> diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+> index 6239c3d..e4dd006 100644
+> --- a/drivers/dma/Kconfig
+> +++ b/drivers/dma/Kconfig
+> @@ -4,13 +4,14 @@
+>  
+>  menuconfig DMADEVICES
+>  	bool "DMA Engine support"
+> -	depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX || PPC
+> -	depends on !HIGHMEM64G
+> +	depends on !HIGHMEM64G && HAS_DMA
+>  	help
+>  	  DMA engines can do asynchronous data transfers without
+>  	  involving the host CPU.  Currently, this framework can be
+>  	  used to offload memory copies in the network stack and
+> -	  RAID operations in the MD driver.
+> +	  RAID operations in the MD driver.  This menu only presents
+> +	  DMA Device drivers supported by the configured arch, it may
+> +	  be empty in some cases.
+>  
+>  if DMADEVICES
+>  
+> @@ -55,10 +56,12 @@ comment "DMA Clients"
+>  config NET_DMA
+>  	bool "Network: TCP receive copy offload"
+>  	depends on DMA_ENGINE && NET
+> +	default (INTEL_IOATDMA || FSL_DMA)
+>  	help
+>  	  This enables the use of DMA engines in the network stack to
+>  	  offload receive copy-to-user operations, freeing CPU cycles.
+> -	  Since this is the main user of the DMA engine, it should be enabled;
+> -	  say Y here.
+> +
+> +	  Say Y here if you enabled INTEL_IOATDMA or FSL_DMA, otherwise
+> +	  say N.
+>  
+>  endif
+> 
+> 
+> 
 
-/cgroup/b
-[dhaval@mordor b]$ time make -j13
-real    1m50.418s
-user    1m26.888s
-sys     0m21.508s
 
-Running infinite loops in parallel (5 in one group, 2 in another)
-
-8789 - 8793 belong to /cgroup/a
-8794, 8795 belong /cgroup/b
-
-When we start.
-
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND           
- 8795 dhaval    20   0  1720  264  212 R 54.6  0.0   0:06.31 test              
- 8794 dhaval    20   0  1720  264  212 R 45.6  0.0   0:06.91 test              
- 8790 dhaval    20   0  1720  264  212 R 23.0  0.0   0:07.29 test              
- 8789 dhaval    20   0  1720  260  212 R 22.6  0.0   0:07.80 test              
- 8791 dhaval    20   0  1720  264  212 R 18.3  0.0   0:07.28 test              
- 8792 dhaval    20   0  1720  260  212 R 18.3  0.0   0:07.01 test              
- 8793 dhaval    20   0  1720  260  212 R 18.0  0.0   0:06.93 test              
-
-After sometime
-
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND           
- 8794 dhaval    20   0  1720  264  212 R 49.9  0.0   0:46.98 test              
- 8795 dhaval    20   0  1720  264  212 R 49.9  0.0   0:52.61 test              
- 8793 dhaval    20   0  1720  260  212 R 20.3  0.0   0:24.96 test              
- 8789 dhaval    20   0  1720  260  212 R 20.0  0.0   0:24.83 test              
- 8790 dhaval    20   0  1720  264  212 R 20.0  0.0   0:24.32 test              
- 8791 dhaval    20   0  1720  264  212 R 20.0  0.0   0:23.29 test              
- 8792 dhaval    20   0  1720  260  212 R 20.0  0.0   0:25.04 test              
-
-But these numbers are not very stable. Also it takes a long time (~1min)
-to converge here.
-
-The results look really good though.
-
--- 
-regards,
-Dhaval
