@@ -1,177 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760066AbYF0G4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759426AbYF0G4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760066AbYF0G4V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 02:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbYF0GvE
+	id S1759426AbYF0G4m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 02:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758631AbYF0GvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 02:51:04 -0400
-Received: from mx2.suse.de ([195.135.220.15]:43218 "EHLO mx2.suse.de"
+	Fri, 27 Jun 2008 02:51:08 -0400
+Received: from ns1.suse.de ([195.135.220.2]:46810 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753965AbYF0Gu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 02:50:58 -0400
+	id S1757060AbYF0GvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 02:51:05 -0400
 From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 27 Jun 2008 16:50:50 +1000
-Message-Id: <1080627065050.10526@suse.de>
+Date: Fri, 27 Jun 2008 16:50:57 +1000
+Message-Id: <1080627065057.10543@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 014 of 29] md: Make sure all changes to md/array_state are notified.
+Subject: [PATCH 015 of 29] md: Make sure all changes to md/sync_action are notified.
 References: <20080627164503.9671.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Changes in md/array_state could be of interest to a monitoring
-program.  So make sure all changes trigger a notification.
+When the 'resync' thread starts or stops, when we explicitly
+set sync_action, or when we determine that there is definitely nothing
+to do, we notify sync_action.
 
-Exceptions:
-   changing active_idle to active is not reported because it
-      is frequent and not interesting.
-   changing active to active_idle is only reported on arrays
-      with externally managed metadata, as it is not interesting
-      otherwise.
-      
+To stop "sync_action" from occasionally showing the wrong value,
+we introduce a new flags - MD_RECOVERY_RECOVER - to say that a 
+recovery is probably needed or happening, and we make sure
+that we set MD_RECOVERY_RUNNING before clearing MD_RECOVERY_NEEDED.
+
 Signed-off-by: Neil Brown <neilb@suse.de>
 
 ### Diffstat output
- ./Documentation/md.txt |    5 +++++
- ./drivers/md/md.c      |   29 ++++++++++++++++++++++++-----
- 2 files changed, 29 insertions(+), 5 deletions(-)
+ ./Documentation/md.txt      |    6 ++++++
+ ./drivers/md/md.c           |   34 ++++++++++++++++++++++++++++------
+ ./include/linux/raid/md_k.h |    2 ++
+ 3 files changed, 36 insertions(+), 6 deletions(-)
 
 diff .prev/Documentation/md.txt ./Documentation/md.txt
---- .prev/Documentation/md.txt	2008-06-27 16:20:34.000000000 +1000
-+++ ./Documentation/md.txt	2008-06-27 16:22:01.000000000 +1000
-@@ -236,6 +236,11 @@ All md devices contain:
-      writing the word for the desired state, however some states
-      cannot be explicitly set, and some transitions are not allowed.
+--- .prev/Documentation/md.txt	2008-06-27 16:22:01.000000000 +1000
++++ ./Documentation/md.txt	2008-06-27 16:22:02.000000000 +1000
+@@ -386,6 +386,12 @@ also have
+ 	'check' and 'repair' will start the appropriate process
+            providing the current state is 'idle'.
  
-+     Select/poll works on this file.  All changes except between
-+     	active_idle and active (which can be frequent and are not
-+	very interesting) are notified.  active->active_idle is
-+	reported if the metadata is externally managed.
++      This file responds to select/poll.  Any important change in the value
++      triggers a poll event.  Sometimes the value will briefly be
++      "recover" if a recovery seems to be needed, but cannot be
++      achieved. In that case, the transition to "recover" isn't
++      notified, but the transition away is.
 +
-      clear
-          No devices, no size, no level
-          Writing is equivalent to STOP_ARRAY ioctl
+    mismatch_count
+       When performing 'check' and 'repair', and possibly when
+       performing 'resync', md will count the number of errors that are
 
 diff .prev/drivers/md/md.c ./drivers/md/md.c
 --- .prev/drivers/md/md.c	2008-06-27 16:22:01.000000000 +1000
-+++ ./drivers/md/md.c	2008-06-27 16:22:01.000000000 +1000
-@@ -2716,8 +2716,10 @@ array_state_store(mddev_t *mddev, const 
- 	}
- 	if (err)
- 		return err;
--	else
-+	else {
-+		sysfs_notify(&mddev->kobj, NULL, "array_state");
- 		return len;
-+	}
- }
- static struct md_sysfs_entry md_array_state =
- __ATTR(array_state, S_IRUGO|S_IWUSR, array_state_show, array_state_store);
-@@ -3408,7 +3410,11 @@ static void md_safemode_timeout(unsigned
++++ ./drivers/md/md.c	2008-06-27 16:22:02.000000000 +1000
+@@ -169,7 +169,6 @@ void md_new_event(mddev_t *mddev)
  {
- 	mddev_t *mddev = (mddev_t *) data;
+ 	atomic_inc(&md_event_count);
+ 	wake_up(&md_event_waiters);
+-	sysfs_notify(&mddev->kobj, NULL, "sync_action");
+ }
+ EXPORT_SYMBOL_GPL(md_new_event);
  
--	mddev->safemode = 1;
-+	if (!atomic_read(&mddev->writes_pending)) {
-+		mddev->safemode = 1;
-+		if (mddev->external)
-+			sysfs_notify(&mddev->kobj, NULL, "array_state");
-+	}
+@@ -2936,7 +2935,7 @@ action_show(mddev_t *mddev, char *page)
+ 				type = "check";
+ 			else
+ 				type = "repair";
+-		} else
++		} else if (test_bit(MD_RECOVERY_RECOVER, &mddev->recovery))
+ 			type = "recover";
+ 	}
+ 	return sprintf(page, "%s\n", type);
+@@ -2958,9 +2957,12 @@ action_store(mddev_t *mddev, const char 
+ 	} else if (test_bit(MD_RECOVERY_RUNNING, &mddev->recovery) ||
+ 		   test_bit(MD_RECOVERY_NEEDED, &mddev->recovery))
+ 		return -EBUSY;
+-	else if (cmd_match(page, "resync") || cmd_match(page, "recover"))
++	else if (cmd_match(page, "resync"))
++		set_bit(MD_RECOVERY_NEEDED, &mddev->recovery);
++	else if (cmd_match(page, "recover")) {
++		set_bit(MD_RECOVERY_RECOVER, &mddev->recovery);
+ 		set_bit(MD_RECOVERY_NEEDED, &mddev->recovery);
+-	else if (cmd_match(page, "reshape")) {
++	} else if (cmd_match(page, "reshape")) {
+ 		int err;
+ 		if (mddev->pers->start_reshape == NULL)
+ 			return -EINVAL;
+@@ -2977,6 +2979,7 @@ action_store(mddev_t *mddev, const char 
+ 	}
+ 	set_bit(MD_RECOVERY_NEEDED, &mddev->recovery);
  	md_wakeup_thread(mddev->thread);
++	sysfs_notify(&mddev->kobj, NULL, "sync_action");
+ 	return len;
  }
  
-@@ -3675,6 +3681,7 @@ static int do_md_run(mddev_t * mddev)
- 
+@@ -3682,6 +3685,7 @@ static int do_md_run(mddev_t * mddev)
  	mddev->changed = 1;
  	md_new_event(mddev);
-+	sysfs_notify(&mddev->kobj, NULL, "array_state");
+ 	sysfs_notify(&mddev->kobj, NULL, "array_state");
++	sysfs_notify(&mddev->kobj, NULL, "sync_action");
  	kobject_uevent(&mddev->gendisk->dev.kobj, KOBJ_CHANGE);
  	return 0;
  }
-@@ -3709,6 +3716,8 @@ static int restart_array(mddev_t *mddev)
- 		md_wakeup_thread(mddev->thread);
- 		md_wakeup_thread(mddev->sync_thread);
- 		err = 0;
-+		sysfs_notify(&mddev->kobj, NULL, "array_state");
-+
- 	} else
- 		err = -EINVAL;
+@@ -4252,6 +4256,8 @@ static int add_new_disk(mddev_t * mddev,
+ 			export_rdev(rdev);
  
-@@ -3879,6 +3888,7 @@ static int do_md_stop(mddev_t * mddev, i
- 			mdname(mddev));
- 	err = 0;
- 	md_new_event(mddev);
-+	sysfs_notify(&mddev->kobj, NULL, "array_state");
- out:
- 	return err;
- }
-@@ -4876,8 +4886,9 @@ static int md_ioctl(struct inode *inode,
- 	    mddev->ro && mddev->pers) {
- 		if (mddev->ro == 2) {
- 			mddev->ro = 0;
--		set_bit(MD_RECOVERY_NEEDED, &mddev->recovery);
--		md_wakeup_thread(mddev->thread);
-+			sysfs_notify(&mddev->kobj, NULL, "array_state");
-+			set_bit(MD_RECOVERY_NEEDED, &mddev->recovery);
-+			md_wakeup_thread(mddev->thread);
- 
- 		} else {
- 			err = -EROFS;
-@@ -5516,6 +5527,7 @@ void md_done_sync(mddev_t *mddev, int bl
-  */
- void md_write_start(mddev_t *mddev, struct bio *bi)
- {
-+	int did_change = 0;
- 	if (bio_data_dir(bi) != WRITE)
- 		return;
- 
-@@ -5526,6 +5538,7 @@ void md_write_start(mddev_t *mddev, stru
+ 		md_update_sb(mddev, 1);
++		if (mddev->degraded)
++			set_bit(MD_RECOVERY_RECOVER, &mddev->recovery);
  		set_bit(MD_RECOVERY_NEEDED, &mddev->recovery);
  		md_wakeup_thread(mddev->thread);
- 		md_wakeup_thread(mddev->sync_thread);
-+		did_change = 1;
- 	}
- 	atomic_inc(&mddev->writes_pending);
- 	if (mddev->safemode == 1)
-@@ -5536,10 +5549,12 @@ void md_write_start(mddev_t *mddev, stru
- 			mddev->in_sync = 0;
- 			set_bit(MD_CHANGE_CLEAN, &mddev->flags);
- 			md_wakeup_thread(mddev->thread);
-+			did_change = 1;
+ 		return err;
+@@ -5105,6 +5111,8 @@ void md_error(mddev_t *mddev, mdk_rdev_t
+ 	if (!mddev->pers->error_handler)
+ 		return;
+ 	mddev->pers->error_handler(mddev,rdev);
++	if (mddev->degraded)
++		set_bit(MD_RECOVERY_RECOVER, &mddev->recovery);
+ 	set_bit(MD_RECOVERY_INTR, &mddev->recovery);
+ 	set_bit(MD_RECOVERY_NEEDED, &mddev->recovery);
+ 	md_wakeup_thread(mddev->thread);
+@@ -6055,13 +6063,18 @@ void md_check_recovery(mddev_t *mddev)
+ 			mddev->recovery = 0;
+ 			/* flag recovery needed just to double check */
+ 			set_bit(MD_RECOVERY_NEEDED, &mddev->recovery);
++			sysfs_notify(&mddev->kobj, NULL, "sync_action");
+ 			md_new_event(mddev);
+ 			goto unlock;
  		}
- 		spin_unlock_irq(&mddev->write_lock);
--		sysfs_notify(&mddev->kobj, NULL, "array_state");
- 	}
-+	if (did_change)
-+		sysfs_notify(&mddev->kobj, NULL, "array_state");
- 	wait_event(mddev->sb_wait,
- 		   !test_bit(MD_CHANGE_CLEAN, &mddev->flags) &&
- 		   !test_bit(MD_CHANGE_PENDING, &mddev->flags));
-@@ -5991,18 +6006,22 @@ void md_check_recovery(mddev_t *mddev)
- 		int spares = 0;
++		/* Set RUNNING before clearing NEEDED to avoid
++		 * any transients in the value of "sync_action".
++		 */
++		set_bit(MD_RECOVERY_RUNNING, &mddev->recovery);
++		clear_bit(MD_RECOVERY_NEEDED, &mddev->recovery);
+ 		/* Clear some bits that don't mean anything, but
+ 		 * might be left set
+ 		 */
+-		clear_bit(MD_RECOVERY_NEEDED, &mddev->recovery);
+ 		clear_bit(MD_RECOVERY_INTR, &mddev->recovery);
+ 		clear_bit(MD_RECOVERY_DONE, &mddev->recovery);
  
- 		if (!mddev->external) {
-+			int did_change = 0;
- 			spin_lock_irq(&mddev->write_lock);
- 			if (mddev->safemode &&
- 			    !atomic_read(&mddev->writes_pending) &&
- 			    !mddev->in_sync &&
- 			    mddev->recovery_cp == MaxSector) {
- 				mddev->in_sync = 1;
-+				did_change = 1;
- 				if (mddev->persistent)
- 					set_bit(MD_CHANGE_CLEAN, &mddev->flags);
- 			}
- 			if (mddev->safemode == 1)
- 				mddev->safemode = 0;
- 			spin_unlock_irq(&mddev->write_lock);
-+			if (did_change)
-+				sysfs_notify(&mddev->kobj, NULL, "array_state");
+@@ -6079,17 +6092,19 @@ void md_check_recovery(mddev_t *mddev)
+ 				/* Cannot proceed */
+ 				goto unlock;
+ 			set_bit(MD_RECOVERY_RESHAPE, &mddev->recovery);
++			clear_bit(MD_RECOVERY_RECOVER, &mddev->recovery);
+ 		} else if ((spares = remove_and_add_spares(mddev))) {
+ 			clear_bit(MD_RECOVERY_SYNC, &mddev->recovery);
+ 			clear_bit(MD_RECOVERY_CHECK, &mddev->recovery);
++			set_bit(MD_RECOVERY_RECOVER, &mddev->recovery);
+ 		} else if (mddev->recovery_cp < MaxSector) {
+ 			set_bit(MD_RECOVERY_SYNC, &mddev->recovery);
++			clear_bit(MD_RECOVERY_RECOVER, &mddev->recovery);
+ 		} else if (!test_bit(MD_RECOVERY_SYNC, &mddev->recovery))
+ 			/* nothing to be done ... */
+ 			goto unlock;
+ 
+ 		if (mddev->pers->sync_request) {
+-			set_bit(MD_RECOVERY_RUNNING, &mddev->recovery);
+ 			if (spares && mddev->bitmap && ! mddev->bitmap->file) {
+ 				/* We are adding a device or devices to an array
+ 				 * which has the bitmap stored on all devices.
+@@ -6108,9 +6123,16 @@ void md_check_recovery(mddev_t *mddev)
+ 				mddev->recovery = 0;
+ 			} else
+ 				md_wakeup_thread(mddev->sync_thread);
++			sysfs_notify(&mddev->kobj, NULL, "sync_action");
+ 			md_new_event(mddev);
  		}
- 
- 		if (mddev->flags)
+ 	unlock:
++		if (!mddev->sync_thread) {
++			clear_bit(MD_RECOVERY_RUNNING, &mddev->recovery);
++			if (test_and_clear_bit(MD_RECOVERY_RECOVER,
++					       &mddev->recovery))
++				sysfs_notify(&mddev->kobj, NULL, "sync_action");
++		}
+ 		mddev_unlock(mddev);
+ 	}
+ }
+
+diff .prev/include/linux/raid/md_k.h ./include/linux/raid/md_k.h
+--- .prev/include/linux/raid/md_k.h	2008-06-27 16:20:34.000000000 +1000
++++ ./include/linux/raid/md_k.h	2008-06-27 16:22:02.000000000 +1000
+@@ -188,6 +188,7 @@ struct mddev_s
+ 	 * NEEDED:   we might need to start a resync/recover
+ 	 * RUNNING:  a thread is running, or about to be started
+ 	 * SYNC:     actually doing a resync, not a recovery
++	 * RECOVER:  doing recovery, or need to try it.
+ 	 * INTR:     resync needs to be aborted for some reason
+ 	 * DONE:     thread is done and is waiting to be reaped
+ 	 * REQUEST:  user-space has requested a sync (used with SYNC)
+@@ -198,6 +199,7 @@ struct mddev_s
+ 	 */
+ #define	MD_RECOVERY_RUNNING	0
+ #define	MD_RECOVERY_SYNC	1
++#define	MD_RECOVERY_RECOVER	2
+ #define	MD_RECOVERY_INTR	3
+ #define	MD_RECOVERY_DONE	4
+ #define	MD_RECOVERY_NEEDED	5
