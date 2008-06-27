@@ -1,51 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758810AbYF0SY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762784AbYF0S0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758810AbYF0SY6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 14:24:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760253AbYF0SYs
+	id S1762784AbYF0S0H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 14:26:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759082AbYF0SZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 14:24:48 -0400
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:30362 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752587AbYF0SYr (ORCPT
+	Fri, 27 Jun 2008 14:25:50 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11697 "EHLO
+	phenom.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753304AbYF0SZt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 14:24:47 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=NQpK3YyoVBxPmcSPts7okVkrlQxPMTqN6OYW5tXHtKCxMzHcSC8ssm1rjyy+aLiPICDqNrODIWnZnC1avWbfHQyQwjAAd+L+nWhnC40pBDAG9z71zxJQUdKxsV5eHYemFl93stueTvPabDTutNwEozrxU5w6nRiEhB13sXiyqY4=  ;
-X-YMail-OSG: rJm1vFgVM1lRQbmXha9oMCVpyd_GVUFNRhnWGdwAjYGrfB6tWQlQEhngyZUteXouiwNUazM4tnpwXKZREiXqMPuGtott9mk1HbwQKwD8ydxRroOT7a2Wo7S1Kxw3JEnHbcg-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH v4 4/6] dmaengine: Make DMA Engine menu visible for AVR32 users
-Date: Fri, 27 Jun 2008 11:24:42 -0700
-User-Agent: KMail/1.9.9
-Cc: Dan Williams <dan.j.williams@intel.com>,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Pierre Ossman <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, kernel@avr32linux.org,
-       "Nelson, Shannon" <shannon.nelson@intel.com>
-References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com> <200806270937.21850.david-b@pacbell.net> <20080627174441.GB4306@cs181140183.pp.htv.fi>
-In-Reply-To: <20080627174441.GB4306@cs181140183.pp.htv.fi>
+	Fri, 27 Jun 2008 14:25:49 -0400
+Date: Fri, 27 Jun 2008 12:13:53 -0600
+From: dougthompson@xmission.com
+To: bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH 13/13] EDAC mv64x60 add pci fixup
+Message-ID: <48652de1.0FvaYuYNBPqHXodM%dougthompson@xmission.com>
+User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806271124.42783.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 June 2008, Adrian Bunk wrote:
-> The only effect of the HAVE_DMA_ENGINE would be to not show an empty 
-> kconfig menu.
+Fixup of missing bit 0 on 64360 PCIx_ERR_MASK and errata FEr-#11 and FEr-#16
+for the 64460. Bit 0 must remain 0.
 
-Well, no.  It would also make the network layer memcpy "acceleration"
-option unavailable when there was no underlying engine ... similarly
-with other pointless "we don't have that subsystem here" options.
+Signed-off-by: Dave Jiang <djiang@mvista.com>
 
-Plus it would help ensure that the arch dependencies are comprehenible,
-unlike that highmem thing.
-
+Index: 2.6.26-rc5-mm3/drivers/edac/mv64x60_edac.c
+===================================================================
+--- 2.6.26-rc5-mm3.orig/drivers/edac/mv64x60_edac.c
++++ 2.6.26-rc5-mm3/drivers/edac/mv64x60_edac.c
+@@ -71,6 +71,35 @@ static irqreturn_t mv64x60_pci_isr(int i
+ 	return IRQ_HANDLED;
+ }
+ 
++/*
++ * Bit 0 of MV64x60_PCIx_ERR_MASK does not exist on the 64360 and because of
++ * errata FEr-#11 and FEr-##16 for the 64460, it should be 0 on that chip as
++ * well.  IOW, don't set bit 0.
++ */
++
++/* Erratum FEr PCI-#16: clear bit 0 of PCI SERRn Mask reg. */
++static int __init mv64x60_pci_fixup(struct platform_device *pdev)
++{
++	struct resource *r;
++	void __iomem *pci_serr;
++
++	r = platform_get_resource(pdev, IORESOURCE_MEM, 1);
++	if (!r) {
++		printk(KERN_ERR "%s: Unable to get resource for "
++		       "PCI err regs\n", __func__);
++		return -ENOENT;
++	}
++
++	pci_serr = ioremap(r->start, r->end - r->start + 1);
++	if (!pci_serr)
++		return -ENOMEM;
++
++	out_le32(pci_serr, in_le32(pci_serr) & ~0x1);
++	iounmap(pci_serr);
++
++	return 0;
++}
++
+ static int __devinit mv64x60_pci_err_probe(struct platform_device *pdev)
+ {
+ 	struct edac_pci_ctl_info *pci;
+@@ -128,6 +157,12 @@ static int __devinit mv64x60_pci_err_pro
+ 		goto err;
+ 	}
+ 
++	res = mv64x60_pci_fixup(pdev);
++	if (res < 0) {
++		printk(KERN_ERR "%s: PCI fixup failed\n", __func__);
++		goto err;
++	}
++
+ 	out_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_CAUSE, 0);
+ 	out_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_MASK, 0);
+ 	out_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_MASK,
