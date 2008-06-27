@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764101AbYF0VGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762341AbYF0VHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764101AbYF0VGy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 17:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763890AbYF0VGm
+	id S1762341AbYF0VHW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 17:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764120AbYF0VG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 17:06:42 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:42228 "EHLO pasmtpA.tele.dk"
+	Fri, 27 Jun 2008 17:06:58 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:58251 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764049AbYF0VGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 17:06:41 -0400
-Date: Fri, 27 Jun 2008 23:07:27 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>, linux-kbuild@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kbuild: sparse needs CF not CHECKFLAGS
-Message-ID: <20080627210727.GD29245@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0806201542200.27182@vixen.sonytel.be>
-Mime-Version: 1.0
+	id S1764115AbYF0VG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 17:06:57 -0400
+Date: Fri, 27 Jun 2008 16:06:56 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/4] security: filesystem capabilities no longer
+	experimental
+Message-ID: <20080627210656.GD17415@us.ibm.com>
+References: <4863584A.9030301@kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806201542200.27182@vixen.sonytel.be>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <4863584A.9030301@kernel.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 20, 2008 at 03:45:12PM +0200, Geert Uytterhoeven wrote:
-> Documentation/sparse.txt tells to use:
-> 
->     make C=2 CHECKFLAGS="-D__CHECK_ENDIAN__"
-> 
-> However, this still doesn't enable endian checks. The correct syntax is:
-> 
->     make C=2 CF="-D__CHECK_ENDIAN__"
-> 
-> This documentation bug was introduced by the following commit:
-> 
->     commit 1c7bafe7206d928eaccbcbd08d868733e0fb7054
->     Author: Robert P. J. Day <rpjday@mindspring.com>
->     Date:   Wed Sep 13 07:57:50 2006 -0400
-> 
-> 	kbuild: clarify "make C=" build option
-> 	    
-> 	Clarify the use of "make C=" in the top-level Makefile, and fix a
-> 	typo in the Documentation file.
-> 
-> 	Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> 
-> This `typo' was not a typo, as `CF' had been introduced much earlier, by:
-> 
->     commit 7b49bb9aff8b14d15da58111d8908c877c0a525e
->     Author: viro@ZenIV.linux.org.uk <viro@ZenIV.linux.org.uk>
->     Date:   Fri Sep 9 21:14:35 2005 +0100
-> 
-> 	[PATCH] kbuild: CF=<arguments> passes arguments to sparse
-> 	
-> 	Allows to add to sparse arguments without mutilating makefiles - just
-> 	pass CF=<arguments> and they will be added to CHECKFLAGS.
->     
->     Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
->     Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Quoting Andrew G. Morgan (morgan@kernel.org):
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+>
+> It is time to drop the experimental tag.
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.2.6 (GNU/Linux)
+>
+> iD8DBQFIY1hK+bHCR3gb8jsRAnl4AKDBkfuW/XfiCIPcoVX3FIT6Ctl0cACbBfH4
+> pGbRuQD7OLrALAk4WLr/rB8=
+> =GZsK
+> -----END PGP SIGNATURE-----
 
-Applied
+> From 4eefa8e670c4fa4c1c4454302f585eef9f46b74b Mon Sep 17 00:00:00 2001
+> From: Andrew G. Morgan <morgan@kernel.org>
+> Date: Wed, 25 Jun 2008 23:33:11 -0700
+> Subject: [PATCH] Filesystem capabilities have come of age.
+> 
+> Remove the experimental tag for configuring filesystem capabilities.
+> 
+> Signed-off-by: Andrew G. Morgan <morgan@kernel.org>
 
-	Sam
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+
+> ---
+>  security/Kconfig |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/security/Kconfig b/security/Kconfig
+> index 49b51f9..9d5b806 100644
+> --- a/security/Kconfig
+> +++ b/security/Kconfig
+> @@ -82,8 +82,8 @@ config SECURITY_CAPABILITIES
+>  	  If you are unsure how to answer this question, answer Y.
+>  
+>  config SECURITY_FILE_CAPABILITIES
+> -	bool "File POSIX Capabilities (EXPERIMENTAL)"
+> -	depends on (SECURITY=n || SECURITY_CAPABILITIES!=n) && EXPERIMENTAL
+> +	bool "File POSIX Capabilities"
+> +	depends on SECURITY=n || SECURITY_CAPABILITIES!=n
+>  	default n
+>  	help
+>  	  This enables filesystem capabilities, allowing you to give
+> -- 
+> 1.5.3.7
+> 
+
