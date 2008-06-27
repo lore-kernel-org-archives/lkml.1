@@ -1,242 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759553AbYF0MlM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758741AbYF0MnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759553AbYF0MlM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 08:41:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbYF0Mk5
+	id S1758741AbYF0MnA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 08:43:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754830AbYF0Mmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 08:40:57 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:17955 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750708AbYF0Mk4 (ORCPT
+	Fri, 27 Jun 2008 08:42:51 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:44715 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753691AbYF0Mmt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 08:40:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=KR2QB8j1EpH7IrT8+3EZgR3BBkhvL2BQyr6BHfRbKsaBVaCDGGsoD+4H7MHzHwXJ0x
-         XD91FcVOxGx4YrF+iVe0Aw6SgQWFqVXZJpEnMmRAdGb04LB5x8xSY2tJy1B5Q/wieuc8
-         AWX/SiI4VniTzz3d2wloZAiYzHh9jG18sR/28=
-Message-ID: <4864DFD2.60508@gmail.com>
-Date: Fri, 27 Jun 2008 05:40:50 -0700
-From: "nkalmala@gmail.com" <nkalmala@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Fri, 27 Jun 2008 08:42:49 -0400
+Message-ID: <4864E043.5030706@linux.vnet.ibm.com>
+Date: Fri, 27 Jun 2008 18:12:43 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: akpm@linux-foundation.org, rusty@rustcorp.com.au
-Subject: [patch] experimental: try-resolve-unexported-symbol-references-in-modules
-Content-Type: text/plain; charset=ISO-8859-1
+To: David Woodhouse <david.woodhouse@intel.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kernel-testers@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Jaswinder Singh <jaswinder@infradead.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: linux-next: Tree for June 26
+References: <20080627010842.e1a0c4b5.sfr@canb.auug.org.au> <200806270138.53895.rjw@sisk.pl> <1214563913.10393.180.camel@pmac.infradead.org>
+In-Reply-To: <1214563913.10393.180.camel@pmac.infradead.org>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For purely experimental purposes, let the kernel resolve unexported-symbol references
-in external modules when loading them. Iff used carefully, this helps save time on 
-development cycles. building testing experimenting certain kinds of changes becomes 
-really fast.
+David Woodhouse wrote:
+> On Fri, 2008-06-27 at 01:38 +0200, Rafael J. Wysocki wrote:
+>> commit 423c982fffb1cd95c8cdd654ce5ab59351ba41f5
+>> Author: Jaswinder Singh <jaswinder@infradead.org>
+>> Date:   Wed Jun 18 19:58:33 2008 +0530
+>>
+>>     firmware: convert tg3 driver to request_firmware()
+>>
+>> breaks my nx6325.
+>>
+>> Apparently, with this patch applied the tg3 has a NULL pointer dereference
+>> somewhere, but I can only see the first line of the oops, afterwards the box
+>> hangs solid.
+> 
+> That's a 5705, isn't it? So using the 'tso5' firmware?
+> 
+> Is that firmware available (did you either build it into your kernel, or
+> run 'make INSTALL_FW_PATH=/lib/firmware firmware_install')? 
+> 
+> Not that it matters; I suspect the driver isn't trying to load it at
+> all. Can you test this patch, please?
+> 
+> (There are more cleanups I want to do to the error paths here, but those
+> should be harmless and irrelevant: http://david.woodhou.se/tg3.patch )
+> 
+> diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
+> index a70147d..bad784b 100644
+> --- a/drivers/net/tg3.c
+> +++ b/drivers/net/tg3.c
+> @@ -12234,11 +12234,6 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+> 
+>  	if (tp->tg3_flags2 & TG3_FLG2_HW_TSO) {
+>  		tp->tg3_flags2 |= TG3_FLG2_TSO_CAPABLE;
+> -
+> -		if (GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5705)
+> -			fw_name = "tigon/tg3_tso5.bin";
+> -		else
+> -			fw_name = "tigon/tg3_tso.bin";
+>  	}
+>  	else if (GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5700 ||
+>  	    GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5701 ||
+> @@ -12248,6 +12243,13 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+>  		tp->tg3_flags2 &= ~TG3_FLG2_TSO_CAPABLE;
+>  	} else {
+>  		tp->tg3_flags2 |= TG3_FLG2_TSO_CAPABLE | TG3_FLG2_TSO_BUG;
+> +		printk("this code path would have forgotten to load the firmware\n");
+> +	}
+> +	if (tp->tg3_flags2 & TG3_FLG2_TSO_CAPABLE) {
+> +		if (GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5705)
+> +			fw_name = "tigon/tg3_tso5.bin";
+> +		else
+> +			fw_name = "tigon/tg3_tso.bin";
+>  	}
+> 
+>  	if (fw_name) {
+> 
+Hi David,
 
-Signed-off-by: <nkalmala@gmail.com>
----
+Thanks, the patch fixes the kernel panic on x86_64 boxes. (the panic message
+is listed below)
 
- include/linux/kallsyms.h |   11 +++++++++++
- include/linux/module.h   |   11 ++++++++---
- init/Kconfig             |   18 ++++++++++++++++++
- kernel/kallsyms.c        |   21 ++++++++++++++++++---
- kernel/module.c          |   31 ++++++++++++++++++++++++++++---
- 5 files changed, 83 insertions(+), 9 deletions(-)
+Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
+IP: [<ffffffff803be1e8>] tg3_reset_hw+0xf48/0x154b
+PGD add0067 PUD ad1a067 PMD 0 
+Oops: 0000 [1] SMP 
+last sysfs file: /sys/class/net/eth1/address
+CPU 2 
+Modules linked in: battery ac lp parport_pc parport nvram amd_rng rng_core i2c_amd756 i2c_core pcspkr button
+Pid: 1919, comm: ip Not tainted 2.6.26-rc8-next-20080627-autotest #1
+RIP: 0010:[<ffffffff803be1e8>]  [<ffffffff803be1e8>] tg3_reset_hw+0xf48/0x154b
+RSP: 0018:ffff81000ad21d38  EFLAGS: 00010246
+RAX: 000000000040a026 RBX: 000000000001f800 RCX: 0000000000000000
+RDX: 0000000000000006 RSI: 0000000000005400 RDI: ffff81003d4e8740
+RBP: ffff81003d4e8740 R08: 0000000000000002 R09: 0000000000000008
+R10: 0000000000000009 R11: ffffffff804773d9 R12: 0000000001000008
+R13: 00000000000003fe R14: ffff81003d4e8748 R15: 0000000000000000
+FS:  00007f600a2586f0(0000) GS:ffff81003f99e800(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000000008 CR3: 000000000c0c6000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process ip (pid: 1919, threadinfo ffff81000ad20000, task ffff81003d519db0)
+Stack:  ffff81003d4e8740 0000000000000074 0000000000000028 ffff000880340430
+ ffff81003d4e8740 ffff81003d4e8800 ffff81003d4e8740 0000000000001002
+ 0000000000000000 ffff81003d4e8748 ffff81003d4e8000 ffffffff803c2a7a
+Call Trace:
+ [<ffffffff803c2a7a>] tg3_open+0x29a/0x5e8
+ [<ffffffff80317af4>] selinux_capable+0x87/0x90
+ [<ffffffff80486e13>] dev_open+0x6b/0x9e
+ [<ffffffff80484fd8>] dev_change_flags+0xa6/0x15d
+ [<ffffffff804c42ed>] devinet_ioctl+0x243/0x59e
+ [<ffffffff80278baf>] handle_mm_fault+0x32b/0x6a5
+ [<ffffffff80479488>] sock_ioctl+0x1d4/0x1f8
+ [<ffffffff8029eb09>] vfs_ioctl+0x21/0x6b
+ [<ffffffff8029edaf>] do_vfs_ioctl+0x25c/0x275
+ [<ffffffff8029ee19>] sys_ioctl+0x51/0x70
+ [<ffffffff8020bcfb>] system_call_after_swapgs+0x7b/0x80
 
 
-diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
-index 00c1801..f39569d 100644
---- a/include/linux/kallsyms.h
-+++ b/include/linux/kallsyms.h
-@@ -13,8 +13,12 @@
- 			 2*(BITS_PER_LONG*3/10) + (MODULE_NAME_LEN - 1) + 1)
- 
- #ifdef CONFIG_KALLSYMS
-+struct module;
- /* Lookup the address for a symbol. Returns 0 if not found. */
- unsigned long kallsyms_lookup_name(const char *name);
-+/* Like above, but this also tells which module (owner) defines the symbol,
-+ * NULL if kernel or no symbol */
-+unsigned long kallsyms_lookup_name_owner(const char *name, struct module **owner);
- 
- extern int kallsyms_lookup_size_offset(unsigned long addr,
- 				  unsigned long *symbolsize,
-@@ -42,6 +46,13 @@ static inline unsigned long kallsyms_lookup_name(const char *name)
- 	return 0;
- }
- 
-+static inline unsigned long kallsyms_lookup_name_owner(const char *name,
-+		struct module **owner)
-+{
-+	if (owner) *owner = NULL;
-+	return 0;
-+}
-+
- static inline int kallsyms_lookup_size_offset(unsigned long addr,
- 					      unsigned long *symbolsize,
- 					      unsigned long *offset)
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 3e03b1a..e99da01 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -365,8 +365,11 @@ int is_module_address(unsigned long addr);
- int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
- 			char *name, char *module_name, int *exported);
- 
--/* Look for this name: can be of form module:name. */
--unsigned long module_kallsyms_lookup_name(const char *name);
-+/* Look for this name: can be of form module:name.
-+ * If name is a module symbol, *owner will be set to struct module, NULL
-+ * otherwise */
-+unsigned long module_kallsyms_lookup_name(const char *name,
-+		struct module **owner);
- 
- extern void __module_put_and_exit(struct module *mod, long code)
- 	__attribute__((noreturn));
-@@ -528,8 +531,10 @@ static inline int module_get_kallsym(unsigned int symnum, unsigned long *value,
- 	return -ERANGE;
- }
- 
--static inline unsigned long module_kallsyms_lookup_name(const char *name)
-+static inline unsigned long module_kallsyms_lookup_name(const char *name,
-+		struct module **owner)
- {
-+	if (owner) *owner = NULL;
- 	return 0;
- }
- 
-diff --git a/init/Kconfig b/init/Kconfig
-index 6199d11..c0c2810 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -892,6 +892,24 @@ config MODULE_SRCVERSION_ALL
- 	  the version).  With this option, such a "srcversion" field
- 	  will be created for all modules.  If unsure, say N.
- 
-+config RESOLVE_UNEXPORTED_SYMBOL
-+	bool "Try to resolve unexported symbols (experimental use only)"
-+	depends on MODULES && KALLSYMS
-+	default n
-+	help
-+	  Say Y here to let the kernel resolve unexported-symbol references
-+	  in external modules when loading them. This taints the kernel with
-+	  TAINT_PROPRIETARY_MODULE and TAINT_FORCED_MODULE, when the first
-+	  unexported symbol gets resolved; this also bypasses version checks,
-+	  if enabled, on such symbols. Use carefully.
-+	  Building the kernel with KALLSYMS_ALL expands the range of symbols
-+	  that can be referenced.
-+	  This is purely for experimental purposes. Enable this config if you
-+	  prefer experimenting in the kernel using loadable modules. Once the
-+	  kernel gets tainted by resolving an unexported symbol, any subsequent
-+	  kernel issue becomes the individual's responsibility to worry; do not
-+	  report back those issues.
-+
- config KMOD
- 	bool "Automatic kernel module loading"
- 	depends on MODULES
-diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
-index 6fc0040..f0e8928 100644
---- a/kernel/kallsyms.c
-+++ b/kernel/kallsyms.c
-@@ -146,7 +146,8 @@ static unsigned int get_symbol_offset(unsigned long pos)
- }
- 
- /* Lookup the address for this symbol. Returns 0 if not found. */
--unsigned long kallsyms_lookup_name(const char *name)
-+static unsigned long __kallsyms_lookup_name_owner(const char *name,
-+		struct module **owner)
- {
- 	char namebuf[KSYM_NAME_LEN];
- 	unsigned long i;
-@@ -155,10 +156,24 @@ unsigned long kallsyms_lookup_name(const char *name)
- 	for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
- 		off = kallsyms_expand_symbol(off, namebuf);
- 
--		if (strcmp(namebuf, name) == 0)
-+		if (strcmp(namebuf, name) == 0) {
-+			if (owner)
-+				*owner = NULL;
- 			return kallsyms_addresses[i];
-+		}
- 	}
--	return module_kallsyms_lookup_name(name);
-+	return module_kallsyms_lookup_name(name, owner);
-+}
-+
-+unsigned long kallsyms_lookup_name(const char *name)
-+{
-+	return __kallsyms_lookup_name_owner(name, NULL);
-+}
-+
-+unsigned long kallsyms_lookup_name_owner(const char *name,
-+		struct module **owner)
-+{
-+	return __kallsyms_lookup_name_owner(name, owner);
- }
- 
- static unsigned long get_symbol_pos(unsigned long addr,
-diff --git a/kernel/module.c b/kernel/module.c
-index 5f80478..c8863f1 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -1001,13 +1001,30 @@ static unsigned long resolve_symbol(Elf_Shdr *sechdrs,
- 	struct module *owner;
- 	unsigned long ret;
- 	const unsigned long *crc;
-+	int check_ver = 1;
- 
- 	ret = find_symbol(name, &owner, &crc,
- 			  !(mod->taints & TAINT_PROPRIETARY_MODULE), true);
-+
-+#ifdef CONFIG_RESOLVE_UNEXPORTED_SYMBOL
-+	if (IS_ERR_VALUE(ret)) {
-+		unsigned long addr = kallsyms_lookup_name_owner(name, &owner);
-+		check_ver = 0;
-+		if (addr) {
-+			ret = addr;
-+			printk(KERN_WARNING "%s: Symbol %s not exported.. "
-+				"resolved to %s:%lx - kernel tainted\n", mod->name,
-+				name, owner ? owner->name : "", ret);
-+			add_taint(TAINT_FORCED_MODULE);
-+			add_taint(TAINT_PROPRIETARY_MODULE);
-+		}
-+	}
-+#endif
-+
- 	if (!IS_ERR_VALUE(ret)) {
- 		/* use_module can fail due to OOM,
- 		   or module initialization or unloading */
--		if (!check_version(sechdrs, versindex, name, mod, crc) ||
-+		if ((check_ver && !check_version(sechdrs, versindex, name, mod, crc)) ||
- 		    !use_module(mod, owner))
- 			ret = -EINVAL;
- 	}
-@@ -2435,8 +2452,12 @@ static unsigned long mod_find_symname(struct module *mod, const char *name)
- 	return 0;
- }
- 
--/* Look for this name: can be of form module:name. */
--unsigned long module_kallsyms_lookup_name(const char *name)
-+/* Look for this name: can be of form module:name.
-+ * if symbol found in a module, *owner will be set to its struct module,
-+ * else NULL
-+ */
-+unsigned long module_kallsyms_lookup_name(const char *name,
-+		struct module **owner)
- {
- 	struct module *mod;
- 	char *colon;
-@@ -2455,6 +2476,10 @@ unsigned long module_kallsyms_lookup_name(const char *name)
- 				break;
- 	}
- 	preempt_enable();
-+
-+	if (owner)
-+		*owner = ret ? mod : NULL;
-+
- 	return ret;
- }
- #endif /* CONFIG_KALLSYMS */
+Code: ef e8 63 a0 ff ff 8b 85 88 07 00 00 a8 20 0f 84 06 01 00 00 a9 00 00 01 08 0f 85 fb 00 00 00 48 8b 8d 48 0b 00 00 be 00 54 00 00 <48> 8b 51 08 8b 42 04 48 83 c2 0c 0f c8 89 04 24 8b 01 b9 00 40 
+RIP  [<ffffffff803be1e8>] tg3_reset_hw+0xf48/0x154b
+ RSP <ffff81000ad21d38>
+CR2: 0000000000000008
+---[ end trace beeca7990caa7b8a ]---
+Kernel panic - not syncing: Aiee, killing interrupt handler!
+Pid: 1919, comm: ip Tainted: G      D   2.6.26-rc8-next-20080627-autotest #1
+
+Call Trace:
+ [<ffffffff802336e3>] panic+0x86/0x144
+ [<ffffffff802530a9>] kallsyms_lookup+0x49/0x80
+ [<ffffffff803be1e8>] tg3_reset_hw+0xf48/0x154b
+ [<ffffffff80234256>] printk+0x4e/0x56
+ [<ffffffff80234256>] printk+0x4e/0x56
+ [<ffffffff802367d6>] do_exit+0x71/0x67c
+ [<ffffffff804fdbe1>] oops_begin+0x0/0x8c
+ [<ffffffff804ffafb>] do_page_fault+0x77b/0x834
+ [<ffffffff804fd829>] error_exit+0x0/0x51
+ [<ffffffff804773d9>] pci_conf1_write+0x0/0xdb
+ [<ffffffff803be1e8>] tg3_reset_hw+0xf48/0x154b
+ [<ffffffff803be0b3>] tg3_reset_hw+0xe13/0x154b
+ [<ffffffff803c2a7a>] tg3_open+0x29a/0x5e8
+ [<ffffffff80317af4>] selinux_capable+0x87/0x90
+ [<ffffffff80486e13>] dev_open+0x6b/0x9e
+ [<ffffffff80484fd8>] dev_change_flags+0xa6/0x15d
+ [<ffffffff804c42ed>] devinet_ioctl+0x243/0x59e
+ [<ffffffff80278baf>] handle_mm_fault+0x32b/0x6a5
+ [<ffffffff80479488>] sock_ioctl+0x1d4/0x1f8
+ [<ffffffff8029eb09>] vfs_ioctl+0x21/0x6b
+ [<ffffffff8029edaf>] do_vfs_ioctl+0x25c/0x275
+ [<ffffffff8029ee19>] sys_ioctl+0x51/0x70
+ [<ffffffff8020bcfb>] system_call_after_swapgs+0x7b/0x80
+
+
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
