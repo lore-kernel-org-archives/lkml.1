@@ -1,119 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbYF0QH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761012AbYF0QIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757989AbYF0QH2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 12:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760383AbYF0QHC
+	id S1761012AbYF0QIV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 12:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757406AbYF0QIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 12:07:02 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:42624 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759608AbYF0QHA (ORCPT
+	Fri, 27 Jun 2008 12:08:10 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:20274 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757321AbYF0QIH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 12:07:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=YHSCBnOyyEztY59nR6yf/VXQCQ0MJj2fyiochKOo393AUGro+jt8W1OzhHt/bm3i8o
-         CJKF5+aR95kFChbJ/W8ELBj00FhpamvnPxHjEfHYNiufTKF2pmjNv4DSQu+twox/jxhl
-         L4uXxpHUaj8nTAjEjvinDXQ8bghSkd3SP54GI=
-Date: Fri, 27 Jun 2008 18:06:54 +0200
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] backtrace: replace timer with tasklet + completions
-Message-ID: <20080627160654.GC8852@damson.getinternet.no>
+	Fri, 27 Jun 2008 12:08:07 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=lbblnRBS3tQ8J19Fp6Q5Br1wMVHo3Y/Z3TVDQHk8sPA/7q5zep15chXxvoo0TUumDIp7HvmJqG5ayNcuPKFKa2WuGyUyA9MQfjwaQbDMWNPIVDMbLWoO56gWJnEem5/41ngGQXjaJN822yNdJWaY0c+ptEuet2uwigPYBg0mx4I=  ;
+X-YMail-OSG: bEF_sAQVM1mb8AFtG318wG5j.tCF1eZxpoDNQX84WjzYYU8Ew_x.ykznkUcOyhLKNSCq5zPMVl9sIDlMR17r..k1w.m.WCP_DwxiXnYsZQAzf51eqwEK0kGwksJCRGhiBUk-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Stefan Becker <Stefan.Becker@nokia.com>
+Subject: Re: [REGRESSION] 2.6.24/25: random lockups when accessing external USB harddrive
+Date: Fri, 27 Jun 2008 09:07:37 -0700
+User-Agent: KMail/1.9.9
+Cc: ext Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+References: <Pine.LNX.4.44L0.0806261018340.2811-100000@iolanthe.rowland.org> <48641325.2020903@nokia.com>
+In-Reply-To: <48641325.2020903@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+Message-Id: <200806270907.37245.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Thu, 26 Jun 2008 14:06:54 +0200
-Subject: [PATCH] backtrace: replace timer with tasklet + completions
+On Thursday 26 June 2008, Stefan Becker wrote:
+> it seems that the following code paths have the interrupts 
+> enabled when calling usb_hcd_unlink_urb_from_ep():
+> 
+>    [<c0574d9d>] usb_hcd_unlink_urb_from_ep+0x25/0x6b
+>    [<de850559>] uhci_giveback_urb+0xcd/0x1e3 [uhci_hcd]
+>    [<de850e02>] uhci_scan_schedule+0x511/0x720 [uhci_hcd]
+> ...
+>    [<de8529c3>] uhci_irq+0x131/0x142 [uhci_hcd]
+>    [<c05750cb>] usb_hcd_irq+0x23/0x51
 
-On qemu, the backtrace would show up _after_ the "end of backtrace
-testing" message.
+I'll let Alan look at that one, but:
 
-This patch changes it to use completions instead, which will guarantee
-that no such race exists.
 
-Cc: Arjan van de Ven <arjan@infradead.org>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- kernel/backtracetest.c |   37 ++++++++++++++++++++++++++-----------
- 1 files changed, 26 insertions(+), 11 deletions(-)
+> and
+> 
+>    [<c0574d9d>] usb_hcd_unlink_urb_from_ep+0x25/0x6b
+>    [<de839d55>] ehci_urb_done+0x73/0x92 [ehci_hcd]
+>    [<de83a92f>] qh_completions+0x373/0x3eb [ehci_hcd]
+>    [<de83aa43>] ehci_work+0x9c/0x6a9 [ehci_hcd]
+> ...
+>    [<de83ec3c>] ehci_irq+0x241/0x265 [ehci_hcd]
+> ...
+>    [<c05750cb>] usb_hcd_irq+0x23/0x51
+> 
+> 
+> Is that enough information to fix the problem?
 
-diff --git a/kernel/backtracetest.c b/kernel/backtracetest.c
-index 50f7abd..a5e026b 100644
---- a/kernel/backtracetest.c
-+++ b/kernel/backtracetest.c
-@@ -10,18 +10,39 @@
-  * of the License.
-  */
- 
-+#include <linux/completion.h>
- #include <linux/delay.h>
-+#include <linux/interrupt.h>
- #include <linux/module.h>
- #include <linux/sched.h>
- #include <linux/stacktrace.h>
- 
--static struct timer_list backtrace_timer;
-+static void backtrace_test_normal(void)
-+{
-+	printk("Testing a backtrace from process context.\n");
-+	printk("The following trace is a kernel self test and not a bug!\n");
-+
-+	dump_stack();
-+}
-+
-+static DECLARE_COMPLETION(backtrace_work);
-+
-+static void backtrace_test_irq_callback(unsigned long data)
-+{
-+	dump_stack();
-+	complete(&backtrace_work);
-+}
-+
-+static DECLARE_TASKLET(backtrace_tasklet, &backtrace_test_irq_callback, 0);
- 
--static void backtrace_test_timer(unsigned long data)
-+static void backtrace_test_irq(void)
- {
- 	printk("Testing a backtrace from irq context.\n");
- 	printk("The following trace is a kernel self test and not a bug!\n");
--	dump_stack();
-+
-+	init_completion(&backtrace_work);
-+	tasklet_schedule(&backtrace_tasklet);
-+	wait_for_completion(&backtrace_work);
- }
- 
- #ifdef CONFIG_STACKTRACE
-@@ -51,17 +72,11 @@ static void backtrace_test_saved(void)
- static int backtrace_regression_test(void)
- {
- 	printk("====[ backtrace testing ]===========\n");
--	printk("Testing a backtrace from process context.\n");
--	printk("The following trace is a kernel self test and not a bug!\n");
--	dump_stack();
- 
-+	backtrace_test_normal();
-+	backtrace_test_irq();
- 	backtrace_test_saved();
- 
--	init_timer(&backtrace_timer);
--	backtrace_timer.function = backtrace_test_timer;
--	mod_timer(&backtrace_timer, jiffies + 10);
--
--	msleep(10);
- 	printk("====[ end of backtrace testing ]====\n");
- 	return 0;
- }
--- 
-1.5.4.1
+No, but it suggests a few ways to get closer to the root cause.
 
+That looks fishy.   The IRQ handler does not re-enable IRQs,
+so it looks like something re-enabled IRQs in the middle of
+an IRQ handler!  Which will obviously cause trouble.
+
+(I'll assume that this isn't a case of a misleading stack dump,
+where the IRQ frames are dead ones that were wrongly dumped...)
+
+If 442258e2ff69276ff767f3703b30ce6a31fdd181 isn't in the
+kernel with those bugs, try applying it... else, I suggest
+you try putting something like your
+
+	if (!raw_irqs_disabled()) {
+		printk(KERN_CRIT "interrupts enabled!\n");
+		dump_stack();
+        }
+
+logic at the beginning and end of usb_hcd_giveback_urb ... and
+maybe have it dump the address of the completion handler, when
+you can finger such a handler as re-enabling IRQs.
+
+- Dave
