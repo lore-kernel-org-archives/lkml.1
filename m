@@ -1,92 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757865AbYF0H0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757198AbYF0Hnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757865AbYF0H0e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 03:26:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbYF0H0X
+	id S1757198AbYF0Hnb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 03:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbYF0HnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 03:26:23 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38322 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753908AbYF0H0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 03:26:22 -0400
-Date: Fri, 27 Jun 2008 17:26:14 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Timothy Shimmin <tes@sgi.com>
-Cc: xfs-masters@oss.sgi.com, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Alexander Beregalov" <a.beregalov@gmail.com>
-Subject: Re: [xfs-masters] Re: linux-next: Tree for June 24 (XFS x2)
-Message-Id: <20080627172614.83a604e4.sfr@canb.auug.org.au>
-In-Reply-To: <4861A4E8.1060101@sgi.com>
-References: <20080624175612.cdf29651.sfr@canb.auug.org.au>
-	<20080624171809.42bbdf68.randy.dunlap@oracle.com>
-	<20080625003751.GP29319@disturbed>
-	<4861A00E.6040801@sgi.com>
-	<4861A4E8.1060101@sgi.com>
-X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__27_Jun_2008_17_26_14_+1000_X9bqhmhapx7==tXO"
+	Fri, 27 Jun 2008 03:43:21 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:56875 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754028AbYF0HnU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 03:43:20 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: Henrik Rydberg <rydberg@euromail.se>
+Subject: Re: [PATCH 001/001] linux-input:  Support for BCM5974 multitouch trackpad
+Date: Fri, 27 Jun 2008 09:43:46 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dmitry.torokhov@gmail.com, robfitz@273k.net, jikos@jikos.cz,
+       vojtech@suse.cz, dmonakhov@openvz.org
+References: <1214521639.20365.1.camel@alnilam>
+In-Reply-To: <1214521639.20365.1.camel@alnilam>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200806270943.48634.oliver@neukum.org>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__27_Jun_2008_17_26_14_+1000_X9bqhmhapx7==tXO
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Am Freitag 27 Juni 2008 01:07:19 schrieb Henrik Rydberg:
+> From: Henrik Rydberg <rydberg@euromail.se>
+> 
+> BCM5974: This driver adds support for the multitouch trackpad on the new
+> Apple Macbook Air and Macbook Pro Penryn laptops. It replaces the
+> appletouch driver on those computers, and integrates well with the
+> synaptics driver of the Xorg system. 
 
-On Wed, 25 Jun 2008 11:52:40 +1000 Timothy Shimmin <tes@sgi.com> wrote:
->
-> So we could move up the acl defines in xfs_acl.h.
-> Unless Christoph wants some other rearrangement...
->=20
-> Index: 2.6.x-xfs-quilt/fs/xfs/xfs_acl.h
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- 2.6.x-xfs-quilt.orig/fs/xfs/xfs_acl.h	2008-06-25 10:46:42.000000000 +=
-1000
-> +++ 2.6.x-xfs-quilt/fs/xfs/xfs_acl.h	2008-06-25 11:45:25.221045485 +1000
-> @@ -46,6 +46,8 @@ typedef struct xfs_acl {
->  #define SGI_ACL_FILE_SIZE	(sizeof(SGI_ACL_FILE)-1)
->  #define SGI_ACL_DEFAULT_SIZE	(sizeof(SGI_ACL_DEFAULT)-1)
-> =20
-> +#define _ACL_TYPE_ACCESS	1
-> +#define _ACL_TYPE_DEFAULT	2
-> =20
->  #ifdef CONFIG_XFS_POSIX_ACL
-> =20
-> @@ -66,8 +68,6 @@ extern int xfs_acl_vset(bhv_vnode_t *, v
->  extern int xfs_acl_vget(bhv_vnode_t *, void *, size_t, int);
->  extern int xfs_acl_vremove(bhv_vnode_t *, int);
-> =20
-> -#define _ACL_TYPE_ACCESS	1
-> -#define _ACL_TYPE_DEFAULT	2
->  #define _ACL_PERM_INVALID(perm)	((perm) & ~(ACL_READ|ACL_WRITE|ACL_EXECU=
-TE))
-> =20
->  #define _ACL_INHERIT(c,m,d)	(xfs_acl_inherit(c,m,d))
->=20
+Some comments on the driver.
 
-I have applied this to linux-next for today, please apply it (or
-something similar) to the xfs tree soon.
+	Regards
+		Oliver
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> +
+> +static int atp_wellspring_init(struct usb_device *udev)
+> +{
+> +  const struct atp_config_t *cfg = atp_product_config(udev);
+> +  char data[8];
 
---Signature=_Fri__27_Jun_2008_17_26_14_+1000_X9bqhmhapx7==tXO
-Content-Type: application/pgp-signature
+DMA on the stack. You must kmalloc that buffer.
+> +  int size;
+> +
+> +  /* reset button endpoint */
+> +  if (usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
+> +		      USB_REQ_CLEAR_FEATURE, USB_RECIP_ENDPOINT,
+> +		      0, cfg->bt_ep, NULL, 0, 5000)) {
+> +    err("Could not reset button endpoint");
+> +    return -EIO;
+> +  }
+> +
+> +  /* reset trackpad endpoint */
+> +  if (usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
+> +		      USB_REQ_CLEAR_FEATURE, USB_RECIP_ENDPOINT,
+> +		      0, cfg->tp_ep, NULL, 0, 5000)) {
+> +    err("Could not reset trackpad endpoint");
+> +    return -EIO;
+> +  }
+> +
+> +  /* read configuration */
+> +  size = usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
+> +			 ATP_WELLSPRING_MODE_READ_REQUEST_ID,
+> +			 USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
+> +			 ATP_WELLSPRING_MODE_REQUEST_VALUE,
+> +			 ATP_WELLSPRING_MODE_REQUEST_INDEX, data, 8, 5000);
+> +
+> +  if (size != 8) {
+> +    err("Could not do mode read request from device (Wellspring Raw mode)");
+> +    return -EIO;
+> +  }
+> +
+> +  /* apply the mode switch */
+> +  data[0] = ATP_WELLSPRING_MODE_VENDOR_VALUE_1;
+> +  data[1] = ATP_WELLSPRING_MODE_VENDOR_VALUE_2;
+> +
+> +  /* write configuration */
+> +  size = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
+> +			 ATP_WELLSPRING_MODE_WRITE_REQUEST_ID,
+> +			 USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
+> +			 ATP_WELLSPRING_MODE_REQUEST_VALUE,
+> +			 ATP_WELLSPRING_MODE_REQUEST_INDEX, data, 8, 5000);
+> +
+> +  if (size != 8) {
+> +    err("Could not do mode write request to device (Wellspring Raw mode)");
+> +    return -EIO;
+> +  }
+> +
+> +  return 0;
+> +}
+[..]
+> +static inline int raw2int(unsigned char hi, unsigned char lo)
+> +{
+> +  return (short)(hi<<8)+lo;
+> +}
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Use the standard function.
 
-iEYEARECAAYFAkhklhYACgkQTgG2atn1QN8VngCfXEvOn4b/xqF9mJrYitz+mpwt
-ttsAmwZ8w7lUl2cMKGC+co8+sKSPSz8V
-=RPGa
------END PGP SIGNATURE-----
+[..]
+> +static int atp_open(struct input_dev *input)
+> +{
+> +  struct atp *dev = input_get_drvdata(input);
+> +
+> +  if (usb_submit_urb(dev->bt_urb, GFP_ATOMIC))
+> +    return -EIO;
+> +
+> +  if (usb_submit_urb(dev->tp_urb, GFP_ATOMIC))
+> +    return -EIO;
 
---Signature=_Fri__27_Jun_2008_17_26_14_+1000_X9bqhmhapx7==tXO--
+Resource leak. You must kill the first urb if you bail out here.
+> +
+> +  dev->open = 1;
+> +  return 0;
+> +}
+> +
+> +static void atp_close(struct input_dev *input)
+> +{
+> +  struct atp *dev = input_get_drvdata(input);
+> +
+> +  usb_kill_urb(dev->tp_urb);
+> +  usb_kill_urb(dev->bt_urb);
+> +  cancel_work_sync(&dev->work);
+
+I can't see where you use that work struct. Anyway, this is a race.
+As the work handler can submit urbs, you must first cancel the work,
+then kill the urbs.
+
+> +  dev->open = 0;
+> +}
+> +
+[..]
+> +static void atp_disconnect(struct usb_interface *iface)
+> +{
+> +  struct atp *dev = usb_get_intfdata(iface);
+> +
+> +  usb_set_intfdata(iface, NULL);
+> +  if (dev) {
+> +    usb_kill_urb(dev->tp_urb);
+> +    usb_kill_urb(dev->bt_urb);
+
+close will do that. no need to kill here.
+> +    input_unregister_device(dev->input);
+> +    usb_buffer_free(dev->udev, dev->cfg.tp_datalen,
+> +		    dev->tp_data, dev->tp_urb->transfer_dma);
+> +    usb_buffer_free(dev->udev, dev->cfg.bt_datalen,
+> +		    dev->bt_data, dev->bt_urb->transfer_dma);
+> +    usb_free_urb(dev->tp_urb);
+> +    usb_free_urb(dev->bt_urb);
+> +    kfree(dev);
+> +  }
+> +  printk(KERN_INFO "input: bcm5974 disconnected\n");
+> +}
+> +
+> +static int atp_suspend(struct usb_interface *iface, pm_message_t message)
+> +{
+> +  struct atp *dev = usb_get_intfdata(iface);
+> +
+> +  usb_kill_urb(dev->tp_urb);
+> +  dev->tp_valid = 0;
+> +
+> +  usb_kill_urb(dev->bt_urb);
+> +  dev->bt_valid = 0;
+
+Why don't you cancel the work here?
