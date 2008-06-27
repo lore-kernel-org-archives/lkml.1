@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761059AbYF0RJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760779AbYF0RIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761059AbYF0RJH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 13:09:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540AbYF0RIw
+	id S1760779AbYF0RIl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 13:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759921AbYF0RI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 13:08:52 -0400
-Received: from 8bytes.org ([88.198.83.132]:57196 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754591AbYF0RIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 13:08:51 -0400
-Date: Fri, 27 Jun 2008 18:40:10 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, tglx@linutronix.de, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       bhavna.sarathy@amd.com, Sebastian.Biemueller@amd.com,
-       robert.richter@amd.com
-Subject: Re: [PATCH 01/34] AMD IOMMU: add Kconfig entry
-Message-ID: <20080627164010.GC10197@8bytes.org>
-References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-2-git-send-email-joerg.roedel@amd.com> <20080627142558.GG18644@cs181140183.pp.htv.fi>
+	Fri, 27 Jun 2008 13:08:29 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:29865 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759833AbYF0RI1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 13:08:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=ooO/wC/OLGBf/NgkYnXOku/kezn21hKLLWupbgNZb9rijb8Bez7Mwkc26N7E1ka0cC
+         QhOPj8POnV7SG8S66ZDYbdzMMm/skJ1GCx2rx37OUec7YIqG8m5+uqtUEUaDvetS+puk
+         6yzAq5V0tN4TU73IuF1ub8naKdsg/hAldqNtQ=
+Message-ID: <9929d2390806271008m633428aeg3fe20b7d67531791@mail.gmail.com>
+Date: Fri, 27 Jun 2008 10:08:24 -0700
+From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
+To: "Taku Izumi" <izumi.taku@jp.fujitsu.com>
+Subject: Re: [PATCH 1/3] e1000: make ioport free
+Cc: "Jeff Garzik" <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org,
+       "Tomohiro Kusumi" <kusumi.tomohiro@jp.fujitsu.com>,
+       auke-jan.h.kok@intel.com
+In-Reply-To: <4864E5A0.60804@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080627142558.GG18644@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <485B1B8E.1060108@jp.fujitsu.com> <485B1C31.4020507@jp.fujitsu.com>
+	 <486483DF.5060404@garzik.org> <4864DBE3.3040801@jp.fujitsu.com>
+	 <4864E5A0.60804@jp.fujitsu.com>
+X-Google-Sender-Auth: 9141035d6218a1b4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 05:25:58PM +0300, Adrian Bunk wrote:
-> On Thu, Jun 26, 2008 at 09:27:37PM +0200, Joerg Roedel wrote:
-> > This patch adds the Kconfig entry for the AMD IOMMU driver.
-> > 
-> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > ---
-> >  arch/x86/Kconfig |    7 +++++++
-> >  1 files changed, 7 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> > index e0edaaa..5a82f18 100644
-> > --- a/arch/x86/Kconfig
-> > +++ b/arch/x86/Kconfig
-> > @@ -549,6 +549,13 @@ config CALGARY_IOMMU_ENABLED_BY_DEFAULT
-> >  	  Calgary anyway, pass 'iommu=calgary' on the kernel command line.
-> >  	  If unsure, say Y.
-> >  
-> > +config AMD_IOMMU
-> > +	bool "AMD IOMMU support"
-> > +	select SWIOTL
-> > +	depends on X86_64 && PCI
-> > +	help
-> > +	  Select this to get support for AMD IOMMU hardware in your system.
-> > +
-> >...
-> 
-> This tells neither what as IOMMU is nor whether my system actually has 
-> one.
-> 
-> Please shortly describe in the help text what an IOMMU is and which
-> AMD systems have an IOMMU.
-> 
-> The goal is that a system administrator building a kernel for his system 
-> gets enough information for deciding whether to enable or disable this 
-> option.
+On Fri, Jun 27, 2008 at 6:05 AM, Taku Izumi <izumi.taku@jp.fujitsu.com> wrote:
+> This patch makes e1000 driver ioport-free.
+> This corrects behavior in probe function so as not to request ioport
+> resources as long as they are not really needed. This is based on the
+> ioport-free patch of e1000 driver from Auke Kok and Tomohiro Kusumi.
+>
+>
+> Signed-off-by: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
+> Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+> Signed-off-by: Taku Izumi <izumi.taku@jp.fujitsu.com>
+> ---
+>  drivers/net/e1000/e1000.h      |    4 +
+>  drivers/net/e1000/e1000_main.c |   88 +++++++++++++++++++++++++++++++++++------
+>  2 files changed, 80 insertions(+), 12 deletions(-)
 
-Ok, I will provide a new help text as an update to this patch series.
+I will add this into my e1000 queue and push it out in my next
+patchset for e1000.
 
-Joerg
+-- 
+Cheers,
+Jeff
