@@ -1,166 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbYF0CWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbYF0CXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753811AbYF0CWU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 22:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbYF0CWI
+	id S1752649AbYF0CXI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 22:23:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbYF0CWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 22:22:08 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:29689 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751040AbYF0CWH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 22:22:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=WYGRa4Vv4w9M/w7gdLcayy9SmFRUSX/HKXKTCYk887BgOiKIPmXXxLqHTnmaGRQ8Dl
-         2f0nDbQr0GAnaQlChNTGujlHpmQhBswFc/VnqMR8ZXA9ASF9/1kslm1qaVaWcN7VRWrF
-         emZyGq0iN18S/R9/FuGrUOuqTTGM9f75GhWxU=
-Message-ID: <86802c440806261922n3f13b454o5e543e28d9a34e8e@mail.gmail.com>
-Date: Thu, 26 Jun 2008 19:22:03 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH 1/2] x86 boot: add E820_RESVD_KERN
-Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-In-Reply-To: <86802c440806260247p19f5b850r8757c51280912ae9@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_7698_26313661.1214533323548"
-References: <1214461978.10809.6.camel@caritas-dev.intel.com>
-	 <86802c440806260025v3fc1970aq682b568cccba4b4e@mail.gmail.com>
-	 <1214466513.11346.30.camel@caritas-dev.intel.com>
-	 <86802c440806260247p19f5b850r8757c51280912ae9@mail.gmail.com>
+	Thu, 26 Jun 2008 22:22:54 -0400
+Received: from mail.windriver.com ([147.11.1.11]:63768 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751358AbYF0CWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 22:22:54 -0400
+Subject: [PATCH]: libata-scsi: Don't start hotplug work queue if hotplug is
+	disabled
+From: Chunbo Luo <chunbo.luo@windriver.com>
+Reply-To: chunbo.luo@windriver.com
+To: linux-kernel@vger.kernel.org
+Cc: jeff@garzik.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Wind River
+Date: Fri, 27 Jun 2008 10:20:46 +0800
+Message-Id: <1214533246.6284.10.camel@pek-cluo>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+X-OriginalArrivalTime: 27 Jun 2008 02:22:41.0111 (UTC) FILETIME=[ACD01E70:01C8D7FC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_7698_26313661.1214533323548
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+Hi
 
-T24gVGh1LCBKdW4gMjYsIDIwMDggYXQgMjo0NyBBTSwgWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxA
-Z21haWwuY29tPiB3cm90ZToKPiBPbiBUaHUsIEp1biAyNiwgMjAwOCBhdCAxMjo0OCBBTSwgSHVh
-bmcsIFlpbmcgPHlpbmcuaHVhbmdAaW50ZWwuY29tPiB3cm90ZToKPj4gT24gVGh1LCAyMDA4LTA2
-LTI2IGF0IDAwOjI1IC0wNzAwLCBZaW5naGFpIEx1IHdyb3RlOgo+PiBbLi4uXQo+Pj4gPiAgICAg
-ICAgICAgICAgICBpZiAocGZuID49IGxpbWl0X3BmbikKPj4+ID4gQEAgLTk3Nyw3ICs5NzgsNyBA
-QCB1NjQgX19pbml0IGVhcmx5X3Jlc2VydmVfZTgyMCh1NjQgc3RhcnR0Cj4+PiA+ICAgICAgICAg
-ICAgICAgIHJldHVybiAwOwo+Pj4gPgo+Pj4gPiAgICAgICAgYWRkciA9IHJvdW5kX2Rvd24oc3Rh
-cnQgKyBzaXplIC0gc2l6ZXQsIGFsaWduKTsKPj4+ID4gLSAgICAgICBlODIwX3VwZGF0ZV9yYW5n
-ZShhZGRyLCBzaXpldCwgRTgyMF9SQU0sIEU4MjBfUkVTRVJWRUQpOwo+Pj4gPiArICAgICAgIGU4
-MjBfdXBkYXRlX3JhbmdlKGFkZHIsIHNpemV0LCBFODIwX1JBTSwgRTgyMF9SRVNWRF9LRVJOKTsK
-Pj4+Cj4+PiB0aGlzIGxpbmUgaXMgbm90IG5lZWRlZC4KPj4KPj4gV2h5PyBNZW1vcnkgcmVzZXJ2
-ZWQgYnkgZWFybHlfcnNlcnZlZF9lODIwIHNob3VsZCBub3QgYmUgc2F2ZWQgZHVyaW5nCj4+IGhp
-YmVybmF0aW9uPyBzaG91ZGwgbm90IGJlIHNhdmVkIGJ5IGtkdW1wPwo+Pgo+Pj4gPiAgICAgICAg
-cHJpbnRrKEtFUk5fSU5GTyAidXBkYXRlIGU4MjAgZm9yIGVhcmx5X3Jlc2VydmVfZTgyMFxuIik7
-Cj4+PiA+ICAgICAgICB1cGRhdGVfZTgyMCgpOwo+Pj4gPgo+Pj4gPiBAQCAtMTE5MSw2ICsxMTky
-LDcgQEAgdm9pZCBfX2luaXQgZTgyMF9yZXNlcnZlX3Jlc291cmNlcyh2b2lkKQo+Pj4gPiAgICAg
-ICAgcmVzID0gYWxsb2NfYm9vdG1lbV9sb3coc2l6ZW9mKHN0cnVjdCByZXNvdXJjZSkgKiBlODIw
-Lm5yX21hcCk7Cj4+PiA+ICAgICAgICBmb3IgKGkgPSAwOyBpIDwgZTgyMC5ucl9tYXA7IGkrKykg
-ewo+Pj4gPiAgICAgICAgICAgICAgICBzd2l0Y2ggKGU4MjAubWFwW2ldLnR5cGUpIHsKPj4+ID4g
-KyAgICAgICAgICAgICAgIGNhc2UgRTgyMF9SRVNWRF9LRVJOOgo+Pj4gPiAgICAgICAgICAgICAg
-ICBjYXNlIEU4MjBfUkFNOiAgcmVzLT5uYW1lID0gIlN5c3RlbSBSQU0iOyBicmVhazsKPj4+ID4g
-ICAgICAgICAgICAgICAgY2FzZSBFODIwX0FDUEk6IHJlcy0+bmFtZSA9ICJBQ1BJIFRhYmxlcyI7
-IGJyZWFrOwo+Pj4gPiAgICAgICAgICAgICAgICBjYXNlIEU4MjBfTlZTOiAgcmVzLT5uYW1lID0g
-IkFDUEkgTm9uLXZvbGF0aWxlIFN0b3JhZ2UiOyBicmVhazsKPj4+ID4KPj4+ID4gLS0KPj4+Cj4+
-PiBwbGVhc2UgIG1vdmUgcmVzZXJ2ZV9zZXR1cF9kYXRhKCkgZnJvbSBoZWFkLmMvaGVhZDY0LmMg
-dG8gc2V0dXAzMi82NC5jCj4+PiBvciBtZXJnZWQgc2V0dXAuYwo+Pgo+PiBPSy4KPj4KPj4+IGFs
-c28gbmVlZCB0byBjaGFuZ2UgcmVzZXJ2ZV9lYXJseSBpbiByZXNlcnZlX3NldHVwX2RhdGEgdG8K
-Pj4+IGU4MjBfdXBkYXRlX3JhbmdlKCwsRTgyMF9SQU0sIEU4MjBfUkVTRVZFRF9FWFRSQSkuCj4+
-Cj4+IO+7v0RvZXMgdGhpcyBtZWFucyByZXNlcnZlX2Vhcmx5KCkgc2hvdWxkIGJlIHJlcGxhY2Vk
-IGJ5Cj4+IGU4MjBfdXBkYXRlX3JhbmdlKCk/Cj4KPiBZZXMuIGluIHlvdXIgY2FzZS4KPgo+Pgo+
-Pj4gY2FsbGluZyByZXNlcnZlX3NldHVwX2RhdGEoKSBzaG91bGQgYXJvdW5kIGVhcmx5X3Jlc2Vy
-dmVfZTgyMF9tcGNfbmV3Lgo+Pgo+PiBJIHRoaW5rIHJlc2VydmVfeHh4IHNob3VsZCBiZSBjYWxs
-ZWQgYmVmb3JlIGZpcnN0IGZpbmRfZTgyMF9hcmVhKCkgdG8KPj4gbWluaW1pemUgdGhlIHBvc3Np
-YmlsaXR5IG9mIGNvbmZsaWN0Lgo+IFlvdSBhbHJlYWR5IGNhbGwgZTgyMF91cGRhdGVfcmFuZ2Us
-IHRoYXQgY291bGQgcHJldmVudCBmaW5kX2U4MjBfYXJlYQo+IHRvIGdldCBjb25mdXNlZC4KCnNv
-bWUgbGlrZSB0aGUgYXR0YWNoIHBhdGNoLi4uCgp5b3Ugc3RpbGwgY2FuIG1lcmdlIHBhcnNlX3Nl
-dHVwX2RhdGEgcGFyc2VfZTgyMF9leHQKYWxzbyBlbnRyaWVzIGluIHBhcnNlX2U4MjBfZXh0IGlz
-IG5vdCBpbml0aWFsaXplZC4uLiwgX19jb3B5X2U4MjBfbWFwCndpbGwgZG8gbm90aGluZy4KCllI
-Cg==
-------=_Part_7698_26313661.1214533323548
-Content-Type: text/x-patch; name=reserve_setup_data.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fhy5jvl80
-Content-Disposition: attachment; filename=reserve_setup_data.patch
+When ata_scsi_scan_host() scan device failed, it will start a work queue
+unconditionally. This may cause some noisy messages. This patch fix this
+problem.
 
-ZGlmZiAtLWdpdCBhL2FyY2gveDg2L2tlcm5lbC9lODIwLmMgYi9hcmNoL3g4Ni9rZXJuZWwvZTgy
-MC5jCmluZGV4IDdiNzY4NWIuLmI0NTI1NWIgMTAwNjQ0Ci0tLSBhL2FyY2gveDg2L2tlcm5lbC9l
-ODIwLmMKKysrIGIvYXJjaC94ODYva2VybmVsL2U4MjAuYwpAQCAtMTIwLDYgKzEyMCw3IEBAIHZv
-aWQgX19pbml0IGU4MjBfcHJpbnRfbWFwKGNoYXIgKndobykKIAkJICAgICAgIChlODIwLm1hcFtp
-XS5hZGRyICsgZTgyMC5tYXBbaV0uc2l6ZSkpOwogCQlzd2l0Y2ggKGU4MjAubWFwW2ldLnR5cGUp
-IHsKIAkJY2FzZSBFODIwX1JBTToKKwkJY2FzZSBFODIwX1JFU0VSVkVEX0tFUk46CiAJCQlwcmlu
-dGsoS0VSTl9DT05UICIodXNhYmxlKVxuIik7CiAJCQlicmVhazsKIAkJY2FzZSBFODIwX1JFU0VS
-VkVEOgpAQCAtNjExLDcgKzYxMiw3IEBAIHZvaWQgX19pbml0IGU4MjBfbWFya19ub3NhdmVfcmVn
-aW9ucyh1bnNpZ25lZCBsb25nIGxpbWl0X3BmbikKIAkJCXJlZ2lzdGVyX25vc2F2ZV9yZWdpb24o
-cGZuLCBQRk5fVVAoZWktPmFkZHIpKTsKIAogCQlwZm4gPSBQRk5fRE9XTihlaS0+YWRkciArIGVp
-LT5zaXplKTsKLQkJaWYgKGVpLT50eXBlICE9IEU4MjBfUkFNKQorCQlpZiAoZWktPnR5cGUgIT0g
-RTgyMF9SQU0gJiYgZWktPnR5cGUgIT0gRTgyMF9SRVNFUlZFRF9LRVJOKQogCQkJcmVnaXN0ZXJf
-bm9zYXZlX3JlZ2lvbihQRk5fVVAoZWktPmFkZHIpLCBwZm4pOwogCiAJCWlmIChwZm4gPj0gbGlt
-aXRfcGZuKQpAQCAtMTE5Niw2ICsxMTk3LDcgQEAgdm9pZCBfX2luaXQgZTgyMF9yZXNlcnZlX3Jl
-c291cmNlcyh2b2lkKQogCXJlcyA9IGFsbG9jX2Jvb3RtZW1fbG93KHNpemVvZihzdHJ1Y3QgcmVz
-b3VyY2UpICogZTgyMC5ucl9tYXApOwogCWZvciAoaSA9IDA7IGkgPCBlODIwLm5yX21hcDsgaSsr
-KSB7CiAJCXN3aXRjaCAoZTgyMC5tYXBbaV0udHlwZSkgeworCQljYXNlIEU4MjBfUkVTRVJWRURf
-S0VSTjoKIAkJY2FzZSBFODIwX1JBTToJcmVzLT5uYW1lID0gIlN5c3RlbSBSQU0iOyBicmVhazsK
-IAkJY2FzZSBFODIwX0FDUEk6CXJlcy0+bmFtZSA9ICJBQ1BJIFRhYmxlcyI7IGJyZWFrOwogCQlj
-YXNlIEU4MjBfTlZTOglyZXMtPm5hbWUgPSAiQUNQSSBOb24tdm9sYXRpbGUgU3RvcmFnZSI7IGJy
-ZWFrOwpkaWZmIC0tZ2l0IGEvYXJjaC94ODYva2VybmVsL2hlYWQuYyBiL2FyY2gveDg2L2tlcm5l
-bC9oZWFkLmMKaW5kZXggYTY4MTZiZS4uM2U2NmJkMyAxMDA2NDQKLS0tIGEvYXJjaC94ODYva2Vy
-bmVsL2hlYWQuYworKysgYi9hcmNoL3g4Ni9rZXJuZWwvaGVhZC5jCkBAIC01MywyMSArNTMsMyBA
-QCB2b2lkIF9faW5pdCByZXNlcnZlX2ViZGFfcmVnaW9uKHZvaWQpCiAJLyogcmVzZXJ2ZSBhbGwg
-bWVtb3J5IGJldHdlZW4gbG93bWVtIGFuZCB0aGUgMU1CIG1hcmsgKi8KIAlyZXNlcnZlX2Vhcmx5
-X292ZXJsYXBfb2sobG93bWVtLCAweDEwMDAwMCwgIkJJT1MgcmVzZXJ2ZWQiKTsKIH0KLQotdm9p
-ZCBfX2luaXQgcmVzZXJ2ZV9zZXR1cF9kYXRhKHZvaWQpCi17Ci0Jc3RydWN0IHNldHVwX2RhdGEg
-KmRhdGE7Ci0JdTY0IHBhX2RhdGE7Ci0JY2hhciBidWZbMzJdOwotCi0JaWYgKGJvb3RfcGFyYW1z
-Lmhkci52ZXJzaW9uIDwgMHgwMjA5KQotCQlyZXR1cm47Ci0JcGFfZGF0YSA9IGJvb3RfcGFyYW1z
-Lmhkci5zZXR1cF9kYXRhOwotCXdoaWxlIChwYV9kYXRhKSB7Ci0JCWRhdGEgPSBlYXJseV9pb3Jl
-bWFwKHBhX2RhdGEsIHNpemVvZigqZGF0YSkpOwotCQlzcHJpbnRmKGJ1ZiwgInNldHVwIGRhdGEg
-JXgiLCBkYXRhLT50eXBlKTsKLQkJcmVzZXJ2ZV9lYXJseShwYV9kYXRhLCBwYV9kYXRhK3NpemVv
-ZigqZGF0YSkrZGF0YS0+bGVuLCBidWYpOwotCQlwYV9kYXRhID0gZGF0YS0+bmV4dDsKLQkJZWFy
-bHlfaW91bm1hcChkYXRhLCBzaXplb2YoKmRhdGEpKTsKLQl9Ci19CmRpZmYgLS1naXQgYS9hcmNo
-L3g4Ni9rZXJuZWwvaGVhZDY0LmMgYi9hcmNoL3g4Ni9rZXJuZWwvaGVhZDY0LmMKaW5kZXggYzk3
-MDkyOS4uMmZmOWJjNiAxMDA2NDQKLS0tIGEvYXJjaC94ODYva2VybmVsL2hlYWQ2NC5jCisrKyBi
-L2FyY2gveDg2L2tlcm5lbC9oZWFkNjQuYwpAQCAtMTIzLDcgKzEyMyw2IEBAIHZvaWQgX19pbml0
-IHg4Nl82NF9zdGFydF9rZXJuZWwoY2hhciAqIHJlYWxfbW9kZV9kYXRhKQogI2VuZGlmCiAKIAly
-ZXNlcnZlX2ViZGFfcmVnaW9uKCk7Ci0JcmVzZXJ2ZV9zZXR1cF9kYXRhKCk7CiAKIAkvKgogCSAq
-IEF0IHRoaXMgcG9pbnQgZXZlcnl0aGluZyBzdGlsbCBuZWVkZWQgZnJvbSB0aGUgYm9vdCBsb2Fk
-ZXIKZGlmZiAtLWdpdCBhL2FyY2gveDg2L2tlcm5lbC9zZXR1cC5jIGIvYXJjaC94ODYva2VybmVs
-L3NldHVwLmMKaW5kZXggYmY1MjhiMi4uZTljZTYzMyAxMDA2NDQKLS0tIGEvYXJjaC94ODYva2Vy
-bmVsL3NldHVwLmMKKysrIGIvYXJjaC94ODYva2VybmVsL3NldHVwLmMKQEAgLTM4OSwxNCArMzg5
-LDMzIEBAIHN0YXRpYyB2b2lkIF9faW5pdCBwYXJzZV9zZXR1cF9kYXRhKHZvaWQpCiAJCWRlZmF1
-bHQ6CiAJCQlicmVhazsKIAkJfQotI2lmbmRlZiBDT05GSUdfREVCVUdfQk9PVF9QQVJBTVMKLQkJ
-ZnJlZV9lYXJseShwYV9kYXRhLCBwYV9kYXRhK3NpemVvZigqZGF0YSkrZGF0YS0+bGVuKTsKLSNl
-bmRpZgogCQlwYV9kYXRhID0gZGF0YS0+bmV4dDsKIAkJZWFybHlfaW91bm1hcChkYXRhLCBQQUdF
-X1NJWkUpOwogCX0KIH0KIAorc3RhdGljIHZvaWQgX19pbml0IHJlc2VydmVfc2V0dXBfZGF0YSh2
-b2lkKQoreworCXN0cnVjdCBzZXR1cF9kYXRhICpkYXRhOworCXU2NCBwYV9kYXRhOworCWNoYXIg
-YnVmWzMyXTsKKworCWlmIChib290X3BhcmFtcy5oZHIudmVyc2lvbiA8IDB4MDIwOSkKKwkJcmV0
-dXJuOworCXBhX2RhdGEgPSBib290X3BhcmFtcy5oZHIuc2V0dXBfZGF0YTsKKwl3aGlsZSAocGFf
-ZGF0YSkgeworCQlkYXRhID0gZWFybHlfaW9yZW1hcChwYV9kYXRhLCBzaXplb2YoKmRhdGEpKTsK
-KwkJc3ByaW50ZihidWYsICJzZXR1cCBkYXRhICV4IiwgZGF0YS0+dHlwZSk7CisJCWU4MjBfdXBk
-YXRlX3JhbmdlKHBhX2RhdGEsIHNpemVvZigqZGF0YSkrZGF0YS0+bGVuLAorCQkJIEU4MjBfUkFN
-LCBFODIwX1JFU0VSVkVEX0tFUk4pOworCQlwYV9kYXRhID0gZGF0YS0+bmV4dDsKKwkJZWFybHlf
-aW91bm1hcChkYXRhLCBzaXplb2YoKmRhdGEpKTsKKwl9CisJc2FuaXRpemVfZTgyMF9tYXAoZTgy
-MC5tYXAsIEFSUkFZX1NJWkUoZTgyMC5tYXApLCAmZTgyMC5ucl9tYXApOworCXByaW50ayhLRVJO
-X0lORk8gImV4dGVuZGVkIHBoeXNpY2FsIFJBTSBtYXA6XG4iKTsKKwllODIwX3ByaW50X21hcCgi
-ZXh0ZW5kZWQiKTsKK30KKwogLyoKICAqIC0tLS0tLS0tLSBDcmFzaGtlcm5lbCByZXNlcnZhdGlv
-biAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KICAqLwpAQCAtNjQwLDYgKzY1OSw4IEBA
-IHZvaWQgX19pbml0IHNldHVwX2FyY2goY2hhciAqKmNtZGxpbmVfcCkKIAkgKi8KIAltYXhfcGZu
-ID0gZTgyMF9lbmRfb2ZfcmFtKCk7CiAKKwlyZXNlcnZlX3NldHVwX2RhdGEoKTsKKwogCS8qIHBy
-ZWFsbG9jYXRlIDRrIGZvciBtcHRhYmxlIG1wYyAqLwogCWVhcmx5X3Jlc2VydmVfZTgyMF9tcGNf
-bmV3KCk7CiAJLyogdXBkYXRlIGU4MjAgZm9yIG1lbW9yeSBub3QgY292ZXJlZCBieSBXQiBNVFJS
-cyAqLwpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9hc20teDg2L2Jvb3RwYXJhbS5oIGIvaW5jbHVkZS9h
-c20teDg2L2Jvb3RwYXJhbS5oCmluZGV4IDZlZWJhM2IuLmFlMjJiZGYgMTAwNjQ0Ci0tLSBhL2lu
-Y2x1ZGUvYXNtLXg4Ni9ib290cGFyYW0uaAorKysgYi9pbmNsdWRlL2FzbS14ODYvYm9vdHBhcmFt
-LmgKQEAgLTEwOCw2ICsxMDgsNCBAQCBzdHJ1Y3QgYm9vdF9wYXJhbXMgewogCV9fdTggIF9wYWQ5
-WzI3Nl07CQkJCS8qIDB4ZWVjICovCiB9IF9fYXR0cmlidXRlX18oKHBhY2tlZCkpOwogCi12b2lk
-IHJlc2VydmVfc2V0dXBfZGF0YSh2b2lkKTsKLQogI2VuZGlmIC8qIF9BU01fQk9PVFBBUkFNX0gg
-Ki8KZGlmZiAtLWdpdCBhL2luY2x1ZGUvYXNtLXg4Ni9lODIwLmggYi9pbmNsdWRlL2FzbS14ODYv
-ZTgyMC5oCmluZGV4IGY2MjI2ODUuLjQ1ZTkwNGYgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvYXNtLXg4
-Ni9lODIwLmgKKysrIGIvaW5jbHVkZS9hc20teDg2L2U4MjAuaApAQCAtNDQsNiArNDQsOSBAQAog
-I2RlZmluZSBFODIwX0FDUEkJMwogI2RlZmluZSBFODIwX05WUwk0CiAKKy8qIHJlc2VydmVkIFJB
-TSB1c2VkIGJ5IGtlcm5lbCBpdHNlbGYgKi8KKyNkZWZpbmUgRTgyMF9SRVNFUlZFRF9LRVJOICAg
-ICAgICAxMjgKKwogI2lmbmRlZiBfX0FTU0VNQkxZX18KIHN0cnVjdCBlODIwZW50cnkgewogCV9f
-dTY0IGFkZHI7CS8qIHN0YXJ0IG9mIG1lbW9yeSBzZWdtZW50ICovCg==
-------=_Part_7698_26313661.1214533323548--
+
+---
+commit 6c686a6814a805782c7ab48ad89352ee309e8c32
+Author: Chunbo Luo <chunbo.luo@windriver.com>
+Date:   Fri Jun 27 09:56:52 2008 +0800
+
+    libata-scsi: Don't start hotplug work queue if hotplug is disabled
+    
+    Previously, queue_delayed_work() was started unconditionally, but if
+    ATA_PFLAG_SCSI_HOTPLUG is not set and we do this, the work queue may
+    cause multiple messages like this:
+    
+    ata3.00: WARNING: ATAPI is not supported with this driver, device ignored.
+    
+    So now,it is only started when the hotplug flag is actually set.
+    
+    Signed-off-by: Chunbo Luo <chunbo.luo@windriver.com>
+
+diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+index 57a4364..7ed5bb3 100644
+--- a/drivers/ata/libata-scsi.c
++++ b/drivers/ata/libata-scsi.c
+@@ -3108,8 +3108,9 @@ void ata_scsi_scan_host(struct ata_port *ap, int sync)
+                                "                  switching to async\n");
+        }
+ 
+-       queue_delayed_work(ata_aux_wq, &ap->hotplug_task,
+-                          round_jiffies_relative(HZ));
++       if (ap->pflags & ATA_PFLAG_SCSI_HOTPLUG)
++               queue_delayed_work(ata_aux_wq, &ap->hotplug_task,
++                                  round_jiffies_relative(HZ));
+ }
+ 
+ /**
+---
+
+
+Best Regards
+Chunbo
