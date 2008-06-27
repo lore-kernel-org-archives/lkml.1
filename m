@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765197AbYF0Vr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765396AbYF0VsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765197AbYF0Vr6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 17:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764321AbYF0ViN
+	id S1765396AbYF0VsY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 17:48:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764228AbYF0ViV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 17:38:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59162 "EHLO mx1.redhat.com"
+	Fri, 27 Jun 2008 17:38:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59177 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763607AbYF0ViK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 17:38:10 -0400
+	id S1764193AbYF0ViT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 17:38:19 -0400
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: tglx@linutronix.de, mingo@elte.hu, x86@kernel.org
-Subject: [PATCH 27/39] move __addr_ok to uaccess.h
-Date: Fri, 27 Jun 2008 18:34:34 -0300
-Message-Id: <1214602486-17080-28-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 29/39] mark x86_64 as having a working WP.
+Date: Fri, 27 Jun 2008 18:34:36 -0300
+Message-Id: <1214602486-17080-30-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1214602486-17080-27-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1214602486-17080-29-git-send-email-gcosta@redhat.com>
 References: <1214602486-17080-1-git-send-email-gcosta@redhat.com>
  <1214602486-17080-2-git-send-email-gcosta@redhat.com>
  <1214602486-17080-3-git-send-email-gcosta@redhat.com>
@@ -44,64 +44,32 @@ References: <1214602486-17080-1-git-send-email-gcosta@redhat.com>
  <1214602486-17080-25-git-send-email-gcosta@redhat.com>
  <1214602486-17080-26-git-send-email-gcosta@redhat.com>
  <1214602486-17080-27-git-send-email-gcosta@redhat.com>
+ <1214602486-17080-28-git-send-email-gcosta@redhat.com>
+ <1214602486-17080-29-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Take it out of uaccess_32.h. Since it seems that no users
-of the x86_64 exists, we simply pick the i386 version.
+select X86_WP_WORKS_OK for x86_64 too.
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- include/asm-x86/uaccess.h    |    4 ++++
- include/asm-x86/uaccess_32.h |    4 ----
- include/asm-x86/uaccess_64.h |    3 ---
- 3 files changed, 4 insertions(+), 7 deletions(-)
+ arch/x86/Kconfig.cpu |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/asm-x86/uaccess.h b/include/asm-x86/uaccess.h
-index a06a810..3721513 100644
---- a/include/asm-x86/uaccess.h
-+++ b/include/asm-x86/uaccess.h
-@@ -33,6 +33,10 @@
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index d5f04f9..99ec0fe 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -344,7 +344,7 @@ config X86_F00F_BUG
  
- #define segment_eq(a, b)	((a).seg == (b).seg)
+ config X86_WP_WORKS_OK
+ 	def_bool y
+-	depends on X86_32 && !M386
++	depends on !M386
  
-+#define __addr_ok(addr)					\
-+	((unsigned long __force)(addr) <		\
-+	 (current_thread_info()->addr_limit.seg))
-+
- /*
-  * Test whether a block of memory is a valid user space address.
-  * Returns 0 if the range is valid, nonzero otherwise.
-diff --git a/include/asm-x86/uaccess_32.h b/include/asm-x86/uaccess_32.h
-index 3cc3236..87b1aed 100644
---- a/include/asm-x86/uaccess_32.h
-+++ b/include/asm-x86/uaccess_32.h
-@@ -20,10 +20,6 @@ extern struct movsl_mask {
- } ____cacheline_aligned_in_smp movsl_mask;
- #endif
- 
--#define __addr_ok(addr)					\
--	((unsigned long __force)(addr) <		\
--	 (current_thread_info()->addr_limit.seg))
--
- extern void __put_user_bad(void);
- 
- /*
-diff --git a/include/asm-x86/uaccess_64.h b/include/asm-x86/uaccess_64.h
-index 4a44b90..8130876 100644
---- a/include/asm-x86/uaccess_64.h
-+++ b/include/asm-x86/uaccess_64.h
-@@ -9,9 +9,6 @@
- #include <linux/prefetch.h>
- #include <asm/page.h>
- 
--#define __addr_ok(addr) (!((unsigned long)(addr) &			\
--			   (current_thread_info()->addr_limit.seg)))
--
- #define ARCH_HAS_SEARCH_EXTABLE
- 
- extern void __put_user_1(void);
+ config X86_INVLPG
+ 	def_bool y
 -- 
 1.5.5.1
 
