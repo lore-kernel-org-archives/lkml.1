@@ -1,139 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761262AbYF0RTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbYF0RUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761262AbYF0RTU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 13:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYF0RTI
+	id S1760979AbYF0RUk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 13:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbYF0RUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 13:19:08 -0400
-Received: from gv-out-0910.google.com ([216.239.58.186]:32227 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753023AbYF0RTF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 13:19:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YYQAskT/pDed7UZCMku4JwpU5h7usiK6WvMae1Huama1hkGpHCLQHMYNyqj0CRKPRN
-         MuCyKelxfJBKKYDKWuBasJaINRx2tYdxFhG4rW8yyMNHzxMBO1d0v68FhDf1/bGIUKuq
-         C0b59b+MwnlbfH55pv8XRP+m42gQvy6HzbA2E=
-Date: Fri, 27 Jun 2008 21:18:36 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Chris Friesen <cfriesen@nortel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip/master] x86: nmi_watchdog - documentation fix
-Message-ID: <20080627171836.GF18957@cvg>
-References: <20080627154340.GC18957@cvg> <Pine.LNX.4.55.0806271652020.8868@cliff.in.clinika.pl> <20080627165937.2f1fb661@lxorguk.ukuu.org.uk> <4865160C.2040403@nortel.com> <20080627165125.GE18957@cvg> <20080627095608.649e819a.randy.dunlap@oracle.com>
+	Fri, 27 Jun 2008 13:20:32 -0400
+Received: from 8bytes.org ([88.198.83.132]:54594 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752550AbYF0RUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 13:20:32 -0400
+Date: Fri, 27 Jun 2008 19:20:30 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Adrian Bunk <bunk@kernel.org>,
+       Joerg Roedel <joerg.roedel@amd.com>, tglx@linutronix.de,
+       mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       Sebastian.Biemueller@amd.com, robert.richter@amd.com
+Subject: Re: [PATCH 01/34] AMD IOMMU: add Kconfig entry
+Message-ID: <20080627172030.GF10197@8bytes.org>
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-2-git-send-email-joerg.roedel@amd.com> <20080627142558.GG18644@cs181140183.pp.htv.fi> <878wwrq6im.fsf@basil.nowhere.org> <20080627163945.GA26130@il.ibm.com> <20080627165430.GD10197@8bytes.org> <20080627165947.GB26130@il.ibm.com> <20080627170546.GE10197@8bytes.org> <20080627171201.GC26130@il.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080627095608.649e819a.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080627171201.GC26130@il.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Randy Dunlap - Fri, Jun 27, 2008 at 09:56:08AM -0700]
-| On Fri, 27 Jun 2008 20:51:25 +0400 Cyrill Gorcunov wrote:
-| 
-| > [Chris Friesen - Fri, Jun 27, 2008 at 10:32:12AM -0600]
-| > > Alan Cox wrote:
-| > >> On Fri, 27 Jun 2008 16:54:19 +0100 (BST)
-| > >> "Maciej W. Rozycki" <macro@linux-mips.org> wrote:
-| > >>> On Fri, 27 Jun 2008, Cyrill Gorcunov wrote:
-| > >>>
-| > >>>
-| > >>>> +NOTE: Prior to 2.4.2-ac18 the NMI-oopser is enabled unconditionally
-| > >>>> +on x86 SMP boxes.
-| > >>>
-| > >>> While you are at it: s/is/was/.
-| > >> Erm - why ??
-| > >> It is still true today that kernels < 2.4.2-ac8 have the NMI oopser
-| > >> enabled.
-| > >
-| > > To my ear the phrase as written implies past tense for the author/reader 
-| > > (i.e. "at points in time prior to the release of 2.4.2-ac18"), and thus 
-| > > grates against "is".
-| > >
-| > > The following sounds better to me: "In kernels prior to 2.4.2-ac18 the 
-| > > NMI-oopser is enabled..."  In this context the phrase itself is in the 
-| > > present, but we point to past kernels.
-| > >
-| > > Chris
-| > >
-| > 
-| > And the winner is? I'm not native English speaker so I can't select
-| > a better candidate in {is,was} limited set.
-| 
-| Use the text that Chris suggested...
-| 
-| 
-| ---
-| ~Randy
-| Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-| http://linuxplumbersconf.org/
-| 
+On Fri, Jun 27, 2008 at 01:12:01PM -0400, Muli Ben-Yehuda wrote:
+> On Fri, Jun 27, 2008 at 07:05:46PM +0200, Joerg Roedel wrote:
+> > On Fri, Jun 27, 2008 at 12:59:47PM -0400, Muli Ben-Yehuda wrote:
+> > > On Fri, Jun 27, 2008 at 06:54:30PM +0200, Joerg Roedel wrote:
+> > > 
+> > > > True. At least for the case without device isolation I have some
+> > > > optimizations in mind which will minimize the performance
+> > > > tradeoff. I hope to have them ready for 2.6.28 :)
+> > > 
+> > > Do you mean the case where you have a single I/O address space which
+> > > is shared by all devices?
+> > 
+> > Yes. I think this will be the case used most when IOMMU is used for
+> > virtualization
+> 
+> Could you elaborate on what you mean here? I assume you're thinking
+> one I/O address space for the host, and one I/O address space per
+> guest with assigned devices?
 
-Ok, you choose ;)
+I think we can create an address space which almost direct-maps the
+physical memory and let some room free for the aperture at the beginning
+(say 64MB). If a mapping request arrives the code looks if it has to do
+mapping (physical address of memory to map is in the first 64MB or
+not in the device address range). If this is not the case it simply
+returns the physical address as dma_addr. otherwise it does the
+expensive mapping. This way we could minimize the default overhead which
+we will get with an IOMMU and still use it for virtualization and as a
+GART replacement.
 
-		- Cyrill -
+> > and to handle devices with limited DMA address ranges.
+> 
+> I'd be pretty surprised if you'll find such devices on machines which
+> will have AMD's IOMMU...
 
----
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: [PATCH -tip/master] x86: nmi_watchdog - documentation fix
+Think of 32bit PCI devices in a host with more than 4GB memory :)
 
-mi_watchdog is set to NMI_NONE by default (ie disabled) on _any_
-mode so lets fix documentation too.
+Cheers,
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Maciej W. Rozycki <macro@linux-mips.org>
----
-
-Index: linux-2.6.git/Documentation/nmi_watchdog.txt
-====================================================================
---- linux-2.6.git.orig/Documentation/nmi_watchdog.txt	2008-06-27 19:50:06.000000000 +0400
-+++ linux-2.6.git/Documentation/nmi_watchdog.txt	2008-06-27 21:15:02.000000000 +0400
-@@ -10,7 +10,7 @@ us to generate 'watchdog NMI interrupts'
- which get executed even if the system is otherwise locked up hard).
- This can be used to debug hard kernel lockups.  By executing periodic
- NMI interrupts, the kernel can monitor whether any CPU has locked up,
--and print out debugging messages if so.  
-+and print out debugging messages if so.
- 
- In order to use the NMI watchdog, you need to have APIC support in your
- kernel. For SMP kernels, APIC support gets compiled in automatically. For
-@@ -22,8 +22,7 @@ CONFIG_X86_UP_IOAPIC is for uniprocessor
- kernel debugging options, such as Kernel Stack Meter or Kernel Tracer,
- may implicitly disable the NMI watchdog.]
- 
--For x86-64, the needed APIC is always compiled in, and the NMI watchdog is
--always enabled with I/O-APIC mode (nmi_watchdog=1).
-+For x86-64, the needed APIC is always compiled in.
- 
- Using local APIC (nmi_watchdog=2) needs the first performance register, so
- you can't use it for other purposes (such as high precision performance
-@@ -63,16 +62,15 @@ when the system is idle), but if your sy
- "hlt", then you are out of luck -- the event will not happen at all and the
- watchdog won't trigger. This is a shortcoming of the local APIC watchdog
- -- unfortunately there is no "clock ticks" event that would work all the
--time. The I/O APIC watchdog is driven externally and has no such shortcoming.  
-+time. The I/O APIC watchdog is driven externally and has no such shortcoming.
- But its NMI frequency is much higher, resulting in a more significant hit
- to the overall system performance.
- 
--NOTE: starting with 2.4.2-ac18 the NMI-oopser is disabled by default,
--you have to enable it with a boot time parameter.  Prior to 2.4.2-ac18
--the NMI-oopser is enabled unconditionally on x86 SMP boxes.
-+On x86 nmi_watchdog is disabled by default so you have to enable it with
-+a boot time parameter.
- 
--On x86-64 the NMI oopser is on by default. On 64bit Intel CPUs
--it uses IO-APIC by default and on AMD it uses local APIC.
-+NOTE: In kernels prior to 2.4.2-ac18 the NMI-oopser is enabled unconditionally
-+on x86 SMP boxes.
- 
- [ feel free to send bug reports, suggestions and patches to
-   Ingo Molnar <mingo@redhat.com> or the Linux SMP mailing
+Joerg
