@@ -1,86 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763693AbYF0VA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763941AbYF0VBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763693AbYF0VA5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 17:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbYF0VAs
+	id S1763941AbYF0VBZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 17:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbYF0VBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 17:00:48 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60028 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754193AbYF0VAs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 17:00:48 -0400
-Date: Fri, 27 Jun 2008 13:56:25 -0700
-From: Greg KH <gregkh@suse.de>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: x86@kernel.org, gregkh@suse.de, kexec@lists.infradead.org,
-       yhlu.kernel@gmail.com, vgoyal@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Add /sys/firmware/memmap
-Message-ID: <20080627205625.GA16609@kroah.com>
-References: <1214565175-21512-1-git-send-email-bwalle@suse.de> <1214565175-21512-2-git-send-email-bwalle@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 27 Jun 2008 17:01:08 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:59543 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754193AbYF0VBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 17:01:07 -0400
+Date: Fri, 27 Jun 2008 23:01:52 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
+Cc: Bart Van Assche <bart.vanassche@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Userspace tools for BSD process accounting (v3)
+Message-ID: <20080627210152.GA29245@uranus.ravnborg.org>
+References: <e2e108260806180134u43413ef5ke226745a8a911e7b@mail.gmail.com> <200806181139.06612.caglar@pardus.org.tr> <200806181145.14265.caglar@pardus.org.tr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1214565175-21512-2-git-send-email-bwalle@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200806181145.14265.caglar@pardus.org.tr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 01:12:54PM +0200, Bernhard Walle wrote:
-> This patch adds /sys/firmware/memmap interface that represents the BIOS
-> (or Firmware) provided memory map. The tree looks like:
+On Wed, Jun 18, 2008 at 11:45:13AM +0300, S.Çağlar Onur wrote:
+> Hi;
 > 
->     /sys/firmware/memmap/0/start   (hex number)
->                            end     (hex number)
->                            type    (string)
->     ...                 /1/start
->                            end
->                            type
+> 18 Haz 2008 Çar tarihinde, S.Çağlar Onur şunları yazmıştı: 
+> > 18 Haz 2008 Çar tarihinde, Bart Van Assche şunları yazmıştı: 
+> > > The file init/Kconfig in the kernel source tree refers to the URL
+> > > http://www.physik3.uni-rostock.de/tim/kernel/utils/acct/ as the
+> > > download location for userspace tools for processing the v3 BSD
+> > > process accounting file format. This URL is no longer valid
+> > > unfortunately. Anyone any idea where these tools can be downloaded ?
+> > 
+> > http://savannah.gnu.org/projects/acct/
 > 
-> With the following shell snippet one can print the memory map in the same form
-> the kernel prints itself when booting on x86 (the E820 map).
+> Following patch corrects URL of "The GNU Accounting Utilities" in init/Kconfig.
 > 
->   --------- 8< --------------------------
->     #!/bin/sh
->     cd /sys/firmware/memmap
->     for dir in * ; do
->         start=$(cat $dir/start)
->         end=$(cat $dir/end)
->         type=$(cat $dir/type)
->         printf "%016x-%016x (%s)\n" $start $[ $end +1] "$type"
->     done
->   --------- >8 --------------------------
+> Noticed by: Bart Van Assche" <bart.vanassche@gmail.com>
 > 
-> That patch only provides the needed interface:
+> Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
 > 
->  1. The sysfs interface.
->  2. The structure and enumeration definition.
->  3. The function firmware_map_add() and firmware_map_add_early()
->     that should be called from architecture code (E820/EFI, for
->     example) to add the contents to the interface.
+>  init/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> If the kernel is compiled without CONFIG_FIRMWARE_MEMMAP, the interface does
-> nothing without cluttering the architecture-specific code with #ifdef's.
-> 
-> The purpose of the new interface is kexec: While /proc/iomem represents
-> the *used* memory map (e.g. modified via kernel parameters like 'memmap'
-> and 'mem'), the /sys/firmware/memmap tree represents the unmodified memory
-> map provided via the firmware. So kexec can:
-> 
->  - use the original memory map for rebooting,
->  - use the /proc/iomem for setting up the ELF core headers for kdump
->    case that should only represent the memory of the system.
-> 
-> The patch has been tested on i386 and x86_64.
-> 
-> 
-> Signed-off-by: Bernhard Walle <bwalle@suse.de>
+> diff --git a/init/Kconfig b/init/Kconfig
+> index 6199d11..10077ce 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -171,7 +171,7 @@ config BSD_PROCESS_ACCT_V3
+>  	  process and it's parent. Note that this file format is incompatible
+>  	  with previous v0/v1/v2 file formats, so you will need updated tools
+>  	  for processing it. A preliminary version of these tools is available
+> -	  at <http://www.physik3.uni-rostock.de/tim/kernel/utils/acct/>.
+> +	  at <http://www.gnu.org/software/acct/>.
+>  
+>  config TASKSTATS
+>  	bool "Export task/process statistics through netlink (EXPERIMENTAL)"
 
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+Applied
 
-x86 developers, feel free to add this to your tree, it looks fine to me.
-
-thanks,
-
-greg k-h
+	Sam
