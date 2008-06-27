@@ -1,87 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbYF0Ok3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759357AbYF0OmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757874AbYF0Ok3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 10:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755256AbYF0OkU
+	id S1759357AbYF0OmE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 10:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbYF0Oly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 10:40:20 -0400
-Received: from wx-out-0506.google.com ([66.249.82.227]:36997 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755078AbYF0OkT (ORCPT
+	Fri, 27 Jun 2008 10:41:54 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:34541 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755974AbYF0Olx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 10:40:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Z/K8ozexjIGnRfwpeIvLjB8+6IWGMChBJHHAjts2ev35bQlfFSSHwyiu/9nGhhNxNa
-         DBCiH84UQ0cDhK9vHWJxquvSsUXbdscMV1E8bfQirj3SJ7XQ2LxbE4Q+zYxdD2nJR/Wq
-         X63XOpk9QFfvLacHU01NC1YH0oLudMggoQ+x4=
-Message-ID: <cfd18e0f0806270740v23e0e0e4jc7ca520dcf31540f@mail.gmail.com>
-Date: Fri, 27 Jun 2008 16:40:18 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: [PATCH] cpusets: document proc status cpus and mems allowed lists
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Paul Menage" <menage@google.com>, linux-kernel@vger.kernel.org,
-       "Mike Travis" <travis@sgi.com>
-In-Reply-To: <20080627140528.3490.86690.sendpatchset@polaris-admin.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 27 Jun 2008 10:41:53 -0400
+Subject: Current List of Kernel Summit suggested topics from the discuss
+	list
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: ksummit-2008-discuss@lists.linux-foundation.org
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 27 Jun 2008 09:41:49 -0500
+Message-Id: <1214577710.3394.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080627140528.3490.86690.sendpatchset@polaris-admin.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 4:05 PM, Paul Jackson <pj@sgi.com> wrote:
-> From: Paul Jackson <pj@sgi.com>
->
-> Provide a little documentation for the two new fields,
-> Cpus_allowed_list and Mems_allowed_list, that were
-> added to each /proc/<pid>/status file a while back.
->
-> Signed-off-by: Paul Jackson <pj@sgi.com>
+Hi All,
 
-Acked-by: Michael Kerrisk <mtk,manpages@gmail.com>
+This is the synopsis of the currently suggested topics so far.  That's
+not to say this is the list we will be doing, just to say that if
+there's something you think we should be discussing and it's not on the
+list, now would be a good time to add it (don't trust the programme
+committee magically to add it at the last minute ...)
 
-> ---
->  Documentation/cpusets.txt |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
->
-> --- 2.6.26-rc5-mm3.orig/Documentation/cpusets.txt       2008-06-27 06:20:55.000000000 -0700
-> +++ 2.6.26-rc5-mm3/Documentation/cpusets.txt    2008-06-27 06:55:34.609862065 -0700
-> @@ -154,13 +154,15 @@ browsing and modifying the cpusets prese
->  new system calls are added for cpusets - all support for querying and
->  modifying cpusets is via this cpuset file system.
->
-> -The /proc/<pid>/status file for each task has two added lines,
-> +The /proc/<pid>/status file for each task has four added lines,
->  displaying the tasks cpus_allowed (on which CPUs it may be scheduled)
->  and mems_allowed (on which Memory Nodes it may obtain memory),
-> -in the format seen in the following example:
-> +in the two formats seen in the following example:
->
->   Cpus_allowed:   ffffffff,ffffffff,ffffffff,ffffffff
-> +  Cpus_allowed_list:      0-127
->   Mems_allowed:   ffffffff,ffffffff
-> +  Mems_allowed_list:      0-63
->
->  Each cpuset is represented by a directory in the cgroup file system
->  containing (on top of the standard cgroup files) the following
->
-> --
->                          I won't rest till it's the best ...
->                          Programmer, Linux Scalability
->                          Paul Jackson <pj@sgi.com> 1.650.933.1373
->
+James
+
+---
+
+Meta Topics:
+
+     1. Do KS as an unconference - Matthew Wilcox
+     2. Do a Mini Hackfest for 50% of the time - Greg KH
+     3. Expand to three days and do Tech/Process/Tech on each day - Dave
+        Miller
+
+Agenda Topics:
+
+     1. Asynchronous Operations - Ulrich Drepper
+              * How do we make programs more parallel (driven by
+                multicore)
+              * Can we use tasklets for this
+     2. Fixing the Kernel Janitor's Project - James Bottomley
+              * KJ Isn't a good intro to kernel hacking, need better
+                ones like bug finding and fixing.
+              * Need to find more ways for non coders to make useful
+                contributions
+              * Need to think more about what 'useful contributions' are
+              * What about the kernel tester's project [Adrian Bunk]
+     3. Moving firmware Blobs out of the Kernel - David Woodhouse
+              * remove all firmware and repackage in ways that would
+                either be pulled in at runtime or could be linked into
+                the kernel (distro choice)
+              * Need to be careful about licensing compatibility
+              * Where should we actually keep the extracted firmware
+     4. Barriers - Neil Brown
+              * Need to define what semantics filesystems actually want
+              * Need to relate this to what devices and subsystems can
+                actually provide.
+     5. Tracking Regressions - Rafael Wysocki
+              * Describe experiences with the current running of the
+                regression lists
+              * How could we make the current list and practice more
+                useful
+     6. Discuss new Suspend/Resume Framework - Rafael Wysocki
+              * Discuss semantics of what drivers should be expecting
+                and what best practices are.
+              * Need better documentation on this
+              * can we make subsystem libraries of helpers for their
+                driver suspend/resume to ease the pain?
+     7. Hack/Fix session for Laptop Suspend and NOHZ/idle - Thomas
+        Gleixner
+              * Perhaps this should be done at Plumbers instead
+     8. Content Accessed Filesystems - Lars Noschinski
+              * Filesystem that would store the same block only once
+              * Would be useful for git [Pavel Machek]
+     9. When should Drivers be Merged - James Bottomley
+              * Options seem to be ASAP, Wait for a bit for it to
+                mature, when the vendor has fixed the obvious bugs
+              * Have a fast submission track for drivers for which the
+                hardware documentation is available [Tony Luck]
+              * Run driver submissions early through staging trees while
+                they get fixed
+                      * How should these be run? Centrally or in
+                        subsystem trees
+                      * Should staging trees be part of linux-next
 
 
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
