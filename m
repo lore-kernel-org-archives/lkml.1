@@ -1,60 +1,42 @@
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758057AbYGFOrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763909AbYF3T05 (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 30 Jun 2008 15:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbYF3T0q
+	id S1758057AbYGFOrj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 10:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756908AbYGFOrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 15:26:46 -0400
-Received: from athos.st-and.ac.uk ([138.251.61.174]:36369 "EHLO
-	athos.st-andrews.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751882AbYF3T0p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 15:26:45 -0400
-X-Greylist: delayed 7498 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jun 2008 15:26:45 EDT
-Message-ID: <1214839868.4868fc3c8b26e@webmail.st-andrews.ac.uk>
-Date: Mon, 30 Jun 2008 16:31:08 +0100
-From: Jenny Mackay <info@whitman.edu>
-Reply-to: kingcollege.helpdesk@y7mail.com
-Subject: 
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.8
-X-Originating-IP: 80.255.59.243
-X-StAndrews-MailScanner-Information: Please contact the ISP for more information
-X-StAndrews-MailScanner: No virus detected
-X-StAndrews-MailScanner-SpamCheck: not spam, SpamAssassin (score=0,
-	required 5)
-X-StAndrews-MailScanner-From: info@whitman.edu
-To: unlisted-recipients:; (no To-header on input)
+	Sun, 6 Jul 2008 10:47:31 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2643 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756906AbYGFOra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 10:47:30 -0400
+Date: Fri, 27 Jun 2008 21:14:58 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: David Altobelli <david.altobelli@hp.com>
+Cc: linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: Re: [PATCH][resubmit] HP iLO driver
+Message-ID: <20080627191458.GA10872@ucw.cz>
+References: <20080623160052.GA7616@ldl.fc.hp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080623160052.GA7616@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1763909AbYF3T05@vger.kernel.org>
 
+Hi!
 
+> A driver for the HP iLO/iLO2 management processor, which allows userspace
+> programs to query the management processor.  Programs can open a channel
+> to the device (/dev/hpilo/dXccbN), and use this to send/receive queries.  
 
-Dear ISI User,
+What kind of queries? Is there documentation somewhere?
 
-To complete your ISI account, you must reply to this email
-immediately and enter your
-username:     (*********)
-password here (*********)
+If it can read temperature, it should hook itself into hwmon
+framework. Can it? What can it do?
 
-Failure to do this will immediately render your email address
-deactivated from our database.
-
-We apologise for the inconvenience that this will cause you during this
-
-period, but trust you understand that our primary concern is for our
-
-customers and for the security of their data.
-
-our customers are totally secure
-Regards
-
-ISI Support Team
-
-
-------------------------------------------------------------------
-University of St Andrews Webmail: https://webmail.st-andrews.ac.uk
-
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
