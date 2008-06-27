@@ -1,138 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbYF0Ca0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbYF0CjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755603AbYF0Ca0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 22:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbYF0CaO
+	id S1755169AbYF0CjW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 22:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbYF0CjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 22:30:14 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:35599 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751519AbYF0CaN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 22:30:13 -0400
-Date: Thu, 26 Jun 2008 20:30:11 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Dave Chinner <david@fromorbit.com>
-Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/6] Replace inode flush semaphore with a completion
-Message-ID: <20080627023011.GC7703@parisc-linux.org>
-References: <1214455277-6387-1-git-send-email-david@fromorbit.com> <1214455277-6387-3-git-send-email-david@fromorbit.com>
+	Thu, 26 Jun 2008 22:39:11 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:41900 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751577AbYF0CjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 22:39:10 -0400
+Message-ID: <486452CC.8050502@sgi.com>
+Date: Thu, 26 Jun 2008 19:39:08 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1214455277-6387-3-git-send-email-david@fromorbit.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Vegard Nossum <vegard.nossum@gmail.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       mm-commits@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask
+ V2
+References: <200806090918.m599Ib0G012837@imap1.linux-foundation.org> <19f34abd0806090420r4100241cgb4b828441de3b102@mail.gmail.com> <20080609113547.GA1534@elte.hu> <484D54F2.4070603@sgi.com> <20080626113229.GB29619@elte.hu> <4863C334.2090007@sgi.com>
+In-Reply-To: <4863C334.2090007@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 02:41:13PM +1000, Dave Chinner wrote:
-> Use the new completion flush code to implement the inode
-> flush lock. Removes one of the final users of semaphores
-> in the XFS code base.
+Subject: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask V2
 
-Let's demonstrate converting this one to completions ...
+V2: Slightly different version to remove a compiler warning.
 
-> --- a/fs/xfs/xfs_iget.c
-> +++ b/fs/xfs/xfs_iget.c
-> @@ -216,7 +216,7 @@ finish_inode:
->  	mrlock_init(&ip->i_iolock, MRLOCK_BARRIER, "xfsio", ip->i_ino);
->  	init_waitqueue_head(&ip->i_ipin_wait);
->  	atomic_set(&ip->i_pincount, 0);
-> -	initnsema(&ip->i_flock, 1, "xfsfino");
-> +	init_completion_flush(&ip->i_flush);
+  * When CONFIG_DEBUG_PER_CPU_MAPS is set, the node passed to
+      node_to_cpumask and node_to_cpumask_ptr should be validated.
 
-+	init_completion(&ip->i_flush);
-+	complete(&ip->i_flush);
+Based on "Thu Jun 26 09:23:55 PDT 2008" tip/master...  ;-) 
 
->  
->  	if (lock_flags)
->  		xfs_ilock(ip, lock_flags);
-> @@ -776,25 +776,24 @@ xfs_isilocked(
->  #endif
->  
->  /*
-> - * The following three routines simply manage the i_flock
-> - * semaphore embedded in the inode.  This semaphore synchronizes
-> - * processes attempting to flush the in-core inode back to disk.
-> + * Manage the i_flush queue embedded in the inode.  This completion
-> + * queue synchronizes processes attempting to flush the in-core
-> + * inode back to disk.
->   */
->  void
->  xfs_iflock(xfs_inode_t *ip)
->  {
-> -	psema(&(ip->i_flock), PINOD|PLTWAIT);
-> +	completion_flush_start(&ip->i_flush);
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ arch/x86/kernel/setup.c    |   26 +++++++++++++++++++++++---
+ include/asm-x86/topology.h |    7 ++++++-
+ 2 files changed, 29 insertions(+), 4 deletions(-)
 
-+	wait_for_completion(&ip->i_flush);
+--- linux-2.6.tip.orig/arch/x86/kernel/setup.c
++++ linux-2.6.tip/arch/x86/kernel/setup.c
+@@ -377,6 +377,10 @@ int early_cpu_to_node(int cpu)
+ 	return per_cpu(x86_cpu_to_node_map, cpu);
+ }
+ 
++
++/* empty cpumask */
++static const cpumask_t cpu_mask_none;
++
+ /*
+  * Returns a pointer to the bitmask of CPUs on Node 'node'.
+  */
+@@ -389,13 +393,23 @@ cpumask_t *_node_to_cpumask_ptr(int node
+ 		dump_stack();
+ 		return &cpu_online_map;
+ 	}
+-	BUG_ON(node >= nr_node_ids);
+-	return &node_to_cpumask_map[node];
++	if (node >= nr_node_ids) {
++		printk(KERN_WARNING
++			"_node_to_cpumask_ptr(%d): node > nr_node_ids(%d)\n",
++			node, nr_node_ids);
++		dump_stack();
++		return (cpumask_t *)&cpu_mask_none;
++	}
++	return (cpumask_t *)&node_to_cpumask_map[node];
+ }
+ EXPORT_SYMBOL(_node_to_cpumask_ptr);
+ 
+ /*
+  * Returns a bitmask of CPUs on Node 'node'.
++ *
++ * Side note: this function creates the returned cpumask on the stack
++ * so with a high NR_CPUS count, excessive stack space is used.  The
++ * node_to_cpumask_ptr function should be used whenever possible.
+  */
+ cpumask_t node_to_cpumask(int node)
+ {
+@@ -405,7 +419,13 @@ cpumask_t node_to_cpumask(int node)
+ 		dump_stack();
+ 		return cpu_online_map;
+ 	}
+-	BUG_ON(node >= nr_node_ids);
++	if (node >= nr_node_ids) {
++		printk(KERN_WARNING
++			"node_to_cpumask(%d): node > nr_node_ids(%d)\n",
++			node, nr_node_ids);
++		dump_stack();
++		return cpu_mask_none;
++	}
+ 	return node_to_cpumask_map[node];
+ }
+ EXPORT_SYMBOL(node_to_cpumask);
+--- linux-2.6.tip.orig/include/asm-x86/topology.h
++++ linux-2.6.tip/include/asm-x86/topology.h
+@@ -57,7 +57,12 @@ static inline int cpu_to_node(int cpu)
+ }
+ #define early_cpu_to_node(cpu)	cpu_to_node(cpu)
+ 
+-/* Returns a bitmask of CPUs on Node 'node'. */
++/* Returns a bitmask of CPUs on Node 'node'.
++ *
++ * Side note: this function creates the returned cpumask on the stack
++ * so with a high NR_CPUS count, excessive stack space is used.  The
++ * node_to_cpumask_ptr function should be used whenever possible.
++ */
+ static inline cpumask_t node_to_cpumask(int node)
+ {
+ 	return node_to_cpumask_map[node];
 
->  }
->  
->  int
->  xfs_iflock_nowait(xfs_inode_t *ip)
->  {
-> -	return (cpsema(&(ip->i_flock)));
-> +	return completion_flush_start_nowait(&ip->i_flush);
-
-This is where you need a new function ...
-
-+	return nowait_for_completion(&ip->i_flush);
-
-Yes, we probably need a better name for the down_trylock() equivalent.
-
->  }
->  
->  void
->  xfs_ifunlock(xfs_inode_t *ip)
->  {
-> -	ASSERT(issemalocked(&(ip->i_flock)));
-> -	vsema(&(ip->i_flock));
-> +	complete(&ip->i_flush);
-
-Yep.
-
->  }
-> diff --git a/fs/xfs/xfs_inode.c b/fs/xfs/xfs_inode.c
-> index bedc661..81e2040 100644
-> --- a/fs/xfs/xfs_inode.c
-> +++ b/fs/xfs/xfs_inode.c
-> @@ -2630,7 +2630,6 @@ xfs_idestroy(
->  		xfs_idestroy_fork(ip, XFS_ATTR_FORK);
->  	mrfree(&ip->i_lock);
->  	mrfree(&ip->i_iolock);
-> -	freesema(&ip->i_flock);
->  
->  #ifdef XFS_INODE_TRACE
->  	ktrace_free(ip->i_trace);
-> @@ -3048,10 +3047,10 @@ cluster_corrupt_out:
->  /*
->   * xfs_iflush() will write a modified inode's changes out to the
->   * inode's on disk home.  The caller must have the inode lock held
-> - * in at least shared mode and the inode flush semaphore must be
-> - * held as well.  The inode lock will still be held upon return from
-> + * in at least shared mode and the inode flush completion must be
-> + * active as well.  The inode lock will still be held upon return from
->   * the call and the caller is free to unlock it.
-> - * The inode flush lock will be unlocked when the inode reaches the disk.
-> + * The inode flush will be completed when the inode reaches the disk.
->   * The flags indicate how the inode's buffer should be written out.
->   */
->  int
-> @@ -3070,7 +3069,7 @@ xfs_iflush(
->  	XFS_STATS_INC(xs_iflush_count);
->  
->  	ASSERT(xfs_isilocked(ip, XFS_ILOCK_EXCL|XFS_ILOCK_SHARED));
-> -	ASSERT(issemalocked(&(ip->i_flock)));
-> +	ASSERT(completion_flush_inprogress(&ip->i_flush));
-
-is_complete()?
-
->  	ASSERT(ip->i_d.di_format != XFS_DINODE_FMT_BTREE ||
->  	       ip->i_d.di_nextents > ip->i_df.if_ext_max);
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
