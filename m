@@ -1,54 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbYF0OJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757851AbYF0OLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757275AbYF0OJc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 10:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbYF0OJZ
+	id S1757851AbYF0OLj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 10:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbYF0OLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 10:09:25 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:36255 "EHLO
-	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753011AbYF0OJY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 10:09:24 -0400
-X-BigFish: VPS22(zzzz10d3izzz32i87il63h)
-X-Spam-TCS-SCL: 2:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K34KN1-01-KHC-01
-From: Robert Richter <robert.richter@amd.com>
-Date: Fri, 27 Jun 2008 16:04:28 +0200
-Subject: [PATCH] x86: Add PCI IDs for AMD Barcelona PCI devices
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Message-ID: <20080627140905.EBD1C83D4@erda.amd.com>
-X-OriginalArrivalTime: 27 Jun 2008 14:09:06.0186 (UTC) FILETIME=[5C494EA0:01C8D85F]
+	Fri, 27 Jun 2008 10:11:32 -0400
+Received: from ns1.bluetone.cz ([212.158.128.13]:32860 "EHLO ns1.bluetone.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753480AbYF0OLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 10:11:31 -0400
+Message-ID: <4864F524.2070603@slax.org>
+Date: Fri, 27 Jun 2008 16:11:48 +0200
+From: Tomas M <tomas@slax.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Jan Engelhardt <jengelh@medozas.de>
+CC: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: LZMA compression algorithm in Kernel - any chance to allow it?
+References: <48634BA7.6030902@slax.org> <20080626201754.GE9878@ucw.cz> <alpine.LNX.1.10.0806271532150.12725@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LNX.1.10.0806271532150.12725@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Robert Richter <robert.richter@amd.com>
----
- include/linux/pci_ids.h |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+Jan Engelhardt wrote:
+> On Thursday 2008-06-26 22:17, Pavel Machek wrote:
+>>> If I (or anybody else) submit LZMA code for inclusion in kernel, would you ACCEPT IT ?? (assuming the code looks nice to you)
+>> You need some good reason why lzma should be in kernel... like 'cramfs
+>> can use it'...?
+> 
+> squashfs if at all.
+> 
 
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index eafc9d6..4a2557c 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -497,6 +497,11 @@
- #define PCI_DEVICE_ID_AMD_K8_NB_ADDRMAP	0x1101
- #define PCI_DEVICE_ID_AMD_K8_NB_MEMCTL	0x1102
- #define PCI_DEVICE_ID_AMD_K8_NB_MISC	0x1103
-+#define PCI_DEVICE_ID_AMD_10H_NB_HT	0x1200
-+#define PCI_DEVICE_ID_AMD_10H_NB_MAP	0x1201
-+#define PCI_DEVICE_ID_AMD_10H_NB_DRAM	0x1202
-+#define PCI_DEVICE_ID_AMD_10H_NB_MISC	0x1203
-+#define PCI_DEVICE_ID_AMD_10H_NB_LINK	0x1204
- #define PCI_DEVICE_ID_AMD_LANCE		0x2000
- #define PCI_DEVICE_ID_AMD_LANCE_HOME	0x2001
- #define PCI_DEVICE_ID_AMD_SCSI		0x2020
--- 
-1.5.5.4
+Well anything can use lzma or any other compressions, not only squashfs.
+Squashfs is a great example, where you get 30% smaller filesystems compared to gzip.
 
-
+Tomas M
