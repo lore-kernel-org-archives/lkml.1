@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757198AbYF0LNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756572AbYF0LVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757198AbYF0LNs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 07:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbYF0LNi
+	id S1756572AbYF0LVx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 07:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYF0LVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 07:13:38 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60691 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754627AbYF0LNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 07:13:37 -0400
-Date: Fri, 27 Jun 2008 13:14:15 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: x86@kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       vgoyal@redhat.com, gregkh@suse.de
-Subject: Re: [PATCH 2/2] Use FIRMWARE_MEMMAP on x86/E820
-Message-ID: <20080627131415.4d482af2@halley.suse.de>
-In-Reply-To: <86802c440806261354y673a5521ie615feafae3b2bd8@mail.gmail.com>
-References: <1214511542-28458-1-git-send-email-bwalle@suse.de>
-	<1214511542-28458-3-git-send-email-bwalle@suse.de>
-	<86802c440806261354y673a5521ie615feafae3b2bd8@mail.gmail.com>
-Organization: SUSE Linux Products GmbH
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
- D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
- vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
- pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+	Fri, 27 Jun 2008 07:21:41 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57437
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751863AbYF0LVk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 07:21:40 -0400
+Date: Fri, 27 Jun 2008 04:21:40 -0700 (PDT)
+Message-Id: <20080627.042140.139354364.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver fixes for .26
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080627054034.GA32593@havoc.gtf.org>
+References: <20080627054034.GA32593@havoc.gtf.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Yinghai Lu [2008-06-26 13:54]:
->
-> looks good...
+From: Jeff Garzik <jeff@garzik.org>
+Date: Fri, 27 Jun 2008 01:40:34 -0400
+
+> Please pull from 'davem-fixes' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git davem-fixes
 > 
-> will produce one patch update early_reserve_e820_mpc_new or
-> early_reserve_e820 to update e820_saved too. that contained updated
-> mptable for second kernel without acpi support.
+> to receive the following updates:
 
-You or me? I don't understand ...
+Pulled into net-2.6, thanks Jeff.
 
+I'll push back out to kernel.org after some basic sanity checks.
 
+Thanks!
 
-Bernhard
--- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
