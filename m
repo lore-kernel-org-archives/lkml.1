@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763776AbYF0Vfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763985AbYF0Vgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763776AbYF0Vfl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 17:35:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758193AbYF0Vfc
+	id S1763985AbYF0Vgv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 17:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758416AbYF0Vgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 17:35:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58955 "EHLO mx1.redhat.com"
+	Fri, 27 Jun 2008 17:36:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59024 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756109AbYF0Vfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 17:35:31 -0400
-Message-ID: <48655D19.7010204@redhat.com>
-Date: Fri, 27 Jun 2008 17:35:21 -0400
-From: William Cohen <wcohen@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: eranian@gmail.com
-CC: Robert Richter <robert.richter@amd.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, perfmon2-devel@lists.sourceforge.net,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [perfmon2] [PATCH 2/2] x86: add PCI extended config space	access
- for AMD Barcelona
-References: <7c86c4470804300651u5a8fc98dr56fd1834ba902a0e@mail.gmail.com>	<1213890640-4444-2-git-send-email-robert.richter@amd.com>	<20080619155918.GD10019@erda.amd.com> <7c86c4470806270810q4c739f25r44ed194a48cf7c1f@mail.gmail.com>
-In-Reply-To: <7c86c4470806270810q4c739f25r44ed194a48cf7c1f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1757263AbYF0Vgm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 17:36:42 -0400
+From: Glauber Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: tglx@linutronix.de, mingo@elte.hu, x86@kernel.org
+Subject: [PATCH 01/39] Don't use size specifiers
+Date: Fri, 27 Jun 2008 18:34:08 -0300
+Message-Id: <1214602486-17080-2-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.5.1
+In-Reply-To: <1214602486-17080-1-git-send-email-gcosta@redhat.com>
+References: <1214602486-17080-1-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-stephane eranian wrote:
-> Robert,
-> 
-> This patch was applied to the perfmon GIT tree.
-> Please test.
-> Thanks.
-> 
-> 
-> On Thu, Jun 19, 2008 at 5:59 PM, Robert Richter <robert.richter@amd.com> wrote:
->> On 19.06.08 17:50:40, Robert Richter wrote:
->>> This patch implements PCI extended configuration space access for
->>> AMD's Barcelona CPUs. It extends the method using CF8/CFC IO
->>> addresses. An x86 capability bit has been introduced that is set for
->>> CPUs supporting PCI extended config space accesses.
->>>
->>> Signed-off-by: Robert Richter <robert.richter@amd.com>
->>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
->>> ---
->>>  arch/x86/kernel/cpu/cpu.h |    3 +
->>>  arch/x86/pci/Makefile_32  |    1 +
->>>  arch/x86/pci/Makefile_64  |    2 +-
->>>  arch/x86/pci/amd_bus.c    |  560 +++++++++++++++++++++++++++++++++++++++++++++
->>>  arch/x86/pci/direct.c     |   25 ++-
->>>  arch/x86/pci/k8-bus_64.c  |  528 ------------------------------------------
->>>  arch/x86/pci/pci.h        |    1 +
->>>  7 files changed, 584 insertions(+), 536 deletions(-)
->>>  create mode 100644 arch/x86/pci/amd_bus.c
->>>  delete mode 100644 arch/x86/pci/k8-bus_64.c
->> These patches are for the perfmon/master tree. They are based upon
->> tip/x86/cpu.
->>
->> -Robert
->>
->> --
->> Advanced Micro Devices, Inc.
->> Operating System Research Center
->> email: robert.richter@amd.com
+Remove the "l" from inline asm at arch/x86/lib/delay_32.c.
+It is not needed.
 
-It looks like the amd_bus.c file didn't get into the git tree. See the builds 
-failing because of that.
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
+---
+ arch/x86/lib/delay_32.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
--Will
+diff --git a/arch/x86/lib/delay_32.c b/arch/x86/lib/delay_32.c
+index ef69131..54013f8 100644
+--- a/arch/x86/lib/delay_32.c
++++ b/arch/x86/lib/delay_32.c
+@@ -38,9 +38,9 @@ static void delay_loop(unsigned long loops)
+ 		"1:	jmp 2f		\n"
+ 
+ 		".align 16		\n"
+-		"2:	decl %0		\n"
++		"2:	dec %0		\n"
+ 		"	jnz 2b		\n"
+-		"3:	decl %0		\n"
++		"3:	dec %0		\n"
+ 
+ 		: /* we don't need output */
+ 		:"a" (loops)
+-- 
+1.5.5.1
+
