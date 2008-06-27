@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758518AbYF0RFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbYF0RGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758518AbYF0RFz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 13:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbYF0RFs
+	id S1760074AbYF0RGW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 13:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYF0RGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 13:05:48 -0400
-Received: from 8bytes.org ([88.198.83.132]:57194 "EHLO 8bytes.org"
+	Fri, 27 Jun 2008 13:06:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37894 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753252AbYF0RFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 13:05:48 -0400
-Date: Fri, 27 Jun 2008 19:05:46 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Adrian Bunk <bunk@kernel.org>,
-       Joerg Roedel <joerg.roedel@amd.com>, tglx@linutronix.de,
-       mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       Sebastian.Biemueller@amd.com, robert.richter@amd.com
-Subject: Re: [PATCH 01/34] AMD IOMMU: add Kconfig entry
-Message-ID: <20080627170546.GE10197@8bytes.org>
-References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-2-git-send-email-joerg.roedel@amd.com> <20080627142558.GG18644@cs181140183.pp.htv.fi> <878wwrq6im.fsf@basil.nowhere.org> <20080627163945.GA26130@il.ibm.com> <20080627165430.GD10197@8bytes.org> <20080627165947.GB26130@il.ibm.com>
+	id S1753270AbYF0RGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 13:06:06 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Subject: Re: 2.6.26-rc7: BUG at kernel/power/snapshot.c:493
+Date: Fri, 27 Jun 2008 19:07:29 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+References: <1214584985.22228.15.camel@localhost>
+In-Reply-To: <1214584985.22228.15.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080627165947.GB26130@il.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200806271907.29968.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 12:59:47PM -0400, Muli Ben-Yehuda wrote:
-> On Fri, Jun 27, 2008 at 06:54:30PM +0200, Joerg Roedel wrote:
+On Friday, 27 of June 2008, Soeren Sonnenburg wrote:
+> Dear all,
 > 
-> > True. At least for the case without device isolation I have some
-> > optimizations in mind which will minimize the performance
-> > tradeoff. I hope to have them ready for 2.6.28 :)
+> Anyone else seeing this? Happened after resuming from s2both (from
+> disk)...
+
+At what point exactly did it happen?
+
+> VFS: Mounted root (ext2 filesystem).
+> ------------[ cut here ]------------
+> kernel BUG at kernel/power/snapshot.c:493!
+> invalid opcode: 0000 [#1] PREEMPT SMP 
+> Modules linked in:
 > 
-> Do you mean the case where you have a single I/O address space which
-> is shared by all devices?
-
-Yes. I think this will be the case used most when IOMMU is used for
-virtualization and to handle devices with limited DMA address ranges. In
-this case there is a lot to optimize.
-
-Joerg
-
+> Pid: 568, comm: linuxrc Not tainted (2.6.26-rc7-sonne #35)
+> EIP: 0060:[<c0157f99>] EFLAGS: 00010282 CPU: 0
+> EIP is at memory_bm_set_bit+0x29/0x30
+> EAX: fffffff2 EBX: f7165f1c ECX: 00000000 EDX: 03000200
+> ESI: f7115000 EDI: b7f2a008 EBP: f7165f28 ESP: f7165f18
+>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> Process linuxrc (pid: 568, ti=f7164000 task=f7b65f80 task.ti=f7164000)
+> Stack: f7165f1c 00000013 f7117000 00000002 f7165f5c c0158e9b bf96e5ec c02dd570 
+>        00001000 c05fa980 00000008 00000008 00000000 00000000 f7000200 c05fa980 
+>        b7f2a008 f7165f70 c015b3af f7000200 b7f2a008 00001000 f7165f90 c0185e28 
+> Call Trace:
+>  [<c0158e9b>] ? snapshot_write_next+0xcb/0x7a0
+>  [<c02dd570>] ? write_chan+0x0/0x380
+>  [<c015b3af>] ? snapshot_write+0x1f/0x70
+>  [<c0185e28>] ? vfs_write+0x98/0x120
+>  [<c015b390>] ? snapshot_write+0x0/0x70
+>  [<c0185f6d>] ? sys_write+0x3d/0x70
+>  [<c010333a>] ? syscall_call+0x7/0xb
+>  =======================
+> Code: 00 00 55 89 e5 53 83 ec 0c 8d 4d f8 8d 5d f4 89 1c 24 e8 4b ff ff ff 85 c0
+> EIP: [<c0157f99>] memory_bm_set_bit+0x29/0x30 SS:ESP 0068:f7165f18
+> ---[ end trace 70a926e889075b3c ]---
