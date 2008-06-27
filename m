@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764389AbYF0Vyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765728AbYF0VzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764389AbYF0Vyu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 17:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757770AbYF0VuZ
+	id S1765728AbYF0VzU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 17:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765476AbYF0Vvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 17:50:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:23180 "EHLO
+	Fri, 27 Jun 2008 17:51:42 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:25371 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764017AbYF0VuV (ORCPT
+	with ESMTP id S1765418AbYF0Vvk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 17:50:21 -0400
+	Fri, 27 Jun 2008 17:51:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:user-agent:mime-version
          :content-type;
-        b=bB3tPaD8XzXNzaAWJkj6ypXC9KFywfcfBxzQcZxoilfaoSOIq6YtbqgyY6vz9WKxvm
-         01C6s4KRGxbLzcHcSA7Q3t5u5tsbbkIoJYZqgSQ4uQaYAfI/nR3W1Snkl+eGgVFluVbE
-         sL3E7EpTI7Q4l9eaptI+dWJtSLxYHbZRmwYLo=
+        b=HOE0aaYaNmaOBefwRMfK302lrnsrAdvgjd5lZeg8y5F/Hmn7fSH5Ls2V8jrL5Oecog
+         HDestWa+pcu5eZuXmWc7sEpRhptf/b85O49gqxnWruj742mFawZDGWm0fnLtWvGdx/Yk
+         xmkplprMbll+Fe/lZNxNxxjUmEZ/XUhSdm6gk=
 From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andi Kleen <andi@firstfloor.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/3] Fix copy_user on x86_64
-Date: Fri, 27 Jun 2008 23:50:13 +0200
-Message-ID: <m3fxqyzgx6.fsf@gravicappa.englab.brq.redhat.com>
+Subject: [PATCH 2/3] Fix copy_user on x86_64
+Date: Fri, 27 Jun 2008 23:51:36 +0200
+Message-ID: <m3bq1mzguv.fsf@gravicappa.englab.brq.redhat.com>
 User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: multipart/mixed; boundary="=-=-="
@@ -34,24 +34,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 --=-=-=
 
-Functionality of copy_user_64.S was moved to copy_user_64.c
+Functionality of copy_user_nocache_64.S was moved to copy_user_64.c
 
 
 --=-=-=
-Content-Disposition: inline; filename=remove-copy_user_64_S.patch
-Content-Description: remove copy_user_64.S
+Content-Disposition: inline; filename=remove-copy_user_nocache_64_S.patch
+Content-Description: remove copy_user_nocache_64.S
 
-diff --git a/arch/x86/lib/copy_user_64.S b/arch/x86/lib/copy_user_64.S
+diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+index 76f60f5..f3e844e 100644
+--- a/arch/x86/lib/Makefile
++++ b/arch/x86/lib/Makefile
+@@ -22,5 +22,5 @@ else
+         lib-y += csum-partial_64.o csum-copy_64.o csum-wrappers_64.o
+         lib-y += thunk_64.o clear_page_64.o copy_page_64.o
+         lib-y += memmove_64.o memset_64.o
+-        lib-y += copy_user_64.o rwlock_64.o copy_user_nocache_64.o
++        lib-y += copy_user_64.o rwlock_64.o
+ endif
+diff --git a/arch/x86/lib/copy_user_nocache_64.S b/arch/x86/lib/copy_user_nocache_64.S
 deleted file mode 100644
-index ee1c3f6..0000000
---- a/arch/x86/lib/copy_user_64.S
+index 9d3d1ab..0000000
+--- a/arch/x86/lib/copy_user_nocache_64.S
 +++ /dev/null
-@@ -1,351 +0,0 @@
+@@ -1,215 +0,0 @@
 -/* Copyright 2002 Andi Kleen, SuSE Labs.
 - * Subject to the GNU Public License v2.
-- * 
-- * Functions to copy from and to user space.		
-- */		 
+- *
+- * Functions to copy from and to user space.
+- */
 -
 -#include <linux/linkage.h>
 -#include <asm/dwarf2.h>
@@ -63,102 +74,29 @@ index ee1c3f6..0000000
 -#include <asm/thread_info.h>
 -#include <asm/cpufeature.h>
 -
--	.macro ALTERNATIVE_JUMP feature,orig,alt
--0:
--	.byte 0xe9	/* 32bit jump */
--	.long \orig-1f	/* by default jump to orig */
--1:
--	.section .altinstr_replacement,"ax"
--2:	.byte 0xe9	             /* near jump with 32bit immediate */
--	.long \alt-1b /* offset */   /* or alternatively to alt */
--	.previous
--	.section .altinstructions,"a"
--	.align 8
--	.quad  0b
--	.quad  2b
--	.byte  \feature		     /* when feature is set */
--	.byte  5
--	.byte  5
--	.previous
--	.endm
--
--/* Standard copy_to_user with segment limit checking */		
--ENTRY(copy_to_user)
--	CFI_STARTPROC
--	GET_THREAD_INFO(%rax)
--	movq %rdi,%rcx
--	addq %rdx,%rcx
--	jc  bad_to_user
--	cmpq threadinfo_addr_limit(%rax),%rcx
--	jae bad_to_user
--	xorl %eax,%eax	/* clear zero flag */
--	ALTERNATIVE_JUMP X86_FEATURE_REP_GOOD,copy_user_generic_unrolled,copy_user_generic_string
--	CFI_ENDPROC
--
--ENTRY(copy_user_generic)
--	CFI_STARTPROC
--	movl $1,%ecx	/* set zero flag */
--	ALTERNATIVE_JUMP X86_FEATURE_REP_GOOD,copy_user_generic_unrolled,copy_user_generic_string
--	CFI_ENDPROC
--
--ENTRY(__copy_from_user_inatomic)
--	CFI_STARTPROC
--	xorl %ecx,%ecx	/* clear zero flag */
--	ALTERNATIVE_JUMP X86_FEATURE_REP_GOOD,copy_user_generic_unrolled,copy_user_generic_string
--	CFI_ENDPROC
--
--/* Standard copy_from_user with segment limit checking */	
--ENTRY(copy_from_user)
--	CFI_STARTPROC
--	GET_THREAD_INFO(%rax)
--	movq %rsi,%rcx
--	addq %rdx,%rcx
--	jc  bad_from_user
--	cmpq threadinfo_addr_limit(%rax),%rcx
--	jae  bad_from_user
--	movl $1,%ecx	/* set zero flag */
--	ALTERNATIVE_JUMP X86_FEATURE_REP_GOOD,copy_user_generic_unrolled,copy_user_generic_string
--	CFI_ENDPROC
--ENDPROC(copy_from_user)
--	
--	.section .fixup,"ax"
--	/* must zero dest */
--bad_from_user:
--	CFI_STARTPROC
--	movl %edx,%ecx
--	xorl %eax,%eax
--	rep
--	stosb
--bad_to_user:
--	movl	%edx,%eax
--	ret
--	CFI_ENDPROC
--END(bad_from_user)
--	.previous
--	
--		
 -/*
-- * copy_user_generic_unrolled - memory copy with exception handling.
-- * This version is for CPUs like P4 that don't have efficient micro code for rep movsq
-- * 	
-- * Input:	
+- * copy_user_nocache - Uncached memory copy with exception handling
+- * This will force destination/source out of cache for more performance.
+- *
+- * Input:
 - * rdi destination
 - * rsi source
 - * rdx count
-- * ecx zero flag -- if true zero destination on error
+- * rcx zero flag	when 1 zero on exception
 - *
-- * Output:		
+- * Output:
 - * eax uncopied bytes or 0 if successful.
 - */
--ENTRY(copy_user_generic_unrolled)
+-ENTRY(__copy_user_nocache)
 -	CFI_STARTPROC
 -	pushq %rbx
 -	CFI_ADJUST_CFA_OFFSET 8
 -	CFI_REL_OFFSET rbx, 0
--	pushq %rcx
+-	pushq %rcx		/* save zero flag */
 -	CFI_ADJUST_CFA_OFFSET 8
 -	CFI_REL_OFFSET rcx, 0
--	xorl %eax,%eax		/*zero for the exception handler */
+-
+-	xorl %eax,%eax		/* zero for the exception handler */
 -
 -#ifdef FIX_ALIGNMENT
 -	/* check for bad alignment of destination */
@@ -181,21 +119,21 @@ index ee1c3f6..0000000
 -.Ls2:	movq 1*8(%rsi),%r8
 -.Ls3:	movq 2*8(%rsi),%r9
 -.Ls4:	movq 3*8(%rsi),%r10
--.Ld1:	movq %r11,(%rdi)
--.Ld2:	movq %r8,1*8(%rdi)
--.Ld3:	movq %r9,2*8(%rdi)
--.Ld4:	movq %r10,3*8(%rdi)
+-.Ld1:	movnti %r11,(%rdi)
+-.Ld2:	movnti %r8,1*8(%rdi)
+-.Ld3:	movnti %r9,2*8(%rdi)
+-.Ld4:	movnti %r10,3*8(%rdi)
 -
 -.Ls5:	movq 4*8(%rsi),%r11
 -.Ls6:	movq 5*8(%rsi),%r8
 -.Ls7:	movq 6*8(%rsi),%r9
 -.Ls8:	movq 7*8(%rsi),%r10
--.Ld5:	movq %r11,4*8(%rdi)
--.Ld6:	movq %r8,5*8(%rdi)
--.Ld7:	movq %r9,6*8(%rdi)
--.Ld8:	movq %r10,7*8(%rdi)
+-.Ld5:	movnti %r11,4*8(%rdi)
+-.Ld6:	movnti %r8,5*8(%rdi)
+-.Ld7:	movnti %r9,6*8(%rdi)
+-.Ld8:	movnti %r10,7*8(%rdi)
 -
--	decq %rdx
+-	dec  %rdx
 -
 -	leaq 64(%rsi),%rsi
 -	leaq 64(%rdi),%rdi
@@ -212,7 +150,7 @@ index ee1c3f6..0000000
 -	.p2align 4
 -.Lloop_8:
 -.Ls9:	movq (%rsi),%r8
--.Ld9:	movq %r8,(%rdi)
+-.Ld9:	movnti %r8,(%rdi)
 -	decl %ecx
 -	leaq 8(%rdi),%rdi
 -	leaq 8(%rsi),%rsi
@@ -235,10 +173,11 @@ index ee1c3f6..0000000
 -.Lende:
 -	popq %rcx
 -	CFI_ADJUST_CFA_OFFSET -8
--	CFI_RESTORE rcx
+-	CFI_RESTORE %rcx
 -	popq %rbx
 -	CFI_ADJUST_CFA_OFFSET -8
 -	CFI_RESTORE rbx
+-	sfence
 -	ret
 -	CFI_RESTORE_STATE
 -
@@ -266,19 +205,19 @@ index ee1c3f6..0000000
 -	/* table sorted by exception address */
 -	.section __ex_table,"a"
 -	.align 8
--	.quad .Ls1,.Ls1e	/* Ls1-Ls4 have copied zero bytes */
+-	.quad .Ls1,.Ls1e	/* .Ls[1-4] - 0 bytes copied */
 -	.quad .Ls2,.Ls1e
 -	.quad .Ls3,.Ls1e
 -	.quad .Ls4,.Ls1e
--	.quad .Ld1,.Ls1e	/* Ld1-Ld4 have copied 0-24 bytes */
+-	.quad .Ld1,.Ls1e	/* .Ld[1-4] - 0..24 bytes coped */
 -	.quad .Ld2,.Ls2e
 -	.quad .Ld3,.Ls3e
 -	.quad .Ld4,.Ls4e
--	.quad .Ls5,.Ls5e	/* Ls5-Ls8 have copied 32 bytes */
+-	.quad .Ls5,.Ls5e	/* .Ls[5-8] - 32 bytes copied */
 -	.quad .Ls6,.Ls5e
 -	.quad .Ls7,.Ls5e
 -	.quad .Ls8,.Ls5e
--	.quad .Ld5,.Ls5e	/* Ld5-Ld8 have copied 32-56 bytes */
+-	.quad .Ld5,.Ls5e	/* .Ld[5-8] - 32..56 bytes copied */
 -	.quad .Ld6,.Ls6e
 -	.quad .Ld7,.Ls7e
 -	.quad .Ld8,.Ls8e
@@ -294,7 +233,7 @@ index ee1c3f6..0000000
 -	.previous
 -
 -	/* eax: zero, ebx: 64 */
--.Ls1e: 	addl $8,%eax		/* eax is bytes left uncopied within the loop (Ls1e: 64 .. Ls8e: 8) */
+-.Ls1e: 	addl $8,%eax	/* eax: bytes left uncopied: Ls1e: 64 .. Ls8e: 8 */
 -.Ls2e: 	addl $8,%eax
 -.Ls3e: 	addl $8,%eax
 -.Ls4e: 	addl $8,%eax
@@ -319,7 +258,7 @@ index ee1c3f6..0000000
 -	addl %ecx,%edx
 -	/* edx: bytes to zero, rdi: dest, eax:zero */
 -.Lzero_rest:
--	cmpl $0,(%rsp)
+-	cmpl $0,(%rsp)	/* zero flag set? */
 -	jz   .Le_zero
 -	movq %rdx,%rcx
 -.Le_byte:
@@ -331,73 +270,9 @@ index ee1c3f6..0000000
 -	movq %rdx,%rax
 -	jmp .Lende
 -	CFI_ENDPROC
--ENDPROC(copy_user_generic)
+-ENDPROC(__copy_user_nocache)
 -
 -
--	/* Some CPUs run faster using the string copy instructions.
--	   This is also a lot simpler. Use them when possible.
--	   Patch in jmps to this code instead of copying it fully
--	   to avoid unwanted aliasing in the exception tables. */
--
-- /* rdi	destination
--  * rsi source
--  * rdx count
--  * ecx zero flag
--  *
--  * Output:
--  * eax uncopied bytes or 0 if successfull.
--  *
--  * Only 4GB of copy is supported. This shouldn't be a problem
--  * because the kernel normally only writes from/to page sized chunks
--  * even if user space passed a longer buffer.
--  * And more would be dangerous because both Intel and AMD have
--  * errata with rep movsq > 4GB. If someone feels the need to fix
--  * this please consider this.
--  */
--ENTRY(copy_user_generic_string)
--	CFI_STARTPROC
--	movl %ecx,%r8d		/* save zero flag */
--	movl %edx,%ecx
--	shrl $3,%ecx
--	andl $7,%edx	
--	jz   10f
--1:	rep 
--	movsq 
--	movl %edx,%ecx
--2:	rep
--	movsb
--9:	movl %ecx,%eax
--	ret
--
--	/* multiple of 8 byte */
--10:	rep
--	movsq
--	xor %eax,%eax
--	ret
--
--	/* exception handling */
--3:      lea (%rdx,%rcx,8),%rax	/* exception on quad loop */
--	jmp 6f
--5:	movl %ecx,%eax		/* exception on byte loop */
--	/* eax: left over bytes */
--6:	testl %r8d,%r8d		/* zero flag set? */
--	jz 7f
--	movl %eax,%ecx		/* initialize x86 loop counter */
--	push %rax
--	xorl %eax,%eax
--8:	rep
--	stosb 			/* zero the rest */
--11:	pop %rax
--7:	ret
--	CFI_ENDPROC
--END(copy_user_generic_c)
--
--	.section __ex_table,"a"
--	.quad 1b,3b
--	.quad 2b,5b
--	.quad 8b,11b
--	.quad 10b,3b
--	.previous
 
 Signed-off-by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
 
