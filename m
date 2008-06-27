@@ -1,80 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbYF0Ogj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759239AbYF0Ohb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758229AbYF0Ogj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 10:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbYF0Og2
+	id S1759239AbYF0Ohb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 10:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbYF0OhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 10:36:28 -0400
-Received: from adelie.canonical.com ([91.189.90.139]:36908 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755077AbYF0Og1 (ORCPT
+	Fri, 27 Jun 2008 10:37:16 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:46144 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754604AbYF0OhP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 10:36:27 -0400
-Subject: Re: [PATCH] keyspan: Remove duplicate device entries
-From: Ben Collins <ben.collins@canonical.com>
-To: Greg KH <gregkh@suse.de>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080627034755.GA7763@suse.de>
-References: <1214525296.7150.120.camel@cunning>
-	 <20080627034755.GA7763@suse.de>
+	Fri, 27 Jun 2008 10:37:15 -0400
+Subject: Re: [PATCH 1/6] Extend completions to provide XFS object flush
+	requirements
+From: Daniel Walker <dwalker@mvista.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Dave Chinner <david@fromorbit.com>,
+       xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080627091509.GA31148@infradead.org>
+References: <1214455277-6387-1-git-send-email-david@fromorbit.com>
+	 <1214455277-6387-2-git-send-email-david@fromorbit.com>
+	 <1214512405.21035.110.camel@localhost.localdomain>
+	 <20080627022407.GB7703@parisc-linux.org>
+	 <1214537199.21035.179.camel@localhost.localdomain>
+	 <20080627091509.GA31148@infradead.org>
 Content-Type: text/plain
-Organization: Canonical
-Date: Fri, 27 Jun 2008 10:32:31 -0400
-Message-Id: <1214577151.7150.384.camel@cunning>
+Date: Fri, 27 Jun 2008 07:37:12 -0700
+Message-Id: <1214577432.21035.181.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-26 at 20:47 -0700, Greg KH wrote:
-> On Thu, Jun 26, 2008 at 08:08:16PM -0400, Ben Collins wrote:
-> > The 28xb, as documented in comments, has the same ID's as the 28x.
-> > Remove the duplicated ID's from the device tables, and expand the
-> > comment to document this.
+
+On Fri, 2008-06-27 at 05:15 -0400, Christoph Hellwig wrote:
+> On Thu, Jun 26, 2008 at 08:26:39PM -0700, Daniel Walker wrote:
+> > Are you saying you want to keep semaphores? Cause I think that goes
+> > against the overall agenda that I've seen,
 > 
-> Was this causing a problem somehow?  How did you notice this?  Good
-> catch.
+> Which overall agenda? 
 
-Wasn't causing a problem, but I wrote a script awhile back that parses
-modules.alias looking for exact matches (doesn't do any fnmatch stuff,
-which might show more overlaps). Attached so you can see where this is
-coming from.
+Semaphore removal ..
 
-Mainly I wrote it to make sure we didn't have any module overlap
-(hostap/orinico kind of stuff), but it catches same module matching as
-well.
-
-> I'll add it to my queue, thanks,
-
-Np
-
-#!/usr/bin/perl -w
-
-my %map;
-
-if (!defined($ARGV[0])) {
-	print STDERR "Usage: check-aliases <modules.alias>\n";
-	exit(1);
-}
-
-$aliases = $ARGV[0];
-
-open(ALIASES, "< $aliases") or die "Could not open $aliases";
-
-while (<ALIASES>) {
-	chomp;
-	my ($junk, $alias, $module) = split;
-
-	if (defined($map{$alias})) {
-		printf("%s %20s / %-20s : %s \n", ("$map{$alias}" eq "$module")
-			? "INT" : "   ", $map{$alias}, $module, $alias);
-	} else {
-		$map{$alias} = $module;
-	}
-}
-
-exit(0);
-
+Daniel
 
