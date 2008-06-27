@@ -1,154 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbYF0Bhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753568AbYF0Bw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753297AbYF0Bhd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 21:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbYF0BhV
+	id S1753568AbYF0Bw5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 21:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbYF0Bwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 21:37:21 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:55324 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751097AbYF0BhT (ORCPT
+	Thu, 26 Jun 2008 21:52:45 -0400
+Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:45051 "EHLO
+	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751128AbYF0Bwo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 21:37:19 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:cc:
-	subject:content-type:content-transfer-encoding;
-	b=sslVyeriARkWdW0ViQwRlCtbujSqsNAc7IO4lofBGDdY462pgHOcrEE4gezYAjdI4
-	lS2QzAjyu4Q5WAzHsgQ5w==
-Message-ID: <4864443E.6000607@google.com>
-Date: Thu, 26 Jun 2008 18:37:02 -0700
-From: Paul Menage <menage@google.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080502)
+	Thu, 26 Jun 2008 21:52:44 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEANexXkh5LFnm/2dsb2JhbACuPg
+X-IronPort-AV: E=Sophos;i="4.27,712,1204464600"; 
+   d="scan'208";a="143990837"
+Date: Fri, 27 Jun 2008 11:52:41 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: xfs@oss.sgi.com, matthew@wil.cx, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] Extend completions to provide XFS object flush
+	requirements
+Message-ID: <20080627015241.GX29319@disturbed>
+Mail-Followup-To: Daniel Walker <dwalker@mvista.com>, xfs@oss.sgi.com,
+	matthew@wil.cx, linux-kernel@vger.kernel.org
+References: <1214455277-6387-1-git-send-email-david@fromorbit.com> <1214455277-6387-2-git-send-email-david@fromorbit.com> <1214512405.21035.110.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, serue@us.ibm.com
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] CGroups: misc cleanups to write_string patchset
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1214512405.21035.110.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CGroups: misc cleanups to write_string patchset
+On Thu, Jun 26, 2008 at 01:33:25PM -0700, Daniel Walker wrote:
+> 
+> On Thu, 2008-06-26 at 14:41 +1000, Dave Chinner wrote:
+> > XFS object flushing doesn't quite match existing completion semantics.  It
+> > mixed exclusive access with completion. That is, we need to mark an object as
+> > being flushed before flushing it to disk, and then block any other attempt to
+> > flush it until the completion occurs.
+> > 
+> > To do this we introduce:
+> > 
+> > void init_completion_flush(struct completion *x)
+> > 	which initialises x->done = 1
+> > 
+> > void completion_flush_start(struct completion *x)
+> > 	which blocks if done == 0, otherwise decrements done to zero and
+> > 	allows the caller to continue.
+> > 
+> > bool completion_flush_start_nowait(struct completion *x)
+> > 	returns a failure status if done == 0, otherwise decrements done
+> > 	to zero and returns a "flush started" status. This is provided
+> > 	to allow flushing to begin safely while holding object locks in
+> > 	inverted order.
+> > 
+> > This replaces the use of semaphores for providing this exclusion
+> > and completion mechanism.
+> 
+> I think there is some basis to make the changes that you have here.
+> Specifically this email and thread,
+> 
+> http://lkml.org/lkml/2008/4/15/232
+> 
+> However, I don't like how your implementing this as specifically a
+> "flush" mechanism for XFS, and the count is limited to just 1 .. There
+> are several other places that do this kind of counting with semaphores,
+> and have counts above 1..
 
-This patch contains cleanups suggested by reviewers for the recent
-write_string() patchset:
+Agreed - but the extension has to start somewhere. So, do I simply
+add a "init_completion_count()" that passes a count value for the
+completion (i.e. replaces init_completion_flush())?
 
-- pair cgroup_lock_live_group() with cgroup_unlock() in cgroup.c for
-  clarity, rather than directly unlocking cgroup_mutex.
+> > +
+> > +static inline void completion_flush_start(struct completion *x)
+> > +{
+> > +	wait_for_completion(x);
+> > +}
+> 
+> Above seems completely pointless.. I would just call
+> wait_for_completion(), and make the rest of the interface generic.
 
-- make the return type of cgroup_lock_live_group() a bool
+Except then wait_for_completion_nowait() makes absolutely no sense ;)
+If i use wait_for_completion() for this, then perhaps the
+non-blocking version becomes "try_wait_for_completion()". Would
+this be acceptible?
 
-- use a #define'd constant for the local buffer size in read/write functions
+i.e. the extra functions in the completion API would be:
 
-Signed-off-by: Paul Menage <menage@google.com>
+	void init_completion_count(struct completion *x, int count);
+	int try_wait_for_completion(struct completion *x);
+	int completion_in_progress(struct completion *x);
 
----
- include/linux/cgroup.h |    4 ++--
- kernel/cgroup.c        |   21 ++++++++++++---------
- 2 files changed, 14 insertions(+), 11 deletions(-)
+Cheers,
 
-Index: cws2-2.6.26-rc5-mm3/include/linux/cgroup.h
-===================================================================
---- cws2-2.6.26-rc5-mm3.orig/include/linux/cgroup.h
-+++ cws2-2.6.26-rc5-mm3/include/linux/cgroup.h
-@@ -21,11 +21,13 @@
- struct cgroupfs_root;
- struct cgroup_subsys;
- struct inode;
-+struct cgroup;
- 
- extern int cgroup_init_early(void);
- extern int cgroup_init(void);
- extern void cgroup_init_smp(void);
- extern void cgroup_lock(void);
-+extern bool cgroup_lock_live_group(struct cgroup *cgrp);
- extern void cgroup_unlock(void);
- extern void cgroup_fork(struct task_struct *p);
- extern void cgroup_fork_callbacks(struct task_struct *p);
-@@ -295,8 +297,6 @@ int cgroup_add_files(struct cgroup *cgrp
- 
- int cgroup_is_removed(const struct cgroup *cgrp);
- 
--int cgroup_lock_live_group(struct cgroup *cgrp);
--
- int cgroup_path(const struct cgroup *cgrp, char *buf, int buflen);
- 
- int cgroup_task_count(const struct cgroup *cgrp);
-Index: cws2-2.6.26-rc5-mm3/kernel/cgroup.c
-===================================================================
---- cws2-2.6.26-rc5-mm3.orig/kernel/cgroup.c
-+++ cws2-2.6.26-rc5-mm3/kernel/cgroup.c
-@@ -1331,10 +1331,10 @@ enum cgroup_filetype {
-  * cgroup_lock_live_group - take cgroup_mutex and check that cgrp is alive.
-  * @cgrp: the cgroup to be checked for liveness
-  *
-- * Returns true (with lock held) on success, or false (with no lock
-- * held) on failure.
-+ * On success, returns true; the lock should be later released with
-+ * cgroup_unlock(). On failure returns false with no lock held.
-  */
--int cgroup_lock_live_group(struct cgroup *cgrp)
-+bool cgroup_lock_live_group(struct cgroup *cgrp)
- {
- 	mutex_lock(&cgroup_mutex);
- 	if (cgroup_is_removed(cgrp)) {
-@@ -1351,7 +1351,7 @@ static int cgroup_release_agent_write(st
- 	if (!cgroup_lock_live_group(cgrp))
- 		return -ENODEV;
- 	strcpy(cgrp->root->release_agent_path, buffer);
--	mutex_unlock(&cgroup_mutex);
-+	cgroup_unlock();
- 	return 0;
- }
- 
-@@ -1362,16 +1362,19 @@ static int cgroup_release_agent_show(str
- 		return -ENODEV;
- 	seq_puts(seq, cgrp->root->release_agent_path);
- 	seq_putc(seq, '\n');
--	mutex_unlock(&cgroup_mutex);
-+	cgroup_unlock();
- 	return 0;
- }
- 
-+/* A buffer size big enough for numbers or short strings */
-+#define CGROUP_LOCAL_BUFFER_SIZE 64 
-+
- static ssize_t cgroup_write_X64(struct cgroup *cgrp, struct cftype *cft,
- 				struct file *file,
- 				const char __user *userbuf,
- 				size_t nbytes, loff_t *unused_ppos)
- {
--	char buffer[64];
-+	char buffer[CGROUP_LOCAL_BUFFER_SIZE];
- 	int retval = 0;
- 	char *end;
- 
-@@ -1405,7 +1408,7 @@ static ssize_t cgroup_write_string(struc
- 				   const char __user *userbuf,
- 				   size_t nbytes, loff_t *unused_ppos)
- {
--	char local_buffer[64];
-+	char local_buffer[CGROUP_LOCAL_BUFFER_SIZE];
- 	int retval = 0;
- 	size_t max_bytes = cft->max_write_len;
- 	char *buffer = local_buffer;
-@@ -1459,7 +1462,7 @@ static ssize_t cgroup_read_u64(struct cg
- 			       char __user *buf, size_t nbytes,
- 			       loff_t *ppos)
- {
--	char tmp[64];
-+	char tmp[CGROUP_LOCAL_BUFFER_SIZE];
- 	u64 val = cft->read_u64(cgrp, cft);
- 	int len = sprintf(tmp, "%llu\n", (unsigned long long) val);
- 
-@@ -1471,7 +1474,7 @@ static ssize_t cgroup_read_s64(struct cg
- 			       char __user *buf, size_t nbytes,
- 			       loff_t *ppos)
- {
--	char tmp[64];
-+	char tmp[CGROUP_LOCAL_BUFFER_SIZE];
- 	s64 val = cft->read_s64(cgrp, cft);
- 	int len = sprintf(tmp, "%lld\n", (long long) val);
- 
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
