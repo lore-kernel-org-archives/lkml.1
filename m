@@ -1,114 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761488AbYF0RgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761559AbYF0Rh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761488AbYF0RgX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 13:36:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbYF0RgI
+	id S1761559AbYF0Rh6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 13:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755991AbYF0Rhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 13:36:08 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:49382 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755891AbYF0RgE (ORCPT
+	Fri, 27 Jun 2008 13:37:50 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:35380 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752408AbYF0Rht (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 13:36:04 -0400
-Date: Fri, 27 Jun 2008 23:05:51 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Mingming <cmm@us.ibm.com>, Holger Kiehl <Holger.Kiehl@dwd.de>,
-       Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
-       Solofo.Ramangalahy@bull.net, Nick Dokos <nicholas.dokos@hp.com>,
-       linux-ext4@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Performance of ext4
-Message-ID: <20080627173551.GA24402@skywalker>
-References: <1214267492.27507.285.camel@BVR-FS.beaverton.ibm.com> <20080624030721.GB10469@skywalker> <20080624033349.GD10469@skywalker> <Pine.LNX.4.64.0806242103370.14795@diagnostix.dwd.de> <1214348318.27507.330.camel@BVR-FS.beaverton.ibm.com> <Pine.LNX.4.64.0806250856160.16081@diagnostix.dwd.de> <1214441199.27507.351.camel@BVR-FS.beaverton.ibm.com> <20080627091459.GA32723@skywalker> <20080627094913.GB32723@skywalker> <20080627100024.GB3602@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080627100024.GB3602@duck.suse.cz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 27 Jun 2008 13:37:49 -0400
+Date: Fri, 27 Jun 2008 10:36:55 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Chris Friesen <cfriesen@nortel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip/master] x86: nmi_watchdog - documentation fix
+Message-Id: <20080627103655.6c6943e9.randy.dunlap@oracle.com>
+In-Reply-To: <20080627171836.GF18957@cvg>
+References: <20080627154340.GC18957@cvg>
+	<Pine.LNX.4.55.0806271652020.8868@cliff.in.clinika.pl>
+	<20080627165937.2f1fb661@lxorguk.ukuu.org.uk>
+	<4865160C.2040403@nortel.com>
+	<20080627165125.GE18957@cvg>
+	<20080627095608.649e819a.randy.dunlap@oracle.com>
+	<20080627171836.GF18957@cvg>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 12:00:24PM +0200, Jan Kara wrote:
-> On Fri 27-06-08 15:19:13, Aneesh Kumar K.V wrote:
-> > On Fri, Jun 27, 2008 at 02:44:59PM +0530, Aneesh Kumar K.V wrote:
-> > > On Wed, Jun 25, 2008 at 05:46:39PM -0700, Mingming wrote:
-> > > > 
-> > > > On Wed, 2008-06-25 at 09:09 +0000, Holger Kiehl wrote:
-> > > > > On Tue, 24 Jun 2008, Mingming wrote:
-> > > > > 
-> > > > > >
-> > > > > > On Tue, 2008-06-24 at 21:12 +0000, Holger Kiehl wrote:
-> > > > > >> Yes, with this patch applied on top of latest patch queue I no longer
-> > > > > >> get truncated files, after running a short test. Tomorrow I will do some
-> > > > > >> more thorough testing and use the patch you have send to me in a separate
-> > > > > >> mail. The above patch did not apply but it was easy to apply by hand.
-> > > > > >
-> > > > > >
-> > > > > > Thanks for quick response and test. I have updated the patch queue with
-> > > > > > above patch merged. Please let me know if you still see apply issue and
-> > > > > > file size update issue with current patch queue.
-> > > > > >
-> > > > > Thanks, it applies without any problems. However I still hit an oops. What
-> > > > > I find strange is that I got the oops just as the benchmark is done and
-> > > > > all process where shutting down. The same behaviour I reported here:
-> > > > > http://www.ussg.iu.edu/hypermail/linux/kernel/0806.2/2113.html
-> > > > > Only this time I got just one oops. This is on x86_64 system (4 Opteron CPU's
-> > > > > and SW Raid 1+0). I have not seen this on my home system x86 (1 Dual Core
-> > > > > and HW Raid). Anyway, here the dmesg output:
-> > > > > 
-> > > > > kjournald2 starting.  Commit interval 15 seconds
-> > > > > EXT4 FS on md7, internal journal
-> > > > > EXT4-fs: mounted filesystem with ordered data mode.
-> > > > > EXT4-fs: file extents enabled
-> > > > > EXT4-fs: mballoc enabled
-> > > > > JBD: barrier-based sync failed on md7 - disabling barriers
-> > > > > ------------[ cut here ]------------
-> > > > > kernel BUG at fs/ext4/inode.c:1667!
-> > > > 
-> > > > Did not get a chance to look more closely today, but it's point to this
-> > > > code in ext4_da_writepage()
-> > > > 
-> > > >  page_bufs = page_buffers(page);
-> > > > 
-> > > > and appearently it's BUG_ON at 
-> > > >  BUG_ON(!PagePrivate(page)); in page_buffers().
-> > > > 
-> > > > 
-> > > 
+On Fri, 27 Jun 2008 21:18:36 +0400 Cyrill Gorcunov wrote:
 
-How about this ?
+> [Randy Dunlap - Fri, Jun 27, 2008 at 09:56:08AM -0700]
+> | On Fri, 27 Jun 2008 20:51:25 +0400 Cyrill Gorcunov wrote:
+> | 
+> | > [Chris Friesen - Fri, Jun 27, 2008 at 10:32:12AM -0600]
+> | > > Alan Cox wrote:
+> | > >> On Fri, 27 Jun 2008 16:54:19 +0100 (BST)
+> | > >> "Maciej W. Rozycki" <macro@linux-mips.org> wrote:
+> | > >>> On Fri, 27 Jun 2008, Cyrill Gorcunov wrote:
+> | > >>>
+> | > >>>
+> | > >>>> +NOTE: Prior to 2.4.2-ac18 the NMI-oopser is enabled unconditionally
+> | > >>>> +on x86 SMP boxes.
+> | > >>>
+> | > >>> While you are at it: s/is/was/.
+> | > >> Erm - why ??
+> | > >> It is still true today that kernels < 2.4.2-ac8 have the NMI oopser
+> | > >> enabled.
+> | > >
+> | > > To my ear the phrase as written implies past tense for the author/reader 
+> | > > (i.e. "at points in time prior to the release of 2.4.2-ac18"), and thus 
+> | > > grates against "is".
+> | > >
+> | > > The following sounds better to me: "In kernels prior to 2.4.2-ac18 the 
+> | > > NMI-oopser is enabled..."  In this context the phrase itself is in the 
+> | > > present, but we point to past kernels.
+> | > >
+> | > > Chris
+> | > >
+> | > 
+> | > And the winner is? I'm not native English speaker so I can't select
+> | > a better candidate in {is,was} limited set.
+> | 
+> | Use the text that Chris suggested...
+> | 
+> | 
+> | ---
+> | ~Randy
+> | Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+> | http://linuxplumbersconf.org/
+> | 
+> 
+> Ok, you choose ;)
+> 
+> 		- Cyrill -
 
-commit 174d555d8effb480a23d5dea8db698d1bc2cfa7d
-Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Date:   Fri Jun 27 23:04:28 2008 +0530
+Looks good to me.  Thanks for persisting.
 
-    ext4: call ext4_page_mkwrite even for MappedToDisk pages
-    
-    We can have pages that are fully mapped to disk. The
-    mappedtodisk flag is used to indicate that every
-    buffer_head in the page have a mapping block allocated
-    on disk. But that doesn't gurantee that we have initialized
-    those buffer_head and added it to page via page->private.
-    This causes writepage to go BUGON when it find a page
-    that have NULL page->private.
-    
-    The fix is to make sure we initialize the buffer_head and add
-    it to page when we are going to write to the page. This can
-    be done via ext4_page_mkwrite
-    
-    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index 10f1d5d..11ebe88 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -3978,8 +3978,6 @@ int ext4_page_mkwrite(struct vm_area_struct *vma, struct page *page)
- 		goto out_unlock;
- 	}
- 	ret = 0;
--	if (PageMappedToDisk(page))
--		goto out_unlock;
- 
- 	if (page->index == size >> PAGE_CACHE_SHIFT)
- 		len = size & ~PAGE_CACHE_MASK;
+> ---
+> From: Cyrill Gorcunov <gorcunov@gmail.com>
+> Subject: [PATCH -tip/master] x86: nmi_watchdog - documentation fix
+> 
+> mi_watchdog is set to NMI_NONE by default (ie disabled) on _any_
+> mode so lets fix documentation too.
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> CC: Maciej W. Rozycki <macro@linux-mips.org>
+> ---
+> 
+> Index: linux-2.6.git/Documentation/nmi_watchdog.txt
+> ====================================================================
+> --- linux-2.6.git.orig/Documentation/nmi_watchdog.txt	2008-06-27 19:50:06.000000000 +0400
+> +++ linux-2.6.git/Documentation/nmi_watchdog.txt	2008-06-27 21:15:02.000000000 +0400
+> @@ -10,7 +10,7 @@ us to generate 'watchdog NMI interrupts'
+>  which get executed even if the system is otherwise locked up hard).
+>  This can be used to debug hard kernel lockups.  By executing periodic
+>  NMI interrupts, the kernel can monitor whether any CPU has locked up,
+> -and print out debugging messages if so.  
+> +and print out debugging messages if so.
+>  
+>  In order to use the NMI watchdog, you need to have APIC support in your
+>  kernel. For SMP kernels, APIC support gets compiled in automatically. For
+> @@ -22,8 +22,7 @@ CONFIG_X86_UP_IOAPIC is for uniprocessor
+>  kernel debugging options, such as Kernel Stack Meter or Kernel Tracer,
+>  may implicitly disable the NMI watchdog.]
+>  
+> -For x86-64, the needed APIC is always compiled in, and the NMI watchdog is
+> -always enabled with I/O-APIC mode (nmi_watchdog=1).
+> +For x86-64, the needed APIC is always compiled in.
+>  
+>  Using local APIC (nmi_watchdog=2) needs the first performance register, so
+>  you can't use it for other purposes (such as high precision performance
+> @@ -63,16 +62,15 @@ when the system is idle), but if your sy
+>  "hlt", then you are out of luck -- the event will not happen at all and the
+>  watchdog won't trigger. This is a shortcoming of the local APIC watchdog
+>  -- unfortunately there is no "clock ticks" event that would work all the
+> -time. The I/O APIC watchdog is driven externally and has no such shortcoming.  
+> +time. The I/O APIC watchdog is driven externally and has no such shortcoming.
+>  But its NMI frequency is much higher, resulting in a more significant hit
+>  to the overall system performance.
+>  
+> -NOTE: starting with 2.4.2-ac18 the NMI-oopser is disabled by default,
+> -you have to enable it with a boot time parameter.  Prior to 2.4.2-ac18
+> -the NMI-oopser is enabled unconditionally on x86 SMP boxes.
+> +On x86 nmi_watchdog is disabled by default so you have to enable it with
+> +a boot time parameter.
+>  
+> -On x86-64 the NMI oopser is on by default. On 64bit Intel CPUs
+> -it uses IO-APIC by default and on AMD it uses local APIC.
+> +NOTE: In kernels prior to 2.4.2-ac18 the NMI-oopser is enabled unconditionally
+> +on x86 SMP boxes.
+>  
+>  [ feel free to send bug reports, suggestions and patches to
+>    Ingo Molnar <mingo@redhat.com> or the Linux SMP mailing
+> --
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
