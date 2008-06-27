@@ -1,76 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760353AbYF0QHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbYF0QH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760353AbYF0QHA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 12:07:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756095AbYF0QGw
+	id S1757989AbYF0QH2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 12:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760383AbYF0QHC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 12:06:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57581 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755918AbYF0QGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 12:06:52 -0400
-Date: Fri, 27 Jun 2008 18:06:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Nick Piggin <npiggin@suse.de>, Mark McLoughlin <markmc@redhat.com>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Eduardo Habkost <ehabkost@redhat.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Stephen Tweedie <sct@redhat.com>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for
-	64-bit Xen support
-Message-ID: <20080627160625.GA29488@elte.hu>
-References: <patchbomb.1214367536@localhost> <20080625084253.GA11524@elte.hu> <20080625152212.GA3442@elte.hu> <4862A6A9.1030109@goop.org> <20080626105722.GA12640@elte.hu> <20080626105818.GA13805@elte.hu> <4863A8E6.1010807@goop.org> <20080627155656.GA19180@elte.hu> <48650F02.5080200@goop.org>
+	Fri, 27 Jun 2008 12:07:02 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:42624 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759608AbYF0QHA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 12:07:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent:from;
+        b=YHSCBnOyyEztY59nR6yf/VXQCQ0MJj2fyiochKOo393AUGro+jt8W1OzhHt/bm3i8o
+         CJKF5+aR95kFChbJ/W8ELBj00FhpamvnPxHjEfHYNiufTKF2pmjNv4DSQu+twox/jxhl
+         L4uXxpHUaj8nTAjEjvinDXQ8bghSkd3SP54GI=
+Date: Fri, 27 Jun 2008 18:06:54 +0200
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] backtrace: replace timer with tasklet + completions
+Message-ID: <20080627160654.GC8852@damson.getinternet.no>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48650F02.5080200@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Thu, 26 Jun 2008 14:06:54 +0200
+Subject: [PATCH] backtrace: replace timer with tasklet + completions
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On qemu, the backtrace would show up _after_ the "end of backtrace
+testing" message.
 
-> Ingo Molnar wrote:
->> i'm testing on multiple systems in parallel, each is running randconfig 
->> kernels. One 64-bit system found a build bug, the other one found a 
->> boot crash.
->>
->> This can happen if certain configs build fine (but crash), certain 
->> configs dont even build. Each system does a random walk of the config 
->> space.
->
-> Yes, but the URL for both the crash and the build failure pointed to 
-> the same config.  Is one of them a mistake?
+This patch changes it to use completions instead, which will guarantee
+that no such race exists.
 
-yeah, i guess so. Right now i only ran into the build failure so there's 
-hope :) Here's a config that fails to build for sure:
+Cc: Arjan van de Ven <arjan@infradead.org>
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ kernel/backtracetest.c |   37 ++++++++++++++++++++++++++-----------
+ 1 files changed, 26 insertions(+), 11 deletions(-)
 
-  http://redhat.com/~mingo/misc/config-Fri_Jun_27_17_54_32_CEST_2008.bad
+diff --git a/kernel/backtracetest.c b/kernel/backtracetest.c
+index 50f7abd..a5e026b 100644
+--- a/kernel/backtracetest.c
++++ b/kernel/backtracetest.c
+@@ -10,18 +10,39 @@
+  * of the License.
+  */
+ 
++#include <linux/completion.h>
+ #include <linux/delay.h>
++#include <linux/interrupt.h>
+ #include <linux/module.h>
+ #include <linux/sched.h>
+ #include <linux/stacktrace.h>
+ 
+-static struct timer_list backtrace_timer;
++static void backtrace_test_normal(void)
++{
++	printk("Testing a backtrace from process context.\n");
++	printk("The following trace is a kernel self test and not a bug!\n");
++
++	dump_stack();
++}
++
++static DECLARE_COMPLETION(backtrace_work);
++
++static void backtrace_test_irq_callback(unsigned long data)
++{
++	dump_stack();
++	complete(&backtrace_work);
++}
++
++static DECLARE_TASKLET(backtrace_tasklet, &backtrace_test_irq_callback, 0);
+ 
+-static void backtrace_test_timer(unsigned long data)
++static void backtrace_test_irq(void)
+ {
+ 	printk("Testing a backtrace from irq context.\n");
+ 	printk("The following trace is a kernel self test and not a bug!\n");
+-	dump_stack();
++
++	init_completion(&backtrace_work);
++	tasklet_schedule(&backtrace_tasklet);
++	wait_for_completion(&backtrace_work);
+ }
+ 
+ #ifdef CONFIG_STACKTRACE
+@@ -51,17 +72,11 @@ static void backtrace_test_saved(void)
+ static int backtrace_regression_test(void)
+ {
+ 	printk("====[ backtrace testing ]===========\n");
+-	printk("Testing a backtrace from process context.\n");
+-	printk("The following trace is a kernel self test and not a bug!\n");
+-	dump_stack();
+ 
++	backtrace_test_normal();
++	backtrace_test_irq();
+ 	backtrace_test_saved();
+ 
+-	init_timer(&backtrace_timer);
+-	backtrace_timer.function = backtrace_test_timer;
+-	mod_timer(&backtrace_timer, jiffies + 10);
+-
+-	msleep(10);
+ 	printk("====[ end of backtrace testing ]====\n");
+ 	return 0;
+ }
+-- 
+1.5.4.1
 
-note, on 32-bit there's a yet unfixed initrd corruption bug i've 
-bisected back to:
-
-| 510be56adc4bb9fb229637a8e89268d987263614 is first bad commit
-| commit 510be56adc4bb9fb229637a8e89268d987263614
-| Author: Yinghai Lu <yhlu.kernel@gmail.com>
-| Date:   Tue Jun 24 04:10:47 2008 -0700
-|
-|    x86: introduce init_memory_mapping for 32bit
-
-so if you see something like that it's probably not a bug introduced by 
-your changes. (and maybe you'll see why the above commit is buggy, i 
-havent figured it out yet)
-
-	Ingo
