@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762940AbYF0UJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763131AbYF0ULT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762940AbYF0UJp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 16:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759454AbYF0UJg
+	id S1763131AbYF0ULT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 16:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759561AbYF0ULF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 16:09:36 -0400
-Received: from outbound-mail-124.bluehost.com ([67.222.38.24]:38390 "HELO
-	outbound-mail-124.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759378AbYF0UJf (ORCPT
+	Fri, 27 Jun 2008 16:11:05 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:40593 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754422AbYF0ULE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 16:09:35 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH] Fix pci_setup_device()'s sprinting into a const buffer
-Date: Fri, 27 Jun 2008 13:09:28 -0700
-User-Agent: KMail/1.9.9
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20080627122320.29319.14707.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20080627122320.29319.14707.stgit@warthog.procyon.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806271309.29266.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+	Fri, 27 Jun 2008 16:11:04 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/1] HID: fix quirk handling in usbmouse/kbd
+Date: Fri, 27 Jun 2008 22:09:25 +0200
+Message-Id: <1214597365-21719-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, June 27, 2008 5:23 am David Howells wrote:
-> Make pci_setup_device() write the bus ID directly into the allotted
-> storage, rather than using pci_name() as the address as that now returns a
-> const pointer.
->
-> Signed-off-by: David Howells <dhowells@redhat.com>
+When usbmouse/kbd is set to build, USB_HID is never defined due to
+the USB_HID!=y Kconfig rule. Test CONFIG_USB_HID_MODULE in both
+drivers instead.
 
-Applied.  Thanks David.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ drivers/hid/usbhid/usbkbd.c   |    2 +-
+ drivers/hid/usbhid/usbmouse.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Jesse
+diff --git a/drivers/hid/usbhid/usbkbd.c b/drivers/hid/usbhid/usbkbd.c
+index 3cd46d2..695929c 100644
+--- a/drivers/hid/usbhid/usbkbd.c
++++ b/drivers/hid/usbhid/usbkbd.c
+@@ -233,7 +233,7 @@ static int usb_kbd_probe(struct usb_interface *iface,
+ 	if (!usb_endpoint_is_int_in(endpoint))
+ 		return -ENODEV;
+ 
+-#ifdef CONFIG_USB_HID
++#ifdef CONFIG_USB_HID_MODULE
+ 	if (usbhid_lookup_quirk(le16_to_cpu(dev->descriptor.idVendor),
+ 				le16_to_cpu(dev->descriptor.idProduct))
+ 			& HID_QUIRK_IGNORE) {
+diff --git a/drivers/hid/usbhid/usbmouse.c b/drivers/hid/usbhid/usbmouse.c
+index 703e9d0..f74740f 100644
+--- a/drivers/hid/usbhid/usbmouse.c
++++ b/drivers/hid/usbhid/usbmouse.c
+@@ -129,7 +129,7 @@ static int usb_mouse_probe(struct usb_interface *intf, const struct usb_device_i
+ 	if (!usb_endpoint_is_int_in(endpoint))
+ 		return -ENODEV;
+ 
+-#ifdef CONFIG_USB_HID
++#ifdef CONFIG_USB_HID_MODULE
+ 	if (usbhid_lookup_quirk(le16_to_cpu(dev->descriptor.idVendor),
+ 				le16_to_cpu(dev->descriptor.idProduct))
+ 			& (HID_QUIRK_IGNORE|HID_QUIRK_IGNORE_MOUSE)) {
+-- 
+1.5.6
+
