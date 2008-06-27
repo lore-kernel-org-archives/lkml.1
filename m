@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758265AbYF0Mes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbYF0Mfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758265AbYF0Mes (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 08:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759562AbYF0Mef
+	id S1760645AbYF0Mfc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 08:35:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbYF0MfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 08:34:35 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:61193 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 27 Jun 2008 08:35:12 -0400
+Received: from saeurebad.de ([85.214.36.134]:39350 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759534AbYF0Mee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 08:34:34 -0400
-To: linux-kernel@vger.kernel.org
-Subject: Re: Kernel hangs in SMP + VMware environment.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <200805150611.m4F6Bv4J046219@www262.sakura.ne.jp>
-	<D3C12B2AD838B44DA9D6B2CA334246D00D8F38DA60@PA-EXMBX04.vmware.com>
-	<200805162148.AAJ21381.QOSMOFFFLHOVJt@I-love.SAKURA.ne.jp>
-	<D3C12B2AD838B44DA9D6B2CA334246D00DC43DE5E6@PA-EXMBX04.vmware.com>
-	<200805171034.CJC04647.HOFMOJVFQFOLtS@I-love.SAKURA.ne.jp>
-In-Reply-To: <200805171034.CJC04647.HOFMOJVFQFOLtS@I-love.SAKURA.ne.jp>
-Message-Id: <200806272134.DED65160.OJMtOFLFOFQVSH@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Fri, 27 Jun 2008 21:34:32 +0900
-Mime-Version: 1.0
+	id S1756087AbYF0MfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 08:35:11 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mmotm] fix double export of kobject_rename
+References: <87wskbxg1o.fsf@skyscraper.fehenstaub.lan>
+	<Pine.LNX.4.64.0806271256570.16003@blonde.site>
+Date: Fri, 27 Jun 2008 14:34:39 +0200
+In-Reply-To: <Pine.LNX.4.64.0806271256570.16003@blonde.site> (Hugh Dickins's
+	message of "Fri, 27 Jun 2008 12:57:34 +0100 (BST)")
+Message-ID: <87lk0rxdi8.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tetsuo Handa wrote:
-> I'm saying "All kernels since 2.6.18 might have this problem, and we need to apply
-> your patch to all kernels since 2.6.18 if they actually have this problem".
+Hi,
 
-Today, I found that the CentOS 5.2's 2.6.18-92.1.6.el5 kernel has the patch applied.
-So, this problem existed in all kernels since 2.6.18, right?
+Hugh Dickins <hugh@veritas.com> writes:
 
-Does this problem happen when used in non-virtualized (i.e. native) environment?
+> On Fri, 27 Jun 2008, Johannes Weiner wrote:
+>
+>> Probably a merging error, line comes from the merge with -next.
+>> 
+>> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+>> ---
+>
+> Please try yesterday's .DATE=2008-06-26-14-32 mmotm,
+> I sent Andrew a similar fix and it should be okay now.
+> Also includes fix to endless bad page states once you boot.
 
-Regards.
+Crap, I must have checked it out just before he updated it.  Thanks,
+Hugh.
+
+	Hannes
