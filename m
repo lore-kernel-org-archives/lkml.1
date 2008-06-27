@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbYF0NzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbYF0OFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757504AbYF0NzY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 09:55:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbYF0NzJ
+	id S1755961AbYF0OFj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 10:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbYF0OF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 09:55:09 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:51723 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755301AbYF0NzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 09:55:08 -0400
-Date: Fri, 27 Jun 2008 15:55:52 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, monstr@seznam.cz,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
-       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com,
-       Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH 48/60] microblaze_v4: headers simple files - empty or redirect to asm-generic
-Message-ID: <20080627135552.GA16485@uranus.ravnborg.org>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz> <200806261838.33787.arnd@arndb.de> <20080626180530.GA22827@cs181140183.pp.htv.fi> <200806270123.06669.arnd@arndb.de> <20080627115936.GA18644@cs181140183.pp.htv.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080627115936.GA18644@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 27 Jun 2008 10:05:29 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:51157 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751273AbYF0OF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 10:05:29 -0400
+From: Paul Jackson <pj@sgi.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "Michael Kerrisk" <mtk.manpages@googlemail.com>,
+       "Paul Menage" <menage@google.com>, Paul Jackson <pj@sgi.com>,
+       linux-kernel@vger.kernel.org, "Mike Travis" <travis@sgi.com>
+Date: Fri, 27 Jun 2008 07:05:28 -0700
+Message-Id: <20080627140528.3490.86690.sendpatchset@polaris-admin.engr.sgi.com>
+Subject: [PATCH] cpusets: document proc status cpus and mems allowed lists
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> We need either all architectures changed or none at all - we do need the 
-> arch headers to become more similar, not more different.
-> 
-> And this is why we need an agreement _before_ an asm-generic header gets 
-> added, not after it.
-We already have the agreement..
-Files which are equal among archs should be in asm-generic.
-And there is simply no gain in adding files for an arch when can put
-them in asm-generic.
-When they are in asm-generic than we can fix the other archs one-by-one.
+From: Paul Jackson <pj@sgi.com>
 
-	Sam
+Provide a little documentation for the two new fields,
+Cpus_allowed_list and Mems_allowed_list, that were
+added to each /proc/<pid>/status file a while back.
+
+Signed-off-by: Paul Jackson <pj@sgi.com>
+
+---
+ Documentation/cpusets.txt |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+--- 2.6.26-rc5-mm3.orig/Documentation/cpusets.txt	2008-06-27 06:20:55.000000000 -0700
++++ 2.6.26-rc5-mm3/Documentation/cpusets.txt	2008-06-27 06:55:34.609862065 -0700
+@@ -154,13 +154,15 @@ browsing and modifying the cpusets prese
+ new system calls are added for cpusets - all support for querying and
+ modifying cpusets is via this cpuset file system.
+ 
+-The /proc/<pid>/status file for each task has two added lines,
++The /proc/<pid>/status file for each task has four added lines,
+ displaying the tasks cpus_allowed (on which CPUs it may be scheduled)
+ and mems_allowed (on which Memory Nodes it may obtain memory),
+-in the format seen in the following example:
++in the two formats seen in the following example:
+ 
+   Cpus_allowed:   ffffffff,ffffffff,ffffffff,ffffffff
++  Cpus_allowed_list:      0-127
+   Mems_allowed:   ffffffff,ffffffff
++  Mems_allowed_list:      0-63
+ 
+ Each cpuset is represented by a directory in the cgroup file system
+ containing (on top of the standard cgroup files) the following
+
+-- 
+                          I won't rest till it's the best ...
+                          Programmer, Linux Scalability
+                          Paul Jackson <pj@sgi.com> 1.650.933.1373
