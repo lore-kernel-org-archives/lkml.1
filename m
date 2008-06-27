@@ -1,101 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760339AbYF0PWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYF0Phz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760339AbYF0PWc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 11:22:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYF0PWZ
+	id S1753371AbYF0Phz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 11:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbYF0Php
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 11:22:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:35104 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751636AbYF0PWY (ORCPT
+	Fri, 27 Jun 2008 11:37:45 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:10983 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181AbYF0Pho (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 11:22:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=ReYm/pEl1kl+vzNzkk9iXzssgctZN3hkCAlRHOw8p4juM6OiNxFex/iQuVmAeWQTAS
-         vlPTxU709G1SW/5WWrWNUM4JdhrTpRCP5hO1JBHgTWP26lTKWUfCrFWnLuZc5O/wgxXf
-         4ZLqJDGZpi0pztDfWBNZpIoTN1uWVXddQN0Wg=
-Date: Fri, 27 Jun 2008 17:22:17 +0200
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Andi Kleen <andi@firstfloor.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [RESEND][PATCH] x86: don't destroy %rbp on kernel-mode faults
-Message-ID: <20080627152216.GA8852@damson.getinternet.no>
+	Fri, 27 Jun 2008 11:37:44 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=cgyIRcxlbhIxEXFreyydZn0Oq6zhRPKIU9zSYSTpEXq/scfVhZnoYFvbO1ZK6jc+c
+	CMvO8va3FzoQ3eL+ug4Sw==
+Message-ID: <6599ad830806270837t5f9df61cn665a88d3dd8746d4@mail.gmail.com>
+Date: Fri, 27 Jun 2008 08:37:34 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+Subject: Re: [RFC 3/5] Replacement policy on heap overfull
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080627151838.31664.51492.sendpatchset@balbir-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+References: <20080627151808.31664.36047.sendpatchset@balbir-laptop>
+	 <20080627151838.31664.51492.sendpatchset@balbir-laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Jun 27, 2008 at 8:18 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>
+>
+> This patch adds a policy parameter to heap_insert. While inserting an element
+> if the heap is full, the policy determines which element to replace.
+> The default earlier is now obtained by passing the policy as HEAP_REP_TOP.
+> The new HEAP_REP_LEAF policy, replaces a leaf node (the last element).
+>
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+>
+>  include/linux/prio_heap.h |    9 ++++++++-
+>  kernel/cgroup.c           |    2 +-
+>  lib/prio_heap.c           |   31 +++++++++++++++++++++++--------
+>  3 files changed, 32 insertions(+), 10 deletions(-)
+>
+> diff -puN include/linux/prio_heap.h~prio_heap_replace_leaf include/linux/prio_heap.h
+> --- linux-2.6.26-rc5/include/linux/prio_heap.h~prio_heap_replace_leaf   2008-06-27 20:43:09.000000000 +0530
+> +++ linux-2.6.26-rc5-balbir/include/linux/prio_heap.h   2008-06-27 20:43:09.000000000 +0530
+> @@ -22,6 +22,11 @@ struct ptr_heap {
+>        int (*gt)(void *, void *);
+>  };
+>
+> +enum heap_replacement_policy {
+> +       HEAP_REP_LEAF,
+> +       HEAP_REP_TOP,
+> +};
 
-I sent this patch earlier, but it was never queued. It has been acked by
-Arjan and acked informally by Andi. I hope this can make it for 2.6.27.
+Maybe "drop" rather than "replace"? HEAP_REP_TOP doesn't replace the
+top element if you insert a new higher element, it drops the top.
 
-(It's been tested on two x86_64s.)
+How about HEAP_DROP_LEAF and HEAP_DROP_MAX? You could also provide a
+HEAP_DROP_MIN with the caveat that it would take linear time.
 
+Add comments here about what these mean?
 
-Vegard
+> +       if (policy == HEAP_REP_TOP)
 
+switch() here?
 
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Thu, 26 Jun 2008 13:26:50 +0200
-Subject: [PATCH] x86: don't destroy %rbp on kernel-mode faults
+> +               if (heap->gt(p, ptrs[0]))
+> +                       return p;
+> +
+> +       if (policy == HEAP_REP_LEAF) {
+> +               /* Heap insertion */
+> +               int pos = heap->size - 1;
+> +               res = ptrs[pos];
+> +               heap_insert_at(heap, p, pos);
+> +               return res;
+> +       }
+>
+>        /* Replace the current max and heapify */
+>        res = ptrs[0];
 
->From the code:
+This should probably be in the arm dealing with
+HEAP_REP_TOP/HEAP_DROP_MAX since we only get here in that case.
 
-    "B stepping K8s sometimes report an truncated RIP for IRET exceptions
-    returning to compat mode. Check for these here too."
-
-The code then proceeds to truncate the upper 32 bits of %rbp. This means
-that when do_page_fault() is finally called, its prologue,
-
-    do_page_fault:
-        push %rbp
-        movl %rsp, %rbp
-
-will put the truncated base pointer on the stack. This means that the
-stack tracer will not be able to follow the base-pointer changes and
-will see all subsequent stack frames as unreliable.
-
-This patch changes the code to use a different register (%rcx) for the
-checking and leaves %rbp untouched.
-
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- arch/x86/kernel/entry_64.S |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
-index 556a8df..fa1c9eb 100644
---- a/arch/x86/kernel/entry_64.S
-+++ b/arch/x86/kernel/entry_64.S
-@@ -926,11 +926,11 @@ error_kernelspace:
- 	   iret run with kernel gs again, so don't set the user space flag.
- 	   B stepping K8s sometimes report an truncated RIP for IRET 
- 	   exceptions returning to compat mode. Check for these here too. */
--	leaq irq_return(%rip),%rbp
--	cmpq %rbp,RIP(%rsp) 
-+	leaq irq_return(%rip),%rcx
-+	cmpq %rcx,RIP(%rsp)
- 	je   error_swapgs
--	movl %ebp,%ebp	/* zero extend */
--	cmpq %rbp,RIP(%rsp) 
-+	movl %ecx,%ecx	/* zero extend */
-+	cmpq %rcx,RIP(%rsp)
- 	je   error_swapgs
- 	cmpq $gs_change,RIP(%rsp)
-         je   error_swapgs
--- 
-1.5.4.1
-
+Paul
