@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760709AbYF0G6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760476AbYF0G6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760709AbYF0G6O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 02:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759225AbYF0Gvd
+	id S1760476AbYF0G6v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 02:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759273AbYF0Gvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 02:51:33 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46853 "EHLO mx1.suse.de"
+	Fri, 27 Jun 2008 02:51:47 -0400
+Received: from ns2.suse.de ([195.135.220.15]:43253 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755159AbYF0Gva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 02:51:30 -0400
+	id S1757687AbYF0Gvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 02:51:44 -0400
 From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 27 Jun 2008 16:51:23 +1000
-Message-Id: <1080627065123.10617@suse.de>
+Date: Fri, 27 Jun 2008 16:51:37 +1000
+Message-Id: <1080627065137.10652@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH 019 of 29] md: md: kill STRIPE_OP_MOD_DMA in raid5 offload
+Subject: [PATCH 021 of 29] md: md: use stripe_head_state in ops_run_io()
 References: <20080627164503.9671.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,68 +27,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Dan Williams <dan.j.williams@intel.com>
 
-This micro-optimization allowed the raid code to skip a re-read of the
-parity block after checking parity.  It took advantage of the fact that
-xor-offload-engines have their own internal result buffer and can check
-parity without writing to memory.  Remove it for the following reasons:
+In handle_stripe after taking sh->lock we sample some bits into 's' (struct
+stripe_head_state):
 
-1/ It is a layering violation for MD to need to manage the DMA and
-   non-DMA paths within async_xor_zero_sum
-2/ Bad precedent to toggle the 'ops' flags outside the lock
-3/ Hard to realize a performance gain as reads will not need an updated
-   parity block and writes will dirty it anyways.
+	s.syncing = test_bit(STRIPE_SYNCING, &sh->state);
+	s.expanding = test_bit(STRIPE_EXPAND_SOURCE, &sh->state);
+	s.expanded = test_bit(STRIPE_EXPAND_READY, &sh->state);
+
+Use these values from 's' in ops_run_io() rather than re-sampling the bits.
+This ensures a consistent snapshot (as seen under sh->lock) is used.
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 Signed-off-by: Neil Brown <neilb@suse.de>
 
 ### Diffstat output
- ./drivers/md/raid5.c         |   10 ----------
- ./include/linux/raid/raid5.h |    2 --
- 2 files changed, 12 deletions(-)
+ ./drivers/md/raid5.c |    9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
 diff .prev/drivers/md/raid5.c ./drivers/md/raid5.c
---- .prev/drivers/md/raid5.c	2008-06-27 16:20:58.000000000 +1000
-+++ ./drivers/md/raid5.c	2008-06-27 16:22:03.000000000 +1000
-@@ -837,15 +837,10 @@ ops_run_postxor(struct stripe_head *sh, 
- static void ops_complete_check(void *stripe_head_ref)
+--- .prev/drivers/md/raid5.c	2008-06-27 16:22:04.000000000 +1000
++++ ./drivers/md/raid5.c	2008-06-27 16:22:04.000000000 +1000
+@@ -390,7 +390,7 @@ raid5_end_read_request(struct bio *bi, i
+ static void
+ raid5_end_write_request(struct bio *bi, int error);
+ 
+-static void ops_run_io(struct stripe_head *sh)
++static void ops_run_io(struct stripe_head *sh, struct stripe_head_state *s)
  {
- 	struct stripe_head *sh = stripe_head_ref;
--	int pd_idx = sh->pd_idx;
+ 	raid5_conf_t *conf = sh->raid_conf;
+ 	int i, disks = sh->disks;
+@@ -425,9 +425,7 @@ static void ops_run_io(struct stripe_hea
+ 		rcu_read_unlock();
  
- 	pr_debug("%s: stripe %llu\n", __func__,
- 		(unsigned long long)sh->sector);
+ 		if (rdev) {
+-			if (test_bit(STRIPE_SYNCING, &sh->state) ||
+-				test_bit(STRIPE_EXPAND_SOURCE, &sh->state) ||
+-				test_bit(STRIPE_EXPAND_READY, &sh->state))
++			if (s->syncing || s->expanding || s->expanded)
+ 				md_sync_acct(rdev->bdev, STRIPE_SECTORS);
  
--	if (test_and_clear_bit(STRIPE_OP_MOD_DMA_CHECK, &sh->ops.pending) &&
--		sh->ops.zero_sum_result == 0)
--		set_bit(R5_UPTODATE, &sh->dev[pd_idx].flags);
+ 			set_bit(STRIPE_IO_STARTED, &sh->state);
+@@ -2902,10 +2900,9 @@ static void handle_stripe5(struct stripe
+ 	if (pending)
+ 		raid5_run_ops(sh, pending);
+ 
+-	ops_run_io(sh);
++	ops_run_io(sh, &s);
+ 
+ 	return_io(return_bi);
 -
- 	set_bit(STRIPE_OP_CHECK, &sh->ops.complete);
- 	set_bit(STRIPE_HANDLE, &sh->state);
- 	release_stripe(sh);
-@@ -873,11 +868,6 @@ static void ops_run_check(struct stripe_
- 	tx = async_xor_zero_sum(xor_dest, xor_srcs, 0, count, STRIPE_SIZE,
- 		&sh->ops.zero_sum_result, 0, NULL, NULL, NULL);
+ }
  
--	if (tx)
--		set_bit(STRIPE_OP_MOD_DMA_CHECK, &sh->ops.pending);
--	else
--		clear_bit(STRIPE_OP_MOD_DMA_CHECK, &sh->ops.pending);
--
- 	atomic_inc(&sh->count);
- 	tx = async_trigger_callback(ASYNC_TX_DEP_ACK | ASYNC_TX_ACK, tx,
- 		ops_complete_check, sh);
-
-diff .prev/include/linux/raid/raid5.h ./include/linux/raid/raid5.h
---- .prev/include/linux/raid/raid5.h	2008-06-27 16:20:33.000000000 +1000
-+++ ./include/linux/raid/raid5.h	2008-06-27 16:22:03.000000000 +1000
-@@ -267,10 +267,8 @@ struct r6_state {
- 
- /* modifiers to the base operations
-  * STRIPE_OP_MOD_REPAIR_PD - compute the parity block and write it back
-- * STRIPE_OP_MOD_DMA_CHECK - parity is not corrupted by the check
-  */
- #define STRIPE_OP_MOD_REPAIR_PD 7
--#define STRIPE_OP_MOD_DMA_CHECK 8
- 
- /*
-  * Plugging:
+ static void handle_stripe6(struct stripe_head *sh, struct page *tmp_page)
