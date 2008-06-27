@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753023AbYF0Qk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbYF0Qne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753023AbYF0Qk4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 12:40:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756960AbYF0QkY
+	id S1756213AbYF0Qne (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 12:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750783AbYF0Qn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 12:40:24 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:32574 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756724AbYF0QkW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 12:40:22 -0400
-Date: Fri, 27 Jun 2008 12:39:45 -0400
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Joerg Roedel <joerg.roedel@amd.com>,
-       tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
-Subject: Re: [PATCH 01/34] AMD IOMMU: add Kconfig entry
-Message-ID: <20080627163945.GA26130@il.ibm.com>
-References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-2-git-send-email-joerg.roedel@amd.com> <20080627142558.GG18644@cs181140183.pp.htv.fi> <878wwrq6im.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <878wwrq6im.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 27 Jun 2008 12:43:26 -0400
+Received: from nn7.de ([85.214.94.156]:40841 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750758AbYF0QnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 12:43:25 -0400
+Subject: 2.6.26-rc7: BUG at kernel/power/snapshot.c:493
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 27 Jun 2008 18:43:05 +0200
+Message-Id: <1214584985.22228.15.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 04:47:29PM +0200, Andi Kleen wrote:
+Dear all,
 
-> Also it should ideally describe that there is a trade off between
-> reliability and performance with IOMMU enabled.
+Anyone else seeing this? Happened after resuming from s2both (from
+disk)...
 
-I agree that there's a performance tradeoff with current generation
-hardware and ingerfaces, but it wouldn't be fair to single out a
-single IOMMU implementation ;=)
+VFS: Mounted root (ext2 filesystem).
+------------[ cut here ]------------
+kernel BUG at kernel/power/snapshot.c:493!
+invalid opcode: 0000 [#1] PREEMPT SMP 
+Modules linked in:
 
-config DMAR
-	bool "Support for DMA Remapping Devices (EXPERIMENTAL)"
-	depends on X86_64 && PCI_MSI && ACPI && EXPERIMENTAL
-	help
-	  DMA remapping (DMAR) devices support enables independent address
-	  translations for Direct Memory Access (DMA) from devices.
-	  These DMA remapping devices are reported via ACPI tables
-	  and include PCI device scope covered by these DMA
-	  remapping devices.
+Pid: 568, comm: linuxrc Not tainted (2.6.26-rc7-sonne #35)
+EIP: 0060:[<c0157f99>] EFLAGS: 00010282 CPU: 0
+EIP is at memory_bm_set_bit+0x29/0x30
+EAX: fffffff2 EBX: f7165f1c ECX: 00000000 EDX: 03000200
+ESI: f7115000 EDI: b7f2a008 EBP: f7165f28 ESP: f7165f18
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+Process linuxrc (pid: 568, ti=f7164000 task=f7b65f80 task.ti=f7164000)
+Stack: f7165f1c 00000013 f7117000 00000002 f7165f5c c0158e9b bf96e5ec c02dd570 
+       00001000 c05fa980 00000008 00000008 00000000 00000000 f7000200 c05fa980 
+       b7f2a008 f7165f70 c015b3af f7000200 b7f2a008 00001000 f7165f90 c0185e28 
+Call Trace:
+ [<c0158e9b>] ? snapshot_write_next+0xcb/0x7a0
+ [<c02dd570>] ? write_chan+0x0/0x380
+ [<c015b3af>] ? snapshot_write+0x1f/0x70
+ [<c0185e28>] ? vfs_write+0x98/0x120
+ [<c015b390>] ? snapshot_write+0x0/0x70
+ [<c0185f6d>] ? sys_write+0x3d/0x70
+ [<c010333a>] ? syscall_call+0x7/0xb
+ =======================
+Code: 00 00 55 89 e5 53 83 ec 0c 8d 4d f8 8d 5d f4 89 1c 24 e8 4b ff ff ff 85 c0
+EIP: [<c0157f99>] memory_bm_set_bit+0x29/0x30 SS:ESP 0068:f7165f18
+---[ end trace 70a926e889075b3c ]---
 
-Cheers,
-Muli
+
+Soeren
