@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757877AbYF0Qka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753023AbYF0Qk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757877AbYF0Qka (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 12:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbYF0QkN
+	id S1753023AbYF0Qk4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 12:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756960AbYF0QkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 12:40:13 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:45161 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751604AbYF0QkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 12:40:11 -0400
-Date: Fri, 27 Jun 2008 20:42:23 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Paul Menage <menage@google.com>, Vegard Nossum <vegard.nossum@gmail.com>,
-       Paul Jackson <pj@sgi.com>, a.p.zijlstra@chello.nl, maxk@qualcomm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] CPUSets: Move most calls to rebuild_sched_domains() to the workqueue
-Message-ID: <20080627164223.GC508@tv-sign.ru>
-References: <48634BC1.8@google.com> <20080627032228.GA3419@in.ibm.com> <20080627032317.GB3419@in.ibm.com>
-Mime-Version: 1.0
+	Fri, 27 Jun 2008 12:40:24 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:32574 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756724AbYF0QkW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 12:40:22 -0400
+Date: Fri, 27 Jun 2008 12:39:45 -0400
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Joerg Roedel <joerg.roedel@amd.com>,
+       tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
+Subject: Re: [PATCH 01/34] AMD IOMMU: add Kconfig entry
+Message-ID: <20080627163945.GA26130@il.ibm.com>
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-2-git-send-email-joerg.roedel@amd.com> <20080627142558.GG18644@cs181140183.pp.htv.fi> <878wwrq6im.fsf@basil.nowhere.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080627032317.GB3419@in.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <878wwrq6im.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/27, Gautham R Shenoy wrote:
->
-> > Using a multithreaded workqueue(kevent here) for this is not such a
-> > great idea this,since currently we cannot call
-> > get_online_cpus() from a workitem executed by a multithreaded workqueue.
-> > 
-> > Can one use a single threaded workqueue here instead ?
+On Fri, Jun 27, 2008 at 04:47:29PM +0200, Andi Kleen wrote:
 
-Yes, this should help.
+> Also it should ideally describe that there is a trade off between
+> reliability and performance with IOMMU enabled.
 
-But I think you are right, we should just fix this annoying problem,
+I agree that there's a performance tradeoff with current generation
+hardware and ingerfaces, but it wouldn't be fair to single out a
+single IOMMU implementation ;=)
 
-> > Or, better, I think we can ask Oleg to re-submit the patch he had to make
-> > get_online_cpus() safe to be called from within the workqueue. It does
-> > require a special post CPU_DEAD notification, but as it does work the
-> > last time I checked.
+config DMAR
+	bool "Support for DMA Remapping Devices (EXPERIMENTAL)"
+	depends on X86_64 && PCI_MSI && ACPI && EXPERIMENTAL
+	help
+	  DMA remapping (DMAR) devices support enables independent address
+	  translations for Direct Memory Access (DMA) from devices.
+	  These DMA remapping devices are reported via ACPI tables
+	  and include PCI device scope covered by these DMA
+	  remapping devices.
 
-OK, will do on Sunday.
-
-Oleg.
-
+Cheers,
+Muli
