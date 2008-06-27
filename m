@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbYF0Gvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758736AbYF0GwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754804AbYF0Gvi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 02:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbYF0Gtq
+	id S1758736AbYF0GwI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 02:52:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755504AbYF0Gtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 02:49:46 -0400
-Received: from mail.suse.de ([195.135.220.2]:46663 "EHLO mx1.suse.de"
+	Fri, 27 Jun 2008 02:49:52 -0400
+Received: from mail.suse.de ([195.135.220.2]:46682 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754414AbYF0Gto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 02:49:44 -0400
+	id S1754804AbYF0Gtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 02:49:51 -0400
 From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 27 Jun 2008 16:49:36 +1000
-Message-Id: <1080627064936.10320@suse.de>
+Date: Fri, 27 Jun 2008 16:49:43 +1000
+Message-Id: <1080627064943.10337@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Dave Jones <davej@redhat.com>
-Subject: [PATCH 003 of 29] md: Fix error paths if md_probe fails.
+Cc: "Nikanth Karthikesan" <knikanth@novell.com>
+Cc: Nikanth Karthikesan <knikanth@suse.de>
+Subject: [PATCH 004 of 29] md: linear: correct disk numbering error check
 References: <20080627164503.9671.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-md_probe can fail (e.g. alloc_disk could fail) without
-returning an error (as it alway returns NULL).
-So when we call mddev_find immediately afterwards, we need
-to check that md_probe actually succeeded.  This means checking
-that mdev->gendisk is non-NULL.
+From: "Nikanth Karthikesan" <knikanth@novell.com>
 
-cc: <stable@kernel.org>
-Cc: Dave Jones <davej@redhat.com>
+Correct disk numbering problem check.
+
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
 Signed-off-by: Neil Brown <neilb@suse.de>
 
 ### Diffstat output
- ./drivers/md/md.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ ./drivers/md/linear.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff .prev/drivers/md/md.c ./drivers/md/md.c
---- .prev/drivers/md/md.c	2008-06-27 15:14:04.000000000 +1000
-+++ ./drivers/md/md.c	2008-06-27 15:31:08.000000000 +1000
-@@ -3897,8 +3897,10 @@ static void autorun_devices(int part)
+diff .prev/drivers/md/linear.c ./drivers/md/linear.c
+--- .prev/drivers/md/linear.c	2008-06-27 15:19:55.000000000 +1000
++++ ./drivers/md/linear.c	2008-06-27 15:31:20.000000000 +1000
+@@ -126,7 +126,7 @@ static linear_conf_t *linear_conf(mddev_
+ 		int j = rdev->raid_disk;
+ 		dev_info_t *disk = conf->disks + j;
  
- 		md_probe(dev, NULL, NULL);
- 		mddev = mddev_find(dev);
--		if (!mddev) {
--			printk(KERN_ERR 
-+		if (!mddev || !mddev->gendisk) {
-+			if (mddev)
-+				mddev_put(mddev);
-+			printk(KERN_ERR
- 				"md: cannot allocate memory for md drive.\n");
- 			break;
+-		if (j < 0 || j > raid_disks || disk->rdev) {
++		if (j < 0 || j >= raid_disks || disk->rdev) {
+ 			printk("linear: disk numbering problem. Aborting!\n");
+ 			goto out;
  		}
