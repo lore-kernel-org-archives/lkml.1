@@ -1,234 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761876AbYF0TRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761837AbYF0TVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761876AbYF0TRR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 15:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755482AbYF0TRD
+	id S1761837AbYF0TVT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 15:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756651AbYF0TVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 15:17:03 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4030 "EHLO ra.tuxdriver.com"
+	Fri, 27 Jun 2008 15:21:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46398 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755367AbYF0TRA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 15:17:00 -0400
-Date: Fri, 27 Jun 2008 15:14:12 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: pull request: wireless-2.6 2008-06-27
-Message-ID: <20080627191412.GA24606@tuxdriver.com>
+	id S1755686AbYF0TVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 15:21:08 -0400
+Date: Fri, 27 Jun 2008 21:20:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RESEND][PATCH 1/2] stacktrace: add saved stack traces to
+	backtrace self-test
+Message-ID: <20080627192055.GA8435@elte.hu>
+References: <20080627160448.GB8852@damson.getinternet.no> <20080627160821.GA30232@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080627160821.GA30232@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave,
 
-Another quick round of fixes hoping to see 2.6.26...
+FYI, it needed the fixlet below.
 
-Thanks!
+	Ingo
 
-John
+------------->
+commit 7bcebd2e3ee8435e2ff0f674a409f46961fda3cc
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Fri Jun 27 21:20:17 2008 +0200
 
----
+    stacktrace: export print_stack_trace and save_stack_trace
+    
+    fix:
+    
+    ERROR: "print_stack_trace" [kernel/backtracetest.ko] undefined!
+    ERROR: "save_stack_trace" [kernel/backtracetest.ko] undefined!
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    
+    Conflicts:
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Individual patches are available here:
-
-	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
-
----
-
-The following changes since commit 7ac3b02536c9ccfcc8aabc4c135a371ac4641805:
-  David S. Miller (1):
-        Merge branch 'master' of master.kernel.org:/.../linville/wireless-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
-
-Emmanuel Grumbach (1):
-      mac80211: fix an oops in several failure paths in key allocation
-
-Harvey Harrison (1):
-      prism: islpci_eth.c endianness fix
-
-Ivo van Doorn (1):
-      rt2x00: Fix lock dependency errror
-
- drivers/net/wireless/prism54/islpci_eth.c |    2 +-
- drivers/net/wireless/rt2x00/rt2x00.h      |    1 +
- drivers/net/wireless/rt2x00/rt2x00dev.c   |   38 +++++++++++++++++++----------
- drivers/net/wireless/rt2x00/rt2x00mac.c   |    4 +-
- net/mac80211/key.c                        |    9 +++++++
- 5 files changed, 38 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/net/wireless/prism54/islpci_eth.c b/drivers/net/wireless/prism54/islpci_eth.c
-index 762e85b..e43bae9 100644
---- a/drivers/net/wireless/prism54/islpci_eth.c
-+++ b/drivers/net/wireless/prism54/islpci_eth.c
-@@ -290,7 +290,7 @@ islpci_monitor_rx(islpci_private *priv, struct sk_buff **skb)
- 
- 		avs->version = cpu_to_be32(P80211CAPTURE_VERSION);
- 		avs->length = cpu_to_be32(sizeof (struct avs_80211_1_header));
--		avs->mactime = cpu_to_be64(le64_to_cpu(clock));
-+		avs->mactime = cpu_to_be64(clock);
- 		avs->hosttime = cpu_to_be64(jiffies);
- 		avs->phytype = cpu_to_be32(6);	/*OFDM: 6 for (g), 8 for (a) */
- 		avs->channel = cpu_to_be32(channel_of_freq(freq));
-diff --git a/drivers/net/wireless/rt2x00/rt2x00.h b/drivers/net/wireless/rt2x00/rt2x00.h
-index 611d983..b4bf1e0 100644
---- a/drivers/net/wireless/rt2x00/rt2x00.h
-+++ b/drivers/net/wireless/rt2x00/rt2x00.h
-@@ -821,6 +821,7 @@ struct rt2x00_dev {
- 	/*
- 	 * Scheduled work.
- 	 */
-+	struct workqueue_struct *workqueue;
- 	struct work_struct intf_work;
- 	struct work_struct filter_work;
- 
-diff --git a/drivers/net/wireless/rt2x00/rt2x00dev.c b/drivers/net/wireless/rt2x00/rt2x00dev.c
-index 2673d56..c997d4f 100644
---- a/drivers/net/wireless/rt2x00/rt2x00dev.c
-+++ b/drivers/net/wireless/rt2x00/rt2x00dev.c
-@@ -75,7 +75,7 @@ static void rt2x00lib_start_link_tuner(struct rt2x00_dev *rt2x00dev)
- 
- 	rt2x00lib_reset_link_tuner(rt2x00dev);
- 
--	queue_delayed_work(rt2x00dev->hw->workqueue,
-+	queue_delayed_work(rt2x00dev->workqueue,
- 			   &rt2x00dev->link.work, LINK_TUNE_INTERVAL);
+diff --git a/arch/x86/kernel/stacktrace.c b/arch/x86/kernel/stacktrace.c
+index c28c342..b7b483b 100644
+--- a/arch/x86/kernel/stacktrace.c
++++ b/arch/x86/kernel/stacktrace.c
+@@ -74,10 +74,4 @@ void save_stack_trace(struct stack_trace *trace)
+ 	if (trace->nr_entries < trace->max_entries)
+ 		trace->entries[trace->nr_entries++] = ULONG_MAX;
  }
- 
-@@ -137,14 +137,6 @@ void rt2x00lib_disable_radio(struct rt2x00_dev *rt2x00dev)
- 		return;
- 
- 	/*
--	 * Stop all scheduled work.
--	 */
--	if (work_pending(&rt2x00dev->intf_work))
--		cancel_work_sync(&rt2x00dev->intf_work);
--	if (work_pending(&rt2x00dev->filter_work))
--		cancel_work_sync(&rt2x00dev->filter_work);
 -
--	/*
- 	 * Stop the TX queues.
- 	 */
- 	ieee80211_stop_queues(rt2x00dev->hw);
-@@ -398,8 +390,8 @@ static void rt2x00lib_link_tuner(struct work_struct *work)
- 	 * Increase tuner counter, and reschedule the next link tuner run.
- 	 */
- 	rt2x00dev->link.count++;
--	queue_delayed_work(rt2x00dev->hw->workqueue, &rt2x00dev->link.work,
--			   LINK_TUNE_INTERVAL);
-+	queue_delayed_work(rt2x00dev->workqueue,
-+			   &rt2x00dev->link.work, LINK_TUNE_INTERVAL);
- }
- 
- static void rt2x00lib_packetfilter_scheduled(struct work_struct *work)
-@@ -433,6 +425,15 @@ static void rt2x00lib_intf_scheduled_iter(void *data, u8 *mac,
- 
- 	spin_unlock(&intf->lock);
- 
-+	/*
-+	 * It is possible the radio was disabled while the work had been
-+	 * scheduled. If that happens we should return here immediately,
-+	 * note that in the spinlock protected area above the delayed_flags
-+	 * have been cleared correctly.
-+	 */
-+	if (!test_bit(DEVICE_ENABLED_RADIO, &rt2x00dev->flags))
-+		return;
-+
- 	if (delayed_flags & DELAYED_UPDATE_BEACON) {
- 		skb = ieee80211_beacon_get(rt2x00dev->hw, vif, &control);
- 		if (skb && rt2x00dev->ops->hw->beacon_update(rt2x00dev->hw,
-@@ -441,7 +442,7 @@ static void rt2x00lib_intf_scheduled_iter(void *data, u8 *mac,
+-void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
+-{
+-	dump_trace(tsk, NULL, NULL, 0, &save_stack_ops_nosched, trace);
+-	if (trace->nr_entries < trace->max_entries)
+-		trace->entries[trace->nr_entries++] = ULONG_MAX;
+-}
++EXPORT_SYMBOL_GPL(save_stack_trace);
+diff --git a/kernel/stacktrace.c b/kernel/stacktrace.c
+index 7eaea9d..eda2f4c 100644
+--- a/kernel/stacktrace.c
++++ b/kernel/stacktrace.c
+@@ -21,4 +21,5 @@ void print_stack_trace(struct stack_trace *trace, int spaces)
+ 		print_ip_sym(trace->entries[i]);
  	}
- 
- 	if (delayed_flags & DELAYED_CONFIG_ERP)
--		rt2x00lib_config_erp(rt2x00dev, intf, &intf->conf);
-+		rt2x00lib_config_erp(rt2x00dev, intf, &conf);
- 
- 	if (delayed_flags & DELAYED_LED_ASSOC)
- 		rt2x00leds_led_assoc(rt2x00dev, !!rt2x00dev->intf_associated);
-@@ -487,7 +488,7 @@ void rt2x00lib_beacondone(struct rt2x00_dev *rt2x00dev)
- 						   rt2x00lib_beacondone_iter,
- 						   rt2x00dev);
- 
--	queue_work(rt2x00dev->hw->workqueue, &rt2x00dev->intf_work);
-+	queue_work(rt2x00dev->workqueue, &rt2x00dev->intf_work);
  }
- EXPORT_SYMBOL_GPL(rt2x00lib_beacondone);
++EXPORT_SYMBOL_GPL(print_stack_trace);
  
-@@ -1130,6 +1131,10 @@ int rt2x00lib_probe_dev(struct rt2x00_dev *rt2x00dev)
- 	/*
- 	 * Initialize configuration work.
- 	 */
-+	rt2x00dev->workqueue = create_singlethread_workqueue("rt2x00lib");
-+	if (!rt2x00dev->workqueue)
-+		goto exit;
-+
- 	INIT_WORK(&rt2x00dev->intf_work, rt2x00lib_intf_scheduled);
- 	INIT_WORK(&rt2x00dev->filter_work, rt2x00lib_packetfilter_scheduled);
- 	INIT_DELAYED_WORK(&rt2x00dev->link.work, rt2x00lib_link_tuner);
-@@ -1190,6 +1195,13 @@ void rt2x00lib_remove_dev(struct rt2x00_dev *rt2x00dev)
- 	rt2x00leds_unregister(rt2x00dev);
- 
- 	/*
-+	 * Stop all queued work. Note that most tasks will already be halted
-+	 * during rt2x00lib_disable_radio() and rt2x00lib_uninitialize().
-+	 */
-+	flush_workqueue(rt2x00dev->workqueue);
-+	destroy_workqueue(rt2x00dev->workqueue);
-+
-+	/*
- 	 * Free ieee80211_hw memory.
- 	 */
- 	rt2x00lib_remove_hw(rt2x00dev);
-diff --git a/drivers/net/wireless/rt2x00/rt2x00mac.c b/drivers/net/wireless/rt2x00/rt2x00mac.c
-index 87e280a..9cb023e 100644
---- a/drivers/net/wireless/rt2x00/rt2x00mac.c
-+++ b/drivers/net/wireless/rt2x00/rt2x00mac.c
-@@ -428,7 +428,7 @@ void rt2x00mac_configure_filter(struct ieee80211_hw *hw,
- 	if (!test_bit(DRIVER_REQUIRE_SCHEDULED, &rt2x00dev->flags))
- 		rt2x00dev->ops->lib->config_filter(rt2x00dev, *total_flags);
- 	else
--		queue_work(rt2x00dev->hw->workqueue, &rt2x00dev->filter_work);
-+		queue_work(rt2x00dev->workqueue, &rt2x00dev->filter_work);
- }
- EXPORT_SYMBOL_GPL(rt2x00mac_configure_filter);
- 
-@@ -509,7 +509,7 @@ void rt2x00mac_bss_info_changed(struct ieee80211_hw *hw,
- 	memcpy(&intf->conf, bss_conf, sizeof(*bss_conf));
- 	if (delayed) {
- 		intf->delayed_flags |= delayed;
--		queue_work(rt2x00dev->hw->workqueue, &rt2x00dev->intf_work);
-+		queue_work(rt2x00dev->workqueue, &rt2x00dev->intf_work);
- 	}
- 	spin_unlock(&intf->lock);
- }
-diff --git a/net/mac80211/key.c b/net/mac80211/key.c
-index 150d66d..220e83b 100644
---- a/net/mac80211/key.c
-+++ b/net/mac80211/key.c
-@@ -380,6 +380,15 @@ void ieee80211_key_free(struct ieee80211_key *key)
- 	if (!key)
- 		return;
- 
-+	if (!key->sdata) {
-+		/* The key has not been linked yet, simply free it
-+		 * and don't Oops */
-+		if (key->conf.alg == ALG_CCMP)
-+			ieee80211_aes_key_free(key->u.ccmp.tfm);
-+		kfree(key);
-+		return;
-+	}
-+
- 	spin_lock_irqsave(&key->sdata->local->key_lock, flags);
- 	__ieee80211_key_free(key);
- 	spin_unlock_irqrestore(&key->sdata->local->key_lock, flags);
--- 
-John W. Linville
-linville@tuxdriver.com
