@@ -1,108 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763376AbYF0U7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763564AbYF0VAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763376AbYF0U7X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 16:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756190AbYF0U7P
+	id S1763564AbYF0VAU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 17:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbYF0VAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 16:59:15 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:41225 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753685AbYF0U7N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 16:59:13 -0400
-Date: Fri, 27 Jun 2008 15:59:05 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Linux Security Modules List 
-	<linux-security-module@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] security: filesystem capabilities bugfix2
-Message-ID: <20080627205905.GB17415@us.ibm.com>
-References: <486357EC.5060205@kernel.org>
+	Fri, 27 Jun 2008 17:00:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50300 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754063AbYF0VAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 17:00:00 -0400
+Message-ID: <48655464.5040000@redhat.com>
+Date: Fri, 27 Jun 2008 16:58:12 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <486357EC.5060205@kernel.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       "'Alexey Dobriyan'" <adobriyan@gmail.com>,
+       "'Peter Zijlstra'" <peterz@infradead.org>,
+       "'Steven Rostedt'" <rostedt@goodmis.org>,
+       "'Frank Ch. Eigler'" <fche@redhat.com>, "'Ingo Molnar'" <mingo@elte.hu>,
+       "'LKML'" <linux-kernel@vger.kernel.org>,
+       "'systemtap-ml'" <systemtap@sources.redhat.com>,
+       "'Hideo AOKI'" <haoki@redhat.com>
+Subject: Re: [RFC PATCH] Kernel Tracepoints
+References: <007601c8d5ca$18fa0e10$4aee2a30$@css.fujitsu.com> <48611B03.1000003@redhat.com> <20080625011951.D83E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48612879.5090809@redhat.com> <20080625235214.GA14249@Krystal> <486403F0.4020801@redhat.com> <20080627133009.GC13751@Krystal>
+In-Reply-To: <20080627133009.GC13751@Krystal>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew G. Morgan (morgan@kernel.org):
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> Bugfix for strace, and CAP_SETPCAP, in the case that filesystem
-> capabilities are supported.
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.2.6 (GNU/Linux)
->
-> iD8DBQFIY1fr+bHCR3gb8jsRAph7AKDOlmeveIpQs1jhIs0TJxjCdMAS5ACgsml6
-> 7UYR+FZpW2XdmG8PkiZzemU=
-> =+Ko+
-> -----END PGP SIGNATURE-----
-
-> From f4419c78fff77c4fa3cdfa6b0a78edae92ddf467 Mon Sep 17 00:00:00 2001
-> From: Andrew G. Morgan <morgan@kernel.org>
-> Date: Wed, 25 Jun 2008 23:24:10 -0700
-> Subject: [PATCH] Blunt CAP_SETPCAP on strace with filesystem capability support
+Mathieu Desnoyers wrote:
+> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
+>  >
+>>> Implementation of kernel tracepoints. Inspired from the Linux Kernel Markers.
+>> What would you think redesigning markers on tracepoints? because most of the
+>> logic (scaning sections, multiple probe and activation) seems very similar
+>> to markers.
+>>
 > 
-> The filesystem capability support meaning for CAP_SETPCAP is less
-> powerful than the non-filesystem capability support. As such, when
-> filesystem capabilities are configured, we should not permit
-> CAP_SETPCAP to 'enhance' the current process through strace
-> manipulation of a child process.
+> We could, although markers, because they use var args, allow to put the
+> iteration on the multi probe array out-of-line. Tracepoints cannot
+> afford this and the iteration must be done at the initial call-site.
 > 
-> Signed-off-by: Andrew G. Morgan <morgan@kernel.org>
+> From what I see in your proposal, it's mostly to extract the if() call()
+> code from the inner __trace_mark() macro and to put it in a separate
+> macro, am I correct ? This would make the macro more readable.
 
-If I understand this right, then LSM_UNSAFE_PTRACE_CAP will only be set
-if the tracer didn't have CAP_SYS_PTRACE.  So this seems sane to me.
+Sure, I think marker and tracepoint can share below functions;
+- definition of static local variables in specific sections
+- probe activation code (if() call())
+- multi probe handling
+Then, marker just exports marker_strings sections.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+>> For example, (not complete, I just thought :-))
+>>
+>>  struct tracepoint {
+>>  	const char *name;		/* Tracepoint name */
+>>  	DEFINE_IMV(char, state);	/* Immediate value state. */
+>>  	struct tracepoint_probe_closure *multi;	/* Closures */
+>> 	void * callsite_data;		/* private date from call site */
+>>  } __attribute__((aligned(8)));
+>>
+>>  #define __tracepoint_block(generic, name, data, func, args)
+>>  	static const char __tpstrtab_##name[]			\
+>>  	__attribute__((section("__tracepoints_strings")))	\
+>>  	= #name;						\
+>>  	static struct tracepoint __tracepoint_##name		\
+>>  	__attribute__((section("__tracepoints"), aligned(8))) =	\
+>>  	{ __tpstrtab_##name, 0, NULL, data};			\
+>>  	if (!generic) {						\
+>>  		if (unlikely(imv_cond(__tracepoint_##name.state))) { \
+>>  			imv_cond_end();				\
+>>  			func(&__tracepoint_##name, args); \
+>>  		} else						\
+>>  			imv_cond_end();				\
+>>  	} else {						\
+>>  		if (unlikely(_imv_read(__tracepoint_##name.state))) \
+>>  			func(&__tracepoint_##name, args); \
+>>  	}
 
-> ---
->  security/commoncap.c |   13 ++++++++++---
->  1 files changed, 10 insertions(+), 3 deletions(-)
+
+So, in my idea, __trace_##name() also uses __tracepoint_block() for
+avoiding code duplication.
+
+
+> [...]
+>>> +	static inline int register_trace_##name(			\
+>>> +		void (*probe)(void *private_data, proto),		\
+>>> +		void *private_data)					\
+>>> +	{								\
+>>> +		return tracepoint_probe_register(#name, (void *)probe,	\
+>>> +			private_data);					\
+>>> +	}								\
+>>> +	static inline void unregister_trace_##name(			\
+>>> +		void (*probe)(void *private_data, proto),		\
+>>> +		void *private_data)					\
+>>> +	{								\
+>>> +		tracepoint_probe_unregister(#name, (void *)probe,	\
+>>> +			private_data);					\
+>>> +	}
+>> Out of curiousity, what the private_data is for?
+>>
 > 
-> diff --git a/security/commoncap.c b/security/commoncap.c
-> index 5edabc7..a9ea921 100644
-> --- a/security/commoncap.c
-> +++ b/security/commoncap.c
-> @@ -103,10 +103,16 @@ static inline int cap_inh_is_capped(void)
->  	return (cap_capable(current, CAP_SETPCAP) != 0);
->  }
->  
-> +static inline int cap_limit_straced_target(void) { return 1; }
-> +
->  #else /* ie., ndef CONFIG_SECURITY_FILE_CAPABILITIES */
->  
->  static inline int cap_block_setpcap(struct task_struct *t) { return 0; }
->  static inline int cap_inh_is_capped(void) { return 1; }
-> +static inline int cap_limit_straced_target(void)
-> +{
-> +	return !capable(CAP_SETPCAP);
-> +}
->  
->  #endif /* def CONFIG_SECURITY_FILE_CAPABILITIES */
->  
-> @@ -342,9 +348,10 @@ void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
->  				bprm->e_uid = current->uid;
->  				bprm->e_gid = current->gid;
->  			}
-> -			if (!capable (CAP_SETPCAP)) {
-> -				new_permitted = cap_intersect (new_permitted,
-> -							current->cap_permitted);
-> +			if (cap_limit_straced_target()) {
-> +				new_permitted =
-> +					cap_intersect(new_permitted,
-> +						      current->cap_permitted);
->  			}
->  		}
->  	}
-> -- 
-> 1.5.3.7
-> 
+> When a probe is registered, it gives more flexibility to be able to pass
+> a pointer to private data associated with that probe. For instance, if a
+> tracer needs to register the same probe to many different tracepoints,
+> but having a different context associated with each, it will pass the
+> same function pointer with different private_data to the registration
+> function.
+
+Hmm, only for tracepoint, it might be not so useful, because
+most of tracepoint's prototypes are different and so we can't
+use same probe to those tracepoints.
+Anyway, it is useful for more general probe(ex. markers) if that
+is implemented on tracepoint ;-)
+
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
