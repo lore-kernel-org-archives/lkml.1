@@ -1,73 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760620AbYF0UgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761683AbYF0Uia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760620AbYF0UgR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 16:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbYF0UgC
+	id S1761683AbYF0Uia (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 16:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbYF0UiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 16:36:02 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3359 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751402AbYF0UgA (ORCPT
+	Fri, 27 Jun 2008 16:38:18 -0400
+Received: from mail-sin.bigfish.com ([207.46.51.74]:16615 "EHLO
+	mail182-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752796AbYF0UiR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 16:36:00 -0400
-Date: Fri, 27 Jun 2008 16:35:59 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-cc: Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: 2.6.26-rc1 regression since 2.6.25 - problem in 2.6.26-rc8 again
-In-Reply-To: <20080627091717.GA4998@ics.muni.cz>
-Message-ID: <Pine.LNX.4.44L0.0806271628390.1304-100000@netrider.rowland.org>
+	Fri, 27 Jun 2008 16:38:17 -0400
+X-BigFish: VPS-39(zz1432R98dR7efV1805M10d1Izzzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-WSS-ID: 0K352MY-02-066-01
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 01/34] AMD IOMMU: add Kconfig entry
+Date: Fri, 27 Jun 2008 15:39:31 -0500
+Message-ID: <6453C3CB8E2B3646B0D020C1126132730120C444@sausexmb4.amd.com>
+In-Reply-To: <20080627170546.GE10197@8bytes.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 01/34] AMD IOMMU: add Kconfig entry
+Thread-Index: AcjYeCH8zkUDhfHyRhulsKaa/78m5gAGogGg
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com><1214508490-29683-2-git-send-email-joerg.roedel@amd.com><20080627142558.GG18644@cs181140183.pp.htv.fi><878wwrq6im.fsf@basil.nowhere.org><20080627163945.GA26130@il.ibm.com><20080627165430.GD10197@8bytes.org><20080627165947.GB26130@il.ibm.com> <20080627170546.GE10197@8bytes.org>
+From: "Duran, Leo" <leo.duran@amd.com>
+To: "Joerg Roedel" <joro@8bytes.org>, "Muli Ben-Yehuda" <muli@il.ibm.com>
+Cc: "Adrian Bunk" <bunk@kernel.org>, "Richter, Robert" <rrichter@elbe.amd.com>,
+       <linux-kernel@vger.kernel.org>, <iommu@lists.linux-foundation.org>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Biemueller, Sebastian" <Sebastian.Biemueller@amd.com>,
+       <tglx@linutronix.de>, <mingo@redhat.com>,
+       "Sarathy, Bhavna" <Bhavna.Sarathy@amd.com>
+X-OriginalArrivalTime: 27 Jun 2008 20:37:57.0452 (UTC) FILETIME=[AECDF8C0:01C8D895]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jun 2008, Lukas Hejtmanek wrote:
+On Fri, Jun 27, 2008 at 12:06 PM, Joerg Roedel wrote
 
-> > What does usbmon reveal when you dock the laptop again and then plug in
-> > the disk (see Documentation/usb/usbmon.txt)?
+> On Fri, Jun 27, 2008 at 12:59:47PM -0400, Muli Ben-Yehuda wrote:
+> > On Fri, Jun 27, 2008 at 06:54:30PM +0200, Joerg Roedel wrote:
+> >
+> > > True. At least for the case without device isolation I have some
+> > > optimizations in mind which will minimize the performance
+> > > tradeoff. I hope to have them ready for 2.6.28 :)
+> >
+> > Do you mean the case where you have a single I/O address space which
+> > is shared by all devices?
 > 
-> attached as 1-26.mon.out (2.6.26-rc8)
->  
-> > Can you provide a comparable usbmon log for 2.6.25?
+> Yes. I think this will be the case used most when IOMMU is used for
+> virtualization and to handle devices with limited DMA address ranges.
+> In
+> this case there is a lot to optimize.
 > 
-> attached as 1-25.mon.out
 
-This is very confusing.  It appears that the two usbmon logs don't show 
-the same actions on your part.
+With the AMD IOMMU there are basically two options with regards to
+(untranslated) DMA handling:
+1) IOMMU will translate using page tables, which can be set on per
+device-table-entry basis; sharing page tables between devices could be
+considered a 'resource usage optimization', with the caveat of not being
+to provide protection for devices sharing the page tables.
 
-Let's try to keep this as simple as possible.  We'll consider a single 
-fixed course of action:
+2) IOMMU will not translate if the exclusion range has been enabled, and
+the DMA address falls inside that range.
+The exclusion range can be enabled for specific devices, or for all
+devices... Enabling the exclusion range can be considered a 'performance
+optimization' (no table-walks), with the caveat of not being able to
+provide protection for devices sharing the exclusion range (BTW, there's
+a single exclusion address range per IOMMU).
 
-	Make sure the disk isn't mounted and isn't in use.
-
-	Start collecting the usbmon log.
-
-	Remove the disk.
-
-	Wait at least 10 seconds.
-
-	Undock the laptop.
-
-	Wait at least 10 seconds.
-
-	Dock the laptop again.
-
-	Wait at least 10 seconds.
-
-	Plug in the disk.
-
-	Stop the usbmon log.
-
-(The reason for those 10-second delays is because the USB stack will 
-automatically suspend an idle hub after a few seconds of inactivity.)
-
-Do exactly the same thing under both operating system versions, and 
-then we should have suitably comparable logs.
-
-Alan Stern
+Leo.
 
