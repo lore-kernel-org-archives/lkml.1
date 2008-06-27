@@ -1,142 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbYF0QFM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760353AbYF0QHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760154AbYF0QFM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 12:05:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755918AbYF0QFA
+	id S1760353AbYF0QHA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 12:07:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756095AbYF0QGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 12:05:00 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:39005 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752840AbYF0QE7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 12:04:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=ICaLMzV4DlaNhnhdgAMJqqeeN8VdiYS8OvXyw4rVwS2ltoQmhLw60IBpfRHWrj7J/z
-         cqJxWoXcNJ08VaEcse7g3igOkYfkKDMYj3F8KsBu8zDWuahEHQt9IO2rdqAE2cfreVSu
-         hgCTXiAHxUyKe0oLvu1s0nxLqBYLCLTe2QcuE=
-Date: Fri, 27 Jun 2008 18:04:48 +0200
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: [RESEND][PATCH 1/2] stacktrace: add saved stack traces to
-	backtrace self-test
-Message-ID: <20080627160448.GB8852@damson.getinternet.no>
+	Fri, 27 Jun 2008 12:06:52 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57581 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755918AbYF0QGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 12:06:52 -0400
+Date: Fri, 27 Jun 2008 18:06:25 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Nick Piggin <npiggin@suse.de>, Mark McLoughlin <markmc@redhat.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Eduardo Habkost <ehabkost@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Stephen Tweedie <sct@redhat.com>, x86@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for
+	64-bit Xen support
+Message-ID: <20080627160625.GA29488@elte.hu>
+References: <patchbomb.1214367536@localhost> <20080625084253.GA11524@elte.hu> <20080625152212.GA3442@elte.hu> <4862A6A9.1030109@goop.org> <20080626105722.GA12640@elte.hu> <20080626105818.GA13805@elte.hu> <4863A8E6.1010807@goop.org> <20080627155656.GA19180@elte.hu> <48650F02.5080200@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+In-Reply-To: <48650F02.5080200@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I'm not really sure to whom this goes. It seems that the original code
-came through the x86 tree, although the code itself seems to be
-entirely generic.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-(The last time I sent it, it was to Andrew only, though he seemed to
-be on holidays at the time. Now I have a patch #2 as well!)
+> Ingo Molnar wrote:
+>> i'm testing on multiple systems in parallel, each is running randconfig 
+>> kernels. One 64-bit system found a build bug, the other one found a 
+>> boot crash.
+>>
+>> This can happen if certain configs build fine (but crash), certain 
+>> configs dont even build. Each system does a random walk of the config 
+>> space.
+>
+> Yes, but the URL for both the crash and the build failure pointed to 
+> the same config.  Is one of them a mistake?
 
-Arjan, are there any objections to this?
+yeah, i guess so. Right now i only ran into the build failure so there's 
+hope :) Here's a config that fails to build for sure:
 
-(This is not intended for 2.6.26. In case that wasn't obvious, heh.)
+  http://redhat.com/~mingo/misc/config-Fri_Jun_27_17_54_32_CEST_2008.bad
 
+note, on 32-bit there's a yet unfixed initrd corruption bug i've 
+bisected back to:
 
-Vegard
+| 510be56adc4bb9fb229637a8e89268d987263614 is first bad commit
+| commit 510be56adc4bb9fb229637a8e89268d987263614
+| Author: Yinghai Lu <yhlu.kernel@gmail.com>
+| Date:   Tue Jun 24 04:10:47 2008 -0700
+|
+|    x86: introduce init_memory_mapping for 32bit
 
+so if you see something like that it's probably not a bug introduced by 
+your changes. (and maybe you'll see why the above commit is buggy, i 
+havent figured it out yet)
 
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Thu, 26 Jun 2008 13:27:35 +0200
-Subject: [PATCH] stacktrace: add saved stack traces to backtrace self-test
-
-This patch adds saved stack-traces to the backtrace suite of self-tests.
-
-Note that we don't depend on or unconditionally enable CONFIG_STACKTRACE
-because not all architectures may have it (and we still want to enable the
-other tests for those architectures).
-
-Cc: Arjan van de Ven <arjan@infradead.org>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- kernel/backtracetest.c |   30 +++++++++++++++++++++++++++++-
- lib/Kconfig.debug      |    3 +++
- 2 files changed, 32 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/backtracetest.c b/kernel/backtracetest.c
-index d1a7605..50f7abd 100644
---- a/kernel/backtracetest.c
-+++ b/kernel/backtracetest.c
-@@ -10,9 +10,10 @@
-  * of the License.
-  */
- 
-+#include <linux/delay.h>
- #include <linux/module.h>
- #include <linux/sched.h>
--#include <linux/delay.h>
-+#include <linux/stacktrace.h>
- 
- static struct timer_list backtrace_timer;
- 
-@@ -22,6 +23,31 @@ static void backtrace_test_timer(unsigned long data)
- 	printk("The following trace is a kernel self test and not a bug!\n");
- 	dump_stack();
- }
-+
-+#ifdef CONFIG_STACKTRACE
-+static void backtrace_test_saved(void)
-+{
-+	struct stack_trace trace;
-+	unsigned long entries[8];
-+
-+	printk("Testing a saved backtrace.\n");
-+	printk("The following trace is a kernel self test and not a bug!\n");
-+
-+	trace.nr_entries = 0;
-+	trace.max_entries = ARRAY_SIZE(entries);
-+	trace.entries = entries;
-+	trace.skip = 0;
-+
-+	save_stack_trace(&trace);
-+	print_stack_trace(&trace, 0);
-+}
-+#else
-+static void backtrace_test_saved(void)
-+{
-+	printk("Saved backtrace test skipped.\n");
-+}
-+#endif
-+
- static int backtrace_regression_test(void)
- {
- 	printk("====[ backtrace testing ]===========\n");
-@@ -29,6 +55,8 @@ static int backtrace_regression_test(void)
- 	printk("The following trace is a kernel self test and not a bug!\n");
- 	dump_stack();
- 
-+	backtrace_test_saved();
-+
- 	init_timer(&backtrace_timer);
- 	backtrace_timer.function = backtrace_test_timer;
- 	mod_timer(&backtrace_timer, jiffies + 10);
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index d2099f4..4dac3c7 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -563,6 +563,9 @@ config BACKTRACE_SELF_TEST
- 	  for distributions or general kernels, but only for kernel
- 	  developers working on architecture code.
- 
-+	  Note that if you want to also test saved backtraces, you will
-+	  have to enable STACKTRACE as well.
-+
- 	  Say N if you are unsure.
- 
- config LKDTM
--- 
-1.5.4.1
-
+	Ingo
