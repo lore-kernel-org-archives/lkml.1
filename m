@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbYF0Mij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760108AbYF0MjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758774AbYF0Mij (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 08:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbYF0Mib
+	id S1760108AbYF0MjE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 08:39:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758128AbYF0Miv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 08:38:31 -0400
-Received: from saeurebad.de ([85.214.36.134]:39393 "EHLO saeurebad.de"
+	Fri, 27 Jun 2008 08:38:51 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:58165 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751573AbYF0Mia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 08:38:30 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mmotm] remove unused vma_page_offset()
-References: <874p7fyvvl.fsf@skyscraper.fehenstaub.lan>
-	<Pine.LNX.4.64.0806271300350.16003@blonde.site>
-Date: Fri, 27 Jun 2008 14:37:57 +0200
-In-Reply-To: <Pine.LNX.4.64.0806271300350.16003@blonde.site> (Hugh Dickins's
-	message of "Fri, 27 Jun 2008 13:13:16 +0100 (BST)")
-Message-ID: <87hcbfxdcq.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1751573AbYF0Miu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 08:38:50 -0400
+Date: Fri, 27 Jun 2008 15:36:36 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Greg KH <greg@kroah.com>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Deti Fliegl <deti@fliegl.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org, jaswinder@infradead.org
+Subject: Re: [PATCH] dabusb: use request_firmware()
+Message-ID: <20080627123636.GC18644@cs181140183.pp.htv.fi>
+References: <1214219201.27974.21.camel@shinybook.infradead.org> <20080623112004.GA26516@infradead.org> <1214221558.27974.33.camel@shinybook.infradead.org> <20080626155517.GD22025@cs181140183.pp.htv.fi> <20080627050101.GB8362@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000002, version=1.1.3
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080627050101.GB8362@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Jun 26, 2008 at 10:01:01PM -0700, Greg KH wrote:
+> On Thu, Jun 26, 2008 at 06:55:18PM +0300, Adrian Bunk wrote:
+> > On Mon, Jun 23, 2008 at 12:45:58PM +0100, David Woodhouse wrote:
+> > >...
+> > > What was the final conclusion on the need to add 'select FW_LOADER'?
+> > > Is that going to go away, too?
+> > >...
+> > 
+> > Greg, you have my "always enable FW_LOADER unless EMBEDDED=y" patch 
+> > queued for 2.6.27?
+> 
+> Yes, it is in my to-apply queue, I hope to get through it tomorrow, it
+> is planned to go into 2.6.27.
 
-Hugh Dickins <hugh@veritas.com> writes:
+Thanks.
 
-> On Fri, 27 Jun 2008, Johannes Weiner wrote:
->> Function has no callees, drop it.
->> 
->> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
->> ---
->
-> Yes, I noticed that too; but I also thought vma_pagecache_offset()
-> below it needs a name change, and was planning on sending Andrew
-> the patch at the end, okay to replace yours with that?
+David, you do not have to add the select's.
 
-Jawohl, that's fine with me.
+> thanks,
+> 
+> greg k-h
 
-	Hannes
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
