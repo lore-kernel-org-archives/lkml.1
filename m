@@ -1,172 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762345AbYF0Uad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763004AbYF0Uaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762345AbYF0Uad (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 16:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760879AbYF0U3u
+	id S1763004AbYF0Uaw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 16:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761017AbYF0U3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 16:29:50 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:54013 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760584AbYF0U3s (ORCPT
+	Fri, 27 Jun 2008 16:29:52 -0400
+Received: from lsg.lsg.lab.novell.com ([151.155.230.1]:8153 "EHLO
+	lsg.lsg.lab.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758085AbYF0U3u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 16:29:48 -0400
-Date: Fri, 27 Jun 2008 15:29:43 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Serge Hallyn <serue@us.ibm.com>
-Subject: Re: [PATCH] devcgroup: relax white-list protection down to RCU
-Message-ID: <20080627202943.GA13956@us.ibm.com>
-References: <48651BDC.5030104@openvz.org>
+	Fri, 27 Jun 2008 16:29:50 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 1/3] sched: enable interrupts and drop rq-lock during newidle
+	balancing
+To: mingo@elte.hu, peterz@infradead.org
+Cc: npiggin@suse.de, ghaskins@novell.com, rostedt@goodmis.org,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Date: Fri, 27 Jun 2008 14:29:50 -0600
+Message-ID: <20080627202949.3829.82838.stgit@lsg.lsg.lab.novell.com>
+In-Reply-To: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com>
+References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48651BDC.5030104@openvz.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Pavel Emelyanov (xemul@openvz.org):
-> Currently this list is protected with a simple spinlock, even
-> for reading from one. This is OK, but can be better.
-> 
-> Actually I want it to be better very much, since after replacing
-> the OpenVZ device permissions engine with the cgroup-based one
-> I noticed, that we set 12 default device permissions for each newly
-> created container (for /dev/null, full, terminals, ect devices),
-> and people sometimes have up to 20 perms more, so traversing the
-> ~30-40 elements list under a spinlock doesn't seem very good.
-> 
-> Here's the liter RCU protection for white-list.
-> 
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-> 
-> ---
-> 
-> diff --git a/security/device_cgroup.c b/security/device_cgroup.c
-> index 4ea5836..9d940c3 100644
-> --- a/security/device_cgroup.c
-> +++ b/security/device_cgroup.c
-> @@ -41,6 +41,7 @@ struct dev_whitelist_item {
->  	short type;
->  	short access;
->  	struct list_head list;
-> +	struct rcu_head rcu;
->  };
-> 
->  struct dev_cgroup {
-> @@ -110,11 +111,19 @@ static int dev_whitelist_add(struct dev_cgroup *dev_cgroup,
-> 
->  	memcpy(whcopy, wh, sizeof(*whcopy));
->  	spin_lock(&dev_cgroup->lock);
-> -	list_add_tail(&whcopy->list, &dev_cgroup->whitelist);
-> +	list_add_tail_rcu(&whcopy->list, &dev_cgroup->whitelist);
->  	spin_unlock(&dev_cgroup->lock);
->  	return 0;
->  }
-> 
-> +static void whitelist_item_free(struct rcu_head *rcu)
-> +{
-> +	struct dev_whitelist_item *item;
-> +
-> +	item = container_of(rcu, struct dev_whitelist_item, rcu);
-> +	kfree(item);
-> +}
-> +
->  /*
->   * called under cgroup_lock()
->   * since the list is visible to other tasks, we need the spinlock also
-> @@ -138,8 +147,8 @@ static void dev_whitelist_rm(struct dev_cgroup *dev_cgroup,
->  remove:
->  		walk->access &= ~wh->access;
->  		if (!walk->access) {
-> -			list_del(&walk->list);
-> -			kfree(walk);
-> +			list_del_rcu(&walk->list);
-> +			call_rcu(&walk->rcu, whitelist_item_free);
+Oprofile data shows that the system may spend a significant amount of
+time (60%+) in find_busiest_groups as a result of newidle balancing.  This
+entire operation is a critical section since it occurs inline with
+a schedule().  Since we do find_busiest_groups() et. al. without locks
+held for normal balancing, lets do it for newidle as well.  It will
+at least allow other cpus and interrupts to make forward progress
+(against our RQ) while we try to balance.
 
-The only thing I'd suggest is that a call_rcu() really isn't necessary.
-You'd avoid the rcu_head in each dev_whitelist_item if you just did
+Additionally, we abort the newidle processing if we are preempted.
 
-			synchronize_rcu();
-			kfree(walk);
+This patch should both improve latency response, as well as increase
+throughput.  It has shown to significantly contribute to a 6-12%
+increase in network peformance.
 
-here.  Downside is you're keeping the cgroup_lock() a little longer
-then...
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
-But that's just an idea.  Whether you do that or not,
+ kernel/sched.c |   40 +++++++++++++++++++++++++++++++++-------
+ 1 files changed, 33 insertions(+), 7 deletions(-)
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+diff --git a/kernel/sched.c b/kernel/sched.c
+index c51d9fa..56722b1 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3426,6 +3426,15 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
+ 
+ 	cpus_setall(*cpus);
+ 
++	schedstat_inc(sd, lb_count[CPU_NEWLY_IDLE]);
++
++	/*
++	 * We are in a preempt-disabled section, so dropping the lock/irq
++	 * here simply means that other cores may acquire the lock,
++	 * and interrupts may occur.
++	 */
++	spin_unlock_irq(&this_rq->lock);
++
+ 	/*
+ 	 * When power savings policy is enabled for the parent domain, idle
+ 	 * sibling can pick up load irrespective of busy siblings. In this case,
+@@ -3436,7 +3445,6 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
+ 	    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
+ 		sd_idle = 1;
+ 
+-	schedstat_inc(sd, lb_count[CPU_NEWLY_IDLE]);
+ redo:
+ 	group = find_busiest_group(sd, this_cpu, &imbalance, CPU_NEWLY_IDLE,
+ 				   &sd_idle, cpus, NULL);
+@@ -3456,22 +3464,37 @@ redo:
+ 	schedstat_add(sd, lb_imbalance[CPU_NEWLY_IDLE], imbalance);
+ 
+ 	ld_moved = 0;
+-	if (busiest->nr_running > 1) {
++	if (!need_resched() && busiest->nr_running > 1) {
+ 		/* Attempt to move tasks */
+-		double_lock_balance(this_rq, busiest);
+-		/* this_rq->clock is already updated */
+-		update_rq_clock(busiest);
++		local_irq_disable();
++		double_rq_lock(this_rq, busiest);
++
++		BUG_ON(this_cpu != smp_processor_id());
++
++		/*
++		 * Checking rq->nr_running covers both the case where
++		 * newidle-balancing pulls a task, as well as if something
++		 * else issued a NEEDS_RESCHED (since we would only need
++		 * a reschedule if something was moved to us)
++		 */
++		if (this_rq->nr_running) {
++			spin_unlock(&busiest->lock);
++			goto out_balanced_locked;
++		}
++
+ 		ld_moved = move_tasks(this_rq, this_cpu, busiest,
+ 					imbalance, sd, CPU_NEWLY_IDLE,
+ 					&all_pinned);
+ 		spin_unlock(&busiest->lock);
+ 
+-		if (unlikely(all_pinned)) {
++		if (unlikely(all_pinned && !this_rq->nr_running)) {
++			spin_unlock_irq(&this_rq->lock);
+ 			cpu_clear(cpu_of(busiest), *cpus);
+ 			if (!cpus_empty(*cpus))
+ 				goto redo;
+ 		}
+-	}
++	} else
++		spin_lock_irq(&this_rq->lock);
+ 
+ 	if (!ld_moved) {
+ 		schedstat_inc(sd, lb_failed[CPU_NEWLY_IDLE]);
+@@ -3484,6 +3507,9 @@ redo:
+ 	return ld_moved;
+ 
+ out_balanced:
++	spin_lock_irq(&this_rq->lock);
++
++out_balanced_locked:
+ 	schedstat_inc(sd, lb_balanced[CPU_NEWLY_IDLE]);
+ 	if (!sd_idle && sd->flags & SD_SHARE_CPUPOWER &&
+ 	    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
 
-Thanks for doing this.
-
--serge
-
->  		}
->  	}
->  	spin_unlock(&dev_cgroup->lock);
-> @@ -246,15 +255,15 @@ static int devcgroup_seq_read(struct cgroup *cgroup, struct cftype *cft,
->  	struct dev_whitelist_item *wh;
->  	char maj[MAJMINLEN], min[MAJMINLEN], acc[ACCLEN];
-> 
-> -	spin_lock(&devcgroup->lock);
-> -	list_for_each_entry(wh, &devcgroup->whitelist, list) {
-> +	rcu_read_lock();
-> +	list_for_each_entry_rcu(wh, &devcgroup->whitelist, list) {
->  		set_access(acc, wh->access);
->  		set_majmin(maj, wh->major);
->  		set_majmin(min, wh->minor);
->  		seq_printf(m, "%c %s:%s %s\n", type_to_char(wh->type),
->  			   maj, min, acc);
->  	}
-> -	spin_unlock(&devcgroup->lock);
-> +	rcu_read_unlock();
-> 
->  	return 0;
->  }
-> @@ -516,8 +525,8 @@ int devcgroup_inode_permission(struct inode *inode, int mask)
->  	if (!dev_cgroup)
->  		return 0;
-> 
-> -	spin_lock(&dev_cgroup->lock);
-> -	list_for_each_entry(wh, &dev_cgroup->whitelist, list) {
-> +	rcu_read_lock();
-> +	list_for_each_entry_rcu(wh, &dev_cgroup->whitelist, list) {
->  		if (wh->type & DEV_ALL)
->  			goto acc_check;
->  		if ((wh->type & DEV_BLOCK) && !S_ISBLK(inode->i_mode))
-> @@ -533,10 +542,10 @@ acc_check:
->  			continue;
->  		if ((mask & MAY_READ) && !(wh->access & ACC_READ))
->  			continue;
-> -		spin_unlock(&dev_cgroup->lock);
-> +		rcu_read_unlock();
->  		return 0;
->  	}
-> -	spin_unlock(&dev_cgroup->lock);
-> +	rcu_read_unlock();
-> 
->  	return -EPERM;
->  }
-> @@ -552,7 +561,7 @@ int devcgroup_inode_mknod(int mode, dev_t dev)
->  	if (!dev_cgroup)
->  		return 0;
-> 
-> -	spin_lock(&dev_cgroup->lock);
-> +	rcu_read_lock();
->  	list_for_each_entry(wh, &dev_cgroup->whitelist, list) {
->  		if (wh->type & DEV_ALL)
->  			goto acc_check;
-> @@ -567,9 +576,9 @@ int devcgroup_inode_mknod(int mode, dev_t dev)
->  acc_check:
->  		if (!(wh->access & ACC_MKNOD))
->  			continue;
-> -		spin_unlock(&dev_cgroup->lock);
-> +		rcu_read_unlock();
->  		return 0;
->  	}
-> -	spin_unlock(&dev_cgroup->lock);
-> +	rcu_read_unlock();
->  	return -EPERM;
->  }
