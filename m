@@ -1,85 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbYF0H6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbYF0H7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756004AbYF0H6P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 03:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYF0H57
+	id S1756891AbYF0H7g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 03:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbYF0H72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 03:57:59 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:59826 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752989AbYF0H56 (ORCPT
+	Fri, 27 Jun 2008 03:59:28 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:22476 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753308AbYF0H71 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 03:57:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Gvmtjh1OVfdI5uRvfc+WjSykmDVtpFJIzd5AysO3kZoYwx1+K3omb3GNbX32KyCHLW
-         y3kKruti18XlPEKeAKwS3/81JWtgrM0vQYJpu8usrMcqKz+PaLo4S5qlV6a1pKhSiuHZ
-         6wK6ZCXnLW7JnqtIpOhRT4PdPCfJO77Pfh7Zg=
-Message-ID: <28c262360806270057w2b2d3e56ob4dde9aacf42327b@mail.gmail.com>
-Date: Fri, 27 Jun 2008 16:57:56 +0900
-From: "MinChan Kim" <minchan.kim@gmail.com>
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [-mm][PATCH 8/10] fix shmem page migration incorrectness on memcgroup
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>,
-       "Rik van Riel" <riel@redhat.com>,
-       "Daisuke Nishimura" <nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20080627142950.7A83.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080625190750.D864.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <28c262360806262208i6791d67at446f7323ded16206@mail.gmail.com>
-	 <20080627142950.7A83.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Fri, 27 Jun 2008 03:59:27 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:to:subject:cc:message-id:date:from;
+	b=cJM+xHu07DPoe2MFxHmtxBLOx9dIU8tzbSEIOkidkoBIL6+OaqRchkRTyknzEG3ui
+	zTA88olY0wTrFDt+5zAFg==
+To: a.p.zijlstra@chello.nl, maxk@qualcomm.com, pj@sgi.com,
+       vegard.nossum@gmail.com
+Subject: [RFC][PATCH] CGroups: Add a per-subsystem hierarchy lock
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <20080627075912.92AE43D6907@localhost>
+Date: Fri, 27 Jun 2008 00:59:12 -0700 (PDT)
+From: menage@google.com (Paul Menage)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 2:41 PM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
->> > mem_cgroup_uncharge() against old page is done after radix-tree-replacement.
->> > And there were special handling to ingore swap-cache page. But, shmem can
->> > be swap-cache and file-cache at the same time. Chekcing PageSwapCache() is
->> > not correct here. Check PageAnon() instead.
->>
->> When/How shmem can be both swap-cache and file-cache ?
->> I can't understand that situation.
->
-> Hi
->
-> see,
->
-> shmem_writepage()
->   -> add_to_swap_cache()
->      -> SetPageSwapCache()
->
->
-> BTW: his file-cache mean !Anon, not mean !SwapBacked.
 
-Hi KOSAKI-san.
-Thanks for explaining.
+This patch adds a hierarchy_mutex to the cgroup_subsys object that
+protects changes to the hierarchy observed by that subsystem. It is
+taken by the cgroup subsystem for the following operations:
 
-In the migrate_page_move_mapping, the page was already locked in unmap_and_move.
-Also, we have a lock for that page for calling shmem_writepage.
+- linking a cgroup into that subsystem's cgroup tree
+- unlinking a cgroup from that subsystem's cgroup tree
+- moving the subsystem to/from a hierarchy (including across the
+  bind() callback)
 
-So I think race problem between shmem_writepage and
-migrate_page_move_mapping don't occur.
-But I am not sure I am right.
+Thus if the subsystem holds its own hierarchy_mutex, it can safely
+traverse its ts own hierarchy.
 
-If I am wrong, could you tell me when race problem happen ? :)
+This patch also changes the cpuset hotplug code to take
+cpuset_subsys.hierarchy_mutex rather than cgroup_mutex, removing a
+cyclical locking dependancy between cpu_hotplug.lock and cgroup_mutex.
 
+---
 
->
->
+This is just a first cut - a full version of this patch would also
+make use of the hierarchy_mutex at other places in cpuset.c that use
+the cgroup hierarchy, but I wanted to see what people thought of the
+concept. It appears to keep lockdep quiet.
 
+ include/linux/cgroup.h |   10 ++++++++--
+ kernel/cgroup.c        |   35 ++++++++++++++++++++++++++++++++++-
+ kernel/cpuset.c        |    4 ++--
+ 3 files changed, 44 insertions(+), 5 deletions(-)
 
-
--- 
-Kinds regards,
-MinChan Kim
+Index: lockfix-2.6.26-rc5-mm3/include/linux/cgroup.h
+===================================================================
+--- lockfix-2.6.26-rc5-mm3.orig/include/linux/cgroup.h
++++ lockfix-2.6.26-rc5-mm3/include/linux/cgroup.h
+@@ -319,9 +319,15 @@ struct cgroup_subsys {
+ #define MAX_CGROUP_TYPE_NAMELEN 32
+ 	const char *name;
+ 
+-	/* Protected by RCU */
+-	struct cgroupfs_root *root;
++	/*
++	 * Protects sibling/children links of cgroups in this
++	 * hierarchy, plus protects which hierarchy (or none) the
++	 * subsystem is a part of (i.e. root/sibling)
++	 */
++	struct mutex hierarchy_mutex;
+ 
++	/* Protected by RCU, this->hierarchy_mutex and cgroup_lock() */
++	struct cgroupfs_root *root;
+ 	struct list_head sibling;
+ 
+ 	void *private;
+Index: lockfix-2.6.26-rc5-mm3/kernel/cgroup.c
+===================================================================
+--- lockfix-2.6.26-rc5-mm3.orig/kernel/cgroup.c
++++ lockfix-2.6.26-rc5-mm3/kernel/cgroup.c
+@@ -728,23 +728,26 @@ static int rebind_subsystems(struct cgro
+ 			BUG_ON(cgrp->subsys[i]);
+ 			BUG_ON(!dummytop->subsys[i]);
+ 			BUG_ON(dummytop->subsys[i]->cgroup != dummytop);
++			mutex_lock(&ss->hierarchy_mutex);
+ 			cgrp->subsys[i] = dummytop->subsys[i];
+ 			cgrp->subsys[i]->cgroup = cgrp;
+ 			list_add(&ss->sibling, &root->subsys_list);
+ 			rcu_assign_pointer(ss->root, root);
+ 			if (ss->bind)
+ 				ss->bind(ss, cgrp);
+-
++			mutex_unlock(&ss->hierarchy_mutex);
+ 		} else if (bit & removed_bits) {
+ 			/* We're removing this subsystem */
+ 			BUG_ON(cgrp->subsys[i] != dummytop->subsys[i]);
+ 			BUG_ON(cgrp->subsys[i]->cgroup != cgrp);
++			mutex_lock(&ss->hierarchy_mutex);
+ 			if (ss->bind)
+ 				ss->bind(ss, dummytop);
+ 			dummytop->subsys[i]->cgroup = dummytop;
+ 			cgrp->subsys[i] = NULL;
+ 			rcu_assign_pointer(subsys[i]->root, &rootnode);
+ 			list_del(&ss->sibling);
++			mutex_unlock(&ss->hierarchy_mutex);
+ 		} else if (bit & final_bits) {
+ 			/* Subsystem state should already exist */
+ 			BUG_ON(!cgrp->subsys[i]);
+@@ -2291,6 +2294,29 @@ static void init_cgroup_css(struct cgrou
+ 	cgrp->subsys[ss->subsys_id] = css;
+ }
+ 
++static void cgroup_lock_hierarchy(struct cgroupfs_root *root)
++{
++	/* We need to take each hierarchy_mutex in a consistent order */
++	int i;
++
++	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
++		struct cgroup_subsys *ss = subsys[i];
++		if (ss->root == root)
++			mutex_lock_nested(&ss->hierarchy_mutex, i);
++	}
++}
++
++static void cgroup_unlock_hierarchy(struct cgroupfs_root *root)
++{
++	int i;
++
++	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
++		struct cgroup_subsys *ss = subsys[i];
++		if (ss->root == root)
++			mutex_unlock(&ss->hierarchy_mutex);
++	}
++}
++
+ /*
+  * cgroup_create - create a cgroup
+  * @parent: cgroup that will be parent of the new cgroup
+@@ -2342,8 +2368,10 @@ static long cgroup_create(struct cgroup 
+ 		init_cgroup_css(css, ss, cgrp);
+ 	}
+ 
++	cgroup_lock_hierarchy(root);
+ 	list_add(&cgrp->sibling, &cgrp->parent->children);
+ 	root->number_of_cgroups++;
++	cgroup_unlock_hierarchy(root);
+ 
+ 	err = cgroup_create_dir(cgrp, dentry, mode);
+ 	if (err < 0)
+@@ -2460,8 +2488,12 @@ static int cgroup_rmdir(struct inode *un
+ 	if (!list_empty(&cgrp->release_list))
+ 		list_del(&cgrp->release_list);
+ 	spin_unlock(&release_list_lock);
++
++	cgroup_lock_hierarchy(root);
+ 	/* delete my sibling from parent->children */
+ 	list_del(&cgrp->sibling);
++	cgroup_unlock_hierarchy(root);
++
+ 	spin_lock(&cgrp->dentry->d_lock);
+ 	d = dget(cgrp->dentry);
+ 	cgrp->dentry = NULL;
+@@ -2504,6 +2536,7 @@ static void __init cgroup_init_subsys(st
+ 	 * need to invoke fork callbacks here. */
+ 	BUG_ON(!list_empty(&init_task.tasks));
+ 
++	mutex_init(&ss->hierarchy_mutex);
+ 	ss->active = 1;
+ }
+ 
+Index: lockfix-2.6.26-rc5-mm3/kernel/cpuset.c
+===================================================================
+--- lockfix-2.6.26-rc5-mm3.orig/kernel/cpuset.c
++++ lockfix-2.6.26-rc5-mm3/kernel/cpuset.c
+@@ -1929,7 +1929,7 @@ static void scan_for_empty_cpusets(const
+ 
+ static void common_cpu_mem_hotplug_unplug(void)
+ {
+-	cgroup_lock();
++	mutex_lock(&cpuset_subsys.hierarchy_mutex);
+ 
+ 	top_cpuset.cpus_allowed = cpu_online_map;
+ 	top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
+@@ -1941,7 +1941,7 @@ static void common_cpu_mem_hotplug_unplu
+ 	 */
+ 	rebuild_sched_domains();
+ 
+-	cgroup_unlock();
++	mutex_unlock(&cpuset_subsys.hierarchy_mutex);
+ }
+ 
+ /*
