@@ -1,264 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761599AbYF0HBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760432AbYF0HCD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761599AbYF0HBp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 03:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758576AbYF0Gwm
+	id S1760432AbYF0HCD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 03:02:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760781AbYF0G6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 02:52:42 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43331 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755356AbYF0Gwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 02:52:39 -0400
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 27 Jun 2008 16:52:32 +1000
-Message-Id: <1080627065232.10796@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH 029 of 29] md: md: rationalize raid5 function names
-References: <20080627164503.9671.patches@notabene>
+	Fri, 27 Jun 2008 02:58:30 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:4113 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759230AbYF0G62 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 02:58:28 -0400
+Subject: Re: [patch 21/21] Cleanup lcs printk messages.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       Jeff Garzik <jgarzik@redhat.com>,
+       "Klaus-D. Wacker" <kdwacker@de.ibm.com>
+In-Reply-To: <48647290.3020909@garzik.org>
+References: <20080625143459.100139455@de.ibm.com>
+	 <20080625143616.727686124@de.ibm.com>  <48647290.3020909@garzik.org>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Fri, 27 Jun 2008 08:58:22 +0200
+Message-Id: <1214549902.1153.0.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-06-27 at 00:54 -0400, Jeff Garzik wrote:
+> Martin Schwidefsky wrote:
+> > From: Klaus-D. Wacker <kdwacker@de.ibm.com>
+> > 
+> > Cc: Jeff Garzik <jgarzik@redhat.com>
+> > Signed-off-by: Klaus-D. Wacker <kdwacker@de.ibm.com>
+> > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> 
+> ACK patches 19-21
 
-From: Dan Williams <dan.j.williams@intel.com>
+Good.
 
-Commit a4456856 refactored some of the deep code paths in raid5.c into separate
-functions.  The names chosen at the time do not consistently indicate what is
-going to happen to the stripe.  So, update the names, and since a stripe is a
-cache element use cache semantics like fill, dirty, and clean.
+> I presume these will go upstream alongside the rest of the series..?
 
-(also, fix up the indentation in fetch_block5)
+That would be the easiest, wouldn't it? I can push the whole series over
+git390.
 
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-Signed-off-by: Neil Brown <neilb@suse.de>
+-- 
+blue skies,
+  Martin.
 
-### Diffstat output
- ./drivers/md/raid5.c |   76 ++++++++++++++++++++++++++-------------------------
- 1 file changed, 40 insertions(+), 36 deletions(-)
+"Reality continues to ruin my life." - Calvin.
 
-diff .prev/drivers/md/raid5.c ./drivers/md/raid5.c
---- .prev/drivers/md/raid5.c	2008-06-27 16:42:56.000000000 +1000
-+++ ./drivers/md/raid5.c	2008-06-27 16:42:57.000000000 +1000
-@@ -1618,7 +1618,7 @@ static void compute_block_2(struct strip
- }
- 
- static void
--handle_write_operations5(struct stripe_head *sh, struct stripe_head_state *s,
-+schedule_reconstruction5(struct stripe_head *sh, struct stripe_head_state *s,
- 			 int rcw, int expand)
- {
- 	int i, pd_idx = sh->pd_idx, disks = sh->disks;
-@@ -1783,7 +1783,7 @@ static int stripe_to_pdidx(sector_t stri
- }
- 
- static void
--handle_requests_to_failed_array(raid5_conf_t *conf, struct stripe_head *sh,
-+handle_failed_stripe(raid5_conf_t *conf, struct stripe_head *sh,
- 				struct stripe_head_state *s, int disks,
- 				struct bio **return_bi)
- {
-@@ -1874,23 +1874,28 @@ handle_requests_to_failed_array(raid5_co
- 			md_wakeup_thread(conf->mddev->thread);
- }
- 
--/* __handle_issuing_new_read_requests5 - returns 0 if there are no more disks
-- * to process
-+/* fetch_block5 - checks the given member device to see if its data needs
-+ * to be read or computed to satisfy a request.
-+ *
-+ * Returns 1 when no more member devices need to be checked, otherwise returns
-+ * 0 to tell the loop in handle_stripe_fill5 to continue
-  */
--static int __handle_issuing_new_read_requests5(struct stripe_head *sh,
--			struct stripe_head_state *s, int disk_idx, int disks)
-+static int fetch_block5(struct stripe_head *sh, struct stripe_head_state *s,
-+			int disk_idx, int disks)
- {
- 	struct r5dev *dev = &sh->dev[disk_idx];
- 	struct r5dev *failed_dev = &sh->dev[s->failed_num];
- 
- 	/* is the data in this block needed, and can we get it? */
- 	if (!test_bit(R5_LOCKED, &dev->flags) &&
--	    !test_bit(R5_UPTODATE, &dev->flags) && (dev->toread ||
--	    (dev->towrite && !test_bit(R5_OVERWRITE, &dev->flags)) ||
--	     s->syncing || s->expanding || (s->failed &&
--	     (failed_dev->toread || (failed_dev->towrite &&
--	     !test_bit(R5_OVERWRITE, &failed_dev->flags)
--	     ))))) {
-+	    !test_bit(R5_UPTODATE, &dev->flags) &&
-+	    (dev->toread ||
-+	     (dev->towrite && !test_bit(R5_OVERWRITE, &dev->flags)) ||
-+	     s->syncing || s->expanding ||
-+	     (s->failed &&
-+	      (failed_dev->toread ||
-+	       (failed_dev->towrite &&
-+		!test_bit(R5_OVERWRITE, &failed_dev->flags)))))) {
- 		/* We would like to get this block, possibly by computing it,
- 		 * otherwise read it if the backing disk is insync
- 		 */
-@@ -1908,7 +1913,7 @@ static int __handle_issuing_new_read_req
- 			 * subsequent operation.
- 			 */
- 			s->uptodate++;
--			return 0; /* uptodate + compute == disks */
-+			return 1; /* uptodate + compute == disks */
- 		} else if (test_bit(R5_Insync, &dev->flags)) {
- 			set_bit(R5_LOCKED, &dev->flags);
- 			set_bit(R5_Wantread, &dev->flags);
-@@ -1918,10 +1923,13 @@ static int __handle_issuing_new_read_req
- 		}
- 	}
- 
--	return ~0;
-+	return 0;
- }
- 
--static void handle_issuing_new_read_requests5(struct stripe_head *sh,
-+/**
-+ * handle_stripe_fill5 - read or compute data to satisfy pending requests.
-+ */
-+static void handle_stripe_fill5(struct stripe_head *sh,
- 			struct stripe_head_state *s, int disks)
- {
- 	int i;
-@@ -1931,16 +1939,14 @@ static void handle_issuing_new_read_requ
- 	 * midst of changing due to a write
- 	 */
- 	if (!test_bit(STRIPE_COMPUTE_RUN, &sh->state) && !sh->check_state &&
--	    !sh->reconstruct_state) {
-+	    !sh->reconstruct_state)
- 		for (i = disks; i--; )
--			if (__handle_issuing_new_read_requests5(
--				sh, s, i, disks) == 0)
-+			if (fetch_block5(sh, s, i, disks))
- 				break;
--	}
- 	set_bit(STRIPE_HANDLE, &sh->state);
- }
- 
--static void handle_issuing_new_read_requests6(struct stripe_head *sh,
-+static void handle_stripe_fill6(struct stripe_head *sh,
- 			struct stripe_head_state *s, struct r6_state *r6s,
- 			int disks)
- {
-@@ -1999,12 +2005,12 @@ static void handle_issuing_new_read_requ
- }
- 
- 
--/* handle_completed_write_requests
-+/* handle_stripe_clean_event
-  * any written block on an uptodate or failed drive can be returned.
-  * Note that if we 'wrote' to a failed drive, it will be UPTODATE, but
-  * never LOCKED, so we don't need to test 'failed' directly.
-  */
--static void handle_completed_write_requests(raid5_conf_t *conf,
-+static void handle_stripe_clean_event(raid5_conf_t *conf,
- 	struct stripe_head *sh, int disks, struct bio **return_bi)
- {
- 	int i;
-@@ -2049,7 +2055,7 @@ static void handle_completed_write_reque
- 			md_wakeup_thread(conf->mddev->thread);
- }
- 
--static void handle_issuing_new_write_requests5(raid5_conf_t *conf,
-+static void handle_stripe_dirtying5(raid5_conf_t *conf,
- 		struct stripe_head *sh,	struct stripe_head_state *s, int disks)
- {
- 	int rmw = 0, rcw = 0, i;
-@@ -2136,10 +2142,10 @@ static void handle_issuing_new_write_req
- 	if ((s->req_compute || !test_bit(STRIPE_COMPUTE_RUN, &sh->state)) &&
- 	    (s->locked == 0 && (rcw == 0 || rmw == 0) &&
- 	    !test_bit(STRIPE_BIT_DELAY, &sh->state)))
--		handle_write_operations5(sh, s, rcw == 0, 0);
-+		schedule_reconstruction5(sh, s, rcw == 0, 0);
- }
- 
--static void handle_issuing_new_write_requests6(raid5_conf_t *conf,
-+static void handle_stripe_dirtying6(raid5_conf_t *conf,
- 		struct stripe_head *sh,	struct stripe_head_state *s,
- 		struct r6_state *r6s, int disks)
- {
-@@ -2597,8 +2603,7 @@ static void handle_stripe5(struct stripe
- 	 * need to be failed
- 	 */
- 	if (s.failed > 1 && s.to_read+s.to_write+s.written)
--		handle_requests_to_failed_array(conf, sh, &s, disks,
--						&return_bi);
-+		handle_failed_stripe(conf, sh, &s, disks, &return_bi);
- 	if (s.failed > 1 && s.syncing) {
- 		md_done_sync(conf->mddev, STRIPE_SECTORS,0);
- 		clear_bit(STRIPE_SYNCING, &sh->state);
-@@ -2614,7 +2619,7 @@ static void handle_stripe5(struct stripe
- 	       !test_bit(R5_LOCKED, &dev->flags) &&
- 	       test_bit(R5_UPTODATE, &dev->flags)) ||
- 	       (s.failed == 1 && s.failed_num == sh->pd_idx)))
--		handle_completed_write_requests(conf, sh, disks, &return_bi);
-+		handle_stripe_clean_event(conf, sh, disks, &return_bi);
- 
- 	/* Now we might consider reading some blocks, either to check/generate
- 	 * parity, or to satisfy requests
-@@ -2622,7 +2627,7 @@ static void handle_stripe5(struct stripe
- 	 */
- 	if (s.to_read || s.non_overwrite ||
- 	    (s.syncing && (s.uptodate + s.compute < disks)) || s.expanding)
--		handle_issuing_new_read_requests5(sh, &s, disks);
-+		handle_stripe_fill5(sh, &s, disks);
- 
- 	/* Now we check to see if any write operations have recently
- 	 * completed
-@@ -2666,7 +2671,7 @@ static void handle_stripe5(struct stripe
- 	 *    block.
- 	 */
- 	if (s.to_write && !sh->reconstruct_state && !sh->check_state)
--		handle_issuing_new_write_requests5(conf, sh, &s, disks);
-+		handle_stripe_dirtying5(conf, sh, &s, disks);
- 
- 	/* maybe we need to check and possibly fix the parity for this stripe
- 	 * Any reads will already have been scheduled, so we just see if enough
-@@ -2722,7 +2727,7 @@ static void handle_stripe5(struct stripe
- 		sh->disks = conf->raid_disks;
- 		sh->pd_idx = stripe_to_pdidx(sh->sector, conf,
- 			conf->raid_disks);
--		handle_write_operations5(sh, &s, 1, 1);
-+		schedule_reconstruction5(sh, &s, 1, 1);
- 	} else if (s.expanded && !sh->reconstruct_state && s.locked == 0) {
- 		clear_bit(STRIPE_EXPAND_READY, &sh->state);
- 		atomic_dec(&conf->reshape_stripes);
-@@ -2854,8 +2859,7 @@ static void handle_stripe6(struct stripe
- 	 * might need to be failed
- 	 */
- 	if (s.failed > 2 && s.to_read+s.to_write+s.written)
--		handle_requests_to_failed_array(conf, sh, &s, disks,
--						&return_bi);
-+		handle_failed_stripe(conf, sh, &s, disks, &return_bi);
- 	if (s.failed > 2 && s.syncing) {
- 		md_done_sync(conf->mddev, STRIPE_SECTORS,0);
- 		clear_bit(STRIPE_SYNCING, &sh->state);
-@@ -2880,7 +2884,7 @@ static void handle_stripe6(struct stripe
- 	     ( r6s.q_failed || ((test_bit(R5_Insync, &qdev->flags)
- 			     && !test_bit(R5_LOCKED, &qdev->flags)
- 			     && test_bit(R5_UPTODATE, &qdev->flags)))))
--		handle_completed_write_requests(conf, sh, disks, &return_bi);
-+		handle_stripe_clean_event(conf, sh, disks, &return_bi);
- 
- 	/* Now we might consider reading some blocks, either to check/generate
- 	 * parity, or to satisfy requests
-@@ -2888,11 +2892,11 @@ static void handle_stripe6(struct stripe
- 	 */
- 	if (s.to_read || s.non_overwrite || (s.to_write && s.failed) ||
- 	    (s.syncing && (s.uptodate < disks)) || s.expanding)
--		handle_issuing_new_read_requests6(sh, &s, &r6s, disks);
-+		handle_stripe_fill6(sh, &s, &r6s, disks);
- 
- 	/* now to consider writing and what else, if anything should be read */
- 	if (s.to_write)
--		handle_issuing_new_write_requests6(conf, sh, &s, &r6s, disks);
-+		handle_stripe_dirtying6(conf, sh, &s, &r6s, disks);
- 
- 	/* maybe we need to check and possibly fix the parity for this stripe
- 	 * Any reads will already have been scheduled, so we just see if enough
+
