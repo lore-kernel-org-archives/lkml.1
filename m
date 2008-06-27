@@ -1,79 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbYF0H7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755125AbYF0IDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754804AbYF0H7y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 03:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbYF0H7k
+	id S1755125AbYF0IDi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 04:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbYF0IDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 03:59:40 -0400
-Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:33616 "EHLO
-	bh-buildlin1.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757342AbYF0H7j (ORCPT
+	Fri, 27 Jun 2008 04:03:19 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48090 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751166AbYF0IDQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 03:59:39 -0400
-From: Benny Halevy <bhalevy@panasas.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, Alen Cox <alan@lxorguk.ukuu.org.uk>,
-       Benny Halevy <bhalevy@panasas.com>
-Subject: [PATCH] usb: fix uninitialized variables in keyspan_pda
-Date: Fri, 27 Jun 2008 10:58:54 +0300
-Message-Id: <1214553534-9970-1-git-send-email-bhalevy@panasas.com>
-X-Mailer: git-send-email 1.5.6.GIT
-In-Reply-To: <4864944B.5020601@panasas.com>
-References: <4864944B.5020601@panasas.com>
+	Fri, 27 Jun 2008 04:03:16 -0400
+Message-ID: <48649EBA.5010403@firstfloor.org>
+Date: Fri, 27 Jun 2008 10:03:06 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: dipankar@in.ibm.com
+CC: balbir@linux.vnet.ibm.com, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [RFC v1] Tunable sched_mc_power_savings=n
+References: <20080625191100.GI21892@dirshya.in.ibm.com> <87k5gcqpbm.fsf@basil.nowhere.org> <4863AF57.3040005@linux.vnet.ibm.com> <4863DB29.1020304@firstfloor.org> <20080626185254.GA12416@dirshya.in.ibm.com> <4863F93C.9040102@firstfloor.org> <20080626210025.GB26167@in.ibm.com> <48640C04.9020600@firstfloor.org> <20080627045401.GC26167@in.ibm.com>
+In-Reply-To: <20080627045401.GC26167@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The compiler (gcc 4.3.0) warns that status might be used uninitialized
-in keyspan_pda_tiocmget and keyspan_pda_tiocmset.
+Dipankar Sarma wrote:
+> On Thu, Jun 26, 2008 at 11:37:08PM +0200, Andi Kleen wrote:
+>> Dipankar Sarma wrote:
+>>
+>>> Some workload managers already do that - they provision cpu and memory
+>>> resources based on request rates and response times. Such software is
+>>> in a better position to make a decision whether they can live with
+>>> reduced performance due to power saving mode or not. The point I am
+>>> making is the the kernel doesn't have any notion of transactional
+>>> performance 
+>> The kernel definitely knows about burstiness vs non burstiness at least
+>> (although it currently has no long term memory for that). Does it need
+>> more than that for this? Anyways if nice levels were used that is not
+>> even needed, because it's ok to run niced processes slower.
+>>
+>> And your workload manager could just nice processes. It should probably
+>> do that anyways to tell ondemand you don't need full frequency.
+> 
+> The current usage of this we are looking requires system-wide
+> settings. That means nicing every process running on the system.
+> That seems a little messy. 
 
-It is technically correct and therefore this patch initializes
-status to 0 in both cases.
+Is it less messy than the letting applications negotiate
+for the best policy by themselves as someone else suggested on the thread?
 
-Note that keyspan_pda_get_modem_info sets *value only when
-usb_control_msg returns rc > 0, otherwise it must
-return an error rc < 0, and it must never return rc == 0, hence
-a WARN_ON(rc == 0) was added in case usb_control_msg ever return 0.
+> Secondly, even if you nice the processes
+> they are still going to be spread all over the CPU packages
+> running at lower frequencies due to nice. 
 
-Both its callers bail out for rc < 0 and use the value
-of "status" in the rc >= 0 case.  If the WARN_ON is ever seen,
-status will be set to the initial value of 0.
+My point was that this could be fixed and you could use nice
+(or another per process parameter if you prefer)
+as an input to load balancer decisions.
 
-Signed-off-by: Benny Halevy <bhalevy@panasas.com>
----
- drivers/usb/serial/keyspan_pda.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+> Using nice, you can force lowering of frequency - but you can do that
+> using userspace governor as well - no need to mess with process
+> priorities.
 
-diff --git a/drivers/usb/serial/keyspan_pda.c b/drivers/usb/serial/keyspan_pda.c
-index ff54203..97ce8a3 100644
---- a/drivers/usb/serial/keyspan_pda.c
-+++ b/drivers/usb/serial/keyspan_pda.c
-@@ -420,6 +420,7 @@ static int keyspan_pda_get_modem_info(struct usb_serial *serial,
- 			     3, /* get pins */
- 			     USB_TYPE_VENDOR|USB_RECIP_INTERFACE|USB_DIR_IN,
- 			     0, 0, &data, 1, 2000);
-+	WARN_ON(rc == 0);
- 	if (rc > 0)
- 		*value = data;
- 	return rc;
-@@ -441,7 +442,7 @@ static int keyspan_pda_tiocmget(struct usb_serial_port *port, struct file *file)
- {
- 	struct usb_serial *serial = port->serial;
- 	int rc;
--	unsigned char status;
-+	unsigned char status = 0;
- 	int value;
- 
- 	rc = keyspan_pda_get_modem_info(serial, &status);
-@@ -462,7 +463,7 @@ static int keyspan_pda_tiocmset(struct usb_serial_port *port, struct file *file,
- {
- 	struct usb_serial *serial = port->serial;
- 	int rc;
--	unsigned char status;
-+	unsigned char status = 0;
- 
- 	rc = keyspan_pda_get_modem_info(serial, &status);
- 	if (rc < 0)
--- 
-1.5.6.GIT
 
+> We are talking about a different optimization here - something
+> that will give more benefits in powersave mode when you have large
+> systems.
+
+Yes it's a different optimization (although the over all theme -- power saving
+-- is the same), but is there a real reason it cannot be driven from the
+same per process heuristics instead of your ugly global sysctl?
+
+>>>>> In a small-scale datacenters, peak and off-peak hour settings can be
+>>>>> potentially done through simple cron jobs.  
+>>>> Is there any real drawback from only controlling it through nice levels?
+>>> In a system with more than a couple of sockets, it is more beneficial
+>>> (power-wise) to pack all work in to a small number of processors
+>>> and let the other processors go to very low power sleep. Compared 
+>>> to running tasks slowly and spreading them all over the processors.
+>> You answered a different question?
+> 
+> The point is that grouping tasks into small number of sockets is
+> more effective than nicing which may still spread the tasks all
+> over the sockets. 
+
+Sorry you completely misunderstood me. I know the principle
+behind the socket grouping.  And yes it's a different mechanism
+from cpu frequency scaling.
+
+My point was just that the heuristics
+used by one power saving mechanism (ondemand) could be used
+for the other too (socket grouping) -- and it would be certainly
+a far saner interface than a global sysctl!.
+
+-Andi
