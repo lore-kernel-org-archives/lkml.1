@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765728AbYF0VzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763730AbYF0Vzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765728AbYF0VzU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 17:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765476AbYF0Vvm
+	id S1763730AbYF0Vzq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 17:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765599AbYF0Vwu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 17:51:42 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:25371 "EHLO
+	Fri, 27 Jun 2008 17:52:50 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:23786 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765418AbYF0Vvk (ORCPT
+	with ESMTP id S1763968AbYF0Vws (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 17:51:40 -0400
+	Fri, 27 Jun 2008 17:52:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:user-agent:mime-version
          :content-type;
-        b=HOE0aaYaNmaOBefwRMfK302lrnsrAdvgjd5lZeg8y5F/Hmn7fSH5Ls2V8jrL5Oecog
-         HDestWa+pcu5eZuXmWc7sEpRhptf/b85O49gqxnWruj742mFawZDGWm0fnLtWvGdx/Yk
-         xmkplprMbll+Fe/lZNxNxxjUmEZ/XUhSdm6gk=
+        b=h+q1drUrHOLQIQso3WWZBfVIgVRwjqOUcMAKmaaHeimZOIyRMl/uf1OsNvEEWM8ZJw
+         Pe/6LIkbDaV8HyVRnEnc0WocbxLR4OP7QBpgFpMUXbzlEQ5vjkd+Seb42TiBKzqT5wmI
+         mivJNB67B3XcJ1ngWrcvq9zP4KtDCvwtTqMYs=
 From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andi Kleen <andi@firstfloor.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/3] Fix copy_user on x86_64
-Date: Fri, 27 Jun 2008 23:51:36 +0200
-Message-ID: <m3bq1mzguv.fsf@gravicappa.englab.brq.redhat.com>
+Subject: [PATCH 3/3] Fix copy_user on x86_64
+Date: Fri, 27 Jun 2008 23:52:43 +0200
+Message-ID: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com>
 User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: multipart/mixed; boundary="=-=-="
@@ -34,245 +34,315 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 --=-=-=
 
-Functionality of copy_user_nocache_64.S was moved to copy_user_64.c
+Added copy_user_64.c instead of copy_user_64.S and
+copy_user_nocache_64.S
 
 
 --=-=-=
-Content-Disposition: inline; filename=remove-copy_user_nocache_64_S.patch
-Content-Description: remove copy_user_nocache_64.S
+Content-Disposition: inline; filename=add-copy_user_64_c.patch
+Content-Description: add copy_user_64.c
 
-diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
-index 76f60f5..f3e844e 100644
---- a/arch/x86/lib/Makefile
-+++ b/arch/x86/lib/Makefile
-@@ -22,5 +22,5 @@ else
-         lib-y += csum-partial_64.o csum-copy_64.o csum-wrappers_64.o
-         lib-y += thunk_64.o clear_page_64.o copy_page_64.o
-         lib-y += memmove_64.o memset_64.o
--        lib-y += copy_user_64.o rwlock_64.o copy_user_nocache_64.o
-+        lib-y += copy_user_64.o rwlock_64.o
- endif
-diff --git a/arch/x86/lib/copy_user_nocache_64.S b/arch/x86/lib/copy_user_nocache_64.S
-deleted file mode 100644
-index 9d3d1ab..0000000
---- a/arch/x86/lib/copy_user_nocache_64.S
-+++ /dev/null
-@@ -1,215 +0,0 @@
--/* Copyright 2002 Andi Kleen, SuSE Labs.
-- * Subject to the GNU Public License v2.
-- *
-- * Functions to copy from and to user space.
-- */
--
--#include <linux/linkage.h>
--#include <asm/dwarf2.h>
--
--#define FIX_ALIGNMENT 1
--
--#include <asm/current.h>
--#include <asm/asm-offsets.h>
--#include <asm/thread_info.h>
--#include <asm/cpufeature.h>
--
--/*
-- * copy_user_nocache - Uncached memory copy with exception handling
-- * This will force destination/source out of cache for more performance.
-- *
-- * Input:
-- * rdi destination
-- * rsi source
-- * rdx count
-- * rcx zero flag	when 1 zero on exception
-- *
-- * Output:
-- * eax uncopied bytes or 0 if successful.
-- */
--ENTRY(__copy_user_nocache)
--	CFI_STARTPROC
--	pushq %rbx
--	CFI_ADJUST_CFA_OFFSET 8
--	CFI_REL_OFFSET rbx, 0
--	pushq %rcx		/* save zero flag */
--	CFI_ADJUST_CFA_OFFSET 8
--	CFI_REL_OFFSET rcx, 0
--
--	xorl %eax,%eax		/* zero for the exception handler */
--
--#ifdef FIX_ALIGNMENT
--	/* check for bad alignment of destination */
--	movl %edi,%ecx
--	andl $7,%ecx
--	jnz  .Lbad_alignment
--.Lafter_bad_alignment:
--#endif
--
--	movq %rdx,%rcx
--
--	movl $64,%ebx
--	shrq $6,%rdx
--	decq %rdx
--	js   .Lhandle_tail
--
--	.p2align 4
--.Lloop:
--.Ls1:	movq (%rsi),%r11
--.Ls2:	movq 1*8(%rsi),%r8
--.Ls3:	movq 2*8(%rsi),%r9
--.Ls4:	movq 3*8(%rsi),%r10
--.Ld1:	movnti %r11,(%rdi)
--.Ld2:	movnti %r8,1*8(%rdi)
--.Ld3:	movnti %r9,2*8(%rdi)
--.Ld4:	movnti %r10,3*8(%rdi)
--
--.Ls5:	movq 4*8(%rsi),%r11
--.Ls6:	movq 5*8(%rsi),%r8
--.Ls7:	movq 6*8(%rsi),%r9
--.Ls8:	movq 7*8(%rsi),%r10
--.Ld5:	movnti %r11,4*8(%rdi)
--.Ld6:	movnti %r8,5*8(%rdi)
--.Ld7:	movnti %r9,6*8(%rdi)
--.Ld8:	movnti %r10,7*8(%rdi)
--
--	dec  %rdx
--
--	leaq 64(%rsi),%rsi
--	leaq 64(%rdi),%rdi
--
--	jns  .Lloop
--
--	.p2align 4
--.Lhandle_tail:
--	movl %ecx,%edx
--	andl $63,%ecx
--	shrl $3,%ecx
--	jz   .Lhandle_7
--	movl $8,%ebx
--	.p2align 4
--.Lloop_8:
--.Ls9:	movq (%rsi),%r8
--.Ld9:	movnti %r8,(%rdi)
--	decl %ecx
--	leaq 8(%rdi),%rdi
--	leaq 8(%rsi),%rsi
--	jnz .Lloop_8
--
--.Lhandle_7:
--	movl %edx,%ecx
--	andl $7,%ecx
--	jz   .Lende
--	.p2align 4
--.Lloop_1:
--.Ls10:	movb (%rsi),%bl
--.Ld10:	movb %bl,(%rdi)
--	incq %rdi
--	incq %rsi
--	decl %ecx
--	jnz .Lloop_1
--
--	CFI_REMEMBER_STATE
--.Lende:
--	popq %rcx
--	CFI_ADJUST_CFA_OFFSET -8
--	CFI_RESTORE %rcx
--	popq %rbx
--	CFI_ADJUST_CFA_OFFSET -8
--	CFI_RESTORE rbx
--	sfence
--	ret
--	CFI_RESTORE_STATE
--
--#ifdef FIX_ALIGNMENT
--	/* align destination */
--	.p2align 4
--.Lbad_alignment:
--	movl $8,%r9d
--	subl %ecx,%r9d
--	movl %r9d,%ecx
--	cmpq %r9,%rdx
--	jz   .Lhandle_7
--	js   .Lhandle_7
--.Lalign_1:
--.Ls11:	movb (%rsi),%bl
--.Ld11:	movb %bl,(%rdi)
--	incq %rsi
--	incq %rdi
--	decl %ecx
--	jnz .Lalign_1
--	subq %r9,%rdx
--	jmp .Lafter_bad_alignment
--#endif
--
--	/* table sorted by exception address */
--	.section __ex_table,"a"
--	.align 8
--	.quad .Ls1,.Ls1e	/* .Ls[1-4] - 0 bytes copied */
--	.quad .Ls2,.Ls1e
--	.quad .Ls3,.Ls1e
--	.quad .Ls4,.Ls1e
--	.quad .Ld1,.Ls1e	/* .Ld[1-4] - 0..24 bytes coped */
--	.quad .Ld2,.Ls2e
--	.quad .Ld3,.Ls3e
--	.quad .Ld4,.Ls4e
--	.quad .Ls5,.Ls5e	/* .Ls[5-8] - 32 bytes copied */
--	.quad .Ls6,.Ls5e
--	.quad .Ls7,.Ls5e
--	.quad .Ls8,.Ls5e
--	.quad .Ld5,.Ls5e	/* .Ld[5-8] - 32..56 bytes copied */
--	.quad .Ld6,.Ls6e
--	.quad .Ld7,.Ls7e
--	.quad .Ld8,.Ls8e
--	.quad .Ls9,.Le_quad
--	.quad .Ld9,.Le_quad
--	.quad .Ls10,.Le_byte
--	.quad .Ld10,.Le_byte
--#ifdef FIX_ALIGNMENT
--	.quad .Ls11,.Lzero_rest
--	.quad .Ld11,.Lzero_rest
--#endif
--	.quad .Le5,.Le_zero
--	.previous
--
--	/* eax: zero, ebx: 64 */
--.Ls1e: 	addl $8,%eax	/* eax: bytes left uncopied: Ls1e: 64 .. Ls8e: 8 */
--.Ls2e: 	addl $8,%eax
--.Ls3e: 	addl $8,%eax
--.Ls4e: 	addl $8,%eax
--.Ls5e: 	addl $8,%eax
--.Ls6e: 	addl $8,%eax
--.Ls7e: 	addl $8,%eax
--.Ls8e: 	addl $8,%eax
--	addq %rbx,%rdi	/* +64 */
--	subq %rax,%rdi  /* correct destination with computed offset */
--
--	shlq $6,%rdx	/* loop counter * 64 (stride length) */
--	addq %rax,%rdx	/* add offset to loopcnt */
--	andl $63,%ecx	/* remaining bytes */
--	addq %rcx,%rdx	/* add them */
--	jmp .Lzero_rest
--
--	/* exception on quad word loop in tail handling */
--	/* ecx:	loopcnt/8, %edx: length, rdi: correct */
--.Le_quad:
--	shll $3,%ecx
--	andl $7,%edx
--	addl %ecx,%edx
--	/* edx: bytes to zero, rdi: dest, eax:zero */
--.Lzero_rest:
--	cmpl $0,(%rsp)	/* zero flag set? */
--	jz   .Le_zero
--	movq %rdx,%rcx
--.Le_byte:
--	xorl %eax,%eax
--.Le5:	rep
--	stosb
--	/* when there is another exception while zeroing the rest just return */
--.Le_zero:
--	movq %rdx,%rax
--	jmp .Lende
--	CFI_ENDPROC
--ENDPROC(__copy_user_nocache)
--
--
+diff --git a/arch/x86/lib/copy_user_64.c b/arch/x86/lib/copy_user_64.c
+new file mode 100644
+index 0000000..7317bf5
+--- /dev/null
++++ b/arch/x86/lib/copy_user_64.c
+@@ -0,0 +1,295 @@
++/*
++ * Copyright 2008 Vitaly Mayatskikh <vmayatsk@redhat.com>
++ * Copyright 2002 Andi Kleen, SuSE Labs.
++ * Subject to the GNU Public License v2.
++ *
++ * Functions to copy from and to user space.
++ */
++
++#include <linux/module.h>
++#include <linux/uaccess.h>
++
++/*
++ * Try to copy last bytes and clear rest if needed.
++ * Since protection fault in copy_from/to_user is not a normal situation,
++ * it is not necessary to optimize tail handling .
++ */
++unsigned long
++copy_user_handle_tail(char *to, char *from, unsigned len, unsigned zerorest)
++{
++	char c;
++	unsigned zero_len;
++
++	for (; len; --len) {
++		if (__get_user_nocheck(c, from++, sizeof(char)))
++			break;
++		if (__put_user_nocheck(c, to++, sizeof(char)))
++			break;
++	}
++
++	for (c = 0, zero_len = len; zerorest && zero_len; --zero_len)
++		if (__put_user_nocheck(c, to++, sizeof(char)))
++			break;
++	return len;
++}
++
++/* Some CPUs run faster using the string copy instructions.
++ * This is also a lot simpler. Use them when possible.
++ *
++ * Only 4GB of copy is supported. This shouldn't be a problem
++ * because the kernel normally only writes from/to page sized chunks
++ * even if user space passed a longer buffer.
++ * And more would be dangerous because both Intel and AMD have
++ * errata with rep movsq > 4GB. If someone feels the need to fix
++ * this please consider this.
++ */
++inline unsigned long
++copy_user_generic_string(void *to, const void *from, unsigned len)
++{
++	unsigned long ret;
++	asm volatile (
++		"	movl %%ecx,%%edx\n"
++		"	shrl $3,%%ecx\n"
++		"	andl $7,%%edx\n"
++		"1:	rep; movsq\n"
++		"	movl %%edx,%%ecx\n"
++		"2:	rep; movsb\n"
++		"3:\n"
++		".section .fixup,\"ax\"\n"
++		"12:	xorl %%ecx,%%ecx\n"
++		"11:	leal (%%edx,%%ecx,8),%%ecx\n"
++		"	movl %%ecx,%%edx\n"	/* ecx is zerorest also */
++		"	call copy_user_handle_tail\n"
++		"	movl %%eax,%%ecx\n"
++		"	jmp 3b\n"
++		".previous\n"
++		".section __ex_table,\"a\"\n"
++		"	.quad 1b,11b\n"
++		"	.quad 2b,12b\n"
++		".previous"
++		: "=c"(ret)
++		: "D"(to), "S"(from), "c"(len)
++		: "eax", "edx", "memory"
++		);
++	return ret;
++}
++
++/*
++ * copy_user_generic_unrolled - memory copy with exception handling.
++ * This version is for CPUs like P4 that don't have efficient micro
++ * code for rep movsq
++ */
++inline unsigned long
++copy_user_generic_unrolled(void *to, const void *from, unsigned len)
++{
++	unsigned long ret;
++	asm volatile (
++		"	movl %%ecx,%%edx\n"
++		"	andl $63,%%edx\n"
++		"	shrl $6,%%ecx\n"
++		"	jz 17f\n"
++		"1:	movq (%%rsi),%%r8\n"
++		"2:	movq 1*8(%%rsi),%%r9\n"
++		"3:	movq 2*8(%%rsi),%%r10\n"
++		"4:	movq 3*8(%%rsi),%%r11\n"
++		"5:	movq %%r8,(%%rdi)\n"
++		"6:	movq %%r9,1*8(%%rdi)\n"
++		"7:	movq %%r10,2*8(%%rdi)\n"
++		"8:	movq %%r11,3*8(%%rdi)\n"
++		"9:	movq 4*8(%%rsi),%%r8\n"
++		"10:	movq 5*8(%%rsi),%%r9\n"
++		"11:	movq 6*8(%%rsi),%%r10\n"
++		"12:	movq 7*8(%%rsi),%%r11\n"
++		"13:	movq %%r8,4*8(%%rdi)\n"
++		"14:	movq %%r9,5*8(%%rdi)\n"
++		"15:	movq %%r10,6*8(%%rdi)\n"
++		"16:	movq %%r11,7*8(%%rdi)\n"
++		"	leaq 64(%%rsi),%%rsi\n"
++		"	leaq 64(%%rdi),%%rdi\n"
++		"	decl %%ecx\n"
++		"	jnz 1b\n"
++		"17:	movl %%edx,%%ecx\n"
++		"	andl $7,%%edx\n"
++		"	shrl $3,%%ecx\n"
++		"	jz 20f\n"
++		"18:	movq (%%rsi),%%r8\n"
++		"19:	movq %%r8,(%%rdi)\n"
++		"	leaq 8(%%rsi),%%rsi\n"
++		"	leaq 8(%%rdi),%%rdi\n"
++		"	decl %%ecx\n"
++		"	jnz 18b\n"
++		"20:	andl %%edx,%%edx\n"
++		"	jz 23f\n"
++		"	movl %%edx,%%ecx\n"
++		"21:	movb (%%rsi),%%al\n"
++		"22:	movb %%al,(%%rdi)\n"
++		"	incq %%rsi\n"
++		"	incq %%rdi\n"
++		"	decl %%ecx\n"
++		"	jnz 21b\n"
++		"23:\n"
++		".section .fixup,\"ax\"\n"
++		"30:	shll $6,%%ecx\n"
++		"	addl %%ecx,%%edx\n"
++		"	jmp 60f\n"
++		"40:	leal (%%edx,%%ecx,8),%%edx\n"
++		"	jmp 60f\n"
++		"50:	movl %%ecx,%%edx\n"
++		"60:\n"				/* ecx is zerorest also */
++		"	call copy_user_handle_tail\n"
++		"	movl %%eax,%%ecx\n"
++		"	jmp  23b\n"
++		".previous\n"
++		".section __ex_table,\"a\"\n"
++		"	.quad 1b,30b\n"
++		"	.quad 2b,30b\n"
++		"	.quad 3b,30b\n"
++		"	.quad 4b,30b\n"
++		"	.quad 5b,30b\n"
++		"	.quad 6b,30b\n"
++		"	.quad 7b,30b\n"
++		"	.quad 8b,30b\n"
++		"	.quad 9b,30b\n"
++		"	.quad 10b,30b\n"
++		"	.quad 11b,30b\n"
++		"	.quad 12b,30b\n"
++		"	.quad 13b,30b\n"
++		"	.quad 14b,30b\n"
++		"	.quad 15b,30b\n"
++		"	.quad 16b,30b\n"
++		"	.quad 18b,40b\n"
++		"	.quad 19b,40b\n"
++		"	.quad 21b,50b\n"
++		"	.quad 22b,50b\n"
++		".previous"
++		: "=c"(ret)
++		: "D"(to), "S"(from), "c"(len)
++		: "eax", "edx", "r8", "r9", "r10", "r11", "memory"
++		);
++	return ret;
++}
++
++/*
++ * copy_user_nocache - Uncached memory copy with exception handling
++ * This will force destination/source out of cache for more performance.
++ */
++long __copy_user_nocache(void *to, const void *from, unsigned len, int zerorest)
++{
++	unsigned long ret;
++	asm volatile (
++		"	movl %%ecx,%%edx\n"
++		"	andl $63,%%edx\n"
++		"	shrl $6,%%ecx\n"
++		"	jz 17f\n"
++		"1:	movq (%%rsi),%%r8\n"
++		"2:	movq 1*8(%%rsi),%%r9\n"
++		"3:	movq 2*8(%%rsi),%%r10\n"
++		"4:	movq 3*8(%%rsi),%%r11\n"
++		"5:	movnti %%r8,(%%rdi)\n"
++		"6:	movnti %%r9,1*8(%%rdi)\n"
++		"7:	movnti %%r10,2*8(%%rdi)\n"
++		"8:	movnti %%r11,3*8(%%rdi)\n"
++		"9:	movq 4*8(%%rsi),%%r8\n"
++		"10:	movq 5*8(%%rsi),%%r9\n"
++		"11:	movq 6*8(%%rsi),%%r10\n"
++		"12:	movq 7*8(%%rsi),%%r11\n"
++		"13:	movnti %%r8,4*8(%%rdi)\n"
++		"14:	movnti %%r9,5*8(%%rdi)\n"
++		"15:	movnti %%r10,6*8(%%rdi)\n"
++		"16:	movnti %%r11,7*8(%%rdi)\n"
++		"	leaq 64(%%rsi),%%rsi\n"
++		"	leaq 64(%%rdi),%%rdi\n"
++		"	decl %%ecx\n"
++		"	jnz 1b\n"
++		"17:	movl %%edx,%%ecx\n"
++		"	andl $7,%%edx\n"
++		"	shrl $3,%%ecx\n"
++		"	jz 20f\n"
++		"18:	movq (%%rsi),%%r8\n"
++		"19:	movnti %%r8,(%%rdi)\n"
++		"	leaq 8(%%rsi),%%rsi\n"
++		"	leaq 8(%%rdi),%%rdi\n"
++		"	decl %%ecx\n"
++		"	jnz 18b\n"
++		"20:	andl %%edx,%%edx\n"
++		"	jz 23f\n"
++		"	movl %%edx,%%ecx\n"
++		"21:	movb (%%rsi),%%al\n"
++		"22:	movb %%al,(%%rdi)\n"
++		"	incq %%rsi\n"
++		"	incq %%rdi\n"
++		"	decl %%ecx\n"
++		"	jnz 21b\n"
++		"23:	sfence\n"
++		".section .fixup,\"ax\"\n"
++		"30:	shll $6,%%ecx\n"
++		"	addl %%ecx,%%edx\n"
++		"	jmp 60f\n"
++		"40:	leal (%%edx,%%ecx,8),%%edx\n"
++		"	jmp 60f\n"
++		"50:	movl %%ecx,%%edx\n"
++		"60:	sfence\n"
++		"	movl %%ebx,%%ecx\n"
++		"	call copy_user_handle_tail\n"
++		"	movl %%eax,%%ecx\n"
++		"	jmp  23b\n"
++		".previous\n"
++		".section __ex_table,\"a\"\n"
++		"	.quad 1b,30b\n"
++		"	.quad 2b,30b\n"
++		"	.quad 3b,30b\n"
++		"	.quad 4b,30b\n"
++		"	.quad 5b,30b\n"
++		"	.quad 6b,30b\n"
++		"	.quad 7b,30b\n"
++		"	.quad 8b,30b\n"
++		"	.quad 9b,30b\n"
++		"	.quad 10b,30b\n"
++		"	.quad 11b,30b\n"
++		"	.quad 12b,30b\n"
++		"	.quad 13b,30b\n"
++		"	.quad 14b,30b\n"
++		"	.quad 15b,30b\n"
++		"	.quad 16b,30b\n"
++		"	.quad 18b,40b\n"
++		"	.quad 19b,40b\n"
++		"	.quad 21b,50b\n"
++		"	.quad 22b,50b\n"
++		".previous"
++		: "=c"(ret)
++		: "D"(to), "S"(from), "c"(len), "b"(zerorest)
++		: "eax", "edx", "r8", "r9", "r10", "r11", "memory"
++		);
++	return ret;
++}
++
++unsigned long copy_user_generic(void *to, const void *from, unsigned len)
++{
++	if (cpu_has(&boot_cpu_data, X86_FEATURE_REP_GOOD))
++		return copy_user_generic_string(to, from, len);
++	else
++		return copy_user_generic_unrolled(to, from, len);
++}
++
++/* Standard copy_to_user with segment limit checking */
++unsigned long copy_to_user(void __user *to, const void *from, unsigned len)
++{
++	if (access_ok(VERIFY_WRITE, to, len))
++		return copy_user_generic(to, from, len);
++	return len;
++}
++
++/* Standard copy_from_user with segment limit checking */
++unsigned long copy_from_user(void *to, const void __user *from, unsigned len)
++{
++	if (access_ok(VERIFY_READ, from, len))
++		return copy_user_generic(to, from, len);
++	else
++		memset(to, 0, len);
++	return len;
++}
++
++long __copy_from_user_inatomic(void *dst, const void __user *src, unsigned size)
++{
++	return copy_user_generic(dst, src, size);
++}
 
 Signed-off-by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
 
