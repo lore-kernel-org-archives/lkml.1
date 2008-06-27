@@ -1,150 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbYF0Q7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbYF0RAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758263AbYF0Q7l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 12:59:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYF0Q7d
+	id S1758759AbYF0RAa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 13:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbYF0RAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 12:59:33 -0400
-Received: from sacred.ru ([62.205.161.221]:44750 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751899AbYF0Q7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 12:59:31 -0400
-Message-ID: <48651BDC.5030104@openvz.org>
-Date: Fri, 27 Jun 2008 20:57:00 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Fri, 27 Jun 2008 13:00:18 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:33168 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752001AbYF0RAR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 13:00:17 -0400
+Date: Fri, 27 Jun 2008 12:59:47 -0400
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Adrian Bunk <bunk@kernel.org>,
+       Joerg Roedel <joerg.roedel@amd.com>, tglx@linutronix.de,
+       mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       Sebastian.Biemueller@amd.com, robert.richter@amd.com
+Subject: Re: [PATCH 01/34] AMD IOMMU: add Kconfig entry
+Message-ID: <20080627165947.GB26130@il.ibm.com>
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-2-git-send-email-joerg.roedel@amd.com> <20080627142558.GG18644@cs181140183.pp.htv.fi> <878wwrq6im.fsf@basil.nowhere.org> <20080627163945.GA26130@il.ibm.com> <20080627165430.GD10197@8bytes.org>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Serge Hallyn <serue@us.ibm.com>
-Subject: [PATCH] devcgroup: relax white-list protection down to RCU
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 27 Jun 2008 20:59:17 +0400 (MSD)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080627165430.GD10197@8bytes.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently this list is protected with a simple spinlock, even
-for reading from one. This is OK, but can be better.
+On Fri, Jun 27, 2008 at 06:54:30PM +0200, Joerg Roedel wrote:
 
-Actually I want it to be better very much, since after replacing
-the OpenVZ device permissions engine with the cgroup-based one
-I noticed, that we set 12 default device permissions for each newly
-created container (for /dev/null, full, terminals, ect devices),
-and people sometimes have up to 20 perms more, so traversing the
-~30-40 elements list under a spinlock doesn't seem very good.
+> True. At least for the case without device isolation I have some
+> optimizations in mind which will minimize the performance
+> tradeoff. I hope to have them ready for 2.6.28 :)
 
-Here's the liter RCU protection for white-list.
+Do you mean the case where you have a single I/O address space which
+is shared by all devices?
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-
----
-
-diff --git a/security/device_cgroup.c b/security/device_cgroup.c
-index 4ea5836..9d940c3 100644
---- a/security/device_cgroup.c
-+++ b/security/device_cgroup.c
-@@ -41,6 +41,7 @@ struct dev_whitelist_item {
- 	short type;
- 	short access;
- 	struct list_head list;
-+	struct rcu_head rcu;
- };
- 
- struct dev_cgroup {
-@@ -110,11 +111,19 @@ static int dev_whitelist_add(struct dev_cgroup *dev_cgroup,
- 
- 	memcpy(whcopy, wh, sizeof(*whcopy));
- 	spin_lock(&dev_cgroup->lock);
--	list_add_tail(&whcopy->list, &dev_cgroup->whitelist);
-+	list_add_tail_rcu(&whcopy->list, &dev_cgroup->whitelist);
- 	spin_unlock(&dev_cgroup->lock);
- 	return 0;
- }
- 
-+static void whitelist_item_free(struct rcu_head *rcu)
-+{
-+	struct dev_whitelist_item *item;
-+
-+	item = container_of(rcu, struct dev_whitelist_item, rcu);
-+	kfree(item);
-+}
-+
- /*
-  * called under cgroup_lock()
-  * since the list is visible to other tasks, we need the spinlock also
-@@ -138,8 +147,8 @@ static void dev_whitelist_rm(struct dev_cgroup *dev_cgroup,
- remove:
- 		walk->access &= ~wh->access;
- 		if (!walk->access) {
--			list_del(&walk->list);
--			kfree(walk);
-+			list_del_rcu(&walk->list);
-+			call_rcu(&walk->rcu, whitelist_item_free);
- 		}
- 	}
- 	spin_unlock(&dev_cgroup->lock);
-@@ -246,15 +255,15 @@ static int devcgroup_seq_read(struct cgroup *cgroup, struct cftype *cft,
- 	struct dev_whitelist_item *wh;
- 	char maj[MAJMINLEN], min[MAJMINLEN], acc[ACCLEN];
- 
--	spin_lock(&devcgroup->lock);
--	list_for_each_entry(wh, &devcgroup->whitelist, list) {
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(wh, &devcgroup->whitelist, list) {
- 		set_access(acc, wh->access);
- 		set_majmin(maj, wh->major);
- 		set_majmin(min, wh->minor);
- 		seq_printf(m, "%c %s:%s %s\n", type_to_char(wh->type),
- 			   maj, min, acc);
- 	}
--	spin_unlock(&devcgroup->lock);
-+	rcu_read_unlock();
- 
- 	return 0;
- }
-@@ -516,8 +525,8 @@ int devcgroup_inode_permission(struct inode *inode, int mask)
- 	if (!dev_cgroup)
- 		return 0;
- 
--	spin_lock(&dev_cgroup->lock);
--	list_for_each_entry(wh, &dev_cgroup->whitelist, list) {
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(wh, &dev_cgroup->whitelist, list) {
- 		if (wh->type & DEV_ALL)
- 			goto acc_check;
- 		if ((wh->type & DEV_BLOCK) && !S_ISBLK(inode->i_mode))
-@@ -533,10 +542,10 @@ acc_check:
- 			continue;
- 		if ((mask & MAY_READ) && !(wh->access & ACC_READ))
- 			continue;
--		spin_unlock(&dev_cgroup->lock);
-+		rcu_read_unlock();
- 		return 0;
- 	}
--	spin_unlock(&dev_cgroup->lock);
-+	rcu_read_unlock();
- 
- 	return -EPERM;
- }
-@@ -552,7 +561,7 @@ int devcgroup_inode_mknod(int mode, dev_t dev)
- 	if (!dev_cgroup)
- 		return 0;
- 
--	spin_lock(&dev_cgroup->lock);
-+	rcu_read_lock();
- 	list_for_each_entry(wh, &dev_cgroup->whitelist, list) {
- 		if (wh->type & DEV_ALL)
- 			goto acc_check;
-@@ -567,9 +576,9 @@ int devcgroup_inode_mknod(int mode, dev_t dev)
- acc_check:
- 		if (!(wh->access & ACC_MKNOD))
- 			continue;
--		spin_unlock(&dev_cgroup->lock);
-+		rcu_read_unlock();
- 		return 0;
- 	}
--	spin_unlock(&dev_cgroup->lock);
-+	rcu_read_unlock();
- 	return -EPERM;
- }
+Cheers,
+Muli
