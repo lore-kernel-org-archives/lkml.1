@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763056AbYF0SWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762997AbYF0SXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763056AbYF0SWM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 14:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757736AbYF0SUw
+	id S1762997AbYF0SXm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 14:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbYF0SXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 14:20:52 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11660 "EHLO
-	phenom.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757767AbYF0SUt (ORCPT
+	Fri, 27 Jun 2008 14:23:34 -0400
+Received: from outbound-mail-15.bluehost.com ([69.89.18.115]:39905 "HELO
+	outbound-mail-15.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754619AbYF0SXd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 14:20:49 -0400
-Date: Fri, 27 Jun 2008 12:13:08 -0600
-From: dougthompson@xmission.com
-To: bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH 4/13] EDAC i5100 fix unmask ecc bits
-Message-ID: <48652db4.9eBuCDarQoo9vl8F%dougthompson@xmission.com>
-User-Agent: Heirloom mailx 12.2 01/07/07
+	Fri, 27 Jun 2008 14:23:33 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [Ksummit-2008-discuss] Current List of Kernel Summit suggested topics from the discuss list
+Date: Fri, 27 Jun 2008 11:23:29 -0700
+User-Agent: KMail/1.9.9
+Cc: ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <1214577710.3394.14.camel@localhost.localdomain> <200806271035.22856.jbarnes@virtuousgeek.org> <48652D5B.60108@zytor.com>
+In-Reply-To: <48652D5B.60108@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806271123.30222.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Arthur Jones <ajones@riverbed.com>
+On Friday, June 27, 2008 11:11 am H. Peter Anvin wrote:
+> Jesse Barnes wrote:
+> > If we measure quality using bug metrics, things are pretty hard.
+>
+> One problem with any metric is that the metric becomes a driving factor
+> in itself.  Consider the whole whitespace issue, for example.
 
-Applied to linux-2.6.26-rc5-mm3
+Sure, but I don't think that's a reason to avoid metrics altogether.  We've 
+already seen that purely qualitative discussions don't really get us 
+anywhere.  For any discussion about kernel quality I think we have to:
+  a) define our goals (no oopses?  fast bug fix turnaround?  whatever)
+  b) define a way to measure progress against those goals
+  c) periodically re-evaluate both
 
-Patch file for the i5100_edac module
+I think all of these are fairly difficult tasks, and any goal or metric we 
+create will have problems, but does that mean we should just ignore quality?  
+Or limit ourselves to our current situation where everyone has a different 
+idea of what it means and whether we're achieving it?
 
-Explicitly unmask ECC errors we are interested in reporting.
-
-Signed-off-by:	Arthur Jones <ajones@riverbed.com>
-Signed-off-by:	Doug Thompson <dougthompson@xmission.com>
----
- drivers/edac/i5100_edac.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
-
-Index: linux-2.6.26-rc5/drivers/edac/i5100_edac.c
-===================================================================
---- linux-2.6.26-rc5.orig/drivers/edac/i5100_edac.c
-+++ linux-2.6.26-rc5/drivers/edac/i5100_edac.c
-@@ -75,6 +75,7 @@
- #define		I5100_FERR_NF_MEM_ANY(a)  ((a) & I5100_FERR_NF_MEM_ANY_MASK)
- #define	I5100_NERR_NF_MEM	0xa4	/* MC Next Non-Fatal Errors */
- #define		I5100_NERR_NF_MEM_ANY(a)  I5100_FERR_NF_MEM_ANY(a)
-+#define I5100_EMASK_MEM		0xa8	/* MC Error Mask Register */
- 
- /* device 21 and 22, func 0 */
- #define I5100_MTR_0	0x154	/* Memory Technology Registers 0-3 */
-@@ -709,6 +710,11 @@ static int __devinit i5100_init_one(stru
- 		goto bail;
- 	}
- 
-+	/* enable error reporting... */
-+	pci_read_config_dword(pdev, I5100_EMASK_MEM, &dw);
-+	dw &= ~I5100_FERR_NF_MEM_ANY_MASK;
-+	pci_write_config_dword(pdev, I5100_EMASK_MEM, dw);
-+
- 	/* device 21, func 0, Channel 0 Memory Map, Error Flag/Mask, etc... */
- 	ch0mm = pci_get_device_func(PCI_VENDOR_ID_INTEL,
- 				    PCI_DEVICE_ID_INTEL_5100_21, 0);
+Jesse
