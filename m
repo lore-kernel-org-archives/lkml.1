@@ -1,68 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756281AbYF0QwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756927AbYF0QyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756281AbYF0QwH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 12:52:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYF0Qvz
+	id S1756927AbYF0QyQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 12:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYF0QyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 12:51:55 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:29937 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751981AbYF0Qvy (ORCPT
+	Fri, 27 Jun 2008 12:54:03 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:22768 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750971AbYF0QyA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 12:51:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=F2CUP/0bktc0ga3fhopg6OSNaWoqsFkAr/8mZ/aTrYf89V6ILn3D2st+Djd41mNdID
-         zdSVKlRpZ9zhFitR9PxkuWIxLpZ5y5zNYBg80CTESN+nTX9WjRZA79rbczX0TkHrr58b
-         P/pKaYzQiujVdw81Y0+OE2YH5Kv5Kw1Be5jhs=
-Date: Fri, 27 Jun 2008 20:51:25 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip/master] x86: nmi_watchdog - documentation fix
-Message-ID: <20080627165125.GE18957@cvg>
-References: <20080627154340.GC18957@cvg> <Pine.LNX.4.55.0806271652020.8868@cliff.in.clinika.pl> <20080627165937.2f1fb661@lxorguk.ukuu.org.uk> <4865160C.2040403@nortel.com>
+	Fri, 27 Jun 2008 12:54:00 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=cH4NsQc5xcuAK7Hjk7Y9D2IVgDnCa2mK4VxTmcBSD3NY6XhEY0It9lUuX623oWrti
+	XLv+ZaRSS+NeXaVLDaOBw==
+Message-ID: <da824cf30806270953q1ebe62fx4face15e12edcc99@mail.gmail.com>
+Date: Fri, 27 Jun 2008 09:53:46 -0700
+From: "Grant Grundler" <grundler@google.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: [Ksummit-2008-discuss] KS Topic Proposal: Vendor and User problems with the Kernel
+Cc: ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1214583706.3394.58.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4865160C.2040403@nortel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <1214583706.3394.58.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Chris Friesen - Fri, Jun 27, 2008 at 10:32:12AM -0600]
-> Alan Cox wrote:
->> On Fri, 27 Jun 2008 16:54:19 +0100 (BST)
->> "Maciej W. Rozycki" <macro@linux-mips.org> wrote:
->>> On Fri, 27 Jun 2008, Cyrill Gorcunov wrote:
->>>
->>>
->>>> +NOTE: Prior to 2.4.2-ac18 the NMI-oopser is enabled unconditionally
->>>> +on x86 SMP boxes.
->>>
->>> While you are at it: s/is/was/.
->> Erm - why ??
->> It is still true today that kernels < 2.4.2-ac8 have the NMI oopser
->> enabled.
+On Fri, Jun 27, 2008 at 9:21 AM, James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+> This proposal is a bit different from a concrete topic, but it's based
+> on the generally positive feedback from the end user panel last year.
+> It's to allocate 2h of Kernel summit to discuss problems raised by
+> vendors and end users.  The format I'm proposing is 10 minutes of
+> problem introduction by someone from the vendor or user representative
+> who is a subject matter expert and 20 minutes of discussion (so,
+> hopefully four such problems).
 >
-> To my ear the phrase as written implies past tense for the author/reader 
-> (i.e. "at points in time prior to the release of 2.4.2-ac18"), and thus 
-> grates against "is".
->
-> The following sounds better to me: "In kernels prior to 2.4.2-ac18 the 
-> NMI-oopser is enabled..."  In this context the phrase itself is in the 
-> present, but we point to past kernels.
->
-> Chris
->
+> As usual, the difficulty is actually finding people from the vendor and
+> user community willing to do such a presentation (and ensuring they
+> won't simply want to talk about their problems with X distro enterprise
+> kernels).  The way I think we might get some diverse problems is to send
+> out a call for participation.
 
-And the winner is? I'm not native English speaker so I can't select
-a better candidate in {is,was} limited set.
+I think this is a good idea and I suggest using referrals since it's not
+just about the problem. It's also how it's presented. And it would be
+worth a few $K to pay for a good presenter who has something relevant
+to say. e.g. enough to cover travel/hotel plus something extra.
 
-		- Cyrill -
+Secondly, these problems arise because second tier users aren't
+participating in the development. I see this CFP as a "Call For Participation"
+and not a "call for papers".
+
+I also suggest trying to get representatives from different communities.
+e.g. education, handhelds, desktop (something other than gfx drivers,
+maybe revisit the user visible latency issues), HPC, database, etc.
+I left out "embedded" since that's now too vague, has been flogged
+to death in the past, and I _hope_ now has better participation.
+
+The last issue I see is "Vendor" usually means HW vendor with a few
+major SW vendors (e.g. Oracle, SAP). Those guys have sufficient
+representation and I think some newer, smaller players (e.g. not google)
+would be more interesting to invite. Maybe dreamworks, pixar, or
+Ernie Ball Guitar Strings (http://www.ernieball.com/) might be examples.
+
+hth,
+grant
+
+> Something like.
+>
+> "The kernel summit programme committe is inviting proposals for
+> participation in the 2008 Kernel Summit in Portland Oregon (URL) from
+> members of the End User and Vendor communities wishing to raise
+> particular issues or problems they see with the current Linux Kernel.  A
+> good problem presentation should stimulate discussion with the kernel
+> community, and as such the presenter should be a subject matter expert
+> capable of engaging in the debate.  While the presenter may have a
+> preferred solution, they should concentrate on the problem and be
+> prepared to consider the effects of solutions outside of their preferred
+> one.  It goes without saying that problems should have a significant
+> component which is susceptible to a solution within the Linux Kernel.
+>
+> "Proposals of around 500 words and describing the nature of the problem
+> and the credentials of the presenter should be forwarded to the Linux
+> Kernel Programme Committee at
+> <ksummit-2008-pc@lists.linux-foundation.org>"
+>
+> Obviously we'd have to circulate this beyond the usual mailing lists,
+> but we can solicit help from the Linux Foundation to do this.
+>
+> James
+>
+>
+> _______________________________________________
+> Ksummit-2008-discuss mailing list
+> Ksummit-2008-discuss@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/ksummit-2008-discuss
+>
