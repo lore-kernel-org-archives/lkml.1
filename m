@@ -1,47 +1,271 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759619AbYF0Ip7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760301AbYF0Iqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759619AbYF0Ip7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 04:45:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756866AbYF0Iox
+	id S1760301AbYF0Iqa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 04:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757121AbYF0Iox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 27 Jun 2008 04:44:53 -0400
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:24226 "EHLO
+Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:24224 "EHLO
 	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755939AbYF0Iot (ORCPT
+	by vger.kernel.org with ESMTP id S1756315AbYF0Iov (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 04:44:49 -0400
+	Fri, 27 Jun 2008 04:44:51 -0400
 X-IronPort-Anti-Spam-Filtered: true
 X-IronPort-Anti-Spam-Result: ApoEANexXkh5LFnm/2dsb2JhbACuPg
 X-IronPort-AV: E=Sophos;i="4.27,714,1204464600"; 
-   d="scan'208";a="144433140"
+   d="scan'208";a="144433137"
 From: Dave Chinner <david@fromorbit.com>
 To: xfs@oss.sgi.com
-Cc: linux-kernel@vger.kernel.org, matthew@wil.cx, dwalker@mvista.com
-Subject: [PATCH 0/6] Remove most users of semaphores from XFS V2.
-Date: Fri, 27 Jun 2008 18:44:38 +1000
-Message-Id: <1214556284-4160-1-git-send-email-david@fromorbit.com>
+Cc: linux-kernel@vger.kernel.org, matthew@wil.cx, dwalker@mvista.com,
+       Dave Chinner <david@fromorbit.com>
+Subject: [PATCH 5/6] Replace dquot flush semaphore with a completion
+Date: Fri, 27 Jun 2008 18:44:43 +1000
+Message-Id: <1214556284-4160-6-git-send-email-david@fromorbit.com>
 X-Mailer: git-send-email 1.5.5.4
+In-Reply-To: <1214556284-4160-1-git-send-email-david@fromorbit.com>
+References: <1214556284-4160-1-git-send-email-david@fromorbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This series aims to convert all but one of the remaining users of
-semaphores in the XFS code to use completions. Two of these
-semaphores don't quite match to completion semantics, but a small
-amount of additional code on top of the completions fixes this
-problem. I'm open to suggestions on different/better ways to implement
-this.
-
-The patch series does not touch the b_lock semaphore in the
-xfs_buf_t. At this point I'm not sure what we want to do with that
-semaphore so I've ignored that for now. Also, this lock uses
-linux primitives, not the xfs sema_t primitives so  it doesn't
-need changing to allow me to remove the sema_t.
+Use the new completion flush code to implement the dquot
+flush lock. Removes one of the final users of semaphores
+in the XFS code base.
 
 Version 2:
-o remove "flush" based API and just add the minimum necessary
-  extensions to allow counting completions to do what is needed
-  by XFS.
-o change XFS patches to make use of new API
-o clean up the XFS APIs using the new completion API a little.
+o make xfs_qm_dqflock_nowait() a static inline and rename to
+  match xfs_dqflock/xfs_dqfunlock operations.
+o use new completion interface.
+
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ fs/xfs/quota/xfs_dquot.c      |   34 ++++++++++++----------------------
+ fs/xfs/quota/xfs_dquot.h      |   29 ++++++++++++++++++-----------
+ fs/xfs/quota/xfs_dquot_item.c |    8 ++++----
+ fs/xfs/quota/xfs_qm.c         |    8 ++++----
+ 4 files changed, 38 insertions(+), 41 deletions(-)
+
+diff --git a/fs/xfs/quota/xfs_dquot.c b/fs/xfs/quota/xfs_dquot.c
+index fc9f3fb..4a2194d 100644
+--- a/fs/xfs/quota/xfs_dquot.c
++++ b/fs/xfs/quota/xfs_dquot.c
+@@ -101,9 +101,16 @@ xfs_qm_dqinit(
+ 	if (brandnewdquot) {
+ 		dqp->dq_flnext = dqp->dq_flprev = dqp;
+ 		mutex_init(&dqp->q_qlock);
+-		initnsema(&dqp->q_flock, 1, "fdq");
+ 		sv_init(&dqp->q_pinwait, SV_DEFAULT, "pdq");
+ 
++		/*
++		 * Because we want to use a counting completion, complete
++		 * the flush completion once to allow a single access to
++		 * the flush completion without blocking.
++		 */
++		init_completion(&dqp->q_flush);
++		complete(&dqp->q_flush);
++
+ #ifdef XFS_DQUOT_TRACE
+ 		dqp->q_trace = ktrace_alloc(DQUOT_TRACE_SIZE, KM_SLEEP);
+ 		xfs_dqtrace_entry(dqp, "DQINIT");
+@@ -150,7 +157,6 @@ xfs_qm_dqdestroy(
+ 	ASSERT(! XFS_DQ_IS_ON_FREELIST(dqp));
+ 
+ 	mutex_destroy(&dqp->q_qlock);
+-	freesema(&dqp->q_flock);
+ 	sv_destroy(&dqp->q_pinwait);
+ 
+ #ifdef XFS_DQUOT_TRACE
+@@ -1211,7 +1217,7 @@ xfs_qm_dqflush(
+ 	int			error;
+ 
+ 	ASSERT(XFS_DQ_IS_LOCKED(dqp));
+-	ASSERT(XFS_DQ_IS_FLUSH_LOCKED(dqp));
++	ASSERT(!completion_done(&dqp->q_flush));
+ 	xfs_dqtrace_entry(dqp, "DQFLUSH");
+ 
+ 	/*
+@@ -1348,34 +1354,18 @@ xfs_qm_dqflush_done(
+ 	xfs_dqfunlock(dqp);
+ }
+ 
+-
+-int
+-xfs_qm_dqflock_nowait(
+-	xfs_dquot_t *dqp)
+-{
+-	int locked;
+-
+-	locked = cpsema(&((dqp)->q_flock));
+-
+-	/* XXX ifdef these out */
+-	if (locked)
+-		(dqp)->dq_flags |= XFS_DQ_FLOCKED;
+-	return (locked);
+-}
+-
+-
+ int
+ xfs_qm_dqlock_nowait(
+ 	xfs_dquot_t *dqp)
+ {
+-	return (mutex_trylock(&((dqp)->q_qlock)));
++	return mutex_trylock(&dqp->q_qlock);
+ }
+ 
+ void
+ xfs_dqlock(
+ 	xfs_dquot_t *dqp)
+ {
+-	mutex_lock(&(dqp->q_qlock));
++	mutex_lock(&dqp->q_qlock);
+ }
+ 
+ void
+@@ -1468,7 +1458,7 @@ xfs_qm_dqpurge(
+ 	 * if we're turning off quotas. Basically, we need this flush
+ 	 * lock, and are willing to block on it.
+ 	 */
+-	if (! xfs_qm_dqflock_nowait(dqp)) {
++	if (!xfs_dqflock_nowait(dqp)) {
+ 		/*
+ 		 * Block on the flush lock after nudging dquot buffer,
+ 		 * if it is incore.
+diff --git a/fs/xfs/quota/xfs_dquot.h b/fs/xfs/quota/xfs_dquot.h
+index f7393bb..8958d0f 100644
+--- a/fs/xfs/quota/xfs_dquot.h
++++ b/fs/xfs/quota/xfs_dquot.h
+@@ -82,7 +82,7 @@ typedef struct xfs_dquot {
+ 	xfs_qcnt_t	 q_res_icount;	/* total inos allocd+reserved */
+ 	xfs_qcnt_t	 q_res_rtbcount;/* total realtime blks used+reserved */
+ 	mutex_t		 q_qlock;	/* quota lock */
+-	sema_t		 q_flock;	/* flush lock */
++	struct completion q_flush;	/* flush completion queue */
+ 	uint		 q_pincount;	/* pin count for this dquot */
+ 	sv_t		 q_pinwait;	/* sync var for pinning */
+ #ifdef XFS_DQUOT_TRACE
+@@ -113,17 +113,25 @@ XFS_DQ_IS_LOCKED(xfs_dquot_t *dqp)
+ 
+ 
+ /*
+- * The following three routines simply manage the q_flock
+- * semaphore embedded in the dquot.  This semaphore synchronizes
+- * processes attempting to flush the in-core dquot back to disk.
++ * Manage the q_flush completion queue embedded in the dquot.  This completion
++ * queue synchronizes processes attempting to flush the in-core dquot back to
++ * disk.
+  */
+-#define xfs_dqflock(dqp)	 { psema(&((dqp)->q_flock), PINOD | PRECALC);\
+-				   (dqp)->dq_flags |= XFS_DQ_FLOCKED; }
+-#define xfs_dqfunlock(dqp)	 { ASSERT(issemalocked(&((dqp)->q_flock))); \
+-				   vsema(&((dqp)->q_flock)); \
+-				   (dqp)->dq_flags &= ~(XFS_DQ_FLOCKED); }
++static inline void xfs_dqflock(xfs_dquot_t *dqp)
++{
++	wait_for_completion(&dqp->q_flush);
++}
++
++static inline int xfs_dqflock_nowait(xfs_dquot_t *dqp)
++{
++	return try_wait_for_completion(&dqp->q_flush);
++}
++
++static inline void xfs_dqfunlock(xfs_dquot_t *dqp)
++{
++	complete(&dqp->q_flush);
++}
+ 
+-#define XFS_DQ_IS_FLUSH_LOCKED(dqp) (issemalocked(&((dqp)->q_flock)))
+ #define XFS_DQ_IS_ON_FREELIST(dqp)  ((dqp)->dq_flnext != (dqp))
+ #define XFS_DQ_IS_DIRTY(dqp)	((dqp)->dq_flags & XFS_DQ_DIRTY)
+ #define XFS_QM_ISUDQ(dqp)	((dqp)->dq_flags & XFS_DQ_USER)
+@@ -167,7 +175,6 @@ extern int		xfs_qm_dqflush(xfs_dquot_t *, uint);
+ extern int		xfs_qm_dqpurge(xfs_dquot_t *);
+ extern void		xfs_qm_dqunpin_wait(xfs_dquot_t *);
+ extern int		xfs_qm_dqlock_nowait(xfs_dquot_t *);
+-extern int		xfs_qm_dqflock_nowait(xfs_dquot_t *);
+ extern void		xfs_qm_dqflock_pushbuf_wait(xfs_dquot_t *dqp);
+ extern void		xfs_qm_adjust_dqtimers(xfs_mount_t *,
+ 					xfs_disk_dquot_t *);
+diff --git a/fs/xfs/quota/xfs_dquot_item.c b/fs/xfs/quota/xfs_dquot_item.c
+index 08d2fc8..f028644 100644
+--- a/fs/xfs/quota/xfs_dquot_item.c
++++ b/fs/xfs/quota/xfs_dquot_item.c
+@@ -151,7 +151,7 @@ xfs_qm_dquot_logitem_push(
+ 	dqp = logitem->qli_dquot;
+ 
+ 	ASSERT(XFS_DQ_IS_LOCKED(dqp));
+-	ASSERT(XFS_DQ_IS_FLUSH_LOCKED(dqp));
++	ASSERT(!completion_done(&dqp->q_flush));
+ 
+ 	/*
+ 	 * Since we were able to lock the dquot's flush lock and
+@@ -245,7 +245,7 @@ xfs_qm_dquot_logitem_pushbuf(
+ 	 * inode flush completed and the inode was taken off the AIL.
+ 	 * So, just get out.
+ 	 */
+-	if (!issemalocked(&(dqp->q_flock))  ||
++	if (completion_done(&dqp->q_flush)  ||
+ 	    ((qip->qli_item.li_flags & XFS_LI_IN_AIL) == 0)) {
+ 		qip->qli_pushbuf_flag = 0;
+ 		xfs_dqunlock(dqp);
+@@ -258,7 +258,7 @@ xfs_qm_dquot_logitem_pushbuf(
+ 	if (bp != NULL) {
+ 		if (XFS_BUF_ISDELAYWRITE(bp)) {
+ 			dopush = ((qip->qli_item.li_flags & XFS_LI_IN_AIL) &&
+-				  issemalocked(&(dqp->q_flock)));
++				  !completion_done(&dqp->q_flush));
+ 			qip->qli_pushbuf_flag = 0;
+ 			xfs_dqunlock(dqp);
+ 
+@@ -317,7 +317,7 @@ xfs_qm_dquot_logitem_trylock(
+ 		return (XFS_ITEM_LOCKED);
+ 
+ 	retval = XFS_ITEM_SUCCESS;
+-	if (! xfs_qm_dqflock_nowait(dqp)) {
++	if (!xfs_dqflock_nowait(dqp)) {
+ 		/*
+ 		 * The dquot is already being flushed.	It may have been
+ 		 * flushed delayed write, however, and we don't want to
+diff --git a/fs/xfs/quota/xfs_qm.c b/fs/xfs/quota/xfs_qm.c
+index 26370a3..234b6d1 100644
+--- a/fs/xfs/quota/xfs_qm.c
++++ b/fs/xfs/quota/xfs_qm.c
+@@ -484,7 +484,7 @@ again:
+ 		xfs_dqtrace_entry(dqp, "FLUSHALL: DQDIRTY");
+ 		/* XXX a sentinel would be better */
+ 		recl = XFS_QI_MPLRECLAIMS(mp);
+-		if (! xfs_qm_dqflock_nowait(dqp)) {
++		if (!xfs_dqflock_nowait(dqp)) {
+ 			/*
+ 			 * If we can't grab the flush lock then check
+ 			 * to see if the dquot has been flushed delayed
+@@ -1062,7 +1062,7 @@ xfs_qm_sync(
+ 
+ 		/* XXX a sentinel would be better */
+ 		recl = XFS_QI_MPLRECLAIMS(mp);
+-		if (! xfs_qm_dqflock_nowait(dqp)) {
++		if (!xfs_dqflock_nowait(dqp)) {
+ 			if (nowait) {
+ 				xfs_dqunlock(dqp);
+ 				continue;
+@@ -2079,7 +2079,7 @@ xfs_qm_shake_freelist(
+ 		 * Try to grab the flush lock. If this dquot is in the process of
+ 		 * getting flushed to disk, we don't want to reclaim it.
+ 		 */
+-		if (! xfs_qm_dqflock_nowait(dqp)) {
++		if (!xfs_dqflock_nowait(dqp)) {
+ 			xfs_dqunlock(dqp);
+ 			dqp = dqp->dq_flnext;
+ 			continue;
+@@ -2257,7 +2257,7 @@ xfs_qm_dqreclaim_one(void)
+ 		 * Try to grab the flush lock. If this dquot is in the process of
+ 		 * getting flushed to disk, we don't want to reclaim it.
+ 		 */
+-		if (! xfs_qm_dqflock_nowait(dqp)) {
++		if (!xfs_dqflock_nowait(dqp)) {
+ 			xfs_dqunlock(dqp);
+ 			continue;
+ 		}
+-- 
+1.5.5.4
 
