@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764692AbYF0XAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764908AbYF0XAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764692AbYF0XAJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 19:00:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761758AbYF0W6r
+	id S1764908AbYF0XAu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 19:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761900AbYF0W6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 18:58:47 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:49082 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761279AbYF0W6o (ORCPT
+	Fri, 27 Jun 2008 18:58:49 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:19405 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761515AbYF0W6o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Jun 2008 18:58:44 -0400
-Message-Id: <20080627225758.850118474@ldl.fc.hp.com>
+Message-Id: <20080627225758.412956427@ldl.fc.hp.com>
 References: <20080627225651.663174474@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 27 Jun 2008 16:56:54 -0600
+Date: Fri, 27 Jun 2008 16:56:52 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 To: Andi Kleen <andi@firstfloor.org>
@@ -31,46 +31,77 @@ Cc: Takashi Iwai <tiwai@suse.de>
 Cc: Jiri Slaby <jirislaby@gmail.com>
 Cc: David Howells <dhowells@redhat.com>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [patch 03/28] PNP: add pnp_resource_type() internal interface
-Content-Disposition: inline; filename=pnp-add-pnp_resource_type
+Subject: [patch 01/28] PNP: add detail to debug resource dump
+Content-Disposition: inline; filename=pnp-better-resource-dump
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Given a struct resource, this returns the type (IO, MEM, IRQ, DMA).
+In the debug resource dump, decode the flags and indicate when
+a resource is disabled or has been automatically assigned.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Index: work10/drivers/pnp/base.h
+Index: work10/drivers/pnp/support.c
 ===================================================================
---- work10.orig/drivers/pnp/base.h	2008-05-15 15:23:24.000000000 -0600
-+++ work10/drivers/pnp/base.h	2008-05-15 15:23:27.000000000 -0600
-@@ -46,6 +46,7 @@ int pnp_check_dma(struct pnp_dev *dev, s
- void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc);
- 
- void pnp_init_resource(struct resource *res);
-+int pnp_resource_type(struct resource *res);
- 
- struct pnp_resource *pnp_get_pnp_resource(struct pnp_dev *dev,
- 					  unsigned int type, unsigned int num);
-Index: work10/drivers/pnp/resource.c
-===================================================================
---- work10.orig/drivers/pnp/resource.c	2008-05-15 15:22:36.000000000 -0600
-+++ work10/drivers/pnp/resource.c	2008-05-15 15:23:27.000000000 -0600
-@@ -499,6 +499,12 @@ int pnp_check_dma(struct pnp_dev *dev, s
+--- work10.orig/drivers/pnp/support.c	2008-05-02 11:18:50.000000000 -0600
++++ work10/drivers/pnp/support.c	2008-05-05 09:39:03.000000000 -0600
+@@ -63,28 +63,46 @@ void dbg_pnp_show_resources(struct pnp_d
+ 	for (i = 0; i < PNP_MAX_IRQ; i++) {
+ 		res = pnp_get_resource(dev, IORESOURCE_IRQ, i);
+ 		if (res && !(res->flags & IORESOURCE_UNSET))
+-			dev_dbg(&dev->dev, "  irq %lld flags %#lx\n",
+-				(unsigned long long) res->start, res->flags);
++			dev_dbg(&dev->dev, "  irq %lld flags %#lx%s%s\n",
++				(unsigned long long) res->start, res->flags,
++				res->flags & IORESOURCE_DISABLED ?
++					" DISABLED" : "",
++				res->flags & IORESOURCE_AUTO ?
++					" AUTO" : "");
+ 	}
+ 	for (i = 0; i < PNP_MAX_DMA; i++) {
+ 		res = pnp_get_resource(dev, IORESOURCE_DMA, i);
+ 		if (res && !(res->flags & IORESOURCE_UNSET))
+-			dev_dbg(&dev->dev, "  dma %lld flags %#lx\n",
+-				(unsigned long long) res->start, res->flags);
++			dev_dbg(&dev->dev, "  dma %lld flags %#lx%s%s\n",
++				(unsigned long long) res->start, res->flags,
++				res->flags & IORESOURCE_DISABLED ?
++					" DISABLED" : "",
++				res->flags & IORESOURCE_AUTO ?
++					" AUTO" : "");
+ 	}
+ 	for (i = 0; i < PNP_MAX_PORT; i++) {
+ 		res = pnp_get_resource(dev, IORESOURCE_IO, i);
+ 		if (res && !(res->flags & IORESOURCE_UNSET))
+-			dev_dbg(&dev->dev, "  io  %#llx-%#llx flags %#lx\n",
++			dev_dbg(&dev->dev, "  io  %#llx-%#llx flags %#lx"
++				"%s%s\n",
+ 				(unsigned long long) res->start,
+-				(unsigned long long) res->end, res->flags);
++				(unsigned long long) res->end, res->flags,
++				res->flags & IORESOURCE_DISABLED ?
++					" DISABLED" : "",
++				res->flags & IORESOURCE_AUTO ?
++					" AUTO" : "");
+ 	}
+ 	for (i = 0; i < PNP_MAX_MEM; i++) {
+ 		res = pnp_get_resource(dev, IORESOURCE_MEM, i);
+ 		if (res && !(res->flags & IORESOURCE_UNSET))
+-			dev_dbg(&dev->dev, "  mem %#llx-%#llx flags %#lx\n",
++			dev_dbg(&dev->dev, "  mem %#llx-%#llx flags %#lx"
++				"%s%s\n",
+ 				(unsigned long long) res->start,
+-				(unsigned long long) res->end, res->flags);
++				(unsigned long long) res->end, res->flags,
++				res->flags & IORESOURCE_DISABLED ?
++					" DISABLED" : "",
++				res->flags & IORESOURCE_AUTO ?
++					" AUTO" : "");
+ 	}
  #endif
  }
- 
-+int pnp_resource_type(struct resource *res)
-+{
-+	return res->flags & (IORESOURCE_IO  | IORESOURCE_MEM |
-+			     IORESOURCE_IRQ | IORESOURCE_DMA);
-+}
-+
- struct pnp_resource *pnp_get_pnp_resource(struct pnp_dev *dev,
- 					  unsigned int type, unsigned int num)
- {
 
 -- 
