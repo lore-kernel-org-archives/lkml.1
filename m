@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759257AbYF0S10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763455AbYF0S1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759257AbYF0S10 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 14:27:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760827AbYF0SZx
+	id S1763455AbYF0S1m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 14:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761117AbYF0SZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 14:25:53 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11699 "EHLO
+	Fri, 27 Jun 2008 14:25:55 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11710 "EHLO
 	phenom.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756789AbYF0SZt (ORCPT
+	by vger.kernel.org with ESMTP id S1759174AbYF0SZu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 14:25:49 -0400
-Date: Fri, 27 Jun 2008 12:13:43 -0600
+	Fri, 27 Jun 2008 14:25:50 -0400
+Date: Fri, 27 Jun 2008 12:13:28 -0600
 From: dougthompson@xmission.com
 To: bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org
-Subject: [PATCH 11/13] EDAC e752x fix too loud on nonmemory errors
-Message-ID: <48652dd7.1UdzlJguztNHzglw%dougthompson@xmission.com>
+Subject: [PATCH 8/13] EDAC core fix redundant sysfs controlls to
+ parameters
+Message-ID: <48652dc8.acccLRojSKu/ZG2M%dougthompson@xmission.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,165 +25,362 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Doug Thompson <dougthompson.com>
+From:	Arthur Jones <ajones@riverbed.com>
 
 Applied to linux-2.6.26-rc5-mm3
 
-This module harvests more than just memory errors, it also harvests
-various bus and dma errors that the Chipset detects.  Previously, it would
-report all such errors, which would cause output to be TOO loud.
+/sys/devices/system/edac/mc has a few files which
+are duplicated in /sys/module/edac_core/parameters.
+Now that all the functionality is duplicated between
+these two locations, we remove the former kobject
+attributes and update the documentation.
 
-This patches therefore adds a parameter which is used
-to turn off NON-MEMORY error reports by default.  Or the reporting  can be
-enabled via the parameter
-
-Also did code style cleanup: less than 80 characters per line rule
-
-Signed-off-by:	Doug Thompson <dougthompson.com>
+Signed-off-by:  Arthur Jones <ajones@riverbed.com>
+Signed-off-by:  Doug Thompson <dougthompson@xmission.com>
 ---
- e752x_edac.c |   37 +++++++++++++++++++++++++++++--------
- 1 file changed, 29 insertions(+), 8 deletions(-)
+ Documentation/edac.txt       |  150 ++++++++++++++++++++-----------------------
+ drivers/edac/edac_mc_sysfs.c |  117 ---------------------------------
+ 2 files changed, 73 insertions(+), 194 deletions(-)
 
-Index: linux-2.6.26-rc5/drivers/edac/e752x_edac.c
+Index: linux-2.6.26-rc5/Documentation/edac.txt
 ===================================================================
---- linux-2.6.26-rc5.orig/drivers/edac/e752x_edac.c
-+++ linux-2.6.26-rc5/drivers/edac/e752x_edac.c
-@@ -28,6 +28,7 @@
- #define E752X_REVISION	" Ver: 2.0.2 " __DATE__
- #define EDAC_MOD_STR	"e752x_edac"
+--- linux-2.6.26-rc5.orig/Documentation/edac.txt
++++ linux-2.6.26-rc5/Documentation/edac.txt
+@@ -222,75 +222,11 @@ both csrow2 and csrow3 are populated, th
+ set of DIMMs for channels 0 and 1.
  
-+static int report_non_memory_errors;
- static int force_function_unhide;
- static int sysbus_parity = -1;
  
-@@ -117,7 +118,7 @@ static struct edac_pci_ctl_info *e752x_p
- #define E752X_BUF_FERR		0x70	/* Memory buffer first error reg (8b) */
- #define E752X_BUF_NERR		0x72	/* Memory buffer next error reg (8b) */
- #define E752X_BUF_ERRMASK	0x74	/* Memory buffer error mask reg (8b) */
--#define E752X_BUF_SMICMD	0x7A	/* Memory buffer SMI command reg (8b) */
-+#define E752X_BUF_SMICMD	0x7A	/* Memory buffer SMI cmd reg (8b) */
- #define E752X_DRAM_FERR		0x80	/* DRAM first error register (16b) */
- #define E752X_DRAM_NERR		0x82	/* DRAM next error register (16b) */
- #define E752X_DRAM_ERRMASK	0x84	/* DRAM error mask register (8b) */
-@@ -127,7 +128,7 @@ static struct edac_pci_ctl_info *e752x_p
- 					/*     error address register (32b) */
- 					/*
- 					 * 31    Reserved
--					 * 30:2  CE address (64 byte block 34:6)
-+					 * 30:2  CE address (64 byte block 34:6
- 					 * 1     Reserved
- 					 * 0     HiLoCS
- 					 */
-@@ -147,11 +148,11 @@ static struct edac_pci_ctl_info *e752x_p
- 					 * 1     Reserved
- 					 * 0     HiLoCS
- 					 */
--#define E752X_DRAM_SCRB_ADD	0xA8	/* DRAM first uncorrectable scrub memory */
-+#define E752X_DRAM_SCRB_ADD	0xA8	/* DRAM 1st uncorrectable scrub mem */
- 					/*     error address register (32b) */
- 					/*
- 					 * 31    Reserved
--					 * 30:2  CE address (64 byte block 34:6)
-+					 * 30:2  CE address (64 byte block 34:6
- 					 * 1     Reserved
- 					 * 0     HiLoCS
- 					 */
-@@ -394,9 +395,12 @@ static void do_process_ded_retry(struct
- 	struct e752x_pvt *pvt = (struct e752x_pvt *)mci->pvt_info;
+-Within each of the 'mc','mcX' and 'csrowX' directories are several
++Within each of the 'mcX' and 'csrowX' directories are several
+ EDAC control and attribute files.
  
- 	error_1b = retry_add;
--	page = error_1b >> (PAGE_SHIFT - 4);	/* convert the addr to 4k page */
--	row = pvt->mc_symmetric ? ((page >> 1) & 3) :	/* chip select are bits 14 & 13 */
-+	page = error_1b >> (PAGE_SHIFT - 4);  /* convert the addr to 4k page */
+ 
+ ============================================================================
+-DIRECTORY 'mc'
+-
+-In directory 'mc' are EDAC system overall control and attribute files:
+-
+-
+-Panic on UE control file:
+-
+-	'edac_mc_panic_on_ue'
+-
+-	An uncorrectable error will cause a machine panic.  This is usually
+-	desirable.  It is a bad idea to continue when an uncorrectable error
+-	occurs - it is indeterminate what was uncorrected and the operating
+-	system context might be so mangled that continuing will lead to further
+-	corruption. If the kernel has MCE configured, then EDAC will never
+-	notice the UE.
+-
+-	LOAD TIME: module/kernel parameter: panic_on_ue=[0|1]
+-
+-	RUN TIME:  echo "1" >/sys/devices/system/edac/mc/edac_mc_panic_on_ue
+-
+-
+-Log UE control file:
+-
+-	'edac_mc_log_ue'
+-
+-	Generate kernel messages describing uncorrectable errors.  These errors
+-	are reported through the system message log system.  UE statistics
+-	will be accumulated even when UE logging is disabled.
+-
+-	LOAD TIME: module/kernel parameter: log_ue=[0|1]
+-
+-	RUN TIME: echo "1" >/sys/devices/system/edac/mc/edac_mc_log_ue
+-
+-
+-Log CE control file:
+-
+-	'edac_mc_log_ce'
+-
+-	Generate kernel messages describing correctable errors.  These
+-	errors are reported through the system message log system.
+-	CE statistics will be accumulated even when CE logging is disabled.
+-
+-	LOAD TIME: module/kernel parameter: log_ce=[0|1]
+-
+-	RUN TIME: echo "1" >/sys/devices/system/edac/mc/edac_mc_log_ce
+-
+-
+-Polling period control file:
+-
+-	'edac_mc_poll_msec'
+-
+-	The time period, in milliseconds, for polling for error information.
+-	Too small a value wastes resources.  Too large a value might delay
+-	necessary handling of errors and might lose valuable information for
+-	locating the error.  1000 milliseconds (once each second) is the current
+-	default. Systems which require all the bandwidth they can get, may
+-	increase this.
+-
+-	LOAD TIME: module/kernel parameter: poll_msec=[0|1]
+-
+-	RUN TIME: echo "1000" >/sys/devices/system/edac/mc/edac_mc_poll_msec
+-
+-
+-============================================================================
+ 'mcX' DIRECTORIES
+ 
+ 
+@@ -537,7 +473,6 @@ Channel 1 DIMM Label control file:
+ 	motherboard specific and determination of this information
+ 	must occur in userland at this time.
+ 
+-
+ ============================================================================
+ SYSTEM LOGGING
+ 
+@@ -570,7 +505,6 @@ error type, a notice of "no info" and th
+ driver-specific error message.
+ 
+ 
+-
+ ============================================================================
+ PCI Bus Parity Detection
+ 
+@@ -604,6 +538,74 @@ Enable/Disable PCI Parity checking contr
+ 	echo "0" >/sys/devices/system/edac/pci/check_pci_parity
+ 
+ 
++Parity Count:
 +
-+	/* chip select are bits 14 & 13 */
-+	row = pvt->mc_symmetric ? ((page >> 1) & 3) :
- 		edac_mc_find_csrow_by_page(mci, page);
++	'pci_parity_count'
 +
- 	e752x_mc_printk(mci, KERN_WARNING,
- 			"CE page 0x%lx, row %d : Memory read retry\n",
- 			(long unsigned int)page, row);
-@@ -422,12 +426,21 @@ static inline void process_threshold_ce(
++	This attribute file will display the number of parity errors that
++	have been detected.
++
++
++============================================================================
++MODULE PARAMETERS
++
++Panic on UE control file:
++
++	'edac_mc_panic_on_ue'
++
++	An uncorrectable error will cause a machine panic.  This is usually
++	desirable.  It is a bad idea to continue when an uncorrectable error
++	occurs - it is indeterminate what was uncorrected and the operating
++	system context might be so mangled that continuing will lead to further
++	corruption. If the kernel has MCE configured, then EDAC will never
++	notice the UE.
++
++	LOAD TIME: module/kernel parameter: edac_mc_panic_on_ue=[0|1]
++
++	RUN TIME:  echo "1" > /sys/module/edac_core/parameters/edac_mc_panic_on_ue
++
++
++Log UE control file:
++
++	'edac_mc_log_ue'
++
++	Generate kernel messages describing uncorrectable errors.  These errors
++	are reported through the system message log system.  UE statistics
++	will be accumulated even when UE logging is disabled.
++
++	LOAD TIME: module/kernel parameter: edac_mc_log_ue=[0|1]
++
++	RUN TIME: echo "1" > /sys/module/edac_core/parameters/edac_mc_log_ue
++
++
++Log CE control file:
++
++	'edac_mc_log_ce'
++
++	Generate kernel messages describing correctable errors.  These
++	errors are reported through the system message log system.
++	CE statistics will be accumulated even when CE logging is disabled.
++
++	LOAD TIME: module/kernel parameter: edac_mc_log_ce=[0|1]
++
++	RUN TIME: echo "1" > /sys/module/edac_core/parameters/edac_mc_log_ce
++
++
++Polling period control file:
++
++	'edac_mc_poll_msec'
++
++	The time period, in milliseconds, for polling for error information.
++	Too small a value wastes resources.  Too large a value might delay
++	necessary handling of errors and might loose valuable information for
++	locating the error.  1000 milliseconds (once each second) is the current
++	default. Systems which require all the bandwidth they can get, may
++	increase this.
++
++	LOAD TIME: module/kernel parameter: edac_mc_poll_msec=[0|1]
++
++	RUN TIME: echo "1000" > /sys/module/edac_core/parameters/edac_mc_poll_msec
++
+ 
+ Panic on PCI PARITY Error:
+ 
+@@ -614,21 +616,13 @@ Panic on PCI PARITY Error:
+ 	error has been detected.
+ 
+ 
+-	module/kernel parameter: panic_on_pci_parity=[0|1]
++	module/kernel parameter: edac_panic_on_pci_pe=[0|1]
+ 
+ 	Enable:
+-	echo "1" >/sys/devices/system/edac/pci/panic_on_pci_parity
++	echo "1" > /sys/module/edac_core/parameters/edac_panic_on_pci_pe
+ 
+ 	Disable:
+-	echo "0" >/sys/devices/system/edac/pci/panic_on_pci_parity
+-
+-
+-Parity Count:
+-
+-	'pci_parity_count'
+-
+-	This attribute file will display the number of parity errors that
+-	have been detected.
++	echo "0" > /sys/module/edac_core/parameters/edac_panic_on_pci_pe
+ 
+ 
+ 
+Index: linux-2.6.26-rc5/drivers/edac/edac_mc_sysfs.c
+===================================================================
+--- linux-2.6.26-rc5.orig/drivers/edac/edac_mc_sysfs.c
++++ linux-2.6.26-rc5/drivers/edac/edac_mc_sysfs.c
+@@ -123,16 +123,6 @@ static const char *edac_caps[] = {
+ 
+ 
+ 
+-/*
+- * /sys/devices/system/edac/mc;
+- *	data structures and methods
+- */
+-static ssize_t memctrl_int_show(void *ptr, char *buffer)
+-{
+-	int *value = (int *)ptr;
+-	return sprintf(buffer, "%u\n", *value);
+-}
+-
+ static ssize_t memctrl_int_store(void *ptr, const char *buffer, size_t count)
+ {
+ 	int *value = (int *)ptr;
+@@ -143,23 +133,6 @@ static ssize_t memctrl_int_store(void *p
+ 	return count;
  }
  
- static char *global_message[11] = {
--	"PCI Express C1", "PCI Express C", "PCI Express B1",
--	"PCI Express B", "PCI Express A1", "PCI Express A",
--	"DMA Controler", "HUB or NS Interface", "System Bus",
--	"DRAM Controler", "Internal Buffer"
-+	"PCI Express C1",
-+	"PCI Express C",
-+	"PCI Express B1",
-+	"PCI Express B",
-+	"PCI Express A1",
-+	"PCI Express A",
-+	"DMA Controller",
-+	"HUB or NS Interface",
-+	"System Bus",
-+	"DRAM Controller",  /* 9th entry */
-+	"Internal Buffer"
+-/*
+- * mc poll_msec time value
+- */
+-static ssize_t poll_msec_int_store(void *ptr, const char *buffer, size_t count)
+-{
+-	int *value = (int *)ptr;
+-
+-	if (isdigit(*buffer)) {
+-		*value = simple_strtoul(buffer, NULL, 0);
+-
+-		/* notify edac_mc engine to reset the poll period */
+-		edac_mc_reset_delay_period(*value);
+-	}
+-
+-	return count;
+-}
+-
+ 
+ /* EDAC sysfs CSROW data structures and methods
+  */
+@@ -669,98 +642,10 @@ static struct kobj_type ktype_mci = {
+ 	.default_attrs = (struct attribute **)mci_attr,
  };
  
-+#define DRAM_ENTRY	9
-+
- static char *fatal_message[2] = { "Non-Fatal ", "Fatal " };
+-/* show/store, tables, etc for the MC kset */
+-
+-
+-struct memctrl_dev_attribute {
+-	struct attribute attr;
+-	void *value;
+-	 ssize_t(*show) (void *, char *);
+-	 ssize_t(*store) (void *, const char *, size_t);
+-};
+-
+-/* Set of show/store abstract level functions for memory control object */
+-static ssize_t memctrl_dev_show(struct kobject *kobj,
+-				struct attribute *attr, char *buffer)
+-{
+-	struct memctrl_dev_attribute *memctrl_dev;
+-	memctrl_dev = (struct memctrl_dev_attribute *)attr;
+-
+-	if (memctrl_dev->show)
+-		return memctrl_dev->show(memctrl_dev->value, buffer);
+-
+-	return -EIO;
+-}
+-
+-static ssize_t memctrl_dev_store(struct kobject *kobj, struct attribute *attr,
+-				 const char *buffer, size_t count)
+-{
+-	struct memctrl_dev_attribute *memctrl_dev;
+-	memctrl_dev = (struct memctrl_dev_attribute *)attr;
+-
+-	if (memctrl_dev->store)
+-		return memctrl_dev->store(memctrl_dev->value, buffer, count);
+-
+-	return -EIO;
+-}
+-
+-static struct sysfs_ops memctrlfs_ops = {
+-	.show = memctrl_dev_show,
+-	.store = memctrl_dev_store
+-};
+-
+-#define MEMCTRL_ATTR(_name, _mode, _show, _store)			\
+-static struct memctrl_dev_attribute attr_##_name = {			\
+-	.attr = {.name = __stringify(_name), .mode = _mode },	\
+-	.value  = &_name,					\
+-	.show   = _show,					\
+-	.store  = _store,					\
+-};
+-
+-#define MEMCTRL_STRING_ATTR(_name, _data, _mode, _show, _store)	\
+-static struct memctrl_dev_attribute attr_##_name = {			\
+-	.attr = {.name = __stringify(_name), .mode = _mode },	\
+-	.value  = _data,					\
+-	.show   = _show,					\
+-	.store  = _store,					\
+-};
+-
+-/* csrow<id> control files */
+-MEMCTRL_ATTR(edac_mc_panic_on_ue,
+-	S_IRUGO | S_IWUSR, memctrl_int_show, memctrl_int_store);
+-
+-MEMCTRL_ATTR(edac_mc_log_ue,
+-	S_IRUGO | S_IWUSR, memctrl_int_show, memctrl_int_store);
+-
+-MEMCTRL_ATTR(edac_mc_log_ce,
+-	S_IRUGO | S_IWUSR, memctrl_int_show, memctrl_int_store);
+-
+-MEMCTRL_ATTR(edac_mc_poll_msec,
+-	S_IRUGO | S_IWUSR, memctrl_int_show, poll_msec_int_store);
+-
+-/* Base Attributes of the memory ECC object */
+-static struct memctrl_dev_attribute *memctrl_attr[] = {
+-	&attr_edac_mc_panic_on_ue,
+-	&attr_edac_mc_log_ue,
+-	&attr_edac_mc_log_ce,
+-	&attr_edac_mc_poll_msec,
+-	NULL,
+-};
+-
+-
+-/* the ktype for the mc_kset internal kobj */
+-static struct kobj_type ktype_mc_set_attribs = {
+-	.sysfs_ops = &memctrlfs_ops,
+-	.default_attrs = (struct attribute **)memctrl_attr,
+-};
+-
+ /* EDAC memory controller sysfs kset:
+  *	/sys/devices/system/edac/mc
+  */
+-static struct kset mc_kset = {
+-	.kobj = {.ktype = &ktype_mc_set_attribs },
+-};
+-
++static struct kset mc_kset;
  
- static void do_global_error(int fatal, u32 errors)
-@@ -435,9 +448,16 @@ static void do_global_error(int fatal, u
- 	int i;
- 
- 	for (i = 0; i < 11; i++) {
--		if (errors & (1 << i))
--			e752x_printk(KERN_WARNING, "%sError %s\n",
--				fatal_message[fatal], global_message[i]);
-+		if (errors & (1 << i)) {
-+			/* If the error is from DRAM Controller OR
-+			 * we are to report ALL errors, then
-+			 * report the error
-+			 */
-+			if ((i == DRAM_ENTRY) || report_non_memory_errors)
-+				e752x_printk(KERN_WARNING, "%sError %s\n",
-+					fatal_message[fatal],
-+					global_message[i]);
-+		}
- 	}
- }
- 
-@@ -1021,7 +1041,7 @@ static int e752x_get_devs(struct pci_dev
- 	struct pci_dev *dev;
- 
- 	pvt->bridge_ck = pci_get_device(PCI_VENDOR_ID_INTEL,
--					pvt->dev_info->err_dev, pvt->bridge_ck);
-+				pvt->dev_info->err_dev, pvt->bridge_ck);
- 
- 	if (pvt->bridge_ck == NULL)
- 		pvt->bridge_ck = pci_scan_single_device(pdev->bus,
-@@ -1034,8 +1054,9 @@ static int e752x_get_devs(struct pci_dev
- 		return 1;
- 	}
- 
--	dev = pci_get_device(PCI_VENDOR_ID_INTEL, e752x_devs[dev_idx].ctl_dev,
--			NULL);
-+	dev = pci_get_device(PCI_VENDOR_ID_INTEL,
-+				e752x_devs[dev_idx].ctl_dev,
-+				NULL);
- 
- 	if (dev == NULL)
- 		goto fail;
-@@ -1316,7 +1337,8 @@ MODULE_DESCRIPTION("MC support for Intel
- 
- module_param(force_function_unhide, int, 0444);
- MODULE_PARM_DESC(force_function_unhide, "if BIOS sets Dev0:Fun1 up as hidden:"
--		 " 1=force unhide and hope BIOS doesn't fight driver for Dev0:Fun1 access");
-+		 " 1=force unhide and hope BIOS doesn't fight driver for "
-+		"Dev0:Fun1 access");
- 
- module_param(edac_op_state, int, 0444);
- MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
-@@ -1324,3 +1346,6 @@ MODULE_PARM_DESC(edac_op_state, "EDAC Er
- module_param(sysbus_parity, int, 0444);
- MODULE_PARM_DESC(sysbus_parity, "0=disable system bus parity checking,"
- 		" 1=enable system bus parity checking, default=auto-detect");
-+module_param(report_non_memory_errors, int, 0644);
-+MODULE_PARM_DESC(report_non_memory_errors, "0=disable non-memory error "
-+		"reporting, 1=enable non-memory error reporting");
+ /*
+  * edac_mc_register_sysfs_main_kobj
