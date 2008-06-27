@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763592AbYF0S3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762896AbYF0Sb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763592AbYF0S3q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 14:29:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756089AbYF0S3g
+	id S1762896AbYF0Sb0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 14:31:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbYF0SbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 14:29:36 -0400
-Received: from cantor.suse.de ([195.135.220.2]:50868 "EHLO mx1.suse.de"
+	Fri, 27 Jun 2008 14:31:16 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:47223 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755503AbYF0S3f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 14:29:35 -0400
-Date: Fri, 27 Jun 2008 20:29:32 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Vivek Goyal <vgoyal@redhat.com>, x86@kernel.org, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: Find offset for crashkernel reservation
- automatically
-Message-ID: <20080627202932.16634031@kopernikus.site>
-In-Reply-To: <m1zlp6vjub.fsf@frodo.ebiederm.org>
-References: <1214510048-21215-1-git-send-email-bwalle@suse.de>
-	<20080627133256.GB5801@redhat.com>
-	<20080627134212.GC5801@redhat.com>
-	<20080627160656.06f71661@halley.suse.de>
-	<20080627141910.GD5801@redhat.com>
-	<20080627162223.2df5a8b9@halley.suse.de>
-	<m1zlp6vjub.fsf@frodo.ebiederm.org>
-Organization: SUSE LINUX Products GmbH
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i686-pc-linux-gnu)
-X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
- D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
- vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
- pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752718AbYF0SbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 14:31:15 -0400
+Date: Fri, 27 Jun 2008 21:29:00 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Dan Williams <dan.j.williams@intel.com>,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Pierre Ossman <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org, kernel@avr32linux.org,
+       "Nelson, Shannon" <shannon.nelson@intel.com>
+Subject: Re: [PATCH v4 4/6] dmaengine: Make DMA Engine menu visible for
+	AVR32 users
+Message-ID: <20080627182900.GC4306@cs181140183.pp.htv.fi>
+References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com> <200806270937.21850.david-b@pacbell.net> <20080627174441.GB4306@cs181140183.pp.htv.fi> <200806271124.42783.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200806271124.42783.david-b@pacbell.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* ebiederm@xmission.com (Eric W. Biederman) [2008-06-27 11:00]:
-> Bernhard Walle <bwalle@suse.de> writes:
+On Fri, Jun 27, 2008 at 11:24:42AM -0700, David Brownell wrote:
+> On Friday 27 June 2008, Adrian Bunk wrote:
+> > The only effect of the HAVE_DMA_ENGINE would be to not show an empty 
+> > kconfig menu.
 > 
-> > Ah, that's true. Only on x86, right? (That would be an alternative for
-> > ia64, too ...)
-> >
-> > But in general policy should go in userspace (if possible), so I agree
-> > with you that kexec-tools can handle that.
-> 
-> At a quick skim the patch looks good.  I thought I had initially implemented
-> the code to work this way but apparently in all of the churn that aspect of it
-> got lost.
-> 
-> Let's start with trying to allocate the memory as low as possible for
-> a crash kernel (I think you are already doing that).
+> Well, no.  It would also make the network layer memcpy "acceleration"
+> option unavailable when there was no underlying engine ... similarly
+> with other pointless "we don't have that subsystem here" options.
+>...
 
-Yes, in 95 % of the cases the crashkernel still gets reserved at 16M.
+This NET_DMA issue has already been fixed 11 months ago - in the same 
+patch that added the arch dependency for the menu. [1]
 
+NET_DMA now depends on DMA_ENGINE which gets select'ed by the device 
+options. NET_DMA can therefore never be offered on architectures
+without any DMA device.
 
+cu
+Adrian
 
-Bernhard
+[1] http://lkml.org/lkml/2007/7/26/15
+
 -- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
