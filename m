@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762303AbYF0MRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762492AbYF0MSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762303AbYF0MRX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 08:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760512AbYF0MGc
+	id S1762492AbYF0MSA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 08:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757960AbYF0MGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 08:06:32 -0400
-Received: from saeurebad.de ([85.214.36.134]:39043 "EHLO saeurebad.de"
+	Fri, 27 Jun 2008 08:06:44 -0400
+Received: from saeurebad.de ([85.214.36.134]:39053 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760154AbYF0MGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 08:06:31 -0400
+	id S1759488AbYF0MGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 08:06:43 -0400
 X-Mailbox-Line: From hannes@saeurebad.de Fri Jun 27 14:00:50 2008
-Message-Id: <20080627120050.037687440@saeurebad.de>
+Message-Id: <20080627120050.347718797@saeurebad.de>
 References: <20080627115349.743368154@saeurebad.de>
 User-Agent: quilt/0.46-1
-Date: Fri, 27 Jun 2008 13:54:04 +0200
+Date: Fri, 27 Jun 2008 13:54:06 +0200
 From: Johannes Weiner <hannes@saeurebad.de>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH 15/20] s390: use generic show_mem()
-Content-Disposition: inline; filename=0017-s390-use-generic-show_mem.patch
+       "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH 17/20] sparc64: use generic show_mem()
+Content-Disposition: inline; filename=0019-sparc64-use-generic-show_mem.patch
 X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,50 +29,53 @@ Remove arch-specific show_mem() in favor of the generic version.
 
 This also removes the following redundant information display:
 
+	- free swap pages, printed by show_swap_cache_info()
 	- pages in swapcache, printed by show_swap_cache_info()
+	- dirty pages, writeback pages, mapped pages, slab pages,
+	  pagetables pages, printed by show_free_areas()
 
 where show_mem() calls show_free_areas(), which calls
 show_swap_cache_info().
 
 Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: David S. Miller <davem@davemloft.net>
 ---
- arch/s390/Kconfig   |    1 +
- arch/s390/mm/init.c |   32 --------------------------------
- 2 files changed, 1 insertion(+), 32 deletions(-)
+ arch/sparc64/Kconfig   |    1 +
+ arch/sparc64/mm/init.c |   45 ---------------------------------------------
+ 2 files changed, 1 insertion(+), 45 deletions(-)
 
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -73,6 +73,7 @@ config S390
+--- a/arch/sparc64/Kconfig
++++ b/arch/sparc64/Kconfig
+@@ -7,6 +7,7 @@ config SPARC
  	select HAVE_OPROFILE
  	select HAVE_KPROBES
  	select HAVE_KRETPROBES
 +	select HAVE_GENERIC_SHOW_MEM
- 	select HAVE_KVM if 64BIT
  
- source "init/Kconfig"
---- a/arch/s390/mm/init.c
-+++ b/arch/s390/mm/init.c
-@@ -42,38 +42,6 @@ DEFINE_PER_CPU(struct mmu_gather, mmu_ga
- pgd_t swapper_pg_dir[PTRS_PER_PGD] __attribute__((__aligned__(PAGE_SIZE)));
- char  empty_zero_page[PAGE_SIZE] __attribute__((__aligned__(PAGE_SIZE)));
+ config SPARC64
+ 	bool
+--- a/arch/sparc64/mm/init.c
++++ b/arch/sparc64/mm/init.c
+@@ -392,51 +392,6 @@ void __kprobes flush_icache_range(unsign
+ 	}
+ }
  
 -void show_mem(void)
 -{
--	unsigned long i, total = 0, reserved = 0;
+-	unsigned long total = 0, reserved = 0;
 -	unsigned long shared = 0, cached = 0;
--	unsigned long flags;
--	struct page *page;
 -	pg_data_t *pgdat;
 -
--	printk("Mem-info:\n");
+-	printk(KERN_INFO "Mem-info:\n");
 -	show_free_areas();
+-	printk(KERN_INFO "Free swap:       %6ldkB\n",
+-	       nr_swap_pages << (PAGE_SHIFT-10));
 -	for_each_online_pgdat(pgdat) {
+-		unsigned long i, flags;
+-
 -		pgdat_resize_lock(pgdat, &flags);
 -		for (i = 0; i < pgdat->node_spanned_pages; i++) {
--			if (!pfn_valid(pgdat->node_start_pfn + i))
--				continue;
--			page = pfn_to_page(pgdat->node_start_pfn + i);
+-			struct page *page = pgdat_page_nr(pgdat, i);
 -			total++;
 -			if (PageReserved(page))
 -				reserved++;
@@ -83,15 +86,28 @@ Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 -		}
 -		pgdat_resize_unlock(pgdat, &flags);
 -	}
--	printk("%ld pages of RAM\n", total);
--	printk("%ld reserved pages\n", reserved);
--	printk("%ld pages shared\n", shared);
--	printk("%ld pages swap cached\n", cached);
+-
+-	printk(KERN_INFO "%lu pages of RAM\n", total);
+-	printk(KERN_INFO "%lu reserved pages\n", reserved);
+-	printk(KERN_INFO "%lu pages shared\n", shared);
+-	printk(KERN_INFO "%lu pages swap cached\n", cached);
+-
+-	printk(KERN_INFO "%lu pages dirty\n",
+-	       global_page_state(NR_FILE_DIRTY));
+-	printk(KERN_INFO "%lu pages writeback\n",
+-	       global_page_state(NR_WRITEBACK));
+-	printk(KERN_INFO "%lu pages mapped\n",
+-	       global_page_state(NR_FILE_MAPPED));
+-	printk(KERN_INFO "%lu pages slab\n",
+-		global_page_state(NR_SLAB_RECLAIMABLE) +
+-		global_page_state(NR_SLAB_UNRECLAIMABLE));
+-	printk(KERN_INFO "%lu pages pagetables\n",
+-	       global_page_state(NR_PAGETABLE));
 -}
 -
- /*
-  * paging_init() sets up the page tables
-  */
+ void mmu_info(struct seq_file *m)
+ {
+ 	if (tlb_type == cheetah)
 
 -- 
 
