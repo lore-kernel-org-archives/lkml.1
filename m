@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763626AbYF0VdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763776AbYF0Vfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763626AbYF0VdU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 17:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540AbYF0VdH
+	id S1763776AbYF0Vfl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 17:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758193AbYF0Vfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 17:33:07 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:41644 "EHLO mail.vyatta.com"
+	Fri, 27 Jun 2008 17:35:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58955 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753136AbYF0VdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 17:33:06 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -2.087
-Date: Fri, 27 Jun 2008 14:32:58 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: "Kiran Kotla" <kotlakiran@gmail.com>
-Cc: "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: setting ICSK_CA_PRIV_SIZE larger than 16 * sizeof(u32)
-Message-ID: <20080627143258.173120cd@extreme>
-In-Reply-To: <965f530d0806271420y7ffebd40xb9b2f9a035206932@mail.gmail.com>
-References: <965f530d0806270137y19c36638yc6ae0a1d4bfa63e7@mail.gmail.com>
-	<20080627.023046.193703830.davem@davemloft.net>
-	<965f530d0806271420y7ffebd40xb9b2f9a035206932@mail.gmail.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1756109AbYF0Vfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 17:35:31 -0400
+Message-ID: <48655D19.7010204@redhat.com>
+Date: Fri, 27 Jun 2008 17:35:21 -0400
+From: William Cohen <wcohen@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: eranian@gmail.com
+CC: Robert Richter <robert.richter@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, perfmon2-devel@lists.sourceforge.net,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [perfmon2] [PATCH 2/2] x86: add PCI extended config space	access
+ for AMD Barcelona
+References: <7c86c4470804300651u5a8fc98dr56fd1834ba902a0e@mail.gmail.com>	<1213890640-4444-2-git-send-email-robert.richter@amd.com>	<20080619155918.GD10019@erda.amd.com> <7c86c4470806270810q4c739f25r44ed194a48cf7c1f@mail.gmail.com>
+In-Reply-To: <7c86c4470806270810q4c739f25r44ed194a48cf7c1f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jun 2008 16:20:10 -0500
-"Kiran Kotla" <kotlakiran@gmail.com> wrote:
+stephane eranian wrote:
+> Robert,
+> 
+> This patch was applied to the perfmon GIT tree.
+> Please test.
+> Thanks.
+> 
+> 
+> On Thu, Jun 19, 2008 at 5:59 PM, Robert Richter <robert.richter@amd.com> wrote:
+>> On 19.06.08 17:50:40, Robert Richter wrote:
+>>> This patch implements PCI extended configuration space access for
+>>> AMD's Barcelona CPUs. It extends the method using CF8/CFC IO
+>>> addresses. An x86 capability bit has been introduced that is set for
+>>> CPUs supporting PCI extended config space accesses.
+>>>
+>>> Signed-off-by: Robert Richter <robert.richter@amd.com>
+>>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>>> ---
+>>>  arch/x86/kernel/cpu/cpu.h |    3 +
+>>>  arch/x86/pci/Makefile_32  |    1 +
+>>>  arch/x86/pci/Makefile_64  |    2 +-
+>>>  arch/x86/pci/amd_bus.c    |  560 +++++++++++++++++++++++++++++++++++++++++++++
+>>>  arch/x86/pci/direct.c     |   25 ++-
+>>>  arch/x86/pci/k8-bus_64.c  |  528 ------------------------------------------
+>>>  arch/x86/pci/pci.h        |    1 +
+>>>  7 files changed, 584 insertions(+), 536 deletions(-)
+>>>  create mode 100644 arch/x86/pci/amd_bus.c
+>>>  delete mode 100644 arch/x86/pci/k8-bus_64.c
+>> These patches are for the perfmon/master tree. They are based upon
+>> tip/x86/cpu.
+>>
+>> -Robert
+>>
+>> --
+>> Advanced Micro Devices, Inc.
+>> Operating System Research Center
+>> email: robert.richter@amd.com
 
-> Hi david,
-> 
-> Thank you very much for your response. I am new to this forum and not
-> sure if I could include you in my reply.
-> 
-> Well, we tried our best to reduce the size of our private variables.
-> 
-> The major consumers of space however are two arrays of 32 bit integers
-> each of size '8', which are used to estimate drop probability and
-> early congestion response probability (our protocol specific), which
-> cannot be reduced to be 16 bit integers and further the size of the
-> array cannot be reduced to some value lesser without degrading the
-> estimation of drop probability.
-> 
-> I guess the only way left is to have a trade-off between the
-> performance of our protocol and size of the array.
-> 
-> In any case, I was wondering if still there is a way to increase the
-> size of the blob, though we would not to increase the size of blob to
-> get our protocol running in the kernel.
-> 
-> Thanks again!
-> Kiran
+It looks like the amd_bus.c file didn't get into the git tree. See the builds 
+failing because of that.
 
-If need be you can use a pointer to an allocated array for that (it would be
-up to your code to free it).  You might even want to make this per route
-rather than per socket. That would require lookup/locking/ref counting, but
-it would allow sharing path information when multiple sockets along same
-path are present.
+-Will
