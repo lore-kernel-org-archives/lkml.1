@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763875AbYF0WJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763564AbYF0WP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763875AbYF0WJm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 18:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758556AbYF0WJ1
+	id S1763564AbYF0WP2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 18:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760259AbYF0WPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 18:09:27 -0400
-Received: from curtis.curtisfong.org ([66.43.110.51]:58578 "EHLO
-	curtis.curtisfong.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757932AbYF0WJ0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 18:09:26 -0400
-Date: Fri, 27 Jun 2008 15:09:23 -0700
-From: Nye Liu <nyet@nyet.org>
-To: linux-kernel@vger.kernel.org
-Cc: pantelis.antoniou@gmail.com, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org
-Subject: [PATCH] FS_ENET: Don't attempt to set mii_speed when fec_inf is
-	null
-Message-ID: <20080627220923.GA3126@curtisfong.org>
-References: <20080627192651.GA28291@curtisfong.org>
+	Fri, 27 Jun 2008 18:15:18 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51739 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759413AbYF0WPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 18:15:16 -0400
+Message-ID: <4865666A.9040306@garzik.org>
+Date: Fri, 27 Jun 2008 18:15:06 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080627192651.GA28291@curtisfong.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Robert Richter <robert.richter@amd.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Add PCI IDs for AMD Barcelona PCI devices
+References: <20080627140905.EBD1C83D4@erda.amd.com>
+In-Reply-To: <20080627140905.EBD1C83D4@erda.amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nye Liu <nyet@mrv.com>
+Robert Richter wrote:
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> ---
+>  include/linux/pci_ids.h |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+> index eafc9d6..4a2557c 100644
+> --- a/include/linux/pci_ids.h
+> +++ b/include/linux/pci_ids.h
+> @@ -497,6 +497,11 @@
+>  #define PCI_DEVICE_ID_AMD_K8_NB_ADDRMAP	0x1101
+>  #define PCI_DEVICE_ID_AMD_K8_NB_MEMCTL	0x1102
+>  #define PCI_DEVICE_ID_AMD_K8_NB_MISC	0x1103
+> +#define PCI_DEVICE_ID_AMD_10H_NB_HT	0x1200
+> +#define PCI_DEVICE_ID_AMD_10H_NB_MAP	0x1201
+> +#define PCI_DEVICE_ID_AMD_10H_NB_DRAM	0x1202
+> +#define PCI_DEVICE_ID_AMD_10H_NB_MISC	0x1203
+> +#define PCI_DEVICE_ID_AMD_10H_NB_LINK	0x1204
+>  #define PCI_DEVICE_ID_AMD_LANCE		0x2000
+>  #define PCI_DEVICE_ID_AMD_LANCE_HOME	0x2001
 
-When using CONFIG_FIXED_PHY, fec_inf (fep->phydev->bus->priv) is NULL in
-fs_enet/mac-fec.c restart(). Dereferencing fec_inf when trying to set the
-mii_speed causes a kernel oops.
+Are these constants going to be used in future kernels?
 
-Signed-off-by: Nye Liu <nyet@mrv.com>
+We don't necessarily want to create constants for each PCI ID in 
+existence.  A more comprehensive database is kept at 
+http://pciids.sourceforge.net/
 
----
+	Jeff
 
-diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
-index 8a311d1..7359068 100644
---- a/drivers/net/fs_enet/mac-fec.c
-+++ b/drivers/net/fs_enet/mac-fec.c
-@@ -328,7 +328,8 @@ static void restart(struct net_device *dev)
- 	/*
- 	 * Set MII speed.
- 	 */
--	FW(fecp, mii_speed, fec_inf->mii_speed);
-+	if (fec_inf)
-+		FW(fecp, mii_speed, fec_inf->mii_speed);
- 
- 	/*
- 	 * Clear any outstanding interrupt.
+
+
