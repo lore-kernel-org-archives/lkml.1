@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757754AbYF0EVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756788AbYF0Eba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757754AbYF0EVW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 00:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYF0EVH
+	id S1756788AbYF0Eba (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 00:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYF0EbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 00:21:07 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:58694 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751787AbYF0EVF (ORCPT
+	Fri, 27 Jun 2008 00:31:21 -0400
+Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:25833 "EHLO
+	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750806AbYF0EbU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 00:21:05 -0400
-X-Sasl-enc: 7+7sXXGP92nuaJAWpzvjoZ8ES+HhUYDxwzMgVeBq08a2 1214540463
-Subject: Re: Linux 2.6.26-rc4
-From: Ian Kent <raven@themaw.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, viro@ZenIV.linux.org.uk, miklos@szeredi.hu,
-       jesper@krogh.cc, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, jmoyer@redhat.com
-In-Reply-To: <20080605153019.77d61199.akpm@linux-foundation.org>
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org>
-	 <47107.195.41.66.226.1212486572.squirrel@mail.jabbernet.dk>
-	 <20080603095713.GR28946@ZenIV.linux.org.uk>
-	 <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk>
-	 <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu>
-	 <20080603104035.GT28946@ZenIV.linux.org.uk>
-	 <E1K3U1F-0005le-07@pomaz-ex.szeredi.hu>
-	 <20080603105258.GV28946@ZenIV.linux.org.uk>
-	 <1212499623.3025.46.camel@raven.themaw.net>
-	 <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org>
-	 <1212651099.3047.44.camel@raven.themaw.net>
-	 <20080605153019.77d61199.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 27 Jun 2008 12:18:19 +0800
-Message-Id: <1214540300.3084.12.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Jun 2008 00:31:20 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEANexXkh5LFnm/2dsb2JhbACuPg
+X-IronPort-AV: E=Sophos;i="4.27,713,1204464600"; 
+   d="scan'208";a="144217243"
+Date: Fri, 27 Jun 2008 14:31:13 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Oliver Pinter <oliver.pntr@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+       linux-kernel@vger.kernel.org, Eric Sandeen <sandeen@sandeen.net>,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [XFS] kernel panic on halt (2.6.26-rc7)
+Message-ID: <20080627043113.GZ29319@disturbed>
+Mail-Followup-To: Oliver Pinter <oliver.pntr@gmail.com>,
+	Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+	linux-kernel@vger.kernel.org, Eric Sandeen <sandeen@sandeen.net>,
+	Matthew Wilcox <matthew@wil.cx>
+References: <6101e8c40806260532j3bed1c7k9a60c41ea297549f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6101e8c40806260532j3bed1c7k9a60c41ea297549f@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-06-05 at 15:30 -0700, Andrew Morton wrote:
-> >  
-> > +	ino->u.symlink = cp;
-> > +	ino->size = strlen(symname);
-> >  	dir->i_mtime = CURRENT_TIME;
+On Thu, Jun 26, 2008 at 02:32:19PM +0200, Oliver Pinter wrote:
+> Hi Christoph, Dave,
 > 
-> This all seems a bit ungainly.  I assume that on entry to
-> autofs4_dir_symlink(), ino->size is equal to strlen(symname)?  If it's
-> not, that strcpy() will overrun.
+> a similar problem came out the with 2.6.26, than the was in post early
+> with 2.6.25[1][2]
 > 
-> But if ino->size _is_ equal to strlen(symname) then why did we just
-> recalculate the same thing?
+> http://students.zipernowsky.hu/~oliverp/upload/xfs_error_2.6.26/dsc00807.jpg
+> http://students.zipernowsky.hu/~oliverp/upload/xfs_error_2.6.26/dsc00808.jpg
+> http://students.zipernowsky.hu/~oliverp/upload/xfs_error_2.6.26/dsc00809.jpg
+> http://students.zipernowsky.hu/~oliverp/upload/xfs_error_2.6.26/dsc00810.jpg
+> http://students.zipernowsky.hu/~oliverp/upload/xfs_error_2.6.26/dsc00811.jpg
 
-Oops.
-I've fixed that in my git tree just now.
+http://lkml.org/lkml/2008/3/7/356
 
-> 
-> I'm suspecting we can zap a lump of code and just do
-> 
-> 	cp = kstrdup(symname, GFP_KERNEL);
-> 
-> Anyway, please check that.
+Cheers,
 
-Yep, but fix now re-factor later.
-
-Ian
-
-
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
