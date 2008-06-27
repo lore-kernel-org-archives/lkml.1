@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762834AbYF0UFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762940AbYF0UJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762834AbYF0UFb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 16:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758973AbYF0UFM
+	id S1762940AbYF0UJp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 16:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759454AbYF0UJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 16:05:12 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:51588 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758886AbYF0UFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 16:05:10 -0400
-Date: Fri, 27 Jun 2008 23:02:55 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: -tip build failure: No rule to make target
-	`/etc/sound/dsp001.ld'
-Message-ID: <20080627200254.GE4306@cs181140183.pp.htv.fi>
-References: <19f34abd0806271225q409dfa51haca8de843eeec76f@mail.gmail.com> <20080627194047.GD4306@cs181140183.pp.htv.fi> <19f34abd0806271259r338ec2c3w3b34e1703d4d97ba@mail.gmail.com>
+	Fri, 27 Jun 2008 16:09:36 -0400
+Received: from outbound-mail-124.bluehost.com ([67.222.38.24]:38390 "HELO
+	outbound-mail-124.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759378AbYF0UJf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 16:09:35 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH] Fix pci_setup_device()'s sprinting into a const buffer
+Date: Fri, 27 Jun 2008 13:09:28 -0700
+User-Agent: KMail/1.9.9
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20080627122320.29319.14707.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080627122320.29319.14707.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <19f34abd0806271259r338ec2c3w3b34e1703d4d97ba@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200806271309.29266.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 09:59:50PM +0200, Vegard Nossum wrote:
-> On Fri, Jun 27, 2008 at 9:40 PM, Adrian Bunk <bunk@kernel.org> wrote:
-> > On Fri, Jun 27, 2008 at 09:25:05PM +0200, Vegard Nossum wrote:
-> >> Hi,
-> >>
-> >> I was just building a randconfig in tip/master and hit this:
-> >>
-> >> make[2]: *** No rule to make target `/etc/sound/dsp001.ld', needed by
-> >> `sound/oss/pss_boot.h'.  Stop.
-> >>
-> >> It seems to be done like this on purpose, but it breaks randconfig
-> >> builds. Is this something that should be using firmware API?
-> >>
-> >> I'm attaching the config. Please forward this in the right direction,
-> >> if such a thing exists.
-> >
-> > It's your fault - compile errors with CONFIG_STANDALONE=n are expected.
-> 
-> Ah, I see. In that case, shouldn't 'make randconfig' also make sure
-> that this option is always =n? Or do I have to do
-> 
-> make randconfig
-> make CONFIG_STANDALONE=n
->...
+On Friday, June 27, 2008 5:23 am David Howells wrote:
+> Make pci_setup_device() write the bus ID directly into the allotted
+> storage, rather than using pci_name() as the address as that now returns a
+> const pointer.
+>
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-KCONFIG_ALLCONFIG can be used for this.
+Applied.  Thanks David.
 
-> Vegard
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Jesse
