@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765020AbYF0Voy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbYF0VpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765020AbYF0Voy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 17:44:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763903AbYF0Vhv
+	id S1755902AbYF0VpZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 17:45:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764107AbYF0Vh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 17:37:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59131 "EHLO mx1.redhat.com"
+	Fri, 27 Jun 2008 17:37:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59142 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764111AbYF0Vhu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 17:37:50 -0400
+	id S1764275AbYF0Vh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 17:37:57 -0400
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: tglx@linutronix.de, mingo@elte.hu, x86@kernel.org
-Subject: [PATCH 20/39] replace function headers by macros
-Date: Fri, 27 Jun 2008 18:34:27 -0300
-Message-Id: <1214602486-17080-21-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 21/39] don't use word-size specifiers in putuser files
+Date: Fri, 27 Jun 2008 18:34:28 -0300
+Message-Id: <1214602486-17080-22-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1214602486-17080-20-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1214602486-17080-21-git-send-email-gcosta@redhat.com>
 References: <1214602486-17080-1-git-send-email-gcosta@redhat.com>
  <1214602486-17080-2-git-send-email-gcosta@redhat.com>
  <1214602486-17080-3-git-send-email-gcosta@redhat.com>
@@ -37,100 +37,137 @@ References: <1214602486-17080-1-git-send-email-gcosta@redhat.com>
  <1214602486-17080-18-git-send-email-gcosta@redhat.com>
  <1214602486-17080-19-git-send-email-gcosta@redhat.com>
  <1214602486-17080-20-git-send-email-gcosta@redhat.com>
+ <1214602486-17080-21-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-in putuser_64.S, do it the i386 way, and replace the code
-in beginning and end of functions with macros, since it's
-always the same thing. Save lines.
+remove them where unambiguous.
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/lib/putuser_64.S |   32 ++++++++++++++------------------
- 1 files changed, 14 insertions(+), 18 deletions(-)
+ arch/x86/lib/putuser_32.S |   28 ++++++++++++++--------------
+ arch/x86/lib/putuser_64.S |   14 +++++++-------
+ 2 files changed, 21 insertions(+), 21 deletions(-)
 
-diff --git a/arch/x86/lib/putuser_64.S b/arch/x86/lib/putuser_64.S
-index a96bd8a..6d7513b 100644
---- a/arch/x86/lib/putuser_64.S
-+++ b/arch/x86/lib/putuser_64.S
-@@ -31,62 +31,58 @@
- #include <asm/asm-offsets.h>
- #include <asm/thread_info.h>
- 
-+#define ENTER   CFI_STARTPROC ; \
-+                GET_THREAD_INFO(%rbx)
-+#define EXIT    ret ; \
-+                CFI_ENDPROC
-+
- 	.text
+diff --git a/arch/x86/lib/putuser_32.S b/arch/x86/lib/putuser_32.S
+index 5b2a926..b67a37c 100644
+--- a/arch/x86/lib/putuser_32.S
++++ b/arch/x86/lib/putuser_32.S
+@@ -33,44 +33,44 @@
+ .text
  ENTRY(__put_user_1)
--	CFI_STARTPROC
--	GET_THREAD_INFO(%rbx)
-+	ENTER
- 	cmpq TI_addr_limit(%rbx),%rcx
+ 	ENTER
+-	cmpl TI_addr_limit(%ebx),%ecx
++	cmp TI_addr_limit(%ebx),%ecx
  	jae bad_put_user
- 1:	movb %al,(%rcx)
- 	xorl %eax,%eax
--	ret
--	CFI_ENDPROC
-+	EXIT
+ 1:	movb %al,(%ecx)
+-	xorl %eax,%eax
++	xor %eax,%eax
+ 	EXIT
  ENDPROC(__put_user_1)
  
  ENTRY(__put_user_2)
--	CFI_STARTPROC
--	GET_THREAD_INFO(%rbx)
-+	ENTER
- 	mov TI_addr_limit(%rbx),%rbx
- 	sub  $1, %rbx
- 	cmpq %rbx ,%rcx
- 	jae  bad_put_user
- 2:	movw %ax,(%rcx)
- 	xorl %eax,%eax
--	ret
--	CFI_ENDPROC
-+	EXIT
+ 	ENTER
+-	movl TI_addr_limit(%ebx),%ebx
+-	subl $1,%ebx
+-	cmpl %ebx,%ecx
++	mov TI_addr_limit(%ebx),%ebx
++	sub $1,%ebx
++	cmp %ebx,%ecx
+ 	jae bad_put_user
+ 2:	movw %ax,(%ecx)
+-	xorl %eax,%eax
++	xor %eax,%eax
+ 	EXIT
  ENDPROC(__put_user_2)
  
  ENTRY(__put_user_4)
--	CFI_STARTPROC
--	GET_THREAD_INFO(%rbx)
-+	ENTER
- 	mov TI_addr_limit(%rbx),%rbx
- 	sub  $3, %rbx
- 	cmp  %rbx, %rcx
+ 	ENTER
+-	movl TI_addr_limit(%ebx),%ebx
+-	subl $3,%ebx
+-	cmpl %ebx,%ecx
++	mov TI_addr_limit(%ebx),%ebx
++	sub $3,%ebx
++	cmp %ebx,%ecx
  	jae bad_put_user
- 3:	movl %eax,(%rcx)
- 	xorl %eax,%eax
--	ret
--	CFI_ENDPROC
-+	EXIT
+ 3:	movl %eax,(%ecx)
+-	xorl %eax,%eax
++	xor %eax,%eax
+ 	EXIT
  ENDPROC(__put_user_4)
  
  ENTRY(__put_user_8)
--	CFI_STARTPROC
--	GET_THREAD_INFO(%rbx)
-+	ENTER
+ 	ENTER
+-	movl TI_addr_limit(%ebx),%ebx
+-	subl $7,%ebx
+-	cmpl %ebx,%ecx
++	mov TI_addr_limit(%ebx),%ebx
++	sub $7,%ebx
++	cmp %ebx,%ecx
+ 	jae bad_put_user
+ 4:	movl %eax,(%ecx)
+ 5:	movl %edx,4(%ecx)
+-	xorl %eax,%eax
++	xor %eax,%eax
+ 	EXIT
+ ENDPROC(__put_user_8)
+ 
+diff --git a/arch/x86/lib/putuser_64.S b/arch/x86/lib/putuser_64.S
+index 6d7513b..c18fc0f 100644
+--- a/arch/x86/lib/putuser_64.S
++++ b/arch/x86/lib/putuser_64.S
+@@ -39,10 +39,10 @@
+ 	.text
+ ENTRY(__put_user_1)
+ 	ENTER
+-	cmpq TI_addr_limit(%rbx),%rcx
++	cmp TI_addr_limit(%rbx),%rcx
+ 	jae bad_put_user
+ 1:	movb %al,(%rcx)
+-	xorl %eax,%eax
++	xor %eax,%eax
+ 	EXIT
+ ENDPROC(__put_user_1)
+ 
+@@ -50,10 +50,10 @@ ENTRY(__put_user_2)
+ 	ENTER
  	mov TI_addr_limit(%rbx),%rbx
- 	sub  $7, %rbx
+ 	sub  $1, %rbx
+-	cmpq %rbx ,%rcx
++	cmp %rbx ,%rcx
+ 	jae  bad_put_user
+ 2:	movw %ax,(%rcx)
+-	xorl %eax,%eax
++	xor %eax,%eax
+ 	EXIT
+ ENDPROC(__put_user_2)
+ 
+@@ -64,7 +64,7 @@ ENTRY(__put_user_4)
+ 	cmp  %rbx, %rcx
+ 	jae bad_put_user
+ 3:	movl %eax,(%rcx)
+-	xorl %eax,%eax
++	xor %eax,%eax
+ 	EXIT
+ ENDPROC(__put_user_4)
+ 
+@@ -75,13 +75,13 @@ ENTRY(__put_user_8)
  	cmp  %rbx, %rcx
  	jae bad_put_user
  4:	movq %rax,(%rcx)
- 	xorl %eax,%eax
--	ret
--	CFI_ENDPROC
-+	EXIT
+-	xorl %eax,%eax
++	xor %eax,%eax
+ 	EXIT
  ENDPROC(__put_user_8)
  
  bad_put_user:
  	CFI_STARTPROC
- 	movq $(-EFAULT),%rax
--	ret
--	CFI_ENDPROC
-+	EXIT
+-	movq $(-EFAULT),%rax
++	mov $(-EFAULT),%rax
+ 	EXIT
  END(bad_put_user)
  
- .section __ex_table,"a"
 -- 
 1.5.5.1
 
