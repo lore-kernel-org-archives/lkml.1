@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbYF0LGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbYF0LGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbYF0LGS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 07:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbYF0LGA
+	id S1756139AbYF0LGy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 07:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbYF0LGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 07:06:00 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:21876 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524AbYF0LGA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 07:06:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Rf6eU9T+yD1BPDqJlBxuvMduFmE9SHaQ4vErdRRAkAkpshEiPiwK8X0OjrkNqVPuvH
-         5yuJvWizk6jDYEz0N4EeGtC1aILibNtovsOyN9Ea4v7miIzZcRob5Rgx7v0cHBABEjb9
-         m8Spu90wmeXQYisWOKefd8YPMV3hV7zEeWyKU=
-Message-ID: <e2e108260806270405u28cb14bcl46713157a5ef4155@mail.gmail.com>
-Date: Fri, 27 Jun 2008 13:05:58 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Mayank Sharma" <mayanks@sirf.com>
-Subject: Re: Time drifting after multiple sleep/wakeup in timekeeping
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-arm@lists.arm.linux.org.uk
-In-Reply-To: <013B1C915F9462459242424413ABB264011AC7AC@bnglmail.sirf.com>
+	Fri, 27 Jun 2008 07:06:45 -0400
+Received: from saeurebad.de ([85.214.36.134]:38335 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753012AbYF0LGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 07:06:44 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mmotm] Remove ->nopfn check from use_zero_page
+CC: linux-kernel@vger.kernel.org
+Date: Fri, 27 Jun 2008 13:06:11 +0200
+Message-ID: <878wwryw64.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e2e108260806252347m7a6b114by5b5100a86ce35a55@mail.gmail.com>
-	 <013B1C915F9462459242424413ABB264011AC7AC@bnglmail.sirf.com>
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 10:00 AM, Mayank Sharma <mayanks@sirf.com> wrote:
-> I have observed this behaviour on 2.6.23-17. The diff in my earlier mail was with the latest kernel.
->
-> I am cc'ing linux-arm on this mail. In my opinion the problem was not restrictive to ARM and hence I posted this message in the linux-kernel list.
+Hi Andrew,
 
-Have you already been able to verify  this ?
+The get_user_pages fix from Linus came to -mm through -next as it seems,
+but -mm has Nick's nopfn removal patches already and so use_zero_page
+checks for a non-existant vm_op.
 
-Bart.
+This patch is needed to at least compile.
+
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+---
+
+diff --git a/mm/memory.c b/mm/memory.c
+index 08cd653..5d7e705 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1082,11 +1082,10 @@ static inline int use_zero_page(struct vm_area_struct *vma)
+ 	if (vma->vm_flags & (VM_LOCKED | VM_SHARED))
+ 		return 0;
+ 	/*
+-	 * And if we have a fault or a nopfn routine, it's not an
+-	 * anonymous region.
++	 * And if we have a fault routine, it's not an anonymous
++	 * region.
+ 	 */
+-	return !vma->vm_ops ||
+-		(!vma->vm_ops->fault && !vma->vm_ops->nopfn);
++	return !vma->vm_ops || !vma->vm_ops->fault;
+ }
+ 
+ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
