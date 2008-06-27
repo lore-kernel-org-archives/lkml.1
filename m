@@ -1,129 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbYF0IIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbYF0IL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818AbYF0IIw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 04:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755246AbYF0IHg
+	id S1758317AbYF0IL3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 04:11:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbYF0ILJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 04:07:36 -0400
-Received: from mail7.hitachi.co.jp ([133.145.228.42]:52769 "EHLO
-	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752673AbYF0IHM (ORCPT
+	Fri, 27 Jun 2008 04:11:09 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:32830 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547AbYF0ILG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 04:07:12 -0400
-X-AuditID: 0ac90648-ab579ba000000c2f-f3-48649faceb60
-Message-ID: <48649FA0.70303@hitachi.com>
-Date: Fri, 27 Jun 2008 17:06:56 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Fri, 27 Jun 2008 04:11:06 -0400
+Date: Fri, 27 Jun 2008 10:12:02 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Alok Kataria <akataria@vmware.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Dan Hecht <dhecht@vmware.com>
+Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
+Message-ID: <20080627081202.GA26613@elf.ucw.cz>
+References: <20080604061637.6bab3f67@infradead.org> <1213924953.27983.52.camel@promb-2n-dhcp368.eng.vmware.com> <20080620113922.GG7439@elte.hu> <1213999593.31598.52.camel@promb-2n-dhcp368.eng.vmware.com> <20080624175753.GG5642@ucw.cz> <1214500831.3351.10.camel@promb-2n-dhcp368.eng.vmware.com> <20080626173536.GA16783@elf.ucw.cz> <1214503849.3351.35.camel@promb-2n-dhcp368.eng.vmware.com> <20080626221634.GE18719@elf.ucw.cz> <1214521834.3351.54.camel@promb-2n-dhcp368.eng.vmware.com>
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-Cc: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: Re: [PATCH 4/5] jbd: fix error handling for checkpoint io
-References: <4843CE15.6080506@hitachi.com> <4843CFBD.7040706@hitachi.com> 
-    <20080602124409.GL30613@duck.suse.cz> <4844CB39.6060409@hitachi.com> 
-    <20080603080219.GA17936@duck.suse.cz> <485F85AE.1010704@hitachi.com> 
-    <20080623122240.GJ26743@duck.suse.cz> <4860E01B.8010806@hitachi.com> 
-    <20080624133309.GG9959@duck.suse.cz>
-In-Reply-To: <20080624133309.GG9959@duck.suse.cz>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1214521834.3351.54.camel@promb-2n-dhcp368.eng.vmware.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jan,
-Thank you for your reply.
+Hi!
 
-Jan Kara wrote:
-
-> On Tue 24-06-08 20:52:59, Hidehiro Kawai wrote:
-
->>>>3. is implemented as described below.
->>>> (1) if log_do_checkpoint() detects an I/O error during
->>>>     checkpointing, it calls journal_abort() to abort the journal
->>>> (2) if the journal has aborted, don't update s_start and s_sequence
->>>>     in the on-disk journal superblock
->>>>
->>>>So, if the journal aborts, journaled data will be replayed on the
->>>>next mount.
->>>>
->>>>Now, please remember that some dirty metadata buffers are written
->>>>back to the filesystem without journaling if the journal aborted.
->>>>We are happy if all dirty metadata buffers are written to the disk,
->>>>the integrity of the filesystem will be kept.  However, replaying
->>>>the journaled data can overwrite the latest on-disk metadata blocks
->>>>partly with old data.  It would break the filesystem.
->>>
->>>  Yes, it would. But how do you think it can happen that a metadata buffer
->>>will be written back to the filesystem when it is a part of running
->>>transaction? Note that checkpointing code specifically checks whether the
->>>buffer being written back is part of a running transaction and if so, it
->>>waits for commit before writing back the buffer. So I don't think this can
->>>happen but maybe I miss something...
->>
->>Checkpointing code checks it and may call log_wait_commit(), but this
->>problem is caused by transactions which have not started checkpointing.
->>
->>For example, the tail transaction has an old update for block_B and
->>the running transaction has a new update for block_B.  Then, the
->>committing transaction fails to write the commit record, it aborts the
->>journal, and new block_B will be written back to the file system without
->>journaling.  Because this patch doesn't separate between normal abort
->>and checkpointing related abort, the tail transaction is left in the
->>journal space.  So by replaying the tail transaction, new block_B is
->>overwritten with old one.
+> > > > > AFAIU in calibrate_delay_direct too we measure the amount by which timer
+> > > > > has ticked until DELAY_CALIBRATION_TICKS amount of jiffies has passed.
+> > > > > So IMO the code there too assumes that there is one loop per timer
+> > > > > cycle ?
+> > > >
+> > > > On my machine, it reports:
+> > > >
+> > > > delay using timer specific routine.. 3661.98 BogoMIPS (lpj=7323971)
+> > > > ...
+> > > > Detected 1828.828 MHz processor.
+> > > >
+> > > > (/proc/cpuinfo)
+> > > > model name      : Genuine Intel(R) CPU           T2400  @ 1.83GHz
+> > > > ...
+> > > > cpu MHz         : 1000.000
+> > > How is it 1000 here ? shouldn't this be 1830.xx
+> > 
+> > cpufreq effect, I believe.
+> > 
+> > > > bogomips        : 3657.54
+> > > >
+> > > > So you'd break it by setting lpj (aka bogomips) to cpu_khz, right?
+> > >
+> > > We are not setting it to cpu_khz but to tsc_khz, i am assuming that in
+> > > this case tsc_khz will be different than cpu_khz. Can you please mail me
+> > > the full dmesg log.
+> > 
+> > Yes, but neither cpu_khz nor tsc_khz will be 3657 bogoMips, right?
 > 
->   Yes, and this is expected an correct. When we cannot properly finish a
-> transaction, we have to discard everything in it. A bug would be (and I
-> think it could currently happen) if we already checkpointed the previous
-> transaction and then written over block_B new data from the uncommitted
-> transaction. I think we have to avoid that - i.e., in case we abort the
-> journal we should not mark buffers dirty when processing the forget loop.
-
-Yes.
-
-> But this is not too serious since fsck has to be run anyway and it will
-> fix the problems.
-
-Yes.  The filesystem should be marked with an error, so fsck will check
-and recover the filesystem on boot.  But this means the filesystem loses
-some latest updates even if it was cleanly unmounted (although some file
-data has been lost.)  I'm a bit afraid that some people would think of
-this as a regression due to this PATCH 4/5.  At least, to avoid
-undesirable replay, we had better keep journaled data only when the
-journal has been aborted for checkpointing related reason.
- 
->>It can happen in the case of the checkpointing related abort.
->>For example, assuming the tail transaction has an update for block_A,
->>the next transaction has an old update for block_B, and the running
->>transaction has a new update for block_B.
->>Now, the running transaction needs more log space, and it calls
->>log_do_checkpoint().  But it aborts the journal because it detected
->>write error on block_A.  In this case, new block_B will be
->>overwritten when the old block_B in the second transaction to the tail
->>is replayed.
+> Hi Pavel,
 > 
->   Well, the scenario has to be a bit different (if we need more space than
-> there is in the journal, we commit the running transaction, do checkpoint
-> and start a new transaction) but something like what you describe could
-> happen. But again I think that this is a correct behavior - i.e., discard
-> all the data in the running transaction when the journal is aborted before
-> the transaction is properly committed. 
+> Thanks for the dmesg. The HZ value that you are using on this system is
+> 250, right ?
+> 
+> If you note the calculations
+> > +     lpj = ((u64)tsc_khz * 1000);
+> > +     do_div(lpj, HZ);
+> 
+> We are dividing by HZ over here. So you are right in saying that tsc_khz
+> wont be equal to bogoMips but lpj_fine will surely be computed correct
+> since we do consider the HZ value.
 
-I think it is correct behavior to discard _all_ metadata updates
-in the running transaction on abort.  But, we don't hope some of
-metadata updates are often discarded, do we?
+Ok.
 
-Thanks,
+> Please let me know if you still have any doubts.
+> Or can i safely assume that you will ACK the patch ;-)
+
+Well, I'm not expert-enough in this subsystem (nor comfortable enough
+with your code) to ACK it, sorry.
+									Pavel
 -- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
