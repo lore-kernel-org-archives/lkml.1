@@ -1,49 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759179AbYF0GKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295AbYF0GQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759179AbYF0GKz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 02:10:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755503AbYF0GKF
+	id S1756295AbYF0GQc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 02:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYF0GQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 02:10:05 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41255 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758135AbYF0GKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 02:10:01 -0400
-Message-ID: <48648433.6070200@garzik.org>
-Date: Fri, 27 Jun 2008 02:09:55 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 27 Jun 2008 02:16:24 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:55550 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751598AbYF0GQY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 02:16:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:reply-to:content-type
+         :content-transfer-encoding;
+        b=l7I5xTWLc+CEhj9+00amNj7hQZ3HUZgt0jx0SucyxG8MUuJM7V+8xbt2zXOY5p1jiY
+         tgWMyCkJX48TGpAIEusdtaRs7xuxByVWpKRjsTnB31XjMdgvjSwM9og/AVDiyk7Qlf61
+         fU3I59HcG4h4SWFhjbB7jsI1rZmmSpzRsfN5w=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: early res print out alignment
+Date: Thu, 26 Jun 2008 23:17:48 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200806251748.06743.yhlu.kernel@gmail.com> <200806252151.29028.yhlu.kernel@gmail.com>
+In-Reply-To: <200806252151.29028.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [PATCH 5/4] Fix forcedeth hibernate/wake-on-lan problems
-References: <20080518125715.GA19229@yamamaya.is-a-geek.org> <20080531225442.GA2747@yamamaya.is-a-geek.org>
-In-Reply-To: <20080531225442.GA2747@yamamaya.is-a-geek.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Message-Id: <200806262317.48716.yhlu.kernel@gmail.com>
+Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tobias Diedrich wrote:
-> From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-> 
-> We currently don't signal the kernel we that this device can wake
-> the system.  Call device_init_wakeup() to correct this.
-> Without this device_can_wakeup and device_may_wakeup will return
-> incorrect values.
-> Together with the minimized acpi wakeup patch (6/4 ;)), which will
-> follow in the next mail, this really makes wake-on-lan work for me
-> as expected (i.e. "ethtool -s eth0 wol g" is sufficient, no
-> additional magic needed).
-> 
-> Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
 
-applied 5-6
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
+---
+ arch/x86/kernel/e820.c |   20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
+Index: linux-2.6/arch/x86/kernel/e820.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -828,16 +828,26 @@ void __init free_early(u64 start, u64 en
+ 
+ void __init early_res_to_bootmem(u64 start, u64 end)
+ {
+-	int i;
++	int i, count;
+ 	u64 final_start, final_end;
+-	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++) {
++
++	count  = 0;
++	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++)
++		count++;
++
++	printk(KERN_INFO "(%d early reservations):\n", count);
++	for (i = 0; i < count; i++) {
+ 		struct early_res *r = &early_res[i];
++		printk(KERN_INFO "  #%d [%08llx-%08llx] %16s", i,
++			r->start, r->end - 1, r->name);
+ 		final_start = max(start, r->start);
+ 		final_end = min(end, r->end);
+-		if (final_start >= final_end)
++		if (final_start >= final_end) {
++			printk(KERN_INFO "\n");
+ 			continue;
+-		printk(KERN_INFO "  early res: %d [%llx-%llx] %s\n", i,
+-			final_start, final_end - 1, r->name);
++		}
++		printk(KERN_CONT " ==> [%08llx-%08llx] converted\n",
++			final_start, final_end - 1);
+ 		reserve_bootmem_generic(final_start, final_end - final_start,
+ 				BOOTMEM_DEFAULT);
+ 	}
