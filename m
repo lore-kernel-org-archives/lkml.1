@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbYF0LN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757198AbYF0LNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbYF0LN2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 07:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbYF0LNE
+	id S1757198AbYF0LNs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 07:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbYF0LNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 07:13:04 -0400
-Received: from saeurebad.de ([85.214.36.134]:38413 "EHLO saeurebad.de"
+	Fri, 27 Jun 2008 07:13:38 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:60691 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753206AbYF0LNC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 07:13:02 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -mmotm] remove unused vma_page_offset()
-CC: linux-kernel@vger.kernel.org
-Date: Fri, 27 Jun 2008 13:12:30 +0200
-Message-ID: <874p7fyvvl.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	id S1754627AbYF0LNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 07:13:37 -0400
+Date: Fri, 27 Jun 2008 13:14:15 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: x86@kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       vgoyal@redhat.com, gregkh@suse.de
+Subject: Re: [PATCH 2/2] Use FIRMWARE_MEMMAP on x86/E820
+Message-ID: <20080627131415.4d482af2@halley.suse.de>
+In-Reply-To: <86802c440806261354y673a5521ie615feafae3b2bd8@mail.gmail.com>
+References: <1214511542-28458-1-git-send-email-bwalle@suse.de>
+	<1214511542-28458-3-git-send-email-bwalle@suse.de>
+	<86802c440806261354y673a5521ie615feafae3b2bd8@mail.gmail.com>
+Organization: SUSE Linux Products GmbH
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Function has no callees, drop it.
+* Yinghai Lu [2008-06-26 13:54]:
+>
+> looks good...
+> 
+> will produce one patch update early_reserve_e820_mpc_new or
+> early_reserve_e820 to update e820_saved too. that contained updated
+> mptable for second kernel without acpi support.
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
----
+You or me? I don't understand ...
 
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 690abf0..a7c7c18 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -48,17 +48,6 @@ static DEFINE_SPINLOCK(hugetlb_lock);
- 
- /*
-  * Convert the address within this vma to the page offset within
-- * the mapping, in base page units.
-- */
--static pgoff_t vma_page_offset(struct vm_area_struct *vma,
--				unsigned long address)
--{
--	return ((address - vma->vm_start) >> PAGE_SHIFT) +
--					(vma->vm_pgoff >> PAGE_SHIFT);
--}
--
--/*
-- * Convert the address within this vma to the page offset within
-  * the mapping, in pagecache page units; huge pages here.
-  */
- static pgoff_t vma_pagecache_offset(struct hstate *h,
+
+
+Bernhard
+-- 
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
