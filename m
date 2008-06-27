@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759898AbYF0Mnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbYF0Mqs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759898AbYF0Mnt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 08:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYF0Mnk
+	id S1758655AbYF0Mqs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 08:46:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbYF0Mql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 08:43:40 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59447 "EHLO mx2.mail.elte.hu"
+	Fri, 27 Jun 2008 08:46:41 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53199 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751837AbYF0Mnk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 08:43:40 -0400
-Date: Fri, 27 Jun 2008 14:43:29 +0200
+	id S1753828AbYF0Mql (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 08:46:41 -0400
+Date: Fri, 27 Jun 2008 14:46:30 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 3/3] softlockup: fix watchdog task wakeup frequency
-Message-ID: <20080627124329.GA14576@elte.hu>
-References: <20080627000445.346130358@saeurebad.de> <20080627000805.504878592@saeurebad.de> <20080627120350.GB30872@elte.hu> <87prq3xdjv.fsf@skyscraper.fehenstaub.lan>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH 00/30] SMP-group balancer - take 3
+Message-ID: <20080627124630.GB14576@elte.hu>
+References: <20080627114109.724249622@chello.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87prq3xdjv.fsf@skyscraper.fehenstaub.lan>
+In-Reply-To: <20080627114109.724249622@chello.nl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,43 +36,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Johannes Weiner <hannes@saeurebad.de> wrote:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-> Hm, it updates the timestamp, so it makes only sense if it runs at a 
-> maximum every second (timestamp granularity) or even less.  The check 
-> for hung tasks uses the cpu timestamp as well for comparison, so that 
-> would be okay too.
+> Hi,
 > 
-> Like this?
+> Another go at SMP fairness for group scheduling.
 > 
-> diff --git a/kernel/softlockup.c b/kernel/softlockup.c
-> index c828c23..b884546 100644
-> --- a/kernel/softlockup.c
-> +++ b/kernel/softlockup.c
-> @@ -106,8 +106,9 @@ void softlockup_tick(void)
->  
->  	now = get_timestamp(this_cpu);
->  
-> -	/* Wake up the high-prio watchdog task every second: */
-> -	if (now > (touch_timestamp + 1))
-> +	/* Wake up the high-prio watchdog task twice per
-> +	 * threshold timespan. */
-> +	if (now > (touch_timestamp + softlockup_thresh / 2))
->  		wake_up_process(per_cpu(watchdog_task, this_cpu));
+> This code needs some serious testing,..
+> 
+> However on my system performance doesn't tank as much as it used to. 
+> I've ran sysbench and volanomark benchmarks.
+> 
+> The machine is a Quad core (Intel Q9450) with 4GB of RAM.
+> Fedora9 - x86_64
+> 
+> sysbench-0.4.8 + postgresql-8.3.3
+> volanomark-2.5.0.9 + openjdk-1.6.0
+> 
+> I've used cgroup group scheduling.
 
-yeah - but please use the best possible coding style. Two-line comments 
-should be in the:
+cool. I have applied your patches to a new temporary topic, 
+tip/sched/devel.smp-group-balance. If that works out fine in testing 
+then we can merge it back into sched/devel.
 
-  /*
-   * Here we ......................
-   * ........................ come:
-   */
-
-... format. And the arithmetics should be:
-
-	if (now > touch_timestamp + softlockup_thresh/2)
-
-(the unnecessary paranthesis was a small style mistake in the original 
-too)
+Thanks Peter,
 
 	Ingo
