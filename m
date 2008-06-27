@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759849AbYF0OXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758862AbYF0O1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759849AbYF0OXr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 10:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755425AbYF0OXj
+	id S1758862AbYF0O1f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 10:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbYF0O12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 10:23:39 -0400
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:40031 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753308AbYF0OXi (ORCPT
+	Fri, 27 Jun 2008 10:27:28 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:1889 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754185AbYF0O11 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 10:23:38 -0400
-Date: Fri, 27 Jun 2008 09:23:09 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Breno Leitao <leitao@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Anton Blanchard <anton@samba.org>
-Subject: Re: [RFC/PATCH 0/3] sched: allow arch override of cpu power
-Message-ID: <20080627142309.GR9594@localdomain>
-References: <1213835374-10868-1-git-send-email-ntl@pobox.com>
- <4863F2CC.1030907@linux.vnet.ibm.com>
+	Fri, 27 Jun 2008 10:27:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xwa85gAyK1Z5iMV+FK0LZyAr/oDVBZLoUuH0A//b1jfhWSaP2ZmYp49aJYsj2LA7XB
+         N0pTt83gY52Hh/lRocx2liJg/iC4/tV9C82y9AoDY7mRn6qH/Do2PCoHxQQyCAh/CVTW
+         Tw8f8mLgJcEnA91IP6AYDdlYXY8b2SWyyWv5c=
+Message-ID: <b647ffbd0806270727m36ec7324odab60e0591d26891@mail.gmail.com>
+Date: Fri, 27 Jun 2008 16:27:25 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "=?GB2312?B?z8TBwQ==?=" <xiaiaxaxi@sjtu.edu.cn>
+Subject: Re: How can I migrate a currently running task?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080627211712.6cto2d1zks848c88@webmail1.sjtu.edu.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4863F2CC.1030907@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Pobox-Relay-ID: A1DD0126-4454-11DD-9B98-CE28B26B55AE-04752483!a-sasl-fastnet.pobox.com
+References: <20080627211712.6cto2d1zks848c88@webmail1.sjtu.edu.cn>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Breno Leitao wrote:
-> Nathan Lynch wrote:
->> There is an "interesting" quality of POWER6 cores, which each have 2
->> hardware threads: assuming one thread on the core is idle, the primary
->> thread is a little "faster" than the secondary thread.  To illustrate:
->>   
-> I found this feature interesting and decided to do some tests.
-> After some tests I found that the example you post really runs fast in  
-> the first CPU, but a more "elaborated" application runs slower on the  
-> first CPU.
-> Here is a small example:
+2008/6/27 夏亮 <xiaiaxaxi@sjtu.edu.cn>:
+> Hi,
 >
-> # taskset 0x1 time -f "%e,  %U, %S" ./a.out ; taskset 0x2 time -f "%e,  
-> %U, %S" ./a.out
-> 10.77,  10.72, 0.01
-> 10.53, 10.48, 0.01
->
-> # taskset 0x2 time -f "%e,  %U, %S" ./a.out ; taskset 0x1 time -f "%e,  
-> %U, %S" ./a.out
-> 10.55,  10.50, 0.01
-> 10.77, 10.72, 0.01
+>      I am working on Intel Duo Core with Linux OS 2.6.21, and I'd like to
+> migrate task from one cpu to another cpu.
+> In SMP systems, load_balance() function uses move_tasks() to move processes
+> from source runqueue to local runqueue, but it does not move a currently
+> running task. If I want to migrate a currently running task from source
+> runqueue to local runqueue, how can I do? Any suggestion is preferred.
+> Thanks!
 
-I've been able to duplicate your results, thanks for the testcase.
-Guess I'll need to understand what's going on before continuing with
-this...
+Some high-prio task takes away CPU from a 'target' task and then
+pushes it onto another CPU. That's what 'migration_thread' does.
+
+Take a look at use-cases of migrate_task() in sched.c.
+
+
+>
+>    Liang
+>
+
+-- 
+Best regards,
+Dmitry Adamushko
