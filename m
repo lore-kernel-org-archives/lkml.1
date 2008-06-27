@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762572AbYF0Tew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761453AbYF0Tme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762572AbYF0Tew (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 15:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761720AbYF0Tef
+	id S1761453AbYF0Tme (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 15:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757857AbYF0TmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 15:34:35 -0400
-Received: from curtis.curtisfong.org ([66.43.110.51]:57358 "EHLO
-	curtis.curtisfong.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757023AbYF0Tee (ORCPT
+	Fri, 27 Jun 2008 15:42:23 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:60793 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1757683AbYF0TmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 15:34:34 -0400
-X-Greylist: delayed 457 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Jun 2008 15:34:34 EDT
-Date: Fri, 27 Jun 2008 12:26:51 -0700
-From: Nye Liu <nyet@nyet.org>
-To: linux-kernel@vger.kernel.org
-Cc: pantelis.antoniou@gmail.com, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org
-Subject: [PATCH] FS_ENET: Don't attempt to set mii_speed when fec_inf is
-	null
-Message-ID: <20080627192651.GA28291@curtisfong.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 27 Jun 2008 15:42:22 -0400
+Date: Fri, 27 Jun 2008 22:41:15 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: hannes@saeurebad.de, tzanussi@gmail.com, penberg@cs.helsinki.fi,
+       torvalds@linux-foundation.org, compudj@krystal.dyndns.org,
+       vegard.nossum@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] Full conversion to early_initcall() interface,
+ remove old interface.
+Message-ID: <20080627224115.7f76b11e@linux360.ro>
+In-Reply-To: <20080627114515.65b00a9e.akpm@linux-foundation.org>
+References: <20080623153056.1862c14e@linux360.ro>
+	<20080623172742.be332a53.akpm@linux-foundation.org>
+	<20080625120151.56180b47@linux360.ro>
+	<87d4m3ywpu.fsf@skyscraper.fehenstaub.lan>
+	<20080627142800.2c0b5cf1@linux360.ro>
+	<20080627114515.65b00a9e.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nye Liu <nyet@mrv.com>
+On Fri, 27 Jun 2008 11:45:15 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-When using CONFIG_FIXED_PHY, fec_inf (fep->phydev->bus->priv) is NULL in
-fs_enet/mac-fec.c restart(). Dereferencing fec_inf when trying to set the
-mii_speed causes a kernel oops.
+> It is a bit of a pain.  I avoid asking people to raise patches against
+> -mm unless it's really necessary.
 
-Signed-off-by: Nye Liu <nyet@mrv.com>
+Just my 2 cents... you said in a 2006 discussion that you don't use Git
+because you modify and drop patches often. I'd like to point out that
+newer Git releases support interactive rebasing, which can do very nice
+things:
+- reorder commits (also adds '<<<', '===', '>>>' merge-like stuff when
+that fails, so you can fix it easier)
+- squash a commit into the previous -> solves the "patch that fixes
+another patch" problem.
+- edit commits different than HEAD
+That is all doable with 'git-rebase -i'.
 
----
+But maybe you got used to quilt and changing requires more effort at
+the beginning, so I'm not going to argue too much.
 
-diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
-index 8a311d1..350bc73 100644
---- a/drivers/net/fs_enet/mac-fec.c
-+++ b/drivers/net/fs_enet/mac-fec.c
-@@ -328,7 +328,8 @@ static void restart(struct net_device *dev)
-        /*
-         * Set MII speed.
-         */
--       FW(fecp, mii_speed, fec_inf->mii_speed);
-+       if (fec_inf)
-+           FW(fecp, mii_speed, fec_inf->mii_speed);
- 
-        /*
-         * Clear any outstanding interrupt.
+I hope this helps.
 
+
+	Cheers,
+	Eduard
