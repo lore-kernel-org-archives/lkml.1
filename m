@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760173AbYF0QRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbYF0QWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760173AbYF0QRb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 12:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbYF0QRX
+	id S1758718AbYF0QWA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 12:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbYF0QVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 12:17:23 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48789 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751604AbYF0QRX (ORCPT
+	Fri, 27 Jun 2008 12:21:53 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:54012 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751604AbYF0QVw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 12:17:23 -0400
-Date: Fri, 27 Jun 2008 16:59:37 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip/master] x86: nmi_watchdog - documentation fix
-Message-ID: <20080627165937.2f1fb661@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.55.0806271652020.8868@cliff.in.clinika.pl>
-References: <20080627154340.GC18957@cvg>
-	<Pine.LNX.4.55.0806271652020.8868@cliff.in.clinika.pl>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 27 Jun 2008 12:21:52 -0400
+Subject: KS Topic Proposal: Vendor and User problems with the Kernel
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: ksummit-2008-discuss@lists.linux-foundation.org
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 27 Jun 2008 11:21:46 -0500
+Message-Id: <1214583706.3394.58.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jun 2008 16:54:19 +0100 (BST)
-"Maciej W. Rozycki" <macro@linux-mips.org> wrote:
+This proposal is a bit different from a concrete topic, but it's based
+on the generally positive feedback from the end user panel last year.
+It's to allocate 2h of Kernel summit to discuss problems raised by
+vendors and end users.  The format I'm proposing is 10 minutes of
+problem introduction by someone from the vendor or user representative
+who is a subject matter expert and 20 minutes of discussion (so,
+hopefully four such problems).
 
-> On Fri, 27 Jun 2008, Cyrill Gorcunov wrote:
-> 
-> > +NOTE: Prior to 2.4.2-ac18 the NMI-oopser is enabled unconditionally
-> > +on x86 SMP boxes.
-> 
->  While you are at it: s/is/was/.
+As usual, the difficulty is actually finding people from the vendor and
+user community willing to do such a presentation (and ensuring they
+won't simply want to talk about their problems with X distro enterprise
+kernels).  The way I think we might get some diverse problems is to send
+out a call for participation.  Something like.
 
-Erm - why ??
+"The kernel summit programme committe is inviting proposals for
+participation in the 2008 Kernel Summit in Portland Oregon (URL) from
+members of the End User and Vendor communities wishing to raise
+particular issues or problems they see with the current Linux Kernel.  A
+good problem presentation should stimulate discussion with the kernel
+community, and as such the presenter should be a subject matter expert
+capable of engaging in the debate.  While the presenter may have a
+preferred solution, they should concentrate on the problem and be
+prepared to consider the effects of solutions outside of their preferred
+one.  It goes without saying that problems should have a significant
+component which is susceptible to a solution within the Linux Kernel.
 
-It is still true today that kernels < 2.4.2-ac8 have the NMI oopser
-enabled.
+"Proposals of around 500 words and describing the nature of the problem
+and the credentials of the presenter should be forwarded to the Linux
+Kernel Programme Committee at
+<ksummit-2008-pc@lists.linux-foundation.org>"
 
-Alan
+Obviously we'd have to circulate this beyond the usual mailing lists,
+but we can solicit help from the Linux Foundation to do this.
+
+James
+
+
