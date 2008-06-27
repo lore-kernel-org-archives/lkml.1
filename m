@@ -1,154 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761559AbYF0Rh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758560AbYF0Rjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761559AbYF0Rh6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 13:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755991AbYF0Rhu
+	id S1758560AbYF0Rjb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 13:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYF0RjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 13:37:50 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:35380 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752408AbYF0Rht (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 13:37:49 -0400
-Date: Fri, 27 Jun 2008 10:36:55 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Chris Friesen <cfriesen@nortel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip/master] x86: nmi_watchdog - documentation fix
-Message-Id: <20080627103655.6c6943e9.randy.dunlap@oracle.com>
-In-Reply-To: <20080627171836.GF18957@cvg>
-References: <20080627154340.GC18957@cvg>
-	<Pine.LNX.4.55.0806271652020.8868@cliff.in.clinika.pl>
-	<20080627165937.2f1fb661@lxorguk.ukuu.org.uk>
-	<4865160C.2040403@nortel.com>
-	<20080627165125.GE18957@cvg>
-	<20080627095608.649e819a.randy.dunlap@oracle.com>
-	<20080627171836.GF18957@cvg>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Fri, 27 Jun 2008 13:39:23 -0400
+Received: from mail.queued.net ([207.210.101.209]:2022 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751930AbYF0RjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 13:39:22 -0400
+Date: Fri, 27 Jun 2008 13:42:14 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Cc: akpm@linux-foundation.org, sdhci-devel@list.drzeus.cx,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [OLPC] sdhci: add quirk for the Marvell CaFe's
+ interrupt timeout
+Message-ID: <20080627134214.422b11f7@xo-debian>
+In-Reply-To: <20080627193001.5925f664@mjolnir.drzeus.cx>
+References: <20080623101352.3bbaf5b0@xo-debian>
+	<20080627193001.5925f664@mjolnir.drzeus.cx>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jun 2008 21:18:36 +0400 Cyrill Gorcunov wrote:
+On Fri, 27 Jun 2008 19:30:01 +0200
+Pierre Ossman <drzeus@drzeus.cx> wrote:
 
-> [Randy Dunlap - Fri, Jun 27, 2008 at 09:56:08AM -0700]
-> | On Fri, 27 Jun 2008 20:51:25 +0400 Cyrill Gorcunov wrote:
-> | 
-> | > [Chris Friesen - Fri, Jun 27, 2008 at 10:32:12AM -0600]
-> | > > Alan Cox wrote:
-> | > >> On Fri, 27 Jun 2008 16:54:19 +0100 (BST)
-> | > >> "Maciej W. Rozycki" <macro@linux-mips.org> wrote:
-> | > >>> On Fri, 27 Jun 2008, Cyrill Gorcunov wrote:
-> | > >>>
-> | > >>>
-> | > >>>> +NOTE: Prior to 2.4.2-ac18 the NMI-oopser is enabled unconditionally
-> | > >>>> +on x86 SMP boxes.
-> | > >>>
-> | > >>> While you are at it: s/is/was/.
-> | > >> Erm - why ??
-> | > >> It is still true today that kernels < 2.4.2-ac8 have the NMI oopser
-> | > >> enabled.
-> | > >
-> | > > To my ear the phrase as written implies past tense for the author/reader 
-> | > > (i.e. "at points in time prior to the release of 2.4.2-ac18"), and thus 
-> | > > grates against "is".
-> | > >
-> | > > The following sounds better to me: "In kernels prior to 2.4.2-ac18 the 
-> | > > NMI-oopser is enabled..."  In this context the phrase itself is in the 
-> | > > present, but we point to past kernels.
-> | > >
-> | > > Chris
-> | > >
-> | > 
-> | > And the winner is? I'm not native English speaker so I can't select
-> | > a better candidate in {is,was} limited set.
-> | 
-> | Use the text that Chris suggested...
-> | 
-> | 
-> | ---
-> | ~Randy
-> | Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-> | http://linuxplumbersconf.org/
-> | 
+> On Mon, 23 Jun 2008 10:13:52 -0400
+> Andres Salomon <dilinger@queued.net> wrote:
 > 
-> Ok, you choose ;)
+> > 
+> > The CaFe chip has a hardware bug that ends up with us getting a
+> > timeout value that's too small, causing the following sorts of
+> > problems:
+> > 
+> > [   60.525138] mmcblk0: error -110 transferring data
+> > [   60.531477] end_request: I/O error, dev mmcblk0, sector 1484353
+> > [   60.533371] Buffer I/O error on device mmcblk0p2, logical block
+> > 181632 [   60.533371] lost page write due to I/O error on mmcblk0p2
+> > 
+> > Presumably this is an off-by-one error in the hardware.
+> > Incrementing the timeout count value that we stuff into the
+> > TIMEOUT_CONTROL register gets us a value that works.  This bug was
+> > originally discovered by Pierre Ossman, I believe.
+> > 
+> > [thanks to Robert Millan for proving that this was still a problem]
+> > 
+> > Signed-off-by: Andres Salomon <dilinger@debian.org>
 > 
-> 		- Cyrill -
+> Hmm... I'm not entirely sure about the specifics of the workaround
+> here. It's likely that we'll have an off-by-minus-one in another
+> controller, and off-by-two in a third.
+> 
+> Perhaps we should just have "broken timeout" and set the timeout to
+> 0xE. It doesn't cause any side-effects except that the user will have
+> to wait slightly longer for requests to fail if the card has decided
+> to crap out.
+> 
 
-Looks good to me.  Thanks for persisting.
+That would be fine.  OFW actually just hardcodes the timeout to 0xc,
+with Mitch citing the same logic.  Just setting it to the upper bound
+would certainly make it more applicable hardware other than the cafe.
 
-
-> ---
-> From: Cyrill Gorcunov <gorcunov@gmail.com>
-> Subject: [PATCH -tip/master] x86: nmi_watchdog - documentation fix
-> 
-> mi_watchdog is set to NMI_NONE by default (ie disabled) on _any_
-> mode so lets fix documentation too.
-> 
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> CC: Maciej W. Rozycki <macro@linux-mips.org>
-> ---
-> 
-> Index: linux-2.6.git/Documentation/nmi_watchdog.txt
-> ====================================================================
-> --- linux-2.6.git.orig/Documentation/nmi_watchdog.txt	2008-06-27 19:50:06.000000000 +0400
-> +++ linux-2.6.git/Documentation/nmi_watchdog.txt	2008-06-27 21:15:02.000000000 +0400
-> @@ -10,7 +10,7 @@ us to generate 'watchdog NMI interrupts'
->  which get executed even if the system is otherwise locked up hard).
->  This can be used to debug hard kernel lockups.  By executing periodic
->  NMI interrupts, the kernel can monitor whether any CPU has locked up,
-> -and print out debugging messages if so.  
-> +and print out debugging messages if so.
->  
->  In order to use the NMI watchdog, you need to have APIC support in your
->  kernel. For SMP kernels, APIC support gets compiled in automatically. For
-> @@ -22,8 +22,7 @@ CONFIG_X86_UP_IOAPIC is for uniprocessor
->  kernel debugging options, such as Kernel Stack Meter or Kernel Tracer,
->  may implicitly disable the NMI watchdog.]
->  
-> -For x86-64, the needed APIC is always compiled in, and the NMI watchdog is
-> -always enabled with I/O-APIC mode (nmi_watchdog=1).
-> +For x86-64, the needed APIC is always compiled in.
->  
->  Using local APIC (nmi_watchdog=2) needs the first performance register, so
->  you can't use it for other purposes (such as high precision performance
-> @@ -63,16 +62,15 @@ when the system is idle), but if your sy
->  "hlt", then you are out of luck -- the event will not happen at all and the
->  watchdog won't trigger. This is a shortcoming of the local APIC watchdog
->  -- unfortunately there is no "clock ticks" event that would work all the
-> -time. The I/O APIC watchdog is driven externally and has no such shortcoming.  
-> +time. The I/O APIC watchdog is driven externally and has no such shortcoming.
->  But its NMI frequency is much higher, resulting in a more significant hit
->  to the overall system performance.
->  
-> -NOTE: starting with 2.4.2-ac18 the NMI-oopser is disabled by default,
-> -you have to enable it with a boot time parameter.  Prior to 2.4.2-ac18
-> -the NMI-oopser is enabled unconditionally on x86 SMP boxes.
-> +On x86 nmi_watchdog is disabled by default so you have to enable it with
-> +a boot time parameter.
->  
-> -On x86-64 the NMI oopser is on by default. On 64bit Intel CPUs
-> -it uses IO-APIC by default and on AMD it uses local APIC.
-> +NOTE: In kernels prior to 2.4.2-ac18 the NMI-oopser is enabled unconditionally
-> +on x86 SMP boxes.
->  
->  [ feel free to send bug reports, suggestions and patches to
->    Ingo Molnar <mingo@redhat.com> or the Linux SMP mailing
-> --
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
