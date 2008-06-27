@@ -1,101 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753568AbYF0Bw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbYF0Byu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753568AbYF0Bw5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 21:52:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbYF0Bwp
+	id S1754503AbYF0Byu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 21:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYF0Bym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 21:52:45 -0400
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:45051 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751128AbYF0Bwo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 21:52:44 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEANexXkh5LFnm/2dsb2JhbACuPg
-X-IronPort-AV: E=Sophos;i="4.27,712,1204464600"; 
-   d="scan'208";a="143990837"
-Date: Fri, 27 Jun 2008 11:52:41 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: xfs@oss.sgi.com, matthew@wil.cx, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] Extend completions to provide XFS object flush
-	requirements
-Message-ID: <20080627015241.GX29319@disturbed>
-Mail-Followup-To: Daniel Walker <dwalker@mvista.com>, xfs@oss.sgi.com,
-	matthew@wil.cx, linux-kernel@vger.kernel.org
-References: <1214455277-6387-1-git-send-email-david@fromorbit.com> <1214455277-6387-2-git-send-email-david@fromorbit.com> <1214512405.21035.110.camel@localhost.localdomain>
+	Thu, 26 Jun 2008 21:54:42 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:63547 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751409AbYF0Byk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 21:54:40 -0400
+Date: Fri, 27 Jun 2008 02:53:09 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Pavel Machek <pavel@suse.cz>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+In-Reply-To: <20080624091516.GA5642@ucw.cz>
+Message-ID: <Pine.LNX.4.55.0806270249490.31618@cliff.in.clinika.pl>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806201353.59083.rjw@sisk.pl>
+ <20080620115714.GC8637@srcf.ucam.org> <200806201422.12659.rjw@sisk.pl>
+ <20080624091516.GA5642@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1214512405.21035.110.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 01:33:25PM -0700, Daniel Walker wrote:
-> 
-> On Thu, 2008-06-26 at 14:41 +1000, Dave Chinner wrote:
-> > XFS object flushing doesn't quite match existing completion semantics.  It
-> > mixed exclusive access with completion. That is, we need to mark an object as
-> > being flushed before flushing it to disk, and then block any other attempt to
-> > flush it until the completion occurs.
+On Tue, 24 Jun 2008, Pavel Machek wrote:
+
+> > $ cat /proc/acpi/thermal_zone/TZ*/trip_points
 > > 
-> > To do this we introduce:
+> > in the failing case:
 > > 
-> > void init_completion_flush(struct completion *x)
-> > 	which initialises x->done = 1
-> > 
-> > void completion_flush_start(struct completion *x)
-> > 	which blocks if done == 0, otherwise decrements done to zero and
-> > 	allows the caller to continue.
-> > 
-> > bool completion_flush_start_nowait(struct completion *x)
-> > 	returns a failure status if done == 0, otherwise decrements done
-> > 	to zero and returns a "flush started" status. This is provided
-> > 	to allow flushing to begin safely while holding object locks in
-> > 	inverted order.
-> > 
-> > This replaces the use of semaphores for providing this exclusion
-> > and completion mechanism.
+> > critical (S5):           105 C
+> > passive:                 16 C: tc1=1 tc2=2 tsp=100 devices=C000 C001 
+> > active[0]:               16 C: devices=C34F 
+> > active[1]:               16 C: devices=C350 
+> > active[2]:               16 C: devices=C351 
+> > active[3]:               16 C: devices=C352 
+> > critical (S5):           100 C
+> > passive:                 16 C: tc1=1 tc2=2 tsp=300 devices=C000 C001 
+> > critical (S5):           100 C
+> > passive:                 16 C: tc1=1 tc2=2 tsp=300 devices=C000 C001 
 > 
-> I think there is some basis to make the changes that you have here.
-> Specifically this email and thread,
-> 
-> http://lkml.org/lkml/2008/4/15/232
-> 
-> However, I don't like how your implementing this as specifically a
-> "flush" mechanism for XFS, and the count is limited to just 1 .. There
-> are several other places that do this kind of counting with semaphores,
-> and have counts above 1..
+> Can we call the ACPI BIOS to be terminally broken at this point?
 
-Agreed - but the extension has to start somewhere. So, do I simply
-add a "init_completion_count()" that passes a count value for the
-completion (i.e. replaces init_completion_flush())?
+ Do we have any point of contact at HP and/or ATI/AMD?  I suppose getting 
+hands on a SB400 datasheet could be tricky, but someone may be able to 
+answer questions about the interrupt routing between the 8254, the 8259A 
+and the I/O APIC for this chip and/or fix the DSDT.
 
-> > +
-> > +static inline void completion_flush_start(struct completion *x)
-> > +{
-> > +	wait_for_completion(x);
-> > +}
-> 
-> Above seems completely pointless.. I would just call
-> wait_for_completion(), and make the rest of the interface generic.
-
-Except then wait_for_completion_nowait() makes absolutely no sense ;)
-If i use wait_for_completion() for this, then perhaps the
-non-blocking version becomes "try_wait_for_completion()". Would
-this be acceptible?
-
-i.e. the extra functions in the completion API would be:
-
-	void init_completion_count(struct completion *x, int count);
-	int try_wait_for_completion(struct completion *x);
-	int completion_in_progress(struct completion *x);
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+  Maciej
