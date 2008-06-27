@@ -1,188 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbYF0DWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbYF0D0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758087AbYF0DWA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 23:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbYF0DVv
+	id S1756924AbYF0D0m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 23:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbYF0D0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 23:21:51 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:55422 "EHLO
-	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750770AbYF0DVu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 23:21:50 -0400
-Date: Fri, 27 Jun 2008 08:53:17 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, Paul Jackson <pj@sgi.com>,
-       a.p.zijlstra@chello.nl, maxk@qualcomm.com, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [RFC][PATCH] CPUSets: Move most calls to
-	rebuild_sched_domains() to the workqueue
-Message-ID: <20080627032317.GB3419@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <48634BC1.8@google.com> <20080627032228.GA3419@in.ibm.com>
+	Thu, 26 Jun 2008 23:26:32 -0400
+Received: from gw.goop.org ([64.81.55.164]:41004 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752227AbYF0D0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 23:26:31 -0400
+Message-ID: <48645DD7.5090503@goop.org>
+Date: Thu, 26 Jun 2008 20:26:15 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080627032228.GA3419@in.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "Yang, Sheng" <sheng.yang@intel.com>
+CC: kvm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] x86: Add "virt flag" in /proc/cpuinfo
+References: <200806241708.49462.sheng.yang@intel.com>
+In-Reply-To: <200806241708.49462.sheng.yang@intel.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 08:52:28AM +0530, Gautham R Shenoy wrote:
-> On Thu, Jun 26, 2008 at 12:56:49AM -0700, Paul Menage wrote:
-> > CPUsets: Move most calls to rebuild_sched_domains() to the workqueue
-> >
-> > In the current cpusets code the lock nesting between cgroup_mutex and
-> > cpuhotplug.lock when calling rebuild_sched_domains is inconsistent -
-> > in the CPU hotplug path cpuhotplug.lock nests outside cgroup_mutex,
-> > and in all other paths that call rebuild_sched_domains() it nests
-> > inside.
-> >
-> > This patch makes most calls to rebuild_sched_domains() asynchronous
-> > via the workqueue, which removes the nesting of the two locks in that
-> > case. In the case of an actual hotplug event, cpuhotplug.lock nests
-> > outside cgroup_mutex as now.
-> >
-> > Signed-off-by: Paul Menage <menage@google.com>
-> >
-> > ---
-> >
-> > Note that all I've done with this patch is verify that it compiles
-> > without warnings; I'm not sure how to trigger a hotplug event to test
-> > the lock dependencies or verify that scheduler domain support is still
-> > behaving correctly. Vegard, does this fix the problems that you were
-> > seeing? Paul/Max, does this still seem sane with regard to scheduler domains?
-> >
-> 
-> Hi Paul, 
-> 
+Yang, Sheng wrote:
+> From 54b1bb9fe5d2fe40fc047b43dd4e1a480d41a977 Mon Sep 17 00:00:00 2001
+> From: Sheng Yang <sheng.yang@intel.com>
+> Date: Tue, 24 Jun 2008 17:03:17 +0800
+> Subject: [PATCH] x86: Add "virt flag" in /proc/cpuinfo
+>
+> The hardware virtualization technology evolves very fast. But currently
+> it's hard to tell if your CPU support a certain kind of HW technology without
+> dig into the source code.
+>
+> The patch add a new item under /proc/cpuinfo, named "virt flag". The "virt
+> flag" got the similar function as "flag". It is used to indicate what
+> features does this CPU supported. It don't cover all features but only the
+> important ones.
+>   
 
-This time CC'ing Oleg!
+A cpu feature is a cpu feature.  I'd prefer to see all this in "flags:".
 
-> Using a multithreaded workqueue(kevent here) for this is not such a
-> great idea this,since currently we cannot call
-> get_online_cpus() from a workitem executed by a multithreaded workqueue.
-> 
-> Can one use a single threaded workqueue here instead ?
-> 
-> Or, better, I think we can ask Oleg to re-submit the patch he had to make
-> get_online_cpus() safe to be called from within the workqueue. It does
-> require a special post CPU_DEAD notification, but as it does work the
-> last time I checked.
-> 
-> >
-> > kernel/cpuset.c |   35 +++++++++++++++++++++++------------
-> > 1 file changed, 23 insertions(+), 12 deletions(-)
-> >
-> > Index: lockfix-2.6.26-rc5-mm3/kernel/cpuset.c
-> > ===================================================================
-> > --- lockfix-2.6.26-rc5-mm3.orig/kernel/cpuset.c
-> > +++ lockfix-2.6.26-rc5-mm3/kernel/cpuset.c
-> > @@ -522,13 +522,9 @@ update_domain_attr(struct sched_domain_a
-> >  * domains when operating in the severe memory shortage situations
-> >  * that could cause allocation failures below.
-> >  *
-> > - * Call with cgroup_mutex held.  May take callback_mutex during
-> > - * call due to the kfifo_alloc() and kmalloc() calls.  May nest
-> > - * a call to the get_online_cpus()/put_online_cpus() pair.
-> > - * Must not be called holding callback_mutex, because we must not
-> > - * call get_online_cpus() while holding callback_mutex.  Elsewhere
-> > - * the kernel nests callback_mutex inside get_online_cpus() calls.
-> > - * So the reverse nesting would risk an ABBA deadlock.
-> > + * Call with cgroup_mutex held, and inside get_online_cpus().  May
-> > + * take callback_mutex during call due to the kfifo_alloc() and
-> > + * kmalloc() calls.
-> >  *
-> >  * The three key local variables below are:
-> >  *    q  - a kfifo queue of cpuset pointers, used to implement a
-> > @@ -689,9 +685,7 @@ restart:
-> >
-> > rebuild:
-> > 	/* Have scheduler rebuild sched domains */
-> > -	get_online_cpus();
-> > 	partition_sched_domains(ndoms, doms, dattr);
-> > -	put_online_cpus();
-> >
-> > done:
-> > 	if (q && !IS_ERR(q))
-> > @@ -701,6 +695,21 @@ done:
-> > 	/* Don't kfree(dattr) -- partition_sched_domains() does that. */
-> > }
-> >
-> > +/*
-> > + * Due to the need to nest cgroup_mutex inside cpuhotplug.lock, most
-> > + * of our invocations of rebuild_sched_domains() are done
-> > + * asynchronously via the workqueue
-> > + */
-> > +static void delayed_rebuild_sched_domains(struct work_struct *work)
-> > +{
-> > +	get_online_cpus();
-> > +	cgroup_lock();
-> > +	rebuild_sched_domains();
-> > +	cgroup_unlock();
-> > +	put_online_cpus();
-> > +}
-> > +static DECLARE_WORK(rebuild_sched_domains_work, delayed_rebuild_sched_domains);
-> > +
-> > static inline int started_after_time(struct task_struct *t1,
-> > 				     struct timespec *time,
-> > 				     struct task_struct *t2)
-> > @@ -853,7 +862,7 @@ static int update_cpumask(struct cpuset 		return 
-> > retval;
-> >
-> > 	if (is_load_balanced)
-> > -		rebuild_sched_domains();
-> > +		schedule_work(&rebuild_sched_domains_work);
-> > 	return 0;
-> > }
-> >
-> > @@ -1080,7 +1089,7 @@ static int update_relax_domain_level(str
-> >
-> > 	if (val != cs->relax_domain_level) {
-> > 		cs->relax_domain_level = val;
-> > -		rebuild_sched_domains();
-> > +		schedule_work(&rebuild_sched_domains_work);
-> > 	}
-> >
-> > 	return 0;
-> > @@ -1121,7 +1130,7 @@ static int update_flag(cpuset_flagbits_t
-> > 	mutex_unlock(&callback_mutex);
-> >
-> > 	if (cpus_nonempty && balance_flag_changed)
-> > -		rebuild_sched_domains();
-> > +		schedule_work(&rebuild_sched_domains_work);
-> >
-> > 	return 0;
-> > }
-> > @@ -1929,6 +1938,7 @@ static void scan_for_empty_cpusets(const
-> >
-> > static void common_cpu_mem_hotplug_unplug(void)
-> > {
-> > +	get_online_cpus();
-> > 	cgroup_lock();
-> >
-> > 	top_cpuset.cpus_allowed = cpu_online_map;
-> > @@ -1942,6 +1952,7 @@ static void common_cpu_mem_hotplug_unplu
-> > 	rebuild_sched_domains();
-> >
-> > 	cgroup_unlock();
-> > +	put_online_cpus();
-> > }
-> >
-> > /*
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
-> 
-> -- 
-> Thanks and Regards
-> gautham
+    J
 
--- 
-Thanks and Regards
-gautham
+> Current implement just cover Intel VMX side.
+>
+> Signed-off-by: Sheng Yang <sheng.yang@intel.com>
+> ---
+>  arch/x86/kernel/cpu/proc.c   |   28 ++++++++++++++++++++++++++++
+>  include/asm-x86/cpufeature.h |    9 +++++++++
+>  2 files changed, 37 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
+> index 0d0d905..03b30d0 100644
+> --- a/arch/x86/kernel/cpu/proc.c
+> +++ b/arch/x86/kernel/cpu/proc.c
+> @@ -77,6 +77,31 @@ static void show_cpuinfo_misc(struct seq_file *m, struct 
+> cpuinfo_x86 *c)
+>  }
+>  #endif
+>
+> +static void show_cpuinfo_vmx_virtflag(struct seq_file *m)
+> +{
+> +	u32 vmx_msr_low, vmx_msr_high, msr_ctl, msr_ctl2;
+> +
+> +	seq_printf(m, "\nvirt flag\t:");
+> +	rdmsr(MSR_IA32_VMX_PROCBASED_CTLS, vmx_msr_low, vmx_msr_high);
+> +	msr_ctl = 0xffffffff & vmx_msr_high | vmx_msr_low;
+> +	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW)
+> +		seq_printf(m, " tpr_shadow");
+> +	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_VNMI)
+> +		seq_printf(m, " vnmi");
+> +	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_2ND_CTLS) {
+> +		rdmsr(MSR_IA32_VMX_PROCBASED_CTLS2,
+> +		      vmx_msr_low, vmx_msr_high);
+> +		msr_ctl2 = 0xffffffff & vmx_msr_high | vmx_msr_low;
+> +		if ((msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_VIRT_APIC) &&
+> +		    (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW))
+> +			seq_printf(m, " flexpriority");
+> +		if (msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_EPT)
+> +			seq_printf(m, " ept");
+> +		if (msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_VPID)
+> +			seq_printf(m, " vpid");
+> +	}
+> +}
+> +
+>  static int show_cpuinfo(struct seq_file *m, void *v)
+>  {
+>  	struct cpuinfo_x86 *c = v;
+> @@ -123,6 +148,9 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+>  		if (cpu_has(c, i) && x86_cap_flags[i] != NULL)
+>  			seq_printf(m, " %s", x86_cap_flags[i]);
+>
+> +	if (cpu_has(c, X86_FEATURE_VMX))
+> +		show_cpuinfo_vmx_virtflag(m);
+> +
+>  	seq_printf(m, "\nbogomips\t: %lu.%02lu\n",
+>  		   c->loops_per_jiffy/(500000/HZ),
+>  		   (c->loops_per_jiffy/(5000/HZ)) % 100);
+> diff --git a/include/asm-x86/cpufeature.h b/include/asm-x86/cpufeature.h
+> index 0d609c8..87d8084 100644
+> --- a/include/asm-x86/cpufeature.h
+> +++ b/include/asm-x86/cpufeature.h
+> @@ -84,6 +84,7 @@
+>  #define X86_FEATURE_XMM3	(4*32+ 0) /* Streaming SIMD Extensions-3 */
+>  #define X86_FEATURE_MWAIT	(4*32+ 3) /* Monitor/Mwait support */
+>  #define X86_FEATURE_DSCPL	(4*32+ 4) /* CPL Qualified Debug Store */
+> +#define X86_FEATURE_VMX		(4*32+ 5) /* Virtual Machine eXtensions */
+>  #define X86_FEATURE_EST		(4*32+ 7) /* Enhanced SpeedStep */
+>  #define X86_FEATURE_TM2		(4*32+ 8) /* Thermal Monitor 2 */
+>  #define X86_FEATURE_CID		(4*32+10) /* Context ID */
+> @@ -113,6 +114,14 @@
+>   */
+>  #define X86_FEATURE_IDA		(7*32+ 0) /* Intel Dynamic Acceleration */
+>
+> +/* Intel VMX MSR indicated features */
+> +#define X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW	0x00200000
+> +#define X86_VMX_FEATURE_PROC_CTLS_VNMI		0x00400000
+> +#define X86_VMX_FEATURE_PROC_CTLS_2ND_CTLS	0x80000000
+> +#define X86_VMX_FEATURE_PROC_CTLS2_VIRT_APIC	0x00000001
+> +#define X86_VMX_FEATURE_PROC_CTLS2_EPT		0x00000002
+> +#define X86_VMX_FEATURE_PROC_CTLS2_VPID		0x00000020
+> +
+>  #if defined(__KERNEL__) && !defined(__ASSEMBLY__)
+>
+>  #include <linux/bitops.h>
+> --
+> 1.5.5
+>
+>   
+
