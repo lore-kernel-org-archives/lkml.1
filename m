@@ -1,118 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbYF0Jux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754912AbYF0KAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755537AbYF0Jux (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 05:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYF0Juo
+	id S1754912AbYF0KAi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 06:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbYF0KA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 05:50:44 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:45969 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752068AbYF0Jun (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 05:50:43 -0400
-Date: Fri, 27 Jun 2008 15:19:13 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Mingming <cmm@us.ibm.com>
-Cc: Holger Kiehl <Holger.Kiehl@dwd.de>, Theodore Tso <tytso@mit.edu>,
-       Eric Sandeen <sandeen@redhat.com>, Jan Kara <jack@suse.cz>,
-       Solofo.Ramangalahy@bull.net, Nick Dokos <nicholas.dokos@hp.com>,
-       linux-ext4@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+	Fri, 27 Jun 2008 06:00:27 -0400
+Received: from styx.suse.cz ([82.119.242.94]:41411 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752226AbYF0KA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 06:00:26 -0400
+Date: Fri, 27 Jun 2008 12:00:24 +0200
+From: Jan Kara <jack@suse.cz>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Mingming <cmm@us.ibm.com>, Holger Kiehl <Holger.Kiehl@dwd.de>,
+       Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
+       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
 Subject: Re: Performance of ext4
-Message-ID: <20080627094913.GB32723@skywalker>
-References: <Pine.LNX.4.64.0806200905070.3383@diagnostix.dwd.de> <20080623174508.GA7216@skywalker> <1214267492.27507.285.camel@BVR-FS.beaverton.ibm.com> <20080624030721.GB10469@skywalker> <20080624033349.GD10469@skywalker> <Pine.LNX.4.64.0806242103370.14795@diagnostix.dwd.de> <1214348318.27507.330.camel@BVR-FS.beaverton.ibm.com> <Pine.LNX.4.64.0806250856160.16081@diagnostix.dwd.de> <1214441199.27507.351.camel@BVR-FS.beaverton.ibm.com> <20080627091459.GA32723@skywalker>
+Message-ID: <20080627100024.GB3602@duck.suse.cz>
+References: <20080623174508.GA7216@skywalker> <1214267492.27507.285.camel@BVR-FS.beaverton.ibm.com> <20080624030721.GB10469@skywalker> <20080624033349.GD10469@skywalker> <Pine.LNX.4.64.0806242103370.14795@diagnostix.dwd.de> <1214348318.27507.330.camel@BVR-FS.beaverton.ibm.com> <Pine.LNX.4.64.0806250856160.16081@diagnostix.dwd.de> <1214441199.27507.351.camel@BVR-FS.beaverton.ibm.com> <20080627091459.GA32723@skywalker> <20080627094913.GB32723@skywalker>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080627091459.GA32723@skywalker>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080627094913.GB32723@skywalker>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 02:44:59PM +0530, Aneesh Kumar K.V wrote:
-> On Wed, Jun 25, 2008 at 05:46:39PM -0700, Mingming wrote:
-> > 
-> > On Wed, 2008-06-25 at 09:09 +0000, Holger Kiehl wrote:
-> > > On Tue, 24 Jun 2008, Mingming wrote:
+On Fri 27-06-08 15:19:13, Aneesh Kumar K.V wrote:
+> On Fri, Jun 27, 2008 at 02:44:59PM +0530, Aneesh Kumar K.V wrote:
+> > On Wed, Jun 25, 2008 at 05:46:39PM -0700, Mingming wrote:
 > > > 
-> > > >
-> > > > On Tue, 2008-06-24 at 21:12 +0000, Holger Kiehl wrote:
-> > > >> Yes, with this patch applied on top of latest patch queue I no longer
-> > > >> get truncated files, after running a short test. Tomorrow I will do some
-> > > >> more thorough testing and use the patch you have send to me in a separate
-> > > >> mail. The above patch did not apply but it was easy to apply by hand.
-> > > >
-> > > >
-> > > > Thanks for quick response and test. I have updated the patch queue with
-> > > > above patch merged. Please let me know if you still see apply issue and
-> > > > file size update issue with current patch queue.
-> > > >
-> > > Thanks, it applies without any problems. However I still hit an oops. What
-> > > I find strange is that I got the oops just as the benchmark is done and
-> > > all process where shutting down. The same behaviour I reported here:
-> > > http://www.ussg.iu.edu/hypermail/linux/kernel/0806.2/2113.html
-> > > Only this time I got just one oops. This is on x86_64 system (4 Opteron CPU's
-> > > and SW Raid 1+0). I have not seen this on my home system x86 (1 Dual Core
-> > > and HW Raid). Anyway, here the dmesg output:
+> > > On Wed, 2008-06-25 at 09:09 +0000, Holger Kiehl wrote:
+> > > > On Tue, 24 Jun 2008, Mingming wrote:
+> > > > 
+> > > > >
+> > > > > On Tue, 2008-06-24 at 21:12 +0000, Holger Kiehl wrote:
+> > > > >> Yes, with this patch applied on top of latest patch queue I no longer
+> > > > >> get truncated files, after running a short test. Tomorrow I will do some
+> > > > >> more thorough testing and use the patch you have send to me in a separate
+> > > > >> mail. The above patch did not apply but it was easy to apply by hand.
+> > > > >
+> > > > >
+> > > > > Thanks for quick response and test. I have updated the patch queue with
+> > > > > above patch merged. Please let me know if you still see apply issue and
+> > > > > file size update issue with current patch queue.
+> > > > >
+> > > > Thanks, it applies without any problems. However I still hit an oops. What
+> > > > I find strange is that I got the oops just as the benchmark is done and
+> > > > all process where shutting down. The same behaviour I reported here:
+> > > > http://www.ussg.iu.edu/hypermail/linux/kernel/0806.2/2113.html
+> > > > Only this time I got just one oops. This is on x86_64 system (4 Opteron CPU's
+> > > > and SW Raid 1+0). I have not seen this on my home system x86 (1 Dual Core
+> > > > and HW Raid). Anyway, here the dmesg output:
+> > > > 
+> > > > kjournald2 starting.  Commit interval 15 seconds
+> > > > EXT4 FS on md7, internal journal
+> > > > EXT4-fs: mounted filesystem with ordered data mode.
+> > > > EXT4-fs: file extents enabled
+> > > > EXT4-fs: mballoc enabled
+> > > > JBD: barrier-based sync failed on md7 - disabling barriers
+> > > > ------------[ cut here ]------------
+> > > > kernel BUG at fs/ext4/inode.c:1667!
 > > > 
-> > > kjournald2 starting.  Commit interval 15 seconds
-> > > EXT4 FS on md7, internal journal
-> > > EXT4-fs: mounted filesystem with ordered data mode.
-> > > EXT4-fs: file extents enabled
-> > > EXT4-fs: mballoc enabled
-> > > JBD: barrier-based sync failed on md7 - disabling barriers
-> > > ------------[ cut here ]------------
-> > > kernel BUG at fs/ext4/inode.c:1667!
+> > > Did not get a chance to look more closely today, but it's point to this
+> > > code in ext4_da_writepage()
+> > > 
+> > >  page_bufs = page_buffers(page);
+> > > 
+> > > and appearently it's BUG_ON at 
+> > >  BUG_ON(!PagePrivate(page)); in page_buffers().
+> > > 
+> > > 
 > > 
-> > Did not get a chance to look more closely today, but it's point to this
-> > code in ext4_da_writepage()
-> > 
-> >  page_bufs = page_buffers(page);
-> > 
-> > and appearently it's BUG_ON at 
-> >  BUG_ON(!PagePrivate(page)); in page_buffers().
+> > Ok so we are doing the journal_commit and meanwhile shrink_page_list
+> > dropped the buffer. I guess what is happening is
 > > 
 > > 
+> > journal_submit_inode_data_buffers
+> > generic_writepages
+> > write_cache_pages
+> > pagevec_lookup_tag(..PAGECACHE_TAG_DIRTY,..)
+> > foreach(page)
+> > 							shrink_page_list
+> > 							lock_page
+> > 							ext4_releasepage
+> > 							try_to_free_buffers
+> > 							drop_buffers
+> > 							cancel_dirty_page
+> > 							unlock_page
+> > lock_page()
+> > BUG_ON(!PagePrivate(page));
+> > 
+> > 
+> > How about the below ? 
 > 
-> Ok so we are doing the journal_commit and meanwhile shrink_page_list
-> dropped the buffer. I guess what is happening is
-> 
-> 
-> journal_submit_inode_data_buffers
-> generic_writepages
-> write_cache_pages
-> pagevec_lookup_tag(..PAGECACHE_TAG_DIRTY,..)
-> foreach(page)
-> 							shrink_page_list
-> 							lock_page
-> 							ext4_releasepage
-> 							try_to_free_buffers
-> 							drop_buffers
-> 							cancel_dirty_page
-> 							unlock_page
-> lock_page()
-> BUG_ON(!PagePrivate(page));
-> 
-> 
-> How about the below ? 
+> or update write_cache_pages not to call writepage if the page is not
+> dirty ?
+  But that is already happening :) Look a few lines above your patch into
+clear_page_dirty_for_io()...
 
-or update write_cache_pages not to call writepage if the page is not
-dirty ?
+									Honza
 
-
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index ded57d5..0a13702 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -929,6 +929,11 @@ int write_cache_pages(struct address_space *mapping,
- 				continue;
- 			}
- 
-+			if (!PageDirty(page)) {
-+				unlock_page(page);
-+				continue;
-+			}
-+
- 			ret = (*writepage)(page, wbc, data);
- 
- 			if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE)) {
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index ded57d5..0a13702 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -929,6 +929,11 @@ int write_cache_pages(struct address_space *mapping,
+>  				continue;
+>  			}
+>  
+> +			if (!PageDirty(page)) {
+> +				unlock_page(page);
+> +				continue;
+> +			}
+> +
+>  			ret = (*writepage)(page, wbc, data);
+>  
+>  			if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE)) {
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
