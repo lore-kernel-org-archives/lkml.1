@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763538AbYF0VEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763866AbYF0VGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763538AbYF0VEo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 17:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbYF0VEg
+	id S1763866AbYF0VGS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 17:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757814AbYF0VGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 17:04:36 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:41700 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753092AbYF0VEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 17:04:35 -0400
-Date: Fri, 27 Jun 2008 23:05:21 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       dbrownell@users.sourceforge.net
-Subject: Re: [PATCH] kernel-doc: handle/strip __init
-Message-ID: <20080627210521.GC29245@uranus.ravnborg.org>
-References: <20080619160329.1a4fe917.randy.dunlap@oracle.com>
+	Fri, 27 Jun 2008 17:06:05 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45086 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755024AbYF0VGC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 17:06:02 -0400
+Subject: Re: [PATCH] Fix a.out.h export to userspace with O= build.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Adrian Bunk <bunk@kernel.org>, torvalds@linux-foundation.org,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dhowells@redhat.com
+In-Reply-To: <20080627205712.GA29202@uranus.ravnborg.org>
+References: <20080627130236.GD18644@cs181140183.pp.htv.fi>
+	 <1214571984.10393.193.camel@pmac.infradead.org>
+	 <20080627131231.GF18644@cs181140183.pp.htv.fi>
+	 <1214573982.10393.204.camel@pmac.infradead.org>
+	 <20080627205712.GA29202@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Fri, 27 Jun 2008 22:05:56 +0100
+Message-Id: <1214600756.10393.214.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080619160329.1a4fe917.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 19, 2008 at 04:03:29PM -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On Fri, 2008-06-27 at 22:57 +0200, Sam Ravnborg wrote:
+> Hi David.
 > 
-> cc: David Brownell <dbrownell@users.sourceforge.net>
-> 
-> Handle __init in functions with kernel-doc notation by stripping the
-> __init away from the output doc.  This is already being done for
-> "__devinit".  This patch fixes these kernel-doc error/aborts:
+> Will you carry this patch in your tree or do you
+> want me to add it to kbuild-next.git?
 
-Applied
+I was hoping Linus would apply it, since we could consider it a
+regression.
 
-	Sam
+-- 
+dwmw2
+
