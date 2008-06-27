@@ -1,36 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbYF0A7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757753AbYF0BCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756628AbYF0A7x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 20:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbYF0A7n
+	id S1757753AbYF0BCm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 21:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYF0BCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 20:59:43 -0400
-Received: from mga11.intel.com ([192.55.52.93]:40043 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750942AbYF0A7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 20:59:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,712,1204531200"; 
-   d="scan'208";a="582463274"
-Subject: Re: [PATCH v4 4/6] dmaengine: Make DMA Engine menu visible for
-	AVR32 users
-From: Dan Williams <dan.j.williams@intel.com>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: Adrian Bunk <bunk@kernel.org>, Pierre Ossman <drzeus-list@drzeus.cx>,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       kernel@avr32linux.org, "Nelson, Shannon" <shannon.nelson@intel.com>,
-       David Brownell <david-b@pacbell.net>
-In-Reply-To: <20080626164601.712bf048@hskinnemo-gx745.norway.atmel.com>
-References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com>
-	 <1214486603-23655-2-git-send-email-haavard.skinnemoen@atmel.com>
-	 <1214486603-23655-3-git-send-email-haavard.skinnemoen@atmel.com>
-	 <1214486603-23655-4-git-send-email-haavard.skinnemoen@atmel.com>
-	 <1214486603-23655-5-git-send-email-haavard.skinnemoen@atmel.com>
-	 <20080626141552.GB30954@cs181140183.pp.htv.fi>
-	 <20080626164601.712bf048@hskinnemo-gx745.norway.atmel.com>
+	Thu, 26 Jun 2008 21:02:33 -0400
+Received: from mail-in-12.arcor-online.net ([151.189.21.52]:58586 "EHLO
+	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752948AbYF0BCc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 21:02:32 -0400
+Subject: Re: [v4l-dvb-maintainer] saa7134 duplicate device in module, but
+	different device_data?
+From: hermann pitton <hermann-pitton@arcor.de>
+To: Ben Collins <ben.collins@canonical.com>
+Cc: Hartmut Hackmann <hartmut.hackmann@t-online.de>,
+       v4l-dvb-maintainer@linuxtv.org,
+       kernel list <linux-kernel@vger.kernel.org>, video4linux-list@redhat.com
+In-Reply-To: <1214525206.7150.118.camel@cunning>
+References: <1214501094.7150.29.camel@cunning>
+	 <1214524580.4480.32.camel@pc10.localdom.local>
+	 <1214525206.7150.118.camel@cunning>
 Content-Type: text/plain
-Date: Thu, 26 Jun 2008 17:59:39 -0700
-Message-Id: <1214528379.32709.51.camel@dwillia2-linux.ch.intel.com>
+Date: Fri, 27 Jun 2008 02:59:52 +0200
+Message-Id: <1214528392.4480.40.camel@pc10.localdom.local>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
@@ -39,73 +32,87 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2008-06-26 at 07:46 -0700, Haavard Skinnemoen wrote:
-> Adrian Bunk <bunk@kernel.org> wrote:
-> > That discussion is mixing two different things I suggested besides other
-> > things before the Kconfig file was added [1]:
-> > - have DMA_ENGINE select'ed when a device gets enabled by the user,
-> >   and not be an independent option
-> > - switch to menuconfig and don't offer an empty kconfig menu
-> >
-> > There seems to be no disagreement about the former (which could
-> > otherwise easily lead to users mistakenly enabling NET_DMA).
-> >
-> > The latter is more a cosmetical kconfig UI thing, and I already said
-> > back then that it "could be dropped if it would become a problem" [2].
+Am Donnerstag, den 26.06.2008, 20:06 -0400 schrieb Ben Collins:
+> On Fri, 2008-06-27 at 01:56 +0200, hermann pitton wrote:
+> > Hello,
+> > 
+> > Am Donnerstag, den 26.06.2008, 13:24 -0400 schrieb Ben Collins:
+> > > In the saa7134 module, there are these two entries in
+> > > MODULE_DEVICE_TABLE():
+> > > 
+> > > 
+> > >         },{
+> > >                 .vendor       = PCI_VENDOR_ID_PHILIPS,
+> > >                 .device       = PCI_DEVICE_ID_PHILIPS_SAA7133,
+> > >                 .subvendor    = 0x185b,
+> > >                 .subdevice    = 0xc100,
+> > >                 .driver_data  = SAA7134_BOARD_VIDEOMATE_TV,
+> > >         },{
+> > >                 .vendor       = PCI_VENDOR_ID_PHILIPS,
+> > >                 .device       = PCI_DEVICE_ID_PHILIPS_SAA7133,
+> > >                 .subvendor    = 0x185b,
+> > >                 .subdevice    = 0xc100,
+> > >                 .driver_data  = SAA7134_BOARD_VIDEOMATE_TV_GOLD_PLUS,
+> > >         },{
+> > > 
+> > > Both will exactly match, and I assume only the first one will ever be
+> > > used, hence the second is just a wasted dupe. At least, I would assume
+> > > if not for the differing driver_data. Anyway to clear up this ambiguity?
+> > > 
+> > 
+> > there are even more devices with the same PCI device and subsystem ID
+> > from that vendor and the problem goes also over saa7133 and saa7135
+> > devices, for which we have no means to detect them as different, but the
+> > saa7133 does only NTSC-M system TV sound decoding and saa7135 and the
+> > even later saa7131e global analog TV sound.
+> > 
+> > For the early saa7133 SAA7134_BOARD_VIDEOMATE_TV we don't have eeprom
+> > readout data and the contributor doesn't have the card anymore.
+> > A request for helping out with such on the list had no result so far.
+> > 
+> > As of now, we can't try to separate them by eeprom differences, which
+> > would be the best attempt and is done for some other Compro products
+> > with similar flaws already.
+> > 
+> > Before that likely possible eeprom detection ever happens, we have two
+> > options left to make you feel better.
+> > 
+> > Kick both out of the auto detection and the users will get a list of
+> > supported devices printed out, from which they have to choose.
+> > 
+> > Leave the oldest one in and print some warnings that they have to look
+> > it up for their newer cards. Naming is quite consistent, except some
+> > early Gold Plus II variants seen first in New Zealand coming with Gold
+> > Plus only stickers. They also come with different tuners, latest have a
+> > separate silicon radio tuner and all such usual ...
+> > 
+> > Patches are always welcome.
+> > 
+> > Internally it was only a reminder for missing eeprom data to be
+> > investigated.
 > 
-> Ok, thanks for explaining. The menu does appear empty if I remove the
-> architecture dependency without adding the driver...if that's a problem
-> maybe we should do the HAVE_DMA_DEVICE thing...
+> Well I was thinking that mainly, this was just a table for loading and
+> binding the driver with a device. In that case, only one entry is
+> needed. The probing would have to decide which device it is.
 > 
-> > So if you want to remove the architecture dependency from the DMADEVICES
-> > menu that's OK with me.
+> I'm not up for suggesting a fix, because I don't know enough about the
+> background. This email is just a friendly reminder that there exists
+> ambiguity, and at least for one of these devices, the driver isn't going
+> to detect it properly anyway :)
 > 
-> Ok, I'm gonna wait for Dan and others to respond. If it's fine with
-> them, I'll post a patch removing the arch dependency.
 
-I agree with removing the arch dependency, and I do not think we
-necessarily need to add HAVE_DMA_ENGINE.  Taking an example from libata
-the SATA_FSL driver depends on FSL_SOC but the menuconfig for ATA does
-not.  We can use "depends on HAS_DMA" to make the menu disappear on
-archs that will never have a dmaegine.  So I propose the following:
+I do agree and will be happy with any patch you provide to get it out of
+sight ;)
 
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 6239c3d..e4dd006 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -4,13 +4,14 @@
- 
- menuconfig DMADEVICES
- 	bool "DMA Engine support"
--	depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX || PPC
--	depends on !HIGHMEM64G
-+	depends on !HIGHMEM64G && HAS_DMA
- 	help
- 	  DMA engines can do asynchronous data transfers without
- 	  involving the host CPU.  Currently, this framework can be
- 	  used to offload memory copies in the network stack and
--	  RAID operations in the MD driver.
-+	  RAID operations in the MD driver.  This menu only presents
-+	  DMA Device drivers supported by the configured arch, it may
-+	  be empty in some cases.
- 
- if DMADEVICES
- 
-@@ -55,10 +56,12 @@ comment "DMA Clients"
- config NET_DMA
- 	bool "Network: TCP receive copy offload"
- 	depends on DMA_ENGINE && NET
-+	default (INTEL_IOATDMA || FSL_DMA)
- 	help
- 	  This enables the use of DMA engines in the network stack to
- 	  offload receive copy-to-user operations, freeing CPU cycles.
--	  Since this is the main user of the DMA engine, it should be enabled;
--	  say Y here.
-+
-+	  Say Y here if you enabled INTEL_IOATDMA or FSL_DMA, otherwise
-+	  say N.
- 
- endif
+Comes back to mind, there is another Compro one on M systems with a NEC
+"deghoster", converting to s-video for that and hence hangs on unusally
+TV vmux 7.
+
+All through so far, but not on the ground enough, since users went away,
+after they have it working ...
+
+Cheers,
+Hermann
 
 
 
