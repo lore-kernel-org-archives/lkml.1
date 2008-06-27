@@ -1,102 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYF0L27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbYF0LcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756732AbYF0L27 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 07:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbYF0L2q
+	id S1756185AbYF0LcJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 07:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYF0Lb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 07:28:46 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:38567 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1756109AbYF0L2l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 07:28:41 -0400
-Date: Fri, 27 Jun 2008 14:28:00 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, tzanussi@gmail.com,
-       penberg@cs.helsinki.fi, torvalds@linux-foundation.org,
-       compudj@krystal.dyndns.org, vegard.nossum@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] Full conversion to early_initcall() interface,
- remove old interface.
-Message-ID: <20080627142800.2c0b5cf1@linux360.ro>
-In-Reply-To: <87d4m3ywpu.fsf@skyscraper.fehenstaub.lan>
-References: <20080623153056.1862c14e@linux360.ro>
-	<20080623172742.be332a53.akpm@linux-foundation.org>
-	<20080625120151.56180b47@linux360.ro>
-	<87d4m3ywpu.fsf@skyscraper.fehenstaub.lan>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Jun 2008 07:31:58 -0400
+Received: from smtp.fullrate.dk ([89.150.129.5]:51208 "EHLO dns2.fullrate.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752868AbYF0Lb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 07:31:58 -0400
+Message-ID: <4864CFA5.9050901@agner.org>
+Date: Fri, 27 Jun 2008 13:31:49 +0200
+From: Agner Fog <agner@agner.org>
+Organization: agner@agner.org
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: ABI change for device drivers using future AVX instruction set
+References: <48626514.2040905@agner.org> <20080625092224.736c2541@infradead.org> <4862ECAB.1040402@zytor.com>
+In-Reply-To: <4862ECAB.1040402@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jun 2008 12:54:21 +0200
-Johannes Weiner <hannes@saeurebad.de> wrote:
+Arjan van de Ven wrote:
 
-> Hi Eduard,
+>the linux kernel policy is loud and clear; this is more an OS policy as
+>it is a platform ABI issue.
 
-Hi.
- 
-> You forgot to remove the declaration from linux/interrupt.h.
+It doesn't help to say it "loud and clear" in a closed mailing list. It has to go into an official document that people can find, and the ABI is the most natural place to look for such rules. The ABI is hard enough to find. Is there an official OS policy document somewhere that I haven't found? Please point me to an authoritative document.
 
-The last patch was made against linux-next, as Andrew Morton
-suggested, where spawn_ksoftirqd() was declared in the scope of
-__do_pre_smp_initcall():
-@@ -793,17 +784,6 @@ static void __init __do_pre_smp_initcalls(void)
- 		do_one_initcall(*call);
- }
- 
--static void __init do_pre_smp_initcalls(void)
--{
--	extern int spawn_ksoftirqd(void);
--
--	init_call_single_data();
--	migration_init();
--	spawn_ksoftirqd();
--	if (!nosoftlockup)
--		spawn_softlockup_task();
--}
--
+You can't blame driver makers for using XMM or YMM registers in inline assembly or intrinsic functions or calling their own libraries or using a different compiler unless there is an official rule against it written in some official document that is easy to find. If you want to move data in a device driver, it is tempting indeed to use the largest register size available.
 
-It may be that some other patch in -mmotm moves that into
-include/linux/interrupt.h. In linux-next with my patch, running
-$ find . -name \*.h | xargs grep "spawn_ksoftirqd"
-shows nothing.
-
-Thanks for spotting this difference.
-
-(Using -mmotm + quilt myself is an additional headache, since git
-already does what I want in terms of patch (read commits) management;
-that's why I prefered linux-next.)
-
-> Andrew, the following fix is needed for -mmotm:
-> 
-> From: Johannes Weiner <hannes@saeurebad.de>
-> Subject:
-> full-conversion-to-early_initcall-interface-remove-old-interface-fix
-> 
-> Original patch made spawn_softirqd() static but failed to remove the
-> global definition.  Do so now.
-> 
-> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-> ---
-> 
-> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-> index 30da779..62aa4f8 100644
-> --- a/include/linux/interrupt.h
-> +++ b/include/linux/interrupt.h
-> @@ -299,7 +299,6 @@ extern void softirq_init(void);
->  #define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL <<
-> (nr)); } while (0) extern void raise_softirq_irqoff(unsigned int nr);
->  extern void raise_softirq(unsigned int nr);
-> -extern int spawn_ksoftirqd(void);
->  
->  
->  /* Tasklets --- multithreaded analogue of BHs.
+I will write the rules in my manual, but it is not authoritative.
 
 
-	Cheers,
-	Eduard
+H. Peter Anvin wrote:
+ >Sadly, AVX repeats the mistakes of SSE1, and doesn't implement proper 
+wide support for integer operations.
+ >It has the basic bitwide stuff, which makes it usable for RAID-5, but 
+it doesn't extend MMX (which SSE2
+ >eventually got around to), so it's not usable for RAID-6.  I'd hoped 
+to find a VPERM-style instruction, like
+ >SSE5 has :(
+
+There is no problem in using the floating point permutation instructions 
+on integer data. They will not generate exceptions or anything on 
+denormal numbers. Only the smallest data size is 32 bits, of course. 
+Integer YMM instructions will probably come in a later version.
+
+Note: Please Cc: me on answers, I am not on the mailing list.
