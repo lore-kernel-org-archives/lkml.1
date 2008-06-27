@@ -1,91 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbYF0OQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758645AbYF0OTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758291AbYF0OQX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 10:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbYF0OQN
+	id S1758645AbYF0OTs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 10:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755048AbYF0OTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 10:16:13 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40437 "EHLO gate.crashing.org"
+	Fri, 27 Jun 2008 10:19:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42437 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754836AbYF0OQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 10:16:11 -0400
-Cc: joseph@codesourcery.com, linux-kernel@vger.kernel.org,
-       libc-alpha@sourceware.org
-Message-Id: <F02EB8BE-6780-4C75-ABB9-7F2397457374@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20080612.212457.01943346.davem@davemloft.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: math-emu issue with fp divide
-Date: Fri, 27 Jun 2008 09:15:40 -0500
-References: <Pine.LNX.4.64.0806042134020.32021@digraph.polyomino.org.uk> <20080604.144950.117343339.davem@davemloft.net> <Pine.LNX.4.64.0806050837230.24924@blarg.am.freescale.net> <20080612.212457.01943346.davem@davemloft.net>
-X-Mailer: Apple Mail (2.924)
+	id S1754957AbYF0OTk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 10:19:40 -0400
+Date: Fri, 27 Jun 2008 10:19:10 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: x86@kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: Find offset for crashkernel reservation
+	automatically
+Message-ID: <20080627141910.GD5801@redhat.com>
+References: <1214510048-21215-1-git-send-email-bwalle@suse.de> <20080627133256.GB5801@redhat.com> <20080627134212.GC5801@redhat.com> <20080627160656.06f71661@halley.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080627160656.06f71661@halley.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jun 27, 2008 at 04:06:56PM +0200, Bernhard Walle wrote:
+> * Vivek Goyal [2008-06-27 09:42]:
+> > 
+> > Thinking more about. Let me step back. I think it is not good idea to
+> > take this kernel take decision about the capability of kernel being
+> > loaded. There is no way we can find out now that if a kernel is capable
+> > of running from this memory location or not. This is highly variable. So,
+> > please ignore above comment.
+> 
+> Maybe below 4G makes sense. Because you need some 32 bit memory for DMA.
+> That's mostly an architecture limitation, so that could make sense to
+> check here.
+> 
 
-On Jun 12, 2008, at 11:24 PM, David Miller wrote:
+Even if you need some 32bit memory in the lower regions, kexec can handle
+it with backup segment mechanism (currently 640K). We can always increse
+the backup region size.
 
-> From: Kumar Gala <galak@kernel.crashing.org>
-> Date: Thu, 5 Jun 2008 08:38:44 -0500 (CDT)
->
->> Now that I'm digging into this a bit I'm thinking my issue has to  
->> do with
->> the fix you put in place from back in Aug 2007 (commit
->> 405849610fd96b4f34cd1875c4c033228fea6c0f):
->>
->> [MATH-EMU]: Fix underflow exception reporting.
->>
->>    2) we ended up rounding back up to normal (this is the case where
->>       we set the exponent to 1 and set the fraction to zero), this
->>       should set inexact too
->> ...
->>
->>    Another example, "0x0.0000000000001p-1022 / 16.0", should signal  
->> both
->>    inexact and underflow.  The cpu implementations and ieee1754
->>    literature is very clear about this.  This is case #2 above.
->>
->> I'm not clear from your commit comment on what actual number
->> 0x0.0....01p-1022 is?
->
-> I haven't been able to look closely at this yet but I think I
-> happened to stumble over the test case that lead me to that
-> changeset you are referencing here.
->
-> The "actual number" is exactly as listed "0x0.0000000000001p-1022",
-> I don't know what's so confusing about it :-)))
->
-> I think this was distilled by Jakub Jelinek from some glibc test case.
->
-> #include <float.h>
-> #include <fenv.h>
-> #include <stdio.h>
->
-> volatile double d = DBL_MIN;
-> volatile double e = 0x0.0000000000001p-1022;
-> volatile double f = 16.0;
-> int
-> main (void)
-> {
->  printf ("%x\n", fetestexcept (FE_UNDERFLOW));
->  d /= f;
->  printf ("%x\n", fetestexcept (FE_UNDERFLOW));
->  e /= f;
->  printf ("%x\n", fetestexcept (FE_UNDERFLOW));
->  return 0;
-> }
+So I would think that it is best to leave it without any checking and 
+then let kexec-tools handle it.
 
-I tested this on PPC HW fp and kern emu w/my patch and get the same  
-results:
-
-0
-0
-8000000
-
-(8000000 is underflow in the PPC FP status register)
-
-- k
+Thanks
+Vivek
