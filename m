@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbYF0OFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbYF0OG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755961AbYF0OFj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 10:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbYF0OF3
+	id S1755347AbYF0OG2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 10:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756224AbYF0OGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 10:05:29 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:51157 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751273AbYF0OF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 10:05:29 -0400
-From: Paul Jackson <pj@sgi.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: "Michael Kerrisk" <mtk.manpages@googlemail.com>,
-       "Paul Menage" <menage@google.com>, Paul Jackson <pj@sgi.com>,
-       linux-kernel@vger.kernel.org, "Mike Travis" <travis@sgi.com>
-Date: Fri, 27 Jun 2008 07:05:28 -0700
-Message-Id: <20080627140528.3490.86690.sendpatchset@polaris-admin.engr.sgi.com>
-Subject: [PATCH] cpusets: document proc status cpus and mems allowed lists
+	Fri, 27 Jun 2008 10:06:20 -0400
+Received: from ns2.suse.de ([195.135.220.15]:45099 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753549AbYF0OGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 10:06:19 -0400
+Date: Fri, 27 Jun 2008 16:06:56 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: x86@kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: Find offset for crashkernel reservation
+ automatically
+Message-ID: <20080627160656.06f71661@halley.suse.de>
+In-Reply-To: <20080627134212.GC5801@redhat.com>
+References: <1214510048-21215-1-git-send-email-bwalle@suse.de>
+	<20080627133256.GB5801@redhat.com>
+	<20080627134212.GC5801@redhat.com>
+Organization: SUSE Linux Products GmbH
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Jackson <pj@sgi.com>
+* Vivek Goyal [2008-06-27 09:42]:
+> 
+> Thinking more about. Let me step back. I think it is not good idea to
+> take this kernel take decision about the capability of kernel being
+> loaded. There is no way we can find out now that if a kernel is capable
+> of running from this memory location or not. This is highly variable. So,
+> please ignore above comment.
 
-Provide a little documentation for the two new fields,
-Cpus_allowed_list and Mems_allowed_list, that were
-added to each /proc/<pid>/status file a while back.
+Maybe below 4G makes sense. Because you need some 32 bit memory for DMA.
+That's mostly an architecture limitation, so that could make sense to
+check here.
 
-Signed-off-by: Paul Jackson <pj@sgi.com>
+But I don't have any strong opinion about that.
 
----
- Documentation/cpusets.txt |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- 2.6.26-rc5-mm3.orig/Documentation/cpusets.txt	2008-06-27 06:20:55.000000000 -0700
-+++ 2.6.26-rc5-mm3/Documentation/cpusets.txt	2008-06-27 06:55:34.609862065 -0700
-@@ -154,13 +154,15 @@ browsing and modifying the cpusets prese
- new system calls are added for cpusets - all support for querying and
- modifying cpusets is via this cpuset file system.
- 
--The /proc/<pid>/status file for each task has two added lines,
-+The /proc/<pid>/status file for each task has four added lines,
- displaying the tasks cpus_allowed (on which CPUs it may be scheduled)
- and mems_allowed (on which Memory Nodes it may obtain memory),
--in the format seen in the following example:
-+in the two formats seen in the following example:
- 
-   Cpus_allowed:   ffffffff,ffffffff,ffffffff,ffffffff
-+  Cpus_allowed_list:      0-127
-   Mems_allowed:   ffffffff,ffffffff
-+  Mems_allowed_list:      0-63
- 
- Each cpuset is represented by a directory in the cgroup file system
- containing (on top of the standard cgroup files) the following
-
+Bernhard
 -- 
-                          I won't rest till it's the best ...
-                          Programmer, Linux Scalability
-                          Paul Jackson <pj@sgi.com> 1.650.933.1373
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
