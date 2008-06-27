@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764500AbYF0Vl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764806AbYF0Vm0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764500AbYF0Vl7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 17:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764247AbYF0Vhf
+	id S1764806AbYF0Vm0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 17:42:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764252AbYF0Vhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 17:37:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59099 "EHLO mx1.redhat.com"
+	Fri, 27 Jun 2008 17:37:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59110 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761831AbYF0VhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 17:37:24 -0400
+	id S1764230AbYF0Vhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 17:37:33 -0400
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: tglx@linutronix.de, mingo@elte.hu, x86@kernel.org
-Subject: [PATCH 14/39] merge getuser asm functions
-Date: Fri, 27 Jun 2008 18:34:21 -0300
-Message-Id: <1214602486-17080-15-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 15/39] don't save ebx in putuser_32.S
+Date: Fri, 27 Jun 2008 18:34:22 -0300
+Message-Id: <1214602486-17080-16-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1214602486-17080-14-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1214602486-17080-15-git-send-email-gcosta@redhat.com>
 References: <1214602486-17080-1-git-send-email-gcosta@redhat.com>
  <1214602486-17080-2-git-send-email-gcosta@redhat.com>
  <1214602486-17080-3-git-send-email-gcosta@redhat.com>
@@ -31,362 +31,84 @@ References: <1214602486-17080-1-git-send-email-gcosta@redhat.com>
  <1214602486-17080-12-git-send-email-gcosta@redhat.com>
  <1214602486-17080-13-git-send-email-gcosta@redhat.com>
  <1214602486-17080-14-git-send-email-gcosta@redhat.com>
+ <1214602486-17080-15-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-getuser_32.S and getuser_64.S are merged into getuser.S
+clobber it in the inline asm macros, and let the compiler do this for us.
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/lib/Makefile     |    2 +-
- arch/x86/lib/getuser.S    |  104 +++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/lib/getuser_32.S |   79 ----------------------------------
- arch/x86/lib/getuser_64.S |  100 -------------------------------------------
- include/asm-x86/asm.h     |    4 +-
- 5 files changed, 108 insertions(+), 181 deletions(-)
- create mode 100644 arch/x86/lib/getuser.S
- delete mode 100644 arch/x86/lib/getuser_32.S
- delete mode 100644 arch/x86/lib/getuser_64.S
+ arch/x86/lib/putuser_32.S    |   13 ++-----------
+ include/asm-x86/uaccess_32.h |   10 +++++-----
+ 2 files changed, 7 insertions(+), 16 deletions(-)
 
-diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
-index 700c2c3..bf990ca 100644
---- a/arch/x86/lib/Makefile
-+++ b/arch/x86/lib/Makefile
-@@ -6,7 +6,7 @@ obj-$(CONFIG_SMP) := msr-on-cpu.o
+diff --git a/arch/x86/lib/putuser_32.S b/arch/x86/lib/putuser_32.S
+index f58fba1..5b2a926 100644
+--- a/arch/x86/lib/putuser_32.S
++++ b/arch/x86/lib/putuser_32.S
+@@ -26,14 +26,8 @@
+  */
  
- lib-y := delay.o
- lib-y += thunk_$(BITS).o
--lib-y += usercopy_$(BITS).o getuser_$(BITS).o putuser_$(BITS).o
-+lib-y += usercopy_$(BITS).o getuser.o putuser_$(BITS).o
- lib-y += memcpy_$(BITS).o
+ #define ENTER	CFI_STARTPROC ; \
+-		pushl %ebx ; \
+-		CFI_ADJUST_CFA_OFFSET 4 ; \
+-		CFI_REL_OFFSET ebx, 0 ; \
+ 		GET_THREAD_INFO(%ebx)
+-#define EXIT	popl %ebx ; \
+-		CFI_ADJUST_CFA_OFFSET -4 ; \
+-		CFI_RESTORE ebx ; \
+-		ret ; \
++#define EXIT	ret ; \
+ 		CFI_ENDPROC
  
- ifeq ($(CONFIG_X86_32),y)
-diff --git a/arch/x86/lib/getuser.S b/arch/x86/lib/getuser.S
-new file mode 100644
-index 0000000..ad37400
---- /dev/null
-+++ b/arch/x86/lib/getuser.S
-@@ -0,0 +1,104 @@
-+/*
-+ * __get_user functions.
-+ *
-+ * (C) Copyright 1998 Linus Torvalds
-+ * (C) Copyright 2005 Andi Kleen
-+ * (C) Copyright 2008 Glauber Costa
-+ *
-+ * These functions have a non-standard call interface
-+ * to make them more efficient, especially as they
-+ * return an error value in addition to the "real"
-+ * return value.
-+ */
-+
-+/*
-+ * __get_user_X
-+ *
-+ * Inputs:	%[r|e]ax contains the address.
-+ *		The register is modified, but all changes are undone
-+ *		before returning because the C code doesn't know about it.
-+ *
-+ * Outputs:	%[r|e]ax is error code (0 or -EFAULT)
-+ *		%[r|e]dx contains zero-extended value
-+ *
-+ *
-+ * These functions should not modify any other registers,
-+ * as they get called from within inline assembly.
-+ */
-+
-+#include <linux/linkage.h>
-+#include <asm/dwarf2.h>
-+#include <asm/page.h>
-+#include <asm/errno.h>
-+#include <asm/asm-offsets.h>
-+#include <asm/thread_info.h>
-+#include <asm/asm.h>
-+
-+	.text
-+ENTRY(__get_user_1)
-+	CFI_STARTPROC
-+	GET_THREAD_INFO(%_ASM_DX)
-+	cmp TI_addr_limit(%_ASM_DX),%_ASM_AX
-+	jae bad_get_user
-+1:	movzb (%_ASM_AX),%edx
-+	xor %eax,%eax
-+	ret
-+	CFI_ENDPROC
-+ENDPROC(__get_user_1)
-+
-+ENTRY(__get_user_2)
-+	CFI_STARTPROC
-+	add $1,%_ASM_AX
-+	jc bad_get_user
-+	GET_THREAD_INFO(%_ASM_DX)
-+	cmp TI_addr_limit(%_ASM_DX),%_ASM_AX
-+	jae bad_get_user
-+2:	movzwl -1(%_ASM_AX),%edx
-+	xor %eax,%eax
-+	ret
-+	CFI_ENDPROC
-+ENDPROC(__get_user_2)
-+
-+ENTRY(__get_user_4)
-+	CFI_STARTPROC
-+	add $3,%_ASM_AX
-+	jc bad_get_user
-+	GET_THREAD_INFO(%_ASM_DX)
-+	cmp TI_addr_limit(%_ASM_DX),%_ASM_AX
-+	jae bad_get_user
-+3:	mov -3(%_ASM_AX),%edx
-+	xor %eax,%eax
-+	ret
-+	CFI_ENDPROC
-+ENDPROC(__get_user_4)
-+
-+#ifdef CONFIG_X86_64
-+ENTRY(__get_user_8)
-+	CFI_STARTPROC
-+	add $7,%_ASM_AX
-+	jc bad_get_user
-+	GET_THREAD_INFO(%_ASM_DX)
-+	cmp TI_addr_limit(%_ASM_DX),%_ASM_AX
-+	jae	bad_get_user
-+4:	movq -7(%_ASM_AX),%_ASM_DX
-+	xor %eax,%eax
-+	ret
-+	CFI_ENDPROC
-+ENDPROC(__get_user_8)
-+#endif
-+
-+bad_get_user:
-+	CFI_STARTPROC
-+	xor %edx,%edx
-+	mov $(-EFAULT),%_ASM_AX
-+	ret
-+	CFI_ENDPROC
-+END(bad_get_user)
-+
-+.section __ex_table,"a"
-+	_ASM_PTR 1b,bad_get_user
-+	_ASM_PTR 2b,bad_get_user
-+	_ASM_PTR 3b,bad_get_user
-+#ifdef CONFIG_X86_64
-+	_ASM_PTR 4b,bad_get_user
-+#endif
-diff --git a/arch/x86/lib/getuser_32.S b/arch/x86/lib/getuser_32.S
-deleted file mode 100644
-index 2bb0a18..0000000
---- a/arch/x86/lib/getuser_32.S
-+++ /dev/null
-@@ -1,79 +0,0 @@
--/*
-- * __get_user functions.
-- *
-- * (C) Copyright 1998 Linus Torvalds
-- *
-- * These functions have a non-standard call interface
-- * to make them more efficient, especially as they
-- * return an error value in addition to the "real"
-- * return value.
-- */
--#include <linux/linkage.h>
--#include <asm/dwarf2.h>
--#include <asm/thread_info.h>
--#include <asm/asm.h>
--
--
--/*
-- * __get_user_X
-- *
-- * Inputs:	%eax contains the address
-- *
-- * Outputs:	%eax is error code (0 or -EFAULT)
-- *		%edx contains zero-extended value
-- *
-- * These functions should not modify any other registers,
-- * as they get called from within inline assembly.
-- */
--
--.text
--ENTRY(__get_user_1)
--	CFI_STARTPROC
--	GET_THREAD_INFO(%_ASM_DX)
--	cmp TI_addr_limit(%_ASM_DX),%_ASM_AX
--	jae bad_get_user
--1:	movzb (%_ASM_AX),%edx
--	xor %eax,%eax
--	ret
--	CFI_ENDPROC
--ENDPROC(__get_user_1)
--
--ENTRY(__get_user_2)
--	CFI_STARTPROC
--	add $1,%_ASM_AX
--	jc bad_get_user
--	GET_THREAD_INFO(%_ASM_DX)
--	cmp TI_addr_limit(%_ASM_DX),%_ASM_AX
--	jae bad_get_user
--2:	movzwl -1(%_ASM_AX),%edx
--	xor %eax,%eax
--	ret
--	CFI_ENDPROC
--ENDPROC(__get_user_2)
--
--ENTRY(__get_user_4)
--	CFI_STARTPROC
--	add $3,%_ASM_AX
--	jc bad_get_user
--	GET_THREAD_INFO(%_ASM_DX)
--	cmp TI_addr_limit(%_ASM_DX),%_ASM_AX
--	jae bad_get_user
--3:	mov -3(%_ASM_AX),%edx
--	xor %eax,%eax
--	ret
--	CFI_ENDPROC
--ENDPROC(__get_user_4)
--
--bad_get_user:
--	CFI_STARTPROC
--	xor %edx,%edx
--	mov $-14,%_ASM_AX
--	ret
--	CFI_ENDPROC
--END(bad_get_user)
--
--.section __ex_table,"a"
--	_ASM_PTR 1b,bad_get_user
--	_ASM_PTR 2b,bad_get_user
--	_ASM_PTR 3b,bad_get_user
--.previous
-diff --git a/arch/x86/lib/getuser_64.S b/arch/x86/lib/getuser_64.S
-deleted file mode 100644
-index e333884..0000000
---- a/arch/x86/lib/getuser_64.S
-+++ /dev/null
-@@ -1,100 +0,0 @@
--/*
-- * __get_user functions.
-- *
-- * (C) Copyright 1998 Linus Torvalds
-- * (C) Copyright 2005 Andi Kleen
-- *
-- * These functions have a non-standard call interface
-- * to make them more efficient, especially as they
-- * return an error value in addition to the "real"
-- * return value.
-- */
--
--/*
-- * __get_user_X
-- *
-- * Inputs:	%rax contains the address.
-- *		The register is modified, but all changes are undone
-- *		before returning because the C code doesn't know about it.
-- *
-- * Outputs:	%rax is error code (0 or -EFAULT)
-- *		%rdx contains zero-extended value
-- * 
-- *
-- * These functions should not modify any other registers,
-- * as they get called from within inline assembly.
-- */
--
--#include <linux/linkage.h>
--#include <asm/dwarf2.h>
--#include <asm/page.h>
--#include <asm/errno.h>
--#include <asm/asm-offsets.h>
--#include <asm/thread_info.h>
--#include <asm/asm.h>
--
--	.text
--ENTRY(__get_user_1)
--	CFI_STARTPROC
--	GET_THREAD_INFO(%_ASM_DX)
--	cmp TI_addr_limit(%_ASM_DX),%_ASM_AX
--	jae bad_get_user
--1:	movzb (%_ASM_AX),%edx
--	xor %eax,%eax
--	ret
--	CFI_ENDPROC
--ENDPROC(__get_user_1)
--
--ENTRY(__get_user_2)
--	CFI_STARTPROC
--	add $1,%_ASM_AX
--	jc bad_get_user
--	GET_THREAD_INFO(%_ASM_DX)
--	cmp TI_addr_limit(%_ASM_DX),%_ASM_AX
--	jae bad_get_user
--2:	movzwl -1(%_ASM_AX),%edx
--	xor %eax,%eax
--	ret
--	CFI_ENDPROC
--ENDPROC(__get_user_2)
--
--ENTRY(__get_user_4)
--	CFI_STARTPROC
--	add $3,%_ASM_AX
--	jc bad_get_user
--	GET_THREAD_INFO(%_ASM_DX)
--	cmp TI_addr_limit(%_ASM_DX),%_ASM_AX
--	jae bad_get_user
--3:	mov -3(%_ASM_AX),%edx
--	xor %eax,%eax
--	ret
--	CFI_ENDPROC
--ENDPROC(__get_user_4)
--
--ENTRY(__get_user_8)
--	CFI_STARTPROC
--	add $7,%_ASM_AX
--	jc bad_get_user
--	GET_THREAD_INFO(%_ASM_DX)
--	cmp TI_addr_limit(%_ASM_DX),%_ASM_AX
--	jae	bad_get_user
--4:	movq -7(%_ASM_AX),%_ASM_DX
--	xor %eax,%eax
--	ret
--	CFI_ENDPROC
--ENDPROC(__get_user_8)
--
--bad_get_user:
--	CFI_STARTPROC
--	xor %edx,%edx
--	mov $(-EFAULT),%_ASM_AX
--	ret
--	CFI_ENDPROC
--END(bad_get_user)
--
--.section __ex_table,"a"
--	_ASM_PTR 1b,bad_get_user
--	_ASM_PTR 2b,bad_get_user
--	_ASM_PTR 3b,bad_get_user
--	_ASM_PTR 4b,bad_get_user
--.previous
-diff --git a/include/asm-x86/asm.h b/include/asm-x86/asm.h
-index 435402e..57750a9 100644
---- a/include/asm-x86/asm.h
-+++ b/include/asm-x86/asm.h
-@@ -3,8 +3,10 @@
+ .text
+@@ -81,10 +75,7 @@ ENTRY(__put_user_8)
+ ENDPROC(__put_user_8)
  
- #ifdef __ASSEMBLY__
- # define __ASM_FORM(x)	x
-+# define __ASM_EX_SEC	.section __ex_table
- #else
- # define __ASM_FORM(x)	" " #x " "
-+# define __ASM_EX_SEC	" .section __ex_table,\"a\"\n"
- #endif
+ bad_put_user:
+-	CFI_STARTPROC simple
+-	CFI_DEF_CFA esp, 2*4
+-	CFI_OFFSET eip, -1*4
+-	CFI_OFFSET ebx, -2*4
++	CFI_STARTPROC
+ 	movl $-14,%eax
+ 	EXIT
+ END(bad_put_user)
+diff --git a/include/asm-x86/uaccess_32.h b/include/asm-x86/uaccess_32.h
+index 6a8adec..94d201b 100644
+--- a/include/asm-x86/uaccess_32.h
++++ b/include/asm-x86/uaccess_32.h
+@@ -188,23 +188,23 @@ extern void __put_user_8(void);
  
- #ifdef CONFIG_X86_32
-@@ -30,7 +32,7 @@
+ #define __put_user_1(x, ptr)					\
+ 	asm volatile("call __put_user_1" : "=a" (__ret_pu)	\
+-		     : "0" ((typeof(*(ptr)))(x)), "c" (ptr))
++		     : "0" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
  
- /* Exception table entry */
- # define _ASM_EXTABLE(from,to) \
--	" .section __ex_table,\"a\"\n" \
-+	__ASM_EX_SEC	\
- 	_ASM_ALIGN "\n" \
- 	_ASM_PTR #from "," #to "\n" \
- 	" .previous\n"
+ #define __put_user_2(x, ptr)					\
+ 	asm volatile("call __put_user_2" : "=a" (__ret_pu)	\
+-		     : "0" ((typeof(*(ptr)))(x)), "c" (ptr))
++		     : "0" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
+ 
+ #define __put_user_4(x, ptr)					\
+ 	asm volatile("call __put_user_4" : "=a" (__ret_pu)	\
+-		     : "0" ((typeof(*(ptr)))(x)), "c" (ptr))
++		     : "0" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
+ 
+ #define __put_user_8(x, ptr)					\
+ 	asm volatile("call __put_user_8" : "=a" (__ret_pu)	\
+-		     : "A" ((typeof(*(ptr)))(x)), "c" (ptr))
++		     : "A" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
+ 
+ #define __put_user_X(x, ptr)					\
+ 	asm volatile("call __put_user_X" : "=a" (__ret_pu)	\
+-		     : "c" (ptr))
++		     : "c" (ptr): "ebx")
+ 
+ /**
+  * put_user: - Write a simple value into user space.
 -- 
 1.5.5.1
 
