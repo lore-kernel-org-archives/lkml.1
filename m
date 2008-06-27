@@ -1,121 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756512AbYF0DRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752080AbYF0DV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756512AbYF0DRz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 23:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbYF0DRp
+	id S1752080AbYF0DV1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 23:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbYF0DVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 23:17:45 -0400
-Received: from ozlabs.org ([203.10.76.45]:54025 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751139AbYF0DRo convert rfc822-to-8bit (ORCPT
+	Thu, 26 Jun 2008 23:21:19 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:47164 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751139AbYF0DVS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 23:17:44 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: ego@in.ibm.com
-Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
-Date: Fri, 27 Jun 2008 13:16:42 +1000
-User-Agent: KMail/1.9.9
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Mike Travis <travis@sgi.com>, Vegard Nossum <vegard.nossum@gmail.com>,
-       Adrian Bunk <bunk@kernel.org>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-References: <20080622125633.GA8166@damson.getinternet.no> <200806242314.51656.rusty@rustcorp.com.au> <20080626125820.GA30144@in.ibm.com>
-In-Reply-To: <20080626125820.GA30144@in.ibm.com>
+	Thu, 26 Jun 2008 23:21:18 -0400
+Date: Fri, 27 Jun 2008 08:52:28 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, Paul Jackson <pj@sgi.com>,
+       a.p.zijlstra@chello.nl, maxk@qualcomm.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] CPUSets: Move most calls to
+	rebuild_sched_domains() to the workqueue
+Message-ID: <20080627032228.GA3419@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <48634BC1.8@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806271316.42771.rusty@rustcorp.com.au>
+In-Reply-To: <48634BC1.8@google.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 June 2008 22:58:20 Gautham R Shenoy wrote:
-> On Tue, Jun 24, 2008 at 11:14:51PM +1000, Rusty Russell wrote:
-> > On Tuesday 24 June 2008 18:06:23 Zhang, Yanmin wrote:
-> > > On Tue, 2008-06-24 at 11:36 +1000, Rusty Russell wrote:
-> > > > On Tuesday 24 June 2008 02:58:44 Mike Travis wrote:
-> > > > > Rusty Russell wrote:
-> > > > > > On Monday 23 June 2008 02:29:07 Vegard Nossum wrote:
-> > > > > >> And the (cpu < nr_cpu_ids) fails because the CPU has just been
-> > > > > >> offlined (or failed to initialize, but it's the same thing),
-> > > > > >> while NR_CPUS is the value that was compiled in as
-> > > > > >> CONFIG_NR_CPUS (so the former check will always be true).
-> > > > > >>
-> > > > > >> I don't think it is valid to ask for a per_cpu() variable on a
-> > > > > >> CPU which does not exist, though
-> > > > > >
-> > > > > > Yes it is.  As long as cpu_possible(cpu), per_cpu(cpu) is valid.
-> > > > > >
-> > > > > > The number check should be removed: checking cpu_possible() is
-> > > > > > sufficient.
-> > > > > >
-> > > > > > Hope that helps,
-> > > > > > Rusty.
-> > > > >
-> > > > > I don't see a check for index being out of range in cpu_possible().
-> > > >
-> > > > You're right.  It assumes cpu is < NR_CPUS.  Hmm, I have no idea
-> > > > what's going on.  nr_cpu_ids (ignore that it's a horrible name for a
-> > > > bad idea) should be fine to test against.
-> > > >
-> > > > Vegard's analysis is flawed: just because cpu is offline, it still
-> > > > must be < nr_cpu_ids, which is based on possible cpus.  Unless
-> > > > something crazy is happening, but a quick grep doesn't reveal anyone
-> > > > manipulating nr_cpu_ids.
-> > > >
-> > > > If changing this fixes the bug, something else is badly wrong...
-> > > > Rusty.
-> > >
-> > > In function _cpu_up, the panic happens when calling
-> > > __raw_notifier_call_chain at the second time. Kernel doesn't panic when
-> > > calling it at the first time. If just say because ﻿of nr_cpu_ids,
-> > > that's not right.
-> > >
-> > > By checking source codes, I find function do_boot_cpu is the culprit.
-> > > Consider below call chain:
-> > >  _cpu_up=>__cpu_up=>smp_ops.cpu_up=>native_cpu_up=>do_boot_cpu.
-> > >
-> > > So ﻿do_boot_cpu is called in the end. In ﻿do_boot_cpu, if
-> > > boot_error==true, cpu_clear(cpu, cpu_possible_map) is executed. So
-> > > later on, when ﻿_cpu_up calls ﻿__raw_notifier_call_chain at the second
-> > > time to report
-> > > CPU_UP_CANCELED, because this cpu is already cleared from
-> > > ﻿cpu_possible_map, get_cpu_sysdev returns NULL.
-> > >
-> > > Many resources are related to ﻿cpu_possible_map, so it's better not to
-> > > change it.
-> > >
-> > > Below patch against 2.6.26-rc7 fixes it by removing the bit clearing in
-> > > ﻿cpu_possible_map.
-> > >
-> > > Vegard, would you like to help test it?
-> > >
-> > > ﻿﻿﻿Signed-off-by: Zhang Yanmin ﻿<yanmin_zhang@linux.intel.com>
-> > >
-> > > ---
-> > >
-> > > diff -Nraup linux-2.6.26-rc7/arch/x86/kernel/smpboot.c
-> > > linux-2.6.26-rc7_cpuhotplug/arch/x86/kernel/smpboot.c ---
-> > > linux-2.6.26-rc7/arch/x86/kernel/smpboot.c	2008-06-24
-> > > 09:03:54.000000000 +0800 +++
-> > > linux-2.6.26-rc7_cpuhotplug/arch/x86/kernel/smpboot.c	2008-06-24
-> > > 09:04:45.000000000 +0800 @@ -996,7 +996,6 @@ do_rest:
-> > >  #endif
-> > >  		cpu_clear(cpu, cpu_callout_map); /* was set by do_boot_cpu() */
-> > >  		cpu_clear(cpu, cpu_initialized); /* was set by cpu_init() */
-> > > -		cpu_clear(cpu, cpu_possible_map);
-> > >  		cpu_clear(cpu, cpu_present_map);
+On Thu, Jun 26, 2008 at 12:56:49AM -0700, Paul Menage wrote:
+> CPUsets: Move most calls to rebuild_sched_domains() to the workqueue
 >
-> Nice catch.
+> In the current cpusets code the lock nesting between cgroup_mutex and
+> cpuhotplug.lock when calling rebuild_sched_domains is inconsistent -
+> in the CPU hotplug path cpuhotplug.lock nests outside cgroup_mutex,
+> and in all other paths that call rebuild_sched_domains() it nests
+> inside.
 >
-> While we're at it, is the clearing of cpu from the cpu_present_map
-> necessary if cpu_up failed for 'cpu' ?
+> This patch makes most calls to rebuild_sched_domains() asynchronous
+> via the workqueue, which removes the nesting of the two locks in that
+> case. In the case of an actual hotplug event, cpuhotplug.lock nests
+> outside cgroup_mutex as now.
+>
+> Signed-off-by: Paul Menage <menage@google.com>
+>
+> ---
+>
+> Note that all I've done with this patch is verify that it compiles
+> without warnings; I'm not sure how to trigger a hotplug event to test
+> the lock dependencies or verify that scheduler domain support is still
+> behaving correctly. Vegard, does this fix the problems that you were
+> seeing? Paul/Max, does this still seem sane with regard to scheduler domains?
+>
 
-It's never necessary, but there there are not many places which cpu_present is 
-examined.  It just prevents it from being hot added again, AFAICT.
+Hi Paul, 
 
-Rusty.
+Using a multithreaded workqueue(kevent here) for this is not such a
+great idea this,since currently we cannot call
+get_online_cpus() from a workitem executed by a multithreaded workqueue.
+
+Can one use a single threaded workqueue here instead ?
+
+Or, better, I think we can ask Oleg to re-submit the patch he had to make
+get_online_cpus() safe to be called from within the workqueue. It does
+require a special post CPU_DEAD notification, but as it does work the
+last time I checked.
+
+>
+> kernel/cpuset.c |   35 +++++++++++++++++++++++------------
+> 1 file changed, 23 insertions(+), 12 deletions(-)
+>
+> Index: lockfix-2.6.26-rc5-mm3/kernel/cpuset.c
+> ===================================================================
+> --- lockfix-2.6.26-rc5-mm3.orig/kernel/cpuset.c
+> +++ lockfix-2.6.26-rc5-mm3/kernel/cpuset.c
+> @@ -522,13 +522,9 @@ update_domain_attr(struct sched_domain_a
+>  * domains when operating in the severe memory shortage situations
+>  * that could cause allocation failures below.
+>  *
+> - * Call with cgroup_mutex held.  May take callback_mutex during
+> - * call due to the kfifo_alloc() and kmalloc() calls.  May nest
+> - * a call to the get_online_cpus()/put_online_cpus() pair.
+> - * Must not be called holding callback_mutex, because we must not
+> - * call get_online_cpus() while holding callback_mutex.  Elsewhere
+> - * the kernel nests callback_mutex inside get_online_cpus() calls.
+> - * So the reverse nesting would risk an ABBA deadlock.
+> + * Call with cgroup_mutex held, and inside get_online_cpus().  May
+> + * take callback_mutex during call due to the kfifo_alloc() and
+> + * kmalloc() calls.
+>  *
+>  * The three key local variables below are:
+>  *    q  - a kfifo queue of cpuset pointers, used to implement a
+> @@ -689,9 +685,7 @@ restart:
+>
+> rebuild:
+> 	/* Have scheduler rebuild sched domains */
+> -	get_online_cpus();
+> 	partition_sched_domains(ndoms, doms, dattr);
+> -	put_online_cpus();
+>
+> done:
+> 	if (q && !IS_ERR(q))
+> @@ -701,6 +695,21 @@ done:
+> 	/* Don't kfree(dattr) -- partition_sched_domains() does that. */
+> }
+>
+> +/*
+> + * Due to the need to nest cgroup_mutex inside cpuhotplug.lock, most
+> + * of our invocations of rebuild_sched_domains() are done
+> + * asynchronously via the workqueue
+> + */
+> +static void delayed_rebuild_sched_domains(struct work_struct *work)
+> +{
+> +	get_online_cpus();
+> +	cgroup_lock();
+> +	rebuild_sched_domains();
+> +	cgroup_unlock();
+> +	put_online_cpus();
+> +}
+> +static DECLARE_WORK(rebuild_sched_domains_work, delayed_rebuild_sched_domains);
+> +
+> static inline int started_after_time(struct task_struct *t1,
+> 				     struct timespec *time,
+> 				     struct task_struct *t2)
+> @@ -853,7 +862,7 @@ static int update_cpumask(struct cpuset 		return 
+> retval;
+>
+> 	if (is_load_balanced)
+> -		rebuild_sched_domains();
+> +		schedule_work(&rebuild_sched_domains_work);
+> 	return 0;
+> }
+>
+> @@ -1080,7 +1089,7 @@ static int update_relax_domain_level(str
+>
+> 	if (val != cs->relax_domain_level) {
+> 		cs->relax_domain_level = val;
+> -		rebuild_sched_domains();
+> +		schedule_work(&rebuild_sched_domains_work);
+> 	}
+>
+> 	return 0;
+> @@ -1121,7 +1130,7 @@ static int update_flag(cpuset_flagbits_t
+> 	mutex_unlock(&callback_mutex);
+>
+> 	if (cpus_nonempty && balance_flag_changed)
+> -		rebuild_sched_domains();
+> +		schedule_work(&rebuild_sched_domains_work);
+>
+> 	return 0;
+> }
+> @@ -1929,6 +1938,7 @@ static void scan_for_empty_cpusets(const
+>
+> static void common_cpu_mem_hotplug_unplug(void)
+> {
+> +	get_online_cpus();
+> 	cgroup_lock();
+>
+> 	top_cpuset.cpus_allowed = cpu_online_map;
+> @@ -1942,6 +1952,7 @@ static void common_cpu_mem_hotplug_unplu
+> 	rebuild_sched_domains();
+>
+> 	cgroup_unlock();
+> +	put_online_cpus();
+> }
+>
+> /*
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+-- 
+Thanks and Regards
+gautham
