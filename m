@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYF0CAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588AbYF0CBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754794AbYF0CAT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 22:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbYF0CAF
+	id S1755588AbYF0CBQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 22:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYF0CBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 22:00:05 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:17429 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751449AbYF0CAE (ORCPT
+	Thu, 26 Jun 2008 22:01:00 -0400
+Received: from mail-in-09.arcor-online.net ([151.189.21.49]:33435 "EHLO
+	mail-in-09.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751688AbYF0CA7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 22:00:04 -0400
-Date: Thu, 26 Jun 2008 19:58:15 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: LZMA compression algorithm in Kernel - any chance to allow it?
-In-reply-to: <fa.WuwHJZhCHgER6Pu+gn66zdRwVUg@ifi.uio.no>
-To: Tomas M <tomas@slax.org>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <48644937.3050503@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.WuwHJZhCHgER6Pu+gn66zdRwVUg@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 26 Jun 2008 22:00:59 -0400
+Subject: Re: [v4l-dvb-maintainer] saa7134 duplicate device in module, but
+	different device_data?
+From: hermann pitton <hermann-pitton@arcor.de>
+To: Ben Collins <ben.collins@canonical.com>
+Cc: v4l-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <1214528392.4480.40.camel@pc10.localdom.local>
+References: <1214501094.7150.29.camel@cunning>
+	 <1214524580.4480.32.camel@pc10.localdom.local>
+	 <1214525206.7150.118.camel@cunning>
+	 <1214528392.4480.40.camel@pc10.localdom.local>
+Content-Type: text/plain
+Date: Fri, 27 Jun 2008 03:58:33 +0200
+Message-Id: <1214531913.4480.53.camel@pc10.localdom.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomas M wrote:
-> Hello.
-> I can see the 2.6.25 kernel includes LZO compression algorithm in:
-> 
-> [*] Cryptographic API
->  < > LZO compression algorithm
-> 
-> As far as I could see, there was a strong pressure against putting compression algorithms in kernel. Does this LZO example mean that kernel people are now more open to include other algorithms as well? I'd like to include LZMA algo, which has far better compression ratio then anything else widely used today, and is already used in many small or embeded systems (as external patches to kernel or userspace utilities)
-> 
-> If I (or anybody else) submit LZMA code for inclusion in kernel, would you ACCEPT IT ?? (assuming the code looks nice to you)
 
-Not if there is nothing that uses it. If you have a place in the kernel 
-that could make good use of such compression, which couldn't easily be 
-handled outside the kernel, and you update it to use it, I would guess 
-it would likely be accepted.
+Am Freitag, den 27.06.2008, 02:59 +0200 schrieb hermann pitton:
+> Am Donnerstag, den 26.06.2008, 20:06 -0400 schrieb Ben Collins:
+> > On Fri, 2008-06-27 at 01:56 +0200, hermann pitton wrote:
+
+[snip]
+> I do agree and will be happy with any patch you provide to get it out of
+> sight ;)
+> 
+
+Ben,
+
+just move the duplicate stuff out of the auto detection until we have
+something better and send that patch. 
+
+Previous hopes, to be able to do something more, are for sure
+disappointed now and no reason to wait any longer.
+
+We rely on the eeprom gimmicks and they did use them mainly previously
+to shot down each other as best they can ...
+
+Cheers,
+Hermannn
+
+
+
+
