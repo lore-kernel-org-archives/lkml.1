@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbYF0Fxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbYF0GIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758798AbYF0Fxr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 01:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYF0Fxi
+	id S1754749AbYF0GIb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 02:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbYF0GIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 01:53:38 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53619 "EHLO mail.dvmed.net"
+	Fri, 27 Jun 2008 02:08:21 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50240 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752146AbYF0Fxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 01:53:37 -0400
-Message-ID: <4864805E.3010407@pobox.com>
-Date: Fri, 27 Jun 2008 01:53:34 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
+	id S1752257AbYF0GIU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 02:08:20 -0400
+Message-ID: <486483CE.8010305@garzik.org>
+Date: Fri, 27 Jun 2008 02:08:14 -0400
+From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Matti Linnanvuori <mattilinn@gmail.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v1.2.31] wan: add driver retina
-References: <ca0148c30806240335t799ab518o2f7589f6d3282787@mail.gmail.com>
-In-Reply-To: <ca0148c30806240335t799ab518o2f7589f6d3282787@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, davem@davemloft.net,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RESEND PATCH 2/3] e1000: remove PCI Express device IDs
+References: <20080622221916.5907.79563.stgit@localhost.localdomain> <20080622222021.5907.16668.stgit@localhost.localdomain>
+In-Reply-To: <20080622222021.5907.16668.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
 X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
@@ -28,14 +30,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matti Linnanvuori wrote:
-> The patch is on top of linux-next June 24:
-> http://pcidriver.googlegroups.com/web/retina-1.2.31.patch?hl=en&gda=IAodQEQAAAD13nxGN0cierCNeIeJfDX5xXkFPvbRgqL6oDt-R_zhlWG1qiJ7UbTIup-M2XPURDSCRcGQDyno6jchG3K2xOQpIvUJau0VvnTEe9ncJ6VTfQ&gsc=eDZaJAsAAADBvYu52m-YgWqvwRZy0wen
+Jeff Kirsher wrote:
+> From: Auke Kok <auke-jan.h.kok@intel.com>
 > 
-> Change log:
-> Fixed ETH_ZLEN minimal packet size
-> Added mmap(2) interface description
+> We do not want to prolong the situation much longer that e1000
+> and e1000e support these devices at the same time. As a result,
+> take out the bandage that was added for the interim period
+> and remove all the PCI Express device IDs from e1000.
+> 
+> Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Cc: Jeff Garzik <jeff@garzik.org>
+> ---
+> 
+>  drivers/net/Kconfig            |    3 ---
+>  drivers/net/e1000/e1000_main.c |   33 ---------------------------------
+>  2 files changed, 0 insertions(+), 36 deletions(-)
 
-applied
+applied to #upstream-next (queued for 2.6.27)
+
+BIG FLASHING WARNING NOTE to x86 maintainers and others:
+
+Make sure your defconfig changes are in place for this change.
 
 
