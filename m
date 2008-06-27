@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbYF0IQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759431AbYF0ITe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753235AbYF0IQM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 04:16:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754243AbYF0IP7
+	id S1759431AbYF0ITe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 04:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756788AbYF0ITH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 04:15:59 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:27771 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754547AbYF0IP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 04:15:57 -0400
-Date: Fri, 27 Jun 2008 17:13:09 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Bernhard Walle <bwalle@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Remove CONFIG_EXPERIMENTAL from kdump
-Message-ID: <20080627081309.GA11284@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Vivek Goyal <vgoyal@redhat.com>, Bernhard Walle <bwalle@suse.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20080625221635.GD32344@redhat.com> <1214465001-12338-1-git-send-email-bwalle@suse.de> <20080626012337.a73c91d2.akpm@linux-foundation.org> <20080626102803.2a1a46cd@halley.suse.de> <20080626123518.GA3878@redhat.com>
+	Fri, 27 Jun 2008 04:19:07 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38531 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756288AbYF0ITE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 04:19:04 -0400
+Date: Fri, 27 Jun 2008 17:08:22 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [RFC v1] Tunable sched_mc_power_savings=n
+Cc: kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20080625191100.GI21892@dirshya.in.ibm.com>
+References: <20080625191100.GI21892@dirshya.in.ibm.com>
+Message-Id: <20080627170514.7A88.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080626123518.GA3878@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 08:35:18AM -0400, Vivek Goyal wrote:
-> On Thu, Jun 26, 2008 at 10:28:03AM +0200, Bernhard Walle wrote:
-> > * Andrew Morton [2008-06-26 01:23]:
-> > > >  
-> > > >  config PROC_VMCORE
-> > > >          bool "/proc/vmcore support (EXPERIMENTAL)"
-> > > > -        depends on PROC_FS && EXPERIMENTAL && CRASH_DUMP
-> > > > +        depends on PROC_FS && CRASH_DUMP
-> > > >  	default y
-> > > >          help
-> > > >          Exports the dump image of crashed kernel in ELF format.
-> > > 
-> > > What about powerpc, sh and ia64?
-> > 
-> > At least for ia64 I wouldn't consider it as experimental. Don't know
-> > about SH and PPC. But should we mark it as EXPERIMENTAL on all
-> > platforms only because some "exotic" (at least SH) platforms have kdump
-> > not very long implemented?
+Hi
+
+> Advantages:
 > 
-> It has been present long enough on ia64 and ppc64. Only new entry seems
-> to be SH. I would think of leaving it EXPERIMENTAL only on SH.
-> 
-Yes, kdump should remain EXPERIMENTAL on SH for the time being. It's only
-been tested on a tiny subset of CPUs, and will need additional work for
-the rest (as with kexec for that matter).
+> * Enterprise workloads on large hardware configurations may need
+>   aggressive consolidation strategy
+> * Performance impact on server is different from desktop or laptops.
+>   Interactivity is less of a concern on large enterprise servers while
+>   workload response times and performance per watt is more significant
+> * Aggressive power savings even with marginal performance penalty is
+>   is a useful tunable for servers since it may provide good
+>   performance-per-watt at low utilisation
+> * This tunable can influence other parts of scheduler like wakeup
+>   biasing for overall task consolidation  
+
+I'd like to know how many saving power.
+if there are only small saving, I think this is not interesting feature.
+
+Do you expect how many percentage saving?
+
+
+
