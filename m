@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763897AbYF0S15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763927AbYF0S2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763897AbYF0S15 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 14:27:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761934AbYF0SZ4
+	id S1763927AbYF0S2j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 14:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761487AbYF0SZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 14:25:56 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11722 "EHLO
+	Fri, 27 Jun 2008 14:25:57 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11723 "EHLO
 	phenom.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753304AbYF0SZu (ORCPT
+	by vger.kernel.org with ESMTP id S1759266AbYF0SZv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 14:25:50 -0400
-Date: Fri, 27 Jun 2008 12:13:18 -0600
+	Fri, 27 Jun 2008 14:25:51 -0400
+Date: Fri, 27 Jun 2008 12:13:13 -0600
 From: dougthompson@xmission.com
 To: bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org
-Subject: [PATCH 6/13] EDAC core fix to use dynamic kobject
-Message-ID: <48652dbe.SF7MlWWZTgLf0S/h%dougthompson@xmission.com>
+Subject: [PATCH 5/13] EDAC mpc85xx fix pci ofdev
+Message-ID: <48652db9.0Y8LuCqRcWSJ9Ih7%dougthompson@xmission.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,133 +24,181 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Arthur Jones <ajones@riverbed.com>
+From:	Dave Jiang <djiang@mvista.com>
 
 Applied to linux-2.6.26-rc5-mm3
 
-Static kobjects are not supported in linux kernel.
-Convert the edac_pci_top_main_kobj from static to
-dynamic.  This avoids the double free of the
-edac_pci_top_main_kobj.name that we see on module
-reload of the e752x edac driver (and probably
-others as well).
- 
-In addition Greg KH <greg@kroah.com> has pointed
-out that this code may be cleaned up significantly.
-I will look at that as a follow-on patch, for now,
-I just want the minimum fix to get this double-free
-oops bug squashed...
- 
-Many thanks to Greg KH for his patience in showing
-me what the Documentation/kobject.txt already said
-(oops)...
+Converting PCI err device from platform to open firmware of_dev to comply with
+powerpc schemes.
 
-Signed-off-by:  Arthur Jones <ajones@riverbed.com>
-Signed-off-by:  Doug Thompson <dougthompson@xmission.com>
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by:	Dave Jiang <djiang@mvista.com>
+Signed-off-by:	Doug Thompson <dougthompson@xmission.com>
 ---
- edac_pci_sysfs.c |   30 +++++++++++++++++++++---------
- 1 file changed, 21 insertions(+), 9 deletions(-)
+ mpc85xx_edac.c |   67 ++++++++++++++++++++++++++++++++++++---------------------
+ 1 file changed, 43 insertions(+), 24 deletions(-)
 
-Index: linux-2.6.26-rc5/drivers/edac/edac_pci_sysfs.c
+Index: linux-2.6.26-rc5/drivers/edac/mpc85xx_edac.c
 ===================================================================
---- linux-2.6.26-rc5.orig/drivers/edac/edac_pci_sysfs.c
-+++ linux-2.6.26-rc5/drivers/edac/edac_pci_sysfs.c
-@@ -28,7 +28,7 @@ static int edac_pci_poll_msec = 1000;	/*
- static atomic_t pci_parity_count = ATOMIC_INIT(0);
- static atomic_t pci_nonparity_count = ATOMIC_INIT(0);
- 
--static struct kobject edac_pci_top_main_kobj;
-+static struct kobject *edac_pci_top_main_kobj;
- static atomic_t edac_pci_sysfs_refcount = ATOMIC_INIT(0);
- 
- /* getter functions for the data variables */
-@@ -83,7 +83,7 @@ static void edac_pci_instance_release(st
- 	pci = to_instance(kobj);
- 
- 	/* decrement reference count on top main kobj */
--	kobject_put(&edac_pci_top_main_kobj);
-+	kobject_put(edac_pci_top_main_kobj);
- 
- 	kfree(pci);	/* Free the control struct */
+--- linux-2.6.26-rc5.orig/drivers/edac/mpc85xx_edac.c
++++ linux-2.6.26-rc5/drivers/edac/mpc85xx_edac.c
+@@ -195,14 +195,15 @@ static irqreturn_t mpc85xx_pci_isr(int i
+ 	return IRQ_HANDLED;
  }
-@@ -166,7 +166,7 @@ static int edac_pci_create_instance_kobj
- 	 * track the number of PCI instances we have, and thus nest
- 	 * properly on keeping the module loaded
- 	 */
--	main_kobj = kobject_get(&edac_pci_top_main_kobj);
-+	main_kobj = kobject_get(edac_pci_top_main_kobj);
- 	if (!main_kobj) {
- 		err = -ENODEV;
- 		goto error_out;
-@@ -174,11 +174,11 @@ static int edac_pci_create_instance_kobj
  
- 	/* And now register this new kobject under the main kobj */
- 	err = kobject_init_and_add(&pci->kobj, &ktype_pci_instance,
--				   &edac_pci_top_main_kobj, "pci%d", idx);
-+				   edac_pci_top_main_kobj, "pci%d", idx);
- 	if (err != 0) {
- 		debugf2("%s() failed to register instance pci%d\n",
- 			__func__, idx);
--		kobject_put(&edac_pci_top_main_kobj);
-+		kobject_put(edac_pci_top_main_kobj);
- 		goto error_out;
- 	}
- 
-@@ -316,9 +316,10 @@ static struct edac_pci_dev_attribute *ed
-  */
- static void edac_pci_release_main_kobj(struct kobject *kobj)
+-static int __devinit mpc85xx_pci_err_probe(struct platform_device *pdev)
++static int __devinit mpc85xx_pci_err_probe(struct of_device *op,
++					   const struct of_device_id *match)
  {
--
- 	debugf0("%s() here to module_put(THIS_MODULE)\n", __func__);
+ 	struct edac_pci_ctl_info *pci;
+ 	struct mpc85xx_pci_pdata *pdata;
+-	struct resource *r;
++	struct resource r;
+ 	int res = 0;
  
-+	kfree(kobj);
-+
- 	/* last reference to top EDAC PCI kobject has been removed,
- 	 * NOW release our ref count on the core module
- 	 */
-@@ -369,8 +370,16 @@ static int edac_pci_main_kobj_setup(void
- 		goto decrement_count_fail;
+-	if (!devres_open_group(&pdev->dev, mpc85xx_pci_err_probe, GFP_KERNEL))
++	if (!devres_open_group(&op->dev, mpc85xx_pci_err_probe, GFP_KERNEL))
+ 		return -ENOMEM;
+ 
+ 	pci = edac_pci_alloc_ctl_info(sizeof(*pdata), "mpc85xx_pci_err");
+@@ -212,34 +213,37 @@ static int __devinit mpc85xx_pci_err_pro
+ 	pdata = pci->pvt_info;
+ 	pdata->name = "mpc85xx_pci_err";
+ 	pdata->irq = NO_IRQ;
+-	platform_set_drvdata(pdev, pci);
+-	pci->dev = &pdev->dev;
++	dev_set_drvdata(&op->dev, pci);
++	pci->dev = &op->dev;
+ 	pci->mod_name = EDAC_MOD_STR;
+ 	pci->ctl_name = pdata->name;
+-	pci->dev_name = dev_name(&pdev->dev);
++	pci->dev_name = op->dev.bus_id;
+ 
+ 	if (edac_op_state == EDAC_OPSTATE_POLL)
+ 		pci->edac_check = mpc85xx_pci_check;
+ 
+ 	pdata->edac_idx = edac_pci_idx++;
+ 
+-	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (!r) {
++	res = of_address_to_resource(op->node, 0, &r);
++	if (res) {
+ 		printk(KERN_ERR "%s: Unable to get resource for "
+ 		       "PCI err regs\n", __func__);
+ 		goto err;
  	}
  
-+	edac_pci_top_main_kobj = kzalloc(sizeof(struct kobject), GFP_KERNEL);
-+	if (!edac_pci_top_main_kobj) {
-+		debugf1("Failed to allocate\n");
-+		err = -ENOMEM;
-+		goto kzalloc_fail;
-+	}
+-	if (!devm_request_mem_region(&pdev->dev, r->start,
+-				     r->end - r->start + 1, pdata->name)) {
++	/* we only need the error registers */
++	r.start += 0xe00;
 +
- 	/* Instanstiate the pci object */
--	err = kobject_init_and_add(&edac_pci_top_main_kobj, &ktype_edac_pci_main_kobj,
-+	err = kobject_init_and_add(edac_pci_top_main_kobj,
-+				   &ktype_edac_pci_main_kobj,
- 				   &edac_class->kset.kobj, "pci");
- 	if (err) {
- 		debugf1("Failed to register '.../edac/pci'\n");
-@@ -381,13 +390,16 @@ static int edac_pci_main_kobj_setup(void
- 	 * for EDAC PCI, then edac_pci_main_kobj_teardown()
- 	 * must be used, for resources to be cleaned up properly
- 	 */
--	kobject_uevent(&edac_pci_top_main_kobj, KOBJ_ADD);
-+	kobject_uevent(edac_pci_top_main_kobj, KOBJ_ADD);
- 	debugf1("Registered '.../edac/pci' kobject\n");
++	if (!devm_request_mem_region(&op->dev, r.start,
++				     r.end - r.start + 1, pdata->name)) {
+ 		printk(KERN_ERR "%s: Error while requesting mem region\n",
+ 		       __func__);
+ 		res = -EBUSY;
+ 		goto err;
+ 	}
+ 
+-	pdata->pci_vbase = devm_ioremap(&pdev->dev, r->start,
+-					r->end - r->start + 1);
++	pdata->pci_vbase = devm_ioremap(&op->dev, r.start,
++					r.end - r.start + 1);
+ 	if (!pdata->pci_vbase) {
+ 		printk(KERN_ERR "%s: Unable to setup PCI err regs\n", __func__);
+ 		res = -ENOMEM;
+@@ -266,14 +270,15 @@ static int __devinit mpc85xx_pci_err_pro
+ 	}
+ 
+ 	if (edac_op_state == EDAC_OPSTATE_INT) {
+-		pdata->irq = platform_get_irq(pdev, 0);
+-		res = devm_request_irq(&pdev->dev, pdata->irq,
++		pdata->irq = irq_of_parse_and_map(op->node, 0);
++		res = devm_request_irq(&op->dev, pdata->irq,
+ 				       mpc85xx_pci_isr, IRQF_DISABLED,
+ 				       "[EDAC] PCI err", pci);
+ 		if (res < 0) {
+ 			printk(KERN_ERR
+ 			       "%s: Unable to requiest irq %d for "
+ 			       "MPC85xx PCI err\n", __func__, pdata->irq);
++			irq_dispose_mapping(pdata->irq);
+ 			res = -ENODEV;
+ 			goto err2;
+ 		}
+@@ -282,23 +287,23 @@ static int __devinit mpc85xx_pci_err_pro
+ 		       pdata->irq);
+ 	}
+ 
+-	devres_remove_group(&pdev->dev, mpc85xx_pci_err_probe);
++	devres_remove_group(&op->dev, mpc85xx_pci_err_probe);
+ 	debugf3("%s(): success\n", __func__);
+ 	printk(KERN_INFO EDAC_MOD_STR " PCI err registered\n");
  
  	return 0;
  
- 	/* Error unwind statck */
- kobject_init_and_add_fail:
-+	kfree(edac_pci_top_main_kobj);
-+
-+kzalloc_fail:
- 	module_put(THIS_MODULE);
- 
- decrement_count_fail:
-@@ -414,7 +426,7 @@ static void edac_pci_main_kobj_teardown(
- 	if (atomic_dec_return(&edac_pci_sysfs_refcount) == 0) {
- 		debugf0("%s() called kobject_put on main kobj\n",
- 			__func__);
--		kobject_put(&edac_pci_top_main_kobj);
-+		kobject_put(edac_pci_top_main_kobj);
- 	}
+ err2:
+-	edac_pci_del_device(&pdev->dev);
++	edac_pci_del_device(&op->dev);
+ err:
+ 	edac_pci_free_ctl_info(pci);
+-	devres_release_group(&pdev->dev, mpc85xx_pci_err_probe);
++	devres_release_group(&op->dev, mpc85xx_pci_err_probe);
+ 	return res;
  }
  
+-static int mpc85xx_pci_err_remove(struct platform_device *pdev)
++static int mpc85xx_pci_err_remove(struct of_device *op)
+ {
+-	struct edac_pci_ctl_info *pci = platform_get_drvdata(pdev);
++	struct edac_pci_ctl_info *pci = dev_get_drvdata(&op->dev);
+ 	struct mpc85xx_pci_pdata *pdata = pci->pvt_info;
+ 
+ 	debugf0("%s()\n", __func__);
+@@ -318,12 +323,26 @@ static int mpc85xx_pci_err_remove(struct
+ 	return 0;
+ }
+ 
+-static struct platform_driver mpc85xx_pci_err_driver = {
++static struct of_device_id mpc85xx_pci_err_of_match[] = {
++	{
++	 .compatible = "fsl,mpc8540-pcix",
++	 },
++	{
++	 .compatible = "fsl,mpc8540-pci",
++	},
++	{},
++};
++
++static struct of_platform_driver mpc85xx_pci_err_driver = {
++	.owner = THIS_MODULE,
++	.name = "mpc85xx_pci_err",
++	.match_table = mpc85xx_pci_err_of_match,
+ 	.probe = mpc85xx_pci_err_probe,
+ 	.remove = __devexit_p(mpc85xx_pci_err_remove),
+ 	.driver = {
+-		.name = "mpc85xx_pci_err",
+-	}
++		   .name = "mpc85xx_pci_err",
++		   .owner = THIS_MODULE,
++		   },
+ };
+ 
+ #endif				/* CONFIG_PCI */
+@@ -1002,7 +1021,7 @@ static int __init mpc85xx_mc_init(void)
+ 		printk(KERN_WARNING EDAC_MOD_STR "L2 fails to register\n");
+ 
+ #ifdef CONFIG_PCI
+-	res = platform_driver_register(&mpc85xx_pci_err_driver);
++	res = of_register_platform_driver(&mpc85xx_pci_err_driver);
+ 	if (res)
+ 		printk(KERN_WARNING EDAC_MOD_STR "PCI fails to register\n");
+ #endif
+@@ -1025,7 +1044,7 @@ static void __exit mpc85xx_mc_exit(void)
+ {
+ 	mtspr(SPRN_HID1, orig_hid1);
+ #ifdef CONFIG_PCI
+-	platform_driver_unregister(&mpc85xx_pci_err_driver);
++	of_unregister_platform_driver(&mpc85xx_pci_err_driver);
+ #endif
+ 	of_unregister_platform_driver(&mpc85xx_l2_err_driver);
+ 	of_unregister_platform_driver(&mpc85xx_mc_err_driver);
