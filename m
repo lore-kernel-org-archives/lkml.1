@@ -1,74 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbYF0O2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbYF0Ogj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760034AbYF0O2V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 10:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755678AbYF0O2N
+	id S1758229AbYF0Ogj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 10:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbYF0Og2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 10:28:13 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:35926 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755573AbYF0O2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 10:28:12 -0400
-Date: Fri, 27 Jun 2008 17:25:58 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
-Subject: Re: [PATCH 01/34] AMD IOMMU: add Kconfig entry
-Message-ID: <20080627142558.GG18644@cs181140183.pp.htv.fi>
-References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-2-git-send-email-joerg.roedel@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1214508490-29683-2-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 27 Jun 2008 10:36:28 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:36908 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755077AbYF0Og1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 10:36:27 -0400
+Subject: Re: [PATCH] keyspan: Remove duplicate device entries
+From: Ben Collins <ben.collins@canonical.com>
+To: Greg KH <gregkh@suse.de>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080627034755.GA7763@suse.de>
+References: <1214525296.7150.120.camel@cunning>
+	 <20080627034755.GA7763@suse.de>
+Content-Type: text/plain
+Organization: Canonical
+Date: Fri, 27 Jun 2008 10:32:31 -0400
+Message-Id: <1214577151.7150.384.camel@cunning>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 09:27:37PM +0200, Joerg Roedel wrote:
-> This patch adds the Kconfig entry for the AMD IOMMU driver.
+On Thu, 2008-06-26 at 20:47 -0700, Greg KH wrote:
+> On Thu, Jun 26, 2008 at 08:08:16PM -0400, Ben Collins wrote:
+> > The 28xb, as documented in comments, has the same ID's as the 28x.
+> > Remove the duplicated ID's from the device tables, and expand the
+> > comment to document this.
 > 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  arch/x86/Kconfig |    7 +++++++
->  1 files changed, 7 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index e0edaaa..5a82f18 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -549,6 +549,13 @@ config CALGARY_IOMMU_ENABLED_BY_DEFAULT
->  	  Calgary anyway, pass 'iommu=calgary' on the kernel command line.
->  	  If unsure, say Y.
->  
-> +config AMD_IOMMU
-> +	bool "AMD IOMMU support"
-> +	select SWIOTL
-> +	depends on X86_64 && PCI
-> +	help
-> +	  Select this to get support for AMD IOMMU hardware in your system.
-> +
->...
+> Was this causing a problem somehow?  How did you notice this?  Good
+> catch.
 
-This tells neither what as IOMMU is nor whether my system actually has 
-one.
+Wasn't causing a problem, but I wrote a script awhile back that parses
+modules.alias looking for exact matches (doesn't do any fnmatch stuff,
+which might show more overlaps). Attached so you can see where this is
+coming from.
 
-Please shortly describe in the help text what an IOMMU is and which
-AMD systems have an IOMMU.
+Mainly I wrote it to make sure we didn't have any module overlap
+(hostap/orinico kind of stuff), but it catches same module matching as
+well.
 
-The goal is that a system administrator building a kernel for his system 
-gets enough information for deciding whether to enable or disable this 
-option.
+> I'll add it to my queue, thanks,
 
-Thanks
-Adrian
+Np
 
--- 
+#!/usr/bin/perl -w
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+my %map;
+
+if (!defined($ARGV[0])) {
+	print STDERR "Usage: check-aliases <modules.alias>\n";
+	exit(1);
+}
+
+$aliases = $ARGV[0];
+
+open(ALIASES, "< $aliases") or die "Could not open $aliases";
+
+while (<ALIASES>) {
+	chomp;
+	my ($junk, $alias, $module) = split;
+
+	if (defined($map{$alias})) {
+		printf("%s %20s / %-20s : %s \n", ("$map{$alias}" eq "$module")
+			? "INT" : "   ", $map{$alias}, $module, $alias);
+	} else {
+		$map{$alias} = $module;
+	}
+}
+
+exit(0);
+
 
