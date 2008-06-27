@@ -1,35 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbYF0Nco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757949AbYF0NeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754169AbYF0Nco (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 09:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbYF0Nce
+	id S1757949AbYF0NeG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 09:34:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbYF0Ndz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 09:32:34 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:49935 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750877AbYF0Nce (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 09:32:34 -0400
-Date: Fri, 27 Jun 2008 15:32:32 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Pavel Machek <pavel@suse.cz>
-cc: Tomas M <tomas@slax.org>, linux-kernel@vger.kernel.org
-Subject: Re: LZMA compression algorithm in Kernel - any chance to allow it?
-In-Reply-To: <20080626201754.GE9878@ucw.cz>
-Message-ID: <alpine.LNX.1.10.0806271532150.12725@fbirervta.pbzchgretzou.qr>
-References: <48634BA7.6030902@slax.org> <20080626201754.GE9878@ucw.cz>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Fri, 27 Jun 2008 09:33:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42952 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750979AbYF0Ndy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 09:33:54 -0400
+Date: Fri, 27 Jun 2008 09:32:56 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: kexec@lists.infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: Find offset for crashkernel reservation
+	automatically
+Message-ID: <20080627133256.GB5801@redhat.com>
+References: <1214510048-21215-1-git-send-email-bwalle@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1214510048-21215-1-git-send-email-bwalle@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 26, 2008 at 09:54:08PM +0200, Bernhard Walle wrote:
+> This patch removes the need of the crashkernel=...@offset parameter to define
+> a fixed offset for crashkernel reservation. That feature can be used together
+> with a relocatable kernel where the kexec-tools relocate the kernel and
+> get the actual offset from /proc/iomem.
+> 
+> The use case is a kernel where the .text+.data+.bss is after 16M physical
+> memory (debug kernel with lockdep on x86_64 can cause that) which caused a
+> major pain in autoconfiguration in our distribution.
+> 
+> Also, that patch unifies crashdump architectures a bit since IA64 has
+> that semantics from the very beginning of the kdump port.
+> 
+> Please provide feedback!
+> 
 
-On Thursday 2008-06-26 22:17, Pavel Machek wrote:
->> If I (or anybody else) submit LZMA code for inclusion in kernel, would you ACCEPT IT ?? (assuming the code looks nice to you)
->
->You need some good reason why lzma should be in kernel... like 'cramfs
->can use it'...?
+Hi Bernhard,
 
-squashfs if at all.
+This looks like a good idea. That means distributions don't have to
+hardcode the crashbase at 16MB and the decision to find a free memory
+can be left on kernel. Users will also find it easy that way.
+
+> 
+> Signed-off-by: Bernhard Walle <bwalle@suse.de>
+> ---
+>  arch/x86/kernel/setup.c |   70 +++++++++++++++++++++++++++++++++++------------
+>  1 files changed, 52 insertions(+), 18 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index a81d82c..c30bb7b 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -435,6 +435,34 @@ static inline unsigned long long get_total_mem(void)
+>  }
+>  
+>  #ifdef CONFIG_KEXEC
+> +
+> +/**
+> + * Reserve @size bytes of crashkernel memory at any suitable offset.
+> + *
+> + * @size: Size of the crashkernel memory to reserve.
+> + * Returns the base address on success, and -1ULL on failure.
+> + */
+> +unsigned long long find_and_reserve_crashkernel(unsigned long long size)
+> +{
+> +	const unsigned long long alignment = 16<<20; 	/* 16M */
+> +	unsigned long long start = 0LL;
+> +
+> +	while (1) {
+> +		int ret;
+> +
+> +		start = find_e820_area(start, ULONG_MAX, size, alignment);
+> +		if (start == -1ULL)
+> +			return start;
+> +
+> +		/* try to reserve it */
+> +		ret = reserve_bootmem_generic(start, size, BOOTMEM_EXCLUSIVE);
+> +		if (ret >= 0)
+> +			return start;
+> +
+> +		start += alignment;
+> +	}
+
+I think both i386 and x86_64 relocatable kernels had some upper limits
+where these could be loaded (Eric had mentioned those in the patch. I
+don't remember these). It might be a good idea to capture it here
+making sure "start" does not cross those limits otherwise don't reserve
+the memory.
+
+Thanks
+Vivek
