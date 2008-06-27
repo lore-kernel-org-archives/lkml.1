@@ -1,125 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754912AbYF0KAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756274AbYF0KCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754912AbYF0KAi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 06:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbYF0KA1
+	id S1756274AbYF0KCV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 06:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbYF0KCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 06:00:27 -0400
-Received: from styx.suse.cz ([82.119.242.94]:41411 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752226AbYF0KA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 06:00:26 -0400
-Date: Fri, 27 Jun 2008 12:00:24 +0200
-From: Jan Kara <jack@suse.cz>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Mingming <cmm@us.ibm.com>, Holger Kiehl <Holger.Kiehl@dwd.de>,
-       Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
-       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
-       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Performance of ext4
-Message-ID: <20080627100024.GB3602@duck.suse.cz>
-References: <20080623174508.GA7216@skywalker> <1214267492.27507.285.camel@BVR-FS.beaverton.ibm.com> <20080624030721.GB10469@skywalker> <20080624033349.GD10469@skywalker> <Pine.LNX.4.64.0806242103370.14795@diagnostix.dwd.de> <1214348318.27507.330.camel@BVR-FS.beaverton.ibm.com> <Pine.LNX.4.64.0806250856160.16081@diagnostix.dwd.de> <1214441199.27507.351.camel@BVR-FS.beaverton.ibm.com> <20080627091459.GA32723@skywalker> <20080627094913.GB32723@skywalker>
-MIME-Version: 1.0
+	Fri, 27 Jun 2008 06:02:09 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:43594 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752755AbYF0KCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 06:02:08 -0400
+Date: Fri, 27 Jun 2008 14:01:10 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Chris Snook <csnook@redhat.com>,
+       Dave Jones <davej@codemonkey.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: GFP_ATOMIC page allocation failures.
+Message-ID: <20080627100109.GC18179@2ka.mipt.ru>
+References: <20080401235609.GA6947@codemonkey.org.uk> <200804022012.58760.nickpiggin@yahoo.com.au> <20080402085437.7d9abf1f.akpm@linux-foundation.org> <200804031622.26973.nickpiggin@yahoo.com.au> <20080402223254.5ac50337.akpm@linux-foundation.org> <20080403085922.GA10874@2ka.mipt.ru> <20080626210624.GA11816@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080627094913.GB32723@skywalker>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080626210624.GA11816@redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 27-06-08 15:19:13, Aneesh Kumar K.V wrote:
-> On Fri, Jun 27, 2008 at 02:44:59PM +0530, Aneesh Kumar K.V wrote:
-> > On Wed, Jun 25, 2008 at 05:46:39PM -0700, Mingming wrote:
-> > > 
-> > > On Wed, 2008-06-25 at 09:09 +0000, Holger Kiehl wrote:
-> > > > On Tue, 24 Jun 2008, Mingming wrote:
-> > > > 
-> > > > >
-> > > > > On Tue, 2008-06-24 at 21:12 +0000, Holger Kiehl wrote:
-> > > > >> Yes, with this patch applied on top of latest patch queue I no longer
-> > > > >> get truncated files, after running a short test. Tomorrow I will do some
-> > > > >> more thorough testing and use the patch you have send to me in a separate
-> > > > >> mail. The above patch did not apply but it was easy to apply by hand.
-> > > > >
-> > > > >
-> > > > > Thanks for quick response and test. I have updated the patch queue with
-> > > > > above patch merged. Please let me know if you still see apply issue and
-> > > > > file size update issue with current patch queue.
-> > > > >
-> > > > Thanks, it applies without any problems. However I still hit an oops. What
-> > > > I find strange is that I got the oops just as the benchmark is done and
-> > > > all process where shutting down. The same behaviour I reported here:
-> > > > http://www.ussg.iu.edu/hypermail/linux/kernel/0806.2/2113.html
-> > > > Only this time I got just one oops. This is on x86_64 system (4 Opteron CPU's
-> > > > and SW Raid 1+0). I have not seen this on my home system x86 (1 Dual Core
-> > > > and HW Raid). Anyway, here the dmesg output:
-> > > > 
-> > > > kjournald2 starting.  Commit interval 15 seconds
-> > > > EXT4 FS on md7, internal journal
-> > > > EXT4-fs: mounted filesystem with ordered data mode.
-> > > > EXT4-fs: file extents enabled
-> > > > EXT4-fs: mballoc enabled
-> > > > JBD: barrier-based sync failed on md7 - disabling barriers
-> > > > ------------[ cut here ]------------
-> > > > kernel BUG at fs/ext4/inode.c:1667!
-> > > 
-> > > Did not get a chance to look more closely today, but it's point to this
-> > > code in ext4_da_writepage()
-> > > 
-> > >  page_bufs = page_buffers(page);
-> > > 
-> > > and appearently it's BUG_ON at 
-> > >  BUG_ON(!PagePrivate(page)); in page_buffers().
-> > > 
-> > > 
-> > 
-> > Ok so we are doing the journal_commit and meanwhile shrink_page_list
-> > dropped the buffer. I guess what is happening is
-> > 
-> > 
-> > journal_submit_inode_data_buffers
-> > generic_writepages
-> > write_cache_pages
-> > pagevec_lookup_tag(..PAGECACHE_TAG_DIRTY,..)
-> > foreach(page)
-> > 							shrink_page_list
-> > 							lock_page
-> > 							ext4_releasepage
-> > 							try_to_free_buffers
-> > 							drop_buffers
-> > 							cancel_dirty_page
-> > 							unlock_page
-> > lock_page()
-> > BUG_ON(!PagePrivate(page));
-> > 
-> > 
-> > How about the below ? 
-> 
-> or update write_cache_pages not to call writepage if the page is not
-> dirty ?
-  But that is already happening :) Look a few lines above your patch into
-clear_page_dirty_for_io()...
+On Thu, Jun 26, 2008 at 05:06:24PM -0400, Dave Jones (davej@redhat.com) wrote:
+> This thread seemed to die out with no resolution..
 
-									Honza
+Please ask to test e1000e driver instead, if it supports given PCI ids.
+It has completely rewritten input path which does not suffer from this
+kind of problems, so you do not need to care too much about e1000, which
+will die sooner or later.
 
-> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> index ded57d5..0a13702 100644
-> --- a/mm/page-writeback.c
-> +++ b/mm/page-writeback.c
-> @@ -929,6 +929,11 @@ int write_cache_pages(struct address_space *mapping,
->  				continue;
->  			}
->  
-> +			if (!PageDirty(page)) {
-> +				unlock_page(page);
-> +				continue;
-> +			}
-> +
->  			ret = (*writepage)(page, wbc, data);
->  
->  			if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE)) {
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+	Evgeniy Polyakov
