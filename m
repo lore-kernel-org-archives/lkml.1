@@ -1,93 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763411AbYF0VTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763995AbYF0VTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763411AbYF0VTP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 17:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756183AbYF0VS6
+	id S1763995AbYF0VTx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 17:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbYF0VTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 17:18:58 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:38522 "EHLO pasmtpB.tele.dk"
+	Fri, 27 Jun 2008 17:19:43 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:53429 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751229AbYF0VS5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 17:18:57 -0400
-Date: Fri, 27 Jun 2008 23:19:43 +0200
+	id S1754063AbYF0VTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 17:19:42 -0400
+Date: Fri, 27 Jun 2008 23:20:29 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Cc: David Woodhouse <david.woodhouse@intel.com>
-Subject: [GIT PULL] one fix for -rc
-Message-ID: <20080627211943.GA3726@uranus.ravnborg.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Adrian Bunk <bunk@kernel.org>, torvalds@linux-foundation.org,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dhowells@redhat.com
+Subject: Re: [PATCH] Fix a.out.h export to userspace with O= build.
+Message-ID: <20080627212029.GB3726@uranus.ravnborg.org>
+References: <20080627130236.GD18644@cs181140183.pp.htv.fi> <1214571984.10393.193.camel@pmac.infradead.org> <20080627131231.GF18644@cs181140183.pp.htv.fi> <1214573982.10393.204.camel@pmac.infradead.org> <20080627205712.GA29202@uranus.ravnborg.org> <1214600756.10393.214.camel@pmac.infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1214600756.10393.214.camel@pmac.infradead.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus
+On Fri, Jun 27, 2008 at 10:05:56PM +0100, David Woodhouse wrote:
+> On Fri, 2008-06-27 at 22:57 +0200, Sam Ravnborg wrote:
+> > Hi David.
+> > 
+> > Will you carry this patch in your tree or do you
+> > want me to add it to kbuild-next.git?
+> 
+> I was hoping Linus would apply it, since we could consider it a
+> regression.
 
-A simple headers_install fix.
-It will manifest itself only when you use "make O=... headers_install"
+Tested and it works.
 
-Please pull from:
+I have added it to kbuild-fixes.git and sent Linus a pull
+request.
 
-    ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
 
 	Sam
-
-
- include/asm-generic/Kbuild.asm |    2 +-
- include/asm-powerpc/Kbuild     |    1 -
- include/linux/Kbuild           |    2 +-
- 3 files changed, 2 insertions(+), 3 deletions(-)
-
-commit 7026103a24c2c6a264e7fcc5dfe614094f0c1b43
-Author: David Woodhouse <david.woodhouse@intel.com>
-Date:   Fri Jun 27 14:39:42 2008 +0100
-
-    kbuild: fix a.out.h export to userspace with O= build.
-
-    We need to check for existence of the a.out.h header in the source tree,
-    not the object tree, if we want it to get the right answer with O=.
-
-    Signed-off-by: David Woodhouse <david.woodhouse@intel.com>
-    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-
-
-diff --git a/include/asm-generic/Kbuild.asm b/include/asm-generic/Kbuild.asm
-index 92a6d91..7cd25b8 100644
---- a/include/asm-generic/Kbuild.asm
-+++ b/include/asm-generic/Kbuild.asm
-@@ -1,6 +1,6 @@
- header-y  += kvm.h
- 
--ifeq ($(wildcard include/asm-$(SRCARCH)/a.out.h),include/asm-$(SRCARCH)/a.out.h)
-+ifneq ($(wildcard $(srctree)/include/asm-$(SRCARCH)/a.out.h),)
- unifdef-y += a.out.h
- endif
- unifdef-y += auxvec.h
-diff --git a/include/asm-powerpc/Kbuild b/include/asm-powerpc/Kbuild
-index 7381916..bca352e 100644
---- a/include/asm-powerpc/Kbuild
-+++ b/include/asm-powerpc/Kbuild
-@@ -1,6 +1,5 @@
- include include/asm-generic/Kbuild.asm
- 
--header-y += a.out.h
- header-y += auxvec.h
- header-y += ioctls.h
- header-y += mman.h
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index b6fbb25..71d70d1 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -166,7 +166,7 @@ unifdef-y += acct.h
- unifdef-y += adb.h
- unifdef-y += adfs_fs.h
- unifdef-y += agpgart.h
--ifeq ($(wildcard include/asm-$(SRCARCH)/a.out.h),include/asm-$(SRCARCH)/a.out.h)
-+ifneq ($(wildcard $(srctree)/include/asm-$(SRCARCH)/a.out.h),)
- unifdef-y += a.out.h
- endif
- unifdef-y += apm_bios.h
