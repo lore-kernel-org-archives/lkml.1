@@ -1,68 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753028AbYF0KRB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYF0KYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753028AbYF0KRB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 06:17:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbYF0KQk
+	id S1753960AbYF0KYd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 06:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbYF0KYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 06:16:40 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:26823 "EHLO
-	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753041AbYF0KQj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 06:16:39 -0400
-X-BigFish: VPS-47(zz146fK1432R14e0Q98dR7efV1805Mzz10d3izzz32i6bh43j63h)
-X-Spam-TCS-SCL: 2:0
-X-WSS-ID: 0K349V6-03-BC1-01
-Date: Fri, 27 Jun 2008 12:15:19 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
-Subject: Re: [PATCH 00/34] AMD IOMMU driver
-Message-ID: <20080627101519.GM1303@amd.com>
-References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <20080627081807.GA6562@elte.hu> <20080627100751.GA27822@elte.hu>
+	Fri, 27 Jun 2008 06:24:22 -0400
+Received: from styx.suse.cz ([82.119.242.94]:42687 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750882AbYF0KYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 06:24:21 -0400
+Date: Fri, 27 Jun 2008 12:24:20 +0200
+From: Jan Kara <jack@suse.cz>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: [PATCH 4/5] jbd: fix error handling for checkpoint io
+Message-ID: <20080627102419.GC3602@duck.suse.cz>
+References: <4843CE15.6080506@hitachi.com> <4843CFBD.7040706@hitachi.com> <20080602124409.GL30613@duck.suse.cz> <4844CB39.6060409@hitachi.com> <20080603080219.GA17936@duck.suse.cz> <485F85AE.1010704@hitachi.com> <20080623122240.GJ26743@duck.suse.cz> <4860E01B.8010806@hitachi.com> <20080624133309.GG9959@duck.suse.cz> <48649FA0.70303@hitachi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080627100751.GA27822@elte.hu>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 27 Jun 2008 10:15:19.0166 (UTC) FILETIME=[B387E9E0:01C8D83E]
+In-Reply-To: <48649FA0.70303@hitachi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+  Hi,
 
-On Fri, Jun 27, 2008 at 12:07:51PM +0200, Ingo Molnar wrote:
+On Fri 27-06-08 17:06:56, Hidehiro Kawai wrote:
+> Jan Kara wrote:
 > 
-> -tip testing found a build failure with:
+> > On Tue 24-06-08 20:52:59, Hidehiro Kawai wrote:
 > 
-> arch/x86/kernel/amd_iommu_init.c:247: warning: 'struct acpi_table_header' declared inside parameter list
-> arch/x86/kernel/amd_iommu_init.c:247: warning: its scope is only this definition or declaration, which is probably not what you want
-> arch/x86/kernel/amd_iommu_init.c: In function 'find_last_devid_acpi':
-> arch/x86/kernel/amd_iommu_init.c:257: error: dereferencing pointer to incomplete type
+> >>>>3. is implemented as described below.
+> >>>> (1) if log_do_checkpoint() detects an I/O error during
+> >>>>     checkpointing, it calls journal_abort() to abort the journal
+> >>>> (2) if the journal has aborted, don't update s_start and s_sequence
+> >>>>     in the on-disk journal superblock
+> >>>>
+> >>>>So, if the journal aborts, journaled data will be replayed on the
+> >>>>next mount.
+> >>>>
+> >>>>Now, please remember that some dirty metadata buffers are written
+> >>>>back to the filesystem without journaling if the journal aborted.
+> >>>>We are happy if all dirty metadata buffers are written to the disk,
+> >>>>the integrity of the filesystem will be kept.  However, replaying
+> >>>>the journaled data can overwrite the latest on-disk metadata blocks
+> >>>>partly with old data.  It would break the filesystem.
+> >>>
+> >>>  Yes, it would. But how do you think it can happen that a metadata buffer
+> >>>will be written back to the filesystem when it is a part of running
+> >>>transaction? Note that checkpointing code specifically checks whether the
+> >>>buffer being written back is part of a running transaction and if so, it
+> >>>waits for commit before writing back the buffer. So I don't think this can
+> >>>happen but maybe I miss something...
+> >>
+> >>Checkpointing code checks it and may call log_wait_commit(), but this
+> >>problem is caused by transactions which have not started checkpointing.
+> >>
+> >>For example, the tail transaction has an old update for block_B and
+> >>the running transaction has a new update for block_B.  Then, the
+> >>committing transaction fails to write the commit record, it aborts the
+> >>journal, and new block_B will be written back to the file system without
+> >>journaling.  Because this patch doesn't separate between normal abort
+> >>and checkpointing related abort, the tail transaction is left in the
+> >>journal space.  So by replaying the tail transaction, new block_B is
+> >>overwritten with old one.
+> > 
+> >   Yes, and this is expected an correct. When we cannot properly finish a
+> > transaction, we have to discard everything in it. A bug would be (and I
+> > think it could currently happen) if we already checkpointed the previous
+> > transaction and then written over block_B new data from the uncommitted
+> > transaction. I think we have to avoid that - i.e., in case we abort the
+> > journal we should not mark buffers dirty when processing the forget loop.
 > 
->   http://redhat.com/~mingo/misc/config-Fri_Jun_27_10_29_06_CEST_2008.bad
+> Yes.
 > 
-> this is due to !CONFIG_ACPI.
+> > But this is not too serious since fsck has to be run anyway and it will
+> > fix the problems.
 > 
-> since AMD IOMMU discovery depends on ACPI anyway, i've fixed this in the 
-> Kconfig space. (Eventually, if you want to make it directly discoverable 
-> via the PCI space in the future, you might want to fix this dependency.)
-> 
-> i've pushed out the fix below into -tip.
+> Yes.  The filesystem should be marked with an error, so fsck will check
+> and recover the filesystem on boot.  But this means the filesystem loses
+> some latest updates even if it was cleanly unmounted (although some file
+> data has been lost.)  I'm a bit afraid that some people would think of
+> this as a regression due to this PATCH 4/5.  At least, to avoid
+> undesirable replay, we had better keep journaled data only when the
+> journal has been aborted for checkpointing related reason.
+  I don't think this makes any difference. Look: We have transaction A
+modifying block B fully committed to the journal. Now there is a running
+(or committing, it does not really matter) transaction R also modifying block
+B. Until R gets fully committed, no block modified by R is checkpointed
+to the device - checkpointing code takes care of that and it must be so
+to satisfy journaling guarantees.
+  So if we abort journal (for whatever reason) before R is fully committed,
+no change in R will be seen on the filesystem regardless whether you
+cleanup the journal or not.
+  And you cannot do much differenly - the principle of journaling is that
+either all changes in the transaction get to disk or none of them. So until
+the transaction is properly committed, you have the only way to satisfy
+this condition - take the "none of them" choice.
+  Now fsck could of course be clever and try to use updates in not fully
+committed transaction but personally I don't think it's worth the effort.
+  Please correct me if I just misunderstood your point...
 
-Thank you for your testing and the fixes. I will test the result from
-your tree.
-
-Joerg
-
+								Honza
 -- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
