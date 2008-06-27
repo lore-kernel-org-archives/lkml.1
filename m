@@ -1,39 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759087AbYF0U3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761385AbYF0UaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759087AbYF0U3k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 16:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbYF0U33
+	id S1761385AbYF0UaH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 16:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758686AbYF0U3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 16:29:29 -0400
-Received: from c60.cesmail.net ([216.154.195.49]:41000 "EHLO c60.cesmail.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751197AbYF0U32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 16:29:28 -0400
-Subject: Re: pull request: wireless-2.6 2008-06-27
-From: Pavel Roskin <proski@gnu.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "John W. Linville" <linville@tuxdriver.com>, davem@davemloft.net,
-       netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080627210723.5ace1840@lxorguk.ukuu.org.uk>
-References: <20080627191412.GA24606@tuxdriver.com>
-	 <1214596203.9513.13.camel@dv> <20080627210723.5ace1840@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Fri, 27 Jun 2008 16:29:26 -0400
-Message-Id: <1214598566.9513.22.camel@dv>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+	Fri, 27 Jun 2008 16:29:46 -0400
+Received: from lsg.lsg.lab.novell.com ([151.155.230.1]:8144 "EHLO
+	lsg.lsg.lab.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757494AbYF0U3q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 16:29:46 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 0/3] sched: newidle and RT wake-buddy fixes
+To: mingo@elte.hu, peterz@infradead.org
+Cc: npiggin@suse.de, ghaskins@novell.com, rostedt@goodmis.org,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Date: Fri, 27 Jun 2008 14:29:44 -0600
+Message-ID: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-06-27 at 21:07 +0100, Alan Cox wrote:
+Hi Ingo,
+  The following patches apply to linux-tip/sched/devel and enhance the
+performance of the kernel (specifically in PREEMPT_RT, though they do
+not regress mainline performance as far as I can tell).  They offer
+somewhere between 50-100% speedups in netperf performance, depending
+on the test.
 
-> I don't think a changelog typo (or two) is exactly important - do you ?
+Should you be interested in these patches, you can optionally pull them
+from git at the following URL:
 
-OK, never mind.
+git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/linux-2.6-hacks.git sched-devel
 
--- 
+Comments/feedback/bugfixes welcome
+
 Regards,
-Pavel Roskin
+-Greg
