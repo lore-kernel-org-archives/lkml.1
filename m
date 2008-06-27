@@ -1,50 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbYF0MJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758790AbYF0MJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758644AbYF0MJi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 08:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbYF0L6c
+	id S1758790AbYF0MJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 08:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758878AbYF0MBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 07:58:32 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:3174 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754495AbYF0L5x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 07:57:53 -0400
-Message-Id: <20080627115211.751732577@chello.nl>
-References: <20080627114109.724249622@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Fri, 27 Jun 2008 13:41:25 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 16/30] sched: fix sched_balance_self() smp group balancing
-Content-Disposition: inline; filename=sched-fix-sched_balance_self.patch
+	Fri, 27 Jun 2008 08:01:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41765 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757551AbYF0MBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 08:01:07 -0400
+Date: Fri, 27 Jun 2008 14:00:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
+       hpa@zytor.com, yhlu.kernel@gmail.com, akpm@linux-foundation.org,
+       tglx@linutronix.de, steiner@sgi.com, travis@sgi.com,
+       linux-kernel@vger.kernel.org, ying.huang@intel.com, andi@firstfloor.org,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [PATCH 4/5 v2] x86 boot: show pfn addresses in hex not decimal
+	in some kernel info printks
+Message-ID: <20080627120040.GA30872@elte.hu>
+References: <86802c440806241429s7f5e899dn67d42303247f618@mail.gmail.com> <20080624203252.f932c631.pj@sgi.com> <4861A5DF.5010104@zytor.com> <20080624211711.8c6d5105.pj@sgi.com> <4861AAEF.3020103@zytor.com> <alpine.LFD.1.10.0806241949030.13106@hp.linux-foundation.org> <20080624220810.b2ec0c6a.pj@sgi.com> <alpine.LFD.1.10.0806242101460.20369@hp.linux-foundation.org> <20080625145331.GA20941@elte.hu> <20080626191406.GC13699@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080626191406.GC13699@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Finding the least idle cpu is more accurate when done with updated shares.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/sched.c |    3 +++
- 1 file changed, 3 insertions(+)
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -2171,6 +2171,9 @@ static int sched_balance_self(int cpu, i
- 			sd = tmp;
- 	}
- 
-+	if (sd)
-+		update_shares(sd);
-+
- 	while (sd) {
- 		cpumask_t span, tmpmask;
- 		struct sched_group *group;
+> Hi Ingo
+> 
+> > Sparse is a cool tool that extends upon C types (and more), but it's 
+> > been made too hard to use widely:
+> > 
+> >  - right now it's opt-in with no ability for testers to use it
+> >    transparently while also building the kernel. Forcing a second
+> >    kernel build just for 'debugging' reduces the userbase.
+> 
+> This is waht make C=1 is for. If this is broken then we should
+> fix it.
+> Just trying it out:
+> $ make C=1 kernel/sched.o
+>   CHECK   kernel/sched.c
+> kernel/sched_fair.c:37:14: warning: symbol 'sysctl_sched_latency' was not declar                                                                   ed. Should it be static?
+> kernel/sched_fair.c:43:14: warning: symbol 'sysctl_sched_min_granularity' was no                                                                   t declared. Should it be static?
+> kernel/sched_fair.c:72:14: warning: symbol 'sysctl_sched_wakeup_granularity' was                                                                    not declared. Should it be static?
+> ...
+>   CC      kernel/sched.o
+> 
+> 
+> So make C=1 works as intended and let you run sparse on the files that 
+> are built - and only those.
 
--- 
+ah, ok - i was confused about that.
 
+> > Fortunately these problems are all solvable gradually:
+> > 
+> >  - a kbuild mechanism to get _parallel_ Sparse checks. I.e. both the 
+> >    real .o gets produced but also the "make C=1" output is produced. 
+> >    Testers would be enabled to do Sparse checks "alongside" of a normal 
+> >    kernel build. (Sparse is plenty fast for this to be practical)
+> Already present.
+> 
+> > 
+> >  - kbuild mechanism with which subsystem maintainers could mark specific 
+> >    files (or all of their subdirectories) of their subsystem as to be 
+> >    Sparse-checked by default. [if a .config debug option is enabled]
+> >    For example we'd mark all of arch/x86/*.o and kernel/sched*.o in such 
+> >    a way for example.
+> That would then be on a directory basis.
+> You can do:
+> diff --git a/kernel/Makefile b/kernel/Makefile
+> index 1c9938a..1ba00aa 100644
+> --- a/kernel/Makefile
+> +++ b/kernel/Makefile
+> @@ -2,6 +2,7 @@
+>  # Makefile for the linux kernel.
+>  #
+> 
+> +KBUILD_CHECKSRC=1
+>  obj-y     = sched.o fork.o exec_domain.o panic.o printk.o profile.o \
+>             exit.o itimer.o time.o softirq.o resource.o \
+>             sysctl.o capability.o ptrace.o timer.o user.o \
+> 
+> already today.
+> It applies recursively so we will then run sparse on kernel/time/*.o too.
+> 
+> There is no easy way to cover all of arch/x86/*.o as the files are distributed
+> in several Makefiles and there is no common one.
+> 
+> > 
+> >  - a second layer would be very useful as well: failures would turn into 
+> >    build failures if a debug .config switch is enabled.
+> This could be a simple:
+> ifdef CONFIG_CHECK_IS_ERROR
+> CHECKFLAGS += -Werror
+> endif
+> 
+> And teach sparse about -Werror
+> 
+> > On a similar note, it would be nice if subsystem maintainers had a 
+> > kbuild mechanism to have the fails they maintain to be built via -Werr 
+> > (if an opt-in .config option is enabled).
+> 
+> For each Makefile (does not apply recursively):
+> ccflags-$(CONFIG_PROMOTE_WARNINGS_TO_ERROR) += -Werror
+> 
+> When I get around to it:
+> ccflags-sched.o-$(CONFIG_PROMOTE_WARNINGS_TO_ERROR) += -Werror
+
+if there's a generic kbuild facility for it i'd love to try something 
+like that out, on files that i maintain. There should perhaps be a 
+shortcut for it? Something like:
+
+  ccflags-sched.o += -Werror
+
+and kbuild would decide whether CONFIG_PROMOTE_WARNINGS_TO_ERROR is set 
+and whether to filter out -Werror or not?
+
+	Ingo
