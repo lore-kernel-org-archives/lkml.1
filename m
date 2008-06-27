@@ -1,97 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbYF0E51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbYF0FFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758241AbYF0E51 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 00:57:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbYF0E5T
+	id S1757959AbYF0FFu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 01:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbYF0FFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 00:57:19 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:41119 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753061AbYF0E5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 00:57:18 -0400
-Date: Fri, 27 Jun 2008 10:24:01 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: balbir@linux.vnet.ibm.com, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [RFC v1] Tunable sched_mc_power_savings=n
-Message-ID: <20080627045401.GC26167@in.ibm.com>
-Reply-To: dipankar@in.ibm.com
-References: <20080625191100.GI21892@dirshya.in.ibm.com> <87k5gcqpbm.fsf@basil.nowhere.org> <4863AF57.3040005@linux.vnet.ibm.com> <4863DB29.1020304@firstfloor.org> <20080626185254.GA12416@dirshya.in.ibm.com> <4863F93C.9040102@firstfloor.org> <20080626210025.GB26167@in.ibm.com> <48640C04.9020600@firstfloor.org>
+	Fri, 27 Jun 2008 01:05:41 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56562 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752563AbYF0FFk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 01:05:40 -0400
+Date: Thu, 26 Jun 2008 22:01:01 -0700
+From: Greg KH <greg@kroah.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Deti Fliegl <deti@fliegl.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org, jaswinder@infradead.org
+Subject: Re: [PATCH] dabusb: use request_firmware()
+Message-ID: <20080627050101.GB8362@kroah.com>
+References: <1214219201.27974.21.camel@shinybook.infradead.org> <20080623112004.GA26516@infradead.org> <1214221558.27974.33.camel@shinybook.infradead.org> <20080626155517.GD22025@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48640C04.9020600@firstfloor.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080626155517.GD22025@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 11:37:08PM +0200, Andi Kleen wrote:
-> Dipankar Sarma wrote:
+On Thu, Jun 26, 2008 at 06:55:18PM +0300, Adrian Bunk wrote:
+> On Mon, Jun 23, 2008 at 12:45:58PM +0100, David Woodhouse wrote:
+> >...
+> > What was the final conclusion on the need to add 'select FW_LOADER'?
+> > Is that going to go away, too?
+> >...
 > 
-> > Some workload managers already do that - they provision cpu and memory
-> > resources based on request rates and response times. Such software is
-> > in a better position to make a decision whether they can live with
-> > reduced performance due to power saving mode or not. The point I am
-> > making is the the kernel doesn't have any notion of transactional
-> > performance 
-> 
-> The kernel definitely knows about burstiness vs non burstiness at least
-> (although it currently has no long term memory for that). Does it need
-> more than that for this? Anyways if nice levels were used that is not
-> even needed, because it's ok to run niced processes slower.
-> 
-> And your workload manager could just nice processes. It should probably
-> do that anyways to tell ondemand you don't need full frequency.
+> Greg, you have my "always enable FW_LOADER unless EMBEDDED=y" patch 
+> queued for 2.6.27?
 
-The current usage of this we are looking requires system-wide
-settings. That means nicing every process running on the system.
-That seems a little messy. Secondly, even if you nice the processes
-they are still going to be spread all over the CPU packages
-running at lower frequencies due to nice. The point I am making
-is that it is more effective to push work into smaller number
-of cpu packages and let others go to low-power sleep state.
+Yes, it is in my to-apply queue, I hope to get through it tomorrow, it
+is planned to go into 2.6.27.
 
-> > Agreed. However that is a difficult problem to solve and not the
-> > intention of this idea. Global power setting is a simple first step.
-> > I don't think we have a good understanding of cases where conflicting
-> 
-> Always the guy who needs the most performance wins? And if only
-> niced processes are running it's ok to be slower.
-> 
-> It would be similar to nice levels. In fact nice levels could be probably
-> used directly (similar to how ionice coopts them too)
-> 
-> Or another case that already uses it is cpufreq/ondemand: when only niced
-> processes run the CPU is not cranked up to the highest frequency.
+thanks,
 
-Using nice, you can force lowering of frequency - but you can do that
-using userspace governor as well - no need to mess with process
-priorities. We are talking about a different optimization here - something
-that will give more benefits in powersave mode when you have large
-systems.
-
-> >>> In a small-scale datacenters, peak and off-peak hour settings can be
-> >>> potentially done through simple cron jobs.  
-> >> Is there any real drawback from only controlling it through nice levels?
-> > 
-> > In a system with more than a couple of sockets, it is more beneficial
-> > (power-wise) to pack all work in to a small number of processors
-> > and let the other processors go to very low power sleep. Compared 
-> > to running tasks slowly and spreading them all over the processors.
-> 
-> You answered a different question?
-
-The point is that grouping tasks into small number of sockets is
-more effective than nicing which may still spread the tasks all
-over the sockets. Think of this as light-weight CPU hotplug.
-Something that can compact and expand CPU capacity fast and
-extends an existing power management interface / logic.
-
-Thanks
-Dipankar
-
+greg k-h
