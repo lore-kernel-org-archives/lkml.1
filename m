@@ -1,94 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757137AbYFZX66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758287AbYF0AD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757137AbYFZX66 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 19:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbYFZX6r
+	id S1758287AbYF0AD7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 20:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYF0ADt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 19:58:47 -0400
-Received: from mail-in-13.arcor-online.net ([151.189.21.53]:40019 "EHLO
-	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751538AbYFZX6q (ORCPT
+	Thu, 26 Jun 2008 20:03:49 -0400
+Received: from qb-out-0506.google.com ([72.14.204.226]:9246 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754262AbYF0ADs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 19:58:46 -0400
-Subject: Re: [v4l-dvb-maintainer] saa7134 duplicate device in module, but
-	different device_data?
-From: hermann pitton <hermann-pitton@arcor.de>
-To: Ben Collins <ben.collins@canonical.com>,
-       Hartmut Hackmann <hartmut.hackmann@t-online.de>
-Cc: v4l-dvb-maintainer@linuxtv.org, kernel list <linux-kernel@vger.kernel.org>,
-       video4linux-list@redhat.com
-In-Reply-To: <1214501094.7150.29.camel@cunning>
-References: <1214501094.7150.29.camel@cunning>
-Content-Type: text/plain
-Date: Fri, 27 Jun 2008 01:56:20 +0200
-Message-Id: <1214524580.4480.32.camel@pc10.localdom.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+	Thu, 26 Jun 2008 20:03:48 -0400
+Message-ID: <1d3f23370806261703w277719cfn8b9f193e08a9d85a@mail.gmail.com>
+Date: Fri, 27 Jun 2008 10:03:46 +1000
+From: "John Williams" <john.williams@petalogix.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [PATCH 02/60] microblaze_v4: Makefiles for Microblaze cpu
+Cc: "Michal Simek" <monstr@seznam.cz>, linux-kernel@vger.kernel.org,
+       arnd@arndb.de, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
+       linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
+       hpa@zytor.com
+In-Reply-To: <20080626194002.GC22827@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-2-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-3-git-send-email-monstr@seznam.cz>
+	 <20080626143623.GC30954@cs181140183.pp.htv.fi>
+	 <4863E414.4090303@seznam.cz>
+	 <20080626194002.GC22827@cs181140183.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 6/27/08, Adrian Bunk <bunk@kernel.org> wrote:
+> On Thu, Jun 26, 2008 at 08:46:44PM +0200, Michal Simek wrote:
+>  > Adrian Bunk napsal(a):
+>  > > On Thu, Jun 26, 2008 at 02:29:31PM +0200, monstr@seznam.cz wrote:
+>  > >> ...
+>  > >> --- /dev/null
+>  > >> +++ b/arch/microblaze/Makefile
+>  > >> ...
+>  > >> +# Work out HW multipler support.  This is icky.
+>  > >> +# 1. Spartan2 has no HW multiplers.
+>  > >> +# 2. MicroBlaze v3.x always uses them, except in Spartan 2
+>  > >> +# 3. All other FPGa/CPU ver combos, we can trust the CONFIG_ settings
+>  > >> +ifeq (,$(findstring spartan2,$(CONFIG_XILINX_MICROBLAZE0_FAMILY)))
+>  > >> +  ifeq ($(CPU_MAJOR),3)
+>  > >> +    CPUFLAGS-1 += -mno-xl-soft-mul
+>  > >> +  else
+>  > >> +    # USE_HW_MUL can be 0, 1, or 2, defining a heirarchy of HW Mul support.
+>  > >> +    CPUFLAGS-$(subst 1,,$(CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL)) += -mxl-multiply-high
+>  > >> +    CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL) += -mno-xl-soft-mul
+>  > >> +  endif
+>  > >> +endif
+>  > >> +CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_DIV) += -mno-xl-soft-div
+>  > >> +CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_BARREL) += -mxl-barrel-shift
+>  > >> +CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_PCMP) += -mxl-pattern-compare
+>  > >> +
+>  > >> +CPUFLAGS-1 += $(call cc-option,-mcpu=v$(CPU_VER))
+>  > >> +
+>  > >> +# The various CONFIG_XILINX cpu features options are integers 0/1/2...
+>  > >> +# rather than bools y/n
+>  > >> +CFLAGS += $(CPUFLAGS-1)
+>  > >> +CFLAGS += $(CPUFLAGS-2)
+>  > >> ...
+>  > >
+>  > > Why are the options not bools?
+>  > because CONFIG_XILINX_... are 0, 1 or 2 not only y, n.
 
-Am Donnerstag, den 26.06.2008, 13:24 -0400 schrieb Ben Collins:
-> In the saa7134 module, there are these two entries in
-> MODULE_DEVICE_TABLE():
-> 
-> 
->         },{
->                 .vendor       = PCI_VENDOR_ID_PHILIPS,
->                 .device       = PCI_DEVICE_ID_PHILIPS_SAA7133,
->                 .subvendor    = 0x185b,
->                 .subdevice    = 0xc100,
->                 .driver_data  = SAA7134_BOARD_VIDEOMATE_TV,
->         },{
->                 .vendor       = PCI_VENDOR_ID_PHILIPS,
->                 .device       = PCI_DEVICE_ID_PHILIPS_SAA7133,
->                 .subvendor    = 0x185b,
->                 .subdevice    = 0xc100,
->                 .driver_data  = SAA7134_BOARD_VIDEOMATE_TV_GOLD_PLUS,
->         },{
-> 
-> Both will exactly match, and I assume only the first one will ever be
-> used, hence the second is just a wasted dupe. At least, I would assume
-> if not for the differing driver_data. Anyway to clear up this ambiguity?
-> 
+> I understood that.
+>
+>  But _why_ are these options not bools?
 
-there are even more devices with the same PCI device and subsystem ID
-from that vendor and the problem goes also over saa7133 and saa7135
-devices, for which we have no means to detect them as different, but the
-saa7133 does only NTSC-M system TV sound decoding and saa7135 and the
-even later saa7131e global analog TV sound.
+The CPU has 3 levels of multiplier support -
 
-For the early saa7133 SAA7134_BOARD_VIDEOMATE_TV we don't have eeprom
-readout data and the contributor doesn't have the card anymore.
-A request for helping out with such on the list had no result so far.
+0=none
+1= 32-bit (mul produces 32 LSB of a 32x32 bit multiply)
+2= 32-bit high (mulhi produces 32 MSB of a 32x32 bit multiply).
 
-As of now, we can't try to separate them by eeprom differences, which
-would be the best attempt and is done for some other Compro products
-with similar flaws already.
+The CPU-specific options are pulled directly out of the MicroBlaze
+system design tools as an auto-generated config file that we drop into
+the kernel build.  Doing so ensures consistency between the hardware
+and the kernel running on it.
 
-Before that likely possible eeprom detection ever happens, we have two
-options left to make you feel better.
+These options come out of the tools as intergers, 0,1,2.  We found in
+the early days of microblaze that lots of users built unbootable
+kernels because they manually transcribed these options incorrectly.
+So, we integrate as closely as we reasonable can to prevent these sort
+of CPU configuration errors.
 
-Kick both out of the auto detection and the users will get a list of
-supported devices printed out, from which they have to choose.
+These options are now limited to about 6 CPU-specific options - things
+we must know about the CPU at compile time to set the correct cpuflags
+to GCC.
 
-Leave the oldest one in and print some warnings that they have to look
-it up for their newer cards. Naming is quite consistent, except some
-early Gold Plus II variants seen first in New Zealand coming with Gold
-Plus only stickers. They also come with different tuners, latest have a
-separate silicon radio tuner and all such usual ...
+All else is set through open firmware or querying a Processor Version
+Register at boot.
 
-Patches are always welcome.
+Regards,
 
-Internally it was only a reminder for missing eeprom data to be
-investigated.
-
-Cheers,
-Hermann
-
-
-
-
+John
+-- 
+John Williams, PhD, B.Eng, B.IT
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
