@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763927AbYF0S2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763981AbYF0S2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763927AbYF0S2j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 14:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761487AbYF0SZ5
+	id S1763981AbYF0S2z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 14:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761940AbYF0SZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 14:25:57 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11723 "EHLO
+	Fri, 27 Jun 2008 14:25:58 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11711 "EHLO
 	phenom.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759266AbYF0SZv (ORCPT
+	by vger.kernel.org with ESMTP id S1759207AbYF0SZu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 14:25:51 -0400
-Date: Fri, 27 Jun 2008 12:13:13 -0600
+	Fri, 27 Jun 2008 14:25:50 -0400
+Date: Fri, 27 Jun 2008 12:13:23 -0600
 From: dougthompson@xmission.com
 To: bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org
-Subject: [PATCH 5/13] EDAC mpc85xx fix pci ofdev
-Message-ID: <48652db9.0Y8LuCqRcWSJ9Ih7%dougthompson@xmission.com>
+Subject: [PATCH 7/13] EDAC core fix workq timer
+Message-ID: <48652dc3.lmAi9ickn7g7orhI%dougthompson@xmission.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,181 +24,66 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Dave Jiang <djiang@mvista.com>
+From:	Arthur Jones <ajones@riverbed.com>
 
 Applied to linux-2.6.26-rc5-mm3
 
-Converting PCI err device from platform to open firmware of_dev to comply with
-powerpc schemes.
+When updating the edac_mc_poll_msec module parameter from
+the sysfs /sys/module/edac_core/parameters/edac_mc_poll_msec
+file, we don't update the workq timers.  So that, if we
+move from a big poll time to a small one, the small one
+won't take effect until the big one has timed out.
+    
+Here we provide a new module parameter set method
+to call out to the update routine.  This brings
+the /sys/module/edac_core/parameters functionality
+up to that provided by the /sys/drivers/system/edac/mc
+sysfs module parameter files so that we can remove
+them or at least link to the /sys/module files...
 
-Signed-off-by:	Dave Jiang <djiang@mvista.com>
-Signed-off-by:	Doug Thompson <dougthompson@xmission.com>
+Signed-off-by:  Arthur Jones <ajones@riverbed.com>
+Signed-off-by:  Doug Thompson <dougthompson@xmission.com>
 ---
- mpc85xx_edac.c |   67 ++++++++++++++++++++++++++++++++++++---------------------
- 1 file changed, 43 insertions(+), 24 deletions(-)
+ edac_mc_sysfs.c |   22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.26-rc5/drivers/edac/mpc85xx_edac.c
+Index: linux-2.6.26-rc5/drivers/edac/edac_mc_sysfs.c
 ===================================================================
---- linux-2.6.26-rc5.orig/drivers/edac/mpc85xx_edac.c
-+++ linux-2.6.26-rc5/drivers/edac/mpc85xx_edac.c
-@@ -195,14 +195,15 @@ static irqreturn_t mpc85xx_pci_isr(int i
- 	return IRQ_HANDLED;
+--- linux-2.6.26-rc5.orig/drivers/edac/edac_mc_sysfs.c
++++ linux-2.6.26-rc5/drivers/edac/edac_mc_sysfs.c
+@@ -44,6 +44,25 @@ int edac_mc_get_poll_msec(void)
+ 	return edac_mc_poll_msec;
  }
  
--static int __devinit mpc85xx_pci_err_probe(struct platform_device *pdev)
-+static int __devinit mpc85xx_pci_err_probe(struct of_device *op,
-+					   const struct of_device_id *match)
- {
- 	struct edac_pci_ctl_info *pci;
- 	struct mpc85xx_pci_pdata *pdata;
--	struct resource *r;
-+	struct resource r;
- 	int res = 0;
- 
--	if (!devres_open_group(&pdev->dev, mpc85xx_pci_err_probe, GFP_KERNEL))
-+	if (!devres_open_group(&op->dev, mpc85xx_pci_err_probe, GFP_KERNEL))
- 		return -ENOMEM;
- 
- 	pci = edac_pci_alloc_ctl_info(sizeof(*pdata), "mpc85xx_pci_err");
-@@ -212,34 +213,37 @@ static int __devinit mpc85xx_pci_err_pro
- 	pdata = pci->pvt_info;
- 	pdata->name = "mpc85xx_pci_err";
- 	pdata->irq = NO_IRQ;
--	platform_set_drvdata(pdev, pci);
--	pci->dev = &pdev->dev;
-+	dev_set_drvdata(&op->dev, pci);
-+	pci->dev = &op->dev;
- 	pci->mod_name = EDAC_MOD_STR;
- 	pci->ctl_name = pdata->name;
--	pci->dev_name = dev_name(&pdev->dev);
-+	pci->dev_name = op->dev.bus_id;
- 
- 	if (edac_op_state == EDAC_OPSTATE_POLL)
- 		pci->edac_check = mpc85xx_pci_check;
- 
- 	pdata->edac_idx = edac_pci_idx++;
- 
--	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if (!r) {
-+	res = of_address_to_resource(op->node, 0, &r);
-+	if (res) {
- 		printk(KERN_ERR "%s: Unable to get resource for "
- 		       "PCI err regs\n", __func__);
- 		goto err;
- 	}
- 
--	if (!devm_request_mem_region(&pdev->dev, r->start,
--				     r->end - r->start + 1, pdata->name)) {
-+	/* we only need the error registers */
-+	r.start += 0xe00;
++static int edac_set_poll_msec(const char *val, struct kernel_param *kp)
++{
++	long l;
++	int ret;
 +
-+	if (!devm_request_mem_region(&op->dev, r.start,
-+				     r.end - r.start + 1, pdata->name)) {
- 		printk(KERN_ERR "%s: Error while requesting mem region\n",
- 		       __func__);
- 		res = -EBUSY;
- 		goto err;
- 	}
- 
--	pdata->pci_vbase = devm_ioremap(&pdev->dev, r->start,
--					r->end - r->start + 1);
-+	pdata->pci_vbase = devm_ioremap(&op->dev, r.start,
-+					r.end - r.start + 1);
- 	if (!pdata->pci_vbase) {
- 		printk(KERN_ERR "%s: Unable to setup PCI err regs\n", __func__);
- 		res = -ENOMEM;
-@@ -266,14 +270,15 @@ static int __devinit mpc85xx_pci_err_pro
- 	}
- 
- 	if (edac_op_state == EDAC_OPSTATE_INT) {
--		pdata->irq = platform_get_irq(pdev, 0);
--		res = devm_request_irq(&pdev->dev, pdata->irq,
-+		pdata->irq = irq_of_parse_and_map(op->node, 0);
-+		res = devm_request_irq(&op->dev, pdata->irq,
- 				       mpc85xx_pci_isr, IRQF_DISABLED,
- 				       "[EDAC] PCI err", pci);
- 		if (res < 0) {
- 			printk(KERN_ERR
- 			       "%s: Unable to requiest irq %d for "
- 			       "MPC85xx PCI err\n", __func__, pdata->irq);
-+			irq_dispose_mapping(pdata->irq);
- 			res = -ENODEV;
- 			goto err2;
- 		}
-@@ -282,23 +287,23 @@ static int __devinit mpc85xx_pci_err_pro
- 		       pdata->irq);
- 	}
- 
--	devres_remove_group(&pdev->dev, mpc85xx_pci_err_probe);
-+	devres_remove_group(&op->dev, mpc85xx_pci_err_probe);
- 	debugf3("%s(): success\n", __func__);
- 	printk(KERN_INFO EDAC_MOD_STR " PCI err registered\n");
- 
- 	return 0;
- 
- err2:
--	edac_pci_del_device(&pdev->dev);
-+	edac_pci_del_device(&op->dev);
- err:
- 	edac_pci_free_ctl_info(pci);
--	devres_release_group(&pdev->dev, mpc85xx_pci_err_probe);
-+	devres_release_group(&op->dev, mpc85xx_pci_err_probe);
- 	return res;
- }
- 
--static int mpc85xx_pci_err_remove(struct platform_device *pdev)
-+static int mpc85xx_pci_err_remove(struct of_device *op)
- {
--	struct edac_pci_ctl_info *pci = platform_get_drvdata(pdev);
-+	struct edac_pci_ctl_info *pci = dev_get_drvdata(&op->dev);
- 	struct mpc85xx_pci_pdata *pdata = pci->pvt_info;
- 
- 	debugf0("%s()\n", __func__);
-@@ -318,12 +323,26 @@ static int mpc85xx_pci_err_remove(struct
- 	return 0;
- }
- 
--static struct platform_driver mpc85xx_pci_err_driver = {
-+static struct of_device_id mpc85xx_pci_err_of_match[] = {
-+	{
-+	 .compatible = "fsl,mpc8540-pcix",
-+	 },
-+	{
-+	 .compatible = "fsl,mpc8540-pci",
-+	},
-+	{},
-+};
++	if (!val)
++		return -EINVAL;
 +
-+static struct of_platform_driver mpc85xx_pci_err_driver = {
-+	.owner = THIS_MODULE,
-+	.name = "mpc85xx_pci_err",
-+	.match_table = mpc85xx_pci_err_of_match,
- 	.probe = mpc85xx_pci_err_probe,
- 	.remove = __devexit_p(mpc85xx_pci_err_remove),
- 	.driver = {
--		.name = "mpc85xx_pci_err",
--	}
-+		   .name = "mpc85xx_pci_err",
-+		   .owner = THIS_MODULE,
-+		   },
- };
++	ret = strict_strtol(val, 0, &l);
++	if (ret == -EINVAL || ((int)l != l))
++		return -EINVAL;
++	*((int *)kp->arg) = l;
++
++	/* notify edac_mc engine to reset the poll period */
++	edac_mc_reset_delay_period(l);
++
++	return 0;
++}
++
+ /* Parameter declarations for above */
+ module_param(edac_mc_panic_on_ue, int, 0644);
+ MODULE_PARM_DESC(edac_mc_panic_on_ue, "Panic on uncorrected error: 0=off 1=on");
+@@ -53,7 +72,8 @@ MODULE_PARM_DESC(edac_mc_log_ue,
+ module_param(edac_mc_log_ce, int, 0644);
+ MODULE_PARM_DESC(edac_mc_log_ce,
+ 		 "Log correctable error to console: 0=off 1=on");
+-module_param(edac_mc_poll_msec, int, 0644);
++module_param_call(edac_mc_poll_msec, edac_set_poll_msec, param_get_int,
++		  &edac_mc_poll_msec, 0644);
+ MODULE_PARM_DESC(edac_mc_poll_msec, "Polling period in milliseconds");
  
- #endif				/* CONFIG_PCI */
-@@ -1002,7 +1021,7 @@ static int __init mpc85xx_mc_init(void)
- 		printk(KERN_WARNING EDAC_MOD_STR "L2 fails to register\n");
- 
- #ifdef CONFIG_PCI
--	res = platform_driver_register(&mpc85xx_pci_err_driver);
-+	res = of_register_platform_driver(&mpc85xx_pci_err_driver);
- 	if (res)
- 		printk(KERN_WARNING EDAC_MOD_STR "PCI fails to register\n");
- #endif
-@@ -1025,7 +1044,7 @@ static void __exit mpc85xx_mc_exit(void)
- {
- 	mtspr(SPRN_HID1, orig_hid1);
- #ifdef CONFIG_PCI
--	platform_driver_unregister(&mpc85xx_pci_err_driver);
-+	of_unregister_platform_driver(&mpc85xx_pci_err_driver);
- #endif
- 	of_unregister_platform_driver(&mpc85xx_l2_err_driver);
- 	of_unregister_platform_driver(&mpc85xx_mc_err_driver);
+ /*
