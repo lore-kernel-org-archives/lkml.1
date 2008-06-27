@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763428AbYF0U5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763796AbYF0U5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763428AbYF0U5Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 16:57:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761159AbYF0U4b
+	id S1763796AbYF0U5f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 16:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762786AbYF0U4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 16:56:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49257 "EHLO mx1.redhat.com"
+	Fri, 27 Jun 2008 16:56:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49266 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759777AbYF0U4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 16:56:30 -0400
+	id S1762408AbYF0U4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 16:56:33 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -22,9 +22,11 @@ Subject: [PATCH 2.6.25-stable] x86_64 ptrace: fix sys32_ptrace task_struct leak
 In-Reply-To: Jeff Dike's message of  Friday, 27 June 2008 16:00:50 -0400 <20080627200050.GA10859@c2.user-mode-linux.org>
 References: <20080627183045.GA18801@xs4all.nl>
 	<20080627200050.GA10859@c2.user-mode-linux.org>
-X-Windows: a mistake carried out to perfection.
-Message-Id: <20080627204953.B2E8A154088@magilla.localdomain>
-Date: Fri, 27 Jun 2008 13:18:33 -0700 (PDT)
+X-Shopping-List: (1) Maoist Omission connotations
+   (2) Ingenuous bears
+   (3) Petulant permanent invasion consolation
+Message-Id: <20080627204953.D7D8A154223@magilla.localdomain>
+Date: Fri, 27 Jun 2008 13:48:29 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
