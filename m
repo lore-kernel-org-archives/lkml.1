@@ -1,63 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763131AbYF0ULT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762467AbYF0UPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763131AbYF0ULT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 16:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759561AbYF0ULF
+	id S1762467AbYF0UPf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 16:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbYF0UP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 16:11:05 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:40593 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754422AbYF0ULE (ORCPT
+	Fri, 27 Jun 2008 16:15:28 -0400
+Received: from outbound-mail-25.bluehost.com ([69.89.21.20]:44314 "HELO
+	outbound-mail-25.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755771AbYF0UP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 16:11:04 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/1] HID: fix quirk handling in usbmouse/kbd
-Date: Fri, 27 Jun 2008 22:09:25 +0200
-Message-Id: <1214597365-21719-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.5.6
+	Fri, 27 Jun 2008 16:15:27 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [2.6 patch] remove pcibios_update_resource() functions
+Date: Fri, 27 Jun 2008 13:14:59 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       dhowells@redhat.com, gerg@uclinux.org, ralf@linux-mips.org,
+       linux-mips@linux-mips.org, lethal@linux-sh.org,
+       linux-sh@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>
+References: <20080617223332.GM25911@cs181133002.pp.htv.fi>
+In-Reply-To: <20080617223332.GM25911@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806271315.01148.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When usbmouse/kbd is set to build, USB_HID is never defined due to
-the USB_HID!=y Kconfig rule. Test CONFIG_USB_HID_MODULE in both
-drivers instead.
+On Tuesday, June 17, 2008 3:33 pm Adrian Bunk wrote:
+> Russell King did the following back in 2003:
+>
+> <--  snip  -->
+>
+>     [PCI] pci-9: Kill per-architecture pcibios_update_resource()
+>
+>     Kill pcibios_update_resource(), replacing it with
+> pci_update_resource(). pci_update_resource() uses pcibios_resource_to_bus()
+> to convert a resource to a device BAR - the transformation should be
+> exactly the same as the transformation used for the PCI bridges.
+>
+>     pci_update_resource "knows" about 64-bit BARs, but doesn't attempt to
+>     set the high 32-bits to anything non-zero - currently no architecture
+>     attempts to do something different.  If anyone cares, please fix; I'm
+>     going to reflect current behaviour for the time being.
+>
+>     Ivan pointed out the following architectures need to examine their
+>     pcibios_update_resource() implementation - they should make sure that
+>     this new implementation does the right thing.  #warning's have been
+>     added where appropriate.
+>
+>         ia64
+>         mips
+>         mips64
+>
+>     This cset also includes a fix for the problem reported by AKPM where
+>     64-bit arch compilers complain about the resource mask being placed
+>     in a u32.
+>
+> <--  snip  -->
+>
+>
+> This patch removes the unused pcibios_update_resource() functions the
+> kernel gained since.
+>
+>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- drivers/hid/usbhid/usbkbd.c   |    2 +-
- drivers/hid/usbhid/usbmouse.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Applied to my linux-next tree, thanks Adrian and everyone for your acks.
 
-diff --git a/drivers/hid/usbhid/usbkbd.c b/drivers/hid/usbhid/usbkbd.c
-index 3cd46d2..695929c 100644
---- a/drivers/hid/usbhid/usbkbd.c
-+++ b/drivers/hid/usbhid/usbkbd.c
-@@ -233,7 +233,7 @@ static int usb_kbd_probe(struct usb_interface *iface,
- 	if (!usb_endpoint_is_int_in(endpoint))
- 		return -ENODEV;
- 
--#ifdef CONFIG_USB_HID
-+#ifdef CONFIG_USB_HID_MODULE
- 	if (usbhid_lookup_quirk(le16_to_cpu(dev->descriptor.idVendor),
- 				le16_to_cpu(dev->descriptor.idProduct))
- 			& HID_QUIRK_IGNORE) {
-diff --git a/drivers/hid/usbhid/usbmouse.c b/drivers/hid/usbhid/usbmouse.c
-index 703e9d0..f74740f 100644
---- a/drivers/hid/usbhid/usbmouse.c
-+++ b/drivers/hid/usbhid/usbmouse.c
-@@ -129,7 +129,7 @@ static int usb_mouse_probe(struct usb_interface *intf, const struct usb_device_i
- 	if (!usb_endpoint_is_int_in(endpoint))
- 		return -ENODEV;
- 
--#ifdef CONFIG_USB_HID
-+#ifdef CONFIG_USB_HID_MODULE
- 	if (usbhid_lookup_quirk(le16_to_cpu(dev->descriptor.idVendor),
- 				le16_to_cpu(dev->descriptor.idProduct))
- 			& (HID_QUIRK_IGNORE|HID_QUIRK_IGNORE_MOUSE)) {
--- 
-1.5.6
-
+Jesse
