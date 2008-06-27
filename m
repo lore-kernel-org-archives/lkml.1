@@ -1,98 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761024AbYF0Rb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbYF0Rb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761024AbYF0Rb3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 13:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbYF0RbV
+	id S1756473AbYF0Rb4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 13:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756820AbYF0Rbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 13:31:21 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:35960 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755024AbYF0RbU (ORCPT
+	Fri, 27 Jun 2008 13:31:46 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:27879 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755490AbYF0Rbq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 13:31:20 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5327"; a="4285104"
-Message-ID: <486523E6.4030201@qualcomm.com>
-Date: Fri, 27 Jun 2008 10:31:18 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 27 Jun 2008 13:31:46 -0400
+Date: Fri, 27 Jun 2008 13:31:00 -0400
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Adrian Bunk <bunk@kernel.org>,
+       Joerg Roedel <joerg.roedel@amd.com>, tglx@linutronix.de,
+       mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       Sebastian.Biemueller@amd.com, robert.richter@amd.com,
+       Ben-Ami Yassour1 <benami@il.ibm.com>
+Subject: Re: [PATCH 01/34] AMD IOMMU: add Kconfig entry
+Message-ID: <20080627173100.GD26130@il.ibm.com>
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-2-git-send-email-joerg.roedel@amd.com> <20080627142558.GG18644@cs181140183.pp.htv.fi> <878wwrq6im.fsf@basil.nowhere.org> <20080627163945.GA26130@il.ibm.com> <20080627165430.GD10197@8bytes.org> <20080627165947.GB26130@il.ibm.com> <20080627170546.GE10197@8bytes.org> <20080627171201.GC26130@il.ibm.com> <20080627172030.GF10197@8bytes.org>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Vegard Nossum <vegard.nossum@gmail.com>, Paul Jackson <pj@sgi.com>,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       Gautham shenoy <ego@in.ibm.com>
-Subject: Re: [RFC][PATCH] CPUSets: Move most calls to rebuild_sched_domains()
- to the workqueue
-References: <48634BC1.8@google.com>	 <19f34abd0806260234y7616bab2k54bc019dfb0c6305@mail.gmail.com>	 <6599ad830806260250m39d700a5haf0f32d999cd2129@mail.gmail.com>	 <4863E4C8.9050705@qualcomm.com>	 <6599ad830806261334y6def5f7an57ac8f071a08eb4b@mail.gmail.com>	 <6599ad830806261417u3015a9b2i6318841de866d768@mail.gmail.com>	 <48647652.5050001@qualcomm.com> <6599ad830806262251x3a0747b9q6f143cc2fcd0aa57@mail.gmail.com>
-In-Reply-To: <6599ad830806262251x3a0747b9q6f143cc2fcd0aa57@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080627172030.GF10197@8bytes.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Thu, Jun 26, 2008 at 10:10 PM, Max Krasnyansky <maxk@qualcomm.com> wrote:
->> Instead of changing cpu_hotplug locking should we maybe try to avoid using
->> cgroup_lock in rebuild_sched_domains() ?
+On Fri, Jun 27, 2008 at 07:20:30PM +0200, Joerg Roedel wrote:
+
+> > Could you elaborate on what you mean here? I assume you're
+> > thinking one I/O address space for the host, and one I/O address
+> > space per guest with assigned devices?
 > 
-> Yes, that would be good too.
+> I think we can create an address space which almost direct-maps the
+> physical memory and let some room free for the aperture at the
+> beginning (say 64MB). If a mapping request arrives the code looks if
+> it has to do mapping (physical address of memory to map is in the
+> first 64MB or not in the device address range). If this is not the
+> case it simply returns the physical address as dma_addr. otherwise
+> it does the expensive mapping. This way we could minimize the
+> default overhead which we will get with an IOMMU and still use it
+> for virtualization and as a GART replacement.
+
+What you are suggesting is an "almost-direct-map" approach for the
+host I/O address space, which provides no protection from mis-behaving
+host drivers. If we could avoid needing a GART replacement (see below
+for why I think we could), you could simply avoid enabling translation
+for host devices and be done with it.
+
+In my humble opinion it's more interesting to try and figure out how
+to get protection from mis-behaving host drivers while still keeping
+performance as close as possible to native.
+
+> > > and to handle devices with limited DMA address ranges.
+> > 
+> > I'd be pretty surprised if you'll find such devices on machines which
+> > will have AMD's IOMMU...
 > 
->> There is a comment in cpuset.c that says
->>  * If a task is only holding callback_mutex, then it has read-only
->>  * access to cpusets.
->>
->> I'm not sure if it's still valid. rebuild_sched_domains() only needs read only
->> access, it does not really modify any cpuset structures.
-> 
-> The comment is still valid, if you interpret it narrowly enough.
-> Holding callback_mutex gives you read-only access to structures that
-> are under the control of cpusets. But rebuild_sched_domains() needs to
-> traverse the hierarchy of cpusets, and that hierarchy is controlled by
-> cgroups. 
-Yes that's what I meant by "not sure if it's still valid" I looked at 
-the code and it did not look like callback_mutex protected overall 
-hierarchy. Thanx for confirming that.
+> Think of 32bit PCI devices in a host with more than 4GB memory :)
 
-> Currently the only synchronization primitives exposed by
-> cgroups are:
-> 
-> - cgroup_lock()/cgroup_unlock() to prevent all cgroup modifications
-> (also used as the main synchronization primitive by some subsystems,
-> i.e. it's in danger of becoming the cgroups equivalent of the BKL).
-> 
-> - task_lock()/task_unlock() to prevent a specific task from changing cgroups
-> 
-> Possible options for richer locking support include:
-> 
-> - lock/unlock a hierarchy, to prevent creation/deletion of cgroups in
-> that hierarchy
-Sounds good.
+I am thinking of them and I'd be surprised if you'd find any in such
+machines. Certainly I assume none of the on-board devices will have
+this ancient limitation. But hey, it could happen ;-)
 
-> - lock/unlock a cgroup to prevent deletion of that cgroup
-Can that be just an atomic refcount ?
-
-> - lock/unlock a cgroup to prevent task movement in/out of that cgroup
-Sounds good.
-
-> For the case of rebuild_sched_domains, we need the first of these
-> options. This lock would be taken in cgroup.c at the points where it
-> attached and removed cgroups from a cgroup tree, and could be taken by
-> something like cpusets that needed to keep the hierarchy stable while
-> scanning it. I think it would be fine to make it a mutex rather than a
-> spinlock.
-Agree
-
-> cpu_hotplug.lock has to nest outside this hierarchy lock due to it
-> being taken at the root of the hotplug/unplug path. So as long as we
-> can ensure that we can always nest the hierarchy lock inside any
-> get_online_cpus()/put_online_cpus() pairs, we should be OK.
-Yes. Although that basically means that we always have to take 
-cpu_hotplug.lock before hierarchy lock.
-
-I like the proposal in general. Specifically for the 
-rebuild_sched_domain() I'm now thinking that maybe we can get away with 
-not involving cpuset at all. I think that what Peter meant originally. 
-I'll send more thoughts on this separately.
-
-Max
-
+Cheers,
+Muli
