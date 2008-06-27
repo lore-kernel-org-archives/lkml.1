@@ -1,94 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbYF0KzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821AbYF0K5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbYF0KzO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 06:55:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755692AbYF0Ky4
+	id S1755821AbYF0K5V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 06:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbYF0K5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 06:54:56 -0400
-Received: from saeurebad.de ([85.214.36.134]:38214 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755650AbYF0Kyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 06:54:54 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Andrew Morton <akpm@linux-foundation.org>, tzanussi@gmail.com,
-       penberg@cs.helsinki.fi, torvalds@linux-foundation.org,
-       compudj@krystal.dyndns.org, vegard.nossum@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] Full conversion to early_initcall() interface, remove old interface.
-References: <20080623153056.1862c14e@linux360.ro>
-	<20080623172742.be332a53.akpm@linux-foundation.org>
-	<20080625120151.56180b47@linux360.ro>
-Date: Fri, 27 Jun 2008 12:54:21 +0200
-In-Reply-To: <20080625120151.56180b47@linux360.ro> (Eduard's message of "Wed,
-	25 Jun 2008 12:01:51 +0300")
-Message-ID: <87d4m3ywpu.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Fri, 27 Jun 2008 06:57:09 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:33588 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753058AbYF0K5H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 06:57:07 -0400
+Subject: Re: [PATCH/RFC] remove irqs_disabled warning from local_bh_enable
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeff Garzik <jgarzik@pobox.com>, Michael Buesch <mb@bu3sch.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       David Ellingsworth <david@identd.dyndns.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>, netdev@vger.kernel.org
+In-Reply-To: <20080627105329.GA11218@elte.hu>
+References: <1213739834.3803.137.camel@johannes.berg>
+	 <20080620155541.GC6656@elte.hu> <200806201801.09858.mb@bu3sch.de>
+	 <200806201818.34904.mb@bu3sch.de> <20080623084123.GA32688@elte.hu>
+	 <48647B94.5000006@pobox.com>  <20080627105329.GA11218@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-kI9vewbu3uw8seEKyewH"
+Date: Fri, 27 Jun 2008 12:56:05 +0200
+Message-Id: <1214564165.3783.78.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eduard,
 
-Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro> writes:
+--=-kI9vewbu3uw8seEKyewH
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> A previous patch added the early_initcall(), to allow a cleaner hooking of
-> pre-SMP initcalls. Now we remove the older interface, converting all
-> existing users to the new one.
->
-> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> ---
->  include/linux/sched.h |   12 ------------
->  include/linux/smp.h   |    8 --------
->  init/main.c           |   23 +----------------------
->  kernel/sched.c        |    6 +++++-
->  kernel/smp.c          |    6 +++++-
->  kernel/softirq.c      |    4 +++-
->  kernel/softlockup.c   |   27 ++++++++++++++++++++++++---
->  7 files changed, 38 insertions(+), 48 deletions(-)
-...
-> diff --git a/kernel/softirq.c b/kernel/softirq.c
-> index 0592568..efab66a 100644
-> --- a/kernel/softirq.c
-> +++ b/kernel/softirq.c
-> @@ -658,7 +658,7 @@ static struct notifier_block __cpuinitdata cpu_nfb = {
->  	.notifier_call = cpu_callback
->  };
->  
-> -__init int spawn_ksoftirqd(void)
-> +static int __init spawn_ksoftirqd(void)
->  {
->  	void *cpu = (void *)(long)smp_processor_id();
->  	int err = cpu_callback(&cpu_nfb, CPU_UP_PREPARE, cpu);
-> @@ -669,6 +669,8 @@ __init int spawn_ksoftirqd(void)
->  	return 0;
->  }
+On Fri, 2008-06-27 at 12:53 +0200, Ingo Molnar wrote:
+> * Jeff Garzik <jgarzik@pobox.com> wrote:
+>=20
+> > applied
+>=20
+> track record of 4 days of testing: the warning indeed went away and no=20
+> other funnies in this area happened on that box. Thanks,
 
-You forgot to remove the declaration from linux/interrupt.h.
+I've been running with my change for a while too now and never noticed
+anything.
 
-Andrew, the following fix is needed for -mmotm:
+johannes
 
-From: Johannes Weiner <hannes@saeurebad.de>
-Subject: full-conversion-to-early_initcall-interface-remove-old-interface-fix
+--=-kI9vewbu3uw8seEKyewH
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Original patch made spawn_softirqd() static but failed to remove the
-global definition.  Do so now.
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
----
+iQIcBAABAgAGBQJIZMdAAAoJEKVg1VMiehFY6zEQAIuDWz0s26+Az4X43ONnGh9L
+F2MXHUdXXQWrP7ENHNuJyfBvgjC/GDqvVS+fmILRaja6AqoY6F2Vy9Qx4vz9mVrD
+h/eAF0Y4r04UqGxPzoWuiqFVIQ0UaIU6eox4hzCCmGFdbKjg4hoQntQzEEIur1yu
+fsXfMCFV8Zh52NxfTEsui8USVgxQMiNxFhNvHJMJKmOBAql+wJEk8uvxWyxIe13W
+PQgArDufEVQo9qkwgSPjW4x5avdyqPv9g+TR+IDNfbcuXECEnTVyI0YRInD9mlbv
+BoRxJCJM2vsjOzUFDwFWH66UOyp6M2w2AiJzS4r5N3PR89DQ+cDtEL2CrTeYSY9M
+Lad+FkgBhBJX/T7x/OrRGLNxvf3EOo2FXO4FtqxqeeCLDS081Ftw6i0yl6KtWnoQ
+eusUjgPWZKSbEZtqdK4gRLwY2UEwVm2JzIO/wXUP07x3g1OixWGycFfXTWwrkI/f
+i7FLlDYtIJVqm2mvnrSOwSswl906bVBWEq5w4SsIjE9qa7adTyHqcY/U2xQGRU1U
+YgR4hf4CWzpnUKwq+G4AxzsKRKXxXkQ1PeSyCVybMZwkeieZUAbPDZeM+j7ymzz2
+1bakVCj5wpsCd9eIMbsYhOPHUiBJBVvKTzbqJ21bvMN93WsSphAKyBvpKbvCfWLe
+mFUkUDfQPtSwuRnU3FjJ
+=30Ke
+-----END PGP SIGNATURE-----
 
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index 30da779..62aa4f8 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -299,7 +299,6 @@ extern void softirq_init(void);
- #define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
- extern void raise_softirq_irqoff(unsigned int nr);
- extern void raise_softirq(unsigned int nr);
--extern int spawn_ksoftirqd(void);
- 
- 
- /* Tasklets --- multithreaded analogue of BHs.
+--=-kI9vewbu3uw8seEKyewH--
+
