@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbYF0Isq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760620AbYF0ItK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760154AbYF0Isq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 04:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755592AbYF0Isj
+	id S1760620AbYF0ItK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 04:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759929AbYF0Isy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 04:48:39 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58448 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753899AbYF0Isi (ORCPT
+	Fri, 27 Jun 2008 04:48:54 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:36323 "EHLO
+	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751688AbYF0Isw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 04:48:38 -0400
-Message-ID: <4864A960.7010807@firstfloor.org>
-Date: Fri, 27 Jun 2008 10:48:32 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Fri, 27 Jun 2008 04:48:52 -0400
+Date: Fri, 27 Jun 2008 14:20:32 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [RFC v1] Tunable sched_mc_power_savings=n
+Message-ID: <20080627085032.GA17412@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Suresh B Siddha <suresh.b.siddha@intel.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Ingo Molnar <mingo@elte.hu>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Dipankar Sarma <dipankar@in.ibm.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>
+References: <20080625191100.GI21892@dirshya.in.ibm.com> <20080627170514.7A88.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Jonathan Corbet <corbet@lwn.net>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [PATCH, RFC] fasync() BKL pushdown (take 2)
-References: <20080620112914.783be428@bike.lwn.net>	<485BEEF7.2020404@firstfloor.org>	<20080620130905.6694a7be@bike.lwn.net>	<485C0133.3020708@firstfloor.org> <20080625163052.344a2957@bike.lwn.net>
-In-Reply-To: <20080625163052.344a2957@bike.lwn.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20080627170514.7A88.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan Corbet wrote:
-> On Fri, 20 Jun 2008 21:12:51 +0200
-> Andi Kleen <andi@firstfloor.org> wrote:
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2008-06-27 17:08:22]:
+
+> Hi
 > 
->> Some devices do state change even when the reference count is > 0.
->> Would need to double check it's all ok with the fasync list.
+> > Advantages:
+> > 
+> > * Enterprise workloads on large hardware configurations may need
+> >   aggressive consolidation strategy
+> > * Performance impact on server is different from desktop or laptops.
+> >   Interactivity is less of a concern on large enterprise servers while
+> >   workload response times and performance per watt is more significant
+> > * Aggressive power savings even with marginal performance penalty is
+> >   is a useful tunable for servers since it may provide good
+> >   performance-per-watt at low utilisation
+> > * This tunable can influence other parts of scheduler like wakeup
+> >   biasing for overall task consolidation  
 > 
-> OK, I've gone over all of the fasync() definitions again with an eye
-> toward convincing myself that the fasync list would not get cleared,
-> freed, or otherwise molested if fasync() runs without BKL protection.
-> I focused especially on other code (open(), ioctl()) which might still
-> run with the BKL.  The result was two more pushdowns in spots where I
-> wasn't sure; chance are both are unnecessary.
+> I'd like to know how many saving power.
+> if there are only small saving, I think this is not interesting feature.
+> 
+> Do you expect how many percentage saving?
 
-Ok fine for me then. I haven't read it again in detail, but it sounds
-good now.
+The power savings depends on the number of sockets.  With the present
+hardware on servers, we are seeing very small power savings.  However
+deep sleep states and wide variation in CPU power consumption in
+future will increase the percentage.  The percentage may be around
+1 to 5 percent.  Given the system utilisation pattern and large number
+of systems idle in a datacenter, this is not an insignificant number.
+The power value can be significant in a 4 socket or larger system
+configuration.
 
-I still think it would be better to somehow compile break external users,
-but that would be only the icing on the cake.
-
-Acked-by: Andi Kleen <ak@linux.intel.com>
-
--Andi
-
+--Vaidy
