@@ -1,181 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760641AbYF0G5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760804AbYF0G6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760641AbYF0G5s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 02:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbYF0Gv2
+	id S1760804AbYF0G6e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 02:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759224AbYF0Gvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 02:51:28 -0400
-Received: from ns2.suse.de ([195.135.220.15]:43242 "EHLO mx2.suse.de"
+	Fri, 27 Jun 2008 02:51:39 -0400
+Received: from mx1.suse.de ([195.135.220.2]:46867 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754604AbYF0GvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 02:51:24 -0400
+	id S1755136AbYF0Gvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 02:51:37 -0400
 From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 27 Jun 2008 16:51:16 +1000
-Message-Id: <1080627065116.10596@suse.de>
+Date: Fri, 27 Jun 2008 16:51:30 +1000
+Message-Id: <1080627065130.10634@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Chris Webb <chris@arachsys.com>
-Subject: [PATCH 018 of 29] md: Support changing rdev size on running arrays.
+Cc: Dan Williams <dan.j.williams@intel.com>
+Subject: [PATCH 020 of 29] md: md: kill STRIPE_OP_IO flag
 References: <20080627164503.9671.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Chris Webb <chris@arachsys.com>
+From: Dan Williams <dan.j.williams@intel.com>
 
-Allow /sys/block/mdX/md/rdY/size to change on running arrays, moving the
-superblock if necessary for this metadata version. We prevent the available
-space from shrinking to less than the used size, and allow it to be set to zero
-to fill all the available space on the underlying device.
+The R5_Want{Read,Write} flags already gate i/o.  So, this flag is
+superfluous and we can unconditionally call ops_run_io().
 
-Signed-off-by: Chris Webb <chris@arachsys.com>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 Signed-off-by: Neil Brown <neilb@suse.de>
 
 ### Diffstat output
- ./drivers/md/md.c |  100 ++++++++++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 87 insertions(+), 13 deletions(-)
+ ./drivers/md/raid5.c         |   32 +++++---------------------------
+ ./include/linux/raid/raid5.h |    1 -
+ 2 files changed, 5 insertions(+), 28 deletions(-)
 
-diff .prev/drivers/md/md.c ./drivers/md/md.c
---- .prev/drivers/md/md.c	2008-06-27 16:22:03.000000000 +1000
-+++ ./drivers/md/md.c	2008-06-27 16:22:03.000000000 +1000
-@@ -658,11 +658,14 @@ static unsigned int calc_sb_csum(mdp_sup
-  */
+diff .prev/drivers/md/raid5.c ./drivers/md/raid5.c
+--- .prev/drivers/md/raid5.c	2008-06-27 16:22:03.000000000 +1000
++++ ./drivers/md/raid5.c	2008-06-27 16:22:04.000000000 +1000
+@@ -373,8 +373,6 @@ static unsigned long get_stripe_work(str
+ 	test_and_ack_op(STRIPE_OP_BIODRAIN, pending);
+ 	test_and_ack_op(STRIPE_OP_POSTXOR, pending);
+ 	test_and_ack_op(STRIPE_OP_CHECK, pending);
+-	if (test_and_clear_bit(STRIPE_OP_IO, &sh->ops.pending))
+-		ack++;
  
- struct super_type  {
--	char 		*name;
--	struct module	*owner;
--	int		(*load_super)(mdk_rdev_t *rdev, mdk_rdev_t *refdev, int minor_version);
--	int		(*validate_super)(mddev_t *mddev, mdk_rdev_t *rdev);
--	void		(*sync_super)(mddev_t *mddev, mdk_rdev_t *rdev);
-+	char		    *name;
-+	struct module	    *owner;
-+	int		    (*load_super)(mdk_rdev_t *rdev, mdk_rdev_t *refdev,
-+					  int minor_version);
-+	int		    (*validate_super)(mddev_t *mddev, mdk_rdev_t *rdev);
-+	void		    (*sync_super)(mddev_t *mddev, mdk_rdev_t *rdev);
-+	unsigned long long  (*rdev_size_change)(mdk_rdev_t *rdev,
-+						unsigned long long size);
- };
+ 	sh->ops.count -= ack;
+ 	if (unlikely(sh->ops.count < 0)) {
+@@ -399,7 +397,6 @@ static void ops_run_io(struct stripe_hea
  
- /*
-@@ -1004,6 +1007,27 @@ static void super_90_sync(mddev_t *mddev
+ 	might_sleep();
+ 
+-	set_bit(STRIPE_IO_STARTED, &sh->state);
+ 	for (i = disks; i--; ) {
+ 		int rw;
+ 		struct bio *bi;
+@@ -433,6 +430,8 @@ static void ops_run_io(struct stripe_hea
+ 				test_bit(STRIPE_EXPAND_READY, &sh->state))
+ 				md_sync_acct(rdev->bdev, STRIPE_SECTORS);
+ 
++			set_bit(STRIPE_IO_STARTED, &sh->state);
++
+ 			bi->bi_bdev = rdev->bdev;
+ 			pr_debug("%s: for %llu schedule op %ld on disc %d\n",
+ 				__func__, (unsigned long long)sh->sector,
+@@ -900,9 +899,6 @@ static void raid5_run_ops(struct stripe_
+ 	if (test_bit(STRIPE_OP_CHECK, &pending))
+ 		ops_run_check(sh);
+ 
+-	if (test_bit(STRIPE_OP_IO, &pending))
+-		ops_run_io(sh);
+-
+ 	if (overlap_clear)
+ 		for (i = disks; i--; ) {
+ 			struct r5dev *dev = &sh->dev[i];
+@@ -2013,8 +2009,6 @@ static int __handle_issuing_new_read_req
+ 			 */
+ 			set_bit(R5_LOCKED, &dev->flags);
+ 			set_bit(R5_Wantread, &dev->flags);
+-			if (!test_and_set_bit(STRIPE_OP_IO, &sh->ops.pending))
+-				sh->ops.count++;
+ 			s->locked++;
+ 			pr_debug("Reading block %d (sync=%d)\n", disk_idx,
+ 				s->syncing);
+@@ -2208,9 +2202,6 @@ static void handle_issuing_new_write_req
+ 						"%d for r-m-w\n", i);
+ 					set_bit(R5_LOCKED, &dev->flags);
+ 					set_bit(R5_Wantread, &dev->flags);
+-					if (!test_and_set_bit(
+-						STRIPE_OP_IO, &sh->ops.pending))
+-						sh->ops.count++;
+ 					s->locked++;
+ 				} else {
+ 					set_bit(STRIPE_DELAYED, &sh->state);
+@@ -2234,9 +2225,6 @@ static void handle_issuing_new_write_req
+ 						"%d for Reconstruct\n", i);
+ 					set_bit(R5_LOCKED, &dev->flags);
+ 					set_bit(R5_Wantread, &dev->flags);
+-					if (!test_and_set_bit(
+-						STRIPE_OP_IO, &sh->ops.pending))
+-						sh->ops.count++;
+ 					s->locked++;
+ 				} else {
+ 					set_bit(STRIPE_DELAYED, &sh->state);
+@@ -2444,8 +2432,6 @@ static void handle_parity_checks5(raid5_
+ 
+ 		set_bit(R5_LOCKED, &dev->flags);
+ 		set_bit(R5_Wantwrite, &dev->flags);
+-		if (!test_and_set_bit(STRIPE_OP_IO, &sh->ops.pending))
+-			sh->ops.count++;
+ 
+ 		clear_bit(STRIPE_DEGRADED, &sh->state);
+ 		s->locked++;
+@@ -2801,9 +2787,6 @@ static void handle_stripe5(struct stripe
+ 				(i == sh->pd_idx || dev->written)) {
+ 				pr_debug("Writing block %d\n", i);
+ 				set_bit(R5_Wantwrite, &dev->flags);
+-				if (!test_and_set_bit(
+-				    STRIPE_OP_IO, &sh->ops.pending))
+-					sh->ops.count++;
+ 				if (prexor)
+ 					continue;
+ 				if (!test_bit(R5_Insync, &dev->flags) ||
+@@ -2857,16 +2840,12 @@ static void handle_stripe5(struct stripe
+ 		dev = &sh->dev[s.failed_num];
+ 		if (!test_bit(R5_ReWrite, &dev->flags)) {
+ 			set_bit(R5_Wantwrite, &dev->flags);
+-			if (!test_and_set_bit(STRIPE_OP_IO, &sh->ops.pending))
+-				sh->ops.count++;
+ 			set_bit(R5_ReWrite, &dev->flags);
+ 			set_bit(R5_LOCKED, &dev->flags);
+ 			s.locked++;
+ 		} else {
+ 			/* let's read it back */
+ 			set_bit(R5_Wantread, &dev->flags);
+-			if (!test_and_set_bit(STRIPE_OP_IO, &sh->ops.pending))
+-				sh->ops.count++;
+ 			set_bit(R5_LOCKED, &dev->flags);
+ 			s.locked++;
+ 		}
+@@ -2884,13 +2863,10 @@ static void handle_stripe5(struct stripe
+ 		clear_bit(STRIPE_OP_POSTXOR, &sh->ops.ack);
+ 		clear_bit(STRIPE_OP_POSTXOR, &sh->ops.complete);
+ 
+-		for (i = conf->raid_disks; i--; ) {
++		for (i = conf->raid_disks; i--; )
+ 			set_bit(R5_Wantwrite, &sh->dev[i].flags);
+ 			set_bit(R5_LOCKED, &dev->flags);
+ 			s.locked++;
+-			if (!test_and_set_bit(STRIPE_OP_IO, &sh->ops.pending))
+-				sh->ops.count++;
+-		}
+ 	}
+ 
+ 	if (s.expanded && test_bit(STRIPE_EXPANDING, &sh->state) &&
+@@ -2926,6 +2902,8 @@ static void handle_stripe5(struct stripe
+ 	if (pending)
+ 		raid5_run_ops(sh, pending);
+ 
++	ops_run_io(sh);
++
+ 	return_io(return_bi);
+ 
  }
+
+diff .prev/include/linux/raid/raid5.h ./include/linux/raid/raid5.h
+--- .prev/include/linux/raid/raid5.h	2008-06-27 16:22:03.000000000 +1000
++++ ./include/linux/raid/raid5.h	2008-06-27 16:22:04.000000000 +1000
+@@ -263,7 +263,6 @@ struct r6_state {
+ #define STRIPE_OP_BIODRAIN	3
+ #define STRIPE_OP_POSTXOR	4
+ #define STRIPE_OP_CHECK	5
+-#define STRIPE_OP_IO		6
  
- /*
-+ * rdev_size_change for 0.90.0
-+ */
-+static unsigned long long
-+super_90_rdev_size_change(mdk_rdev_t *rdev, unsigned long long size)
-+{
-+	if (size && size < rdev->mddev->size)
-+		return 0; /* component must fit device */
-+	size *= 2; /* convert to sectors */
-+	if (rdev->mddev->bitmap_offset)
-+		return 0; /* can't move bitmap */
-+	rdev->sb_offset = calc_dev_sboffset(rdev->bdev);
-+	if (!size || size > rdev->sb_offset*2)
-+		size = rdev->sb_offset*2;
-+	md_super_write(rdev->mddev, rdev, rdev->sb_offset << 1, rdev->sb_size,
-+		       rdev->sb_page);
-+	md_super_wait(rdev->mddev);
-+	return size/2; /* kB for sysfs */
-+}
-+
-+
-+/*
-  * version 1 superblock
-  */
- 
-@@ -1328,21 +1352,59 @@ static void super_1_sync(mddev_t *mddev,
- 	sb->sb_csum = calc_sb_1_csum(sb);
- }
- 
-+static unsigned long long
-+super_1_rdev_size_change(mdk_rdev_t *rdev, unsigned long long size)
-+{
-+	struct mdp_superblock_1 *sb;
-+	unsigned long long max_size;
-+	if (size && size < rdev->mddev->size)
-+		return 0; /* component must fit device */
-+	size *= 2; /* convert to sectors */
-+	if (rdev->sb_offset < rdev->data_offset/2) {
-+		/* minor versions 1 and 2; superblock before data */
-+		max_size = (rdev->bdev->bd_inode->i_size >> 9);
-+		max_size -= rdev->data_offset;
-+		if (!size || size > max_size)
-+			size = max_size;
-+	} else if (rdev->mddev->bitmap_offset) {
-+		/* minor version 0 with bitmap we can't move */
-+		return 0;
-+	} else {
-+		/* minor version 0; superblock after data */
-+		sector_t sb_offset;
-+		sb_offset = (rdev->bdev->bd_inode->i_size >> 9) - 8*2;
-+		sb_offset &= ~(sector_t)(4*2 - 1);
-+		max_size = rdev->size*2 + sb_offset - rdev->sb_offset*2;
-+		if (!size || size > max_size)
-+			size = max_size;
-+		rdev->sb_offset = sb_offset/2;
-+	}
-+	sb = (struct mdp_superblock_1 *) page_address(rdev->sb_page);
-+	sb->data_size = cpu_to_le64(size);
-+	sb->super_offset = rdev->sb_offset*2;
-+	sb->sb_csum = calc_sb_1_csum(sb);
-+	md_super_write(rdev->mddev, rdev, rdev->sb_offset << 1, rdev->sb_size,
-+		       rdev->sb_page);
-+	md_super_wait(rdev->mddev);
-+	return size/2; /* kB for sysfs */
-+}
- 
- static struct super_type super_types[] = {
- 	[0] = {
- 		.name	= "0.90.0",
- 		.owner	= THIS_MODULE,
--		.load_super	= super_90_load,
--		.validate_super	= super_90_validate,
--		.sync_super	= super_90_sync,
-+		.load_super	    = super_90_load,
-+		.validate_super	    = super_90_validate,
-+		.sync_super	    = super_90_sync,
-+		.rdev_size_change   = super_90_rdev_size_change,
- 	},
- 	[1] = {
- 		.name	= "md-1",
- 		.owner	= THIS_MODULE,
--		.load_super	= super_1_load,
--		.validate_super	= super_1_validate,
--		.sync_super	= super_1_sync,
-+		.load_super	    = super_1_load,
-+		.validate_super	    = super_1_validate,
-+		.sync_super	    = super_1_sync,
-+		.rdev_size_change   = super_1_rdev_size_change,
- 	},
- };
- 
-@@ -2060,8 +2122,20 @@ rdev_size_store(mdk_rdev_t *rdev, const 
- 
- 	if (e==buf || (*e && *e != '\n'))
- 		return -EINVAL;
--	if (my_mddev->pers && rdev->raid_disk >= 0)
--		return -EBUSY;
-+	if (my_mddev->pers && rdev->raid_disk >= 0) {
-+		if (rdev->mddev->persistent) {
-+			size = super_types[rdev->mddev->major_version].
-+				rdev_size_change(rdev, size);
-+			if (!size)
-+				return -EBUSY;
-+		} else if (!size) {
-+			size = (rdev->bdev->bd_inode->i_size >> 10);
-+			size -= rdev->data_offset/2;
-+		}
-+		if (size < rdev->mddev->size)
-+			return -EINVAL; /* component must fit device */
-+	}
-+
- 	rdev->size = size;
- 	if (size > oldsize && rdev->mddev->external) {
- 		/* need to check that all other rdevs with the same ->bdev
+ /* modifiers to the base operations
+  * STRIPE_OP_MOD_REPAIR_PD - compute the parity block and write it back
