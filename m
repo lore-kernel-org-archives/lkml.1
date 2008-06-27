@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760641AbYF0NM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYF0NN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760641AbYF0NM5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 09:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbYF0NMt
+	id S1756820AbYF0NN1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 09:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbYF0NNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 09:12:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46038 "EHLO mx1.redhat.com"
+	Fri, 27 Jun 2008 09:13:16 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:33005 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751166AbYF0NMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 09:12:48 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: linux-aio@kvack.org, linux-kernel@vger.kernel.org,
-       Benjamin LaHaise <bcrl@kvack.org>, Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH] aio: avoid using queue_delayed_work in aio_kick_handler to schedule itself
-References: <200806260927.27995.knikanth@suse.de>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Fri, 27 Jun 2008 09:11:37 -0400
-In-Reply-To: <200806260927.27995.knikanth@suse.de> (Nikanth Karthikesan's
-	message of "Thu, 26 Jun 2008 09:27:27 +0530")
-Message-ID: <x49prq3t43a.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1752180AbYF0NNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 09:13:15 -0400
+Date: Fri, 27 Jun 2008 16:11:01 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: David Woodhouse <dwmw2@infradead.org>, sam@ravnborg.org
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: a.out.h userspace headers not present with O=
+Message-ID: <20080627131101.GE18644@cs181140183.pp.htv.fi>
+References: <20080627130236.GD18644@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080627130236.GD18644@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nikanth Karthikesan <knikanth@suse.de> writes:
+On Fri, Jun 27, 2008 at 04:02:36PM +0300, Adrian Bunk wrote:
+> Commit e53d6a152793a38aa334d6f7a4850642ae45cedc
+> (Export <linux/a.out.h> to userspace again.)
+> does not work properly when using O= :
+> 
+> <--  snip  -->
+> 
+> linux-2.6.26-rc8$ make O=../out headers_install
+> ...
+> linux-2.6.26-rc8$ find usr -name a.out.h
 
-> Avoid using queue_delayed_work in aio_kick_handler() to run itself 
-> immediately. Instead use aio_run_all_iocbs()
+Wrong test...
 
-Can you give some rationale for this change?  Also, how did you test it?
+That should have been:
 
-Cheers,
+linux-2.6.26-rc8$ find ../out -name a.out.h
+linux-2.6.26-rc8$ 
 
-Jeff
+> linux-2.6.26-rc8$ 
+> 
+> <--  snip  -->
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
