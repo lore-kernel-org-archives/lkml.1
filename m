@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763135AbYF0UDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762834AbYF0UFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763135AbYF0UDj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 16:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758135AbYF0UD2
+	id S1762834AbYF0UFb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 16:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758973AbYF0UFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 16:03:28 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:46945 "EHLO pasmtpA.tele.dk"
+	Fri, 27 Jun 2008 16:05:12 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:51588 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762825AbYF0UD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 16:03:27 -0400
-Date: Fri, 27 Jun 2008 22:04:14 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
+	id S1758886AbYF0UFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 16:05:10 -0400
+Date: Fri, 27 Jun 2008 23:02:55 +0300
+From: Adrian Bunk <bunk@kernel.org>
 To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+Cc: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: -tip build failure: No rule to make target `/etc/sound/dsp001.ld'
-Message-ID: <20080627200414.GA19361@uranus.ravnborg.org>
+Subject: Re: -tip build failure: No rule to make target
+	`/etc/sound/dsp001.ld'
+Message-ID: <20080627200254.GE4306@cs181140183.pp.htv.fi>
 References: <19f34abd0806271225q409dfa51haca8de843eeec76f@mail.gmail.com> <20080627194047.GD4306@cs181140183.pp.htv.fi> <19f34abd0806271259r338ec2c3w3b34e1703d4d97ba@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 In-Reply-To: <19f34abd0806271259r338ec2c3w3b34e1703d4d97ba@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -49,15 +50,19 @@ On Fri, Jun 27, 2008 at 09:59:50PM +0200, Vegard Nossum wrote:
 > 
 > make randconfig
 > make CONFIG_STANDALONE=n
+>...
 
-Create a file fixed.config with the config options that may not change
-and use:
+KCONFIG_ALLCONFIG can be used for this.
 
-make KCONFIG_ALLCONFIG=fixed.config randconfig
+> Vegard
 
-STANDALONE is one of them - I recall Ingo has a well tested set of options
-he always forces to specific values.
+cu
+Adrian
 
-[I may have the syntax wrong for KCONFGI_ALLCONFIG - please see README].
+-- 
 
-	Sam
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
