@@ -1,79 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759696AbYF0MEr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757846AbYF0MFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759696AbYF0MEr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 08:04:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757202AbYF0L6T
+	id S1757846AbYF0MFK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 08:05:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbYF0L6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 07:58:19 -0400
-Received: from viefep20-int.chello.at ([62.179.121.40]:44590 "EHLO
-	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756628AbYF0L6G (ORCPT
+	Fri, 27 Jun 2008 07:58:15 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:7218 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754652AbYF0L5y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 07:58:06 -0400
-Message-Id: <20080627115211.850085065@chello.nl>
+	Fri, 27 Jun 2008 07:57:54 -0400
+Message-Id: <20080627115212.100333545@chello.nl>
 References: <20080627114109.724249622@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Fri, 27 Jun 2008 13:41:27 +0200
+Date: Fri, 27 Jun 2008 13:41:32 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
        Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 18/30] sched: hierarchical load vs affine wakeups
-Content-Disposition: inline; filename=sched-wake_affine.patch
+Subject: [PATCH 23/30] sched: optimize effective_load()
+Content-Disposition: inline; filename=sched-simplyfy-effective-load.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With hierarchical grouping we can't just compare task weight to rq weight - we
-need to scale the weight appropriately.
+s_i = S * rw_i / \Sum_j rw_j
+
+ -> \Sum_j rw_j = S * rw_i / s_i
+
+ -> s'_i = S * (rw_i + w) / (\Sum_j rw_j + w)
+
+delta s = s' - s = S * (rw + w) / ((S * rw / s) + w)
+        = s * (S * (rw + w) / (S * rw + s * w) - 1)
+
+ a = S*(rw+w), b = S*rw + s*w
+
+delta s = s * (a-b) / b
+
+IOW, trade one divide for two multiplies
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/sched_fair.c |   23 +++++++++++++++++++++--
- 1 file changed, 21 insertions(+), 2 deletions(-)
+ kernel/sched_fair.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 Index: linux-2.6/kernel/sched_fair.c
 ===================================================================
 --- linux-2.6.orig/kernel/sched_fair.c
 +++ linux-2.6/kernel/sched_fair.c
-@@ -1071,6 +1071,25 @@ static inline int wake_idle(int cpu, str
+@@ -1079,16 +1079,16 @@ static unsigned long effective_load(stru
+ 	for_each_sched_entity(se) {
+ #define D(n) (likely(n) ? (n) : 1)
  
- static const struct sched_class fair_sched_class;
+-		long S, Srw, rw, s, sn;
++		long S, rw, s, a, b;
  
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+static unsigned long task_h_load(struct task_struct *p)
-+{
-+	unsigned long h_load = p->se.load.weight;
-+	struct cfs_rq *cfs_rq = cfs_rq_of(&p->se);
-+
-+	update_h_load(task_cpu(p));
-+
-+	h_load = calc_delta_mine(h_load, cfs_rq->h_load, &cfs_rq->load);
-+
-+	return h_load;
-+}
-+#else
-+static unsigned long task_h_load(struct task_struct *p)
-+{
-+	return p->se.load.weight;
-+}
-+#endif
-+
- static int
- wake_affine(struct rq *rq, struct sched_domain *this_sd, struct rq *this_rq,
- 	    struct task_struct *p, int prev_cpu, int this_cpu, int sync,
-@@ -1091,9 +1110,9 @@ wake_affine(struct rq *rq, struct sched_
- 	 * of the current CPU:
- 	 */
- 	if (sync)
--		tl -= current->se.load.weight;
-+		tl -= task_h_load(current);
+ 		S = se->my_q->tg->shares;
+ 		s = se->my_q->shares;
+ 		rw = se->my_q->load.weight;
  
--	balanced = 100*(tl + p->se.load.weight) <= imbalance*load;
-+	balanced = 100*(tl + task_h_load(p)) <= imbalance*load;
+-		Srw = S * rw / D(s);
+-		sn = S * (rw + wl) / D(Srw + wg);
++		a = S*(rw + wl);
++		b = S*rw + s*wg;
  
- 	/*
- 	 * If the currently running task will sleep within
+-		wl = sn - s;
++		wl = s*(a-b)/D(b);
+ 		wg = 0;
+ #undef D
+ 	}
 
 -- 
 
