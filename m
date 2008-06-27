@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbYF0XJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932170AbYF0XJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932167AbYF0XJN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 19:09:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764282AbYF0W7d
+	id S932170AbYF0XJr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 19:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764735AbYF0W7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 18:59:33 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:6004 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764386AbYF0W7F (ORCPT
+	Fri, 27 Jun 2008 18:59:35 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:46176 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764580AbYF0W7H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 18:59:05 -0400
-Message-Id: <20080627225802.140634493@ldl.fc.hp.com>
+	Fri, 27 Jun 2008 18:59:07 -0400
+Message-Id: <20080627225802.568767803@ldl.fc.hp.com>
 References: <20080627225651.663174474@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 27 Jun 2008 16:57:10 -0600
+Date: Fri, 27 Jun 2008 16:57:12 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 To: Andi Kleen <andi@firstfloor.org>
@@ -31,34 +31,54 @@ Cc: Takashi Iwai <tiwai@suse.de>
 Cc: Jiri Slaby <jirislaby@gmail.com>
 Cc: David Howells <dhowells@redhat.com>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [patch 19/28] PNP: remove redundant pnp_can_configure() check
-Content-Disposition: inline; filename=pnp-remove-assign-configurability-check
+Subject: [patch 21/28] PNPACPI: ignore _PRS interrupt numbers larger than PNP_IRQ_NR
+Content-Disposition: inline; filename=pnpacpi-extended-irq-option
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pnp_assign_resources() is static and the only caller checks
-pnp_can_configure() before calling it, so no need to do it
-again.
+ACPI Extended Interrupt Descriptors can encode 32-bit interrupt
+numbers, so an interrupt number may exceed the size of the bitmap
+we use to track possible IRQ settings.
+
+To avoid corrupting memory, complain and ignore too-large interrupt
+numbers.
+
+There's similar code in pnpacpi_parse_irq_option(), but I didn't
+change that because the small IRQ descriptor can only encode
+IRQs 0-15, which do not exceed bitmap size.
+
+In the future, we could handle IRQ numbers greater than PNP_IRQ_NR
+by replacing the bitmap with a table or list.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Acked-by: Rene Herman <rene.herman@gmail.com>
 
-Index: work10/drivers/pnp/manager.c
+Index: work14/drivers/pnp/pnpacpi/rsparser.c
 ===================================================================
---- work10.orig/drivers/pnp/manager.c	2008-05-13 13:29:57.000000000 -0600
-+++ work10/drivers/pnp/manager.c	2008-05-13 13:30:21.000000000 -0600
-@@ -231,9 +231,6 @@ static int pnp_assign_resources(struct p
- 	struct pnp_dma *dma;
- 	int nport = 0, nmem = 0, nirq = 0, ndma = 0;
+--- work14.orig/drivers/pnp/pnpacpi/rsparser.c	2008-06-24 17:09:17.000000000 -0600
++++ work14/drivers/pnp/pnpacpi/rsparser.c	2008-06-27 14:46:33.000000000 -0600
+@@ -455,9 +455,16 @@ static __init void pnpacpi_parse_ext_irq
+ 		return;
  
--	if (!pnp_can_configure(dev))
--		return -ENODEV;
--
- 	dbg_pnp_show_resources(dev, "before pnp_assign_resources");
- 	mutex_lock(&pnp_res_mutex);
- 	pnp_clean_resource_table(dev);
+ 	bitmap_zero(map.bits, PNP_IRQ_NR);
+-	for (i = 0; i < p->interrupt_count; i++)
+-		if (p->interrupts[i])
+-			__set_bit(p->interrupts[i], map.bits);
++	for (i = 0; i < p->interrupt_count; i++) {
++		if (p->interrupts[i]) {
++			if (p->interrupts[i] < PNP_IRQ_NR)
++				__set_bit(p->interrupts[i], map.bits);
++			else
++				dev_err(&dev->dev, "ignoring IRQ %d option "
++					"(too large for %d entry bitmap)\n",
++					p->interrupts[i], PNP_IRQ_NR);
++		}
++	}
+ 
+ 	flags = irq_flags(p->triggering, p->polarity, p->sharable);
+ 	pnp_register_irq_resource(dev, option, &map, flags);
 
 -- 
