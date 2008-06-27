@@ -1,110 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbYF0KwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbYF0Kxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754869AbYF0KwM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 06:52:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYF0KwA
+	id S1755252AbYF0Kxm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 06:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYF0Kxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 06:52:00 -0400
-Received: from mga09.intel.com ([134.134.136.24]:62152 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752586AbYF0Kv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 06:51:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,715,1204531200"; 
-   d="scan'208";a="402723050"
-Subject: Re: linux-next: Tree for June 26
-From: David Woodhouse <david.woodhouse@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kernel-testers@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Jaswinder Singh <jaswinder@infradead.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-In-Reply-To: <200806270138.53895.rjw@sisk.pl>
-References: <20080627010842.e1a0c4b5.sfr@canb.auug.org.au>
-	 <200806270138.53895.rjw@sisk.pl>
-Organization: Intel Corporation
-Date: Fri, 27 Jun 2008 11:51:53 +0100
-Message-Id: <1214563913.10393.180.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+	Fri, 27 Jun 2008 06:53:34 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:41976 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752657AbYF0Kxd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 06:53:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=XiUXiP+7ucENybxUMk39ze0j0RCxpVOpM1895MuNH/UY6yJDJepStFTttXXC8tT06C
+         w/Arga/y+lb/Nztx1aZES3uFCas7GwKQHvREnuJDKrx0htltBs5KmOCsm0P6Jsg99PD8
+         Xs3UzzAlfFanbSS8mHGWFDr2IcYTXs3GLliDw=
+Message-ID: <4864C6A8.6050605@gmail.com>
+Date: Fri, 27 Jun 2008 12:53:28 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: balbir@linux.vnet.ibm.com, menage@google.com, chlunde@ping.uio.no,
+       axboe@kernel.dk, matt@bluehost.com, roberto@unbit.it,
+       randy.dunlap@oracle.com, dpshah@google.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] i/o bandwidth controller infrastructure
+References: <1213956335-29866-3-git-send-email-righi.andrea@gmail.com>	<20080625172900.6cfe79cf.akpm@linux-foundation.org>	<486419FE.6070600@gmail.com> <20080626155948.34f30751.akpm@linux-foundation.org>
+In-Reply-To: <20080626155948.34f30751.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-06-27 at 01:38 +0200, Rafael J. Wysocki wrote:
-> commit 423c982fffb1cd95c8cdd654ce5ab59351ba41f5
-> Author: Jaswinder Singh <jaswinder@infradead.org>
-> Date:   Wed Jun 18 19:58:33 2008 +0530
+Andrew Morton wrote:
+> On Fri, 27 Jun 2008 00:36:46 +0200
+> Andrea Righi <righi.andrea@gmail.com> wrote:
 > 
->     firmware: convert tg3 driver to request_firmware()
+>>> Does all this code treat /dev/sda1 as a separate device from /dev/sda2?
+>>>  If so, that would be broken.
+>> Yes, all the partitions are treated as separate devices with
+>> (potentially) different limiting rules, but I don't understand why it
+>> would be broken... dev_t has both minor and major numbers, so it would
+>> be possible to select single partitions as well.
 > 
-> breaks my nx6325.
+> Well it's functionally broken, isn't it?  A physical disk has a fixed
+> IO bandwidth and when the administrator wants to partition that
+> bandwidth amongst control groups he will need to consider the entire
+> device when doing so?
 > 
-> Apparently, with this patch applied the tg3 has a NULL pointer dereference
-> somewhere, but I can only see the first line of the oops, afterwards the box
-> hangs solid.
+> I mean, the whole point of this feature and of control groups as a
+> whole is isolation.  But /dev/sda1 and /dev/sda2 are very much _not_
+> isolated.  Whereas /dev/sda and /dev/sdb are (to a large degree)
+> isolated.
 
-That's a 5705, isn't it? So using the 'tso5' firmware?
+well... yes, sounds reasonable. In this case we could just ignore the
+minor number and consider only major number as the key to identify a
+specific block device (both for userspace<->kernel interface and when
+accounting/throttling i/o requests).
 
-Is that firmware available (did you either build it into your kernel, or
-run 'make INSTALL_FW_PATH=/lib/firmware firmware_install')? 
-
-Not that it matters; I suspect the driver isn't trying to load it at
-all. Can you test this patch, please?
-
-(There are more cleanups I want to do to the error paths here, but those
-should be harmless and irrelevant: http://david.woodhou.se/tg3.patch )
-
-diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
-index a70147d..bad784b 100644
---- a/drivers/net/tg3.c
-+++ b/drivers/net/tg3.c
-@@ -12234,11 +12234,6 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
- 
- 	if (tp->tg3_flags2 & TG3_FLG2_HW_TSO) {
- 		tp->tg3_flags2 |= TG3_FLG2_TSO_CAPABLE;
--
--		if (GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5705)
--			fw_name = "tigon/tg3_tso5.bin";
--		else
--			fw_name = "tigon/tg3_tso.bin";
- 	}
- 	else if (GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5700 ||
- 	    GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5701 ||
-@@ -12248,6 +12243,13 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
- 		tp->tg3_flags2 &= ~TG3_FLG2_TSO_CAPABLE;
- 	} else {
- 		tp->tg3_flags2 |= TG3_FLG2_TSO_CAPABLE | TG3_FLG2_TSO_BUG;
-+		printk("this code path would have forgotten to load the firmware\n");
-+	}
-+	if (tp->tg3_flags2 & TG3_FLG2_TSO_CAPABLE) {
-+		if (GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5705)
-+			fw_name = "tigon/tg3_tso5.bin";
-+		else
-+			fw_name = "tigon/tg3_tso.bin";
- 	}
- 
- 	if (fw_name) {
-
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
-
-
----------------------------------------------------------------------
-Intel Corporation (UK) Limited
-Registered No. 1134945 (England)
-Registered Office: Pipers Way, Swindon SN3 1RJ
-VAT No: 860 2173 47
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+-Andrea
