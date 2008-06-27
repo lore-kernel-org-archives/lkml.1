@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762780AbYF0S1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759257AbYF0S10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762780AbYF0S1H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 14:27:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760253AbYF0SZw
+	id S1759257AbYF0S10 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 14:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760827AbYF0SZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 14:25:52 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11695 "EHLO
+	Fri, 27 Jun 2008 14:25:53 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11699 "EHLO
 	phenom.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757988AbYF0SZt (ORCPT
+	by vger.kernel.org with ESMTP id S1756789AbYF0SZt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Jun 2008 14:25:49 -0400
-Date: Fri, 27 Jun 2008 12:13:33 -0600
+Date: Fri, 27 Jun 2008 12:13:43 -0600
 From: dougthompson@xmission.com
 To: bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org
-Subject: [PATCH 9/13] EDAC core fix static to dynamic kset
-Message-ID: <48652dcd.9e9yZTQQua24d8I6%dougthompson@xmission.com>
+Subject: [PATCH 11/13] EDAC e752x fix too loud on nonmemory errors
+Message-ID: <48652dd7.1UdzlJguztNHzglw%dougthompson@xmission.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,65 +24,165 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:  Arthur Jones <ajones@riverbed.com>
+From:	Doug Thompson <dougthompson.com>
 
 Applied to linux-2.6.26-rc5-mm3
 
-Static kobjects and ksets are not supported in
-Linux kernel.  Convert the mc_kset from static
-to dynamic.  This patch depends on my previous
-patch to remove the module parameter attributes
-from mc...
+This module harvests more than just memory errors, it also harvests
+various bus and dma errors that the Chipset detects.  Previously, it would
+report all such errors, which would cause output to be TOO loud.
 
-Signed-off-by:  Arthur Jones <ajones@riverbed.com>
-Signed-off-by:  Doug Thompson <dougthompson@xmission.com>
+This patches therefore adds a parameter which is used
+to turn off NON-MEMORY error reports by default.  Or the reporting  can be
+enabled via the parameter
+
+Also did code style cleanup: less than 80 characters per line rule
+
+Signed-off-by:	Doug Thompson <dougthompson.com>
 ---
- edac_mc_sysfs.c |   15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
+ e752x_edac.c |   37 +++++++++++++++++++++++++++++--------
+ 1 file changed, 29 insertions(+), 8 deletions(-)
 
-Index: linux-2.6.26-rc5/drivers/edac/edac_mc_sysfs.c
+Index: linux-2.6.26-rc5/drivers/edac/e752x_edac.c
 ===================================================================
---- linux-2.6.26-rc5.orig/drivers/edac/edac_mc_sysfs.c
-+++ linux-2.6.26-rc5/drivers/edac/edac_mc_sysfs.c
-@@ -645,7 +645,7 @@ static struct kobj_type ktype_mci = {
- /* EDAC memory controller sysfs kset:
-  *	/sys/devices/system/edac/mc
-  */
--static struct kset mc_kset;
-+static struct kset *mc_kset;
+--- linux-2.6.26-rc5.orig/drivers/edac/e752x_edac.c
++++ linux-2.6.26-rc5/drivers/edac/e752x_edac.c
+@@ -28,6 +28,7 @@
+ #define E752X_REVISION	" Ver: 2.0.2 " __DATE__
+ #define EDAC_MOD_STR	"e752x_edac"
  
- /*
-  * edac_mc_register_sysfs_main_kobj
-@@ -676,7 +676,7 @@ int edac_mc_register_sysfs_main_kobj(str
- 	}
++static int report_non_memory_errors;
+ static int force_function_unhide;
+ static int sysbus_parity = -1;
  
- 	/* this instance become part of the mc_kset */
--	kobj_mci->kset = &mc_kset;
-+	kobj_mci->kset = mc_kset;
+@@ -117,7 +118,7 @@ static struct edac_pci_ctl_info *e752x_p
+ #define E752X_BUF_FERR		0x70	/* Memory buffer first error reg (8b) */
+ #define E752X_BUF_NERR		0x72	/* Memory buffer next error reg (8b) */
+ #define E752X_BUF_ERRMASK	0x74	/* Memory buffer error mask reg (8b) */
+-#define E752X_BUF_SMICMD	0x7A	/* Memory buffer SMI command reg (8b) */
++#define E752X_BUF_SMICMD	0x7A	/* Memory buffer SMI cmd reg (8b) */
+ #define E752X_DRAM_FERR		0x80	/* DRAM first error register (16b) */
+ #define E752X_DRAM_NERR		0x82	/* DRAM next error register (16b) */
+ #define E752X_DRAM_ERRMASK	0x84	/* DRAM error mask register (8b) */
+@@ -127,7 +128,7 @@ static struct edac_pci_ctl_info *e752x_p
+ 					/*     error address register (32b) */
+ 					/*
+ 					 * 31    Reserved
+-					 * 30:2  CE address (64 byte block 34:6)
++					 * 30:2  CE address (64 byte block 34:6
+ 					 * 1     Reserved
+ 					 * 0     HiLoCS
+ 					 */
+@@ -147,11 +148,11 @@ static struct edac_pci_ctl_info *e752x_p
+ 					 * 1     Reserved
+ 					 * 0     HiLoCS
+ 					 */
+-#define E752X_DRAM_SCRB_ADD	0xA8	/* DRAM first uncorrectable scrub memory */
++#define E752X_DRAM_SCRB_ADD	0xA8	/* DRAM 1st uncorrectable scrub mem */
+ 					/*     error address register (32b) */
+ 					/*
+ 					 * 31    Reserved
+-					 * 30:2  CE address (64 byte block 34:6)
++					 * 30:2  CE address (64 byte block 34:6
+ 					 * 1     Reserved
+ 					 * 0     HiLoCS
+ 					 */
+@@ -394,9 +395,12 @@ static void do_process_ded_retry(struct
+ 	struct e752x_pvt *pvt = (struct e752x_pvt *)mci->pvt_info;
  
- 	/* register the mc<id> kobject to the mc_kset */
- 	err = kobject_init_and_add(kobj_mci, &ktype_mci, NULL,
-@@ -906,12 +906,9 @@ int edac_sysfs_setup_mc_kset(void)
- 	}
- 
- 	/* Init the MC's kobject */
--	kobject_set_name(&mc_kset.kobj, "mc");
--	mc_kset.kobj.parent = &edac_class->kset.kobj;
--
--	/* register the mc_kset */
--	err = kset_register(&mc_kset);
--	if (err) {
-+	mc_kset = kset_create_and_add("mc", NULL, &edac_class->kset.kobj);
-+	if (!mc_kset) {
-+		err = -ENOMEM;
- 		debugf1("%s() Failed to register '.../edac/mc'\n", __func__);
- 		goto fail_out;
- 	}
-@@ -933,6 +930,6 @@ fail_out:
-  */
- void edac_sysfs_teardown_mc_kset(void)
- {
--	kset_unregister(&mc_kset);
-+	kset_unregister(mc_kset);
+ 	error_1b = retry_add;
+-	page = error_1b >> (PAGE_SHIFT - 4);	/* convert the addr to 4k page */
+-	row = pvt->mc_symmetric ? ((page >> 1) & 3) :	/* chip select are bits 14 & 13 */
++	page = error_1b >> (PAGE_SHIFT - 4);  /* convert the addr to 4k page */
++
++	/* chip select are bits 14 & 13 */
++	row = pvt->mc_symmetric ? ((page >> 1) & 3) :
+ 		edac_mc_find_csrow_by_page(mci, page);
++
+ 	e752x_mc_printk(mci, KERN_WARNING,
+ 			"CE page 0x%lx, row %d : Memory read retry\n",
+ 			(long unsigned int)page, row);
+@@ -422,12 +426,21 @@ static inline void process_threshold_ce(
  }
  
+ static char *global_message[11] = {
+-	"PCI Express C1", "PCI Express C", "PCI Express B1",
+-	"PCI Express B", "PCI Express A1", "PCI Express A",
+-	"DMA Controler", "HUB or NS Interface", "System Bus",
+-	"DRAM Controler", "Internal Buffer"
++	"PCI Express C1",
++	"PCI Express C",
++	"PCI Express B1",
++	"PCI Express B",
++	"PCI Express A1",
++	"PCI Express A",
++	"DMA Controller",
++	"HUB or NS Interface",
++	"System Bus",
++	"DRAM Controller",  /* 9th entry */
++	"Internal Buffer"
+ };
+ 
++#define DRAM_ENTRY	9
++
+ static char *fatal_message[2] = { "Non-Fatal ", "Fatal " };
+ 
+ static void do_global_error(int fatal, u32 errors)
+@@ -435,9 +448,16 @@ static void do_global_error(int fatal, u
+ 	int i;
+ 
+ 	for (i = 0; i < 11; i++) {
+-		if (errors & (1 << i))
+-			e752x_printk(KERN_WARNING, "%sError %s\n",
+-				fatal_message[fatal], global_message[i]);
++		if (errors & (1 << i)) {
++			/* If the error is from DRAM Controller OR
++			 * we are to report ALL errors, then
++			 * report the error
++			 */
++			if ((i == DRAM_ENTRY) || report_non_memory_errors)
++				e752x_printk(KERN_WARNING, "%sError %s\n",
++					fatal_message[fatal],
++					global_message[i]);
++		}
+ 	}
+ }
+ 
+@@ -1021,7 +1041,7 @@ static int e752x_get_devs(struct pci_dev
+ 	struct pci_dev *dev;
+ 
+ 	pvt->bridge_ck = pci_get_device(PCI_VENDOR_ID_INTEL,
+-					pvt->dev_info->err_dev, pvt->bridge_ck);
++				pvt->dev_info->err_dev, pvt->bridge_ck);
+ 
+ 	if (pvt->bridge_ck == NULL)
+ 		pvt->bridge_ck = pci_scan_single_device(pdev->bus,
+@@ -1034,8 +1054,9 @@ static int e752x_get_devs(struct pci_dev
+ 		return 1;
+ 	}
+ 
+-	dev = pci_get_device(PCI_VENDOR_ID_INTEL, e752x_devs[dev_idx].ctl_dev,
+-			NULL);
++	dev = pci_get_device(PCI_VENDOR_ID_INTEL,
++				e752x_devs[dev_idx].ctl_dev,
++				NULL);
+ 
+ 	if (dev == NULL)
+ 		goto fail;
+@@ -1316,7 +1337,8 @@ MODULE_DESCRIPTION("MC support for Intel
+ 
+ module_param(force_function_unhide, int, 0444);
+ MODULE_PARM_DESC(force_function_unhide, "if BIOS sets Dev0:Fun1 up as hidden:"
+-		 " 1=force unhide and hope BIOS doesn't fight driver for Dev0:Fun1 access");
++		 " 1=force unhide and hope BIOS doesn't fight driver for "
++		"Dev0:Fun1 access");
+ 
+ module_param(edac_op_state, int, 0444);
+ MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
+@@ -1324,3 +1346,6 @@ MODULE_PARM_DESC(edac_op_state, "EDAC Er
+ module_param(sysbus_parity, int, 0444);
+ MODULE_PARM_DESC(sysbus_parity, "0=disable system bus parity checking,"
+ 		" 1=enable system bus parity checking, default=auto-detect");
++module_param(report_non_memory_errors, int, 0644);
++MODULE_PARM_DESC(report_non_memory_errors, "0=disable non-memory error "
++		"reporting, 1=enable non-memory error reporting");
