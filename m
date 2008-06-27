@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765579AbYF0Vwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765385AbYF0VxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765579AbYF0Vwj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 17:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764462AbYF0Vis
+	id S1765385AbYF0VxH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 17:53:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764525AbYF0Vi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 17:38:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60816 "EHLO mx1.redhat.com"
+	Fri, 27 Jun 2008 17:38:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60820 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764431AbYF0Vir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 17:38:47 -0400
+	id S1764507AbYF0Viy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 17:38:54 -0400
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: tglx@linutronix.de, mingo@elte.hu, x86@kernel.org
-Subject: [PATCH 38/39] put movsl_mask into uaccess.h
-Date: Fri, 27 Jun 2008 18:34:45 -0300
-Message-Id: <1214602486-17080-39-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 39/39] define architectural characteristics in uaccess.h
+Date: Fri, 27 Jun 2008 18:34:46 -0300
+Message-Id: <1214602486-17080-40-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1214602486-17080-38-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1214602486-17080-39-git-send-email-gcosta@redhat.com>
 References: <1214602486-17080-1-git-send-email-gcosta@redhat.com>
  <1214602486-17080-2-git-send-email-gcosta@redhat.com>
  <1214602486-17080-3-git-send-email-gcosta@redhat.com>
@@ -55,59 +55,71 @@ References: <1214602486-17080-1-git-send-email-gcosta@redhat.com>
  <1214602486-17080-36-git-send-email-gcosta@redhat.com>
  <1214602486-17080-37-git-send-email-gcosta@redhat.com>
  <1214602486-17080-38-git-send-email-gcosta@redhat.com>
+ <1214602486-17080-39-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86_64 does not need it, but it won't have X86_INTEL_USERCOPY
-defined either.
+Remove them from the arch-specific file.
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- include/asm-x86/uaccess.h    |    9 +++++++++
- include/asm-x86/uaccess_32.h |    9 ---------
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ include/asm-x86/uaccess.h    |    3 +++
+ include/asm-x86/uaccess_32.h |    2 --
+ include/asm-x86/uaccess_64.h |    3 ---
+ 3 files changed, 3 insertions(+), 5 deletions(-)
 
 diff --git a/include/asm-x86/uaccess.h b/include/asm-x86/uaccess.h
-index 4ebb992..ddc32fe 100644
+index ddc32fe..a1e8157 100644
 --- a/include/asm-x86/uaccess.h
 +++ b/include/asm-x86/uaccess.h
-@@ -433,6 +433,15 @@ struct __large_struct { unsigned long buf[100]; };
- #define __get_user_unaligned __get_user
- #define __put_user_unaligned __put_user
+@@ -442,9 +442,12 @@ extern struct movsl_mask {
+ } ____cacheline_aligned_in_smp movsl_mask;
+ #endif
  
-+/*
-+ * movsl can be slow when source and dest are not both 8-byte aligned
-+ */
-+#ifdef CONFIG_X86_INTEL_USERCOPY
-+extern struct movsl_mask {
-+	int mask;
-+} ____cacheline_aligned_in_smp movsl_mask;
-+#endif
++#define ARCH_HAS_NOCACHE_UACCESS 1
 +
  #ifdef CONFIG_X86_32
  # include "uaccess_32.h"
  #else
++# define ARCH_HAS_SEARCH_EXTABLE
+ # include "uaccess_64.h"
+ #endif
+ 
 diff --git a/include/asm-x86/uaccess_32.h b/include/asm-x86/uaccess_32.h
-index d3b5bf8..3467749 100644
+index 3467749..6fdef39 100644
 --- a/include/asm-x86/uaccess_32.h
 +++ b/include/asm-x86/uaccess_32.h
-@@ -11,15 +11,6 @@
- #include <asm/asm.h>
+@@ -156,8 +156,6 @@ __copy_from_user(void *to, const void __user *from, unsigned long n)
+ 	return __copy_from_user_ll(to, from, n);
+ }
+ 
+-#define ARCH_HAS_NOCACHE_UACCESS
+-
+ static __always_inline unsigned long __copy_from_user_nocache(void *to,
+ 				const void __user *from, unsigned long n)
+ {
+diff --git a/include/asm-x86/uaccess_64.h b/include/asm-x86/uaccess_64.h
+index b5bacd6..4e3ec00 100644
+--- a/include/asm-x86/uaccess_64.h
++++ b/include/asm-x86/uaccess_64.h
+@@ -9,8 +9,6 @@
+ #include <linux/prefetch.h>
  #include <asm/page.h>
  
--/*
-- * movsl can be slow when source and dest are not both 8-byte aligned
-- */
--#ifdef CONFIG_X86_INTEL_USERCOPY
--extern struct movsl_mask {
--	int mask;
--} ____cacheline_aligned_in_smp movsl_mask;
--#endif
+-#define ARCH_HAS_SEARCH_EXTABLE
 -
- unsigned long __must_check __copy_to_user_ll
- 		(void __user *to, const void *from, unsigned long n);
- unsigned long __must_check __copy_from_user_ll
+ /*
+  * Copy To/From Userspace
+  */
+@@ -180,7 +178,6 @@ __copy_to_user_inatomic(void __user *dst, const void *src, unsigned size)
+ 	return copy_user_generic((__force void *)dst, src, size);
+ }
+ 
+-#define ARCH_HAS_NOCACHE_UACCESS 1
+ extern long __copy_user_nocache(void *dst, const void __user *src,
+ 				unsigned size, int zerorest);
+ 
 -- 
 1.5.5.1
 
