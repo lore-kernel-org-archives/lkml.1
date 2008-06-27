@@ -1,99 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760803AbYF0RwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762176AbYF0Rw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760803AbYF0RwO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 13:52:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757631AbYF0Rv7
+	id S1762176AbYF0Rw5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 13:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYF0Rwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 13:51:59 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:42197 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1756912AbYF0Rv6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 13:51:58 -0400
-Date: Fri, 27 Jun 2008 13:50:09 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Renzo Davoli <renzo@cs.unibo.it>
-Cc: LKML <linux-kernel@vger.kernel.org>, Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH 0/1] ptrace_vm: let us simplify the code for ptrace and
-	add useful features for VM
-Message-ID: <20080627175009.GG8381@c2.user-mode-linux.org>
-References: <20080616075804.GA6950@cs.unibo.it> <20080617162511.GA7223@c2.user-mode-linux.org> <20080617190831.GC32418@cs.unibo.it> <20080618164942.GC8225@c2.user-mode-linux.org> <20080622091102.GA29401@cs.unibo.it>
+	Fri, 27 Jun 2008 13:52:49 -0400
+Received: from 8bytes.org ([88.198.83.132]:39408 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751402AbYF0Rwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 13:52:49 -0400
+Date: Fri, 27 Jun 2008 19:52:47 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Adrian Bunk <bunk@kernel.org>,
+       Joerg Roedel <joerg.roedel@amd.com>, tglx@linutronix.de,
+       mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       Sebastian.Biemueller@amd.com, robert.richter@amd.com,
+       Ben-Ami Yassour1 <BENAMI@il.ibm.com>
+Subject: Re: [PATCH 01/34] AMD IOMMU: add Kconfig entry
+Message-ID: <20080627175247.GH10197@8bytes.org>
+References: <878wwrq6im.fsf@basil.nowhere.org> <20080627163945.GA26130@il.ibm.com> <20080627165430.GD10197@8bytes.org> <20080627165947.GB26130@il.ibm.com> <20080627170546.GE10197@8bytes.org> <20080627171201.GC26130@il.ibm.com> <20080627172030.GF10197@8bytes.org> <20080627173100.GD26130@il.ibm.com> <20080627174034.GG10197@8bytes.org> <20080627174415.GF26130@il.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080622091102.GA29401@cs.unibo.it>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080627174415.GF26130@il.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 22, 2008 at 11:11:02AM +0200, Renzo Davoli wrote:
-> There are three events for a syscall:
-> START - call notification
-> CALL - run the SYSCALL
-> EXIT - return notification.
+On Fri, Jun 27, 2008 at 01:44:15PM -0400, Muli Ben-Yehuda wrote:
+> On Fri, Jun 27, 2008 at 07:40:35PM +0200, Joerg Roedel wrote:
 > 
-> I think that it is a non sense to write code for useless cases.
-> Let us see all the combinations of doing/skipping each one of the three
-> phases:
+> > Yes. As I said, this is for the non-isolating case. For the
+> > isolation case (which is needed for protection) it is harder to
+> > optimize. But there I think about some sort of lazy IOMMU TLB
+> > flushing. The flushing and 'wait for the flush to finish' is the
+> > most expensive part in the mapping and unmapping code path. But this
+> > needs some experiments.
 > 
-> 0- DOSTART - DOCALL - DOEXIT - Standard PTRACE_SYSCALL (new option 0)
-> 1- DOSTART - DOCALL - SKIPEXIT - PTRACE_VM_SKIPEXIT of my proposal
-> 2- DOSTART - SKIPCALL - DOEXIT - useless, nothing has changed between
->                               the two notifications
-> 3- DOSTART - SKIPCALL - SKIPEXIT - PTRACE_VM_SKIPCALL in my proposal
-> 4- SKIPSTART - DOCALL - DOEXIT - is this useful? (Case 4,see below)
-> 5- SKIPSTART - DOCALL - SKIPEXIT - simply don't use PTRACE_SYSCALL
-> 6- SKIPSTART - SKIPCALL - DOEXIT - this is the old PTRACE_SYSEMU (case 6)
-> 7- SKIPSTART - SKIPCALL - SKIPEXIT - nullify completely the syscalls
->                                 (case 7).
->                                 
-> case 4: a vm or debugging monitor receives just the return value of a
-> syscall. In many architectures it not even possible to read the parameters
-> of the call (e.g. powerpc where the first argument and the return value
-> use the same register). This choice must be done a-priori, so without
-> actually know which will be the next system call.
+> Agreed. The paper I just posted to the iommu mailing list has some
+> ideas and experimental data.
 
-I can see this being useful - this is kind of what strace wants,
-except that it wouldn't be able to see that a system call is about to
-sleep.  This could be implemented by just stashing any trashed
-registers off to the side ala x86 orig_eax.
+Cool. I wasn't aware if that paper. I will read it next week. Thanks for
+the pointer to it.
 
-> case 6: this makes sense just for applications which virtualize *all* the
-> system call, current PTRACE_SYSEMU works exactly in this way.
-> My patch shows that for these applications it does not matter whether the
-> virtualization takes place before skipping the call or after having just
-> skipped the call. So PTRACE_VM_SKIPCALL can be used instead.
+Joerg
 
-Yup.
-
-> case 7: skip the next syscall and give no information about, there is no way
-> to virtualize or trace what is going on.
-> Who could be ever interested in an option like this?
-
-No one.
-
-> It seems that the combinations that really make sense are those skipping
-> a trailing part of the sequence.
-> 
-> DOSTART - DOCALL - DOEXIT         my option 0
-> DOSTART - DOCALL - SKIPEXIT       my option PTRACE_VM_SKIPEXIT
-> DOSTART - SKIPCALL - SKIPEXIT     my option PTRACE_VM_SKIPCALL
-
-Seems reasonable.  In this case, they should be numbered 0, 1, 2
-rather than having masks or-ed together.  This happens to produce the
-same numbers, except that 3 is outlawed.
-
-> If you think that it is not clear from the tag name that PTRACE_VM_SKIPCALL
-> implies PTRACE_VM_SKIPEXIT let us change the name in:
-> PTRACE_VM_SKIPCALL_SKIPEXIT
-> Maybe the name is quite long, but in this way it is clear what it
-> does.
-
-Maybe.  How about PTRACE_VM_TRACESTART?  Makes the naming somewhat
-non-orthogonal, but shorter and descriptive.
-
-		    	    	Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
