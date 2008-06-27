@@ -1,93 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760470AbYF0IrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbYF0Isq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760470AbYF0IrX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 04:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757844AbYF0IrH
+	id S1760154AbYF0Isq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 04:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755592AbYF0Isj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 04:47:07 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40742 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756473AbYF0IrE (ORCPT
+	Fri, 27 Jun 2008 04:48:39 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58448 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753899AbYF0Isi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 04:47:04 -0400
-Date: Fri, 27 Jun 2008 17:52:01 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "MinChan Kim" <minchan.kim@gmail.com>
-Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>,
-       "Rik van Riel" <riel@redhat.com>,
-       "Daisuke Nishimura" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [-mm][PATCH 8/10] fix shmem page migration incorrectness on
- memcgroup
-Message-Id: <20080627175201.cbe86a06.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <28c262360806270057w2b2d3e56ob4dde9aacf42327b@mail.gmail.com>
-References: <20080625190750.D864.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<28c262360806262208i6791d67at446f7323ded16206@mail.gmail.com>
-	<20080627142950.7A83.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<28c262360806270057w2b2d3e56ob4dde9aacf42327b@mail.gmail.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Jun 2008 04:48:38 -0400
+Message-ID: <4864A960.7010807@firstfloor.org>
+Date: Fri, 27 Jun 2008 10:48:32 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Jonathan Corbet <corbet@lwn.net>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [PATCH, RFC] fasync() BKL pushdown (take 2)
+References: <20080620112914.783be428@bike.lwn.net>	<485BEEF7.2020404@firstfloor.org>	<20080620130905.6694a7be@bike.lwn.net>	<485C0133.3020708@firstfloor.org> <20080625163052.344a2957@bike.lwn.net>
+In-Reply-To: <20080625163052.344a2957@bike.lwn.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jun 2008 16:57:56 +0900
-"MinChan Kim" <minchan.kim@gmail.com> wrote:
-
-> On Fri, Jun 27, 2008 at 2:41 PM, KOSAKI Motohiro
-> <kosaki.motohiro@jp.fujitsu.com> wrote:
-> >> > mem_cgroup_uncharge() against old page is done after radix-tree-replacement.
-> >> > And there were special handling to ingore swap-cache page. But, shmem can
-> >> > be swap-cache and file-cache at the same time. Chekcing PageSwapCache() is
-> >> > not correct here. Check PageAnon() instead.
-> >>
-> >> When/How shmem can be both swap-cache and file-cache ?
-> >> I can't understand that situation.
-> >
-> > Hi
-> >
-> > see,
-> >
-> > shmem_writepage()
-> >   -> add_to_swap_cache()
-> >      -> SetPageSwapCache()
-> >
-> >
-> > BTW: his file-cache mean !Anon, not mean !SwapBacked.
+Jonathan Corbet wrote:
+> On Fri, 20 Jun 2008 21:12:51 +0200
+> Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> Hi KOSAKI-san.
-> Thanks for explaining.
+>> Some devices do state change even when the reference count is > 0.
+>> Would need to double check it's all ok with the fasync list.
 > 
-> In the migrate_page_move_mapping, the page was already locked in unmap_and_move.
-> Also, we have a lock for that page for calling shmem_writepage.
-> 
-> So I think race problem between shmem_writepage and
-> migrate_page_move_mapping don't occur.
-> But I am not sure I am right.
-> 
-> If I am wrong, could you tell me when race problem happen ? :)
-> 
-You are right. I misundestood the swap/shmem code. there is no race.
-Hmm...
+> OK, I've gone over all of the fasync() definitions again with an eye
+> toward convincing myself that the fasync list would not get cleared,
+> freed, or otherwise molested if fasync() runs without BKL protection.
+> I focused especially on other code (open(), ioctl()) which might still
+> run with the BKL.  The result was two more pushdowns in spots where I
+> wasn't sure; chance are both are unnecessary.
 
-But situation is a bit complicated.
-- shmem's page is charged as file-cache.
-- shmem's swap cache is still charged by mem_cgroup_cache_charge() because
-  it's implicitly (to memcg) converted to swap cache. 
-- anon's swap cache is charged by mem_cgroup_uncharge_cache_page()
+Ok fine for me then. I haven't read it again in detail, but it sounds
+good now.
 
-So, uncharging swap-cache of shmem by mem_cgroup_uncharge_cache_page() is valid.
-Checking PageSwapCache() was bad and Cheking PageAnon() is good.
-(From maintainance view)
+I still think it would be better to somehow compile break external users,
+but that would be only the icing on the cake.
 
-I think the patch is valid but my patch description contains wrong information.
-Andrew, could you drop this ? I'll rewrite the patch description.
+Acked-by: Andi Kleen <ak@linux.intel.com>
 
-Sorry,
--Kame
+-Andi
 
