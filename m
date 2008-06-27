@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762713AbYF0UDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763135AbYF0UDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762713AbYF0UDT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 16:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758135AbYF0UDL
+	id S1763135AbYF0UDj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 16:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758135AbYF0UD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 16:03:11 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:43131 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753753AbYF0UDK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 16:03:10 -0400
-Date: Fri, 27 Jun 2008 16:00:50 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Joris van Rantwijk <jorispubl@xs4all.nl>
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Thorsten Knabe <linux@thorsten-knabe.de>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: BUG: Linux 2.6.25 ptrace leaks struct_task
-Message-ID: <20080627200050.GA10859@c2.user-mode-linux.org>
-References: <20080627183045.GA18801@xs4all.nl>
-MIME-Version: 1.0
+	Fri, 27 Jun 2008 16:03:28 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:46945 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762825AbYF0UD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 16:03:27 -0400
+Date: Fri, 27 Jun 2008 22:04:14 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: -tip build failure: No rule to make target `/etc/sound/dsp001.ld'
+Message-ID: <20080627200414.GA19361@uranus.ravnborg.org>
+References: <19f34abd0806271225q409dfa51haca8de843eeec76f@mail.gmail.com> <20080627194047.GD4306@cs181140183.pp.htv.fi> <19f34abd0806271259r338ec2c3w3b34e1703d4d97ba@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080627183045.GA18801@xs4all.nl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <19f34abd0806271259r338ec2c3w3b34e1703d4d97ba@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 08:30:45PM +0200, Joris van Rantwijk wrote:
-> I think sys32_ptrace() is leaking struct_task.
+On Fri, Jun 27, 2008 at 09:59:50PM +0200, Vegard Nossum wrote:
+> On Fri, Jun 27, 2008 at 9:40 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> > On Fri, Jun 27, 2008 at 09:25:05PM +0200, Vegard Nossum wrote:
+> >> Hi,
+> >>
+> >> I was just building a randconfig in tip/master and hit this:
+> >>
+> >> make[2]: *** No rule to make target `/etc/sound/dsp001.ld', needed by
+> >> `sound/oss/pss_boot.h'.  Stop.
+> >>
+> >> It seems to be done like this on purpose, but it breaks randconfig
+> >> builds. Is this something that should be using firmware API?
+> >>
+> >> I'm attaching the config. Please forward this in the right direction,
+> >> if such a thing exists.
+> >
+> > It's your fault - compile errors with CONFIG_STANDALONE=n are expected.
 > 
-> In arch/x86/kernel/ptrace.c, function sys32_ptrace(), there
-> is a call to ptrace_get_task_struct(). In some cases (such as
-> PTRACE_GETREGS), there is no matching call to put_task_struct().
+> Ah, I see. In that case, shouldn't 'make randconfig' also make sure
+> that this option is always =n? Or do I have to do
+> 
+> make randconfig
+> make CONFIG_STANDALONE=n
 
-Yup, good diagnosis.  The culprit is
-5a4646a4efed8c835f76c3b88f3155f6ab5b8d9b.  Doing an s/return /ret = /
-inside that switch should fix the bug.
+Create a file fixed.config with the config options that may not change
+and use:
 
-It looks like it's since been fixed in mainline by the restructuring
-done in 562b80bafffaf42a6d916b0a2ee3d684220a1c10.
+make KCONFIG_ALLCONFIG=fixed.config randconfig
 
-			Jeff
+STANDALONE is one of them - I recall Ingo has a well tested set of options
+he always forces to specific values.
 
--- 
-Work email - jdike at linux dot intel dot com
+[I may have the syntax wrong for KCONFGI_ALLCONFIG - please see README].
+
+	Sam
