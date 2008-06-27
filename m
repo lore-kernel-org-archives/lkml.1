@@ -1,114 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764352AbYF0Vib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764478AbYF0Viu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764352AbYF0Vib (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 17:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761103AbYF0VhJ
+	id S1764478AbYF0Viu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 17:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764216AbYF0VhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 17:37:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59068 "EHLO mx1.redhat.com"
+	Fri, 27 Jun 2008 17:37:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59075 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764201AbYF0VhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 17:37:07 -0400
+	id S1761143AbYF0VhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 17:37:13 -0400
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: tglx@linutronix.de, mingo@elte.hu, x86@kernel.org
-Subject: [PATCH 02/39] provide delay loop for x86_64
-Date: Fri, 27 Jun 2008 18:34:09 -0300
-Message-Id: <1214602486-17080-3-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 09/39] adapt x86_64 getuser functions
+Date: Fri, 27 Jun 2008 18:34:16 -0300
+Message-Id: <1214602486-17080-10-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1214602486-17080-2-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1214602486-17080-9-git-send-email-gcosta@redhat.com>
 References: <1214602486-17080-1-git-send-email-gcosta@redhat.com>
  <1214602486-17080-2-git-send-email-gcosta@redhat.com>
+ <1214602486-17080-3-git-send-email-gcosta@redhat.com>
+ <1214602486-17080-4-git-send-email-gcosta@redhat.com>
+ <1214602486-17080-5-git-send-email-gcosta@redhat.com>
+ <1214602486-17080-6-git-send-email-gcosta@redhat.com>
+ <1214602486-17080-7-git-send-email-gcosta@redhat.com>
+ <1214602486-17080-8-git-send-email-gcosta@redhat.com>
+ <1214602486-17080-9-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is for consistency with i386. We call use_tsc_delay()
-at tsc initialization for x86_64, so we'll be always using it.
+instead of doing a sub after the addition, use the
+offset directly at the memory operand of the mov instructions.
+This is the way i386 do.
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/kernel/tsc_64.c |    1 +
- arch/x86/lib/delay_64.c  |   44 ++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 41 insertions(+), 4 deletions(-)
+ arch/x86/lib/getuser_64.S |   33 ++++++++++++---------------------
+ 1 files changed, 12 insertions(+), 21 deletions(-)
 
-diff --git a/arch/x86/kernel/tsc_64.c b/arch/x86/kernel/tsc_64.c
-index 9898fb0..36ac46f 100644
---- a/arch/x86/kernel/tsc_64.c
-+++ b/arch/x86/kernel/tsc_64.c
-@@ -258,6 +258,7 @@ void __init tsc_calibrate(void)
- out:
- 	for_each_possible_cpu(cpu)
- 		set_cyc2ns_scale(tsc_khz, cpu);
-+	use_tsc_delay();
- }
+diff --git a/arch/x86/lib/getuser_64.S b/arch/x86/lib/getuser_64.S
+index 2b003d3..df37d3a 100644
+--- a/arch/x86/lib/getuser_64.S
++++ b/arch/x86/lib/getuser_64.S
+@@ -47,49 +47,40 @@ ENDPROC(__get_user_1)
  
- /*
-diff --git a/arch/x86/lib/delay_64.c b/arch/x86/lib/delay_64.c
-index 4c441be..d0326d0 100644
---- a/arch/x86/lib/delay_64.c
-+++ b/arch/x86/lib/delay_64.c
-@@ -22,13 +22,28 @@
- #include <asm/smp.h>
- #endif
+ ENTRY(__get_user_2)
+ 	CFI_STARTPROC
+-	GET_THREAD_INFO(%rdx)
+ 	addq $1,%rax
+-	jc 20f
++	jc bad_get_user
++	GET_THREAD_INFO(%rdx)
+ 	cmpq threadinfo_addr_limit(%rdx),%rax
+-	jae 20f
+-	decq   %rax
+-2:	movzwl (%rax),%edx
++	jae bad_get_user
++2:	movzwl -1(%rax),%edx
+ 	xorl %eax,%eax
+ 	ret
+-20:	decq    %rax
+-	jmp	bad_get_user
+ 	CFI_ENDPROC
+ ENDPROC(__get_user_2)
  
--int __devinit read_current_timer(unsigned long *timer_value)
-+/* simple loop based delay: */
-+static void delay_loop(unsigned long loops)
- {
--	rdtscll(*timer_value);
--	return 0;
-+	asm volatile(
-+		"	test %0,%0	\n"
-+		"	jz 3f		\n"
-+		"	jmp 1f		\n"
-+
-+		".align 16		\n"
-+		"1:	jmp 2f		\n"
-+
-+		".align 16		\n"
-+		"2:	dec %0		\n"
-+		"	jnz 2b		\n"
-+		"3:	dec %0		\n"
-+
-+		: /* we don't need output */
-+		:"a" (loops)
-+	);
- }
+ ENTRY(__get_user_4)
+ 	CFI_STARTPROC
+-	GET_THREAD_INFO(%rdx)
+ 	addq $3,%rax
+-	jc 30f
++	jc bad_get_user
++	GET_THREAD_INFO(%rdx)
+ 	cmpq threadinfo_addr_limit(%rdx),%rax
+-	jae 30f
+-	subq $3,%rax
+-3:	movl (%rax),%edx
++	jae bad_get_user
++3:	movl -3(%rax),%edx
+ 	xorl %eax,%eax
+ 	ret
+-30:	subq $3,%rax
+-	jmp bad_get_user
+ 	CFI_ENDPROC
+ ENDPROC(__get_user_4)
  
--void __delay(unsigned long loops)
-+static void delay_tsc(unsigned long loops)
- {
- 	unsigned bclock, now;
- 	int cpu;
-@@ -63,6 +78,27 @@ void __delay(unsigned long loops)
- 	}
- 	preempt_enable();
- }
-+
-+static void (*delay_fn)(unsigned long) = delay_loop;
-+
-+void use_tsc_delay(void)
-+{
-+	delay_fn = delay_tsc;
-+}
-+
-+int __devinit read_current_timer(unsigned long *timer_value)
-+{
-+	if (delay_fn == delay_tsc) {
-+		rdtscll(*timer_value);
-+		return 0;
-+	}
-+	return -1;
-+}
-+
-+void __delay(unsigned long loops)
-+{
-+	delay_fn(loops);
-+}
- EXPORT_SYMBOL(__delay);
+ ENTRY(__get_user_8)
+ 	CFI_STARTPROC
+-	GET_THREAD_INFO(%rdx)
+ 	addq $7,%rax
+-	jc 40f
++	jc bad_get_user
++	GET_THREAD_INFO(%rdx)
+ 	cmpq threadinfo_addr_limit(%rdx),%rax
+-	jae	40f
+-	subq	$7,%rax
+-4:	movq (%rax),%rdx
++	jae	bad_get_user
++4:	movq -7(%rax),%rdx
+ 	xorl %eax,%eax
+ 	ret
+-40:	subq $7,%rax
+-	jmp bad_get_user
+ 	CFI_ENDPROC
+ ENDPROC(__get_user_8)
  
- inline void __const_udelay(unsigned long xloops)
 -- 
 1.5.5.1
 
