@@ -1,287 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757146AbYF0IHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbYF0IIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757146AbYF0IHx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 04:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbYF0IHY
+	id S1754818AbYF0IIw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 04:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755246AbYF0IHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 04:07:24 -0400
-Received: from wx-out-0506.google.com ([66.249.82.229]:29924 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756568AbYF0IG5 (ORCPT
+	Fri, 27 Jun 2008 04:07:36 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:52769 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752673AbYF0IHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 04:06:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gC8HM/PL+eU9z3QUWN2jMUhZO7dEG5D6xHAfNUWvmzZ9OXRGAoVtp4UTmez4N9s0H7
-         uO7PNYK3ep1FNdYcD4z1DFEF+OGOLSZnXnO0GbKcSU2AfeQFuQsBOLpNycPzUnsgY/6S
-         /iEB8i359dClTYQxCR7vn7ugAvrlmTeDySN/I=
-Message-ID: <cfd18e0f0806270106s5088327dja804c973bee117d@mail.gmail.com>
-Date: Fri, 27 Jun 2008 10:06:56 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Oleg Nesterov" <oleg@tv-sign.ru>
-Subject: Re: [patch] make siginfo_t si_utime + si_sstime report times in USER_HZ, not HZ
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Bart Van Assche" <bart.vanassche@gmail.com>,
-       "Roland McGrath" <roland@redhat.com>
-In-Reply-To: <cfd18e0f0806260809n4370c6eqc07c05ff93029658@mail.gmail.com>
+	Fri, 27 Jun 2008 04:07:12 -0400
+X-AuditID: 0ac90648-ab579ba000000c2f-f3-48649faceb60
+Message-ID: <48649FA0.70303@hitachi.com>
+Date: Fri, 27 Jun 2008 17:06:56 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jan Kara <jack@suse.cz>
+Cc: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: [PATCH 4/5] jbd: fix error handling for checkpoint io
+References: <4843CE15.6080506@hitachi.com> <4843CFBD.7040706@hitachi.com> 
+    <20080602124409.GL30613@duck.suse.cz> <4844CB39.6060409@hitachi.com> 
+    <20080603080219.GA17936@duck.suse.cz> <485F85AE.1010704@hitachi.com> 
+    <20080623122240.GJ26743@duck.suse.cz> <4860E01B.8010806@hitachi.com> 
+    <20080624133309.GG9959@duck.suse.cz>
+In-Reply-To: <20080624133309.GG9959@duck.suse.cz>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <cfd18e0f0806250749od875635r9e533d9f834bd8c4@mail.gmail.com>
-	 <20080625153806.GA499@tv-sign.ru>
-	 <cfd18e0f0806260809n4370c6eqc07c05ff93029658@mail.gmail.com>
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 5:09 PM, Michael Kerrisk
-<mtk.manpages@googlemail.com> wrote:
-> On Wed, Jun 25, 2008 at 5:38 PM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
->> On 06/25, Michael Kerrisk wrote:
+Hi Jan,
+Thank you for your reply.
+
+Jan Kara wrote:
+
+> On Tue 24-06-08 20:52:59, Hidehiro Kawai wrote:
+
+>>>>3. is implemented as described below.
+>>>> (1) if log_do_checkpoint() detects an I/O error during
+>>>>     checkpointing, it calls journal_abort() to abort the journal
+>>>> (2) if the journal has aborted, don't update s_start and s_sequence
+>>>>     in the on-disk journal superblock
+>>>>
+>>>>So, if the journal aborts, journaled data will be replayed on the
+>>>>next mount.
+>>>>
+>>>>Now, please remember that some dirty metadata buffers are written
+>>>>back to the filesystem without journaling if the journal aborted.
+>>>>We are happy if all dirty metadata buffers are written to the disk,
+>>>>the integrity of the filesystem will be kept.  However, replaying
+>>>>the journaled data can overwrite the latest on-disk metadata blocks
+>>>>partly with old data.  It would break the filesystem.
 >>>
->>> --- /home/mtk/ARCHIVE/KERNEL/linux-2.6.26-rc7/kernel/signal.c.orig    2008-06-24
->>> 16:20:39.000000000 +0200
->>> +++ /home/mtk/ARCHIVE/KERNEL/linux-2.6.26-rc7/kernel/signal.c 2008-06-24
->>> 16:22:17.000000000 +0200
->>> @@ -1379,10 +1379,9 @@
->>>
->>>       info.si_uid = tsk->uid;
->>>
->>> -     /* FIXME: find out whether or not this is supposed to be c*time. */
->>> -     info.si_utime = cputime_to_jiffies(cputime_add(tsk->utime,
->>> +     info.si_utime = cputime_to_clock_t(cputime_add(tsk->utime,
->>>                                                      tsk->signal->utime));
->>> -     info.si_stime = cputime_to_jiffies(cputime_add(tsk->stime,
->>> +     info.si_stime = cputime_to_clock_t(cputime_add(tsk->stime,
->>>                                                      tsk->signal->stime));
->>>
->>>       info.si_status = tsk->exit_code & 0x7f;
->>> @@ -1450,9 +1449,8 @@
->>>
->>>       info.si_uid = tsk->uid;
->>>
->>> -     /* FIXME: find out whether or not this is supposed to be c*time. */
->>> -     info.si_utime = cputime_to_jiffies(tsk->utime);
->>> -     info.si_stime = cputime_to_jiffies(tsk->stime);
->>> +     info.si_utime = cputime_to_clock_t(tsk->utime);
->>> +     info.si_stime = cputime_to_clock_t(tsk->stime);
->>>
->>>       info.si_code = why;
->>>       switch (why) {
+>>>  Yes, it would. But how do you think it can happen that a metadata buffer
+>>>will be written back to the filesystem when it is a part of running
+>>>transaction? Note that checkpointing code specifically checks whether the
+>>>buffer being written back is part of a running transaction and if so, it
+>>>waits for commit before writing back the buffer. So I don't think this can
+>>>happen but maybe I miss something...
 >>
->> This looks like the obviously good fix to me.
->
-> Tested now, and it does what I expect.
->
->> The patch also deletes the comment about signal_struct->cXtime,
->> this also looks right: why should we use cutime/cstime ?
->
-> Hmmm -- maybe I was wrong to delete that comment.  I think the point
-> of the comment was: should the time returned vie these fields of the
-> signinfo structure also include the times for (grand)children of the
-> process that had terminated and been wait()ed for.  My first take on
-> that was "no".  But now I'm not 100% sure.  A quick test on Solaris 8
-> suggests that these fields *do* include the times of waited for
-> children.  (None of this is specified in POSIX.1, which doesn't
-> specify si_utime and si_stime.)  I've not yet tested FreeBSD (not sure
-> if it supports these fields or not).
+>>Checkpointing code checks it and may call log_wait_commit(), but this
+>>problem is caused by transactions which have not started checkpointing.
+>>
+>>For example, the tail transaction has an old update for block_B and
+>>the running transaction has a new update for block_B.  Then, the
+>>committing transaction fails to write the commit record, it aborts the
+>>journal, and new block_B will be written back to the file system without
+>>journaling.  Because this patch doesn't separate between normal abort
+>>and checkpointing related abort, the tail transaction is left in the
+>>journal space.  So by replaying the tail transaction, new block_B is
+>>overwritten with old one.
+> 
+>   Yes, and this is expected an correct. When we cannot properly finish a
+> transaction, we have to discard everything in it. A bug would be (and I
+> think it could currently happen) if we already checkpointed the previous
+> transaction and then written over block_B new data from the uncommitted
+> transaction. I think we have to avoid that - i.e., in case we abort the
+> journal we should not mark buffers dirty when processing the forget loop.
 
-So, FreeBSD doesn't implement these fields.  A more extensive test
-(see below) on Solaris (8) shows that it does indeed include the times
-of waited-for children in the si_utime and si_stime fields.
+Yes.
 
-I'm not sure if we should emulate that behavior or not - it'd be easy
-enough to do so of course.  Thoughts, anyone?
+> But this is not too serious since fsck has to be run anyway and it will
+> fix the problems.
 
-Cheers,
+Yes.  The filesystem should be marked with an error, so fsck will check
+and recover the filesystem on boot.  But this means the filesystem loses
+some latest updates even if it was cleanly unmounted (although some file
+data has been lost.)  I'm a bit afraid that some people would think of
+this as a regression due to this PATCH 4/5.  At least, to avoid
+undesirable replay, we had better keep journaled data only when the
+journal has been aborted for checkpointing related reason.
+ 
+>>It can happen in the case of the checkpointing related abort.
+>>For example, assuming the tail transaction has an update for block_A,
+>>the next transaction has an old update for block_B, and the running
+>>transaction has a new update for block_B.
+>>Now, the running transaction needs more log space, and it calls
+>>log_do_checkpoint().  But it aborts the journal because it detected
+>>write error on block_A.  In this case, new block_B will be
+>>overwritten when the old block_B in the second transaction to the tail
+>>is replayed.
+> 
+>   Well, the scenario has to be a bit different (if we need more space than
+> there is in the journal, we commit the running transaction, do checkpoint
+> and start a new transaction) but something like what you describe could
+> happen. But again I think that this is a correct behavior - i.e., discard
+> all the data in the running transaction when the journal is aborted before
+> the transaction is properly committed. 
 
-Michael
+I think it is correct behavior to discard _all_ metadata updates
+in the running transaction on abort.  But, we don't hope some of
+metadata updates are often discarded, do we?
 
-Test
-====
+Thanks,
+-- 
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
 
-(If anyone has access to Tru64 or Irix, I'd be interested to see
-results from the test program below.)
-
-Using the test program below allows us to see the difference if the
-child doesn't wait on it's child versus if it does wait.
-
-# Child creates (grand)child that burns 1 second of CPU
-# Child burns 2 seconds of CPU, and waits for 4 seconds
-# Child does not wait on (grand)child
-
-$ ./a.out 2 4 1
-Child 17838 about to burn 1 secs
-Child 17838 done
-Finished burn
-Finished sleep
-waited for 0 children
-SIGCHLD     si_status=0x0;  si_utime=37  si_stime=164
-
-# Child creates (grand)child that burns 1 second of CPU
-# Child burns 2 seconds of CPU, and waits for 4 seconds
-# Child waits on (grand)child
-
-$ ./a.out 2 4 1w
-Child 17841 about to burn 1 secs
-Child 17841 done
-Finished burn
-Finished sleep
-About to wait for child 3 (1w), PID 17841
-waited for 1 children
-SIGCHLD     si_status=0x0;  si_utime=59  si_stime=243
-
-==================
-
-/* sigchld_siginfo_time_test.c
-
-   Copyright 2008, Linux Foundation
-   Author: Michael Kerrisk <mtk.manpages@gmail.com>
-   Licensed under GPLv2 or later
-*/
-#include <signal.h>
-#include <sys/wait.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <sys/types.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-
-
-#define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); \
-                        } while (0)
-
-#define usageErr(msg, progName) \
-                        do { fprintf(stderr, "Usage: "); \
-                             fprintf(stderr, msg, progName); \
-                             exit(EXIT_FAILURE); } while (0)
-
-static void
-handler(int sig, siginfo_t *siginfo, void *arg)
-{
-    printf("SIGCHLD     si_status=0x%x;  ",
-            (unsigned int) siginfo->si_status);
-    printf("si_utime=%ld  si_stime=%ld\n",
-            siginfo->si_utime, siginfo->si_stime);
-} /* handler */
-
-
-static void
-burn(int nsecs)
-{
-    struct rusage start, curr;
-    float t;
-
-    if (getrusage(RUSAGE_SELF, &start) == -1) errExit("getrusage");
-
-    for (;;) {
-        if (getrusage(RUSAGE_SELF, &curr) == -1)
-            errExit("getrusage");
-
-        t = (curr.ru_utime.tv_sec - start.ru_utime.tv_sec) * 1000000 +
-                        (curr.ru_utime.tv_usec - start.ru_utime.tv_usec) +
-            (curr.ru_stime.tv_sec - start.ru_stime.tv_sec) * 1000000 +
-                        (curr.ru_stime.tv_usec - start.ru_stime.tv_usec);
-
-        if (t > nsecs * 1000000)
-            break;
-    }
-} /* burn */
-
-
-static void
-doChild(int argc, char *argv[])
-{
-    int cn, waited, rtime;
-    pid_t *childList;
-    char *ep;
-
-    if (signal(SIGCHLD, SIG_DFL) == SIG_ERR) errExit("signal");
-
-    childList = calloc(argc, sizeof(pid_t));
-    if (childList == NULL)
-        errExit("calloc");
-
-    for (cn = 3; cn < argc; cn++) {
-        rtime = strtol(argv[cn], &ep, 0);
-
-        childList[cn] = fork();
-        if (childList[cn] == -1)
-            errExit("fork");
-
-        if (childList[cn] == 0) {
-            printf("Child %ld about to burn %d secs\n",
-                    (long) getpid(), rtime);
-            burn(rtime);
-            printf("Child %ld done\n", (long) getpid());
-            exit(EXIT_SUCCESS);
-        } else {
-            if (*ep == '\0')
-                childList[cn] = -childList[cn]; /* Don't waitpid() */
-        }
-    }
-
-    /* Burn some CPU time ourselves */
-
-    burn(atoi(argv[1]));
-    printf("Finished burn\n");
-
-    /* Optionally sleep for a while, so as to allow children that we
-       don't wait for to terminate */
-
-    sleep(atoi(argv[2]));
-    printf("Finished sleep\n");
-
-    /* Wait for children */
-
-    waited = 0;
-    for (cn = 3; cn < argc; cn++) {
-        if (childList[cn] > 0) {
-            printf("About to wait for child %d (%s), PID %ld\n",
-                    cn, argv[cn], (long) childList[cn]);
-            if (waitpid(childList[cn], NULL, 0) == -1) errExit("waitpid");
-            waited++;
-        }
-    }
-
-    printf("waited for %d children\n", waited);
-} /* doChild */
-
-int
-main(int argc, char *argv[])
-{
-    struct sigaction sa;
-    pid_t childPid;
-
-    if (argc < 4 || strcmp(argv[1], "--help") == 0)
-        usageErr("%s <child-run-time> <child-sleep-time> "
-                "<nsecs>[w]...\n", argv[0]);
-
-    sa.sa_flags = SA_SIGINFO;
-    sa.sa_sigaction = handler;
-    sigemptyset(&sa.sa_mask);
-    if (sigaction(SIGCHLD, &sa, NULL) == -1) errExit("sigaction");
-
-    childPid = fork();
-
-    if (childPid == -1)
-        errExit("fork");
-
-    if (childPid == 0) {
-        doChild(argc, argv);
-        exit(EXIT_SUCCESS);
-    }
-
-    pause();    /* Wait for SIGCHLD */
-
-    exit(EXIT_SUCCESS);
-} /* main */
