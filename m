@@ -1,131 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbYF0D3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbYF0DbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758166AbYF0D3a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jun 2008 23:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYF0D3W
+	id S1758263AbYF0DbV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jun 2008 23:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbYF0DbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 23:29:22 -0400
-Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.108]:51827
-	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752195AbYF0D3W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 23:29:22 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvMAAOj7Y0jLrQkK/2dsb2JhbAAIszk
-X-IronPort-AV: E=Sophos;i="4.27,713,1204470000"; 
-   d="scan'208";a="348244524"
-Subject: Re: Accelerometer etc subsystem (Update on progress)
-From: Ben Nizette <bn@niasdigital.com>
-To: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-Cc: Jean Delvare <khali@linux-fr.org>, linux-kernel@vger.kernel.org,
-       spi-devel-general@lists.sourceforge.net,
-       LM Sensors <lm-sensors@lm-sensors.org>, Dmitry Torokhov <dtor@mail.ru>,
-       Ben Dooks <ben@fluff.org>, mgross@linux.intel.com, hmh@hmh.eng.br,
-       "Hans J. Koch" <hjk@linutronix.de>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <4863D97A.9090102@gmail.com>
-References: <4832A211.4040206@gmail.com>
-	 <20080520132817.03fb74ea@hyperion.delvare>  <4863D97A.9090102@gmail.com>
-Content-Type: text/plain
-Organization: Nias Digital
-Date: Fri, 27 Jun 2008 13:29:27 +1000
-Message-Id: <1214537367.8462.157.camel@moss.renham>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Thu, 26 Jun 2008 23:31:13 -0400
+Received: from mga09.intel.com ([134.134.136.24]:56612 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753360AbYF0DbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jun 2008 23:31:12 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,713,1204531200"; 
+   d="scan'208";a="300092140"
+From: "Yang, Sheng" <sheng.yang@intel.com>
+Organization: Intel
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 2/2] x86: Add "virt flag" in /proc/cpuinfo
+Date: Fri, 27 Jun 2008 11:31:38 +0800
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: kvm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <200806241708.49462.sheng.yang@intel.com> <48645DD7.5090503@goop.org>
+In-Reply-To: <48645DD7.5090503@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806271131.38540.sheng.yang@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 27 June 2008 11:26:15 Jeremy Fitzhardinge wrote:
+> Yang, Sheng wrote:
+> > From 54b1bb9fe5d2fe40fc047b43dd4e1a480d41a977 Mon Sep 17 00:00:00
+> > 2001 From: Sheng Yang <sheng.yang@intel.com>
+> > Date: Tue, 24 Jun 2008 17:03:17 +0800
+> > Subject: [PATCH] x86: Add "virt flag" in /proc/cpuinfo
+> >
+> > The hardware virtualization technology evolves very fast. But
+> > currently it's hard to tell if your CPU support a certain kind of
+> > HW technology without dig into the source code.
+> >
+> > The patch add a new item under /proc/cpuinfo, named "virt flag".
+> > The "virt flag" got the similar function as "flag". It is used to
+> > indicate what features does this CPU supported. It don't cover
+> > all features but only the important ones.
+>
+> A cpu feature is a cpu feature.  I'd prefer to see all this in
+> "flags:".
+>
+>     J
 
-On Thu, 2008-06-26 at 19:01 +0100, Jonathan Cameron wrote:
+But I think (as I said before)
 
-> Sysfs -    Parameter Control - gain / offsets etc
->     State control, turn interrupts on and off etc.
+1. The standard flag covered upper level of cpu capability, they are 
+covered by CPUID. And virt flag was enabled by vmx/svm (we can leave 
+it blank also), and covered by MSR. It's very different.
 
-As in turn userspace [interrupt] event notification on and off?  I would
-have thought it'd be the kernel driver's responsibility to turn the
-device's interrupt generation on and off according to needs for
-data/events etc.
+2. If we add virtual feature to standard flag, I am afraid it would 
+grow too fast, though we just add some key feature to it.
 
-I know this is in a rough state but a few comments anyway.  First, there
-are heaps of casts-of-void-pointers (eg casts of kmalloc returns) which
-are superfluous and hard readability 'coz you have to split the line to
-fit in 80cols.
-
-And hardcoded type-size assumptions everywhere.  Don't be scared of
-sizeof ;-)
-
-
-> Anyhow, all comments welcome.  Can anyone think of a better name?
-> (I'm not keen on industrialio. It's too long if nothing else!
->  It will do as a working title for now)
-
-I don't mind industrial io but as a function prefix, iio works better.
-I can't see it being used elsewhere.
-
-also:
-
-+/* As the ring buffer contents are device dependent this functionality
-+ * must remain part of the driver and not the ring buffer subsystem */
-+static ssize_t
-+lis3l02dq_read_accel_from_ring(struct industrialio_ring_buffer *ring,
-+			       int element, char *buf)
-+{
-+	int val, ret, len;
-+	uint16_t temp;
-+	char *data, *datalock;
-+
-+	data = kmalloc(8, GFP_KERNEL);
-+	if (data == NULL) {
-+		ret = -ENOMEM;
-+		goto error_ret;
-+	}
-+	ret = industrialio_read_last_from_ring(ring, data);
-+	datalock = data + 2*element;
-
-I haven't looked deeply at the ringbuffer code but can you guarantee
-that later elements are at higher addresses than the lower ones?  As in,
-can one datum in the the ring buffer wrap to the beginning again?
-
-+	kfree(data);
-
-You free the data before you use it?  Though you are using it through a
-different pointer below.  I wouldn't be scared of allocating 8 bytes on
-the stack rather than kmalloc'ing (unless you expect this to be called
-in a deep callchain)
-
-+	temp = (((uint16_t)((datalock[1]))) << 8)
-+		| (uint16_t)(datalock[0]);
-+	val = *((int16_t *)(&temp));
-
-All this data/datalock/bitshuffle nonsense would be nicer if you just
-used structs and unions, yeah?
-
-union channel {
-	char data[2];
-	int16_t val;
-}
-
-struct datum {
-	union channel elements[3];
-}
-
-or something.
-
-+	len = sprintf(buf, "ring %d\n", val);
-+
-+	return len;
-+error_ret:
-+	return ret;
-+}
-
-
-Incidentally, is there much that your ringbuffer can do which kfifo
-can't?  Apart from having a bunch of extra nice accessor-helpers sitting
-on the top.
-
-Overall looking good and useful, can't wait 'till it's done :-)
-	--Ben.
-
-
+--
+Thanks
+Yang, Sheng
