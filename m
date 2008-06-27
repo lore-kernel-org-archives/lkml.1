@@ -1,145 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbYF0MHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759124AbYF0MIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508AbYF0MHv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 08:07:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756141AbYF0L60
+	id S1759124AbYF0MIO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 08:08:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbYF0L61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 07:58:26 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:64186 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756792AbYF0L6H (ORCPT
+	Fri, 27 Jun 2008 07:58:27 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:52969 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756899AbYF0L6L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 07:58:07 -0400
-Message-Id: <20080627115211.276771961@chello.nl>
+	Fri, 27 Jun 2008 07:58:11 -0400
+Message-Id: <20080627115212.299243385@chello.nl>
 References: <20080627114109.724249622@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Fri, 27 Jun 2008 13:41:15 +0200
+Date: Fri, 27 Jun 2008 13:41:36 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
        Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 06/30] sched: sched_clock_cpu() based cpu_clock()
-Content-Disposition: inline; filename=sched-cpu_clock.patch
+Subject: [PATCH 27/30] sched: fix mult overflow
+Content-Disposition: inline; filename=sched-fix-mult-overflow.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-with sched_clock_cpu() being reasonably in sync between cpus (max 1 jiffy 
-difference) use this to provide cpu_clock().
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
 
+It was observed these mults can overflow.
+
+Signed-off-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/sched.c       |   80 ---------------------------------------------------
- kernel/sched_clock.c |   12 +++++++
- 2 files changed, 12 insertions(+), 80 deletions(-)
+ kernel/sched_fair.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/kernel/sched.c
+Index: linux-2.6/kernel/sched_fair.c
 ===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -809,82 +807,6 @@ static inline u64 global_rt_runtime(void
- 	return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
- }
+--- linux-2.6.orig/kernel/sched_fair.c
++++ linux-2.6/kernel/sched_fair.c
+@@ -1518,7 +1518,7 @@ load_balance_fair(struct rq *this_rq, in
+ 		struct cfs_rq *busiest_cfs_rq = tg->cfs_rq[busiest_cpu];
+ 		unsigned long busiest_h_load = busiest_cfs_rq->h_load;
+ 		unsigned long busiest_weight = busiest_cfs_rq->load.weight;
+-		long rem_load, moved_load;
++		u64 rem_load, moved_load;
  
--unsigned long long time_sync_thresh = 100000;
--
--static DEFINE_PER_CPU(unsigned long long, time_offset);
--static DEFINE_PER_CPU(unsigned long long, prev_cpu_time);
--
--/*
-- * Global lock which we take every now and then to synchronize
-- * the CPUs time. This method is not warp-safe, but it's good
-- * enough to synchronize slowly diverging time sources and thus
-- * it's good enough for tracing:
-- */
--static DEFINE_SPINLOCK(time_sync_lock);
--static unsigned long long prev_global_time;
--
--static unsigned long long __sync_cpu_clock(unsigned long long time, int cpu)
--{
--	/*
--	 * We want this inlined, to not get tracer function calls
--	 * in this critical section:
--	 */
--	spin_acquire(&time_sync_lock.dep_map, 0, 0, _THIS_IP_);
--	__raw_spin_lock(&time_sync_lock.raw_lock);
--
--	if (time < prev_global_time) {
--		per_cpu(time_offset, cpu) += prev_global_time - time;
--		time = prev_global_time;
--	} else {
--		prev_global_time = time;
--	}
--
--	__raw_spin_unlock(&time_sync_lock.raw_lock);
--	spin_release(&time_sync_lock.dep_map, 1, _THIS_IP_);
--
--	return time;
--}
--
--static unsigned long long __cpu_clock(int cpu)
--{
--	unsigned long long now;
--
--	/*
--	 * Only call sched_clock() if the scheduler has already been
--	 * initialized (some code might call cpu_clock() very early):
--	 */
--	if (unlikely(!scheduler_running))
--		return 0;
--
--	now = sched_clock_cpu(cpu);
--
--	return now;
--}
--
--/*
-- * For kernel-internal use: high-speed (but slightly incorrect) per-cpu
-- * clock constructed from sched_clock():
-- */
--unsigned long long cpu_clock(int cpu)
--{
--	unsigned long long prev_cpu_time, time, delta_time;
--	unsigned long flags;
--
--	local_irq_save(flags);
--	prev_cpu_time = per_cpu(prev_cpu_time, cpu);
--	time = __cpu_clock(cpu) + per_cpu(time_offset, cpu);
--	delta_time = time-prev_cpu_time;
--
--	if (unlikely(delta_time > time_sync_thresh)) {
--		time = __sync_cpu_clock(time, cpu);
--		per_cpu(prev_cpu_time, cpu) = time;
--	}
--	local_irq_restore(flags);
--
--	return time;
--}
--EXPORT_SYMBOL_GPL(cpu_clock);
--
- #ifndef prepare_arch_switch
- # define prepare_arch_switch(next)	do { } while (0)
- #endif
-Index: linux-2.6/kernel/sched_clock.c
-===================================================================
---- linux-2.6.orig/kernel/sched_clock.c
-+++ linux-2.6/kernel/sched_clock.c
-@@ -244,3 +244,15 @@ unsigned long long __attribute__((weak))
- {
- 	return (unsigned long long)jiffies * (NSEC_PER_SEC / HZ);
- }
-+
-+unsigned long long cpu_clock(int cpu)
-+{
-+	unsigned long long clock;
-+	unsigned long flags;
-+
-+	raw_local_irq_save(flags);
-+	clock = sched_clock_cpu(cpu);
-+	raw_local_irq_restore(flags);
-+
-+	return clock;
-+}
+ 		/*
+ 		 * empty group
+@@ -1526,8 +1526,8 @@ load_balance_fair(struct rq *this_rq, in
+ 		if (!busiest_cfs_rq->task_weight)
+ 			continue;
+ 
+-		rem_load = rem_load_move * busiest_weight;
+-		rem_load /= busiest_h_load + 1;
++		rem_load = (u64)rem_load_move * busiest_weight;
++		rem_load = div_u64(rem_load, busiest_h_load + 1);
+ 
+ 		moved_load = __load_balance_fair(this_rq, this_cpu, busiest,
+ 				rem_load, sd, idle, all_pinned, this_best_prio,
+@@ -1537,7 +1537,7 @@ load_balance_fair(struct rq *this_rq, in
+ 			continue;
+ 
+ 		moved_load *= busiest_h_load;
+-		moved_load /= busiest_weight + 1;
++		moved_load = div_u64(moved_load, busiest_weight + 1);
+ 
+ 		rem_load_move -= moved_load;
+ 		if (rem_load_move < 0)
 
 -- 
 
