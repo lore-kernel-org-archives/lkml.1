@@ -1,101 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759468AbYF0RaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761024AbYF0Rb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759468AbYF0RaX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 13:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYF0RaJ
+	id S1761024AbYF0Rb3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 13:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbYF0RbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 13:30:09 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:43276 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752277AbYF0RaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 13:30:08 -0400
-Date: Fri, 27 Jun 2008 19:30:01 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Andres Salomon <dilinger@queued.net>
-Cc: akpm@linux-foundation.org, drzeus-sdhci@drzeus.cx,
-       sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [OLPC] sdhci: add quirk for the Marvell CaFe's
- interrupt timeout
-Message-ID: <20080627193001.5925f664@mjolnir.drzeus.cx>
-In-Reply-To: <20080623101352.3bbaf5b0@xo-debian>
-References: <20080623101352.3bbaf5b0@xo-debian>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
-X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-27365-1214587209-0001-2"
+	Fri, 27 Jun 2008 13:31:21 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:35960 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755024AbYF0RbU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 13:31:20 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5327"; a="4285104"
+Message-ID: <486523E6.4030201@qualcomm.com>
+Date: Fri, 27 Jun 2008 10:31:18 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: Vegard Nossum <vegard.nossum@gmail.com>, Paul Jackson <pj@sgi.com>,
+       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       Gautham shenoy <ego@in.ibm.com>
+Subject: Re: [RFC][PATCH] CPUSets: Move most calls to rebuild_sched_domains()
+ to the workqueue
+References: <48634BC1.8@google.com>	 <19f34abd0806260234y7616bab2k54bc019dfb0c6305@mail.gmail.com>	 <6599ad830806260250m39d700a5haf0f32d999cd2129@mail.gmail.com>	 <4863E4C8.9050705@qualcomm.com>	 <6599ad830806261334y6def5f7an57ac8f071a08eb4b@mail.gmail.com>	 <6599ad830806261417u3015a9b2i6318841de866d768@mail.gmail.com>	 <48647652.5050001@qualcomm.com> <6599ad830806262251x3a0747b9q6f143cc2fcd0aa57@mail.gmail.com>
+In-Reply-To: <6599ad830806262251x3a0747b9q6f143cc2fcd0aa57@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Paul Menage wrote:
+> On Thu, Jun 26, 2008 at 10:10 PM, Max Krasnyansky <maxk@qualcomm.com> wrote:
+>> Instead of changing cpu_hotplug locking should we maybe try to avoid using
+>> cgroup_lock in rebuild_sched_domains() ?
+> 
+> Yes, that would be good too.
+> 
+>> There is a comment in cpuset.c that says
+>>  * If a task is only holding callback_mutex, then it has read-only
+>>  * access to cpusets.
+>>
+>> I'm not sure if it's still valid. rebuild_sched_domains() only needs read only
+>> access, it does not really modify any cpuset structures.
+> 
+> The comment is still valid, if you interpret it narrowly enough.
+> Holding callback_mutex gives you read-only access to structures that
+> are under the control of cpusets. But rebuild_sched_domains() needs to
+> traverse the hierarchy of cpusets, and that hierarchy is controlled by
+> cgroups. 
+Yes that's what I meant by "not sure if it's still valid" I looked at 
+the code and it did not look like callback_mutex protected overall 
+hierarchy. Thanx for confirming that.
 
---=_freyr.drzeus.cx-27365-1214587209-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+> Currently the only synchronization primitives exposed by
+> cgroups are:
+> 
+> - cgroup_lock()/cgroup_unlock() to prevent all cgroup modifications
+> (also used as the main synchronization primitive by some subsystems,
+> i.e. it's in danger of becoming the cgroups equivalent of the BKL).
+> 
+> - task_lock()/task_unlock() to prevent a specific task from changing cgroups
+> 
+> Possible options for richer locking support include:
+> 
+> - lock/unlock a hierarchy, to prevent creation/deletion of cgroups in
+> that hierarchy
+Sounds good.
 
-On Mon, 23 Jun 2008 10:13:52 -0400
-Andres Salomon <dilinger@queued.net> wrote:
+> - lock/unlock a cgroup to prevent deletion of that cgroup
+Can that be just an atomic refcount ?
 
->=20
-> The CaFe chip has a hardware bug that ends up with us getting a timeout
-> value that's too small, causing the following sorts of problems:
->=20
-> [   60.525138] mmcblk0: error -110 transferring data
-> [   60.531477] end_request: I/O error, dev mmcblk0, sector 1484353
-> [   60.533371] Buffer I/O error on device mmcblk0p2, logical block 181632
-> [   60.533371] lost page write due to I/O error on mmcblk0p2
->=20
-> Presumably this is an off-by-one error in the hardware.  Incrementing
-> the timeout count value that we stuff into the TIMEOUT_CONTROL register
-> gets us a value that works.  This bug was originally discovered by
-> Pierre Ossman, I believe.
->=20
-> [thanks to Robert Millan for proving that this was still a problem]
->=20
-> Signed-off-by: Andres Salomon <dilinger@debian.org>
+> - lock/unlock a cgroup to prevent task movement in/out of that cgroup
+Sounds good.
 
-Hmm... I'm not entirely sure about the specifics of the workaround
-here. It's likely that we'll have an off-by-minus-one in another
-controller, and off-by-two in a third.
+> For the case of rebuild_sched_domains, we need the first of these
+> options. This lock would be taken in cgroup.c at the points where it
+> attached and removed cgroups from a cgroup tree, and could be taken by
+> something like cpusets that needed to keep the hierarchy stable while
+> scanning it. I think it would be fine to make it a mutex rather than a
+> spinlock.
+Agree
 
-Perhaps we should just have "broken timeout" and set the timeout to
-0xE. It doesn't cause any side-effects except that the user will have
-to wait slightly longer for requests to fail if the card has decided to
-crap out.
+> cpu_hotplug.lock has to nest outside this hierarchy lock due to it
+> being taken at the root of the hotplug/unplug path. So as long as we
+> can ensure that we can always nest the hierarchy lock inside any
+> get_online_cpus()/put_online_cpus() pairs, we should be OK.
+Yes. Although that basically means that we always have to take 
+cpu_hotplug.lock before hierarchy lock.
 
-> @@ -479,6 +482,13 @@ static void sdhci_prepare_data(struct sdhci_host *ho=
-st, struct mmc_data *data)
->  			break;
->  	}
-> =20
-> +	/*
-> +	 * Compensate for an off-by-one error in the CaFe hardware; otherwise,
-> +	 * a too-small count gives us interrupt timeouts.
-> +	 */
+I like the proposal in general. Specifically for the 
+rebuild_sched_domain() I'm now thinking that maybe we can get away with 
+not involving cpuset at all. I think that what Peter meant originally. 
+I'll send more thoughts on this separately.
 
-Same issue with "CaFE" as the previous patch.
+Max
 
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-27365-1214587209-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkhlI5wACgkQ7b8eESbyJLhnUwCgyrED06jqUvlx+zJkaaGZ5EAX
-Vl8AnA5hpKuil8LHOcpqtVOBHmZcGMw/
-=rlgs
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-27365-1214587209-0001-2--
