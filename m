@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756420AbYF0FZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbYF0F2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756420AbYF0FZB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 01:25:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYF0FYv
+	id S1754696AbYF0F2J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 01:28:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbYF0F14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 01:24:51 -0400
-Received: from 175.210.dsnet ([203.110.175.210]:40770 "EHLO mail.atheros.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751328AbYF0FYu convert rfc822-to-8bit (ORCPT
+	Fri, 27 Jun 2008 01:27:56 -0400
+Received: from ozlabs.org ([203.10.76.45]:49623 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751128AbYF0F14 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 01:24:50 -0400
-From: Jie Yang <Jie.Yang@Atheros.com>
-To: Jay Cliburn <jacliburn@bellsouth.net>
-CC: "jeff@garzik.org" <jeff@garzik.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Date: Fri, 27 Jun 2008 13:24:47 +0800
-Subject: RE: [PATCH 2.6.25.3 1/5] atl1e: Atheros L1E Gigabit Ethernet driver
-Thread-Topic: [PATCH 2.6.25.3 1/5] atl1e: Atheros L1E Gigabit Ethernet driver
-Thread-Index: AcjX/+W/vqXl3M89TQir/VNpGaFi9wAFSynA
-Message-ID: <72981EBCFD196144B7C6999B9FC34A9A3EE603BB7C@SHEXMB-01.global.atheros.com>
-References: <72981EBCFD196144B7C6999B9FC34A9A3EE603B863@SHEXMB-01.global.atheros.com>
- <20080626214510.01373505@osprey.hogchain.net>
-In-Reply-To: <20080626214510.01373505@osprey.hogchain.net>
-Accept-Language: zh-CN, en-US
-Content-Language: zh-CN
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: zh-CN, en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 27 Jun 2008 01:27:56 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: Re: [RFC 1/3 v2] hvc_console: rework setup to replace irq functions with callbacks
+Date: Fri, 27 Jun 2008 15:27:51 +1000
+User-Agent: KMail/1.9.9
+Cc: Linux PPC devel <linuxppc-dev@ozlabs.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Yajin <zyj001et@gmail.com>
+References: <200806031444.21945.borntraeger@de.ibm.com> <200806201524.08237.borntraeger@de.ibm.com>
+In-Reply-To: <200806201524.08237.borntraeger@de.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200806271527.52321.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jay Cliburn [acliburn@bellsouth.net]
-Date: Friday, June 27, 2008 10:45 AM
+On Friday 20 June 2008 23:24:08 Christian Borntraeger wrote:
+> I also kept hvc_struct defined in hvc_console.h so that hvc_irq.c can
+> access the irq_requested element.
 
-> Patches 1 and 2 reviewed tonight.  I intend to review the
-> other 3 in coming days.
+Added this fix:
 
-Thanks for your help.
-I will update source code on these comments.
+Fix compile of hvc_rtas.c
 
-> On Thu, 26 Jun 2008 13:37:23 +0800
-> Jie Yang <Jie.Yang@Atheros.com> wrote:
->
-> > From: Jie Yang <jie.yang@atheros.com>
-> >
-> > Full patch for the Atheros L1E Gigabit Ethernet driver.
-> > Supportring AR8121, AR8113 and AR8114
->
-> Please generate the patch against current mainline (or at
-> least current -rc); it fails to apply cleanly as is.
->
+Moving the struct definition out to the header had bad effect under one
+ppc64 config that I tried:
 
-how about use the git
-git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+drivers/char/hvc_console.h:59: error: field ‘kref’ has incomplete type
 
-Best wishes
-jie
+So move the include of kref.h too.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff -r f382d8f562a8 drivers/char/hvc_console.c
+--- a/drivers/char/hvc_console.c	Fri Jun 27 15:17:49 2008 +1000
++++ b/drivers/char/hvc_console.c	Fri Jun 27 15:24:15 2008 +1000
+@@ -27,7 +27,6 @@
+ #include <linux/init.h>
+ #include <linux/kbd_kern.h>
+ #include <linux/kernel.h>
+-#include <linux/kref.h>
+ #include <linux/kthread.h>
+ #include <linux/list.h>
+ #include <linux/module.h>
+diff -r f382d8f562a8 drivers/char/hvc_console.h
+--- a/drivers/char/hvc_console.h	Fri Jun 27 15:17:49 2008 +1000
++++ b/drivers/char/hvc_console.h	Fri Jun 27 15:24:15 2008 +1000
+@@ -26,6 +26,7 @@
+ 
+ #ifndef HVC_CONSOLE_H
+ #define HVC_CONSOLE_H
++#include <linux/kref.h>
+ 
+ /*
+  * This is the max number of console adapters that can/will be found as
