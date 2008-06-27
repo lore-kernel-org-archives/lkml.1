@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765894AbYF0XIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932198AbYF0XIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765894AbYF0XIR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 19:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764450AbYF0W71
+	id S932198AbYF0XIo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 19:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764315AbYF0W73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 18:59:27 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:46094 "EHLO
+	Fri, 27 Jun 2008 18:59:29 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:46141 "EHLO
 	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764451AbYF0W7E (ORCPT
+	with ESMTP id S1764550AbYF0W7G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 18:59:04 -0400
-Message-Id: <20080627225801.329952961@ldl.fc.hp.com>
+	Fri, 27 Jun 2008 18:59:06 -0400
+Message-Id: <20080627225801.940528882@ldl.fc.hp.com>
 References: <20080627225651.663174474@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 27 Jun 2008 16:57:06 -0600
+Date: Fri, 27 Jun 2008 16:57:09 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 To: Andi Kleen <andi@firstfloor.org>
@@ -31,129 +31,184 @@ Cc: Takashi Iwai <tiwai@suse.de>
 Cc: Jiri Slaby <jirislaby@gmail.com>
 Cc: David Howells <dhowells@redhat.com>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [patch 15/28] PNP: increase I/O port & memory option address sizes
-Content-Disposition: inline; filename=pnp-option-resource-size
+Subject: [patch 18/28] PNP: make resource assignment functions return 0 (success) or -EBUSY (failure)
+Content-Disposition: inline; filename=pnp-change-assignment-return-values
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACPI Address Space Descriptors can be up to 64 bits wide.
-We should keep track of the whole thing when parsing resource
-options, so this patch changes PNP port and mem option
-fields from "unsigned short" and "unsigned int" to
-"resource_size_t".
+This patch doesn't change any behavior; it just makes the return
+values more conventional.
+
+This changes pnp_assign_dma() from a void function to one that
+returns an int, just like the other assignment functions.  For
+now, at least, pnp_assign_dma() always returns 0 (success), so
+it appears to never fail, just like before.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Acked-by: Rene Herman <rene.herman@gmail.com>
 
----
- drivers/pnp/base.h      |   16 ++++++++--------
- drivers/pnp/interface.c |   17 +++++++++++------
- drivers/pnp/resource.c  |   14 ++++++++++----
- 3 files changed, 29 insertions(+), 18 deletions(-)
-
-Index: work10/drivers/pnp/base.h
+Index: work10/drivers/pnp/manager.c
 ===================================================================
---- work10.orig/drivers/pnp/base.h	2008-05-16 16:13:34.000000000 -0600
-+++ work10/drivers/pnp/base.h	2008-05-16 16:13:37.000000000 -0600
-@@ -20,10 +20,10 @@ int pnp_add_card_device(struct pnp_card 
- void pnp_remove_card_device(struct pnp_dev *dev);
+--- work10.orig/drivers/pnp/manager.c	2008-05-13 13:27:01.000000000 -0600
++++ work10/drivers/pnp/manager.c	2008-05-13 13:29:05.000000000 -0600
+@@ -26,7 +26,7 @@ static int pnp_assign_port(struct pnp_de
+ 		dev_dbg(&dev->dev, "  io %d already set to %#llx-%#llx "
+ 			"flags %#lx\n", idx, (unsigned long long) res->start,
+ 			(unsigned long long) res->end, res->flags);
+-		return 1;
++		return 0;
+ 	}
  
- struct pnp_port {
--	unsigned short min;	/* min base number */
--	unsigned short max;	/* max base number */
--	unsigned char align;	/* align boundary */
--	unsigned char size;	/* size of range */
-+	resource_size_t min;	/* min base number */
-+	resource_size_t max;	/* max base number */
-+	resource_size_t align;	/* align boundary */
-+	resource_size_t size;	/* size of range */
- 	unsigned char flags;	/* port flags */
- 	unsigned char pad;	/* pad */
- 	struct pnp_port *next;	/* next port */
-@@ -46,10 +46,10 @@ struct pnp_dma {
- };
+ 	res = &local_res;
+@@ -51,13 +51,13 @@ static int pnp_assign_port(struct pnp_de
+ 				"(min %#llx max %#llx)\n", idx,
+ 				(unsigned long long) rule->min,
+ 				(unsigned long long) rule->max);
+-			return 0;
++			return -EBUSY;
+ 		}
+ 	}
  
- struct pnp_mem {
--	unsigned int min;	/* min base number */
--	unsigned int max;	/* max base number */
--	unsigned int align;	/* align boundary */
--	unsigned int size;	/* size of range */
-+	resource_size_t min;	/* min base number */
-+	resource_size_t max;	/* max base number */
-+	resource_size_t align;	/* align boundary */
-+	resource_size_t size;	/* size of range */
- 	unsigned char flags;	/* memory flags */
- 	unsigned char pad;	/* pad */
- 	struct pnp_mem *next;	/* next memory resource */
-Index: work10/drivers/pnp/interface.c
-===================================================================
---- work10.orig/drivers/pnp/interface.c	2008-05-16 16:13:34.000000000 -0600
-+++ work10/drivers/pnp/interface.c	2008-05-16 16:13:37.000000000 -0600
-@@ -53,10 +53,12 @@ static int pnp_printf(pnp_info_buffer_t 
- static void pnp_print_port(pnp_info_buffer_t * buffer, char *space,
- 			   struct pnp_port *port)
+ __add:
+ 	pnp_add_io_resource(dev, res->start, res->end, res->flags);
+-	return 1;
++	return 0;
+ }
+ 
+ static int pnp_assign_mem(struct pnp_dev *dev, struct pnp_mem *rule, int idx)
+@@ -69,7 +69,7 @@ static int pnp_assign_mem(struct pnp_dev
+ 		dev_dbg(&dev->dev, "  mem %d already set to %#llx-%#llx "
+ 			"flags %#lx\n", idx, (unsigned long long) res->start,
+ 			(unsigned long long) res->end, res->flags);
+-		return 1;
++		return 0;
+ 	}
+ 
+ 	res = &local_res;
+@@ -103,13 +103,13 @@ static int pnp_assign_mem(struct pnp_dev
+ 				"(min %#llx max %#llx)\n", idx,
+ 				(unsigned long long) rule->min,
+ 				(unsigned long long) rule->max);
+-			return 0;
++			return -EBUSY;
+ 		}
+ 	}
+ 
+ __add:
+ 	pnp_add_mem_resource(dev, res->start, res->end, res->flags);
+-	return 1;
++	return 0;
+ }
+ 
+ static int pnp_assign_irq(struct pnp_dev *dev, struct pnp_irq *rule, int idx)
+@@ -126,7 +126,7 @@ static int pnp_assign_irq(struct pnp_dev
+ 	if (res) {
+ 		dev_dbg(&dev->dev, "  irq %d already set to %d flags %#lx\n",
+ 			idx, (int) res->start, res->flags);
+-		return 1;
++		return 0;
+ 	}
+ 
+ 	res = &local_res;
+@@ -154,14 +154,14 @@ static int pnp_assign_irq(struct pnp_dev
+ 		}
+ 	}
+ 	dev_dbg(&dev->dev, "  couldn't assign irq %d\n", idx);
+-	return 0;
++	return -EBUSY;
+ 
+ __add:
+ 	pnp_add_irq_resource(dev, res->start, res->flags);
+-	return 1;
++	return 0;
+ }
+ 
+-static void pnp_assign_dma(struct pnp_dev *dev, struct pnp_dma *rule, int idx)
++static int pnp_assign_dma(struct pnp_dev *dev, struct pnp_dma *rule, int idx)
  {
--	pnp_printf(buffer,
--		   "%sport 0x%x-0x%x, align 0x%x, size 0x%x, %i-bit address decoding\n",
--		   space, port->min, port->max,
--		   port->align ? (port->align - 1) : 0, port->size,
-+	pnp_printf(buffer, "%sport %#llx-%#llx, align %#llx, size %#llx, "
-+		   "%i-bit address decoding\n", space,
-+		   (unsigned long long) port->min,
-+		   (unsigned long long) port->max,
-+		   port->align ? ((unsigned long long) port->align - 1) : 0,
-+		   (unsigned long long) port->size,
- 		   port->flags & IORESOURCE_IO_16BIT_ADDR ? 16 : 10);
+ 	struct resource *res, local_res;
+ 	int i;
+@@ -175,7 +175,7 @@ static void pnp_assign_dma(struct pnp_de
+ 	if (res) {
+ 		dev_dbg(&dev->dev, "  dma %d already set to %d flags %#lx\n",
+ 			idx, (int) res->start, res->flags);
+-		return;
++		return 0;
+ 	}
+ 
+ 	res = &local_res;
+@@ -198,6 +198,7 @@ static void pnp_assign_dma(struct pnp_de
+ 
+ __add:
+ 	pnp_add_dma_resource(dev, res->start, res->flags);
++	return 0;
  }
  
-@@ -148,8 +150,11 @@ static void pnp_print_mem(pnp_info_buffe
- {
- 	char *s;
- 
--	pnp_printf(buffer, "%sMemory 0x%x-0x%x, align 0x%x, size 0x%x",
--		   space, mem->min, mem->max, mem->align, mem->size);
-+	pnp_printf(buffer, "%sMemory %#llx-%#llx, align %#llx, size %#llx",
-+		   space, (unsigned long long) mem->min,
-+		   (unsigned long long) mem->max,
-+		   (unsigned long long) mem->align,
-+		   (unsigned long long) mem->size);
- 	if (mem->flags & IORESOURCE_MEM_WRITEABLE)
- 		pnp_printf(buffer, ", writeable");
- 	if (mem->flags & IORESOURCE_MEM_CACHEABLE)
-Index: work10/drivers/pnp/resource.c
-===================================================================
---- work10.orig/drivers/pnp/resource.c	2008-05-16 16:13:34.000000000 -0600
-+++ work10/drivers/pnp/resource.c	2008-05-16 16:13:37.000000000 -0600
-@@ -143,8 +143,11 @@ int pnp_register_port_resource(struct pn
- 		option->port = data;
- 
- 	dev_dbg(&dev->dev, "  io  "
--		"min %#x max %#x align %d size %d flags %#x\n",
--		data->min, data->max, data->align, data->size, data->flags);
-+		"min %#llx max %#llx align %lld size %lld flags %#x\n",
-+		(unsigned long long) data->min,
-+		(unsigned long long) data->max,
-+		(unsigned long long) data->align,
-+		(unsigned long long) data->size, data->flags);
- 	return 0;
- }
- 
-@@ -162,8 +165,11 @@ int pnp_register_mem_resource(struct pnp
- 		option->mem = data;
- 
- 	dev_dbg(&dev->dev, "  mem "
--		"min %#x max %#x align %d size %d flags %#x\n",
--		data->min, data->max, data->align, data->size, data->flags);
-+		"min %#llx max %#llx align %lld size %lld flags %#x\n",
-+		(unsigned long long) data->min,
-+		(unsigned long long) data->max,
-+		(unsigned long long) data->align,
-+		(unsigned long long) data->size, data->flags);
- 	return 0;
- }
- 
+ void pnp_init_resources(struct pnp_dev *dev)
+@@ -243,25 +244,26 @@ static int pnp_assign_resources(struct p
+ 		irq = dev->independent->irq;
+ 		dma = dev->independent->dma;
+ 		while (port) {
+-			if (!pnp_assign_port(dev, port, nport))
++			if (pnp_assign_port(dev, port, nport) < 0)
+ 				goto fail;
+ 			nport++;
+ 			port = port->next;
+ 		}
+ 		while (mem) {
+-			if (!pnp_assign_mem(dev, mem, nmem))
++			if (pnp_assign_mem(dev, mem, nmem) < 0)
+ 				goto fail;
+ 			nmem++;
+ 			mem = mem->next;
+ 		}
+ 		while (irq) {
+-			if (!pnp_assign_irq(dev, irq, nirq))
++			if (pnp_assign_irq(dev, irq, nirq) < 0)
+ 				goto fail;
+ 			nirq++;
+ 			irq = irq->next;
+ 		}
+ 		while (dma) {
+-			pnp_assign_dma(dev, dma, ndma);
++			if (pnp_assign_dma(dev, dma, ndma) < 0)
++				goto fail;
+ 			ndma++;
+ 			dma = dma->next;
+ 		}
+@@ -281,25 +283,26 @@ static int pnp_assign_resources(struct p
+ 		irq = dep->irq;
+ 		dma = dep->dma;
+ 		while (port) {
+-			if (!pnp_assign_port(dev, port, nport))
++			if (pnp_assign_port(dev, port, nport) < 0)
+ 				goto fail;
+ 			nport++;
+ 			port = port->next;
+ 		}
+ 		while (mem) {
+-			if (!pnp_assign_mem(dev, mem, nmem))
++			if (pnp_assign_mem(dev, mem, nmem) < 0)
+ 				goto fail;
+ 			nmem++;
+ 			mem = mem->next;
+ 		}
+ 		while (irq) {
+-			if (!pnp_assign_irq(dev, irq, nirq))
++			if (pnp_assign_irq(dev, irq, nirq) < 0)
+ 				goto fail;
+ 			nirq++;
+ 			irq = irq->next;
+ 		}
+ 		while (dma) {
+-			pnp_assign_dma(dev, dma, ndma);
++			if (pnp_assign_dma(dev, dma, ndma) < 0)
++				goto fail;
+ 			ndma++;
+ 			dma = dma->next;
+ 		}
 
 -- 
