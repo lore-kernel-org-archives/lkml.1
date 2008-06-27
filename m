@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbYF0EyL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758348AbYF0Ey5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756662AbYF0EyL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 00:54:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbYF0Exz
+	id S1758348AbYF0Ey5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 00:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbYF0Eyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 00:53:55 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:64871 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752346AbYF0Exy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 00:53:54 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5326"; a="4096126"
-Message-ID: <48647267.3030606@qualcomm.com>
-Date: Thu, 26 Jun 2008 21:53:59 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
+	Fri, 27 Jun 2008 00:54:49 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:40783 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752563AbYF0Eys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 00:54:48 -0400
+Message-ID: <48647290.3020909@garzik.org>
+Date: Fri, 27 Jun 2008 00:54:40 -0400
+From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: ego@in.ibm.com
-CC: Paul Menage <menage@google.com>, Vegard Nossum <vegard.nossum@gmail.com>,
-       Paul Jackson <pj@sgi.com>, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [RFC][PATCH] CPUSets: Move most calls to	rebuild_sched_domains()
- to the workqueue
-References: <48634BC1.8@google.com> <20080627032228.GA3419@in.ibm.com> <20080627032317.GB3419@in.ibm.com>
-In-Reply-To: <20080627032317.GB3419@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+CC: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       Jeff Garzik <jgarzik@redhat.com>,
+       "Klaus-D. Wacker" <kdwacker@de.ibm.com>
+Subject: Re: [patch 21/21] Cleanup lcs printk messages.
+References: <20080625143459.100139455@de.ibm.com> <20080625143616.727686124@de.ibm.com>
+In-Reply-To: <20080625143616.727686124@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gautham R Shenoy wrote:
-> On Fri, Jun 27, 2008 at 08:52:28AM +0530, Gautham R Shenoy wrote:
->> On Thu, Jun 26, 2008 at 12:56:49AM -0700, Paul Menage wrote:
->>> CPUsets: Move most calls to rebuild_sched_domains() to the workqueue
->>>
->>> In the current cpusets code the lock nesting between cgroup_mutex and
->>> cpuhotplug.lock when calling rebuild_sched_domains is inconsistent -
->>> in the CPU hotplug path cpuhotplug.lock nests outside cgroup_mutex,
->>> and in all other paths that call rebuild_sched_domains() it nests
->>> inside.
->>>
->>> This patch makes most calls to rebuild_sched_domains() asynchronous
->>> via the workqueue, which removes the nesting of the two locks in that
->>> case. In the case of an actual hotplug event, cpuhotplug.lock nests
->>> outside cgroup_mutex as now.
->>>
->> Using a multithreaded workqueue(kevent here) for this is not such a
->> great idea this,since currently we cannot call
->> get_online_cpus() from a workitem executed by a multithreaded workqueue.
->>
->> Can one use a single threaded workqueue here instead ?
-We could certainly do it in the single threaded workqueue. It won't help to
-avoid circular locking dependencies though.
-Did you get a chance to read entire thread on this topic ? There were some
-questions that you might be able to answer.
+Martin Schwidefsky wrote:
+> From: Klaus-D. Wacker <kdwacker@de.ibm.com>
+> 
+> Cc: Jeff Garzik <jgarzik@redhat.com>
+> Signed-off-by: Klaus-D. Wacker <kdwacker@de.ibm.com>
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-Max
+ACK patches 19-21
+
+I presume these will go upstream alongside the rest of the series..?
+
+
