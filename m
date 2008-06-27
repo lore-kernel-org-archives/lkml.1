@@ -1,138 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763028AbYF0W1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762844AbYF0Wha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763028AbYF0W1c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 18:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756580AbYF0W1W
+	id S1762844AbYF0Wha (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 18:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757958AbYF0WhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 18:27:22 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:42452 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755902AbYF0W1U (ORCPT
+	Fri, 27 Jun 2008 18:37:17 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:47745 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755843AbYF0WhP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 18:27:20 -0400
-Subject: Re: [regression] CD-DA delay needed after insertion
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0806171530340.22840@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
-	 <1213540781.3517.18.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0806161659440.30122@vixen.sonytel.be>
-	 <1213648258.3420.12.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0806171530340.22840@vixen.sonytel.be>
-Content-Type: text/plain
-Date: Fri, 27 Jun 2008 17:27:14 -0500
-Message-Id: <1214605634.3394.91.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+	Fri, 27 Jun 2008 18:37:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=YNK1oDsFukslRRsheD6hgm0z0pM/htvVTGsAAFpSTLcDt5SIluaZsxMkjYmTtdlTXa
+         wQLLOOtpqrErekI29s5FHHyLlRCfwhy4atw3tAVKwBqzkskhy2/GnQ9KY6RMVBs1o0UI
+         4tnY9qvjCEELQu+rAANsQcPp5yvXpzSdMjj/Y=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: early res print out alignment v2
+Date: Fri, 27 Jun 2008 15:36:54 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200806251748.06743.yhlu.kernel@gmail.com> <200806252151.29028.yhlu.kernel@gmail.com> <200806262317.48716.yhlu.kernel@gmail.com>
+In-Reply-To: <200806262317.48716.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806271536.54351.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-17 at 15:31 +0200, Geert Uytterhoeven wrote:
-> On Mon, 16 Jun 2008, James Bottomley wrote:
-> > On Mon, 2008-06-16 at 17:05 +0200, Geert Uytterhoeven wrote:
-> > > On Sun, 15 Jun 2008, James Bottomley wrote:
-> > > > On Fri, 2008-06-13 at 13:57 +0200, Geert Uytterhoeven wrote:
-> > > > > We've found another regression in 2.6.25 w.r.t. CD media change on PS3.
-> > > > > 
-> > > > > It can easily be reproduced by:
-> > > > > 
-> > > > >   1. Inserting an audio CD
-> > > > >   2. Running the following command as soon as the blue CD/DVD/BD drive LED
-> > > > >      stops blinking and is lit continuously:
-> > > > >       
-> > > > > 	 cdparanoia -Z -q 1-1[:1] /dev/null || echo failed
-> > > > > 
-> > > > > On 2.6.25 (and current mainline), you have to wait ca. 10 seconds after
-> > > > > insertion, or it will fail.
-> > > > > On 2.6.24 and older, it just works immediately.
-> > > > > 
-> > > > > It does not matter whether
-> > > > > http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
-> > > > > is applied or not.
-> > > > > 
-> > > > > We haven't bisected it yet.
-> > > > 
-> > > > There aren't that many commits affecting sr between 2.6.24 and 2.6.25,
-> > > > so I'd bet on the previous culprits.
-> > > > 
-> > > > This time, the taxonomy looks like NOT_READY isn't being waited for
-> > > > properly.  I'd still tend to blame
-> > > > 210ba1d1724f5c4ed87a2ab1a21ca861a915f734 it's just that this time I
-> > > 
-> > > Reverting that commit doesn't fix the problem.
-> > 
-> > That's a bit of a problem.  Particularly as:
-> > 
-> > > > suspect this to be the problem line:
-> > > > 
-> > > > 	if (sshdr.sense_key == NOT_READY && sshdr.asc == 0x04)
-> > > > 		return CDS_DISC_OK;
-> > > > 
-> > > > Previously the code would have returned CDS_NO_DISC for the not ready
-> > > > case.  The CD would have tried to close the door but (and this is the
-> > > > key) it would have waited for the door to close before trying again.
-> > > 
-> > > I tried the patch below.
-> > > 
-> > > Now the kernel spits out messages every 2 seconds:
-> > > 
-> > > | G: CDS_NO_DISC
-> > > | G: CDS_NO_DISC
-> > > 
-> > > Insert CD-DA media
-> > > 
-> > > Reading from CD using cdparanioa fails
-> > > 
-> > > | F: CDS_DISC_OK
-> > > | F: CDS_DISC_OK
-> > > | F: CDS_DISC_OK
-> > > | F: CDS_DISC_OK
-> > > | F: CDS_DISC_OK
-> > 
-> > That's in the two lines I fingered as the source of the problem ...
-> > however, if reversing the apparently bad commit (that introduces those
-> > lines) doesn't work there's something else wrong.
-> > 
-> > Could you try altering your F: case to return CDS_DRIVE_NOT_READY, but
-> > if that doesn't work, it's going to take a bit of bisection, I'm
-> > afraid ...
-> 
-> Doesn't make any difference.
-> 
-> git-bisect taught me it was introduced by
-> 
-> commit 38582a62ecd337de4212004c7d4844899dc57890
-> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-> Date:   Wed Feb 6 13:01:58 2008 -0600
-> 
->     [SCSI] sr: fix test unit ready responses
->     
->     Commit 210ba1d1724f5c4ed87a2ab1a21ca861a915f734 updated sr.c to use
->     the scsi_test_unit_ready() function.  Unfortunately, this has the
->     wrong characteristic of eating NOT_READY returns which sr.c relies on
->     for tray status.
->     
->     Fix by rolling an internal sr_test_unit_ready() that doesn't do this.
 
-OK, I thought I had a test case for this, but when I revert this commit
-on git head (and fix up the one reject which just leaves the sr_
-function in place) I still produce the same behaviour.
+v2: fix print info to cont
+    [ - ] change to xxx - xxx
 
-What I'm trying is 
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-sg_start -i -l <cdrom>
+---
+ arch/x86/kernel/e820.c |   20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
-to close the tray followed by your cdparanoia command
-
-Could you see if reverting this commit on git head works for you (in
-which case I'm not reproducing it correctly)?
-
-Thanks,
-
-James
-
-
+Index: linux-2.6/arch/x86/kernel/e820.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -828,16 +828,26 @@ void __init free_early(u64 start, u64 en
+ 
+ void __init early_res_to_bootmem(u64 start, u64 end)
+ {
+-	int i;
++	int i, count;
+ 	u64 final_start, final_end;
+-	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++) {
++
++	count  = 0;
++	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++)
++		count++;
++
++	printk(KERN_INFO "(%d early reservations) ==> bootmem\n", count);
++	for (i = 0; i < count; i++) {
+ 		struct early_res *r = &early_res[i];
++		printk(KERN_INFO "  #%d %010llx - %010llx %16s", i,
++			r->start, r->end, r->name);
+ 		final_start = max(start, r->start);
+ 		final_end = min(end, r->end);
+-		if (final_start >= final_end)
++		if (final_start >= final_end) {
++			printk(KERN_CONT "\n");
+ 			continue;
+-		printk(KERN_INFO "  early res: %d [%llx-%llx] %s\n", i,
+-			final_start, final_end - 1, r->name);
++		}
++		printk(KERN_CONT " ==> %010llx - %010llx\n",
++			final_start, final_end);
+ 		reserve_bootmem_generic(final_start, final_end - final_start,
+ 				BOOTMEM_DEFAULT);
+ 	}
