@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756274AbYF0KCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756274AbYF0KIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756274AbYF0KCV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 06:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbYF0KCJ
+	id S1756274AbYF0KIU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 06:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbYF0KIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 06:02:09 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:43594 "EHLO 2ka.mipt.ru"
+	Fri, 27 Jun 2008 06:08:13 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49917 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752755AbYF0KCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 06:02:08 -0400
-Date: Fri, 27 Jun 2008 14:01:10 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Chris Snook <csnook@redhat.com>,
-       Dave Jones <davej@codemonkey.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: GFP_ATOMIC page allocation failures.
-Message-ID: <20080627100109.GC18179@2ka.mipt.ru>
-References: <20080401235609.GA6947@codemonkey.org.uk> <200804022012.58760.nickpiggin@yahoo.com.au> <20080402085437.7d9abf1f.akpm@linux-foundation.org> <200804031622.26973.nickpiggin@yahoo.com.au> <20080402223254.5ac50337.akpm@linux-foundation.org> <20080403085922.GA10874@2ka.mipt.ru> <20080626210624.GA11816@redhat.com>
-Mime-Version: 1.0
+	id S1752767AbYF0KIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 06:08:12 -0400
+Date: Fri, 27 Jun 2008 12:07:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
+Subject: Re: [PATCH 00/34] AMD IOMMU driver
+Message-ID: <20080627100751.GA27822@elte.hu>
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <20080627081807.GA6562@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080626210624.GA11816@redhat.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080627081807.GA6562@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 05:06:24PM -0400, Dave Jones (davej@redhat.com) wrote:
-> This thread seemed to die out with no resolution..
 
-Please ask to test e1000e driver instead, if it supports given PCI ids.
-It has completely rewritten input path which does not suffer from this
-kind of problems, so you do not need to care too much about e1000, which
-will die sooner or later.
+-tip testing found a build failure with:
 
--- 
-	Evgeniy Polyakov
+arch/x86/kernel/amd_iommu_init.c:247: warning: 'struct acpi_table_header' declared inside parameter list
+arch/x86/kernel/amd_iommu_init.c:247: warning: its scope is only this definition or declaration, which is probably not what you want
+arch/x86/kernel/amd_iommu_init.c: In function 'find_last_devid_acpi':
+arch/x86/kernel/amd_iommu_init.c:257: error: dereferencing pointer to incomplete type
+
+  http://redhat.com/~mingo/misc/config-Fri_Jun_27_10_29_06_CEST_2008.bad
+
+this is due to !CONFIG_ACPI.
+
+since AMD IOMMU discovery depends on ACPI anyway, i've fixed this in the 
+Kconfig space. (Eventually, if you want to make it directly discoverable 
+via the PCI space in the future, you might want to fix this dependency.)
+
+i've pushed out the fix below into -tip.
+
+	Ingo
