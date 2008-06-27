@@ -1,114 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbYF0FIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896AbYF0FKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756517AbYF0FIT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 01:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYF0FIL
+	id S1754896AbYF0FKv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 01:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbYF0FKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 01:08:11 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:17779 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751490AbYF0FIJ (ORCPT
+	Fri, 27 Jun 2008 01:10:39 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:58021 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750758AbYF0FKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 01:08:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=an6yCWwcnDGeptuDhoO5udGwlD24noAshHG/FM/pFRRyvhOBAdFjBvoeKzugIfJHm8
-         BkUJ5ni2m7tjWZr+L6j+naC/qkGTLmk7cSCYCugfVL1iczrYV5xrfiY09kEaobdUaGLw
-         wqcMgnJFStVdmIHevSUXaXZgxRQ9Sldo8LfIU=
-Message-ID: <28c262360806262208i6791d67at446f7323ded16206@mail.gmail.com>
-Date: Fri, 27 Jun 2008 14:08:08 +0900
-From: "MinChan Kim" <minchan.kim@gmail.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [-mm][PATCH 8/10] fix shmem page migration incorrectness on memcgroup
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>,
-       "Rik van Riel" <riel@redhat.com>,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Daisuke Nishimura" <nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20080625190750.D864.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Fri, 27 Jun 2008 01:10:37 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5326"; a="4096364"
+Message-ID: <48647652.5050001@qualcomm.com>
+Date: Thu, 26 Jun 2008 22:10:42 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Paul Menage <menage@google.com>
+CC: Vegard Nossum <vegard.nossum@gmail.com>, Paul Jackson <pj@sgi.com>,
+       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       Gautham shenoy <ego@in.ibm.com>
+Subject: Re: [RFC][PATCH] CPUSets: Move most calls to rebuild_sched_domains()
+ to the workqueue
+References: <48634BC1.8@google.com>	 <19f34abd0806260234y7616bab2k54bc019dfb0c6305@mail.gmail.com>	 <6599ad830806260250m39d700a5haf0f32d999cd2129@mail.gmail.com>	 <4863E4C8.9050705@qualcomm.com>	 <6599ad830806261334y6def5f7an57ac8f071a08eb4b@mail.gmail.com> <6599ad830806261417u3015a9b2i6318841de866d768@mail.gmail.com>
+In-Reply-To: <6599ad830806261417u3015a9b2i6318841de866d768@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080625185717.D84C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080625190750.D864.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, KAMEZAWA-san.
+Paul Menage wrote:
+> On Thu, Jun 26, 2008 at 1:34 PM, Paul Menage <menage@google.com> wrote:
+>> void get_online_cpus(void)
+>> {
+>>        might_sleep();
+>>        if (cpu_hotplug.active_writer == current)
+>>                return;
+>>        down_read(&cpu_hotplug.lock);
+>> }
+>>
+>> void put_online_cpus(void)
+>> {
+>>        if (cpu_hotplug.active_writer == current)
+>>                return;
+>>        up_read(&cpu_hotplug.lock);
+>> }
+>>
+>> static void cpu_hotplug_begin(void)
+>> {
+>>        down_write(&cpu_hotplug.lock);
+>>        cpu_hotplug.active_writer = current;
+>> }
+>>
+>> static void cpu_hotplug_done(void)
+>> {
+>>        cpu_hotplug.active_writer = NULL;
+>>        up_write(&cpu_hotplug.lock);
+>> }
+>>
+>> I think that combined with moving the async rebuild_sched_domains to a
+>> separate thread should solve the problem, but I'm wondering why
+>> cpu_hotplug.lock was implemented this way in the first place.
+> 
+> Oh, I guess that doesn't work because of recursive calls to
+> get_online_cpus(). Maybe we need a down_read_recursive() that skips
+> ahead of waiting writers if the lock is already held in read mode?
 
-I have one question.
-It's just curious.
+Instead of changing cpu_hotplug locking should we maybe try to avoid using
+cgroup_lock in rebuild_sched_domains() ?
+There is a comment in cpuset.c that says
+ * If a task is only holding callback_mutex, then it has read-only
+ * access to cpusets.
 
-On Wed, Jun 25, 2008 at 7:09 PM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
->
-> =
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
-> mem_cgroup_uncharge() against old page is done after radix-tree-replacement.
-> And there were special handling to ingore swap-cache page. But, shmem can
-> be swap-cache and file-cache at the same time. Chekcing PageSwapCache() is
-> not correct here. Check PageAnon() instead.
+I'm not sure if it's still valid. rebuild_sched_domains() only needs read only
+access, it does not really modify any cpuset structures.
 
-When/How shmem can be both swap-cache and file-cache ?
-I can't understand that situation.
-
-Thanks. :)
-
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Acked-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->
-> ---
->  mm/migrate.c |   11 +++++++++--
->  1 file changed, 9 insertions(+), 2 deletions(-)
->
-> Index: b/mm/migrate.c
-> ===================================================================
-> --- a/mm/migrate.c
-> +++ b/mm/migrate.c
-> @@ -332,7 +332,13 @@ static int migrate_page_move_mapping(str
->        __inc_zone_page_state(newpage, NR_FILE_PAGES);
->
->        spin_unlock_irq(&mapping->tree_lock);
-> -       if (!PageSwapCache(newpage))
-> +
-> +       /*
-> +        * The page is removed from radix-tree implicitly.
-> +        * We uncharge it here but swap cache of anonymous page should be
-> +        * uncharged by mem_cgroup_ucharge_page().
-> +        */
-> +       if (!PageAnon(newpage))
->                mem_cgroup_uncharge_cache_page(page);
->
->        return 0;
-> @@ -381,7 +387,8 @@ static void migrate_page_copy(struct pag
->                /*
->                 * SwapCache is removed implicitly. Uncharge against swapcache
->                 * should be called after ClearPageSwapCache() because
-> -                * mem_cgroup_uncharge_page checks the flag.
-> +                * mem_cgroup_uncharge_page checks the flag. shmem's swap cache
-> +                * is uncharged before here.
->                 */
->                mem_cgroup_uncharge_page(page);
->        }
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Max
 
 
-
--- 
-Kinds regards,
-MinChan Kim
