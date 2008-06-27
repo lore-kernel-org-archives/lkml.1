@@ -1,595 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763523AbYF0VPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763411AbYF0VRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763523AbYF0VPa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 17:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756349AbYF0VPN
+	id S1763411AbYF0VRu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 17:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbYF0VRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 17:15:13 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:53934 "EHLO smtp4.pp.htv.fi"
+	Fri, 27 Jun 2008 17:17:42 -0400
+Received: from saeurebad.de ([85.214.36.134]:43953 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754485AbYF0VPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 17:15:09 -0400
-Date: Sat, 28 Jun 2008 00:12:52 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Peter Korsgaard <jacmet@sunsite.dk>, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org, dhowells@redhat.com, andi@firstfloor.org,
-       "Kirill A. Shutemov" <k.shutemov@gmail.com>, ysato@users.sourceforge.jp,
-       takata@linux-m32r.org, linux-m32r@ml.linux-m32r.org, kyle@mcmartin.ca,
-       matthew@wil.cx, grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
-       lethal@linux-sh.org, linux-sh@vger.kernel.org,
+	id S1754381AbYF0VRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 17:17:41 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-arch@vger.kernel.org
-Subject: [2.6 patch] remove unused asm/a.out.h files
-Message-ID: <20080627211252.GA16545@cs181140183.pp.htv.fi>
-References: <1213565555.26255.522.camel@pmac.infradead.org> <1213604973-7073-1-git-send-email-jacmet@sunsite.dk> <1213617663.26255.708.camel@pmac.infradead.org> <20080616121727.GB10854@cs181133002.pp.htv.fi> <1213619214.26255.721.camel@pmac.infradead.org> <20080617084235.GA20169@cs181133002.pp.htv.fi> <1213696004.26255.960.camel@pmac.infradead.org>
+Subject: [PATCH 02/20 fixed] mm: generic show_mem()
+References: <20080627115349.743368154@saeurebad.de>
+	<20080627120048.059732179@saeurebad.de>
+	<20080627144329.GA7634@osiris.ibm.com>
+Date: Fri, 27 Jun 2008 23:17:06 +0200
+In-Reply-To: <20080627144329.GA7634@osiris.ibm.com> (Heiko Carstens's message
+	of "Fri, 27 Jun 2008 16:43:30 +0200")
+Message-ID: <87od5mwpbh.fsf_-_@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1213696004.26255.960.camel@pmac.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 17, 2008 at 10:46:44AM +0100, David Woodhouse wrote:
->...
-> I think we can probably get away with removing <asm/a.out.h> from every
-> architecture other than Alpha, ARM, m68k and x86,
->...
+This implements a platform-independent version of show_mem().
 
-Patch below.
-
-> dwmw2
-
-cu
-Adrian
-
-
-<--  snip  -->
-
-
-This patch removes asm/a.out.h from all architectures that do not
-provide a.out support.
-
-This patch also includes the required removal of (unused)
-#include <asm/a.out.h>'s and #include <linux/a.out.h>'s in the arch/
-code for these architectures.
-
-The ppc and v850 architectures that should anyway be removed in 2.6.27 
-are not touched by this patch to avoid needless merge conflicts.
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
 ---
+ mm/Kconfig      |    3 +++
+ mm/page_alloc.c |   56 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 59 insertions(+)
 
- arch/cris/arch-v10/boot/tools/build.c   |    1 
- arch/h8300/kernel/process.c             |    1 
- arch/ia64/mm/init.c                     |    1 
- arch/m68knommu/kernel/process.c         |    1 
- arch/m68knommu/kernel/traps.c           |    1 
- arch/mips/kernel/irixelf.c              |    1 
- arch/mips/kernel/process.c              |    1 
- arch/mips/kernel/syscall.c              |    1 
- arch/powerpc/kernel/softemu8xx.c        |    1 
- arch/powerpc/kernel/traps.c             |    1 
- arch/powerpc/platforms/chrp/setup.c     |    1 
- arch/powerpc/platforms/maple/setup.c    |    1 
- arch/powerpc/platforms/powermac/setup.c |    1 
- arch/powerpc/platforms/pseries/setup.c  |    1 
- include/asm-avr32/a.out.h               |   20 -------------
- include/asm-blackfin/a.out.h            |   19 -------------
- include/asm-cris/a.out.h                |   26 -----------------
- include/asm-h8300/a.out.h               |   20 -------------
- include/asm-ia64/a.out.h                |   32 ---------------------
- include/asm-m32r/a.out.h                |   20 -------------
- include/asm-m68knommu/a.out.h           |    1 
- include/asm-mips/a.out.h                |   35 ------------------------
- include/asm-parisc/a.out.h              |   20 -------------
- include/asm-powerpc/a.out.h             |   20 -------------
- include/asm-sh/a.out.h                  |   20 -------------
- include/asm-xtensa/a.out.h              |   29 -------------------
- 26 files changed, 276 deletions(-)
+Heiko Carstens <heiko.carstens@de.ibm.com> writes:
 
-9cd72b780be8d25cd2deb99a923030f2fe2aeba4 diff --git a/arch/cris/arch-v10/boot/tools/build.c b/arch/cris/arch-v10/boot/tools/build.c
-index 2f9bbb2..c8adef3 100644
---- a/arch/cris/arch-v10/boot/tools/build.c
-+++ b/arch/cris/arch-v10/boot/tools/build.c
-@@ -30,7 +30,6 @@
- #include <sys/sysmacros.h>
- #include <unistd.h>	/* contains read/write */
- #include <fcntl.h>
--#include <linux/a.out.h>
- #include <errno.h>
- 
- #define MINIX_HEADER 32
-diff --git a/arch/h8300/kernel/process.c b/arch/h8300/kernel/process.c
-index dfbe7ab..a8ef654 100644
---- a/arch/h8300/kernel/process.c
-+++ b/arch/h8300/kernel/process.c
-@@ -34,7 +34,6 @@
- #include <linux/ptrace.h>
- #include <linux/slab.h>
- #include <linux/user.h>
--#include <linux/a.out.h>
- #include <linux/interrupt.h>
- #include <linux/reboot.h>
- #include <linux/fs.h>
-diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
-index 200100e..f482a90 100644
---- a/arch/ia64/mm/init.c
-+++ b/arch/ia64/mm/init.c
-@@ -21,7 +21,6 @@
- #include <linux/bitops.h>
- #include <linux/kexec.h>
- 
--#include <asm/a.out.h>
- #include <asm/dma.h>
- #include <asm/ia32.h>
- #include <asm/io.h>
-diff --git a/arch/m68knommu/kernel/process.c b/arch/m68knommu/kernel/process.c
-index 47502d5..3f2d774 100644
---- a/arch/m68knommu/kernel/process.c
-+++ b/arch/m68knommu/kernel/process.c
-@@ -25,7 +25,6 @@
- #include <linux/ptrace.h>
- #include <linux/slab.h>
- #include <linux/user.h>
--#include <linux/a.out.h>
- #include <linux/interrupt.h>
- #include <linux/reboot.h>
- #include <linux/fs.h>
-diff --git a/arch/m68knommu/kernel/traps.c b/arch/m68knommu/kernel/traps.c
-index ec9aea6..0157b9d 100644
---- a/arch/m68knommu/kernel/traps.c
-+++ b/arch/m68knommu/kernel/traps.c
-@@ -22,7 +22,6 @@
- #include <linux/mm.h>
- #include <linux/module.h>
- #include <linux/types.h>
--#include <linux/a.out.h>
- #include <linux/user.h>
- #include <linux/string.h>
- #include <linux/linkage.h>
-diff --git a/arch/mips/kernel/irixelf.c b/arch/mips/kernel/irixelf.c
-index 469c723..e068a72 100644
---- a/arch/mips/kernel/irixelf.c
-+++ b/arch/mips/kernel/irixelf.c
-@@ -18,7 +18,6 @@
- #include <linux/sched.h>
- #include <linux/mm.h>
- #include <linux/mman.h>
--#include <linux/a.out.h>
- #include <linux/errno.h>
- #include <linux/init.h>
- #include <linux/signal.h>
-diff --git a/arch/mips/kernel/process.c b/arch/mips/kernel/process.c
-index 2c09a44..2040fc5 100644
---- a/arch/mips/kernel/process.c
-+++ b/arch/mips/kernel/process.c
-@@ -22,7 +22,6 @@
- #include <linux/personality.h>
- #include <linux/sys.h>
- #include <linux/user.h>
--#include <linux/a.out.h>
- #include <linux/init.h>
- #include <linux/completion.h>
- #include <linux/kallsyms.h>
-diff --git a/arch/mips/kernel/syscall.c b/arch/mips/kernel/syscall.c
-index af1bdc8..0d2b609 100644
---- a/arch/mips/kernel/syscall.c
-+++ b/arch/mips/kernel/syscall.c
-@@ -7,7 +7,6 @@
-  * Copyright (C) 1999, 2000 Silicon Graphics, Inc.
-  * Copyright (C) 2001 MIPS Technologies, Inc.
-  */
--#include <linux/a.out.h>
- #include <linux/capability.h>
- #include <linux/errno.h>
- #include <linux/linkage.h>
-diff --git a/arch/powerpc/kernel/softemu8xx.c b/arch/powerpc/kernel/softemu8xx.c
-index 67d6f68..2489493 100644
---- a/arch/powerpc/kernel/softemu8xx.c
-+++ b/arch/powerpc/kernel/softemu8xx.c
-@@ -23,7 +23,6 @@
- #include <linux/ptrace.h>
- #include <linux/slab.h>
- #include <linux/user.h>
--#include <linux/a.out.h>
- #include <linux/interrupt.h>
- 
- #include <asm/pgtable.h>
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 4b5b7ff..c7e499e 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -23,7 +23,6 @@
- #include <linux/ptrace.h>
- #include <linux/slab.h>
- #include <linux/user.h>
--#include <linux/a.out.h>
- #include <linux/interrupt.h>
- #include <linux/init.h>
- #include <linux/module.h>
-diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
-index 116babb..e6b3fac 100644
---- a/arch/powerpc/platforms/chrp/setup.c
-+++ b/arch/powerpc/platforms/chrp/setup.c
-@@ -17,7 +17,6 @@
- #include <linux/ptrace.h>
- #include <linux/slab.h>
- #include <linux/user.h>
--#include <linux/a.out.h>
- #include <linux/tty.h>
- #include <linux/major.h>
- #include <linux/interrupt.h>
-diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
-index 3647147..d4c61c3 100644
---- a/arch/powerpc/platforms/maple/setup.c
-+++ b/arch/powerpc/platforms/maple/setup.c
-@@ -23,7 +23,6 @@
- #include <linux/ptrace.h>
- #include <linux/slab.h>
- #include <linux/user.h>
--#include <linux/a.out.h>
- #include <linux/tty.h>
- #include <linux/string.h>
- #include <linux/delay.h>
-diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-index 00bd016..19c287a 100644
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -33,7 +33,6 @@
- #include <linux/ptrace.h>
- #include <linux/slab.h>
- #include <linux/user.h>
--#include <linux/a.out.h>
- #include <linux/tty.h>
- #include <linux/string.h>
- #include <linux/delay.h>
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index f5d29f5..577efcd 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -25,7 +25,6 @@
- #include <linux/unistd.h>
- #include <linux/slab.h>
- #include <linux/user.h>
--#include <linux/a.out.h>
- #include <linux/tty.h>
- #include <linux/major.h>
- #include <linux/interrupt.h>
-diff --git a/include/asm-avr32/a.out.h b/include/asm-avr32/a.out.h
-deleted file mode 100644
-index e46375a..0000000
---- a/include/asm-avr32/a.out.h
-+++ /dev/null
-@@ -1,20 +0,0 @@
--#ifndef __ASM_AVR32_A_OUT_H
--#define __ASM_AVR32_A_OUT_H
--
--struct exec
--{
--  unsigned long a_info;		/* Use macros N_MAGIC, etc for access */
--  unsigned a_text;		/* length of text, in bytes */
--  unsigned a_data;		/* length of data, in bytes */
--  unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
--  unsigned a_syms;		/* length of symbol table data in file, in bytes */
--  unsigned a_entry;		/* start address */
--  unsigned a_trsize;		/* length of relocation info for text, in bytes */
--  unsigned a_drsize;		/* length of relocation info for data, in bytes */
--};
--
--#define N_TRSIZE(a)	((a).a_trsize)
--#define N_DRSIZE(a)	((a).a_drsize)
--#define N_SYMSIZE(a)	((a).a_syms)
--
--#endif /* __ASM_AVR32_A_OUT_H */
-diff --git a/include/asm-blackfin/a.out.h b/include/asm-blackfin/a.out.h
-deleted file mode 100644
-index 6c3d652..0000000
---- a/include/asm-blackfin/a.out.h
-+++ /dev/null
-@@ -1,19 +0,0 @@
--#ifndef __BFIN_A_OUT_H__
--#define __BFIN_A_OUT_H__
--
--struct exec {
--	unsigned long a_info;	/* Use macros N_MAGIC, etc for access */
--	unsigned a_text;	/* length of text, in bytes */
--	unsigned a_data;	/* length of data, in bytes */
--	unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
--	unsigned a_syms;	/* length of symbol table data in file, in bytes */
--	unsigned a_entry;	/* start address */
--	unsigned a_trsize;	/* length of relocation info for text, in bytes */
--	unsigned a_drsize;	/* length of relocation info for data, in bytes */
--};
--
--#define N_TRSIZE(a)	((a).a_trsize)
--#define N_DRSIZE(a)	((a).a_drsize)
--#define N_SYMSIZE(a)	((a).a_syms)
--
--#endif				/* __BFIN_A_OUT_H__ */
-diff --git a/include/asm-cris/a.out.h b/include/asm-cris/a.out.h
-deleted file mode 100644
-index c82e9f9..0000000
---- a/include/asm-cris/a.out.h
-+++ /dev/null
-@@ -1,26 +0,0 @@
--#ifndef __CRIS_A_OUT_H__
--#define __CRIS_A_OUT_H__
--
--/* we don't support a.out binaries on Linux/CRIS anyway, so this is
-- * not really used but still needed because binfmt_elf.c for some reason
-- * wants to know about a.out even if there is no interpreter available...
-- */
--
--struct exec
--{
--  unsigned long a_info;		/* Use macros N_MAGIC, etc for access */
--  unsigned a_text;		/* length of text, in bytes */
--  unsigned a_data;		/* length of data, in bytes */
--  unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
--  unsigned a_syms;		/* length of symbol table data in file, in bytes */
--  unsigned a_entry;		/* start address */
--  unsigned a_trsize;		/* length of relocation info for text, in bytes */
--  unsigned a_drsize;		/* length of relocation info for data, in bytes */
--};
--
--
--#define N_TRSIZE(a)	((a).a_trsize)
--#define N_DRSIZE(a)	((a).a_drsize)
--#define N_SYMSIZE(a)	((a).a_syms)
--
--#endif
-diff --git a/include/asm-h8300/a.out.h b/include/asm-h8300/a.out.h
-deleted file mode 100644
-index ded780f..0000000
---- a/include/asm-h8300/a.out.h
-+++ /dev/null
-@@ -1,20 +0,0 @@
--#ifndef __H8300_A_OUT_H__
--#define __H8300_A_OUT_H__
--
--struct exec
--{
--  unsigned long a_info;		/* Use macros N_MAGIC, etc for access */
--  unsigned a_text;		/* length of text, in bytes */
--  unsigned a_data;		/* length of data, in bytes */
--  unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
--  unsigned a_syms;		/* length of symbol table data in file, in bytes */
--  unsigned a_entry;		/* start address */
--  unsigned a_trsize;		/* length of relocation info for text, in bytes */
--  unsigned a_drsize;		/* length of relocation info for data, in bytes */
--};
--
--#define N_TRSIZE(a)	((a).a_trsize)
--#define N_DRSIZE(a)	((a).a_drsize)
--#define N_SYMSIZE(a)	((a).a_syms)
--
--#endif /* __H8300_A_OUT_H__ */
-diff --git a/include/asm-ia64/a.out.h b/include/asm-ia64/a.out.h
-deleted file mode 100644
-index 193dcfb..0000000
---- a/include/asm-ia64/a.out.h
-+++ /dev/null
-@@ -1,32 +0,0 @@
--#ifndef _ASM_IA64_A_OUT_H
--#define _ASM_IA64_A_OUT_H
--
--/*
-- * No a.out format has been (or should be) defined so this file is
-- * just a dummy that allows us to get binfmt_elf compiled.  It
-- * probably would be better to clean up binfmt_elf.c so it does not
-- * necessarily depend on there being a.out support.
-- *
-- * Modified 1998-2002
-- *	David Mosberger-Tang <davidm@hpl.hp.com>, Hewlett-Packard Co.
-- */
--
--#include <linux/types.h>
--
--struct exec {
--	unsigned long a_info;
--	unsigned long a_text;
--	unsigned long a_data;
--	unsigned long a_bss;
--	unsigned long a_entry;
--};
--
--#define N_TXTADDR(x)	0
--#define N_DATADDR(x)	0
--#define N_BSSADDR(x)	0
--#define N_DRSIZE(x)	0
--#define N_TRSIZE(x)	0
--#define N_SYMSIZE(x)	0
--#define N_TXTOFF(x)	0
--
--#endif /* _ASM_IA64_A_OUT_H */
-diff --git a/include/asm-m32r/a.out.h b/include/asm-m32r/a.out.h
-deleted file mode 100644
-index ab150f5..0000000
---- a/include/asm-m32r/a.out.h
-+++ /dev/null
-@@ -1,20 +0,0 @@
--#ifndef _ASM_M32R_A_OUT_H
--#define _ASM_M32R_A_OUT_H
--
--struct exec
--{
--  unsigned long a_info;		/* Use macros N_MAGIC, etc for access */
--  unsigned a_text;		/* length of text, in bytes */
--  unsigned a_data;		/* length of data, in bytes */
--  unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
--  unsigned a_syms;		/* length of symbol table data in file, in bytes */
--  unsigned a_entry;		/* start address */
--  unsigned a_trsize;		/* length of relocation info for text, in bytes */
--  unsigned a_drsize;		/* length of relocation info for data, in bytes */
--};
--
--#define N_TRSIZE(a)	((a).a_trsize)
--#define N_DRSIZE(a)	((a).a_drsize)
--#define N_SYMSIZE(a)	((a).a_syms)
--
--#endif /* _ASM_M32R_A_OUT_H */
-diff --git a/include/asm-m68knommu/a.out.h b/include/asm-m68knommu/a.out.h
-deleted file mode 100644
-index ce18ef9..0000000
---- a/include/asm-m68knommu/a.out.h
-+++ /dev/null
-@@ -1 +0,0 @@
--#include <asm-m68k/a.out.h>
-diff --git a/include/asm-mips/a.out.h b/include/asm-mips/a.out.h
-deleted file mode 100644
-index cad8371..0000000
---- a/include/asm-mips/a.out.h
-+++ /dev/null
-@@ -1,35 +0,0 @@
--/*
-- * This file is subject to the terms and conditions of the GNU General Public
-- * License.  See the file "COPYING" in the main directory of this archive
-- * for more details.
-- *
-- * Copyright (C) 1994 - 1999, 2003 by Ralf Baechle
-- */
--#ifndef _ASM_A_OUT_H
--#define _ASM_A_OUT_H
--
--#ifdef __KERNEL__
--
--
--#endif
--
--struct exec
--{
--	unsigned long a_info;	/* Use macros N_MAGIC, etc for access */
--	unsigned a_text;	/* length of text, in bytes */
--	unsigned a_data;	/* length of data, in bytes */
--	unsigned a_bss;		/* length of uninitialized data area for
--				    file, in bytes */
--	unsigned a_syms;	/* length of symbol table data in file,
--				   in bytes */
--	unsigned a_entry;	/* start address */
--	unsigned a_trsize;	/* length of relocation info for text, in
--				    bytes */
--	unsigned a_drsize;	/* length of relocation info for data, in bytes */
--};
--
--#define N_TRSIZE(a)	((a).a_trsize)
--#define N_DRSIZE(a)	((a).a_drsize)
--#define N_SYMSIZE(a)	((a).a_syms)
--
--#endif /* _ASM_A_OUT_H */
-diff --git a/include/asm-parisc/a.out.h b/include/asm-parisc/a.out.h
-deleted file mode 100644
-index eb04e34..0000000
---- a/include/asm-parisc/a.out.h
-+++ /dev/null
-@@ -1,20 +0,0 @@
--#ifndef __PARISC_A_OUT_H__
--#define __PARISC_A_OUT_H__
--
--struct exec
--{
--  unsigned int a_info;		/* Use macros N_MAGIC, etc for access */
--  unsigned a_text;		/* length of text, in bytes */
--  unsigned a_data;		/* length of data, in bytes */
--  unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
--  unsigned a_syms;		/* length of symbol table data in file, in bytes */
--  unsigned a_entry;		/* start address */
--  unsigned a_trsize;		/* length of relocation info for text, in bytes */
--  unsigned a_drsize;		/* length of relocation info for data, in bytes */
--};
--
--#define N_TRSIZE(a)	((a).a_trsize)
--#define N_DRSIZE(a)	((a).a_drsize)
--#define N_SYMSIZE(a)	((a).a_syms)
--
--#endif /* __A_OUT_GNU_H__ */
-diff --git a/include/asm-powerpc/a.out.h b/include/asm-powerpc/a.out.h
-deleted file mode 100644
-index 89cead6..0000000
---- a/include/asm-powerpc/a.out.h
-+++ /dev/null
-@@ -1,20 +0,0 @@
--#ifndef _ASM_POWERPC_A_OUT_H
--#define _ASM_POWERPC_A_OUT_H
--
--struct exec
--{
--	unsigned long a_info;	/* Use macros N_MAGIC, etc for access */
--	unsigned a_text;	/* length of text, in bytes */
--	unsigned a_data;	/* length of data, in bytes */
--	unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
--	unsigned a_syms;	/* length of symbol table data in file, in bytes */
--	unsigned a_entry;	/* start address */
--	unsigned a_trsize;	/* length of relocation info for text, in bytes */
--	unsigned a_drsize;	/* length of relocation info for data, in bytes */
--};
--
--#define N_TRSIZE(a)	((a).a_trsize)
--#define N_DRSIZE(a)	((a).a_drsize)
--#define N_SYMSIZE(a)	((a).a_syms)
--
--#endif /* _ASM_POWERPC_A_OUT_H */
-diff --git a/include/asm-sh/a.out.h b/include/asm-sh/a.out.h
-deleted file mode 100644
-index 1f93130..0000000
---- a/include/asm-sh/a.out.h
-+++ /dev/null
-@@ -1,20 +0,0 @@
--#ifndef __ASM_SH_A_OUT_H
--#define __ASM_SH_A_OUT_H
--
--struct exec
--{
--  unsigned long a_info;		/* Use macros N_MAGIC, etc for access */
--  unsigned a_text;		/* length of text, in bytes */
--  unsigned a_data;		/* length of data, in bytes */
--  unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
--  unsigned a_syms;		/* length of symbol table data in file, in bytes */
--  unsigned a_entry;		/* start address */
--  unsigned a_trsize;		/* length of relocation info for text, in bytes */
--  unsigned a_drsize;		/* length of relocation info for data, in bytes */
--};
--
--#define N_TRSIZE(a)	((a).a_trsize)
--#define N_DRSIZE(a)	((a).a_drsize)
--#define N_SYMSIZE(a)	((a).a_syms)
--
--#endif /* __ASM_SH_A_OUT_H */
-diff --git a/include/asm-xtensa/a.out.h b/include/asm-xtensa/a.out.h
-deleted file mode 100644
-index fdf1370..0000000
---- a/include/asm-xtensa/a.out.h
-+++ /dev/null
-@@ -1,29 +0,0 @@
--/*
-- * include/asm-xtensa/a.out.h
-- *
-- * Dummy a.out file. Xtensa does not support the a.out format, but the kernel
-- * seems to depend on it.
-- *
-- * This file is subject to the terms and conditions of the GNU General Public
-- * License.  See the file "COPYING" in the main directory of this archive
-- * for more details.
-- *
-- * Copyright (C) 2001 - 2005 Tensilica Inc.
-- */
--
--#ifndef _XTENSA_A_OUT_H
--#define _XTENSA_A_OUT_H
--
--struct exec
--{
--  unsigned long a_info;
--  unsigned a_text;
--  unsigned a_data;
--  unsigned a_bss;
--  unsigned a_syms;
--  unsigned a_entry;
--  unsigned a_trsize;
--  unsigned a_drsize;
--};
--
--#endif /* _XTENSA_A_OUT_H */
+>> +#ifdef CONFIG_HAVE_GENERIC_SHOW_MEM
+>> +void show_mem(void)
+>> +{
+>> +	pg_data_t *pgdat;
+>> +	int total = 0, reserved = 0, shared = 0, nonshared = 0, highmem = 0;
+>
+> All of these should be unsigned long. Might overflow on very large
+> configurations otherwise.
 
+Thanks Heiko for pointing it out.  quicklist_total_size() also returns
+UL so I fixed up the format character there as well.
+
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -45,6 +45,7 @@
+ #include <linux/fault-inject.h>
+ #include <linux/page-isolation.h>
+ #include <linux/memcontrol.h>
++#include <linux/nmi.h>
+ #include <linux/debugobjects.h>
+ 
+ #include <asm/tlbflush.h>
+@@ -2042,6 +2043,61 @@ static void zoneref_set_zone(struct zone
+ 	zoneref->zone_idx = zone_idx(zone);
+ }
+ 
++#ifdef CONFIG_HAVE_GENERIC_SHOW_MEM
++void show_mem(void)
++{
++	pg_data_t *pgdat;
++	unsigned long total = 0, reserved = 0, shared = 0,
++		nonshared = 0, highmem = 0;
++
++	printk(KERN_INFO "Mem-Info:\n");
++	show_free_areas();
++
++	for_each_online_pgdat(pgdat) {
++		unsigned long i, flags;
++
++		pgdat_resize_lock(pgdat, &flags);
++		for (i = 0; i < pgdat->node_spanned_pages; i++) {
++			struct page *page;
++			unsigned long pfn = pgdat->node_start_pfn + i;
++
++			if (unlikely((i % MAX_ORDER_NR_PAGES) == 0))
++				touch_nmi_watchdog();
++
++			if (!pfn_valid(pfn))
++				continue;
++
++			page = pfn_to_page(pfn);
++
++			if (PageHighMem(page))
++				highmem++;
++
++			if (PageReserved(page))
++				reserved++;
++			else if (page_count(page) == 1)
++				nonshared++;
++			else if (page_count(page) > 1)
++				shared += page_count(page) - 1;
++
++			total++;
++		}
++		pgdat_resize_unlock(pgdat, &flags);
++	}
++
++	printk(KERN_INFO "%lu pages RAM\n", total);
++#ifdef CONFIG_HIGHMEM
++	printk(KERN_INFO "%lu pages HighMem\n", highmem);
++#endif
++	printk(KERN_INFO "%lu pages reserved\n", reserved);
++	printk(KERN_INFO "%lu pages shared\n", shared);
++	printk(KERN_INFO "%lu pages non-shared\n", nonshared);
++#ifdef CONFIG_QUICKLIST
++	printk(KERN_INFO "%lu pages in pagetable cache\n",
++		quicklist_total_size());
++#endif
++}
++#endif /* CONFIG_HAVE_GENERIC_SHOW_MEM */
++
+ /*
+  * Builds allocation fallback zone lists.
+  *
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -213,6 +213,9 @@ config VIRT_TO_BUS
+ config PAGE_WALKER
+ 	def_bool n
+ 
++config HAVE_GENERIC_SHOW_MEM
++	def_bool n
++
+ config UNEVICTABLE_LRU
+ 	bool "Add LRU list to track non-evictable pages"
+ 	default y
