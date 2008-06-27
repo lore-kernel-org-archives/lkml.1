@@ -1,78 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757727AbYF0Q6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbYF0Q7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757727AbYF0Q6z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 12:58:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbYF0Q6s
+	id S1758263AbYF0Q7l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 12:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYF0Q7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 12:58:48 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:17955 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751626AbYF0Q6r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 12:58:47 -0400
-Date: Fri, 27 Jun 2008 09:56:08 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Chris Friesen <cfriesen@nortel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip/master] x86: nmi_watchdog - documentation fix
-Message-Id: <20080627095608.649e819a.randy.dunlap@oracle.com>
-In-Reply-To: <20080627165125.GE18957@cvg>
-References: <20080627154340.GC18957@cvg>
-	<Pine.LNX.4.55.0806271652020.8868@cliff.in.clinika.pl>
-	<20080627165937.2f1fb661@lxorguk.ukuu.org.uk>
-	<4865160C.2040403@nortel.com>
-	<20080627165125.GE18957@cvg>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Jun 2008 12:59:33 -0400
+Received: from sacred.ru ([62.205.161.221]:44750 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751899AbYF0Q7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 12:59:31 -0400
+Message-ID: <48651BDC.5030104@openvz.org>
+Date: Fri, 27 Jun 2008 20:57:00 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Serge Hallyn <serue@us.ibm.com>
+Subject: [PATCH] devcgroup: relax white-list protection down to RCU
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 27 Jun 2008 20:59:17 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jun 2008 20:51:25 +0400 Cyrill Gorcunov wrote:
+Currently this list is protected with a simple spinlock, even
+for reading from one. This is OK, but can be better.
 
-> [Chris Friesen - Fri, Jun 27, 2008 at 10:32:12AM -0600]
-> > Alan Cox wrote:
-> >> On Fri, 27 Jun 2008 16:54:19 +0100 (BST)
-> >> "Maciej W. Rozycki" <macro@linux-mips.org> wrote:
-> >>> On Fri, 27 Jun 2008, Cyrill Gorcunov wrote:
-> >>>
-> >>>
-> >>>> +NOTE: Prior to 2.4.2-ac18 the NMI-oopser is enabled unconditionally
-> >>>> +on x86 SMP boxes.
-> >>>
-> >>> While you are at it: s/is/was/.
-> >> Erm - why ??
-> >> It is still true today that kernels < 2.4.2-ac8 have the NMI oopser
-> >> enabled.
-> >
-> > To my ear the phrase as written implies past tense for the author/reader 
-> > (i.e. "at points in time prior to the release of 2.4.2-ac18"), and thus 
-> > grates against "is".
-> >
-> > The following sounds better to me: "In kernels prior to 2.4.2-ac18 the 
-> > NMI-oopser is enabled..."  In this context the phrase itself is in the 
-> > present, but we point to past kernels.
-> >
-> > Chris
-> >
-> 
-> And the winner is? I'm not native English speaker so I can't select
-> a better candidate in {is,was} limited set.
+Actually I want it to be better very much, since after replacing
+the OpenVZ device permissions engine with the cgroup-based one
+I noticed, that we set 12 default device permissions for each newly
+created container (for /dev/null, full, terminals, ect devices),
+and people sometimes have up to 20 perms more, so traversing the
+~30-40 elements list under a spinlock doesn't seem very good.
 
-Use the text that Chris suggested...
+Here's the liter RCU protection for white-list.
 
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
 ---
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+
+diff --git a/security/device_cgroup.c b/security/device_cgroup.c
+index 4ea5836..9d940c3 100644
+--- a/security/device_cgroup.c
++++ b/security/device_cgroup.c
+@@ -41,6 +41,7 @@ struct dev_whitelist_item {
+ 	short type;
+ 	short access;
+ 	struct list_head list;
++	struct rcu_head rcu;
+ };
+ 
+ struct dev_cgroup {
+@@ -110,11 +111,19 @@ static int dev_whitelist_add(struct dev_cgroup *dev_cgroup,
+ 
+ 	memcpy(whcopy, wh, sizeof(*whcopy));
+ 	spin_lock(&dev_cgroup->lock);
+-	list_add_tail(&whcopy->list, &dev_cgroup->whitelist);
++	list_add_tail_rcu(&whcopy->list, &dev_cgroup->whitelist);
+ 	spin_unlock(&dev_cgroup->lock);
+ 	return 0;
+ }
+ 
++static void whitelist_item_free(struct rcu_head *rcu)
++{
++	struct dev_whitelist_item *item;
++
++	item = container_of(rcu, struct dev_whitelist_item, rcu);
++	kfree(item);
++}
++
+ /*
+  * called under cgroup_lock()
+  * since the list is visible to other tasks, we need the spinlock also
+@@ -138,8 +147,8 @@ static void dev_whitelist_rm(struct dev_cgroup *dev_cgroup,
+ remove:
+ 		walk->access &= ~wh->access;
+ 		if (!walk->access) {
+-			list_del(&walk->list);
+-			kfree(walk);
++			list_del_rcu(&walk->list);
++			call_rcu(&walk->rcu, whitelist_item_free);
+ 		}
+ 	}
+ 	spin_unlock(&dev_cgroup->lock);
+@@ -246,15 +255,15 @@ static int devcgroup_seq_read(struct cgroup *cgroup, struct cftype *cft,
+ 	struct dev_whitelist_item *wh;
+ 	char maj[MAJMINLEN], min[MAJMINLEN], acc[ACCLEN];
+ 
+-	spin_lock(&devcgroup->lock);
+-	list_for_each_entry(wh, &devcgroup->whitelist, list) {
++	rcu_read_lock();
++	list_for_each_entry_rcu(wh, &devcgroup->whitelist, list) {
+ 		set_access(acc, wh->access);
+ 		set_majmin(maj, wh->major);
+ 		set_majmin(min, wh->minor);
+ 		seq_printf(m, "%c %s:%s %s\n", type_to_char(wh->type),
+ 			   maj, min, acc);
+ 	}
+-	spin_unlock(&devcgroup->lock);
++	rcu_read_unlock();
+ 
+ 	return 0;
+ }
+@@ -516,8 +525,8 @@ int devcgroup_inode_permission(struct inode *inode, int mask)
+ 	if (!dev_cgroup)
+ 		return 0;
+ 
+-	spin_lock(&dev_cgroup->lock);
+-	list_for_each_entry(wh, &dev_cgroup->whitelist, list) {
++	rcu_read_lock();
++	list_for_each_entry_rcu(wh, &dev_cgroup->whitelist, list) {
+ 		if (wh->type & DEV_ALL)
+ 			goto acc_check;
+ 		if ((wh->type & DEV_BLOCK) && !S_ISBLK(inode->i_mode))
+@@ -533,10 +542,10 @@ acc_check:
+ 			continue;
+ 		if ((mask & MAY_READ) && !(wh->access & ACC_READ))
+ 			continue;
+-		spin_unlock(&dev_cgroup->lock);
++		rcu_read_unlock();
+ 		return 0;
+ 	}
+-	spin_unlock(&dev_cgroup->lock);
++	rcu_read_unlock();
+ 
+ 	return -EPERM;
+ }
+@@ -552,7 +561,7 @@ int devcgroup_inode_mknod(int mode, dev_t dev)
+ 	if (!dev_cgroup)
+ 		return 0;
+ 
+-	spin_lock(&dev_cgroup->lock);
++	rcu_read_lock();
+ 	list_for_each_entry(wh, &dev_cgroup->whitelist, list) {
+ 		if (wh->type & DEV_ALL)
+ 			goto acc_check;
+@@ -567,9 +576,9 @@ int devcgroup_inode_mknod(int mode, dev_t dev)
+ acc_check:
+ 		if (!(wh->access & ACC_MKNOD))
+ 			continue;
+-		spin_unlock(&dev_cgroup->lock);
++		rcu_read_unlock();
+ 		return 0;
+ 	}
+-	spin_unlock(&dev_cgroup->lock);
++	rcu_read_unlock();
+ 	return -EPERM;
+ }
