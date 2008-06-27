@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762784AbYF0S0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763204AbYF0S0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762784AbYF0S0H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 14:26:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759082AbYF0SZu
+	id S1763204AbYF0S0d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 14:26:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759644AbYF0SZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 27 Jun 2008 14:25:50 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11697 "EHLO
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11696 "EHLO
 	phenom.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753304AbYF0SZt (ORCPT
+	by vger.kernel.org with ESMTP id S1756563AbYF0SZt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Jun 2008 14:25:49 -0400
-Date: Fri, 27 Jun 2008 12:13:53 -0600
+Date: Fri, 27 Jun 2008 12:13:38 -0600
 From: dougthompson@xmission.com
 To: bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org
-Subject: [PATCH 13/13] EDAC mv64x60 add pci fixup
-Message-ID: <48652de1.0FvaYuYNBPqHXodM%dougthompson@xmission.com>
+Subject: [PATCH 10/13] EDAC core fix added newline to sysfs dimm labels
+Message-ID: <48652dd2.ta+2XWbG/aD+2pRz%dougthompson@xmission.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,61 +24,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixup of missing bit 0 on 64360 PCIx_ERR_MASK and errata FEr-#11 and FEr-#16
-for the 64460. Bit 0 must remain 0.
+From: Arthur Jones <ajones@riverbed.com>
 
-Signed-off-by: Dave Jiang <djiang@mvista.com>
+Applied to linux-2.6.26-rc5-mm3
 
-Index: 2.6.26-rc5-mm3/drivers/edac/mv64x60_edac.c
+The channel DIMM label does not seem to be
+used much in the edac code.  However, where
+it is used (in the core code), it is assumed
+to not have a newline embedded.  This leaves
+the sysfs file newline free which looks funny
+when cat'ing it.  Here we just add the trailing
+newline to the sysfs chX_dimm_label output...
+
+[Doug Thompson note: the DIMM label is one of the primary uses of EDAC. User
+space daemon scripts, edac-utils@sourceforge, populate the DIMM label fields,
+via /sys/devices/system/edac attributes, with the silk screen labels of
+the motherboard in use. dmidecode access BIOS tables, but BIOS tables
+are well known to be incorrect and useless in these respects. edac-utils
+will strip off any newlines before its use of the output, when displaying
+DIMM slot silk screen labels.
+
+Signed-off-by: Arthur Jones <ajones@riverbed.com>
+Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+---
+ drivers/edac/edac_mc_sysfs.c |    6 ++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
+
+Index: linux-2.6.26-rc5/drivers/edac/edac_mc_sysfs.c
 ===================================================================
---- 2.6.26-rc5-mm3.orig/drivers/edac/mv64x60_edac.c
-+++ 2.6.26-rc5-mm3/drivers/edac/mv64x60_edac.c
-@@ -71,6 +71,35 @@ static irqreturn_t mv64x60_pci_isr(int i
- 	return IRQ_HANDLED;
+--- linux-2.6.26-rc5.orig/drivers/edac/edac_mc_sysfs.c
++++ linux-2.6.26-rc5/drivers/edac/edac_mc_sysfs.c
+@@ -178,7 +178,11 @@ static ssize_t csrow_edac_mode_show(stru
+ static ssize_t channel_dimm_label_show(struct csrow_info *csrow,
+ 				char *data, int channel)
+ {
+-	return snprintf(data, EDAC_MC_LABEL_LEN, "%s",
++	/* if field has not been initialized, there is nothing to send */
++	if (!csrow->channels[channel].label[0])
++		return 0;
++
++	return snprintf(data, EDAC_MC_LABEL_LEN, "%s\n",
+ 			csrow->channels[channel].label);
  }
  
-+/*
-+ * Bit 0 of MV64x60_PCIx_ERR_MASK does not exist on the 64360 and because of
-+ * errata FEr-#11 and FEr-##16 for the 64460, it should be 0 on that chip as
-+ * well.  IOW, don't set bit 0.
-+ */
-+
-+/* Erratum FEr PCI-#16: clear bit 0 of PCI SERRn Mask reg. */
-+static int __init mv64x60_pci_fixup(struct platform_device *pdev)
-+{
-+	struct resource *r;
-+	void __iomem *pci_serr;
-+
-+	r = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-+	if (!r) {
-+		printk(KERN_ERR "%s: Unable to get resource for "
-+		       "PCI err regs\n", __func__);
-+		return -ENOENT;
-+	}
-+
-+	pci_serr = ioremap(r->start, r->end - r->start + 1);
-+	if (!pci_serr)
-+		return -ENOMEM;
-+
-+	out_le32(pci_serr, in_le32(pci_serr) & ~0x1);
-+	iounmap(pci_serr);
-+
-+	return 0;
-+}
-+
- static int __devinit mv64x60_pci_err_probe(struct platform_device *pdev)
- {
- 	struct edac_pci_ctl_info *pci;
-@@ -128,6 +157,12 @@ static int __devinit mv64x60_pci_err_pro
- 		goto err;
- 	}
- 
-+	res = mv64x60_pci_fixup(pdev);
-+	if (res < 0) {
-+		printk(KERN_ERR "%s: PCI fixup failed\n", __func__);
-+		goto err;
-+	}
-+
- 	out_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_CAUSE, 0);
- 	out_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_MASK, 0);
- 	out_le32(pdata->pci_vbase + MV64X60_PCI_ERROR_MASK,
