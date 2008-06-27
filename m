@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbYF0L4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756817AbYF0L6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857AbYF0L4Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 07:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbYF0L4Q
+	id S1756817AbYF0L6H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 07:58:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbYF0L5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 07:56:16 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:45259 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752093AbYF0L4P (ORCPT
+	Fri, 27 Jun 2008 07:57:53 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:37394 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753930AbYF0L5w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 07:56:15 -0400
-Date: Fri, 27 Jun 2008 12:55:47 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Johannes Weiner <hannes@saeurebad.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mmotm] Remove ->nopfn check from use_zero_page
-In-Reply-To: <878wwryw64.fsf@skyscraper.fehenstaub.lan>
-Message-ID: <Pine.LNX.4.64.0806271253320.16003@blonde.site>
-References: <878wwryw64.fsf@skyscraper.fehenstaub.lan>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 27 Jun 2008 07:57:52 -0400
+Message-Id: <20080627115211.010995594@chello.nl>
+References: <20080627114109.724249622@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Fri, 27 Jun 2008 13:41:10 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 01/30] sched: clean up some unused variables
+Content-Disposition: inline; filename=sched-rt-cleanup-unused-variable.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jun 2008, Johannes Weiner wrote:
+In file included from /mnt/build/linux-2.6/kernel/sched.c:1496:
+/mnt/build/linux-2.6/kernel/sched_rt.c: In function '__enable_runtime':
+/mnt/build/linux-2.6/kernel/sched_rt.c:339: warning: unused variable 'rd'
+/mnt/build/linux-2.6/kernel/sched_rt.c: In function 'requeue_rt_entity':
+/mnt/build/linux-2.6/kernel/sched_rt.c:692: warning: unused variable 'queue'
 
-> Hi Andrew,
-> 
-> The get_user_pages fix from Linus came to -mm through -next as it seems,
-> but -mm has Nick's nopfn removal patches already and so use_zero_page
-> checks for a non-existant vm_op.
-> 
-> This patch is needed to at least compile.
-> 
-> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+Signed-off-by: Peter Zijlstra <peterz@infradead.org>
+---
+ kernel/sched_rt.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-Please try yesterday's .DATE=2008-06-26-14-32 mmotm,
-I sent Andrew a similar fix and it should be okay now.
-Also includes fix to endless bad page states once you boot.
+Index: linux-2.6/kernel/sched_rt.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_rt.c
++++ linux-2.6/kernel/sched_rt.c
+@@ -336,7 +336,6 @@ static void disable_runtime(struct rq *r
+ 
+ static void __enable_runtime(struct rq *rq)
+ {
+-	struct root_domain *rd = rq->rd;
+ 	struct rt_rq *rt_rq;
+ 
+ 	if (unlikely(!scheduler_running))
+@@ -689,7 +688,6 @@ static
+ void requeue_rt_entity(struct rt_rq *rt_rq, struct sched_rt_entity *rt_se)
+ {
+ 	struct rt_prio_array *array = &rt_rq->active;
+-	struct list_head *queue = array->queue + rt_se_prio(rt_se);
+ 
+ 	if (on_rt_rq(rt_se)) {
+ 		list_del_init(&rt_se->run_list);
 
-Hugh
+-- 
 
-> ---
-> 
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 08cd653..5d7e705 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -1082,11 +1082,10 @@ static inline int use_zero_page(struct vm_area_struct *vma)
->  	if (vma->vm_flags & (VM_LOCKED | VM_SHARED))
->  		return 0;
->  	/*
-> -	 * And if we have a fault or a nopfn routine, it's not an
-> -	 * anonymous region.
-> +	 * And if we have a fault routine, it's not an anonymous
-> +	 * region.
->  	 */
-> -	return !vma->vm_ops ||
-> -		(!vma->vm_ops->fault && !vma->vm_ops->nopfn);
-> +	return !vma->vm_ops || !vma->vm_ops->fault;
->  }
->  
->  int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
