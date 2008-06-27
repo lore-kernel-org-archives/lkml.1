@@ -1,76 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760969AbYF0MIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755024AbYF0MJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760969AbYF0MIf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 08:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757236AbYF0L62
+	id S1755024AbYF0MJT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 08:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757258AbYF0L6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 07:58:28 -0400
-Received: from viefep20-int.chello.at ([62.179.121.40]:36338 "EHLO
+	Fri, 27 Jun 2008 07:58:31 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:37421 "EHLO
 	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756895AbYF0L6L (ORCPT
+	with ESMTP id S1754350AbYF0L5y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 07:58:11 -0400
-Message-Id: <20080627115211.948674621@chello.nl>
+	Fri, 27 Jun 2008 07:57:54 -0400
+Message-Id: <20080627115211.799975306@chello.nl>
 References: <20080627114109.724249622@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Fri, 27 Jun 2008 13:41:29 +0200
+Date: Fri, 27 Jun 2008 13:41:26 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 20/30] sched: fix load scaling in group balancing
-Content-Disposition: inline; filename=sched-fix-load_balance-h_load.patch
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 17/30] sched: persistent average load per task
+Content-Disposition: inline; filename=sched-avg_load_per_task.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-doing the load balance will change cfs_rq->load.weight (that's the whole point)
-but since that's part of the scale factor, we'll scale back with a different
-amount.
+Remove the fall-back to SCHED_LOAD_SCALE by remembering the previous value of
+cpu_avg_load_per_task() - this is useful because of the hierarchical group
+model in which task weight can be much smaller.
 
-Weight getting smaller would result in an inflated moved_load which causes
-it to stop balancing too soon.
-
-Signed-off-by: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/sched_fair.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ kernel/sched.c |   25 ++++++++++++-------------
+ 1 file changed, 12 insertions(+), 13 deletions(-)
 
-Index: linux-2.6/kernel/sched_fair.c
+Index: linux-2.6/kernel/sched.c
 ===================================================================
---- linux-2.6.orig/kernel/sched_fair.c
-+++ linux-2.6/kernel/sched_fair.c
-@@ -1449,6 +1449,8 @@ load_balance_fair(struct rq *this_rq, in
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -554,6 +554,8 @@ struct rq {
+ 	int cpu;
+ 	int online;
  
- 	list_for_each_entry(tg, &task_groups, list) {
- 		struct cfs_rq *busiest_cfs_rq = tg->cfs_rq[busiest_cpu];
-+		unsigned long busiest_h_load = busiest_cfs_rq->h_load;
-+		unsigned long busiest_weight = busiest_cfs_rq->load.weight;
- 		long rem_load, moved_load;
++	unsigned long avg_load_per_task;
++
+ 	struct task_struct *migration_thread;
+ 	struct list_head migration_queue;
+ #endif
+@@ -1427,9 +1429,18 @@ static inline void dec_cpu_load(struct r
+ #ifdef CONFIG_SMP
+ static unsigned long source_load(int cpu, int type);
+ static unsigned long target_load(int cpu, int type);
+-static unsigned long cpu_avg_load_per_task(int cpu);
+ static int task_hot(struct task_struct *p, u64 now, struct sched_domain *sd);
  
- 		/*
-@@ -1457,8 +1459,8 @@ load_balance_fair(struct rq *this_rq, in
- 		if (!busiest_cfs_rq->task_weight)
- 			continue;
++static unsigned long cpu_avg_load_per_task(int cpu)
++{
++	struct rq *rq = cpu_rq(cpu);
++
++	if (rq->nr_running)
++		rq->avg_load_per_task = rq->load.weight / rq->nr_running;
++
++	return rq->avg_load_per_task;
++}
++
+ #ifdef CONFIG_FAIR_GROUP_SCHED
  
--		rem_load = rem_load_move * busiest_cfs_rq->load.weight;
--		rem_load /= busiest_cfs_rq->h_load + 1;
-+		rem_load = rem_load_move * busiest_weight;
-+		rem_load /= busiest_h_load + 1;
+ typedef void (*tg_visitor)(struct task_group *, int, struct sched_domain *);
+@@ -2011,18 +2022,6 @@ static unsigned long target_load(int cpu
+ }
  
- 		moved_load = __load_balance_fair(this_rq, this_cpu, busiest,
- 				rem_load, sd, idle, all_pinned, this_best_prio,
-@@ -1467,8 +1469,8 @@ load_balance_fair(struct rq *this_rq, in
- 		if (!moved_load)
- 			continue;
- 
--		moved_load *= busiest_cfs_rq->h_load;
--		moved_load /= busiest_cfs_rq->load.weight + 1;
-+		moved_load *= busiest_h_load;
-+		moved_load /= busiest_weight + 1;
- 
- 		rem_load_move -= moved_load;
- 		if (rem_load_move < 0)
+ /*
+- * Return the average load per task on the cpu's run queue
+- */
+-static unsigned long cpu_avg_load_per_task(int cpu)
+-{
+-	struct rq *rq = cpu_rq(cpu);
+-	unsigned long total = weighted_cpuload(cpu);
+-	unsigned long n = rq->nr_running;
+-
+-	return n ? total / n : SCHED_LOAD_SCALE;
+-}
+-
+-/*
+  * find_idlest_group finds and returns the least busy CPU group within the
+  * domain.
+  */
 
 -- 
 
