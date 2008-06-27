@@ -1,82 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758986AbYF0Fwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbYF0Fxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758986AbYF0Fwc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 01:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758665AbYF0Fv4
+	id S1758798AbYF0Fxr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 01:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYF0Fxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 01:51:56 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:41180 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754624AbYF0Fvi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 01:51:38 -0400
-Date: Fri, 27 Jun 2008 11:19:59 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Dipankar Sarma <dipankar@in.ibm.com>
-Cc: Gautham R Shenoy <ego@in.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, laijs@cn.fujitsu.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Rusty Russel <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] fix rcu vs hotplug race
-Message-ID: <20080627054959.GB3309@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20080623103700.GA4043@linux.vnet.ibm.com> <20080623105844.GC28192@elte.hu> <20080623114941.GB3160@in.ibm.com> <20080624110144.GA8695@elte.hu> <20080626152728.GA24972@linux.vnet.ibm.com> <20080627044738.GC3419@in.ibm.com> <20080627051855.GD26167@in.ibm.com>
+	Fri, 27 Jun 2008 01:53:38 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53619 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752146AbYF0Fxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 01:53:37 -0400
+Message-ID: <4864805E.3010407@pobox.com>
+Date: Fri, 27 Jun 2008 01:53:34 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080627051855.GD26167@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Matti Linnanvuori <mattilinn@gmail.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1.2.31] wan: add driver retina
+References: <ca0148c30806240335t799ab518o2f7589f6d3282787@mail.gmail.com>
+In-Reply-To: <ca0148c30806240335t799ab518o2f7589f6d3282787@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 10:48:55AM +0530, Dipankar Sarma wrote:
-> On Fri, Jun 27, 2008 at 10:17:38AM +0530, Gautham R Shenoy wrote:
-> > IMHO the warning is a spurious one.
-> > Here's the timeline.
-> > CPU_A						 CPU_B
-> > --------------------------------------------------------------
-> > cpu_down():					.
-> > .					   	.
-> > .						.
-> > stop_machine(): /* disables preemption,		.
-> > 		 * and irqs */			.
-> > .						.
-> > .						.
-> > take_cpu_down();				.
-> > .						.
-> > .						.
-> > .						.
-> > cpu_disable(); /*this removes cpu 		.
-> > 		*from cpu_online_map 		.
-> > 		*/				.
-> > .						.
-> > .						.
-> > restart_machine(); /* enables irqs */		.
-> > ------WINDOW DURING WHICH rcp->cpumask is stale ---------------
-> > .						call_rcu();
-> > .						/* disables irqs here */
-> > .						.force_quiescent_state();
-> > .CPU_DEAD:					.for_each_cpu(rcp->cpumask)
-> > .						.   smp_send_reschedule();
-> > .						.
-> > .						.   WARN_ON() for offlined CPU!
-> > .
+Matti Linnanvuori wrote:
+> The patch is on top of linux-next June 24:
+> http://pcidriver.googlegroups.com/web/retina-1.2.31.patch?hl=en&gda=IAodQEQAAAD13nxGN0cierCNeIeJfDX5xXkFPvbRgqL6oDt-R_zhlWG1qiJ7UbTIup-M2XPURDSCRcGQDyno6jchG3K2xOQpIvUJau0VvnTEe9ncJ6VTfQ&gsc=eDZaJAsAAADBvYu52m-YgWqvwRZy0wen
 > 
-> Exactly. The call_rcu()s are coming from a different subsystem
-> and can happen anytime during the CPU hotplug path. So, RCU subsystem
-> doesn't have anything to do to keep rcu->cpumask consistent.
-> It is *safe* even if we miss poking a cpu or two while
-> forcing quiescent state in all CPUs. The worst that can happen
-> is a delay in grace period. No correctness problem here.
-> 
+> Change log:
+> Fixed ETH_ZLEN minimal packet size
+> Added mmap(2) interface description
 
-One question. What is preventing a CPU from clearing its mask after we
-have checked whether it is online but before we have called into
-smp_send_reschedule?
+applied
 
--- 
-regards,
-Dhaval
+
