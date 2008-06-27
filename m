@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760872AbYF0Oyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbYF0O66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760872AbYF0Oyi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 10:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbYF0Oya
+	id S1760155AbYF0O66 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 10:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbYF0O6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 10:54:30 -0400
-Received: from mga09.intel.com ([134.134.136.24]:60853 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756206AbYF0Oy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 10:54:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,715,1204531200"; 
-   d="scan'208";a="300252803"
-Message-ID: <4864FEFB.2050405@linux.intel.com>
-Date: Fri, 27 Jun 2008 07:53:47 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Fri, 27 Jun 2008 10:58:50 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:44212 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753745AbYF0O6t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 10:58:49 -0400
+Date: Fri, 27 Jun 2008 07:58:45 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Dipankar Sarma <dipankar@in.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, laijs@cn.fujitsu.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Rusty Russel <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] fix rcu vs hotplug race
+Message-ID: <20080627145845.GA9229@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080623103700.GA4043@linux.vnet.ibm.com> <20080623105844.GC28192@elte.hu> <20080623114941.GB3160@in.ibm.com> <20080624110144.GA8695@elte.hu> <20080626152728.GA24972@linux.vnet.ibm.com> <20080627044738.GC3419@in.ibm.com> <20080627051855.GD26167@in.ibm.com> <20080627054959.GB3309@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Ksummit-2008-discuss] Current List of Kernel Summit suggested
- topics from the discuss	list
-References: <1214577710.3394.14.camel@localhost.localdomain>
-In-Reply-To: <1214577710.3394.14.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080627054959.GB3309@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> Hi All,
+On Fri, Jun 27, 2008 at 11:19:59AM +0530, Dhaval Giani wrote:
+> On Fri, Jun 27, 2008 at 10:48:55AM +0530, Dipankar Sarma wrote:
+> > On Fri, Jun 27, 2008 at 10:17:38AM +0530, Gautham R Shenoy wrote:
+> > > IMHO the warning is a spurious one.
+> > > Here's the timeline.
+> > > CPU_A						 CPU_B
+> > > --------------------------------------------------------------
+> > > cpu_down():					.
+> > > .					   	.
+> > > .						.
+> > > stop_machine(): /* disables preemption,		.
+> > > 		 * and irqs */			.
+> > > .						.
+> > > .						.
+> > > take_cpu_down();				.
+> > > .						.
+> > > .						.
+> > > .						.
+> > > cpu_disable(); /*this removes cpu 		.
+> > > 		*from cpu_online_map 		.
+> > > 		*/				.
+> > > .						.
+> > > .						.
+> > > restart_machine(); /* enables irqs */		.
+> > > ------WINDOW DURING WHICH rcp->cpumask is stale ---------------
+> > > .						call_rcu();
+> > > .						/* disables irqs here */
+> > > .						.force_quiescent_state();
+> > > .CPU_DEAD:					.for_each_cpu(rcp->cpumask)
+> > > .						.   smp_send_reschedule();
+> > > .						.
+> > > .						.   WARN_ON() for offlined CPU!
+> > > .
+> > 
+> > Exactly. The call_rcu()s are coming from a different subsystem
+> > and can happen anytime during the CPU hotplug path. So, RCU subsystem
+> > doesn't have anything to do to keep rcu->cpumask consistent.
+> > It is *safe* even if we miss poking a cpu or two while
+> > forcing quiescent state in all CPUs. The worst that can happen
+> > is a delay in grace period. No correctness problem here.
+> > 
 > 
-> This is the synopsis of the currently suggested topics so far.  That's
-> not to say this is the list we will be doing, just to say that if
-> there's something you think we should be discussing and it's not on the
-> list, now would be a good time to add it (don't trust the programme
-> committee magically to add it at the last minute ...)
-> 
-> James
-> 
+> One question. What is preventing a CPU from clearing its mask after we
+> have checked whether it is online but before we have called into
+> smp_send_reschedule?
 
-I'd like to propose a topic about kernel quality; there's been a lot of
-lkml traffic about it (in ups and downs). As part of this topic I could present
-trends, data and conclusions from the kerneloops.org project. I'm sure Andrew has
-a set of data and views from his part of the world, and the regressions topic
-could fall under this too. If we, unlike last year, ask various subsystem maintainers
-to prepare data or at least something more solid than "eh I think we're fine" ahead of the
-conference, we could have a more thought out set of inputs from that direction as well.
+This is my concern as well.  Gautham, at which point in the above
+timeline is the offlining CPU marked DYING?  Before stop_machine(), right?
 
+If so, can't we just disable irqs, check for DYING or DEAD, and invoke
+smp_send_reschedule() only if not DYING or DEAD?
 
+							Thanx, Paul
