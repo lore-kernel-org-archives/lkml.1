@@ -1,73 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbYF1NeF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808AbYF1NhD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754934AbYF1NeF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 09:34:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbYF1Ndz
+	id S1755808AbYF1NhD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 09:37:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbYF1Ngy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 09:33:55 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:53436 "EHLO mail.screens.ru"
+	Sat, 28 Jun 2008 09:36:54 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:49691 "EHLO bagnes.atmel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752452AbYF1Ndy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 09:33:54 -0400
-Date: Sat, 28 Jun 2008 17:36:28 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] coredump: elf_core_dump: skip kernel threads
-Message-ID: <20080628133628.GA4434@tv-sign.ru>
-References: <20080616162603.GA21028@tv-sign.ru> <20080627204953.C2A49154224@magilla.localdomain>
+	id S1750930AbYF1Ngy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 09:36:54 -0400
+Date: Sat, 28 Jun 2008 15:37:04 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] mmc: Export internal host state through debugfs
+Message-ID: <20080628153704.36eda3e6@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <20080628152856.3ba1c2ff@mjolnir.drzeus.cx>
+References: <1214478589-21291-1-git-send-email-haavard.skinnemoen@atmel.com>
+	<20080628152856.3ba1c2ff@mjolnir.drzeus.cx>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080627204953.C2A49154224@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Jun 2008 13:36:51.0923 (UTC) FILETIME=[05C9F230:01C8D924]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/19, Roland McGrath wrote:
->
-> Perhaps a little prettier like this:
+Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
+> On Thu, 26 Jun 2008 13:09:47 +0200
+> Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
 > 
-> --- a/fs/binfmt_elf.c
-> +++ b/fs/binfmt_elf.c
-> @@ -1469,6 +1469,12 @@ static int fill_thread_core_info(struct 
->  	return 1;
->  }
->  
-> +static bool is_dump_thread(struct task_struct *dump_task,
-> +			   struct task_struct *thread)
-> +{
-> +	return !(thread->flags & PF_KTHREAD) && thread->mm == dump_task->mm;
-> +}
-> +
->  static int fill_note_info(struct elfhdr *elf, int phdrs,
->  			  struct elf_note_info *info,
->  			  long signr, struct pt_regs *regs)
-> @@ -1518,7 +1524,7 @@ static int fill_note_info(struct elfhdr 
->  	 */
->  	rcu_read_lock();
->  	do_each_thread(g, p)
-> -		if (p->mm == dump_task->mm) {
-> +		if (is_dump_thread(dump_task, p)) {
->  			t = kzalloc(offsetof(struct elf_thread_core_info,
->  					     notes[info->thread_notes]),
->  				    GFP_ATOMIC);
-
-Agreed.
-
-> > It is sad we have to iterate over all threads in system and use GFP_ATOMIC.
-> > Hopefully we can kill theses ugly do_each_thread()s, but this needs some
-> > nontrivial changes in mm_struct and do_coredump.
+> > From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> > 
+> > This adds a new config option, MMC_DEBUG_FS which will, when enabled,
+> > create a few files under /sys/kernel/debug containing information
+> > about an mmc host's internal state.
+> > 
+> > Host drivers can add additional files and directories under the host's
+> > root directory by passing the debugfs_root field in struct mmc_host as
+> > the 'parent' parameter to debugfs_create_*.
+> > 
+> > Unfinished: No files are actually created yet.
+> > 
+> > Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> > ---
 > 
-> Agreed, and twice at that (coredump_wait).  But this is something more to
-> consider for the future, and I wouldn't worry about it right now.
+> Is there any point to having a separate option for this? Can't we just
+> include it if DEBUG_FS is defined?
 
-In most cases coredump_wait() doesn't need to do for_each_process().
+Sure. It doesn't introduce any additional overhead, just a bit of extra
+code.
 
-And I think there are other reasons to kill these do_each_thread()s.
-We can simplify the code and make the coredumping process visible to
-oom_kill. I sent the preparatory patches.
+> Otherwise the system looks ok to me, assuming that everyone is of the
+> opinion that debugfs is _not_ a stable API.
 
-Oleg.
+That's my assumption at least. Debugfs is just a place where you can
+throw random stuff that may help you debugging stuff.
 
+> > +
+> > +#else
+> > +static inline void mmc_add_host_debugfs(struct mmc_host *host)
+> > +{
+> > +
+> > +}
+> > +
+> > +static inline void mmc_remove_host_debugfs(struct mmc_host *host)
+> > +{
+> > +
+> > +}
+> > +#endif
+> > +
+> 
+> In the other places we have conditional function, it is done by
+> ifdef:ing the calls instead. There are just two of them, so it should
+> be less mess.
+
+Hmm. You mean it's better with three #ifdefs than one?
+
+Haavard
