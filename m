@@ -1,91 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbYF1Hz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbYF1IGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755198AbYF1Hz6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 03:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbYF1Hzs
+	id S1753252AbYF1IGQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 04:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYF1IFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 03:55:48 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57790 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750882AbYF1Hzr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 03:55:47 -0400
-Subject: Re: How can I migrate a currently running task?
-From: Peter Zijlstra <peterz@infradead.org>
-To: xialiang <xiaiaxaxi@sjtu.edu.cn>
-Cc: Robin Holt <holt@sgi.com>, Bart Van Assche <bart.vanassche@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080628120521.kjrvzpgpwwcc0g0c@webmail1.sjtu.edu.cn>
-References: <20080627211712.6cto2d1zks848c88@webmail1.sjtu.edu.cn>
-	 <e2e108260806270625o44ebe7a0u8250fa0bd5e976bd@mail.gmail.com>
-	 <20080627213805.jdqshto0ys4oookk@webmail1.sjtu.edu.cn>
-	 <20080627184815.GB10511@sgi.com>
-	 <20080628120521.kjrvzpgpwwcc0g0c@webmail1.sjtu.edu.cn>
-Content-Type: text/plain; charset=utf-8
-Date: Sat, 28 Jun 2008 09:55:39 +0200
-Message-Id: <1214639739.12348.13.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 8bit
+	Sat, 28 Jun 2008 04:05:51 -0400
+Received: from smtp.fullrate.dk ([89.150.129.5]:53493 "EHLO dns2.fullrate.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750971AbYF1IFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 04:05:48 -0400
+Message-ID: <4865F0DA.2050906@agner.org>
+Date: Sat, 28 Jun 2008 10:05:46 +0200
+From: Agner Fog <agner@agner.org>
+Organization: agner@agner.org
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: ABI change for device drivers using future AVX instruction set
+References: <48626514.2040905@agner.org>	<20080625092224.736c2541@infradead.org>	<4862ECAB.1040402@zytor.com>	<4864CFA5.9050901@agner.org> <20080627072231.7337ba18@infradead.org>
+In-Reply-To: <20080627072231.7337ba18@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-06-28 at 12:05 +0800, xialiang wrote:
-> Quoting Robin Holt <holt@sgi.com>:
-> 
-> > On Fri, Jun 27, 2008 at 09:38:05PM +0800, xialiang wrote:
-> >> Quoting Bart Van Assche <bart.vanassche@gmail.com>:
-> >>
-> >>> On Fri, Jun 27, 2008 at 3:17 PM, 夏亮 <xiaiaxaxi@sjtu.edu.cn> wrote:
-> >>>> I am working on Intel Duo Core with Linux OS 2.6.21, and I'd like to
-> >>>> migrate task from one cpu to another cpu.
-> >>>> In SMP systems, load_balance() function uses move_tasks() to move  
-> >>>>  processes
-> >>>> from source runqueue to local runqueue, but it does not move a currently
-> >>>> running task. If I want to migrate a currently running task from source
-> >>>> runqueue to local runqueue, how can I do? Any suggestion is preferred.
-> >>>
-> >>> Are you familiar with the glibc pthread_setaffinity_np() function
-> >>> and/or the sched_setaffinity() system call ?
-> >>>
-> >>> Bart.
-> >>>
-> >>
-> >> Yes. I know sched_setaffinity(), it sets cpu_mask of a task. I want to
-> >> use it in a timer interrupt( scheduler_tick() ), can I?
-> >
-> > Don't use it from a timer handler.  You can use migrate_task() to move the
-> > task, but your email from a couple days ago said you wanted to move the
-> > task at the head of the runqueue due to cpu heat or something like that.
-> > That is a very imprecise way to move the task as any unfortunate task
-> > that happens to be running when the timer tick occurs could get migrated,
-> > not the one generating the work.
-> >
-> > I think you really want to look at the other areas of the kernel which do
-> > stuff like throttling the cpu.  Just moving a task off the cpu does not
-> > prevent it from being used for another compute intesive load.  You could
-> > take the cpu offline.  I guess to do that, I would use schedule_work()
-> > or kthread_create() to get out of the timer context and into a regular
-> > thread context then take the cpu offline from there.
-> >
-> > Good Luck,
-> > Robin
-> >
-> 
->        I would move a task at the head of the runqueue, but I already  
-> know which task creates the heat. I get the profile of tasks  
-> beforehand. So if I find the temperature of a cpu is much higher than  
-> that of the other, and coincidentally the currently running task of  
-> the cpu is what I want to migrate. Can I migrate it in the  
-> scheduler_tick()? 
+Arjan van de Ven wrote:
+ >the good news is that we review drivers before they get included and 
+we do catch such things.
 
-No, you cannot migrate current from hardirq context. 
+Are you saying that some group should have the monopoly of approving 
+device drivers? That is exectly the policy that Microsoft has been so 
+much criticized for. You can only control the drivers that are included 
+in your own Linux distribution.
 
-> Or where should I put the migration code? Thanks!
+Nothing should prevent me from publishing my own driver for some special 
+purpose (in fact, I am going to do so). The open source principle would 
+allow anybody to make a different compiler for device drivers, possibly 
+using a different programming language. Or making a function library for 
+use in device drivers.
 
-If you want to balance temperature, the best place would be the load
-balancer.
+Thank you for the reference to DocBook/kernel-hacking. The title reads 
+"Unreliable Guide To Hacking The Linux Kernel". This doesn't really look 
+like the place to look for authoritative information. It warns against 
+using floating point/MMX, but not XMM. You can't blame programmers for 
+making faulty device drivers when there is no authoritative guideline to 
+follow.
 
-Just don't wreck all the other balance conditions.
+You don't seem to realize the importance of proper documentation. Do you 
+want me to write in my manual: "There is no authoritative information on 
+this, but the Linux Junta says so-and-so.."?
 
+How can you expect people to regard Linux as a serious and reliable 
+alternative to ..BEEP.. when there is no proper documentation?
+
+It is a disgrace that the ABI consists of fractions stored in weird 
+places and some of them still drafts, but at least there is consensus on 
+which one to look in for authoritative information. There should be an 
+authoritative document on what you can do and not do in a device driver, 
+and the ABI would be the most natural place to put this information. It 
+is important to tell people that they can save and restore an XMM 
+register under certain conditions, but not a YMM register. You can't 
+expect people to search through a huge mailing list archive for such 
+information.
+
+
+Note: Please Cc: me of answers
