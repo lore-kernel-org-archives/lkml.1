@@ -1,50 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754359AbYF1Nb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbYF1NeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754359AbYF1Nb6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 09:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbYF1Nbt
+	id S1754934AbYF1NeF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 09:34:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbYF1Ndz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 09:31:49 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:49673 "EHLO bagnes.atmel.com"
+	Sat, 28 Jun 2008 09:33:55 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:53436 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752513AbYF1Nbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 09:31:48 -0400
-Date: Sat, 28 Jun 2008 15:31:44 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: linux-embedded@vger.kernel.org, shannon.nelson@intel.com,
-       kernel@avr32linux.org, linux-kernel@vger.kernel.org,
-       David Brownell <david-b@pacbell.net>,
-       Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH v4 6/6] Atmel MCI: Driver for Atmel on-chip MMC
- controllers
-Message-ID: <20080628153144.128faa7b@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <20080628144313.353bbf18@hskinnemo-gx745.norway.atmel.com>
-References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-2-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-3-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-4-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-5-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-6-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-7-git-send-email-haavard.skinnemoen@atmel.com>
-	<20080627211014.0e80db04@siona.local>
-	<20080627215627.5d75639c@mjolnir.drzeus.cx>
-	<20080628144313.353bbf18@hskinnemo-gx745.norway.atmel.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	id S1752452AbYF1Ndy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 09:33:54 -0400
+Date: Sat, 28 Jun 2008 17:36:28 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] coredump: elf_core_dump: skip kernel threads
+Message-ID: <20080628133628.GA4434@tv-sign.ru>
+References: <20080616162603.GA21028@tv-sign.ru> <20080627204953.C2A49154224@magilla.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jun 2008 13:31:32.0627 (UTC) FILETIME=[47793E30:01C8D923]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080627204953.C2A49154224@magilla.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-> Tests 7 and 9 are not supported by the card, so I can't do much about
-> it except go through all the cards I have available and see if one of
-> them supports this test.
+On 06/19, Roland McGrath wrote:
+>
+> Perhaps a little prettier like this:
+> 
+> --- a/fs/binfmt_elf.c
+> +++ b/fs/binfmt_elf.c
+> @@ -1469,6 +1469,12 @@ static int fill_thread_core_info(struct 
+>  	return 1;
+>  }
+>  
+> +static bool is_dump_thread(struct task_struct *dump_task,
+> +			   struct task_struct *thread)
+> +{
+> +	return !(thread->flags & PF_KTHREAD) && thread->mm == dump_task->mm;
+> +}
+> +
+>  static int fill_note_info(struct elfhdr *elf, int phdrs,
+>  			  struct elf_note_info *info,
+>  			  long signr, struct pt_regs *regs)
+> @@ -1518,7 +1524,7 @@ static int fill_note_info(struct elfhdr 
+>  	 */
+>  	rcu_read_lock();
+>  	do_each_thread(g, p)
+> -		if (p->mm == dump_task->mm) {
+> +		if (is_dump_thread(dump_task, p)) {
+>  			t = kzalloc(offsetof(struct elf_thread_core_info,
+>  					     notes[info->thread_notes]),
+>  				    GFP_ATOMIC);
 
-Turns out none of my 12 cards of various brands and models support this
-test. Do you know some specific model I can try?
+Agreed.
 
-Haavard
+> > It is sad we have to iterate over all threads in system and use GFP_ATOMIC.
+> > Hopefully we can kill theses ugly do_each_thread()s, but this needs some
+> > nontrivial changes in mm_struct and do_coredump.
+> 
+> Agreed, and twice at that (coredump_wait).  But this is something more to
+> consider for the future, and I wouldn't worry about it right now.
+
+In most cases coredump_wait() doesn't need to do for_each_process().
+
+And I think there are other reasons to kill these do_each_thread()s.
+We can simplify the code and make the coredumping process visible to
+oom_kill. I sent the preparatory patches.
+
+Oleg.
+
