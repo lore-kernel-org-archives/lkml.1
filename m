@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758865AbYF1PoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755042AbYF1PxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758865AbYF1PoS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 11:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbYF1PoJ
+	id S1755042AbYF1PxJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 11:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbYF1Pw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 11:44:09 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:39841 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750997AbYF1PoI (ORCPT
+	Sat, 28 Jun 2008 11:52:57 -0400
+Received: from viefep28-int.chello.at ([62.179.121.48]:5362 "EHLO
+	viefep28-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750997AbYF1Pw4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 11:44:08 -0400
-Message-ID: <48665C44.9030209@aitel.hist.no>
-Date: Sat, 28 Jun 2008 17:44:04 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-Organization: HiST
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+	Sat, 28 Jun 2008 11:52:56 -0400
+X-Greylist: delayed 2311 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Jun 2008 11:52:55 EDT
+From: Daniel Ritz <daniel.ritz-ml@swissonline.ch>
+To: Alastair Bridgewater <nyef@lisphacker.com>
+Subject: Re: [PATCH] input: Add support for eGalax TouchKit USB touchscreen used on HP tx1305us
+Date: Sat, 28 Jun 2008 17:57:47 +0200
+User-Agent: KMail/1.9.6
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+References: <200806281719.16837.daniel.ritz-ml@swissonline.ch>
+In-Reply-To: <200806281719.16837.daniel.ritz-ml@swissonline.ch>
 MIME-Version: 1.0
-To: Agner Fog <agner@agner.org>
-CC: Andi Kleen <andi@firstfloor.org>, Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: ABI change for device drivers using future AVX instruction set
-References: <48626514.2040905@agner.org>	<20080625092224.736c2541@infradead.org> <4862ECAB.1040402@zytor.com>	<4864CFA5.9050901@agner.org> <20080627072231.7337ba18@infradead.org>	<4865F0DA.2050906@agner.org> <87myl5pyqo.fsf@basil.nowhere.org> <4866541F.1060709@agner.org>
-In-Reply-To: <4866541F.1060709@agner.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806281757.48201.daniel.ritz-ml@swissonline.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Agner Fog wrote:
+On Saturday 28 June 2008 17:19:16 Daniel Ritz wrote:
+> hi
+> 
+> > The eGalax touchscreen used in the HP tx1305us tablet PC (and presumably 
+> > the rest of the tx1000 series) uses a different format for events from 
+> > the device than the existing driver supports.
+> > 
+> is there more information available? datasheets? drivers?
+> 
+> > Add a new device description and interrupt packet handler for the 
+> > touchscreen used in the tx1305us, claiming the USB device ID for the 
+> > device that this patch was tested with from the older eGalax device code.
+> >
+> NAK. you cannot change device IDs currently used to some new code.
+> this will break most eGalax setups as the device ID 0x0eef,0x0001 is used
+> in most of them, including the one i have..
+> 
+> you'll need to find a way to distinguish the screens. as a starting point
+> i attached an lsusb -vvv output from my screen...
+> 
 
-> You see why I want proper documentation? If this had been documented in 
-> some reference that was easy to find, I wouldn't have needed to take 
-> your time with all these questions...
+reading the latest driver guide and programming guide from eGalax (now EETI btw.
+www.eeti.com.tw ) it turns out that the newer devices should support the HID
+format and report with that by default. those newer screens are handled by the
+'usbhid' driver. have you tried loading that one before usbtouchscreen?
 
-This is correct - but then someone would have to use time to write that 
-documentation _and keep it up-to-date_. So far, nobody volunteered.
-You should feel free to add your newly gained information to the
-existing incomplete documentation. :)
+can you give an lsusb -vvv output?
 
-This is how open-source works - there is no "boss/management"
-that can put someone on the less popular jobs.
-No matter how useful this might be.
-You want something extra - driver or docs - you make it.
+in case the usbhid driver does not work, it's possible to put the touchscreen
+into the non-HID operating mode and have to current code work again..it's easy
+to code...but please try usbhid first...
 
-Helge Hafting
+rgds
+-daniel
+
