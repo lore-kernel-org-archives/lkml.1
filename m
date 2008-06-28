@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbYF1BFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758756AbYF1BJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757978AbYF1BFj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 21:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbYF1BF3
+	id S1758756AbYF1BJk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 21:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbYF1BJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 21:05:29 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50167 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752434AbYF1BF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 21:05:28 -0400
-Date: Sat, 28 Jun 2008 11:05:18 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       xfs-masters@oss.sgi.com, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 27 - randconfig build
- fails with !CONFIG_XFS_POSIX_ACL
-Message-Id: <20080628110518.5ae86cd6.sfr@canb.auug.org.au>
-In-Reply-To: <4865304C.3020301@linux.vnet.ibm.com>
-References: <20080627182406.a54b00c1.sfr@canb.auug.org.au>
-	<4865304C.3020301@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__28_Jun_2008_11_05_18_+1000_x08UiE53=JvB=67g"
+	Fri, 27 Jun 2008 21:09:31 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:8804 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753368AbYF1BJa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 21:09:30 -0400
+Date: Sat, 28 Jun 2008 05:09:28 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-ide@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH v2 -rt] ide: workaround buggy hardware issues with
+	preemptable hardirqs
+Message-ID: <20080628010928.GA4248@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu> <20080624000016.GA12547@polina.dev.rtsoft.ru> <20080625123431.GA25452@polina.dev.rtsoft.ru> <20080628005436.GA1956@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <20080628005436.GA1956@polina.dev.rtsoft.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__28_Jun_2008_11_05_18_+1000_x08UiE53=JvB=67g
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, Jun 28, 2008 at 04:54:36AM +0400, Anton Vorontsov wrote:
+> IDE interrupt handler relies on the fact that, if necessary, hardirqs
+> will re-trigger on ISR exit. The assumption is valid for level sensitive
+> interrupts.
+> 
+> But some hardware (namely ULi M5228 in the ULi M1575 "Super South Brige")
+> behaves in a strange way: it asserts interrupts as edge sensitive. And
+> because preemptable IRQ handler disables PIC's interrupt, PIC will likely
+> miss it.
+> 
+> This patch fixes following issue:
+> 
+> ALI15X3: IDE controller (0x10b9:0x5229 rev 0xc8) at  PCI slot 0001:03:1f.0
+> ALI15X3: 100% native mode on irq 18
+> ide0: BM-DMA at 0x1120-0x1127, BIOS settings: hda:PIO, hdb:PIO
+> ide1: BM-DMA at 0x1128-0x112f, BIOS settings: hdc:PIO, hdd:PIO
+> hda: Optiarc DVD RW AD-7190A, ATAPI CD/DVD-ROM drive
+> hda: UDMA/66 mode selected
+> ide0 at 0x1100-0x1107,0x110a on irq 18
+> ide-cd: cmd 0x5a timed out
+> hda: lost interrupt
+> hda: ATAPI 12X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache
+> Uniform CD-ROM driver Revision: 3.20
+> ide-cd: cmd 0x3 timed out
+> hda: lost interrupt
+> ide-cd: cmd 0x3 timed out
+> hda: lost interrupt
+> ...
+> 
+> It would be great to re-configure the ULi bridge or ULi IDE controller
+> to behave sanely, but no one knows how or if this is possible at all
+> (no available specifications).
 
-Hi Kamalesh.
+Btw, thanks to Jeff Garzik for mentioning this link:
 
-On Fri, 27 Jun 2008 23:54:12 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ib=
-m.com> wrote:
->
-> randconfig build on x86_64 machine fails with build failure
->=20
->   CC [M]  fs/xfs/linux-2.6/xfs_xattr.o
-> fs/xfs/linux-2.6/xfs_xattr.c: In function =E2=80=98xfs_decode_acl=E2=80=
-=99:
-> fs/xfs/linux-2.6/xfs_xattr.c:40: error: =E2=80=98_ACL_TYPE_ACCESS=E2=80=
-=99 undeclared (first use in this function)
-> fs/xfs/linux-2.6/xfs_xattr.c:40: error: (Each undeclared identifier is re=
-ported only once
-> fs/xfs/linux-2.6/xfs_xattr.c:40: error: for each function it appears in.)
-> fs/xfs/linux-2.6/xfs_xattr.c:42: error: =E2=80=98_ACL_TYPE_DEFAULT=E2=80=
-=99 undeclared (first use in this function)
+http://gkernel.sourceforge.net/specs/
 
-Are you sure your sources are OK?  The patch "xfs fix 1" (which is the
-second last commit in the next20080627 tree) is supposed to fix that.
+Though, from a brief glance there is nothing much useful for this ULi
+chip. The only thing I gathered is that IDE controller does not provide
+any means of configuring its IRQs behaviour, so it is indeed ULi's bridge
+problems. It doesn't change anything, just another data point...
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__28_Jun_2008_11_05_18_+1000_x08UiE53=JvB=67g
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhljk4ACgkQTgG2atn1QN/KUQCfSnZ5ZrafLIxuR/s0Y8R1AtQg
-x7UAn1qerOHMFjR27JNekKEPqV1obWSL
-=MucB
------END PGP SIGNATURE-----
-
---Signature=_Sat__28_Jun_2008_11_05_18_+1000_x08UiE53=JvB=67g--
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
