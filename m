@@ -1,91 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbYF1KbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYF1Kc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754949AbYF1KbJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 06:31:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755647AbYF1Kar
+	id S1756862AbYF1Kc6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 06:32:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbYF1Kcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 06:30:47 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:38469 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755421AbYF1Kap (ORCPT
+	Sat, 28 Jun 2008 06:32:50 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60748 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751618AbYF1Kct (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 06:30:45 -0400
-Message-ID: <486612CC.3060505@ru.mvista.com>
-Date: Sat, 28 Jun 2008 14:30:36 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Cc: Ingo Molnar <mingo@elte.hu>, linux-ide@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH v2 -rt] ide: workaround buggy hardware issues with	preemptable
- hardirqs
-References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu> <20080624000016.GA12547@polina.dev.rtsoft.ru> <20080625123431.GA25452@polina.dev.rtsoft.ru> <20080628005436.GA1956@polina.dev.rtsoft.ru>
-In-Reply-To: <20080628005436.GA1956@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sat, 28 Jun 2008 06:32:49 -0400
+Subject: Re: linux-next: Tree for June 26
+From: David Woodhouse <dwmw2@infradead.org>
+To: Jaswinder Singh <jaswinder@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kernel-testers@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+In-Reply-To: <1214646863.2660.22.camel@jaswinder.satnam>
+References: <20080627010842.e1a0c4b5.sfr@canb.auug.org.au>
+	 <200806270138.53895.rjw@sisk.pl>
+	 <1214563913.10393.180.camel@pmac.infradead.org>
+	 <200806280104.17527.rjw@sisk.pl>
+	 <1214646863.2660.22.camel@jaswinder.satnam>
+Content-Type: text/plain
+Date: Sat, 28 Jun 2008 11:32:44 +0100
+Message-Id: <1214649164.10393.265.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Sat, 2008-06-28 at 15:24 +0530, Jaswinder Singh wrote:
+> Here is updated patch :-
+> 
+> http://git.infradead.org/users/jaswinder/firm-jsr-2.6.git?a=commitdiff;h=aa8b184d8eb4f1d7b5e37d5ad449fb7c02ad79c2
 
-Anton Vorontsov wrote:
-> IDE interrupt handler relies on the fact that, if necessary, hardirqs
-> will re-trigger on ISR exit. The assumption is valid for level sensitive
-> interrupts.
->   
+You can ignore that; it's just the same as today's linux-next (which in
+turn is just the same as yesterday's + the patch which fixes the problem
+for Kamalesh but not for you + the other minor error path cleanup.
 
-   It's valid for both edge and level triggered interrupts.
+Please could you try the other debugging patch I just sent, on top of
+today's linux-next? It should confirm that you're using the 'Tso5'
+firmware, as I told Jaswinder yesterday, and give us a little more clue
+as to what's going on.
 
-> But some hardware (namely ULi M5228 in the ULi M1575 "Super South Brige")
-> behaves in a strange way: it asserts interrupts as edge sensitive. And
-> because preemptable IRQ handler disables PIC's interrupt, PIC will likely
-> miss it.
->   
+This is your machine, right? ...
 
-   Unmasking an IRQ should re-enable an edge detector in a PIC (or that 
-detector should even be independent from mask). So, unless an IRQ signal 
-is a short pulse (which shouldn't be the case for IDE) it shouldn't be 
-missed.
+http://www.ussg.iu.edu/hypermail/linux/kernel/0709.3/1619.html
 
-> This patch fixes following issue:
->
-> ALI15X3: IDE controller (0x10b9:0x5229 rev 0xc8) at  PCI slot 0001:03:1f.0
-> ALI15X3: 100% native mode on irq 18
-> ide0: BM-DMA at 0x1120-0x1127, BIOS settings: hda:PIO, hdb:PIO
-> ide1: BM-DMA at 0x1128-0x112f, BIOS settings: hdc:PIO, hdd:PIO
-> hda: Optiarc DVD RW AD-7190A, ATAPI CD/DVD-ROM drive
-> hda: UDMA/66 mode selected
-> ide0 at 0x1100-0x1107,0x110a on irq 18
-> ide-cd: cmd 0x5a timed out
-> hda: lost interrupt
-> hda: ATAPI 12X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache
-> Uniform CD-ROM driver Revision: 3.20
-> ide-cd: cmd 0x3 timed out
-> hda: lost interrupt
-> ide-cd: cmd 0x3 timed out
-> hda: lost interrupt
-> ...
->
-> It would be great to re-configure the ULi bridge or ULi IDE controller
-> to behave sanely, but no one knows how or if this is possible at all
-> (no available specifications).
->
-> So.. to workaround the issue IDE interrupt handler should re-check for
-> any pending IRQs. This isn't bulletproof solution, but it works and this
-> is the best one we can do
+tg3.c:v3.81 (September 5, 2007)
+ACPI: PCI Interrupt 0000:02:01.0[A] -> GSI 23 (level, low) -> IRQ 23
+eth1: Tigon3 [partno(BCM95788A50) rev 3003 PHY(5705)] (PCI:33MHz:32-bit) 10/100/1000Base-T Ethernet 00:17:08:2e:2e:f3
+eth1: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[0] TSOcap[1]
+eth1: dma_rwctrl[763f0000] dma_mask[32-bit]
 
-   I remembered a pssible issue with such code: it's possible that BSY 
-bit will be cleared before INTRQ assertion (this is a race not spotted 
-for a long time by the ATA standards -- and an observed behavior, at 
-least of some ATAPI drives), thus a status register read won't clear the 
-"interrupt pending" condition within drive.
+ tp->pci_chip_rev_id is 0x3003, which is ASIC_REV_5705.
 
-MBR, Sergei
-
+-- 
+dwmw2
 
