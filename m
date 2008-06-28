@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758407AbYF1ROO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbYF1RYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758407AbYF1ROO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 13:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbYF1RN5
+	id S1755308AbYF1RYv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 13:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbYF1RYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 13:13:57 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:53557 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752374AbYF1RN4 (ORCPT
+	Sat, 28 Jun 2008 13:24:40 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:24789 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753207AbYF1RYj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 13:13:56 -0400
+	Sat, 28 Jun 2008 13:24:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=oR4FmKbpoK4CQc+UqD244rYU92VIOlP6Z+hKiYpMVua7Pn/XK/ZfqVEpf01dhLxCpN
-         nAojszlihESz+0u3iS/s+/1qWLuXvIiTka/iIFMPIfSUTvZMCDp13txVBv0JKfQMhK6k
-         UmfXKfHXqKxzZHAcFDyuq+r17gHSJydG6GxkQ=
-Message-ID: <c384c5ea0806281013t50e56efes46ff7c53e58097ba@mail.gmail.com>
-Date: Sat, 28 Jun 2008 19:13:55 +0200
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: trem <tremyfr@yahoo.fr>
-Subject: Re: 2.6.24.7-rt14
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <g45dvm$pvt$1@ger.gmane.org>
+        h=date:from:x-x-sender:to:cc:subject:message-id:user-agent
+         :mime-version:content-type:sender;
+        b=JkLU7iFmhuA6TgmBybE97ytIyWrU68dCXdaCkXfoDJctQdUnhLdg6F9OCnoLZnrX+h
+         M7ZKrNwKVA/ok31QosmjTxLc9wMBpXHy5cp+LGAEOlWycnqWRNfQc+PtATZrEGg8clti
+         22wi0WqeEQMB9Alz71oFhikU+e0UpNGtqvyIc=
+Date: Sat, 28 Jun 2008 19:24:21 +0200 (CEST)
+From: Marcin Obara <marcin_obara@users.sourceforge.net>
+X-X-Sender: marcin_obara@ip-195-3-221-75.vnet.pl
+To: tpmdd-devel@lists.sourceforge.net, Marcel Selhorst <tpm@selhorst.net>
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] tpm: add Intel TPM TIS device HID
+Message-ID: <alpine.DEB.1.00.0806281913410.7076@ip-195-3-221-75.vnet.pl>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1214256117.8701.13.camel@localhost.localdomain>
-	 <g45dvm$pvt$1@ger.gmane.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+This patch adds Intel TPM TIS device HID :  ICO0102
 
-On Sat, Jun 28, 2008 at 3:19 PM, trem <tremyfr@yahoo.fr> wrote:
-> [trem@localhost rt-tests]$ sudo ./cyclictest -t 1 -p 80 -n -i 10000 -l
+Signed-off-by: Marcin Obara <marcin_obara@users.sourceforge.net>
 
-Just a warning to everyone, not that it affects the test or results in
-case of 1 thread, but that should be -t1 instead of -t 1.
-
-This little difference would matter if you decided to use more than 1 thread.
-
-"-t NUM" will not pick up the NUM value, as optional arguments must
-not have a space between the option and (optional) argument.
-
-Regards,
--- 
-Leon
+--- linux_tpm/drivers/char/tpm/tpm_tis.c	2008-06-05 20:51:13.000000000 +0200
++++ linux_intel/drivers/char/tpm/tpm_tis.c	2008-06-25 06:31:39.000000000 +0200
+@@ -623,6 +623,7 @@ static struct pnp_device_id tpm_pnp_tbl[
+ 	{"IFX0102", 0},		/* Infineon */
+ 	{"BCM0101", 0},		/* Broadcom */
+ 	{"NSC1200", 0},		/* National */
++	{"ICO0102", 0},		/* Intel */
+ 	/* Add new here */
+ 	{"", 0},		/* User Specified */
+ 	{"", 0}			/* Terminator */
