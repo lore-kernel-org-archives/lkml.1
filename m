@@ -1,314 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759987AbYF1Vof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758407AbYF1WMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759987AbYF1Vof (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 17:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756850AbYF1Vmn
+	id S1758407AbYF1WMB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 18:12:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbYF1WLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 17:42:43 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:20711 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755370AbYF1Vmi (ORCPT
+	Sat, 28 Jun 2008 18:11:50 -0400
+Received: from mail-in-03.arcor-online.net ([151.189.21.43]:46105 "EHLO
+	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752649AbYF1WLs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 17:42:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=MWsx9/OxJHS7aHwSu4PM9V8sgZcbrM1PPcs6kzQ2YzCNO+pNLtPrxEA6ZDh68fUB1R
-         CNqfNkNppa0Bqbv9If+Kay9CIjyf+2QhRTgc2hfC5nUyDDWcpUwabuQnPvkA1xpyd7Pj
-         ZEIQQo7l9uc4BAk6mKf7FDvKM5JENz3RsqdWw=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Sat, 28 Jun 2008 23:44:45 +0200
-Message-Id: <20080628214445.21345.36769.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080628214355.21345.94835.sendpatchset@localhost.localdomain>
-References: <20080628214355.21345.94835.sendpatchset@localhost.localdomain>
-Subject: [PATCH 7/7] ide: add ide_host_free() helper
+	Sat, 28 Jun 2008 18:11:48 -0400
+Subject: Re: [v4l-dvb-maintainer] [PATCH] add Sensoray 2255 v4l driver
+From: hermann pitton <hermann-pitton@arcor.de>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Greg KH <greg@kroah.com>, v4l-dvb-maintainer@linuxtv.org,
+       linux-usb@vger.kernel.org, dean@sensoray.com,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080628083154.33d3a93d@gaivota>
+References: <20080626231551.GA20012@kroah.com>
+	 <20080628083154.33d3a93d@gaivota>
+Content-Type: text/plain
+Date: Sun, 29 Jun 2008 00:08:34 +0200
+Message-Id: <1214690914.7722.10.camel@pc10.localdom.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Add ide_host_free() helper and convert ide_host_remove() to use it.
 
-* Fix handling of ide_host_register() failure in ide_host_add(),
-  icside.c, ide-generic.c, falconide.c and sgiioc4.c.
+Am Samstag, den 28.06.2008, 08:31 -0300 schrieb Mauro Carvalho Chehab:
+> On Thu, 26 Jun 2008 16:15:51 -0700
+> Greg KH <greg@kroah.com> wrote:
+> 
+> > From: Dean Anderson <dean@sensoray.com>
+> > 
+> > This driver adds support for the Sensoray 2255 devices.
+> > 
+> > It was primarily developed by Dean Anderson with only a little bit of
+> > guidance and cleanup by Greg.
+> > 
+> 
+> Hmm... there are still a few minor CodingStyle errors:
+> 
+> ERROR: return is not a function, parentheses are not required
+> #881: FILE: drivers/media/video/s2255drv.c:792:
+> +       return (dev->resources[fh->channel]);
+> 
+> WARNING: line over 80 characters
+> #898: FILE: drivers/media/video/s2255drv.c:809:
+> +       strlcpy(cap->bus_info, dev_name(&dev->udev->dev), sizeof(cap->bus_info));
+> 
+> ERROR: return is not a function, parentheses are not required
+> #932: FILE: drivers/media/video/s2255drv.c:843:
+> +       return (0);
+> 
+> ERROR: return is not a function, parentheses are not required
+> #1053: FILE: drivers/media/video/s2255drv.c:964:
+> +               return (ret);
+> 
+> ERROR: return is not a function, parentheses are not required
+> #1428: FILE: drivers/media/video/s2255drv.c:1339:
+> +       return (0);
+> 
+> ERROR: return is not a function, parentheses are not required
+> #1452: FILE: drivers/media/video/s2255drv.c:1363:
+> +                       return (0);
+> 
+> ERROR: return is not a function, parentheses are not required
+> #1467: FILE: drivers/media/video/s2255drv.c:1378:
+> +                       return (0);
+> 
+> ERROR: return is not a function, parentheses are not required
+> #1487: FILE: drivers/media/video/s2255drv.c:1398:
+> +                               return (-ERANGE);
+> 
+> total: 7 errors, 1 warnings, 2508 lines checked
+> 
+> I'm applying the patch right now on my tree.
+> 
+> Dean,
+> 
+> When you have some time, please send me a patch fixing those.
+> 
+> heers,
+> Mauro
+> 
 
-While at it:
+On an attempt to get recent drivers on a FC8 x86_64 machine to watch
+Glastonbury music festival on BBC HD DVB-S with the saa714 driver on an
+recently updated 2.6.25 FC kernel it also fails to compile on some
+strlcpy attempt. Same with a 2.6.24 on the mail machine here.
 
-* Fix handling of ide_host_alloc_all() failure in ide-generic.c.
+  CC [M]  /mnt/xfer/mercurial/v4l-dvb-head/v4l-dvb/v4l/quickcam_messenger.o
+  CC [M]  /mnt/xfer/mercurial/v4l-dvb-head/v4l-dvb/v4l/s2255drv.o
+/mnt/xfer/mercurial/v4l-dvb-head/v4l-dvb/v4l/s2255drv.c: In function 'vidioc_querycap':
+/mnt/xfer/mercurial/v4l-dvb-head/v4l-dvb/v4l/s2255drv.c:809: error: implicit declaration of function 'dev_name'
+/mnt/xfer/mercurial/v4l-dvb-head/v4l-dvb/v4l/s2255drv.c:809: warning: passing argument 2 of 'strlcpy' makes pointer from integer without a cast
+make[3]: *** [/mnt/xfer/mercurial/v4l-dvb-head/v4l-dvb/v4l/s2255drv.o] Error 1
+make[2]: *** [_module_/mnt/xfer/mercurial/v4l-dvb-head/v4l-dvb/v4l] Error 2
+make[2]: Leaving directory `/usr/src/kernels/2.6.24.7-92.fc8-i686'
+make[1]: *** [default] Fehler 2
+make[1]: Leaving directory `/mnt/xfer/mercurial/v4l-dvb-head/v4l-dvb/v4l'
+make: *** [all] Fehler 2
 
-* Fix handling of ide_host_alloc() failure in falconide.c
-  (also return the correct error value if no device is found).
+Cheers,
+Hermann
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/arm/icside.c       |   21 +++++++++++++++++----
- drivers/ide/ide-generic.c      |   27 +++++++++++++++++++++++----
- drivers/ide/ide-probe.c        |   23 ++++++++++++++++++++---
- drivers/ide/legacy/falconide.c |   22 +++++++++++++++++-----
- drivers/ide/pci/sgiioc4.c      |   14 ++++++++++----
- include/linux/ide.h            |    1 +
- 6 files changed, 88 insertions(+), 20 deletions(-)
 
-Index: b/drivers/ide/arm/icside.c
-===================================================================
---- a/drivers/ide/arm/icside.c
-+++ b/drivers/ide/arm/icside.c
-@@ -445,6 +445,7 @@ icside_register_v5(struct icside_state *
- 	void __iomem *base;
- 	struct ide_host *host;
- 	hw_regs_t hw, *hws[] = { &hw, NULL, NULL, NULL };
-+	int ret;
- 
- 	base = ecardm_iomap(ec, ECARD_RES_MEMC, 0, 0);
- 	if (!base)
-@@ -472,9 +473,15 @@ icside_register_v5(struct icside_state *
- 
- 	ecard_set_drvdata(ec, state);
- 
--	ide_host_register(host, NULL, hws);
-+	ret = ide_host_register(host, NULL, hws);
-+	if (ret)
-+		goto err_free;
- 
- 	return 0;
-+err_free:
-+	ide_host_free(host);
-+	ecard_set_drvdata(ec, NULL);
-+	return ret;
- }
- 
- static const struct ide_port_info icside_v6_port_info __initdata = {
-@@ -547,11 +554,17 @@ icside_register_v6(struct icside_state *
- 		d.dma_ops = NULL;
- 	}
- 
--	ide_host_register(host, &d, hws);
-+	ret = ide_host_register(host, NULL, hws);
-+	if (ret)
-+		goto err_free;
- 
- 	return 0;
--
-- out:
-+err_free:
-+	ide_host_free(host);
-+	if (d.dma_ops)
-+		free_dma(ec->dma);
-+	ecard_set_drvdata(ec, NULL);
-+out:
- 	return ret;
- }
- 
-Index: b/drivers/ide/ide-generic.c
-===================================================================
---- a/drivers/ide/ide-generic.c
-+++ b/drivers/ide/ide-generic.c
-@@ -84,13 +84,14 @@ static int __init ide_generic_init(void)
- {
- 	hw_regs_t hw[MAX_HWIFS], *hws[MAX_HWIFS];
- 	struct ide_host *host;
--	int i;
-+	unsigned long io_addr;
-+	int i, rc;
- 
- 	printk(KERN_INFO DRV_NAME ": please use \"probe_mask=0x3f\" module "
- 			 "parameter for probing all legacy ISA IDE ports\n");
- 
- 	for (i = 0; i < MAX_HWIFS; i++) {
--		unsigned long io_addr = ide_default_io_base(i);
-+		io_addr = ide_default_io_base(i);
- 
- 		hws[i] = NULL;
- 
-@@ -120,14 +121,32 @@ static int __init ide_generic_init(void)
- 	}
- 
- 	host = ide_host_alloc_all(NULL, hws);
--	if (host)
--		ide_host_register(host, NULL, hws);
-+	if (host == NULL) {
-+		rc = -ENOMEM;
-+		goto err;
-+	}
-+
-+	rc = ide_host_register(host, NULL, hws);
-+	if (rc)
-+		goto err_free;
- 
- 	if (ide_generic_sysfs_init())
- 		printk(KERN_ERR DRV_NAME ": failed to create ide_generic "
- 					 "class\n");
- 
- 	return 0;
-+err_free:
-+	ide_host_free(host);
-+err:
-+	for (i = 0; i < MAX_HWIFS; i++) {
-+		if (hws[i] == NULL)
-+			continue;
-+
-+		io_addr = hws[i]->io_ports.data_addr;
-+		release_region(io_addr + 0x206, 1);
-+		release_region(io_addr, 8);
-+	}
-+	return rc;
- }
- 
- module_init(ide_generic_init);
-Index: b/drivers/ide/ide-probe.c
-===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1735,12 +1735,17 @@ int ide_host_add(const struct ide_port_i
- 		 struct ide_host **hostp)
- {
- 	struct ide_host *host;
-+	int rc;
- 
- 	host = ide_host_alloc(d, hws);
- 	if (host == NULL)
- 		return -ENOMEM;
- 
--	ide_host_register(host, d, hws);
-+	rc = ide_host_register(host, d, hws);
-+	if (rc) {
-+		ide_host_free(host);
-+		return rc;
-+	}
- 
- 	if (hostp)
- 		*hostp = host;
-@@ -1749,7 +1754,7 @@ int ide_host_add(const struct ide_port_i
- }
- EXPORT_SYMBOL_GPL(ide_host_add);
- 
--void ide_host_remove(struct ide_host *host)
-+void ide_host_free(struct ide_host *host)
- {
- 	ide_hwif_t *hwif;
- 	int i;
-@@ -1760,13 +1765,25 @@ void ide_host_remove(struct ide_host *ho
- 		if (hwif == NULL)
- 			continue;
- 
--		ide_unregister(hwif);
- 		ide_free_port_slot(hwif->index);
- 		kfree(hwif);
- 	}
- 
- 	kfree(host);
- }
-+EXPORT_SYMBOL_GPL(ide_host_free);
-+
-+void ide_host_remove(struct ide_host *host)
-+{
-+	int i;
-+
-+	for (i = 0; i < MAX_HWIFS; i++) {
-+		if (host->ports[i])
-+			ide_unregister(host->ports[i]);
-+	}
-+
-+	ide_host_free(host);
-+}
- EXPORT_SYMBOL_GPL(ide_host_remove);
- 
- void ide_port_scan(ide_hwif_t *hwif)
-Index: b/drivers/ide/legacy/falconide.c
-===================================================================
---- a/drivers/ide/legacy/falconide.c
-+++ b/drivers/ide/legacy/falconide.c
-@@ -114,9 +114,10 @@ static int __init falconide_init(void)
- {
- 	struct ide_host *host;
- 	hw_regs_t hw, *hws[] = { &hw, NULL, NULL, NULL };
-+	int rc;
- 
- 	if (!MACH_IS_ATARI || !ATARIHW_PRESENT(IDE))
--		return 0;
-+		return -NODEV;
- 
- 	printk(KERN_INFO "ide: Falcon IDE controller\n");
- 
-@@ -128,13 +129,24 @@ static int __init falconide_init(void)
- 	falconide_setup_ports(&hw);
- 
- 	host = ide_host_alloc(&falconide_port_info, hws);
--	if (host) {
--		ide_get_lock(NULL, NULL);
--		ide_host_register(host, &falconide_port_info, hws);
--		ide_release_lock();
-+	if (host == NULL) {
-+		rc = -ENOMEM;
-+		goto err;
- 	}
- 
-+	ide_get_lock(NULL, NULL);
-+	rc = ide_host_register(host, &falconide_port_info, hws);
-+	ide_release_lock();
-+
-+	if (rc)
-+		goto err_free;
-+
- 	return 0;
-+err_free:
-+	ide_host_free(host);
-+err:
-+	release_mem_region(ATA_HD_BASE, 0x40);
-+	return rc;
- }
- 
- module_init(falconide_init);
-Index: b/drivers/ide/pci/sgiioc4.c
-===================================================================
---- a/drivers/ide/pci/sgiioc4.c
-+++ b/drivers/ide/pci/sgiioc4.c
-@@ -603,6 +603,7 @@ sgiioc4_ide_setup_pci_device(struct pci_
- 	struct ide_host *host;
- 	hw_regs_t hw, *hws[] = { &hw, NULL, NULL, NULL };
- 	struct ide_port_info d = sgiioc4_port_info;
-+	int rc;
- 
- 	/*  Get the CmdBlk and CtrlBlk Base Registers */
- 	bar0 = pci_resource_start(dev, 0);
-@@ -638,17 +639,22 @@ sgiioc4_ide_setup_pci_device(struct pci_
- 	writel(0x03, (void __iomem *)(irqport + IOC4_INTR_SET * 4));
- 
- 	host = ide_host_alloc(&d, hws);
--	if (host == NULL)
-+	if (host == NULL) {
-+		rc = -ENOMEM;
- 		goto err;
-+	}
- 
--	if (ide_host_register(host, &d, hws))
--		return -EIO;
-+	rc = ide_host_register(host, &d, hws);
-+	if (rc)
-+		goto err_free;
- 
- 	return 0;
-+err_free:
-+	ide_host_free(host);
- err:
- 	release_mem_region(cmd_phys_base, IOC4_CMD_CTL_BLK_SIZE);
- 	iounmap(virt_base);
--	return -ENOMEM;
-+	return rc;
- }
- 
- static unsigned int __devinit
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -1221,6 +1221,7 @@ void ide_port_apply_params(ide_hwif_t *)
- 
- struct ide_host *ide_host_alloc_all(const struct ide_port_info *, hw_regs_t **);
- struct ide_host *ide_host_alloc(const struct ide_port_info *, hw_regs_t **);
-+void ide_host_free(struct ide_host *);
- int ide_host_register(struct ide_host *, const struct ide_port_info *,
- 		      hw_regs_t **);
- int ide_host_add(const struct ide_port_info *, hw_regs_t **,
+
