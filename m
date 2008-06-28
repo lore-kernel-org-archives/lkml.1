@@ -1,171 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbYF1Ayv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbYF1BFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755898AbYF1Ayv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 20:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYF1Ayl
+	id S1757978AbYF1BFj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 21:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbYF1BF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 20:54:41 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:8764 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752379AbYF1Ayj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 20:54:39 -0400
-Date: Sat, 28 Jun 2008 04:54:36 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-ide@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: [PATCH v2 -rt] ide: workaround buggy hardware issues with
-	preemptable hardirqs
-Message-ID: <20080628005436.GA1956@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu> <20080624000016.GA12547@polina.dev.rtsoft.ru> <20080625123431.GA25452@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20080625123431.GA25452@polina.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 27 Jun 2008 21:05:29 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50167 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752434AbYF1BF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 21:05:28 -0400
+Date: Sat, 28 Jun 2008 11:05:18 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       xfs-masters@oss.sgi.com, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 27 - randconfig build
+ fails with !CONFIG_XFS_POSIX_ACL
+Message-Id: <20080628110518.5ae86cd6.sfr@canb.auug.org.au>
+In-Reply-To: <4865304C.3020301@linux.vnet.ibm.com>
+References: <20080627182406.a54b00c1.sfr@canb.auug.org.au>
+	<4865304C.3020301@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__28_Jun_2008_11_05_18_+1000_x08UiE53=JvB=67g"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IDE interrupt handler relies on the fact that, if necessary, hardirqs
-will re-trigger on ISR exit. The assumption is valid for level sensitive
-interrupts.
+--Signature=_Sat__28_Jun_2008_11_05_18_+1000_x08UiE53=JvB=67g
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-But some hardware (namely ULi M5228 in the ULi M1575 "Super South Brige")
-behaves in a strange way: it asserts interrupts as edge sensitive. And
-because preemptable IRQ handler disables PIC's interrupt, PIC will likely
-miss it.
+Hi Kamalesh.
 
-This patch fixes following issue:
+On Fri, 27 Jun 2008 23:54:12 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ib=
+m.com> wrote:
+>
+> randconfig build on x86_64 machine fails with build failure
+>=20
+>   CC [M]  fs/xfs/linux-2.6/xfs_xattr.o
+> fs/xfs/linux-2.6/xfs_xattr.c: In function =E2=80=98xfs_decode_acl=E2=80=
+=99:
+> fs/xfs/linux-2.6/xfs_xattr.c:40: error: =E2=80=98_ACL_TYPE_ACCESS=E2=80=
+=99 undeclared (first use in this function)
+> fs/xfs/linux-2.6/xfs_xattr.c:40: error: (Each undeclared identifier is re=
+ported only once
+> fs/xfs/linux-2.6/xfs_xattr.c:40: error: for each function it appears in.)
+> fs/xfs/linux-2.6/xfs_xattr.c:42: error: =E2=80=98_ACL_TYPE_DEFAULT=E2=80=
+=99 undeclared (first use in this function)
 
-ALI15X3: IDE controller (0x10b9:0x5229 rev 0xc8) at  PCI slot 0001:03:1f.0
-ALI15X3: 100% native mode on irq 18
-ide0: BM-DMA at 0x1120-0x1127, BIOS settings: hda:PIO, hdb:PIO
-ide1: BM-DMA at 0x1128-0x112f, BIOS settings: hdc:PIO, hdd:PIO
-hda: Optiarc DVD RW AD-7190A, ATAPI CD/DVD-ROM drive
-hda: UDMA/66 mode selected
-ide0 at 0x1100-0x1107,0x110a on irq 18
-ide-cd: cmd 0x5a timed out
-hda: lost interrupt
-hda: ATAPI 12X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache
-Uniform CD-ROM driver Revision: 3.20
-ide-cd: cmd 0x3 timed out
-hda: lost interrupt
-ide-cd: cmd 0x3 timed out
-hda: lost interrupt
-...
+Are you sure your sources are OK?  The patch "xfs fix 1" (which is the
+second last commit in the next20080627 tree) is supposed to fix that.
 
-It would be great to re-configure the ULi bridge or ULi IDE controller
-to behave sanely, but no one knows how or if this is possible at all
-(no available specifications).
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-So.. to workaround the issue IDE interrupt handler should re-check for
-any pending IRQs. This isn't bulletproof solution, but it works and this
-is the best one we can do.
+--Signature=_Sat__28_Jun_2008_11_05_18_+1000_x08UiE53=JvB=67g
+Content-Type: application/pgp-signature
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-On Wed, Jun 25, 2008 at 04:34:31PM +0400, Anton Vorontsov wrote:
-[...]
-> The bug, as I see it, in the alim15x3 (ULi M5228) hardware: for some
-> reason it does not hold IRQ line, but rises it for some short period
-> of time (while the drive itself rises and holds it correctly -- I'm
-> seeing it via oscilloscope).
-> 
-> So this scheme does not work:
-> mask_irq()
-> ...do something that will trigger IDE interrupt...
-> unmask_irq()
-> 
-> Because at the unmask_irq() time IDE IRQ is gone already, and interrupt
-> controller could not notice it (interrupts are level sensitive).
-> 
-> I did following test: disable RT + insert mask/unmask sequence in the
-> IDE IRQ handler, and I got the same behaviour as with RT enabled.
-> 
-> Also, further testing showed that this issue isn't drive-specific, i.e.
-> with a delay inserted before the unmask_irq(), the bug shows with any
-> drive I have.
-> 
-> So, in summary: I think that the patch is still correct as a hw bug
-> workaround (I'll need to correct its comments and description though).
+iEYEARECAAYFAkhljk4ACgkQTgG2atn1QN/KUQCfSnZ5ZrafLIxuR/s0Y8R1AtQg
+x7UAn1qerOHMFjR27JNekKEPqV1obWSL
+=MucB
+-----END PGP SIGNATURE-----
 
-Here is updated patch.
-
- drivers/ide/ide-io.c |   20 ++++++++++++++++----
- 1 files changed, 16 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-index 6c1b288..19d36f0 100644
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -1460,6 +1460,7 @@ static void unexpected_intr (int irq, ide_hwgroup_t *hwgroup)
-  
- irqreturn_t ide_intr (int irq, void *dev_id)
- {
-+	irqreturn_t ret = IRQ_NONE;
- 	unsigned long flags;
- 	ide_hwgroup_t *hwgroup = (ide_hwgroup_t *)dev_id;
- 	ide_hwif_t *hwif;
-@@ -1467,12 +1468,13 @@ irqreturn_t ide_intr (int irq, void *dev_id)
- 	ide_handler_t *handler;
- 	ide_startstop_t startstop;
- 
-+again:
- 	spin_lock_irqsave(&ide_lock, flags);
- 	hwif = hwgroup->hwif;
- 
- 	if (!ide_ack_intr(hwif)) {
- 		spin_unlock_irqrestore(&ide_lock, flags);
--		return IRQ_NONE;
-+		return ret;
- 	}
- 
- 	if ((handler = hwgroup->handler) == NULL || hwgroup->polling) {
-@@ -1510,7 +1512,7 @@ irqreturn_t ide_intr (int irq, void *dev_id)
- #endif /* CONFIG_BLK_DEV_IDEPCI */
- 		}
- 		spin_unlock_irqrestore(&ide_lock, flags);
--		return IRQ_NONE;
-+		return ret;
- 	}
- 	drive = hwgroup->drive;
- 	if (!drive) {
-@@ -1532,7 +1534,7 @@ irqreturn_t ide_intr (int irq, void *dev_id)
- 		 * enough advance overhead that the latter isn't a problem.
- 		 */
- 		spin_unlock_irqrestore(&ide_lock, flags);
--		return IRQ_NONE;
-+		return ret;
- 	}
- 	if (!hwgroup->busy) {
- 		hwgroup->busy = 1;	/* paranoia */
-@@ -1578,7 +1580,17 @@ irqreturn_t ide_intr (int irq, void *dev_id)
- 		}
- 	}
- 	spin_unlock_irqrestore(&ide_lock, flags);
--	return IRQ_HANDLED;
-+	ret = IRQ_HANDLED;
-+
-+	/*
-+	 * Previous handler() may have set things up for another interrupt to
-+	 * occur soon... with hardirqs preemption we may lose it because of
-+	 * buggy hardware that asserts edge-sensitive IRQs, so try again and
-+	 * then return gracefully if no IRQs were actually pending.
-+	 */
-+	if (hardirq_preemption && startstop != ide_stopped)
-+		goto again;
-+	return ret;
- }
- 
- /**
--- 
-1.5.5.4
-
+--Signature=_Sat__28_Jun_2008_11_05_18_+1000_x08UiE53=JvB=67g--
