@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbYF1NeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbYF1Nhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757275AbYF1NeY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 09:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbYF1NeI
+	id S1757624AbYF1Nhz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 09:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbYF1Nhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 09:34:08 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:52699 "EHLO smtp.drzeus.cx"
+	Sat, 28 Jun 2008 09:37:48 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:52221 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754916AbYF1NeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 09:34:05 -0400
-Date: Sat, 28 Jun 2008 15:34:03 +0200
+	id S1752685AbYF1Nhr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 09:37:47 -0400
+Date: Sat, 28 Jun 2008 15:37:45 +0200
 From: Pierre Ossman <drzeus-mmc@drzeus.cx>
 To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: [PATCH 2/3] mmc: Export ios settings for a host through debugfs
-Message-ID: <20080628153403.0870e96c@mjolnir.drzeus.cx>
-In-Reply-To: <1214478589-21291-2-git-send-email-haavard.skinnemoen@atmel.com>
+Cc: linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: Re: [PATCH 3/3] mmc: Add per-card debugfs support
+Message-ID: <20080628153745.027b0817@mjolnir.drzeus.cx>
+In-Reply-To: <1214478589-21291-3-git-send-email-haavard.skinnemoen@atmel.com>
 References: <1214478589-21291-1-git-send-email-haavard.skinnemoen@atmel.com>
 	<1214478589-21291-2-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214478589-21291-3-git-send-email-haavard.skinnemoen@atmel.com>
 X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,60 +28,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jun 2008 13:09:48 +0200
+On Thu, 26 Jun 2008 13:09:49 +0200
 Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
 
-> From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> For each card successfully added to the bus, create a subdirectory under
+> the host's debugfs root with information about the card.
 > 
-> Export all the fields in struct mmc_ios under /sys/kernel/debug/<host>/ios
+> At the moment, only a single file is added to the card directory:
+> "status". Reading this file will ask the card about its current status
+> and return it. This can be useful if the card just refuses to respond to
+> any commands, which might indicate that the card state is not what the
+> MMC core thinks it is (due to a missing stop command, for example.)
 > 
-> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 > ---
->  drivers/mmc/core/host.c  |   55 ++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/mmc/host.h |   13 +++++++++++
->  2 files changed, 68 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/mmc/core/host.c b/drivers/mmc/core/host.c
-> index 93da502..2977f26 100644
-> --- a/drivers/mmc/core/host.c
-> +++ b/drivers/mmc/core/host.c
-> @@ -25,6 +25,54 @@
->  #ifdef CONFIG_MMC_DEBUG_FS
->  #include <linux/debugfs.h>
->  
-> +static void mmc_remove_ios_debugfs(struct mmc_ios *ios)
+
+The status command doesn't work on SDIO cards, so this seems like the
+wrong place for it.
+
+> +#else
+> +static inline void mmc_add_card_debugfs(struct mmc_card *card)
 > +{
-> +	if (ios->dbg_root) {
-
-You can save a bit of indentation if you do:
-
-	if (!ios->dbg_root)
-		return;
-
-> +static int mmc_add_ios_debugfs(struct mmc_ios *ios, struct dentry *parent)
-> +{
-> +	struct dentry *dir;
 > +
-> +	dir = debugfs_create_dir("ios", parent);
-> +	if (!dir)
-> +		return -EBUSY;	/* or whatever */
-
-Is it undefined what a NULL return means here? I would have expected an
-ERRPTR or ENOMEM.
-
-> +#ifdef CONFIG_MMC_DEBUG_FS
-> +	struct dentry		*dbg_root;
-> +	struct dentry		*dbg_clock;
-> +	struct dentry		*dbg_vdd;
-> +	struct dentry		*dbg_bus_mode;
-> +	struct dentry		*dbg_chip_select;
-> +	struct dentry		*dbg_power_mode;
-> +	struct dentry		*dbg_bus_width;
-> +	struct dentry		*dbg_timing;
+> +}
+> +
+> +static inline void mmc_remove_card_debugfs(struct mmc_card *card)
+> +{
+> +
+> +}
 > +#endif
+> +
 
-Can't we use debugfs' own bookkeeping to keep track of them? Saves us a
-lot of noise in these structures.
+ifdef the calls here as well.
 
 -- 
      -- Pierre Ossman
