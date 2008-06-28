@@ -1,129 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759458AbYF1Vnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbYF1VnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759458AbYF1Vnd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 17:43:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbYF1Vmg
+	id S1756023AbYF1VnQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 17:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbYF1Vmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 17:42:36 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:31469 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754770AbYF1VmQ (ORCPT
+	Sat, 28 Jun 2008 17:42:33 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:38459 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754625AbYF1VmK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 17:42:16 -0400
+	Sat, 28 Jun 2008 17:42:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=LMSmp4gc0/ADmaknm3ZpyyaSkhokUOmkJIVoZPY4fu1a1Hzn4afhsk7KqnNW4XUdYF
-         gay96rXKJHd9VdBujflsWgQmaOIxXfaZClYWzYFA1Np547xQvwqngq6KQaqr7lp1Jyp0
-         toI+X1viKmOayaICzRHaF58dNXNZ0+6Ft+wXY=
+        b=HNnyev7lJONVNhlgm4ndahEWy+CTAzcmaEyjo/yQpCtC8lmEH8a//evRpjAPW83XBZ
+         mOQrGhpdxjL8CFfbaPV1b2/mWInvUYa5BA0WzLltuPE5TUFEasU8mMYupG+wIEee9Opw
+         yN2QPdaqybbRHrSdJY6b7CxOrSEYXfQXnrMgk=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sat, 28 Jun 2008 23:44:24 +0200
-Message-Id: <20080628214424.21345.82726.sendpatchset@localhost.localdomain>
+Date: Sat, 28 Jun 2008 23:44:16 +0200
+Message-Id: <20080628214416.21345.69884.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080628214355.21345.94835.sendpatchset@localhost.localdomain>
 References: <20080628214355.21345.94835.sendpatchset@localhost.localdomain>
-Subject: [PATCH 4/7] ide: move ide_remove_port_from_hwgroup() to ide-probe.c
+Subject: [PATCH 3/7] ide: fix IDE port slots reservation and freeing
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Make ide_find_port_slot() return port slot index.
+
+* Add ide_free_port_slot() helper.
+
+* Move ide_init_port_data() call and error printk() from
+  ide_find_port_slot() to ide_host_alloc_all().
+
+* Make ide_{find,free}_port_slot() take ide_cfg_mtx mutex
+  and convert them use ide_indexes bitmap to keep track of
+  reserved port slots.
+
+* Don't set hwif->chipset in ide_host_alloc_all() as it is
+  no longer necessary.
+
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-probe.c |   35 +++++++++++++++++++++++++++++++++++
- drivers/ide/ide.c       |   35 -----------------------------------
- 2 files changed, 35 insertions(+), 35 deletions(-)
+ drivers/ide/ide-probe.c |   87 +++++++++++++++++++++++++++---------------------
+ 1 file changed, 50 insertions(+), 37 deletions(-)
 
 Index: b/drivers/ide/ide-probe.c
 ===================================================================
 --- a/drivers/ide/ide-probe.c
 +++ b/drivers/ide/ide-probe.c
-@@ -994,6 +994,41 @@ static void ide_port_setup_devices(ide_h
- 	mutex_unlock(&ide_cfg_mtx);
+@@ -1476,18 +1476,20 @@ static int ide_sysfs_register_port(ide_h
+ 	return rc;
  }
  
-+void ide_remove_port_from_hwgroup(ide_hwif_t *hwif)
-+{
-+	ide_hwgroup_t *hwgroup = hwif->hwgroup;
++static unsigned int ide_indexes;
 +
-+	spin_lock_irq(&ide_lock);
-+	/*
-+	 * Remove us from the hwgroup, and free
-+	 * the hwgroup if we were the only member
-+	 */
-+	if (hwif->next == hwif) {
-+		BUG_ON(hwgroup->hwif != hwif);
-+		kfree(hwgroup);
-+	} else {
-+		/* There is another interface in hwgroup.
-+		 * Unlink us, and set hwgroup->drive and ->hwif to
-+		 * something sane.
-+		 */
-+		ide_hwif_t *g = hwgroup->hwif;
-+
-+		while (g->next != hwif)
-+			g = g->next;
-+		g->next = hwif->next;
-+		if (hwgroup->hwif == hwif) {
-+			/* Chose a random hwif for hwgroup->hwif.
-+			 * It's guaranteed that there are no drives
-+			 * left in the hwgroup.
-+			 */
-+			BUG_ON(hwgroup->drive != NULL);
-+			hwgroup->hwif = g;
-+		}
-+		BUG_ON(hwgroup->hwif == hwif);
-+	}
-+	spin_unlock_irq(&ide_lock);
-+}
-+
- /*
-  * This routine sets up the irq for an ide interface, and creates a new
-  * hwgroup for the irq/hwif if none was previously assigned.
-Index: b/drivers/ide/ide.c
-===================================================================
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -133,41 +133,6 @@ static void ide_port_init_devices_data(i
- 	}
- }
+ /**
+- *	ide_find_port_slot	-	find free ide_hwifs[] slot
++ *	ide_find_port_slot	-	find free port slot
+  *	@d: IDE port info
+  *
+- *	Return the new hwif.  If we are out of free slots return NULL.
++ *	Return the new port slot index or -ENOENT if we are out of free slots.
+  */
  
--void ide_remove_port_from_hwgroup(ide_hwif_t *hwif)
--{
--	ide_hwgroup_t *hwgroup = hwif->hwgroup;
--
--	spin_lock_irq(&ide_lock);
--	/*
--	 * Remove us from the hwgroup, and free
--	 * the hwgroup if we were the only member
--	 */
--	if (hwif->next == hwif) {
--		BUG_ON(hwgroup->hwif != hwif);
--		kfree(hwgroup);
--	} else {
--		/* There is another interface in hwgroup.
--		 * Unlink us, and set hwgroup->drive and ->hwif to
--		 * something sane.
--		 */
--		ide_hwif_t *g = hwgroup->hwif;
--
--		while (g->next != hwif)
--			g = g->next;
--		g->next = hwif->next;
--		if (hwgroup->hwif == hwif) {
--			/* Chose a random hwif for hwgroup->hwif.
--			 * It's guaranteed that there are no drives
--			 * left in the hwgroup.
--			 */
--			BUG_ON(hwgroup->drive != NULL);
--			hwgroup->hwif = g;
--		}
--		BUG_ON(hwgroup->hwif == hwif);
--	}
--	spin_unlock_irq(&ide_lock);
--}
--
- /* Called with ide_lock held. */
- static void __ide_port_unregister_devices(ide_hwif_t *hwif)
+-static ide_hwif_t *ide_find_port_slot(const struct ide_port_info *d)
++static int ide_find_port_slot(const struct ide_port_info *d)
  {
+-	ide_hwif_t *hwif;
+-	int i;
++	int idx = -ENOENT;
+ 	u8 bootable = (d && (d->host_flags & IDE_HFLAG_NON_BOOTABLE)) ? 0 : 1;
++	u8 i = (d && (d->host_flags & IDE_HFLAG_QD_2ND_PORT)) ? 1 : 0;;
+ 
+ 	/*
+ 	 * Claim an unassigned slot.
+@@ -1499,35 +1501,33 @@ static ide_hwif_t *ide_find_port_slot(co
+ 	 * Unless there is a bootable card that does not use the standard
+ 	 * ports 0x1f0/0x170 (the ide0/ide1 defaults).
+ 	 */
+-	if (bootable) {
+-		i = (d && (d->host_flags & IDE_HFLAG_QD_2ND_PORT)) ? 1 : 0;
+-
+-		for (; i < MAX_HWIFS; i++) {
+-			hwif = &ide_hwifs[i];
+-			if (hwif->chipset == ide_unknown)
+-				goto out_found;
+-		}
++	mutex_lock(&ide_cfg_mtx);
++	if (MAX_HWIFS == 1) {
++		if (ide_indexes == 0 && i == 0)
++			idx = 1;
+ 	} else {
+-		for (i = 2; i < MAX_HWIFS; i++) {
+-			hwif = &ide_hwifs[i];
+-			if (hwif->chipset == ide_unknown)
+-				goto out_found;
+-		}
+-		for (i = 0; i < 2 && i < MAX_HWIFS; i++) {
+-			hwif = &ide_hwifs[i];
+-			if (hwif->chipset == ide_unknown)
+-				goto out_found;
++		if (bootable) {
++			if ((ide_indexes | i) != (1 << MAX_HWIFS) - 1)
++				idx = ffz(ide_indexes | i);
++		} else {
++			if ((ide_indexes | 3) != (1 << MAX_HWIFS) - 1)
++				idx = ffz(ide_indexes | 3);
++			else if ((ide_indexes & 3) != 3)
++				idx = ffz(ide_indexes);
+ 		}
+ 	}
++	if (idx >= 0)
++		ide_indexes |= (1 << idx);
++	mutex_unlock(&ide_cfg_mtx);
+ 
+-	printk(KERN_ERR "%s: no free slot for interface\n",
+-			d ? d->name : "ide");
+-
+-	return NULL;
++	return idx;
++}
+ 
+-out_found:
+-	ide_init_port_data(hwif, i);
+-	return hwif;
++static void ide_free_port_slot(int idx)
++{
++	mutex_lock(&ide_cfg_mtx);
++	ide_indexes &= ~(1 << idx);
++	mutex_unlock(&ide_cfg_mtx);
+ }
+ 
+ struct ide_host *ide_host_alloc_all(const struct ide_port_info *d,
+@@ -1542,17 +1542,24 @@ struct ide_host *ide_host_alloc_all(cons
+ 
+ 	for (i = 0; i < MAX_HWIFS; i++) {
+ 		ide_hwif_t *hwif;
++		int idx;
+ 
+ 		if (hws[i] == NULL)
+ 			continue;
+ 
+-		hwif = ide_find_port_slot(d);
+-		if (hwif) {
+-			hwif->chipset = hws[i]->chipset;
+-
+-			host->ports[i] = hwif;
+-			host->n_ports++;
++		idx = ide_find_port_slot(d);
++		if (idx < 0) {
++			printk(KERN_ERR "%s: no free slot for interface\n",
++					d ? d->name : "ide");
++			continue;
+ 		}
++
++		hwif = &ide_hwifs[idx];
++
++		ide_init_port_data(hwif, i);
++
++		host->ports[i] = hwif;
++		host->n_ports++;
+ 	}
+ 
+ 	if (host->n_ports == 0) {
+@@ -1701,11 +1708,17 @@ EXPORT_SYMBOL_GPL(ide_host_add);
+ 
+ void ide_host_remove(struct ide_host *host)
+ {
++	ide_hwif_t *hwif;
+ 	int i;
+ 
+ 	for (i = 0; i < MAX_HWIFS; i++) {
+-		if (host->ports[i])
+-			ide_unregister(host->ports[i]);
++		hwif = host->ports[i];
++
++		if (hwif == NULL)
++			continue;
++
++		ide_unregister(hwif);
++		ide_free_port_slot(hwif->index);
+ 	}
+ 
+ 	kfree(host);
