@@ -1,79 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758399AbYF1PWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbYF1Pc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758399AbYF1PWU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 11:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbYF1PWJ
+	id S1754496AbYF1Pc2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 11:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbYF1PcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 11:22:09 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:56965 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753211AbYF1PWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 11:22:07 -0400
-Date: Sat, 28 Jun 2008 17:22:05 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] mmc: Add per-card debugfs support
-Message-ID: <20080628172205.430b35b2@mjolnir.drzeus.cx>
-In-Reply-To: <20080628161524.5c3fd45f@hskinnemo-gx745.norway.atmel.com>
-References: <1214478589-21291-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214478589-21291-2-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214478589-21291-3-git-send-email-haavard.skinnemoen@atmel.com>
-	<20080628153745.027b0817@mjolnir.drzeus.cx>
-	<20080628154844.35a90ae9@hskinnemo-gx745.norway.atmel.com>
-	<20080628160110.41ec91f7@mjolnir.drzeus.cx>
-	<20080628161524.5c3fd45f@hskinnemo-gx745.norway.atmel.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Jun 2008 11:32:15 -0400
+Received: from sorrow.cyrius.com ([65.19.161.204]:3901 "EHLO sorrow.cyrius.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751040AbYF1PcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 11:32:07 -0400
+Date: Sat, 28 Jun 2008 17:31:09 +0200
+From: Martin Michlmayr <tbm@cyrius.com>
+To: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org
+Cc: buytenh@wantstofly.org
+Subject: LEDs: how to handle gpios that control brightness for all LEDs
+Message-ID: <20080628153109.GA20215@deprecation.cyrius.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Jun 2008 16:15:24 +0200
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+Hi Richard,
 
-> Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> > On Sat, 28 Jun 2008 15:48:44 +0200
-> > Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-> > 
-> > > Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> > > > The status command doesn't work on SDIO cards, so this seems like the
-> > > > wrong place for it.
-> > > 
-> > > Where do you want it then?
-> > > 
-> > 
-> > drivers/mmc/core/mmc.c seems like the correct place (and some coupling
-> > from sd.c as well). See if you can do something that's similar to how
-> > sysfs nodes are handled by the bus handlers.
-> 
-> Hmm...I thought card.c seemed like a good place for card-specific debug
-> information. Even though this particular attribute isn't relevant to
-> some types of cards, is that a reason to create the whole directory
-> elsewhere and add complicated dependencies between files?
-> 
+I have a device that has various gpios that correspond to the colours
+(blue, red) of various LEDs.  They only accept 0/1, not the actual
+brightness.  However, there are two other gpios that can be used to
+control the brightness (of all LEDs): gpio V_LED 5V is bright, gpio
+V_LED 3.3V is dimmed and if neither of these two gpios are set, all
+LEDs stay off.
 
-The directory might be suitable there, just not the "status" file. The
-MMC code used to be a horrible mess of "if":s, "but":s and "when":s in
-order to handle the crappy details of MMC vs SD. I'd like to avoid
-going back to that nightmare as much as possible. The layering can
-never be perfect, but right now it's at least just core.c that needs to
-know about the different systems.
+Can I simply export these brightness gpios to userland or would it be
+better to handle the brightness setting in the kernel so that setting
+e.g. 100 to a LED would automatically set the V_LED 3.3V gpio and 255
+would set V_LED 5V.  If so, how should this be done?  If I can simply
+export them to userland, would mv2120:led:dimmed and mv2120:led:bright
+be appropriate names?
 
-An alternative to sticking it into mmc.c is to create a debugfs.c that
-contains all the uglyness. Debugging code isn't quite as important to
-keep crystal clear.
+Second, the LEDS class sets all gpios to off by default.  This is bad
+in my case because if neither of the brightness gpios (3.3V or 5V) are
+on, the SATA lights won't be shown either.  Is there a way to specify
+in the platform code that one gpio should be turned on by default?
 
-Rgds
+Thanks.
+
+
+For the reference, here is my current work-in-progress patch (I use
+numbers rather than #defines for the gpio values because there's a
+table listing all gpios in the source file).
+
+--- a/arch/arm/mach-orion5x/mv2120-setup.c
++++ b/arch/arm/mach-orion5x/mv2120-setup.c
+@@ -137,6 +137,49 @@ static struct i2c_board_info __initdata mv2120_i2c_rtc = {
+ 	.irq	= 0,
+ };
+ 
++static struct gpio_led mv2120_led_pins[] = {
++	{
++		.name		= "mv2120:blue:sys",
++		.gpio		= 0,
++	},
++	{
++		.name		= "mv2120:red:sys",
++		.gpio		= 1,
++	},
++	{
++		.name		= "mv2120:led5v",
++		.gpio		= 4,
++	},
++	{
++		.name		= "mv2120:led3.3v",
++		.gpio		= 5,
++	},
++	{
++		.name		= "mv2120:red:sata0",
++		.gpio		= 8,
++		.active_low	= 1,
++	},
++	{
++		.name		= "mv2120:red:sata1",
++		.gpio		= 9,
++		.active_low	= 1,
++	},
++
++};
++
++static struct gpio_led_platform_data mv2120_led_data = {
++	.leds		= mv2120_led_pins,
++	.num_leds	= ARRAY_SIZE(mv2120_led_pins),
++};
++
++static struct platform_device mv2120_leds = {
++	.name	= "leds-gpio",
++	.id	= -1,
++	.dev	= {
++		.platform_data	= &mv2120_led_data,
++	}
++};
++
+ static void mv2120_power_off(void)
+ {
+ 	pr_info("%s: triggering power-off...\n", __func__);
+@@ -172,6 +215,7 @@ static void __init mv2120_init(void)
+ 			gpio_free(MV2120_GPIO_RTC_IRQ);
+ 	}
+ 	i2c_register_board_info(0, &mv2120_i2c_rtc, 1);
++	platform_device_register(&mv2120_leds);
+ 
+ 	/* register mv2120 specific power-off method */
+ 	if (gpio_request(MV2120_GPIO_POWER_OFF, "POWEROFF") != 0 ||
+
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+Martin Michlmayr
+http://www.cyrius.com/
