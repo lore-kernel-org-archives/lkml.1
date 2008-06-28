@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756485AbYF1N7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbYF1OBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756485AbYF1N7X (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 09:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbYF1N7Q
+	id S1757346AbYF1OBU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 10:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbYF1OBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 09:59:16 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:40384 "EHLO smtp.drzeus.cx"
+	Sat, 28 Jun 2008 10:01:13 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:46751 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753293AbYF1N7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 09:59:15 -0400
-Date: Sat, 28 Jun 2008 15:59:13 +0200
+	id S1753313AbYF1OBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 10:01:12 -0400
+Date: Sat, 28 Jun 2008 16:01:10 +0200
 From: Pierre Ossman <drzeus-mmc@drzeus.cx>
 To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: [PATCH 2/3] mmc: Export ios settings for a host through debugfs
-Message-ID: <20080628155913.2bba34a9@mjolnir.drzeus.cx>
-In-Reply-To: <20080628154700.426a422c@hskinnemo-gx745.norway.atmel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] mmc: Add per-card debugfs support
+Message-ID: <20080628160110.41ec91f7@mjolnir.drzeus.cx>
+In-Reply-To: <20080628154844.35a90ae9@hskinnemo-gx745.norway.atmel.com>
 References: <1214478589-21291-1-git-send-email-haavard.skinnemoen@atmel.com>
 	<1214478589-21291-2-git-send-email-haavard.skinnemoen@atmel.com>
-	<20080628153403.0870e96c@mjolnir.drzeus.cx>
-	<20080628154700.426a422c@hskinnemo-gx745.norway.atmel.com>
+	<1214478589-21291-3-git-send-email-haavard.skinnemoen@atmel.com>
+	<20080628153745.027b0817@mjolnir.drzeus.cx>
+	<20080628154844.35a90ae9@hskinnemo-gx745.norway.atmel.com>
 X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,20 +29,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Jun 2008 15:47:00 +0200
+On Sat, 28 Jun 2008 15:48:44 +0200
 Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
 
 > Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> > 
-> > Can't we use debugfs' own bookkeeping to keep track of them? Saves us a
-> > lot of noise in these structures.
+> > The status command doesn't work on SDIO cards, so this seems like the
+> > wrong place for it.
 > 
-> You mean d_subdirs in struct dentry? I guess we could do that...though
-> I was sort of trying not to dig too deply into VFS internals...
+> Where do you want it then?
 > 
 
-I'm a complete noob when it comes to debugfs. There isn't some
-recursive delete function that can be used on the "ios" node?
+drivers/mmc/core/mmc.c seems like the correct place (and some coupling
+from sd.c as well). See if you can do something that's similar to how
+sysfs nodes are handled by the bus handlers.
+
+> Btw, /sys/class/mmc_host/mmc0/<card>/test doesn't work on SDIO cards
+> either:
+> 
+
+Ooops. It shouldn't be binding to non-storage cards. I'll make sure to
+have that fixed.
 
 -- 
      -- Pierre Ossman
