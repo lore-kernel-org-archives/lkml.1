@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbYF1FGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbYF1FHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188AbYF1FGo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 01:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbYF1FGd
+	id S1754530AbYF1FHe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 01:07:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbYF1FHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 01:06:33 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:49053 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750806AbYF1FGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 01:06:32 -0400
-Date: Sat, 28 Jun 2008 14:03:45 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: monstr@seznam.cz
-Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
-       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com,
-       Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH 29/60] microblaze_v4: traps support
-Message-ID: <20080628050345.GH25492@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>, monstr@seznam.cz,
-	linux-kernel@vger.kernel.org, arnd@arndb.de,
-	linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
-	John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
-	will.newton@gmail.com, drepper@redhat.com,
-	microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
-	linuxppc-dev@ozlabs.org, vapier.adi@gmail.com,
-	alan@lxorguk.ukuu.org.uk, hpa@zytor.com,
-	Michal Simek <monstr@monstr.eu>
-References: <1214483429-32360-21-git-send-email-monstr@seznam.cz> <1214483429-32360-22-git-send-email-monstr@seznam.cz> <1214483429-32360-23-git-send-email-monstr@seznam.cz> <1214483429-32360-24-git-send-email-monstr@seznam.cz> <1214483429-32360-25-git-send-email-monstr@seznam.cz> <1214483429-32360-26-git-send-email-monstr@seznam.cz> <1214483429-32360-27-git-send-email-monstr@seznam.cz> <1214483429-32360-28-git-send-email-monstr@seznam.cz> <1214483429-32360-29-git-send-email-monstr@seznam.cz> <1214483429-32360-30-git-send-email-monstr@seznam.cz>
+	Sat, 28 Jun 2008 01:07:25 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:13559 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752080AbYF1FHY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 01:07:24 -0400
+To: dougthompson@xmission.com
+Cc: bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 1/13] EDAC i5100 new intel chipset driver
+From: Andi Kleen <andi@firstfloor.org>
+References: <48652da5.s2xXeJUyQ6DrqarN%dougthompson@xmission.com>
+Date: Sat, 28 Jun 2008 07:07:21 +0200
+In-Reply-To: <48652da5.s2xXeJUyQ6DrqarN%dougthompson@xmission.com> (dougthompson@xmission.com's message of "Fri, 27 Jun 2008 12:12:53 -0600")
+Message-ID: <87r6aip2pi.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1214483429-32360-30-git-send-email-monstr@seznam.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 28 Jun 2008 05:00:01.0883 (UTC) FILETIME=[D25D5AB0:01C8D8DB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 02:29:58PM +0200, monstr@seznam.cz wrote:
-> +static int kstack_depth_to_print = 24;
-> +
-x86 has a sysctl for this. It may be worth making this non-static and
-generalizing the ifdef case. Plenty of other architectures could benefit
-from this also.
+dougthompson@xmission.com writes:
+>
+> 2)  I have not yet tackled the de-interleaving of the
+> rank/controller address space into the physical address
+> space of the CPU.  There is nothing fundamentally missing,
+> it is just ending up to be a lot of code, and I'd rather
+> keep it separate for now, esp since it doesn't work yet...
+>
+> 3)  The code depends on a particular i5100 chip select
+> to DIMM mainboard chip select mapping.  This mapping
+> seems obvious to me in order to support dual and single
+> ranked memory, but it is not unique and DIMM labels
+> could be wrong on other mainboards.  There is no way
+> to query this mapping that I know of.
 
-> +void show_trace(struct task_struct *task, unsigned long *stack)
-> +{
-> +	unsigned long addr;
-> +
-> +	if (!stack)
-> +		stack = (unsigned long *)&stack;
-> +
-> +	printk(KERN_INFO "Call Trace: ");
-> +#ifdef CONFIG_KALLSYMS
-> +	printk(KERN_INFO "\n");
-> +#endif
-> +	while (!kstack_end(stack)) {
-> +		addr = *stack++;
-> +		if (__kernel_text_address(addr)) {
-> +			printk(KERN_INFO "[<%08lx>] ", addr);
-> +			print_symbol("%s\n", addr);
+Since there's a non negligible probability that the output
+of this driver is completely misleading because of (2) and (3)
+and probably (4) too [reporting the wrong DIMMs etc.]
+would it be possible to add some flag to EDAC that 
+warns the user that the output is not fully reliable?
 
-Use print_ip_sym() here for future-proofing.
+-Andi (who can just see people replacing the wrong DIMMs and 
+then blaming Linux)
 
-> +		}
-> +	}
-> +	printk(KERN_INFO "\n");
-
-And here you can:
-
-	if (!tsk)
-		tsk = current;
-	
-	debug_show_held_locks(tsk);
-> +}
-> +
-
-for when you get around to implementing lockdep.
