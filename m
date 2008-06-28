@@ -1,84 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbYF1Vnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759884AbYF1VoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918AbYF1Vnv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 17:43:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755764AbYF1Vmi
+	id S1759884AbYF1VoM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 17:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756557AbYF1Vml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 17:42:38 -0400
+	Sat, 28 Jun 2008 17:42:41 -0400
 Received: from fg-out-1718.google.com ([72.14.220.155]:20711 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754818AbYF1Vm0 (ORCPT
+	with ESMTP id S1754898AbYF1Vma (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 17:42:26 -0400
+	Sat, 28 Jun 2008 17:42:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=ndQr9BQz/0sCoV8eUPmEVE1hIOVDFnl1tXldbIJOokcC471HpuyZssp3YPxdqvrvBk
-         BWUzHreGQpFiWdmBRTtKfoNymOSqq2HMgOksHPXJzQ/T10T+CNQsMwhWw6LH85ZlgRHM
-         nE2cESZcIeNhuW3uNeXZAkwjqMo+ekeAwgwlI=
+        b=iyWxZB/bFlS9VGrqw/v6FUC0bG0auTWJZaKwFBVUG35iapbysxqivA5c8ow8ESl/Tj
+         fA+TFoMk8AqPb8KGZkZzqPQmSB7egdph3B1+BRigRGhcncNbfwwialAM/kqlk5mj+B7J
+         psYYuB7GFNrMcZZwyjpUMc3cgz9qswKkWQnGE=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sat, 28 Jun 2008 23:44:31 +0200
-Message-Id: <20080628214431.21345.80510.sendpatchset@localhost.localdomain>
+Date: Sat, 28 Jun 2008 23:44:38 +0200
+Message-Id: <20080628214438.21345.13127.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080628214355.21345.94835.sendpatchset@localhost.localdomain>
 References: <20080628214355.21345.94835.sendpatchset@localhost.localdomain>
-Subject: [PATCH 5/7] ide: add ide_ports[]
+Subject: [PATCH 6/7] ide: allocate ide_hwif_t instances dynamically
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Add ide_ports[] table keeping pointers to all initialized ports.
+* Allocate ide_hwif_t instances dynamically and remove ide_hwifs[].
 
-* Set ide_ports[] entry for a given port in init_irq() and clear it
-  ide_remove_port_from_hwgroup().
+  This cuts almost ~14kB from ide-probe.o (x86-32, MAX_HWIFS == 10):
 
-* Convert init_irq() to use ide_ports[] instead of ide_hwifs[] for
-  grouping ports into hwgroup.
+   text    data     bss     dec     hex filename
+   9140      40   14084   23264    5ae0 drivers/ide/ide-probe.o.before
+   9169      40      44    9253    2425 drivers/ide/ide-probe.o.after
+
+* Remove no longer needed ide_init_port_data() call from ide_unregister().
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-probe.c |   11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ drivers/ide/ide-probe.c |   10 ++++++----
+ drivers/ide/ide.c       |    4 ----
+ 2 files changed, 6 insertions(+), 8 deletions(-)
 
 Index: b/drivers/ide/ide-probe.c
 ===================================================================
 --- a/drivers/ide/ide-probe.c
 +++ b/drivers/ide/ide-probe.c
-@@ -994,10 +994,14 @@ static void ide_port_setup_devices(ide_h
- 	mutex_unlock(&ide_cfg_mtx);
- }
+@@ -39,8 +39,6 @@
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
  
-+static ide_hwif_t *ide_ports[MAX_HWIFS];
-+
- void ide_remove_port_from_hwgroup(ide_hwif_t *hwif)
- {
- 	ide_hwgroup_t *hwgroup = hwif->hwgroup;
+-static ide_hwif_t ide_hwifs[MAX_HWIFS]; /* master data repository */
+-
+ /**
+  *	generic_id		-	add a generic drive id
+  *	@drive:	drive to make an ID block for
+@@ -1589,15 +1587,18 @@ struct ide_host *ide_host_alloc_all(cons
+ 		if (hws[i] == NULL)
+ 			continue;
  
-+	ide_ports[hwif->index] = NULL;
++		hwif = kzalloc(sizeof(*hwif), GFP_KERNEL);
++		if (hwif == NULL)
++			continue;
 +
- 	spin_lock_irq(&ide_lock);
- 	/*
- 	 * Remove us from the hwgroup, and free
-@@ -1056,8 +1060,9 @@ static int init_irq (ide_hwif_t *hwif)
- 	 * Group up with any other hwifs that share our irq(s).
- 	 */
- 	for (index = 0; index < MAX_HWIFS; index++) {
--		ide_hwif_t *h = &ide_hwifs[index];
--		if (h->hwgroup) {  /* scan only initialized hwif's */
-+		ide_hwif_t *h = ide_ports[index];
-+
-+		if (h && h->hwgroup) {  /* scan only initialized ports */
- 			if (hwif->irq == h->irq) {
- 				hwif->sharing_irq = h->sharing_irq = 1;
- 				if (hwif->chipset != ide_pci ||
-@@ -1111,6 +1116,8 @@ static int init_irq (ide_hwif_t *hwif)
- 		hwgroup->timer.data = (unsigned long) hwgroup;
+ 		idx = ide_find_port_slot(d);
+ 		if (idx < 0) {
+ 			printk(KERN_ERR "%s: no free slot for interface\n",
+ 					d ? d->name : "ide");
++			kfree(hwif);
+ 			continue;
+ 		}
+ 
+-		hwif = &ide_hwifs[idx];
+-
+ 		ide_init_port_data(hwif, i);
+ 
+ 		host->ports[i] = hwif;
+@@ -1761,6 +1762,7 @@ void ide_host_remove(struct ide_host *ho
+ 
+ 		ide_unregister(hwif);
+ 		ide_free_port_slot(hwif->index);
++		kfree(hwif);
  	}
  
-+	ide_ports[hwif->index] = hwif;
-+
- 	/*
- 	 * Allocate the irq, if not already obtained for another hwif
- 	 */
+ 	kfree(host);
+Index: b/drivers/ide/ide.c
+===================================================================
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -232,10 +232,6 @@ void ide_unregister(ide_hwif_t *hwif)
+ 
+ 	if (hwif->dma_base)
+ 		ide_release_dma_engine(hwif);
+-
+-	/* restore hwif data to pristine status */
+-	ide_init_port_data(hwif, hwif->index);
+-
+ abort:
+ 	spin_unlock_irq(&ide_lock);
+ 	mutex_unlock(&ide_cfg_mtx);
