@@ -1,87 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbYF1OLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbYF1OP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756900AbYF1OLm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 10:11:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbYF1OLd
+	id S1757458AbYF1OP0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 10:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbYF1OPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 10:11:33 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:48987 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752085AbYF1OLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 10:11:32 -0400
-Date: Sat, 28 Jun 2008 16:11:27 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, kernel@avr32linux.org,
-       shannon.nelson@intel.com, David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH v4 6/6] Atmel MCI: Driver for Atmel on-chip MMC
- controllers
-Message-ID: <20080628161127.16b6fcff@mjolnir.drzeus.cx>
-In-Reply-To: <20080628160121.10c7c1b0@hskinnemo-gx745.norway.atmel.com>
-References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-2-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-3-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-4-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-5-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-6-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-7-git-send-email-haavard.skinnemoen@atmel.com>
-	<20080627211014.0e80db04@siona.local>
-	<20080627215627.5d75639c@mjolnir.drzeus.cx>
-	<20080628144313.353bbf18@hskinnemo-gx745.norway.atmel.com>
-	<20080628154515.0eb002f6@mjolnir.drzeus.cx>
-	<20080628160121.10c7c1b0@hskinnemo-gx745.norway.atmel.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+	Sat, 28 Jun 2008 10:15:15 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:49887 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753507AbYF1OPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 10:15:14 -0400
+Date: Sat, 28 Jun 2008 16:15:24 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] mmc: Add per-card debugfs support
+Message-ID: <20080628161524.5c3fd45f@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <20080628160110.41ec91f7@mjolnir.drzeus.cx>
+References: <1214478589-21291-1-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214478589-21291-2-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214478589-21291-3-git-send-email-haavard.skinnemoen@atmel.com>
+	<20080628153745.027b0817@mjolnir.drzeus.cx>
+	<20080628154844.35a90ae9@hskinnemo-gx745.norway.atmel.com>
+	<20080628160110.41ec91f7@mjolnir.drzeus.cx>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-8206-1214661683-0001-2"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Jun 2008 14:15:11.0807 (UTC) FILETIME=[60A064F0:01C8D929]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
+> On Sat, 28 Jun 2008 15:48:44 +0200
+> Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+> 
+> > Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
+> > > The status command doesn't work on SDIO cards, so this seems like the
+> > > wrong place for it.
+> > 
+> > Where do you want it then?
+> > 
+> 
+> drivers/mmc/core/mmc.c seems like the correct place (and some coupling
+> from sd.c as well). See if you can do something that's similar to how
+> sysfs nodes are handled by the bus handlers.
 
---=_freyr.drzeus.cx-8206-1214661683-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hmm...I thought card.c seemed like a good place for card-specific debug
+information. Even though this particular attribute isn't relevant to
+some types of cards, is that a reason to create the whole directory
+elsewhere and add complicated dependencies between files?
 
-On Sat, 28 Jun 2008 16:01:21 +0200
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+How about I check card->type and just not create the "status" attribute
+for SDIO cards?
 
->=20
-> bytes_xfered is 0 if any block failed. If I understand correctly, this
-> is good enough, but not optimal. I want to improve this later, but I
-> might need some more feedback from the DMA engine subsystem (e.g.
-> adding "actual" and "status" fields to the descriptor.)
->=20
-
-That's good enough yes. The only incorrect value is reporting more than
-was actually written as that would completely undermine any attempts of
-keeping data integrity in upper layers.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-8206-1214661683-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkhmRpEACgkQ7b8eESbyJLgtMwCgvCZ0qYWkfCHRZ4SH8z3wyGSi
-OYUAn2NCYCKGqgZYtBH0cwl+ZbtXXvQB
-=KncN
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-8206-1214661683-0001-2--
+Haavard
