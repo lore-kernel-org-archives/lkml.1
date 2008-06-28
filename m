@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbYF1X43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbYF1X5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbYF1X43 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 19:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbYF1X4W
+	id S1754841AbYF1X5R (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 19:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbYF1X5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 19:56:22 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:33725 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751726AbYF1X4V (ORCPT
+	Sat, 28 Jun 2008 19:57:03 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:35870 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751860AbYF1X5B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 19:56:21 -0400
-Date: Sun, 29 Jun 2008 00:55:49 +0100 (BST)
+	Sat, 28 Jun 2008 19:57:01 -0400
+Date: Sun, 29 Jun 2008 00:57:22 +0100 (BST)
 From: Hugh Dickins <hugh@veritas.com>
 X-X-Sender: hugh@blonde.site
-To: Chris Wright <chrisw@sous-sol.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH trivial] security: remove unused forwards
-Message-ID: <Pine.LNX.4.64.0806290054351.18327@blonde.site>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH trivial] exec: remove some includes
+Message-ID: <Pine.LNX.4.64.0806290055560.18327@blonde.site>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Why would linux/security.h need forward declarations for nfsctl_arg
-and swap_info_struct?  It's hard to imagine: remove them.
+fs/exec.c used to need mman.h pagemap.h swap.h and rmap.h when it did
+mm-ish stuff in install_arg_page(); but no need for them after 2.6.22.
 
 Signed-off-by: Hugh Dickins <hugh@veritas.com>
 ---
 
- include/linux/security.h |    2 --
- 1 file changed, 2 deletions(-)
+ fs/exec.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
---- linux-next/include/linux/security.h	2008-06-27 13:39:19.000000000 +0100
-+++ linux/include/linux/security.h	2008-06-27 14:08:00.000000000 +0100
-@@ -101,9 +101,7 @@ extern unsigned long mmap_min_addr;
- #define LSM_SETID_FS	8
- 
- /* forward declares to avoid warnings */
--struct nfsctl_arg;
- struct sched_param;
--struct swap_info_struct;
- struct request_sock;
- 
- /* bprm_apply_creds unsafe reasons */
+--- linux-next/fs/exec.c	2008-06-27 13:39:17.000000000 +0100
++++ linux/fs/exec.c	2008-06-27 14:08:00.000000000 +0100
+@@ -25,19 +25,17 @@
+ #include <linux/slab.h>
+ #include <linux/file.h>
+ #include <linux/fdtable.h>
+-#include <linux/mman.h>
++#include <linux/mm.h>
+ #include <linux/stat.h>
+ #include <linux/fcntl.h>
+ #include <linux/smp_lock.h>
+ #include <linux/string.h>
+ #include <linux/init.h>
+-#include <linux/pagemap.h>
+ #include <linux/highmem.h>
+ #include <linux/spinlock.h>
+ #include <linux/key.h>
+ #include <linux/personality.h>
+ #include <linux/binfmts.h>
+-#include <linux/swap.h>
+ #include <linux/utsname.h>
+ #include <linux/pid_namespace.h>
+ #include <linux/module.h>
+@@ -47,7 +45,6 @@
+ #include <linux/mount.h>
+ #include <linux/security.h>
+ #include <linux/syscalls.h>
+-#include <linux/rmap.h>
+ #include <linux/tsacct_kern.h>
+ #include <linux/cn_proc.h>
+ #include <linux/audit.h>
