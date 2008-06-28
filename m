@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbYF1Rs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYF1RyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758128AbYF1Rs1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 13:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYF1RsS
+	id S1758020AbYF1RyU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 13:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYF1RyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 13:48:18 -0400
-Received: from mail.dunaweb.hu ([81.17.184.3]:36228 "EHLO mail.dunaweb.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753023AbYF1RsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 13:48:18 -0400
-X-Greylist: delayed 358 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Jun 2008 13:48:17 EDT
-Message-ID: <486677F7.6080004@dunaweb.hu>
-Date: Sat, 28 Jun 2008 19:42:15 +0200
-From: Zoltan Boszormenyi <zboszor@dunaweb.hu>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 28 Jun 2008 13:54:10 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:36366 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753388AbYF1RyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 13:54:09 -0400
+Date: Sun, 29 Jun 2008 02:51:33 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH 02/20] mm: generic show_mem()
+Message-ID: <20080628175133.GA6364@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Johannes Weiner <hannes@saeurebad.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+References: <20080627115349.743368154@saeurebad.de> <20080627120048.059732179@saeurebad.de> <20080628042240.GB25492@linux-sh.org> <87myl5ama2.fsf@skyscraper.fehenstaub.lan>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Mickey mouse voices on snd-intel8x0
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87myl5ama2.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-I have a Compaq Deskpro EN with PIII/866 recycled as a thin client.
-The problem was that sound on the thin client was played faster than it
-should.
-I have Fedora 9/x86-64 on the main machine, so the thin client is LTSP5
-that comes with F9.
-I tried everything (acpi=off, etc) but the strange voice didn't get better.
-I discovered this in the dmesg:
-
-intel8x0_measure_ac97_clock: measured 50895 usecs
-intel8x0: measured clock 78 rejected
-intel8x0: clocking to 48000
-
-I looked at the current kernel sources and found the solution for that.
-I had to provide this for the thin client in
-/opt/ltsp/i386/etc/modprobe.conf :
-
-options snd-intel8x0 ac97_clock=44100
-
-# lspci -s 00:1f.5
-00:1f.5 Multimedia audio controller: Intel Corporation 82801BA/BAM AC'97
-Audio Controller (rev 02)
-# lspci -ns 00:1f.5
-00:1f.5 0401: 8086:2445 (rev 02)
-
-Best regards,
-Zoltán Böszörményi
-
+On Sat, Jun 28, 2008 at 12:25:57PM +0200, Johannes Weiner wrote:
+> Paul Mundt <lethal@linux-sh.org> writes:
+> > On Fri, Jun 27, 2008 at 01:53:51PM +0200, Johannes Weiner wrote:
+> >> This implements a platform-independent version of show_mem().
+> >> 
+> >> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+> >
+> > Looking at this again, does having this as a Kconfig option really make
+> > sense? We have no tristate in-tree users of this that I can see, wouldn't
+> > this be better off in lib/? It would be preferable not to let the
+> > HAVE_foo stuff get out of hand if we can avoid it.
+> 
+> I hate the current Kconfig usage, too.  But I figured, if I won't obey
+> on such decisions by people who maintain it, it won't have a chance to
+> get in.
+> 
+> So, what do you suggest?  Moving it to lib/ and have one simple #define
+> if the arch wants to use it or not?
+> 
+There's no need for a define. If you move it to lib/ it will just be the
+default implementation unless an architecture overloads it with their own
+definition. With your current patch set, you should just be able to shove
+it in to lib/, drop the Kconfig option, and be good to go.
