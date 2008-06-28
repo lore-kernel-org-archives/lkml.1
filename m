@@ -1,125 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753610AbYF1FbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbYF1FqK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753610AbYF1FbT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 01:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbYF1Fa7
+	id S1754703AbYF1FqK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 01:46:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbYF1Fpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 01:30:59 -0400
-Received: from vms042pub.verizon.net ([206.46.252.42]:44182 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751682AbYF1Fat (ORCPT
+	Sat, 28 Jun 2008 01:45:55 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:6382 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753388AbYF1Fpt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 01:30:49 -0400
-Date: Sat, 28 Jun 2008 01:30:12 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: [GIT PATCH] ACPI patches for 2.6.26-rc8
-X-X-Sender: lenb@localhost.localdomain
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <ak@linux.intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Message-id: <alpine.LFD.1.10.0806280126160.14731@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 28 Jun 2008 01:45:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=JD3uuPG7J/sULh1hTTH7J1+ve8x5JjrHEIA6c6O567M3v6qGX7Lv6dAtWUrGleK/T8
+         o6uDHNvMA+nKn8UfeM5v8YtPoTZHheQK6MQTNgQAkJ47YXd8Xqhx2Ftl+V9JpLSWzFp9
+         2IelJSYFTjYkjXHnluycuiPQ5gq9WiB4s5vYs=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: fix init_memory_mapping over boundary v2
+Date: Fri, 27 Jun 2008 22:47:11 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200806251748.06743.yhlu.kernel@gmail.com> <200806252151.29028.yhlu.kernel@gmail.com> <200806271538.46829.yhlu.kernel@gmail.com>
+In-Reply-To: <200806271538.46829.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806272247.11971.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-please pull from: 
+some end boundary is only page alignment, instead of 2M alignment,
+so call ker_phycial_mapping_init three times.
+then don't overmap above the max_low_pfn
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+v2: make init_memory_mapping more solid: start could be any value other than 0
 
-This will update the files shown below.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-Note that I will be taking a sabbatical from Intel this summer.
-Andi Kleen will maintain Linux/ACPI while I'm away.
+---
+ arch/x86/mm/init_32.c |   86 ++++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 62 insertions(+), 24 deletions(-)
 
-thanks!
-
--Len
-
-ps. individual patches are available on linux-acpi@vger.kernel.org
-and a consolidated plain patch is available here:
-ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.6.26/acpi-release-20080609-2.6.26-rc8.diff.gz
-
- Documentation/feature-removal-schedule.txt |    9 +++++++++
- drivers/acpi/bay.c                         |    3 +++
- drivers/acpi/dock.c                        |    3 +++
- drivers/acpi/glue.c                        |    3 +++
- drivers/thermal/Kconfig                    |    9 +++++++++
- drivers/thermal/thermal_sys.c              |    4 ++--
- include/linux/thermal.h                    |    6 ++----
- 7 files changed, 31 insertions(+), 6 deletions(-)
-
-through these commits:
-
-Len Brown (1):
-      dock: bay: Don't call acpi_walk_namespace() when ACPI is disabled.
-
-Rene Herman (1):
-      thermal: Create CONFIG_THERMAL_HWMON=n
-
-Vegard Nossum (1):
-      ACPI: don't walk tables if ACPI was disabled
-
-with this log:
-
-commit c4e6a2e64e948de42473e9c829181d768b1258c3
-Merge: 816c2ed... 16d7523...
-Author: Len Brown <len.brown@intel.com>
-Date:   Thu Jun 26 01:56:35 2008 -0400
-
-    Merge branches 'release', 'acpi_disabled' and 'bugzilla-10958' into release
-
-commit 816c2eda3ce8fa7eb62f22e01e2ec7a3f7d677c0
-Author: Len Brown <len.brown@intel.com>
-Date:   Tue Jun 24 22:57:12 2008 -0400
-
-    dock: bay: Don't call acpi_walk_namespace() when ACPI is disabled.
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 4389ed2ff61de2b1485b31bf342da913dd342f59
-Author: Vegard Nossum <vegard.nossum@gmail.com>
-Date:   Fri Jun 20 15:39:09 2008 +0200
-
-    ACPI: don't walk tables if ACPI was disabled
-    
-    Ingo Molnar wrote:
-    > -tip auto-testing started triggering this spinlock corruption message
-    > yesterday:
-    >
-    > [    3.976213] calling  acpi_rtc_init+0x0/0xd3
-    > [    3.980213] ACPI Exception (utmutex-0263): AE_BAD_PARAMETER, Thread F7C50000 could not acquire Mutex [3] [20080321]
-    > [    3.992213] BUG: spinlock bad magic on CPU#0, swapper/1
-    > [    3.992213]  lock: c2508dc4, .magic: 00000000, .owner: swapper/1, .owner_cpu: 0
-    
-    This is apparently because some parts of ACPI, including mutexes, are not
-    initialized when acpi=off is passed to the kernel.
-    
-    Reported-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 16d752397301b95abaa95cbaf9e785d221872311
-Author: Rene Herman <rene.herman@keyaccess.nl>
-Date:   Tue Jun 24 19:38:56 2008 +0200
-
-    thermal: Create CONFIG_THERMAL_HWMON=n
-    
-    A bug in libsensors <= 2.10.6 is exposed
-    when this new hwmon I/F is enabled.
-    Create CONFIG_THERMAL_HWMON=n
-    until some time after libsensors 2.10.7 ships
-    so those users can run the latest kernel.
-    
-    libsensors 3.x is already fixed -- those users
-    can use CONFIG_THERMAL_HWMON=y now.
-    
-    Signed-off-by: Rene Herman <rene.herman@gmail.com>
-    Acked-by: Mark M. Hoffman <mhoffman@lightlink.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
+Index: linux-2.6/arch/x86/mm/init_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/init_32.c
++++ linux-2.6/arch/x86/mm/init_32.c
+@@ -184,8 +184,9 @@ static inline int is_kernel_text(unsigne
+  * PAGE_OFFSET:
+  */
+ static void __init kernel_physical_mapping_init(pgd_t *pgd_base,
+-						unsigned long start,
+-						unsigned long end)
++						unsigned long start_pfn,
++						unsigned long end_pfn,
++						int use_pse)
+ {
+ 	int pgd_idx, pmd_idx, pte_ofs;
+ 	unsigned long pfn;
+@@ -193,32 +194,30 @@ static void __init kernel_physical_mappi
+ 	pmd_t *pmd;
+ 	pte_t *pte;
+ 	unsigned pages_2m = 0, pages_4k = 0;
+-	unsigned limit_pfn = end >> PAGE_SHIFT;
+ 
+-	pgd_idx = pgd_index(PAGE_OFFSET);
+-	pgd = pgd_base + pgd_idx;
+-	pfn = start >> PAGE_SHIFT;
++	if (!cpu_has_pse)
++		use_pse = 0;
+ 
++	pfn = start_pfn;
++	pgd_idx = pgd_index((pfn<<PAGE_SHIFT) + PAGE_OFFSET);
++	pgd = pgd_base + pgd_idx;
+ 	for (; pgd_idx < PTRS_PER_PGD; pgd++, pgd_idx++) {
+ 		pmd = one_md_table_init(pgd);
+-		if (pfn >= limit_pfn)
++
++		if (pfn >= end_pfn)
+ 			continue;
+ 
+-		for (pmd_idx = 0;
+-		     pmd_idx < PTRS_PER_PMD && pfn < limit_pfn;
++		pmd_idx = pmd_index((pfn<<PAGE_SHIFT) + PAGE_OFFSET);
++		pmd += pmd_idx;
++		for (; pmd_idx < PTRS_PER_PMD && pfn < end_pfn;
+ 		     pmd++, pmd_idx++) {
+ 			unsigned int addr = pfn * PAGE_SIZE + PAGE_OFFSET;
+ 
+ 			/*
+ 			 * Map with big pages if possible, otherwise
+ 			 * create normal page tables:
+-			 *
+-			 * Don't use a large page for the first 2/4MB of memory
+-			 * because there are often fixed size MTRRs in there
+-			 * and overlapping MTRRs into large pages can cause
+-			 * slowdowns.
+ 			 */
+-			if (cpu_has_pse && !(pgd_idx == 0 && pmd_idx == 0)) {
++			if (use_pse) {
+ 				unsigned int addr2;
+ 				pgprot_t prot = PAGE_KERNEL_LARGE;
+ 
+@@ -233,13 +232,12 @@ static void __init kernel_physical_mappi
+ 				set_pmd(pmd, pfn_pmd(pfn, prot));
+ 
+ 				pfn += PTRS_PER_PTE;
+-				max_pfn_mapped = pfn;
+ 				continue;
+ 			}
+ 			pte = one_page_table_init(pmd);
+ 
+ 			for (pte_ofs = 0;
+-			     pte_ofs < PTRS_PER_PTE && pfn < max_low_pfn;
++			     pte_ofs < PTRS_PER_PTE && pfn < end_pfn;
+ 			     pte++, pfn++, pte_ofs++, addr += PAGE_SIZE) {
+ 				pgprot_t prot = PAGE_KERNEL;
+ 
+@@ -249,7 +247,6 @@ static void __init kernel_physical_mappi
+ 				pages_4k++;
+ 				set_pte(pte, pfn_pte(pfn, prot));
+ 			}
+-			max_pfn_mapped = pfn;
+ 		}
+ 	}
+ 	update_page_count(PG_LEVEL_2M, pages_2m);
+@@ -729,7 +726,7 @@ void __init setup_bootmem_allocator(void
+ 
+ static void __init find_early_table_space(unsigned long end)
+ {
+-	unsigned long puds, pmds, tables, start;
++	unsigned long puds, pmds, ptes, tables, start;
+ 
+ 	puds = (end + PUD_SIZE - 1) >> PUD_SHIFT;
+ 	tables = PAGE_ALIGN(puds * sizeof(pud_t));
+@@ -737,10 +734,15 @@ static void __init find_early_table_spac
+ 	pmds = (end + PMD_SIZE - 1) >> PMD_SHIFT;
+ 	tables += PAGE_ALIGN(pmds * sizeof(pmd_t));
+ 
+-	if (!cpu_has_pse) {
+-		int ptes = (end + PAGE_SIZE - 1) >> PAGE_SHIFT;
+-		tables += PAGE_ALIGN(ptes * sizeof(pte_t));
+-	}
++	if (cpu_has_pse) {
++		int extra;
++		extra = end - ((end>>21) << 21);
++		extra += (2<<20);
++		ptes = (extra + PAGE_SIZE - 1) >> PAGE_SHIFT;
++	} else
++		ptes = (end + PAGE_SIZE - 1) >> PAGE_SHIFT;
++
++	tables += PAGE_ALIGN(ptes * sizeof(pte_t));
+ 
+ 	/*
+ 	 * RED-PEN putting page tables only on node 0 could
+@@ -766,6 +768,8 @@ unsigned long __init_refok init_memory_m
+ 						unsigned long end)
+ {
+ 	pgd_t *pgd_base = swapper_pg_dir;
++	unsigned long start_pfn, end_pfn;
++	unsigned long big_page_start;
+ 
+ 	/*
+ 	 * Find space for the kernel direct mapping tables.
+@@ -790,7 +794,41 @@ unsigned long __init_refok init_memory_m
+ 		__PAGE_KERNEL_EXEC |= _PAGE_GLOBAL;
+ 	}
+ 
+-	kernel_physical_mapping_init(pgd_base, start, end);
++	/*
++	 * Don't use a large page for the first 2/4MB of memory
++	 * because there are often fixed size MTRRs in there
++	 * and overlapping MTRRs into large pages can cause
++	 * slowdowns.
++	 */
++	big_page_start = 2UL<<20;
++	if (start < big_page_start) {
++		start_pfn = start >> PAGE_SHIFT;
++		end_pfn = min(big_page_start>>PAGE_SHIFT, end>>PAGE_SHIFT);
++	} else {
++		/* head is not 2M alignment ? */
++		start_pfn = (start >> 21) << (21 - PAGE_SHIFT);
++		end_pfn = start >> PAGE_SHIFT;
++	}
++	if (start_pfn < end_pfn)
++		kernel_physical_mapping_init(pgd_base, start_pfn, end_pfn, 0);
++
++	/* big page range */
++	start_pfn = ((start + ((2UL<<20) - 1)) >> 21) << (21 - PAGE_SHIFT);
++	if (start_pfn < (big_page_start >> PAGE_SHIFT))
++		start_pfn =  big_page_start >> PAGE_SHIFT;
++	end_pfn = (end >> 21) << (21 - PAGE_SHIFT);
++	if (start_pfn < end_pfn)
++		kernel_physical_mapping_init(pgd_base, start_pfn, end_pfn,
++						cpu_has_pse);
++
++	/* tail is not 2M alignment ? */
++	start_pfn = end_pfn;
++	if (start_pfn > (big_page_start>>PAGE_SHIFT)) {
++		end_pfn = end >> PAGE_SHIFT;
++		if (start_pfn < end_pfn)
++			kernel_physical_mapping_init(pgd_base, start_pfn,
++							 end_pfn, 0);
++	}
+ 
+ 	early_ioremap_page_table_range_init(pgd_base);
+ 
