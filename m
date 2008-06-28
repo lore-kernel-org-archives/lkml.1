@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753744AbYF1Lr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754317AbYF1LwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753744AbYF1Lr5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 07:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbYF1Lrs
+	id S1754317AbYF1LwV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 07:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbYF1LwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 07:47:48 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:45496 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750723AbYF1Lrs (ORCPT
+	Sat, 28 Jun 2008 07:52:12 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:39033 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750736AbYF1LwL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 07:47:48 -0400
-To: Agner Fog <agner@agner.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: ABI change for device drivers using future AVX instruction set
-From: Andi Kleen <andi@firstfloor.org>
-References: <48626514.2040905@agner.org>
-	<20080625092224.736c2541@infradead.org> <4862ECAB.1040402@zytor.com>
-	<4864CFA5.9050901@agner.org> <20080627072231.7337ba18@infradead.org>
-	<4865F0DA.2050906@agner.org>
-Date: Sat, 28 Jun 2008 13:47:43 +0200
-In-Reply-To: <4865F0DA.2050906@agner.org> (Agner Fog's message of "Sat, 28 Jun 2008 10:05:46 +0200")
-Message-ID: <87myl5pyqo.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Sat, 28 Jun 2008 07:52:11 -0400
+Message-ID: <486625E2.2020808@ru.mvista.com>
+Date: Sat, 28 Jun 2008 15:52:02 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Jun 2008 11:40:23.0788 (UTC) FILETIME=[C0892AC0:01C8D913]
+To: avorontsov@ru.mvista.com
+Cc: Ingo Molnar <mingo@elte.hu>, linux-ide@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH v2 -rt] ide: workaround buggy hardware issues with	preemptable
+ hardirqs
+References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu> <20080624000016.GA12547@polina.dev.rtsoft.ru> <20080625123431.GA25452@polina.dev.rtsoft.ru> <20080628005436.GA1956@polina.dev.rtsoft.ru> <486612CC.3060505@ru.mvista.com> <20080628113126.GA438@polina.dev.rtsoft.ru>
+In-Reply-To: <20080628113126.GA438@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Agner Fog <agner@agner.org> writes:
+Hello.
 
-I explained it earlier, but you didn't seem to have understood it.
-Here's it again in a simpler form:
+Anton Vorontsov wrote:
+>>> But some hardware (namely ULi M5228 in the ULi M1575 "Super South Brige")
+>>> behaves in a strange way: it asserts interrupts as edge sensitive. And
+>>> because preemptable IRQ handler disables PIC's interrupt, PIC will likely
+>>> miss it.
+>>>   
+>>>       
+>>   Unmasking an IRQ should re-enable an edge detector in a PIC (or that  
+>> detector should even be independent from mask).
+>>     
+> Should? Hm.. well, I can easily check it. Will just program the MPIC IRQ
+> to edge sensitive, and see if it fixes the problem (not sure if I already
+> tried this, I think I did try).
+>   
 
-If a x86 device driver doesn't use the standard kernel interfaces
-for saving/restoring extended state (kernel_fpu_begin/end) it will die. 
-That is because Linux uses lazy FPU saving by default and when the lazy FPU exception
-hits kernel code it will crash because that's not allowed. 
+   That will not help if edge detector is not active for masked out IRQs 
+(that's how i8259 behaves, IIRC) *and* you're getting the short IRQ 
+"pulses" but should help if IRQ is generated normally -- though in this 
+case the level trigger mode (with the same polarity) should work as well...
 
-And the standard interfaces are going to handle all extended state supported
-by the kernel. Full XSAVE support should be there for 2.6.27.
+MBR, Sergei
 
-Pretty much the whole problem you describe in your original email doesn't
-apply to Linux because of that.
-
--Andi
 
