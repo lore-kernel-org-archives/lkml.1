@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbYF1MgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756527AbYF1Mgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755347AbYF1MgU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 08:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbYF1MgH
+	id S1756527AbYF1Mgm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 08:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbYF1MgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 08:36:07 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44489 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751214AbYF1MgG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 08:36:06 -0400
-Message-ID: <48663032.6010207@firstfloor.org>
-Date: Sat, 28 Jun 2008 14:36:02 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: Peter Zijlstra <peterz@infradead.org>, dipankar@in.ibm.com,
-       balbir@linux.vnet.ibm.com, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Vatsa <vatsa@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [RFC v1] Tunable sched_mc_power_savings=n
-References: <4863AF57.3040005@linux.vnet.ibm.com> <4863DB29.1020304@firstfloor.org> <20080626185254.GA12416@dirshya.in.ibm.com> <4863F93C.9040102@firstfloor.org> <20080626210025.GB26167@in.ibm.com> <48640C04.9020600@firstfloor.org> <1214516584.12265.10.camel@twins.programming.kicks-ass.net> <48641A7D.6080204@firstfloor.org> <1214553090.2801.7.camel@twins.programming.kicks-ass.net> <48649F84.4090501@firstfloor.org> <20080628122237.GA22099@srcf.ucam.org>
-In-Reply-To: <20080628122237.GA22099@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Jun 2008 08:36:12 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:56725 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752440AbYF1MgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 08:36:10 -0400
+Date: Sat, 28 Jun 2008 16:38:25 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] sched: fix TASK_WAKEKILL vs SIGKILL race
+Message-ID: <20080628123825.GA1682@tv-sign.ru>
+References: <20080608172041.GA10383@tv-sign.ru> <20080627204954.4CC04154226@magilla.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080627204954.4CC04154226@magilla.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> On Fri, Jun 27, 2008 at 10:06:28AM +0200, Andi Kleen wrote:
+On 06/09, Roland McGrath wrote:
+>
+   ^^^^^
+Oops, something is wrong! I received this message today, 06/28.
+
+> > Note this "__TASK_STOPPED | __TASK_TRACED" check in signal_pending_state().
+> > This is needed to preserve the current behaviour (ptrace_notify). I hope
+> > this check will be removed soon, but this (afaics good) change needs the
+> > separate discussion.
 > 
->> Ok distcc is a special case, but it doesn't apply to a lot of other
->> processes (do you really want your CPU to crank up for "updatedb" or
->> beagle or some backup job for example?)
-> 
-> If something's CPU-bound, then you almost certainly want to speed the 
-> CPU up. There's no power advantage to leaving it at a low frequency. 
+> Agreed.  I think it might actually already be safe to drop it, but we can
+> get to that after this settles.
 
-I'm not sure you can say it that certainly. While on many standalone systems
-"race to idle" is the best strategy, there are cases where it is not
-true.
+Great! I'll re-send the patch which drops it in a minute.
 
-For example if you're in a data center at a specific operating point and
-you would need to crank up the air condition at significant power cost it might
-be well better overall to force all servers to a lower operating point
-and avoid that.
+Could you also look at other patches?
 
-That said in general you all should have complained when ondemand behaviour
-was introduced.
+	[PATCH 2/3] ptrace: never sleep in TASK_TRACED if SIGKILL'ed
+	http://marc.info/?l=linux-kernel&m=121362601402886
 
-Also it's unclear that the general "race to idle" heuristic really
-applies to the case of the "keep sockets idle" power optimization
-that started this thread.
+	[PATCH 3/3] ptrace: kill may_ptrace_stop()
+	http://marc.info/?l=linux-kernel&m=121362601702897
 
-Usually package C states bring much more than core C states
-and keeping another package completely idle saves likely
-more power than the power cost of running something a little
-bit slower on a package that is already busy on another core.
+I think ptrace_stop() really needs changes. But I don't know what is
+the supposed behaviour of PT_TRACE_EXIT. Should we sleep even if the
+task was killed? Should we sleep if the thread was killed because another
+one does exit_group() or exec() ?
 
-I still think using nice levels for this is reasonable.
+We can use "SIGNAL_GROUP_EXIT && (group_exit_code & 0x7f)" instead
+of signal_group_exit() to be sure that task was killed by the fatal
+signal.
 
--Andi
+Oleg.
+
