@@ -1,92 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759170AbYF1RzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbYF1SOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759170AbYF1RzS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 13:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbYF1RzD
+	id S1758380AbYF1SOi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 14:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbYF1SO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 13:55:03 -0400
-Received: from colo.lackof.org ([198.49.126.79]:43184 "EHLO colo.lackof.org"
+	Sat, 28 Jun 2008 14:14:29 -0400
+Received: from naru.obs2.net ([84.20.150.76]:53001 "EHLO narury.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753500AbYF1RzB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 13:55:01 -0400
-Date: Sat, 28 Jun 2008 11:54:49 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Julia Lawall <julia@diku.dk>
-Cc: akinobu.mita@gmail.com, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 6/14] arch/parisc: Eliminate NULL test and memset after
-	alloc_bootmem
-Message-ID: <20080628175449.GB12265@colo.lackof.org>
-References: <Pine.LNX.4.64.0806241023080.26777@ask.diku.dk>
+	id S1753388AbYF1SO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 14:14:28 -0400
+X-Greylist: delayed 1321 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Jun 2008 14:14:28 EDT
+Date: Sat, 28 Jun 2008 20:52:25 +0300
+From: Riku Voipio <riku.voipio@iki.fi>
+To: Martin Michlmayr <tbm@cyrius.com>
+Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
+       buytenh@wantstofly.org
+Subject: Re: LEDs: how to handle gpios that control brightness for all LEDs
+Message-ID: <20080628175225.GA32176@kos.to>
+References: <20080628153109.GA20215@deprecation.cyrius.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="BXVAT5kNtrzKuDFl"
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806241023080.26777@ask.diku.dk>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20080628153109.GA20215@deprecation.cyrius.com>
+X-message-flag: Warning: message not sent with a DRM-Certified client
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 24, 2008 at 10:23:28AM +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> As noted by Akinobu Mita in patch b1fceac2b9e04d278316b2faddf276015fc06e3b,
-> alloc_bootmem and related functions never return NULL and always return a
-> zeroed region of memory.  Thus a NULL test or memset after calls to these
-> functions is unnecessary.
-> 
->  arch/parisc/mm/init.c |    1 -
->  1 file changed, 1 deletion(-)
-> 
-> This was fixed using the following semantic patch.
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @@
-> expression E;
-> statement S;
-> @@
-> 
-> E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_pages\)(...)
-> ... when != E
-> (
-> - BUG_ON (E == NULL);
-> |
-> - if (E == NULL) S
-> )
-> 
-> @@
-> expression E,E1;
-> @@
-> 
-> E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_pages\)(...)
-> ... when != E
-> - memset(E,0,E1);
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Acked-by: Grant Grundler <grundler@parisc-linux.org>
+--BXVAT5kNtrzKuDFl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-thanks,
-grant
+On Sat, Jun 28, 2008 at 05:31:09PM +0200, Martin Michlmayr wrote:
+> I have a device that has various gpios that correspond to the colours
+> (blue, red) of various LEDs.  They only accept 0/1, not the actual
+> brightness.  However, there are two other gpios that can be used to
+> control the brightness (of all LEDs): gpio V_LED 5V is bright, gpio
+> V_LED 3.3V is dimmed and if neither of these two gpios are set, all
+> LEDs stay off.
 
-> ---
-> 
-> diff -u -p a/arch/parisc/mm/init.c b/arch/parisc/mm/init.c
-> --- a/arch/parisc/mm/init.c
-> +++ b/arch/parisc/mm/init.c
-> @@ -765,7 +765,6 @@ static void __init pagetable_init(void)
->  #endif
->  
->  	empty_zero_page = alloc_bootmem_pages(PAGE_SIZE);
-> -	memset(empty_zero_page, 0, PAGE_SIZE);
->  }
->  
->  static void __init gateway_init(void)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-parisc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Can I simply export these brightness gpios to userland or would it be
+> better to handle the brightness setting in the kernel so that setting
+> e.g. 100 to a LED would automatically set the V_LED 3.3V gpio and 255
+> would set V_LED 5V.  If so, how should this be done?
+
+There is a enum led_brightness, which defines LED_HALF and LED_FULL. You
+would need a custom brightness function. Leds-gpio driver would need to
+be extended for it. The main problem with this approach is the
+unexpected effect for enduser, that adjusting brighntess of one led
+affects all of them.
+
+> Second, the LEDS class sets all gpios to off by default.  This is bad
+> in my case because if neither of the brightness gpios (3.3V or 5V) are
+> on, the SATA lights won't be shown either.  Is there a way to specify
+> in the platform code that one gpio should be turned on by default?
+
+default-on trigger is probably the easiest way.
+
+--=20
+"rm -rf" only sounds scary if you don't have backups
+
+--BXVAT5kNtrzKuDFl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIZnpZibPvMsrqrwMRAhf1AKDHGkUmVnxCyyAVvHxXACdFfRvYywCgkp6N
+pGYdrBNOYnwyNytgmfqJ/Ic=
+=ikvf
+-----END PGP SIGNATURE-----
+
+--BXVAT5kNtrzKuDFl--
