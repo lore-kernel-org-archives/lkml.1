@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756957AbYF1OXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbYF1OjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756957AbYF1OXR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 10:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbYF1OXF
+	id S1755473AbYF1OjY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 10:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbYF1OjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 10:23:05 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:49917 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753368AbYF1OXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 10:23:04 -0400
-Date: Sat, 28 Jun 2008 16:23:12 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] mmc: Export internal host state through debugfs
-Message-ID: <20080628162312.0f10c6d3@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <20080628154015.423daf51@mjolnir.drzeus.cx>
-References: <1214478589-21291-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<20080628152856.3ba1c2ff@mjolnir.drzeus.cx>
-	<20080628153704.36eda3e6@hskinnemo-gx745.norway.atmel.com>
-	<20080628154015.423daf51@mjolnir.drzeus.cx>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 28 Jun 2008 10:39:13 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:50732 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752202AbYF1OjM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 10:39:12 -0400
+Message-ID: <48664B4A.9090308@nokia.com>
+Date: Sat, 28 Jun 2008 17:31:38 +0300
+From: Stefan Becker <Stefan.Becker@nokia.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: ext David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+CC: ext Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [REGRESSION] 2.6.24/25: random lockups when accessing external
+ USB harddrive
+References: <Pine.LNX.4.44L0.0806261018340.2811-100000@iolanthe.rowland.org> <48641325.2020903@nokia.com> <200806270907.37245.david-b@pacbell.net>
+In-Reply-To: <200806270907.37245.david-b@pacbell.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jun 2008 14:23:00.0828 (UTC) FILETIME=[782F51C0:01C8D92A]
+X-OriginalArrivalTime: 28 Jun 2008 14:32:23.0117 (UTC) FILETIME=[C755CFD0:01C8D92B]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> > Hmm. You mean it's better with three #ifdefs than one?
-> >   
+Hi David,
+
+ext David Brownell wrote:
 > 
-> Fewer lines though. Those dummy function stick out like a sore thumb.
-> It's a decent trade-off when you have multiple callers, but here we have
-> just the one.
+> If 442258e2ff69276ff767f3703b30ce6a31fdd181 isn't in the
+> kernel with those bugs, try applying it... else, I suggest
 
-Actually, if debugfs is disabled, debugfs_create_dir() and friends are
-inline functions which return ERR_PTR(-ENODEV). So if we just remove
-the whole #ifdef altogether, gcc should be smart enough to optimize
-away the whole thing if debugfs isn't enabled...
+That commit is about 4 months later than the commit I tracked down with 
+git bisect. I'm currently testing with 2.6.26-rc8, so that commit is in.
 
-I'll give it a try.
+> you try putting something like your
+> 
+> 	if (!raw_irqs_disabled()) {
+> 		printk(KERN_CRIT "interrupts enabled!\n");
+> 		dump_stack();
+>         }
+> 
+> logic at the beginning and end of usb_hcd_giveback_urb ... and
+> maybe have it dump the address of the completion handler, when
+> you can finger such a handler as re-enabling IRQs.
 
-Haavard
+See my reply to Alan's mail...
+
+Regards,
+
+	Stefan
+
+---
+Stefan Becker
+E-Mail: Stefan.Becker@nokia.com
