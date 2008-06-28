@@ -1,217 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbYF1FqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbYF1Fts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754703AbYF1FqK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 01:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbYF1Fpz
+	id S1754840AbYF1Fts (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 01:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbYF1Ftj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 01:45:55 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:6382 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753388AbYF1Fpt (ORCPT
+	Sat, 28 Jun 2008 01:49:39 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:14909 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753746AbYF1Fth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 01:45:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=JD3uuPG7J/sULh1hTTH7J1+ve8x5JjrHEIA6c6O567M3v6qGX7Lv6dAtWUrGleK/T8
-         o6uDHNvMA+nKn8UfeM5v8YtPoTZHheQK6MQTNgQAkJ47YXd8Xqhx2Ftl+V9JpLSWzFp9
-         2IelJSYFTjYkjXHnluycuiPQ5gq9WiB4s5vYs=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: fix init_memory_mapping over boundary v2
-Date: Fri, 27 Jun 2008 22:47:11 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806251748.06743.yhlu.kernel@gmail.com> <200806252151.29028.yhlu.kernel@gmail.com> <200806271538.46829.yhlu.kernel@gmail.com>
-In-Reply-To: <200806271538.46829.yhlu.kernel@gmail.com>
+	Sat, 28 Jun 2008 01:49:37 -0400
+Message-ID: <fa686aa40806272249l7eae0c34k43a20ad41672b77a@mail.gmail.com>
+Date: Fri, 27 Jun 2008 22:49:36 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: monstr@seznam.cz
+Subject: Re: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
+Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
+       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
+       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
+       linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
+       hpa@zytor.com, "Michal Simek" <monstr@monstr.eu>
+In-Reply-To: <1214483429-32360-13-git-send-email-monstr@seznam.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806272247.11971.yhlu.kernel@gmail.com>
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-5-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-6-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-7-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-8-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-9-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-10-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-11-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-12-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-13-git-send-email-monstr@seznam.cz>
+X-Google-Sender-Auth: 5db678cb3158068a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 26, 2008 at 5:29 AM,  <monstr@seznam.cz> wrote:
+> From: Michal Simek <monstr@monstr.eu>
+>
+>
+> Signed-off-by: Michal Simek <monstr@monstr.eu>
+> ---
+>  arch/microblaze/platform/generic/system.dts |  300 +++++++++++++++++++++++++++
+>  1 files changed, 300 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/microblaze/platform/generic/system.dts
 
-some end boundary is only page alignment, instead of 2M alignment,
-so call ker_phycial_mapping_init three times.
-then don't overmap above the max_low_pfn
+Since this is a generated file, and entirely bitstream specific, does
+it make sense to include it in the kernel tree?  If it does, then is
+it produced from one of the Xilinx reference designs?  Can you add
+documentation to the header that specifies exactly which design
+version this .dts is for?
 
-v2: make init_memory_mapping more solid: start could be any value other than 0
+>
+> diff --git a/arch/microblaze/platform/generic/system.dts b/arch/microblaze/platform/generic/system.dts
+> new file mode 100644
+> index 0000000..724a037
+> --- /dev/null
+> +++ b/arch/microblaze/platform/generic/system.dts
+> @@ -0,0 +1,300 @@
+> +/*
+> + * (C) Copyright 2007-2008 Xilinx, Inc.
+> + * (C) Copyright 2007-2008 Michal Simek
+> + *
+> + * Michal SIMEK <monstr@monstr.eu>
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+If this is a generated file, then is this copyright notice even appropriate?
 
----
- arch/x86/mm/init_32.c |   86 ++++++++++++++++++++++++++++++++++++--------------
- 1 file changed, 62 insertions(+), 24 deletions(-)
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License as
+> + * published by the Free Software Foundation; either version 2 of
+> + * the License, or (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+> + * MA 02111-1307 USA
 
-Index: linux-2.6/arch/x86/mm/init_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/init_32.c
-+++ linux-2.6/arch/x86/mm/init_32.c
-@@ -184,8 +184,9 @@ static inline int is_kernel_text(unsigne
-  * PAGE_OFFSET:
-  */
- static void __init kernel_physical_mapping_init(pgd_t *pgd_base,
--						unsigned long start,
--						unsigned long end)
-+						unsigned long start_pfn,
-+						unsigned long end_pfn,
-+						int use_pse)
- {
- 	int pgd_idx, pmd_idx, pte_ofs;
- 	unsigned long pfn;
-@@ -193,32 +194,30 @@ static void __init kernel_physical_mappi
- 	pmd_t *pmd;
- 	pte_t *pte;
- 	unsigned pages_2m = 0, pages_4k = 0;
--	unsigned limit_pfn = end >> PAGE_SHIFT;
- 
--	pgd_idx = pgd_index(PAGE_OFFSET);
--	pgd = pgd_base + pgd_idx;
--	pfn = start >> PAGE_SHIFT;
-+	if (!cpu_has_pse)
-+		use_pse = 0;
- 
-+	pfn = start_pfn;
-+	pgd_idx = pgd_index((pfn<<PAGE_SHIFT) + PAGE_OFFSET);
-+	pgd = pgd_base + pgd_idx;
- 	for (; pgd_idx < PTRS_PER_PGD; pgd++, pgd_idx++) {
- 		pmd = one_md_table_init(pgd);
--		if (pfn >= limit_pfn)
-+
-+		if (pfn >= end_pfn)
- 			continue;
- 
--		for (pmd_idx = 0;
--		     pmd_idx < PTRS_PER_PMD && pfn < limit_pfn;
-+		pmd_idx = pmd_index((pfn<<PAGE_SHIFT) + PAGE_OFFSET);
-+		pmd += pmd_idx;
-+		for (; pmd_idx < PTRS_PER_PMD && pfn < end_pfn;
- 		     pmd++, pmd_idx++) {
- 			unsigned int addr = pfn * PAGE_SIZE + PAGE_OFFSET;
- 
- 			/*
- 			 * Map with big pages if possible, otherwise
- 			 * create normal page tables:
--			 *
--			 * Don't use a large page for the first 2/4MB of memory
--			 * because there are often fixed size MTRRs in there
--			 * and overlapping MTRRs into large pages can cause
--			 * slowdowns.
- 			 */
--			if (cpu_has_pse && !(pgd_idx == 0 && pmd_idx == 0)) {
-+			if (use_pse) {
- 				unsigned int addr2;
- 				pgprot_t prot = PAGE_KERNEL_LARGE;
- 
-@@ -233,13 +232,12 @@ static void __init kernel_physical_mappi
- 				set_pmd(pmd, pfn_pmd(pfn, prot));
- 
- 				pfn += PTRS_PER_PTE;
--				max_pfn_mapped = pfn;
- 				continue;
- 			}
- 			pte = one_page_table_init(pmd);
- 
- 			for (pte_ofs = 0;
--			     pte_ofs < PTRS_PER_PTE && pfn < max_low_pfn;
-+			     pte_ofs < PTRS_PER_PTE && pfn < end_pfn;
- 			     pte++, pfn++, pte_ofs++, addr += PAGE_SIZE) {
- 				pgprot_t prot = PAGE_KERNEL;
- 
-@@ -249,7 +247,6 @@ static void __init kernel_physical_mappi
- 				pages_4k++;
- 				set_pte(pte, pfn_pte(pfn, prot));
- 			}
--			max_pfn_mapped = pfn;
- 		}
- 	}
- 	update_page_count(PG_LEVEL_2M, pages_2m);
-@@ -729,7 +726,7 @@ void __init setup_bootmem_allocator(void
- 
- static void __init find_early_table_space(unsigned long end)
- {
--	unsigned long puds, pmds, tables, start;
-+	unsigned long puds, pmds, ptes, tables, start;
- 
- 	puds = (end + PUD_SIZE - 1) >> PUD_SHIFT;
- 	tables = PAGE_ALIGN(puds * sizeof(pud_t));
-@@ -737,10 +734,15 @@ static void __init find_early_table_spac
- 	pmds = (end + PMD_SIZE - 1) >> PMD_SHIFT;
- 	tables += PAGE_ALIGN(pmds * sizeof(pmd_t));
- 
--	if (!cpu_has_pse) {
--		int ptes = (end + PAGE_SIZE - 1) >> PAGE_SHIFT;
--		tables += PAGE_ALIGN(ptes * sizeof(pte_t));
--	}
-+	if (cpu_has_pse) {
-+		int extra;
-+		extra = end - ((end>>21) << 21);
-+		extra += (2<<20);
-+		ptes = (extra + PAGE_SIZE - 1) >> PAGE_SHIFT;
-+	} else
-+		ptes = (end + PAGE_SIZE - 1) >> PAGE_SHIFT;
-+
-+	tables += PAGE_ALIGN(ptes * sizeof(pte_t));
- 
- 	/*
- 	 * RED-PEN putting page tables only on node 0 could
-@@ -766,6 +768,8 @@ unsigned long __init_refok init_memory_m
- 						unsigned long end)
- {
- 	pgd_t *pgd_base = swapper_pg_dir;
-+	unsigned long start_pfn, end_pfn;
-+	unsigned long big_page_start;
- 
- 	/*
- 	 * Find space for the kernel direct mapping tables.
-@@ -790,7 +794,41 @@ unsigned long __init_refok init_memory_m
- 		__PAGE_KERNEL_EXEC |= _PAGE_GLOBAL;
- 	}
- 
--	kernel_physical_mapping_init(pgd_base, start, end);
-+	/*
-+	 * Don't use a large page for the first 2/4MB of memory
-+	 * because there are often fixed size MTRRs in there
-+	 * and overlapping MTRRs into large pages can cause
-+	 * slowdowns.
-+	 */
-+	big_page_start = 2UL<<20;
-+	if (start < big_page_start) {
-+		start_pfn = start >> PAGE_SHIFT;
-+		end_pfn = min(big_page_start>>PAGE_SHIFT, end>>PAGE_SHIFT);
-+	} else {
-+		/* head is not 2M alignment ? */
-+		start_pfn = (start >> 21) << (21 - PAGE_SHIFT);
-+		end_pfn = start >> PAGE_SHIFT;
-+	}
-+	if (start_pfn < end_pfn)
-+		kernel_physical_mapping_init(pgd_base, start_pfn, end_pfn, 0);
-+
-+	/* big page range */
-+	start_pfn = ((start + ((2UL<<20) - 1)) >> 21) << (21 - PAGE_SHIFT);
-+	if (start_pfn < (big_page_start >> PAGE_SHIFT))
-+		start_pfn =  big_page_start >> PAGE_SHIFT;
-+	end_pfn = (end >> 21) << (21 - PAGE_SHIFT);
-+	if (start_pfn < end_pfn)
-+		kernel_physical_mapping_init(pgd_base, start_pfn, end_pfn,
-+						cpu_has_pse);
-+
-+	/* tail is not 2M alignment ? */
-+	start_pfn = end_pfn;
-+	if (start_pfn > (big_page_start>>PAGE_SHIFT)) {
-+		end_pfn = end >> PAGE_SHIFT;
-+		if (start_pfn < end_pfn)
-+			kernel_physical_mapping_init(pgd_base, start_pfn,
-+							 end_pfn, 0);
-+	}
- 
- 	early_ioremap_page_table_range_init(pgd_base);
- 
+I don't this whole large legal block is necessary.  Unless specified
+otherwise in the comment block, I believe GPL licencing is pretty much
+assumed and so the above three copyrights should be redundant.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
