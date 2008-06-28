@@ -1,85 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbYF1Npb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbYF1Nq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755774AbYF1Npb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 09:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbYF1NpW
+	id S1757327AbYF1Nq7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 09:46:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbYF1Nqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 09:45:22 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:41033 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752652AbYF1NpV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 09:45:21 -0400
-Date: Sat, 28 Jun 2008 15:45:15 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, kernel@avr32linux.org,
-       shannon.nelson@intel.com, David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH v4 6/6] Atmel MCI: Driver for Atmel on-chip MMC
- controllers
-Message-ID: <20080628154515.0eb002f6@mjolnir.drzeus.cx>
-In-Reply-To: <20080628144313.353bbf18@hskinnemo-gx745.norway.atmel.com>
-References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-2-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-3-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-4-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-5-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-6-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-7-git-send-email-haavard.skinnemoen@atmel.com>
-	<20080627211014.0e80db04@siona.local>
-	<20080627215627.5d75639c@mjolnir.drzeus.cx>
-	<20080628144313.353bbf18@hskinnemo-gx745.norway.atmel.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+	Sat, 28 Jun 2008 09:46:51 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:49737 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752982AbYF1Nqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 09:46:51 -0400
+Date: Sat, 28 Jun 2008 15:47:00 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH 2/3] mmc: Export ios settings for a host through debugfs
+Message-ID: <20080628154700.426a422c@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <20080628153403.0870e96c@mjolnir.drzeus.cx>
+References: <1214478589-21291-1-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214478589-21291-2-git-send-email-haavard.skinnemoen@atmel.com>
+	<20080628153403.0870e96c@mjolnir.drzeus.cx>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-7521-1214660113-0001-2"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Jun 2008 13:46:48.0309 (UTC) FILETIME=[69433A50:01C8D925]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
+> On Thu, 26 Jun 2008 13:09:48 +0200
+> Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
 
---=_freyr.drzeus.cx-7521-1214660113-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+> > +static void mmc_remove_ios_debugfs(struct mmc_ios *ios)
+> > +{
+> > +	if (ios->dbg_root) {
+> 
+> You can save a bit of indentation if you do:
+> 
+> 	if (!ios->dbg_root)
+> 		return;
 
-On Sat, 28 Jun 2008 14:43:13 +0200
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+Good point.
 
-> Tests 15 and 17 return -EILSEQ instead of -ETIMEDOUT. The at91_mci
-> driver has the same problem, and I think it's a hardware issue -- the
-> controller wrongly flags a CRC error instead of a data timeout error
-> if the card doesn't respond with any CRC status after a write. I don't
-> know how to work around that problem.
+> > +static int mmc_add_ios_debugfs(struct mmc_ios *ios, struct dentry *parent)
+> > +{
+> > +	struct dentry *dir;
+> > +
+> > +	dir = debugfs_create_dir("ios", parent);
+> > +	if (!dir)
+> > +		return -EBUSY;	/* or whatever */
+> 
+> Is it undefined what a NULL return means here? I would have expected an
+> ERRPTR or ENOMEM.
 
-If that's how the hardware behaves, then EILSEQ will have to do. The
-test is more about forcing people to do proper error management in the
-driver than anything else. Have a check that you don't report a bad
-bytes_xfered though.
+Yeah...debugfs_create_dir() may return an ERRPTR only if debugfs is
+disabled. All other errors return NULL.
 
-Rgds
---=20
-     -- Pierre Ossman
+We wouldn't be here unless the caller managed to create the host
+directory, so checking IS_ERR() is redundant. Maybe ENOMEM would make
+more sense, but I could also be that the directory already exists,
+hence EBUSY is appropriate. We really don't know as long as debugfs
+keeps us in the dark...
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+> > +#ifdef CONFIG_MMC_DEBUG_FS
+> > +	struct dentry		*dbg_root;
+> > +	struct dentry		*dbg_clock;
+> > +	struct dentry		*dbg_vdd;
+> > +	struct dentry		*dbg_bus_mode;
+> > +	struct dentry		*dbg_chip_select;
+> > +	struct dentry		*dbg_power_mode;
+> > +	struct dentry		*dbg_bus_width;
+> > +	struct dentry		*dbg_timing;
+> > +#endif
+> 
+> Can't we use debugfs' own bookkeeping to keep track of them? Saves us a
+> lot of noise in these structures.
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+You mean d_subdirs in struct dentry? I guess we could do that...though
+I was sort of trying not to dig too deply into VFS internals...
 
---=_freyr.drzeus.cx-7521-1214660113-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkhmQG4ACgkQ7b8eESbyJLi5fgCfXI5+I7q29IPBjGghE7XQZNJq
-UOMAn3+9O4tmF9xeub4NjNLvFpYPSB1S
-=pYO0
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-7521-1214660113-0001-2--
+Haavard
