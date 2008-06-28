@@ -1,64 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbYF1QL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbYF1QQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755787AbYF1QL5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 12:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbYF1QLt
+	id S1756793AbYF1QQZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 12:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbYF1QQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 12:11:49 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:39584 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750928AbYF1QLt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 12:11:49 -0400
-Date: Sat, 28 Jun 2008 18:11:45 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] mmc: Add per-card debugfs support
-Message-ID: <20080628181145.60c55ea0@mjolnir.drzeus.cx>
-In-Reply-To: <20080628173637.53e3279f@hskinnemo-gx745.norway.atmel.com>
-References: <1214478589-21291-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214478589-21291-2-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214478589-21291-3-git-send-email-haavard.skinnemoen@atmel.com>
-	<20080628153745.027b0817@mjolnir.drzeus.cx>
-	<20080628154844.35a90ae9@hskinnemo-gx745.norway.atmel.com>
-	<20080628160110.41ec91f7@mjolnir.drzeus.cx>
-	<20080628161524.5c3fd45f@hskinnemo-gx745.norway.atmel.com>
-	<20080628172205.430b35b2@mjolnir.drzeus.cx>
-	<20080628173637.53e3279f@hskinnemo-gx745.norway.atmel.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+	Sat, 28 Jun 2008 12:16:18 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:43580 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750928AbYF1QQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 12:16:17 -0400
+Date: Sat, 28 Jun 2008 20:18:56 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] migrate_timers: add comment, use spinlock_irq()
+Message-ID: <20080628161856.GA7030@tv-sign.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Jun 2008 17:36:37 +0200
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+Add the comment to explain why the double lock in migrate_timers()
+can't deadlock.
 
-> Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> > 
-> > An alternative to sticking it into mmc.c is to create a debugfs.c that
-> > contains all the uglyness. Debugging code isn't quite as important to
-> > keep crystal clear.
-> 
-> But if we're going to rely on gcc optimizing the whole thing away when
-> debugfs is disabled, we must keep these buggers in the same file as its
-> caller...
-> 
-> Though I suppose an extra function call that does nothing at host and
-> card registration time isn't a very high price to pay for cleaner code.
-> 
+Change the code to use spinlock_irq() instead of local_irq_disable()
++ spin_lock().
 
-This is in the device addition/removal code as well. Hardly a hotpath.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
--- 
-     -- Pierre Ossman
+--- 26-rc2/kernel/timer.c~MIGRATE_TIMERS	2008-05-18 15:44:19.000000000 +0400
++++ 26-rc2/kernel/timer.c	2008-06-28 20:07:49.000000000 +0400
+@@ -1443,9 +1443,11 @@ static void __cpuinit migrate_timers(int
+ 	BUG_ON(cpu_online(cpu));
+ 	old_base = per_cpu(tvec_bases, cpu);
+ 	new_base = get_cpu_var(tvec_bases);
+-
+-	local_irq_disable();
+-	spin_lock(&new_base->lock);
++	/*
++	 * The caller is globally serialized and nobody else
++	 * takes two locks at once, deadlock is not possible.
++	 */
++	spin_lock_irq(&new_base->lock);
+ 	spin_lock_nested(&old_base->lock, SINGLE_DEPTH_NESTING);
+ 
+ 	BUG_ON(old_base->running_timer);
+@@ -1460,8 +1462,7 @@ static void __cpuinit migrate_timers(int
+ 	}
+ 
+ 	spin_unlock(&old_base->lock);
+-	spin_unlock(&new_base->lock);
+-	local_irq_enable();
++	spin_unlock_irq(&new_base->lock);
+ 	put_cpu_var(tvec_bases);
+ }
+ #endif /* CONFIG_HOTPLUG_CPU */
+--- 26-rc2/kernel/hrtimer.c~MIGRATE_TIMERS	2008-05-18 15:44:18.000000000 +0400
++++ 26-rc2/kernel/hrtimer.c	2008-06-28 20:08:15.000000000 +0400
+@@ -1615,9 +1615,11 @@ static void migrate_hrtimers(int cpu)
+ 	new_base = &get_cpu_var(hrtimer_bases);
+ 
+ 	tick_cancel_sched_timer(cpu);
+-
+-	local_irq_disable();
+-	spin_lock(&new_base->lock);
++	/*
++	 * The caller is globally serialized and nobody else
++	 * takes two locks at once, deadlock is not possible.
++	 */
++	spin_lock_irq(&new_base->lock);
+ 	spin_lock_nested(&old_base->lock, SINGLE_DEPTH_NESTING);
+ 
+ 	for (i = 0; i < HRTIMER_MAX_CLOCK_BASES; i++) {
+@@ -1626,8 +1628,7 @@ static void migrate_hrtimers(int cpu)
+ 	}
+ 
+ 	spin_unlock(&old_base->lock);
+-	spin_unlock(&new_base->lock);
+-	local_irq_enable();
++	spin_unlock_irq(&new_base->lock);
+ 	put_cpu_var(hrtimer_bases);
+ }
+ #endif /* CONFIG_HOTPLUG_CPU */
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
