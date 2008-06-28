@@ -1,100 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbYF1Fts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbYF1GPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754840AbYF1Fts (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 01:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbYF1Ftj
+	id S1754775AbYF1GPZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 02:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYF1GPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 01:49:39 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:14909 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753746AbYF1Fth (ORCPT
+	Sat, 28 Jun 2008 02:15:13 -0400
+Received: from web50103.mail.re2.yahoo.com ([206.190.38.31]:26914 "HELO
+	web50103.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752781AbYF1GPM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 01:49:37 -0400
-Message-ID: <fa686aa40806272249l7eae0c34k43a20ad41672b77a@mail.gmail.com>
-Date: Fri, 27 Jun 2008 22:49:36 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: monstr@seznam.cz
-Subject: Re: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
-Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
-       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
-       hpa@zytor.com, "Michal Simek" <monstr@monstr.eu>
-In-Reply-To: <1214483429-32360-13-git-send-email-monstr@seznam.cz>
+	Sat, 28 Jun 2008 02:15:12 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=JaLnsSQjzji9yDwJ1FRE3jt1LMpOdSbk69Hw2d3sTeRO1FxlpNS67m6R3C93cOWOqcwoVYIq4b/TY4E+RlhgEssZvBnIUm2tm+/K4fb7P4TJs6agxmNrkFLITYqbQAThQiqG1q7R5f5msT0t7bAZ75fYypGoT5VGnsmOLUR1UTM=;
+X-YMail-OSG: iUxDCjcVM1lmooBiD_3sgkYadkSMsyD3Ct4h2KKxxXbHWu1l7bC6QdAZvth5lUK8N0G3qP9LfSDK0DWGcZYCm5wJqwb29Qo_Qfw6FWJBeWGXZNO.fW4ScOfSw3jb.12iJw--
+Date: Fri, 27 Jun 2008 23:15:06 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Subject: Re: [PATCH 1/13] EDAC i5100 new intel chipset driver
+To: Andi Kleen <andi@firstfloor.org>, dougthompson@xmission.com
+Cc: bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <87r6aip2pi.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-5-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-6-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-7-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-8-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-9-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-10-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-11-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-12-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-13-git-send-email-monstr@seznam.cz>
-X-Google-Sender-Auth: 5db678cb3158068a
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <77374.55758.qm@web50103.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 5:29 AM,  <monstr@seznam.cz> wrote:
-> From: Michal Simek <monstr@monstr.eu>
->
->
-> Signed-off-by: Michal Simek <monstr@monstr.eu>
-> ---
->  arch/microblaze/platform/generic/system.dts |  300 +++++++++++++++++++++++++++
->  1 files changed, 300 insertions(+), 0 deletions(-)
->  create mode 100644 arch/microblaze/platform/generic/system.dts
 
-Since this is a generated file, and entirely bitstream specific, does
-it make sense to include it in the kernel tree?  If it does, then is
-it produced from one of the Xilinx reference designs?  Can you add
-documentation to the header that specifies exactly which design
-version this .dts is for?
+--- Andi Kleen <andi@firstfloor.org> wrote:
 
->
-> diff --git a/arch/microblaze/platform/generic/system.dts b/arch/microblaze/platform/generic/system.dts
-> new file mode 100644
-> index 0000000..724a037
-> --- /dev/null
-> +++ b/arch/microblaze/platform/generic/system.dts
-> @@ -0,0 +1,300 @@
-> +/*
-> + * (C) Copyright 2007-2008 Xilinx, Inc.
-> + * (C) Copyright 2007-2008 Michal Simek
-> + *
-> + * Michal SIMEK <monstr@monstr.eu>
+> dougthompson@xmission.com writes:
+> >
+> > 2)  I have not yet tackled the de-interleaving of the
+> > rank/controller address space into the physical address
+> > space of the CPU.  There is nothing fundamentally missing,
+> > it is just ending up to be a lot of code, and I'd rather
+> > keep it separate for now, esp since it doesn't work yet...
+> >
+> > 3)  The code depends on a particular i5100 chip select
+> > to DIMM mainboard chip select mapping.  This mapping
+> > seems obvious to me in order to support dual and single
+> > ranked memory, but it is not unique and DIMM labels
+> > could be wrong on other mainboards.  There is no way
+> > to query this mapping that I know of.
+> 
+> Since there's a non negligible probability that the output
+> of this driver is completely misleading because of (2) and (3)
+> and probably (4) too [reporting the wrong DIMMs etc.]
+> would it be possible to add some flag to EDAC that 
+> warns the user that the output is not fully reliable?\
 
-If this is a generated file, then is this copyright notice even appropriate?
+good idea.
 
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License as
-> + * published by the Free Software Foundation; either version 2 of
-> + * the License, or (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-> + * MA 02111-1307 USA
+Arthur, could you add some more text to the driver's output, before the call to the
+core's output function, doing exactly that? Explaining just what you DO know, and what you don't
+know?
 
-I don't this whole large legal block is necessary.  Unless specified
-otherwise in the comment block, I believe GPL licencing is pretty much
-assumed and so the above three copyrights should be redundant.
+doug t
 
-Cheers,
-g.
+> 
+> -Andi (who can just see people replacing the wrong DIMMs and 
+> then blaming Linux)
+> 
+> 
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+
+W1DUG
