@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYF1Mjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbYF1Mlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbYF1Mjm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 08:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYF1Mjd
+	id S1756391AbYF1Mlb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 08:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbYF1MlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 08:39:33 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:24868 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751981AbYF1Mjc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 08:39:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=f3/vkSG73uGNIE2c3CHdpNLNbXE+G0qeLF9kC2EaoPD0Eigh0VsOICZcAeeiQ/GcRT
-         nsYSE+KJBxeCVNKDvh2of9A7PH2pmQvsM7KfwqVbALyffYUb/Vpk5yCw0FY4Tryc/gbO
-         sNPc+Byi2j8LZxtC15lgNmQ6ABeAwfce41fHU=
-Message-ID: <19f34abd0806280539g4961392evb469d7c106c198c9@mail.gmail.com>
-Date: Sat, 28 Jun 2008 14:39:32 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Daniel J Blueman" <daniel.blueman@gmail.com>
-Subject: Re: ALC883 recording troubles...
-Cc: "Takashi Iwai" <tiwai@suse.de>,
-       "Romano Giannetti" <romano@dea.icai.upcomillas.es>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <6278d2220806280529n70c6233dk1c5768df5d52acf@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Jun 2008 08:41:24 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:52491 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752432AbYF1MlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 08:41:24 -0400
+Date: Sat, 28 Jun 2008 16:44:01 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] ptrace: don't sleep in TASK_TRACED if SIGKILL is pending
+Message-ID: <20080628124401.GA1705@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <6278d2220806091259t47c9b070v269da0f5855ef014@mail.gmail.com>
-	 <s5habhtesoq.wl%tiwai@suse.de>
-	 <6278d2220806111200g4f802885wfc5f0fd6c0405efb@mail.gmail.com>
-	 <s5hiqwf0vyr.wl%tiwai@suse.de>
-	 <6278d2220806271705v5bd5fec3l86c3560283063092@mail.gmail.com>
-	 <19f34abd0806280311s115062e6vc6d0f304cb744934@mail.gmail.com>
-	 <6278d2220806280329j2f77c52dp8fbae78420c136c1@mail.gmail.com>
-	 <6278d2220806280529n70c6233dk1c5768df5d52acf@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 28, 2008 at 2:29 PM, Daniel J Blueman
-<daniel.blueman@gmail.com> wrote:
-> Using your dumped config and
-> ftp://202.65.194.211/pc/audio/ALC268_DataSheet_1.3.pdf page 42, your
-> front mic pin complex is at node 19h; the mixers connecting to it are
-> at nodes 0Bh, 22h and 23h, all at the second input index, so one of
-> these should work:
->
-> # ./hda-verb /dev/snd/hwC0D0 0x0b SET_AMP_GAIN_MUTE 0x7280
-> # ./hda-verb /dev/snd/hwC0D0 0x22 SET_AMP_GAIN_MUTE 0x7280
-> # ./hda-verb /dev/snd/hwC0D0 0x23 SET_AMP_GAIN_MUTE 0x7280
->
-> On my ALC883, we need to mute the first input instead, thus 0x7180.
-> Can you see if the above helps you out?
+ptrace_stop() has some complicated checks to prevent the scheduling in the
+TASK_TRACED state with the pending SIGKILL, but these checks are racy, and
+they depend on arch_ptrace_stop_needed().
 
-Thanks for helping out!
+This patch assumes that the traced task should die asap if it was killed by
+SIGKILL, in that case schedule()->signal_pending_state() has no reason to
+ignore the TASK_WAKEKILL part of TASK_TRACED, and we can kill this nasty
+special case.
 
-Unfortunately, none of these commands (with either 0x7180 or 0x7280)
-seems to make any difference at all. (I tried various combinations,
-with reloading the driver in-between to undo the trial attempts.)
+Note: do_exit()->ptrace_notify() is special, the killed task can already
+dequeue SIGKILL at this point and deceive __fatal_signal_pending(), this
+needs further fixes.
 
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Vegard
+--- 26-rc2/include/linux/sched.h~1_KILL_TRACED_CHECK	2008-06-01 16:44:39.000000000 +0400
++++ 26-rc2/include/linux/sched.h	2008-06-01 16:44:39.000000000 +0400
+@@ -2034,9 +2034,6 @@ static inline int signal_pending_state(l
+ 	if (!signal_pending(p))
+ 		return 0;
+ 
+-	if (state & (__TASK_STOPPED | __TASK_TRACED))
+-		return 0;
+-
+ 	return (state & TASK_INTERRUPTIBLE) || __fatal_signal_pending(p);
+ }
+ 
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
