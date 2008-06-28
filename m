@@ -1,366 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbYF1QA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbYF1QJK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755196AbYF1QA4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 12:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYF1QAp
+	id S1755828AbYF1QJK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 12:09:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYF1QI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 12:00:45 -0400
-Received: from relay2.netbox.cz ([83.240.0.204]:39217 "EHLO relay1.netbox.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751754AbYF1QAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 12:00:18 -0400
-Date: Sat, 28 Jun 2008 19:56:37 +0200
-From: Zbynek Hrabovsky <hrabosh@t-email.cz>
-To: "Nicolas Marot" <nicolas.marot@gmail.com>
-Cc: "Mauro Carvalho Chehab" <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org, video4linux-list@redhat.com,
-       nicolas <nicolas@niko2.homelinux.org>,
-       "Michel Lespinasse" <walken@zoy.org>
-Subject: Re: [PATCH][RESEND] New type of DTV2000H TV Card
-Message-Id: <20080628195637.6dacc709.hrabosh@t-email.cz>
-In-Reply-To: <f4d5b6dd0806201352h4538072fy20f6187f54f81bae@mail.gmail.com>
-References: <20080207002224.e26d6bb1.hrabosh@t-email.cz>
-	<20080613151843.240a62cb@gaivota>
-	<20080620235242.e1e97f18.hrabosh@t-email.cz>
-	<f4d5b6dd0806201352h4538072fy20f6187f54f81bae@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.9; i686-pc-linux-gnu)
+	Sat, 28 Jun 2008 12:08:56 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:50281 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750928AbYF1QIy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 12:08:54 -0400
+Date: Sat, 28 Jun 2008 18:08:58 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Greg KH <greg@kroah.com>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] mmc: Export ios settings for a host through debugfs
+Message-ID: <20080628180858.4bb1cd5b@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <20080628153309.GC11018@kroah.com>
+References: <1214478589-21291-1-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214478589-21291-2-git-send-email-haavard.skinnemoen@atmel.com>
+	<20080628153403.0870e96c@mjolnir.drzeus.cx>
+	<20080628154700.426a422c@hskinnemo-gx745.norway.atmel.com>
+	<20080628155913.2bba34a9@mjolnir.drzeus.cx>
+	<20080628160752.0fe19753@hskinnemo-gx745.norway.atmel.com>
+	<20080628153309.GC11018@kroah.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="Multipart=_Sat__28_Jun_2008_19_56_37_+0200_sh+HMMPsvZqCR3qj"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 28 Jun 2008 16:08:46.0634 (UTC) FILETIME=[3E9478A0:01C8D939]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+Greg KH <greg@kroah.com> wrote:
+> Someone can add a "debugfs_rm_dentry_and_children" function if they so
+> desire to handle this kind of thing if they want to :)
 
---Multipart=_Sat__28_Jun_2008_19_56_37_+0200_sh+HMMPsvZqCR3qj
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Ok, I'll try. I'm not an FS developer, so I'm sure the below patch is
+horribly broken in some subtle way, but it does appear to work at least
+the few times I tried it...
 
+Lockdep indeed confirms that something is broken:
 
-Hi Nicolas,
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.26-rc8 #34
+---------------------------------------------
+rmmod/396 is trying to acquire lock:
+ (&sb->s_type->i_mutex_key#2){--..}, at: [<900a4ab6>] debugfs_remove_recursive+0x2e/0xc0
 
-so I should install git and run these commands, or .. ? I'm really confuzzled. 
+but task is already holding lock:
+ (&sb->s_type->i_mutex_key#2){--..}, at: [<900a4aa8>] debugfs_remove_recursive+0x20/0xc0
 
-But I had installed GPG and signed my patch, maybe this is what I should have done earlier. My key ID is: 7803B3E1
+other info that might help us debug this:
+1 lock held by rmmod/396:
+ #0:  (&sb->s_type->i_mutex_key#2){--..}, at: [<900a4aa8>] debugfs_remove_recursive+0x20/0xc0
 
-If you guys want me somethink more to do, write me ... I'll do my best.
+stack backtrace:
+Call trace:
+ [<90017018>] dump_stack+0x18/0x20
+ [<900327ac>] __lock_acquire+0x6a0/0x964
+ [<9003306c>] lock_acquire+0x38/0x4c
+ [<90170130>] mutex_lock_nested+0x7c/0x18c
+ [<900a4ab6>] debugfs_remove_recursive+0x2e/0xc0
+ [<c0861c26>] mmc_remove_host+0x12/0x34 [mmc_core]
+ [<c0857222>] atmci_remove+0x4a/0xd4 [atmel_mci]
+ [<900d478a>] platform_drv_remove+0x10/0x12
+ [<900d3cfc>] __device_release_driver+0x48/0x64
+ [<900d3d74>] driver_detach+0x5c/0x7c
+ [<900d34be>] bus_remove_driver+0x5a/0x70
+ [<900d4054>] driver_unregister+0x24/0x28
+ [<900d488e>] platform_driver_unregister+0xa/0xc
+ [<c08571ce>] atmci_exit+0xa/0x14 [atmel_mci]
+ [<90038086>] sys_delete_module+0x116/0x15c
+ [<90013132>] syscall_return+0x0/0x12
 
-Thanx for your time
+But I don't know exactly what. Isn't it ok to take the inode lock in
+parent -> child order?
 
-Zbynek
+Haavard
 
-On Fri, 20 Jun 2008 22:52:02 +0200
-"Nicolas Marot" <nicolas.marot@gmail.com> wrote:
+>From 5b8c84b71456de1cfc37910c40c974e3459f39cf Mon Sep 17 00:00:00 2001
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Date: Sat, 28 Jun 2008 17:54:15 +0200
+Subject: [PATCH] debugfs: Implement debugfs_remove_recursive()
 
-> Hi Zbynek,
-> 
-> I think lines Mauro asks us are some git commands on driver source code
-> 
-> nicolas
-> 
-> 
-> On Fri, Jun 20, 2008 at 11:52 PM, Zbynek Hrabovsky <hrabosh@t-email.cz>
-> wrote:
-> 
-> > Hi Mauro,
-> >
-> > thanks for your answer.
-> >
-> > I've tried to apply the updated patch you've sent me and it is working, but
-> > ....
-> >
-> > ... there is a little problem with this:
-> >
-> > --- a/linux/drivers/media/video/cx88/cx88-mpeg.c        Tue Jun 10 15:27:29
-> > 2008 -0300
-> > +++ b/linux/drivers/media/video/cx88/cx88-mpeg.c        Fri Jun 13 15:07:34
-> > 2008 -0300
-> > @@ -148,6 +148,12 @@
-> >                        cx_write(TS_SOP_STAT, 0);
-> >                        cx_write(TS_VALERR_CNTRL, 0);
-> >                        udelay(100);
-> > +                       break;
-> > +               case CX88_BOARD_WINFAST_DTV2000H_2:
-> > +                       /* switch signal input to antena */
-> > +                       cx_write(MO_GP0_IO, 0x00017300);
-> > +
-> > +                       cx_write(TS_SOP_STAT, 0x00);
-> >                        break;
-> >                default:
-> >                        cx_write(TS_SOP_STAT, 0x00);
-> >
-> >
-> > This piece of code used to switch the input of RF signal to "Air Antenna"
-> > mode. When I was writing the patch, this code was executed every time I was
-> > tunning DVB-T station. (using Kaffeine, or sth.) But now ( I don't know why
-> > ... ) this code is ran only if the station is succesfully tuned ... which is
-> > late for switching RF input.
-> >
-> > So ... all the things about sound in analog TV and video inputs, etc. are
-> > working well, but switching between Cable and Air Antenna RF inputs must be
-> > done using programs for analog TV ... such as TvTime for example.
-> >
-> > It would be nice, if this patch (and driver) would be able to switch RF
-> > inputs in DVB-T mode somehow. My idea is, to have two DVB-T devices ... one
-> > would use Air Antenna input as a source of signal, second the Cable input as
-> > source of signal. This will provide us to receive DVB-T from both inputs
-> > (BTW ... original Windows driver is not able to do this). The problem is,
-> > that I'm not sure if I'm able to do it ... I have very poor idea how all the
-> > things around this driver works ...for example which c. file I should focus
-> > on. If you would give me a small piece of advise, where to start, I would be
-> > pleased.
-> >
-> > OK, I'm not sure if I understood what you meant by adding sign-off-by and
-> > reviewed-by line ... I hope I did what you want me to:
-> >
-> >
-> > So .. thanks for your time,
-> > Zbynek
-> >
-> > Signed-off-by: Zbynek Hrabovsky <hrabosh@t-email.cz>
-> >
-> > Reviewed-by: Zbynek Hrbaovsky <hrabosh@t-email.cz>
-> >
-> > diff -r 04ddbe145932 linux/drivers/media/video/cx88/cx88-cards.c
-> > --- a/linux/drivers/media/video/cx88/cx88-cards.c       Tue Jun 10 15:27:29
-> > 2008 -0300
-> > +++ b/linux/drivers/media/video/cx88/cx88-cards.c       Fri Jun 13 15:07:33
-> > 2008 -0300
-> > @@ -1284,7 +1284,7 @@
-> >        },
-> >        [CX88_BOARD_WINFAST_DTV2000H] = {
-> >                /* video inputs and radio still in testing */
-> > -               .name           = "WinFast DTV2000 H",
-> > +               .name           = "WinFast DTV2000 H ver. I (old)",
-> >                .tuner_type     = TUNER_PHILIPS_FMD1216ME_MK3,
-> >                .radio_type     = UNSET,
-> >                .tuner_addr     = ADDR_UNSET,
-> > @@ -1298,6 +1298,45 @@
-> >                        .gpio2  = 0x00017304,
-> >                        .gpio3  = 0x02000000,
-> >                }},
-> > +               .mpeg           = CX88_MPEG_DVB,
-> > +       },
-> > +       [CX88_BOARD_WINFAST_DTV2000H_2] = {
-> > +               /* this is just a try */
-> > +               .name           = "WinFast DTV2000 H ver. J (new)",
-> > +               .tuner_type     = TUNER_PHILIPS_FMD1216ME_MK3,
-> > +               .radio_type     = UNSET,
-> > +               .tuner_addr     = ADDR_UNSET,
-> > +               .radio_addr     = ADDR_UNSET,
-> > +               .tda9887_conf   = TDA9887_PRESENT,
-> > +               .input          = { {
-> > +                       .type   = CX88_VMUX_TELEVISION,
-> > +                       .vmux   = 0,
-> > +                       .gpio0  = 0x00017300,
-> > +                       .gpio1  = 0x00008207,
-> > +                       .gpio2  = 0x00000000,
-> > +                       .gpio3  = 0x02000000,
-> > +               }, {
-> > +                       .type   = CX88_VMUX_TELEVISION,
-> > +                       .vmux   = 0,
-> > +                       .gpio0  = 0x00018300,
-> > +                       .gpio1  = 0x0000f207,
-> > +                       .gpio2  = 0x00017304,
-> > +                       .gpio3  = 0x02000000,
-> > +               }, {
-> > +                       .type   = CX88_VMUX_COMPOSITE1,
-> > +                       .vmux   = 1,
-> > +                       .gpio0  = 0x00018301,
-> > +                       .gpio1  = 0x0000f207,
-> > +                       .gpio2  = 0x00017304,
-> > +                       .gpio3  = 0x02000000,
-> > +               }, {
-> > +                       .type   = CX88_VMUX_SVIDEO,
-> > +                       .vmux   = 2,
-> > +                       .gpio0  = 0x00018301,
-> > +                       .gpio1  = 0x0000f207,
-> > +                       .gpio2  = 0x00017304,
-> > +                       .gpio3  = 0x02000000,
-> > +               } },
-> >                .mpeg           = CX88_MPEG_DVB,
-> >        },
-> >        [CX88_BOARD_GENIATECH_DVBS] = {
-> > @@ -1963,6 +2002,10 @@
-> >                .subdevice = 0x665e,
-> >                .card      = CX88_BOARD_WINFAST_DTV2000H,
-> >        },{
-> > +               .subvendor = 0x107d,
-> > +               .subdevice = 0x6f2b,
-> > +               .card      = CX88_BOARD_WINFAST_DTV2000H_2,
-> > +       }, {
-> >                .subvendor = 0x18ac,
-> >                .subdevice = 0xd800, /* FusionHDTV 3 Gold (original
-> > revision) */
-> >                .card      = CX88_BOARD_DVICO_FUSIONHDTV_3_GOLD_Q,
-> > diff -r 04ddbe145932 linux/drivers/media/video/cx88/cx88-dvb.c
-> > --- a/linux/drivers/media/video/cx88/cx88-dvb.c Tue Jun 10 15:27:29 2008
-> > -0300
-> > +++ b/linux/drivers/media/video/cx88/cx88-dvb.c Fri Jun 13 15:07:34 2008
-> > -0300
-> > @@ -561,6 +561,7 @@
-> >                }
-> >                break;
-> >        case CX88_BOARD_WINFAST_DTV2000H:
-> > +       case CX88_BOARD_WINFAST_DTV2000H_2:
-> >        case CX88_BOARD_HAUPPAUGE_HVR1100:
-> >        case CX88_BOARD_HAUPPAUGE_HVR1100LP:
-> >        case CX88_BOARD_HAUPPAUGE_HVR1300:
-> > diff -r 04ddbe145932 linux/drivers/media/video/cx88/cx88-input.c
-> > --- a/linux/drivers/media/video/cx88/cx88-input.c       Tue Jun 10 15:27:29
-> > 2008 -0300
-> > +++ b/linux/drivers/media/video/cx88/cx88-input.c       Fri Jun 13 15:07:34
-> > 2008 -0300
-> > @@ -242,6 +242,7 @@
-> >                ir->sampling = 1;
-> >                break;
-> >        case CX88_BOARD_WINFAST_DTV2000H:
-> > +       case CX88_BOARD_WINFAST_DTV2000H_2:
-> >                ir_codes = ir_codes_winfast;
-> >                ir->gpio_addr = MO_GP0_IO;
-> >                ir->mask_keycode = 0x8f8;
-> >
-> > diff -r 04ddbe145932 linux/drivers/media/video/cx88/cx88.h
-> > --- a/linux/drivers/media/video/cx88/cx88.h     Tue Jun 10 15:27:29 2008
-> > -0300
-> > +++ b/linux/drivers/media/video/cx88/cx88.h     Fri Jun 13 15:07:34 2008
-> > -0300
-> > @@ -224,6 +224,7 @@
-> >  #define CX88_BOARD_DVICO_FUSIONHDTV_7_GOLD 65
-> >  #define CX88_BOARD_PROLINK_PV_8000GT       66
-> >  #define CX88_BOARD_KWORLD_ATSC_120         67
-> > +#define CX88_BOARD_WINFAST_DTV2000H_2      68
-> >
-> >  enum cx88_itype {
-> >        CX88_VMUX_COMPOSITE1 = 1,
-> >
-> >
-> >
-> >
-> 
+debugfs_remove_recursive() will remove a dentry and all its children.
+Drivers can use this to zap their whole debugfs tree so that they don't
+need to keep track of every single debugfs dentry they created.
 
---Multipart=_Sat__28_Jun_2008_19_56_37_+0200_sh+HMMPsvZqCR3qj
-Content-Type: text/plain;
- name="DTV2000H.diff.asc"
-Content-Disposition: attachment;
- filename="DTV2000H.diff.asc"
-Content-Transfer-Encoding: 7bit
+It may fail to remove the whole tree in certain cases:
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+sh-3.2# rmmod atmel-mci < /sys/kernel/debug/mmc0/ios/clock
+mmc0: card b368 removed
+atmel_mci atmel_mci.0: Lost dma0chan1, falling back to PIO
+sh-3.2# ls /sys/kernel/debug/mmc0/
+ios
 
-Signed-off-by: Zbynek Hrabovsky <hrabosh@t-email.cz>
-Reviewed-by: Zbynek Hrabovsky <hrabosh@t-email.cz>
+But I'm not sure if that case can be handled in any sane manner.
 
-diff -r 04ddbe145932 linux/drivers/media/video/cx88/cx88-cards.c
-- --- a/linux/drivers/media/video/cx88/cx88-cards.c Tue Jun 10 15:27:29 2008 -0300
-+++ b/linux/drivers/media/video/cx88/cx88-cards.c Fri Jun 13 15:07:33 2008 -0300
-@@ -1284,7 +1284,7 @@
-},
-[CX88_BOARD_WINFAST_DTV2000H] = {
-/* video inputs and radio still in testing */
-- - .name = "WinFast DTV2000 H",
-+ .name = "WinFast DTV2000 H ver. I (old)",
-.tuner_type = TUNER_PHILIPS_FMD1216ME_MK3,
-.radio_type = UNSET,
-.tuner_addr = ADDR_UNSET,
-@@ -1298,6 +1298,45 @@
-.gpio2 = 0x00017304,
-.gpio3 = 0x02000000,
-}},
-+ .mpeg = CX88_MPEG_DVB,
-+ },
-+ [CX88_BOARD_WINFAST_DTV2000H_2] = {
-+ /* this is just a try */
-+ .name = "WinFast DTV2000 H ver. J (new)",
-+ .tuner_type = TUNER_PHILIPS_FMD1216ME_MK3,
-+ .radio_type = UNSET,
-+ .tuner_addr = ADDR_UNSET,
-+ .radio_addr = ADDR_UNSET,
-+ .tda9887_conf = TDA9887_PRESENT,
-+ .input = { {
-+ .type = CX88_VMUX_TELEVISION,
-+ .vmux = 0,
-+ .gpio0 = 0x00017300,
-+ .gpio1 = 0x00008207,
-+ .gpio2 = 0x00000000,
-+ .gpio3 = 0x02000000,
-+ }, {
-+ .type = CX88_VMUX_TELEVISION,
-+ .vmux = 0,
-+ .gpio0 = 0x00018300,
-+ .gpio1 = 0x0000f207,
-+ .gpio2 = 0x00017304,
-+ .gpio3 = 0x02000000,
-+ }, {
-+ .type = CX88_VMUX_COMPOSITE1,
-+ .vmux = 1,
-+ .gpio0 = 0x00018301,
-+ .gpio1 = 0x0000f207,
-+ .gpio2 = 0x00017304,
-+ .gpio3 = 0x02000000,
-+ }, {
-+ .type = CX88_VMUX_SVIDEO,
-+ .vmux = 2,
-+ .gpio0 = 0x00018301,
-+ .gpio1 = 0x0000f207,
-+ .gpio2 = 0x00017304,
-+ .gpio3 = 0x02000000,
-+ } },
-.mpeg = CX88_MPEG_DVB,
-},
-[CX88_BOARD_GENIATECH_DVBS] = {
-@@ -1963,6 +2002,10 @@
-.subdevice = 0x665e,
-.card = CX88_BOARD_WINFAST_DTV2000H,
-},{
-+ .subvendor = 0x107d,
-+ .subdevice = 0x6f2b,
-+ .card = CX88_BOARD_WINFAST_DTV2000H_2,
-+ }, {
-.subvendor = 0x18ac,
-.subdevice = 0xd800, /* FusionHDTV 3 Gold (original revision) */
-.card = CX88_BOARD_DVICO_FUSIONHDTV_3_GOLD_Q,
-diff -r 04ddbe145932 linux/drivers/media/video/cx88/cx88-dvb.c
-- --- a/linux/drivers/media/video/cx88/cx88-dvb.c Tue Jun 10 15:27:29 2008 -0300
-+++ b/linux/drivers/media/video/cx88/cx88-dvb.c Fri Jun 13 15:07:34 2008 -0300
-@@ -561,6 +561,7 @@
-}
-break;
-case CX88_BOARD_WINFAST_DTV2000H:
-+ case CX88_BOARD_WINFAST_DTV2000H_2:
-case CX88_BOARD_HAUPPAUGE_HVR1100:
-case CX88_BOARD_HAUPPAUGE_HVR1100LP:
-case CX88_BOARD_HAUPPAUGE_HVR1300:
-diff -r 04ddbe145932 linux/drivers/media/video/cx88/cx88-input.c
-- --- a/linux/drivers/media/video/cx88/cx88-input.c Tue Jun 10 15:27:29 2008 -0300
-+++ b/linux/drivers/media/video/cx88/cx88-input.c Fri Jun 13 15:07:34 2008 -0300
-@@ -242,6 +242,7 @@
-ir->sampling = 1;
-break;
-case CX88_BOARD_WINFAST_DTV2000H:
-+ case CX88_BOARD_WINFAST_DTV2000H_2:
-ir_codes = ir_codes_winfast;
-ir->gpio_addr = MO_GP0_IO;
-ir->mask_keycode = 0x8f8;
-diff -r 04ddbe145932 linux/drivers/media/video/cx88/cx88.h
-- --- a/linux/drivers/media/video/cx88/cx88.h Tue Jun 10 15:27:29 2008 -0300
-+++ b/linux/drivers/media/video/cx88/cx88.h Fri Jun 13 15:07:34 2008 -0300
-@@ -224,6 +224,7 @@
-#define CX88_BOARD_DVICO_FUSIONHDTV_7_GOLD 65
-#define CX88_BOARD_PROLINK_PV_8000GT 66
-#define CX88_BOARD_KWORLD_ATSC_120 67
-+#define CX88_BOARD_WINFAST_DTV2000H_2 68
+Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+---
+ fs/debugfs/inode.c      |  114 ++++++++++++++++++++++++++++++++++++++++-------
+ include/linux/debugfs.h |    4 ++
+ 2 files changed, 101 insertions(+), 17 deletions(-)
 
-enum cx88_itype {
-CX88_VMUX_COMPOSITE1 = 1,
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
+index e9602d8..6234322 100644
+--- a/fs/debugfs/inode.c
++++ b/fs/debugfs/inode.c
+@@ -309,6 +309,31 @@ struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
+ }
+ EXPORT_SYMBOL_GPL(debugfs_create_symlink);
+ 
++static void __debugfs_remove(struct dentry *dentry, struct dentry *parent)
++{
++	int ret = 0;
++
++	if (debugfs_positive(dentry)) {
++		if (dentry->d_inode) {
++			dget(dentry);
++			switch (dentry->d_inode->i_mode & S_IFMT) {
++			case S_IFDIR:
++				ret = simple_rmdir(parent->d_inode, dentry);
++				break;
++			case S_IFLNK:
++				kfree(dentry->d_inode->i_private);
++				/* fall through */
++			default:
++				simple_unlink(parent->d_inode, dentry);
++				break;
++			}
++			if (!ret)
++				d_delete(dentry);
++			dput(dentry);
++		}
++	}
++}
++
+ /**
+  * debugfs_remove - removes a file or directory from the debugfs filesystem
+  * @dentry: a pointer to a the dentry of the file or directory to be
+@@ -325,7 +350,6 @@ EXPORT_SYMBOL_GPL(debugfs_create_symlink);
+ void debugfs_remove(struct dentry *dentry)
+ {
+ 	struct dentry *parent;
+-	int ret = 0;
+ 	
+ 	if (!dentry)
+ 		return;
+@@ -335,29 +359,85 @@ void debugfs_remove(struct dentry *dentry)
+ 		return;
+ 
+ 	mutex_lock(&parent->d_inode->i_mutex);
+-	if (debugfs_positive(dentry)) {
+-		if (dentry->d_inode) {
+-			dget(dentry);
+-			switch (dentry->d_inode->i_mode & S_IFMT) {
+-			case S_IFDIR:
+-				ret = simple_rmdir(parent->d_inode, dentry);
+-				break;
+-			case S_IFLNK:
+-				kfree(dentry->d_inode->i_private);
+-				/* fall through */
+-			default:
+-				simple_unlink(parent->d_inode, dentry);
++	__debugfs_remove(dentry, parent);
++	mutex_unlock(&parent->d_inode->i_mutex);
++	simple_release_fs(&debugfs_mount, &debugfs_mount_count);
++}
++EXPORT_SYMBOL_GPL(debugfs_remove);
++
++/**
++ * debugfs_remove_recursive - recursively removes a directory
++ * @dentry: a pointer to a the dentry of the directory to be removed.
++ *
++ * This function recursively removes a directory tree in debugfs that
++ * was previously created with a call to another debugfs function
++ * (like debugfs_create_file() or variants thereof.)
++ *
++ * This function is required to be called in order for the file to be
++ * removed, no automatic cleanup of files will happen when a module is
++ * removed, you are responsible here.
++ */
++void debugfs_remove_recursive(struct dentry *dentry)
++{
++	struct dentry *child;
++	struct dentry *parent;
++
++	if (!dentry)
++		return;
++
++	parent = dentry->d_parent;
++	if (!parent || !parent->d_inode)
++		return;
++
++	mutex_lock(&parent->d_inode->i_mutex);
++	mutex_lock(&dentry->d_inode->i_mutex);
++	parent = dentry;
++
++	while (1) {
++		/*
++		 * When all dentries under "parent" has been removed,
++		 * walk up the tree until we reach our starting point.
++		 */
++		if (list_empty(&parent->d_subdirs)) {
++			mutex_unlock(&parent->d_inode->i_mutex);
++			if (parent == dentry)
+ 				break;
++			parent = parent->d_parent;
++		}
++		child = list_entry(parent->d_subdirs.next, struct dentry,
++				d_u.d_child);
++
++		/*
++		 * If "child" isn't empty, walk down the tree and
++		 * remove all its descendants first.
++		 */
++		if (!list_empty(&child->d_subdirs)) {
++			parent = child;
++			mutex_lock(&parent->d_inode->i_mutex);
++			continue;
++		}
++		__debugfs_remove(child, parent);
++		if (parent->d_subdirs.next == &child->d_u.d_child) {
++			/*
++			 * Avoid infinite loop if we fail to remove
++			 * one dentry.
++			 */
++			while (parent != dentry) {
++				mutex_unlock(&parent->d_inode->i_mutex);
++				parent = parent->d_parent;
+ 			}
+-			if (!ret)
+-				d_delete(dentry);
+-			dput(dentry);
++			mutex_unlock(&parent->d_inode->i_mutex);
++			break;
+ 		}
++		simple_release_fs(&debugfs_mount, &debugfs_mount_count);
+ 	}
++
++	parent = dentry->d_parent;
++	__debugfs_remove(dentry, parent);
+ 	mutex_unlock(&parent->d_inode->i_mutex);
+ 	simple_release_fs(&debugfs_mount, &debugfs_mount_count);
+ }
+-EXPORT_SYMBOL_GPL(debugfs_remove);
++EXPORT_SYMBOL_GPL(debugfs_remove_recursive);
+ 
+ /**
+  * debugfs_rename - rename a file/directory in the debugfs filesystem
+diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
+index 7266124..b67b375 100644
+--- a/include/linux/debugfs.h
++++ b/include/linux/debugfs.h
+@@ -42,6 +42,7 @@ struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
+ 				      const char *dest);
+ 
+ void debugfs_remove(struct dentry *dentry);
++void debugfs_remove_recursive(struct dentry *dentry);
+ 
+ struct dentry *debugfs_rename(struct dentry *old_dir, struct dentry *old_dentry,
+                 struct dentry *new_dir, const char *new_name);
+@@ -99,6 +100,9 @@ static inline struct dentry *debugfs_create_symlink(const char *name,
+ static inline void debugfs_remove(struct dentry *dentry)
+ { }
+ 
++static inline void debugfs_remove_recursive(struct dentry *dentry)
++{ }
++
+ static inline struct dentry *debugfs_rename(struct dentry *old_dir, struct dentry *old_dentry,
+                 struct dentry *new_dir, char *new_name)
+ {
+-- 
+1.5.5.4
 
-iEYEARECAAYFAkhmXRgACgkQPedPCXgDs+FAwgCghc3wFwpAmeGkMzGKoJi8HnHz
-W5EAn2iybN7vkU3nR7gqJ0k7NBOVSGXD
-=O/Qr
------END PGP SIGNATURE-----
-
---Multipart=_Sat__28_Jun_2008_19_56_37_+0200_sh+HMMPsvZqCR3qj--
