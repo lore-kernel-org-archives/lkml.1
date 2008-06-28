@@ -1,99 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756052AbYF1NYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbYF1N3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756052AbYF1NYm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 09:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYF1NYd
+	id S1755670AbYF1N3Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 09:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbYF1N3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 09:24:33 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:26345 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752028AbYF1NYc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 09:24:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=bhy4x2PfnkVp5EeDvSrxORFiG90Z1LhFhZsmIDs6zJVggE+CWXtkhJtv26tqSgRjEz
-         ggtYN8+IeuKWUAECnm3RzJWfvM1WQmIC0LcIar93n4OnVUoYFpYUbjEsghAzvpkJnD+3
-         7mrfpRcTkecrXkA1vmshRBNdSqz6yrhCi+qOk=
-Message-ID: <6278d2220806280624iec3a67rf25789e98f81521@mail.gmail.com>
-Date: Sat, 28 Jun 2008 14:24:31 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Romano Giannetti" <romano@dea.icai.upcomillas.es>
-Subject: Re: ALC883 recording troubles...
-Cc: "Takashi Iwai" <tiwai@suse.de>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <19f34abd0806280539g4961392evb469d7c106c198c9@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 28 Jun 2008 09:29:00 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:37821 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752777AbYF1N27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 09:28:59 -0400
+Date: Sat, 28 Jun 2008 15:28:56 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH 1/3] mmc: Export internal host state through debugfs
+Message-ID: <20080628152856.3ba1c2ff@mjolnir.drzeus.cx>
+In-Reply-To: <1214478589-21291-1-git-send-email-haavard.skinnemoen@atmel.com>
+References: <1214478589-21291-1-git-send-email-haavard.skinnemoen@atmel.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6278d2220806091259t47c9b070v269da0f5855ef014@mail.gmail.com>
-	 <s5habhtesoq.wl%tiwai@suse.de>
-	 <6278d2220806111200g4f802885wfc5f0fd6c0405efb@mail.gmail.com>
-	 <s5hiqwf0vyr.wl%tiwai@suse.de>
-	 <6278d2220806271705v5bd5fec3l86c3560283063092@mail.gmail.com>
-	 <19f34abd0806280311s115062e6vc6d0f304cb744934@mail.gmail.com>
-	 <6278d2220806280329j2f77c52dp8fbae78420c136c1@mail.gmail.com>
-	 <6278d2220806280529n70c6233dk1c5768df5d52acf@mail.gmail.com>
-	 <19f34abd0806280539g4961392evb469d7c106c198c9@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 28, 2008 at 1:39 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> On Sat, Jun 28, 2008 at 2:29 PM, Daniel J Blueman
-> <daniel.blueman@gmail.com> wrote:
->> Using your dumped config and
->> ftp://202.65.194.211/pc/audio/ALC268_DataSheet_1.3.pdf page 42, your
->> front mic pin complex is at node 19h; the mixers connecting to it are
->> at nodes 0Bh, 22h and 23h, all at the second input index, so one of
->> these should work:
->>
->> # ./hda-verb /dev/snd/hwC0D0 0x0b SET_AMP_GAIN_MUTE 0x7280
->> # ./hda-verb /dev/snd/hwC0D0 0x22 SET_AMP_GAIN_MUTE 0x7280
->> # ./hda-verb /dev/snd/hwC0D0 0x23 SET_AMP_GAIN_MUTE 0x7280
->>
->> On my ALC883, we need to mute the first input instead, thus 0x7180.
->> Can you see if the above helps you out?
->
-> Thanks for helping out!
->
-> Unfortunately, none of these commands (with either 0x7180 or 0x7280)
-> seems to make any difference at all. (I tried various combinations,
-> with reloading the driver in-between to undo the trial attempts.)
+On Thu, 26 Jun 2008 13:09:47 +0200
+Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
 
-I made a mistake - the second input is selected by 0x7180, as the
-first is 0x7080...perhaps retry this with nodes 0Bh, 22h and 23h?
+> From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> 
+> This adds a new config option, MMC_DEBUG_FS which will, when enabled,
+> create a few files under /sys/kernel/debug containing information
+> about an mmc host's internal state.
+> 
+> Host drivers can add additional files and directories under the host's
+> root directory by passing the debugfs_root field in struct mmc_host as
+> the 'parent' parameter to debugfs_create_*.
+> 
+> Unfinished: No files are actually created yet.
+> 
+> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> ---
 
-Failing that, these are the steps I'd try:
- 1. setup audio so as to reproduce input DC offset
- 2. start recording in audacity and observe DC offset
- 3. for each input of each mixer:
-  3.1 mute until you see the DC offset disappear
+Is there any point to having a separate option for this? Can't we just
+include it if DEBUG_FS is defined?
 
-ie for ALC268, mixer input amps at nodes (# inputs): 0Eh(1) 0Fh(2)
-10h(3) 18h(1) 19h(1) 1Ah(1)
-ie:
+Otherwise the system looks ok to me, assuming that everyone is of the
+opinion that debugfs is _not_ a stable API.
 
-# ./hda-verb /dev/snd/hwC0D0 0x0e SET_AMP_GAIN_MUTE 0x7080
-# ./hda-verb /dev/snd/hwC0D0 0x0f SET_AMP_GAIN_MUTE 0x7080
-# ./hda-verb /dev/snd/hwC0D0 0x0f SET_AMP_GAIN_MUTE 0x7180
-# ./hda-verb /dev/snd/hwC0D0 0x10 SET_AMP_GAIN_MUTE 0x7080
-# ./hda-verb /dev/snd/hwC0D0 0x10 SET_AMP_GAIN_MUTE 0x7180
-# ./hda-verb /dev/snd/hwC0D0 0x10 SET_AMP_GAIN_MUTE 0x7280
-# ./hda-verb /dev/snd/hwC0D0 0x18 SET_AMP_GAIN_MUTE 0x7080
-# ./hda-verb /dev/snd/hwC0D0 0x19 SET_AMP_GAIN_MUTE 0x7080
-# ./hda-verb /dev/snd/hwC0D0 0x1a SET_AMP_GAIN_MUTE 0x7080
+> +
+> +#else
+> +static inline void mmc_add_host_debugfs(struct mmc_host *host)
+> +{
+> +
+> +}
+> +
+> +static inline void mmc_remove_host_debugfs(struct mmc_host *host)
+> +{
+> +
+> +}
+> +#endif
+> +
 
-Changes are real-time, so no need to restart anything. Once you've
-found which mixer input amp and input index stops the DC offset, reset
-the HD codec (eg reboot) and try just that one! I'm interested in
-hearing if this finds the issue...
+In the other places we have conditional function, it is done by
+ifdef:ing the calls instead. There are just two of them, so it should
+be less mess.
 
-Dan
+
 -- 
-Daniel J Blueman
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
