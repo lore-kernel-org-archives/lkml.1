@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbYF1OjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbYF1Okj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755473AbYF1OjY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 10:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbYF1OjN
+	id S1757899AbYF1Okj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 10:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYF1Oka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 10:39:13 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:50732 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752202AbYF1OjM (ORCPT
+	Sat, 28 Jun 2008 10:40:30 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:58074 "EHLO
+	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753235AbYF1Ok3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 10:39:12 -0400
-Message-ID: <48664B4A.9090308@nokia.com>
-Date: Sat, 28 Jun 2008 17:31:38 +0300
-From: Stefan Becker <Stefan.Becker@nokia.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 28 Jun 2008 10:40:29 -0400
+X-BigFish: VPS-38(zz1432R98dR7efV1805M1442Jzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K36GQY-02-HOC-01
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-To: ext David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-CC: ext Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [REGRESSION] 2.6.24/25: random lockups when accessing external
- USB harddrive
-References: <Pine.LNX.4.44L0.0806261018340.2811-100000@iolanthe.rowland.org> <48641325.2020903@nokia.com> <200806270907.37245.david-b@pacbell.net>
-In-Reply-To: <200806270907.37245.david-b@pacbell.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jun 2008 14:32:23.0117 (UTC) FILETIME=[C755CFD0:01C8D92B]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 01/34] AMD IOMMU: add Kconfig entry
+Date: Sat, 28 Jun 2008 09:40:57 -0500
+Message-ID: <6453C3CB8E2B3646B0D020C1126132730120C518@sausexmb4.amd.com>
+In-Reply-To: <20080628110426.GJ10197@8bytes.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 01/34] AMD IOMMU: add Kconfig entry
+Thread-Index: AcjZDsZMy19Ey33QRYKOW7BROMrBfgAHYGIw
+References: <20080627170546.GE10197@8bytes.org> <6453C3CB8E2B3646B0D020C1126132730120C444@sausexmb4.amd.com> <20080627222931.GB7201@il.ibm.com> <6453C3CB8E2B3646B0D020C1126132730120C4EE@sausexmb4.amd.com> <20080628110426.GJ10197@8bytes.org>
+From: "Duran, Leo" <leo.duran@amd.com>
+To: "Joerg Roedel" <joro@8bytes.org>
+CC: "Muli Ben-Yehuda" <muli@il.ibm.com>, "Adrian Bunk" <bunk@kernel.org>,
+       "Richter, Robert" <rrichter@elbe.amd.com>,
+       <linux-kernel@vger.kernel.org>, <iommu@lists.linux-foundation.org>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Biemueller, Sebastian" <Sebastian.Biemueller@amd.com>,
+       <tglx@linutronix.de>, <mingo@redhat.com>,
+       "Sarathy, Bhavna" <Bhavna.Sarathy@amd.com>
+X-OriginalArrivalTime: 28 Jun 2008 14:40:17.0568 (UTC) FILETIME=[E2214A00:01C8D92C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On Saturday, June 28, 2008 6:04 AM, Joerg Roedel wrote:
 
-ext David Brownell wrote:
+> Yes, there is only one exclusion range per IOMMU. The problem is that
+> an
+> exclusion range from 64MB to the end may not be possible because there
+> is
+> an exclusion range already configured in the ACPI table. On my System
+> for
+> example the exclusion range is somewhere in the first megabyte of RAM.
+> In this case the direct mapping using page tables is needed. If there
+> is
+> no exclusion range defined in ACPI this idea would work of course.
 > 
-> If 442258e2ff69276ff767f3703b30ce6a31fdd181 isn't in the
-> kernel with those bugs, try applying it... else, I suggest
-
-That commit is about 4 months later than the commit I tracked down with 
-git bisect. I'm currently testing with 2.6.26-rc8, so that commit is in.
-
-> you try putting something like your
+> Joerg
 > 
-> 	if (!raw_irqs_disabled()) {
-> 		printk(KERN_CRIT "interrupts enabled!\n");
-> 		dump_stack();
->         }
-> 
-> logic at the beginning and end of usb_hcd_giveback_urb ... and
-> maybe have it dump the address of the completion handler, when
-> you can finger such a handler as re-enabling IRQs.
 
-See my reply to Alan's mail...
+Direct 1:1 mappings have a couple of issues:
+1) They don't provide a performance optimization (i.e., table-walk still
+required)
+2) Your aperture would have to be large enough so that virtual==physical
+(i.e., lots of memory for page-tables)
 
-Regards,
+Leo.
 
-	Stefan
 
----
-Stefan Becker
-E-Mail: Stefan.Becker@nokia.com
