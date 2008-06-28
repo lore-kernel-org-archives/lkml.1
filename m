@@ -1,89 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbYF1QQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbYF1Q2D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbYF1QQZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 12:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbYF1QQS
+	id S1757229AbYF1Q2D (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 12:28:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYF1Q1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 12:16:18 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:43580 "EHLO mail.screens.ru"
+	Sat, 28 Jun 2008 12:27:52 -0400
+Received: from 8bytes.org ([88.198.83.132]:60426 "EHLO 8bytes.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750928AbYF1QQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 12:16:17 -0400
-Date: Sat, 28 Jun 2008 20:18:56 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] migrate_timers: add comment, use spinlock_irq()
-Message-ID: <20080628161856.GA7030@tv-sign.ru>
-Mime-Version: 1.0
+	id S1751402AbYF1Q1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 12:27:51 -0400
+Date: Sat, 28 Jun 2008 18:27:48 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: "Duran, Leo" <leo.duran@amd.com>
+Cc: Muli Ben-Yehuda <muli@il.ibm.com>, Adrian Bunk <bunk@kernel.org>,
+       "Richter, Robert" <rrichter@elbe.amd.com>, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, Andi Kleen <andi@firstfloor.org>,
+       "Biemueller, Sebastian" <Sebastian.Biemueller@amd.com>,
+       tglx@linutronix.de, mingo@redhat.com,
+       "Sarathy, Bhavna" <Bhavna.Sarathy@amd.com>
+Subject: Re: [PATCH 01/34] AMD IOMMU: add Kconfig entry
+Message-ID: <20080628162748.GA31029@8bytes.org>
+References: <20080627170546.GE10197@8bytes.org> <6453C3CB8E2B3646B0D020C1126132730120C444@sausexmb4.amd.com> <20080627222931.GB7201@il.ibm.com> <6453C3CB8E2B3646B0D020C1126132730120C4EE@sausexmb4.amd.com> <20080628110426.GJ10197@8bytes.org> <6453C3CB8E2B3646B0D020C1126132730120C518@sausexmb4.amd.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <6453C3CB8E2B3646B0D020C1126132730120C518@sausexmb4.amd.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the comment to explain why the double lock in migrate_timers()
-can't deadlock.
+On Sat, Jun 28, 2008 at 09:40:57AM -0500, Duran, Leo wrote:
+> On Saturday, June 28, 2008 6:04 AM, Joerg Roedel wrote:
+> 
+> > Yes, there is only one exclusion range per IOMMU. The problem is that
+> > an
+> > exclusion range from 64MB to the end may not be possible because there
+> > is
+> > an exclusion range already configured in the ACPI table. On my System
+> > for
+> > example the exclusion range is somewhere in the first megabyte of RAM.
+> > In this case the direct mapping using page tables is needed. If there
+> > is
+> > no exclusion range defined in ACPI this idea would work of course.
+> > 
+> > Joerg
+> > 
+> 
+> Direct 1:1 mappings have a couple of issues:
+> 1) They don't provide a performance optimization (i.e., table-walk still
+> required)
 
-Change the code to use spinlock_irq() instead of local_irq_disable()
-+ spin_lock().
+True. But the table walk is nothing which could be optimized in
+software. The optimization here is that we don't need to map/unmap on
+each dma_ops call. Mapping/Unmapping requires TLB flushing and
+completion_wait. This is expensive for the CPU. But direct mapping
+exclusion ranges inside the aperture and mark the area from 64mb to the
+end as the exclusion range as you suggested could be a real option.
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> 2) Your aperture would have to be large enough so that virtual==physical
+> (i.e., lots of memory for page-tables)
 
---- 26-rc2/kernel/timer.c~MIGRATE_TIMERS	2008-05-18 15:44:19.000000000 +0400
-+++ 26-rc2/kernel/timer.c	2008-06-28 20:07:49.000000000 +0400
-@@ -1443,9 +1443,11 @@ static void __cpuinit migrate_timers(int
- 	BUG_ON(cpu_online(cpu));
- 	old_base = per_cpu(tvec_bases, cpu);
- 	new_base = get_cpu_var(tvec_bases);
--
--	local_irq_disable();
--	spin_lock(&new_base->lock);
-+	/*
-+	 * The caller is globally serialized and nobody else
-+	 * takes two locks at once, deadlock is not possible.
-+	 */
-+	spin_lock_irq(&new_base->lock);
- 	spin_lock_nested(&old_base->lock, SINGLE_DEPTH_NESTING);
- 
- 	BUG_ON(old_base->running_timer);
-@@ -1460,8 +1462,7 @@ static void __cpuinit migrate_timers(int
- 	}
- 
- 	spin_unlock(&old_base->lock);
--	spin_unlock(&new_base->lock);
--	local_irq_enable();
-+	spin_unlock_irq(&new_base->lock);
- 	put_cpu_var(tvec_bases);
- }
- #endif /* CONFIG_HOTPLUG_CPU */
---- 26-rc2/kernel/hrtimer.c~MIGRATE_TIMERS	2008-05-18 15:44:18.000000000 +0400
-+++ 26-rc2/kernel/hrtimer.c	2008-06-28 20:08:15.000000000 +0400
-@@ -1615,9 +1615,11 @@ static void migrate_hrtimers(int cpu)
- 	new_base = &get_cpu_var(hrtimer_bases);
- 
- 	tick_cancel_sched_timer(cpu);
--
--	local_irq_disable();
--	spin_lock(&new_base->lock);
-+	/*
-+	 * The caller is globally serialized and nobody else
-+	 * takes two locks at once, deadlock is not possible.
-+	 */
-+	spin_lock_irq(&new_base->lock);
- 	spin_lock_nested(&old_base->lock, SINGLE_DEPTH_NESTING);
- 
- 	for (i = 0; i < HRTIMER_MAX_CLOCK_BASES; i++) {
-@@ -1626,8 +1628,7 @@ static void migrate_hrtimers(int cpu)
- 	}
- 
- 	spin_unlock(&old_base->lock);
--	spin_unlock(&new_base->lock);
--	local_irq_enable();
-+	spin_unlock_irq(&new_base->lock);
- 	put_cpu_var(hrtimer_bases);
- }
- #endif /* CONFIG_HOTPLUG_CPU */
+The AMD IOMMU supports multiple page sizes from 4kb up to 4GB. I don't
+think that we need too much memory for the page tables.
+
+Joerg
 
