@@ -1,86 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753120AbYF1Ean@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbYF1Egm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753120AbYF1Ean (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 00:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbYF1Eae
+	id S1753859AbYF1Egm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 00:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbYF1Egc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 00:30:34 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58848 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750930AbYF1Eae (ORCPT
+	Sat, 28 Jun 2008 00:36:32 -0400
+Received: from vms044pub.verizon.net ([206.46.252.44]:45087 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751433AbYF1Ega (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 00:30:34 -0400
-Date: Sat, 28 Jun 2008 13:36:15 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [RFC 0/5] Memory controller soft limit introduction (v3)
-Message-Id: <20080628133615.a5fa16cf.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080627151808.31664.36047.sendpatchset@balbir-laptop>
-References: <20080627151808.31664.36047.sendpatchset@balbir-laptop>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Jun 2008 00:36:30 -0400
+Date: Sat, 28 Jun 2008 00:36:17 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [patch 00/28] PNP: convert fixed tables to lists, v4
+In-reply-to: <20080627225651.663174474@ldl.fc.hp.com>
+X-X-Sender: lenb@localhost.localdomain
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>,
+       Rene Herman <rene.herman@keyaccess.nl>,
+       Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>,
+       Jiri Slaby <jirislaby@gmail.com>, David Howells <dhowells@redhat.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Message-id: <alpine.LFD.1.10.0806280035490.14731@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <20080627225651.663174474@ldl.fc.hp.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jun 2008 20:48:08 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> This patchset implements the basic changes required to implement soft limits
-> in the memory controller. A soft limit is a variation of the currently
-> supported hard limit feature. A memory cgroup can exceed it's soft limit
-> provided there is no contention for memory.
+v4 has replaced v3 in the acpi-test tree.
+
+thanks,
+-Len
+
+On Fri, 27 Jun 2008, Bjorn Helgaas wrote:
+
+> This patch series contains all my PNP patches that are not yet in Linus'
+> tree, including both the "convert resource table to dynamic list" series
+> and the "convert resource options to unified dynamic list" series.
 > 
-> These patches were tested on a x86_64 box, by running a programs in parallel,
-> and checking their behaviour for various soft limit values.
+> This fixes all checkpatch warnings except a "do not add new typedefs"
+> warning.  I kept the pnp_irq_mask_t typedef because I don't see a
+> better way to declare bitmaps in various places and pass around pointers
+> to them.
 > 
-> These patches were developed on top of 2.6.26-rc5-mm3. Comments, suggestions,
-> criticism are all welcome!
+> Len, I told you I was going to send incremental patches, but this is
+> a replacement instead.
 > 
-> A previous version of the patch can be found at
+> Changes since v3:
 > 
-> http://kerneltrap.org/mailarchive/linux-kernel/2008/2/19/904114
+>     - Move IRQ test from pnpacpi_parse_irq_option() to
+>       pnpacpi_parse_ext_irq_option() (fixes "comparison is always true"
+>       warning noticed by David Howells)
+>     - Use pci_get_legacy_ide_irq(), not ATA_PRIMARY_IRQ()/ATA_SECONDARY_IRQ()
+>       (thanks to Bartlomiej Zolnierkiewicz)
+>     - Use snprintf() to make printks atomic
+>     - Fix checkpatch warnings (line length, "//" comments)
 > 
-I have a couple of comments.
-
-1. Why you add soft_limit to res_coutner ?
-   Is there any other controller which uses soft-limit ?
-   I'll move watermark handling to memcg from res_counter becasue it's
-   required only by memcg.
-
-2. *please* handle NUMA
-   There is a fundamental difference between global VMM and memcg.
-     global VMM - reclaim memory at memory shortage.
-     memcg     - for reclaim memory at memory limit
-   Then, memcg wasn't required to handle place-of-memory at hitting limit. 
-   *just reducing the usage* was enough.
-   In this set, you try to handle memory shortage handling.
-   So, please handle NUMA, i.e. "what node do you want to reclaim memory from ?"
-   If not, 
-    - memory placement of Apps can be terrible.
-    - cannot work well with cpuset. (I think)
-
-3. I think  when "mem_cgroup_reclaim_on_contention" exits is unclear.
-   plz add explanation of algorithm. It returns when some pages are reclaimed ?
-
-4. When swap-full cgroup is on the top of heap, which tends to contain
-   tons of memory, much amount of cpu-time will be wasted.
-   Can we add "ignore me" flag  ?
-
-Maybe "2" is the most important to implement this.
-I think this feature itself is interesting, so please handle NUMA.
-
-"4" includes the user's (middleware's) memcg handling problem. But maybe
-a problem should be fixed in future.
-
-Thanks,
--Kame
-
-
+> Here are the significant changes since the last posting:
+> 
+>     - When replacing pnp_resource_table, the PNPACPI resource encoders
+>       have to explicitly handle disabled resources; previously any
+>       unused slots in the table were implicitly disabled.  This should
+>       fix Jiri Slaby's oops on suspend/resume (though he hasn't tested
+>       this version).
+>       
+>       This change is in the patch titled "PNP: replace pnp_resource_table
+>       with dynamically allocated resources".
+>       
+>     - Added a new patch to keep disabled IRQ and DMA resources when parsing
+>       current config.  This fixes a bug in the current (2.6.25) PNPACPI
+>       code: consider a device with (mem, irq0, irq1, io), where irq0 is
+>       disabled.  If we drop irq0 when parsing the _CRS, we will mistakenly
+>       put irq1 in the irq0 slot when we encode resources for an _SRS call.
+> 
+>     - Added a new patch to avoid interrupts used by an IDE controller in
+>       compatibility mode.  https://bugzilla.novell.com/show_bug.cgi?id=375836
+> 
+>     - Added a new PNPACPI patch to support HP vendor-specific descriptors.
+>       This has long been supported by arch/ia64/kernel/acpi-ext.c, which
+>       provides an hp_acpi_csr_space() interface, but I think it's better
+>       and more generic to support it in PNPACPI.
+> 
+> Changes since v2 of "convert resource options to unified dynamic list":
+> 
+>     - fixed bisection problem in quirk_ad1815_mpu_resources()
+>     - fixed checkpatch warning in pnp_show_options()
+>       (pnp-convert-resource-options-to-single-linked-list-checkpatch-fixes.patch)
+>     - replaced pnp_independent_option() with literal 0
+>     - fixed coding style in pnp/manager.c
+>     - added EXPORT_SYMBOL(pnp_possible_config)
+>       (pnp-add-pnp_possible_config-can-a-device-could-be-configured-this-way-fix.patch)
+> 
+> Bjorn
+> -- 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
