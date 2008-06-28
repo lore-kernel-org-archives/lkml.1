@@ -1,127 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756842AbYF1NQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756052AbYF1NYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756842AbYF1NQZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 09:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbYF1NOi
+	id S1756052AbYF1NYm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 09:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYF1NYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 09:14:38 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:44595 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753294AbYF1NOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 09:14:35 -0400
-Date: Sat, 28 Jun 2008 17:17:17 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4] coredump: simplify core_state->nr_threads calculation
-Message-ID: <20080628131717.GA4415@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 28 Jun 2008 09:24:33 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:26345 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752028AbYF1NYc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 09:24:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bhy4x2PfnkVp5EeDvSrxORFiG90Z1LhFhZsmIDs6zJVggE+CWXtkhJtv26tqSgRjEz
+         ggtYN8+IeuKWUAECnm3RzJWfvM1WQmIC0LcIar93n4OnVUoYFpYUbjEsghAzvpkJnD+3
+         7mrfpRcTkecrXkA1vmshRBNdSqz6yrhCi+qOk=
+Message-ID: <6278d2220806280624iec3a67rf25789e98f81521@mail.gmail.com>
+Date: Sat, 28 Jun 2008 14:24:31 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Romano Giannetti" <romano@dea.icai.upcomillas.es>
+Subject: Re: ALC883 recording troubles...
+Cc: "Takashi Iwai" <tiwai@suse.de>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <19f34abd0806280539g4961392evb469d7c106c198c9@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+References: <6278d2220806091259t47c9b070v269da0f5855ef014@mail.gmail.com>
+	 <s5habhtesoq.wl%tiwai@suse.de>
+	 <6278d2220806111200g4f802885wfc5f0fd6c0405efb@mail.gmail.com>
+	 <s5hiqwf0vyr.wl%tiwai@suse.de>
+	 <6278d2220806271705v5bd5fec3l86c3560283063092@mail.gmail.com>
+	 <19f34abd0806280311s115062e6vc6d0f304cb744934@mail.gmail.com>
+	 <6278d2220806280329j2f77c52dp8fbae78420c136c1@mail.gmail.com>
+	 <6278d2220806280529n70c6233dk1c5768df5d52acf@mail.gmail.com>
+	 <19f34abd0806280539g4961392evb469d7c106c198c9@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change zap_process() to return int instead of incrementing
-mm->core_state->nr_threads directly. Change zap_threads() to set
-mm->core_state only on success.
+On Sat, Jun 28, 2008 at 1:39 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> On Sat, Jun 28, 2008 at 2:29 PM, Daniel J Blueman
+> <daniel.blueman@gmail.com> wrote:
+>> Using your dumped config and
+>> ftp://202.65.194.211/pc/audio/ALC268_DataSheet_1.3.pdf page 42, your
+>> front mic pin complex is at node 19h; the mixers connecting to it are
+>> at nodes 0Bh, 22h and 23h, all at the second input index, so one of
+>> these should work:
+>>
+>> # ./hda-verb /dev/snd/hwC0D0 0x0b SET_AMP_GAIN_MUTE 0x7280
+>> # ./hda-verb /dev/snd/hwC0D0 0x22 SET_AMP_GAIN_MUTE 0x7280
+>> # ./hda-verb /dev/snd/hwC0D0 0x23 SET_AMP_GAIN_MUTE 0x7280
+>>
+>> On my ALC883, we need to mute the first input instead, thus 0x7180.
+>> Can you see if the above helps you out?
+>
+> Thanks for helping out!
+>
+> Unfortunately, none of these commands (with either 0x7180 or 0x7280)
+> seems to make any difference at all. (I tried various combinations,
+> with reloading the driver in-between to undo the trial attempts.)
 
-This patch restores the original size of .text, and more importantly now
-->nr_threads is used in two places only.
+I made a mistake - the second input is selected by 0x7180, as the
+first is 0x7080...perhaps retry this with nodes 0Bh, 22h and 23h?
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+Failing that, these are the steps I'd try:
+ 1. setup audio so as to reproduce input DC offset
+ 2. start recording in audacity and observe DC offset
+ 3. for each input of each mixer:
+  3.1 mute until you see the DC offset disappear
 
- exec.c |   33 ++++++++++++++++-----------------
- 1 files changed, 16 insertions(+), 17 deletions(-)
+ie for ALC268, mixer input amps at nodes (# inputs): 0Eh(1) 0Fh(2)
+10h(3) 18h(1) 19h(1) 1Ah(1)
+ie:
 
---- 26-rc2/fs/exec.c~3_NR_CLEANUP	2008-06-16 16:50:13.000000000 +0400
-+++ 26-rc2/fs/exec.c	2008-06-16 17:23:59.000000000 +0400
-@@ -1496,9 +1496,10 @@ out:
- 	return ispipe;
- }
- 
--static void zap_process(struct task_struct *start)
-+static int zap_process(struct task_struct *start)
- {
- 	struct task_struct *t;
-+	int nr = 0;
- 
- 	start->signal->flags = SIGNAL_GROUP_EXIT;
- 	start->signal->group_stop_count = 0;
-@@ -1506,31 +1507,32 @@ static void zap_process(struct task_stru
- 	t = start;
- 	do {
- 		if (t != current && t->mm) {
--			t->mm->core_state->nr_threads++;
- 			sigaddset(&t->pending.signal, SIGKILL);
- 			signal_wake_up(t, 1);
-+			nr++;
- 		}
- 	} while_each_thread(start, t);
-+
-+	return nr;
- }
- 
- static inline int zap_threads(struct task_struct *tsk, struct mm_struct *mm,
--				int exit_code)
-+				struct core_state *core_state, int exit_code)
- {
- 	struct task_struct *g, *p;
- 	unsigned long flags;
--	int err = -EAGAIN;
-+	int nr = -EAGAIN;
- 
- 	spin_lock_irq(&tsk->sighand->siglock);
- 	if (!signal_group_exit(tsk->signal)) {
- 		tsk->signal->group_exit_code = exit_code;
--		zap_process(tsk);
--		err = 0;
-+		nr = zap_process(tsk);
- 	}
- 	spin_unlock_irq(&tsk->sighand->siglock);
--	if (err)
--		return err;
-+	if (unlikely(nr < 0))
-+		return nr;
- 
--	if (atomic_read(&mm->mm_users) == mm->core_state->nr_threads + 1)
-+	if (atomic_read(&mm->mm_users) == nr + 1)
- 		goto done;
- 	/*
- 	 * We should find and kill all tasks which use this mm, and we should
-@@ -1574,7 +1576,7 @@ static inline int zap_threads(struct tas
- 			if (p->mm) {
- 				if (unlikely(p->mm == mm)) {
- 					lock_task_sighand(p, &flags);
--					zap_process(p);
-+					nr += zap_process(p);
- 					unlock_task_sighand(p, &flags);
- 				}
- 				break;
-@@ -1583,7 +1585,9 @@ static inline int zap_threads(struct tas
- 	}
- 	rcu_read_unlock();
- done:
--	return mm->core_state->nr_threads;
-+	core_state->nr_threads = nr;
-+	mm->core_state = core_state;
-+	return nr;
- }
- 
- static int coredump_wait(int exit_code)
-@@ -1596,12 +1600,7 @@ static int coredump_wait(int exit_code)
- 
- 	init_completion(&mm->core_done);
- 	init_completion(&core_state.startup);
--	core_state.nr_threads = 0;
--	mm->core_state = &core_state;
--
--	core_waiters = zap_threads(tsk, mm, exit_code);
--	if (core_waiters < 0)
--		mm->core_state = NULL;
-+	core_waiters = zap_threads(tsk, mm, &core_state, exit_code);
- 	up_write(&mm->mmap_sem);
- 
- 	if (unlikely(core_waiters < 0))
+# ./hda-verb /dev/snd/hwC0D0 0x0e SET_AMP_GAIN_MUTE 0x7080
+# ./hda-verb /dev/snd/hwC0D0 0x0f SET_AMP_GAIN_MUTE 0x7080
+# ./hda-verb /dev/snd/hwC0D0 0x0f SET_AMP_GAIN_MUTE 0x7180
+# ./hda-verb /dev/snd/hwC0D0 0x10 SET_AMP_GAIN_MUTE 0x7080
+# ./hda-verb /dev/snd/hwC0D0 0x10 SET_AMP_GAIN_MUTE 0x7180
+# ./hda-verb /dev/snd/hwC0D0 0x10 SET_AMP_GAIN_MUTE 0x7280
+# ./hda-verb /dev/snd/hwC0D0 0x18 SET_AMP_GAIN_MUTE 0x7080
+# ./hda-verb /dev/snd/hwC0D0 0x19 SET_AMP_GAIN_MUTE 0x7080
+# ./hda-verb /dev/snd/hwC0D0 0x1a SET_AMP_GAIN_MUTE 0x7080
 
+Changes are real-time, so no need to restart anything. Once you've
+found which mixer input amp and input index stops the DC offset, reset
+the HD codec (eg reboot) and try just that one! I'm interested in
+hearing if this finds the issue...
+
+Dan
+-- 
+Daniel J Blueman
