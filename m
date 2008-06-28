@@ -1,81 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758756AbYF1BJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbYF1Bh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758756AbYF1BJk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 21:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbYF1BJb
+	id S1753832AbYF1Bh4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 21:37:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYF1Bhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 21:09:31 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:8804 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753368AbYF1BJa (ORCPT
+	Fri, 27 Jun 2008 21:37:47 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:54846 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751254AbYF1Bhq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 21:09:30 -0400
-Date: Sat, 28 Jun 2008 05:09:28 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-ide@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH v2 -rt] ide: workaround buggy hardware issues with
-	preemptable hardirqs
-Message-ID: <20080628010928.GA4248@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu> <20080624000016.GA12547@polina.dev.rtsoft.ru> <20080625123431.GA25452@polina.dev.rtsoft.ru> <20080628005436.GA1956@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20080628005436.GA1956@polina.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 27 Jun 2008 21:37:46 -0400
+Date: Fri, 27 Jun 2008 21:36:47 -0400
+From: Alastair Bridgewater <nyef@lisphacker.com>
+Subject: [PATCH] input: Add support for eGalax TouchKit USB touchscreen used on
+ HP tx1305us
+To: dmitry.torokhov@gmail.com
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-id: <486595AF.7040103@lisphacker.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+User-Agent: Thunderbird 2.0.0.12 (X11/20080320)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 28, 2008 at 04:54:36AM +0400, Anton Vorontsov wrote:
-> IDE interrupt handler relies on the fact that, if necessary, hardirqs
-> will re-trigger on ISR exit. The assumption is valid for level sensitive
-> interrupts.
-> 
-> But some hardware (namely ULi M5228 in the ULi M1575 "Super South Brige")
-> behaves in a strange way: it asserts interrupts as edge sensitive. And
-> because preemptable IRQ handler disables PIC's interrupt, PIC will likely
-> miss it.
-> 
-> This patch fixes following issue:
-> 
-> ALI15X3: IDE controller (0x10b9:0x5229 rev 0xc8) at  PCI slot 0001:03:1f.0
-> ALI15X3: 100% native mode on irq 18
-> ide0: BM-DMA at 0x1120-0x1127, BIOS settings: hda:PIO, hdb:PIO
-> ide1: BM-DMA at 0x1128-0x112f, BIOS settings: hdc:PIO, hdd:PIO
-> hda: Optiarc DVD RW AD-7190A, ATAPI CD/DVD-ROM drive
-> hda: UDMA/66 mode selected
-> ide0 at 0x1100-0x1107,0x110a on irq 18
-> ide-cd: cmd 0x5a timed out
-> hda: lost interrupt
-> hda: ATAPI 12X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache
-> Uniform CD-ROM driver Revision: 3.20
-> ide-cd: cmd 0x3 timed out
-> hda: lost interrupt
-> ide-cd: cmd 0x3 timed out
-> hda: lost interrupt
-> ...
-> 
-> It would be great to re-configure the ULi bridge or ULi IDE controller
-> to behave sanely, but no one knows how or if this is possible at all
-> (no available specifications).
+The eGalax touchscreen used in the HP tx1305us tablet PC (and presumably 
+the rest of the tx1000 series) uses a different format for events from 
+the device than the existing driver supports.
 
-Btw, thanks to Jeff Garzik for mentioning this link:
+Add a new device description and interrupt packet handler for the 
+touchscreen used in the tx1305us, claiming the USB device ID for the 
+device that this patch was tested with from the older eGalax device code.
 
-http://gkernel.sourceforge.net/specs/
+Signed-off-by: Alastair Bridgewater <nyef@lisphacker.com>
 
-Though, from a brief glance there is nothing much useful for this ULi
-chip. The only thing I gathered is that IDE controller does not provide
-any means of configuring its IRQs behaviour, so it is indeed ULi's bridge
-problems. It doesn't change anything, just another data point...
+---
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Applies clean with linux-2.6.25 and linux-2.6.26-rc6.
+
+--- linux-2.6.26-rc6/drivers/input/touchscreen/usbtouchscreen.c   
+ 2008-06-27 20:34:34.886969800 -0400
++++ linux-2.6.25/drivers/input/touchscreen/usbtouchscreen.c   
+ 2008-06-06 12:19:16.460568440 -0400
+@@ -103,6 +103,7 @@ struct usbtouch_usb {
+ enum {
+     DEVTPYE_DUMMY = -1,
+     DEVTYPE_EGALAX,
++    DEVTYPE_EGALAX2,
+     DEVTYPE_PANJIT,
+     DEVTYPE_3M,
+     DEVTYPE_ITM,
+@@ -120,7 +121,7 @@ static struct usb_device_id usbtouch_dev
+     {USB_DEVICE(0x3823, 0x0001), .driver_info = DEVTYPE_EGALAX},
+     {USB_DEVICE(0x3823, 0x0002), .driver_info = DEVTYPE_EGALAX},
+     {USB_DEVICE(0x0123, 0x0001), .driver_info = DEVTYPE_EGALAX},
+-    {USB_DEVICE(0x0eef, 0x0001), .driver_info = DEVTYPE_EGALAX},
++    {USB_DEVICE(0x0eef, 0x0001), .driver_info = DEVTYPE_EGALAX2},
+     {USB_DEVICE(0x0eef, 0x0002), .driver_info = DEVTYPE_EGALAX},
+     {USB_DEVICE(0x1234, 0x0001), .driver_info = DEVTYPE_EGALAX},
+     {USB_DEVICE(0x1234, 0x0002), .driver_info = DEVTYPE_EGALAX},
+@@ -217,6 +218,15 @@ static int egalax_get_pkt_len(unsigned c
+ 
+     return 0;
+ }
++
++static int egalax2_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
++{
++    dev->x = ((pkt[3] & 0x0F) << 8) | pkt[2];
++    dev->y = ((pkt[5] & 0x0F) << 8) | pkt[4];
++    dev->touch = pkt[1] & 0x01;
++
++    return 1;
++}
+ #endif
+ 
+ 
+@@ -555,6 +565,15 @@ static struct usbtouch_device_info usbto
+         .get_pkt_len    = egalax_get_pkt_len,
+         .read_data    = egalax_read_data,
+     },
++
++    [DEVTYPE_EGALAX2] = {
++        .min_xc        = 0x0,
++        .max_xc        = 0x0fff,
++        .min_yc        = 0x0,
++        .max_yc        = 0x0fff,
++        .rept_size    = 8,
++        .read_data    = egalax2_read_data,
++    },
+ #endif
+ 
+ #ifdef CONFIG_TOUCHSCREEN_USB_PANJIT
+
