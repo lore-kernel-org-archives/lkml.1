@@ -1,57 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbYF1MsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbYF1Mt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756213AbYF1MsS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 08:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbYF1MsE
+	id S1757283AbYF1Mt3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 08:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbYF1MtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 08:48:04 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:49515 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751823AbYF1MsD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 08:48:03 -0400
-Date: Sat, 28 Jun 2008 14:47:59 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Pierre Ossman <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, kernel@avr32linux.org,
-       "Nelson, Shannon" <shannon.nelson@intel.com>,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH v4 6/6] Atmel MCI: Driver for Atmel on-chip MMC
- controllers
-Message-ID: <20080628144759.2d9c7311@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <1214602273.12666.7.camel@dwillia2-linux.ch.intel.com>
-References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-2-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-3-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-4-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-5-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-6-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-7-git-send-email-haavard.skinnemoen@atmel.com>
-	<20080627211014.0e80db04@siona.local>
-	<1214602273.12666.7.camel@dwillia2-linux.ch.intel.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Sat, 28 Jun 2008 08:49:18 -0400
+Received: from [88.205.141.71] ([88.205.141.71]:13031 "EHLO mail.ward.six"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751860AbYF1MtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 08:49:17 -0400
+X-Greylist: delayed 433 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Jun 2008 08:49:17 EDT
+Date: Sat, 28 Jun 2008 18:41:36 +0600
+From: Denis Zaitceff <zaitceff@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.25.8] ipconfig.c: extend the info in /proc/net/pnp
+Message-ID: <20080628184136.A5610@ward.six>
+Mail-Followup-To: David Miller <davem@davemloft.net>,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jun 2008 12:47:47.0384 (UTC) FILETIME=[2AB4F380:01C8D91D]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams <dan.j.williams@intel.com> wrote:
-> > This driver has been out of tree for way too long. I'm hoping we can
-> > get it in before 2.6.27.  
-> 
-> I have high confidence that we can get the dma bits applied in time for
-> 2.6.27.  You seem to have addressed my previous concerns and there has
-> been more than ample time for others with similar dma configurations to
-> comment on the dma-slave framework.  I just want some more time to give
-> it an honest review.
+This patch extends the info shown thru /proc/net/pnp, making more ipv4
+autoconf results accessible to user.  The variables added are:
 
-Sorry, I didn't mean to put pressure on you -- I certainly want an
-honest review. I meant it more as a sigh of relief that this
-troublesome driver is finally making its way into mainline...and that I
-can start working on preparing the other drivers that depend on the DMA
-slave interface.
+ic_myaddr
+ic_netmask
+ic_gateway
+root_server_addr
+root_server_path
+ic_dev_name
 
-Haavard
+This should make diskless clients more happy, as their startup scripts
+would have more information.
+
+Please apply the patch, would you consider it useful.
+
+
+--- net/ipv4/ipconfig.c
++++ net/ipv4/ipconfig.c
+@@ -183,6 +183,9 @@
+ 
+ static struct ic_device *ic_first_dev __initdata = NULL;/* List of open device */
+ static struct net_device *ic_dev __initdata = NULL;	/* Selected device */
++#ifdef CONFIG_PROC_FS
++static u8 ic_dev_name[sizeof ic_dev->name];
++#endif
+ 
+ static int __init ic_open_devs(void)
+ {
+@@ -1199,6 +1202,19 @@ static int pnp_seq_show(struct seq_file 
+ {
+ 	int i;
+ 
++	const struct info {
++		__be32 *value;
++		const char *name;
++	} static list[]= {
++		{&ic_servaddr,"bootserver"},
++		{&ic_myaddr,"myaddr"},
++		{&ic_netmask,"netmask"},
++		{&ic_gateway,"gateway"},
++		{&root_server_addr,"rootserver"},
++		{NULL}
++	};
++	const struct info *p= list;
++
+ 	if (ic_proto_used & IC_PROTO)
+ 		seq_printf(seq, "#PROTO: %s\n",
+ 			   (ic_proto_used & IC_RARP) ? "RARP"
+@@ -1215,10 +1231,18 @@ static int pnp_seq_show(struct seq_file 
+ 				   "nameserver %u.%u.%u.%u\n",
+ 				   NIPQUAD(ic_nameservers[i]));
+ 	}
+-	if (ic_servaddr != NONE)
+-		seq_printf(seq,
+-			   "bootserver %u.%u.%u.%u\n",
+-			   NIPQUAD(ic_servaddr));
++
++	do if (*p->value != NONE)
++		seq_printf(seq, "%s %u.%u.%u.%u\n",
++			   p->name, NIPQUAD(*p->value));
++	while ((++p)->value);
++
++	if (root_server_path[0])
++		seq_printf(seq, "rootpath %s\n", root_server_path);
++
++	if (ic_dev_name[0])
++		seq_printf(seq, "device %s\n", ic_dev_name);
++
+ 	return 0;
+ }
+ 
+@@ -1386,6 +1410,10 @@ static int __init ip_auto_config(void)
+ 	ic_proto_used = ic_got_reply | (ic_proto_enabled & IC_USE_DHCP);
+ #endif
+ 
++#ifdef CONFIG_PROC_FS
++        strcpy(ic_dev_name, ic_dev->name);
++#endif
++
+ #ifndef IPCONFIG_SILENT
+ 	/*
+ 	 * Clue in the operator.
