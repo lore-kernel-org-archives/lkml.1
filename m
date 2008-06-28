@@ -1,55 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYF1RyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759170AbYF1RzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758020AbYF1RyU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 13:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYF1RyK
+	id S1759170AbYF1RzS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 13:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbYF1RzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 13:54:10 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:36366 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753388AbYF1RyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 13:54:09 -0400
-Date: Sun, 29 Jun 2008 02:51:33 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH 02/20] mm: generic show_mem()
-Message-ID: <20080628175133.GA6364@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Johannes Weiner <hannes@saeurebad.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-References: <20080627115349.743368154@saeurebad.de> <20080627120048.059732179@saeurebad.de> <20080628042240.GB25492@linux-sh.org> <87myl5ama2.fsf@skyscraper.fehenstaub.lan>
+	Sat, 28 Jun 2008 13:55:03 -0400
+Received: from colo.lackof.org ([198.49.126.79]:43184 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753500AbYF1RzB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 13:55:01 -0400
+Date: Sat, 28 Jun 2008 11:54:49 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Julia Lawall <julia@diku.dk>
+Cc: akinobu.mita@gmail.com, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 6/14] arch/parisc: Eliminate NULL test and memset after
+	alloc_bootmem
+Message-ID: <20080628175449.GB12265@colo.lackof.org>
+References: <Pine.LNX.4.64.0806241023080.26777@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87myl5ama2.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.64.0806241023080.26777@ask.diku.dk>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 28, 2008 at 12:25:57PM +0200, Johannes Weiner wrote:
-> Paul Mundt <lethal@linux-sh.org> writes:
-> > On Fri, Jun 27, 2008 at 01:53:51PM +0200, Johannes Weiner wrote:
-> >> This implements a platform-independent version of show_mem().
-> >> 
-> >> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-> >
-> > Looking at this again, does having this as a Kconfig option really make
-> > sense? We have no tristate in-tree users of this that I can see, wouldn't
-> > this be better off in lib/? It would be preferable not to let the
-> > HAVE_foo stuff get out of hand if we can avoid it.
+On Tue, Jun 24, 2008 at 10:23:28AM +0200, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> I hate the current Kconfig usage, too.  But I figured, if I won't obey
-> on such decisions by people who maintain it, it won't have a chance to
-> get in.
+> As noted by Akinobu Mita in patch b1fceac2b9e04d278316b2faddf276015fc06e3b,
+> alloc_bootmem and related functions never return NULL and always return a
+> zeroed region of memory.  Thus a NULL test or memset after calls to these
+> functions is unnecessary.
 > 
-> So, what do you suggest?  Moving it to lib/ and have one simple #define
-> if the arch wants to use it or not?
+>  arch/parisc/mm/init.c |    1 -
+>  1 file changed, 1 deletion(-)
 > 
-There's no need for a define. If you move it to lib/ it will just be the
-default implementation unless an architecture overloads it with their own
-definition. With your current patch set, you should just be able to shove
-it in to lib/, drop the Kconfig option, and be good to go.
+> This was fixed using the following semantic patch.
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @@
+> expression E;
+> statement S;
+> @@
+> 
+> E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_pages\)(...)
+> ... when != E
+> (
+> - BUG_ON (E == NULL);
+> |
+> - if (E == NULL) S
+> )
+> 
+> @@
+> expression E,E1;
+> @@
+> 
+> E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_pages\)(...)
+> ... when != E
+> - memset(E,0,E1);
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+
+Acked-by: Grant Grundler <grundler@parisc-linux.org>
+
+thanks,
+grant
+
+> ---
+> 
+> diff -u -p a/arch/parisc/mm/init.c b/arch/parisc/mm/init.c
+> --- a/arch/parisc/mm/init.c
+> +++ b/arch/parisc/mm/init.c
+> @@ -765,7 +765,6 @@ static void __init pagetable_init(void)
+>  #endif
+>  
+>  	empty_zero_page = alloc_bootmem_pages(PAGE_SIZE);
+> -	memset(empty_zero_page, 0, PAGE_SIZE);
+>  }
+>  
+>  static void __init gateway_init(void)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-parisc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
