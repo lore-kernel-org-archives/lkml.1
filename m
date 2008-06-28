@@ -1,33 +1,39 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756804AbYF0FVW (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 27 Jun 2008 01:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYF0FVN
+	id S1753321AbYF1C7n (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 27 Jun 2008 22:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYF1C7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 01:21:13 -0400
-Received: from smtp.sohu.com ([220.181.26.195]:35946 "EHLO smtp.sohu.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752541AbYF0FVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 01:21:13 -0400
-From: =?GB2312?B?xfPT0Q==?= <gdpeixun002@sohu.com>
-Subject: linux-kernel
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain;
-	charset="GB2312"
+	Fri, 27 Jun 2008 22:59:30 -0400
+Received: from tomts31-srv.bellnexxia.net ([209.226.175.105]:33249 "EHLO
+	tomts31-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752151AbYF1C7a convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 22:59:30 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqaGAOlAZUjR4q+H/2dsb2JhbACBOIokAYYS
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [81.199.177.14]
+From: <michael.clarke@bellnet.ca>
+Reply-To: british.claimsoffice01@yahoo.com.tr
+To: info@bellnet.ca
+Subject: Your (Ticketno:56475600545188)
+Date: Fri, 27 Jun 2008 22:59:25 -0400
 MIME-Version: 1.0
-Content-Transfer-Encoding: base64
-Reply-To: gdpeixun002@sohu.com
-Date: Fri, 27 Jun 2008 13:21:09 +0800
-Message-Id: <20080627052104.C53E312320E@smtp.sohu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Message-Id: <20080628025928.SBUU10647.tomts31-srv.bellnexxia.net@toip38-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756804AbYF0FVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753321AbYF1C7n@vger.kernel.org>
 
-x9ewrrXExfPT0aOsxOO6w6O6DQogICAgueO2q8Xg0bXN+MrH06a9zNP9xeDRtbei1bm2+LPJwaK1
-xNK7uPbXqNK10NTV0Mn618rRtsa9zKijrLvjvK+547arzfK80sXg0bW7+rm51+7QwsXg0bW/zrPM
-0MXPoqOsxuS498/uxeDRtdeo0rW31sDgvqvIt6GiueO3uqOszqrF4NG1u/q5uczhuanBy9K7uPbX
-7teo0rW1xNXQyfrGvcyoo6y547arxeDRtc34zqrE+sPit9HX9tXQyfrNxrnjLLK708O7qLfRuN+2
-7tfKvfAsxPq1xNXQyfrQxc+ivs274bG7yc/N8rXE0afUseSvwMCho7u5tcjKssO0P7/swLS3orK8
-xPq1xMXg0bW/zrPMsMmhow0KICAgIA0KICAgICAgaHR0cDovL3d3dy5nZHBlaXh1bi5uZXQNCg0K
-yOe5+8TjysfT0NLi0bDF4NG1u/q5ubXE0afUsaOsxMfDtKOswLS547arxeDRtc34obC79bHIyP28
-0qGxzt7SycrHxOO++LzR0aHU8aOhDQo=
+Contact: Mr: Robert Williams for your WINNING Cheque of
+=A31,000,000.00 GBP Pounds with this Information below: Full Name,
+Address,Telephone Number, Amount Won,Occupation, Country. Age,
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
