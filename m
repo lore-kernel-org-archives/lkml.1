@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbYF1L4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbYF1MJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754753AbYF1L4H (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 07:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbYF1Lz5
+	id S1754245AbYF1MJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 08:09:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbYF1MJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 07:55:57 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58948 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbYF1Lz4 (ORCPT
+	Sat, 28 Jun 2008 08:09:50 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:47195 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751776AbYF1MJt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 07:55:56 -0400
-Message-ID: <486626C8.7070705@firstfloor.org>
-Date: Sat, 28 Jun 2008 13:55:52 +0200
+	Sat, 28 Jun 2008 08:09:49 -0400
+To: Glauber Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       x86@kernel.org
+Subject: Re: [PATCH 12/39] introduce __ASM_REG macro
 From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+References: <1214602486-17080-1-git-send-email-gcosta@redhat.com>
+	<1214602486-17080-2-git-send-email-gcosta@redhat.com>
+	<1214602486-17080-3-git-send-email-gcosta@redhat.com>
+	<1214602486-17080-4-git-send-email-gcosta@redhat.com>
+	<1214602486-17080-5-git-send-email-gcosta@redhat.com>
+	<1214602486-17080-6-git-send-email-gcosta@redhat.com>
+	<1214602486-17080-7-git-send-email-gcosta@redhat.com>
+	<1214602486-17080-8-git-send-email-gcosta@redhat.com>
+	<1214602486-17080-9-git-send-email-gcosta@redhat.com>
+	<1214602486-17080-10-git-send-email-gcosta@redhat.com>
+	<1214602486-17080-11-git-send-email-gcosta@redhat.com>
+	<1214602486-17080-12-git-send-email-gcosta@redhat.com>
+	<1214602486-17080-13-git-send-email-gcosta@redhat.com>
+Date: Sat, 28 Jun 2008 14:09:47 +0200
+In-Reply-To: <1214602486-17080-13-git-send-email-gcosta@redhat.com> (Glauber Costa's message of "Fri, 27 Jun 2008 18:34:19 -0300")
+Message-ID: <87iqvtpxpw.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: Tim Connors <tconnors@astro.swin.edu.au>
-CC: Peter Zijlstra <peterz@infradead.org>, dipankar@in.ibm.com,
-       balbir@linux.vnet.ibm.com, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Vatsa <vatsa@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [RFC v1] Tunable sched_mc_power_savings=n
-References: <20080625191100.GI21892@dirshya.in.ibm.com> <87k5gcqpbm.fsf@basil.nowhere.org> <4863AF57.3040005@linux.vnet.ibm.com> <4863DB29.1020304@firstfloor.org> <20080626185254.GA12416@dirshya.in.ibm.com> <4863F93C.9040102@firstfloor.org> <20080626210025.GB26167@in.ibm.com> <48640C04.9020600@firstfloor.org> <1214516584.12265.10.camel@twins.programming.kicks-ass.net> <48641A7D.6080204@firstfloor.org> <1214553090.2801.7.camel@twins.programming.kicks-ass.net> <48649F84.4090501@firstfloor.org> <12146524137149-twc@hexane.ssi.swin.edu.au>
-In-Reply-To: <12146524137149-twc@hexane.ssi.swin.edu.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 28 Jun 2008 12:02:28.0444 (UTC) FILETIME=[D617A1C0:01C8D916]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Connors wrote:
-> Andi Kleen <andi@firstfloor.org> said on Fri, 27 Jun 2008 10:06:28 +0200:
->> Peter Zijlstra wrote:
->>> disappeared then I'd call that a huge usability regression. Basically
->>> making ondemand useless.
->>>
->>> /me checks,..
->>>
->>> Yeah, on F9, my opteron runs at 1GHz when idle, but when I start distcc,
->>> which like said runs on nice 19, the cpu speed goes up to 2.4GHz.
->> Ok distcc is a special case, 
-> 
-> No it's not. 
+Glauber Costa <gcosta@redhat.com> writes:
 
-You're arguing against the current default of ondemand then.
+> There are situations in which the architecture wants to use the
+> register that represents its word-size, whatever it is. For those,
+> introduce __ASM_REG in asm.h, along with the first users _ASM_AX
+> and _ASM_DX. They have users waiting for it, namely the getuser
+> functions.
+
+FYI the ABI of the 64bit get_user was designed for minimal
+code size originally.  You should check for regressions if you
+change that.
 
 -Andi
