@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbYF1RYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYF1Ret@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbYF1RYv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 13:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbYF1RYk
+	id S1756889AbYF1Ret (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 13:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbYF1Rej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 13:24:40 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:24789 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753207AbYF1RYj (ORCPT
+	Sat, 28 Jun 2008 13:34:39 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:39100 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753211AbYF1Rei (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 13:24:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:message-id:user-agent
-         :mime-version:content-type:sender;
-        b=JkLU7iFmhuA6TgmBybE97ytIyWrU68dCXdaCkXfoDJctQdUnhLdg6F9OCnoLZnrX+h
-         M7ZKrNwKVA/ok31QosmjTxLc9wMBpXHy5cp+LGAEOlWycnqWRNfQc+PtATZrEGg8clti
-         22wi0WqeEQMB9Alz71oFhikU+e0UpNGtqvyIc=
-Date: Sat, 28 Jun 2008 19:24:21 +0200 (CEST)
-From: Marcin Obara <marcin_obara@users.sourceforge.net>
-X-X-Sender: marcin_obara@ip-195-3-221-75.vnet.pl
-To: tpmdd-devel@lists.sourceforge.net, Marcel Selhorst <tpm@selhorst.net>
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] tpm: add Intel TPM TIS device HID
-Message-ID: <alpine.DEB.1.00.0806281913410.7076@ip-195-3-221-75.vnet.pl>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Sat, 28 Jun 2008 13:34:38 -0400
+Message-ID: <48667624.1090904@linux.vnet.ibm.com>
+Date: Sat, 28 Jun 2008 23:04:28 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       xfs-masters@oss.sgi.com, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 27 - randconfig build
+ fails with !CONFIG_XFS_POSIX_ACL
+References: <20080627182406.a54b00c1.sfr@canb.auug.org.au> <4865304C.3020301@linux.vnet.ibm.com> <20080628110518.5ae86cd6.sfr@canb.auug.org.au>
+In-Reply-To: <20080628110518.5ae86cd6.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds Intel TPM TIS device HID :  ICO0102
+Stephen Rothwell wrote:
+> Hi Kamalesh.
+> 
+> On Fri, 27 Jun 2008 23:54:12 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+>> randconfig build on x86_64 machine fails with build failure
+>>
+>>   CC [M]  fs/xfs/linux-2.6/xfs_xattr.o
+>> fs/xfs/linux-2.6/xfs_xattr.c: In function ‘xfs_decode_acl’:
+>> fs/xfs/linux-2.6/xfs_xattr.c:40: error: ‘_ACL_TYPE_ACCESS’ undeclared (first use in this function)
+>> fs/xfs/linux-2.6/xfs_xattr.c:40: error: (Each undeclared identifier is reported only once
+>> fs/xfs/linux-2.6/xfs_xattr.c:40: error: for each function it appears in.)
+>> fs/xfs/linux-2.6/xfs_xattr.c:42: error: ‘_ACL_TYPE_DEFAULT’ undeclared (first use in this function)
+> 
+> Are you sure your sources are OK?  The patch "xfs fix 1" (which is the
+> second last commit in the next20080627 tree) is supposed to fix that.
+> 
+Your right, the sources did not have the commit. Sorry for the noise.
 
-Signed-off-by: Marcin Obara <marcin_obara@users.sourceforge.net>
-
---- linux_tpm/drivers/char/tpm/tpm_tis.c	2008-06-05 20:51:13.000000000 +0200
-+++ linux_intel/drivers/char/tpm/tpm_tis.c	2008-06-25 06:31:39.000000000 +0200
-@@ -623,6 +623,7 @@ static struct pnp_device_id tpm_pnp_tbl[
- 	{"IFX0102", 0},		/* Infineon */
- 	{"BCM0101", 0},		/* Broadcom */
- 	{"NSC1200", 0},		/* National */
-+	{"ICO0102", 0},		/* Intel */
- 	/* Add new here */
- 	{"", 0},		/* User Specified */
- 	{"", 0}			/* Terminator */
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
