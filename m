@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754317AbYF1LwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbYF1L4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754317AbYF1LwV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 07:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbYF1LwM
+	id S1754753AbYF1L4H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 07:56:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbYF1Lz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 07:52:12 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:39033 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750736AbYF1LwL (ORCPT
+	Sat, 28 Jun 2008 07:55:57 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58948 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbYF1Lz4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 07:52:11 -0400
-Message-ID: <486625E2.2020808@ru.mvista.com>
-Date: Sat, 28 Jun 2008 15:52:02 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Sat, 28 Jun 2008 07:55:56 -0400
+Message-ID: <486626C8.7070705@firstfloor.org>
+Date: Sat, 28 Jun 2008 13:55:52 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Cc: Ingo Molnar <mingo@elte.hu>, linux-ide@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH v2 -rt] ide: workaround buggy hardware issues with	preemptable
- hardirqs
-References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu> <20080624000016.GA12547@polina.dev.rtsoft.ru> <20080625123431.GA25452@polina.dev.rtsoft.ru> <20080628005436.GA1956@polina.dev.rtsoft.ru> <486612CC.3060505@ru.mvista.com> <20080628113126.GA438@polina.dev.rtsoft.ru>
-In-Reply-To: <20080628113126.GA438@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Tim Connors <tconnors@astro.swin.edu.au>
+CC: Peter Zijlstra <peterz@infradead.org>, dipankar@in.ibm.com,
+       balbir@linux.vnet.ibm.com, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Vatsa <vatsa@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [RFC v1] Tunable sched_mc_power_savings=n
+References: <20080625191100.GI21892@dirshya.in.ibm.com> <87k5gcqpbm.fsf@basil.nowhere.org> <4863AF57.3040005@linux.vnet.ibm.com> <4863DB29.1020304@firstfloor.org> <20080626185254.GA12416@dirshya.in.ibm.com> <4863F93C.9040102@firstfloor.org> <20080626210025.GB26167@in.ibm.com> <48640C04.9020600@firstfloor.org> <1214516584.12265.10.camel@twins.programming.kicks-ass.net> <48641A7D.6080204@firstfloor.org> <1214553090.2801.7.camel@twins.programming.kicks-ass.net> <48649F84.4090501@firstfloor.org> <12146524137149-twc@hexane.ssi.swin.edu.au>
+In-Reply-To: <12146524137149-twc@hexane.ssi.swin.edu.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Tim Connors wrote:
+> Andi Kleen <andi@firstfloor.org> said on Fri, 27 Jun 2008 10:06:28 +0200:
+>> Peter Zijlstra wrote:
+>>> disappeared then I'd call that a huge usability regression. Basically
+>>> making ondemand useless.
+>>>
+>>> /me checks,..
+>>>
+>>> Yeah, on F9, my opteron runs at 1GHz when idle, but when I start distcc,
+>>> which like said runs on nice 19, the cpu speed goes up to 2.4GHz.
+>> Ok distcc is a special case, 
+> 
+> No it's not. 
 
-Anton Vorontsov wrote:
->>> But some hardware (namely ULi M5228 in the ULi M1575 "Super South Brige")
->>> behaves in a strange way: it asserts interrupts as edge sensitive. And
->>> because preemptable IRQ handler disables PIC's interrupt, PIC will likely
->>> miss it.
->>>   
->>>       
->>   Unmasking an IRQ should re-enable an edge detector in a PIC (or that  
->> detector should even be independent from mask).
->>     
-> Should? Hm.. well, I can easily check it. Will just program the MPIC IRQ
-> to edge sensitive, and see if it fixes the problem (not sure if I already
-> tried this, I think I did try).
->   
+You're arguing against the current default of ondemand then.
 
-   That will not help if edge detector is not active for masked out IRQs 
-(that's how i8259 behaves, IIRC) *and* you're getting the short IRQ 
-"pulses" but should help if IRQ is generated normally -- though in this 
-case the level trigger mode (with the same polarity) should work as well...
-
-MBR, Sergei
-
-
+-Andi
