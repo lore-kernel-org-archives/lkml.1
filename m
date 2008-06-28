@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756527AbYF1Mgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYF1Mjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756527AbYF1Mgm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 08:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbYF1MgM
+	id S1755843AbYF1Mjm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 08:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYF1Mjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 08:36:12 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:56725 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752440AbYF1MgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 08:36:10 -0400
-Date: Sat, 28 Jun 2008 16:38:25 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] sched: fix TASK_WAKEKILL vs SIGKILL race
-Message-ID: <20080628123825.GA1682@tv-sign.ru>
-References: <20080608172041.GA10383@tv-sign.ru> <20080627204954.4CC04154226@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 28 Jun 2008 08:39:33 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:24868 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751981AbYF1Mjc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 08:39:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=f3/vkSG73uGNIE2c3CHdpNLNbXE+G0qeLF9kC2EaoPD0Eigh0VsOICZcAeeiQ/GcRT
+         nsYSE+KJBxeCVNKDvh2of9A7PH2pmQvsM7KfwqVbALyffYUb/Vpk5yCw0FY4Tryc/gbO
+         sNPc+Byi2j8LZxtC15lgNmQ6ABeAwfce41fHU=
+Message-ID: <19f34abd0806280539g4961392evb469d7c106c198c9@mail.gmail.com>
+Date: Sat, 28 Jun 2008 14:39:32 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Daniel J Blueman" <daniel.blueman@gmail.com>
+Subject: Re: ALC883 recording troubles...
+Cc: "Takashi Iwai" <tiwai@suse.de>,
+       "Romano Giannetti" <romano@dea.icai.upcomillas.es>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <6278d2220806280529n70c6233dk1c5768df5d52acf@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080627204954.4CC04154226@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+References: <6278d2220806091259t47c9b070v269da0f5855ef014@mail.gmail.com>
+	 <s5habhtesoq.wl%tiwai@suse.de>
+	 <6278d2220806111200g4f802885wfc5f0fd6c0405efb@mail.gmail.com>
+	 <s5hiqwf0vyr.wl%tiwai@suse.de>
+	 <6278d2220806271705v5bd5fec3l86c3560283063092@mail.gmail.com>
+	 <19f34abd0806280311s115062e6vc6d0f304cb744934@mail.gmail.com>
+	 <6278d2220806280329j2f77c52dp8fbae78420c136c1@mail.gmail.com>
+	 <6278d2220806280529n70c6233dk1c5768df5d52acf@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/09, Roland McGrath wrote:
+On Sat, Jun 28, 2008 at 2:29 PM, Daniel J Blueman
+<daniel.blueman@gmail.com> wrote:
+> Using your dumped config and
+> ftp://202.65.194.211/pc/audio/ALC268_DataSheet_1.3.pdf page 42, your
+> front mic pin complex is at node 19h; the mixers connecting to it are
+> at nodes 0Bh, 22h and 23h, all at the second input index, so one of
+> these should work:
 >
-   ^^^^^
-Oops, something is wrong! I received this message today, 06/28.
+> # ./hda-verb /dev/snd/hwC0D0 0x0b SET_AMP_GAIN_MUTE 0x7280
+> # ./hda-verb /dev/snd/hwC0D0 0x22 SET_AMP_GAIN_MUTE 0x7280
+> # ./hda-verb /dev/snd/hwC0D0 0x23 SET_AMP_GAIN_MUTE 0x7280
+>
+> On my ALC883, we need to mute the first input instead, thus 0x7180.
+> Can you see if the above helps you out?
 
-> > Note this "__TASK_STOPPED | __TASK_TRACED" check in signal_pending_state().
-> > This is needed to preserve the current behaviour (ptrace_notify). I hope
-> > this check will be removed soon, but this (afaics good) change needs the
-> > separate discussion.
-> 
-> Agreed.  I think it might actually already be safe to drop it, but we can
-> get to that after this settles.
+Thanks for helping out!
 
-Great! I'll re-send the patch which drops it in a minute.
+Unfortunately, none of these commands (with either 0x7180 or 0x7280)
+seems to make any difference at all. (I tried various combinations,
+with reloading the driver in-between to undo the trial attempts.)
 
-Could you also look at other patches?
 
-	[PATCH 2/3] ptrace: never sleep in TASK_TRACED if SIGKILL'ed
-	http://marc.info/?l=linux-kernel&m=121362601402886
+Vegard
 
-	[PATCH 3/3] ptrace: kill may_ptrace_stop()
-	http://marc.info/?l=linux-kernel&m=121362601702897
-
-I think ptrace_stop() really needs changes. But I don't know what is
-the supposed behaviour of PT_TRACE_EXIT. Should we sleep even if the
-task was killed? Should we sleep if the thread was killed because another
-one does exit_group() or exec() ?
-
-We can use "SIGNAL_GROUP_EXIT && (group_exit_code & 0x7f)" instead
-of signal_group_exit() to be sure that task was killed by the fatal
-signal.
-
-Oleg.
-
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
