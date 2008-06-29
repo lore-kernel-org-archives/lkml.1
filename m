@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762458AbYF2TnE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763381AbYF2Tmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762458AbYF2TnE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 15:43:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756724AbYF2Tbp
+	id S1763381AbYF2Tmp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 15:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbYF2Tbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 15:31:45 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45685 "EHLO ogre.sisk.pl"
+	Sun, 29 Jun 2008 15:31:44 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45736 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759941AbYF2Tbf convert rfc822-to-8bit (ORCPT
+	id S1759909AbYF2Tbe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 15:31:35 -0400
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "tosn00j02@sneakemail.com <"@ogre.sisk.pl
+	Sun, 29 Jun 2008 15:31:34 -0400
+Cc: "Alan Stern" <stern@rowland.harvard.edu>,
+       "Lukas Hejtmanek" <xhejtman@ics.muni.cz>
 References: <q5WW6DLC10O.A.dxC.R69ZIB@albercik>
 In-Reply-To: <q5WW6DLC10O.A.dxC.R69ZIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <X8mbwW6K81I.A.suG.g_9ZIB@albercik>
-Subject: [Bug #9791] Clock is running too fast^Wslow using acpi_pm clocksource
+Message-ID: <X8mbwW6K81I.A.k6C.Z69ZIB@albercik>
+Subject: [Bug #11008] after laptop re-dock: usb-storage device no longer detected
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun, 29 Jun 2008 20:18:43 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,11 +34,11 @@ The following bug entry is on the current list of known regressions
 from 2.6.25.  Please verify if it still should be listed.
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9791
-Subject		: Clock is running too fast^Wslow using acpi_pm clocksource
-Submitter	: tosn00j02@sneakemail.com
-Date		: 2008-05-03 05:09 (58 days old)
-Handled-By	: Maciej W. Rozycki <macro@linux-mips.org>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=16180
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11008
+Subject		: after laptop re-dock: usb-storage device no longer detected
+Submitter	: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Date		: 2008-06-26 17:37 (4 days old)
+References	: http://lkml.org/lkml/2008/6/26/391
+Handled-By	: Alan Stern <stern@rowland.harvard.edu>
 
 
