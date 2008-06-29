@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760513AbYF2LBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759982AbYF2LBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760513AbYF2LBB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 07:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbYF2K7U
+	id S1759982AbYF2LBY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 07:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758142AbYF2K7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 06:59:20 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:56961 "EHLO
+	Sun, 29 Jun 2008 06:59:23 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:55234 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754917AbYF2K7M (ORCPT
+	with ESMTP id S1754771AbYF2K7M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 29 Jun 2008 06:59:12 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=whcXaubKt/VRUQ4dSIKvkvagtV1cVIFbjhFgy9PLwNAU2H+AoVeRSc+v+Q2lkRGu9R
-         L5Gi4SFE7SwOEXRo2d0H13fRBmj5ZGi6hAIQNwyYIAyYxGhfqvX4Qmj2i9ukbKF0rVH7
-         uxuHXmYiBXDlCDSj0Zpc8FcXY1R7tZL8fXUCI=
+        b=dw6CLdoFZmCmn3l8HHeGP5OD6qPhsxRr+ANfRxpLKYUXSQ4xP7uI+8N5IDRYVsUtG0
+         4YE+bhuS9yOee6t9kz3qeS8Bfn3JiueA1/Whd06b7mLzWuFNWHxA9uvCO4Vh+P6XFWVK
+         1dTr3Ldt4g3PhDki0iIAF3T+UbtLpS9tN13KU=
 To: <bzolnier@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
        Borislav Petkov <petkovbb@gmail.com>
-Subject: [PATCH 04/16] ide-scsi: use drive->pc_callback instead of pc->callback
-Date: Sun, 29 Jun 2008 12:59:07 +0200
-Message-Id: <1214737159-1078-5-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 02/16] ide-floppy: use drive->pc_callback instead of pc->callback
+Date: Sun, 29 Jun 2008 12:59:05 +0200
+Message-Id: <1214737159-1078-3-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <1214737159-1078-1-git-send-email-petkovbb@gmail.com>
 References: <1214737159-1078-1-git-send-email-petkovbb@gmail.com>
@@ -30,72 +30,79 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+It is important that drive->pc_callback is set prior to enabling IRQs on the
+device since this is called from the IRQ handler. Otherwise it hurts as I learnt
+the hard way from the several "Kernel panic - not synching: Fatal exception in
+interrupt" during the weekend :).
+
+The if-else block in the IRQ handler is only temporary so that bisect searches
+don't break and it'll be removed after converting the remainder of the drivers.
+
 There should be no functionality change resulting from this patch.
 
 Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- drivers/ide/ide-atapi.c |   10 ++--------
- drivers/scsi/ide-scsi.c |    5 +++--
- 2 files changed, 5 insertions(+), 10 deletions(-)
+ drivers/ide/ide-atapi.c  |   10 ++++++++--
+ drivers/ide/ide-floppy.c |    4 ++--
+ 2 files changed, 10 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-index c3c161a..0e8b6f5 100644
+index 2802031..411443e 100644
 --- a/drivers/ide/ide-atapi.c
 +++ b/drivers/ide/ide-atapi.c
-@@ -30,10 +30,7 @@ ide_startstop_t ide_pc_intr(ide_drive_t *drive, struct ide_atapi_pc *pc,
+@@ -30,7 +30,10 @@ ide_startstop_t ide_pc_intr(ide_drive_t *drive, struct ide_atapi_pc *pc,
  	debug_log("Enter %s - interrupt handler\n", __func__);
  
  	if (pc->flags & PC_FLAG_TIMEDOUT) {
--		if (drive->media == ide_floppy || drive->media == ide_tape)
--			drive->pc_callback(drive);
--		else
--			pc->callback(drive);
-+		drive->pc_callback(drive);
+-		pc->callback(drive);
++		if (drive->media == ide_floppy)
++			drive->pc_callback(drive);
++		else
++			pc->callback(drive);
  		return ide_stopped;
  	}
  
-@@ -99,10 +96,7 @@ cmd_finished:
+@@ -96,7 +99,10 @@ cmd_finished:
  			return ide_stopped;
  		}
  		/* Command finished - Call the callback function */
--		if (drive->media == ide_floppy || drive->media == ide_tape)
--			drive->pc_callback(drive);
--		else
--			pc->callback(drive);
+-		pc->callback(drive);
++		if (drive->media == ide_floppy)
++			drive->pc_callback(drive);
++		else
++			pc->callback(drive);
+ 		return ide_stopped;
+ 	}
+ 
+diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
+index c7e4433..b5b3191 100644
+--- a/drivers/ide/ide-floppy.c
++++ b/drivers/ide/ide-floppy.c
+@@ -354,7 +354,6 @@ static void idefloppy_init_pc(struct ide_atapi_pc *pc)
+ 	memset(pc, 0, sizeof(*pc));
+ 	pc->buf = pc->pc_buf;
+ 	pc->buf_size = IDEFLOPPY_PC_BUFFER_SIZE;
+-	pc->callback = ide_floppy_callback;
+ }
+ 
+ static void idefloppy_create_request_sense_cmd(struct ide_atapi_pc *pc)
+@@ -474,7 +473,7 @@ static ide_startstop_t idefloppy_issue_pc(ide_drive_t *drive,
+ 		pc->error = IDEFLOPPY_ERROR_GENERAL;
+ 
+ 		floppy->failed_pc = NULL;
+-		pc->callback(drive);
 +		drive->pc_callback(drive);
  		return ide_stopped;
  	}
  
-diff --git a/drivers/scsi/ide-scsi.c b/drivers/scsi/ide-scsi.c
-index 683bce3..a6c2c5f 100644
---- a/drivers/scsi/ide-scsi.c
-+++ b/drivers/scsi/ide-scsi.c
-@@ -228,7 +228,6 @@ static int idescsi_check_condition(ide_drive_t *drive,
- 	rq->cmd_type = REQ_TYPE_SENSE;
- 	rq->cmd_flags |= REQ_PREEMPT;
- 	pc->timeout = jiffies + WAIT_READY;
--	pc->callback = ide_scsi_callback;
- 	/* NOTE! Save the failed packet command in "rq->buffer" */
- 	rq->buffer = (void *) failed_cmd->special;
- 	pc->scsi_cmd = ((struct ide_atapi_pc *) failed_cmd->special)->scsi_cmd;
-@@ -478,6 +477,9 @@ static void idescsi_setup (ide_drive_t *drive, idescsi_scsi_t *scsi)
- #if IDESCSI_DEBUG_LOG
- 	set_bit(IDESCSI_LOG_CMD, &scsi->log);
- #endif /* IDESCSI_DEBUG_LOG */
-+
-+	drive->pc_callback = ide_scsi_callback;
-+
- 	idescsi_add_settings(drive);
- }
+@@ -1039,6 +1038,7 @@ static void idefloppy_setup(ide_drive_t *drive, idefloppy_floppy_t *floppy)
  
-@@ -630,7 +632,6 @@ static int idescsi_queue (struct scsi_cmnd *cmd,
- 	pc->scsi_cmd = cmd;
- 	pc->done = done;
- 	pc->timeout = jiffies + cmd->timeout_per_command;
--	pc->callback = ide_scsi_callback;
+ 	*((u16 *) &gcw) = drive->id->config;
+ 	floppy->pc = floppy->pc_stack;
++	drive->pc_callback = ide_floppy_callback;
  
- 	if (test_bit(IDESCSI_LOG_CMD, &scsi->log)) {
- 		printk ("ide-scsi: %s: que %lu, cmd = ", drive->name, cmd->serial_number);
+ 	if (((gcw[0] & 0x60) >> 5) == 1)
+ 		floppy->flags |= IDEFLOPPY_FLAG_DRQ_INTERRUPT;
 -- 
 1.5.5.4
 
