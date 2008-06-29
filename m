@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762066AbYF2PMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761725AbYF2PRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762066AbYF2PMx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 11:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760896AbYF2PML
+	id S1761725AbYF2PRd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 11:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760724AbYF2PRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 11:12:11 -0400
-Received: from sh.osrg.net ([192.16.179.4]:57061 "EHLO sh.osrg.net"
+	Sun, 29 Jun 2008 11:17:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58278 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760754AbYF2PLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 11:11:55 -0400
-Date: Mon, 30 Jun 2008 00:07:10 +0900
-To: joerg.roedel@amd.com
-Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
-Subject: Re: [PATCH 21/34] AMD IOMMU: add address allocation and
- deallocation functions
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1214508490-29683-22-git-send-email-joerg.roedel@amd.com>
-References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
-	<1214508490-29683-22-git-send-email-joerg.roedel@amd.com>
+	id S1760411AbYF2PRY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jun 2008 11:17:24 -0400
+Date: Sun, 29 Jun 2008 11:16:05 -0400
+From: Rik van Riel <riel@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Hugh Dickins <hugh@veritas.com>, kosaki.motohiro@jp.fujitsu.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] splitlru: BDI_CAP_SWAP_BACKED
+Message-ID: <20080629111605.6bc749c7@bree.surriel.com>
+In-Reply-To: <20080629173841.37CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <Pine.LNX.4.64.0806290117510.21758@blonde.site>
+	<Pine.LNX.4.64.0806290122330.21758@blonde.site>
+	<20080629173841.37CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080629234830P.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jun 2008 21:27:57 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+On Sun, 29 Jun 2008 17:48:59 +0900
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> This patch adds the address allocator to the AMD IOMMU code.
+> I'm not sure about this patch is perfect.
+> but it seems makes sense and very good code.
 > 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  arch/x86/kernel/amd_iommu.c |   48 +++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 48 insertions(+), 0 deletions(-)
+> So, I'll testing this patch for a while.
 > 
-> diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-> index 1d70f5e..69d8d02 100644
-> --- a/arch/x86/kernel/amd_iommu.c
-> +++ b/arch/x86/kernel/amd_iommu.c
-> @@ -266,3 +266,51 @@ static int init_unity_mappings_for_device(struct dma_ops_domain *dma_dom,
->  	return 0;
->  }
->  
-> +static unsigned long dma_mask_to_pages(unsigned long mask)
-> +{
-> +	return (mask >> PAGE_SHIFT) +
-> +		(PAGE_ALIGN(mask & ~PAGE_MASK) >> PAGE_SHIFT);
-> +}
-> +
-> +static unsigned long dma_ops_alloc_addresses(struct device *dev,
-> +					     struct dma_ops_domain *dom,
-> +					     unsigned int pages)
-> +{
-> +	unsigned long limit = dma_mask_to_pages(*dev->dma_mask);
-> +	unsigned long address;
-> +	unsigned long size = dom->aperture_size >> PAGE_SHIFT;
-> +	unsigned long boundary_size;
-> +
-> +	boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
-> +			PAGE_SIZE) >> PAGE_SHIFT;
-> +	limit = limit < size ? limit : size;
-> +
-> +	if (dom->next_bit >= limit)
-> +		dom->next_bit = 0;
-> +
-> +	address = iommu_area_alloc(dom->bitmap, limit, dom->next_bit, pages,
-> +			0 , boundary_size, 0);
-> +	if (address == -1)
-> +		address = iommu_area_alloc(dom->bitmap, limit, 0, pages,
-> +				0, boundary_size, 0);
-> +
-> +	if (likely(address != -1)) {
-> +		set_bit_string(dom->bitmap, address, pages);
+> Rik, What do you think about it?
 
-Is set_bit_string() necessary here? iommu_area_alloc calls it internally.
+I have been running with a similar patch for a while, and
+got my system to OOM :)
+
+However, the patch is correct and the OOM is caused by
+a different issue.  When stress-testing with a loopback
+device on a tmpfs file, the VM thinks that we succeed
+in evicting pages from the loopback device (file LRUs)
+and continues scanning those LRUs.
+
+Unfortunately for the VM, the loopback writepage function,
+in combination with splice, end up moving the pages to the
+anon LRUs, instead of freeing any pages.  
+
+This confuses the balancing code, which thinks the pages
+got freed.  As a result, the VM keeps scanning the file
+LRUs and will eventually realize it failed to free any
+memory.
+
+One of Kosaki-san's recent patches may fix this, though.
+
+-- 
+All rights reversed.
