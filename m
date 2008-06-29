@@ -1,65 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbYF2Dmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758344AbYF2DwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759343AbYF2Dmu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 23:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbYF2Dmk
+	id S1758344AbYF2DwS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 23:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbYF2Dv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 23:42:40 -0400
-Received: from il.qumranet.com ([212.179.150.194]:44122 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753067AbYF2Dmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 23:42:38 -0400
-Message-ID: <486704AC.2090207@qumranet.com>
-Date: Sun, 29 Jun 2008 06:42:36 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 28 Jun 2008 23:51:59 -0400
+Received: from ti-out-0910.google.com ([209.85.142.187]:53990 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752267AbYF2Dv6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jun 2008 23:51:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=s+NMKJSADmmbQ2nqQQmjE75KkZ/R65B8xXW9X0Xh1uTdPPECrINsK3al6i1+bcllda
+         lwFagYrLLH37HcC42Ui2yQxk1+kjc+kEmxYgvlXdGtvs0A/Lig7nhsEYCrCJk/0zjHr4
+         UhIWX2Hc4skR2N20otnJyYar8FCo+YhsOLd+w=
+Message-ID: <486706C9.9040303@gmail.com>
+Date: Sun, 29 Jun 2008 12:51:37 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Ctrl+C doesn't interrupt process waiting for I/O
-References: <48661488.10304@gmail.com> <4866F6FE.9000503@goop.org>
-In-Reply-To: <4866F6FE.9000503@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Benjamin Thery <benjamin.thery@bull.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 06/11] sysfs: Implement sysfs tagged directory support.
+References: <20080618170729.808539948@theryb.frec.bull.fr>	<20080618170731.002784342@theryb.frec.bull.fr>	<485F04E1.70204@gmail.com> <m1y74svtff.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1y74svtff.fsf@frodo.ebiederm.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Török Edwin wrote:
->> Hi,
->>
->> I have encountered the following situation several times, but I've been
->> unable to come up with a way to reproduce this until now:
->>  - some process is keeping the disk busy (some cron job for example:
->> updatedb, chkrootkit, ...)
->>  - other processes that want to do I/O have to wait (this is normal)
->>  - I have a (I/O bound) process running in my terminal, and I want to
->> interrupt it with Ctrl+C
->>  - I type Ctrl+C several times, and the process is not interrupted for
->> several seconds (10-30 secs)
->>  - if I type Ctrl+Z, and use kill %1 the process dies faster than
->> waiting for it to react to Ctrl+C
->>
->> This issue occurs both on my x86-64 machine that uses reiserfs, and on
->> my x86 machine that uses XFS, so it doesn't seem related to the
->> underlying FS.
->> I use 2.6.25-2 and 2.6.26-rc8 now; I don't recall seeing this behaviour
->> with old kernels (IIRC I see this since 2.6.21 or 2.6.23).
->>
->> Is this intended behaviour, or should I report a bug?
->>   
->
-> Yes, it's intended behaviour.  Filesystem IO syscalls are considered 
-> "fast" and are interruptible.  Usermode code can reasonably expect 
-> that file IO will never return EINTR.
+Hello, Eric.
 
-That's filesystem dependent; if you mount an nfs filesystem with the 
-'intr' mount option, it will be interruptible (which makes sense, as it 
-is impossible to guarantee the server's responsiveness).
+Eric W. Biederman wrote:
+> Tejun thank you for the review, and my apologies for the delayed
+> reply.
+
+Me being the king of delays, no need for apologies.  :-)
+
+>> As before, I can't bring myself to like this interface.  Is computing
+>> tags dynamically really necessary?  Can't we do the followings?
+> 
+> It isn't so much computing tags dynamically but rather it is reading them
+> from where they are stored.
+
+It's still dynamic from sysfs's POV and I think that will make
+maintenance more difficult.
+
+>> tag = sysfs_allocate_tag(s);
+>> sysfs_enable_tag(kobj (or sd), tag);
+>> sysfs_sb_show_tag(sb, tag);
+>>
+>> Where tags are allocated using ida and each sb has bitmap of enabled
+>> tags so that sysfs ops can simply use something like the following to
+>> test whether it's enabled.
+>>
+>> bool sysfs_tag_enabled(sb, tag)
+>> {
+>> 	return sysfs_info(sb)->tag_map & (1 << tag);
+>> }
+> 
+> 
+> Youch that seems limiting.  The expectation is that we could have
+> as many as 100 different containers in use on a single system at one
+> time.  So 100 apparent copies of the network stack.
+
+100 netns would mean 100 bits and 100 different views of them would mean
+100 sb's where each sb would need bitmap larger than 100 bits.  I don't
+think there would be a scalability problem.  Am I missing something?
+
+> There is also a second dimension here we multiplex different
+> directories based on different sets of tags.   One directory based
+> on user namespaces another on the network namespaces.
+
+No matter which criteria is used to select ns, it should end up being
+mapped to a set of tags (here, ida allocated numbers).  Unless tags can
+change dynamically, there shouldn't be functional difference.
+
+> The tags in practice are just pointers to the namespace pointers.
+> 
+> So while we could use the ida technique to specify which set of tags
+> we are talking about for a directory it isn't sufficient.
+
+I failed to follow here.  Can you please elaborate a bit?  If you can
+describe a simple example to me, it would be much appreciated.
+
+> The question sysfs_tag_enabled(sb, tag) makes no sense to me.
+> Especially in the context of needed a sysfs_sb_show_tag(sb, tag);
+> 
+> The current structure is because of all of the darn fool races and
+> magic that sysfs does.  We have to say for a given directory:  Your
+> contents will always be tagged, and only those that one tag that
+> matches what was captured by the superblock when sysfs is mounted
+> will be shown.
+
+sysfs_tag_enabled() was meant to test whether a directory which is
+tagged should be shown under the current sb.
+
+>> Tags which can change dynamically seems too confusing to me and it
+>> makes things difficult to verify as it's unclear how those tags are
+>> gonna to change.
+> 
+> We have a  fundamental issue that we have to handle, and it sounds like
+> you are proposing something that will not handle it.
+> 
+> - network devices can move between namespaces.
+> - network devices have driver specific sysfs attributes hanging off of them.
+> 
+> So we have to move the network devices and their sysfs attributes
+> between namespaces, and I implemented that in kobject_rename,
+> sysfs_rename path.
+> 
+> The tags on a kobject can only change during a rename operation.
+> So when the change happens is well defined.  Further there is a
+> set of functions:  sysfs_creation_tag, sysfs_removal_tag,
+> sysfs_lookup_tag, sysfs_dirent_tag which makes it clear what we
+> are doing.
+> 
+> If you really don't like how the tags are managed we need to talk
+> about how we store the tags on kobjects and on the super block.
+> 
+> Registering a set of tags could easily make the sb_tag function
+> obsolete, and that is one small piece of code so it is no big deal.
+> 
+> struct sysfs_tag_type_operations {
+> 	const void *(*mount_tag)(void);
+>         const void *(*kobject_tag)(struct kobject *kobj);
+> };
+> 
+> Then we could do:
+> struct sysfs_sbtag_operations *tag_type_ops[MAX_TAG_TYPES];
+> 
+> And sysfs_tag_info could become.
+> struct sysfs_tag_info {
+>        void *tag[MAX_TAG_TYPES];
+> };
+> 
+> During subsystem initialization we could call
+> tag_type = sysfs_allocate_tag_type();
+> 
+> Just after the subsystem creates a directory.
+> sysfs_enable_tagging(kobj/sd, tag_type);
+> 
+> Then anytime we currently call sb_tag during lookup we can instead
+> just look at sysfs_info(sb)->tag[tag_type] and compare that with
+> sd->s_tag.tag.
+
+What you described is pretty much what I'm talking about.  The only
+difference is whether to use caller-provided pointer as tag or an
+ida-allocated integer.  The last sentence of the above paragraph is
+basically sys_tag_enabled() function (maybe misnamed).
+
+The main reason why I'm whining about this so much is because I think
+tag should be something abstracted inside sysfs proper.  It's something
+which affects very internal operation of sysfs and I really want to keep
+the implementation details inside sysfs.  Spreading implementation over
+kobject and sysfs didn't turn out too pretty after all.
+
+Thank you.
 
 -- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+tejun
