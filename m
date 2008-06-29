@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932508AbYF2To4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761730AbYF2Tpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932508AbYF2To4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 15:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760022AbYF2Tbs
+	id S1761730AbYF2Tpa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 15:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756817AbYF2Tbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 15:31:48 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45729 "EHLO ogre.sisk.pl"
+	Sun, 29 Jun 2008 15:31:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45661 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759874AbYF2Tbd convert rfc822-to-8bit (ORCPT
+	id S1759832AbYF2Tbc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 15:31:33 -0400
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Takashi Iwai" <tiwai@suse.de>
+	Sun, 29 Jun 2008 15:31:32 -0400
+Cc: "Jie Luo" <clotho67@gmail.com>
 References: <q5WW6DLC10O.A.dxC.R69ZIB@albercik>
 In-Reply-To: <q5WW6DLC10O.A.dxC.R69ZIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -18,8 +18,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <X8mbwW6K81I.A.KND.h69ZIB@albercik>
-Subject: [Bug #11005] 2.6.26-rc5-git2: snd-emu10k1 does not work
+Message-ID: <X8mbwW6K81I.A.BSD.o69ZIB@albercik>
+Subject: [Bug #10984] MMC print trace information when resume from suspend
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun, 29 Jun 2008 20:18:43 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,11 +33,9 @@ The following bug entry is on the current list of known regressions
 from 2.6.25.  Please verify if it still should be listed.
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11005
-Subject		: 2.6.26-rc5-git2: snd-emu10k1 does not work
-Submitter	: Rafael J. Wysocki <rjw@sisk.pl>
-Date		: 2008-06-08 21:03 (22 days old)
-References	: http://marc.info/?l=linux-kernel&m=121295902917875&w=4
-Handled-By	: Takashi Iwai <tiwai@suse.de>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10984
+Subject		: MMC print trace information when resume from suspend
+Submitter	: Jie Luo <clotho67@gmail.com>
+Date		: 2008-06-26 01:15 (4 days old)
 
 
