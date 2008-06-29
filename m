@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760489AbYF2Nvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbYF2NwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760489AbYF2Nvp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 09:51:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbYF2Nve
+	id S1756241AbYF2NwD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 09:52:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757074AbYF2Nvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 09:51:34 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:47653 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753104AbYF2Nvd (ORCPT
+	Sun, 29 Jun 2008 09:51:37 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:39259 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756241AbYF2Nvf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 09:51:33 -0400
-Date: Sun, 29 Jun 2008 14:51:08 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] splitlru: memcg swapbacked pages active
-In-Reply-To: <20080629213352.37D5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0806291440030.6036@blonde.site>
-References: <20080629171251.37CA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
- <Pine.LNX.4.64.0806291302160.787@blonde.site> <20080629213352.37D5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sun, 29 Jun 2008 09:51:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=VEMxvf9iLC6jGMjUkA8KzJCvqTDy89wEA+xSiy07Hez3rBa/uT8jkyFGw8FkhEQq/S
+         3DnDg3EQ7GbWWF7cHi8QMAkulJ44i4nMi1Falu0tFfAB59ak3vGnyBfb44Rd9rEA5oct
+         Kmnhm8zVTwGKSXrnHxdiRp02fpc13BbUHtuo0=
+Message-ID: <19f34abd0806290651g15d3048ejf41f0bd9f7ec1d4d@mail.gmail.com>
+Date: Sun, 29 Jun 2008 15:51:33 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: -tip: WARNING: at kernel/lockdep.c:2738
+Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Steven Rostedt" <srostedt@redhat.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080629130554.GA16703@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0806290532k1b176d97k96f7c5bb2bb9e830@mail.gmail.com>
+	 <20080629130554.GA16703@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Jun 2008, KOSAKI Motohiro wrote:
-> 
-> Well...
-> you are right.
+On Sun, Jun 29, 2008 at 3:05 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> Does the patch below (or the tip/master i just pushed out) fix it?
+>
+>        Ingo
+>
+> ------------->
+> commit 2d452c9b10caeec455eb5e56a0ef4ed485178213
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Sun Jun 29 15:01:59 2008 +0200
 
-Not proved!  This is all quite complex.  But it looks that way.
+Yep, thanks, that gets rid of it for me! Although I'm not sure how
+reproducible it was in the first place.
 
-> 
-> Hmm.. OK, I propse alternative way.
-> 
-> step1: commit this patch
-> step2: implement active/inactive anon balancing routine
 
-That sounds a good plan to me.
+Vegard
 
-> 
-> 	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> 
-> Thank you for good patch.
-
-Thank you; and please accept my apology for not Cc'ing you on
-the patches - I had intended to, but forgot just when sending.
-
-> 
-> btw, furtunately, memcg reclaim has some retry.
-> thus, lru imbalancing doesn't cause OOM, it only cause small performance degression.
-> IMHO your patch doesn't have any risk.
-
-These things can work out so differently in practice than one would
-expect.  Tests seem to be chugging along okay with the change in,
-but I haven't explicitly tested performance with and without.
-
-It just seems a sensible starting point to have the global and
-memcg views in synch: if departing from that proves to work better,
-then we should do so later.
-
-I've no view yet on the performance characteristics of any of this,
-just focussed on getting tmpfs working correctly again.  The notion
-of keeping unevictable pages away from the regularly scanned lists
-seems an obvious gain; but the swapbacked/filebacked distinction
-is not so obvious to me (and particularly problematic for tmpfs).
-
-Hugh
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
