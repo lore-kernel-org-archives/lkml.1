@@ -1,105 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759961AbYF2Lbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbYF2Ldt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759961AbYF2Lbi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 07:31:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbYF2Lb2
+	id S1754705AbYF2Ldt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 07:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbYF2Ldl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 07:31:28 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:43074 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754705AbYF2Lb1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 07:31:27 -0400
-Date: Sun, 29 Jun 2008 12:31:23 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Valdis.Kletnieks@vt.edu
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26-rc7-mmotd-0626 ext3-validate-directory-entry-data-before-use.patch
-In-Reply-To: <26368.1214720749@turing-police.cc.vt.edu>
-Message-ID: <Pine.LNX.4.64.0806291218390.30797@blonde.site>
-References: <26368.1214720749@turing-police.cc.vt.edu>
+	Sun, 29 Jun 2008 07:33:41 -0400
+Received: from il.qumranet.com ([212.179.150.194]:57037 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754703AbYF2Ldk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jun 2008 07:33:40 -0400
+Message-ID: <48677313.8000804@qumranet.com>
+Date: Sun, 29 Jun 2008 14:33:39 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-1511822721-1214739083=:30797"
+To: Andi Kleen <andi@firstfloor.org>
+CC: Agner Fog <agner@agner.org>, Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: ABI change for device drivers using future AVX instruction set
+References: <48626514.2040905@agner.org> <20080625092224.736c2541@infradead.org> <4862ECAB.1040402@zytor.com> <4864CFA5.9050901@agner.org> <20080627072231.7337ba18@infradead.org> <4865F0DA.2050906@agner.org> <87myl5pyqo.fsf@basil.nowhere.org> <4866541F.1060709@agner.org> <20080628200231.GA21259@one.firstfloor.org>
+In-Reply-To: <20080628200231.GA21259@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Andi Kleen wrote:
+>   
+>> list. I had to actually look into the source code of kernel_fpu_begin to 
+>> verify that it saves not only the FPU but also the XMM registers and 
+>> that it disables pre-emption.
+>>     
+>
+> The requirement to disable preemption is one reason why XMM in 
+> a driver is not a good idea BTW.  XMM should be normally only
+> used when you plan to spend a lot of CPU cycles (otherwise
+> the cost of saving the state is not amortized by the improvements).
+>
+> But keeping preemption disabled for a long time is considered
+> unfriendly because it increases kernel latencies and might 
+> in the worst case cause visible scheduling problems like skipping audio
+> etc. 
+>   
 
---8323584-1511822721-1214739083=:30797
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+This is fixable.  We could change kernel_fpu_begin() not to disable 
+preemption, but instead set a task flag.  When we get the "no device" 
+fault, if the flag is set, save the fpu state into the kernel fpu save 
+area instead of the user fpu save area.  Similar logic for restoring the 
+fpu state.
 
-On Sun, 29 Jun 2008, Valdis.Kletnieks@vt.edu wrote:
-> I'm seeing some ext3 errors, and I'm suspecting the patch
-> ext3-validate-directory-entry-data-before-use.patch is causing them
-> (since it seems to be the only thing in rc7-mmotd at the moment that
-> touches make_indexed_dir, and -rc5-mm3 works OK).
->=20
-> Jun 28 21:50:29 turing-police kernel: [  240.784199] EXT3-fs error (devic=
-e dm-7): make_indexed_dir: bad entry in directory #9894: directory entry ac=
-ross blocks - offset=3D0, inode=3D10144, rec_len=3D32, name_len=3D22
-> Jun 28 21:50:29 turing-police kernel: [  240.784214] Aborting journal on =
-device dm-7.
-> Jun 28 21:50:29 turing-police kernel: [  240.784597] Remounting filesyste=
-m read-only
-> Jun 28 21:50:29 turing-police kernel: [  240.785616] EXT3-fs error (devic=
-e dm-7): do_split: bad entry in directory #9894: rec_len is smaller than mi=
-nimal - offset=3D0, inode=3D2553887680, rec_len=3D0, name_len=3D0
-> Jun 28 21:50:29 turing-police kernel: [  240.785616] EXT3-fs error (devic=
-e dm-7) in ext3_reserve_inode_write: Journal has aborted
-> Jun 28 21:50:29 turing-police kernel: [  241.027111] __journal_remove_jou=
-rnal_head: freeing b_committed_data
->=20
-> Jun 28 23:09:54 turing-police kernel: [ 5026.698415] EXT3-fs error (devic=
-e dm-2): make_indexed_dir: bad entry in directory #369136: directory entry =
-across blocks - offset=3D0, inode=3D369138, rec_len=3D20, name_len=3D11
-> Jun 28 23:09:54 turing-police kernel: [ 5026.698415] Aborting journal on =
-device dm-2.
-> Jun 28 23:09:54 turing-police kernel: [ 5026.698519] Remounting filesyste=
-m read-only
-> Jun 28 23:09:54 turing-police kernel: [ 5026.702730] EXT3-fs error (devic=
-e dm-2): do_split: bad entry in directory #369136: directory entry across b=
-locks - offset=3D0, inode=3D106647, rec_len=3D12, name_len=3D1
-> Jun 28 23:09:54 turing-police kernel: [ 5026.702730] EXT3-fs error (devic=
-e dm-2) in ext3_reserve_inode_write: Journal has aborted
->=20
-> I believe I have a reasonably good replicator for the error on dm-7, that=
-'s my /usr/share
-> and trying to 'rpm -Fvh' one specific RPM has caused it twice (in two tri=
-es).
->=20
-> The file systems appear to be OK (or at least the fsck.ext3 in Fedora's
-> e2fsprogs-1.41-0.WIP.0617.1.fc10.x86_64 says both file systems are in fac=
-t OK).
->=20
-> Any comments/suggestions?  Any testing/debugging you'd like,
-> or should I just revert it and move on?
+kvm runs with the guest fpu context while in the host kernel, using 
+preempt notifiers to achieve the same thing.
 
-Thanks for the warning, yes, me too.  All I have to do is boot up and
-cp -al a kernel source tree: that starts generating lots of these errors,
-I Ctrl-C out, unmount the filesystem, then fsck -f has lots of work to do.
+-- 
+error compiling committee.c: too many arguments to function
 
-So not only does the patch find directory entries invalid which have
-given no trouble in the past, it handles them in such a way as to
-leave the filesystem messed up where it wasn't before.
-
-And build even gives a compile warning, haven't looked if it's significant:
-fs/ext3/namei.c: In function =E2=80=98make_indexed_dir=E2=80=99:
-fs/ext3/namei.c:1435: warning: comparison of distinct pointer types lacks a=
- cast
-
-I think I don't want to investigate this one!  I've hurriedly reverted
-
-ext3-validate-directory-entry-data-before-use-checkpatch-fixes.patch
-ext3-validate-directory-entry-data-before-use.patch
-
-, checked that cp -al on the kernel source tree now gives me no errors,
-checked that fsck -f is happy with the resultant filesystem,
-now moving on.
-
-Hugh
---8323584-1511822721-1214739083=:30797--
