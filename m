@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760044AbYF2Mfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759961AbYF2MkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760044AbYF2Mfj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 08:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYF2Mfa
+	id S1759961AbYF2MkZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 08:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbYF2MkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 08:35:30 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:57698 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753465AbYF2Mfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 08:35:30 -0400
-Date: Sun, 29 Jun 2008 22:35:20 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, kernel-testers@vger.kernel.org,
-       v4l-dvb-maintainer@linuxtv.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 24 - missing files in
- drivers/media/dvb/
-Message-Id: <20080629223520.1ac2297b.sfr@canb.auug.org.au>
-In-Reply-To: <20080629084317.3392dac9@gaivota>
-References: <20080624175612.cdf29651.sfr@canb.auug.org.au>
-	<486134B4.4050400@linux.vnet.ibm.com>
-	<20080625132810.6f31b571.sfr@canb.auug.org.au>
-	<20080625134859.6bc218c4.sfr@canb.auug.org.au>
-	<20080629084317.3392dac9@gaivota>
-X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__29_Jun_2008_22_35_20_+1000__DK_08u9Im=Rjzaj"
+	Sun, 29 Jun 2008 08:40:13 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:59201 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754008AbYF2MkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jun 2008 08:40:12 -0400
+Message-ID: <486782A9.9060704@sgi.com>
+Date: Sun, 29 Jun 2008 05:40:09 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       mm-commits@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask
+ V3
+References: <200806090918.m599Ib0G012837@imap1.linux-foundation.org>	 <19f34abd0806090420r4100241cgb4b828441de3b102@mail.gmail.com>	 <20080609113547.GA1534@elte.hu> <484D54F2.4070603@sgi.com>	 <20080626113229.GB29619@elte.hu> <4863C334.2090007@sgi.com>	 <486452CC.8050502@sgi.com> <48651EF5.5090808@sgi.com>	 <19f34abd0806271024j53b383ddq33ab2b58debfbb65@mail.gmail.com>	 <48652B6A.7060007@sgi.com> <19f34abd0806290434l836e858p47850eb96addd0b3@mail.gmail.com>
+In-Reply-To: <19f34abd0806290434l836e858p47850eb96addd0b3@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__29_Jun_2008_22_35_20_+1000__DK_08u9Im=Rjzaj
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Vegard Nossum wrote:
+> On Fri, Jun 27, 2008 at 8:03 PM, Mike Travis <travis@sgi.com> wrote:
+>>> So if CONFIG_DEBUG_RODATA=y, I believe we'll see first this warning,
+>>> then a panic (after all). Would it be better to make cpu_mask_none
+>>> non-const, in spirit of trying to continue as far as possible? I don't
+>>> really know if it matters, though. It seems that fedora kernels at
+>>> least ship with a default of DEBUG_RODATA=y.
+>>>
+> 
+> ...
+> 
+>> Ingo asked me to add the "const".  But it would be a mistake to use
+>> node_to_cpumask_ptr to modify the map... numa_set/clear_node is the
+>> proper way to modify the maps.  Hmm, maybe I should add "const" to
+>> the real node_to_cpumask_ptr function, at least then the compiler
+>> would help spot illegal usages.
+> 
+> That sounds like a brilliant idea, as long as none of the callers
+> expect it to be non-const.
 
-On Sun, 29 Jun 2008 08:43:17 -0300 Mauro Carvalho Chehab <mchehab@infradead=
-.org> wrote:
->
-> Thanks for the report. I've fixed the two reported issues and now it shou=
-ld compile fine.
+Being that I modified all the callers to use this new function, I did
+verify that each caller expected it to be read only... ;-)
+> 
+> I changed it to return const to see, and built allmodconfig + a few
+> randconfigs without error (well, warning). There are not that many
+> users of this function anyway.
 
-Thanks, I look forward to tomorrow's build.
+Did any violate the read-only nature of the call?
+> 
+> BTW, what's up with the topology.h/setup_percpu.c mismatch, when
+> topology.c exists as well?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Topology.h supplies the generic usage which is to define a local cpumask
+variable, fill it, and then return a pointer to it.  This is for arch's
+that do not maintain a separate node_to_cpumask_map[] but allows a
+compatible call interface.
+> 
+> 
+> Vegard
+> 
 
---Signature=_Sun__29_Jun_2008_22_35_20_+1000__DK_08u9Im=Rjzaj
-Content-Type: application/pgp-signature
+Thanks!
+Mike
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhngYgACgkQjjKRsyhoI8yiHgCfRNocYwpz7l1uSu3Wdw6jS4Ye
-Z7sAoKrIhoA7rvikJ5vBOsOlXLVuff0h
-=bEg7
------END PGP SIGNATURE-----
-
---Signature=_Sun__29_Jun_2008_22_35_20_+1000__DK_08u9Im=Rjzaj--
