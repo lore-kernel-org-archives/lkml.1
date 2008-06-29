@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759976AbYF2JuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbYF2J6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759976AbYF2JuX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 05:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759672AbYF2Jtx
+	id S1756949AbYF2J6U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 05:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbYF2J6C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 05:49:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42767 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759623AbYF2Jtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 05:49:52 -0400
-Date: Sun, 29 Jun 2008 11:49:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: fix warning in e820_reserve_resources with 32bit
-Message-ID: <20080629094941.GC3001@elte.hu>
-References: <200806251748.06743.yhlu.kernel@gmail.com> <200806271538.46829.yhlu.kernel@gmail.com> <200806272247.11971.yhlu.kernel@gmail.com> <200806281749.59443.yhlu.kernel@gmail.com>
+	Sun, 29 Jun 2008 05:58:02 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:37640 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753053AbYF2J6A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jun 2008 05:58:00 -0400
+Date: Sun, 29 Jun 2008 11:57:58 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Julia Lawall <julia@diku.dk>
+cc: akinobu.mita@gmail.com, zippel@linux-m68k.org, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 5/14] arch/m68k/mm/Sun3mmu.c: Eliminate NULL test and
+ memset after alloc_bootmem
+In-Reply-To: <Pine.LNX.4.64.0806241022410.26777@ask.diku.dk>
+Message-ID: <Pine.LNX.4.64.0806291157350.29339@anakin>
+References: <Pine.LNX.4.64.0806241022410.26777@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200806281749.59443.yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-
-> when 64bit resource is not enabled, got:
+On Tue, 24 Jun 2008, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> arch/x86/kernel/e820.c: In function ‘e820_reserve_resources’:
-> arch/x86/kernel/e820.c:1217: warning: comparison is always false due to limited range of data type
+> As noted by Akinobu Mita in patch b1fceac2b9e04d278316b2faddf276015fc06e3b,
+> alloc_bootmem and related functions never return NULL and always return a
+> zeroed region of memory.  Thus a NULL test or memset after calls to these
+> functions is unnecessary.
 > 
-> because res->start/end is resource_t aka u32. it will overflow.
+>  arch/m68k/mm/sun3mmu.c |    1 -
+>  1 file changed, 1 deletion(-)
 > 
-> fix it with temp end of u64
+> This was fixed using the following semantic patch.
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @@
+> expression E;
+> statement S;
+> @@
+> 
+> E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_pages\)(...)
+> ... when != E
+> (
+> - BUG_ON (E == NULL);
+> |
+> - if (E == NULL) S
+> )
+> 
+> @@
+> expression E,E1;
+> @@
+> 
+> E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_pages\)(...)
+> ... when != E
+> - memset(E,0,E1);
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-applied, thanks.
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-	Ingo
+(queued for 2.6.27)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
