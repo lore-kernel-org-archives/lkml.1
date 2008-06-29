@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760274AbYF2Uui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbYF2VH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760274AbYF2Uui (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 16:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754706AbYF2UuU
+	id S1755384AbYF2VH7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 17:07:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbYF2VHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 16:50:20 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48910 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754470AbYF2Uto (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 16:49:44 -0400
-Subject: Re: linux-next: Tree for June 26
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jaswinder Singh <jaswinder@infradead.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kernel-testers@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-In-Reply-To: <200806291336.44603.rjw@sisk.pl>
-References: <20080627010842.e1a0c4b5.sfr@canb.auug.org.au>
-	 <200806290215.03792.rjw@sisk.pl>
-	 <1214726476.10393.289.camel@pmac.infradead.org>
-	 <200806291336.44603.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Sun, 29 Jun 2008 21:49:35 +0100
-Message-Id: <1214772575.10393.306.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 29 Jun 2008 17:07:48 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:52665 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751888AbYF2VHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jun 2008 17:07:47 -0400
+Date: Mon, 30 Jun 2008 00:07:43 +0300
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug #10954] hda_intel: azx_get_response timeout, switching to
+	polling mode: last cmd=0x011f000c
+Message-ID: <20080629210743.GL19430@sci.fi>
+Mail-Followup-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
+	Justin Mattock <justinmattock@gmail.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <q5WW6DLC10O.A.dxC.R69ZIB@albercik> <X8mbwW6K81I.A.9LE.N79ZIB@albercik> <dd18b0c30806291328o55d1be25t4d692344bbc3d129@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <dd18b0c30806291328o55d1be25t4d692344bbc3d129@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-06-29 at 13:36 +0200, Rafael J. Wysocki wrote:
-> # make INSTALL_FW_PATH=/lib/firmware firmware_install
-> make -C /home/rafael/src/linux-next
-> O=/home/rafael/src/build/next/albercik/. firmware_install
-> make[3]: *** No rule to make target `firmware/acenic/tg1.bin', needed
-> by `/lib/firmware/acenic/tg1.bin'.  Stop.
-> make[2]: *** [firmware_install] Error 2
-> make[1]: *** [sub-make] Error 2
-> make: *** [all] Error 2
+On Sun, Jun 29, 2008 at 08:28:58PM +0000, Justin Mattock wrote:
+> On Sun, Jun 29, 2008 at 6:18 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> >
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.25.  Please verify if it still should be listed.
+> >
+> >
+> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10954
+> > Subject         : hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x011f000c
+> > Submitter       : Justin Mattock <justinmattock@gmail.com>
+> > Date            : 2008-06-21 2:05 (9 days old)
+> > References      : http://marc.info/?l=linux-kernel&m=121401399622190&w=4
+> >
+> >
+> >
+> 
+> yes; still seeing this pop up,(problem is I can't reproduce this)
 
-Ah, sorry -- I haven't been testing firmware_install with O= builds very
-often, and I seem to have broken it. This should fix it:
+This happened to me a few times a while back. It happened when watching
+videos with mplayer. It only occured sometimes when switching from one
+video file to the next. I haven't seen it in a while though.
 
---- a/firmware/Makefile
-+++ b/firmware/Makefile
-@@ -69,7 +69,7 @@ fw-shipped-y :=
- endif
- 
- firmware-y    := $(fw-external-y) $(fw-shipped-y)
--firmware-dirs := $(sort $(patsubst %,$(objtree)/$(obj)/%/,$(dir $(firmware-y))))
-+firmware-dirs := $(sort $(patsubst %,$(objtree)/$(obj)/%/,$(dir $(firmware-y) $(fw-shipped-))))
- 
- quiet_cmd_mkdir = MKDIR   $(patsubst $(objtree)/%,%,$@)
-       cmd_mkdir = mkdir -p $@
-
+Right now I have the HDA power save timeout set to 2 seconds. It is
+possible I had it set to 1 second when I saw the problem, however I
+can't be absolutely certain about that.
 
 -- 
-dwmw2
-
+Ville Syrjälä
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
