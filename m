@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761007AbYF2OXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761242AbYF2OaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761007AbYF2OXV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 10:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759708AbYF2OXF
+	id S1761242AbYF2OaL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 10:30:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759772AbYF2O3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 10:23:05 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:12125 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758308AbYF2OXE (ORCPT
+	Sun, 29 Jun 2008 10:29:54 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:55613 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759539AbYF2O3h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 10:23:04 -0400
-Date: Sun, 29 Jun 2008 18:23:00 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       linux-ide@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH v2 -rt] ide: workaround buggy hardware issues with
-	preemptable hardirqs
-Message-ID: <20080629142300.GA4599@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu> <20080624000016.GA12547@polina.dev.rtsoft.ru> <20080625123431.GA25452@polina.dev.rtsoft.ru> <20080628005436.GA1956@polina.dev.rtsoft.ru> <20080628101431.0b64d6c2@lxorguk.ukuu.org.uk> <486615E2.3080802@ru.mvista.com> <20080629134943.19b94bd2@lxorguk.ukuu.org.uk> <48678B72.4000706@ru.mvista.com>
+	Sun, 29 Jun 2008 10:29:37 -0400
+Date: Sun, 29 Jun 2008 16:29:36 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Pavel Machek <pavel@suse.cz>
+cc: Willy Tarreau <w@1wt.eu>, Xose Vazquez Perez <xose.vazquez@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com
+Subject: Re: AdvFS released under GPLv2
+In-Reply-To: <20080626151115.GL5642@ucw.cz>
+Message-ID: <alpine.LNX.1.10.0806261816370.12725@fbirervta.pbzchgretzou.qr>
+References: <ee588a540806230519h1f09498ev655be6c6e32e6f5@mail.gmail.com> <20080623124929.GA1369@1wt.eu> <20080626151115.GL5642@ucw.cz>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <48678B72.4000706@ru.mvista.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 29, 2008 at 05:17:38PM +0400, Sergei Shtylyov wrote:
-> Alan Cox wrote:
->
->>>   His boot log shows the native mode.
->
->> Then the bridge is misprogrammed
->
->>>   What's IDEIRT, some ISA bridge register? And why should one set  
->>> [A]PIC to level mode for legacy mode IDE? :-O
->
->> You need an NDA and then they'll send you the data sheet for the bridges
->> and other logic. It's all programmable.
->
->    That could be a very long story... :-|
->
->> "He has an OpenPIC, it's PowerPC SoC, so no ELCR either"
->
->> Really - he's using a designed for PC ISA bridge etc.. he might have all
->> sorts of stuff on it.
->
->   Ah, indeed. I meant to say that 8259 and ELCR are bypassed for PCI IRQs 
-> (or at least Anton says so :-).
 
-Yes, we don't use 8259 for the IDE interrupt.
+On Thursday 2008-06-26 17:11, Pavel Machek wrote:
+>
+>> > HP has released AdvFS, a file system that was developed by Digital
+>> > Equipment Corp
+>> > and continues to be part of HP's Tru64 operating system.
+>> 
+>> Wow! That's awesome. I discovered it in 1999 and 9 years later, it probably
+>> remains the most advanced FS I encountered. That was a major reason I was
+>> sad to see Digital Unix die.
+>
+>That's something I missed in the press release... what is so advanced
+>about AdvFS? What is the killer feature?
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Automatic storage pool resizing would be the killer feature I would want.
+Especially advanced Windows users (yes, well, that's my observation)
+tend to create lots and lots of partitions and of course having one
+filled up means you either need to improvise or undertake a partition
+resizing (the latter of which is always a bit risky).
