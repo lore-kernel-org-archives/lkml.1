@@ -1,114 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752534AbYF2FCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbYF2FDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752534AbYF2FCO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 01:02:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbYF2FCD
+	id S1753468AbYF2FDX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 01:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbYF2FDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 01:02:03 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:49770 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbYF2FCA (ORCPT
+	Sun, 29 Jun 2008 01:03:14 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:47883 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750930AbYF2FDN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 01:02:00 -0400
-Message-ID: <4867174B.3090005@linux.vnet.ibm.com>
-Date: Sun, 29 Jun 2008 10:32:03 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Sun, 29 Jun 2008 01:03:13 -0400
+Message-ID: <4867178D.50106@skyrush.com>
+Date: Sat, 28 Jun 2008 23:03:09 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080620)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [RFC 0/5] Memory controller soft limit introduction (v3)
-References: <20080627151808.31664.36047.sendpatchset@balbir-laptop> <20080628133615.a5fa16cf.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080628133615.a5fa16cf.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: James Cloos <cloos@jhcloos.com>
+CC: linux-kernel@vger.kernel.org, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] UTC timestamp option for FAT filesystems
+References: <4861D685.4070308@skyrush.com> <87od5pqh4o.fsf@basil.nowhere.org>	<4862DB28.3050001@skyrush.com> <48630286.2050006@skyrush.com>	<87wskck5wi.fsf@devron.myhome.or.jp> <48639863.808@skyrush.com>	<877iccxnwi.fsf@devron.myhome.or.jp> <4863B9AF.4080105@skyrush.com>	<87zlp8w4br.fsf@devron.myhome.or.jp> <4863CC89.9070705@skyrush.com> <m31w2h6vup.fsf@lugabout.jhcloos.org>
+In-Reply-To: <m31w2h6vup.fsf@lugabout.jhcloos.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Fri, 27 Jun 2008 20:48:08 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+James Cloos wrote:
+> Joe> For a camera, since DST is not taken into account.  If you really
+> Joe> want to set your camera to local time and are willing to accept the
+> Joe> inherent issues, why not just use local time FAT behavior as it is
+> Joe> now in Linux.
 > 
->> This patchset implements the basic changes required to implement soft limits
->> in the memory controller. A soft limit is a variation of the currently
->> supported hard limit feature. A memory cgroup can exceed it's soft limit
->> provided there is no contention for memory.
->>
->> These patches were tested on a x86_64 box, by running a programs in parallel,
->> and checking their behaviour for various soft limit values.
->>
->> These patches were developed on top of 2.6.26-rc5-mm3. Comments, suggestions,
->> criticism are all welcome!
->>
->> A previous version of the patch can be found at
->>
->> http://kerneltrap.org/mailarchive/linux-kernel/2008/2/19/904114
->>
-> I have a couple of comments.
-> 
-> 1. Why you add soft_limit to res_coutner ?
->    Is there any other controller which uses soft-limit ?
->    I'll move watermark handling to memcg from res_counter becasue it's
->    required only by memcg.
-> 
+> Taking the rôle of Devil’s Advocate, why presume that the camera and the
+> box will have the same idea of local time?  One might set the camera to
+> local time on a vacation, take some pics, return home and only them mount
+> the card on one's box.
 
-I expect soft_limits to be controller independent. The same thing can be applied
-to an io-controller for example, right?
+Hi James, I think you have hit squarely on the issue.  One could do
+this, and the result would be potentially confusing and incorrect.
 
-> 2. *please* handle NUMA
->    There is a fundamental difference between global VMM and memcg.
->      global VMM - reclaim memory at memory shortage.
->      memcg     - for reclaim memory at memory limit
->    Then, memcg wasn't required to handle place-of-memory at hitting limit. 
->    *just reducing the usage* was enough.
->    In this set, you try to handle memory shortage handling.
->    So, please handle NUMA, i.e. "what node do you want to reclaim memory from ?"
->    If not, 
->     - memory placement of Apps can be terrible.
->     - cannot work well with cpuset. (I think)
-> 
+Say someone lives in Denver, and it is summer.  The UTC offset here is
+-6 hours.  That person travels to the east coast, sets his camera to
+local time there (UTC - 4), and takes a picture at 9:00am.  He then
+returns to Denver and transfers the pic to his PC.  Using the current
+Linux FAT mount behavior, the picture would be given a timestamp in
+Linux of 15:00 UTC (9:00am local time in Denver, since the code
+preserves the local time stamp, which is 9:00).  Now, the picture was
+actually taken at 13:00 UTC (7:00am local time in Denver), and since UTC
+is what matters in Linux, the actual time is two hours off.
 
-try_to_free_mem_cgroup_pages() handles NUMA right? We start with the
-node_zonelists of the current node on which we are executing.  I can pass on the
-zonelist from __alloc_pages_internal() to try_to_free_mem_cgroup_pages(). Is
-there anything else you had in mind?
+In order to make sense of the timestamp on the picture, he would have to
+remember where the picture was taken and do a time zone correction,
+remembering that the picture was downloaded in Denver preserving local
+time.  It's starting to get a bit mind-bending already, but see the
+example of moving to England below for how it can get worse.
 
+> It does seem likely that anyone who sets the camera's time at all will
+> probably prefer localtime.  And if they know that one card has photos
+> taken during a winter visit to Orlando, and another from a summer trip
+> to Alaska, they may want to copy over accurate timestamps.
 
-> 3. I think  when "mem_cgroup_reclaim_on_contention" exits is unclear.
->    plz add explanation of algorithm. It returns when some pages are reclaimed ?
-> 
+Some people will perfer the timestamps be in localtime, but this is
+really problematic, since times in Linux's filesystems (ext3, etc.), and
+even Windows' NTFS, are stored in UTC internally (which is a good thing).
 
-Sure, I will do that.
+Now things potentially get interesting...
 
-> 4. When swap-full cgroup is on the top of heap, which tends to contain
->    tons of memory, much amount of cpu-time will be wasted.
->    Can we add "ignore me" flag  ?
-> 
+Say that same person who took the picture on the east coast at 9:00am
+(but timestamped 9:00am Denver time now) moves to England with his PC.
+He then sets his computer's time zone to his new local time zone, and it
+now says the picture was taken at 4:00pm!  He can no longer think of the
+timestamp as local time, but then again it is not even correct in local
+time where the picture was taken, since that would have been 11:00 east
+coast time.
 
-Could you elaborate on swap-full cgroup please? Are you referring to changes
-introduced by the memcg-handle-swap-cache patch? I don't mind adding a ignore me
-flag, but I guess we need to figure out when a cgroup is swap full.
+Now, if the guy had kept his camera on Denver time during his travels
+and no DST change happened between taking the pictures and downloading
+them, the correct timestamps would have been preserved (if DST status
+was different, however, the timestamp would be off by one hour).  But if
+one is going to pick a "universal time" that is not necessarily local
+time for the camera while traveling, why not use UTC and avoid all of
+the issues?
 
-> Maybe "2" is the most important to implement this.
-> I think this feature itself is interesting, so please handle NUMA.
-> 
+So I guess my point is that the option I propose will allow people to
+set their cameras to UTC and thereby always get unambiguously correct
+timestamps.  Plus there is no need to ever change the camera's clock
+when traveling or when DST changes happen.  Not all people will choose
+to operate this way, so it would be nice to have the choice.
 
-Thanks, I'll definitely fix what ever is needed to make the functionality more
-correct and useful.
-
-> "4" includes the user's (middleware's) memcg handling problem. But maybe
-> a problem should be fixed in future.
-
-Thanks for the review!
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+						-Joe
