@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932251AbYF2UBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762275AbYF2UDF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932251AbYF2UBR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 16:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759484AbYF2UBD
+	id S1762275AbYF2UDF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 16:03:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759065AbYF2UCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 16:01:03 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45068 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759360AbYF2UBC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 16:01:02 -0400
-Date: Sun, 29 Jun 2008 16:01:01 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Drivers for selfmade hardware
-Message-ID: <20080629200101.GA29452@infradead.org>
-References: <200806292147.52112.mb@bu3sch.de>
+	Sun, 29 Jun 2008 16:02:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41551 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753870AbYF2UCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jun 2008 16:02:52 -0400
+Date: Sun, 29 Jun 2008 22:02:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Andi Kleen <andi-suse@firstfloor.org>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+Message-ID: <20080629200210.GB31633@elte.hu>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806291600.29059.rjw@sisk.pl> <Pine.LNX.4.55.0806291952590.22548@cliff.in.clinika.pl> <200806292123.16237.rjw@sisk.pl> <Pine.LNX.4.55.0806292023320.22548@cliff.in.clinika.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200806292147.52112.mb@bu3sch.de>
+In-Reply-To: <Pine.LNX.4.55.0806292023320.22548@cliff.in.clinika.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 29, 2008 at 09:47:52PM +0200, Michael Buesch wrote:
-> I'm wondering what the policy is for selfmade hardware
-> or other hardware where only a few pieces exist. Is it desired
-> to get drivers for this kind of hardware merged upstream into the
-> mainline kernel?
-> 
-> I have a tiny driver that can be used to drive a modified
-> Brooktree 8xx based card in 24-port GPIO mode.
-> So the card can be used as a cheap digital PCI GPIO card.
-> This hardware can be built with some soldering skills, a tiny
-> soldering tip and a few hours of free time.
-> 
-> So what's the policy? Push to mainline or keep as seperate
 
-Push to mainline as long as you have a nice enough guide on the web
-somewhere describing how to build it :)
+* Maciej W. Rozycki <macro@linux-mips.org> wrote:
 
+>  You may argue this is a regression, but this is simply the cost paid 
+> for progress -- the kernel stays within the spec as defined both by 
+> ACPI and MPS, we have just started using a different configuration now 
+> and an interrupt source override provided by the manufacturer 
+> explicitly states INTIN2 is good to use.  In a sense you were simply 
+> lucky previously the kernel was bad enough with the way it configured 
+> the timer through the I/O APIC it failed completely avoiding the bug 
+> in your firmware.  Now the bug has got uncovered.
+
+well as long as we eliminate the bad effects around via DMI exceptions 
+nobody will feel the need to argue whether it's a regression ;-) [this 
+problem could be argued to be a regression, even if it's caused by prior 
+luck/stupidity of Linux. We have to live with the effects of our 
+mistakes.]
+
+	Ingo
