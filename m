@@ -1,40 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759998AbYF2Tzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759532AbYF2T4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759998AbYF2Tzq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 15:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbYF2Tzi
+	id S1759532AbYF2T4X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 15:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbYF2T4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 15:55:38 -0400
-Received: from hpsmtp-eml12.kpnxchange.com ([213.75.38.112]:2320 "EHLO
-	hpsmtp-eml12.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753891AbYF2Tzh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 15:55:37 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #10843] Display artifacts on XOrg logout with PAT kernel and VESA framebuffer
-Date: Sun, 29 Jun 2008 21:55:34 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <q5WW6DLC10O.A.dxC.R69ZIB@albercik> <X8mbwW6K81I.A.6YF.K89ZIB@albercik>
-In-Reply-To: <X8mbwW6K81I.A.6YF.K89ZIB@albercik>
+	Sun, 29 Jun 2008 15:56:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45962 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754306AbYF2T4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jun 2008 15:56:05 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Subject: Re: linux-next: Tree for June 27
+Date: Sun, 29 Jun 2008 21:57:22 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, kernel-testers@vger.kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <20080627182406.a54b00c1.sfr@canb.auug.org.au> <200806292129.57465.m.kozlowski@tuxland.pl>
+In-Reply-To: <200806292129.57465.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806292155.34659.elendil@planet.nl>
-X-OriginalArrivalTime: 29 Jun 2008 19:55:35.0281 (UTC) FILETIME=[1860F610:01C8DA22]
+Message-Id: <200806292157.22860.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 29 June 2008, you wrote:
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10843
-> Subject	: Display artifacts on XOrg logout with PAT kernel and VESA
-> 		  framebuffer
+On Sunday, 29 of June 2008, Mariusz Kozlowski wrote:
+> Hello,
+> 
+> It's too good. It survived hours of testing on 4 different arches. I stressed
+> them with latest ltp, autotest, my own testing scripts and anything else
+> I could think of. Good job :) The game is on.
 
-Yes.
+Lucky you.
+
+There are no less than three different patches in it that break sigle box for
+me. :-(
+
+Thanks,
+Rafael
