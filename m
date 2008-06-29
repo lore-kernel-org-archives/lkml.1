@@ -1,21 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762603AbYF2Tgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759424AbYF2ThM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762603AbYF2Tgu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 15:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759688AbYF2Tba
+	id S1759424AbYF2ThM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 15:37:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759783AbYF2Tbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 15:31:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45681 "EHLO ogre.sisk.pl"
+	Sun, 29 Jun 2008 15:31:31 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45678 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759277AbYF2Tb0 convert rfc822-to-8bit (ORCPT
+	id S1759433AbYF2Tb0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 29 Jun 2008 15:31:26 -0400
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Daniel J Blueman" <daniel.blueman@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>
+Cc: "Maximilian Engelhardt" <maxi@daemonizer.de>
 References: <q5WW6DLC10O.A.dxC.R69ZIB@albercik>
 In-Reply-To: <q5WW6DLC10O.A.dxC.R69ZIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -23,8 +18,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <X8mbwW6K81I.A.2oE.j79ZIB@albercik>
-Subject: [Bug #10918] 2.6.26-rc5: SLUB debug, lockdep warning...
+Message-ID: <X8mbwW6K81I.A.YcE.g79ZIB@albercik>
+Subject: [Bug #10919] [regression] display dimming is slow and laggy - Acer Travelmate 661lci
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun, 29 Jun 2008 20:18:43 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,13 +33,10 @@ The following bug entry is on the current list of known regressions
 from 2.6.25.  Please verify if it still should be listed.
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10918
-Subject		: 2.6.26-rc5: SLUB debug, lockdep warning...
-Submitter	: Daniel J Blueman <daniel.blueman@gmail.com>
-Date		: 2008-06-14 10:54 (16 days old)
-References	: http://marc.info/?l=linux-kernel&m=121344091109597&w=4
-Handled-By	: Vegard Nossum <vegard.nossum@gmail.com>
-		  Daniel J Blueman <daniel.blueman@gmail.com>
-Patch		: http://bugzilla.kernel.org/show_bug.cgi?id=10918#c2
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10919
+Subject		: [regression] display dimming is slow and laggy - Acer Travelmate 661lci
+Submitter	: Maximilian Engelhardt <maxi@daemonizer.de>
+Date		: 2008-06-14 22:31 (16 days old)
+References	: http://marc.info/?l=linux-kernel&m=121348428828320&w=4
 
 
