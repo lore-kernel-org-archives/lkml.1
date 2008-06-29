@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757680AbYF2AH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbYF2ANW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757680AbYF2AH7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jun 2008 20:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbYF2AHt
+	id S1754797AbYF2ANW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jun 2008 20:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbYF2ANN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jun 2008 20:07:49 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:33924 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754823AbYF2AHK (ORCPT
+	Sat, 28 Jun 2008 20:13:13 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:36071 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751769AbYF2ANM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jun 2008 20:07:10 -0400
-Date: Sun, 29 Jun 2008 01:07:15 +0100 (BST)
+	Sat, 28 Jun 2008 20:13:12 -0400
+Date: Sun, 29 Jun 2008 01:13:20 +0100 (BST)
 From: Hugh Dickins <hugh@veritas.com>
 X-X-Sender: hugh@blonde.site
-To: Erez Zadok <ezk@cs.sunysb.edu>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] unionfs: fix memory leak
-In-Reply-To: <Pine.LNX.4.64.0806290101160.20280@blonde.site>
-Message-ID: <Pine.LNX.4.64.0806290105430.20280@blonde.site>
-References: <Pine.LNX.4.64.0806290101160.20280@blonde.site>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] memcg: fix shmem_unuse_inode charging
+Message-ID: <Pine.LNX.4.64.0806290108110.20280@blonde.site>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unionfs has slowly been leaking memory: although many places do explicitly
-free the dentry's lower_paths array (and I've not changed those, in case
-the ordering is important), not all do - and adding a WARN_ON didn't seem
-to finger any particular culprit.  So free_dentry_private_data needs to
-kfree lower_paths (other freeers are good about setting it to NULL).
+The mem_cgroup_cache_charge in shmem_unuse_inode has been moved after
+the radix_tree_preload, so generating a BUG: sleeping function called
+from invalid context.  Move it back, uncharging where necessary.
 
 Signed-off-by: Hugh Dickins <hugh@veritas.com>
 ---
-Should follow mmotm's git-unionfs-fixup.patch
+Should follow mmotm's memcg-remove-refcnt-from-page_cgroup.patch
 
- fs/unionfs/lookup.c |    1 +
- 1 file changed, 1 insertion(+)
+mm/shmem.c |   28 ++++++++++++----------------
+ 1 file changed, 12 insertions(+), 16 deletions(-)
+
+--- mmotm/mm/shmem.c	2008-06-27 13:39:20.000000000 +0100
++++ linux/mm/shmem.c	2008-06-27 17:25:41.000000000 +0100
+@@ -922,27 +922,24 @@ found:
+ 	error = 1;
+ 	if (!inode)
+ 		goto out;
+-	error = radix_tree_preload(GFP_KERNEL);
+-	if (error)
+-		goto out;
+-	/*
+-	 * Because we use GFP_NOWAIT in add_to_page_cache(), we can see -ENOMEM
+-	 * failure because of memory pressure in memory resource controller.
+-	 * Then, precharge page while we can wait, uncharge at failure will be
+-	 * automatically done in add_to_page_cache()
+-	 */
++	/* Precharge page using GFP_KERNEL while we can wait */
+ 	error = mem_cgroup_cache_charge(page, current->mm, GFP_KERNEL);
+ 	if (error)
+-		goto preload_out;
+-
++		goto out;
++	error = radix_tree_preload(GFP_KERNEL);
++	if (error) {
++		mem_cgroup_uncharge_cache_page(page);
++		goto out;
++	}
+ 	error = 1;
  
---- mmotm/fs/unionfs/lookup.c	2008-06-27 13:39:18.000000000 +0100
-+++ linux/fs/unionfs/lookup.c	2008-06-27 14:08:00.000000000 +0100
-@@ -498,6 +498,7 @@ void free_dentry_private_data(struct den
- {
- 	if (!dentry || !dentry->d_fsdata)
- 		return;
-+	kfree(UNIONFS_D(dentry)->lower_paths);
- 	kmem_cache_free(unionfs_dentry_cachep, dentry->d_fsdata);
- 	dentry->d_fsdata = NULL;
- }
+ 	spin_lock(&info->lock);
+ 	ptr = shmem_swp_entry(info, idx, NULL);
+-	if (ptr && ptr->val == entry.val)
+-		error = add_to_page_cache(page, inode->i_mapping, idx,
+-					GFP_NOWAIT);
+-	else /* we don't have to account this page. */
++	if (ptr && ptr->val == entry.val) {
++		error = add_to_page_cache(page, inode->i_mapping,
++						idx, GFP_NOWAIT);
++		/* does mem_cgroup_uncharge_cache_page on error */
++	} else	/* we must compensate for our precharge above */
+ 		mem_cgroup_uncharge_cache_page(page);
+ 
+ 	if (error == -EEXIST) {
+@@ -969,7 +966,6 @@ found:
+ 	if (ptr)
+ 		shmem_swp_unmap(ptr);
+ 	spin_unlock(&info->lock);
+-preload_out:
+ 	radix_tree_preload_end();
+ out:
+ 	unlock_page(page);
