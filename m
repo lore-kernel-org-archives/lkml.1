@@ -1,79 +1,435 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbYF2Vd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbYF2Vn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754776AbYF2Vd6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 17:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYF2Vds
+	id S1754012AbYF2Vn4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 17:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbYF2Vnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 17:33:48 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:2314 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753933AbYF2Vdr (ORCPT
+	Sun, 29 Jun 2008 17:43:46 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56082 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751583AbYF2Vno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 17:33:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=QZgNh5KjW5j8YUu915TVPHoyZhwXKBJCS8VADOHRIKfjUha2yjEOD9iAFJ/+KR1KD7
-         LRtKLSyUYRTr63NhyQvVWCKaN2YTmv8cyOLOIUTLBOTGKxnEnXKSx35EHHyyYRbvu+7j
-         QyRnOYKSUxQ0LDjTiJKL0le7JRvqu0YA4N5l4=
-Message-ID: <6278d2220806291433j9bc9e71qce28a4b952b121c@mail.gmail.com>
-Date: Sun, 29 Jun 2008 22:33:43 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Romano Giannetti" <romano@dea.icai.upcomillas.es>
-Subject: Re: ALC883 recording troubles...
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>, "Takashi Iwai" <tiwai@suse.de>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1214760581.6998.4.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 29 Jun 2008 17:43:44 -0400
+Date: Sun, 29 Jun 2008 22:26:16 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: Drivers for selfmade hardware
+Message-ID: <20080629222616.2757558b@lxorguk.ukuu.org.uk>
+In-Reply-To: <200806292147.52112.mb@bu3sch.de>
+References: <200806292147.52112.mb@bu3sch.de>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6278d2220806091259t47c9b070v269da0f5855ef014@mail.gmail.com>
-	 <6278d2220806111200g4f802885wfc5f0fd6c0405efb@mail.gmail.com>
-	 <s5hiqwf0vyr.wl%tiwai@suse.de>
-	 <6278d2220806271705v5bd5fec3l86c3560283063092@mail.gmail.com>
-	 <19f34abd0806280311s115062e6vc6d0f304cb744934@mail.gmail.com>
-	 <6278d2220806280329j2f77c52dp8fbae78420c136c1@mail.gmail.com>
-	 <6278d2220806280529n70c6233dk1c5768df5d52acf@mail.gmail.com>
-	 <19f34abd0806280539g4961392evb469d7c106c198c9@mail.gmail.com>
-	 <6278d2220806280624iec3a67rf25789e98f81521@mail.gmail.com>
-	 <1214760581.6998.4.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 29, 2008 at 6:29 PM, Romano Giannetti
-<romano@dea.icai.upcomillas.es> wrote:
->
-> On Sat, 2008-06-28 at 14:24 +0100, Daniel J Blueman wrote:
->> # ./hda-verb /dev/snd/hwC0D0 0x0e SET_AMP_GAIN_MUTE 0x7080
->> # ./hda-verb /dev/snd/hwC0D0 0x0f SET_AMP_GAIN_MUTE 0x7080
->> # ./hda-verb /dev/snd/hwC0D0 0x0f SET_AMP_GAIN_MUTE 0x7180
->> # ./hda-verb /dev/snd/hwC0D0 0x10 SET_AMP_GAIN_MUTE 0x7080
->> # ./hda-verb /dev/snd/hwC0D0 0x10 SET_AMP_GAIN_MUTE 0x7180
->> # ./hda-verb /dev/snd/hwC0D0 0x10 SET_AMP_GAIN_MUTE 0x7280
->> # ./hda-verb /dev/snd/hwC0D0 0x18 SET_AMP_GAIN_MUTE 0x7080
->> # ./hda-verb /dev/snd/hwC0D0 0x19 SET_AMP_GAIN_MUTE 0x7080
->> # ./hda-verb /dev/snd/hwC0D0 0x1a SET_AMP_GAIN_MUTE 0x7080
->
-> I tried all this, to no avail. At some point input stopped recording
-> sound, it has just offset, but I can't say which one was... if it's a
-> useful data, I can retry it.
->
-> And... I have almost never booted it, but I have a Vista installed in
-> this laptop. If you explain me how to do (in windows I am a dumb user) I
-> can try to search thing. What I know is that the sound in windows is
-> quite louder, and that recording works better. There is a button with
-> "offset correction" default on, if I remember correctly.
+On Sun, 29 Jun 2008 21:47:52 +0200
+Michael Buesch <mb@bu3sch.de> wrote:
 
-That'll be the software 'fix' the Realtek guys mentioned to Takashi.
+> I'm wondering what the policy is for selfmade hardware
+> or other hardware where only a few pieces exist. Is it desired
+> to get drivers for this kind of hardware merged upstream into the
+> mainline kernel?
+> 
+> I have a tiny driver that can be used to drive a modified
+> Brooktree 8xx based card in 24-port GPIO mode.
+> So the card can be used as a cheap digital PCI GPIO card.
+> This hardware can be built with some soldering skills, a tiny
+> soldering tip and a few hours of free time.
+> 
+> So what's the policy? Push to mainline or keep as seperate
+> patch?
+> 
+> (The following patch is not complete, but just what I have for now
+> to show you...)
+> 
+> Index: linux-2.6/drivers/gpio/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/drivers/gpio/Kconfig	2008-05-01 13:19:48.000000000 +0200
+> +++ linux-2.6/drivers/gpio/Kconfig	2008-06-29 21:19:26.000000000 +0200
+> @@ -61,6 +61,24 @@ config GPIO_PCF857X
+>  	  This driver provides an in-kernel interface to those GPIOs using
+>  	  platform-neutral GPIO calls.
+>  
+> +comment "PCI GPIO expanders:"
+> +
+> +config GPIO_BT8XX
+> +	tristate "BT8XX GPIO abuser"
+> +	depends on PCI && !VIDEO_BT848
+> +	help
+> +	  The BT8xx frame grabber chip has 24 GPIO pins than can be abused
+> +	  as a cheap PCI GPIO card.
+> +
+> +	  This chip can be found on Miro, Hauppauge and STB TV-cards.
+> +
+> +	  The card needs to be physically altered for using it as a
+> +	  GPIO card. For more information on how to build a GPIO card
+> +	  from a BT8xx TV card, see the following link:
+> +	  http://bu3sch.de/btgpio.php
+> +
+> +	  If unsure, say N.
+> +
+>  comment "SPI GPIO expanders:"
+>  
+>  config GPIO_MCP23S08
+> Index: linux-2.6/drivers/gpio/Makefile
+> ===================================================================
+> --- linux-2.6.orig/drivers/gpio/Makefile	2008-05-01 13:19:48.000000000 +0200
+> +++ linux-2.6/drivers/gpio/Makefile	2008-06-29 17:58:05.000000000 +0200
+> @@ -7,3 +7,4 @@ obj-$(CONFIG_HAVE_GPIO_LIB)	+= gpiolib.o
+>  obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
+>  obj-$(CONFIG_GPIO_PCA953X)	+= pca953x.o
+>  obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
+> +obj-$(CONFIG_GPIO_BT8XX)	+= btgpio.o
+> Index: linux-2.6/drivers/gpio/btgpio.c
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6/drivers/gpio/btgpio.c	2008-06-29 19:21:23.000000000 +0200
+> @@ -0,0 +1,334 @@
+> +/*
+> +
+> +    bt8xx GPIO abuser
+> +
+> +    Copyright (C) 2008 Michael Buesch <mb@bu3sch.de>
+> +
+> +    Please do _only_ contact Michael Buesch with issues related to this driver.
+> +    All the other people listed below are not related to this driver. Their names
+> +    are only here, because this driver is derived from the bt848 driver.
+> +
+> +
+> +    Derived from the bt848 driver:
+> +
+> +    Copyright (C) 1996,97,98 Ralph  Metzler
+> +			   & Marcus Metzler
+> +    (c) 1999-2002 Gerd Knorr
+> +
+> +    some v4l2 code lines are taken from Justin's bttv2 driver which is
+> +    (c) 2000 Justin Schoeman
+> +
+> +    V4L1 removal from:
+> +    (c) 2005-2006 Nickolay V. Shmyrev
+> +
+> +    Fixes to be fully V4L2 compliant by
+> +    (c) 2006 Mauro Carvalho Chehab
+> +
+> +    Cropping and overscan support
+> +    Copyright (C) 2005, 2006 Michael H. Schimek
+> +    Sponsored by OPQ Systems AB
+> +
+> +    This program is free software; you can redistribute it and/or modify
+> +    it under the terms of the GNU General Public License as published by
+> +    the Free Software Foundation; either version 2 of the License, or
+> +    (at your option) any later version.
+> +
+> +    This program is distributed in the hope that it will be useful,
+> +    but WITHOUT ANY WARRANTY; without even the implied warranty of
+> +    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> +    GNU General Public License for more details.
+> +
+> +    You should have received a copy of the GNU General Public License
+> +    along with this program; if not, write to the Free Software
+> +    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+> +*/
+> +
+> +#include <linux/module.h>
+> +#include <linux/pci.h>
+> +#include <linux/spinlock.h>
+> +#include <asm/gpio.h>
+> +
+> +/* Steal the hardware definitions from the bttv driver. */
+> +#include "../media/video/bt8xx/bt848.h"
+> +
+> +
+> +struct btgpio {
+> +	spinlock_t lock;
+> +
+> +	void __iomem *mmio;
+> +	struct pci_dev *pdev;
+> +	struct gpio_chip gpio;
+> +
+> +#ifdef CONFIG_PM
+> +	u32 saved_outen;
+> +	u32 saved_data;
+> +#endif
+> +};
+> +
+> +#define bgwrite(dat,adr)    writel((dat), bg->mmio+(adr))
+> +#define bgread(adr)         readl(bg->mmio+(adr))
+> +
+> +
+> +static int btgpio_gpio_direction_input(struct gpio_chip *gpio, unsigned nr)
+> +{
+> +	struct btgpio *bg = container_of(gpio, struct btgpio, gpio);
+> +	unsigned long flags;
+> +	u32 outen, data;
+> +
+> +	spin_lock_irqsave(&bg->lock, flags);
+> +
+> +	data = bgread(BT848_GPIO_DATA);
+> +	data &= ~(1 << nr);
+> +	bgwrite(data, BT848_GPIO_DATA);
+> +
+> +	outen = bgread(BT848_GPIO_OUT_EN);
+> +	outen &= ~(1 << nr);
+> +	bgwrite(outen, BT848_GPIO_OUT_EN);
+> +
+> +	spin_unlock_irqrestore(&bg->lock, flags);
+> +
+> +	return 0;
+> +}
+> +
+> +static int btgpio_gpio_get(struct gpio_chip *gpio, unsigned nr)
+> +{
+> +	struct btgpio *bg = container_of(gpio, struct btgpio, gpio);
+> +	unsigned long flags;
+> +	u32 val;
+> +
+> +	spin_lock_irqsave(&bg->lock, flags);
+> +	val = bgread(BT848_GPIO_DATA);
+> +	spin_unlock_irqrestore(&bg->lock, flags);
+> +
+> +	return !!(val & (1 << nr));
+> +}
+> +
+> +static int btgpio_gpio_direction_output(struct gpio_chip *gpio,
+> +					unsigned nr, int val)
+> +{
+> +	struct btgpio *bg = container_of(gpio, struct btgpio, gpio);
+> +	unsigned long flags;
+> +	u32 outen, data;
+> +
+> +	spin_lock_irqsave(&bg->lock, flags);
+> +
+> +	data = bgread(BT848_GPIO_DATA);
+> +	if (val)
+> +		data |= (1 << nr);
+> +	else
+> +		data &= ~(1 << nr);
+> +	bgwrite(data, BT848_GPIO_DATA);
+> +
+> +	outen = bgread(BT848_GPIO_OUT_EN);
+> +	outen |= (1 << nr);
+> +	bgwrite(outen, BT848_GPIO_OUT_EN);
+> +
+> +	spin_unlock_irqrestore(&bg->lock, flags);
+> +
+> +	return 0;
+> +}
+> +
+> +static void btgpio_gpio_set(struct gpio_chip *gpio,
+> +			    unsigned nr, int val)
+> +{
+> +	struct btgpio *bg = container_of(gpio, struct btgpio, gpio);
+> +	unsigned long flags;
+> +	u32 data;
+> +
+> +	spin_lock_irqsave(&bg->lock, flags);
+> +
+> +	data = bgread(BT848_GPIO_DATA);
+> +	if (val)
+> +		data |= (1 << nr);
+> +	else
+> +		data &= ~(1 << nr);
+> +	bgwrite(data, BT848_GPIO_DATA);
+> +
+> +	spin_unlock_irqrestore(&bg->lock, flags);
+> +}
+> +
+> +static void btgpio_gpio_setup(struct btgpio *bg)
+> +{
+> +	struct gpio_chip *c = &bg->gpio;
+> +
+> +	c->label = bg->pdev->dev.bus_id;
+> +	c->owner = THIS_MODULE;
+> +	c->direction_input = btgpio_gpio_direction_input;
+> +	c->get = btgpio_gpio_get;
+> +	c->direction_output = btgpio_gpio_direction_output;
+> +	c->set = btgpio_gpio_set;
+> +	c->dbg_show = NULL;
+> +	c->base = -1;
+> +	c->ngpio = 24;
+> +	c->can_sleep = 0;
+> +}
+> +
+> +static int btgpio_probe(struct pci_dev *dev,
+> +			const struct pci_device_id *pci_id)
+> +{
+> +	struct btgpio *bg;
+> +	int err;
+> +
+> +	bg = kzalloc(sizeof(*bg), GFP_KERNEL);
+> +	if (!bg)
+> +		return -ENOMEM;
+> +
+> +	bg->pdev = dev;
+> +	spin_lock_init(&bg->lock);
+> +
+> +	err = pci_enable_device(dev);
+> +	if (err) {
+> +		printk(KERN_ERR "btgpio: Can't enable device.\n");
+> +		goto err_freebg;
+> +	}
+> +	if (!request_mem_region(pci_resource_start(dev, 0),
+> +				pci_resource_len(dev, 0),
+> +				"btgpio")) {
+> +		printk(KERN_WARNING "btgpio: can't request iomem (0x%llx).\n",
+> +		       (unsigned long long)pci_resource_start(dev, 0));
+> +		err = -EBUSY;
+> +		goto err_disable;
+> +	}
+> +	pci_set_master(dev);
+> +	pci_set_drvdata(dev, bg);
+> +
+> +	bg->mmio = ioremap(pci_resource_start(dev, 0), 0x1000);
+> +	if (!bg->mmio) {
+> +		printk(KERN_ERR "btgpio: ioremap() failed\n");
+> +		err = -EIO;
+> +		goto err_release_mem;
+> +	}
+> +
+> +	/* Disable interrupts */
+> +	bgwrite(0, BT848_INT_MASK);
+> +
+> +	/* gpio init */
+> +	bgwrite(0, BT848_GPIO_REG_INP);
+> +	bgwrite(0, BT848_GPIO_OUT_EN);
+> +
+> +	btgpio_gpio_setup(bg);
+> +	err = gpiochip_add(&bg->gpio);
+> +	if (err) {
+> +		printk(KERN_ERR "btgpio: Failed to register GPIOs\n");
+> +		goto err_release_mem;
+> +	}
+> +
+> +	printk(KERN_INFO "btgpio: Abusing BT8xx card for GPIO\n");
+> +
+> +	return 0;
+> +
+> +err_release_mem:
+> +	release_mem_region(pci_resource_start(dev, 0),
+> +			   pci_resource_len(dev, 0));
+> +	pci_set_drvdata(dev, NULL);
+> +err_disable:
+> +	pci_disable_device(dev);
+> +err_freebg:
+> +	kfree(bg);
+> +
+> +	return err;
+> +}
+> +
+> +static void btgpio_remove(struct pci_dev *pdev)
+> +{
+> +	struct btgpio *bg = pci_get_drvdata(pdev);
+> +
+> +	gpiochip_remove(&bg->gpio);
+> +
+> +	bgwrite(0, BT848_INT_MASK);
+> +	bgwrite(~0x0, BT848_INT_STAT);
+> +	bgwrite(0x0, BT848_GPIO_OUT_EN);
+> +
+> +	iounmap(bg->mmio);
+> +	release_mem_region(pci_resource_start(pdev,0),
+> +			   pci_resource_len(pdev,0));
+> +	pci_disable_device(pdev);
+> +
+> +	pci_set_drvdata(pdev, NULL);
+> +	kfree(bg);
+> +}
+> +
+> +#ifdef CONFIG_PM
+> +static int btgpio_suspend(struct pci_dev *pdev, pm_message_t state)
+> +{
+> +	struct btgpio *bg = pci_get_drvdata(pdev);
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&bg->lock, flags);
+> +
+> +	bg->saved_outen = bgread(BT848_GPIO_OUT_EN);
+> +	bg->saved_data = bgread(BT848_GPIO_DATA);
+> +
+> +	bgwrite(0, BT848_INT_MASK);
+> +	bgwrite(~0x0, BT848_INT_STAT);
+> +	bgwrite(0x0, BT848_GPIO_OUT_EN);
+> +
+> +	spin_unlock_irqrestore(&bg->lock, flags);
+> +
+> +	pci_save_state(pdev);
+> +	pci_disable_device(pdev);
+> +	pci_set_power_state(pdev, pci_choose_state(pdev, state));
+> +
+> +	return 0;
+> +}
+> +
+> +static int btgpio_resume(struct pci_dev *pdev)
+> +{
+> +	struct btgpio *bg = pci_get_drvdata(pdev);
+> +	unsigned long flags;
+> +	int err;
+> +
+> +	pci_set_power_state(pdev, 0);
+> +	err = pci_enable_device(pdev);
+> +	if (err)
+> +		return err;
+> +	pci_restore_state(pdev);
+> +
+> +	spin_lock_irqsave(&bg->lock, flags);
+> +
+> +	bgwrite(0, BT848_INT_MASK);
+> +	bgwrite(0, BT848_GPIO_REG_INP);
+> +	bgwrite(bg->saved_outen, BT848_GPIO_OUT_EN);
+> +	bgwrite(bg->saved_data, BT848_GPIO_DATA);
+> +
+> +	spin_unlock_irqrestore(&bg->lock, flags);
+> +
+> +	return 0;
+> +}
+> +#endif /* CONFIG_PM */
+> +
+> +static struct pci_device_id btgpio_pci_tbl[] = {
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_BROOKTREE, PCI_DEVICE_ID_BT848) },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_BROOKTREE, PCI_DEVICE_ID_BT849) },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_BROOKTREE, PCI_DEVICE_ID_BT878) },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_BROOKTREE, PCI_DEVICE_ID_BT879) },
+> +	{ 0, },
+> +};
+> +MODULE_DEVICE_TABLE(pci, btgpio_pci_tbl);
+> +
+> +static struct pci_driver btgpio_pci_driver = {
+> +	.name		= "btgpio",
+> +	.id_table	= btgpio_pci_tbl,
+> +	.probe		= btgpio_probe,
+> +	.remove		= btgpio_remove,
+> +#ifdef CONFIG_PM
+> +	.suspend	= btgpio_suspend,
+> +	.resume		= btgpio_resume,
+> +#endif
+> +};
+> +
+> +static int btgpio_init(void)
+> +{
+> +	return pci_register_driver(&btgpio_pci_driver);
+> +}
+> +module_init(btgpio_init)
+> +
+> +static void btgpio_exit(void)
+> +{
+> +	pci_unregister_driver(&btgpio_pci_driver);
+> +}
+> +module_exit(btgpio_exit)
+> +
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR("Michael Buesch");
+> +MODULE_DESCRIPTION("Abuse a BT8xx framegrabber card as generic GPIO card");
+> 
 
-It's clear the issue with the ALC268 is different than the ALC883
-offset issue that I'm seeing, which seems to be a bug as ALSA isn't
-muting the mixer inputs which aren't intended.
 
-Daniel
 -- 
-Daniel J Blueman
+--
+	"Alan, I'm getting a bit worried about you."
+				-- Linus Torvalds
