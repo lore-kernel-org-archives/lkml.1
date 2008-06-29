@@ -1,78 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932463AbYF2UEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932166AbYF2UFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932463AbYF2UEm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 16:04:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760155AbYF2UE2
+	id S932166AbYF2UFA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 16:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbYF2UEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 16:04:28 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:60289 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759047AbYF2UE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 16:04:27 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -2.087
-Date: Sun, 29 Jun 2008 13:04:20 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       <netdev@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add missing skb->dev assignment in Frame Relay RX code
-Message-ID: <20080629130420.62d00d59@extreme>
-In-Reply-To: <m3wsk8aupw.fsf@maximus.localdomain>
-References: <m3wsk8aupw.fsf@maximus.localdomain>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Jun 2008 16:04:32 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62395 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760379AbYF2UE3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jun 2008 16:04:29 -0400
+Date: Sun, 29 Jun 2008 21:03:29 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+In-Reply-To: <20080629192353.GA9132@srcf.ucam.org>
+Message-ID: <Pine.LNX.4.55.0806292057270.22548@cliff.in.clinika.pl>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806262152.02099.rjw@sisk.pl>
+ <Pine.LNX.4.55.0806270102051.31618@cliff.in.clinika.pl> <200806291600.29059.rjw@sisk.pl>
+ <Pine.LNX.4.55.0806291952590.22548@cliff.in.clinika.pl>
+ <20080629192353.GA9132@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Jun 2008 21:48:11 +0200
-Krzysztof Halasa <khc@pm.waw.pl> wrote:
+On Sun, 29 Jun 2008, Matthew Garrett wrote:
 
-> Hi,
-> 
-> Commit 4c13eb6657fe9ef7b4dc8f1a405c902e9e5234e0 ([ETH]: Make
-> eth_type_trans set skb->dev like the other *_type_trans) removed
-> skb->dev assignment from hdlc_fr.c:fr_rx(). Unfortunately it was also
-> needed for cases other than eth_type_trans().
-> 
-> Adding it back.
-> 
-> It's quite serious and may be a security risk as it causes a wrong
-> input interface indication (the physical hdlcX instead of logical
-> pvcX). Probably -stable class fix.
-> 
-> Signed-off-by: Krzysztof Halasa <khc@pm.waw.pl>
-> 
-> diff --git a/drivers/net/wan/hdlc_fr.c b/drivers/net/wan/hdlc_fr.c
-> index c4ab032..3a86e64 100644
-> --- a/drivers/net/wan/hdlc_fr.c
-> +++ b/drivers/net/wan/hdlc_fr.c
-> @@ -1008,6 +1008,7 @@ static int fr_rx(struct sk_buff *skb)
->  		stats->rx_bytes += skb->len;
->  		if (pvc->state.becn)
->  			stats->rx_compressed++;
-> +		skb->dev = dev;
->  		netif_rx(skb);
->  		return NET_RX_SUCCESS;
->  	} else {
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> The DSDT can't be updated without the BIOS being updated, and the DMI 
+> information gives us a BIOS version string that can be matched against 
+> if a fixed version is ever released. I'd be in favour of doing it with 
+> DMI on the grounds that it's how we already handle machine-specific 
+> quirks rather than adding new code to do it.
 
-Better to use netdev_alloc_skb for receive buffers instead.
---- a/drivers/net/wan/hdlc_fr.c	2008-06-29 13:02:42.000000000 -0700
-+++ b/drivers/net/wan/hdlc_fr.c	2008-06-29 13:04:01.000000000 -0700
-@@ -515,7 +515,7 @@ static void fr_lmi_send(struct net_devic
- 		}
- 	}
- 
--	skb = dev_alloc_skb(len);
-+	skb = netdev_alloc_skb(dev, len);
- 	if (!skb) {
- 		printk(KERN_WARNING "%s: Memory squeeze on fr_lmi_send()\n",
- 		       dev->name);
+ Is the DMI ID *guaranteed* to be changed with an update to the DSDT?  
+Anyway, you cannot imply from a given DMI ID a broken DSDT is present, so
+you will have to repeat the experience of adding another DMI ID whenever a
+user hits this broken DSDT with another piece of hardware.  As long as you
+are able to pull this piece of information from that user, that is...
+
+  Maciej
