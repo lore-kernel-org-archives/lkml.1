@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932499AbYF2URl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760849AbYF2U14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932499AbYF2URl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 16:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757549AbYF2URc
+	id S1760849AbYF2U14 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 16:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756329AbYF2U1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 16:17:32 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:62513 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756565AbYF2URb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 16:17:31 -0400
-Date: Sun, 29 Jun 2008 21:16:38 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-In-Reply-To: <20080629200732.GA10295@srcf.ucam.org>
-Message-ID: <Pine.LNX.4.55.0806292115200.22548@cliff.in.clinika.pl>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806262152.02099.rjw@sisk.pl>
- <Pine.LNX.4.55.0806270102051.31618@cliff.in.clinika.pl> <200806291600.29059.rjw@sisk.pl>
- <Pine.LNX.4.55.0806291952590.22548@cliff.in.clinika.pl>
- <20080629192353.GA9132@srcf.ucam.org> <Pine.LNX.4.55.0806292057270.22548@cliff.in.clinika.pl>
- <20080629200732.GA10295@srcf.ucam.org>
+	Sun, 29 Jun 2008 16:27:47 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:58815 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754843AbYF2U1q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jun 2008 16:27:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=HcX9q+aHNINvQLczJ2IdJC4zOBnL6X2QKiuIVvOcGs4ihDcv8H31PxFtwtTKwasDTx
+         Y6oz4WKzOxvqpb6B8CBnZqXtZGdSkVN1tuhZjYh0CXKk+5wa8DwQtT3Nd0km4VFRd3bm
+         ZOq4I3TPp36aJmQlyv8eoxqsmHv8Vrmnk3nvY=
+Message-ID: <dd18b0c30806291327j7f94d4f3x27e7b3d97f97565c@mail.gmail.com>
+Date: Sun, 29 Jun 2008 20:27:45 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Ray Lee" <ray@madrabbit.org>
+Subject: Re: [Bug #10959] stuck tcp connections 2.6.26-rc7
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <2c0942db0806291304t2f278e7fq65b67519eb56af41@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <q5WW6DLC10O.A.dxC.R69ZIB@albercik>
+	 <X8mbwW6K81I.A.OtD.769ZIB@albercik>
+	 <2c0942db0806291304t2f278e7fq65b67519eb56af41@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Jun 2008, Matthew Garrett wrote:
+On Sun, Jun 29, 2008 at 8:04 PM, Ray Lee <ray@madrabbit.org> wrote:
+> On Sun, Jun 29, 2008 at 11:18 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.25.  Please verify if it still should be listed.
+>>
+>>
+>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10959
+>> Subject         : stuck tcp connections 2.6.26-rc7
+>> Submitter       : Justin Mattock <justinmattock@gmail.com>
+>> Date            : 2008-06-22 18:09 (8 days old)
+>> References      : http://marc.info/?l=linux-kernel&m=121415821219644&w=4
+>
+> Last word on this was that it was traced down to a problem with
+> madwifi / wpa_supplicant that was independent of kernel version
+> (reverting to an earlier wpa_supplicant fixed the problem), so I think
+> this can be closed.
+>
 
-> >  Is the DMI ID *guaranteed* to be changed with an update to the DSDT?  
-> 
-> The BIOS version is, yes.
+Yes; That was the case with me, I'm not too sure about the other
+reports. But from over here I'm a yes too closing.
+regards;
 
- Good to know, thanks.
-
-> > Anyway, you cannot imply from a given DMI ID a broken DSDT is present, so
-> > you will have to repeat the experience of adding another DMI ID whenever a
-> > user hits this broken DSDT with another piece of hardware.  As long as you
-> > are able to pull this piece of information from that user, that is...
-> 
-> These are the only two pieces of hardware ever reported to have this 
-> problem. Nobody appears to have demonstrated it on any other HP systems, 
-> and any non-HP systems would have a different identifier string. With 
-> the SB400 being superceded, I don't expect us to see any more machines 
-> with the same ID.
-
- Fair enough.  As I wrote, I'll send an update shortly.
-
-  Maciej
+-- 
+Justin P. Mattock
