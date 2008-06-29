@@ -1,149 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbYF2Qus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbYF2QvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757291AbYF2Qus (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 12:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbYF2Qtv
+	id S1756060AbYF2QvH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 12:51:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756236AbYF2Quh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 12:49:51 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:40400 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753663AbYF2Qtj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 12:49:39 -0400
-Date: Sun, 29 Jun 2008 20:51:31 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gautham R Shenoy <ego@in.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Max Krasnyansky <maxk@qualcomm.com>, Paul Jackson <pj@sgi.com>,
-       Paul Menage <menage@google.com>, Peter Zijlstra <peterz@infradead.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] workqueues: make get_online_cpus() useable for work->func()
-Message-ID: <20080629165131.GA11215@tv-sign.ru>
+	Sun, 29 Jun 2008 12:50:37 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:39469 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755052AbYF2Qtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jun 2008 12:49:46 -0400
+Date: Sun, 29 Jun 2008 18:49:38 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: linux-embedded@vger.kernel.org, shannon.nelson@intel.com,
+       kernel@avr32linux.org, linux-kernel@vger.kernel.org,
+       David Brownell <david-b@pacbell.net>,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH v4 6/6] Atmel MCI: Driver for Atmel on-chip MMC
+ controllers
+Message-ID: <20080629184938.7e3d7cd6@mjolnir.drzeus.cx>
+In-Reply-To: <20080628153144.128faa7b@hskinnemo-gx745.norway.atmel.com>
+References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214486603-23655-2-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214486603-23655-3-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214486603-23655-4-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214486603-23655-5-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214486603-23655-6-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214486603-23655-7-git-send-email-haavard.skinnemoen@atmel.com>
+	<20080627211014.0e80db04@siona.local>
+	<20080627215627.5d75639c@mjolnir.drzeus.cx>
+	<20080628144313.353bbf18@hskinnemo-gx745.norway.atmel.com>
+	<20080628153144.128faa7b@hskinnemo-gx745.norway.atmel.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-28712-1214757562-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-workqueue_cpu_callback(CPU_DEAD) flushes cwq->thread under
-cpu_maps_update_begin(). This means that the multithreaded workqueues can't
-use get_online_cpus() due to the possible deadlock, very bad and very old
-problem.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Introduce the new state, CPU_POST_DEAD, which is called after
-cpu_hotplug_done() but before cpu_maps_update_done().
+--=_freyr.drzeus.cx-28712-1214757562-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Change workqueue_cpu_callback() to use CPU_POST_DEAD instead of CPU_DEAD.
-This means that create/destroy functions can't rely on get_online_cpus()
-any longer and should take cpu_add_remove_lock instead.
+On Sat, 28 Jun 2008 15:31:44 +0200
+Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+> > Tests 7 and 9 are not supported by the card, so I can't do much about
+> > it except go through all the cards I have available and see if one of
+> > them supports this test.
+>=20
+> Turns out none of my 12 cards of various brands and models support this
+> test. Do you know some specific model I can try?
+>=20
 
- include/linux/notifier.h |    2 ++
- kernel/cpu.c             |    5 +++++
- kernel/workqueue.c       |   18 +++++++++---------
- 3 files changed, 16 insertions(+), 9 deletions(-)
+Of the set I have here, only one supported partial writes. A prototype
+samsung MMC 4.2 card. It has the markings "MM8GH04GNACA-9A" on it. A
+quick google doesn't turn up anything, but some other new Samsung MMC
+card might have good odds.
 
---- 26-rc2/include/linux/notifier.h~WQ_4_GET_ONLINE_CPUS	2008-05-18 15:44:16.000000000 +0400
-+++ 26-rc2/include/linux/notifier.h	2008-05-18 15:44:16.000000000 +0400
-@@ -213,6 +213,8 @@ static inline int notifier_to_errno(int 
- #define CPU_DEAD		0x0007 /* CPU (unsigned)v dead */
- #define CPU_DYING		0x0008 /* CPU (unsigned)v not running any task,
- 				        * not handling interrupts, soon dead */
-+#define CPU_POST_DEAD		0x0009 /* CPU (unsigned)v dead, cpu_hotplug
-+					* lock is dropped */
- 
- /* Used for CPU hotplug events occuring while tasks are frozen due to a suspend
-  * operation in progress
---- 26-rc2/kernel/cpu.c~WQ_4_GET_ONLINE_CPUS	2008-05-18 15:44:18.000000000 +0400
-+++ 26-rc2/kernel/cpu.c	2008-06-29 20:03:19.000000000 +0400
-@@ -261,6 +261,11 @@ out_allowed:
- 	set_cpus_allowed_ptr(current, &old_allowed);
- out_release:
- 	cpu_hotplug_done();
-+	if (!err) {
-+		if (raw_notifier_call_chain(&cpu_chain, CPU_POST_DEAD | mod,
-+					    hcpu) == NOTIFY_BAD)
-+			BUG();
-+	}
- 	return err;
- }
- 
---- 26-rc2/kernel/workqueue.c~WQ_4_GET_ONLINE_CPUS	2008-06-29 18:34:06.000000000 +0400
-+++ 26-rc2/kernel/workqueue.c	2008-06-29 19:36:27.000000000 +0400
-@@ -791,7 +791,7 @@ struct workqueue_struct *__create_workqu
- 		err = create_workqueue_thread(cwq, singlethread_cpu);
- 		start_workqueue_thread(cwq, -1);
- 	} else {
--		get_online_cpus();
-+		cpu_maps_update_begin();
- 		spin_lock(&workqueue_lock);
- 		list_add(&wq->list, &workqueues);
- 		spin_unlock(&workqueue_lock);
-@@ -803,7 +803,7 @@ struct workqueue_struct *__create_workqu
- 			err = create_workqueue_thread(cwq, cpu);
- 			start_workqueue_thread(cwq, cpu);
- 		}
--		put_online_cpus();
-+		cpu_maps_update_done();
- 	}
- 
- 	if (err) {
-@@ -817,8 +817,8 @@ EXPORT_SYMBOL_GPL(__create_workqueue_key
- static void cleanup_workqueue_thread(struct cpu_workqueue_struct *cwq)
- {
- 	/*
--	 * Our caller is either destroy_workqueue() or CPU_DEAD,
--	 * get_online_cpus() protects cwq->thread.
-+	 * Our caller is either destroy_workqueue() or CPU_POST_DEAD,
-+	 * cpu_add_remove_lock protects cwq->thread.
- 	 */
- 	if (cwq->thread == NULL)
- 		return;
-@@ -828,7 +828,7 @@ static void cleanup_workqueue_thread(str
- 
- 	flush_cpu_workqueue(cwq);
- 	/*
--	 * If the caller is CPU_DEAD and cwq->worklist was not empty,
-+	 * If the caller is CPU_POST_DEAD and cwq->worklist was not empty,
- 	 * a concurrent flush_workqueue() can insert a barrier after us.
- 	 * However, in that case run_workqueue() won't return and check
- 	 * kthread_should_stop() until it flushes all work_struct's.
-@@ -852,14 +852,14 @@ void destroy_workqueue(struct workqueue_
- 	const cpumask_t *cpu_map = wq_cpu_map(wq);
- 	int cpu;
- 
--	get_online_cpus();
-+	cpu_maps_update_begin();
- 	spin_lock(&workqueue_lock);
- 	list_del(&wq->list);
- 	spin_unlock(&workqueue_lock);
- 
- 	for_each_cpu_mask(cpu, *cpu_map)
- 		cleanup_workqueue_thread(per_cpu_ptr(wq->cpu_wq, cpu));
--	put_online_cpus();
-+	cpu_maps_update_done();
- 
- 	free_percpu(wq->cpu_wq);
- 	kfree(wq);
-@@ -898,7 +898,7 @@ static int __devinit workqueue_cpu_callb
- 
- 		case CPU_UP_CANCELED:
- 			start_workqueue_thread(cwq, -1);
--		case CPU_DEAD:
-+		case CPU_POST_DEAD:
- 			cleanup_workqueue_thread(cwq);
- 			break;
- 		}
-@@ -906,7 +906,7 @@ static int __devinit workqueue_cpu_callb
- 
- 	switch (action) {
- 	case CPU_UP_CANCELED:
--	case CPU_DEAD:
-+	case CPU_POST_DEAD:
- 		cpu_clear(cpu, cpu_populated_map);
- 	}
- 
+Rgds
+--=20
+     -- Pierre Ossman
 
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-28712-1214757562-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkhnvSYACgkQ7b8eESbyJLj0zwCgqm48k8rhcgo/iCYOASeJt51v
+8dAAnjnlX5aJvocFwA5IXSo8ZER1Ur1Y
+=Jea+
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-28712-1214757562-0001-2--
