@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932166AbYF2UFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932368AbYF2UFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932166AbYF2UFA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 16:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbYF2UEc
+	id S932368AbYF2UFt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 16:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932261AbYF2UEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 29 Jun 2008 16:04:35 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:38095 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932065AbYF2UEc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 29 Jun 2008 16:04:32 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:62395 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760379AbYF2UE3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 16:04:29 -0400
-Date: Sun, 29 Jun 2008 21:03:29 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-In-Reply-To: <20080629192353.GA9132@srcf.ucam.org>
-Message-ID: <Pine.LNX.4.55.0806292057270.22548@cliff.in.clinika.pl>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806262152.02099.rjw@sisk.pl>
- <Pine.LNX.4.55.0806270102051.31618@cliff.in.clinika.pl> <200806291600.29059.rjw@sisk.pl>
- <Pine.LNX.4.55.0806291952590.22548@cliff.in.clinika.pl>
- <20080629192353.GA9132@srcf.ucam.org>
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=XflmJFDXhJpsIf+KW8TgNtunA2WV6Pp4CAS4/M/yvjNsxBsdqAaVK++EeyEqDxVdJb
+         kkTUTQqSiOGdxjtA4GM9RgRG85SqXywd73z/hSbi70ZB8M2EeiCuODKQ1in+cd/kcxCF
+         r7y455Roh2ftUZfMlwXW0xAKymWsUDKj0MGZU=
+Message-ID: <2c0942db0806291304t2f278e7fq65b67519eb56af41@mail.gmail.com>
+Date: Sun, 29 Jun 2008 13:04:30 -0700
+From: "Ray Lee" <ray@madrabbit.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #10959] stuck tcp connections 2.6.26-rc7
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Justin Mattock" <justinmattock@gmail.com>
+In-Reply-To: <X8mbwW6K81I.A.OtD.769ZIB@albercik>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <q5WW6DLC10O.A.dxC.R69ZIB@albercik>
+	 <X8mbwW6K81I.A.OtD.769ZIB@albercik>
+X-Google-Sender-Auth: f77b2f6eb6b152e9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Jun 2008, Matthew Garrett wrote:
+On Sun, Jun 29, 2008 at 11:18 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10959
+> Subject         : stuck tcp connections 2.6.26-rc7
+> Submitter       : Justin Mattock <justinmattock@gmail.com>
+> Date            : 2008-06-22 18:09 (8 days old)
+> References      : http://marc.info/?l=linux-kernel&m=121415821219644&w=4
 
-> The DSDT can't be updated without the BIOS being updated, and the DMI 
-> information gives us a BIOS version string that can be matched against 
-> if a fixed version is ever released. I'd be in favour of doing it with 
-> DMI on the grounds that it's how we already handle machine-specific 
-> quirks rather than adding new code to do it.
-
- Is the DMI ID *guaranteed* to be changed with an update to the DSDT?  
-Anyway, you cannot imply from a given DMI ID a broken DSDT is present, so
-you will have to repeat the experience of adding another DMI ID whenever a
-user hits this broken DSDT with another piece of hardware.  As long as you
-are able to pull this piece of information from that user, that is...
-
-  Maciej
+Last word on this was that it was traced down to a problem with
+madwifi / wpa_supplicant that was independent of kernel version
+(reverting to an earlier wpa_supplicant fixed the problem), so I think
+this can be closed.
