@@ -1,48 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760008AbYF2Mq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759747AbYF2Mws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760008AbYF2Mq7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 08:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbYF2Mqt
+	id S1759747AbYF2Mws (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 08:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYF2Mwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 08:46:49 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47945 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754112AbYF2Mqt (ORCPT
+	Sun, 29 Jun 2008 08:52:38 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:34711 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754112AbYF2Mwi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 08:46:49 -0400
-Date: Sun, 29 Jun 2008 13:29:06 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Agner Fog <agner@agner.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+	Sun, 29 Jun 2008 08:52:38 -0400
+Date: Sun, 29 Jun 2008 14:52:36 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Matti Linnanvuori <mattilinn@gmail.com>
+cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
        linux-kernel@vger.kernel.org
-Subject: Re: ABI change for device drivers using future AVX instruction set
-Message-ID: <20080629132906.611e5244@lxorguk.ukuu.org.uk>
-In-Reply-To: <4865F0DA.2050906@agner.org>
-References: <48626514.2040905@agner.org>
-	<20080625092224.736c2541@infradead.org>
-	<4862ECAB.1040402@zytor.com>
-	<4864CFA5.9050901@agner.org>
-	<20080627072231.7337ba18@infradead.org>
-	<4865F0DA.2050906@agner.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: Re: [patch] x86: add compilation checks to pci_unmap_ macros
+In-Reply-To: <ca0148c30806282322u51cf8ecct700f442466b58ee4@mail.gmail.com>
+Message-ID: <alpine.LNX.1.10.0806291450170.6280@fbirervta.pbzchgretzou.qr>
+References: <ca0148c30806282322u51cf8ecct700f442466b58ee4@mail.gmail.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Nothing should prevent me from publishing my own driver for some special 
-> purpose (in fact, I am going to do so). The open source principle would 
 
-Go ahead but the API is *source* level and changes each release so the
-ABI question doesn't happen.
+On Sunday 2008-06-29 08:22, Matti Linnanvuori wrote:
+>+#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)	dma_addr_t ADDR_NAME[0];
+>+#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)	unsigned LEN_NAME[0];
+>+#define pci_unmap_addr(PTR, ADDR_NAME)	sizeof((PTR)->ADDR_NAME)
+>+#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL) \
+>+	do { break; } while (pci_unmap_addr(PTR, ADDR_NAME))
 
-> It is a disgrace that the ABI 
-
-We don't have an ABI.
-
-Alan
+Mh. If addr_name happens to be non-0 for some reason (like, a typo),
+then this just introduces a lockup.
+(Better to have a no-op with a typo than a sudden lockup. Given
+that these are no-ops means they are deprecated, is not it the case?)
