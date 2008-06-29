@@ -1,67 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761964AbYF2PNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762066AbYF2PMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761964AbYF2PNV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 11:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760911AbYF2PMM
+	id S1762066AbYF2PMx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 11:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760896AbYF2PML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 11:12:12 -0400
-Received: from sh.osrg.net ([192.16.179.4]:57063 "EHLO sh.osrg.net"
+	Sun, 29 Jun 2008 11:12:11 -0400
+Received: from sh.osrg.net ([192.16.179.4]:57061 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760801AbYF2PLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760754AbYF2PLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 29 Jun 2008 11:11:55 -0400
-Date: Mon, 30 Jun 2008 00:07:17 +0900
+Date: Mon, 30 Jun 2008 00:07:10 +0900
 To: joerg.roedel@amd.com
 Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
        iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
        Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
-Subject: Re: [PATCH 34/34] AMD IOMMU: add documentation for kernel
- parameters
+Subject: Re: [PATCH 21/34] AMD IOMMU: add address allocation and
+ deallocation functions
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1214508490-29683-35-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1214508490-29683-22-git-send-email-joerg.roedel@amd.com>
 References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com>
-	<1214508490-29683-35-git-send-email-joerg.roedel@amd.com>
+	<1214508490-29683-22-git-send-email-joerg.roedel@amd.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080630000551E.fujita.tomonori@lab.ntt.co.jp>
+Message-Id: <20080629234830P.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jun 2008 21:28:10 +0200
+On Thu, 26 Jun 2008 21:27:57 +0200
 Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-> Add documentation for the kernel parameters introduced with this driver.
+> This patch adds the address allocator to the AMD IOMMU code.
 > 
 > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 > ---
->  Documentation/kernel-parameters.txt |   12 ++++++++++++
->  1 files changed, 12 insertions(+), 0 deletions(-)
+>  arch/x86/kernel/amd_iommu.c |   48 +++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 48 insertions(+), 0 deletions(-)
 > 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index e07c432..fc8f936 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -271,6 +271,18 @@ and is between 256 and 4096 characters. It is defined in the file
->  	aic79xx=	[HW,SCSI]
->  			See Documentation/scsi/aic79xx.txt.
+> diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+> index 1d70f5e..69d8d02 100644
+> --- a/arch/x86/kernel/amd_iommu.c
+> +++ b/arch/x86/kernel/amd_iommu.c
+> @@ -266,3 +266,51 @@ static int init_unity_mappings_for_device(struct dma_ops_domain *dma_dom,
+>  	return 0;
+>  }
 >  
-> +	amd_iommu=	[HW,X86-84]
-> +			Pass parameters to the AMD IOMMU driver in the system.
-> +			Possible values are:
-> +			off     - disable the driver for AMD IOMMU
-> +			isolate - enable device isolation (each device, as far
-> +			          as possible, will get its own protection
-> +			          domain)
-> +	amd_iommu_size= [HW,X86-64]
-> +			Define the size of the aperture for the AMD IOMMU
-> +			driver. Possible values are:
-> +			'32M', '64M' (default), '128M', '256M', '512M', '1G'
+> +static unsigned long dma_mask_to_pages(unsigned long mask)
+> +{
+> +	return (mask >> PAGE_SHIFT) +
+> +		(PAGE_ALIGN(mask & ~PAGE_MASK) >> PAGE_SHIFT);
+> +}
 > +
->  	amijoy.map=	[HW,JOY] Amiga joystick support
->  			Map of devices attached to JOY0DAT and JOY1DAT
->  			Format: <a>,<b>
+> +static unsigned long dma_ops_alloc_addresses(struct device *dev,
+> +					     struct dma_ops_domain *dom,
+> +					     unsigned int pages)
+> +{
+> +	unsigned long limit = dma_mask_to_pages(*dev->dma_mask);
+> +	unsigned long address;
+> +	unsigned long size = dom->aperture_size >> PAGE_SHIFT;
+> +	unsigned long boundary_size;
+> +
+> +	boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
+> +			PAGE_SIZE) >> PAGE_SHIFT;
+> +	limit = limit < size ? limit : size;
+> +
+> +	if (dom->next_bit >= limit)
+> +		dom->next_bit = 0;
+> +
+> +	address = iommu_area_alloc(dom->bitmap, limit, dom->next_bit, pages,
+> +			0 , boundary_size, 0);
+> +	if (address == -1)
+> +		address = iommu_area_alloc(dom->bitmap, limit, 0, pages,
+> +				0, boundary_size, 0);
+> +
+> +	if (likely(address != -1)) {
+> +		set_bit_string(dom->bitmap, address, pages);
 
-Documentation/x86_64/boot-options.txt would be a better place?
-
-Probabaly, it would be better to clean up x86_64 IOMMU options.
+Is set_bit_string() necessary here? iommu_area_alloc calls it internally.
