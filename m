@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbYF2IBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbYF2ILK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757593AbYF2IBr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 04:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYF2IB0
+	id S1757184AbYF2ILK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 04:11:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbYF2IKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 04:01:26 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:59940 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752099AbYF2IBX (ORCPT
+	Sun, 29 Jun 2008 04:10:53 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46642 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750954AbYF2IKu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 04:01:23 -0400
-Subject: Re: linux-next: Tree for June 26
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jaswinder Singh <jaswinder@infradead.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kernel-testers@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-In-Reply-To: <200806290215.03792.rjw@sisk.pl>
-References: <20080627010842.e1a0c4b5.sfr@canb.auug.org.au>
-	 <1214646863.2660.22.camel@jaswinder.satnam>
-	 <1214649164.10393.265.camel@pmac.infradead.org>
-	 <200806290215.03792.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Sun, 29 Jun 2008 09:01:16 +0100
-Message-Id: <1214726476.10393.289.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+	Sun, 29 Jun 2008 04:10:50 -0400
+Date: Sun, 29 Jun 2008 17:09:50 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH] splitlru: shmem_getpage SetPageSwapBacked sooner
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0806290117510.21758@blonde.site>
+References: <Pine.LNX.4.64.0806290117510.21758@blonde.site>
+Message-Id: <20080629170839.37C7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-06-29 at 02:15 +0200, Rafael J. Wysocki wrote:
-> On Saturday, 28 of June 2008, David Woodhouse wrote:
-> > On Sat, 2008-06-28 at 15:24 +0530, Jaswinder Singh wrote:
-> > > Here is updated patch :-
-> > > 
-> > > http://git.infradead.org/users/jaswinder/firm-jsr-2.6.git?a=commitdiff;h=aa8b184d8eb4f1d7b5e37d5ad449fb7c02ad79c2
-> > 
-> > You can ignore that; it's just the same as today's linux-next (which in
-> > turn is just the same as yesterday's + the patch which fixes the problem
-> > for Kamalesh but not for you + the other minor error path cleanup.
-> > 
-> > Please could you try the other debugging patch I just sent, on top of
-> > today's linux-next? It should confirm that you're using the 'Tso5'
-> > firmware, as I told Jaswinder yesterday, and give us a little more clue
-> > as to what's going on.
+> shmem_getpage must SetPageSwapBacked before the mem_cgroup_cache_charge,
+> otherwise try_to_free_mem_cgroup_pages cannot find the shmem/tmpfs pages
+> it needs to free, and OOMs result.
 > 
-> I tested with the debug patch on top of
-> http://git.infradead.org/users/jaswinder/firm-jsr-2.6.git?a=commitdiff;h=aa8b184d8eb4f1d7b5e37d5ad449fb7c02ad79c2
-> 
-> dmesg output is at: http://www.sisk.pl/kernel/debug/20080627/dmesg-1.log
-> the .config is at: http://www.sisk.pl/kernel/debug/20080627/config-1
-> 
-> and it looks like the card just can't load the firmware.
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
 
-Ah, you have it configured as a module, not built-in. You need to run
-'make INSTALL_FW_PATH=/lib/firmware firmware_install'
+it seems makes sense.
 
--- 
-dwmw2
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
 
