@@ -1,40 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759747AbYF2Mws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760306AbYF2Mzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759747AbYF2Mws (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 08:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYF2Mwi
+	id S1760306AbYF2Mzw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 08:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbYF2Mzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 08:52:38 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:34711 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754112AbYF2Mwi (ORCPT
+	Sun, 29 Jun 2008 08:55:44 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52264 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754280AbYF2Mzn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 08:52:38 -0400
-Date: Sun, 29 Jun 2008 14:52:36 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Matti Linnanvuori <mattilinn@gmail.com>
-cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86: add compilation checks to pci_unmap_ macros
-In-Reply-To: <ca0148c30806282322u51cf8ecct700f442466b58ee4@mail.gmail.com>
-Message-ID: <alpine.LNX.1.10.0806291450170.6280@fbirervta.pbzchgretzou.qr>
-References: <ca0148c30806282322u51cf8ecct700f442466b58ee4@mail.gmail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 29 Jun 2008 08:55:43 -0400
+Date: Sun, 29 Jun 2008 13:37:57 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       =?UTF-8?B?VMO2csO2aw==?= Edwin <edwintorok@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Ctrl+C doesn't interrupt process waiting for I/O
+Message-ID: <20080629133757.7d183385@lxorguk.ukuu.org.uk>
+In-Reply-To: <48671FF6.1070501@qumranet.com>
+References: <48661488.10304@gmail.com>
+	<4866F6FE.9000503@goop.org>
+	<486704AC.2090207@qumranet.com>
+	<48671A12.90205@goop.org>
+	<48671FF6.1070501@qumranet.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Applications should not assume that write() (or other syscalls) can't 
+> return EINTR.  Not all filesystems have a bounded-time backing store.
 
-On Sunday 2008-06-29 08:22, Matti Linnanvuori wrote:
->+#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)	dma_addr_t ADDR_NAME[0];
->+#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)	unsigned LEN_NAME[0];
->+#define pci_unmap_addr(PTR, ADDR_NAME)	sizeof((PTR)->ADDR_NAME)
->+#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL) \
->+	do { break; } while (pci_unmap_addr(PTR, ADDR_NAME))
+Unix tradition (and thus almost all applications) believe file store
+writes to be non signal interruptible. It would not be safe or practical
+to change that guarantee.
 
-Mh. If addr_name happens to be non-0 for some reason (like, a typo),
-then this just introduces a lockup.
-(Better to have a no-op with a typo than a sudden lockup. Given
-that these are no-ops means they are deprecated, is not it the case?)
+Alan
