@@ -1,54 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760912AbYF2N6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761054AbYF2OFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760912AbYF2N6u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 09:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757033AbYF2N6j
+	id S1761054AbYF2OFG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 10:05:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759539AbYF2OEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 09:58:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44679 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755689AbYF2N6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 09:58:38 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-Date: Sun, 29 Jun 2008 16:00:27 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806262152.02099.rjw@sisk.pl> <Pine.LNX.4.55.0806270102051.31618@cliff.in.clinika.pl>
-In-Reply-To: <Pine.LNX.4.55.0806270102051.31618@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 29 Jun 2008 10:04:54 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:22037 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758308AbYF2OEy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jun 2008 10:04:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:x-mailer:mime-version:content-type
+         :content-transfer-encoding;
+        b=KfjCOM3MLY45cr7C3usTkNM7Wy/qvOrqbI82QwT/4S6w03ZmdLt2OrOu4f//fq3Wn3
+         N4VOSGmjTmTmX7fC7Q1IAvah83DcSvIC/9VwlKmeGrIDcrUqLmt9nCZIwjJCzBNXt2Iv
+         YjPaQd3V9aoSSEFaganxGxUqKTInUMViVougI=
+Date: Sun, 29 Jun 2008 16:04:46 +0200
+From: Tomas Smetana <t.smetana@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] fs/proc: Per thread I/O accounting
+Message-ID: <20080629160446.07eef194@saiph.smetana.name>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806291600.29059.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 27 of June 2008, Maciej W. Rozycki wrote:
-> On Thu, 26 Jun 2008, Rafael J. Wysocki wrote:
-> 
-> > Well, actually, I'm not sure that will work.  I have only found
-> > acpi_skip_timer_override being set to 1 in two places, but it doesn't seem to
-> > be read anywhere.  What am I missing?
-> 
->  I believe I removed all the occurences.  I am waiting for a proposal of a
-> quirk based on the DSDT ID -- my time is a bit too limited to study the
-> internals of our ACPI code at the moment; sorry about that.  I will
-> complement it with a change to remove IRQ0 from I/O APIC tables as
-> promised then; this piece of code I am quite familiar with.
+Hello,
+  here's an attempt to fix the bug #10702: The /proc/#/io doesn't aggregate
+I/O statistics of all the process' threads -- just the main one. The patch
+fixes this and also adds /proc/#/task/#/io file for per-thread accounting
+which should make I/O accounting consistent with CPU stats.
 
-Well, why don't we use the DMI identification as suggested by Matthew?
+Reference: http://bugzilla.kernel.org/show_bug.cgi?id=10702
 
-I think we can safely assume that all of these boxes are broken for now and we
-can use a more fine grained identification in the future, if necessary.
+Please cc: me in the answers.
 
-Thanks,
-Rafael
+
+Signed-off-by: Tomas Smetana <t.smetana@gmail.com>
+---
+ fs/proc/base.c |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 48 insertions(+), 0 deletions(-)
+
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 3b45537..5437ae3 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -2377,6 +2377,51 @@ static int proc_base_fill_cache(struct file *filp, void *dirent,
+ #ifdef CONFIG_TASK_IO_ACCOUNTING
+ static int proc_pid_io_accounting(struct task_struct *task, char *buffer)
+ {
++#ifdef CONFIG_TASK_XACCT
++	unsigned long long rchar = 0, wchar = 0;
++	unsigned long long syscr = 0, syscw = 0;
++#endif
++	unsigned long long read_bytes = 0, write_bytes = 0;
++	unsigned long long cancelled_write_bytes = 0;
++	struct task_struct *t = task;
++
++	do {
++#ifdef CONFIG_TASK_XACCT
++		rchar += (unsigned long long)t->rchar;
++		wchar += (unsigned long long)t->wchar;
++		syscr += (unsigned long long)t->syscr;
++		syscw += (unsigned long long)t->syscw;
++#endif
++		read_bytes += (unsigned long long)t->ioac.read_bytes;
++		write_bytes += (unsigned long long)t->ioac.write_bytes;
++		cancelled_write_bytes +=
++		    (unsigned long long)t->ioac.cancelled_write_bytes;
++		t = next_thread(t);
++	} while (t != task);
++
++	return sprintf(buffer,
++#ifdef CONFIG_TASK_XACCT
++			"rchar: %llu\n"
++			"wchar: %llu\n"
++			"syscr: %llu\n"
++			"syscw: %llu\n"
++#endif
++			"read_bytes: %llu\n"
++			"write_bytes: %llu\n"
++			"cancelled_write_bytes: %llu\n",
++#ifdef CONFIG_TASK_XACCT
++			rchar,
++			wchar,
++			syscr,
++			syscw,
++#endif
++			read_bytes,
++			write_bytes,
++			cancelled_write_bytes);
++}
++
++static int proc_tid_io_accounting(struct task_struct *task, char *buffer)
++{
+ 	return sprintf(buffer,
+ #ifdef CONFIG_TASK_XACCT
+ 			"rchar: %llu\n"
+@@ -2796,6 +2841,9 @@ static const struct pid_entry tid_base_stuff[] = {
+ #ifdef CONFIG_FAULT_INJECTION
+ 	REG("make-it-fail", S_IRUGO|S_IWUSR, fault_inject),
+ #endif
++#ifdef CONFIG_TASK_IO_ACCOUNTING
++	INF("io",	S_IRUGO, tid_io_accounting)
++#endif
+ };
+ 
+ static int proc_tid_base_readdir(struct file * filp,
+-- 
+1.5.4.1
+
