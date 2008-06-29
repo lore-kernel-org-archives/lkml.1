@@ -1,16 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762013AbYF2Ti1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932136AbYF2Til@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762013AbYF2Ti1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 15:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbYF2Tbe
+	id S932136AbYF2Til (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 15:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759914AbYF2Tbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sun, 29 Jun 2008 15:31:34 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45681 "EHLO ogre.sisk.pl"
+Received: from ogre.sisk.pl ([217.79.144.158]:45661 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759515AbYF2Tb1 convert rfc822-to-8bit (ORCPT
+	id S1759492AbYF2Tb1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 29 Jun 2008 15:31:27 -0400
-Cc: "Justin Mattock" <justinmattock@gmail.com>
+Cc: "H. Peter Anvin" <hpa@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       "Pavel Machek" <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
 References: <q5WW6DLC10O.A.dxC.R69ZIB@albercik>
 In-Reply-To: <q5WW6DLC10O.A.dxC.R69ZIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -18,8 +21,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <X8mbwW6K81I.A.9LE.N79ZIB@albercik>
-Subject: [Bug #10954] hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x011f000c
+Message-ID: <X8mbwW6K81I.A.rVE.Y79ZIB@albercik>
+Subject: [Bug #10927] Dell laptops: reboot instead of resume
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun, 29 Jun 2008 20:18:43 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,10 +36,12 @@ The following bug entry is on the current list of known regressions
 from 2.6.25.  Please verify if it still should be listed.
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10954
-Subject		: hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x011f000c
-Submitter	: Justin Mattock <justinmattock@gmail.com>
-Date		: 2008-06-21 2:05 (9 days old)
-References	: http://marc.info/?l=linux-kernel&m=121401399622190&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10927
+Subject		: Dell laptops: reboot instead of resume
+Submitter	: Kirill A. Shutemov <kirill@shutemov.name>
+Date		: 2008-06-16 07:31 (14 days old)
+References	: http://marc.info/?l=linux-kernel&m=121446903218446&w=4
+Handled-By	: H. Peter Anvin <hpa@kernel.org>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=16549&action=view
 
 
