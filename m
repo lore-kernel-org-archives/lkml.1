@@ -1,72 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755789AbYF2G0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYF2G4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755789AbYF2G0T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 02:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbYF2G0A
+	id S1753960AbYF2G4Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 02:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYF2G4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 02:26:00 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:60333 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbYF2GZ7 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 02:25:59 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "Duane Griffin" <duaneg@dghda.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: 2.6.26-rc7-mmotd-0626 ext3-validate-directory-entry-data-before-use.patch
-From: Valdis.Kletnieks@vt.edu
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1214720749_25769P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sun, 29 Jun 2008 02:25:49 -0400
-Message-ID: <26368.1214720749@turing-police.cc.vt.edu>
+	Sun, 29 Jun 2008 02:56:14 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58584 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751329AbYF2G4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jun 2008 02:56:13 -0400
+Date: Sun, 29 Jun 2008 08:55:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@qumranet.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] CFS vs cpu hotplug
+Message-ID: <20080629065556.GA20398@elte.hu>
+References: <20080619161949.GA11062@osiris.ibm.com> <b647ffbd0806251512i3ab6efedv75a5bddd865ef618@mail.gmail.com> <b647ffbd0806281516i57392230idf06f99ff02d22cf@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b647ffbd0806281516i57392230idf06f99ff02d22cf@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1214720749_25769P
-Content-Type: text/plain; charset=us-ascii
 
-I'm seeing some ext3 errors, and I'm suspecting the patch
-ext3-validate-directory-entry-data-before-use.patch is causing them
-(since it seems to be the only thing in rc7-mmotd at the moment that
-touches make_indexed_dir, and -rc5-mm3 works OK).
+* Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
 
-Jun 28 21:50:29 turing-police kernel: [  240.784199] EXT3-fs error (device dm-7): make_indexed_dir: bad entry in directory #9894: directory entry across blocks - offset=0, inode=10144, rec_len=32, name_len=22
-Jun 28 21:50:29 turing-police kernel: [  240.784214] Aborting journal on device dm-7.
-Jun 28 21:50:29 turing-police kernel: [  240.784597] Remounting filesystem read-only
-Jun 28 21:50:29 turing-police kernel: [  240.785616] EXT3-fs error (device dm-7): do_split: bad entry in directory #9894: rec_len is smaller than minimal - offset=0, inode=2553887680, rec_len=0, name_len=0
-Jun 28 21:50:29 turing-police kernel: [  240.785616] EXT3-fs error (device dm-7) in ext3_reserve_inode_write: Journal has aborted
-Jun 28 21:50:29 turing-police kernel: [  241.027111] __journal_remove_journal_head: freeing b_committed_data
+> Hello,
+> 
+> it seems to be related to migrate_dead_tasks().
+> 
+> Firstly I added traces to see all tasks being migrated with 
+> migrate_live_tasks() and migrate_dead_tasks(). On my setup the problem 
+> pops up (the one with "se == NULL" in the loop of 
+> pick_next_task_fair()) shortly after the traces indicate that some has 
+> been migrated with migrate_dead_tasks()). btw., I can reproduce it 
+> much faster now with just a plain cpu down/up loop.
+> 
+> [disclaimer] Well, unless I'm really missing something important in 
+> this late hour [/desclaimer] pick_next_task() is not something 
+> appropriate for migrate_dead_tasks() :-)
+> 
+> the following change seems to eliminate the problem on my setup 
+> (although, I kept it running only for a few minutes to get a few 
+> messages indicating migrate_dead_tasks() does move tasks and the 
+> system is still ok)
+> 
+> [ quick hack ]
+> 
+> @@ -5887,6 +5907,7 @@ static void migrate_dead_tasks(unsigned int dead_cpu)
+>                 next = pick_next_task(rq, rq->curr);
+>                 if (!next)
+>                         break;
+> +               next->sched_class->put_prev_task(rq, next);
+>                 migrate_dead(dead_cpu, next);
+> 
 
-Jun 28 23:09:54 turing-police kernel: [ 5026.698415] EXT3-fs error (device dm-2): make_indexed_dir: bad entry in directory #369136: directory entry across blocks - offset=0, inode=369138, rec_len=20, name_len=11
-Jun 28 23:09:54 turing-police kernel: [ 5026.698415] Aborting journal on device dm-2.
-Jun 28 23:09:54 turing-police kernel: [ 5026.698519] Remounting filesystem read-only
-Jun 28 23:09:54 turing-police kernel: [ 5026.702730] EXT3-fs error (device dm-2): do_split: bad entry in directory #369136: directory entry across blocks - offset=0, inode=106647, rec_len=12, name_len=1
-Jun 28 23:09:54 turing-police kernel: [ 5026.702730] EXT3-fs error (device dm-2) in ext3_reserve_inode_write: Journal has aborted
+thanks Dmitry - i've applied this chunk to tip/master and 
+tip/sched/urgent, for more testing.
 
-I believe I have a reasonably good replicator for the error on dm-7, that's my /usr/share
-and trying to 'rpm -Fvh' one specific RPM has caused it twice (in two tries).
+if this turns out to be the final and full fix today, would you mind to 
+submit the rest of your checks as well? It seems like a rather sensible 
+set of sanity checks. Put under CONFIG_SCHED_DEBUG or a new 
+(default-off) config option.
 
-The file systems appear to be OK (or at least the fsck.ext3 in Fedora's
-e2fsprogs-1.41-0.WIP.0617.1.fc10.x86_64 says both file systems are in fact OK).
+it would also be _very_ nice to have a built-in cpu hotplug tester in 
+the kernel, a'ka CONFIG_RCU_TORTURE_TEST=y. There's already sample code 
+in kernel/tracing/ of how to initiate hotplug events from within the 
+kernel.
 
-Any comments/suggestions?  Any testing/debugging you'd like, or should I just revert it
-and move on?
-
-
---==_Exmh_1214720749_25769P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFIZyrtcC3lWbTT17ARAq9qAKDbEfGOJU7oc/1GUZI+DbTNxjkrVgCgokkW
-IsvXXbMrVrmYwoIdgAP4MNU=
-=tEjh
------END PGP SIGNATURE-----
-
---==_Exmh_1214720749_25769P--
+	Ingo
