@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbYF2HXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbYF2Hab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508AbYF2HXu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 03:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYF2HXl
+	id S1755384AbYF2Hab (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 03:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbYF2HaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 03:23:41 -0400
-Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:46585 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751395AbYF2HXk (ORCPT
+	Sun, 29 Jun 2008 03:30:23 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:26393 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750846AbYF2HaW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 03:23:40 -0400
-Message-ID: <48673873.6040202@davidnewall.com>
-Date: Sun, 29 Jun 2008 16:53:31 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Sun, 29 Jun 2008 03:30:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=K6pxIVLno1hxApaaRfjqk+d9AAbPpiXfx+hq5gbGUJ6l8rqHXDsFBL6Pwezk1x/kIY
+         /Va4AFKLOVIqPO632RccdNFeupw6fob7sy36yscL0cWloN2XaOQuDHvjQtJJNMymQd6P
+         kaAkcLttqLHOKqKFAliV6UeiFPX7mAcCu77ec=
+Message-ID: <86802c440806290030u43129a6dm57a93a07533fa0b9@mail.gmail.com>
+Date: Sun, 29 Jun 2008 00:30:21 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] x86: fix init_memory_mapping over boundary v4
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080629070833.GA4898@elte.hu>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Ctrl+C doesn't interrupt process waiting for I/O
-References: <48661488.10304@gmail.com> <4866F6FE.9000503@goop.org>
-In-Reply-To: <4866F6FE.9000503@goop.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200806251748.06743.yhlu.kernel@gmail.com>
+	 <200806271538.46829.yhlu.kernel@gmail.com>
+	 <200806272247.11971.yhlu.kernel@gmail.com>
+	 <200806281749.02000.yhlu.kernel@gmail.com>
+	 <20080629070833.GA4898@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Török Edwin wrote:
->> ...
->> - I have a (I/O bound) process running in my terminal, and I want to
->> interrupt it with Ctrl+C
->>  - I type Ctrl+C several times, and the process is not interrupted for
->> several seconds (10-30 secs)
->>  - if I type Ctrl+Z, and use kill %1 the process dies faster than
->> waiting for it to react to Ctrl+C  
+On Sun, Jun 29, 2008 at 12:08 AM, Ingo Molnar <mingo@elte.hu> wrote:
 >
-> Yes, it's intended behaviour.  Filesystem IO syscalls are considered
-> "fast" and are interruptible.  Usermode code can reasonably expect
-> that file IO will never return EINTR.
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+>> some end boundary is only page alignment, instead of 2M alignment,
+>> so call ker_phycial_mapping_init three times.
+>> then don't overmap above the max_low_pfn
+>>
+>> v2: make init_memory_mapping more solid: start could be any value other than 0
+>> v3: fix NON PAE by handling left over in kernel_physical_mapping
+>> v4: revert back to v2, and use PMD_SHIFT to calculate boundary
+>>     also adjust size for pre-allocated table size
+>
+> i've got v3 applied to tip/master and it worked well in testing - on the
+> old, 512m RAM problem laptop too. So could you send v4 as a delta patch
+> instead please, against tip/master?
 
-This does not address the symptom that the process can be killed quicker
-by sending a SIGTERM.  I've noticed the problem, too (2.6.25.)  I wonder
-if it isn't some strangeness in the tty layer (hence the interrupt key
-is slower than an explicitly sent signal.)
+will. before that delta patch please do test on your 512M system .
+
+YH
