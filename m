@@ -1,143 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbYF3FJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbYF3FMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756733AbYF3FJp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 01:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbYF3FJd
+	id S1756930AbYF3FMR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 01:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbYF3FMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 01:09:33 -0400
-Received: from mail7.hitachi.co.jp ([133.145.228.42]:42959 "EHLO
-	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751800AbYF3FJc (ORCPT
+	Mon, 30 Jun 2008 01:12:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:38608 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751936AbYF3FMF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 01:09:32 -0400
-X-AuditID: 0ac90647-ab321ba000004aeb-8a-48686a89e959
-Message-ID: <48686A75.9010809@hitachi.com>
-Date: Mon, 30 Jun 2008 14:09:09 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Mon, 30 Jun 2008 01:12:05 -0400
+Message-ID: <48686AD3.1070300@kernel.org>
+Date: Sun, 29 Jun 2008 22:10:43 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-Cc: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: Re: [PATCH 4/5] jbd: fix error handling for checkpoint io
-References: <4843CE15.6080506@hitachi.com> <4843CFBD.7040706@hitachi.com> 
-    <20080602124409.GL30613@duck.suse.cz> <4844CB39.6060409@hitachi.com> 
-    <20080603080219.GA17936@duck.suse.cz> <485F85AE.1010704@hitachi.com> 
-    <20080623122240.GJ26743@duck.suse.cz> <4860E01B.8010806@hitachi.com> 
-    <20080624133309.GG9959@duck.suse.cz> <48649FA0.70303@hitachi.com> 
-    <20080627102419.GC3602@duck.suse.cz>
-In-Reply-To: <20080627102419.GC3602@duck.suse.cz>
-Content-Type: text/plain; charset="us-ascii"
+To: Glauber Costa <gcosta@redhat.com>
+CC: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       x86@kernel.org
+Subject: Re: [PATCH 0/39] Merge files at x86/lib
+References: <1214602486-17080-1-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1214602486-17080-1-git-send-email-gcosta@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Jan Kara wrote:
-
-> On Fri 27-06-08 17:06:56, Hidehiro Kawai wrote:
+Glauber Costa wrote:
+> Hey folks,
 > 
->>Jan Kara wrote:
->>
->>
->>>On Tue 24-06-08 20:52:59, Hidehiro Kawai wrote:
->>
->>>>>>3. is implemented as described below.
->>>>>>(1) if log_do_checkpoint() detects an I/O error during
->>>>>>    checkpointing, it calls journal_abort() to abort the journal
->>>>>>(2) if the journal has aborted, don't update s_start and s_sequence
->>>>>>    in the on-disk journal superblock
->>>>>>
->>>>>>So, if the journal aborts, journaled data will be replayed on the
->>>>>>next mount.
->>>>>>
->>>>>>Now, please remember that some dirty metadata buffers are written
->>>>>>back to the filesystem without journaling if the journal aborted.
->>>>>>We are happy if all dirty metadata buffers are written to the disk,
->>>>>>the integrity of the filesystem will be kept.  However, replaying
->>>>>>the journaled data can overwrite the latest on-disk metadata blocks
->>>>>>partly with old data.  It would break the filesystem.
->>>>>
->>>>> Yes, it would. But how do you think it can happen that a metadata buffer
->>>>>will be written back to the filesystem when it is a part of running
->>>>>transaction? Note that checkpointing code specifically checks whether the
->>>>>buffer being written back is part of a running transaction and if so, it
->>>>>waits for commit before writing back the buffer. So I don't think this can
->>>>>happen but maybe I miss something...
->>>>
->>>>Checkpointing code checks it and may call log_wait_commit(), but this
->>>>problem is caused by transactions which have not started checkpointing.
->>>>
->>>>For example, the tail transaction has an old update for block_B and
->>>>the running transaction has a new update for block_B.  Then, the
->>>>committing transaction fails to write the commit record, it aborts the
->>>>journal, and new block_B will be written back to the file system without
->>>>journaling.  Because this patch doesn't separate between normal abort
->>>>and checkpointing related abort, the tail transaction is left in the
->>>>journal space.  So by replaying the tail transaction, new block_B is
->>>>overwritten with old one.
->>>
->>>  Yes, and this is expected an correct. When we cannot properly finish a
->>>transaction, we have to discard everything in it. A bug would be (and I
->>>think it could currently happen) if we already checkpointed the previous
->>>transaction and then written over block_B new data from the uncommitted
->>>transaction. I think we have to avoid that - i.e., in case we abort the
->>>journal we should not mark buffers dirty when processing the forget loop.
->>
->>Yes.
->>
->>
->>>But this is not too serious since fsck has to be run anyway and it will
->>>fix the problems.
->>
->>Yes.  The filesystem should be marked with an error, so fsck will check
->>and recover the filesystem on boot.  But this means the filesystem loses
->>some latest updates even if it was cleanly unmounted (although some file
->>data has been lost.)  I'm a bit afraid that some people would think of
->>this as a regression due to this PATCH 4/5.  At least, to avoid
->>undesirable replay, we had better keep journaled data only when the
->>journal has been aborted for checkpointing related reason.
+> Here it goes a series of patch that merges some user-related files.
+> From x86/lib, delay.c, getuser.S, and putuser.S are merged. For the
+> last two of them, the accompanying include/asm-x86/uaccess.h is merged.
+> Or close to. There are some small leftovers, that are sufficiently
+> different to remain in its own files.
 > 
->   I don't think this makes any difference. Look: We have transaction A
-> modifying block B fully committed to the journal. Now there is a running
-> (or committing, it does not really matter) transaction R also modifying block
-> B. Until R gets fully committed, no block modified by R is checkpointed
-> to the device - checkpointing code takes care of that and it must be so
-> to satisfy journaling guarantees.
->   So if we abort journal (for whatever reason) before R is fully committed,
-> no change in R will be seen on the filesystem regardless whether you
-> cleanup the journal or not.
+> As for bisectability, all patches have been tested in more than 20
+> different configs for both i386 and x86_64, in the usual way (just
+> I'm testing in more configs now). If you find a build bug in this
+> series, please send me the offending config so I can add to my poll.
+> 
+> The diffstat and the one-big-patch follows at the end of this introductory
+> message.
+> 
+> Ingo, in the absence of any objections, you can pull this work from:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/glommer/linux-2.6-x86-integration.git master
+> 
+> into your tip/master tree
+> 
 
-No, changes in R will be seen on the filesystem.
-The metadata buffer for block B is marked as dirty when it is unfiled
-whether the journal has aborted or not.  Eventually the buffer will be
-written-back to the filesystem by pdflush.  Actually I have confirmed
-this behavior by using SystemTap.  So if both journal abort and
-system crash happen at the same time, the filesystem would become
-inconsistent state.  As I stated, replaying the journaled block B in
-transaction A may also corrupt the filesystem, because changes in
-transaction R are reflected halfway.  That is why I sent a patch to
-prevent metadata buffers from being dirtied on abort.
+Hi Glauber,
 
->   And you cannot do much differenly - the principle of journaling is that
-> either all changes in the transaction get to disk or none of them. So until
-> the transaction is properly committed, you have the only way to satisfy
-> this condition - take the "none of them" choice.
->   Now fsck could of course be clever and try to use updates in not fully
-> committed transaction but personally I don't think it's worth the effort.
->   Please correct me if I just misunderstood your point...
+Applied to -tip as x86/unify-lib.
 
-Thanks,
--- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
-
+	-hpa
