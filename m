@@ -1,192 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760955AbYF3XVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbYF3X3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760955AbYF3XVH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 19:21:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbYF3XU4
+	id S1756510AbYF3X3m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 19:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbYF3X3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 19:20:56 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:23214 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754753AbYF3XUz (ORCPT
+	Mon, 30 Jun 2008 19:29:33 -0400
+Received: from anguilla.debian.or.at ([86.59.118.152]:48223 "EHLO
+	anguilla.debian.or.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753438AbYF3X3b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 19:20:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=jGuwcLtT7SrH18HWWNBBgdaSPpp99JvciAwvbSe1MPVsp/AQmHosPdYXzYv1yIbmql
-         iXAiU6fsbhq9UuEgvP5P1y9HAzF71B0roJ2cD15qttEDMXAbPf8aWZgHeVVGFhqkmb2x
-         m4obXYidrvggoJi+9W0vGUahJZuPoQ9vaH0Ec=
-Message-ID: <86802c440806301620hafa3ee3k8c5dbe6c45188d69@mail.gmail.com>
-Date: Mon, 30 Jun 2008 16:20:54 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH 1/2] x86 boot: add E820_RESVD_KERN
-Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-In-Reply-To: <86802c440806301553y240b020bh9dc448e8085fe60d@mail.gmail.com>
+	Mon, 30 Jun 2008 19:29:31 -0400
+X-Greylist: delayed 1175 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jun 2008 19:29:30 EDT
+Date: Tue, 1 Jul 2008 01:09:54 +0200
+From: Peter Palfrader <peter@palfrader.org>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org
+Subject: 2.6.25.6: warn_on_slowpath in tcp_input.c
+Message-ID: <20080630230954.GS16698@anguilla.noreply.org>
+Mail-Followup-To: Peter Palfrader <peter@palfrader.org>,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_1456_31794477.1214868054465"
-References: <86802c440806260247p19f5b850r8757c51280912ae9@mail.gmail.com>
-	 <86802c440806271505n78275758re235ef6616d95b3d@mail.gmail.com>
-	 <1214809434.2887.8.camel@caritas-dev.intel.com>
-	 <86802c440806300034x5bb9b7a1s168bbeaee17e5124@mail.gmail.com>
-	 <1214812303.3187.10.camel@caritas-dev.intel.com>
-	 <86802c440806300215w31abbcb3h6a42395e11701713@mail.gmail.com>
-	 <1214818706.23677.8.camel@caritas-dev.intel.com>
-	 <86802c440806301205y35563326rd2ada495a0024441@mail.gmail.com>
-	 <20080630191628.GA15366@elte.hu>
-	 <86802c440806301553y240b020bh9dc448e8085fe60d@mail.gmail.com>
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+X-PGP: 1024D/94C09C7F 5B00 C96D 5D54 AEE1 206B  AF84 DE7A AF6E 94C0 9C7F
+X-Request-PGP: http://www.palfrader.org/keys/94C09C7F.asc
+X-Accept-Language: de, en
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_1456_31794477.1214868054465
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hey,
 
-On Mon, Jun 30, 2008 at 3:53 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> On Mon, Jun 30, 2008 at 12:16 PM, Ingo Molnar <mingo@elte.hu> wrote:
->>
->> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->>
->>> > For find_e820_area, this is safe enough. But what about conflict
->>> > between setup_data and ebda or ramdisk?
->>>
->>> can you have setup_data and ebda at the same time?
->>>
->>> setup_data and ramdisk should be ok, because bootloader is supposed to
->>> make them not to be conflicts.
->>
->> the more sanity checks we do before relying on some crutial data, the
->> better. It's easier to panic or sanitize data in some structured way and
->> complain about it in the syslog than to let things get corrupted. Boot
->> loaders are ... not unknown to be have bugs too, at times.
->
-> to address Ying's concern, we could let reserve_setup_data
-> call reserve_early in addition to e820_update_range...
->
-> reserve_early will panic if RAMDISK overlap efi setup_data...
->
+I found a couple of backtraces on one of our machines.  I didn't notice
+anything weird on it other than that; it seems to be pushing its
+constant 40 to 60 Mbps as always.
 
-Ying,
-please check the attached patch
+I've had 13 or so of them since upgrading the machine to a 2.6.25 kernel
+20 days ago.
 
-YH
+Linux saens 2.6.25.6-dl380 #2 SMP Tue Jun 10 17:54:44 CEST 2008 i686 GNU/Linux
 
-------=_Part_1456_31794477.1214868054465
-Content-Type: text/x-patch; name=reserve_setup_data_v3.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fi3p0y1a0
-Content-Disposition: attachment; filename=reserve_setup_data_v3.patch
 
-W1BBVENIXSB4ODY6IG1vdmUgcmVzZXJ2ZV9zZXR1cF9kYXRhIHRvIHNldHVwLmMKCllpbmcgSHVh
-bmcgd2FudCB0byBzZXR1cF9kYXRhIHRvIGJlIHJlc2VydmVkLCBidXQgbm90IGluY2x1ZGVkIGlu
-IG5vIHNhdmUKcmFuZ2UuCgpoZXJlIHRyeSB0byBtb2RpZnkgZTgyMCB0YWJsZSB0byByZXNlcnZl
-IHRoYXQgcmFuZ2UgYXMgZWFybHkuCmFsc28gYWRkIHRoYXQgaW4gZWFybHlfcmVzIGluIGNhc2Ug
-Ym9vdGxvYWRlciBtZXNzIHVwIGl0IHdpdGggcmFtZGlzay4KCm90aGVyIHNvbHV0aW9uIHdvdWxk
-IGJlCjEuIGFkZCBlYXJseV9yZXNfdG9faGlnaG1lbS4uLgoyLiBlYXJseV9yZXNfdG9fZTgyMC4u
-LgpidXQgdGhleSBjb3VsZCByZXNlcnZlIHdyb25nbHkgb3RoZXIgdHlwZSBtZW1vcnksIGlmIGVh
-cmx5X3JlcyBoYXMgc29tZSByZXNvdXJjZSByZXNlcnZlZCBlYXJseSwKYW5kIG5vdCBuZWVkIGxh
-dGVyLCBidXQgaXQgaXMgbm90IHJlbW92ZWQgZnJvbSBlYXJseV9yZXMgaW4gdGltZS4KbGlrZSB0
-aGUgUkFNRElTSyAoYWxyZWFkeSBoYW5kbGVkKS4KClNpZ25lZC1vZmYtYnk6IFlpbmdoYWkgTHUg
-PHlobHUua2VybmVsQGdtYWlsLmNvbT4KCi0tLQogYXJjaC94ODYva2VybmVsL2U4MjAuYyAgICAg
-IHwgICAgNCArKystCiBhcmNoL3g4Ni9rZXJuZWwvaGVhZC5jICAgICAgfCAgIDE4IC0tLS0tLS0t
-LS0tLS0tLS0tLQogYXJjaC94ODYva2VybmVsL2hlYWQ2NC5jICAgIHwgICAgMSAtCiBhcmNoL3g4
-Ni9rZXJuZWwvc2V0dXAuYyAgICAgfCAgIDM0ICsrKysrKysrKysrKysrKysrKysrKysrKysrKyst
-LS0tLS0KIGluY2x1ZGUvYXNtLXg4Ni9ib290cGFyYW0uaCB8ICAgIDIgLS0KIGluY2x1ZGUvYXNt
-LXg4Ni9lODIwLmggICAgICB8ICAgIDMgKysrCiA2IGZpbGVzIGNoYW5nZWQsIDM0IGluc2VydGlv
-bnMoKyksIDI4IGRlbGV0aW9ucygtKQoKSW5kZXg6IGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwv
-ZTgyMC5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2FyY2gveDg2L2tlcm5lbC9lODIw
-LmMKKysrIGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvZTgyMC5jCkBAIC0xMjAsNiArMTIwLDcg
-QEAgdm9pZCBfX2luaXQgZTgyMF9wcmludF9tYXAoY2hhciAqd2hvKQogCQkgICAgICAgKGU4MjAu
-bWFwW2ldLmFkZHIgKyBlODIwLm1hcFtpXS5zaXplKSk7CiAJCXN3aXRjaCAoZTgyMC5tYXBbaV0u
-dHlwZSkgewogCQljYXNlIEU4MjBfUkFNOgorCQljYXNlIEU4MjBfUkVTRVJWRURfS0VSTjoKIAkJ
-CXByaW50ayhLRVJOX0NPTlQgIih1c2FibGUpXG4iKTsKIAkJCWJyZWFrOwogCQljYXNlIEU4MjBf
-UkVTRVJWRUQ6CkBAIC02MTEsNyArNjEyLDcgQEAgdm9pZCBfX2luaXQgZTgyMF9tYXJrX25vc2F2
-ZV9yZWdpb25zKHVucwogCQkJcmVnaXN0ZXJfbm9zYXZlX3JlZ2lvbihwZm4sIFBGTl9VUChlaS0+
-YWRkcikpOwogCiAJCXBmbiA9IFBGTl9ET1dOKGVpLT5hZGRyICsgZWktPnNpemUpOwotCQlpZiAo
-ZWktPnR5cGUgIT0gRTgyMF9SQU0pCisJCWlmIChlaS0+dHlwZSAhPSBFODIwX1JBTSAmJiBlaS0+
-dHlwZSAhPSBFODIwX1JFU0VSVkVEX0tFUk4pCiAJCQlyZWdpc3Rlcl9ub3NhdmVfcmVnaW9uKFBG
-Tl9VUChlaS0+YWRkciksIHBmbik7CiAKIAkJaWYgKHBmbiA+PSBsaW1pdF9wZm4pCkBAIC0xMjA3
-LDYgKzEyMDgsNyBAQCB2b2lkIF9faW5pdCBlODIwX3Jlc2VydmVfcmVzb3VyY2VzKHZvaWQpCiAJ
-cmVzID0gYWxsb2NfYm9vdG1lbV9sb3coc2l6ZW9mKHN0cnVjdCByZXNvdXJjZSkgKiBlODIwLm5y
-X21hcCk7CiAJZm9yIChpID0gMDsgaSA8IGU4MjAubnJfbWFwOyBpKyspIHsKIAkJc3dpdGNoIChl
-ODIwLm1hcFtpXS50eXBlKSB7CisJCWNhc2UgRTgyMF9SRVNFUlZFRF9LRVJOOgogCQljYXNlIEU4
-MjBfUkFNOglyZXMtPm5hbWUgPSAiU3lzdGVtIFJBTSI7IGJyZWFrOwogCQljYXNlIEU4MjBfQUNQ
-SToJcmVzLT5uYW1lID0gIkFDUEkgVGFibGVzIjsgYnJlYWs7CiAJCWNhc2UgRTgyMF9OVlM6CXJl
-cy0+bmFtZSA9ICJBQ1BJIE5vbi12b2xhdGlsZSBTdG9yYWdlIjsgYnJlYWs7CkluZGV4OiBsaW51
-eC0yLjYvYXJjaC94ODYva2VybmVsL2hlYWQuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3Jp
-Zy9hcmNoL3g4Ni9rZXJuZWwvaGVhZC5jCisrKyBsaW51eC0yLjYvYXJjaC94ODYva2VybmVsL2hl
-YWQuYwpAQCAtNTMsMjEgKzUzLDMgQEAgdm9pZCBfX2luaXQgcmVzZXJ2ZV9lYmRhX3JlZ2lvbih2
-b2lkKQogCS8qIHJlc2VydmUgYWxsIG1lbW9yeSBiZXR3ZWVuIGxvd21lbSBhbmQgdGhlIDFNQiBt
-YXJrICovCiAJcmVzZXJ2ZV9lYXJseV9vdmVybGFwX29rKGxvd21lbSwgMHgxMDAwMDAsICJCSU9T
-IHJlc2VydmVkIik7CiB9Ci0KLXZvaWQgX19pbml0IHJlc2VydmVfc2V0dXBfZGF0YSh2b2lkKQot
-ewotCXN0cnVjdCBzZXR1cF9kYXRhICpkYXRhOwotCXU2NCBwYV9kYXRhOwotCWNoYXIgYnVmWzMy
-XTsKLQotCWlmIChib290X3BhcmFtcy5oZHIudmVyc2lvbiA8IDB4MDIwOSkKLQkJcmV0dXJuOwot
-CXBhX2RhdGEgPSBib290X3BhcmFtcy5oZHIuc2V0dXBfZGF0YTsKLQl3aGlsZSAocGFfZGF0YSkg
-ewotCQlkYXRhID0gZWFybHlfaW9yZW1hcChwYV9kYXRhLCBzaXplb2YoKmRhdGEpKTsKLQkJc3By
-aW50ZihidWYsICJzZXR1cCBkYXRhICV4IiwgZGF0YS0+dHlwZSk7Ci0JCXJlc2VydmVfZWFybHko
-cGFfZGF0YSwgcGFfZGF0YStzaXplb2YoKmRhdGEpK2RhdGEtPmxlbiwgYnVmKTsKLQkJcGFfZGF0
-YSA9IGRhdGEtPm5leHQ7Ci0JCWVhcmx5X2lvdW5tYXAoZGF0YSwgc2l6ZW9mKCpkYXRhKSk7Ci0J
-fQotfQpJbmRleDogbGludXgtMi42L2FyY2gveDg2L2tlcm5lbC9oZWFkNjQuYwo9PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-Ci0tLSBsaW51eC0yLjYub3JpZy9hcmNoL3g4Ni9rZXJuZWwvaGVhZDY0LmMKKysrIGxpbnV4LTIu
-Ni9hcmNoL3g4Ni9rZXJuZWwvaGVhZDY0LmMKQEAgLTEyMyw3ICsxMjMsNiBAQCB2b2lkIF9faW5p
-dCB4ODZfNjRfc3RhcnRfa2VybmVsKGNoYXIgKiByCiAjZW5kaWYKIAogCXJlc2VydmVfZWJkYV9y
-ZWdpb24oKTsKLQlyZXNlcnZlX3NldHVwX2RhdGEoKTsKIAogCS8qCiAJICogQXQgdGhpcyBwb2lu
-dCBldmVyeXRoaW5nIHN0aWxsIG5lZWRlZCBmcm9tIHRoZSBib290IGxvYWRlcgpJbmRleDogbGlu
-dXgtMi42L2FyY2gveDg2L2tlcm5lbC9zZXR1cC5jCj09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5v
-cmlnL2FyY2gveDg2L2tlcm5lbC9zZXR1cC5jCisrKyBsaW51eC0yLjYvYXJjaC94ODYva2VybmVs
-L3NldHVwLmMKQEAgLTM4OSwxNCArMzg5LDM0IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBwYXJzZV9z
-ZXR1cF9kYXRhKHZvaWQKIAkJZGVmYXVsdDoKIAkJCWJyZWFrOwogCQl9Ci0jaWZuZGVmIENPTkZJ
-R19ERUJVR19CT09UX1BBUkFNUwotCQlmcmVlX2Vhcmx5KHBhX2RhdGEsIHBhX2RhdGErc2l6ZW9m
-KCpkYXRhKStkYXRhLT5sZW4pOwotI2VuZGlmCiAJCXBhX2RhdGEgPSBkYXRhLT5uZXh0OwogCQll
-YXJseV9pb3VubWFwKGRhdGEsIFBBR0VfU0laRSk7CiAJfQogfQogCitzdGF0aWMgdm9pZCBfX2lu
-aXQgcmVzZXJ2ZV9zZXR1cF9kYXRhKHZvaWQpCit7CisJc3RydWN0IHNldHVwX2RhdGEgKmRhdGE7
-CisJdTY0IHBhX2RhdGE7CisJY2hhciBidWZbMzJdOworCisJaWYgKGJvb3RfcGFyYW1zLmhkci52
-ZXJzaW9uIDwgMHgwMjA5KQorCQlyZXR1cm47CisJcGFfZGF0YSA9IGJvb3RfcGFyYW1zLmhkci5z
-ZXR1cF9kYXRhOworCXdoaWxlIChwYV9kYXRhKSB7CisJCWRhdGEgPSBlYXJseV9pb3JlbWFwKHBh
-X2RhdGEsIHNpemVvZigqZGF0YSkpOworCQlzcHJpbnRmKGJ1ZiwgInNldHVwIGRhdGEgJXgiLCBk
-YXRhLT50eXBlKTsKKwkJcmVzZXJ2ZV9lYXJseShwYV9kYXRhLCBwYV9kYXRhK3NpemVvZigqZGF0
-YSkrZGF0YS0+bGVuLCBidWYpOworCQllODIwX3VwZGF0ZV9yYW5nZShwYV9kYXRhLCBzaXplb2Yo
-KmRhdGEpK2RhdGEtPmxlbiwKKwkJCSBFODIwX1JBTSwgRTgyMF9SRVNFUlZFRF9LRVJOKTsKKwkJ
-cGFfZGF0YSA9IGRhdGEtPm5leHQ7CisJCWVhcmx5X2lvdW5tYXAoZGF0YSwgc2l6ZW9mKCpkYXRh
-KSk7CisJfQorCXNhbml0aXplX2U4MjBfbWFwKGU4MjAubWFwLCBBUlJBWV9TSVpFKGU4MjAubWFw
-KSwgJmU4MjAubnJfbWFwKTsKKwlwcmludGsoS0VSTl9JTkZPICJleHRlbmRlZCBwaHlzaWNhbCBS
-QU0gbWFwOlxuIik7CisJZTgyMF9wcmludF9tYXAoInJlc2VydmUgc2V0dXBfZGF0YSIpOworfQor
-CiAvKgogICogLS0tLS0tLS0tIENyYXNoa2VybmVsIHJlc2VydmF0aW9uIC0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLQogICovCkBAIC01MjQsNyArNTQ0LDYgQEAgdm9pZCBfX2luaXQgc2V0
-dXBfYXJjaChjaGFyICoqY21kbGluZV9wKQogCXByZV9zZXR1cF9hcmNoX2hvb2soKTsKIAllYXJs
-eV9jcHVfaW5pdCgpOwogCWVhcmx5X2lvcmVtYXBfaW5pdCgpOwotCXJlc2VydmVfc2V0dXBfZGF0
-YSgpOwogI2Vsc2UKIAlwcmludGsoS0VSTl9JTkZPICJDb21tYW5kIGxpbmU6ICVzXG4iLCBib290
-X2NvbW1hbmRfbGluZSk7CiAjZW5kaWYKQEAgLTU2Niw2ICs1ODUsOCBAQCB2b2lkIF9faW5pdCBz
-ZXR1cF9hcmNoKGNoYXIgKipjbWRsaW5lX3ApCiAJQVJDSF9TRVRVUAogCiAJc2V0dXBfbWVtb3J5
-X21hcCgpOworCXBhcnNlX3NldHVwX2RhdGEoKTsKKwogCWNvcHlfZWRkKCk7CiAKIAlpZiAoIWJv
-b3RfcGFyYW1zLmhkci5yb290X2ZsYWdzKQpAQCAtNTkyLDEwICs2MTMsMTEgQEAgdm9pZCBfX2lu
-aXQgc2V0dXBfYXJjaChjaGFyICoqY21kbGluZV9wKQogCXN0cmxjcHkoY29tbWFuZF9saW5lLCBi
-b290X2NvbW1hbmRfbGluZSwgQ09NTUFORF9MSU5FX1NJWkUpOwogCSpjbWRsaW5lX3AgPSBjb21t
-YW5kX2xpbmU7CiAKLQlwYXJzZV9zZXR1cF9kYXRhKCk7Ci0KIAlwYXJzZV9lYXJseV9wYXJhbSgp
-OwogCisJLyogYWZ0ZXIgZWFybHkgcGFyYW0sIHNvIGNvdWxkIGdldCBwYW5pYyBmcm9tIHNlcmlh
-bCAqLworCXJlc2VydmVfc2V0dXBfZGF0YSgpOworCiAJaWYgKGFjcGlfbXBzX2NoZWNrKCkpIHsK
-ICNpZmRlZiBDT05GSUdfWDg2X0xPQ0FMX0FQSUMKIAkJZGlzYWJsZV9hcGljID0gMTsKSW5kZXg6
-IGxpbnV4LTIuNi9pbmNsdWRlL2FzbS14ODYvYm9vdHBhcmFtLmgKPT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGlu
-dXgtMi42Lm9yaWcvaW5jbHVkZS9hc20teDg2L2Jvb3RwYXJhbS5oCisrKyBsaW51eC0yLjYvaW5j
-bHVkZS9hc20teDg2L2Jvb3RwYXJhbS5oCkBAIC0xMDgsNiArMTA4LDQgQEAgc3RydWN0IGJvb3Rf
-cGFyYW1zIHsKIAlfX3U4ICBfcGFkOVsyNzZdOwkJCQkvKiAweGVlYyAqLwogfSBfX2F0dHJpYnV0
-ZV9fKChwYWNrZWQpKTsKIAotdm9pZCByZXNlcnZlX3NldHVwX2RhdGEodm9pZCk7Ci0KICNlbmRp
-ZiAvKiBfQVNNX0JPT1RQQVJBTV9IICovCkluZGV4OiBsaW51eC0yLjYvaW5jbHVkZS9hc20teDg2
-L2U4MjAuaAo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9pbmNsdWRlL2FzbS14ODYvZTgy
-MC5oCisrKyBsaW51eC0yLjYvaW5jbHVkZS9hc20teDg2L2U4MjAuaApAQCAtNDQsNiArNDQsOSBA
-QAogI2RlZmluZSBFODIwX0FDUEkJMwogI2RlZmluZSBFODIwX05WUwk0CiAKKy8qIHJlc2VydmVk
-IFJBTSB1c2VkIGJ5IGtlcm5lbCBpdHNlbGYgKi8KKyNkZWZpbmUgRTgyMF9SRVNFUlZFRF9LRVJO
-ICAgICAgICAxMjgKKwogI2lmbmRlZiBfX0FTU0VNQkxZX18KIHN0cnVjdCBlODIwZW50cnkgewog
-CV9fdTY0IGFkZHI7CS8qIHN0YXJ0IG9mIG1lbW9yeSBzZWdtZW50ICovCg==
-------=_Part_1456_31794477.1214868054465--
+Jun 30 04:08:50 saens kernel: [1659894.570682] ------------[ cut here ]------------
+Jun 30 04:08:50 saens kernel: [1659894.570682] WARNING: at net/ipv4/tcp_input.c:2539 tcp_ack+0x1b35/0x1d72()
+Jun 30 04:08:50 saens kernel: [1659894.570682] Pid: 0, comm: swapper Not tainted 2.6.25.6-dl380 #2
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c0122f8d>] warn_on_slowpath+0x49/0x59
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c0149eb8>] ? __free_pages+0x27/0x29
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c0149ed9>] ? free_pages+0x1f/0x21
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c015fb06>] ? kmem_freepages+0x90/0xc4
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c015fd33>] ? slab_destroy+0x2f/0x47
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c015fe64>] ? free_block+0x119/0x12e
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c0284215>] ? memmove+0x28/0x2f
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c015fbb2>] ? cache_flusharray+0x78/0xb8
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c03b492a>] ? bictcp_cong_avoid+0x13/0x383
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c035a4bb>] ? skb_release_data+0x59/0x85
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c038d72b>] tcp_ack+0x1b35/0x1d72
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c0395824>] ? tcp_v4_send_synack+0x9d/0xf2
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c03907e6>] tcp_rcv_established+0x41d/0x8c7
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c0374d0d>] ? tcp_error+0xaa/0x1c0
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c0374c63>] ? tcp_error+0x0/0x1c0
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c03967ef>] tcp_v4_do_rcv+0x3cb/0x50a
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c03842d1>] ? __inet_lookup_established+0xc7/0x179
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c039852e>] tcp_v4_rcv+0x573/0x777
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c037d0de>] ip_local_deliver_finish+0x7b/0x1af
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c037d5a7>] ip_local_deliver+0x2d/0x96
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c037d063>] ? ip_local_deliver_finish+0x0/0x1af
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c037ce97>] ip_rcv_finish+0xc7/0x293
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c0370e2c>] ? nf_hook_slow+0x4a/0xb5
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c037cdd0>] ? ip_rcv_finish+0x0/0x293
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c037d4a0>] ip_rcv+0x197/0x271
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c037cdd0>] ? ip_rcv_finish+0x0/0x293
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c035f472>] netif_receive_skb+0x220/0x2ac
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c02f3e43>] e100_poll+0x140/0x45d
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c0136a37>] ? hrtimer_start+0xb4/0x137
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c03614a1>] net_rx_action+0x89/0x16d
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c0127a07>] __do_softirq+0x75/0xe6
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c0127ab3>] do_softirq+0x3b/0x3d
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c0127d25>] irq_exit+0x63/0x75
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c010565b>] do_IRQ+0x45/0x7a
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c01035df>] common_interrupt+0x23/0x28
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c013007b>] ? sys_setregid+0xa/0x107
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c01019bf>] ? default_idle+0x40/0x5f
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c010197f>] ? default_idle+0x0/0x5f
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c010189d>] cpu_idle+0x4f/0x8d
+Jun 30 04:08:50 saens kernel: [1659894.570682]  [<c040b039>] rest_init+0x49/0x4b
+Jun 30 04:08:50 saens kernel: [1659894.570682]  =======================
+Jun 30 04:08:50 saens kernel: [1659894.570682] ---[ end trace 2b6550de0a1db34c ]---
+
+Most are very similar, differences being these:
+
+--- 1a  2008-07-01 00:54:56.514224160 +0200
++++ 2   2008-07-01 00:55:03.410219826 +0200
+@@ -8,11 +8,12 @@
+  [<c015fd33>] ? slab_destroy+0x2f/0x47
+  [<c015fe64>] ? free_block+0x119/0x12e
+  [<c0284215>] ? memmove+0x28/0x2f
++ [<c0284215>] ? memmove+0x28/0x2f
+  [<c015fbb2>] ? cache_flusharray+0x78/0xb8
+- [<c03b492a>] ? bictcp_cong_avoid+0x13/0x383
+  [<c035a4bb>] ? skb_release_data+0x59/0x85
++ [<c038ac46>] ? tcp_enter_frto_loss+0x163/0x1d3
+  [<c038d72b>] tcp_ack+0x1b35/0x1d72
+- [<c0395824>] ? tcp_v4_send_synack+0x9d/0xf2
++ [<c012b47b>] ? lock_timer_base+0x1f/0x40
+  [<c03907e6>] tcp_rcv_established+0x41d/0x8c7
+  [<c0374d0d>] ? tcp_error+0xaa/0x1c0
+  [<c0374c63>] ? tcp_error+0x0/0x1c0
+
+or
+--- 1a  2008-07-01 00:54:56.514224160 +0200
++++ 3   2008-07-01 00:55:35.554219380 +0200
+@@ -8,11 +8,10 @@
+  [<c015fd33>] ? slab_destroy+0x2f/0x47
+  [<c015fe64>] ? free_block+0x119/0x12e
+  [<c0284215>] ? memmove+0x28/0x2f
++ [<c0284215>] ? memmove+0x28/0x2f
+  [<c015fbb2>] ? cache_flusharray+0x78/0xb8
+- [<c03b492a>] ? bictcp_cong_avoid+0x13/0x383
+- [<c035a4bb>] ? skb_release_data+0x59/0x85
++ [<c038ac46>] ? tcp_enter_frto_loss+0x163/0x1d3
+  [<c038d72b>] tcp_ack+0x1b35/0x1d72
+- [<c0395824>] ? tcp_v4_send_synack+0x9d/0xf2
+  [<c03907e6>] tcp_rcv_established+0x41d/0x8c7
+  [<c0374d0d>] ? tcp_error+0xaa/0x1c0
+  [<c0374c63>] ? tcp_error+0x0/0x1c0
+
+
+
+This one is different since it doesn't come via __free_pages but from
+ip_finish_output:
+
+------------[ cut here ]------------
+WARNING: at net/ipv4/tcp_input.c:2539 tcp_ack+0x1b35/0x1d72()
+Pid: 0, comm: swapper Not tainted 2.6.25.6-dl380 #2
+ [<c0122f8d>] warn_on_slowpath+0x49/0x59
+ [<c0380c14>] ? ip_finish_output+0x0/0x281
+ [<c038117b>] ? ip_output+0x5c/0x95
+ [<c0380c14>] ? ip_finish_output+0x0/0x281
+ [<c03808d3>] ? ip_local_out+0x18/0x1b
+ [<c0284215>] ? memmove+0x28/0x2f
+ [<c015fbb2>] ? cache_flusharray+0x78/0xb8
+ [<c035a4bb>] ? skb_release_data+0x59/0x85
+ [<c038ac46>] ? tcp_enter_frto_loss+0x163/0x1d3
+ [<c038d72b>] tcp_ack+0x1b35/0x1d72
+ [<c041a7ed>] ? _spin_unlock_bh+0xd/0xf
+ [<c03752b9>] ? tcp_packet+0x496/0xb3d
+ [<c038fd57>] tcp_rcv_state_process+0x40d/0xa7f
+ [<c041a7de>] ? _read_unlock_bh+0xe/0x10
+ [<c0396540>] tcp_v4_do_rcv+0x11c/0x50a
+ [<c03842d1>] ? __inet_lookup_established+0xc7/0x179
+ [<c039852e>] tcp_v4_rcv+0x573/0x777
+ [<c037d0de>] ip_local_deliver_finish+0x7b/0x1af
+ [<c037d5a7>] ip_local_deliver+0x2d/0x96
+ [<c037d063>] ? ip_local_deliver_finish+0x0/0x1af
+ [<c037ce97>] ip_rcv_finish+0xc7/0x293
+ [<c0370e2c>] ? nf_hook_slow+0x4a/0xb5
+ [<c037cdd0>] ? ip_rcv_finish+0x0/0x293
+ [<c037d4a0>] ip_rcv+0x197/0x271
+ [<c037cdd0>] ? ip_rcv_finish+0x0/0x293
+ [<c035f472>] netif_receive_skb+0x220/0x2ac
+ [<c02f3e43>] e100_poll+0x140/0x45d
+ [<c0136a37>] ? hrtimer_start+0xb4/0x137
+ [<c03614a1>] net_rx_action+0x89/0x16d
+ [<c0127a07>] __do_softirq+0x75/0xe6
+ [<c0127ab3>] do_softirq+0x3b/0x3d
+ [<c0127d25>] irq_exit+0x63/0x75
+ [<c010565b>] do_IRQ+0x45/0x7a
+ [<c0127d17>] ? irq_exit+0x55/0x75
+ [<c010f0b2>] ? smp_apic_timer_interrupt+0x5d/0x8b
+ [<c01035df>] common_interrupt+0x23/0x28
+ [<c013007b>] ? sys_setregid+0xa/0x107
+ [<c01019bf>] ? default_idle+0x40/0x5f
+ [<c010197f>] ? default_idle+0x0/0x5f
+ [<c010189d>] cpu_idle+0x4f/0x8d
+ [<c040b039>] rest_init+0x49/0x4b
+ =======================
+---[ end trace 2b6550de0a1db34c ]---
+
+another variation of that is
+
+------------[ cut here ]------------
+WARNING: at net/ipv4/tcp_input.c:2539 tcp_ack+0x1b35/0x1d72()
+Pid: 0, comm: swapper Not tainted 2.6.25.6-dl380 #2
+ [<c0122f8d>] warn_on_slowpath+0x49/0x59
+ [<c0380d49>] ? ip_finish_output+0x135/0x281
+ [<c0380c14>] ? ip_finish_output+0x0/0x281
+ [<c0284215>] ? memmove+0x28/0x2f
+ [<c015fbb2>] ? cache_flusharray+0x78/0xb8
+ [<c012b47b>] ? lock_timer_base+0x1f/0x40
+ [<c039112d>] ? tcp_snd_test+0x15/0xea
+ [<c0391242>] ? tcp_may_send_now+0x40/0x59
+ [<c038d72b>] tcp_ack+0x1b35/0x1d72
+ [<c03907e6>] tcp_rcv_established+0x41d/0x8c7
+ [<c0374d0d>] ? tcp_error+0xaa/0x1c0
+ [<c0374c63>] ? tcp_error+0x0/0x1c0
+ [<c03967ef>] tcp_v4_do_rcv+0x3cb/0x50a
+ [<c03842d1>] ? __inet_lookup_established+0xc7/0x179
+ [<c039852e>] tcp_v4_rcv+0x573/0x777
+ [<c037d0de>] ip_local_deliver_finish+0x7b/0x1af
+ [<c037d5a7>] ip_local_deliver+0x2d/0x96
+ [<c037d063>] ? ip_local_deliver_finish+0x0/0x1af
+ [<c037ce97>] ip_rcv_finish+0xc7/0x293
+ [<c0370e2c>] ? nf_hook_slow+0x4a/0xb5
+ [<c037cdd0>] ? ip_rcv_finish+0x0/0x293
+ [<c037d4a0>] ip_rcv+0x197/0x271
+ [<c037cdd0>] ? ip_rcv_finish+0x0/0x293
+ [<c035f472>] netif_receive_skb+0x220/0x2ac
+ [<c02f3e43>] e100_poll+0x140/0x45d
+ [<c013b458>] ? clockevents_program_event+0xae/0x104
+ [<c03614a1>] net_rx_action+0x89/0x16d
+ [<c0127a07>] __do_softirq+0x75/0xe6
+ [<c0127ab3>] do_softirq+0x3b/0x3d
+ [<c0127d25>] irq_exit+0x63/0x75
+ [<c010565b>] do_IRQ+0x45/0x7a
+ [<c01035df>] common_interrupt+0x23/0x28
+ [<c013007b>] ? sys_setregid+0xa/0x107
+ [<c01019bf>] ? default_idle+0x40/0x5f
+ [<c010197f>] ? default_idle+0x0/0x5f
+ [<c010189d>] cpu_idle+0x4f/0x8d
+ [<c040b039>] rest_init+0x49/0x4b
+ =======================
+---[ end trace 2b6550de0a1db34c ]---
+
+
+
+If you need to know anything else please let me know.  Please CC me on
+replies,
+
+Peter
+-- 
+                           |  .''`.  ** Debian GNU/Linux **
+      Peter Palfrader      | : :' :      The  universal
+ http://www.palfrader.org/ | `. `'      Operating System
+                           |   `-    http://www.debian.org/
