@@ -1,308 +1,326 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762603AbYF3NS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932370AbYF3NQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762603AbYF3NS3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 09:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762155AbYF3NO0
+	id S932370AbYF3NQw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 09:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756433AbYF3NOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 09:14:26 -0400
+	Mon, 30 Jun 2008 09:14:11 -0400
 Received: from fg-out-1718.google.com ([72.14.220.153]:50401 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762130AbYF3NOY (ORCPT
+	with ESMTP id S1762048AbYF3NOJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 09:14:24 -0400
+	Mon, 30 Jun 2008 09:14:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:subject:from:date:message-id;
-        b=IE3jZrEhQc/HbhS9JXnugg0AsWIA+5hMQUR7a8dRABW1UeYTKGABzqayw/uRpGOR2w
-         5dDtKOXvBg40MSbo4URMjoM2Q8gphAYZ8W2/BxnjlHPxM20yW3XEweP4o4hBMKlH0AdF
-         Hbwcvq/BxOsMND3hOaVilCAId+CZyUIh9IsFg=
+        b=g6hi8G627QJOmpzq0CWNePk+Huu6zIb+jx3KBKcXmXj1RiJuj4xWVYaXbCtYFO2h/m
+         UDOspD3FV8XOC1DgYwxO7hRKHRoHSkTbLxsIYILc/kVcPon3VQUtM3l859j/+68LouBX
+         fmcqAMZ/I7TecbmiWLI400eF6w+Iy+s82kFsU=
 To: linux-kernel@vger.kernel.org
-Subject: [patch 13/19] perfmon2 minimal v3:  attach/detach support
+Subject: [patch 09/19] perfmon2 minimal v3:  PMU mapping
 From: eranian@googlemail.com
-Date: Mon, 30 Jun 2008 06:14:22 -0700 (PDT)
-Message-ID: <4868dc2e.1358560a.0eba.08b9@mx.google.com>
+Date: Mon, 30 Jun 2008 06:14:05 -0700 (PDT)
+Message-ID: <4868dc1d.0c07560a.5f1f.129a@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the attach and detach functionalities. A perfmon
-session can be dynamically attached and detached from a thread.
+This patch adds PMU resource description management functions.
+Perfmon2 exports a logical view of the PMU with uniform register
+names across all architectures. Each logical register is then
+map onto an actual PMU register via a mapping table. Such table
+exists for each PMU model.
+
+PMU description tables are hardcoded into the kernel and one
+is selected during boot.
 
 Signed-off-by: Stephane Eranian <eranian@gmail.com>
 --
 
-Index: o/perfmon/perfmon_attach.c
+Index: o/perfmon/perfmon_pmu.c
 ===================================================================
---- o.orig/perfmon/perfmon_attach.c	2008-06-26 13:01:16.000000000 +0200
-+++ o/perfmon/perfmon_attach.c	2008-06-26 13:02:04.000000000 +0200
-@@ -42,6 +42,243 @@
- #include "perfmon_priv.h"
- 
- /**
-+ * __pfm_load_ctx_thread - attach context to a thread
-+ * @ctx: context to operate on
-+ * @task: thread to attach to
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ o/perfmon/perfmon_pmu.c	2008-06-23 13:12:54.000000000 +0200
+@@ -0,0 +1,255 @@
++/*
++ * perfmon_pmu.c: perfmon2 PMU configuration management
 + *
-+ * The function must be called with the context locked and interrupts disabled.
++ * This file implements the perfmon2 interface which
++ * provides access to the hardware performance counters
++ * of the host processor.
++ *
++ * The initial version of perfmon.c was written by
++ * Ganesh Venkitachalam, IBM Corp.
++ *
++ * Then it was modified for perfmon-1.x by Stephane Eranian and
++ * David Mosberger, Hewlett Packard Co.
++ *
++ * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
++ * by Stephane Eranian, Hewlett Packard Co.
++ *
++ * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *                David Mosberger-Tang <davidm@hpl.hp.com>
++ *
++ * More information about perfmon available at:
++ * 	http://perfmon2.sf.net
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
 + */
-+static int pfm_load_ctx_thread(struct pfm_context *ctx,
-+			       struct task_struct *task)
++#include <linux/module.h>
++#include <linux/perfmon_kern.h>
++#include "perfmon_priv.h"
++
++#ifndef CONFIG_MODULE_UNLOAD
++#define module_refcount(n)	1
++#endif
++
++static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_pmu_conf_lock);
++
++static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_pmu_acq_lock);
++static u32 pfm_pmu_acquired;
++
++/*
++ * perfmon core must acces PMU information ONLY through pfm_pmu_conf
++ * if pfm_pmu_conf is NULL, then no description is registered
++ */
++struct pfm_pmu_config	*pfm_pmu_conf;
++EXPORT_SYMBOL(pfm_pmu_conf);
++
++static int pfm_pmu_regdesc_init(u64 *unavail_pmcs, u64 *unavail_pmds)
 +{
-+	struct pfm_event_set *set;
-+	struct pfm_context *old;
-+	int ret;
-+	u16 max;
-+
-+	PFM_DBG("pid=%d",  task->pid);
++	struct pfm_regmap_desc *d;
++	u16 n, n2, n_counters, i;
++	int max1, max2, max3;
 +
 +	/*
-+	 * per-thread:
-+	 *   - task to attach to is checked in sys_pfm_load_context() to avoid
-+	 *     locking issues. if found, and not self,  task refcount was
-+	 *     incremented.
++	 * compute the number of implemented PMC from the
++	 * description table
 +	 */
-+	old = cmpxchg(&task->pfm_context, NULL, ctx);
-+	if (old) {
-+		PFM_DBG("load_pid=%d has a context "
-+			"old=%p new=%p cur=%p",
-+			task->pid,
-+			old,
-+			ctx,
-+			task->pfm_context);
-+		return -EEXIST;
++	n = 0;
++	max1 = max2 = -1;
++	d = pfm_pmu_conf->pmc_desc;
++	for (i = 0; i < pfm_pmu_conf->num_pmc_entries;  i++, d++) {
++		if (!(d->type & PFM_REG_I))
++			continue;
++
++		if (test_bit(i, cast_ulp(unavail_pmcs)))
++			continue;
++
++		__set_bit(i, cast_ulp(pfm_pmu_conf->regs.pmcs));
++
++		max1 = i;
++		n++;
 +	}
 +
-+	/*
-+	 * initialize sets
-+	 */
-+	set = ctx->active_set;
-+
-+	max = pfm_pmu_conf->regs.max_intr_pmd;
-+
-+	/*
-+	 * cleanup bitvectors
-+	 */
-+	bitmap_zero(cast_ulp(set->povfl_pmds), max);
-+
-+	set->npend_ovfls = 0;
-+
-+	/*
-+	 * we cannot just use plain clear because of arch-specific flags
-+	 */
-+	set->priv_flags &= ~PFM_SETFL_PRIV_MOD_BOTH;
-+
-+	ctx->task = task;
-+
-+	/*
-+	 * perform any architecture specific actions
-+	 */
-+	ret = pfm_arch_load_context(ctx);
-+	if (ret)
-+		goto error_noload;
-+
-+	/*
-+	 * now reserve the session, before we can proceed with
-+	 * actually accessing the PMU hardware
-+	 */
-+	ret = pfm_session_acquire();
-+	if (ret)
-+		goto error;
-+
-+
-+	if (ctx->task != current) {
-+
-+		ctx->flags.is_self = 0;
-+
-+		/* force a full reload */
-+		ctx->last_act = PFM_INVALID_ACTIVATION;
-+		ctx->last_cpu = -1;
-+		set->priv_flags |= PFM_SETFL_PRIV_MOD_BOTH;
-+
-+	} else {
-+		pfm_check_save_prev_ctx();
-+
-+		ctx->last_cpu = smp_processor_id();
-+		__get_cpu_var(pmu_activation_number)++;
-+		ctx->last_act = __get_cpu_var(pmu_activation_number);
-+
-+		ctx->flags.is_self = 1;
-+
-+		/*
-+		 * load PMD from set
-+		 * load PMC from set
-+		 */
-+		pfm_arch_restore_pmds(ctx, set);
-+		pfm_arch_restore_pmcs(ctx, set);
-+
-+		/*
-+		 * set new ownership
-+		 */
-+		pfm_set_pmu_owner(ctx->task, ctx);
++	if (!n) {
++		PFM_INFO("%s PMU description has no PMC registers",
++			 pfm_pmu_conf->pmu_name);
++		return -EINVAL;
 +	}
-+	set_tsk_thread_flag(task, TIF_PERFMON_CTXSW);
 +
-+	ctx->state = PFM_CTX_LOADED;
++	pfm_pmu_conf->regs.max_pmc = max1 + 1;
++	pfm_pmu_conf->regs.num_pmcs = n;
++
++	n = n_counters = n2 = 0;
++	max1 = max2 = max3 = -1;
++	d = pfm_pmu_conf->pmd_desc;
++	for (i = 0; i < pfm_pmu_conf->num_pmd_entries;  i++, d++) {
++		if (!(d->type & PFM_REG_I))
++			continue;
++
++		if (test_bit(i, cast_ulp(unavail_pmds)))
++			continue;
++
++		__set_bit(i, cast_ulp(pfm_pmu_conf->regs.pmds));
++		max1 = i;
++		n++;
++
++		/*
++		 * read-write registers
++		 */
++		if (!(d->type & PFM_REG_RO)) {
++			__set_bit(i, cast_ulp(pfm_pmu_conf->regs.rw_pmds));
++			max3 = i;
++			n2++;
++		}
++
++		/*
++		 * counter registers
++		 */
++		if (d->type & PFM_REG_C64) {
++			__set_bit(i, cast_ulp(pfm_pmu_conf->regs.cnt_pmds));
++			n_counters++;
++		}
++
++		/*
++		 * PMD with intr capabilities
++		 */
++		if (d->type & PFM_REG_INTR) {
++			__set_bit(i, cast_ulp(pfm_pmu_conf->regs.intr_pmds));
++			max2 = i;
++		}
++	}
++
++	if (!n) {
++		PFM_INFO("%s PMU description has no PMD registers",
++			 pfm_pmu_conf->pmu_name);
++		return -EINVAL;
++	}
++
++	pfm_pmu_conf->regs.max_pmd = max1 + 1;
++	pfm_pmu_conf->regs.max_intr_pmd  = max2 + 1;
++
++	pfm_pmu_conf->regs.num_counters = n_counters;
++	pfm_pmu_conf->regs.num_pmds = n;
++	pfm_pmu_conf->regs.max_rw_pmd = max3 + 1;
++	pfm_pmu_conf->regs.num_rw_pmd = n2;
 +
 +	return 0;
++}
 +
-+error:
-+	pfm_arch_unload_context(ctx);
-+	ctx->task = NULL;
-+error_noload:
-+	/*
-+	 * detach context
-+	 */
-+	task->pfm_context = NULL;
++int pfm_pmu_register(struct pfm_pmu_config *cfg)
++{
++	int ret = -EBUSY;
++
++	if (perfmon_disabled) {
++		PFM_INFO("perfmon disabled, cannot add PMU description");
++		return -ENOSYS;
++	}
++
++	spin_lock(&pfm_pmu_conf_lock);
++
++	if (pfm_pmu_conf)
++		goto unlock;
++
++	pfm_pmu_conf = cfg;
++	pfm_pmu_conf->ovfl_mask = (1ULL << cfg->counter_width) - 1;
++
++unlock:
++	spin_unlock(&pfm_pmu_conf_lock);
++
++	if (ret)
++		PFM_INFO("register %s PMU error %d", cfg->pmu_name, ret);
++	else
++		PFM_INFO("%s PMU installed", cfg->pmu_name);
 +	return ret;
 +}
 +
-+/**
-+ * __pfm_load_context - attach context to a thread
-+ * @ctx: context to operate on
-+ * @task: thread to attach to
-+ */
-+int __pfm_load_context(struct pfm_context *ctx, struct task_struct *task)
-+{
-+	return pfm_load_ctx_thread(ctx, task);
-+}
-+
-+/**
-+ * pfm_update_ovfl_pmds - account for pending ovfls on PMDs
-+ * @ctx: context to operate on
++/*
++ * acquire PMU resource from lower-level PMU register allocator
++ * (currently perfctr-watchdog.c)
 + *
-+ * This function is always called after pfm_stop has been issued
++ * acquisition is done when the first context is created (and not
++ * when it is loaded). We grab all that is defined in the description
++ * module and then we make adjustments at the arch-specific level.
++ *
++ * The PMU resource is released when the last perfmon context is
++ * destroyed.
++ *
++ * interrupts are not masked
 + */
-+static void pfm_update_ovfl_pmds(struct pfm_context *ctx)
++int pfm_pmu_acquire(void)
 +{
-+	struct pfm_event_set *set;
-+	u64 *cnt_pmds;
-+	u64 ovfl_mask;
-+	u16 num_ovfls, i;
++	u64 unavail_pmcs[PFM_PMC_BV];
++	u64 unavail_pmds[PFM_PMD_BV];
++	int ret = 0;
 +
-+	ovfl_mask = pfm_pmu_conf->ovfl_mask;
-+	cnt_pmds = pfm_pmu_conf->regs.cnt_pmds;
-+	set = ctx->active_set;
++	spin_lock(&pfm_pmu_acq_lock);
 +
-+	if (!set->npend_ovfls)
-+		return;
++	PFM_DBG("pmu_acquired=%d", pfm_pmu_acquired);
 +
-+	num_ovfls = set->npend_ovfls;
-+	PFM_DBG("novfls=%u", num_ovfls);
++	pfm_pmu_acquired++;
 +
-+	for (i = 0; num_ovfls; i++) {
-+		if (test_bit(i, cast_ulp(set->povfl_pmds))) {
-+			/* only correct value for counters */
-+			if (test_bit(i, cast_ulp(cnt_pmds)))
-+				set->pmds[i].value += 1 + ovfl_mask;
-+			num_ovfls--;
++	if (pfm_pmu_acquired == 1) {
++
++		memset(unavail_pmcs, 0, sizeof(unavail_pmcs));
++		memset(unavail_pmds, 0, sizeof(unavail_pmds));
++
++		ret = pfm_arch_pmu_acquire(unavail_pmcs, unavail_pmds);
++		if (ret) {
++			pfm_pmu_acquired--;
++		} else {
++			pfm_pmu_regdesc_init(unavail_pmcs, unavail_pmds);
++
++			/* available PMU ressources */
++			PFM_DBG("PMU acquired: %u PMCs, %u PMDs, %u counters",
++				pfm_pmu_conf->regs.num_pmcs,
++				pfm_pmu_conf->regs.num_pmds,
++				pfm_pmu_conf->regs.num_counters);
 +		}
-+		PFM_DBG("pmd%u val=0x%llx",
-+			i,
-+			(unsigned long long)set->pmds[i].value);
 +	}
-+	/*
-+	 * we need to clear to prevent a pfm_getinfo_evtsets() from
-+	 * returning stale data even after the context is unloaded
-+	 */
-+	set->npend_ovfls = 0;
-+	bitmap_zero(cast_ulp(set->povfl_pmds),
-+		    pfm_pmu_conf->regs.max_intr_pmd);
++	spin_unlock(&pfm_pmu_acq_lock);
++
++	return ret;
 +}
 +
-+/**
-+ * __pfm_unload_context - detach context from CPU or thread
-+ * @ctx: context to operate on
++/*
++ * release the PMU resource
 + *
-+ * The function must be called with the context locked and interrupts disabled.
++ * actual release happens when last context is destroyed
++ *
++ * interrupts are not masked
 + */
-+int __pfm_unload_context(struct pfm_context *ctx)
++void pfm_pmu_release(void)
 +{
-+	int ret;
-+
-+	PFM_DBG("ctx_state=%d task [%d]",
-+		ctx->state,
-+		ctx->task ? ctx->task->pid : -1);
++	BUG_ON(irqs_disabled());
 +
 +	/*
-+	 * check unload-able state
++	 * we need to use a spinlock because release takes some time
++	 * and we may have a race with pfm_pmu_acquire()
 +	 */
-+	if (ctx->state == PFM_CTX_UNLOADED)
-+		return -EINVAL;
++	spin_lock(&pfm_pmu_acq_lock);
++
++	PFM_DBG("pmu_acquired=%d", pfm_pmu_acquired);
 +
 +	/*
-+	 * stop monitoring
++	 * we decouple test and decrement because if we had errors
++	 * in pfm_pmu_acquire(), we still come here on pfm_context_free()
++	 * but with pfm_pmu_acquire=0
 +	 */
-+	ret = __pfm_stop(ctx);
-+	if (ret)
-+		return ret;
-+
-+	ctx->state = PFM_CTX_UNLOADED;
-+
-+	/*
-+	 * save active set
-+	 * UP:
-+	 * 	if not current task and due to lazy, state may
-+	 * 	still be live
-+	 * for system-wide, guaranteed to run on correct CPU
-+	 */
-+	if (__get_cpu_var(pmu_ctx) == ctx) {
-+		/*
-+		 * pending overflows have been saved by pfm_stop()
-+		 */
-+		pfm_save_pmds(ctx);
-+		pfm_set_pmu_owner(NULL, NULL);
-+		PFM_DBG("released ownership");
++	if (pfm_pmu_acquired > 0 && --pfm_pmu_acquired == 0) {
++		pfm_arch_pmu_release();
++		memset(&pfm_pmu_conf->regs, 0, sizeof(pfm_pmu_conf->regs));
++		PFM_DBG("PMU released");
 +	}
-+
-+	/*
-+	 * account for pending overflows
-+	 */
-+	pfm_update_ovfl_pmds(ctx);
-+
-+	/*
-+	 * arch-specific unload operations
-+	 */
-+	pfm_arch_unload_context(ctx);
-+
-+	/*
-+	 * per-thread: disconnect from monitored task
-+	 */
-+	if (ctx->task) {
-+		ctx->task->pfm_context = NULL;
-+		clear_tsk_thread_flag(ctx->task, TIF_PERFMON_CTXSW);
-+		ctx->task = NULL;
-+	}
-+	return 0;
++	spin_unlock(&pfm_pmu_acq_lock);
 +}
-+
-+/**
-  * __pfm_exit_thread - detach and free context on thread exit
-  */
- void __pfm_exit_thread(void)
-Index: o/perfmon/perfmon_priv.h
-===================================================================
---- o.orig/perfmon/perfmon_priv.h	2008-06-26 13:02:03.000000000 +0200
-+++ o/perfmon/perfmon_priv.h	2008-06-26 13:02:59.000000000 +0200
-@@ -60,6 +60,9 @@
- int __pfm_stop(struct pfm_context *ctx);
- int __pfm_start(struct pfm_context *ctx);
- 
-+int __pfm_load_context(struct pfm_context *ctx, struct task_struct *task);
-+int __pfm_unload_context(struct pfm_context *ctx);
-+
- ssize_t pfm_sysfs_res_show(char *buf, size_t sz, int what);
- 
- int pfm_pmu_acquire(void);
 Index: o/perfmon/Makefile
 ===================================================================
---- o.orig/perfmon/Makefile	2008-06-26 13:03:22.000000000 +0200
-+++ o/perfmon/Makefile	2008-06-26 13:03:29.000000000 +0200
-@@ -7,4 +7,4 @@
+--- o.orig/perfmon/Makefile	2008-06-23 13:12:41.000000000 +0200
++++ o/perfmon/Makefile	2008-06-23 13:13:20.000000000 +0200
+@@ -5,4 +5,4 @@
+ obj-y =	perfmon_ctx.o perfmon_file.o \
+ 	perfmon_attach.o perfmon_res.o \
  	perfmon_init.o perfmon_ctxsw.o \
- 	perfmon_intr.o perfmon_pmu.o \
- 	perfmon_sysfs.o perfmon_rw.o \
--	perfmon_activate.o
-+	perfmon_activate.o perfmon_attach.o
+-	perfmon_intr.o
++	perfmon_intr.o perfmon_pmu.o
+Index: o/perfmon/perfmon_priv.h
+===================================================================
+--- o.orig/perfmon/perfmon_priv.h	2008-06-23 13:07:06.000000000 +0200
++++ o/perfmon/perfmon_priv.h	2008-06-23 13:12:54.000000000 +0200
+@@ -52,6 +52,9 @@
+ 
+ void pfm_free_context(struct pfm_context *ctx);
+ 
++int pfm_pmu_acquire(void);
++void pfm_pmu_release(void);
++
+ void pfm_save_pmds(struct pfm_context *ctx);
+ 
+ /*
 
 -- 
 
