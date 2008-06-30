@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762222AbYF3NKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760956AbYF3NNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762222AbYF3NKA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 09:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761974AbYF3NJg
+	id S1760956AbYF3NNl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 09:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbYF3NNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 09:09:36 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:34369 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761969AbYF3NJf (ORCPT
+	Mon, 30 Jun 2008 09:13:32 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:63631 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753558AbYF3NNb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 09:09:35 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #10868] Oops on loading ipaq module since 2.6.26, prevents use of device
-Date: Mon, 30 Jun 2008 15:10:05 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Adam Williamson" <awilliamson@mandriva.com>
-References: <q5WW6DLC10O.A.dxC.R69ZIB@albercik> <X8mbwW6K81I.A.x9E.379ZIB@albercik>
-In-Reply-To: <X8mbwW6K81I.A.x9E.379ZIB@albercik>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806301510.05909.oliver@neukum.org>
+	Mon, 30 Jun 2008 09:13:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=to:subject:from:date:message-id;
+        b=Rk+BtMG/DjlKGlSkDw/6EAIRMQcuW9lrKTlqYjk9Jxr/oQww8jaJdmr57J5kU4BfaP
+         A9svJBosr6vEud3bNKq/daWjGeDBrzXCsTj9vUNcMf+mEuIRNTAjPTUl+74hFrhxszuI
+         MBK+eymqgugcAMC1KxYLIhEhuKvqgGWBk622A=
+To: linux-kernel@vger.kernel.org
+Subject: [patch 00/19] perfmon2 minimal v3:  introduction
+From: eranian@googlemail.com
+Date: Mon, 30 Jun 2008 06:13:26 -0700 (PDT)
+Message-ID: <4868dbf6.0af5660a.1972.52f4@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag 29 Juni 2008 20:18:42 schrieb Rafael J. Wysocki:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10868
-> Subject		: Oops on loading ipaq module since 2.6.26, prevents use of device
-> Submitter	: Adam Williamson <awilliamson@mandriva.com>
-> Date		: 2008-06-05 17:39 (25 days old)
-> References	: http://marc.info/?t=121287647600002&r=1&w=4
-> Handled-By	: Oliver Neukum <oliver@neukum.org>
+The following patches implement a minimal perfmon2 subsystem which provides
+access to the hardware performance counters of modern processors. Performance
+counters are very useful resource to extract micro-architectural-level information
+such the number of caches misses, or the number of instructions executed. The list
+of events which can be monitored in highly specific to each processor implmentation.
 
-It should be listed. The cause is as yet unknown.
+This series supports ONLY per-thread counting of PMU events (no sampling) for
+AMD64 and Intel processors with support for architectural perfmon (Core Duo/Solo,
+Core 2) in both 32 and 64 bit modes.
 
-	Regards
-		Oliver
+This is version 3 of the series. It is against Stephen Rothwell linux-next GIT
+tree. Compared to the previous version, there were a few more cleanups in the
+Makefile structure suggested by Stephen. The series also merges more code
+between 32 and 64 bit x86.
+
+Please review.
+
+More information about the perfmon2 project can be found at:
+
+		http://perfmon2.sourceforge.net
+
+To test this series, it is possible to use libpfm and pfmon, both
+available from the web site above.
+
+Signed-off-by: Stephane Eranian <eranian@gmail.com>
+
+-- 
 
