@@ -1,155 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbYF3Dwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbYF3EAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756560AbYF3Dwn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 23:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYF3Dwf
+	id S1752035AbYF3EAK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 00:00:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYF3D75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 23:52:35 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38720 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752085AbYF3Dwe (ORCPT
+	Sun, 29 Jun 2008 23:59:57 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:39817 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752154AbYF3D7z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 23:52:34 -0400
-Date: Mon, 30 Jun 2008 12:57:37 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [RFC 0/5] Memory controller soft limit introduction (v3)
-Message-Id: <20080630125737.4b14785f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <486855DF.2070100@linux.vnet.ibm.com>
-References: <20080627151808.31664.36047.sendpatchset@balbir-laptop>
-	<20080628133615.a5fa16cf.kamezawa.hiroyu@jp.fujitsu.com>
-	<4867174B.3090005@linux.vnet.ibm.com>
-	<20080630102054.ee214765.kamezawa.hiroyu@jp.fujitsu.com>
-	<486855DF.2070100@linux.vnet.ibm.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 29 Jun 2008 23:59:55 -0400
+Message-ID: <1d3f23370806292059qe407693h500d7e562b214e9a@mail.gmail.com>
+Date: Mon, 30 Jun 2008 13:59:53 +1000
+From: "John Williams" <john.williams@petalogix.com>
+To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+Subject: Re: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
+Cc: grant.likely@secretlab.ca, monstr@seznam.cz, linux-kernel@vger.kernel.org,
+       arnd@arndb.de, linux-arch@vger.kernel.org,
+       "John Linn" <linnj@xilinx.com>, matthew@wil.cx, will.newton@gmail.com,
+       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
+       linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
+       hpa@zytor.com, "Michal Simek" <monstr@monstr.eu>
+In-Reply-To: <20080630033943.332471860046@mail171-va3.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-8-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-9-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-10-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-11-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-12-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-13-git-send-email-monstr@seznam.cz>
+	 <fa686aa40806272249l7eae0c34k43a20ad41672b77a@mail.gmail.com>
+	 <1d3f23370806291702g4344a2f9lb62f85cbb475fca4@mail.gmail.com>
+	 <20080630033943.332471860046@mail171-va3.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jun 2008 09:11:19 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Hi Steve,
 
-> KAMEZAWA Hiroyuki wrote:
-> > On Sun, 29 Jun 2008 10:32:03 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> >>> I have a couple of comments.
-> >>>
-> >>> 1. Why you add soft_limit to res_coutner ?
-> >>>    Is there any other controller which uses soft-limit ?
-> >>>    I'll move watermark handling to memcg from res_counter becasue it's
-> >>>    required only by memcg.
-> >>>
-> >> I expect soft_limits to be controller independent. The same thing can be applied
-> >> to an io-controller for example, right?
-> >>
-> > 
-> > I can't imagine how soft-limit works on i/o controller. could you explain ?
-> > 
-> 
-> An io-controller could have the same concept. A hard-limit on the bandwidth and
-> a soft-limit to allow a group to exceed the soft-limit provided there is no i/o
-> bandwidth congestion.
-> 
-Hmm, that is the case where "share" works well. Why soft-limit ?
-i/o conroller doesn't support share ? (I don' know sorry.)
+> In my opionion, we should only include dts files for reference designs, and
+> it must be documented how to get the design that the dts corresponds to.
 
+I'm not sure you (or Xilinx) are quite ready for the pain this implies
+- have you tried browsing reference designs on Xilinx.com recently?
+It's a total mishmash of tool versions, boards, you name it.  If
+Xilinx is ready to declare a gold standard "ML401" design, and commit
+to maintaining it tool version after tool version, lots of people will
+be very happy, but I don't see it just yet!
 
+I'm not having a go at you here, just questioning the notion that
+there is really any such thing as a persistent 'reference design' for
+these platforms.  These are not physical boards that get manufactured
+and persist as real objects.
 
-> > 
-> >>> 2. *please* handle NUMA
-> >>>    There is a fundamental difference between global VMM and memcg.
-> >>>      global VMM - reclaim memory at memory shortage.
-> >>>      memcg     - for reclaim memory at memory limit
-> >>>    Then, memcg wasn't required to handle place-of-memory at hitting limit. 
-> >>>    *just reducing the usage* was enough.
-> >>>    In this set, you try to handle memory shortage handling.
-> >>>    So, please handle NUMA, i.e. "what node do you want to reclaim memory from ?"
-> >>>    If not, 
-> >>>     - memory placement of Apps can be terrible.
-> >>>     - cannot work well with cpuset. (I think)
-> >>>
-> >> try_to_free_mem_cgroup_pages() handles NUMA right? We start with the
-> >> node_zonelists of the current node on which we are executing.  I can pass on the
-> >> zonelist from __alloc_pages_internal() to try_to_free_mem_cgroup_pages(). Is
-> >> there anything else you had in mind?
-> >>
-> > Assume following case of a host with 2 nodes. and following mount style.
-> > 
-> > mount -t cgroup -o memory,cpuset none /opt/cgroup/
-> > 
-> >   
-> >   /Group1: cpu 0-1, mem=0 limit=1G, soft-limit=700M
-> >   /Group2: cpu 2-3, mem=1 limit=1G  soft-limit=700M
-> >   ....
-> >   /Groupxxxx
-> > 
-> > Assume a environ after some workload, 
-> > 
-> >   /Group1: cpu 0-1, mem=0 limit=1G, soft-limit=700M usage=990M
-> >   /Group2: cpu 2-3, mem=1 limit=1G  soft-limit=700M usage=400M
-> > 
-> > *And* memory of node"1" is in shortage and the kernel has to reclaim
-> > memory from node "1".
-> > 
-> > Your routine tries to relclaim memory from a group, which exceeds soft-limit
-> > ....Group1. But it's no help because Group1 doesn't contains any memory in Node1.
-> > And make it worse, your routine doen't tries to call try_to_free_pages() in global
-> > LRU when your soft-limit reclaim some memory. So, if a task in Group 1 continues
-> > to allocate memory at some speed, memory shortage in Group2 will not be recovered,
-> > easily.
-> > 
-> > This includes 2 aspects of trouble.
-> >  - Group1's memory is reclaimed but it's wrong.
-> >  - Group2's try_to_free_pages() may took very long time.
-> > 
-> > (Current page shrinking under cpuset seems to scan all nodes,
-> >  his seems not to be quick, but it works  because it scans all.
-> >  This will be another problem, anyway ;).
-> > 
-> > 
-> > BTW, currently mem_cgroup_try_to_free_pages() assumes GFP_HIGHUSER_MOVABLE
-> > always.
-> > ==
-> > unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
-> >                                                 gfp_t gfp_mask)
-> > {
-> >         struct scan_control sc = {
-> >                 .may_writepage = !laptop_mode,
-> >                 .may_swap = 1,
-> >                 .swap_cluster_max = SWAP_CLUSTER_MAX,
-> >                 .swappiness = vm_swappiness,
-> >                 .order = 0,
-> >                 .mem_cgroup = mem_cont,
-> >                 .isolate_pages = mem_cgroup_isolate_pages,
-> >         };
-> >         struct zonelist *zonelist;
-> > 
-> >         sc.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |
-> >                         (GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);
-> >         zonelist = NODE_DATA(numa_node_id())->node_zonelists;
-> >         return do_try_to_free_pages(zonelist, &sc);
-> > }
-> > ==
-> > please select appropriate zonelist here.
-> > 
-> 
-> We do have zonelist information in __alloc_pages_internal(), it should be easy
-> to pass the zonelist or come up with a good default (current one) if no zonelist
-> is provided to the routine.
-> 
-yes. what I want to say is you should take care of this.
+> MD5 hashing might be one way to prevent people from getting the dts file
+> wrong, however without some way of checking it automatically, I don't think
+> anyone will have the patience to checksum the design they have (even worse,
+> with whitespace changes, the md5 sum will change, so this is pretty fragile.
 
-Anyway, I think you should revisit the whole memory reclaim and fixes small bugs?
-which doesn't meet soft-limit.
+Actually I was only joking about the md5 hashing - just to prove my point :)
 
-Thanks,
--Kame
+> Having a device tree in the kernel for documentation *shouldn't* be
+> necessary,
 
+Well, yes and no.  A vanilla DTS that shows what a valid one might
+look like - "oh, here's where I declare my main memory parameters,
+..." has some value IMO.
+
+> since noone should ever write their dts by hand. (right?)
+
+I'm not certain you can guarantee that.
+
+> Hence, I'd prefer to not put the dts file in the kernel at all, and but to
+> automatically generate the dts and store it in the blockram of the design.
+> This inextricably associates the dts with the design.
+
+Whether the DTS lives in block ram or is pulled over the net by uboot
+or whatever is not our call to make in the kernel - that's a
+deployment issue.
+
+> As for the copyright, I haven't been able to find much information on
+> whether or not generated files are even copyrightable.  One might argue that
+> they
+> don't have sufficient 'creative value' to be copyrightable.  Or arguably,
+> they are as copyrightable by the generator author as by the author or the
+> .mhs file.
+
+The DTS is a mechanical translation from one file format to another
+(more or less).  Auto-inserting a copyright Xilinx (or anyone else) in
+there would be unenforceable, and therefore should probably just go
+away.
+
+How would you feel if the FSF claimed copyright over object code
+derived from your source files simply because you ran them through
+gcc? :)  I believe there's a special clause in the GCC license to
+explicitly cover this kind of situation.
+
+Cheers,
+
+John
