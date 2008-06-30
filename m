@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbYF3G1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757549AbYF3G2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757393AbYF3G1e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 02:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbYF3G10
+	id S1757549AbYF3G2T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 02:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYF3G2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 02:27:26 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:54027 "EHLO
-	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752794AbYF3G1Z (ORCPT
+	Mon, 30 Jun 2008 02:28:00 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:54028 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752826AbYF3G17 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 02:27:25 -0400
-Message-ID: <48687CB9.4090505@linux.vnet.ibm.com>
-Date: Mon, 30 Jun 2008 11:57:05 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Mon, 30 Jun 2008 02:27:59 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <48687CDE.5010502@s5r6.in-berlin.de>
+Date: Mon, 30 Jun 2008 08:27:42 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080614 SeaMonkey/1.1.9
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@in.ibm.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] memcg: further checking of disabled flag
-References: <Pine.LNX.4.64.0806290108110.20280@blonde.site> <Pine.LNX.4.64.0806290115440.20280@blonde.site> <20080630112608.94fe4762.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080630112608.94fe4762.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jeff Garzik <jeff@garzik.org>
+CC: Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Git Mailing List <git@vger.kernel.org>
+Subject: Re: Updated Kernel Hacker's guide to git
+References: <200612241807.kBOI746w008739@laptop13.inf.utfsm.cl> <476E42BF.1010300@garzik.org> <Pine.LNX.4.64.0712310349260.2093@fbirervta.pbzchgretzou.qr> <4778D1CD.4020001@s5r6.in-berlin.de> <48684A46.7040802@garzik.org>
+In-Reply-To: <48684A46.7040802@garzik.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Sun, 29 Jun 2008 01:17:17 +0100 (BST)
-> Hugh Dickins <hugh@veritas.com> wrote:
+Jeff Garzik wrote:
+> Stefan Richter wrote:
+>> A while ago the default behavior of git pull was changed to fetch all
+>> tags which point to objects that can be reached from any of the tracked
+>> heads.
 > 
->> Further adjustments to the mem_cgroup_subsys.disabled tests: add one to
->> mem_cgroup_shrink_usage; move mem_cgroup_charge_common's into its callers,
->> before they've done any work; and add one to mem_cgroup_move_lists, to
->> avoid the overhead of its bit spin locking and unlocking.
->>
->> Signed-off-by: Hugh Dickins <hugh@veritas.com>
 > 
-> seems better
+> This does not work in all cases.  When I retrieve the latest kernel, it 
+> downloads the tags:
 > 
-> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>     cd /spare/repo/linux-2.6
+>     git pull
+> 
+> but when I pull those changes into another local repo, the tags do -not- 
+> follow the objects:
+> 
+>     cd /spare/repo/misc-2.6
+>     git checkout master
+>     git pull ../linux-2.6
+>     git fetch --tags ../linux-2.6    # still required to this day
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-
+I guess this is because /spare/repo/misc-2.6 does not have branches of 
+/spare/repo/linux-2.6 configured as remote (tracking) branches.
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Stefan Richter
+-=====-==--- -==- ====-
+http://arcgraph.de/sr/
