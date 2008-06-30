@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758385AbYF3M43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbYF3M76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758385AbYF3M43 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 08:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbYF3M4V
+	id S1758824AbYF3M76 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 08:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbYF3M7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 08:56:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48148 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753749AbYF3M4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 08:56:20 -0400
-Date: Mon, 30 Jun 2008 14:56:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Gregory Haskins <ghaskins@novell.com>, npiggin@suse.de,
-       rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH 0/3] sched: newidle and RT wake-buddy fixes
-Message-ID: <20080630125601.GC4011@elte.hu>
-References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com> <1214599896.12348.9.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1214599896.12348.9.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 30 Jun 2008 08:59:48 -0400
+Received: from hedwig.cmf.nrl.navy.mil ([134.207.12.162]:43281 "EHLO
+	hedwig.cmf.nrl.navy.mil" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752004AbYF3M7r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 08:59:47 -0400
+Message-Id: <200806301259.m5UCxewW022114@cmf.nrl.navy.mil>
+From: "Chas Williams (CONTRACTOR)" <chas@cmf.nrl.navy.mil>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: netdev@vger.kernel.org, linux-atm-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Linux-ATM-General] [PATCH] firmware: convert Ambassador ATM driver to request_firmware()
+In-reply-to: <1214818473.10393.337.camel@pmac.infradead.org>
+Date: Mon, 30 Jun 2008 08:59:40 -0400
+X-NRLCMF-Spam-Score: () hits=-0.021
+X-NRLCMF-Virus-Scanned: No virus found
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+In message <1214818473.10393.337.camel@pmac.infradead.org>,David Woodhouse writ
+es:
+>A couple of comments though... it looks like you forgot to add
+>MODULE_FIRMWARE(). And shouldn't 'fw_data' in
+>fore200e_load_and_start_firmware() be a (__le32 *) not a (u32 *)?
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+this look ok:
 
-> On Fri, 2008-06-27 at 14:29 -0600, Gregory Haskins wrote:
-> > Hi Ingo,
-> >   The following patches apply to linux-tip/sched/devel and enhance the
-> > performance of the kernel (specifically in PREEMPT_RT, though they do
-> > not regress mainline performance as far as I can tell).  They offer
-> > somewhere between 50-100% speedups in netperf performance, depending
-> > on the test.
-> > 
-> > Should you be interested in these patches, you can optionally pull them
-> > from git at the following URL:
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/linux-2.6-hacks.git sched-devel
-> > 
-> > Comments/feedback/bugfixes welcome
-> 
-> Seem reasonable to me,
-> 
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-applied to tip/sched/devel - thanks guys.
-
-I have also merged tip/sched/devel.smp-group-balance into 
-tip/sched/devel, those changes have held up fine in testing, with little 
-problems.
-
-	Ingo
+diff --git a/drivers/atm/fore200e.c b/drivers/atm/fore200e.c
+index d5c1bbf..91710d4 100644
+--- a/drivers/atm/fore200e.c
++++ b/drivers/atm/fore200e.c
+@@ -2562,7 +2562,8 @@ fore200e_load_and_start_fw(struct fore200e* fore200e)
+     const struct firmware *firmware;
+     struct device *device;
+     struct fw_header *fw_header;
+-    u32 *fw_data, fw_size;
++    __le32 *fw_data;
++    u32 fw_size;
+     u32 __iomem *load_addr;
+     char buf[48];
+     int err = -ENODEV;
+@@ -2582,7 +2583,7 @@ fore200e_load_and_start_fw(struct fore200e* fore200e)
+ 	return err;
+     }
+ 
+-    fw_data = (u32 *) firmware->data;
++    fw_data = (__le32 *) firmware->data;
+     fw_size = firmware->size / sizeof(u32);
+     fw_header = (struct fw_header *) firmware->data;
+     load_addr = fore200e->virt_base + le32_to_cpu(fw_header->load_offset);
+@@ -3199,6 +3200,7 @@ static const struct fore200e_bus fore200e_bus[] = {
+     {}
+ };
+ 
+-#ifdef MODULE_LICENSE
+ MODULE_LICENSE("GPL");
+-#endif
++MODULE_FIRMWARE("sba200e.bin");
++MODULE_FIRMWARE("pca200e.bin");
++MODULE_FIRMWARE("pca200e_ecd.bin");
