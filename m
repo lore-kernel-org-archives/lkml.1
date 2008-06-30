@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761285AbYF3Pub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762290AbYF3Put@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761285AbYF3Pub (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 11:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYF3PuX
+	id S1762290AbYF3Put (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 11:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761650AbYF3Puh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 11:50:23 -0400
+	Mon, 30 Jun 2008 11:50:37 -0400
 Received: from server.drzeus.cx ([85.8.24.28]:45730 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752377AbYF3PuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 11:50:22 -0400
-Date: Mon, 30 Jun 2008 17:50:18 +0200
+	id S1752592AbYF3Puh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 11:50:37 -0400
+Date: Mon, 30 Jun 2008 17:50:34 +0200
 From: Pierre Ossman <drzeus-mmc@drzeus.cx>
 To: Ben Dooks <ben-linux@fluff.org>
-Cc: linux-kernel@vger.kernel.org, tk@maintech.de, laforge@openmoko.org,
-       Ben Dooks <ben-linux@fluff.org>
-Subject: Re: [patch v4 02/17] MMC: S3C24XX: Fix the checkpatch.pl errors in
- the s3cmci driver
-Message-ID: <20080630175018.356568b7@mjolnir.drzeus.cx>
-In-Reply-To: <20080630152747.132370982@fluff.org.uk>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
+       tk@maintech.de, laforge@openmoko.org
+Subject: Re: [patch v4 17/17] MMC: S3C24XX:
+Message-ID: <20080630175034.3ff975c8@mjolnir.drzeus.cx>
+In-Reply-To: <20080630153611.GE21835@fluff.org.uk>
 References: <20080630152547.755285683@fluff.org.uk>
-	<20080630152747.132370982@fluff.org.uk>
+	<20080630152750.578945866@fluff.org.uk>
+	<20080630153611.GE21835@fluff.org.uk>
 X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,18 +28,16 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jun 2008 16:25:49 +0100
+On Mon, 30 Jun 2008 16:36:11 +0100
 Ben Dooks <ben-linux@fluff.org> wrote:
 
-> Fix the checkpatch and other problems pointed out by
-> akpm.
+> On Mon, Jun 30, 2008 at 04:26:04PM +0100, Ben Dooks wrote:
 > 
-> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> Should I resend this one, or the entire series with the 
+> subject line of this patch corrected?
 > 
 
-I prefer to have this one merged into 01 as you'll end up with a commit
-that you cannot compile otherwise. Besides, running checkpatch is
-something you do before submitting anyway, not as a separate cleanup. :)
+That's ok. I can fix it up manually.
 
 -- 
      -- Pierre Ossman
