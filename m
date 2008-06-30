@@ -1,100 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbYF3DJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbYF3DLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754913AbYF3DJj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 23:09:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYF3DJ3
+	id S1755459AbYF3DLo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 23:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbYF3DLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 23:09:29 -0400
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:24996 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750877AbYF3DJ2 (ORCPT
+	Sun, 29 Jun 2008 23:11:36 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:44921 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751263AbYF3DLf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 23:09:28 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=kJ4+5fi56CoEJrzmIqgor1W/vVrOf4v/k1zhNs/FrQGn2yAAV0HxZWmavmzAL4mCAwtU+r5JCmCIL3Qe0MzfDrmxIQSRNvV6WmVrWs6B6FvHzJT4UYyvz7wodjTb645/oDhqggXZHFvsU6Gd0siq8yfchXAK88GpYFhzPdAYBXw=  ;
-X-YMail-OSG: m2nb1hYVM1nHGjHXd_Dychrz7kbgPTtBeeHLHtygfinS9KkSVNV7RzaypSN21w19Q2_Tiejd1XxG4aY7FtPAm1uTg481WWzex4z6rtUfjoBsESQnGzaTVgdovRRzZL.CssM-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Stefan Becker <Stefan.Becker@nokia.com>
-Subject: Re: PATCH: 2.6.26-rc8: Fix IRQF_DISABLED for shared interrupts
-Date: Sun, 29 Jun 2008 20:09:26 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       ext Alan Stern <stern@rowland.harvard.edu>
-References: <Pine.LNX.4.44L0.0806281241200.23326-100000@netrider.rowland.org> <200806281251.21299.david-b@pacbell.net> <4867A2DE.3070509@nokia.com>
-In-Reply-To: <4867A2DE.3070509@nokia.com>
+	Sun, 29 Jun 2008 23:11:35 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Tejun Heo <htejun@gmail.com>
+Cc: Benjamin Thery <benjamin.thery@bull.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+References: <20080618170729.808539948@theryb.frec.bull.fr>
+	<20080618170731.153832341@theryb.frec.bull.fr>
+	<485F06B8.6090902@gmail.com> <m1od5ovt9s.fsf@frodo.ebiederm.org>
+	<48670308.5020301@gmail.com>
+Date: Sun, 29 Jun 2008 20:02:22 -0700
+In-Reply-To: <48670308.5020301@gmail.com> (Tejun Heo's message of "Sun, 29 Jun
+	2008 12:35:36 +0900")
+Message-ID: <m18wwnvd4x.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200806292009.26975.david-b@pacbell.net>
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Tejun Heo <htejun@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
+	*      [score: 0.0132]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 07/11] sysfs: Implement sysfs_delete_link and sysfs_rename_link
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 29 June 2008, Stefan Becker wrote:
-> The problem is caused by this code in handle_IRQ_event():
-> 
->         if (!(action->flags & IRQF_DISABLED))
->                 local_irq_enable_in_hardirq();
-> 
->         do {
->                 ret = action->handler(irq, action->dev_id);
->          ...
->                 action = action->next;
->         } while (action);
-> 
-> For shared interrupts IRQF_DISABLED will only take effect if the first 
-> registered handler sets it.
+Tejun Heo <htejun@gmail.com> writes:
+>
+> I think the current one should do for now.  Changing to managed links
+> requires pervasive changes to locking and stuff.  I'll clean them up
+> when I refresh the patches I posted a while back.
 
-I was suspecting something rude like that ...
+Sounds good.
 
-By the way, did you notice the oddness of IRQF_SAMPLE_RANDOM there?
-For a shared IRQ, I would rather think that if any IRQ was flagged
-as "too predictable for use as IRQ randomness" (by not having that
-flag set) then the IRQ should never be sampled ... there's some odd
-thought (or non-thought) involved in IRQ sharing.
-
-
-> The attached changes fix the problem for me.
-
-And it looks plausible to me.  Seems like this patch (or a variant)
-should be merged for 2.6.26-final, yes?  Disregarding IRQF_DISABLED
-has -- as you noted -- significant potential for oopsage.
-
-I suggest you provide a fully cleaned-up version of this patch with
-your signed-off-by line and a proper patch description ... do this
-ASAP, since RC8 is getting a bit late for patches to merge!
-
-
-One technical comment:
-
-> --- a/kernel/irq/internals.h
-> +++ b/kernel/irq/internals.h
-> @@ -2,6 +2,13 @@
->   * IRQ subsystem internal functions and variables:
->   */
->  
-> +/*
-> + * Internal interrupt flags
-> + *
-> + * IRQF_DISABLED_CUMULATIVE - one handler in the chain has IRQF_DISABLED
-> set + */
-> +#define IRQF_DISABLED_CUMULATIVE       0x80000000
-> +
->  extern int noirqdebug;
->  
->  /* Set default functions for irq_chip structures: */
-
-I don't think you should need that flag; and if you did, it should be
-declared in <linux/irq.h> to prevent anyone else from using that bit
-for some other purpose.
-
-Instead, I think you can set IRQF_DISABLED in irq_desc[irq].status
-to achieve the same effect.
-
-- Dave
-
+Eric
