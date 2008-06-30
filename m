@@ -1,102 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762830AbYF3N0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932135AbYF3N1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762830AbYF3N0N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 09:26:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756413AbYF3NZ5
+	id S932135AbYF3N1S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 09:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757883AbYF3N1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 09:25:57 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:13610 "EHLO
-	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754287AbYF3NZ4 (ORCPT
+	Mon, 30 Jun 2008 09:27:06 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:41505 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755852AbYF3N1F convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 09:25:56 -0400
-X-BigFish: VPS-39(zz1432R98dR7efV1805M179dR873fnzz10d3izzz32i6bh43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0K3A2MV-03-HTU-01
-Date: Mon, 30 Jun 2008 15:25:45 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
-       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
-Subject: Re: [PATCH 26/34] AMD IOMMU: add mapping functions for scatter gather lists
-Message-ID: <20080630132545.GP1303@amd.com>
-References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-27-git-send-email-joerg.roedel@amd.com> <20080630000023F.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	Mon, 30 Jun 2008 09:27:05 -0400
+Message-Id: <48688930.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Mon, 30 Jun 2008 05:20:16 -0600
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <rostedt@goodmis.org>, <peterz@infradead.org>, <npiggin@suse.de>,
+       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH 0/3] sched: newidle and RT wake-buddy fixes
+References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com>
+ <20080630131511.GA7506@elte.hu>
+In-Reply-To: <20080630131511.GA7506@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080630000023F.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 30 Jun 2008 13:25:45.0390 (UTC) FILETIME=[CD5494E0:01C8DAB4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 12:07:16AM +0900, FUJITA Tomonori wrote:
-> On Thu, 26 Jun 2008 21:28:02 +0200
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
+>>> On Mon, Jun 30, 2008 at  9:15 AM, in message <20080630131511.GA7506@elte.hu>,
+Ingo Molnar <mingo@elte.hu> wrote: 
+
+> * Gregory Haskins <ghaskins@novell.com> wrote:
 > 
-> > This patch adds the dma_ops functions for mapping and unmapping scatter gather
-> > lists.
-> > 
-> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > ---
-> >  arch/x86/kernel/amd_iommu.c |   98 +++++++++++++++++++++++++++++++++++++++++++
-> >  1 files changed, 98 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-> > index b4079f6..f4747fe 100644
-> > --- a/arch/x86/kernel/amd_iommu.c
-> > +++ b/arch/x86/kernel/amd_iommu.c
-> > @@ -700,3 +700,101 @@ static void unmap_single(struct device *dev, dma_addr_t dma_addr,
-> >  	spin_unlock_irqrestore(&domain->lock, flags);
-> >  }
-> >  
-> > +static int map_sg_no_iommu(struct device *dev, struct scatterlist *sglist,
-> > +			   int nelems, int dir)
-> > +{
-> > +	struct scatterlist *s;
-> > +	int i;
-> > +
-> > +	for_each_sg(sglist, s, nelems, i) {
-> > +		s->dma_address = (dma_addr_t)sg_phys(s);
-> > +		s->dma_length  = s->length;
-> > +	}
-> > +
-> > +	return nelems;
-> > +}
-> > +
-> > +static int map_sg(struct device *dev, struct scatterlist *sglist,
-> > +		  int nelems, int dir)
-> > +{
-> > +	unsigned long flags;
-> > +	struct amd_iommu *iommu;
-> > +	struct protection_domain *domain;
-> > +	u16 devid;
-> > +	int i;
-> > +	struct scatterlist *s;
-> > +	phys_addr_t paddr;
-> > +	int mapped_elems = 0;
-> > +
-> > +	get_device_resources(dev, &iommu, &domain, &devid);
-> > +
-> > +	if (!iommu || !domain)
-> > +		return map_sg_no_iommu(dev, sglist, nelems, dir);
+>> Hi Ingo,
+>>   The following patches apply to linux-tip/sched/devel and enhance the
+>> performance of the kernel (specifically in PREEMPT_RT, though they do
+>> not regress mainline performance as far as I can tell).  They offer
+>> somewhere between 50-100% speedups in netperf performance, depending
+>> on the test.
 > 
-> VT-d put a pointer in struct dev_archdata to store IOMMU info per
-> device. Is is useful for you too?
+> -tip testing found this boot hang:
 
-Hmm yes. Thank you for that hint. I can save at least one of my arrays
-with that method.
+Ill take a look, Ingo.  Sorry for the inconvenience and thanks for the bisect.
 
-Joerg
+-Greg
 
+> 
+>  Linux version 2.6.26-rc8-tip (mingo@dione) (gcc version 4.2.3) #12917 
+>  SMP Mon Jun 30 15:06:32 CEST 2008
+>  [...]
+>  CPU 1/1 -> Node 0
+>  CPU: Physical Processor ID: 0
+>  CPU: Processor Core ID: 1
+>  CPU1: AMD Athlon(tm) 64 X2 Dual Core Processor 3800+ stepping 02
+>  Brought up 2 CPUs
+>  Total of 2 processors activated (8041.15 BogoMIPS).
+>  [ hard hang ]
+> 
+> with this config:
+> 
+>   http://redhat.com/~mingo/misc/config-Mon_Jun_30_14_54_19_CEST_2008.bad
+> 
+> full bootlog:
+> 
+>   http://redhat.com/~mingo/misc/hang-Mon_Jun_30_14_54_19_CEST_2008.bad
+> 
+> it should continue with this bootup sequence:
+> 
+>   calling  net_ns_init+0x0/0x1a0
+>   net_namespace: 376 bytes
+>   initcall net_ns_init+0x0/0x1a0 returned 0 after 0 msecs
+>   calling  init_smp_flush+0x0/0x60
+> 
+> i've bisected it down to:
+> 
+> --------------
+> | commit cc8160c56843201891766660e3816d2e546c1b17
+> | Author: Gregory Haskins <ghaskins@novell.com>
+> | Date:   Fri Jun 27 14:29:50 2008 -0600
+> |
+> |     sched: enable interrupts and drop rq-lock during newidle balancing
+> --------------
+> 
+> so i've reverted that change for now.
+> 
+> 	Ingo
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
