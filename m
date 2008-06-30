@@ -1,77 +1,472 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbYF3Ght@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758903AbYF3GiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757933AbYF3Ght (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 02:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbYF3Ghk
+	id S1758903AbYF3GiR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 02:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbYF3GiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 02:37:40 -0400
-Received: from gw.goop.org ([64.81.55.164]:46520 "EHLO mail.goop.org"
+	Mon, 30 Jun 2008 02:38:00 -0400
+Received: from mailtp.via.com.tw ([61.66.243.2]:53210 "EHLO mailtp.via.com.tw"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752826AbYF3Ghj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 02:37:39 -0400
-Message-ID: <48687F2B.2000402@goop.org>
-Date: Sun, 29 Jun 2008 23:37:31 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1752826AbYF3Gh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 02:37:58 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: xfs-masters@oss.sgi.com, Elias Oltmanns <eo@nebensachen.de>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [xfs-masters] Re: freeze vs freezer
-References: <4744FD87.7010301@goop.org> <20080626150910.GK5642@ucw.cz> <20080629221217.GM29319@disturbed> <200806300122.48204.rjw@sisk.pl> <20080630062956.GN29319@disturbed>
-In-Reply-To: <20080630062956.GN29319@disturbed>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: [PATCH 3/13] viafb: accel.c, accel.h
+Date: Mon, 30 Jun 2008 14:37:55 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E772F@exchtp03.taipei.via.com.tw>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 3/13] viafb: accel.c, accel.h
+Thread-Index: Acjae9Qvxc85c25vTdiBO8JmW/i7lA==
+From: <JosephChan@via.com.tw>
+To: <JosephChan@via.com.tw>, <linux-fbdev-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>
+Cc: <akpm@linux-foundation.org>, <geert@linux-m68k.org>
+X-OriginalArrivalTime: 30 Jun 2008 06:37:56.0333 (UTC) FILETIME=[D4A2C9D0:01C8DA7B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m5U6cSfq018061
 
-Dave Chinner wrote:
-> On Mon, Jun 30, 2008 at 01:22:47AM +0200, Rafael J. Wysocki wrote:
->   
->> On Monday, 30 of June 2008, Dave Chinner wrote:
->>     
->>> On Thu, Jun 26, 2008 at 05:09:10PM +0200, Pavel Machek wrote:
->>>       
->>>>>> Is this the same thing the per-device IO-queue-freeze patches for
->>>>>> HDAPS also
->>>>>> need to do?  If so, you may want to talk to Elias Oltmanns
->>>>>> <eo@nebensachen.de> about it.  Added to CC.
->>>>>>             
->>>>> Thanks for the heads up Henrique. Even though these issues seem to be
->>>>> related up to a certain degree, there probably are some important
->>>>> differences. When suspending a system, the emphasis is on leaving the
->>>>> system in a consistent state (think of journalled file systems), whereas
->>>>> disk shock protection is mainly concerned with stopping I/O as soon as
->>>>> possible. As yet, I cannot possibly say to what extend these two
->>>>> concepts can be reconciled in the sense of sharing some common code.
->>>>>           
->>>> Actually, I believe requirements are same.
->>>>
->>>> 'don't do i/o in dangerous period'.
->>>>
->>>> swsusp will just do sync() before entering dangerous period. That
->>>> provides consistent-enough state...
->>>>         
->>> As I've said many times before - if the requirement is "don't do
->>> I/O" then you have to freeze the filesystem. In no way does 'sync'
->>> prevent filesystems from doing I/O.....
->>>       
->> Well, it seems we can handle this on the block layer level, by temporarily
->> replacing the elevator with something that will selectively prevent fs I/O
->> from reaching the layers below it.
->>     
->
-> Why? What part of freeze_bdev() doesn't work for you?
+2D and HW cursor stuff of viafb driver.
 
-Well, my original problem - which is still an issue - is that a process 
-writing to a frozen XFS filesystem is stuck in D state, and therefore 
-cannot be frozen as part of suspend.
+Signed-off-by: Joseph Chan <josephchan@via.com.tw>
 
-    J
-
+diff -Nur a/drivers/video/via/accel.c b/drivers/video/via/accel.c
+--- a/drivers/video/via/accel.c	1970-01-01 08:00:00.000000000 +0800
++++ b/drivers/video/via/accel.c	2008-06-30 08:53:33.000000000 +0800
+@@ -0,0 +1,244 @@
++/*
++ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
++
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation;
++ * either version 2, or (at your option) any later version.
++
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
++ * the implied warranty of MERCHANTABILITY or FITNESS FOR
++ * A PARTICULAR PURPOSE.See the GNU General Public License
++ * for more details.
++
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++#include "global.h"
++
++void viafb_init_accel(void)
++{
++	viaparinfo->fbmem_free -= CURSOR_SIZE;
++	viaparinfo->cursor_start = viaparinfo->fbmem_free;
++	viaparinfo->fbmem_used += CURSOR_SIZE;
++
++	/* Reverse 8*1024 memory space for cursor image */
++	viaparinfo->fbmem_free -= (CURSOR_SIZE + VQ_SIZE);
++	viaparinfo->VQ_start = viaparinfo->fbmem_free;
++	viaparinfo->VQ_end = viaparinfo->VQ_start + VQ_SIZE - 1;
++	viaparinfo->fbmem_used += (CURSOR_SIZE + VQ_SIZE);
++}
++
++void viafb_init_2d_engine(void)
++{
++	u32 dwVQStartAddr, dwVQEndAddr;
++	u32 dwVQLen, dwVQStartL, dwVQEndL, dwVQStartEndH;
++
++	/* init 2D engine regs to reset 2D engine */
++	MMIO_OUT32(VIA_REG_GEMODE, 0x0);
++	MMIO_OUT32(VIA_REG_SRCPOS, 0x0);
++	MMIO_OUT32(VIA_REG_DSTPOS, 0x0);
++	MMIO_OUT32(VIA_REG_DIMENSION, 0x0);
++	MMIO_OUT32(VIA_REG_PATADDR, 0x0);
++	MMIO_OUT32(VIA_REG_FGCOLOR, 0x0);
++	MMIO_OUT32(VIA_REG_BGCOLOR, 0x0);
++	MMIO_OUT32(VIA_REG_CLIPTL, 0x0);
++	MMIO_OUT32(VIA_REG_CLIPBR, 0x0);
++	MMIO_OUT32(VIA_REG_OFFSET, 0x0);
++	MMIO_OUT32(VIA_REG_KEYCONTROL, 0x0);
++	MMIO_OUT32(VIA_REG_SRCBASE, 0x0);
++	MMIO_OUT32(VIA_REG_DSTBASE, 0x0);
++	MMIO_OUT32(VIA_REG_PITCH, 0x0);
++	MMIO_OUT32(VIA_REG_MONOPAT1, 0x0);
++
++	/* Init AGP and VQ regs */
++	switch (viaparinfo->chip_info->gfx_chip_name) {
++	case UNICHROME_K8M890:
++	case UNICHROME_P4M900:
++		MMIO_OUT32(VIA_REG_CR_TRANSET, 0x00100000);
++		MMIO_OUT32(VIA_REG_CR_TRANSPACE, 0x680A0000);
++		MMIO_OUT32(VIA_REG_CR_TRANSPACE, 0x02000000);
++		break;
++
++	default:
++		MMIO_OUT32(VIA_REG_TRANSET, 0x00100000);
++		MMIO_OUT32(VIA_REG_TRANSPACE, 0x00000000);
++		MMIO_OUT32(VIA_REG_TRANSPACE, 0x00333004);
++		MMIO_OUT32(VIA_REG_TRANSPACE, 0x60000000);
++		MMIO_OUT32(VIA_REG_TRANSPACE, 0x61000000);
++		MMIO_OUT32(VIA_REG_TRANSPACE, 0x62000000);
++		MMIO_OUT32(VIA_REG_TRANSPACE, 0x63000000);
++		MMIO_OUT32(VIA_REG_TRANSPACE, 0x64000000);
++		MMIO_OUT32(VIA_REG_TRANSPACE, 0x7D000000);
++
++		MMIO_OUT32(VIA_REG_TRANSET, 0xFE020000);
++		MMIO_OUT32(VIA_REG_TRANSPACE, 0x00000000);
++		break;
++	}
++	if (viaparinfo->VQ_start != 0) {
++		/* Enable VQ */
++		dwVQStartAddr = viaparinfo->VQ_start;
++		dwVQEndAddr = viaparinfo->VQ_end;
++
++		dwVQStartL = 0x50000000 | (dwVQStartAddr & 0xFFFFFF);
++		dwVQEndL = 0x51000000 | (dwVQEndAddr & 0xFFFFFF);
++		dwVQStartEndH = 0x52000000 |
++			((dwVQStartAddr & 0xFF000000) >> 24) |
++			((dwVQEndAddr & 0xFF000000) >> 16);
++		dwVQLen = 0x53000000 | (VQ_SIZE >> 3);
++		switch (viaparinfo->chip_info->gfx_chip_name) {
++		case UNICHROME_K8M890:
++		case UNICHROME_P4M900:
++			dwVQStartL |= 0x20000000;
++			dwVQEndL |= 0x20000000;
++			dwVQStartEndH |= 0x20000000;
++			dwVQLen |= 0x20000000;
++			break;
++		default:
++			break;
++		}
++
++		switch (viaparinfo->chip_info->gfx_chip_name) {
++		case UNICHROME_K8M890:
++		case UNICHROME_P4M900:
++			MMIO_OUT32(VIA_REG_CR_TRANSET, 0x00100000);
++			MMIO_OUT32(VIA_REG_CR_TRANSPACE, dwVQStartEndH);
++			MMIO_OUT32(VIA_REG_CR_TRANSPACE, dwVQStartL);
++			MMIO_OUT32(VIA_REG_CR_TRANSPACE, dwVQEndL);
++			MMIO_OUT32(VIA_REG_CR_TRANSPACE, dwVQLen);
++			MMIO_OUT32(VIA_REG_CR_TRANSPACE, 0x74301001);
++			MMIO_OUT32(VIA_REG_CR_TRANSPACE, 0x00000000);
++			break;
++		default:
++			MMIO_OUT32(VIA_REG_TRANSET, 0x00FE0000);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x080003FE);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x0A00027C);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x0B000260);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x0C000274);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x0D000264);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x0E000000);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x0F000020);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x1000027E);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x110002FE);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x200F0060);
++
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x00000006);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x40008C0F);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x44000000);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x45080C04);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x46800408);
++
++			MMIO_OUT32(VIA_REG_TRANSPACE, dwVQStartEndH);
++			MMIO_OUT32(VIA_REG_TRANSPACE, dwVQStartL);
++			MMIO_OUT32(VIA_REG_TRANSPACE, dwVQEndL);
++			MMIO_OUT32(VIA_REG_TRANSPACE, dwVQLen);
++			break;
++		}
++	} else {
++		/* Disable VQ */
++		switch (viaparinfo->chip_info->gfx_chip_name) {
++		case UNICHROME_K8M890:
++		case UNICHROME_P4M900:
++			MMIO_OUT32(VIA_REG_CR_TRANSET, 0x00100000);
++			MMIO_OUT32(VIA_REG_CR_TRANSPACE, 0x74301000);
++			break;
++		default:
++			MMIO_OUT32(VIA_REG_TRANSET, 0x00FE0000);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x00000004);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x40008C0F);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x44000000);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x45080C04);
++			MMIO_OUT32(VIA_REG_TRANSPACE, 0x46800408);
++			break;
++		}
++	}
++
++	viafb_set_2d_color_depth(viaparinfo->bpp);
++
++	MMIO_OUT32(VIA_REG_SRCBASE, 0x0);
++	MMIO_OUT32(VIA_REG_DSTBASE, 0x0);
++
++	MMIO_OUT32(VIA_REG_PITCH,
++		   VIA_PITCH_ENABLE |
++		   (((viaparinfo->hres *
++		      viaparinfo->bpp >> 3) >> 3) | (((viaparinfo->hres *
++						   viaparinfo->
++						   bpp >> 3) >> 3) << 16)));
++}
++
++void viafb_set_2d_color_depth(int bpp)
++{
++	u32 dwGEMode;
++
++	dwGEMode = MMIO_IN32(0x04) & 0xFFFFFCFF;
++
++	switch (bpp) {
++	case 16:
++		dwGEMode |= VIA_GEM_16bpp;
++		break;
++	case 32:
++		dwGEMode |= VIA_GEM_32bpp;
++		break;
++	default:
++		dwGEMode |= VIA_GEM_8bpp;
++		break;
++	}
++
++	/* Set BPP and Pitch */
++	MMIO_OUT32(VIA_REG_GEMODE, dwGEMode);
++}
++
++void viafb_hw_cursor_init(void)
++{
++	/* Set Cursor Image Base Address */
++	MMIO_OUT32(VIA_REG_CURSOR_MODE, viaparinfo->cursor_start);
++	MMIO_OUT32(VIA_REG_CURSOR_POS, 0x0);
++	MMIO_OUT32(VIA_REG_CURSOR_ORG, 0x0);
++	MMIO_OUT32(VIA_REG_CURSOR_BG, 0x0);
++	MMIO_OUT32(VIA_REG_CURSOR_FG, 0x0);
++}
++
++void viafb_show_hw_cursor(struct fb_info *info, int Status)
++{
++	u32 temp;
++	u32 iga_path = ((struct viafb_par *)(info->par))->iga_path;
++
++	temp = MMIO_IN32(VIA_REG_CURSOR_MODE);
++	switch (Status) {
++	case HW_Cursor_ON:
++		temp |= 0x1;
++		break;
++	case HW_Cursor_OFF:
++		temp &= 0xFFFFFFFE;
++		break;
++	}
++	switch (iga_path) {
++	case IGA2:
++		temp |= 0x80000000;
++		break;
++	case IGA1:
++	default:
++		temp &= 0x7FFFFFFF;
++	}
++	MMIO_OUT32(VIA_REG_CURSOR_MODE, temp);
++}
++
++int viafb_wait_engine_idle(void)
++{
++	int loop = 0;
++
++	while (!(MMIO_IN32(VIA_REG_STATUS) & VIA_VR_QUEUE_BUSY)
++	       && (loop++ < MAXLOOP))
++	       cpu_relax();
++
++	while ((MMIO_IN32(VIA_REG_STATUS) &
++		(VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY)) &&
++	       (loop++ < MAXLOOP))
++	       cpu_relax();
++
++	return loop >= MAXLOOP;
++}
+diff -Nur a/drivers/video/via/accel.h b/drivers/video/via/accel.h
+--- a/drivers/video/via/accel.h	1970-01-01 08:00:00.000000000 +0800
++++ b/drivers/video/via/accel.h	2008-06-30 08:53:33.000000000 +0800
+@@ -0,0 +1,181 @@
++/*
++ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
++
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation;
++ * either version 2, or (at your option) any later version.
++
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
++ * the implied warranty of MERCHANTABILITY or FITNESS FOR
++ * A PARTICULAR PURPOSE.See the GNU General Public License
++ * for more details.
++
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++#ifndef __ACCEL_H__
++#define __ACCEL_H__
++
++#define FB_ACCEL_VIA_UNICHROME  50
++
++/* MMIO Base Address Definition */
++#define MMIO_VGABASE                0x8000
++#define MMIO_CR_READ                (MMIO_VGABASE + 0x3D4)
++#define MMIO_CR_WRITE               (MMIO_VGABASE + 0x3D5)
++#define MMIO_SR_READ                (MMIO_VGABASE + 0x3C4)
++#define MMIO_SR_WRITE               (MMIO_VGABASE + 0x3C5)
++
++#define VIA_MMIO 1
++
++#if VIA_MMIO
++#define MMIO_OUT32(reg, val) writel(val, viaparinfo->io_virt + reg)
++#define MMIO_IN32(reg)      readl(viaparinfo->io_virt + reg)
++
++#else
++#define MMIO_OUT32(reg, val) outl(val, reg)
++#define MMIO_IN32(reg)      inl(reg)
++#endif
++
++/* HW Cursor Status Define */
++#define HW_Cursor_ON    0
++#define HW_Cursor_OFF   1
++
++#define CURSOR_SIZE     (8 * 1024)
++#define VQ_SIZE         (256 * 1024)
++
++#define VIA_MMIO_BLTBASE        0x200000
++#define VIA_MMIO_BLTSIZE        0x200000
++
++/* Defines for 2D registers */
++#define VIA_REG_GECMD           0x000
++#define VIA_REG_GEMODE          0x004
++#define VIA_REG_SRCPOS          0x008
++#define VIA_REG_DSTPOS          0x00C
++/* width and height */
++#define VIA_REG_DIMENSION       0x010
++#define VIA_REG_PATADDR         0x014
++#define VIA_REG_FGCOLOR         0x018
++#define VIA_REG_BGCOLOR         0x01C
++/* top and left of clipping */
++#define VIA_REG_CLIPTL          0x020
++/* bottom and right of clipping */
++#define VIA_REG_CLIPBR          0x024
++#define VIA_REG_OFFSET          0x028
++/* color key control */
++#define VIA_REG_KEYCONTROL      0x02C
++#define VIA_REG_SRCBASE         0x030
++#define VIA_REG_DSTBASE         0x034
++/* pitch of src and dst */
++#define VIA_REG_PITCH           0x038
++#define VIA_REG_MONOPAT0        0x03C
++#define VIA_REG_MONOPAT1        0x040
++/* from 0x100 to 0x1ff */
++#define VIA_REG_COLORPAT        0x100
++
++/* VIA_REG_PITCH(0x38): Pitch Setting */
++#define VIA_PITCH_ENABLE        0x80000000
++
++/* defines for VIA HW cursor registers */
++#define VIA_REG_CURSOR_MODE     0x2D0
++#define VIA_REG_CURSOR_POS      0x2D4
++#define VIA_REG_CURSOR_ORG      0x2D8
++#define VIA_REG_CURSOR_BG       0x2DC
++#define VIA_REG_CURSOR_FG       0x2E0
++
++/* VIA_REG_GEMODE(0x04): GE mode */
++#define VIA_GEM_8bpp            0x00000000
++#define VIA_GEM_16bpp           0x00000100
++#define VIA_GEM_32bpp           0x00000300
++
++/* VIA_REG_GECMD(0x00): 2D Engine Command  */
++#define VIA_GEC_NOOP            0x00000000
++#define VIA_GEC_BLT             0x00000001
++#define VIA_GEC_LINE            0x00000005
++
++/* Rotate Command */
++#define VIA_GEC_ROT             0x00000008
++
++#define VIA_GEC_SRC_XY          0x00000000
++#define VIA_GEC_SRC_LINEAR      0x00000010
++#define VIA_GEC_DST_XY          0x00000000
++#define VIA_GEC_DST_LINRAT      0x00000020
++
++#define VIA_GEC_SRC_FB          0x00000000
++#define VIA_GEC_SRC_SYS         0x00000040
++#define VIA_GEC_DST_FB          0x00000000
++#define VIA_GEC_DST_SYS         0x00000080
++
++/* source is mono */
++#define VIA_GEC_SRC_MONO        0x00000100
++/* pattern is mono */
++#define VIA_GEC_PAT_MONO        0x00000200
++/* mono src is opaque */
++#define VIA_GEC_MSRC_OPAQUE     0x00000000
++/* mono src is transparent */
++#define VIA_GEC_MSRC_TRANS      0x00000400
++/* pattern is in frame buffer */
++#define VIA_GEC_PAT_FB          0x00000000
++/* pattern is from reg setting */
++#define VIA_GEC_PAT_REG         0x00000800
++
++#define VIA_GEC_CLIP_DISABLE    0x00000000
++#define VIA_GEC_CLIP_ENABLE     0x00001000
++
++#define VIA_GEC_FIXCOLOR_PAT    0x00002000
++
++#define VIA_GEC_INCX            0x00000000
++#define VIA_GEC_DECY            0x00004000
++#define VIA_GEC_INCY            0x00000000
++#define VIA_GEC_DECX            0x00008000
++/* mono pattern is opaque */
++#define VIA_GEC_MPAT_OPAQUE     0x00000000
++/* mono pattern is transparent */
++#define VIA_GEC_MPAT_TRANS      0x00010000
++
++#define VIA_GEC_MONO_UNPACK     0x00000000
++#define VIA_GEC_MONO_PACK       0x00020000
++#define VIA_GEC_MONO_DWORD      0x00000000
++#define VIA_GEC_MONO_WORD       0x00040000
++#define VIA_GEC_MONO_BYTE       0x00080000
++
++#define VIA_GEC_LASTPIXEL_ON    0x00000000
++#define VIA_GEC_LASTPIXEL_OFF   0x00100000
++#define VIA_GEC_X_MAJOR         0x00000000
++#define VIA_GEC_Y_MAJOR         0x00200000
++#define VIA_GEC_QUICK_START     0x00800000
++
++/* defines for VIA 3D registers */
++#define VIA_REG_STATUS          0x400
++#define VIA_REG_CR_TRANSET      0x41C
++#define VIA_REG_CR_TRANSPACE	0x420
++#define VIA_REG_TRANSET         0x43C
++#define VIA_REG_TRANSPACE       0x440
++
++/* VIA_REG_STATUS(0x400): Engine Status */
++
++/* Command Regulator is busy */
++#define VIA_CMD_RGTR_BUSY       0x00000080
++/* 2D Engine is busy */
++#define VIA_2D_ENG_BUSY         0x00000002
++/* 3D Engine is busy */
++#define VIA_3D_ENG_BUSY         0x00000001
++/* Virtual Queue is busy */
++#define VIA_VR_QUEUE_BUSY       0x00020000
++
++#define MAXLOOP                 0xFFFFFF
++
++void viafb_init_accel(void);
++void viafb_init_2d_engine(void);
++void set_2d_color_depth(int);
++void viafb_hw_cursor_init(void);
++void viafb_show_hw_cursor(struct fb_info *info, int Status);
++int viafb_wait_engine_idle(void);
++void viafb_set_2d_color_depth(int bpp);
++
++#endif /* __ACCEL_H__ */
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
