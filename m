@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762637AbYF3Sgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760495AbYF3ShV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762637AbYF3Sgm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 14:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbYF3Sge
+	id S1760495AbYF3ShV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 14:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbYF3ShG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 14:36:34 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:10782 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752395AbYF3Sgd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 14:36:33 -0400
-Date: Mon, 30 Jun 2008 11:35:53 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: linux-pci@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Cc: mb@bu3sch.de, jbarnes@virtuousgeek.org,
-       jejb <James.Bottomley@HansenPartnership.com>,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH] PCI: add stub for pci_set_consistent_dma_mask()
-Message-Id: <20080630113553.c133307f.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 30 Jun 2008 14:37:06 -0400
+Received: from gw.goop.org ([64.81.55.164]:49662 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753148AbYF3ShF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 14:37:05 -0400
+Message-ID: <486927AB.1060006@goop.org>
+Date: Mon, 30 Jun 2008 11:36:27 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Nick Piggin <npiggin@suse.de>, Mark McLoughlin <markmc@redhat.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Eduardo Habkost <ehabkost@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Stephen Tweedie <sct@redhat.com>, x86@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for
+ 64-bit Xen support
+References: <20080626105722.GA12640@elte.hu> <20080626105818.GA13805@elte.hu> <4863A8E6.1010807@goop.org> <20080627160333.GA27072@elte.hu> <486539A3.3030102@goop.org> <20080629084318.GA28815@elte.hu> <48684CD4.7040403@goop.org> <20080630082135.GA22844@elte.hu> <20080630092209.GA29815@elte.hu> <48691524.5010806@goop.org> <20080630181221.GF23739@elte.hu>
+In-Reply-To: <20080630181221.GF23739@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>>> config and full log can be found at:
+>>>
+>>>  http://redhat.com/~mingo/misc/config-Mon_Jun_30_11_11_51_CEST_2008.bad
+>>>   
+>>>       
+>> That config doesn't build for me.  When I put it in place and do "make 
+>> oldconfig" it still asks for lots of config options (which I just set 
+>> to default).  But when I build it fails with:
+>>     
+>
+> try 'make ARCH=i386 oldconfig' - does it work better that way?
+>   
 
-When CONFIG_PCI=n, there is no stub for pci_set_consistent_dma_mask(),
-so add one like other similar stubs.  Otherwise there can be build errors,
-as here:
+Er, we're talking about 64-bit here, aren't we?  The log messages are 
+from a 64-bit kernel.
 
-linux-next-20080630/drivers/ssb/main.c:1175: error: implicit declaration of function 'pci_set_consistent_dma_mask'
+Well, it was the wrong config anyway, which I guess is the source of 
+this confusion.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- include/linux/pci.h |    5 +++++
- 1 file changed, 5 insertions(+)
+(I thought ARCH= to select 32/64 was going away now that the config has 
+the bitsize config?)
 
---- linux-next-20080630.orig/include/linux/pci.h
-+++ linux-next-20080630/include/linux/pci.h
-@@ -854,6 +854,11 @@ static inline int pci_set_dma_mask(struc
- 	return -EIO;
- }
- 
-+static inline int pci_set_consistent_dma_mask(struct pci_dev *dev, u64 mask)
-+{
-+	return -EIO;
-+}
-+
- static inline int pci_set_dma_max_seg_size(struct pci_dev *dev,
- 					unsigned int size)
- {
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+    J
