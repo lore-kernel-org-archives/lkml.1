@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbYF3GvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758980AbYF3Gvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758599AbYF3GvW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 02:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbYF3GvN
+	id S1758980AbYF3Gvh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 02:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758542AbYF3GvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 02:51:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53017 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754113AbYF3GvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 02:51:12 -0400
-Date: Mon, 30 Jun 2008 08:50:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Chris Friesen <cfriesen@nortel.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip/master] x86: nmi_watchdog - documentation fix
-Message-ID: <20080630065056.GB9561@elte.hu>
-References: <20080627154340.GC18957@cvg> <Pine.LNX.4.55.0806271652020.8868@cliff.in.clinika.pl> <20080627165937.2f1fb661@lxorguk.ukuu.org.uk> <4865160C.2040403@nortel.com> <20080627165125.GE18957@cvg> <20080627203204.2bdd7aed@lxorguk.ukuu.org.uk> <20080627200020.GG18957@cvg>
+	Mon, 30 Jun 2008 02:51:21 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:29936 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758100AbYF3GvS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 02:51:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=EGiL4Qq2KO/rnZzMs3usX5+XmfFxbhuyXZHbcN8Qs8ATD9ACbG+doNaaEjZ4EP2Y8d
+         9cZ/15Rm8Fm4tRDtMi2XsoRbboQE8TYqR2vsLVwbN8EGA/qoLoR4N8aKCOStuKBwE/9N
+         qnvcRvN05XJL5LPUkhMXmpnTyqdZUtn768a18=
+Message-ID: <ce513bcc0806292351t7f4ad933l920112381f4ebb4@mail.gmail.com>
+Date: Mon, 30 Jun 2008 09:51:16 +0300
+From: "Erez Zilber" <erezzi.list@gmail.com>
+To: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Should a block device enforce block atomicity?
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080627200020.GG18957@cvg>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+I have a question about block devices and whether they are required to
+enforce block atomicity:
 
-> [Alan Cox - Fri, Jun 27, 2008 at 08:32:04PM +0100]
-> | > > The following sounds better to me: "In kernels prior to 2.4.2-ac18 the 
-> | > > NMI-oopser is enabled..."  In this context the phrase itself is in the 
-> | > > present, but we point to past kernels.
-> | 
-> | Agreed.
-> | 
-> | > And the winner is? I'm not native English speaker so I can't select
-> | > a better candidate in {is,was} limited set.
-> | 
-> | The suggestion above.
-> | 
-> | Alan
-> | 
-> 
-> Thanks Alan, I've already sent the updated version. Hope you will find 
-> it in your mbox /I thought I've Cc'ed you/ ;)
+I read the code of drivers/block/brd.c, and I didn't see any locking
+when blocks are read/written. I also looked at the block layer code
+that calls brd and didn't find any locking there. Does it mean that
+there's no block atomicity (i.e. multiple threads can write a single
+block at the same time)? Is there any hidden assumption here? Is this
+the responsibility of the application to do that (e.g. not start a
+WRITE request before other READ/WRITE requests to the same block were
+completed)?
 
-applied to tip/x86/nmi-watchdog - thanks everyone.
-
-	Ingo
+Thanks,
+Erez
