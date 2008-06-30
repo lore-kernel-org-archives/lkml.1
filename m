@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762839AbYF3TQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763147AbYF3TSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762839AbYF3TQz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 15:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbYF3TQr
+	id S1763147AbYF3TSb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 15:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbYF3TSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 15:16:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52266 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797AbYF3TQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 15:16:46 -0400
-Date: Mon, 30 Jun 2008 21:16:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "Huang, Ying" <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       andi@firstfloor.org, mingo@redhat.com, tglx@linutronix.de,
+	Mon, 30 Jun 2008 15:18:21 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57358 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750797AbYF3TSU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 15:18:20 -0400
+Subject: Re: [Linux-ATM-General] [PATCH] firmware: convert Ambassador ATM
+	driver to request_firmware()
+From: David Woodhouse <dwmw2@infradead.org>
+To: "Chas Williams (CONTRACTOR)" <chas@cmf.nrl.navy.mil>
+Cc: netdev@vger.kernel.org, linux-atm-general@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] x86 boot: add E820_RESVD_KERN
-Message-ID: <20080630191628.GA15366@elte.hu>
-References: <86802c440806260247p19f5b850r8757c51280912ae9@mail.gmail.com> <86802c440806261922n3f13b454o5e543e28d9a34e8e@mail.gmail.com> <1214534894.10865.6.camel@caritas-dev.intel.com> <86802c440806271505n78275758re235ef6616d95b3d@mail.gmail.com> <1214809434.2887.8.camel@caritas-dev.intel.com> <86802c440806300034x5bb9b7a1s168bbeaee17e5124@mail.gmail.com> <1214812303.3187.10.camel@caritas-dev.intel.com> <86802c440806300215w31abbcb3h6a42395e11701713@mail.gmail.com> <1214818706.23677.8.camel@caritas-dev.intel.com> <86802c440806301205y35563326rd2ada495a0024441@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440806301205y35563326rd2ada495a0024441@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200806301610.m5UGAlqr025302@cmf.nrl.navy.mil>
+References: <200806301610.m5UGAlqr025302@cmf.nrl.navy.mil>
+Content-Type: text/plain
+Date: Mon, 30 Jun 2008 20:18:12 +0100
+Message-Id: <1214853492.10393.350.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-
-> > For find_e820_area, this is safe enough. But what about conflict 
-> > between setup_data and ebda or ramdisk?
+On Mon, 2008-06-30 at 12:10 -0400, Chas Williams (CONTRACTOR) wrote:
+> In message <1214837678.10393.345.camel@pmac.infradead.org>,David Woodhouse writ
+> es:
+> >> i removed the #ifdef's from around MODULE_LICENSE().  there shouldnt
+> >> be any need for #ifdef's around MODULE_FIRMWARE() either.
+> >
+> >Unless you put #ifdef CONFIG_SBUS around the
+> >MODULE_FIRMWARE("sba200e_ecd.bin") you will be requesting that firmware
+> >even on non-sbus machines. Likewise little-endian vs. big-endian on PCI.
 > 
-> can you have setup_data and ebda at the same time?
-> 
-> setup_data and ramdisk should be ok, because bootloader is supposed to 
-> make them not to be conflicts.
+> does it?  i was under the impression that MODULE_FIRMWARE() just
+> provides a hint that modinfo can read.  request_firmware() still
+> the requestor for the firmware image.
 
-the more sanity checks we do before relying on some crutial data, the 
-better. It's easier to panic or sanitize data in some structured way and 
-complain about it in the syslog than to let things get corrupted. Boot 
-loaders are ... not unknown to be have bugs too, at times.
+True. But if you were to put the driver into an initrd, for example,
+then the tools would pick out all three firmwares to include in the
+initrd too. Given that we _do_ know at runtime that we'll need a maximum
+of two of the three, it makes sense to list only the ones we might use.
 
-	Ingo
+-- 
+dwmw2
+
