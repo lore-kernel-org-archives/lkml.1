@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761603AbYF3MYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757703AbYF3MZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761603AbYF3MYH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 08:24:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbYF3MXw
+	id S1757703AbYF3MZf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 08:25:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757517AbYF3MZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 08:23:52 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:35903 "EHLO
+	Mon, 30 Jun 2008 08:25:24 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:36208 "EHLO
 	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753878AbYF3MXv (ORCPT
+	with ESMTP id S1753917AbYF3MZW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 08:23:51 -0400
+	Mon, 30 Jun 2008 08:25:22 -0400
 To: akpm@linux-foundation.org, viro@ZenIV.linux.org.uk
 Cc: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
        "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
@@ -17,224 +17,379 @@ Cc: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
        "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        axboe@kernel.dk, mtk.manpages@googlemail.com
-Subject: [PATCH 1/3] Implement generic freeze feature
-Message-Id: <20080630212323t-sato@mail.jp.nec.com>
+Subject: [PATCH 3/3] Add timeout feature
+Message-Id: <20080630212450t-sato@mail.jp.nec.com>
 Mime-Version: 1.0
 X-Mailer: WeMail32[2.51] ID:1K0086
 From: Takashi Sato <t-sato@yk.jp.nec.com>
-Date: Mon, 30 Jun 2008 21:23:23 +0900
+Date: Mon, 30 Jun 2008 21:24:50 +0900
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ioctls for the generic freeze feature are below.
+The timeout feature is added to freeze ioctl.  And new ioctl
+to reset the timeout period is added.
 o Freeze the filesystem
-  int ioctl(int fd, int FIFREEZE, arg)
+  int ioctl(int fd, int FIFREEZE, long *timeout_sec)
     fd: The file descriptor of the mountpoint
     FIFREEZE: request code for the freeze
-    arg: Ignored
+    timeout_sec: the timeout period in seconds
+             If it's 0 or 1, the timeout isn't set.
+             This special case of "1" is implemented to keep
+             the compatibility with XFS applications.
     Return value: 0 if the operation succeeds. Otherwise, -1
 
-o Unfreeze the filesystem
-  int ioctl(int fd, int FITHAW, arg)
-    fd: The file descriptor of the mountpoint
-    FITHAW: request code for unfreeze
-    arg: Ignored
+o Reset the timeout period
+  int ioctl(int fd, int FIFREEZE_RESET_TIMEOUT, long *timeout_sec)
+    fd:file descriptor of mountpoint
+    FIFREEZE_RESET_TIMEOUT: request code for reset of timeout period
+    timeout_sec: new timeout period in seconds
     Return value: 0 if the operation succeeds. Otherwise, -1
+    Error number: If the filesystem has already been unfrozen,
+                  errno is set to EINVAL.
 
 Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
 Signed-off-by: Masayuki Hamaguchi <m-hamaguchi@ys.jp.nec.com>
 ---
-diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7.org/fs/buffer.c linux-2.6.26-rc7-freeze/fs/bu
-ffer.c
---- linux-2.6.26-rc7.org/fs/buffer.c	2008-06-25 12:08:10.000000000 +0900
-+++ linux-2.6.26-rc7-freeze/fs/buffer.c	2008-06-27 09:18:19.000000000 +0900
-@@ -201,6 +201,21 @@ struct super_block *freeze_bdev(struct b
+diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7-xfs/drivers/md/dm.c linux-2.6.26-rc7-timeout/
+drivers/md/dm.c
+--- linux-2.6.26-rc7-xfs/drivers/md/dm.c	2008-06-25 12:06:59.000000000 +0900
++++ linux-2.6.26-rc7-timeout/drivers/md/dm.c	2008-06-25 16:28:40.000000000 +0900
+@@ -1407,7 +1407,7 @@ static int lock_fs(struct mapped_device 
+ 
+ 	WARN_ON(md->frozen_sb);
+ 
+-	md->frozen_sb = freeze_bdev(md->suspended_bdev);
++	md->frozen_sb = freeze_bdev(md->suspended_bdev, 0);
+ 	if (IS_ERR(md->frozen_sb)) {
+ 		r = PTR_ERR(md->frozen_sb);
+ 		md->frozen_sb = NULL;
+diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7-xfs/fs/block_dev.c linux-2.6.26-rc7-timeout/f
+s/block_dev.c
+--- linux-2.6.26-rc7-xfs/fs/block_dev.c	2008-06-25 12:07:19.000000000 +0900
++++ linux-2.6.26-rc7-timeout/fs/block_dev.c	2008-06-25 16:30:49.000000000 +0900
+@@ -285,6 +285,8 @@ static void init_once(struct kmem_cache 
+ 	INIT_LIST_HEAD(&bdev->bd_holder_list);
+ #endif
+ 	inode_init_once(&ei->vfs_inode);
++	/* Setup freeze timeout function. */
++	INIT_DELAYED_WORK(&bdev->bd_freeze_timeout, freeze_timeout);
+ }
+ 
+ static inline void __bd_forget(struct inode *inode)
+diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7-xfs/fs/buffer.c linux-2.6.26-rc7-timeout/fs/b
+uffer.c
+--- linux-2.6.26-rc7-xfs/fs/buffer.c	2008-06-30 12:59:53.000000000 +0900
++++ linux-2.6.26-rc7-timeout/fs/buffer.c	2008-06-27 10:59:55.000000000 +0900
+@@ -190,14 +190,18 @@ int fsync_bdev(struct block_device *bdev
+ 
+ /**
+  * freeze_bdev  --  lock a filesystem and force it into a consistent state
+- * @bdev:	blockdevice to lock
++ * @bdev:              blockdevice to lock
++ * @timeout_msec:      timeout period
+  *
+  * This takes the block device bd_mount_sem to make sure no new mounts
+  * happen on bdev until thaw_bdev() is called.
+  * If a superblock is found on this device, we take the s_umount semaphore
+  * on it to make sure nobody unmounts until the snapshot creation is done.
++ * If timeout_msec is bigger than 0, this registers the delayed work for
++ * timeout of the freeze feature.
+  */
+-struct super_block *freeze_bdev(struct block_device *bdev)
++struct super_block *freeze_bdev(struct block_device *bdev,
++				unsigned int timeout_msec)
  {
  	struct super_block *sb;
  
-+	if (test_and_set_bit(BD_FREEZE_OP, &bdev->bd_state))
-+		return ERR_PTR(-EBUSY);
-+
-+	sb = get_super(bdev);
-+
-+	/* If super_block has been already frozen, return. */
-+	if (sb && sb->s_frozen != SB_UNFROZEN) {
-+		drop_super(sb);
-+		clear_bit(BD_FREEZE_OP, &bdev->bd_state);
-+		return sb;
-+	}
-+
-+	if (sb)
-+		drop_super(sb);
-+
- 	down(&bdev->bd_mount_sem);
- 	sb = get_super(bdev);
- 	if (sb && !(sb->s_flags & MS_RDONLY)) {
-@@ -219,6 +234,8 @@ struct super_block *freeze_bdev(struct b
+@@ -234,6 +238,10 @@ struct super_block *freeze_bdev(struct b
  	}
  
  	sync_blockdev(bdev);
-+	clear_bit(BD_FREEZE_OP, &bdev->bd_state);
++	/* Setup unfreeze timer. */
++	if (timeout_msec > 0)
++		add_freeze_timeout(bdev, timeout_msec);
 +
+ 	clear_bit(BD_FREEZE_OP, &bdev->bd_state);
+ 
  	return sb;	/* thaw_bdev releases s->s_umount and bd_mount_sem */
- }
- EXPORT_SYMBOL(freeze_bdev);
-@@ -230,8 +247,17 @@ EXPORT_SYMBOL(freeze_bdev);
-  *
-  * Unlocks the filesystem and marks it writeable again after freeze_bdev().
-  */
--void thaw_bdev(struct block_device *bdev, struct super_block *sb)
-+int thaw_bdev(struct block_device *bdev, struct super_block *sb)
- {
-+
-+	if (test_and_set_bit(BD_FREEZE_OP, &bdev->bd_state))
-+		return -EBUSY;
-+
-+	if (sb && sb->s_frozen == SB_UNFROZEN) {
-+		clear_bit(BD_FREEZE_OP, &bdev->bd_state);
-+		return 0;
-+	}
+@@ -258,6 +266,9 @@ int thaw_bdev(struct block_device *bdev,
+ 		return 0;
+ 	}
+ 
++	/* Delete unfreeze timer. */
++	del_freeze_timeout(bdev);
 +
  	if (sb) {
  		BUG_ON(sb->s_bdev != bdev);
  
-@@ -244,6 +270,8 @@ void thaw_bdev(struct block_device *bdev
- 	}
+diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7-xfs/fs/ioctl.c linux-2.6.26-rc7-timeout/fs/io
+ctl.c
+--- linux-2.6.26-rc7-xfs/fs/ioctl.c	2008-06-25 12:07:20.000000000 +0900
++++ linux-2.6.26-rc7-timeout/fs/ioctl.c	2008-06-27 08:49:58.000000000 +0900
+@@ -145,22 +145,47 @@ static int ioctl_fioasync(unsigned int f
+  * ioctl_freeze - Freeze the filesystem.
+  *
+  * @filp:	target file
++ * @argp:       timeout value(sec)
+  *
+  * Call freeze_bdev() to freeze the filesystem.
+  */
+-static int ioctl_freeze(struct file *filp)
++static int ioctl_freeze(struct file *filp, int __user *argp)
+ {
++	int timeout_sec;
++	unsigned int timeout_msec;
+ 	struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
++	int error;
  
- 	up(&bdev->bd_mount_sem);
-+	clear_bit(BD_FREEZE_OP, &bdev->bd_state);
-+	return 0;
- }
- EXPORT_SYMBOL(thaw_bdev);
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
  
-diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7.org/fs/ioctl.c linux-2.6.26-rc7-freeze/fs/ioc
-tl.c
---- linux-2.6.26-rc7.org/fs/ioctl.c	2008-06-25 12:08:14.000000000 +0900
-+++ linux-2.6.26-rc7-freeze/fs/ioctl.c	2008-06-25 12:00:41.000000000 +0900
-@@ -13,6 +13,7 @@
- #include <linux/security.h>
- #include <linux/module.h>
- #include <linux/uaccess.h>
-+#include <linux/buffer_head.h>
+-	/* If filesystem doesn't support freeze feature, return. */
++	/* If filesystem doesn't support freeze feature, return EOPNOTSUPP. */
+ 	if (sb->s_op->write_super_lockfs == NULL)
+ 		return -EOPNOTSUPP;
  
- #include <asm/ioctls.h>
++	/* If a regular file or a directory isn't specified, return EINVAL. */
++	if (sb->s_bdev == NULL)
++		return -EINVAL;
++
++	/* arg(sec) to tick value. */
++	error = get_user(timeout_sec, argp);
++	if (error != 0)
++		return error;
++
++	if (timeout_sec < 0 || timeout_sec > UINT_MAX/1000)
++		return -EINVAL;
++
++	/*
++	 * If 1 is specified as the timeout period it is changed into 0
++	 * to retain compatibility with XFS's xfs_freeze.
++	 */
++	if (timeout_sec == 1)
++		timeout_sec = 0;
++
++	timeout_msec = timeout_sec * 1000;
++
+ 	/* Freeze */
+-	sb = freeze_bdev(sb->s_bdev);
++	sb = freeze_bdev(sb->s_bdev, timeout_msec);
+ 	if (IS_ERR(sb))
+ 		return PTR_ERR(sb);
+ 	return 0;
+@@ -180,11 +205,61 @@ static int ioctl_thaw(struct file *filp)
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
  
-@@ -141,6 +142,49 @@ static int ioctl_fioasync(unsigned int f
++	/* If a regular file or a directory isn't specified, return EINVAL. */
++	if (sb->s_bdev == NULL)
++		return -EINVAL;
++
+ 	/* Thaw */
+ 	return thaw_bdev(sb->s_bdev, sb);
  }
  
  /*
-+ * ioctl_freeze - Freeze the filesystem.
++ * ioctl_freeze_reset_timeout - Reset timeout for freeze.
 + *
-+ * @filp:	target file
++ * @filp:       target file
++ * @argp:       timeout value(sec)
 + *
-+ * Call freeze_bdev() to freeze the filesystem.
++ * Reset timeout for freeze.
 + */
-+static int ioctl_freeze(struct file *filp)
++static int
++ioctl_freeze_reset_timeout(struct file *filp, int __user *argp)
 +{
++	int timeout_sec;
++	unsigned int timeout_msec;
 +	struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
++	int error;
 +
 +	if (!capable(CAP_SYS_ADMIN))
 +		return -EPERM;
 +
-+	/* If filesystem doesn't support freeze feature, return. */
-+	if (sb->s_op->write_super_lockfs == NULL)
-+		return -EOPNOTSUPP;
++	/* If a regular file or a directory isn't specified, return EINVAL. */
++	if (sb->s_bdev == NULL)
++		return -EINVAL;
 +
-+	/* Freeze */
-+	sb = freeze_bdev(sb->s_bdev);
-+	if (IS_ERR(sb))
-+		return PTR_ERR(sb);
++	/* arg(sec) to tick value */
++	error = get_user(timeout_sec, argp);
++	if (error)
++		return error;
++
++	if (timeout_sec <= 0 || timeout_sec > UINT_MAX/1000)
++		return -EINVAL;
++
++	timeout_msec = timeout_sec * 1000;
++
++	if (test_and_set_bit(BD_FREEZE_OP, &sb->s_bdev->bd_state))
++		return -EBUSY;
++	if (sb->s_frozen == SB_UNFROZEN) {
++		clear_bit(BD_FREEZE_OP, &sb->s_bdev->bd_state);
++		return -EINVAL;
++	}
++	/* setup unfreeze timer */
++	add_freeze_timeout(sb->s_bdev, timeout_msec);
++	clear_bit(BD_FREEZE_OP, &sb->s_bdev->bd_state);
++
 +	return 0;
-+}
-+
-+/*
-+ * ioctl_thaw - Thaw the filesystem.
-+ *
-+ * @filp:	target file
-+ *
-+ * Call thaw_bdev() to thaw the filesystem.
-+ */
-+static int ioctl_thaw(struct file *filp)
-+{
-+	struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
-+
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+
-+	/* Thaw */
-+	return thaw_bdev(sb->s_bdev, sb);
 +}
 +
 +/*
   * When you add any new common ioctls to the switches above and below
   * please update compat_sys_ioctl() too.
   *
-@@ -181,6 +225,15 @@ int do_vfs_ioctl(struct file *filp, unsi
- 		} else
- 			error = -ENOTTY;
+@@ -227,13 +302,17 @@ int do_vfs_ioctl(struct file *filp, unsi
  		break;
-+
-+	case FIFREEZE:
-+		error = ioctl_freeze(filp);
-+		break;
-+
-+	case FITHAW:
-+		error = ioctl_thaw(filp);
+ 
+ 	case FIFREEZE:
+-		error = ioctl_freeze(filp);
++		error = ioctl_freeze(filp, argp);
+ 		break;
+ 
+ 	case FITHAW:
+ 		error = ioctl_thaw(filp);
+ 		break;
+ 
++	case FIFREEZE_RESET_TIMEOUT:
++		error = ioctl_freeze_reset_timeout(filp, argp);
 +		break;
 +
  	default:
  		if (S_ISREG(filp->f_path.dentry->d_inode->i_mode))
  			error = file_ioctl(filp, cmd, arg);
-diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7.org/include/linux/buffer_head.h linux-2.6.26-
-rc7-freeze/include/linux/buffer_head.h
---- linux-2.6.26-rc7.org/include/linux/buffer_head.h	2008-06-25 12:08:19.000000000 +0900
-+++ linux-2.6.26-rc7-freeze/include/linux/buffer_head.h	2008-06-25 12:00:45.000000000 +0900
-@@ -171,7 +171,7 @@ void __wait_on_buffer(struct buffer_head
+diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7-xfs/fs/super.c linux-2.6.26-rc7-timeout/fs/su
+per.c
+--- linux-2.6.26-rc7-xfs/fs/super.c	2008-06-30 16:41:48.000000000 +0900
++++ linux-2.6.26-rc7-timeout/fs/super.c	2008-06-30 17:30:38.000000000 +0900
+@@ -980,3 +980,60 @@ struct vfsmount *kern_mount_data(struct 
+ }
+ 
+ EXPORT_SYMBOL_GPL(kern_mount_data);
++
++/*
++ * freeze_timeout - Thaw the filesystem.
++ *
++ * @work:	work queue (delayed_work.work)
++ *
++ * Called by the delayed work when elapsing the timeout period.
++ * Thaw the filesystem.
++ */
++void freeze_timeout(struct work_struct *work)
++{
++	struct block_device *bd = container_of(work,
++			struct block_device, bd_freeze_timeout.work);
++	struct super_block *sb = get_super(bd);
++
++	thaw_bdev(bd, sb);
++
++	if (sb)
++		drop_super(sb);
++}
++EXPORT_SYMBOL_GPL(freeze_timeout);
++
++/*
++ * add_freeze_timeout - Add timeout for freeze.
++ *
++ * @bdev:		block device struct
++ * @timeout_msec:	timeout period
++ *
++ * Add the delayed work for freeze timeout to the delayed work queue.
++ */
++void add_freeze_timeout(struct block_device *bdev, unsigned int timeout_msec)
++{
++	s64 timeout_jiffies = msecs_to_jiffies(timeout_msec);
++
++	/* Set delayed work queue */
++	cancel_delayed_work_sync(&bdev->bd_freeze_timeout);
++	schedule_delayed_work(&bdev->bd_freeze_timeout, timeout_jiffies);
++}
++
++/*
++ * del_freeze_timeout - Delete timeout for freeze.
++ *
++ * @bdev:	block device struct
++ *
++ * Delete the delayed work for freeze timeout from the delayed work queue.
++ */
++void del_freeze_timeout(struct block_device *bdev)
++{
++	/*
++	 * It's possible that the delayed work task (freeze_timeout()) calls
++	 * del_freeze_timeout().  If the delayed work task calls
++	 * cancel_delayed_work_sync((), the deadlock will occur.
++	 * So we need this check (delayed_work_pending()).
++	 */
++	if (delayed_work_pending(&bdev->bd_freeze_timeout))
++		cancel_delayed_work_sync(&bdev->bd_freeze_timeout);
++}
+diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7-xfs/fs/xfs/xfs_fsops.c linux-2.6.26-rc7-timeo
+ut/fs/xfs/xfs_fsops.c
+--- linux-2.6.26-rc7-xfs/fs/xfs/xfs_fsops.c	2008-06-25 12:07:19.000000000 +0900
++++ linux-2.6.26-rc7-timeout/fs/xfs/xfs_fsops.c	2008-06-25 16:30:48.000000000 +0900
+@@ -619,7 +619,7 @@ xfs_fs_goingdown(
+ {
+ 	switch (inflags) {
+ 	case XFS_FSOP_GOING_FLAGS_DEFAULT: {
+-		struct super_block *sb = freeze_bdev(mp->m_super->s_bdev);
++		struct super_block *sb = freeze_bdev(mp->m_super->s_bdev, 0);
+ 
+ 		if (sb && !IS_ERR(sb)) {
+ 			xfs_force_shutdown(mp, SHUTDOWN_FORCE_UMOUNT);
+diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7-xfs/include/linux/buffer_head.h linux-2.6.26-
+rc7-timeout/include/linux/buffer_head.h
+--- linux-2.6.26-rc7-xfs/include/linux/buffer_head.h	2008-06-25 12:07:24.000000000 +0900
++++ linux-2.6.26-rc7-timeout/include/linux/buffer_head.h	2008-06-27 11:11:38.000000000 +0900
+@@ -170,7 +170,8 @@ int sync_blockdev(struct block_device *b
+ void __wait_on_buffer(struct buffer_head *);
  wait_queue_head_t *bh_waitq_head(struct buffer_head *bh);
  int fsync_bdev(struct block_device *);
- struct super_block *freeze_bdev(struct block_device *);
--void thaw_bdev(struct block_device *, struct super_block *);
-+int thaw_bdev(struct block_device *, struct super_block *);
+-struct super_block *freeze_bdev(struct block_device *);
++struct super_block *freeze_bdev(struct block_device *,
++				unsigned int timeout_msec);
+ int thaw_bdev(struct block_device *, struct super_block *);
  int fsync_super(struct super_block *);
  int fsync_no_super(struct block_device *);
- struct buffer_head *__find_get_block(struct block_device *bdev, sector_t block,
-diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7.org/include/linux/fs.h linux-2.6.26-rc7-freez
-e/include/linux/fs.h
---- linux-2.6.26-rc7.org/include/linux/fs.h	2008-06-25 12:08:19.000000000 +0900
-+++ linux-2.6.26-rc7-freeze/include/linux/fs.h	2008-06-30 16:40:49.000000000 +0900
-@@ -223,6 +223,8 @@ extern int dir_notify_enable;
- #define BMAP_IOCTL 1		/* obsolete - kept for compatibility */
- #define FIBMAP	   _IO(0x00,1)	/* bmap access */
+diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7-xfs/include/linux/fs.h linux-2.6.26-rc7-timeo
+ut/include/linux/fs.h
+--- linux-2.6.26-rc7-xfs/include/linux/fs.h	2008-06-30 16:42:11.000000000 +0900
++++ linux-2.6.26-rc7-timeout/include/linux/fs.h	2008-06-30 16:43:13.000000000 +0900
+@@ -8,6 +8,7 @@
+ 
+ #include <linux/limits.h>
+ #include <linux/ioctl.h>
++#include <linux/workqueue.h>
+ 
+ /*
+  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
+@@ -225,6 +226,7 @@ extern int dir_notify_enable;
  #define FIGETBSZ   _IO(0x00,2)	/* get the block size used for bmap */
-+#define FIFREEZE	_IOWR('X', 119, int)	/* Freeze */
-+#define FITHAW		_IOWR('X', 120, int)	/* Thaw */
+ #define FIFREEZE	_IOWR('X', 119, int)	/* Freeze */
+ #define FITHAW		_IOWR('X', 120, int)	/* Thaw */
++#define	FIFREEZE_RESET_TIMEOUT	_IO(0x00, 3)	/* Reset freeze timeout */
  
  #define	FS_IOC_GETFLAGS			_IOR('f', 1, long)
  #define	FS_IOC_SETFLAGS			_IOW('f', 2, long)
-@@ -494,6 +496,13 @@ int pagecache_write_end(struct file *, s
- 				loff_t pos, unsigned len, unsigned copied,
- 				struct page *page, void *fsdata);
+@@ -559,6 +561,8 @@ struct block_device {
  
-+/*
-+ * Bits in block_device.bd_state.
-+ */
-+enum bd_state {
-+	BD_FREEZE_OP	/* In freeze operation */
-+};
-+
- struct backing_dev_info;
- struct address_space {
- 	struct inode		*host;		/* owner: inode, block_device */
-@@ -547,6 +556,9 @@ struct block_device {
- 	 * care to not mess up bd_private for that case.
- 	 */
- 	unsigned long		bd_private;
-+
-+	/* State of the block device. (Used by freeze feature) */
-+	unsigned long		bd_state;
+ 	/* State of the block device. (Used by freeze feature) */
+ 	unsigned long		bd_state;
++	/* Delayed work for freeze */
++	struct delayed_work     bd_freeze_timeout;
  };
  
  /*
+@@ -2147,5 +2151,10 @@ int proc_nr_files(struct ctl_table *tabl
+ 
+ int get_filesystem_list(char * buf);
+ 
++extern void add_freeze_timeout(struct block_device *bdev,
++				unsigned int timeout_msec);
++extern void del_freeze_timeout(struct block_device *bdev);
++extern void freeze_timeout(struct work_struct *work);
++
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_FS_H */
