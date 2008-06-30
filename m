@@ -1,128 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763943AbYF3Syc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763536AbYF3Szz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763943AbYF3Syc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 14:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754979AbYF3SyW
+	id S1763536AbYF3Szz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 14:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbYF3Szp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 14:54:22 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:26336 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753936AbYF3SyV (ORCPT
+	Mon, 30 Jun 2008 14:55:45 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:4214 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128AbYF3Szn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 14:54:21 -0400
-Message-ID: <48692B9C.7090608@nokia.com>
-Date: Mon, 30 Jun 2008 21:53:16 +0300
-From: Stefan Becker <Stefan.Becker@nokia.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 30 Jun 2008 14:55:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=bl1W/1Oa1aS2FBORFB+ZhF5scgbsMCzMY0MrGPz/7pba/p67ai4JHEEdYSlFYYqy65
+         xcqkxSmFes6ZIj88vNIQdRBesxOkTQtlMgC0MxBRoOuQQZnEkg8pWeDECTcoU4SjcWIS
+         Duf6gc7COH0w83h/0FHtg1e1OuHVQWBQDDaMQ=
+Message-ID: <ea11fea30806301155u3daccf0eo2daf690396b5616f@mail.gmail.com>
+Date: Tue, 1 Jul 2008 00:25:37 +0530
+From: "Manish Katiyar" <mkatiyar@gmail.com>
+To: linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] ext4 : Remove unused variable journal from ext4_show_options
 MIME-Version: 1.0
-To: ext Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-CC: ext Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] USB: fix interrupt disabling for HCDs with shared interrupt
- handlers
-References: <Pine.LNX.4.44L0.0806301035510.2708-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0806301035510.2708-100000@iolanthe.rowland.org>
-Content-Type: multipart/mixed;
- boundary="------------050607060603090407040201"
-X-OriginalArrivalTime: 30 Jun 2008 18:54:07.0328 (UTC) FILETIME=[AC99BE00:01C8DAE2]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050607060603090407040201
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+=======================================================================
 
-Hi,
-
-here is the proposed patch to fix the problem. I hope I used git 
-correctly to generate it...
-
-Regards,
-
-	Stefan
+Signed-off-by : Manish Katiyar <mkatiyar@gmail.com>
 
 ---
-Stefan Becker
-E-Mail: Stefan.Becker@nokia.com
+ fs/ext4/super.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
---------------050607060603090407040201
-Content-Type: text/plain;
- name="usb-fix-shared-interrupts-disabling.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="usb-fix-shared-interrupts-disabling.patch"
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index cb96f12..d9d12c1 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -671,7 +671,6 @@ static int ext4_show_options(struct seq_file *seq,
+struct vfsmount *vfs)
+        unsigned long def_mount_opts;
+        struct super_block *sb = vfs->mnt_sb;
+        struct ext4_sb_info *sbi = EXT4_SB(sb);
+-       journal_t *journal = sbi->s_journal;
+        struct ext4_super_block *es = sbi->s_es;
 
-RnJvbSA0NDU1NzViMjlhNDQ5MDU3Mjk0YWNmNjFjN2Q1MWM1ZjcwNDkwNjc2IE1vbiBTZXAg
-MTcgMDA6MDA6MDAgMjAwMQpGcm9tOiBTdGVmYW4gQmVja2VyIDxzdGVmYW4uYmVja2VyQG5v
-a2lhLmNvbT4KRGF0ZTogTW9uLCAzMCBKdW4gMjAwOCAyMToxODoyOSArMDMwMApTdWJqZWN0
-OiBbUEFUQ0hdIFVTQjogZml4IGludGVycnVwdCBkaXNhYmxpbmcgZm9yIEhDRHMgd2l0aCBz
-aGFyZWQgaW50ZXJydXB0IGhhbmRsZXJzCgpBcyBoYXMgYmVlbiBkaXNjdXNzZWQgc2V2ZXJh
-bCB0aW1lcyBvbiBMS01MLCBJUlFGX1NIQVJFRCB8IElSUUZfRElTQUJMRUQKZG9lc24ndCB3
-b3JrIHRvZ2V0aGVyIHJlbGlhYmx5LCBpLmUuIGEgc2hhcmVkIGludGVycnVwdCBoYW5kbGVy
-IENBTidUIGJlCmNlcnRhaW4gdG8gYmUgY2FsbGVkIHdpdGggaW50ZXJydXB0cyBkaXNhYmxl
-ZC4gTW9zdCBVU0IgSENEIGhhbmRsZXJzIHVzZQpJUlFGX0RJU0FCTEVEIGFuZCB0aGVyZWZv
-cmUgaGF2b2MgY2FuIGJyZWFrIG91dCBpZiB0aGV5IHNoYXJlIHRoZWlyCmludGVycnVwdCB3
-aXRoIGEgaGFuZGxlciB0aGF0IGRvZXNuJ3QgdXNlIGl0LgoKT24gbXkgdGVzdCBtYWNoaW5l
-IHRoZSB5ZW50YV9zb2NrZXQgaW50ZXJydXB0IGhhbmRsZXIgKG5vIElSUUZfRElTQUJMRUQp
-CndhcyByZWdpc3RlcmVkIGJlZm9yZSBlaGNpX2hjZCBhbmQgb25lIHVoY2lfaGNkIGluc3Rh
-bmNlLiBUaGVyZWZvcmUgYWxsCnVzYl9oY2RfaXJxKCkgaW52b2NhdGlvbnMgZm9yIGVoY2lf
-aGNkIGFuZCBmb3Igb25lIHVoY2lfaGNkIGluc3RhbmNlCmhhcHBlbmVkIHdpdGggaW50ZXJy
-dXB0cyBlbmFibGVkLiBUaGF0IGxlZCB0byByYW5kb20gbG9ja3VwcyBhcyBVU0IgY29yZQpI
-Q0QgZnVuY3Rpb25zIHRoYXQgYWNxdWlyZSB0aGUgc2FtZSBzcGlubG9jayBjb3VsZCBiZSBj
-YWxsZWQgdHdpY2UKZnJvbSBpbnRlcnJ1cHQgaGFuZGxlcnMuCgpUaGlzIHBhdGNoIGRvZXNu
-J3QgbW9kaWZ5IHRoZSBpbnRlcmZhY2Ugb2YgdXNiX2FkZF9oY2QoKSwgaS5lLiBIQ0QgY29k
-ZQpjYW4gc3RpbGwgdXNlIElSUUZfRElTQUJMRUQuIEl0IHdpbGwgbm93IHNpbGVudGx5IGNv
-bnZlcnQgdGhpcyBpbnRvIGFuCmludGVybmFsIEhDRCBmbGFnIGFuZCBjbGVhciBJUlFGX0RJ
-U0FCTEVEIGJlZm9yZSByZXF1ZXN0aW5nIHRoZSBpbnRlcnJ1cHQKZnJvbSB0aGUgTGludXgg
-Y29yZS4gdXNiX2hjZF9pcnEoKSB3aWxsIGNoZWNrIHRoaXMgZmxhZyB0byBkaXNhYmxlL3Jl
-LWVuYWJsZQp0aGUgaW50ZXJydXB0cyBvbiBhIGNhc2UgYnkgY2FzZSBiYXNpcy4KClNpZ25l
-ZC1vZmYtYnk6IFN0ZWZhbiBCZWNrZXIgPHN0ZWZhbi5iZWNrZXJAbm9raWEuY29tPgoKZGlm
-ZiAtLWdpdCBhL2RyaXZlcnMvdXNiL2NvcmUvaGNkLmMgYi9kcml2ZXJzL3VzYi9jb3JlL2hj
-ZC5jCmluZGV4IDA5YTUzZTcuLjc2ZWIzZmMgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdXNiL2Nv
-cmUvaGNkLmMKKysrIGIvZHJpdmVycy91c2IvY29yZS9oY2QuYwpAQCAtMTY4MywyMCArMTY4
-MywzMCBAQCBFWFBPUlRfU1lNQk9MX0dQTCh1c2JfYnVzX3N0YXJ0X2VudW0pOwogICovCiBp
-cnFyZXR1cm5fdCB1c2JfaGNkX2lycSAoaW50IGlycSwgdm9pZCAqX19oY2QpCiB7Ci0Jc3Ry
-dWN0IHVzYl9oY2QJCSpoY2QgPSBfX2hjZDsKLQlpbnQJCQlzdGFydCA9IGhjZC0+c3RhdGU7
-CisJc3RydWN0IHVzYl9oY2QJCSpoY2QgID0gX19oY2Q7CisJdW5zaWduZWQgaW50ICAgICAg
-ICAgICAgZmxhZ3MgPSAwOworCWlycXJldHVybl90ICAgICAgICAgICAgIHJjOworCisJaWYg
-KGhjZC0+ZGlzYWJsZV9pcnEpCisJCWxvY2FsX2lycV9zYXZlKGZsYWdzKTsKKworCWlmICh1
-bmxpa2VseShoY2QtPnN0YXRlID09IEhDX1NUQVRFX0hBTFQgfHwKKwkJICAgICAhdGVzdF9i
-aXQoSENEX0ZMQUdfSFdfQUNDRVNTSUJMRSwgJmhjZC0+ZmxhZ3MpKSkgeworCQlyYyA9IElS
-UV9OT05FOworCX0gZWxzZSBpZiAoaGNkLT5kcml2ZXItPmlycSAoaGNkKSA9PSBJUlFfTk9O
-RSkgeworCQlyYyA9IElSUV9OT05FOworCX0gZWxzZSB7CisJCXNldF9iaXQoSENEX0ZMQUdf
-U0FXX0lSUSwgJmhjZC0+ZmxhZ3MpOwogCi0JaWYgKHVubGlrZWx5KHN0YXJ0ID09IEhDX1NU
-QVRFX0hBTFQgfHwKLQkgICAgIXRlc3RfYml0KEhDRF9GTEFHX0hXX0FDQ0VTU0lCTEUsICZo
-Y2QtPmZsYWdzKSkpCi0JCXJldHVybiBJUlFfTk9ORTsKLQlpZiAoaGNkLT5kcml2ZXItPmly
-cSAoaGNkKSA9PSBJUlFfTk9ORSkKLQkJcmV0dXJuIElSUV9OT05FOworCQlpZiAodW5saWtl
-bHkoaGNkLT5zdGF0ZSA9PSBIQ19TVEFURV9IQUxUKSkKKwkJCXVzYl9oY19kaWVkIChoY2Qp
-OworCQlyYyA9IElSUV9IQU5ETEVEOworCX0KIAotCXNldF9iaXQoSENEX0ZMQUdfU0FXX0lS
-USwgJmhjZC0+ZmxhZ3MpOworCWlmIChoY2QtPmRpc2FibGVfaXJxKQorCQlsb2NhbF9pcnFf
-cmVzdG9yZShmbGFncyk7CiAKLQlpZiAodW5saWtlbHkoaGNkLT5zdGF0ZSA9PSBIQ19TVEFU
-RV9IQUxUKSkKLQkJdXNiX2hjX2RpZWQgKGhjZCk7Ci0JcmV0dXJuIElSUV9IQU5ETEVEOwor
-CXJldHVybiByYzsKIH0KIAogLyotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi8KQEAgLTE4NjAsNiAr
-MTg3MCwxNCBAQCBpbnQgdXNiX2FkZF9oY2Qoc3RydWN0IHVzYl9oY2QgKmhjZCwKIAogCS8q
-IGVuYWJsZSBpcnFzIGp1c3QgYmVmb3JlIHdlIHN0YXJ0IHRoZSBjb250cm9sbGVyICovCiAJ
-aWYgKGhjZC0+ZHJpdmVyLT5pcnEpIHsKKworCQkvKiBJUlFGX0RJU0FCTEVEIGRvZXNuJ3Qg
-d29yayBhcyBhZHZlcnRpc2VkIHdoZW4gdXNlZCB0b2dldGhlcgorCQkgKiB3aXRoIElSUUZf
-U0hBUkVELiBUaGVyZWZvcmUgd2UgaGFuZGxlIGludGVycnVwdCBkaXNhYmxpbmcKKwkJICog
-b3Vyc2VsdmVzIGluIHVzYl9oY2RfaXJxKCkgd2hlbiB0aGUgY29udHJvbGxlciByZXF1ZXN0
-cyBpdC4KKwkJICovCisJCWhjZC0+ZGlzYWJsZV9pcnEgPSAoaXJxZmxhZ3MgJiBJUlFGX0RJ
-U0FCTEVEKSA/IDEgOiAwOworCQlpcnFmbGFncyAmPSB+SVJRRl9ESVNBQkxFRDsKKwogCQlz
-bnByaW50ZihoY2QtPmlycV9kZXNjciwgc2l6ZW9mKGhjZC0+aXJxX2Rlc2NyKSwgIiVzOnVz
-YiVkIiwKIAkJCQloY2QtPmRyaXZlci0+ZGVzY3JpcHRpb24sIGhjZC0+c2VsZi5idXNudW0p
-OwogCQlpZiAoKHJldHZhbCA9IHJlcXVlc3RfaXJxKGlycW51bSwgJnVzYl9oY2RfaXJxLCBp
-cnFmbGFncywKZGlmZiAtLWdpdCBhL2RyaXZlcnMvdXNiL2NvcmUvaGNkLmggYi9kcml2ZXJz
-L3VzYi9jb3JlL2hjZC5oCmluZGV4IGEwYmY1ZGYuLmRmNDA0YWQgMTAwNjQ0Ci0tLSBhL2Ry
-aXZlcnMvdXNiL2NvcmUvaGNkLmgKKysrIGIvZHJpdmVycy91c2IvY29yZS9oY2QuaApAQCAt
-MTAwLDYgKzEwMCw3IEBAIHN0cnVjdCB1c2JfaGNkIHsKIAl1bnNpZ25lZAkJd2lyZWxlc3M6
-MTsJLyogV2lyZWxlc3MgVVNCIEhDRCAqLwogCXVuc2lnbmVkCQlhdXRob3JpemVkX2RlZmF1
-bHQ6MTsKIAl1bnNpZ25lZAkJaGFzX3R0OjE7CS8qIEludGVncmF0ZWQgVFQgaW4gcm9vdCBo
-dWIgKi8KKwl1bnNpZ25lZAkJZGlzYWJsZV9pcnE6MTsJLyogRGlzYWJsZSBJUlFzIGZvciBo
-YW5kbGVyICovCiAKIAlpbnQJCQlpcnE7CQkvKiBpcnEgYWxsb2NhdGVkICovCiAJdm9pZCBf
-X2lvbWVtCQkqcmVnczsJCS8qIGRldmljZSBtZW1vcnkvaW8gKi8K
---------------050607060603090407040201--
+        def_mount_opts = le32_to_cpu(es->s_default_mount_opts);
+-- 
+1.5.4.3
+
+========================================================================
+
+-- 
+Thanks & Regards,
+********************************************
+Manish Katiyar ( http://mkatiyar.googlepages.com )
+3rd Floor, Fair Winds Block
+EGL Software Park
+Off Intermediate Ring Road
+Bangalore 560071, India
+***********************************************
