@@ -1,91 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493AbYF3NJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762222AbYF3NKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755493AbYF3NJr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 09:09:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761784AbYF3NJ0
+	id S1762222AbYF3NKA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 09:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761974AbYF3NJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 09:09:26 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44558 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761740AbYF3NJZ (ORCPT
+	Mon, 30 Jun 2008 09:09:36 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:34369 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761969AbYF3NJf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 09:09:25 -0400
-Subject: Re: [Linux-ATM-General] [PATCH] firmware: convert Ambassador ATM
-	driver to request_firmware()
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Chas Williams (CONTRACTOR)" <chas@cmf.nrl.navy.mil>
-Cc: netdev@vger.kernel.org, linux-atm-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200806301259.m5UCxewW022114@cmf.nrl.navy.mil>
-References: <200806301259.m5UCxewW022114@cmf.nrl.navy.mil>
-Content-Type: text/plain
-Date: Mon, 30 Jun 2008 14:09:22 +0100
-Message-Id: <1214831362.10393.340.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+	Mon, 30 Jun 2008 09:09:35 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #10868] Oops on loading ipaq module since 2.6.26, prevents use of device
+Date: Mon, 30 Jun 2008 15:10:05 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Adam Williamson" <awilliamson@mandriva.com>
+References: <q5WW6DLC10O.A.dxC.R69ZIB@albercik> <X8mbwW6K81I.A.x9E.379ZIB@albercik>
+In-Reply-To: <X8mbwW6K81I.A.x9E.379ZIB@albercik>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200806301510.05909.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-30 at 08:59 -0400, Chas Williams (CONTRACTOR) wrote:
-> In message <1214818473.10393.337.camel@pmac.infradead.org>,David Woodhouse writ
-> es:
-> >A couple of comments though... it looks like you forgot to add
-> >MODULE_FIRMWARE(). And shouldn't 'fw_data' in
-> >fore200e_load_and_start_firmware() be a (__le32 *) not a (u32 *)?
+Am Sonntag 29 Juni 2008 20:18:42 schrieb Rafael J. Wysocki:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> this look ok:
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
 > 
 > 
-> diff --git a/drivers/atm/fore200e.c b/drivers/atm/fore200e.c
-> index d5c1bbf..91710d4 100644
-> --- a/drivers/atm/fore200e.c
-> +++ b/drivers/atm/fore200e.c
-> @@ -2562,7 +2562,8 @@ fore200e_load_and_start_fw(struct fore200e* fore200e)
->      const struct firmware *firmware;
->      struct device *device;
->      struct fw_header *fw_header;
-> -    u32 *fw_data, fw_size;
-> +    __le32 *fw_data;
-> +    u32 fw_size;
->      u32 __iomem *load_addr;
->      char buf[48];
->      int err = -ENODEV;
-> @@ -2582,7 +2583,7 @@ fore200e_load_and_start_fw(struct fore200e* fore200e)
->  	return err;
->      }
->  
-> -    fw_data = (u32 *) firmware->data;
-> +    fw_data = (__le32 *) firmware->data;
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10868
+> Subject		: Oops on loading ipaq module since 2.6.26, prevents use of device
+> Submitter	: Adam Williamson <awilliamson@mandriva.com>
+> Date		: 2008-06-05 17:39 (25 days old)
+> References	: http://marc.info/?t=121287647600002&r=1&w=4
+> Handled-By	: Oliver Neukum <oliver@neukum.org>
 
-Actually, it should probably be 'const' too.
+It should be listed. The cause is as yet unknown.
 
->      fw_size = firmware->size / sizeof(u32);
->      fw_header = (struct fw_header *) firmware->data;
->      load_addr = fore200e->virt_base + le32_to_cpu(fw_header->load_offset);
-> @@ -3199,6 +3200,7 @@ static const struct fore200e_bus fore200e_bus[] = {
->      {}
->  };
->  
-> -#ifdef MODULE_LICENSE
->  MODULE_LICENSE("GPL");
-> -#endif
-
-#ifdef CONFIG_SBUS
-> +MODULE_FIRMWARE("sba200e.bin");
-#ifdef CONFIG_PCI
-#ifdef __LITTLE_ENDIAN
-> +MODULE_FIRMWARE("pca200e.bin");
-#else /* big-endian */
-> +MODULE_FIRMWARE("pca200e_ecd.bin");
-#endif
-#endif
-
-And wasn't it sba200e_ecd.bin ? 
-
--- 
-dwmw2
+	Regards
+		Oliver
 
