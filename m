@@ -1,90 +1,995 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757766AbYF3HAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbYF3HB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757766AbYF3HAM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 03:00:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754639AbYF3G75
+	id S1757436AbYF3HB0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 03:01:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYF3HBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 02:59:57 -0400
-Received: from mga14.intel.com ([143.182.124.37]:47498 "EHLO mga14.intel.com"
+	Mon, 30 Jun 2008 03:01:19 -0400
+Received: from mailtp.via.com.tw ([61.66.243.2]:56550 "EHLO mailtp.via.com.tw"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753878AbYF3G74 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 02:59:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,725,1204531200"; 
-   d="scan'208";a="4437632"
-Subject: Re: [PATCH 1/2] x86 boot: add E820_RESVD_KERN
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-In-Reply-To: <86802c440806271505n78275758re235ef6616d95b3d@mail.gmail.com>
-References: <1214461978.10809.6.camel@caritas-dev.intel.com>
-	 <86802c440806260025v3fc1970aq682b568cccba4b4e@mail.gmail.com>
-	 <1214466513.11346.30.camel@caritas-dev.intel.com>
-	 <86802c440806260247p19f5b850r8757c51280912ae9@mail.gmail.com>
-	 <86802c440806261922n3f13b454o5e543e28d9a34e8e@mail.gmail.com>
-	 <1214534894.10865.6.camel@caritas-dev.intel.com>
-	 <86802c440806271505n78275758re235ef6616d95b3d@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Date: Mon, 30 Jun 2008 15:03:54 +0800
-Message-Id: <1214809434.2887.8.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-X-OriginalArrivalTime: 30 Jun 2008 06:59:48.0628 (UTC) FILETIME=[E2D31D40:01C8DA7E]
+	id S1751995AbYF3HBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 03:01:17 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: [PATCH 5/13] viafb: dvi.c, dvi.h, global.c and global.h
+Date: Mon, 30 Jun 2008 15:01:14 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E77A1@exchtp03.taipei.via.com.tw>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 5/13] viafb: dvi.c, dvi.h, global.c and global.h
+Thread-Index: AcjafxXGVuNkjYrfSOa7K6E3KVkq6g==
+From: <JosephChan@via.com.tw>
+To: <JosephChan@via.com.tw>, <linux-fbdev-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>
+Cc: <akpm@linux-foundation.org>, <geert@linux-m68k.org>
+X-OriginalArrivalTime: 30 Jun 2008 07:01:15.0192 (UTC) FILETIME=[166BBB80:01C8DA7F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m5U71Xfq018560
 
-On Fri, 2008-06-27 at 15:05 -0700, Yinghai Lu wrote:
-> On Thu, Jun 26, 2008 at 7:48 PM, Huang, Ying <ying.huang@intel.com> wrote:
-> > On Thu, 2008-06-26 at 19:22 -0700, Yinghai Lu wrote:
-> >> On Thu, Jun 26, 2008 at 2:47 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >> > On Thu, Jun 26, 2008 at 12:48 AM, Huang, Ying <ying.huang@intel.com> wrote:
-> >> >> On Thu, 2008-06-26 at 00:25 -0700, Yinghai Lu wrote:
-> >> >> [...]
-> >> >>> >                if (pfn >= limit_pfn)
-> >> >>> > @@ -977,7 +978,7 @@ u64 __init early_reserve_e820(u64 startt
-> >> >>> >                return 0;
-> >> >>> >
-> >> >>> >        addr = round_down(start + size - sizet, align);
-> >> >>> > -       e820_update_range(addr, sizet, E820_RAM, E820_RESERVED);
-> >> >>> > +       e820_update_range(addr, sizet, E820_RAM, E820_RESVD_KERN);
-> >> >>>
-> >> >>> this line is not needed.
-> >> >>
-> >> >> Why? Memory reserved by early_rserved_e820 should not be saved during
-> >> >> hibernation? shoudl not be saved by kdump?
-> >> >>
-> >
-> > Can you tell me why this line is not needed?
-> >
-> > [...]
-> >> some like the attach patch...
-> >>
-> >> you still can merge parse_setup_data parse_e820_ext
-> >> also entries in parse_e820_ext is not initialized..., __copy_e820_map
-> >> will do nothing.
-> >
-> > ÔªøOK. Because some E820 entries are available after parse_setup_data(),
-> > it is better to call reserve_setup_data() after calling
-> > parse_setup_data() if update_e820_range() is used instead of
-> > reserve_early().
-> 
-> please modify it and test on your platforms then submit to Ingo..
+dvi.c, dvi.h: TMDS generic process and setting.
+global.c, global.h: define globale variabls.
 
-It seems that there is an issue:
+Signed-off-by: Joseph Chan <josephchan@via.com.tw>
 
-- If parse_setup_data() is called before reserve_setup_data(), and there
-is a conflict between memory area used by setup_data and other memory
-area, it is possible that the contents of setup_data is changed. So that
-system may panic before reporting memory area conflict. And it seems
-that memory area conflict is not checked by e820_update_range().
-
-So maybe it is better to use reserve_early() instead of
-e820_update_range() for setup_data.
-
-Best Regards,
-Huang Ying
-
+diff -Nur a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
+--- a/drivers/video/via/dvi.c	1970-01-01 08:00:00.000000000 +0800
++++ b/drivers/video/via/dvi.c	2008-06-30 08:53:33.000000000 +0800
+@@ -0,0 +1,723 @@
++/*
++ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
++
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation;
++ * either version 2, or (at your option) any later version.
++
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
++ * the implied warranty of MERCHANTABILITY or FITNESS FOR
++ * A PARTICULAR PURPOSE.See the GNU General Public License
++ * for more details.
++
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++#include "global.h"
++
++static void tmds_register_write(int index, u8 data);
++static int tmds_register_read(int index);
++static int tmds_register_read_bytes(int index, u8 *buff, int buff_len);
++static int check_reduce_blanking_mode(int mode_index,
++	int refresh_rate);
++static int dvi_get_panel_size_from_DDCv1(void);
++static int dvi_get_panel_size_from_DDCv2(void);
++static unsigned char dvi_get_panel_info(void);
++static int viafb_dvi_query_EDID(void);
++
++static int check_tmds_chip(int device_id_subaddr, int device_id)
++{
++	if (tmds_register_read(device_id_subaddr) == device_id)
++		return OK;
++	else
++		return FAIL;
++}
++
++void viafb_init_dvi_size(void)
++{
++	DEBUG_MSG(KERN_INFO "viafb_init_dvi_size()\n");
++	DEBUG_MSG(KERN_INFO
++		"viaparinfo->tmds_setting_info->get_dvi_size_method %d\n",
++		  viaparinfo->tmds_setting_info->get_dvi_size_method);
++
++	switch (viaparinfo->tmds_setting_info->get_dvi_size_method) {
++	case GET_DVI_SIZE_BY_SYSTEM_BIOS:
++		break;
++	case GET_DVI_SZIE_BY_HW_STRAPPING:
++		break;
++	case GET_DVI_SIZE_BY_VGA_BIOS:
++	default:
++		dvi_get_panel_info();
++		break;
++	}
++	return;
++}
++
++int viafb_tmds_trasmitter_identify(void)
++{
++	unsigned char sr2a = 0, sr1e = 0, sr3e = 0;
++
++	/* Turn on ouputting pad */
++	switch (viaparinfo->chip_info->gfx_chip_name) {
++	case UNICHROME_K8M890:
++	    /*=* DFP Low Pad on *=*/
++		sr2a = viafb_read_reg(VIASR, SR2A);
++		viafb_write_reg_mask(SR2A, VIASR, 0x03, BIT0 + BIT1);
++		break;
++
++	case UNICHROME_P4M900:
++	case UNICHROME_P4M890:
++		/* DFP Low Pad on */
++		sr2a = viafb_read_reg(VIASR, SR2A);
++		viafb_write_reg_mask(SR2A, VIASR, 0x03, BIT0 + BIT1);
++		/* DVP0 Pad on */
++		sr1e = viafb_read_reg(VIASR, SR1E);
++		viafb_write_reg_mask(SR1E, VIASR, 0xC0, BIT6 + BIT7);
++		break;
++
++	default:
++	    /* DVP0/DVP1 Pad on */
++		sr1e = viafb_read_reg(VIASR, SR1E);
++		viafb_write_reg_mask(SR1E, VIASR, 0xF0, BIT4 +
++			BIT5 + BIT6 + BIT7);
++	    /* SR3E[1]Multi-function selection:
++	    0 = Emulate I2C and DDC bus by GPIO2/3/4. */
++		sr3e = viafb_read_reg(VIASR, SR3E);
++		viafb_write_reg_mask(SR3E, VIASR, 0x0, BIT5);
++		break;
++	}
++
++	/* Check for VT1632: */
++	viaparinfo->chip_info->tmds_chip_info.tmds_chip_name = VT1632_TMDS;
++	viaparinfo->chip_info->
++		tmds_chip_info.tmds_chip_slave_addr = VT1632_TMDS_I2C_ADDR;
++	viaparinfo->chip_info->tmds_chip_info.i2c_port = I2CPORTINDEX;
++	if (check_tmds_chip(VT1632_DEVICE_ID_REG, VT1632_DEVICE_ID) != FAIL) {
++	/*Currently only support 12bits,dual edge,add 24bits mode later */
++		tmds_register_write(0x08, 0x3b);
++
++		DEBUG_MSG(KERN_INFO "\n VT1632 TMDS ! \n");
++		DEBUG_MSG(KERN_INFO "\n %2d",
++			  viaparinfo->chip_info->tmds_chip_info.tmds_chip_name);
++		DEBUG_MSG(KERN_INFO "\n %2d",
++			  viaparinfo->chip_info->tmds_chip_info.i2c_port);
++		return OK;
++	} else {
++		viaparinfo->chip_info->tmds_chip_info.i2c_port = GPIOPORTINDEX;
++		if (check_tmds_chip(VT1632_DEVICE_ID_REG, VT1632_DEVICE_ID)
++		    != FAIL) {
++			tmds_register_write(0x08, 0x3b);
++			DEBUG_MSG(KERN_INFO "\n VT1632 TMDS ! \n");
++			DEBUG_MSG(KERN_INFO "\n %2d",
++				  viaparinfo->chip_info->
++				  tmds_chip_info.tmds_chip_name);
++			DEBUG_MSG(KERN_INFO "\n %2d",
++				  viaparinfo->chip_info->
++				  tmds_chip_info.i2c_port);
++			return OK;
++		}
++	}
++
++	viaparinfo->chip_info->tmds_chip_info.tmds_chip_name = INTEGRATED_TMDS;
++
++	if ((viaparinfo->chip_info->gfx_chip_name == UNICHROME_CX700) &&
++	    ((viafb_display_hardware_layout == HW_LAYOUT_DVI_ONLY) ||
++	     (viafb_display_hardware_layout == HW_LAYOUT_LCD_DVI))) {
++		DEBUG_MSG(KERN_INFO "\n Integrated TMDS ! \n");
++		return OK;
++	}
++
++	switch (viaparinfo->chip_info->gfx_chip_name) {
++	case UNICHROME_K8M890:
++		viafb_write_reg(SR2A, VIASR, sr2a);
++		break;
++
++	case UNICHROME_P4M900:
++	case UNICHROME_P4M890:
++		viafb_write_reg(SR2A, VIASR, sr2a);
++		viafb_write_reg(SR1E, VIASR, sr1e);
++		break;
++
++	default:
++		viafb_write_reg(SR1E, VIASR, sr1e);
++		viafb_write_reg(SR3E, VIASR, sr3e);
++		break;
++	}
++
++	viaparinfo->chip_info->
++		tmds_chip_info.tmds_chip_name = NON_TMDS_TRANSMITTER;
++	viaparinfo->chip_info->tmds_chip_info.
++		tmds_chip_slave_addr = VT1632_TMDS_I2C_ADDR;
++	return FAIL;
++}
++
++static void tmds_register_write(int index, u8 data)
++{
++	u8 tmp;
++
++	tmp = viaparinfo->chip_info->chip_on_slot;
++	switch (viaparinfo->chip_info->tmds_chip_info.i2c_port) {
++	case I2CPORTINDEX:
++		viaparinfo->chip_info->chip_on_slot = PORT_ON_AMR;
++		break;
++
++	case GPIOPORTINDEX:
++	default:
++		viaparinfo->chip_info->chip_on_slot = PORT_ON_AGP;
++		break;
++	}
++
++	viafb_i2cWriteByte(viaparinfo->chip_info->tmds_chip_info.
++		tmds_chip_slave_addr, index,
++		     data);
++
++	viaparinfo->chip_info->chip_on_slot = tmp;
++
++}
++
++static int tmds_register_read(int index)
++{
++	u8 data;
++	int status;
++	u8 tmp;
++
++	tmp = viaparinfo->chip_info->chip_on_slot;
++	switch (viaparinfo->chip_info->tmds_chip_info.i2c_port) {
++	case I2CPORTINDEX:
++		viaparinfo->chip_info->chip_on_slot = PORT_ON_AMR;
++		break;
++
++	case GPIOPORTINDEX:
++	default:
++		viaparinfo->chip_info->chip_on_slot = PORT_ON_AGP;
++		break;
++	}
++
++	status =
++	    viafb_i2cReadByte((u8) viaparinfo->chip_info->
++	    tmds_chip_info.tmds_chip_slave_addr,
++			(u8) index, &data);
++	viaparinfo->chip_info->chip_on_slot = tmp;
++	return data;
++}
++
++static int tmds_register_read_bytes(int index, u8 *buff, int buff_len)
++{
++	int status;
++	u8 tmp;
++
++	tmp = viaparinfo->chip_info->chip_on_slot;
++	switch (viaparinfo->chip_info->tmds_chip_info.i2c_port) {
++	case I2CPORTINDEX:
++		viaparinfo->chip_info->chip_on_slot = PORT_ON_AMR;
++		break;
++
++	case GPIOPORTINDEX:
++	default:
++		viaparinfo->chip_info->chip_on_slot = PORT_ON_AGP;
++		break;
++	}
++
++	status =
++	    viafb_i2cReadBytes((u8) viaparinfo->chip_info->tmds_chip_info.
++			 tmds_chip_slave_addr, (u8) index, buff, buff_len);
++	viaparinfo->chip_info->chip_on_slot = tmp;
++	return status;
++}
++
++static int check_reduce_blanking_mode(int mode_index,
++	int refresh_rate)
++{
++	if (refresh_rate != 60)
++		return FALSE;
++
++	switch (mode_index) {
++		/* Following modes have reduce blanking mode. */
++	case VIA_RES_1360X768:
++	case VIA_RES_1400X1050:
++	case VIA_RES_1440X900:
++	case VIA_RES_1600X900:
++	case VIA_RES_1680X1050:
++	case VIA_RES_1920X1080:
++	case VIA_RES_1920X1200:
++		break;
++
++	default:
++		DEBUG_MSG(KERN_INFO
++			  "This dvi mode %d have no reduce blanking mode!\n",
++			  mode_index);
++		return FALSE;
++	}
++
++	return TRUE;
++}
++
++/* DVI Set Mode */
++void viafb_dvi_set_mode(int video_index, int mode_bpp, int set_iga)
++{
++	struct VideoModeTable *videoMode = NULL;
++	struct crt_mode_table *pDviTiming;
++	unsigned long desirePixelClock, maxPixelClock;
++	int status = 0;
++	videoMode = viafb_get_modetbl_pointer(video_index);
++	pDviTiming = videoMode->crtc;
++	desirePixelClock = pDviTiming->clk / 1000000;
++	maxPixelClock = (unsigned long)viaparinfo->
++		tmds_setting_info->max_pixel_clock;
++
++	DEBUG_MSG(KERN_INFO "\nDVI_set_mode!!\n");
++
++	if ((maxPixelClock != 0) && (desirePixelClock > maxPixelClock)) {
++		/*Check if reduce-blanking mode is exist */
++		status =
++		    check_reduce_blanking_mode(video_index,
++					       pDviTiming->refresh_rate);
++		if (status) {
++			video_index += 100;	/*Use reduce-blanking mode */
++			videoMode = viafb_get_modetbl_pointer(video_index);
++			pDviTiming = videoMode->crtc;
++			DEBUG_MSG(KERN_INFO
++				  "DVI use reduce blanking mode %d!!\n",
++				  video_index);
++		}
++	}
++	viafb_fill_crtc_timing(pDviTiming, video_index, mode_bpp / 8, set_iga);
++	viafb_set_output_path(DEVICE_DVI, set_iga,
++			viaparinfo->chip_info->tmds_chip_info.output_interface);
++}
++
++/* Sense DVI Connector */
++int viafb_dvi_sense(void)
++{
++	u8 RegSR1E = 0, RegSR3E = 0, RegCR6B = 0, RegCR91 = 0,
++		RegCR93 = 0, RegCR9B = 0, data;
++	int ret = FALSE;
++
++	DEBUG_MSG(KERN_INFO "viafb_dvi_sense!!\n");
++
++	if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266) {
++		/* DI1 Pad on */
++		RegSR1E = viafb_read_reg(VIASR, SR1E);
++		viafb_write_reg(SR1E, VIASR, RegSR1E | 0x30);
++
++		/* CR6B[0]VCK Input Selection: 1 = External clock. */
++		RegCR6B = viafb_read_reg(VIACR, CR6B);
++		viafb_write_reg(CR6B, VIACR, RegCR6B | 0x08);
++
++		/* CR91[4] VDD On [3] Data On [2] VEE On [1] Back Light Off
++		   [0] Software Control Power Sequence */
++		RegCR91 = viafb_read_reg(VIACR, CR91);
++		viafb_write_reg(CR91, VIACR, 0x1D);
++
++		/* CR93[7] DI1 Data Source Selection: 1 = DSP2.
++		   CR93[5] DI1 Clock Source: 1 = internal.
++		   CR93[4] DI1 Clock Polarity.
++		   CR93[3:1] DI1 Clock Adjust. CR93[0] DI1 enable */
++		RegCR93 = viafb_read_reg(VIACR, CR93);
++		viafb_write_reg(CR93, VIACR, 0x01);
++	} else {
++		/* DVP0/DVP1 Pad on */
++		RegSR1E = viafb_read_reg(VIASR, SR1E);
++		viafb_write_reg(SR1E, VIASR, RegSR1E | 0xF0);
++
++		/* SR3E[1]Multi-function selection:
++		   0 = Emulate I2C and DDC bus by GPIO2/3/4. */
++		RegSR3E = viafb_read_reg(VIASR, SR3E);
++		viafb_write_reg(SR3E, VIASR, RegSR3E & (~0x20));
++
++		/* CR91[4] VDD On [3] Data On [2] VEE On [1] Back Light Off
++		   [0] Software Control Power Sequence */
++		RegCR91 = viafb_read_reg(VIACR, CR91);
++		viafb_write_reg(CR91, VIACR, 0x1D);
++
++		/*CR9B[4] DVP1 Data Source Selection: 1 = From secondary
++		display.CR9B[2:0] DVP1 Clock Adjust */
++		RegCR9B = viafb_read_reg(VIACR, CR9B);
++		viafb_write_reg(CR9B, VIACR, 0x01);
++	}
++
++	data = (u8) tmds_register_read(0x09);
++	if (data & 0x04)
++		ret = TRUE;
++
++	if (ret == FALSE) {
++		if (viafb_dvi_query_EDID())
++			ret = TRUE;
++	}
++
++	/* Restore status */
++	viafb_write_reg(SR1E, VIASR, RegSR1E);
++	viafb_write_reg(CR91, VIACR, RegCR91);
++	if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266) {
++		viafb_write_reg(CR6B, VIACR, RegCR6B);
++		viafb_write_reg(CR93, VIACR, RegCR93);
++	} else {
++		viafb_write_reg(SR3E, VIASR, RegSR3E);
++		viafb_write_reg(CR9B, VIACR, RegCR9B);
++	}
++
++	return ret;
++}
++
++/* Query Flat Panel's EDID Table Version Through DVI Connector */
++static int viafb_dvi_query_EDID(void)
++{
++	u8 data0, data1;
++	int restore;
++
++	DEBUG_MSG(KERN_INFO "viafb_dvi_query_EDID!!\n");
++
++	restore = viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr;
++	viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr = 0xA0;
++
++	data0 = (u8) tmds_register_read(0x00);
++	data1 = (u8) tmds_register_read(0x01);
++	if ((data0 == 0) && (data1 == 0xFF)) {
++		viaparinfo->chip_info->
++			tmds_chip_info.tmds_chip_slave_addr = restore;
++		return EDID_VERSION_1;	/* Found EDID1 Table */
++	}
++
++	data0 = (u8) tmds_register_read(0x00);
++	viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr = restore;
++	if (data0 == 0x20)
++		return EDID_VERSION_2;	/* Found EDID2 Table */
++	else
++		return FALSE;
++}
++
++/*
++ *
++ * int dvi_get_panel_size_from_DDCv1(void)
++ *
++ *     - Get Panel Size Using EDID1 Table
++ *
++ * Return Type:    int
++ *
++ */
++static int dvi_get_panel_size_from_DDCv1(void)
++{
++	int i, max_h = 0, max_v = 0, tmp, restore;
++	unsigned char rData;
++	unsigned char EDID_DATA[18];
++
++	DEBUG_MSG(KERN_INFO "\n dvi_get_panel_size_from_DDCv1 \n");
++
++	restore = viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr;
++	viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr = 0xA0;
++
++	rData = tmds_register_read(0x23);
++	if (rData & 0x3C)
++		max_h = 640;
++	if (rData & 0xC0)
++		max_h = 720;
++	if (rData & 0x03)
++		max_h = 800;
++
++	rData = tmds_register_read(0x24);
++	if (rData & 0xC0)
++		max_h = 800;
++	if (rData & 0x1E)
++		max_h = 1024;
++	if (rData & 0x01)
++		max_h = 1280;
++
++	for (i = 0x25; i < 0x6D; i++) {
++		switch (i) {
++		case 0x26:
++		case 0x28:
++		case 0x2A:
++		case 0x2C:
++		case 0x2E:
++		case 0x30:
++		case 0x32:
++		case 0x34:
++			rData = tmds_register_read(i);
++			if (rData == 1)
++				break;
++			/* data = (data + 31) * 8 */
++			tmp = (rData + 31) << 3;
++			if (tmp > max_h)
++				max_h = tmp;
++			break;
++
++		case 0x36:
++		case 0x48:
++		case 0x5A:
++		case 0x6C:
++			tmds_register_read_bytes(i, EDID_DATA, 10);
++			if (!(EDID_DATA[0] || EDID_DATA[1])) {
++				/* The first two byte must be zero. */
++				if (EDID_DATA[3] == 0xFD) {
++					/* To get max pixel clock. */
++					viaparinfo->tmds_setting_info->
++					max_pixel_clock = EDID_DATA[9] * 10;
++				}
++			}
++			break;
++
++		default:
++			break;
++		}
++	}
++
++	switch (max_h) {
++	case 640:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_640X480;
++		break;
++	case 800:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_800X600;
++		break;
++	case 1024:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_1024X768;
++		break;
++	case 1280:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_1280X1024;
++		break;
++	case 1400:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_1400X1050;
++		break;
++	case 1440:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_1440X1050;
++		break;
++	case 1600:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_1600X1200;
++		break;
++	case 1920:
++		if (max_v == 1200) {
++			viaparinfo->tmds_setting_info->dvi_panel_size =
++				VIA_RES_1920X1200;
++		} else {
++			viaparinfo->tmds_setting_info->dvi_panel_size =
++				VIA_RES_1920X1080;
++		}
++
++		break;
++	default:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_1024X768;
++		DEBUG_MSG(KERN_INFO "Unknow panel size max resolution = %d !\
++					 set default panel size.\n", max_h);
++		break;
++	}
++
++	DEBUG_MSG(KERN_INFO "DVI max pixelclock = %d\n",
++		  viaparinfo->tmds_setting_info->max_pixel_clock);
++	viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr = restore;
++	return viaparinfo->tmds_setting_info->dvi_panel_size;
++}
++
++/*
++ *
++ * int dvi_get_panel_size_from_DDCv2(void)
++ *
++ *     - Get Panel Size Using EDID2 Table
++ *
++ * Return Type:    int
++ *
++ */
++static int dvi_get_panel_size_from_DDCv2(void)
++{
++	int HSize = 0, restore;
++	unsigned char R_Buffer[2];
++
++	DEBUG_MSG(KERN_INFO "\n dvi_get_panel_size_from_DDCv2 \n");
++
++	restore = viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr;
++	viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr = 0xA2;
++
++	/* Horizontal: 0x76, 0x77 */
++	tmds_register_read_bytes(0x76, R_Buffer, 2);
++	HSize = R_Buffer[0];
++	HSize += R_Buffer[1] << 8;
++
++	switch (HSize) {
++	case 640:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_640X480;
++		break;
++	case 800:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_800X600;
++		break;
++	case 1024:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_1024X768;
++		break;
++	case 1280:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_1280X1024;
++		break;
++	case 1400:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_1400X1050;
++		break;
++	case 1440:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_1440X1050;
++		break;
++	case 1600:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_1600X1200;
++		break;
++	default:
++		viaparinfo->tmds_setting_info->dvi_panel_size =
++			VIA_RES_1024X768;
++		DEBUG_MSG(KERN_INFO "Unknow panel size max resolution = %d!\
++					set default panel size.\n", HSize);
++		break;
++	}
++
++	viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr = restore;
++	return viaparinfo->tmds_setting_info->dvi_panel_size;
++}
++
++/*
++ *
++ * unsigned char dvi_get_panel_info(void)
++ *
++ *     - Get Panel Size
++ *
++ * Return Type:    unsigned char
++ */
++static unsigned char dvi_get_panel_info(void)
++{
++	unsigned char dvipanelsize;
++	DEBUG_MSG(KERN_INFO "dvi_get_panel_info! \n");
++
++	viafb_dvi_sense();
++	switch (viafb_dvi_query_EDID()) {
++	case 1:
++		dvi_get_panel_size_from_DDCv1();
++		break;
++	case 2:
++		dvi_get_panel_size_from_DDCv2();
++		break;
++	default:
++		break;
++	}
++
++	DEBUG_MSG(KERN_INFO "dvi panel size is %2d \n",
++		  viaparinfo->tmds_setting_info->dvi_panel_size);
++	dvipanelsize = (unsigned char)(viaparinfo->
++		tmds_setting_info->dvi_panel_size);
++	return dvipanelsize;
++}
++
++/* If Disable DVI, turn off pad */
++void viafb_dvi_disable(void)
++{
++	if (viaparinfo->chip_info->
++		tmds_chip_info.output_interface == INTERFACE_DVP0)
++		viafb_write_reg(SR1E, VIASR,
++		viafb_read_reg(VIASR, SR1E) & (~0xC0));
++
++	if (viaparinfo->chip_info->
++		tmds_chip_info.output_interface == INTERFACE_DVP1)
++		viafb_write_reg(SR1E, VIASR,
++		viafb_read_reg(VIASR, SR1E) & (~0x30));
++
++	if (viaparinfo->chip_info->
++		tmds_chip_info.output_interface == INTERFACE_DFP_HIGH)
++		viafb_write_reg(SR2A, VIASR,
++		viafb_read_reg(VIASR, SR2A) & (~0x0C));
++
++	if (viaparinfo->chip_info->
++		tmds_chip_info.output_interface == INTERFACE_DFP_LOW)
++		viafb_write_reg(SR2A, VIASR,
++		viafb_read_reg(VIASR, SR2A) & (~0x03));
++
++	if (viaparinfo->chip_info->
++		tmds_chip_info.output_interface == INTERFACE_TMDS)
++		/* Turn off TMDS power. */
++		viafb_write_reg(CRD2, VIACR,
++		viafb_read_reg(VIACR, CRD2) | 0x08);
++}
++
++/* If Enable DVI, turn off pad */
++void viafb_dvi_enable(void)
++{
++	u8 data;
++
++	if (viaparinfo->chip_info->
++		tmds_chip_info.output_interface == INTERFACE_DVP0) {
++		viafb_write_reg(SR1E, VIASR,
++			viafb_read_reg(VIASR, SR1E) | 0xC0);
++		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266)
++			tmds_register_write(0x88, 0x3b);
++		else
++			/*clear CR91[5] to direct on display period
++			   in the secondary diplay path */
++			viafb_write_reg(CR91, VIACR,
++			viafb_read_reg(VIACR, CR91) & 0xDF);
++	}
++
++	if (viaparinfo->chip_info->
++		tmds_chip_info.output_interface == INTERFACE_DVP1) {
++		viafb_write_reg(SR1E, VIASR,
++			viafb_read_reg(VIASR, SR1E) | 0x30);
++
++		/*fix dvi cann't be enabled with MB VT5718C4 - Al Zhang */
++		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266) {
++			tmds_register_write(0x88, 0x3b);
++		} else {
++			/*clear CR91[5] to direct on display period
++			  in the secondary diplay path */
++			viafb_write_reg(CR91, VIACR,
++			viafb_read_reg(VIACR, CR91) & 0xDF);
++		}
++
++		/*fix DVI cannot enable on EPIA-M board */
++		if (viafb_platform_epia_dvi == 1) {
++			viafb_write_reg_mask(CR91, VIACR, 0x1f, 0x1f);
++			viafb_write_reg_mask(CR88, VIACR, 0x00, BIT6 + BIT0);
++			if (via_bus_width == 24) {
++				if (viafb_device_lcd_dualedge == 1)
++					data = 0x3F;
++				else
++					data = 0x37;
++				viafb_i2cWriteByte(viaparinfo->chip_info->
++					     tmds_chip_info.
++					     tmds_chip_slave_addr,
++					     0x08, data);
++			}
++		}
++	}
++
++	if (viaparinfo->chip_info->
++		tmds_chip_info.output_interface == INTERFACE_DFP_HIGH) {
++		viafb_write_reg(SR2A, VIASR,
++			viafb_read_reg(VIASR, SR2A) | 0x0C);
++		viafb_write_reg(CR91, VIACR,
++			viafb_read_reg(VIACR, CR91) & 0xDF);
++	}
++
++	if (viaparinfo->chip_info->
++		tmds_chip_info.output_interface == INTERFACE_DFP_LOW) {
++		viafb_write_reg(SR2A, VIASR,
++			viafb_read_reg(VIASR, SR2A) | 0x03);
++		viafb_write_reg(CR91, VIACR,
++			viafb_read_reg(VIACR, CR91) & 0xDF);
++	}
++	if (viaparinfo->chip_info->
++		tmds_chip_info.output_interface == INTERFACE_TMDS) {
++		/* Turn on Display period in the panel path. */
++		viafb_write_reg_mask(CR91, VIACR, 0, BIT7);
++
++		/* Turn on TMDS power. */
++		viafb_write_reg_mask(CRD2, VIACR, 0, BIT3);
++	}
++}
++
+diff -Nur a/drivers/video/via/dvi.h b/drivers/video/via/dvi.h
+--- a/drivers/video/via/dvi.h	1970-01-01 08:00:00.000000000 +0800
++++ b/drivers/video/via/dvi.h	2008-06-30 08:53:33.000000000 +0800
+@@ -0,0 +1,64 @@
++/*
++ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
++
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation;
++ * either version 2, or (at your option) any later version.
++
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
++ * the implied warranty of MERCHANTABILITY or FITNESS FOR
++ * A PARTICULAR PURPOSE.See the GNU General Public License
++ * for more details.
++
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++#ifndef __DVI_H__
++#define __DVI_H__
++
++/*Definition TMDS Device ID register*/
++#define     VT1632_DEVICE_ID_REG        0x02
++#define     VT1632_DEVICE_ID            0x92
++
++#define     GET_DVI_SIZE_BY_SYSTEM_BIOS     0x01
++#define     GET_DVI_SIZE_BY_VGA_BIOS        0x02
++#define     GET_DVI_SZIE_BY_HW_STRAPPING    0x03
++
++/* Definition DVI Panel ID*/
++/* Resolution: 640x480,   Channel: single, Dithering: Enable */
++#define     DVI_PANEL_ID0_640X480       0x00
++/* Resolution: 800x600,   Channel: single, Dithering: Enable */
++#define     DVI_PANEL_ID1_800x600       0x01
++/* Resolution: 1024x768,  Channel: single, Dithering: Enable */
++#define     DVI_PANEL_ID1_1024x768      0x02
++/* Resolution: 1280x768,  Channel: single, Dithering: Enable */
++#define     DVI_PANEL_ID1_1280x768      0x03
++/* Resolution: 1280x1024, Channel: dual,   Dithering: Enable */
++#define     DVI_PANEL_ID1_1280x1024     0x04
++/* Resolution: 1400x1050, Channel: dual,   Dithering: Enable */
++#define     DVI_PANEL_ID1_1400x1050     0x05
++/* Resolution: 1600x1200, Channel: dual,   Dithering: Enable */
++#define     DVI_PANEL_ID1_1600x1200     0x06
++
++/* Define the version of EDID*/
++#define     EDID_VERSION_1      1
++#define     EDID_VERSION_2      2
++
++#define     DEV_CONNECT_DVI     0x01
++#define     DEV_CONNECT_HDMI    0x02
++
++struct VideoModeTable *viafb_get_cea_mode_tbl_pointer(int Index);
++int viafb_dvi_sense(void);
++void viafb_dvi_disable(void);
++void viafb_dvi_enable(void);
++int viafb_tmds_trasmitter_identify(void);
++void viafb_init_dvi_size(void);
++void viafb_dvi_set_mode(int video_index, int mode_bpp, int set_iga);
++
++#endif /* __DVI_H__ */
+diff -Nur a/drivers/video/via/global.c b/drivers/video/via/global.c
+--- a/drivers/video/via/global.c	1970-01-01 08:00:00.000000000 +0800
++++ b/drivers/video/via/global.c	2008-06-30 08:53:33.000000000 +0800
+@@ -0,0 +1,60 @@
++/*
++ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
++
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation;
++ * either version 2, or (at your option) any later version.
++
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
++ * the implied warranty of MERCHANTABILITY or FITNESS FOR
++ * A PARTICULAR PURPOSE.See the GNU General Public License
++ * for more details.
++
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++#include "global.h"
++int viafb_platform_epia_dvi = STATE_OFF;
++int viafb_device_lcd_dualedge = STATE_OFF;
++int via_bus_width = 12;
++int viafb_display_hardware_layout = HW_LAYOUT_LCD_DVI;
++int via_fb_memsize;
++int viafb_DeviceStatus = CRT_Device;
++int via_fb_hotplug;
++int viafb_refresh = 60;
++int viafb_refresh1 = 60;
++int viafb_lcd_dsp_method = LCD_EXPANDSION;
++int viafb_lcd_mode = LCD_OPENLDI;
++int via_fb_bpp = 32;
++int via_fb_bpp1 = 32;
++int via_fb_accel = 1;
++int viafb_CRT_ON = 1;
++int viafb_DVI_ON;
++int viafb_LCD_ON ;
++int viafb_LCD2_ON;
++int viafb_SAMM_ON;
++int viafb_dual_fb;
++int via_fb_hotplug_Xres = 640;
++int via_fb_hotplug_Yres = 480;
++int via_fb_hotplug_bpp = 32;
++int via_fb_hotplug_refresh = 60;
++unsigned int viafb_second_offset;
++int viafb_second_size;
++int viafb_primary_dev = None_Device;
++void __iomem *viafb_FB_MM;
++unsigned int viafb_second_xres = 640;
++unsigned int viafb_second_yres = 480;
++unsigned int viafb_second_virtual_xres;
++unsigned int viafb_second_virtual_yres;
++int viafb_lcd_panel_id = LCD_PANEL_ID_MAXIMUM + 1;
++struct fb_cursor viacursor;
++struct fb_info *viafbinfo;
++struct fb_info *viafbinfo1;
++struct viafb_par *viaparinfo;
++struct viafb_par *viaparinfo1;
++
+diff -Nur a/drivers/video/via/global.h b/drivers/video/via/global.h
+--- a/drivers/video/via/global.h	1970-01-01 08:00:00.000000000 +0800
++++ b/drivers/video/via/global.h	2008-06-30 08:53:33.000000000 +0800
+@@ -0,0 +1,92 @@
++/*
++ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
++
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation;
++ * either version 2, or (at your option) any later version.
++
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
++ * the implied warranty of MERCHANTABILITY or FITNESS FOR
++ * A PARTICULAR PURPOSE.See the GNU General Public License
++ * for more details.
++
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++#ifndef __GLOBAL_H__
++#define __GLOBAL_H__
++
++#include <linux/fb.h>
++#include <linux/delay.h>
++#include <linux/ioport.h>
++#include <linux/pci.h>
++#include <linux/io.h>
++#include <linux/uaccess.h>
++#include <linux/init.h>
++#include <linux/proc_fs.h>
++#include <linux/console.h>
++#include <linux/timer.h>
++
++#include "debug.h"
++
++#include "iface.h"
++#include "viafbdev.h"
++#include "chip.h"
++#include "debug.h"
++#include "accel.h"
++#include "share.h"
++#include "dvi.h"
++#include "viamode.h"
++#include "via_i2c.h"
++#include "hw.h"
++
++#include "lcd.h"
++#include "ioctl.h"
++#include "viamode.h"
++#include "via_utility.h"
++#include "vt1636.h"
++#include "tblDPASetting.h"
++#include "tbl1636.h"
++#include "viafbdev.h"
++
++/* External struct*/
++#define     PORT_ON_AMR       1
++#define     PORT_ON_AGP       2
++
++extern int viafb_platform_epia_dvi;
++extern int viafb_device_lcd_dualedge;
++extern int via_bus_width;
++extern int viafb_display_hardware_layout;
++extern struct offset offset_reg;
++extern struct viafb_par *viaparinfo;
++extern struct viafb_par *viaparinfo1;
++extern struct fb_info *viafbinfo;
++extern struct fb_info *viafbinfo1;
++extern int viafb_DeviceStatus;
++extern int viafb_refresh;
++extern int viafb_refresh1;
++extern int viafb_lcd_dsp_method;
++extern int viafb_lcd_mode;
++extern int via_fb_bpp;
++extern int via_fb_bpp1;
++
++extern int viafb_CRT_ON;
++extern int via_fb_hotplug_Xres;
++extern int via_fb_hotplug_Yres;
++extern int via_fb_hotplug_bpp;
++extern int via_fb_hotplug_refresh;
++extern int viafb_primary_dev;
++extern void __iomem *viafb_FB_MM;
++extern struct fb_cursor viacursor;
++
++extern unsigned int viafb_second_xres;
++extern unsigned int viafb_second_yres;
++extern int viafb_lcd_panel_id;
++
++#endif /* __GLOBAL_H__ */
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
