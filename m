@@ -1,83 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932543AbYF3SWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932554AbYF3SWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932543AbYF3SWH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 14:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762364AbYF3SVH
+	id S932554AbYF3SWi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 14:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932417AbYF3SVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 14:21:07 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:44536 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763661AbYF3SVF (ORCPT
+	Mon, 30 Jun 2008 14:21:30 -0400
+Received: from stinky.trash.net ([213.144.137.162]:42820 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932402AbYF3SV3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 14:21:05 -0400
-Message-ID: <4869240C.9060503@linux.vnet.ibm.com>
-Date: Mon, 30 Jun 2008 23:51:00 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
+	Mon, 30 Jun 2008 14:21:29 -0400
+Message-ID: <48692427.7090703@trash.net>
+Date: Mon, 30 Jun 2008 20:21:27 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 30
-References: <20080701001656.e156585c.sfr@canb.auug.org.au> <48690385.7030500@linux.vnet.ibm.com> <20080630175925.GQ20826@kernel.dk>
-In-Reply-To: <20080630175925.GQ20826@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Peter Warasin <peter@endian.com>, netdev@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [NETFILTER Kconfig help text]: bridge: add ebt_nflog watcher
+References: <m3bq1i6b41.fsf@maximus.localdomain>
+In-Reply-To: <m3bq1i6b41.fsf@maximus.localdomain>
+Content-Type: multipart/mixed;
+ boundary="------------080800020501000502020602"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Mon, Jun 30 2008, Kamalesh Babulal wrote:
->> Hi Stephen,
->>
->> next-20080630 kernel build fails x86 box 
->>
->> fs/bio-integrity.c: In function `bio_integrity_add_page':
->> include/linux/bio.h:368: sorry, unimplemented: inlining failed in call to 'bvec_nr_vecs': function body not available
->> fs/bio-integrity.c:135: sorry, unimplemented: called from here
->> make[1]: *** [fs/bio-integrity.o] Error 1
->> make: *** [fs] Error 2
-> 
-> Gah, I can't believe gcc errors on that. This should fix it, I'll
-> integrate with the patchset.
+This is a multi-part message in MIME format.
+--------------080800020501000502020602
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hi Jens,
+Krzysztof Halasa wrote:
+> is the following really correct?
+> e7bfd0a1a6c8f82977253dab19be9d9979c1ec1b
+> 
+> +	tristate "ebt: nflog support"
+> +	depends on BRIDGE_NF_EBTABLES
+> +	help
+> +	  This option enables the nflog watcher, which allows to LOG
+> +	  messages through the netfilter logging API, which can use
+> +	  either the old LOG target, the old ULOG target or nfnetlink_log
+> +	  as backend.
+> +
+> +	  This option adds the ulog watcher, that you can use in any rule
+>                                ^^^^^^^^^^^^
+> 
+> ulog watcher?
 
-Thanks, the patch fixes the build failure.
-
-> 
-> diff --git a/fs/bio.c b/fs/bio.c
-> index bc865b1..7761c84 100644
-> --- a/fs/bio.c
-> +++ b/fs/bio.c
-> @@ -50,7 +50,7 @@ static struct biovec_slab bvec_slabs[BIOVEC_NR_POOLS] __read_mostly = {
->   */
->  struct bio_set *fs_bio_set;
-> 
-> -inline unsigned int bvec_nr_vecs(unsigned short idx)
-> +unsigned int bvec_nr_vecs(unsigned short idx)
->  {
->  	return bvec_slabs[idx].nr_vecs;
->  }
-> diff --git a/include/linux/bio.h b/include/linux/bio.h
-> index 62f0be9..0933a14 100644
-> --- a/include/linux/bio.h
-> +++ b/include/linux/bio.h
-> @@ -365,7 +365,7 @@ extern struct bio *bio_copy_user_iov(struct request_queue *, struct sg_iovec *,
->  extern int bio_uncopy_user(struct bio *);
->  void zero_fill_bio(struct bio *bio);
->  extern struct bio_vec *bvec_alloc_bs(gfp_t, int, unsigned long *, struct bio_set *);
-> -extern inline unsigned int bvec_nr_vecs(unsigned short idx);
-> +extern unsigned int bvec_nr_vecs(unsigned short idx);
-> 
->  /*
->   * bio_set is used to allow other portions of the IO system to
-> 
+That appears to be a cut-and-paste error. I've queued this fix.
 
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+--------------080800020501000502020602
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
+
+commit d921ce404ad26e2169e8f89e9a59722ecff35fcf
+Author: Patrick McHardy <kaber@trash.net>
+Date:   Mon Jun 30 20:21:07 2008 +0200
+
+    netfilter: ebt_nflog: fix Kconfig typo
+    
+    The help text should refer to nflog instead of ulog. Noticed by
+    Krzysztof Halasa <khc@pm.waw.pl>.
+    
+    Signed-off-by: Patrick McHardy <kaber@trash.net>
+
+diff --git a/net/bridge/netfilter/Kconfig b/net/bridge/netfilter/Kconfig
+index 540df41..9094797 100644
+--- a/net/bridge/netfilter/Kconfig
++++ b/net/bridge/netfilter/Kconfig
+@@ -230,7 +230,7 @@ config BRIDGE_EBT_NFLOG
+ 	  either the old LOG target, the old ULOG target or nfnetlink_log
+ 	  as backend.
+ 
+-	  This option adds the ulog watcher, that you can use in any rule
++	  This option adds the nflog watcher, that you can use in any rule
+ 	  in any ebtables table.
+ 
+ 	  To compile it as a module, choose M here.  If unsure, say N.
+
+--------------080800020501000502020602--
