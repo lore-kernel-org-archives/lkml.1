@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753399AbYF3Cja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbYF3Cth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753399AbYF3Cja (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 22:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbYF3CjV
+	id S1754076AbYF3Cth (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 22:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYF3Ct2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 22:39:21 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36210 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750877AbYF3CjU (ORCPT
+	Sun, 29 Jun 2008 22:49:28 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36412 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750877AbYF3Ct1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 22:39:20 -0400
-Date: Mon, 30 Jun 2008 11:44:39 +0900
+	Sun, 29 Jun 2008 22:49:27 -0400
+Date: Mon, 30 Jun 2008 11:53:54 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
        Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] splitlru: memcg swapbacked pages active
-Message-Id: <20080630114439.da792361.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0806290120270.21758@blonde.site>
+       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] splitlru: BDI_CAP_SWAP_BACKED
+Message-Id: <20080630115354.3a75edd3.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080629173841.37CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 References: <Pine.LNX.4.64.0806290117510.21758@blonde.site>
-	<Pine.LNX.4.64.0806290120270.21758@blonde.site>
+	<Pine.LNX.4.64.0806290122330.21758@blonde.site>
+	<20080629173841.37CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Organization: Fujitsu
 X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -30,47 +32,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Jun 2008 01:22:22 +0100 (BST)
-Hugh Dickins <hugh@veritas.com> wrote:
+On Sun, 29 Jun 2008 17:48:59 +0900
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> add_to_page_cache_lru puts PageSwapBacked pages on the active_anon lru,
-> so shouldn't mem_cgroup_charge_common mirror that by setting FLAG_ACTIVE?
+> > The split-lru patches put file and swap-backed pages on different lrus.
+> > shmem/tmpfs pages are awkward because they are swap-backed file pages.
+> > Since it's difficult to change lru midstream, they are treated as swap-
+> > backed throughout, with SetPageSwapBacked on allocation in shmem_getpage.
+> > 
+> > However, splice read (used by loop and sendfile) and readahead* allocate
+> > pages first, add_to_page_cache_lru, and then call into the filesystem
+> > through ->readpage.  Under memory pressure, the shmem pages arrive at
+> > add_to_swap_cache and hit its BUG_ON(!PageSwapBacked(page)).
+> > 
+> > I've not yet found a better way to handle this than a "capability"
+> > flag in shmem_backing_dev_info, tested by add_to_page_cache_lru.
+> > And solely because it would look suspicious without it, set that
+> > BDI_CAP_SWAP_BACKED in swap_backing_dev_info also.
+> > 
+> > * readahead on shmem/tmpfs?  I'd always thought ra_pages 0 prevented
+> > that; but in fact readahead(2), fadvise(POSIX_FADV_WILLNEED) and
+> > madvise(MADV_WILLNEED) all force_page_cache_readahead and get there.
+> > 
+> > Signed-off-by: Hugh Dickins <hugh@veritas.com>
 > 
-> Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> ---
-> Should follow mmotm's vmscan-split-lru-lists-into-anon-file-sets.patch
+> great.
 > 
->  mm/memcontrol.c |    2 ++
->  1 file changed, 2 insertions(+)
+> I'm not sure about this patch is perfect.
+> but it seems makes sense and very good code.
 > 
-> --- mmotm/mm/memcontrol.c	2008-06-27 13:39:20.000000000 +0100
-> +++ linux/mm/memcontrol.c	2008-06-27 17:32:29.000000000 +0100
-> @@ -560,6 +560,8 @@ static int mem_cgroup_charge_common(stru
->  		pc->flags = PAGE_CGROUP_FLAG_CACHE;
->  		if (page_is_file_cache(page))
->  			pc->flags |= PAGE_CGROUP_FLAG_FILE;
-> +		else
-> +			pc->flags |= PAGE_CGROUP_FLAG_ACTIVE;
->  	} else
->  		pc->flags = PAGE_CGROUP_FLAG_ACTIVE;
->  
+> So, I'll testing this patch for a while.
 > 
-Hmm, maybe no trouble but we'll have to care shmem's page is not marked as
-PAGE_CGROUP_FLAG_CACHE but charged by mem_cgroup_charge_cache_page(). 
-(I think why shmem is charged as cache is because shmem is used for tmpfs)
 
-pc->flags |= PAGE_CGROUP_FLAG_FILE |  PAGE_CGROUP_FLAG_ACTIVE;
-
-is bad ? (or not work ? I can't catch yet.)
-
-
-And we have to change this again ;)
-==
-        [MEM_CGROUP_STAT_RSS] = { "anon/swapcache", PAGE_SIZE, },
-==
+Hmm, how about adding LRU only for shmem/tmpfs ? nonsense ? ;)
+It's just a file if not mapped but it's swap backed.
 
 
 Thanks,
 -Kame
-
 
