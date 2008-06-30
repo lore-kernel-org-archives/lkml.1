@@ -1,102 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbYF3Du6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbYF3Dwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756606AbYF3Du6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 23:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbYF3Duu
+	id S1756560AbYF3Dwn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 23:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYF3Dwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 23:50:50 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:23115 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751869AbYF3Duu (ORCPT
+	Sun, 29 Jun 2008 23:52:35 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38720 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752085AbYF3Dwe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 23:50:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:To:Subject:Cc:Content-Disposition:From:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=CmvvaTvfTPaf3J1jxd2CpoVhxpV6ol6rs4c6OEpZh8q8oRpVpCKOf+LYO2kxuwzPioqkn68MPzH74Ksp276uXZaGCsDs4v0tIo0qSAXy7nMZLWOmhQv/XAdmA/envMSuwmQsHh/jHEElnT5McN0u03wj5/yjnI4q0JgGBL22fjQ=  ;
-X-YMail-OSG: 6SfUq.oVM1lX_2aLjVWvcQSsEjtYE_TqkZ7.curdcPTjPnoUmyJB2wm8c1bUBa5OGy_EjjE_0bxBSlYqJjOg3xATnqIGYbJmbQ174u6WRqmvKA3wc0UhdhHg0vFuG5V8Vkc-
-X-Yahoo-Newman-Property: ymail-3
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.26-rc6-mm] gpio: updates to sysfs support
-Cc: lkml <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
-From: David Brownell <david-b@pacbell.net>
-Date: Sun, 29 Jun 2008 20:50:45 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 29 Jun 2008 23:52:34 -0400
+Date: Mon, 30 Jun 2008 12:57:37 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [RFC 0/5] Memory controller soft limit introduction (v3)
+Message-Id: <20080630125737.4b14785f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <486855DF.2070100@linux.vnet.ibm.com>
+References: <20080627151808.31664.36047.sendpatchset@balbir-laptop>
+	<20080628133615.a5fa16cf.kamezawa.hiroyu@jp.fujitsu.com>
+	<4867174B.3090005@linux.vnet.ibm.com>
+	<20080630102054.ee214765.kamezawa.hiroyu@jp.fujitsu.com>
+	<486855DF.2070100@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200806292050.45405.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update and bugfix the patch adding sysfs GPIO support:
+On Mon, 30 Jun 2008 09:11:19 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-  * Bugfix:  the test initializing the IS_OUT flag for output-only
-    GPIOs had the sense inverted.
+> KAMEZAWA Hiroyuki wrote:
+> > On Sun, 29 Jun 2008 10:32:03 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> >>> I have a couple of comments.
+> >>>
+> >>> 1. Why you add soft_limit to res_coutner ?
+> >>>    Is there any other controller which uses soft-limit ?
+> >>>    I'll move watermark handling to memcg from res_counter becasue it's
+> >>>    required only by memcg.
+> >>>
+> >> I expect soft_limits to be controller independent. The same thing can be applied
+> >> to an io-controller for example, right?
+> >>
+> > 
+> > I can't imagine how soft-limit works on i/o controller. could you explain ?
+> > 
+> 
+> An io-controller could have the same concept. A hard-limit on the bandwidth and
+> a soft-limit to allow a group to exceed the soft-limit provided there is no i/o
+> bandwidth congestion.
+> 
+Hmm, that is the case where "share" works well. Why soft-limit ?
+i/o conroller doesn't support share ? (I don' know sorry.)
 
-  * Update:  when gpio_chip.dev is provided, list it in the debugfs
-    dump.  Device nodes are unique; the "label" isn't.
 
-The bug of course caused output-only GPIOs to misbehave, but it also
-made just-exported (or generally:  only-requested) GPIOs always appear
-to be outputs in sysfs and debugfs.  That's wrong more often than it's
-right, although it gets corrected when the direction is assigned.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/gpio/gpiolib.c |   28 +++++++++++++++++++++++-----
- 1 files changed, 23 insertions(+), 5 deletions(-)
+> > 
+> >>> 2. *please* handle NUMA
+> >>>    There is a fundamental difference between global VMM and memcg.
+> >>>      global VMM - reclaim memory at memory shortage.
+> >>>      memcg     - for reclaim memory at memory limit
+> >>>    Then, memcg wasn't required to handle place-of-memory at hitting limit. 
+> >>>    *just reducing the usage* was enough.
+> >>>    In this set, you try to handle memory shortage handling.
+> >>>    So, please handle NUMA, i.e. "what node do you want to reclaim memory from ?"
+> >>>    If not, 
+> >>>     - memory placement of Apps can be terrible.
+> >>>     - cannot work well with cpuset. (I think)
+> >>>
+> >> try_to_free_mem_cgroup_pages() handles NUMA right? We start with the
+> >> node_zonelists of the current node on which we are executing.  I can pass on the
+> >> zonelist from __alloc_pages_internal() to try_to_free_mem_cgroup_pages(). Is
+> >> there anything else you had in mind?
+> >>
+> > Assume following case of a host with 2 nodes. and following mount style.
+> > 
+> > mount -t cgroup -o memory,cpuset none /opt/cgroup/
+> > 
+> >   
+> >   /Group1: cpu 0-1, mem=0 limit=1G, soft-limit=700M
+> >   /Group2: cpu 2-3, mem=1 limit=1G  soft-limit=700M
+> >   ....
+> >   /Groupxxxx
+> > 
+> > Assume a environ after some workload, 
+> > 
+> >   /Group1: cpu 0-1, mem=0 limit=1G, soft-limit=700M usage=990M
+> >   /Group2: cpu 2-3, mem=1 limit=1G  soft-limit=700M usage=400M
+> > 
+> > *And* memory of node"1" is in shortage and the kernel has to reclaim
+> > memory from node "1".
+> > 
+> > Your routine tries to relclaim memory from a group, which exceeds soft-limit
+> > ....Group1. But it's no help because Group1 doesn't contains any memory in Node1.
+> > And make it worse, your routine doen't tries to call try_to_free_pages() in global
+> > LRU when your soft-limit reclaim some memory. So, if a task in Group 1 continues
+> > to allocate memory at some speed, memory shortage in Group2 will not be recovered,
+> > easily.
+> > 
+> > This includes 2 aspects of trouble.
+> >  - Group1's memory is reclaimed but it's wrong.
+> >  - Group2's try_to_free_pages() may took very long time.
+> > 
+> > (Current page shrinking under cpuset seems to scan all nodes,
+> >  his seems not to be quick, but it works  because it scans all.
+> >  This will be another problem, anyway ;).
+> > 
+> > 
+> > BTW, currently mem_cgroup_try_to_free_pages() assumes GFP_HIGHUSER_MOVABLE
+> > always.
+> > ==
+> > unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
+> >                                                 gfp_t gfp_mask)
+> > {
+> >         struct scan_control sc = {
+> >                 .may_writepage = !laptop_mode,
+> >                 .may_swap = 1,
+> >                 .swap_cluster_max = SWAP_CLUSTER_MAX,
+> >                 .swappiness = vm_swappiness,
+> >                 .order = 0,
+> >                 .mem_cgroup = mem_cont,
+> >                 .isolate_pages = mem_cgroup_isolate_pages,
+> >         };
+> >         struct zonelist *zonelist;
+> > 
+> >         sc.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |
+> >                         (GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);
+> >         zonelist = NODE_DATA(numa_node_id())->node_zonelists;
+> >         return do_try_to_free_pages(zonelist, &sc);
+> > }
+> > ==
+> > please select appropriate zonelist here.
+> > 
+> 
+> We do have zonelist information in __alloc_pages_internal(), it should be easy
+> to pass the zonelist or come up with a good default (current one) if no zonelist
+> is provided to the routine.
+> 
+yes. what I want to say is you should take care of this.
 
---- a/drivers/gpio/gpiolib.c	2008-06-17 23:15:17.000000000 -0700
-+++ b/drivers/gpio/gpiolib.c	2008-06-18 09:48:32.000000000 -0700
-@@ -685,7 +685,14 @@ int gpiochip_add(struct gpio_chip *chip)
- 	if (status == 0) {
- 		for (id = base; id < base + chip->ngpio; id++) {
- 			gpio_desc[id].chip = chip;
--			gpio_desc[id].flags = chip->direction_input
-+
-+			/* REVISIT:  most hardware initializes GPIOs as
-+			 * inputs (often with pullups enabled) so power
-+			 * usage is minimized.  Linux code should set the
-+			 * gpio direction first thing; but until it does,
-+			 * we may expose the wrong direction in sysfs.
-+			 */
-+			gpio_desc[id].flags = !chip->direction_input
- 				? (1 << FLAG_IS_OUT)
- 				: 0;
- 		}
-@@ -1108,17 +1115,28 @@ static int gpiolib_show(struct seq_file 
- 	/* REVISIT this isn't locked against gpio_chip removal ... */
- 
- 	for (gpio = 0; gpio_is_valid(gpio); gpio++) {
-+		struct device *dev;
-+
- 		if (chip == gpio_desc[gpio].chip)
- 			continue;
- 		chip = gpio_desc[gpio].chip;
- 		if (!chip)
- 			continue;
- 
--		seq_printf(s, "%sGPIOs %d-%d, %s%s:\n",
-+		seq_printf(s, "%sGPIOs %d-%d",
- 				started ? "\n" : "",
--				chip->base, chip->base + chip->ngpio - 1,
--				chip->label ? : "generic",
--				chip->can_sleep ? ", can sleep" : "");
-+				chip->base, chip->base + chip->ngpio - 1);
-+		dev = chip->dev;
-+		if (dev)
-+			seq_printf(s, ", %s/%s",
-+				dev->bus ? dev->bus->name : "no-bus",
-+				dev->bus_id);
-+		if (chip->label)
-+			seq_printf(s, ", %s", chip->label);
-+		if (chip->can_sleep)
-+			seq_printf(s, ", can sleep");
-+		seq_printf(s, ":\n");
-+
- 		started = 1;
- 		if (chip->dbg_show)
- 			chip->dbg_show(s, chip);
+Anyway, I think you should revisit the whole memory reclaim and fixes small bugs?
+which doesn't meet soft-limit.
+
+Thanks,
+-Kame
+
