@@ -1,93 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760971AbYF3KZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759922AbYF3KaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760971AbYF3KZk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 06:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755727AbYF3KZI
+	id S1759922AbYF3KaS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 06:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbYF3KaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 06:25:08 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:63800 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754882AbYF3KZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 06:25:06 -0400
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: linux-kernel@vger.kernel.org
-Cc: kernel@avr32linux.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Victor <linux@maxim.org.za>, Chip Coldwell <coldwell@redhat.com>,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: [PATCH 1/2] serial: Add flush_buffer() operation to uart_ops
-Date: Mon, 30 Jun 2008 12:24:20 +0200
-Message-Id: <1214821461-11772-1-git-send-email-haavard.skinnemoen@atmel.com>
-X-Mailer: git-send-email 1.5.5.4
-X-OriginalArrivalTime: 30 Jun 2008 10:24:12.0880 (UTC) FILETIME=[70E37500:01C8DA9B]
+	Mon, 30 Jun 2008 06:30:05 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:41034 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754419AbYF3KaE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 06:30:04 -0400
+Message-ID: <4868B5A8.2060004@aitel.hist.no>
+Date: Mon, 30 Jun 2008 12:30:00 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+Organization: HiST
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Andi Kleen <andi@firstfloor.org>,
+       =?UTF-8?B?VMO2csO2ayBFZHdpbg==?= <edwintorok@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Ctrl+C doesn't interrupt process waiting for I/O
+References: <48661488.10304@gmail.com> <4866F6FE.9000503@goop.org> <8763rsphkt.fsf@basil.nowhere.org> <4867B20E.2030608@goop.org>
+In-Reply-To: <4867B20E.2030608@goop.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serial drivers using DMA (like the atmel_serial driver) tend to get very
-confused when the xmit buffer is flushed and nobody told them.  They
-also tend to spew a lot of garbage since the DMA engine keeps running
-after the buffer is flushed and possibly refilled with unrelated data.
+Jeremy Fitzhardinge wrote:
+> Andi Kleen wrote:
+>> Still there's the effect that Ctrl-Z+kill works faster than Ctrl-C
+>> that is not explained by this. This has often annoyed me too.
+>> I'm not sure why it is. In theory they should be the same unless
+>> someone blocks SIGINT.
+>>   
+> 
+> I'd never noticed that.  That's just weird.
+> 
+I occationally see this - although I rarely run loads so heavy that it 
+is a real problem. Ctrl-C - nothing happens except maybe a ^C printed - 
+kill it from another rxvt.
 
-This patch adds a new flush_buffer operation to the uart_ops struct,
-along with a call to it from uart_flush_buffer() right after the xmit
-buffer has been cleared. The driver can implement this in order to
-syncronize its internal DMA state with the xmit buffer when the buffer
-is flushed.
+Could it be some sort of tty locking issue, holding up Ctrl-C processing
+while the heavily loaded machine suffer lock contention?
 
-Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
----
- Documentation/serial/driver  |   11 +++++++++++
- drivers/serial/serial_core.c |    2 ++
- include/linux/serial_core.h  |    1 +
- 3 files changed, 14 insertions(+), 0 deletions(-)
+Last time I saw this was a erroneous script that called itself without
+exec. With 2G memory and 3G of swap in use, the system was slow. the 
+mouse cursor moved only now and then. Very little happened
+with Ctrl-C. Closing the rxvt running this script then caused a lot of
+disk activity and the system slowly came back to normal.
 
-diff --git a/Documentation/serial/driver b/Documentation/serial/driver
-index 88ad615..77ba0af 100644
---- a/Documentation/serial/driver
-+++ b/Documentation/serial/driver
-@@ -186,6 +186,17 @@ hardware.
- 	Locking: port_sem taken.
- 	Interrupts: caller dependent.
- 
-+  flush_buffer(port)
-+	Flush any write buffers, reset any DMA state and stop any
-+	ongoing DMA transfers.
-+
-+	This will be called whenever the port->info->xmit circular
-+	buffer is cleared.
-+
-+	Locking: port->lock taken.
-+	Interrupts: locally disabled.
-+	This call must not sleep
-+
-   set_termios(port,termios,oldtermios)
- 	Change the port parameters, including word length, parity, stop
- 	bits.  Update read_status_mask and ignore_status_mask to indicate
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index c9b64e7..799f739 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -573,6 +573,8 @@ static void uart_flush_buffer(struct tty_struct *tty)
- 
- 	spin_lock_irqsave(&port->lock, flags);
- 	uart_circ_clear(&state->info->xmit);
-+	if (port->ops->flush_buffer)
-+		port->ops->flush_buffer(port);
- 	spin_unlock_irqrestore(&port->lock, flags);
- 	tty_wakeup(tty);
- }
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index d8f31de..1d2faa6 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -190,6 +190,7 @@ struct uart_ops {
- 	void		(*break_ctl)(struct uart_port *, int ctl);
- 	int		(*startup)(struct uart_port *);
- 	void		(*shutdown)(struct uart_port *);
-+	void		(*flush_buffer)(struct uart_port *);
- 	void		(*set_termios)(struct uart_port *, struct ktermios *new,
- 				       struct ktermios *old);
- 	void		(*set_ldisc)(struct uart_port *);
--- 
-1.5.5.4
-
+Helge Hafting
