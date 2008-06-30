@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbYF3M76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760362AbYF3NAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758824AbYF3M76 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 08:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbYF3M7s
+	id S1760362AbYF3NAa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 09:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbYF3NAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 08:59:48 -0400
-Received: from hedwig.cmf.nrl.navy.mil ([134.207.12.162]:43281 "EHLO
-	hedwig.cmf.nrl.navy.mil" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbYF3M7r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 08:59:47 -0400
-Message-Id: <200806301259.m5UCxewW022114@cmf.nrl.navy.mil>
-From: "Chas Williams (CONTRACTOR)" <chas@cmf.nrl.navy.mil>
-To: David Woodhouse <dwmw2@infradead.org>
-cc: netdev@vger.kernel.org, linux-atm-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Linux-ATM-General] [PATCH] firmware: convert Ambassador ATM driver to request_firmware()
-In-reply-to: <1214818473.10393.337.camel@pmac.infradead.org>
-Date: Mon, 30 Jun 2008 08:59:40 -0400
-X-NRLCMF-Spam-Score: () hits=-0.021
-X-NRLCMF-Virus-Scanned: No virus found
+	Mon, 30 Jun 2008 09:00:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56583 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755233AbYF3NAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 09:00:16 -0400
+Date: Mon, 30 Jun 2008 14:59:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH 00/30] SMP-group balancer - take 3
+Message-ID: <20080630125956.GD4011@elte.hu>
+References: <20080627114109.724249622@chello.nl> <20080627173355.GA11381@linux.vnet.ibm.com> <20080628170828.GA2002@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080628170828.GA2002@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <1214818473.10393.337.camel@pmac.infradead.org>,David Woodhouse writ
-es:
->A couple of comments though... it looks like you forgot to add
->MODULE_FIRMWARE(). And shouldn't 'fw_data' in
->fore200e_load_and_start_firmware() be a (__le32 *) not a (u32 *)?
 
-this look ok:
+* Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
 
+> Hi,
+> 
+> I get this at bootup
+> 
+> ------------[ cut here ]------------
+> WARNING: at kernel/lockdep.c:2738 check_flags+0x8a/0x12d()
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.26-rc8-tip #5
 
-diff --git a/drivers/atm/fore200e.c b/drivers/atm/fore200e.c
-index d5c1bbf..91710d4 100644
---- a/drivers/atm/fore200e.c
-+++ b/drivers/atm/fore200e.c
-@@ -2562,7 +2562,8 @@ fore200e_load_and_start_fw(struct fore200e* fore200e)
-     const struct firmware *firmware;
-     struct device *device;
-     struct fw_header *fw_header;
--    u32 *fw_data, fw_size;
-+    __le32 *fw_data;
-+    u32 fw_size;
-     u32 __iomem *load_addr;
-     char buf[48];
-     int err = -ENODEV;
-@@ -2582,7 +2583,7 @@ fore200e_load_and_start_fw(struct fore200e* fore200e)
- 	return err;
-     }
- 
--    fw_data = (u32 *) firmware->data;
-+    fw_data = (__le32 *) firmware->data;
-     fw_size = firmware->size / sizeof(u32);
-     fw_header = (struct fw_header *) firmware->data;
-     load_addr = fore200e->virt_base + le32_to_cpu(fw_header->load_offset);
-@@ -3199,6 +3200,7 @@ static const struct fore200e_bus fore200e_bus[] = {
-     {}
- };
- 
--#ifdef MODULE_LICENSE
- MODULE_LICENSE("GPL");
--#endif
-+MODULE_FIRMWARE("sba200e.bin");
-+MODULE_FIRMWARE("pca200e.bin");
-+MODULE_FIRMWARE("pca200e_ecd.bin");
+please check latest tip/master. This is the commit that should fix it:
+
+----------------
+| commit 2d452c9b10caeec455eb5e56a0ef4ed485178213
+| Author: Ingo Molnar <mingo@elte.hu>
+| Date:   Sun Jun 29 15:01:59 2008 +0200
+|
+|     sched: sched_clock_cpu() based cpu_clock(), lockdep fix
+|
+|     Vegard Nossum reported:
+|
+|     > WARNING: at kernel/lockdep.c:2738 check_flags+0x142/0x160()
+----------------
+
+	Ingo
