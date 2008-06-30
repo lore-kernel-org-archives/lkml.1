@@ -1,66 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753080AbYGAFlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbYGAFyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753080AbYGAFlG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 01:41:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbYGAFkz
+	id S1752696AbYGAFyU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 01:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYGAFyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 01:40:55 -0400
-Received: from saeurebad.de ([85.214.36.134]:50200 "EHLO saeurebad.de"
+	Tue, 1 Jul 2008 01:54:04 -0400
+Received: from s5.reserver.ru ([74.86.82.203]:52427 "EHLO s5.reserver.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751048AbYGAFky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 01:40:54 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 3/3] softlockup: fix watchdog task wakeup frequency
-References: <20080627000445.346130358@saeurebad.de>
-	<20080627000805.504878592@saeurebad.de>
-	<20080627120350.GB30872@elte.hu>
-	<87prq3xdjv.fsf@skyscraper.fehenstaub.lan>
-	<20080627124329.GA14576@elte.hu>
-	<87d4m3xbzq.fsf@skyscraper.fehenstaub.lan>
-	<87od5ms7yh.fsf@skyscraper.fehenstaub.lan>
-	<20080630130837.GA332@elte.hu>
-Date: Tue, 01 Jul 2008 07:40:17 +0200
-In-Reply-To: <20080630130837.GA332@elte.hu> (Ingo Molnar's message of "Mon, 30
-	Jun 2008 15:08:37 +0200")
-Message-ID: <87abh26u2m.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1751500AbYGAFyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 01:54:03 -0400
+X-Greylist: delayed 25728 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Jul 2008 01:54:03 EDT
+To: minhtamvnn1@yahoo.com, elgabo_666@hotmail.com, zwerlpe@comcast.net,
+       mcguffe@christcom.net, riaka@webtv.net, wave4@swbell.net,
+       dsr@delphi.com, majordomo@mlists.com, cecilie.heyerdahl2@chello.no,
+       v@bath.ac.uk
+Subject: Re: Your request
+Date: Tue, 1 Jul 2008 02:37:13 +0400
+From: no-reply <no-reply@indieweed.org>
+Message-ID: <4be84516ed4ce4e8538ab7ba74a4c70e@pharmaenergy.com>
+X-Priority: 3
+X-Mailer: Cerberus Helpdesk v. 2.6.1 Release (http://www.cerberusweb.com)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - s5.reserver.ru
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [99 32002] / [47 12]
+X-AntiAbuse: Sender Address Domain - s5.reserver.ru
+X-Source: 
+X-Source-Args: /usr/local/apache/bin/httpd 
+X-Source-Dir: pharmaenergy.com:/public_html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+All Controlleds without Doctor Approval!
 
-Ingo Molnar <mingo@elte.hu> writes:
+Phen...
+Hydro..
+Val...
+Xan...
+Ativ...
+Ambi...
 
-> * Johannes Weiner <hannes@saeurebad.de> wrote:
->
->> > +	/*
->> > +	 * Wake up the high-prio watchdog task twice per
->> > +	 * threshold timespan.
->> > +	 */
->> > +	if (now > touch_timestamp + softlockup_thresh/2)
->> >  		wake_up_process(per_cpu(watchdog_task, this_cpu));
->> 
->> That defeats patch 1/3 and I think it can be dropped (#1).
->
-> applied this updated patch to tip/core/softlockup. #3 didnt apply - 
-> could you send a delta patch against tip/core/softlockup please? You can 
-> pick it up via:
->
->   http://people.redhat.com/mingo/tip.git/README
->
-> do:
->
->   git-checkout -b core/softlockup tip/core/softlockup
->
-> to check it out.
+VISA, MasterCard, AMEX, DINERS, JCB, ECHECK... 
 
-Uhm, I see this patch is already in.  Misunderstanding or did you fix it
-up yourself?
+http://www.availmeds.com/ 
 
-	Hannes
+
+
+
+
+
+
+__________________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+yamschik ne goni ty gonish yamschik
+bolnoy nuzhdaetsya v uhode vracha i chem dalshe uydet vrach tem luchshe
+
+samoe luchshee v novyh druzyah to chto oni esch nikogda ne slyshali vashih staryh istoriy
+
+za dvumya zaycami pogonishsya - ot oboih i poluchish
+
+inyh uzh net drugih dolechim
+
+
+kak malo nado cheloveku chtoby pochuvstvovat sebya schastlivym i kak mnogo chtoby ne chuvstvovat sebya neschastnym
+
+bodr kak elektricheskiy stul
+
+
+skazhite u vas v rodu beremennye byli
+
+horoshie muzhiki na doroge ne valyautsya oni valyautsya na divane
+
