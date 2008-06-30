@@ -1,63 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbYF3I4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755039AbYF3I5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755474AbYF3I4Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 04:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbYF3Iz7
+	id S1755039AbYF3I5N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 04:57:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbYF3I46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 04:55:59 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:21180 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752667AbYF3Iz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 04:55:59 -0400
-Date: Mon, 30 Jun 2008 10:55:56 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Zhao Forrest <forrest.zhao@gmail.com>
-Cc: Boaz Harrosh <bharrosh@panasas.com>, Erez Zilber <erezzi.list@gmail.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Should a block device enforce block atomicity?
-Message-ID: <20080630085556.GL20826@kernel.dk>
-References: <ce513bcc0806292351t7f4ad933l920112381f4ebb4@mail.gmail.com> <20080630065525.GI20826@kernel.dk> <ce513bcc0806300058mbe0f15eya07fafbb9ba4a56@mail.gmail.com> <48689857.1050908@panasas.com> <ac8af0be0806300147i1970a6f7mb705c0ce590326@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ac8af0be0806300147i1970a6f7mb705c0ce590326@mail.gmail.com>
+	Mon, 30 Jun 2008 04:56:58 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:41158 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753634AbYF3I46 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 04:56:58 -0400
+Subject: Re: [PATCH 2/3] mmc: wbsd.c fix shadowing of 'dma' variable
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Tomas Winkler <tomas.winkler@intel.com>
+Cc: drzeus-list@drzeus.cx, linux-kernel@vger.kernel.org
+In-Reply-To: <1214812224-32267-2-git-send-email-tomas.winkler@intel.com>
+References: <1214812224-32267-1-git-send-email-tomas.winkler@intel.com>
+	 <1214812224-32267-2-git-send-email-tomas.winkler@intel.com>
+Content-Type: text/plain
+Date: Mon, 30 Jun 2008 10:57:07 +0200
+Message-Id: <1214816227.11537.22.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30 2008, Zhao Forrest wrote:
-> >
-> > Don't forget that all IO requests are queued on the device. With a
-> > modern HW and disk you usually have NCQ and most drives will throw
-> > away write request to the same sector if they see a later write to
-> > the same sector in the queue.
-> >
-> > That said. There is nothing wrong with writing again and again to
-> > the same sector on disk. File/record locking is done at the FileSystem
-> > level. An application that wants exclusive write need to open the file
-> > that way. Other wise it could even be written from another machine not
-> > even another thread.
-> >
-> > What is it you are concerned with?
-> >
-> I happen to read the email and have a question, that may not be Erez's
-> real question :)
-> Let's suppose the following example:
-> 1 pdflush find a dirty inode and decides to flush a set of dirty pages
-> to harddrive
-> 2 while this set of dirty pages is being committed to
-> harddrive(dma_mapping is done, but dirty pages are not really written
-> to disk media), application/FS is trying to update some pages in this
-> set of dirty pages.
-> 
-> Then what happens? Will application be put into sleep until page
-> flushing to disk media is done?
+Hi Tomas,
 
-Yes, the page needs to be locked before IO can be issued. So it'll block
-on the page lock. That is what I referred to as the page cache providing
-this guarentee for you. With raw IO, the application needs to ensure
-ordering on its own if it commits IO to the same block more than once.
+> This patch fix warning :shadowing dma variable
 
--- 
-Jens Axboe
+please use module_param_named() instead.
+
+Regards
+
+Marcel
+
 
