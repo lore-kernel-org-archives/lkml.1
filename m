@@ -1,72 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbYF3FD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbYF3FJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756734AbYF3FD0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 01:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbYF3FDR
+	id S1756733AbYF3FJp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 01:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbYF3FJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 01:03:17 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:34128 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750878AbYF3FDQ (ORCPT
+	Mon, 30 Jun 2008 01:09:33 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:42959 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751800AbYF3FJc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 01:03:16 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=qUjudB9HEM1ITk1JxZF33wh+thb/FZi8etwrD0/ur/mBlPlLiKbWVIv4OX38RtA/52wLYyaZG4jAemkwJJdSFaMO5U8tvX2jdo0LjeDLti7JdZZnT8e9qwWClhrTKA/eYh2GgpGftOa7xDfOFNzSdqnWqaqX337IOyhW7XZ0jd4=  ;
-X-YMail-OSG: H05KR7IVM1noKMMberqbY1x0.8msd23syVCVZURjlWoN77wzxtmlgh0F0nMQa1d3l26NAkNptYreaUfe9.P6cFr4_xp_1d1m7pIfBK7KqF5aJuhnH086P8dxAng5ga.nYQM-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Kyungmin Park" <kmpark@infradead.org>
-Subject: Re: [patch 2.6.26-rc8+] mtd: dataflash OTP support
-Date: Sun, 29 Jun 2008 22:03:14 -0700
-User-Agent: KMail/1.9.9
-Cc: "Bryan Wu" <cooloney@kernel.org>,
-       "Michael Hennerich" <michael.hennerich@analog.com>,
-       linux-mtd@lists.infradead.org, lkml <linux-kernel@vger.kernel.org>
-References: <200806292019.53376.david-b@pacbell.net> <9c9fda240806292114m43d4e940h3346c03d92d65b32@mail.gmail.com>
-In-Reply-To: <9c9fda240806292114m43d4e940h3346c03d92d65b32@mail.gmail.com>
+	Mon, 30 Jun 2008 01:09:32 -0400
+X-AuditID: 0ac90647-ab321ba000004aeb-8a-48686a89e959
+Message-ID: <48686A75.9010809@hitachi.com>
+Date: Mon, 30 Jun 2008 14:09:09 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Jan Kara <jack@suse.cz>
+Cc: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: [PATCH 4/5] jbd: fix error handling for checkpoint io
+References: <4843CE15.6080506@hitachi.com> <4843CFBD.7040706@hitachi.com> 
+    <20080602124409.GL30613@duck.suse.cz> <4844CB39.6060409@hitachi.com> 
+    <20080603080219.GA17936@duck.suse.cz> <485F85AE.1010704@hitachi.com> 
+    <20080623122240.GJ26743@duck.suse.cz> <4860E01B.8010806@hitachi.com> 
+    <20080624133309.GG9959@duck.suse.cz> <48649FA0.70303@hitachi.com> 
+    <20080627102419.GC3602@duck.suse.cz>
+In-Reply-To: <20080627102419.GC3602@duck.suse.cz>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806292203.15123.david-b@pacbell.net>
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 29 June 2008, Kyungmin Park wrote:
-> > +#ifdef CONFIG_MTD_OTP
-> > +#define HAVE_OTP
-> > +#endif
-> > +
-> > +#ifdef CONFIG_MTD_ONENAND_OTP
-> > +#define HAVE_OTP
-> > +#endif
-> > +
-> > +#ifdef CONFIG_MTD_DATAFLASH_OTP
-> > +#define HAVE_OTP
-> > +#endif
-> > +
+Hi,
+
+Jan Kara wrote:
+
+> On Fri 27-06-08 17:06:56, Hidehiro Kawai wrote:
 > 
-> How about to add these at Kconfig like this,
+>>Jan Kara wrote:
+>>
+>>
+>>>On Tue 24-06-08 20:52:59, Hidehiro Kawai wrote:
+>>
+>>>>>>3. is implemented as described below.
+>>>>>>(1) if log_do_checkpoint() detects an I/O error during
+>>>>>>    checkpointing, it calls journal_abort() to abort the journal
+>>>>>>(2) if the journal has aborted, don't update s_start and s_sequence
+>>>>>>    in the on-disk journal superblock
+>>>>>>
+>>>>>>So, if the journal aborts, journaled data will be replayed on the
+>>>>>>next mount.
+>>>>>>
+>>>>>>Now, please remember that some dirty metadata buffers are written
+>>>>>>back to the filesystem without journaling if the journal aborted.
+>>>>>>We are happy if all dirty metadata buffers are written to the disk,
+>>>>>>the integrity of the filesystem will be kept.  However, replaying
+>>>>>>the journaled data can overwrite the latest on-disk metadata blocks
+>>>>>>partly with old data.  It would break the filesystem.
+>>>>>
+>>>>> Yes, it would. But how do you think it can happen that a metadata buffer
+>>>>>will be written back to the filesystem when it is a part of running
+>>>>>transaction? Note that checkpointing code specifically checks whether the
+>>>>>buffer being written back is part of a running transaction and if so, it
+>>>>>waits for commit before writing back the buffer. So I don't think this can
+>>>>>happen but maybe I miss something...
+>>>>
+>>>>Checkpointing code checks it and may call log_wait_commit(), but this
+>>>>problem is caused by transactions which have not started checkpointing.
+>>>>
+>>>>For example, the tail transaction has an old update for block_B and
+>>>>the running transaction has a new update for block_B.  Then, the
+>>>>committing transaction fails to write the commit record, it aborts the
+>>>>journal, and new block_B will be written back to the file system without
+>>>>journaling.  Because this patch doesn't separate between normal abort
+>>>>and checkpointing related abort, the tail transaction is left in the
+>>>>journal space.  So by replaying the tail transaction, new block_B is
+>>>>overwritten with old one.
+>>>
+>>>  Yes, and this is expected an correct. When we cannot properly finish a
+>>>transaction, we have to discard everything in it. A bug would be (and I
+>>>think it could currently happen) if we already checkpointed the previous
+>>>transaction and then written over block_B new data from the uncommitted
+>>>transaction. I think we have to avoid that - i.e., in case we abort the
+>>>journal we should not mark buffers dirty when processing the forget loop.
+>>
+>>Yes.
+>>
+>>
+>>>But this is not too serious since fsck has to be run anyway and it will
+>>>fix the problems.
+>>
+>>Yes.  The filesystem should be marked with an error, so fsck will check
+>>and recover the filesystem on boot.  But this means the filesystem loses
+>>some latest updates even if it was cleanly unmounted (although some file
+>>data has been lost.)  I'm a bit afraid that some people would think of
+>>this as a regression due to this PATCH 4/5.  At least, to avoid
+>>undesirable replay, we had better keep journaled data only when the
+>>journal has been aborted for checkpointing related reason.
 > 
-> config MTD_HAVE_OTP
->          bool
->          default n
-> 
-> and NOR, OneNAND, and DATAFLASH select MTD_HAVE_OTP if OTP support.
+>   I don't think this makes any difference. Look: We have transaction A
+> modifying block B fully committed to the journal. Now there is a running
+> (or committing, it does not really matter) transaction R also modifying block
+> B. Until R gets fully committed, no block modified by R is checkpointed
+> to the device - checkpointing code takes care of that and it must be so
+> to satisfy journaling guarantees.
+>   So if we abort journal (for whatever reason) before R is fully committed,
+> no change in R will be seen on the filesystem regardless whether you
+> cleanup the journal or not.
 
-Shouldn't it be HAVE_MTD_OTP?
+No, changes in R will be seen on the filesystem.
+The metadata buffer for block B is marked as dirty when it is unfiled
+whether the journal has aborted or not.  Eventually the buffer will be
+written-back to the filesystem by pdflush.  Actually I have confirmed
+this behavior by using SystemTap.  So if both journal abort and
+system crash happen at the same time, the filesystem would become
+inconsistent state.  As I stated, replaying the journaled block B in
+transaction A may also corrupt the filesystem, because changes in
+transaction R are reflected halfway.  That is why I sent a patch to
+prevent metadata buffers from being dirtied on abort.
 
-That'd be prettier, yes.  MTD_OTP would have been the obvious
-choice for the generic symbol, but that's specific to CFI.
-(And for that matter, CFI command set 1 ... I have set 2 chips
-that can't yet expose their OTP data!)
+>   And you cannot do much differenly - the principle of journaling is that
+> either all changes in the transaction get to disk or none of them. So until
+> the transaction is properly committed, you have the only way to satisfy
+> this condition - take the "none of them" choice.
+>   Now fsck could of course be clever and try to use updates in not fully
+> committed transaction but personally I don't think it's worth the effort.
+>   Please correct me if I just misunderstood your point...
 
-I'd rather see that as a separate patch though -- either before
-or after this one, I don't much care.
-
-- Dave
+Thanks,
+-- 
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
 
