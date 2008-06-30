@@ -1,139 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762666AbYF3PwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761138AbYF3Pzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762666AbYF3PwY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 11:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762237AbYF3PwK
+	id S1761138AbYF3Pzu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 11:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbYF3Pzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 11:52:10 -0400
-Received: from hs-out-0708.google.com ([64.233.178.246]:8623 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762204AbYF3PwI (ORCPT
+	Mon, 30 Jun 2008 11:55:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40013 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750842AbYF3Pzm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 11:52:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type;
-        b=a2DPISTBG4/obg9Mr4BjtcM9PCiaoDWQL94GHojoA53WD6R00Kj9c54WqMo8at8+nE
-         L2pQpEWTIw3vdvyxzX8tbe3eFEMCkwSp+VjGKL8+s6WxwP+dhTex25C9Akf+WQLP3AYK
-         AyqbTlc/WZIfptd0inJ+Xc6pSbV+zlwg4e8Yw=
-Message-ID: <c384c5ea0806300852p517c769ga17f1583fc55ad2d@mail.gmail.com>
-Date: Mon, 30 Jun 2008 17:52:06 +0200
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       RT <linux-rt-users@vger.kernel.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-Subject: [PATCH -rt] {queue,schedule}_work_prio() allowing work priorities other than caller's priority
+	Mon, 30 Jun 2008 11:55:42 -0400
+Date: Mon, 30 Jun 2008 08:55:02 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 3/3] Fix copy_user on x86_64
+In-Reply-To: <m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com>
+Message-ID: <alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org>
+References: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0806281108240.4371@hp.linux-foundation.org> <m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_32183_24848114.1214841126769"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_32183_24848114.1214841126769
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Hello,
 
-proposed patch for the -rt tree. queue_work() might be made a static
-inline instead.
+On Mon, 30 Jun 2008, Vitaly Mayatskikh wrote:
+> 
+> "For this reason, all patches should be submitting e-mail "inline".
+> WARNING:  Be wary of your editor's word-wrap corrupting your patch,
+> if you choose to cut-n-paste your patch."
+> 
+> My first thought was "should be attached inline".
 
-Regards,
--- 
-Leon
+Yeah, no, the "inline" there means literally as no attachment at all, but 
+inline in the normal mail.
 
-------=_Part_32183_24848114.1214841126769
-Content-Type: text/x-diff; name=schedule_work_prio.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fi390p6m0
-Content-Disposition: attachment; filename=schedule_work_prio.patch
+Sometimes it's not possible (known broken MUA's/MTA's), and for really big 
+patches it's usually not all that useful anyway, since nobody is going to 
+review or comment on rally big patches in the first place (but because of 
+that, nobody should ever even _send_ such patches, because they are 
+pointless). But in general, if you don't have a crappy MUA/MTA setup, 
+putting the patch at the end of the email as normal inline text, no 
+attachment, means that every form of emailer known to man will have no 
+problem quoting it for commentary or showing it by default etc.
 
-QWdhaW5zdCAyLjYuMjQuNy1ydDE0LiBUZXN0ZWQgb24gSVhQNHh4IHBsYXRmb3JtLgoKQWRkcyBz
-Y2hlZHVsZV93b3JrX3ByaW8oKSBhbmQgcXVldWVfd29ya19wcmlvKCkgc28gdGhhdCB3b3JrIGNh
-biBiZQpzY2hlZHVsZWQgd2l0aCBhIGRpZmZlcmVudCBwcmlvcml0eSB0aGFuIHRoZSBjYWxsZXIu
-CgpVbmRlciBQUkVFTVBUIFJULCBzY2hlZHVsZV93b3JrKCkgYW5kIHRoZXJlZm9yZSBxdWV1ZV93
-b3JrKCkgbWFrZXMKdGhlIHdvcmsgaW5oZXJpdCB0aGUgY2FsbGVyJ3MgcHJpb3JpdHkuCgpIb3dl
-dmVyLCBpZiBhIHJlYWwtdGltZSBrZXJuZWwgaW50ZXJydXB0IGhhbmRsZXIgdGhyZWFkIGRlZmVy
-cyB3b3JrIGl0IG1heSB3YW50CnRoZSBkZWZlcnJlZCB3b3JrIGhhdmUgbG93ZXIgcHJpb3JpdHkg
-c28gaXQgZG9lcyBub3QgY29udGVuZCBmb3IgdGhlIGNwdSB3aXRoCnN1Y2NlZWRpbmcgaW50ZXJy
-dXB0IGhhbmRsaW5nLgoKVGhlIGZhdWx0eSBjYXNlIHdhcyBhIG5vbi1GSUZPIHNlcmlhbCBkcml2
-ZXIgdGhhdCBkZWZlcnJlZCBMRUQgYmxpbmtpbmcgdG8KYSB3b3JrcXVldWUgdXNpbmcgc2NoZWR1
-bGVfd29yaygpLiBIb3dldmVyLCB0aGF0IHdvcmsgdXNlZCBHUElPIGJpdGJhbmdlZCBJMkMsCndo
-aWNoIHVzZXMgNTAgdXNlY3MgdWRlbGF5KClzLiBXaXRoIHRoZSB3b3JrIGluaGVyaXRpbmcgdGhl
-IHNlcmlhbCBJUlEgcHJpb3JpdHksCml0IGVhc2lseSBtaXNzZWQgdGhlIH42MCB1c2VjIGRlYWRs
-aW5lIG9mIDExNTIwMCBicHMgY29tbXVuaWNhdGlvbnMuCgpUaGlzIHBhdGNoIHNvbHZlcyB0aGUg
-aXNzdWUgd2l0aCB0aGUgSVJRIHVzaW5nIHNjaGVkdWxlX3dvcmtfcHJpbygpLgoKU2lnbmVkLW9m
-Zi1ieTogTGVvbiBXb2VzdGVuYmVyZyA8bGVvbkBzaWRlYnJhbmNoLmNvbT4KCkluZGV4OiBsaW51
-eC0yLjYuMjQva2VybmVsL3dvcmtxdWV1ZS5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi4yNC5v
-cmlnL2tlcm5lbC93b3JrcXVldWUuYwkyMDA4LTA2LTMwIDE3OjEyOjA1LjAwMDAwMDAwMCArMDIw
-MAorKysgbGludXgtMi42LjI0L2tlcm5lbC93b3JrcXVldWUuYwkyMDA4LTA2LTMwIDE3OjI1OjAz
-LjAwMDAwMDAwMCArMDIwMApAQCAtMTYzLDkgKzE2MywxMCBAQAogfQogCiAvKioKLSAqIHF1ZXVl
-X3dvcmsgLSBxdWV1ZSB3b3JrIG9uIGEgd29ya3F1ZXVlCisgKiBxdWV1ZV93b3JrX3ByaW8gLSBx
-dWV1ZSB3b3JrIG9uIGEgd29ya3F1ZXVlIGFuZCBzZXQgd29yayBwcmlvcml0eQogICogQHdxOiB3
-b3JrcXVldWUgdG8gdXNlCiAgKiBAd29yazogd29yayB0byBxdWV1ZQorICogQHByaW86IHByaW9y
-aXR5IG9mIHdvcmsKICAqCiAgKiBSZXR1cm5zIDAgaWYgQHdvcmsgd2FzIGFscmVhZHkgb24gYSBx
-dWV1ZSwgbm9uLXplcm8gb3RoZXJ3aXNlLgogICoKQEAgLTE3NCwxNyArMTc1LDM2IEBACiAgKgog
-ICogRXNwZWNpYWxseSBubyBzdWNoIGd1YXJhbnRlZSBvbiBQUkVFTVBUX1JULgogICovCi1pbnQg
-ZmFzdGNhbGwgcXVldWVfd29yayhzdHJ1Y3Qgd29ya3F1ZXVlX3N0cnVjdCAqd3EsIHN0cnVjdCB3
-b3JrX3N0cnVjdCAqd29yaykKK2ludCBmYXN0Y2FsbCBxdWV1ZV93b3JrX3ByaW8oc3RydWN0IHdv
-cmtxdWV1ZV9zdHJ1Y3QgKndxLAorICBzdHJ1Y3Qgd29ya19zdHJ1Y3QgKndvcmssIGludCBwcmlv
-KQogewogCWludCByZXQgPSAwLCBjcHUgPSByYXdfc21wX3Byb2Nlc3Nvcl9pZCgpOwogCiAJaWYg
-KCF0ZXN0X2FuZF9zZXRfYml0KFdPUktfU1RSVUNUX1BFTkRJTkcsIHdvcmtfZGF0YV9iaXRzKHdv
-cmspKSkgewogCQlCVUdfT04oIXBsaXN0X25vZGVfZW1wdHkoJndvcmstPmVudHJ5KSk7Ci0JCV9f
-cXVldWVfd29yayh3cV9wZXJfY3B1KHdxLCBjcHUpLCB3b3JrLCBjdXJyZW50LT5ub3JtYWxfcHJp
-byk7CisJCV9fcXVldWVfd29yayh3cV9wZXJfY3B1KHdxLCBjcHUpLCB3b3JrLCBwcmlvKTsKIAkJ
-cmV0ID0gMTsKIAl9CiAJcmV0dXJuIHJldDsKIH0KK0VYUE9SVF9TWU1CT0xfR1BMKHF1ZXVlX3dv
-cmtfcHJpbyk7CisKKy8qKgorICogcXVldWVfd29yayAtIHF1ZXVlIHdvcmsgb24gYSB3b3JrcXVl
-dWUuIHdvcmsgaW5oZXJpdHMgY2FsbGVyJ3MgcHJpby4KKyAqIEB3cTogd29ya3F1ZXVlIHRvIHVz
-ZQorICogQHdvcms6IHdvcmsgdG8gcXVldWUKKyAqCisgKiBSZXR1cm5zIDAgaWYgQHdvcmsgd2Fz
-IGFscmVhZHkgb24gYSBxdWV1ZSwgbm9uLXplcm8gb3RoZXJ3aXNlLgorICoKKyAqIFdlIHF1ZXVl
-IHRoZSB3b3JrIHRvIHRoZSBDUFUgaXQgd2FzIHN1Ym1pdHRlZCwgYnV0IHRoZXJlIGlzIG5vCisg
-KiBndWFyYW50ZWUgdGhhdCBpdCB3aWxsIGJlIHByb2Nlc3NlZCBieSB0aGF0IENQVS4KKyAqCisg
-KiBFc3BlY2lhbGx5IG5vIHN1Y2ggZ3VhcmFudGVlIG9uIFBSRUVNUFRfUlQuCisgKi8KK2ludCBm
-YXN0Y2FsbCBxdWV1ZV93b3JrKHN0cnVjdCB3b3JrcXVldWVfc3RydWN0ICp3cSwgc3RydWN0IHdv
-cmtfc3RydWN0ICp3b3JrKQoreworICByZXR1cm4gcXVldWVfd29ya19wcmlvKHdxLCB3b3JrLCBj
-dXJyZW50LT5ub3JtYWxfcHJpbyk7Cit9CiBFWFBPUlRfU1lNQk9MX0dQTChxdWV1ZV93b3JrKTsK
-IAogdm9pZCBkZWxheWVkX3dvcmtfdGltZXJfZm4odW5zaWduZWQgbG9uZyBfX2RhdGEpCkBAIC02
-MjcsNyArNjQ3LDggQEAKICAqIHNjaGVkdWxlX3dvcmsgLSBwdXQgd29yayB0YXNrIGluIGdsb2Jh
-bCB3b3JrcXVldWUKICAqIEB3b3JrOiBqb2IgdG8gYmUgZG9uZQogICoKLSAqIFRoaXMgcHV0cyBh
-IGpvYiBpbiB0aGUga2VybmVsLWdsb2JhbCB3b3JrcXVldWUuCisgKiBUaGlzIHB1dHMgYSBqb2Ig
-aW4gdGhlIGtlcm5lbC1nbG9iYWwgd29ya3F1ZXVlLiBUaGUgam9iIGluaGVyaXRzIHRoZQorICog
-Y2FsbGVyJ3MgcHJpb3JpdHkuCiAgKi8KIGludCBmYXN0Y2FsbCBzY2hlZHVsZV93b3JrKHN0cnVj
-dCB3b3JrX3N0cnVjdCAqd29yaykKIHsKQEAgLTYzNiw2ICs2NTcsMTkgQEAKIEVYUE9SVF9TWU1C
-T0woc2NoZWR1bGVfd29yayk7CiAKIC8qKgorICogc2NoZWR1bGVfd29ya19wcmlvIC0gcHV0IHdv
-cmsgdGFzayBpbiBnbG9iYWwgd29ya3F1ZXVlLCBzZXQgd29yayBwcmlvCisgKiBAd29yazogam9i
-IHRvIGJlIGRvbmUKKyAqCisgKiBUaGlzIHB1dHMgYSBqb2IgaW4gdGhlIGtlcm5lbC1nbG9iYWwg
-d29ya3F1ZXVlLiBUaGUgam9iIGdldHMgdGhlIHNwZWNpZmllZAorICogcHJpb3JpdHkuCisgKi8K
-K2ludCBmYXN0Y2FsbCBzY2hlZHVsZV93b3JrX3ByaW8oc3RydWN0IHdvcmtfc3RydWN0ICp3b3Jr
-LCBpbnQgcHJpbykKK3sKKwlyZXR1cm4gcXVldWVfd29ya19wcmlvKGtldmVudGRfd3EsIHdvcmss
-IHByaW8pOworfQorRVhQT1JUX1NZTUJPTChzY2hlZHVsZV93b3JrX3ByaW8pOworCisvKioKICAq
-IHNjaGVkdWxlX2RlbGF5ZWRfd29yayAtIHB1dCB3b3JrIHRhc2sgaW4gZ2xvYmFsIHdvcmtxdWV1
-ZSBhZnRlciBkZWxheQogICogQGR3b3JrOiBqb2IgdG8gYmUgZG9uZQogICogQGRlbGF5OiBudW1i
-ZXIgb2YgamlmZmllcyB0byB3YWl0IG9yIDAgZm9yIGltbWVkaWF0ZSBleGVjdXRpb24KSW5kZXg6
-IGxpbnV4LTIuNi4yNC9pbmNsdWRlL2xpbnV4L3dvcmtxdWV1ZS5oCj09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxp
-bnV4LTIuNi4yNC5vcmlnL2luY2x1ZGUvbGludXgvd29ya3F1ZXVlLmgJMjAwOC0wNi0zMCAxNzox
-Mjo1Ny4wMDAwMDAwMDAgKzAyMDAKKysrIGxpbnV4LTIuNi4yNC9pbmNsdWRlL2xpbnV4L3dvcmtx
-dWV1ZS5oCTIwMDgtMDYtMzAgMTc6MzA6MzQuMDAwMDAwMDAwICswMjAwCkBAIC0xODUsNiArMTg1
-LDcgQEAKIGV4dGVybiB2b2lkIGRlc3Ryb3lfd29ya3F1ZXVlKHN0cnVjdCB3b3JrcXVldWVfc3Ry
-dWN0ICp3cSk7CiAKIGV4dGVybiBpbnQgRkFTVENBTEwocXVldWVfd29yayhzdHJ1Y3Qgd29ya3F1
-ZXVlX3N0cnVjdCAqd3EsIHN0cnVjdCB3b3JrX3N0cnVjdCAqd29yaykpOworZXh0ZXJuIGludCBG
-QVNUQ0FMTChxdWV1ZV93b3JrX3ByaW8oc3RydWN0IHdvcmtxdWV1ZV9zdHJ1Y3QgKndxLCBzdHJ1
-Y3Qgd29ya19zdHJ1Y3QgKndvcmssIGludCBwcmlvKSk7CiBleHRlcm4gaW50IEZBU1RDQUxMKHF1
-ZXVlX2RlbGF5ZWRfd29yayhzdHJ1Y3Qgd29ya3F1ZXVlX3N0cnVjdCAqd3EsCiAJCQlzdHJ1Y3Qg
-ZGVsYXllZF93b3JrICp3b3JrLCB1bnNpZ25lZCBsb25nIGRlbGF5KSk7CiBleHRlcm4gaW50IHF1
-ZXVlX2RlbGF5ZWRfd29ya19vbihpbnQgY3B1LCBzdHJ1Y3Qgd29ya3F1ZXVlX3N0cnVjdCAqd3Es
-CkBAIC0xOTQsNiArMTk1LDcgQEAKIGV4dGVybiB2b2lkIGZsdXNoX3NjaGVkdWxlZF93b3JrKHZv
-aWQpOwogCiBleHRlcm4gaW50IEZBU1RDQUxMKHNjaGVkdWxlX3dvcmsoc3RydWN0IHdvcmtfc3Ry
-dWN0ICp3b3JrKSk7CitleHRlcm4gaW50IEZBU1RDQUxMKHNjaGVkdWxlX3dvcmtfcHJpbyhzdHJ1
-Y3Qgd29ya19zdHJ1Y3QgKndvcmssIGludCBwcmlvKSk7CiBleHRlcm4gaW50IEZBU1RDQUxMKHNj
-aGVkdWxlX2RlbGF5ZWRfd29yayhzdHJ1Y3QgZGVsYXllZF93b3JrICp3b3JrLAogCQkJCQl1bnNp
-Z25lZCBsb25nIGRlbGF5KSk7CiBleHRlcm4gaW50IHNjaGVkdWxlX2RlbGF5ZWRfd29ya19vbihp
-bnQgY3B1LCBzdHJ1Y3QgZGVsYXllZF93b3JrICp3b3JrLAo=
-------=_Part_32183_24848114.1214841126769--
+> Agreed. Code was reworked again, will test it a bit more. Two more
+> questions to you and Andi:
+> 
+> 1. Do you see any reasons to do fix alignment for destination as it was
+> done in copy_user_generic_unrolled (yes, I know, access to unaligned
+> address is slower)? It tries to byte-copy unaligned bytes first and then
+> to do a normal copy. I think, most times destination addresses will be
+> aligned and this check is not so necessary. If it is necessary, then
+> copy_user_generic_string should do the same.
+
+Usually the cost of alignment is higher for writes than for reads (eg you 
+may be able to do two cache reads per cycle but only one cache write), so 
+aligning the destination preferentially is always a good idea.
+
+Also, if the source and destination are actualy mutually aligned, and the 
+_start_ is just not aligned, then aligning the destination will align the 
+source too (if they aren't mutually aligned, one or the other will always 
+be an unaligned access, and as mentioned, it's _usually_ cheaper to do the 
+load unaligned rather than the store).
+
+So I suspect the alignment code is worth it. There are many situations 
+where the kernel ends up having unaligned memory copies, sometimes big 
+ones too: things like TCP packets aren't nice powrs-of-two, so when you do 
+per-packet copying, even if the user passed in a buffer that was 
+originally aligned, by the time you've copied a few packets you may no 
+longer be nicely aligned any more.
+
+> 2. What is the purpose of "minor optimization" in commit
+> 3022d734a54cbd2b65eea9a024564821101b4a9a?
+
+I think that one was just a "since we're doing that 'and' operation, and 
+since it sets the flags anyway, jumping to a special sequence is free".
+
+Btw, for string instructions, it would probably be nice if we actually 
+tried to trigger the "fast string" mode if possible. Intel CPU's (and 
+maybe AMD ones too) have a special cache-line optimizing mode for "rep 
+movs" that triggers in special circumstances:
+
+  "In order for a fast string move to occur, five conditions must be met:
+
+   1. The source and destination address must be 8-byte aligned.
+   2. The string operation (rep movs) must operate on the data in 
+      ascending order
+   3. The initial count (ECX) must be at least 64
+   4. The source and the destination can't overlap by less than a cache 
+      line
+   5. The memory types of both source and destination must either be write 
+      back cacheable or write combining."
+
+and we historically haven't cared much, because the above _naturally_ 
+happens for the bulk of the important cases (copy whole pages, which 
+happens not just in the VM for COW, but also when a user reads a regular 
+file in aligned chunks). But again, for networking buffers, it _might_ 
+make sense to try to help trigger this case explicitly.
+
+			Linus
