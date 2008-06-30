@@ -1,85 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763249AbYF3SlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762869AbYF3Sxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763249AbYF3SlS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 14:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754331AbYF3SlF
+	id S1762869AbYF3Sxe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 14:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbYF3SxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 14:41:05 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:13039 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753897AbYF3SlE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 14:41:04 -0400
-Date: Mon, 30 Jun 2008 11:39:56 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-next@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       mingo <mingo@redhat.com>, tglx <tglx@linutronix.de>,
-       hpa <hpa@zytor.com>, akpm <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH -next] fork and exit: need to include iocontext.h
-Message-Id: <20080630113956.d910a1d9.randy.dunlap@oracle.com>
-In-Reply-To: <20080630183337.GD32211@elte.hu>
-References: <20080630105458.7c95e195.randy.dunlap@oracle.com>
-	<20080630180506.GC23739@elte.hu>
-	<20080630112222.f103e477.randy.dunlap@oracle.com>
-	<20080630183337.GD32211@elte.hu>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 30 Jun 2008 14:53:25 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:50852 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753148AbYF3SxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 14:53:24 -0400
+Date: Mon, 30 Jun 2008 13:53:18 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/4] security: filesystem capabilities bugfix2
+Message-ID: <20080630185318.GB30669@us.ibm.com>
+References: <20080627205905.GB17415@us.ibm.com> <486357EC.5060205@kernel.org> <7852.1214837604@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7852.1214837604@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jun 2008 20:33:37 +0200 Ingo Molnar wrote:
+Quoting David Howells (dhowells@redhat.com):
+> Serge E. Hallyn <serue@us.ibm.com> wrote:
+> 
+> > If I understand this right, then LSM_UNSAFE_PTRACE_CAP will only be set
+> > if the tracer didn't have CAP_SYS_PTRACE.  So this seems sane to me.
+> 
+> Erm...  Firstly:
 
-> 
-> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
-> > On Mon, 30 Jun 2008 20:05:06 +0200 Ingo Molnar wrote:
-> > 
-> > > 
-> > > * Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > > 
-> > > > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > > > 
-> > > > Fix fork and exit build errors: they need to include iocontext.h:
-> > > > 
-> > > > linux-next-20080630/kernel/fork.c: In function 'copy_process':
-> > > > linux-next-20080630/kernel/fork.c:1237: error: implicit declaration of function 'put_io_context'
-> > > > linux-next-20080630/kernel/exit.c: In function 'do_exit':
-> > > > linux-next-20080630/kernel/exit.c:992: error: implicit declaration of function 'exit_io_context'
-> > > 
-> > > i havent seen this one - do you know by chance which commit triggers it?
-> > 
-> > 
-> > Sorry, no idea which commit.
-> > 
-> > In 50 randconfigs today (next-20080630), I saw this one 12 times.
-> 
-> btw., block.git would be one of my first guesses - Jens Cc:-ed.
-> 
-> normally there's an easy way to find out the source commit of build 
-> failures. Try something like:
-> 
->  git-bisect reset
->  git-bisect start
->  git-bisect good v2.6.26-rc8
->  git-bisect bad linux-next/master
->  git-bisect run make kernel/fork.o
-> 
-> ... this should lead you to the commit that broke the build 
-> automatically. (as long as everyone keeps make oldconfig compatibility)
+Yeah, inverse of what I said...
 
-Thanks for the steps.  Maybe someday I'll use git.  ;)
+> 	int ptrace_attach(struct task_struct *task)
+> 	{
+> 	...
+> 		if (capable(CAP_SYS_PTRACE))
+> 			task->ptrace |= PT_PTRACE_CAP;
+> 	...
+> 	}
+> 
+> Then:
+> 
+> 	static int unsafe_exec(struct task_struct *p)
+> 	{
+> 		int unsafe = 0;
+> 		if (p->ptrace & PT_PTRACED) {
+> 			if (p->ptrace & PT_PTRACE_CAP)
+> 				unsafe |= LSM_UNSAFE_PTRACE_CAP;
+> 			else
+> 				unsafe |= LSM_UNSAFE_PTRACE;
+> 		}
+> 		if (atomic_read(&p->fs->count) > 1 ||
+> 		    atomic_read(&p->files->count) > 1 ||
+> 		    atomic_read(&p->sighand->count) > 1)
+> 			unsafe |= LSM_UNSAFE_SHARE;
+> 
+> 		return unsafe;
+> 	}
+> 
+> So LSM_UNSAFE_PTRACE_CAP will only be set if the tracer _does_ have
+> CAP_SYS_PTRACE.  That will be irrelevant, however, if any of fs, files or
+> sighand are shared.
+> 
+> And finally:
+> 
+> 	void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
+> 	{
+> 	...
+> 		if (bprm->e_uid != current->uid ||
+> 		    bprm->e_gid != current->gid ||
+> 		    !cap_issubset (new_permitted, current->cap_permitted)) {
+> 	...
+> 			if (unsafe & ~LSM_UNSAFE_PTRACE_CAP) {
+> 				if (!capable(CAP_SETUID)) {
+> 					bprm->e_uid = current->uid;
+> 					bprm->e_gid = current->gid;
+> 				}
+> 				if (!capable (CAP_SETPCAP)) {
+> 					new_permitted = cap_intersect(
+> 						new_permitted,
+> 						current->cap_permitted);
+> 				}
+> 			}
+> 	...
+> 	}
+> 
+> So if it's a 'set-privilege' binary, then if the tracer _doesn't_ have
+> CAP_SYS_PTRACE, we look at downgrading the privileges of the process.
+> 
+> Without Andrew's patch, we only downgrade the capabilities if we don't have
+> CAP_SETPCAP (and aren't sharing inheritables).
+> 
+> With Andrew's patch, capabilities are downgraded regardless of whether we have
+> CAP_SETPCAP or not.  I guess that means that if you're tracing a binary whose
+> filecaps say that it wants CAP_SETPCAP, then it retains CAP_SETPCAP.
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+I don't understand where that last sentence comes from.  Why would it
+retain CAP_SETPCAP?
+
+> I wonder if the tracing task should be examined here, and any capability the
+> tracer isn't permitted should be denied the process doing the exec.
+
+That sounds reasonable on its own, but it opens up a dangerous ability
+for the partially-privileged tracer to manipulate the capability set for
+the traced task.
+
+Note that (as of recently) we do not allow the execution of a file with
+partial privileges in its pE', precisely because it is dangerous to
+allow pick-and-choosing of capabilities in a capability-unaware binary.
+
+So frankly I wonder whether the existing downgrade is really safe...
+
+-serge
+
+> Anyway, in my commoncap.c prettification patch, I've dressed the limiter
+> function up as follows:
+> 
+> 	/*
+> 	 * Determine whether a exec'ing process's new permitted capabilities
+> 	 * should be limited to just what it already has.
+> 	 *
+> 	 * This prevents processes that are being ptraced from gaining access
+> 	 * to CAP_SETPCAP, unless the process they're tracing already has it,
+> 	 * and the binary they're executing has filecaps that elevate it.
+> 	 *
+> 	 *  Returns 1 if they should be limited, 0 if they are not.
+> 	 */
+> 	static inline int cap_limit_ptraced_target(void)
+> 	{
+> 	#ifndef CONFIG_SECURITY_FILE_CAPABILITIES
+> 		if (capable(CAP_SETPCAP))
+> 			return 0;
+> 	#endif
+> 		return 1;
+> 	}
+> 
+> David
