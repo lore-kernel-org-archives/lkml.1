@@ -1,85 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbYF3PAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759978AbYF3PB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757965AbYF3PAo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 11:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYF3PAe
+	id S1759978AbYF3PB4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 11:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYF3PBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 11:00:34 -0400
-Received: from smtp2.riverbed.com ([206.169.144.7]:34914 "EHLO
-	smtp2.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751936AbYF3PAd (ORCPT
+	Mon, 30 Jun 2008 11:01:48 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:55456 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752160AbYF3PBr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 11:00:33 -0400
-Date: Mon, 30 Jun 2008 08:01:11 -0700
-From: Arthur Jones <ajones@riverbed.com>
-To: Andi Kleen <andi@firstfloor.org>
-CC: "dougthompson@xmission.com" <dougthompson@xmission.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "bluesmoke-devel@lists.sourceforge.net" 
-	<bluesmoke-devel@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/13] EDAC i5100 new intel chipset driver
-Message-ID: <20080630150111.GE10571@ajones-laptop.nbttech.com>
-References: <48652da5.s2xXeJUyQ6DrqarN%dougthompson@xmission.com> <87r6aip2pi.fsf@basil.nowhere.org>
+	Mon, 30 Jun 2008 11:01:47 -0400
+Date: Mon, 30 Jun 2008 11:01:44 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: Ingo Molnar <mingo@elte.hu>, peterz@infradead.org, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH 0/3] sched: newidle and RT wake-buddy fixes
+In-Reply-To: <4868B841.BA47.005A.0@novell.com>
+Message-ID: <Pine.LNX.4.58.0806301100130.15090@gandalf.stny.rr.com>
+References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com>
+ <20080630131511.GA7506@elte.hu> <4868B841.BA47.005A.0@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <87r6aip2pi.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi, ...
 
-On Fri, Jun 27, 2008 at 10:07:21PM -0700, Andi Kleen wrote:
-> dougthompson@xmission.com writes:
+On Mon, 30 Jun 2008, Gregory Haskins wrote:
+
+>
+> >>> On Mon, Jun 30, 2008 at  9:15 AM, in message <20080630131511.GA7506@elte.hu>,
+> Ingo Molnar <mingo@elte.hu> wrote:
+>
+> > * Gregory Haskins <ghaskins@novell.com> wrote:
 > >
-> > 2)  I have not yet tackled the de-interleaving of the
-> > rank/controller address space into the physical address
-> > space of the CPU.  There is nothing fundamentally missing,
-> > it is just ending up to be a lot of code, and I'd rather
-> > keep it separate for now, esp since it doesn't work yet...
+> >> Hi Ingo,
+> >>   The following patches apply to linux-tip/sched/devel and enhance the
+> >> performance of the kernel (specifically in PREEMPT_RT, though they do
+> >> not regress mainline performance as far as I can tell).  They offer
+> >> somewhere between 50-100% speedups in netperf performance, depending
+> >> on the test.
 > >
-> > 3)  The code depends on a particular i5100 chip select
-> > to DIMM mainboard chip select mapping.  This mapping
-> > seems obvious to me in order to support dual and single
-> > ranked memory, but it is not unique and DIMM labels
-> > could be wrong on other mainboards.  There is no way
-> > to query this mapping that I know of.
-> 
-> Since there's a non negligible probability that the output
-> of this driver is completely misleading because of (2) and (3)
-> and probably (4) too [reporting the wrong DIMMs etc.]
-> would it be possible to add some flag to EDAC that
-> warns the user that the output is not fully reliable?
+> > -tip testing found this boot hang:
+>
+> Ok, I dug in a little bit here.  I haven't verified this out yet, but I think the problem is that
+> your config is PREEMPT_VOLUNTARY which NOPs the preempt_disable() in schedule() that
+> I rely on to allow the lock to be dropped.  (Doh!)
 
-The code properly presents all the right info
-in 2).  All that is missing the actual memory
-address -- which is not printed, but everything
-that it does print comes straight from the chip,
-so it should be right.  Also, for 4), the driver
-won't load unless it's in the proper mode.
+This means that there's a location somewhere that does a cond_resched?
+Perhaps we should look to see what does that. And perhaps the
+preempt_disable should not be allowing PREEMPT_VOLUNTARY to do scheduling
+with cond_resched.
 
-So, that leaves 3), which is indeed highly suspect.
-Most (all?) EDAC drivers don't print a DIMM label
-probably for this very reason.  Perhaps it is better
-to just take out that bit of code and leave the DIMM
-label blank?
+-- Steve
 
-> -Andi (who can just see people replacing the wrong DIMMs and
-> then blaming Linux)
+>
+> One way I can fix this is to fixup the newidle() code to only play the irq dropping tricks
+> ifdef CONFIG_PREEMPT == TRUE.  Does this sound reasonable, or is there a better way
+> to address this?
 
-Yeah, I can see this happening...
-
-Arthur
-
-> -------------------------------------------------------------------------
-> Check out the new SourceForge.net Marketplace.
-> It's the best place to buy or sell services for
-> just about anything Open Source.
-> http://sourceforge.net/services/buy/index.php
-> _______________________________________________
-> bluesmoke-devel mailing list
-> bluesmoke-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/bluesmoke-devel
