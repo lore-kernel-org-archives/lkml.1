@@ -1,227 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934181AbYF3Vxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934109AbYF3VyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934181AbYF3Vxt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 17:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933691AbYF3Von
+	id S934109AbYF3VyQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 17:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933726AbYF3Vq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 17:44:43 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:54200 "EHLO e3.ny.us.ibm.com"
+	Mon, 30 Jun 2008 17:46:28 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:44555 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933694AbYF3Vol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 17:44:41 -0400
-Date: Mon, 30 Jun 2008 16:44:23 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Tejun Heo <htejun@gmail.com>, Benjamin Thery <benjamin.thery@bull.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
-       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 06/11] sysfs: Implement sysfs tagged directory support.
-Message-ID: <20080630214421.GA29605@us.ibm.com>
-References: <20080618170729.808539948@theryb.frec.bull.fr> <20080618170731.002784342@theryb.frec.bull.fr> <485F04E1.70204@gmail.com> <m1y74svtff.fsf@frodo.ebiederm.org> <486706C9.9040303@gmail.com> <m18wwmsqdv.fsf@frodo.ebiederm.org>
+	id S933806AbYF3VqZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 17:46:25 -0400
+Date: Mon, 30 Jun 2008 16:49:01 -0500
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: Hugh Dickins <hugh@veritas.com>, Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, hooanon05@yahoo.co.jp,
+       viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fsstack: fsstack_copy_inode_size locking
+Message-ID: <20080630214901.GA8900@halcrowt61p.austin.ibm.com>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
+References: <Pine.LNX.4.64.0806291244440.32708@blonde.site> <200806301819.m5UIJRhv030310@agora.fsl.cs.sunysb.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m18wwmsqdv.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <200806301819.m5UIJRhv030310@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> Tejun Heo <htejun@gmail.com> writes:
-> 
-> > Hello, Eric.
-> >
-> > Eric W. Biederman wrote:
-> >> Tejun thank you for the review, and my apologies for the delayed
-> >> reply.
-> >
-> > Me being the king of delays, no need for apologies.  :-)
-> >
-> >>> As before, I can't bring myself to like this interface.  Is computing
-> >>> tags dynamically really necessary?  Can't we do the followings?
-> >> 
-> >> It isn't so much computing tags dynamically but rather it is reading them
-> >> from where they are stored.
-> >
-> > It's still dynamic from sysfs's POV and I think that will make
-> > maintenance more difficult.
-> 
-> Potentially.  I have no problem make it clear that things are more static.
-> 
-> >> There is also a second dimension here we multiplex different
-> >> directories based on different sets of tags.   One directory based
-> >> on user namespaces another on the network namespaces.
-> >
-> > No matter which criteria is used to select ns, it should end up being
-> > mapped to a set of tags (here, ida allocated numbers).  Unless tags can
-> > change dynamically, there shouldn't be functional difference.
-> >
-> >> The tags in practice are just pointers to the namespace pointers.
-> >> 
-> >> So while we could use the ida technique to specify which set of tags
-> >> we are talking about for a directory it isn't sufficient.
-> >
-> > I failed to follow here.  Can you please elaborate a bit?  If you can
-> > describe a simple example to me, it would be much appreciated.
-> 
-> See below.
-> 
-> >> The question sysfs_tag_enabled(sb, tag) makes no sense to me.
-> >> Especially in the context of needed a sysfs_sb_show_tag(sb, tag);
-> >> 
-> >> The current structure is because of all of the darn fool races and
-> >> magic that sysfs does.  We have to say for a given directory:  Your
-> >> contents will always be tagged, and only those that one tag that
-> >> matches what was captured by the superblock when sysfs is mounted
-> >> will be shown.
-> >
-> > sysfs_tag_enabled() was meant to test whether a directory which is
-> > tagged should be shown under the current sb.
-> 
-> Ah.  When we are doing readdir or lookup.  Yes that makes sense.
-> 
-> See below.  I honestly think sysfs_tab_enabled is the wrong question.
-> 
-> >>> Tags which can change dynamically seems too confusing to me and it
-> >>> makes things difficult to verify as it's unclear how those tags are
-> >>> gonna to change.
-> >> 
-> >> We have a  fundamental issue that we have to handle, and it sounds like
-> >> you are proposing something that will not handle it.
-> >> 
-> >> - network devices can move between namespaces.
-> >> - network devices have driver specific sysfs attributes hanging off of them.
-> >> 
-> >> So we have to move the network devices and their sysfs attributes
-> >> between namespaces, and I implemented that in kobject_rename,
-> >> sysfs_rename path.
-> >> 
-> >> The tags on a kobject can only change during a rename operation.
-> >> So when the change happens is well defined.  Further there is a
-> >> set of functions:  sysfs_creation_tag, sysfs_removal_tag,
-> >> sysfs_lookup_tag, sysfs_dirent_tag which makes it clear what we
-> >> are doing.
-> >> 
-> >> If you really don't like how the tags are managed we need to talk
-> >> about how we store the tags on kobjects and on the super block.
-> >> 
-> >> Registering a set of tags could easily make the sb_tag function
-> >> obsolete, and that is one small piece of code so it is no big deal.
-> >> 
-> >> struct sysfs_tag_type_operations {
-> >> 	const void *(*mount_tag)(void);
-> >>         const void *(*kobject_tag)(struct kobject *kobj);
-> >> };
-> >> 
-> >> Then we could do:
-> >> struct sysfs_sbtag_operations *tag_type_ops[MAX_TAG_TYPES];
-> >> 
-> >> And sysfs_tag_info could become.
-> >> struct sysfs_tag_info {
-> >>        void *tag[MAX_TAG_TYPES];
-> >> };
-> >> 
-> >> During subsystem initialization we could call
-> >> tag_type = sysfs_allocate_tag_type();
-> >> 
-> >> Just after the subsystem creates a directory.
-> >> sysfs_enable_tagging(kobj/sd, tag_type);
-> >> 
-> >> Then anytime we currently call sb_tag during lookup we can instead
-> >> just look at sysfs_info(sb)->tag[tag_type] and compare that with
-> >> sd->s_tag.tag.
-> >
-> > What you described is pretty much what I'm talking about.  The only
-> > difference is whether to use caller-provided pointer as tag or an
-> > ida-allocated integer.  The last sentence of the above paragraph is
-> > basically sys_tag_enabled() function (maybe misnamed).
-> 
-> So some concrete code examples here.  In the current code in lookup
-> what I am doing is: 
-> 
-> 	tag = sysfs_lookup_tag(parent_sd, parent->d_sb);
-> 	sd = sysfs_find_dirent(parent_sd, tag, dentry->d_name.name);
-> 
-> With the proposed change of adding tag types sysfs_lookup_tag becomes:
-> 
-> const void *sysfs_lookup_tag(struct sysfs_dirent *dir_sd, struct super_block *sb)
-> {
-> 	const void *tag = NULL;
-> 
-> 	if (dir_sd->s_flags & SYSFS_FLAG_TAGGED)
-> 		tag = sysfs_info(sb)->tag[dir_sd->tag_type];
-> 
-> 	return tag;
-> }	    
-> 
-> Which means that in practice I can lookup that tag that I am displaying
-> once.
-> 
-> Then in sysfs_find_dirent we do:
-> 
-> 	for (sd = parent_sd->s_dir.children; sd; sd = sd->s_sibling) {
-> 		 if ((parent_sd->s_flags & SYSFS_FLAG_TAGGED) &&		
-> 		     (sd->s_tag.tag != tag))			  
-> 			 continue;
-> 		 if (!strcmp(sd->s_name, name))
-> 			 return sd;					  
-> 	}						    
-> 
-> That should keep the implementation sufficiently inside of sysfs for there
-> to be no guessing.  In addition as a practical matter we can only allow
-> one tag to be visible in a directory at once or else we can not check
-> for duplicate names.  Which is the problem I see with a bitmap based test
-> too unnecessary many degrees of freedom.
-> 
-> The number of tag types will be low as it is the number of subsystems
-> that use the feature.  Simple enough that I expect statically allocating
-> the tag types in an enumeration is a safe and sane way to operate.
-> i.e.
-> 
-> enum sysfs_tag_types {
-> 	SYSFS_TAG_NETNS,
-> 	SYSFS_TAG_USERNS,
->         SYSFS_TAG_MAX
-> };
-> 
-> > The main reason why I'm whining about this so much is because I think
-> > tag should be something abstracted inside sysfs proper.  It's something
-> > which affects very internal operation of sysfs and I really want to keep
-> > the implementation details inside sysfs.  Spreading implementation over
-> > kobject and sysfs didn't turn out too pretty after all.
-> 
-> I agree. Most of the implementation is in sysfs already.  We just have
-> a few corner cases.  
-> 
-> Fundamentally it is the subsystems responsibility that creates the
-> kobjects and the sysfs entries.  The only case where I can see an
-> ida generated number being a help is if we start having lifetime
-> issues.  Further the  extra work to allocate and free tags ida based
-> tags seems unnecessary.
-> 
-> I don't doubt that there is a lot we can do better.  My current goal
-> is for something that is clean enough it won't get us into trouble
-> later, and then merging the code.  In tree where people can see
-> the code and the interactions I expect it will be easier to talk
-> about.
-> 
-> Currently the interface with the users is very small.  Adding the
-> tag_type enumeration should make it smaller and make things more
-> obviously static.
-> 
-> Guys can we please make something useful happen?
-> 
-> Eric
+On Mon, Jun 30, 2008 at 02:19:27PM -0400, Erez Zadok wrote:
+> BTW, ecryptfs may have a problem with this, b/c it uses
+> i_size_read/write b/t the lower and upper inodes.  If some
+> filesystems have a different interpretation for i_size, then
+> stacking ecryptfs on top of them could be an issue.  Mike?
 
-Now that the iproute2 patch is upstream, this patchset really is the
-only thing keeping us from using network namespaces.  Given that the
-details of the tagging are trivially changeable with no abi changes, I'd
-personally much rather see the patches go in as is, with whatever new
-tagging patches Benjamin whips up, using ida or some new idea, being
-applied later if we feel the need.
-
--serge
+eCryptfs depends on the results of i_size_read() on the lower inode
+when it needs to interpolate the filesize when the metadata is stored
+in the lower file's xattr region.
