@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761936AbYF3RUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762584AbYF3RVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761936AbYF3RUF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:20:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbYF3RTx
+	id S1762584AbYF3RVH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 13:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbYF3RUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:19:53 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:54344 "EHLO mail.vyatta.com"
+	Mon, 30 Jun 2008 13:20:55 -0400
+Received: from touchdown.maintech.de ([87.106.18.11]:57449 "EHLO mail.wvpn.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751733AbYF3RTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:19:52 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -1.639
-Date: Mon, 30 Jun 2008 10:19:48 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       <netdev@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add missing skb->dev assignment in Frame Relay RX code
-Message-ID: <20080630101948.535496a9@extreme>
-In-Reply-To: <m3od5kaqx8.fsf@maximus.localdomain>
-References: <m3wsk8aupw.fsf@maximus.localdomain>
-	<20080629130420.62d00d59@extreme>
-	<m3od5kaqx8.fsf@maximus.localdomain>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752099AbYF3RUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 13:20:54 -0400
+X-Greylist: delayed 612 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jun 2008 13:20:54 EDT
+Message-ID: <486911B2.7000006@maintech.de>
+Date: Mon, 30 Jun 2008 19:02:42 +0200
+From: Thomas Kleffel <tk@maintech.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Harald Welte <laforge@openmoko.org>
+CC: Ben Dooks <ben-linux@fluff.org>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch v4 02/17] MMC: S3C24XX: Fix the checkpatch.pl errors in
+ the s3cmci driver
+References: <20080630152547.755285683@fluff.org.uk> <20080630152747.132370982@fluff.org.uk> <20080630175018.356568b7@mjolnir.drzeus.cx> <20080630161537.GD8489@trinity.fluff.org> <20080630163601.GD5043@prithivi.gnumonks.org>
+In-Reply-To: <20080630163601.GD5043@prithivi.gnumonks.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Jun 2008 23:10:11 +0200
-Krzysztof Halasa <khc@pm.waw.pl> wrote:
+Hi,
+> don't worry about that.  Thomas Kleffel is unlikely to return to do any
+> active work on it (I know him personally), and the OpenMoko community
+> will inevitably rebase its patches based on whatever ends up in
+> mainline.  So nobody is worried if you merge all that stuff into one
+> patch.  It's probably polite to add the significant contributors (such
+> as yourself and myself) to the list of authors at the beginning of the
+> file though - given the amount of changes the driver has received
+> compared to Tomas' original.
+>   
+Harald is 100% right. I have absolutely no time at all to maintain this 
+driver and I haven't worked on it (or any other SD/MMC related stuff) 
+for almost two years now.
 
-> Stephen Hemminger <shemminger@vyatta.com> writes:
-> 
-> >> --- a/drivers/net/wan/hdlc_fr.c
-> >> +++ b/drivers/net/wan/hdlc_fr.c
-> >> @@ -1008,6 +1008,7 @@ static int fr_rx(struct sk_buff *skb)
-> >>  		stats->rx_bytes += skb->len;
-> >>  		if (pvc->state.becn)
-> >>  			stats->rx_compressed++;
-> >> +		skb->dev = dev;
-> >>  		netif_rx(skb);
-> >>  		return NET_RX_SUCCESS;
-> >>  	} else {
-> >
-> > Better to use netdev_alloc_skb for receive buffers instead.
-> > --- a/drivers/net/wan/hdlc_fr.c	2008-06-29 13:02:42.000000000 -0700
-> > +++ b/drivers/net/wan/hdlc_fr.c	2008-06-29 13:04:01.000000000 -0700
-> > @@ -515,7 +515,7 @@ static void fr_lmi_send(struct net_devic
-> >  		}
-> >  	}
-> >  
-> > -	skb = dev_alloc_skb(len);
-> > +	skb = netdev_alloc_skb(dev, len);
-> >  	if (!skb) {
-> >  		printk(KERN_WARNING "%s: Memory squeeze on fr_lmi_send()\n",
-> >  		       dev->name);
-> 
-> Well, no, that's another story - the missing assignment is in fr_rx(),
-> in the regular receive path (similar to 802.1q case, ethX ->
-> ethX.VLAN_ID transition). I.e., we get incoming packet from a hardware
-> driver, with skb->dev pointing to hardware hdlcX device, and we change
-> it to point to a logical pvcX device.
-> 
-> fr_lmi_send() is for control messages (generated locally) only, in TX
-> path. IOW we alloc skb and send it through hw driver immediately. Not
-> related to the bug.
-> 
-> That said, perhaps I should indeed use netdev_alloc_skb() for those
-> control messages? Or is it RX-only?
+I'd like to thank Harald, Ben, Pierre and all others who are working 
+hard to get the driver merged.
 
-netdev_alloc_skb does two things:
-  1) it sets skb->dev
-  2) on some platforms it can choose memory "closer" to the device.
-     but this is really a NUMA issue
+See you,
+
+Thomas Kleffel
+
+
+
