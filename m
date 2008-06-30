@@ -1,63 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759978AbYF3PB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760399AbYF3PDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759978AbYF3PB4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 11:01:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYF3PBs
+	id S1760399AbYF3PDS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 11:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYF3PDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 11:01:48 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:55456 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752160AbYF3PBr (ORCPT
+	Mon, 30 Jun 2008 11:03:06 -0400
+Received: from smtp1.riverbed.com ([206.169.144.12]:1426 "EHLO
+	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751405AbYF3PDF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 11:01:47 -0400
-Date: Mon, 30 Jun 2008 11:01:44 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: Ingo Molnar <mingo@elte.hu>, peterz@infradead.org, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH 0/3] sched: newidle and RT wake-buddy fixes
-In-Reply-To: <4868B841.BA47.005A.0@novell.com>
-Message-ID: <Pine.LNX.4.58.0806301100130.15090@gandalf.stny.rr.com>
-References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com>
- <20080630131511.GA7506@elte.hu> <4868B841.BA47.005A.0@novell.com>
+	Mon, 30 Jun 2008 11:03:05 -0400
+Date: Mon, 30 Jun 2008 08:03:46 -0700
+From: Arthur Jones <ajones@riverbed.com>
+To: Doug Thompson <norsk5@yahoo.com>
+CC: Andi Kleen <andi@firstfloor.org>,
+       "dougthompson@xmission.com" <dougthompson@xmission.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "bluesmoke-devel@lists.sourceforge.net" 
+	<bluesmoke-devel@lists.sourceforge.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/13] EDAC i5100 new intel chipset driver
+Message-ID: <20080630150346.GF10571@ajones-laptop.nbttech.com>
+References: <87r6aip2pi.fsf@basil.nowhere.org> <77374.55758.qm@web50103.mail.re2.yahoo.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <77374.55758.qm@web50103.mail.re2.yahoo.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Doug, ...
 
-On Mon, 30 Jun 2008, Gregory Haskins wrote:
-
->
-> >>> On Mon, Jun 30, 2008 at  9:15 AM, in message <20080630131511.GA7506@elte.hu>,
-> Ingo Molnar <mingo@elte.hu> wrote:
->
-> > * Gregory Haskins <ghaskins@novell.com> wrote:
+On Fri, Jun 27, 2008 at 11:15:06PM -0700, Doug Thompson wrote:
+> 
+> --- Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > dougthompson@xmission.com writes:
+> > >
+> > > 2)  I have not yet tackled the de-interleaving of the
+> > > rank/controller address space into the physical address
+> > > space of the CPU.  There is nothing fundamentally missing,
+> > > it is just ending up to be a lot of code, and I'd rather
+> > > keep it separate for now, esp since it doesn't work yet...
+> > >
+> > > 3)  The code depends on a particular i5100 chip select
+> > > to DIMM mainboard chip select mapping.  This mapping
+> > > seems obvious to me in order to support dual and single
+> > > ranked memory, but it is not unique and DIMM labels
+> > > could be wrong on other mainboards.  There is no way
+> > > to query this mapping that I know of.
 > >
-> >> Hi Ingo,
-> >>   The following patches apply to linux-tip/sched/devel and enhance the
-> >> performance of the kernel (specifically in PREEMPT_RT, though they do
-> >> not regress mainline performance as far as I can tell).  They offer
-> >> somewhere between 50-100% speedups in netperf performance, depending
-> >> on the test.
+> > Since there's a non negligible probability that the output
+> > of this driver is completely misleading because of (2) and (3)
+> > and probably (4) too [reporting the wrong DIMMs etc.]
+> > would it be possible to add some flag to EDAC that
+> > warns the user that the output is not fully reliable?\
+> 
+> good idea.
+> 
+> Arthur, could you add some more text to the driver's output, before the call to the
+> core's output function, doing exactly that? Explaining just what you DO know, and what you don't
+> know?
+
+Everything should be good except the DIMM label.  There
+are all kinds of ways this could be wrong (mainboard labelling,
+mainboard routing, ...).  I think it might be better just
+to leave this blank.
+
+Are there any EDAC drivers that properly report the DIMM label?
+
+How do they get around these issues?
+
+Thanks...
+
+Arthur
+
 > >
-> > -tip testing found this boot hang:
->
-> Ok, I dug in a little bit here.  I haven't verified this out yet, but I think the problem is that
-> your config is PREEMPT_VOLUNTARY which NOPs the preempt_disable() in schedule() that
-> I rely on to allow the lock to be dropped.  (Doh!)
-
-This means that there's a location somewhere that does a cond_resched?
-Perhaps we should look to see what does that. And perhaps the
-preempt_disable should not be allowing PREEMPT_VOLUNTARY to do scheduling
-with cond_resched.
-
--- Steve
-
->
-> One way I can fix this is to fixup the newidle() code to only play the irq dropping tricks
-> ifdef CONFIG_PREEMPT == TRUE.  Does this sound reasonable, or is there a better way
-> to address this?
-
+> > -Andi (who can just see people replacing the wrong DIMMs and
+> > then blaming Linux)
+> >
+> >
+> 
+> 
+> W1DUG
+> 
+> -------------------------------------------------------------------------
+> Check out the new SourceForge.net Marketplace.
+> It's the best place to buy or sell services for
+> just about anything Open Source.
+> http://sourceforge.net/services/buy/index.php
+> _______________________________________________
+> bluesmoke-devel mailing list
+> bluesmoke-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/bluesmoke-devel
