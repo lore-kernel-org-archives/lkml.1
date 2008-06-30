@@ -1,95 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761533AbYF3TWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751344AbYF3TYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761533AbYF3TWs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 15:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbYF3TWl
+	id S1751344AbYF3TYT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 15:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYF3TYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 15:22:41 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:37875 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751257AbYF3TWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 15:22:40 -0400
-Date: Mon, 30 Jun 2008 21:22:32 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       ALSA devel <alsa-devel@alsa-project.org>, mulix@mulix.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [alsa-devel] looping S/PDIF data
-Message-ID: <20080630212232.15b379cf@mjolnir.drzeus.cx>
-In-Reply-To: <48692415.3070204@keyaccess.nl>
-References: <20080531112606.5884a1c9@mjolnir.drzeus.cx>
-	<20080617215504.3203a5ed@mjolnir.drzeus.cx>
-	<4858B84B.4030800@keyaccess.nl>
-	<s5hej6t91u1.wl%tiwai@suse.de>
-	<Pine.LNX.4.61.0806191435270.1798@tm8103-a.perex-int.cz>
-	<s5hskv97fqk.wl%tiwai@suse.de>
-	<20080620214516.28e9d3f3@mjolnir.drzeus.cx>
-	<485C0A97.7020909@keyaccess.nl>
-	<20080621000050.43160d47@mjolnir.drzeus.cx>
-	<485C2DF7.7080408@keyaccess.nl>
-	<20080621010910.018f880d@mjolnir.drzeus.cx>
-	<485CF0AE.3020204@keyaccess.nl>
-	<20080630191133.7f7c349d@mjolnir.drzeus.cx>
-	<48692415.3070204@keyaccess.nl>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
-X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-10645-1214853122-0001-2"
+	Mon, 30 Jun 2008 15:24:12 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:58850 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751554AbYF3TYL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 15:24:11 -0400
+Date: Mon, 30 Jun 2008 20:23:54 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] splitlru: BDI_CAP_SWAP_BACKED
+In-Reply-To: <20080630115354.3a75edd3.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0806302020260.27080@blonde.site>
+References: <Pine.LNX.4.64.0806290117510.21758@blonde.site>
+ <Pine.LNX.4.64.0806290122330.21758@blonde.site> <20080629173841.37CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+ <20080630115354.3a75edd3.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Mon, 30 Jun 2008, KAMEZAWA Hiroyuki wrote:
+> 
+> Hmm, how about adding LRU only for shmem/tmpfs ? nonsense ? ;)
 
---=_freyr.drzeus.cx-10645-1214853122-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+I'd much prefer not: the more LRUs, the more balancing problems;
+And I don't think shmem/tmpfs _deserves_ its own LRUs.
+But it cannot be ruled out.
 
-On Mon, 30 Jun 2008 20:21:09 +0200
-Rene Herman <rene.herman@keyaccess.nl> wrote:
-
->=20
-> Your fix is commit f19a62ecba9d0963cee2b673f0ad34917b5e57ad in the=20
-> "sound-2.6" git repo (Takashi Iwai's tree), branch "master", at
->=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
->=20
-> also viewable at:
->=20
-> http://git.kernel.org/?p=3Dlinux/kernel/git/tiwai/sound-2.6.git;a=3Dcommi=
-t;h=3Df19a62ecba9d0963cee2b673f0ad34917b5e57ad
->=20
-> That commit is pre the 1.0.17-rc3 release/tag so it's in. Will find its=20
-> way into the kernel during the next merge window no doubt...
->=20
-
-Delightful. :)
-
-Now I just need to poke my vendor of choice to backport it aswell...
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-10645-1214853122-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkhpMn0ACgkQ7b8eESbyJLi+DgCeJzk+uslCvmqO5kbPCBjVPu2K
-6CcAoLiYvvp8crPV5Hm9EbyrPQgQz/12
-=W2Ka
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-10645-1214853122-0001-2--
+Hugh
