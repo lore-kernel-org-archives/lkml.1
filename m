@@ -1,202 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762460AbYF3NPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932266AbYF3NQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762460AbYF3NPz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 09:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756045AbYF3NOA
+	id S932266AbYF3NQS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 09:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762036AbYF3NOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 09:14:00 -0400
-Received: from gv-out-0910.google.com ([216.239.58.190]:57975 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761919AbYF3NN5 (ORCPT
+	Mon, 30 Jun 2008 09:14:08 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:63631 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756468AbYF3NOD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 09:13:57 -0400
+	Mon, 30 Jun 2008 09:14:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:subject:from:date:message-id;
-        b=fO+2ms1tnvqg62br4Ja1SKIB5C17BzIlhF6yo/omExhASz7xWTDnI865PUfttzlbtg
-         hAKiupW0L5XumIcOWDILHhDr+AP9TSzK5t9zv/hQRQKWxC71HWyxX5mBADRklRI2Qheb
-         SO4jPl7Dmxc7/8Lf9kQkhdxFscEex6PSL2i/g=
+        b=VbWSqjo/caJPg9bSVhnpxZ7tEKOtPcDyxHq/LbR2QU/SZfLwzOlD9DzIh1nN9NQNal
+         76rdcn4AKY0nNlOPV8iWY8iOWqFDZ6PAtjXtnJHuytIYlOdxveW7JBl6xmsjiQDIrcqi
+         8M+K13niH/rcJhXY7CuWzh/3a0J1ywzVAnx5U=
 To: linux-kernel@vger.kernel.org
-Subject: [patch 06/19] perfmon2 minimal v3:  X86 OProfile hooks
+Subject: [patch 07/19] perfmon2 minimal v3:  X86 64-bit hooks
 From: eranian@googlemail.com
-Date: Mon, 30 Jun 2008 06:13:53 -0700 (PDT)
-Message-ID: <4868dc11.16125e0a.0637.ffffeccd@mx.google.com>
+Date: Mon, 30 Jun 2008 06:13:57 -0700 (PDT)
+Message-ID: <4868dc15.08b6660a.60ea.ffffac5b@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provides PMU access synchronization between Perfmon2 and OProfile.
-Both subsystems can be compiled in. Only one of them can be active
-at any one time. It is necessary to issue opcontrol --shutdown
-to terminate the OProfile session.
+This patch adds the necessary hooks to the X86 64-bit code
+to support initialization, interrupts, context switching,
+and termination of a perfmon session.
 
 Signed-off-by: Stephane Eranian <eranian@gmail.com>
+-
 
---
-
-Index: linux-next/arch/x86/oprofile/nmi_int.c
+Index: next/arch/x86/kernel/entry_64.S
 ===================================================================
---- linux-next.orig/arch/x86/oprofile/nmi_int.c	2008-06-26 17:46:24.000000000 +0200
-+++ linux-next/arch/x86/oprofile/nmi_int.c	2008-06-26 19:48:15.000000000 +0200
-@@ -15,6 +15,7 @@
- #include <linux/slab.h>
- #include <linux/moduleparam.h>
- #include <linux/kdebug.h>
-+#include <linux/perfmon_kern.h>
- #include <asm/nmi.h>
- #include <asm/msr.h>
- #include <asm/apic.h>
-@@ -191,12 +192,18 @@
- 	int err = 0;
- 	int cpu;
- 
--	if (!allocate_msrs())
-+	if (pfm_session_allcpus_acquire())
-+		return -EBUSY;
+--- next.orig/arch/x86/kernel/entry_64.S	2008-06-30 14:15:35.000000000 +0200
++++ next/arch/x86/kernel/entry_64.S	2008-06-30 14:18:29.000000000 +0200
+@@ -835,7 +835,13 @@
+ ENTRY(spurious_interrupt)
+ 	apicinterrupt SPURIOUS_APIC_VECTOR,smp_spurious_interrupt
+ END(spurious_interrupt)
+-				
 +
-+	if (!allocate_msrs()) {
-+		pfm_session_allcpus_release();
- 		return -ENOMEM;
-+	}
++#ifdef CONFIG_PERFMON
++ENTRY(pmu_interrupt)
++	apicinterrupt LOCAL_PERFMON_VECTOR,smp_pmu_interrupt
++END(pmu_interrupt)
++#endif
++
+ /*
+  * Exception entry points.
+  */ 		
+Index: next/arch/x86/kernel/process_64.c
+===================================================================
+--- next.orig/arch/x86/kernel/process_64.c	2008-06-30 14:15:35.000000000 +0200
++++ next/arch/x86/kernel/process_64.c	2008-06-30 14:18:29.000000000 +0200
+@@ -37,6 +37,7 @@
+ #include <linux/kprobes.h>
+ #include <linux/kdebug.h>
+ #include <linux/tick.h>
++#include <linux/perfmon_kern.h>
+ #include <linux/prctl.h>
  
- 	err = register_die_notifier(&profile_exceptions_nb);
- 	if (err) {
- 		free_msrs();
-+		pfm_session_allcpus_release();
- 		return err;
+ #include <asm/uaccess.h>
+@@ -251,6 +252,7 @@
+ 		t->io_bitmap_max = 0;
+ 		put_cpu();
+ 	}
++	pfm_exit_thread();
+ }
+ 
+ void flush_thread(void)
+@@ -355,6 +357,8 @@
+ 	asm("mov %%es,%0" : "=m" (p->thread.es));
+ 	asm("mov %%ds,%0" : "=m" (p->thread.ds));
+ 
++	pfm_copy_thread(p);
++
+ 	if (unlikely(test_tsk_thread_flag(me, TIF_IO_BITMAP))) {
+ 		p->thread.io_bitmap_ptr = kmalloc(IO_BITMAP_BYTES, GFP_KERNEL);
+ 		if (!p->thread.io_bitmap_ptr) {
+@@ -481,6 +485,9 @@
+ 	prev = &prev_p->thread,
+ 	next = &next_p->thread;
+ 
++	if (test_tsk_thread_flag(prev_p, TIF_PERFMON_CTXSW))
++		pfm_ctxsw_out(prev_p, next_p);
++
+ 	debugctl = prev->debugctlmsr;
+ 	if (next->ds_area_msr != prev->ds_area_msr) {
+ 		/* we clear debugctl to make sure DS
+@@ -493,6 +500,9 @@
+ 	if (next->debugctlmsr != debugctl)
+ 		update_debugctlmsr(next->debugctlmsr);
+ 
++	if (test_tsk_thread_flag(next_p, TIF_PERFMON_CTXSW))
++		pfm_ctxsw_in(prev_p, next_p);
++
+ 	if (test_tsk_thread_flag(next_p, TIF_DEBUG)) {
+ 		loaddebug(next, 0);
+ 		loaddebug(next, 1);
+Index: next/arch/x86/kernel/signal_64.c
+===================================================================
+--- next.orig/arch/x86/kernel/signal_64.c	2008-06-30 14:15:35.000000000 +0200
++++ next/arch/x86/kernel/signal_64.c	2008-06-30 14:18:29.000000000 +0200
+@@ -19,6 +19,7 @@
+ #include <linux/stddef.h>
+ #include <linux/personality.h>
+ #include <linux/compiler.h>
++#include <linux/perfmon_kern.h>
+ #include <asm/processor.h>
+ #include <asm/ucontext.h>
+ #include <asm/uaccess.h>
+@@ -493,6 +494,10 @@
+ 		clear_thread_flag(TIF_SINGLESTEP);
  	}
  
-@@ -275,6 +282,7 @@
- 	unregister_die_notifier(&profile_exceptions_nb);
- 	model->shutdown(msrs);
- 	free_msrs();
-+	pfm_session_allcpus_release();
- 	put_cpu_var(cpu_msrs);
- }
- 
-Index: linux-next/include/linux/perfmon_kern.h
-===================================================================
---- linux-next.orig/include/linux/perfmon_kern.h	2008-06-26 19:47:13.000000000 +0200
-+++ linux-next/include/linux/perfmon_kern.h	2008-06-26 19:47:29.000000000 +0200
-@@ -178,6 +178,9 @@
- 
- void pfm_interrupt_handler(unsigned long ip, struct pt_regs *regs);
- 
-+int pfm_session_allcpus_acquire(void);
-+void pfm_session_allcpus_release(void);
++	/* process perfmon asynchronous work (e.g. block thread or reset) */
++	if (thread_info_flags & _TIF_PERFMON_WORK)
++		pfm_handle_work(regs);
 +
- static inline void pfm_exit_thread(void)
- {
- 	if (current->pfm_context)
-@@ -254,6 +257,8 @@
- #define pfm_copy_thread(_t)		do { } while (0)
- #define pfm_ctxsw_in(_p, _n)    	do { } while (0)
- #define pfm_ctxsw_out(_p, _n)      	do { } while (0)
-+#define pfm_session_allcpus_release()	do { } while (0)
-+#define pfm_session_allcpus_acquire()	(0)
- 
- #endif /* CONFIG_PERFMON */
- #endif /* __LINUX_PERFMON_KERN_H__ */
-Index: linux-next/perfmon/perfmon_res.c
+ #ifdef CONFIG_X86_MCE
+ 	/* notify userspace of pending MCEs */
+ 	if (thread_info_flags & _TIF_MCE_NOTIFY)
+Index: next/arch/x86/kernel/irqinit_64.c
 ===================================================================
---- linux-next.orig/perfmon/perfmon_res.c	2008-06-26 19:47:05.000000000 +0200
-+++ linux-next/perfmon/perfmon_res.c	2008-06-26 19:47:29.000000000 +0200
-@@ -36,6 +36,7 @@
-  * 02111-1307 USA
+--- next.orig/arch/x86/kernel/irqinit_64.c	2008-06-30 14:15:35.000000000 +0200
++++ next/arch/x86/kernel/irqinit_64.c	2008-06-30 14:18:29.000000000 +0200
+@@ -11,6 +11,7 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/sysdev.h>
+ #include <linux/bitops.h>
++#include <linux/perfmon_kern.h>
+ 
+ #include <asm/acpi.h>
+ #include <asm/atomic.h>
+@@ -216,6 +217,10 @@
+ 	alloc_intr_gate(SPURIOUS_APIC_VECTOR, spurious_interrupt);
+ 	alloc_intr_gate(ERROR_APIC_VECTOR, error_interrupt);
+ 
++#ifdef CONFIG_PERFMON
++	alloc_intr_gate(LOCAL_PERFMON_VECTOR, pmu_interrupt);
++#endif
++
+ 	if (!acpi_ioapic)
+ 		setup_irq(2, &irq2);
+ }
+Index: next/include/asm-x86/irq_vectors.h
+===================================================================
+--- next.orig/include/asm-x86/irq_vectors.h	2008-06-30 14:15:38.000000000 +0200
++++ next/include/asm-x86/irq_vectors.h	2008-06-30 14:18:29.000000000 +0200
+@@ -91,6 +91,11 @@
+ #define LOCAL_TIMER_VECTOR	0xef
+ 
+ /*
++ * PERfmon PMU interrupt vector
++ */
++#define LOCAL_PERFMON_VECTOR	0xee
++
++/*
+  * First APIC vector available to drivers: (vectors 0x30-0xee) we
+  * start at 0x31(0x41) to spread out vectors evenly between priority
+  * levels. (0x80 is the syscall vector)
+Index: next/include/asm-x86/thread_info.h
+===================================================================
+--- next.orig/include/asm-x86/thread_info.h	2008-06-30 14:15:38.000000000 +0200
++++ next/include/asm-x86/thread_info.h	2008-06-30 14:21:13.000000000 +0200
+@@ -71,6 +71,7 @@
+  * Warning: layout of LSW is hardcoded in entry.S
   */
- #include <linux/kernel.h>
-+#include <linux/module.h>
- #include <linux/perfmon_kern.h>
- #include "perfmon_priv.h"
+ #define TIF_SYSCALL_TRACE	0	/* syscall trace active */
++#define TIF_PERFMON_WORK	1	/* work for pfm_handle_work() */
+ #define TIF_SIGPENDING		2	/* signal pending */
+ #define TIF_NEED_RESCHED	3	/* rescheduling necessary */
+ #define TIF_SINGLESTEP		4	/* reenable singlestep on user return*/
+@@ -94,6 +95,7 @@
+ #define TIF_DEBUGCTLMSR		25	/* uses thread_struct.debugctlmsr */
+ #define TIF_DS_AREA_MSR		26      /* uses thread_struct.ds_area_msr */
+ #define TIF_BTS_TRACE_TS	27      /* record scheduling event timestamps */
++#define TIF_PERFMON_CTXSW	28	/* perfmon needs ctxsw calls */
  
-@@ -103,3 +104,87 @@
+ #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
+@@ -120,6 +122,8 @@
+ #define _TIF_DEBUGCTLMSR	(1 << TIF_DEBUGCTLMSR)
+ #define _TIF_DS_AREA_MSR	(1 << TIF_DS_AREA_MSR)
+ #define _TIF_BTS_TRACE_TS	(1 << TIF_BTS_TRACE_TS)
++#define _TIF_PERFMON_WORK	(1<<TIF_PERFMON_WORK)
++#define _TIF_PERFMON_CTXSW	(1<<TIF_PERFMON_CTXSW)
  
- 	spin_unlock_irqrestore(&pfm_res_lock, flags);
- }
-+
-+/**
-+ * pfm_session_allcpus_acquire - acquire per-cpu sessions on all available cpus
-+ *
-+ * currently used by Oprofile on X86
-+ */
-+int pfm_session_allcpus_acquire(void)
-+{
-+	unsigned long flags;
-+	u32 nsys_cpus, cpu;
-+	int ret = -EBUSY;
-+
-+	spin_lock_irqsave(&pfm_res_lock, flags);
-+
-+	nsys_cpus = cpus_weight(pfm_res.sys_cpumask);
-+
-+	PFM_DBG("in  sys=%u task=%u",
-+		nsys_cpus,
-+		pfm_res.thread_sessions);
-+
-+	if (nsys_cpus) {
-+		PFM_DBG("already some system-wide sessions");
-+		goto abort;
-+	}
-+
-+	/*
-+	 * cannot mix system wide and per-task sessions
-+	 */
-+	if (pfm_res.thread_sessions) {
-+		PFM_DBG("%u conflicting thread_sessions",
-+			pfm_res.thread_sessions);
-+		goto abort;
-+	}
-+
-+	for_each_online_cpu(cpu) {
-+		cpu_set(cpu, pfm_res.sys_cpumask);
-+		nsys_cpus++;
-+	}
-+
-+	PFM_DBG("out sys=%u task=%u",
-+		nsys_cpus,
-+		pfm_res.thread_sessions);
-+
-+	ret = 0;
-+abort:
-+	spin_unlock_irqrestore(&pfm_res_lock, flags);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(pfm_session_allcpus_acquire);
-+
-+/**
-+ * pfm_session_allcpus_release - relase per-cpu sessions on all cpus
-+ *
-+ * currently used by Oprofile code
-+ */
-+void pfm_session_allcpus_release(void)
-+{
-+	unsigned long flags;
-+	u32 nsys_cpus, cpu;
-+
-+	spin_lock_irqsave(&pfm_res_lock, flags);
-+
-+	nsys_cpus = cpus_weight(pfm_res.sys_cpumask);
-+
-+	PFM_DBG("in  sys=%u task=%u",
-+		nsys_cpus,
-+		pfm_res.thread_sessions);
-+
-+	/*
-+	 * XXX: could use __cpus_clear() with nbits
-+	 */
-+	for_each_online_cpu(cpu) {
-+		cpu_clear(cpu, pfm_res.sys_cpumask);
-+		nsys_cpus--;
-+	}
-+
-+	PFM_DBG("out sys=%u task=%u",
-+		nsys_cpus,
-+		pfm_res.thread_sessions);
-+
-+	spin_unlock_irqrestore(&pfm_res_lock, flags);
-+}
-+EXPORT_SYMBOL(pfm_session_allcpus_release);
+ /* work to do on interrupt/exception return */
+ #define _TIF_WORK_MASK							\
+@@ -137,7 +141,7 @@
+ /* flags to check in __switch_to() */
+ #define _TIF_WORK_CTXSW							\
+ 	(_TIF_IO_BITMAP|_TIF_DEBUGCTLMSR|_TIF_DS_AREA_MSR|_TIF_BTS_TRACE_TS| \
+-								_TIF_NOTSC)
++	 _TIF_NOTSC|_TIF_PERFMON_CTXSW)
+ 
+ #define _TIF_WORK_CTXSW_PREV _TIF_WORK_CTXSW
+ #define _TIF_WORK_CTXSW_NEXT (_TIF_WORK_CTXSW|_TIF_DEBUG)
 
 -- 
 
