@@ -1,157 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763921AbYF3TaI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764099AbYF3Tag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763921AbYF3TaI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 15:30:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYF3T34
+	id S1764099AbYF3Tag (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 15:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbYF3Ta0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 15:29:56 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:33714 "EHLO fieldses.org"
+	Mon, 30 Jun 2008 15:30:26 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38657 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752344AbYF3T3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 15:29:55 -0400
-Date: Mon, 30 Jun 2008 15:29:51 -0400
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Neil Brown <neilb@suse.de>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH - take 2] knfsd: nfsd: Handle ERESTARTSYS from
-	syscalls. (and possible kthread_stop changes)
-Message-ID: <20080630192951.GC6502@fieldses.org>
-References: <1080619001109.24338@suse.de> <20080618210947.2110a541@tleilax.poochiereds.net> <18521.50300.572838.123366@notabene.brown> <20080619063824.00ca6381@tleilax.poochiereds.net> <18526.60523.584503.68076@notabene.brown> <20080622205244.261a787d@tleilax.poochiereds.net> <18528.14347.525397.917553@notabene.brown> <20080630083536.680b093a@barsoom.rdu.redhat.com> <20080630171019.GA4877@fieldses.org> <20080630140946.34154d4c@barsoom.rdu.redhat.com>
+	id S1754331AbYF3TaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 15:30:23 -0400
+Date: Mon, 30 Jun 2008 21:29:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Glauber Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, x86@kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 25/39] merge common parts of uaccess.
+Message-ID: <20080630192954.GB6584@elte.hu>
+References: <1214602486-17080-21-git-send-email-gcosta@redhat.com> <1214602486-17080-22-git-send-email-gcosta@redhat.com> <1214602486-17080-23-git-send-email-gcosta@redhat.com> <1214602486-17080-24-git-send-email-gcosta@redhat.com> <1214602486-17080-25-git-send-email-gcosta@redhat.com> <1214602486-17080-26-git-send-email-gcosta@redhat.com> <20080630063030.GA31336@elte.hu> <48692A76.70304@redhat.com> <20080630185311.GB27398@elte.hu> <48692D58.7090208@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080630140946.34154d4c@barsoom.rdu.redhat.com>
+In-Reply-To: <48692D58.7090208@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 02:09:46PM -0400, Jeff Layton wrote:
-> On Mon, 30 Jun 2008 13:10:19 -0400
-> "J. Bruce Fields" <bfields@fieldses.org> wrote:
-> 
-> > On Mon, Jun 30, 2008 at 08:35:36AM -0400, Jeff Layton wrote:
-> > > The idea looks reasonable, but the patch above doesn't apply to Bruce's
-> > > for-2.6.27 tree. The nfsd() function has changed a bit. Actually, I
-> > > think we can make this even simpler. kthreads start with all signals
-> > > ignored and the new patch enables all of the ones in SHUTDOWN_SIGS. So
-> > > I don't think we need any signal masking at all.
-> > > 
-> > > How about this patch? It should apply on top of the patchset already
-> > > in Bruce's tree.
-> > 
-> > Looks reasonable to me; applied for 2.6.27 barring any test failures or
-> > objections.
-> > 
-> > --b.
-> > 
-> 
-> Actually, here's an even simpler version. How about we just get rid of
-> the loop and just have a series of allow_signal() calls. We can get
-> rid of a local variable that way and since we're only referencing
-> SHUTDOWN_SIGS once, I don't see any reason to keep it around.
 
-Yep, it's one less definition to track down when you read the code....
-Thanks!
+* Glauber Costa <gcosta@redhat.com> wrote:
 
---b.
+> Ingo Molnar wrote:
+>> * Glauber Costa <gcosta@redhat.com> wrote:
+>>
+>>> Ingo Molnar wrote:
+>>>> * Glauber Costa <gcosta@redhat.com> wrote:
+>>>>
+>>>>> common parts of uaccess_32.h and uaccess_64.h
+>>>>> are put in uaccess.h.
+>>>> -tip testing found that it causes this build failure:
+>>>>
+>>>>   fs/binfmt_aout.c: Assembler messages:
+>>>>   fs/binfmt_aout.c:152: Error: suffix or operands invalid for `cmp'
+>>>>
+>>>> with:
+>>>>
+>>>>   http://redhat.com/~mingo/misc/config-Mon_Jun_30_08_17_42_CEST_2008.bad
+>>>>
+>>>> and comparing the 32-bit and unified version is not simple and the  
+>>>> commit is rather large.
+>>>>
+>>>> I'm sure the fix is simple, but this bug shows a structural problem 
+>>>> with this unification patch. The proper way to unify files is to 
+>>>> first bring both the 32-bit and the 64-bit version up to a unified 
+>>>> form via  finegrained changes, so that uaccess_32.h and 
+>>>> uaccess_64.h becomes  exactly the same file.
+>>>>
+>>>> ... _then_ only, in a final 'mechanic unification' step the two 
+>>>> files  are merged into uaccess.h. (but no change is done to the 
+>>>> content)
+>>>>
+>>>> If anything breaks during such a series it's bisectable to a  
+>>>> finegrained patch on either the 32-bit or the 64-bit side. If this  
+>>>> commit was shaped that way i could now report to you the exact  
+>>>> bisection result - instead of this too-broad bisection result.
+>>>>
+>>>> So please rework this commit in that fashion (not just to fix this  
+>>>> breakage but in anticipation of future commits) - uaccess.h is 
+>>>> central  enough for us to be super careful about it.
+>>>>
+>>>> 	Ingo
+>>> Fair.
+>>>
+>>> However, as I wrote in the first patch of the series, I'm not doing a 
+>>>  complete unification of uaccess.h. Part of it is left for future 
+>>> work,  since it's a little bit trickier.
+>>>
+>>> So I didn't have the option of a mechanical move. I did tried, 
+>>> however,  to make sure this patch was only a code move, with 
+>>> everything that is  going to the common file being equal in both 
+>>> files.
+>>>
+>>> Needless to say, I failed. ;-) This was for a very tiny piece, but still...
+>>>
+>>> The options I see are:
+>>>
+>>> * to redo the uaccess.h unification this way, making sure a diff  
+>>> between the diffs of the arch-files report nothing different, or: * 
+>>> to remove the topmost patches that touches uaccess*.h, and leave only 
+>>> the ones that integrate the .c and .S files, until I can really 
+>>> integrate the whole of it.
+>>>
+>>> For the second, however, although I was careful to make incremental  
+>>> changes, some small differences may exist. Examples of these  
+>>> differences are places in which I introduce a few ifdefs. It's close  
+>>> to nothing, but still not mechanical. Because of that, you might want 
+>>> me to redo the whole series.
+>>>
+>>> Your call.
+>>
+>> well the primary worry is the build failure with gcc 4.3.1 that i've  
+>> posted. If that's simple to fix we could re-try with your existing  
+>> series.
+>>
+>> But to be defensive it's alway useful to move one component at a time.  
+>> Even if you dont end up doing a mechanical unification - the stuff you  
+>> move you should be able to claim to be exactly identical. I.e. the 
+>> final step can be mechanic in that it unifies exactly the same content 
+>> (even though both files still have remaining bits).
+>>
+>> Then we'll end up with nice bisection reports to the specific area that 
+>> is impacted by a problem.
+>>
+>> 	Ingo
+>
+> I already have a fix for that. But I'll repost it in a way in which I 
+> can claim the (part of the) files to be identical. For now, can you 
+> trim the tree at that point? I think it's the best option.
 
-> 
-> -------[snip]-----------
-> 
-> knfsd: treat all shutdown signals as equivalent
-> 
-> knfsd currently uses 2 signal masks when processing requests. A "loose"
-> mask (SHUTDOWN_SIGS) that it uses when receiving network requests, and
-> then a more "strict" mask (ALLOWED_SIGS, which is just SIGKILL) that it
-> allows when doing the actual operation on the local storage.
-> 
-> This is apparently unnecessarily complicated. The underlying filesystem
-> should be able to sanely handle a signal in the middle of an operation.
-> This patch removes the signal mask handling from knfsd altogether. When
-> knfsd is started as a kthread, all signals are ignored. It then allows
-> all of the signals in SHUTDOWN_SIGS. There's no need to set the mask
-> as well.
-> 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> ---
->  fs/nfsd/nfssvc.c |   30 +++++-------------------------
->  1 files changed, 5 insertions(+), 25 deletions(-)
-> 
-> diff --git a/fs/nfsd/nfssvc.c b/fs/nfsd/nfssvc.c
-> index 96fdbca..80292ff 100644
-> --- a/fs/nfsd/nfssvc.c
-> +++ b/fs/nfsd/nfssvc.c
-> @@ -37,15 +37,6 @@
->  
->  #define NFSDDBG_FACILITY	NFSDDBG_SVC
->  
-> -/* these signals will be delivered to an nfsd thread 
-> - * when handling a request
-> - */
-> -#define ALLOWED_SIGS	(sigmask(SIGKILL))
-> -/* these signals will be delivered to an nfsd thread
-> - * when not handling a request. i.e. when waiting
-> - */
-> -#define SHUTDOWN_SIGS	(sigmask(SIGKILL) | sigmask(SIGHUP) | sigmask(SIGINT) | sigmask(SIGQUIT))
-> -
->  extern struct svc_program	nfsd_program;
->  static int			nfsd(void *vrqstp);
->  struct timeval			nfssvc_boot;
-> @@ -414,9 +405,7 @@ nfsd(void *vrqstp)
->  {
->  	struct svc_rqst *rqstp = (struct svc_rqst *) vrqstp;
->  	struct fs_struct *fsp;
-> -	sigset_t shutdown_mask, allowed_mask;
->  	int err, preverr = 0;
-> -	unsigned int signo;
->  
->  	/* Lock module and set up kernel thread */
->  	mutex_lock(&nfsd_mutex);
-> @@ -433,17 +422,14 @@ nfsd(void *vrqstp)
->  	current->fs = fsp;
->  	current->fs->umask = 0;
->  
-> -	siginitsetinv(&shutdown_mask, SHUTDOWN_SIGS);
-> -	siginitsetinv(&allowed_mask, ALLOWED_SIGS);
-> -
->  	/*
->  	 * thread is spawned with all signals set to SIG_IGN, re-enable
-> -	 * the ones that matter
-> +	 * the ones that will bring down the thread
->  	 */
-> -	for (signo = 1; signo <= _NSIG; signo++) {
-> -		if (!sigismember(&shutdown_mask, signo))
-> -			allow_signal(signo);
-> -	}
-> +	allow_signal(SIGKILL);
-> +	allow_signal(SIGHUP);
-> +	allow_signal(SIGINT);
-> +	allow_signal(SIGQUIT);
->  
->  	nfsdstats.th_cnt++;
->  	mutex_unlock(&nfsd_mutex);
-> @@ -460,9 +446,6 @@ nfsd(void *vrqstp)
->  	 * The main request loop
->  	 */
->  	for (;;) {
-> -		/* Block all but the shutdown signals */
-> -		sigprocmask(SIG_SETMASK, &shutdown_mask, NULL);
-> -
->  		/*
->  		 * Find a socket with data available and call its
->  		 * recvfrom routine.
-> @@ -487,9 +470,6 @@ nfsd(void *vrqstp)
->  		/* Lock the export hash tables for reading. */
->  		exp_readlock();
->  
-> -		/* Process request with signals blocked. */
-> -		sigprocmask(SIG_SETMASK, &allowed_mask, NULL);
-> -
->  		svc_process(rqstp);
->  
->  		/* Unlock export hash tables */
-> -- 
-> 1.5.5.1
-> 
+sounds good. Could you git branch for that, and post the pull request 
+plus the shortlog+diffstat to lkml?
+
+To construct that branch you can merge any subset of the existing 
+tip/x86/unify-lib series into that. I.e. you can cut the tree yourself 
+at the point you find most appropriate - and we can then reset 
+tip/x86/unify-lib and pull your tree into it.
+
+Due to the test failure the topic is not integrated yet externally so it 
+has no append-only constraints.
+
+> As for bisection, note that I did everything with bisection in mind, 
+> so I do know the importance of it. It's more a failure than a 
+> fundamental mistake.
+
+yeah, i know that and i'm not complaining :)
+
+	Ingo
