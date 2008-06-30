@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760621AbYF3RuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761016AbYF3R5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760621AbYF3RuM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbYF3Rt7
+	id S1761016AbYF3R5U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 13:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbYF3R5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:49:59 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:34892 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752031AbYF3Rt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:49:58 -0400
-Message-ID: <48691CC5.4050603@sgi.com>
-Date: Mon, 30 Jun 2008 10:49:57 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       len.brown@intel.com, Jack Steiner <steiner@sgi.com>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com> <485947A8.8060801@goop.org> <4859511E.5050605@sgi.com> <48596315.6020104@goop.org> <48596893.4040908@sgi.com> <485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org> <485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org> <485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com> <485ADBCF.5040101@goop.org>
-In-Reply-To: <485ADBCF.5040101@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 30 Jun 2008 13:57:08 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:16881 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673AbYF3R5G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 13:57:06 -0400
+Date: Mon, 30 Jun 2008 10:54:58 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: linux-next@vger.kernel.org
+Cc: lkml <linux-kernel@vger.kernel.org>, mingo <mingo@redhat.com>,
+       tglx <tglx@linutronix.de>, hpa <hpa@zytor.com>,
+       akpm <akpm@linux-foundation.org>
+Subject: [PATCH -next] fork and exit: need to include iocontext.h
+Message-Id: <20080630105458.7c95e195.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Mike Travis wrote:
-...
->> I'm not sure yet what to put into acpi_save_state_mem:
->>
->>         initial_code = (unsigned long)wakeup_long64;
->> +       /* ZZZ initial_pda = (unsigned long)?; */
->>   
-> 
-> You'll need to change wakeup_long64 to load the right value into the
-> GS_BASE msr anyway.
-> 
->    J
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-I'm afraid I don't quite understand the transitioning of the
-ACPI states to figure out the correct thing to do.  My first
-inclination would be to:  [sorry, cut and pasted]
+Fix fork and exit build errors: they need to include iocontext.h:
 
---- linux-2.6.tip.orig/arch/x86/kernel/acpi/sleep.c
-+++ linux-2.6.tip/arch/x86/kernel/acpi/sleep.c
-@@ -89,6 +89,8 @@ int acpi_save_state_mem(void)
- #ifdef CONFIG_SMP
-        stack_start.sp = temp_stack + 4096;
- #endif
-+       early_gdt_descr.address = (unsigned long)get_cpu_gdt_table(cpu);
-+       initial_pda = (unsigned long)get_cpu_pda(cpu);
-        initial_code = (unsigned long)wakeup_long64;
-        saved_magic = 0x123456789abcdef0;
- #endif /* CONFIG_64BIT */
+linux-next-20080630/kernel/fork.c: In function 'copy_process':
+linux-next-20080630/kernel/fork.c:1237: error: implicit declaration of function 'put_io_context'
+linux-next-20080630/kernel/exit.c: In function 'do_exit':
+linux-next-20080630/kernel/exit.c:992: error: implicit declaration of function 'exit_io_context'
 
 
-But I'd like some confirmation that this is right thing to do...
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ kernel/exit.c |    1 +
+ kernel/fork.c |    1 +
+ 2 files changed, 2 insertions(+)
 
-[This mimics what smpboot.c:do_boot_cpu() does.]
+--- linux-next-20080630.orig/kernel/fork.c
++++ linux-next-20080630/kernel/fork.c
+@@ -23,6 +23,7 @@
+ #include <linux/sem.h>
+ #include <linux/file.h>
+ #include <linux/fdtable.h>
++#include <linux/iocontext.h>
+ #include <linux/key.h>
+ #include <linux/binfmts.h>
+ #include <linux/mman.h>
+--- linux-next-20080630.orig/kernel/exit.c
++++ linux-next-20080630/kernel/exit.c
+@@ -13,6 +13,7 @@
+ #include <linux/personality.h>
+ #include <linux/tty.h>
+ #include <linux/mnt_namespace.h>
++#include <linux/iocontext.h>
+ #include <linux/key.h>
+ #include <linux/security.h>
+ #include <linux/cpu.h>
 
-Len - I'll cc you on the full patch submission shortly.
 
-Thanks,
-Mike
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
