@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761061AbYF3NoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762207AbYF3Nop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761061AbYF3NoO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 09:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYF3NoA
+	id S1762207AbYF3Nop (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 09:44:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761570AbYF3No0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 09:44:00 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:27216 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753917AbYF3NoA (ORCPT
+	Mon, 30 Jun 2008 09:44:26 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:55593 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760923AbYF3NoN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 09:44:00 -0400
-Date: Mon, 30 Jun 2008 15:43:49 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, Max Krasnyansky <maxk@qualcomm.com>,
-       Paul Jackson <pj@sgi.com>, Paul Menage <menage@google.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] workqueues: make get_online_cpus() useable for
-	work->func()
-Message-ID: <20080630134349.GB7686@osiris.boeblingen.de.ibm.com>
-References: <20080629165131.GA11215@tv-sign.ru>
+	Mon, 30 Jun 2008 09:44:13 -0400
+To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Temporary ACPI maintainer for this summer
+Cc: lenb@kernel.org, torvalds@osdl.org, akpm@osdl.org, acpi@linux.intel.com
+From: Andi Kleen <andi@firstfloor.org>
+Date: Mon, 30 Jun 2008 15:43:33 +0200
+Message-ID: <871w2fujga.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080629165131.GA11215@tv-sign.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 30 Jun 2008 13:36:12.0570 (UTC) FILETIME=[4328A7A0:01C8DAB6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 29, 2008 at 08:51:31PM +0400, Oleg Nesterov wrote:
-> workqueue_cpu_callback(CPU_DEAD) flushes cwq->thread under
-> cpu_maps_update_begin(). This means that the multithreaded workqueues can't
-> use get_online_cpus() due to the possible deadlock, very bad and very old
-> problem.
-> 
-> Introduce the new state, CPU_POST_DEAD, which is called after
-> cpu_hotplug_done() but before cpu_maps_update_done().
-> 
-> Change workqueue_cpu_callback() to use CPU_POST_DEAD instead of CPU_DEAD.
-> This means that create/destroy functions can't rely on get_online_cpus()
-> any longer and should take cpu_add_remove_lock instead.
 
-Ah, nice!
+Len Brown is on sabbatical from Intel this summer. While he's away
+I'm serving as the temporary ACPI maintainer. Please send all ACPI
+mails and patches you would normally send to Len to me, ideally cc
+linux-acpi@vger.kernel.org.
 
-> --- 26-rc2/kernel/cpu.c~WQ_4_GET_ONLINE_CPUS	2008-05-18 15:44:18.000000000 +0400
-> +++ 26-rc2/kernel/cpu.c	2008-06-29 20:03:19.000000000 +0400
-> @@ -261,6 +261,11 @@ out_allowed:
->  	set_cpus_allowed_ptr(current, &old_allowed);
->  out_release:
->  	cpu_hotplug_done();
-> +	if (!err) {
+As usual please put all ACPI bug reports into http://bugzilla.kernel.org.
 
-This should be (!err && !cpu_online(cpu)), no?
+First (in case he still reads that) I would like to thank Len (and all
+the other ACPI hackers of course) for all the great work done on the ACPI
+code in the last years, turning it from a problem child to a quite
+respectable kernel subsystem.
 
-This is because it might be that __stop_machine_run() succeeded, but
-take_cpu_down() failed and therefore our cpu is still online.
+I'm not as deep in all things ACPI as Len is, so I'll often rely on
+the various other ACPI hackers for specific issues.
 
-Which in turn is not good when doing this:
+My main goal will be to merge patches from the usual contributors and
+try to keep the ACPI bugs and regressions under control. I don't plan
+many new features, but features already in progress will be processed
+as they are ready.
 
-> +		if (raw_notifier_call_chain(&cpu_chain, CPU_POST_DEAD | mod,
-> +					    hcpu) == NOTIFY_BAD)
-> +			BUG();
-> +	}
+I'm also not full time working on ACPI, but also active in other areas.
+This means I will not write that many ACPI patches myself
+or do extensive testing on my own, but mostly focus on review and merging 
+and bug triage.
+
+The git tree setup for the merges will be announced later.  I won't
+directly use Len's tree.
+
+I'll take over all patches Len has already queued, so no need to
+resubmit them.  But if he doesn't have something acknowledged already
+you want to be included, please retransmit it to me.
+
+The .27 merge will be primarily patches Len has already queued
+in his release tree.
+
+-Andi
