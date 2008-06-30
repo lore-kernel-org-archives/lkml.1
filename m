@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933365AbYF3WIO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932886AbYF3WIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933365AbYF3WIO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 18:08:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932863AbYF3WHq
+	id S932886AbYF3WIl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 18:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933260AbYF3WH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 18:07:46 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:45194 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932796AbYF3WHp (ORCPT
+	Mon, 30 Jun 2008 18:07:59 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58595 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933242AbYF3WH6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 18:07:45 -0400
-Subject: Re: [patch] ADJ_OFFSET_SS_READ and capabilities
-From: john stultz <johnstul@us.ibm.com>
-To: Michael Kerrisk <mtk.manpages@gmail.com>
-Cc: Roman Zippel <zippel@linux-m68k.org>, lkml <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <485E002B.5010101@gmail.com>
-References: <485DF41E.9020909@gmail.com>  <485E002B.5010101@gmail.com>
-Content-Type: text/plain
-Date: Mon, 30 Jun 2008 15:07:40 -0700
-Message-Id: <1214863660.3143.20.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Mon, 30 Jun 2008 18:07:58 -0400
+Message-ID: <48695871.8000805@zytor.com>
+Date: Mon, 30 Jun 2008 15:04:33 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Sean Young <sean@mess.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Regression: boot failure on AMD Elan TS-5500
+References: <20080616121138.GA51097@atlantis.8hz.com> <200806162327.34912.rusty@rustcorp.com.au> <48566C88.6000702@goop.org> <20080616161944.GA53539@atlantis.8hz.com> <20080630214347.GA57988@atlantis.8hz.com> <4869558A.9020907@goop.org>
+In-Reply-To: <4869558A.9020907@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sun, 2008-06-22 at 09:32 +0200, Michael Kerrisk wrote:
-> Hi Roman, John,
+Jeremy Fitzhardinge wrote:
+>>
+>> Looking at the beginning of startup_32, it seems ds is used before it 
+>> is set:
+>>
+>> startup_32:
+>>         cld
+>>         /* test KEEP_SEGMENTS flag to see if the bootloader is asking
+>>          * us to not reload segments */
+>>         testb $(1<<6), BP_loadflags(%esi)
+>>         jnz 1f
+>>
+>>         cli
+>>         movl $(__BOOT_DS),%eax
+>>         movl %eax,%ds
+>>         movl %eax,%es
+>>         movl %eax,%fs
+>>         movl %eax,%gs
+>>         movl %eax,%ss
+>> 1:
+>>
+>> Since the testb instruction is a dereference, ds is implicitly used. If
+>> I move the testb to after "movl %eax,%ds" it seems to work (not that it
+>> would make any sense there, but just to prove the point).
+>>
+>> 1) Am I barking up the wrong tree?
+>>
+>> 2) If I'm right I have no idea what the correct solution is; it seems 
+>> that
+>>    a chicken & egg issue is introduced.
+>>
+>> Please advise. I am very new to all of this.
 > 
-> ADJ_OFFSET_SS_READ is a read-only operation.  Therefore, it seems
-> reasonable not to require any capability (as is the case when 'modes'
-> is zero.  See the patch below.  Does this change seem reasonable?
+> It's a bit odd that the boot loader neglected to set up ds properly, but 
+> changing the testb line to
 > 
-> Cheers,
+>     testb $(1<<6), %cs:BP_loadflags(%esi)
 > 
-> Michael
+> should work.  (Or perhaps a %ss: override would be better?)
 > 
-> --- linux-2.6.26-rc5/kernel/time/ntp.c	2008-06-13 11:16:51.000000000 +0200
-> +++ linux-2.6.26-rc5-p/kernel/time/ntp.c	2008-06-22 07:31:43.000000000 +0200
-> @@ -281,7 +281,8 @@
->   	int result;
-> 
->   	/* In order to modify anything, you gotta be super-user! */
-> -	if (txc->modes && !capable(CAP_SYS_TIME))
-> +	if (txc->modes && txc->modes != ADJ_OFFSET_SS_READ &&
-> +	    !capable(CAP_SYS_TIME))
->   		return -EPERM;
-> 
->   	/* Now we validate the data before disabling interrupts */
+> I'm assuming that the GDT setup isn't completely mad and that the 
+> segments have the same base at least.
 > 
 
+This should have been set up by the *boot code* (specifically lines 
+57-61 of arch/x86/boot/pmjump.S) since he's using a conventional boot 
+loader (syslinux) so something is utterly fuggled up.  Using %cs: here 
+should be safe, though (and *is* more conservative, after all, why 
+otherwise bother reloading these segments at all?), but it still 
+concerns me a great deal if this is broken in this way.  It's definitely 
+better than %ss:.
 
-Hey Michael,
-	This seems like an ok change, but we'd first want to fix the issue you
-pointed out earlier which would make sure adjtimex() read calls don't
-cause side effects.
+In particular, I'm wondering if the Elan CPU has any strange ordering 
+requirements with regards to the protected mode transition that we're 
+not obeying.
 
-thanks
--john
+It would be interesting to put in a heavyweight "brutally synchronizing" 
+instruction like WBINVD at various places in arch/x86/boot/pmjump.S and 
+see if it helps.
 
-
-
+	-hpa
