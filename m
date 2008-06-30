@@ -1,111 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbYF3XFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbYF3XM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933084AbYF3XFH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 19:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764121AbYF3XEz
+	id S1758774AbYF3XM6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 19:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbYF3XMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 19:04:55 -0400
-Received: from gw.goop.org ([64.81.55.164]:52333 "EHLO mail.goop.org"
+	Mon, 30 Jun 2008 19:12:47 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:35709 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764146AbYF3XEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 19:04:54 -0400
-Message-ID: <48696690.90907@goop.org>
-Date: Mon, 30 Jun 2008 16:04:48 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1754130AbYF3XMr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 19:12:47 -0400
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
+To: Len Brown <lenb@kernel.org>,
+       Linux Power Management List <linux-pm@lists.osdl.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Mon, 30 Jun 2008 18:11:52 -0500
+Subject: RE: [linux-pm] Linux Power Management Mini-Summit -- Ottawa -- July
+ 22,	2008
+Thread-Topic: [linux-pm] Linux Power Management Mini-Summit -- Ottawa --
+ July 22,	2008
+Thread-Index: AcjW9WDChl0pE2miSS+3McPoUveWbwEDfrdw
+Message-ID: <13B9B4C6EF24D648824FF11BE8967162035BBF861D@dlee02.ent.ti.com>
+References: <alpine.LFD.1.10.0806251358060.3014@localhost.localdomain>
+In-Reply-To: <alpine.LFD.1.10.0806251358060.3014@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Nick Piggin <npiggin@suse.de>, Mark McLoughlin <markmc@redhat.com>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Eduardo Habkost <ehabkost@redhat.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Stephen Tweedie <sct@redhat.com>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for
- 64-bit Xen support
-References: <20080625152212.GA3442@elte.hu> <4862A6A9.1030109@goop.org> <20080626105722.GA12640@elte.hu> <20080626105818.GA13805@elte.hu> <4863A8E6.1010807@goop.org> <20080627160333.GA27072@elte.hu> <486539A3.3030102@goop.org> <20080629084318.GA28815@elte.hu> <48684CD4.7040403@goop.org> <20080630082135.GA22844@elte.hu> <20080630092209.GA29815@elte.hu>
-In-Reply-To: <20080630092209.GA29815@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> -tip auto-testing found pagetable corruption (CPA self-test failure):
+> Send suggestions for topics to linux-pm@lists.osdl.org,
+> whether you plan to attend or not.  The attendees will
+> form the agenda by consensus at the start of the session.
 >
-> [   32.956015] CPA self-test:
-> [   32.958822]  4k 2048 large 508 gb 0 x 2556[ffff880000000000-ffff88003fe00000] miss 0
-> [   32.964000] CPA ffff88001d54e000: bad pte 1d4000e3
-> [   32.968000] CPA ffff88001d54e000: unexpected level 2
-> [   32.972000] CPA ffff880022c5d000: bad pte 22c000e3
-> [   32.976000] CPA ffff880022c5d000: unexpected level 2
-> [   32.980000] CPA ffff8800200ce000: bad pte 200000e3
-> [   32.984000] CPA ffff8800200ce000: unexpected level 2
-> [   32.988000] CPA ffff8800210f0000: bad pte 210000e3
->
-> config and full log can be found at:
->
->  http://redhat.com/~mingo/misc/config-Mon_Jun_30_11_11_51_CEST_2008.bad
->  http://redhat.com/~mingo/misc/log-Mon_Jun_30_11_11_51_CEST_2008.bad
->
-> i've pushed that tree out into tip/tmp.xen-64bit.Mon_Jun_30_11_11. The 
-> only new item in that tree over a well-tested base is x86/xen-64bit, so 
-> i've taken it out again.
->   
+> If you would like to attend, please send a note to
+> linux-pm@lists.osdl.org announcing your intent,
+> and what you would like to discuss.
 
-Phew.  OK, I've worked this out.  Short version is that's it's a false 
-alarm, and there was no real failure here.  Long version:
+I would like to attend.
 
-    * I changed the code to create the physical mapping pagetables to
-      reuse any existing mapping rather than replace it.   Specifically,
-      reusing an pud pointed to by the pgd caused this symptom to appear.
-    * The specific PUD being reused is the one created statically in
-      head_64.S, which creates an initial 1GB mapping.
-    * That mapping doesn't have _PAGE_GLOBAL set on it, due to the
-      inconsistency between __PAGE_* and PAGE_*.
-    * The CPA test attempts to clear _PAGE_GLOBAL, and then checks to
-      see that the resulting range is 1) shattered into 4k pages, and 2)
-      has no _PAGE_GLOBAL.
-    * However, since it didn't have _PAGE_GLOBAL on that range to start
-      with, change_page_attr_clear() had nothing to do, and didn't
-      bother shattering the range,
-    * resulting in the reported messages
+Main topics of interest would be run time PM.
 
-The simple fix is to set _PAGE_GLOBAL in level2_ident_pgt.
+We currently have ARM systems using cpuidle and going to 0v with full context loss between dynamic ticks.  There are a few areas it would be nice to get feed back on some hacks have had to be employed to get reasonable performance.
 
-An additional fix to make CPA testing more robust by using some other 
-pagetable bit (one of the unused available-to-software ones).  This 
-would solve spurious CPA test warnings under Xen which uses _PAGE_GLOBAL 
-for its own purposes (ie, not under guest control).
+For example:
+- we are saving driver state based on aggressive clock disables in drivers and only restoring context back on enable on control or event paths.  Doing this at the bottom of a driver stack like MMC means you don't always have good knowledge of what the stack has in store.  As such we add some activity timers to smooth it out.  But it would be nice to have some kind of idea about upper layer activity.
 
-Also, we should revisit the use of _PAGE_GLOBAL in asm-x86/pgtable.h, 
-and use it consistently, and drop MAKE_GLOBAL.  The first time I 
-proposed it it caused breakages in the very early CPA code; with luck 
-that's all fixed now.
+- With dynamic tick running you find needless one shot timer reprogramming (mainly from high interrupts during idle).  This can overflow the timer posting buffer and stall the MPU to a slower clock domain.  This results in really bad throughput.  Just keeping user space active and the periodic timer running instead of 1-shot will result in much better performance.
 
-Anyway, the simple fix below.  I'll put together RFC patches for the 
-other suggestions.  I also split the originating patch into tiny, tiny 
-bisectable pieces.
+- How to account for demoted C-States?  Right now if a CPUIDLE BM check forces a state reduction compared to the menu governor chosen C-State there is no path to allow for residency accounting for the actual state entered.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-
----
- arch/x86/kernel/head_64.S |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-===================================================================
---- a/arch/x86/kernel/head_64.S
-+++ b/arch/x86/kernel/head_64.S
-@@ -374,7 +374,7 @@
- 	/* Since I easily can, map the first 1G.
- 	 * Don't set NX because code runs from these pages.
- 	 */
--	PMDS(0, __PAGE_KERNEL_LARGE_EXEC, PTRS_PER_PMD)
-+	PMDS(0, __PAGE_KERNEL_LARGE_EXEC | _PAGE_GLOBAL, PTRS_PER_PMD)
- 
- NEXT_PAGE(level2_kernel_pgt)
- 	/*
-
+Thanks,
+Richard W.
 
