@@ -1,26 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932518AbYF3UZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932509AbYF3U2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932518AbYF3UZI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 16:25:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764341AbYF3UYt
+	id S932509AbYF3U2x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 16:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbYF3U2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 16:24:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54094 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764309AbYF3UYr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 16:24:47 -0400
-Date: Mon, 30 Jun 2008 13:24:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Timur Tabi <timur@freescale.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] fsl-diu-fb: Update Freescale DIU driver to use
- page_alloc_exact()
-Message-Id: <20080630132426.a89c32b0.akpm@linux-foundation.org>
-In-Reply-To: <1214325853-26150-1-git-send-email-timur@freescale.com>
-References: <1214325853-26150-1-git-send-email-timur@freescale.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 30 Jun 2008 16:28:45 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:39396 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750797AbYF3U2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 16:28:44 -0400
+Date: Mon, 30 Jun 2008 15:28:38 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: heiko.carstens@de.ibm.com, oleg@tv-sign.ru, akpm@linux-foundation.org,
+       ego@in.ibm.com, menage@google.com, peterz@infradead.org,
+       vegard.nossum@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] S390 topology: don't use kthread() for
+ arch_reinit_sched_domains()
+Message-Id: <20080630152838.e793cb10.pj@sgi.com>
+In-Reply-To: <486938C1.90907@qualcomm.com>
+References: <20080629165132.GA11218@tv-sign.ru>
+	<20080630134537.GC7686@osiris.boeblingen.de.ibm.com>
+	<48692D7C.10403@qualcomm.com>
+	<20080630143334.66033f60.pj@sgi.com>
+	<486938C1.90907@qualcomm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -28,81 +33,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jun 2008 11:44:13 -0500
-Timur Tabi <timur@freescale.com> wrote:
+Max wrote:
+> When a CPU goes off line overall partitioning does not change we just 
+> need to update current domains and remove the CPU that is no longer 
+> available.
 
-> Update the Freescale DIU driver to use page_alloc_exact() to allocate a
-> DMA buffer.  This also eliminates the rheap-based memory allocator.  We
-> can do this now because commit 6ccf61f9 allows us to allocate 8MB physically-
-> contiguous memory blocks.
-> 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
-> 
-> My other patch, "Add alloc_pages_exact() and free_pages_exact()", must be
-> applied first, otherwise drivers/video/fsl-diu-fb.c will not compile.
-> 
->  drivers/video/fsl-diu-fb.c |   59 +++++++++++++++----------------------------
->  1 files changed, 21 insertions(+), 38 deletions(-)
-> 
-> diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-> index 0a27853..d15d265 100644
-> --- a/drivers/video/fsl-diu-fb.c
-> +++ b/drivers/video/fsl-diu-fb.c
-> @@ -279,58 +279,41 @@ static struct diu_hw dr = {
->  
->  static struct diu_pool pool;
->  
-> -/*	To allocate memory for framebuffer. First try __get_free_pages(). If it
-> - *	fails, try rh_alloc. The reason is __get_free_pages() cannot allocate
-> - *	very large memory (more than 4MB). We don't want to allocate all memory
-> - *	in rheap since small memory allocation/deallocation will fragment the
-> - *	rheap and make the furture large allocation fail.
-> +/**
-> + * fsl_diu_alloc - allocate memory for the DIU
-> + * @size: number of bytes to allocate
-> + * @param: returned physical address of memory
-> + *
-> + * This function allocates a physically-contiguous block of memory.
->   */
-> -
-> -void *fsl_diu_alloc(unsigned long size, phys_addr_t *phys)
-> +static void *fsl_diu_alloc(size_t size, phys_addr_t *phys)
->  {
->  	void *virt;
->  
-> -	pr_debug("size=%lu\n", size);
-> +	pr_debug("size=%u\n", size);
+I don't believe that this is correct.
 
-Nope, this will generate warnings on some architectures.
+If one had say just the following three cpusets in a system:
 
-The way to print a size_t is with %zu or %zd.  I guess the latter is for
-ssize_t.
+	/dev/cpuset		# sched_load_balance == 0
+	/dev/cpuset/alpha	# sched_load_balance == 1
+	/dev/cpuset/beta	# sched_load_balance == 1
 
+where the 'cpus' of alpha and beta overlapped by a single CPU,
+and if one then took that single CPU offline, then the overall
+partitioning of the system would change, from a single sched
+domain covering the combined 'cpus' of alpha and beta, to two
+separate sched domains, handling the 'cpus' of alpha and beta
+separately.
 
-> -	virt = (void *)__get_free_pages(GFP_DMA | __GFP_ZERO, get_order(size));
-> +	virt = alloc_pages_exact(size, GFP_DMA | __GFP_ZERO);
->  	if (virt) {
->  		*phys = virt_to_phys(virt);
-> -		pr_debug("virt %p, phys=%llx\n", virt, (uint64_t) *phys);
-> -		return virt;
-> -	}
-> -	if (!diu_ops.diu_mem) {
-> -		printk(KERN_INFO "%s: no diu_mem."
-> -			" To reserve more memory, put 'diufb=15M' "
-> -			"in the command line\n", __func__);
-> -		return NULL;
-> -	}
-> -
-> -	virt = (void *)rh_alloc(&diu_ops.diu_rh_info, size, "DIU");
-> -	if (virt) {
-> -		*phys = virt_to_bus(virt);
-> -		memset(virt, 0, size);
-> +		pr_debug("virt=%p, phys=%llx\n", virt, (uint64_t) *phys);
+> When a CPU goes online it always ends up in the root cpuset, 
+> which means it can be added to the first load-balanced sched domain.
 
-This is also incorrect.  We cannot pass u64 or uint64_t into printk at
-all.  We do not know what type the architectures uses to implement
-them.  It should be cast to a known type.  In this case `unsigned long
-long'.
+Also not correct, but at least in this case, one might be able
+to avoid doing a full fledged 'rebuild_sched_domains()' call,
+by the following reasoning.
 
+    When bringing CPUs online, either the top cpuset has
+    sched_load_balance set (1) or off (0).  If it is set, then one
+    has a single sched domain covering all online CPUs, and yes one
+    could just add the new CPU to that sched domain.  If off, then
+    the newly online CPU would only be in the top cpuset, which does
+    not by itself put that CPU in any sched domain, and that new CPU
+    should not be added to -any- cpuset.
 
+However, since we have to handle the offline case as well as the online
+case, and since that case requires (to the best of my understanding)
+calling rebuild_sched_domains(), I think it is best to just call that
+routine in all cases.
+
+An earlier version of this sched domain code always attempted to
+incrementally adjust sched domains to online and offline events,
+and that code ended up being a maintenance nightmare.  I will be most
+reluctant to attempt to go back to such calculations.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
