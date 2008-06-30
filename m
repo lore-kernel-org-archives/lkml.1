@@ -1,129 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbYF3OyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbYF3Oyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755288AbYF3OyV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 10:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYF3OyI
+	id S1760006AbYF3Oyw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 10:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755992AbYF3Oyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 10:54:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51625 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751361AbYF3OyG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 10:54:06 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080627205905.GB17415@us.ibm.com>
-References: <20080627205905.GB17415@us.ibm.com> <486357EC.5060205@kernel.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Security Modules List 
-	<linux-security-module@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] security: filesystem capabilities bugfix2
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
-Date: Mon, 30 Jun 2008 15:53:24 +0100
-Message-ID: <7852.1214837604@redhat.com>
+	Mon, 30 Jun 2008 10:54:35 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:38014 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752492AbYF3OyZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 10:54:25 -0400
+Date: Mon, 30 Jun 2008 20:23:57 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH 00/30] SMP-group balancer - take 3
+Message-ID: <20080630145357.GA26809@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20080627114109.724249622@chello.nl> <20080627173355.GA11381@linux.vnet.ibm.com> <20080628170828.GA2002@linux.vnet.ibm.com> <20080630125956.GD4011@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080630125956.GD4011@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn <serue@us.ibm.com> wrote:
+On Mon, Jun 30, 2008 at 02:59:56PM +0200, Ingo Molnar wrote:
+> 
+> * Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> 
+> > Hi,
+> > 
+> > I get this at bootup
+> > 
+> > ------------[ cut here ]------------
+> > WARNING: at kernel/lockdep.c:2738 check_flags+0x8a/0x12d()
+> > Modules linked in:
+> > Pid: 1, comm: swapper Not tainted 2.6.26-rc8-tip #5
+> 
+> please check latest tip/master. This is the commit that should fix it:
+> 
 
-> If I understand this right, then LSM_UNSAFE_PTRACE_CAP will only be set
-> if the tracer didn't have CAP_SYS_PTRACE.  So this seems sane to me.
+Nope, does not :(. Still get,
 
-Erm...  Firstly:
+------------[ cut here ]------------
+WARNING: at kernel/lockdep.c:2662 check_flags+0x7c/0x10b()
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.26-rc8 #2
+ [<c0122a6d>] warn_on_slowpath+0x41/0x5d
+ [<c013ba0e>] ? find_usage_backwards+0xb4/0xd5
+ [<c013ba0e>] ? find_usage_backwards+0xb4/0xd5
+ [<c013ba0e>] ? find_usage_backwards+0xb4/0xd5
+ [<c013bc2b>] ? check_usage+0x23/0x58
+ [<c013bcd1>] ? check_prev_add_irq+0x71/0x85
+ [<c013be48>] ? check_prev_add+0x3b/0x17f
+ [<c013bfe6>] ? check_prevs_add+0x5a/0xb2
+ [<c013c0e8>] ? validate_chain+0xaa/0x29c
+ [<c013def5>] check_flags+0x7c/0x10b
+ [<c013dfb4>] lock_acquire+0x30/0x7e
+ [<c01187b2>] ? tg_shares_up+0x0/0x100
+ [<c01186b6>] walk_tg_tree+0x2c/0x96
+ [<c011868a>] ? walk_tg_tree+0x0/0x96
+ [<c0118907>] ? tg_nop+0x0/0x5
+ [<c011894e>] update_shares+0x42/0x4a
+ [<c011b87a>] try_to_wake_up+0x4c/0x11f
+ [<c011b95c>] wake_up_process+0xf/0x11
+ [<c01331b5>] kthread_create+0x6c/0x9c
+ [<c0130739>] ? worker_thread+0x0/0xd2
+ [<c024218c>] ? __spin_lock_init+0x24/0x47
+ [<c0130ceb>] create_workqueue_thread+0x2b/0x45
+ [<c0130739>] ? worker_thread+0x0/0xd2
+ [<c0130e3a>] __create_workqueue_key+0x115/0x14d
+ [<c05c8854>] ? kernel_init+0x0/0x93
+ [<c05d7594>] init_workqueues+0x4c/0x5d
+ [<c05c880d>] do_basic_setup+0x8/0x1e
+ [<c05c88ac>] kernel_init+0x58/0x93
+ [<c0104557>] kernel_thread_helper+0x7/0x10
+ =======================
+---[ end trace 4eaa2a86a8e2da22 ]---
+possible reason: unannotated irqs-on.
+irq event stamp: 10216
+hardirqs last  enabled at (10215): [<c013e52b>]
+debug_check_no_locks_freed+0x9d/0xa7
+hardirqs last disabled at (10216): [<c0107f91>]
+native_sched_clock+0x50/0xb8
+softirqs last  enabled at (9922): [<c0127171>] __do_softirq+0xdf/0xe6
+softirqs last disabled at (9915): [<c01271b1>] do_softirq+0x39/0x51
 
-	int ptrace_attach(struct task_struct *task)
-	{
-	...
-		if (capable(CAP_SYS_PTRACE))
-			task->ptrace |= PT_PTRACE_CAP;
-	...
-	}
-
-Then:
-
-	static int unsafe_exec(struct task_struct *p)
-	{
-		int unsafe = 0;
-		if (p->ptrace & PT_PTRACED) {
-			if (p->ptrace & PT_PTRACE_CAP)
-				unsafe |= LSM_UNSAFE_PTRACE_CAP;
-			else
-				unsafe |= LSM_UNSAFE_PTRACE;
-		}
-		if (atomic_read(&p->fs->count) > 1 ||
-		    atomic_read(&p->files->count) > 1 ||
-		    atomic_read(&p->sighand->count) > 1)
-			unsafe |= LSM_UNSAFE_SHARE;
-
-		return unsafe;
-	}
-
-So LSM_UNSAFE_PTRACE_CAP will only be set if the tracer _does_ have
-CAP_SYS_PTRACE.  That will be irrelevant, however, if any of fs, files or
-sighand are shared.
-
-And finally:
-
-	void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
-	{
-	...
-		if (bprm->e_uid != current->uid ||
-		    bprm->e_gid != current->gid ||
-		    !cap_issubset (new_permitted, current->cap_permitted)) {
-	...
-			if (unsafe & ~LSM_UNSAFE_PTRACE_CAP) {
-				if (!capable(CAP_SETUID)) {
-					bprm->e_uid = current->uid;
-					bprm->e_gid = current->gid;
-				}
-				if (!capable (CAP_SETPCAP)) {
-					new_permitted = cap_intersect(
-						new_permitted,
-						current->cap_permitted);
-				}
-			}
-	...
-	}
-
-So if it's a 'set-privilege' binary, then if the tracer _doesn't_ have
-CAP_SYS_PTRACE, we look at downgrading the privileges of the process.
-
-Without Andrew's patch, we only downgrade the capabilities if we don't have
-CAP_SETPCAP (and aren't sharing inheritables).
-
-With Andrew's patch, capabilities are downgraded regardless of whether we have
-CAP_SETPCAP or not.  I guess that means that if you're tracing a binary whose
-filecaps say that it wants CAP_SETPCAP, then it retains CAP_SETPCAP.
-
-I wonder if the tracing task should be examined here, and any capability the
-tracer isn't permitted should be denied the process doing the exec.
-
-Anyway, in my commoncap.c prettification patch, I've dressed the limiter
-function up as follows:
-
-	/*
-	 * Determine whether a exec'ing process's new permitted capabilities
-	 * should be limited to just what it already has.
-	 *
-	 * This prevents processes that are being ptraced from gaining access
-	 * to CAP_SETPCAP, unless the process they're tracing already has it,
-	 * and the binary they're executing has filecaps that elevate it.
-	 *
-	 *  Returns 1 if they should be limited, 0 if they are not.
-	 */
-	static inline int cap_limit_ptraced_target(void)
-	{
-	#ifndef CONFIG_SECURITY_FILE_CAPABILITIES
-		if (capable(CAP_SETPCAP))
-			return 0;
-	#endif
-		return 1;
-	}
-
-David
+-- 
+regards,
+Dhaval
