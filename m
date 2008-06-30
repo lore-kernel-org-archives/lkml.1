@@ -1,78 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761083AbYF3RV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763074AbYF3RVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761083AbYF3RV0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762336AbYF3RVD
+	id S1763074AbYF3RVq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 13:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbYF3RVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:21:03 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:44630 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1762213AbYF3RVA (ORCPT
+	Mon, 30 Jun 2008 13:21:36 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:57258 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756821AbYF3RVf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:21:00 -0400
-Date: Mon, 30 Jun 2008 13:21:00 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-cc: Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: 2.6.26-rc1 regression since 2.6.25 - problem in 2.6.26-rc8 again
-In-Reply-To: <20080630122626.GB4413@ics.muni.cz>
-Message-ID: <Pine.LNX.4.44L0.0806301318570.2138-100000@iolanthe.rowland.org>
+	Mon, 30 Jun 2008 13:21:35 -0400
+Message-ID: <48691556.2080208@zytor.com>
+Date: Mon, 30 Jun 2008 10:18:14 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Mike Travis <travis@sgi.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com>	<485947A8.8060801@goop.org> <4859511E.5050605@sgi.com>	<48596315.6020104@goop.org> <48596893.4040908@sgi.com>	<485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org>	<485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>	<485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com>	<485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com>	<485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>	<485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com> <m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>
+In-Reply-To: <486912C4.8070705@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jun 2008, Lukas Hejtmanek wrote:
-
-> On Fri, Jun 27, 2008 at 04:35:59PM -0400, Alan Stern wrote:
-> > Do exactly the same thing under both operating system versions, and 
-> > then we should have suitably comparable logs.
+Mike Travis wrote:
 > 
-> all you wanted is attached including dmesgs.
+> FYI, I did try this out and it caused the bootloader to scramble the
+> loaded data.  The first corruption I found was the .x86cpuvendor.init
+> section contained all zeroes.
+> 
 
-Ah, good.  I see the problem now.
+Explain what you mean with "the bootloader" in this context.
 
-To tell the truth, this has been fixed in the development tree for so 
-long that I had forgotten about it.  Unfortunately those fixes won't 
-get into the regular kernel until 2.6.27.  Until then we need another 
-fix.
-
-The patch below should take care of the problem.  Let me know how it 
-works.
-
-Alan Stern
-
-
-
-Index: 2.6.26-rc8/drivers/usb/core/hub.c
-===================================================================
---- 2.6.26-rc8.orig/drivers/usb/core/hub.c
-+++ 2.6.26-rc8/drivers/usb/core/hub.c
-@@ -713,18 +713,11 @@ static void hub_restart(struct usb_hub *
- 		}
- 
- 		/* Was the power session lost while we were suspended? */
--		switch (type) {
--		case HUB_RESET_RESUME:
--			portstatus = 0;
--			portchange = USB_PORT_STAT_C_CONNECTION;
--			break;
-+		status = hub_port_status(hub, port1, &portstatus, &portchange);
- 
--		case HUB_RESET:
--		case HUB_RESUME:
--			status = hub_port_status(hub, port1,
--					&portstatus, &portchange);
--			break;
--		}
-+		/* If the device is gone, khubd will handle it later */
-+		if (status == 0 && !(portstatus & USB_PORT_STAT_CONNECTION))
-+			continue;
- 
- 		/* For "USB_PERSIST"-enabled children we must
- 		 * mark the child device for reset-resume and
-
+	-hpa
