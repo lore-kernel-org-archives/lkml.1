@@ -1,118 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763890AbYF3Sxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763943AbYF3Syc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763890AbYF3Sxs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 14:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762255AbYF3Sxc
+	id S1763943AbYF3Syc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 14:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754979AbYF3SyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 14:53:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43153 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761770AbYF3Sxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 14:53:31 -0400
-Date: Mon, 30 Jun 2008 20:53:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Glauber Costa <gcosta@redhat.com>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, x86@kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 25/39] merge common parts of uaccess.
-Message-ID: <20080630185311.GB27398@elte.hu>
-References: <1214602486-17080-19-git-send-email-gcosta@redhat.com> <1214602486-17080-20-git-send-email-gcosta@redhat.com> <1214602486-17080-21-git-send-email-gcosta@redhat.com> <1214602486-17080-22-git-send-email-gcosta@redhat.com> <1214602486-17080-23-git-send-email-gcosta@redhat.com> <1214602486-17080-24-git-send-email-gcosta@redhat.com> <1214602486-17080-25-git-send-email-gcosta@redhat.com> <1214602486-17080-26-git-send-email-gcosta@redhat.com> <20080630063030.GA31336@elte.hu> <48692A76.70304@redhat.com>
+	Mon, 30 Jun 2008 14:54:22 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:26336 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753936AbYF3SyV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 14:54:21 -0400
+Message-ID: <48692B9C.7090608@nokia.com>
+Date: Mon, 30 Jun 2008 21:53:16 +0300
+From: Stefan Becker <Stefan.Becker@nokia.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48692A76.70304@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: ext Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+CC: ext Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] USB: fix interrupt disabling for HCDs with shared interrupt
+ handlers
+References: <Pine.LNX.4.44L0.0806301035510.2708-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0806301035510.2708-100000@iolanthe.rowland.org>
+Content-Type: multipart/mixed;
+ boundary="------------050607060603090407040201"
+X-OriginalArrivalTime: 30 Jun 2008 18:54:07.0328 (UTC) FILETIME=[AC99BE00:01C8DAE2]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------050607060603090407040201
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-* Glauber Costa <gcosta@redhat.com> wrote:
+Hi,
 
-> Ingo Molnar wrote:
->> * Glauber Costa <gcosta@redhat.com> wrote:
->>
->>> common parts of uaccess_32.h and uaccess_64.h
->>> are put in uaccess.h.
->>
->> -tip testing found that it causes this build failure:
->>
->>   fs/binfmt_aout.c: Assembler messages:
->>   fs/binfmt_aout.c:152: Error: suffix or operands invalid for `cmp'
->>
->> with:
->>
->>   http://redhat.com/~mingo/misc/config-Mon_Jun_30_08_17_42_CEST_2008.bad
->>
->> and comparing the 32-bit and unified version is not simple and the  
->> commit is rather large.
->>
->> I'm sure the fix is simple, but this bug shows a structural problem 
->> with this unification patch. The proper way to unify files is to first 
->> bring both the 32-bit and the 64-bit version up to a unified form via  
->> finegrained changes, so that uaccess_32.h and uaccess_64.h becomes  
->> exactly the same file.
->>
->> ... _then_ only, in a final 'mechanic unification' step the two files  
->> are merged into uaccess.h. (but no change is done to the content)
->>
->> If anything breaks during such a series it's bisectable to a 
->> finegrained patch on either the 32-bit or the 64-bit side. If this 
->> commit was shaped that way i could now report to you the exact 
->> bisection result - instead of this too-broad bisection result.
->>
->> So please rework this commit in that fashion (not just to fix this  
->> breakage but in anticipation of future commits) - uaccess.h is central  
->> enough for us to be super careful about it.
->>
->> 	Ingo
-> Fair.
->
-> However, as I wrote in the first patch of the series, I'm not doing a  
-> complete unification of uaccess.h. Part of it is left for future work,  
-> since it's a little bit trickier.
->
-> So I didn't have the option of a mechanical move. I did tried, however,  
-> to make sure this patch was only a code move, with everything that is  
-> going to the common file being equal in both files.
->
-> Needless to say, I failed. ;-) This was for a very tiny piece, but still...
->
-> The options I see are:
->
-> * to redo the uaccess.h unification this way, making sure a diff 
-> between the diffs of the arch-files report nothing different, or: * to 
-> remove the topmost patches that touches uaccess*.h, and leave only the 
-> ones that integrate the .c and .S files, until I can really integrate 
-> the whole of it.
->
-> For the second, however, although I was careful to make incremental 
-> changes, some small differences may exist. Examples of these 
-> differences are places in which I introduce a few ifdefs. It's close 
-> to nothing, but still not mechanical. Because of that, you might want 
-> me to redo the whole series.
->
-> Your call.
+here is the proposed patch to fix the problem. I hope I used git 
+correctly to generate it...
 
-well the primary worry is the build failure with gcc 4.3.1 that i've 
-posted. If that's simple to fix we could re-try with your existing 
-series.
+Regards,
 
-But to be defensive it's alway useful to move one component at a time. 
-Even if you dont end up doing a mechanical unification - the stuff you 
-move you should be able to claim to be exactly identical. I.e. the final 
-step can be mechanic in that it unifies exactly the same content (even 
-though both files still have remaining bits).
+	Stefan
 
-Then we'll end up with nice bisection reports to the specific area that 
-is impacted by a problem.
+---
+Stefan Becker
+E-Mail: Stefan.Becker@nokia.com
 
-	Ingo
+--------------050607060603090407040201
+Content-Type: text/plain;
+ name="usb-fix-shared-interrupts-disabling.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="usb-fix-shared-interrupts-disabling.patch"
+
+RnJvbSA0NDU1NzViMjlhNDQ5MDU3Mjk0YWNmNjFjN2Q1MWM1ZjcwNDkwNjc2IE1vbiBTZXAg
+MTcgMDA6MDA6MDAgMjAwMQpGcm9tOiBTdGVmYW4gQmVja2VyIDxzdGVmYW4uYmVja2VyQG5v
+a2lhLmNvbT4KRGF0ZTogTW9uLCAzMCBKdW4gMjAwOCAyMToxODoyOSArMDMwMApTdWJqZWN0
+OiBbUEFUQ0hdIFVTQjogZml4IGludGVycnVwdCBkaXNhYmxpbmcgZm9yIEhDRHMgd2l0aCBz
+aGFyZWQgaW50ZXJydXB0IGhhbmRsZXJzCgpBcyBoYXMgYmVlbiBkaXNjdXNzZWQgc2V2ZXJh
+bCB0aW1lcyBvbiBMS01MLCBJUlFGX1NIQVJFRCB8IElSUUZfRElTQUJMRUQKZG9lc24ndCB3
+b3JrIHRvZ2V0aGVyIHJlbGlhYmx5LCBpLmUuIGEgc2hhcmVkIGludGVycnVwdCBoYW5kbGVy
+IENBTidUIGJlCmNlcnRhaW4gdG8gYmUgY2FsbGVkIHdpdGggaW50ZXJydXB0cyBkaXNhYmxl
+ZC4gTW9zdCBVU0IgSENEIGhhbmRsZXJzIHVzZQpJUlFGX0RJU0FCTEVEIGFuZCB0aGVyZWZv
+cmUgaGF2b2MgY2FuIGJyZWFrIG91dCBpZiB0aGV5IHNoYXJlIHRoZWlyCmludGVycnVwdCB3
+aXRoIGEgaGFuZGxlciB0aGF0IGRvZXNuJ3QgdXNlIGl0LgoKT24gbXkgdGVzdCBtYWNoaW5l
+IHRoZSB5ZW50YV9zb2NrZXQgaW50ZXJydXB0IGhhbmRsZXIgKG5vIElSUUZfRElTQUJMRUQp
+CndhcyByZWdpc3RlcmVkIGJlZm9yZSBlaGNpX2hjZCBhbmQgb25lIHVoY2lfaGNkIGluc3Rh
+bmNlLiBUaGVyZWZvcmUgYWxsCnVzYl9oY2RfaXJxKCkgaW52b2NhdGlvbnMgZm9yIGVoY2lf
+aGNkIGFuZCBmb3Igb25lIHVoY2lfaGNkIGluc3RhbmNlCmhhcHBlbmVkIHdpdGggaW50ZXJy
+dXB0cyBlbmFibGVkLiBUaGF0IGxlZCB0byByYW5kb20gbG9ja3VwcyBhcyBVU0IgY29yZQpI
+Q0QgZnVuY3Rpb25zIHRoYXQgYWNxdWlyZSB0aGUgc2FtZSBzcGlubG9jayBjb3VsZCBiZSBj
+YWxsZWQgdHdpY2UKZnJvbSBpbnRlcnJ1cHQgaGFuZGxlcnMuCgpUaGlzIHBhdGNoIGRvZXNu
+J3QgbW9kaWZ5IHRoZSBpbnRlcmZhY2Ugb2YgdXNiX2FkZF9oY2QoKSwgaS5lLiBIQ0QgY29k
+ZQpjYW4gc3RpbGwgdXNlIElSUUZfRElTQUJMRUQuIEl0IHdpbGwgbm93IHNpbGVudGx5IGNv
+bnZlcnQgdGhpcyBpbnRvIGFuCmludGVybmFsIEhDRCBmbGFnIGFuZCBjbGVhciBJUlFGX0RJ
+U0FCTEVEIGJlZm9yZSByZXF1ZXN0aW5nIHRoZSBpbnRlcnJ1cHQKZnJvbSB0aGUgTGludXgg
+Y29yZS4gdXNiX2hjZF9pcnEoKSB3aWxsIGNoZWNrIHRoaXMgZmxhZyB0byBkaXNhYmxlL3Jl
+LWVuYWJsZQp0aGUgaW50ZXJydXB0cyBvbiBhIGNhc2UgYnkgY2FzZSBiYXNpcy4KClNpZ25l
+ZC1vZmYtYnk6IFN0ZWZhbiBCZWNrZXIgPHN0ZWZhbi5iZWNrZXJAbm9raWEuY29tPgoKZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvdXNiL2NvcmUvaGNkLmMgYi9kcml2ZXJzL3VzYi9jb3JlL2hj
+ZC5jCmluZGV4IDA5YTUzZTcuLjc2ZWIzZmMgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdXNiL2Nv
+cmUvaGNkLmMKKysrIGIvZHJpdmVycy91c2IvY29yZS9oY2QuYwpAQCAtMTY4MywyMCArMTY4
+MywzMCBAQCBFWFBPUlRfU1lNQk9MX0dQTCh1c2JfYnVzX3N0YXJ0X2VudW0pOwogICovCiBp
+cnFyZXR1cm5fdCB1c2JfaGNkX2lycSAoaW50IGlycSwgdm9pZCAqX19oY2QpCiB7Ci0Jc3Ry
+dWN0IHVzYl9oY2QJCSpoY2QgPSBfX2hjZDsKLQlpbnQJCQlzdGFydCA9IGhjZC0+c3RhdGU7
+CisJc3RydWN0IHVzYl9oY2QJCSpoY2QgID0gX19oY2Q7CisJdW5zaWduZWQgaW50ICAgICAg
+ICAgICAgZmxhZ3MgPSAwOworCWlycXJldHVybl90ICAgICAgICAgICAgIHJjOworCisJaWYg
+KGhjZC0+ZGlzYWJsZV9pcnEpCisJCWxvY2FsX2lycV9zYXZlKGZsYWdzKTsKKworCWlmICh1
+bmxpa2VseShoY2QtPnN0YXRlID09IEhDX1NUQVRFX0hBTFQgfHwKKwkJICAgICAhdGVzdF9i
+aXQoSENEX0ZMQUdfSFdfQUNDRVNTSUJMRSwgJmhjZC0+ZmxhZ3MpKSkgeworCQlyYyA9IElS
+UV9OT05FOworCX0gZWxzZSBpZiAoaGNkLT5kcml2ZXItPmlycSAoaGNkKSA9PSBJUlFfTk9O
+RSkgeworCQlyYyA9IElSUV9OT05FOworCX0gZWxzZSB7CisJCXNldF9iaXQoSENEX0ZMQUdf
+U0FXX0lSUSwgJmhjZC0+ZmxhZ3MpOwogCi0JaWYgKHVubGlrZWx5KHN0YXJ0ID09IEhDX1NU
+QVRFX0hBTFQgfHwKLQkgICAgIXRlc3RfYml0KEhDRF9GTEFHX0hXX0FDQ0VTU0lCTEUsICZo
+Y2QtPmZsYWdzKSkpCi0JCXJldHVybiBJUlFfTk9ORTsKLQlpZiAoaGNkLT5kcml2ZXItPmly
+cSAoaGNkKSA9PSBJUlFfTk9ORSkKLQkJcmV0dXJuIElSUV9OT05FOworCQlpZiAodW5saWtl
+bHkoaGNkLT5zdGF0ZSA9PSBIQ19TVEFURV9IQUxUKSkKKwkJCXVzYl9oY19kaWVkIChoY2Qp
+OworCQlyYyA9IElSUV9IQU5ETEVEOworCX0KIAotCXNldF9iaXQoSENEX0ZMQUdfU0FXX0lS
+USwgJmhjZC0+ZmxhZ3MpOworCWlmIChoY2QtPmRpc2FibGVfaXJxKQorCQlsb2NhbF9pcnFf
+cmVzdG9yZShmbGFncyk7CiAKLQlpZiAodW5saWtlbHkoaGNkLT5zdGF0ZSA9PSBIQ19TVEFU
+RV9IQUxUKSkKLQkJdXNiX2hjX2RpZWQgKGhjZCk7Ci0JcmV0dXJuIElSUV9IQU5ETEVEOwor
+CXJldHVybiByYzsKIH0KIAogLyotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi8KQEAgLTE4NjAsNiAr
+MTg3MCwxNCBAQCBpbnQgdXNiX2FkZF9oY2Qoc3RydWN0IHVzYl9oY2QgKmhjZCwKIAogCS8q
+IGVuYWJsZSBpcnFzIGp1c3QgYmVmb3JlIHdlIHN0YXJ0IHRoZSBjb250cm9sbGVyICovCiAJ
+aWYgKGhjZC0+ZHJpdmVyLT5pcnEpIHsKKworCQkvKiBJUlFGX0RJU0FCTEVEIGRvZXNuJ3Qg
+d29yayBhcyBhZHZlcnRpc2VkIHdoZW4gdXNlZCB0b2dldGhlcgorCQkgKiB3aXRoIElSUUZf
+U0hBUkVELiBUaGVyZWZvcmUgd2UgaGFuZGxlIGludGVycnVwdCBkaXNhYmxpbmcKKwkJICog
+b3Vyc2VsdmVzIGluIHVzYl9oY2RfaXJxKCkgd2hlbiB0aGUgY29udHJvbGxlciByZXF1ZXN0
+cyBpdC4KKwkJICovCisJCWhjZC0+ZGlzYWJsZV9pcnEgPSAoaXJxZmxhZ3MgJiBJUlFGX0RJ
+U0FCTEVEKSA/IDEgOiAwOworCQlpcnFmbGFncyAmPSB+SVJRRl9ESVNBQkxFRDsKKwogCQlz
+bnByaW50ZihoY2QtPmlycV9kZXNjciwgc2l6ZW9mKGhjZC0+aXJxX2Rlc2NyKSwgIiVzOnVz
+YiVkIiwKIAkJCQloY2QtPmRyaXZlci0+ZGVzY3JpcHRpb24sIGhjZC0+c2VsZi5idXNudW0p
+OwogCQlpZiAoKHJldHZhbCA9IHJlcXVlc3RfaXJxKGlycW51bSwgJnVzYl9oY2RfaXJxLCBp
+cnFmbGFncywKZGlmZiAtLWdpdCBhL2RyaXZlcnMvdXNiL2NvcmUvaGNkLmggYi9kcml2ZXJz
+L3VzYi9jb3JlL2hjZC5oCmluZGV4IGEwYmY1ZGYuLmRmNDA0YWQgMTAwNjQ0Ci0tLSBhL2Ry
+aXZlcnMvdXNiL2NvcmUvaGNkLmgKKysrIGIvZHJpdmVycy91c2IvY29yZS9oY2QuaApAQCAt
+MTAwLDYgKzEwMCw3IEBAIHN0cnVjdCB1c2JfaGNkIHsKIAl1bnNpZ25lZAkJd2lyZWxlc3M6
+MTsJLyogV2lyZWxlc3MgVVNCIEhDRCAqLwogCXVuc2lnbmVkCQlhdXRob3JpemVkX2RlZmF1
+bHQ6MTsKIAl1bnNpZ25lZAkJaGFzX3R0OjE7CS8qIEludGVncmF0ZWQgVFQgaW4gcm9vdCBo
+dWIgKi8KKwl1bnNpZ25lZAkJZGlzYWJsZV9pcnE6MTsJLyogRGlzYWJsZSBJUlFzIGZvciBo
+YW5kbGVyICovCiAKIAlpbnQJCQlpcnE7CQkvKiBpcnEgYWxsb2NhdGVkICovCiAJdm9pZCBf
+X2lvbWVtCQkqcmVnczsJCS8qIGRldmljZSBtZW1vcnkvaW8gKi8K
+--------------050607060603090407040201--
