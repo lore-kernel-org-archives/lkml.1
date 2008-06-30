@@ -1,40 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760678AbYF3RGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762107AbYF3RH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760678AbYF3RGh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:06:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbYF3RGa
+	id S1762107AbYF3RH2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 13:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYF3RHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:06:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43751 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752303AbYF3RG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:06:29 -0400
-Date: Mon, 30 Jun 2008 12:01:58 -0500
-From: David Teigland <teigland@redhat.com>
-To: Benny Halevy <bhalevy@panasas.com>
-Cc: Christine Caulfield <ccaulfie@redhat.com>, cluster-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dlm: fix uninitialized variable for search_rsb_list callers
-Message-ID: <20080630170157.GB31662@redhat.com>
-References: <1214845154-4978-1-git-send-email-bhalevy@panasas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1214845154-4978-1-git-send-email-bhalevy@panasas.com>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 30 Jun 2008 13:07:20 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:33405 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752563AbYF3RHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 13:07:18 -0400
+Message-ID: <486912C4.8070705@sgi.com>
+Date: Mon, 30 Jun 2008 10:07:16 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com>	<485947A8.8060801@goop.org> <4859511E.5050605@sgi.com>	<48596315.6020104@goop.org> <48596893.4040908@sgi.com>	<485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org>	<485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>	<485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com>	<485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com>	<485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>	<485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com> <m1skv7onvh.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1skv7onvh.fsf@frodo.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 07:59:14PM +0300, Benny Halevy wrote:
-> gcc 4.3.0 correctly emits the following warning.
-> search_rsb_list does not *r_ret if no dlm_rsb is found
-> and _search_rsb may pass the uninitialized value upstream
-> on the error path when both calls to search_rsb_list
-> return non-zero error.
+Eric W. Biederman wrote:
+> Mike Travis <travis@sgi.com> writes:
+...
+>> Can we generate a new symbol which would account for LOAD_OFFSET?
 > 
-> The fix sets *r_ret to NULL on search_rsb_list's not-found path.
+> Ouch.  Absolute symbols indeed.  On the 32bit kernel that may play havoc
+> with the relocatable kernel, although we have had similar absolute logic
+> for the last year. With __per_cpu_start and __per_cpu_end so it may
+> not be a problem.
+> 
+> To initialize the percpu data you do want to talk to the virtual address
+> at __per_coup_load.  But it is absolute Ugh.  
+> 
+> It might be worth saying something like.
+> .data.percpu.start : AT(.data.percpu.dummy - LOAD_OFFSET) {
+> 	DATA(0)                   
+> 	. = ALIGN(align);
+>         __per_cpu_load = . ;                   
+> }
+> To make __per_cpu_load a relative symbol. ld has a bad habit of taking
+> symbols out of empty sections and making them absolute.  Which is why
+> I added the DATA(0).
+> 
+> Still I don't think that would be the 64bit problem.
+> 
+> Eric
 
-Added to dlm.git.
-Thanks, Dave
+FYI, I did try this out and it caused the bootloader to scramble the
+loaded data.  The first corruption I found was the .x86cpuvendor.init
+section contained all zeroes.
 
+Mike
