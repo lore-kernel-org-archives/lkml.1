@@ -1,67 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759865AbYF3H6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759865AbYF3H6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759865AbYF3H6b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 03:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755389AbYF3H6U
+	id S1759865AbYF3H6s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 03:58:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759878AbYF3H6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 03:58:20 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:2019 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755090AbYF3H6S (ORCPT
+	Mon, 30 Jun 2008 03:58:31 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:56192 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759605AbYF3H63 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 03:58:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=slGvsGyHFUzkPtMCxSOC3hkvSwAaudVkp3N/iwFPJQYEShu1c4LLFv5C2EFgYD9S5g
-         zlie/YlCOzkxqk6ucWXtGS8BSLoBW6q3DZw1bwB7e+KzT5L35MEYaLcks1rZjyTmGt7q
-         Jk2N/gm1JxCc9ARzfv7GYKLH/uMKuUR7wun9o=
-Message-ID: <ce513bcc0806300058mbe0f15eya07fafbb9ba4a56@mail.gmail.com>
-Date: Mon, 30 Jun 2008 10:58:16 +0300
-From: "Erez Zilber" <erezzi.list@gmail.com>
-To: "Jens Axboe" <jens.axboe@oracle.com>
-Subject: Re: Should a block device enforce block atomicity?
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080630065525.GI20826@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Jun 2008 03:58:29 -0400
+Message-Id: <1214812708.18086.1261039037@webmail.messagingengine.com>
+X-Sasl-Enc: 5lqLN35ggziuT7ybVQEEqjRhQ3g7R7rMD7bbmL8NLIfO 1214812708
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Johannes Berg" <johannes@sipsolutions.net>
+Cc: "Paul Jackson" <pj@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       yhlu.kernel@gmail.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       steiner@sgi.com, travis@sgi.com, linux-kernel@vger.kernel.org,
+       ying.huang@intel.com, "Andi Kleen" <andi@firstfloor.org>
 Content-Disposition: inline
-References: <ce513bcc0806292351t7f4ad933l920112381f4ebb4@mail.gmail.com>
-	 <20080630065525.GI20826@kernel.dk>
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20080622142151.5591.4139.sendpatchset@polaris-admin.engr.sgi.com>
+ <20080622142212.5591.64592.sendpatchset@polaris-admin.engr.sgi.com>
+ <86802c440806221238g78300952t2fc7f406c1842273@mail.gmail.com>
+ <20080623060939.6b6b3183.pj@sgi.com> <86802c440806241
+ <alpine.LFD.1.10.0806250813030.4733@hp.linux-foundation.org>
+Subject: Re: [PATCH 4/5 v2] x86 boot: show pfn addresses in hex not decimal in
+ some kernel info printks
+In-Reply-To: <alpine.LFD.1.10.0806250813030.4733@hp.linux-foundation.org>
+Date: Mon, 30 Jun 2008 09:58:28 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 9:55 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Mon, Jun 30 2008, Erez Zilber wrote:
->> Hi,
->>
->> I have a question about block devices and whether they are required to
->> enforce block atomicity:
->>
->> I read the code of drivers/block/brd.c, and I didn't see any locking
->> when blocks are read/written. I also looked at the block layer code
->> that calls brd and didn't find any locking there. Does it mean that
->> there's no block atomicity (i.e. multiple threads can write a single
->> block at the same time)? Is there any hidden assumption here? Is this
->> the responsibility of the application to do that (e.g. not start a
->> WRITE request before other READ/WRITE requests to the same block were
->> completed)?
->
-> The block layer doesn't give such guarentees, not for "regular" block
-> devices either. If the IO goes through the page cache then that will
-> serialize IO to a given page, but with eg O_DIRECT IO, you could have
-> the same block in flight several times. So if you are doing raw IO, the
-> application has to ensure ordering of the same block.
->
+On Wed, 25 Jun 2008 08:19:13 -0700 (PDT), "Linus Torvalds"
+<torvalds@linux-foundation.org> said:
+> On Wed, 25 Jun 2008, Johannes Berg wrote:
+> > 
+> > In networking, we've gone through various incarnations of print_mac()
+> > which is similar to the sym() macro Paul proposed, and it turned out to
+> > be undesirable because of the way it interacts with static inlines that
+> > only optionally contain code at all, the print_mac() function call is
+> > still emitted by the compiler. People experimented with marking it
+> > __pure but that had other problems.
+> 
+> You don't even have to go that esoteric.
+> 
+> Just printing things like "sector_t" or "u64" is painful, because the 
+> exact type depends on config options and/or architecture.
+> 
+> > It would be nice to be able to say
+> > 
+> > u8 *eaddr;
+> > 
+> > printk(... %M ..., eaddr);
+> 
+> For special things, I do think we should extend the format more, and 
+> forget about single-character names. It would be lovely to do them as
+> %[mac], %[u64], %[symbol] or similar. Because once you don't rely on gcc 
+> checking the string, you can do it.
 
-So, do you say that people that write applications need to take care
-of I/O serialization, and block devices (and the block layer itself)
-don't need to care about this problem? I thought that standard disks
-guarantee block atomicity (i.e. they don't count on the layers above
-them to do that).
+That would confuse the gcc format string checking... A solution that
+just crossed my mind is leaving the format string as is (i.e., "%p"),
+but prepending it with a special linux-specific string which does not
+confuse gcc. Like: "&mac%p"... for simplicity & can be considered always
+special in printk, and && can stand for a literal &. (or pick any
+other character that is not used frequently in format strings and is
+not %, of course.)
 
-Erez
+> The problem is that right now we absolutely _do_ rely on gcc checking the 
+> string, and as such we're forced to use standard patterns, and standard 
+> patterns _only_. And that means that %M isn't an option, but also that if 
+> we want symbolic names we'd have to use %p, and not some extension.
+
+"&%p" could then be used for a symbol-lookup.
+
+It doesn't help u64, though, but isn't it about time to unify u64 to
+"unsigned long long" everywhere, anyhow? Is there any argument against
+that except that a big sweep is necessary to clean up new warnings due
+to printk format strings?
+
+Greetings,
+    Alexander
+
+> But once you drop the 'standard patterns' requirement, I do think you 
+> should drop it _entirely_, and not just extend it with some pissant 
+> single-character unreadable mess.
+> 
+> 				Linus
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel"
+> in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
+
+-- 
+http://www.fastmail.fm - IMAP accessible web-mail
+
