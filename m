@@ -1,84 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933716AbYF3WAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933118AbYF3WF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933716AbYF3WAi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 18:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932440AbYF3WAZ
+	id S933118AbYF3WF0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 18:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756381AbYF3WFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 18:00:25 -0400
-Received: from kumera.dghda.com ([80.68.90.171]:3882 "EHLO kumera.dghda.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763875AbYF3WAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 18:00:23 -0400
-From: "Duane Griffin" <duaneg@dghda.com>
-To: linux-ext4@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, sct@redhat.com,
-       adilger@clusterfs.com, Sami Liedes <sliedes@cc.hut.fi>,
-       jochen.voss@googlemail.com, Jan Kara <jack@suse.cz>,
-       Duane Griffin <duaneg@dghda.com>
-Subject: [PATCH, v5] ext3: validate directory entry data before use
-Date: Mon, 30 Jun 2008 23:00:18 +0100
-Message-Id: <1214863218-14828-1-git-send-email-duaneg@dghda.com>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <20080630143427.GA5473@dastardly>
-References: <20080630143427.GA5473@dastardly>
+	Mon, 30 Jun 2008 18:05:10 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:25446 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752856AbYF3WFI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 18:05:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=LyHDIpSLT/LoMO3SuVptf1ufgywqoPHGtInQYRqSH1F8DoD8wwG5Q5LQQu0cohEKn2
+         gQd4vXiymBEvzDAINT3lq52tSy5cTL4T4DCvwFBjdm3Hy4foTRqhBDg8BihH8Jt0Wxsa
+         IRFANz6dR1GpVy5coBF7efH4bsDnAjdWrBEl4=
+Message-ID: <48695883.3080508@gmail.com>
+Date: Mon, 30 Jun 2008 19:04:51 -0300
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: subrata@linux.vnet.ibm.com
+CC: ltp-list <ltp-list@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Davide Libenzi <davidel@xmailserver.org>, rusty <rusty@rustcorp.com.au>,
+       Bryce Harrington <bryce@canonical.com>, Ren@pimp.vs19.net
+Subject: Re: [ANNOUNCE] The Linux Test Project has been Released for JUNE
+ 2008
+References: <1214825814.4603.41.camel@subratamodak.linux.ibm.com>
+In-Reply-To: <1214825814.4603.41.camel@subratamodak.linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ext3_dx_find_entry uses ext3_next_entry without verifying that the entry is
-valid. If its rec_len == 0 this causes an infinite loop. Refactor the loop
-to check the validity of entries before checking whether they match and
-moving onto the next one.
+Subrata Modak wrote:
+> Dear All,
+> 
+> The Linux Test Project test suite has been released for the month of
+> JUNE 2008. The latest version of the test-suite contains 3000+ tests
+> for the Linux OS and can be found at
+> http://ltp.sourceforge.net/.
+> Latest happenings in LTP can also be found at:
+> http://ltp.sourceforge.net/wiki/,
+> http://ltp.sourceforge.net/wikiArchives.php, and,
+> IRC: irc.freenode.org #ltp.
+> 
+> 
+> JUNE 2008 Highlights:
+> 
+> * Addition of timerfd(), utimensat(), gettid() & io_cancel() tests,
+> * Addition of CPU & MEMORY HOTPLUG tests,
+> * Addition of Process Event Connector tests,
+> * Addition of Hackbench test,
+> * RT tests fix for START_LATENCY,
+> * FS_BIND fix for ia64 & for kernels below 2.6.15,
+> * SE-Linux fix to build against the latest refpolicy headers,
+> * Concurrency Fixes for some tests.
+> 
+> 
+> JUNE 2008 LTP Contributors:
+> 
+> * Masatake YAMATO,
+> * Davide Libenzi,
+> * Rusty Russell,
+> * Michael Kerrisk,
+> * Bryce Harrington,
+> * Stephen Smalley,
+> * Renaud Lottiaux,
+> * Vernon Mauery,
+> * Louis Rilling,
+> * Li Zefan,
+> * Roy Lee,
+> * Andrew Vagin,
+> * Veerendra Chandrappa,
+> * Le Rouzic,
+> * Garrett Cooper,
+> * Giuseppe Cavallaro,
+> * Carmelo Amoroso,
+> * Chirag Jog,
+> * Max Stirling,
+> * Shi Weihua,
+> * Matthieu Fertré,
+> * Matt Fleming,
+> 
+> 
+> Note(s) from the Maintainer:
+> 
+> June 2008 saw the initiation of Project collaboration. Thanks to
+> Masatake Yamato, who will help in porting a significant amount of
+> syscall test cases from the Crackerjack Project to LTP. I am also
+> excited to see that new test cases are being submitted to LTP with
+> increasing pace. I hope that the pace accelerates much much more. The
+> next half of 2008 will also see some major Infrastructural improvements
+> in LTP along with our unending endeavor to add more test cases. From now
+> onwards i would also like to acknowledge each and every contributor in
+> this release mail for their valuable contribution(s). I will release
+> results on 2 diff. kernels(one a bit old and another a bit younger) on
+> same architecture and for those architectures available at my disposal.
+> This will help us to compare results for 2 extreme kernels.
+> 
+> 
+> Our web site also contains other information such as:
+> - A Linux test tools matrix
+> - Technical papers
+> - How To's on Linux testing
+> - Code coverage analysis tool.
+> 
+> We would encourage the community to post results to
+> ltp-results@lists.sf.net,
+> patches, new tests, bugs or comments/questions to ltp-list@lists.sf.net,
+> http://sourceforge.net/tracker/?func=add&group_id=3382&atid=103382
+> (for New Bug(s)),
+> http://sourceforge.net/tracker/?func=add&group_id=3382&atid=303382
+> (for New Patch(s)),
+> http://sourceforge.net/tracker/?func=add&group_id=3382&atid=353382
+> (for New Feature Request(s))
+> 
+> Please also see the Change Log Attached (JUNE 2008) for detailed
+> changes.
+> 
 
-There are other uses of ext3_next_entry in this file which also look
-problematic. They should be reviewed and fixed if/when we have a test-case
-that triggers them.
+Hi,
 
-This patch fixes the first case (image hdb.25.softlockup.gz) reported in
-http://bugzilla.kernel.org/show_bug.cgi?id=10882.
+I decided to give this LTP release a try on my workstation, and there 
+were quite a few test failures.  Is that expected?  I expect that some 
+of the failures are probably related to kernel features I have turned 
+off (I try to get rid of stuff I don't need where possible).
 
-Signed-off-by: Duane Griffin <duaneg@dghda.com>
---
+If the failures are not expected, what should I do?  Would the log file 
+be of any help?  Are there any extra options I should supply?  I just ran:
 
-This is version 5. It is a safer minimal version of the patch that only
-fixes the original reported problem. Other potentially dangerous uses of
-ext3_next_entry are left untouched until/unless we get test-cases for them.
+./runltp -p -l result.yyyymmdd.log
 
----
 
-diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
-index 0b8cf80..8db2c38 100644
---- a/fs/ext3/namei.c
-+++ b/fs/ext3/namei.c
-@@ -991,19 +991,21 @@ static struct buffer_head * ext3_dx_find_entry(struct dentry *dentry,
- 		de = (struct ext3_dir_entry_2 *) bh->b_data;
- 		top = (struct ext3_dir_entry_2 *) ((char *) de + sb->s_blocksize -
- 				       EXT3_DIR_REC_LEN(0));
--		for (; de < top; de = ext3_next_entry(de))
--		if (ext3_match (namelen, name, de)) {
--			if (!ext3_check_dir_entry("ext3_find_entry",
--						  dir, de, bh,
--				  (block<<EXT3_BLOCK_SIZE_BITS(sb))
--					  +((char *)de - bh->b_data))) {
--				brelse (bh);
-+		for (; de < top; de = ext3_next_entry(de)) {
-+			int off = (block << EXT3_BLOCK_SIZE_BITS(sb))
-+				  + ((char *) de - bh->b_data);
-+
-+			if (!ext3_check_dir_entry(__func__, dir, de, bh, off)) {
-+				brelse(bh);
- 				*err = ERR_BAD_DX_DIR;
- 				goto errout;
- 			}
--			*res_dir = de;
--			dx_release (frames);
--			return bh;
-+
-+			if (ext3_match(namelen, name, de)) {
-+				*res_dir = de;
-+				dx_release(frames);
-+				return bh;
-+			}
- 		}
- 		brelse (bh);
- 		/* Check to see if we should continue to search */
+If failures are expected on some systems or with some kernel 
+configuration options, then let me know, and perhaps I can diff log 
+files between kernel versions to look for new failures.
+
+Thanks,
+
+-- 
+Kevin Winchester
+
