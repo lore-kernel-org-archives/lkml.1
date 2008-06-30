@@ -1,102 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762894AbYF3RYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763217AbYF3RY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762894AbYF3RYN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:24:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYF3RX4
+	id S1763217AbYF3RY2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 13:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbYF3RX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:23:56 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:52122 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbYF3RXz convert rfc822-to-8bit (ORCPT
+	Mon, 30 Jun 2008 13:23:59 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53637 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755382AbYF3RX5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:23:55 -0400
-Message-Id: <4868DCC7.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Mon, 30 Jun 2008 11:16:55 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <rostedt@goodmis.org>, <peterz@infradead.org>, <npiggin@suse.de>,
-       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH 0/3] sched: newidle and RT wake-buddy fixes
-References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com>
- <20080630131511.GA7506@elte.hu>
-In-Reply-To: <20080630131511.GA7506@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Mon, 30 Jun 2008 13:23:57 -0400
+Message-ID: <486916A9.8050808@firstfloor.org>
+Date: Mon, 30 Jun 2008 19:23:53 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@kernel.org,
+       torvalds@osdl.org, akpm@osdl.org, acpi@linux.intel.com
+Subject: Re: Temporary ACPI maintainer for this summer
+References: <871w2fujga.fsf@basil.nowhere.org> <20080630165037.GA30779@khazad-dum.debian.net>
+In-Reply-To: <20080630165037.GA30779@khazad-dum.debian.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Mon, Jun 30, 2008 at  9:15 AM, in message <20080630131511.GA7506@elte.hu>,
-Ingo Molnar <mingo@elte.hu> wrote: 
 
-> * Gregory Haskins <ghaskins@novell.com> wrote:
+> Len usually stores all changes from different sub-maintainers in separate
+> topic branches, and as long as the tree had not been sent to Linus for
+> mainline merge yet, he would even let us resubmit patchsets (instead of
+> asking for incremental fixes):  he'd just drop the old topic branch with
+> that patchset, and create it anew using the new patchset.
+
+I don't plan to use topic branches, but have a quilt/guilt workflow
+that makes it possible to drop patches.
+
+> Not every sub-maintainer took advantage of this, but some of us did.  It
+> would be nice to know beforehand how you're going to handle these issues
+> (i.e. do you prefer incremental fixing on stuff already staged for
+> submission, or a cleaned-up resubmission for re-staging?)
+
+I prefer cleaned-up resubmission in general over incremental changes.
+I would just merge the incrementals into the original patches anyways,
+so the submitter does that it is best.
+
+
+> These drivers have ties to subsystems spread all over the kernel (major ACPI
+> ties, but also leds, input, rfkill, gpio, hwmon...), so they often get
+> patches that require late merging (end of the merge window, early -rc1)
+> because of dependencies to subsystems outside ACPI.  Len was fine with it,
+> as long as the changes were local to the drivers (very low breakage risk for
+> anything else in the kernel).
+
+Ok. We'll need to talk about that in detail.
+
+>> I'll take over all patches Len has already queued, so no need to
+>> resubmit them.  But if he doesn't have something acknowledged already
+>> you want to be included, please retransmit it to me.
 > 
->> Hi Ingo,
->>   The following patches apply to linux-tip/sched/devel and enhance the
->> performance of the kernel (specifically in PREEMPT_RT, though they do
->> not regress mainline performance as far as I can tell).  They offer
->> somewhere between 50-100% speedups in netperf performance, depending
->> on the test.
+> You will get a bunch of thinkpad-acpi patches that depend upon net-next-2.6
+> soon...  I was waiting for some rfkill improvements to land on net-next-2.6
+> before submitting code that needs them.
 > 
-> -tip testing found this boot hang:
+> That's something else I'd like to know.  Do you prefer to get such changes
+> [that depend on stuff still being submitted to other subsystems] early, or
+> only after their dependencies are already on a (mostly) assured path to
+> mainline?
 
-I may have found the issue:  It looks like the hunk that initially disables interrupts in load_balance_newidle() was inadvertently applied to load_balance() instead during the
-merge to linux-tip.  If you fold the following patch into my original patch, it should set
-things right again.
+Earlier. The tree would be based on linux-next.
 
------
-
-sched: fix merge problem with newidle enhancement patch
-
-From: Gregory Haskins <ghaskins@novell.com>
-
-commit cc8160c56843201891766660e3816d2e546c1b17 introduces a locking
-enhancement for newidle.  However, one hunk misapplied to load_balance
-instead of load_balance_newidle.  This fixes the issue.
-
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
-
- kernel/sched.c |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index f35d73c..f36406f 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -3459,15 +3459,6 @@ static int load_balance(int this_cpu, struct rq *this_rq,
- 
- 	cpus_setall(*cpus);
- 
--	schedstat_inc(sd, lb_count[CPU_NEWLY_IDLE]);
--
--	/*
--	 * We are in a preempt-disabled section, so dropping the lock/irq
--	 * here simply means that other cores may acquire the lock,
--	 * and interrupts may occur.
--	 */
--	spin_unlock_irq(&this_rq->lock);
--
- 	/*
- 	 * When power savings policy is enabled for the parent domain, idle
- 	 * sibling can pick up load irrespective of busy siblings. In this case,
-@@ -3630,6 +3621,15 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
- 
- 	cpus_setall(*cpus);
- 
-+	schedstat_inc(sd, lb_count[CPU_NEWLY_IDLE]);
-+
-+	/*
-+	 * We are in a preempt-disabled section, so dropping the lock/irq
-+	 * here simply means that other cores may acquire the lock,
-+	 * and interrupts may occur.
-+	 */
-+	spin_unlock_irq(&this_rq->lock);
-+
- 	/*
- 	 * When power savings policy is enabled for the parent domain, idle
- 	 * sibling can pick up load irrespective of busy siblings. In this case,
+-Andi
 
