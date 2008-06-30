@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762404AbYF3R7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762180AbYF3SBK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762404AbYF3R7i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYF3R73
+	id S1762180AbYF3SBK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 14:01:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbYF3SA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:59:29 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:11685 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751308AbYF3R72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:59:28 -0400
-Date: Mon, 30 Jun 2008 19:59:25 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Discussions of testing linux 
-	<ltc-linux-test@lists.linux.ibm.com>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 30
-Message-ID: <20080630175925.GQ20826@kernel.dk>
-References: <20080701001656.e156585c.sfr@canb.auug.org.au> <48690385.7030500@linux.vnet.ibm.com>
+	Mon, 30 Jun 2008 14:00:57 -0400
+Received: from gv-out-0910.google.com ([216.239.58.187]:6165 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752064AbYF3SA4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 14:00:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=OezoFmHy2U1WVkDNqWvVyv/Ky86S0e0xoIUkAJ6toimgVWxTeqh1KRYhRNhhK9qjQn
+         bzGxJ5JZcQlLGU9EM2QmY5tOh75VlhgUxNj13ghzgXX6ETj+wgv5OA8+1BDt8YbC79qL
+         XvWFpeZuq3Da7GEWmeMhDekQH8Nm9rA2HqCXU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH] ide: fix /proc/ide/ide?/mate reporting
+Date: Mon, 30 Jun 2008 20:02:45 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48690385.7030500@linux.vnet.ibm.com>
+Message-Id: <200806302002.46667.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30 2008, Kamalesh Babulal wrote:
-> Hi Stephen,
-> 
-> next-20080630 kernel build fails x86 box 
-> 
-> fs/bio-integrity.c: In function `bio_integrity_add_page':
-> include/linux/bio.h:368: sorry, unimplemented: inlining failed in call to 'bvec_nr_vecs': function body not available
-> fs/bio-integrity.c:135: sorry, unimplemented: called from here
-> make[1]: *** [fs/bio-integrity.o] Error 1
-> make: *** [fs] Error 2
+Now that we support warm-plug mate port will be registered
+even if there are no devices attached to it.
 
-Gah, I can't believe gcc errors on that. This should fix it, I'll
-integrate with the patchset.
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide-proc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/fs/bio.c b/fs/bio.c
-index bc865b1..7761c84 100644
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -50,7 +50,7 @@ static struct biovec_slab bvec_slabs[BIOVEC_NR_POOLS] __read_mostly = {
-  */
- struct bio_set *fs_bio_set;
+Index: b/drivers/ide/ide-proc.c
+===================================================================
+--- a/drivers/ide/ide-proc.c
++++ b/drivers/ide/ide-proc.c
+@@ -76,7 +76,7 @@ static int proc_ide_read_mate
+ 	ide_hwif_t	*hwif = (ide_hwif_t *) data;
+ 	int		len;
  
--inline unsigned int bvec_nr_vecs(unsigned short idx)
-+unsigned int bvec_nr_vecs(unsigned short idx)
- {
- 	return bvec_slabs[idx].nr_vecs;
- }
-diff --git a/include/linux/bio.h b/include/linux/bio.h
-index 62f0be9..0933a14 100644
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -365,7 +365,7 @@ extern struct bio *bio_copy_user_iov(struct request_queue *, struct sg_iovec *,
- extern int bio_uncopy_user(struct bio *);
- void zero_fill_bio(struct bio *bio);
- extern struct bio_vec *bvec_alloc_bs(gfp_t, int, unsigned long *, struct bio_set *);
--extern inline unsigned int bvec_nr_vecs(unsigned short idx);
-+extern unsigned int bvec_nr_vecs(unsigned short idx);
- 
- /*
-  * bio_set is used to allow other portions of the IO system to
-
--- 
-Jens Axboe
-
+-	if (hwif && hwif->mate && hwif->mate->present)
++	if (hwif && hwif->mate)
+ 		len = sprintf(page, "%s\n", hwif->mate->name);
+ 	else
+ 		len = sprintf(page, "(none)\n");
