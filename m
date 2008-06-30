@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760179AbYF3KAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760442AbYF3KCD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760179AbYF3KAu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 06:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbYF3KAm
+	id S1760442AbYF3KCD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 06:02:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbYF3KBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 06:00:42 -0400
-Received: from bu3sch.de ([62.75.166.246]:46759 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753887AbYF3KAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 06:00:42 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Subject: Re: Drivers for selfmade hardware
-Date: Mon, 30 Jun 2008 12:00:18 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-References: <200806292147.52112.mb@bu3sch.de> <20080630095014.GA3211@local>
-In-Reply-To: <20080630095014.GA3211@local>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 30 Jun 2008 06:01:54 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34494 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755167AbYF3KBx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 06:01:53 -0400
+Date: Mon, 30 Jun 2008 10:44:07 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: <JosephChan@via.com.tw>
+Cc: <JosephChan@via.com.tw>, <linux-fbdev-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>,
+       <geert@linux-m68k.org>
+Subject: Re: [PATCH 13/13] viafb: via_utility.c, via_utility.h, vt1636.c,
+ vt1636.h
+Message-ID: <20080630104407.6adf59ab@lxorguk.ukuu.org.uk>
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E78BE@exchtp03.taipei.via.com.tw>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E78BE@exchtp03.taipei.via.com.tw>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806301200.19210.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 30 June 2008 11:50:15 Hans J. Koch wrote:
-> This driver is not only useful for PCI TV cards. With little
-> modification, it could be used for bttv chips integrated in embedded
-> systems as platform devices. You might have more users than you think
-> ;-)
+> +void get_gamma_table(unsigned int *gamma_table)
 
-Oh nice. I didn't know that such devices exist. However, these embedded
-devices might want to use the original bttv driver and modify that for
-generic GPIO support.
-This btgpio driver clashes with the bttv driver and the two drivers can't be
-used at the same time. That's fine for me, however, as I removed the TV tuner
-and more stuff from the card. So I decided to write a stripped-down driver
-instead of extending the bttv driver.
+Still more globals with names asking to cause clashes
 
-But of course, if you still use the card as TV card, we cannot use
-all GPIOs for generic GPIOs, as the card uses some of them to communicate
-with other chips (That's why I unsoldered the pins). So extending bttv for
-generic GPIO support might become hairy with all the different boards with
-possibly different GPIO assignments. I didn't want to get into that for now.
+> +{
+> +	unsigned char color_r[256];
+> +	unsigned char color_g[256];
+> +	unsigned char color_b[256];
+> +	unsigned char sr1a = 0;
 
-But it's nice to know that such devices do exist.
+and possibly excesive stack usage
 
-> > 
-> > So what's the policy? Push to mainline or keep as seperate
-> > patch?
-> 
-> Definetly mainline. But don't forget to cc: other relevant
-> maintainers/lists (v4l, gpio, maybe linux-embedded).
 
-Ok, nice.
+I think at this point however the code is in a state where it would be
+more productive to merge it and then fix up the remaining smaller details
+than keep going round back to VIA to change it internally and return.
 
--- 
-Greetings Michael.
+So
+
+Acked-by: Alan Cox <alan@redhat.com>  - for the patch series, subject to
+further tidyups getting done after it is all merged.
+
+Alan
