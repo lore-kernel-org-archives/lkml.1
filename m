@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933826AbYF3WST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933625AbYF3WTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933826AbYF3WST (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 18:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932283AbYF3WSE
+	id S933625AbYF3WTs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 18:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763179AbYF3WTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 18:18:04 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:43381 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932752AbYF3WSB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 18:18:01 -0400
-Message-ID: <48695ACE.9040806@zytor.com>
-Date: Mon, 30 Jun 2008 15:14:38 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 30 Jun 2008 18:19:36 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:57869 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762723AbYF3WTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 18:19:35 -0400
+Date: Tue, 1 Jul 2008 01:19:19 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Gerd Hoffmann <kraxel@redhat.com>, Avi Kivity <avi@qumranet.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make kvm_smp_prepare_boot_cpu() static
+Message-ID: <20080630221918.GI1536@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Sean Young <sean@mess.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Regression: boot failure on AMD Elan TS-5500
-References: <20080616121138.GA51097@atlantis.8hz.com> <200806162327.34912.rusty@rustcorp.com.au> <48566C88.6000702@goop.org> <20080616161944.GA53539@atlantis.8hz.com> <20080630214347.GA57988@atlantis.8hz.com> <4869558A.9020907@goop.org> <48695871.8000805@zytor.com>
-In-Reply-To: <48695871.8000805@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
->>>
->>> startup_32:
->>>         cld
->>>         /* test KEEP_SEGMENTS flag to see if the bootloader is asking
->>>          * us to not reload segments */
->>>         testb $(1<<6), BP_loadflags(%esi)
->>>         jnz 1f
->>>
->>>         cli
->>>         movl $(__BOOT_DS),%eax
->>>         movl %eax,%ds
->>>         movl %eax,%es
->>>         movl %eax,%fs
->>>         movl %eax,%gs
->>>         movl %eax,%ss
->>> 1:
+This patch makes the needlessly global kvm_smp_prepare_boot_cpu() static.
 
-On this general subject... I keep thinking that it would be better to 
-have this as:
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-	movl	%cs, %eax
-	addl	$8, %eax
-	movl	%eax, %cs
+---
+a03ee2a21c4e40483712d453a4f803980186c59f 
+diff --git a/arch/x86/kernel/kvmclock.c b/arch/x86/kernel/kvmclock.c
+index 87edf1c..d02def0 100644
+--- a/arch/x86/kernel/kvmclock.c
++++ b/arch/x86/kernel/kvmclock.c
+@@ -113,7 +113,7 @@ static void kvm_setup_secondary_clock(void)
+ #endif
+ 
+ #ifdef CONFIG_SMP
+-void __init kvm_smp_prepare_boot_cpu(void)
++static void __init kvm_smp_prepare_boot_cpu(void)
+ {
+ 	WARN_ON(kvm_register_clock("primary cpu clock"));
+ 	native_smp_prepare_boot_cpu();
 
-... instead of a hard-coded constant.  That actually removes all 
-hard-coded uses of BOOT_CS/BOOT_DS until we eventually load the kernel's 
-own boot GDT at head_32.S:94.
-
-Does anyone see any problem with that?  As far as I can tell, we're 
-requiring %cs == BOOT_CS for the current code anyway (unless 
-KEEP_SEGMENTS), but %ds == %cs + 8 seems like a more sensible requirement.
-
-	-hpa
