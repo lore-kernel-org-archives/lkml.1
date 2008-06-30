@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbYF3AEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493AbYF3AeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755798AbYF3AEU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 20:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYF3AEN
+	id S1755493AbYF3AeU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 20:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYF3AeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 20:04:13 -0400
-Received: from mail.tmr.com ([64.65.253.246]:46054 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753062AbYF3AEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 20:04:12 -0400
-Message-ID: <486823CB.8050603@tmr.com>
-Date: Sun, 29 Jun 2008 20:07:39 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Various x86 syscall mechanisms
-References: <485C2875.2050204@goop.org> <20080627204954.166D0154077@magilla.localdomain>
-In-Reply-To: <20080627204954.166D0154077@magilla.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Jun 2008 20:34:03 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:52131 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752966AbYF3AeA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jun 2008 20:34:00 -0400
+Date: Mon, 30 Jun 2008 02:45:44 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Andi Kleen <andi-suse@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+Message-ID: <20080630004544.GB19093@one.firstfloor.org>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <20080629200210.GB31633@elte.hu> <Pine.LNX.4.55.0806292104560.22548@cliff.in.clinika.pl> <200806300106.38414.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200806300106.38414.rjw@sisk.pl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath wrote:
->> As far as I can work out, an x86_32 kernel will use "int 0x80" and 
->> "sysenter" for system calls.  64-bit kernel will use just "syscall" for 
->> 64-bit processes (though you can use "int 0x80" to access the 32-bit 
->> syscall interface from a 64-bit process), but will allow "sysenter", 
->> "syscall" or "int 0x80" for 32-on-64 processes.
 > 
-> That is correct, with the caveats below.
+> Otherwise you throw this burden onto users who
+> (1) don't expect things to stop working,
+> (2) may not be able to figure out themselves what the right workaround is,
+> (3) may not be able to make hardware manufacturers do anything.
+
+Right thing would be to revert the guilty patches until these
+problems are resolved.
+
 > 
-Thanks for setting this out clearly, I've seen most of it (from Andi, I 
-think) in bits, and one of the scheduler folk had a comment relevant to 
-scheduling which I can't find now, but this is both technical and 
-historical, and thus a nice thing to hand to someone with a related 
-question.
+> If there's a configuration that worked before your patch and doesn't work
+> after it, you're hurting the users of that configuration.
 
-Well done.
+... also past experience is that DMI tables don't work well for this.
+We tried that early when ACPI was still very problematic and it turned
+out to be a flawed non-scalable strategy,
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Typically the configurations causing problems are in multiple motherboards
+with different DMI strings and it's very difficult to catch them all.
+
+Also sometimes BIOS behaviour changes over versions and that's tricky to catch
+with the standard DMI matches.
+
+One way that would half way scale is to check for specific configurations
+based on PCI-IDs and knowledge of the config space of these chipset, 
+although it's also not ideal because often multiple chipset generations
+with different PCI-IDs have similar issues.
+
+-Andi
+
