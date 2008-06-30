@@ -1,53 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763106AbYF3SRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763407AbYF3SSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763106AbYF3SRr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 14:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755654AbYF3SRh
+	id S1763407AbYF3SSd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 14:18:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbYF3SS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 14:17:37 -0400
-Received: from khc.piap.pl ([195.187.100.11]:43643 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752903AbYF3SRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 14:17:36 -0400
-To: Peter Warasin <peter@endian.com>, Patrick McHardy <kaber@trash.net>
-Cc: <netdev@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: [NETFILTER Kconfig help text]: bridge: add ebt_nflog watcher
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Mon, 30 Jun 2008 20:17:34 +0200
-Message-ID: <m3bq1i6b41.fsf@maximus.localdomain>
+	Mon, 30 Jun 2008 14:18:26 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:35813 "EHLO
+	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753789AbYF3SSZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 14:18:25 -0400
+X-BigFish: VPS-6(z6c9Rzzz10d3izzz32i43j63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0K3AG5Y-03-U59-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: mingo@redhat.com, tglx@linutronix.de
+CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       bhavna.sarathy@amd.com, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH] AMD IOMMU: disable suspend/resume with IOMMU enabled (for now)
+Date: Mon, 30 Jun 2008 20:18:02 +0200
+Message-ID: <1214849882-18550-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.3.7
+X-OriginalArrivalTime: 30 Jun 2008 18:18:03.0051 (UTC) FILETIME=[A29747B0:01C8DADD]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This patch disables suspend/resume on machines with AMD IOMMU enabled. Real
+suspend/resume support for AMD IOMMU is currently being worked on. Until this
+is ready it will be disabled to avoid data corruption when the IOMMU is not
+properly re-enabled at resume. The patch is based on a similar patch for the
+GART driver written by Pavel Machek.
+The overall driver merged into tip/master is tested with parallel disk and
+network loads and showed no problems in a test running for 3 days.
 
-is the following really correct?
-e7bfd0a1a6c8f82977253dab19be9d9979c1ec1b
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kernel/amd_iommu_init.c |   35 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 35 insertions(+), 0 deletions(-)
 
-------------------------- net/bridge/netfilter/Kconfig -------------------------
-index 4a3e2bf..7beeefa 100644
-@@ -214,2 +214,16 @@ config BRIDGE_EBT_ULOG
+diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
+index 6ab8128..5d9e45c 100644
+--- a/arch/x86/kernel/amd_iommu_init.c
++++ b/arch/x86/kernel/amd_iommu_init.c
+@@ -21,6 +21,7 @@
+ #include <linux/acpi.h>
+ #include <linux/gfp.h>
+ #include <linux/list.h>
++#include <linux/sysdev.h>
+ #include <asm/pci-direct.h>
+ #include <asm/amd_iommu_types.h>
+ #include <asm/amd_iommu.h>
+@@ -654,6 +655,32 @@ static void __init enable_iommus(void)
+ 	}
+ }
  
-+config BRIDGE_EBT_NFLOG
-+	tristate "ebt: nflog support"
-+	depends on BRIDGE_NF_EBTABLES
-+	help
-+	  This option enables the nflog watcher, which allows to LOG
-+	  messages through the netfilter logging API, which can use
-+	  either the old LOG target, the old ULOG target or nfnetlink_log
-+	  as backend.
++/*
++ * Suspend/Resume support
++ * disable suspend until real resume implemented
++ */
 +
-+	  This option adds the ulog watcher, that you can use in any rule
-                               ^^^^^^^^^^^^
-+	  in any ebtables table.
++static int amd_iommu_resume(struct sys_device *dev)
++{
++	return 0;
++}
 +
-+	  To compile it as a module, choose M here.  If unsure, say N.
++static int amd_iommu_suspend(struct sys_device *dev, pm_message_t state)
++{
++	return -EINVAL;
++}
 +
- endmenu
-
-
-ulog watcher?
++static struct sysdev_class amd_iommu_sysdev_class = {
++	.name = "amd_iommu",
++	.suspend = amd_iommu_suspend,
++	.resume = amd_iommu_resume,
++};
++
++static struct sys_device device_amd_iommu = {
++	.id = 0,
++	.cls = &amd_iommu_sysdev_class,
++};
++
+ int __init amd_iommu_init(void)
+ {
+ 	int i, ret = 0;
+@@ -745,6 +772,14 @@ int __init amd_iommu_init(void)
+ 	if (ret)
+ 		goto free;
+ 
++	ret = sysdev_class_register(&amd_iommu_sysdev_class);
++	if (ret)
++		goto free;
++
++	ret = sysdev_register(&device_amd_iommu);
++	if (ret)
++		goto free;
++
+ 	enable_iommus();
+ 
+ 	printk(KERN_INFO "AMD IOMMU: aperture size is %d MB\n",
 -- 
-Krzysztof Halasa
+1.5.3.7
+
+
