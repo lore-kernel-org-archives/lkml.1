@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933625AbYF3WTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933995AbYF3WUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933625AbYF3WTs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 18:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763179AbYF3WTg
+	id S933995AbYF3WUe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 18:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762946AbYF3WUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 18:19:36 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:57869 "EHLO smtp4.pp.htv.fi"
+	Mon, 30 Jun 2008 18:20:18 -0400
+Received: from chrocht.moloch.sk ([62.176.169.44]:36689 "EHLO mail.moloch.sk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762723AbYF3WTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 18:19:35 -0400
-Date: Tue, 1 Jul 2008 01:19:19 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Gerd Hoffmann <kraxel@redhat.com>, Avi Kivity <avi@qumranet.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make kvm_smp_prepare_boot_cpu() static
-Message-ID: <20080630221918.GI1536@cs181140183.pp.htv.fi>
+	id S1763187AbYF3WUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 18:20:17 -0400
+Message-ID: <48695C20.6050704@fastmq.com>
+Date: Tue, 01 Jul 2008 00:20:16 +0200
+From: Martin Sustrik <sustrik@fastmq.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Roger Heflin <rogerheflin@gmail.com>
+CC: Martin Lucina <mato@kotelna.sk>, linux-kernel@vger.kernel.org
+Subject: Re: Higher than expected disk write(2) latency
+References: <20080628121131.GA14181@nodbug.moloch.sk> <48663873.5010200@gmail.com> <486921AD.8060308@fastmq.com> <48692DC0.6060904@gmail.com>
+In-Reply-To: <48692DC0.6060904@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global kvm_smp_prepare_boot_cpu() static.
+Hi Roger,
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+>> Fair enough. That exaplains the behaviour. Would AIO help here? If we 
+>> are able to enqueue next write before the first one is finished, it 
+>> can start writing it immediately without waiting for a revolution.
+> 
+> If you could get them queued at the disk level, things that would need 
+> to be watched were if the disk can queue things up (and all 
+> controllers/drivers support it), and how many things the disk can queue 
+> up, and how large each of those things can be, if they aren't queued at 
+> the disk, there is the chance that the machine cannot get the data to 
+> the disk faster enough for that next sector.
 
----
-a03ee2a21c4e40483712d453a4f803980186c59f 
-diff --git a/arch/x86/kernel/kvmclock.c b/arch/x86/kernel/kvmclock.c
-index 87edf1c..d02def0 100644
---- a/arch/x86/kernel/kvmclock.c
-+++ b/arch/x86/kernel/kvmclock.c
-@@ -113,7 +113,7 @@ static void kvm_setup_secondary_clock(void)
- #endif
- 
- #ifdef CONFIG_SMP
--void __init kvm_smp_prepare_boot_cpu(void)
-+static void __init kvm_smp_prepare_boot_cpu(void)
- {
- 	WARN_ON(kvm_register_clock("primary cpu clock"));
- 	native_smp_prepare_boot_cpu();
+We'll try with AIO and we'll see what the impact would be.
 
+> Depending on your application you could always get a small fast solid 
+> state device (no seek or RPM issues), and use it to keep a journal that 
+> could be replayed on an unexpected crash...and then just use various 
+> syncs to force things to disk at various points.
+
+Yes, that's one thing we want to do. However, we cannot assume that 
+every user will have SSD, thus we should try to get the best latencies 
+possible even on standard HD.
+
+Martin
