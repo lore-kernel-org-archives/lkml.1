@@ -1,79 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbYF3ACr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbYF3AEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756005AbYF3ACr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 20:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755440AbYF3ACc
+	id S1755798AbYF3AEU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 20:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYF3AEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 20:02:32 -0400
-Received: from hu-out-0506.google.com ([72.14.214.224]:12090 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754685AbYF3AC3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 20:02:29 -0400
-Message-ID: <1d3f23370806291702g4344a2f9lb62f85cbb475fca4@mail.gmail.com>
-Date: Mon, 30 Jun 2008 10:02:21 +1000
-From: "John Williams" <john.williams@petalogix.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
-Cc: monstr@seznam.cz, linux-kernel@vger.kernel.org, arnd@arndb.de,
-       linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
-       John.Linn@xilinx.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       linuxppc-dev@ozlabs.org, vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk,
-       hpa@zytor.com, "Michal Simek" <monstr@monstr.eu>
-In-Reply-To: <fa686aa40806272249l7eae0c34k43a20ad41672b77a@mail.gmail.com>
+	Sun, 29 Jun 2008 20:04:13 -0400
+Received: from mail.tmr.com ([64.65.253.246]:46054 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753062AbYF3AEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jun 2008 20:04:12 -0400
+Message-ID: <486823CB.8050603@tmr.com>
+Date: Sun, 29 Jun 2008 20:07:39 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Roland McGrath <roland@redhat.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Various x86 syscall mechanisms
+References: <485C2875.2050204@goop.org> <20080627204954.166D0154077@magilla.localdomain>
+In-Reply-To: <20080627204954.166D0154077@magilla.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-6-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-7-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-8-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-9-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-10-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-11-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-12-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-13-git-send-email-monstr@seznam.cz>
-	 <fa686aa40806272249l7eae0c34k43a20ad41672b77a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 28, 2008 at 3:49 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Thu, Jun 26, 2008 at 5:29 AM,  <monstr@seznam.cz> wrote:
->> From: Michal Simek <monstr@monstr.eu>
+Roland McGrath wrote:
+>> As far as I can work out, an x86_32 kernel will use "int 0x80" and 
+>> "sysenter" for system calls.  64-bit kernel will use just "syscall" for 
+>> 64-bit processes (though you can use "int 0x80" to access the 32-bit 
+>> syscall interface from a 64-bit process), but will allow "sysenter", 
+>> "syscall" or "int 0x80" for 32-on-64 processes.
+> 
+> That is correct, with the caveats below.
+> 
+Thanks for setting this out clearly, I've seen most of it (from Andi, I 
+think) in bits, and one of the scheduler folk had a comment relevant to 
+scheduling which I can't find now, but this is both technical and 
+historical, and thus a nice thing to hand to someone with a related 
+question.
 
->>  arch/microblaze/platform/generic/system.dts |  300 +++++++++++++++++++++++++++
+Well done.
 
-> Since this is a generated file, and entirely bitstream specific, does
-> it make sense to include it in the kernel tree?  If it does, then is
-> it produced from one of the Xilinx reference designs?  Can you add
-> documentation to the header that specifies exactly which design
-> version this .dts is for?
-
-I think there's value in having a generic DTS as an example or
-template, even if it doesn't correspond to any specific machine.
-Agreed a comment block explaining this is valuable.
-
-I'd almost oppose any attempt to include a standard DTS for things
-like ML401 boards etc - they are just misleading.  Unless we do MD5
-hashes on MHS files, and use them as the filenames, any attempt to
-define a standard platform will just fail and confuse people.  Better
-to show them how to generate the DTS for their system.
-
->> +/*
->> + * (C) Copyright 2007-2008 Xilinx, Inc.
->> + * (C) Copyright 2007-2008 Michal Simek
->> + *
->> + * Michal SIMEK <monstr@monstr.eu>
->
-> If this is a generated file, then is this copyright notice even appropriate?
-
-I agree.  I think Michal is just copying Xilinx's habit of putting
-copyright headers in generated files, and it's one that we should stop
-now.
-
-Regards,
-
-John
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
