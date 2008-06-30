@@ -1,87 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932554AbYF3SWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932627AbYF3SWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932554AbYF3SWi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 14:22:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932417AbYF3SVa
+	id S932627AbYF3SWx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 14:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932291AbYF3SWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 14:21:30 -0400
-Received: from stinky.trash.net ([213.144.137.162]:42820 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932402AbYF3SV3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 14:21:29 -0400
-Message-ID: <48692427.7090703@trash.net>
-Date: Mon, 30 Jun 2008 20:21:27 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
-MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Peter Warasin <peter@endian.com>, netdev@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [NETFILTER Kconfig help text]: bridge: add ebt_nflog watcher
-References: <m3bq1i6b41.fsf@maximus.localdomain>
-In-Reply-To: <m3bq1i6b41.fsf@maximus.localdomain>
-Content-Type: multipart/mixed;
- boundary="------------080800020501000502020602"
+	Mon, 30 Jun 2008 14:22:32 -0400
+Received: from main.gmane.org ([80.91.229.2]:41744 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932442AbYF3SWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 14:22:31 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Kari Hurtta <hurtta+gmane@siilo.fmi.fi>
+Subject: Re: [PATCH 3/3] Fix copy_user on x86_64
+Date: 30 Jun 2008 21:22:18 +0300
+Message-ID: <5dlk0mdbqd.fsf@Hurtta06k.keh.iki.fi>
+References: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0806281108240.4371@hp.linux-foundation.org> <m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: cs130027.pp.htv.fi
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080800020501000502020602
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-Krzysztof Halasa wrote:
-> is the following really correct?
-> e7bfd0a1a6c8f82977253dab19be9d9979c1ec1b
+> On Mon, 30 Jun 2008, Vitaly Mayatskikh wrote:
+> > 
+> > "For this reason, all patches should be submitting e-mail "inline".
+> > WARNING:  Be wary of your editor's word-wrap corrupting your patch,
+> > if you choose to cut-n-paste your patch."
+> > 
+> > My first thought was "should be attached inline".
 > 
-> +	tristate "ebt: nflog support"
-> +	depends on BRIDGE_NF_EBTABLES
-> +	help
-> +	  This option enables the nflog watcher, which allows to LOG
-> +	  messages through the netfilter logging API, which can use
-> +	  either the old LOG target, the old ULOG target or nfnetlink_log
-> +	  as backend.
-> +
-> +	  This option adds the ulog watcher, that you can use in any rule
->                                ^^^^^^^^^^^^
-> 
-> ulog watcher?
+> Yeah, no, the "inline" there means literally as no attachment at all, but 
+> inline in the normal mail.
 
-That appears to be a cut-and-paste error. I've queued this fix.
+And not as own mime body part with
+
+Content-Disposition: inline
 
 
---------------080800020501000502020602
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="x"
+?
 
-commit d921ce404ad26e2169e8f89e9a59722ecff35fcf
-Author: Patrick McHardy <kaber@trash.net>
-Date:   Mon Jun 30 20:21:07 2008 +0200
 
-    netfilter: ebt_nflog: fix Kconfig typo
-    
-    The help text should refer to nflog instead of ulog. Noticed by
-    Krzysztof Halasa <khc@pm.waw.pl>.
-    
-    Signed-off-by: Patrick McHardy <kaber@trash.net>
+( As you see "inline" have several meanings. 
 
-diff --git a/net/bridge/netfilter/Kconfig b/net/bridge/netfilter/Kconfig
-index 540df41..9094797 100644
---- a/net/bridge/netfilter/Kconfig
-+++ b/net/bridge/netfilter/Kconfig
-@@ -230,7 +230,7 @@ config BRIDGE_EBT_NFLOG
- 	  either the old LOG target, the old ULOG target or nfnetlink_log
- 	  as backend.
- 
--	  This option adds the ulog watcher, that you can use in any rule
-+	  This option adds the nflog watcher, that you can use in any rule
- 	  in any ebtables table.
- 
- 	  To compile it as a module, choose M here.  If unsure, say N.
+  yes. Some mail readers treats only first body part as 'inline'
+  and other have 'attachments'.
+)
 
---------------080800020501000502020602--
+/ Kari Hurtta
+
+
