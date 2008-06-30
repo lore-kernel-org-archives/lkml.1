@@ -1,42 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751344AbYF3TYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764044AbYF3T1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751344AbYF3TYT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 15:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYF3TYM
+	id S1764044AbYF3T1V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 15:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763935AbYF3T1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 15:24:12 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:58850 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751554AbYF3TYL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 15:24:11 -0400
-Date: Mon, 30 Jun 2008 20:23:54 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] splitlru: BDI_CAP_SWAP_BACKED
-In-Reply-To: <20080630115354.3a75edd3.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0806302020260.27080@blonde.site>
-References: <Pine.LNX.4.64.0806290117510.21758@blonde.site>
- <Pine.LNX.4.64.0806290122330.21758@blonde.site> <20080629173841.37CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
- <20080630115354.3a75edd3.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 30 Jun 2008 15:27:00 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40041 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763796AbYF3T05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 15:26:57 -0400
+Date: Mon, 30 Jun 2008 21:26:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Andy Whitcroft <apw@shadowen.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 30
+Message-ID: <20080630192610.GA6584@elte.hu>
+References: <20080701001656.e156585c.sfr@canb.auug.org.au> <48690385.7030500@linux.vnet.ibm.com> <48690D3C.1060803@linux.vnet.ibm.com> <20080630185943.GA24692@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080630185943.GA24692@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jun 2008, KAMEZAWA Hiroyuki wrote:
+
+* Sam Ravnborg <sam@ravnborg.org> wrote:
+
+> On Mon, Jun 30, 2008 at 10:13:40PM +0530, Kamalesh Babulal wrote:
+> > Kamalesh Babulal wrote:
+> > > Hi Stephen,
+> > > 
+> > > next-20080630 kernel build fails x86 box 
+> > > 
+> > > fs/bio-integrity.c: In function `bio_integrity_add_page':
+> > > include/linux/bio.h:368: sorry, unimplemented: inlining failed in call to 'bvec_nr_vecs': function body not available
+> > > fs/bio-integrity.c:135: sorry, unimplemented: called from here
+> > > make[1]: *** [fs/bio-integrity.o] Error 1
+> > > make: *** [fs] Error 2
+> > > 
+> > > # gcc -v
+> > > Reading specs from /usr/lib/gcc/i386-redhat-linux/3.4.6/specs
+> > > Configured with: ../configure --prefix=/usr --mandir=/usr/share/man
+> > > --infodir=/usr/share/info --enable-shared --enable-threads=posix
+> > > --disable-checking --with-system-zlib --enable-__cxa_atexit
+> > > --disable-libunwind-exceptions --enable-java-awt=gtk
+> > > --host=i386-redhat-linux
+> > > Thread model: posix
+> > > gcc version 3.4.6 20060404 (Red Hat 3.4.6-10)
+> > > 
+> > > 
+> > Another build failure on the same box/config file
+> > 
+> > make[2]: `scripts/unifdef' is up to date.
+> >   RELOCS  arch/x86/boot/compressed/vmlinux.relocs
+> > 101 section headers supported: 100
+> > make[2]: *** [arch/x86/boot/compressed/vmlinux.relocs] Error 1
+> > make[1]: *** [arch/x86/boot/compressed/vmlinux] Error 2
+> > make: *** [bzImage] Error 2
 > 
-> Hmm, how about adding LRU only for shmem/tmpfs ? nonsense ? ;)
+> In a i386 specific part of the kernel - so let's cc x86 maintainers.
 
-I'd much prefer not: the more LRUs, the more balancing problems;
-And I don't think shmem/tmpfs _deserves_ its own LRUs.
-But it cannot be ruled out.
+that's an allyesconfig kernel and i cannot reproduce the failure with 
+linux-next v2.6.26-rc8-6206-gf1c7436:
 
-Hugh
+  [...]
+  RELOCS  arch/x86/boot/compressed/vmlinux.relocs
+  BUILD   arch/x86/boot/compressed/vmlinux.bin.all
+  GZIP    arch/x86/boot/compressed/vmlinux.bin.gz
+  LD      arch/x86/boot/compressed/piggy.o
+  LD      arch/x86/boot/compressed/vmlinux
+  OFFSETS arch/x86/boot/offsets.h
+  OBJCOPY arch/x86/boot/vmlinux.bin
+  AS      arch/x86/boot/header.o
+  LD      arch/x86/boot/setup.elf
+  OBJCOPY arch/x86/boot/setup.bin
+  BUILD   arch/x86/boot/bzImage
+ Root device is (8, 17)
+ Setup is 12524 bytes (padded to 12800 bytes).
+ System is 17840 kB
+ CRC bccb6201
+ Kernel: arch/x86/boot/bzImage is ready  (#10848)
+
+(nor has anything substantial change in that area changed in the x86 
+tree recently that sticks out at first sight.)
+
+	Ingo
