@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759764AbYF3Rkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762353AbYF3RlG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759764AbYF3Rkk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYF3Rkc
+	id S1762353AbYF3RlG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 13:41:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759146AbYF3Rkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:40:32 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:45124 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752064AbYF3Rkb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:40:31 -0400
-Date: Mon, 30 Jun 2008 23:09:40 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, heiko.carstens@de.ibm.com
-Subject: Re: [git pull] scheduler fixes
-Message-ID: <20080630173940.GA6133@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20080630153124.GA21919@elte.hu>
+	Mon, 30 Jun 2008 13:40:52 -0400
+Received: from tetsuo.zabbo.net ([207.173.201.20]:39186 "EHLO tetsuo.zabbo.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752796AbYF3Rkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 13:40:51 -0400
+Message-ID: <48691AA2.7050201@oracle.com>
+Date: Mon, 30 Jun 2008 10:40:50 -0700
+From: Zach Brown <zach.brown@oracle.com>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
 MIME-Version: 1.0
+To: Jeff Moyer <jmoyer@redhat.com>
+CC: Nikanth Karthikesan <knikanth@suse.de>, linux-aio@kvack.org,
+       linux-kernel@vger.kernel.org, Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [PATCH]  aio: remove unused function aio_run_iocbs()
+References: <200806261640.27048.knikanth@suse.de> <x49lk0rt3x6.fsf@segfault.boston.devel.redhat.com>
+In-Reply-To: <x49lk0rt3x6.fsf@segfault.boston.devel.redhat.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080630153124.GA21919@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 05:31:24PM +0200, Ingo Molnar wrote:
-> Linus,
+Jeff Moyer wrote:
+> Nikanth Karthikesan <knikanth@suse.de> writes:
 > 
-> Please pull the latest scheduler fixes git tree from:
+>> remove unused function aio_run_iocbs()
 > 
->    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
-> 
-> Thanks,
-> 
-> 	Ingo
-> 
-> ------------------>
-> Dmitry Adamushko (1):
->       sched: fix cpu hotplug
-> 
+> Seems like it's time to just get rid of it.  See:
+>   http://ussg.iu.edu/hypermail/linux/kernel/0608.0/0048.html
+> for an explanation of why it's still there.
 
-Ingo,
+Yeah, I'm still of the opinion that the cost of having to resurrect it
+if it's needed again isn't significant enough to keep it in the tree
+without callers.
 
-You might want to put this is as a candidate for stable. I recall seeing
-a similar crash in 2.6.24 rt as well. And Heiko mentioned bisection
-taking him to 2.6.23
-
-Thanks,
--- 
-regards,
-Dhaval
+- z
