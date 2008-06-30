@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763147AbYF3TSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763449AbYF3TTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763147AbYF3TSb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 15:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbYF3TSV
+	id S1763449AbYF3TTZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 15:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbYF3TTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 15:18:21 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57358 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbYF3TSU (ORCPT
+	Mon, 30 Jun 2008 15:19:17 -0400
+Received: from slow2-v.mail.gandi.net ([217.70.178.89]:43045 "EHLO
+	slow2-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbYF3TTR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 15:18:20 -0400
-Subject: Re: [Linux-ATM-General] [PATCH] firmware: convert Ambassador ATM
-	driver to request_firmware()
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Chas Williams (CONTRACTOR)" <chas@cmf.nrl.navy.mil>
-Cc: netdev@vger.kernel.org, linux-atm-general@lists.sourceforge.net,
+	Mon, 30 Jun 2008 15:19:17 -0400
+X-Greylist: delayed 1269 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jun 2008 15:19:16 EDT
+To: hannes@saeurebad.de (Johannes Weiner)
+Cc: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@suse.cz>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <200806301610.m5UGAlqr025302@cmf.nrl.navy.mil>
-References: <200806301610.m5UGAlqr025302@cmf.nrl.navy.mil>
-Content-Type: text/plain
-Date: Mon, 30 Jun 2008 20:18:12 +0100
-Message-Id: <1214853492.10393.350.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Subject: Re: Longstanding bug in ac97/intel8x0 resume/init
+References: <87hcca3xkx.fsf@saeurebad.de>
+	<8763rsa5qk.fsf@skyscraper.fehenstaub.lan>
+X-Face: %JOeya=Dg!}[/#Go&*&cQ+)){p1c8}u\Fg2Q3&)kothIq|JnWoVzJtCFo~4X<uJ\9cHK'.w 3:{EoxBR
+From: Mathieu Chouquet-Stringer <mchouque@free.fr>
+Organization: Uh?
+Date: 30 Jun 2008 20:58:03 +0200
+In-Reply-To: <8763rsa5qk.fsf@skyscraper.fehenstaub.lan>
+Message-ID: <m3iqvq7nt0.fsf@mobydick.mine.nu>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-30 at 12:10 -0400, Chas Williams (CONTRACTOR) wrote:
-> In message <1214837678.10393.345.camel@pmac.infradead.org>,David Woodhouse writ
-> es:
-> >> i removed the #ifdef's from around MODULE_LICENSE().  there shouldnt
-> >> be any need for #ifdef's around MODULE_FIRMWARE() either.
-> >
-> >Unless you put #ifdef CONFIG_SBUS around the
-> >MODULE_FIRMWARE("sba200e_ecd.bin") you will be requesting that firmware
-> >even on non-sbus machines. Likewise little-endian vs. big-endian on PCI.
-> 
-> does it?  i was under the impression that MODULE_FIRMWARE() just
-> provides a hint that modinfo can read.  request_firmware() still
-> the requestor for the firmware image.
+        Hey there,
 
-True. But if you were to put the driver into an initrd, for example,
-then the tools would pick out all three firmwares to include in the
-initrd too. Given that we _do_ know at runtime that we'll need a maximum
-of two of the three, it makes sense to list only the ones we might use.
+hannes@saeurebad.de (Johannes Weiner) writes:
+> Johannes Weiner <hannes@saeurebad.de> writes:
+> > my laptop has muted sound after resuming the soundcard (by
+> > s2ram/hibernation).  The problem seems to be that the cached register
+> > values are not written back to the device properly.
+
+I've got the same exact issue on a Thinkpad T30:
+
+ 0 [I82801CAICH3   ]: ICH - Intel 82801CA-ICH3
+                      Intel 82801CA-ICH3 with AD1881A at irq 5
+
+00:1f.5 Multimedia audio controller: Intel Corporation 82801CA/CAM AC'97 Audio Controller (rev 02)
+
 
 -- 
-dwmw2
-
+Mathieu Chouquet-Stringer
+            The sun itself sees not till heaven clears.
+	             -- William Shakespeare --
