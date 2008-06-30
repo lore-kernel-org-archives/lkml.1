@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763074AbYF3RVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762715AbYF3RX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763074AbYF3RVq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:21:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbYF3RVg
+	id S1762715AbYF3RX1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 13:23:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYF3RXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:21:36 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57258 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756821AbYF3RVf (ORCPT
+	Mon, 30 Jun 2008 13:23:19 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45471 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752095AbYF3RXS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:21:35 -0400
-Message-ID: <48691556.2080208@zytor.com>
-Date: Mon, 30 Jun 2008 10:18:14 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com>	<485947A8.8060801@goop.org> <4859511E.5050605@sgi.com>	<48596315.6020104@goop.org> <48596893.4040908@sgi.com>	<485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org>	<485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>	<485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com>	<485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com>	<485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>	<485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com> <m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>
-In-Reply-To: <486912C4.8070705@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 30 Jun 2008 13:23:18 -0400
+Date: Mon, 30 Jun 2008 18:05:38 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: JosephChan@via.com.tw, linux-fbdev-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       geert@linux-m68k.org
+Subject: Re: [PATCH 12/13] viafb: via_i2c.c, via_i2c.h, viamode.c, viamode.c
+Message-ID: <20080630180538.51fc993d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080630154348.GF21835@fluff.org.uk>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E78AA@exchtp03.taipei.via.com.tw>
+	<20080630154348.GF21835@fluff.org.uk>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> 
-> FYI, I did try this out and it caused the bootloader to scramble the
-> loaded data.  The first corruption I found was the .x86cpuvendor.init
-> section contained all zeroes.
-> 
+> This looks like an attempt at re-doing the already extant i2c gpio
+> algorithm. Either export via gpiolib and use the i2c-gpio adapter or
+> use the i2c bit-banging algorithm.
 
-Explain what you mean with "the bootloader" in this context.
+Agreed - but this can be done a lot more easily after a merge.
 
-	-hpa
+
+Alan
