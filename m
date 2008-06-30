@@ -1,119 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763309AbYF3TC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763753AbYF3TDF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763309AbYF3TC2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 15:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932714AbYF3TBu
+	id S1763753AbYF3TDF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 15:03:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756607AbYF3TCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 15:01:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34436 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932708AbYF3TBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 15:01:48 -0400
-Message-ID: <48692D58.7090208@redhat.com>
-Date: Mon, 30 Jun 2008 16:00:40 -0300
-From: Glauber Costa <gcosta@redhat.com>
-Organization: Red Hat
+	Mon, 30 Jun 2008 15:02:52 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:50484 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755601AbYF3TCv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 15:02:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=aZCFmOIZ+KwLbv+Z51FLIoVmArjI1cvaORDq1aV6Stq9fuSr8JaW8hVaSsunUwVT+h
+         2O+z9DW7DS0D/85qVWKMMGrkTBZ6FlcgdWJ8IJm53EUAYaME3qp3aPoQZ773TV0Szdsk
+         o8ze6pHonRmI/y4hi72IdmA/KDDFvwszuZoAQ=
+Message-ID: <48692DC0.6060904@gmail.com>
+Date: Mon, 30 Jun 2008 14:02:24 -0500
+From: Roger Heflin <rogerheflin@gmail.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, tglx@linutronix.de, x86@kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 25/39] merge common parts of uaccess.
-References: <1214602486-17080-19-git-send-email-gcosta@redhat.com> <1214602486-17080-20-git-send-email-gcosta@redhat.com> <1214602486-17080-21-git-send-email-gcosta@redhat.com> <1214602486-17080-22-git-send-email-gcosta@redhat.com> <1214602486-17080-23-git-send-email-gcosta@redhat.com> <1214602486-17080-24-git-send-email-gcosta@redhat.com> <1214602486-17080-25-git-send-email-gcosta@redhat.com> <1214602486-17080-26-git-send-email-gcosta@redhat.com> <20080630063030.GA31336@elte.hu> <48692A76.70304@redhat.com> <20080630185311.GB27398@elte.hu>
-In-Reply-To: <20080630185311.GB27398@elte.hu>
+To: Martin Sustrik <sustrik@fastmq.com>
+CC: Martin Lucina <mato@kotelna.sk>, linux-kernel@vger.kernel.org
+Subject: Re: Higher than expected disk write(2) latency
+References: <20080628121131.GA14181@nodbug.moloch.sk> <48663873.5010200@gmail.com> <486921AD.8060308@fastmq.com>
+In-Reply-To: <486921AD.8060308@fastmq.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Glauber Costa <gcosta@redhat.com> wrote:
+Martin Sustrik wrote:
+> Hi Roger,
 > 
->> Ingo Molnar wrote:
->>> * Glauber Costa <gcosta@redhat.com> wrote:
->>>
->>>> common parts of uaccess_32.h and uaccess_64.h
->>>> are put in uaccess.h.
->>> -tip testing found that it causes this build failure:
->>>
->>>   fs/binfmt_aout.c: Assembler messages:
->>>   fs/binfmt_aout.c:152: Error: suffix or operands invalid for `cmp'
->>>
->>> with:
->>>
->>>   http://redhat.com/~mingo/misc/config-Mon_Jun_30_08_17_42_CEST_2008.bad
->>>
->>> and comparing the 32-bit and unified version is not simple and the  
->>> commit is rather large.
->>>
->>> I'm sure the fix is simple, but this bug shows a structural problem 
->>> with this unification patch. The proper way to unify files is to first 
->>> bring both the 32-bit and the 64-bit version up to a unified form via  
->>> finegrained changes, so that uaccess_32.h and uaccess_64.h becomes  
->>> exactly the same file.
->>>
->>> ... _then_ only, in a final 'mechanic unification' step the two files  
->>> are merged into uaccess.h. (but no change is done to the content)
->>>
->>> If anything breaks during such a series it's bisectable to a 
->>> finegrained patch on either the 32-bit or the 64-bit side. If this 
->>> commit was shaped that way i could now report to you the exact 
->>> bisection result - instead of this too-broad bisection result.
->>>
->>> So please rework this commit in that fashion (not just to fix this  
->>> breakage but in anticipation of future commits) - uaccess.h is central  
->>> enough for us to be super careful about it.
->>>
->>> 	Ingo
->> Fair.
+>>> If these figures are to be believed, then why are we seeing latencies of
+>>> 8.3 msec?  Is this normal?  Or are we just being overly optimistic in
+>>> our performance expectations?
 >>
->> However, as I wrote in the first patch of the series, I'm not doing a  
->> complete unification of uaccess.h. Part of it is left for future work,  
->> since it's a little bit trickier.
+>> Consider this, 60/7200rpm=8.3ms for one rotation.
 >>
->> So I didn't have the option of a mechanical move. I did tried, however,  
->> to make sure this patch was only a code move, with everything that is  
->> going to the common file being equal in both files.
->>
->> Needless to say, I failed. ;-) This was for a very tiny piece, but still...
->>
->> The options I see are:
->>
->> * to redo the uaccess.h unification this way, making sure a diff 
->> between the diffs of the arch-files report nothing different, or: * to 
->> remove the topmost patches that touches uaccess*.h, and leave only the 
->> ones that integrate the .c and .S files, until I can really integrate 
->> the whole of it.
->>
->> For the second, however, although I was careful to make incremental 
->> changes, some small differences may exist. Examples of these 
->> differences are places in which I introduce a few ifdefs. It's close 
->> to nothing, but still not mechanical. Because of that, you might want 
->> me to redo the whole series.
->>
->> Your call.
+>> You write sector n and n+1, it takes some amount of time for that 
+>> first set of sectors to come under the head, when it does you write it 
+>> and immediately return.   Immediately after that you attempt write 
+>> sector n+2 and n+3 which just a bit ago passed under the head, so you 
+>> have to wait an *ENTIRE* revolution for those sectors to again come 
+>> under the head to be written, another ~8.3ms, and you continue to 
+>> repeat this with each block being written.   If the sector was 
+>> randomly placed in the rotation (ie 50% chance of the disk being off 
+>> by 1/2 a rotation or less-you would have a 4.15 ms average seek time 
+>> for your test)-but the case of sequential sync writes this leaves the 
+>> sector about as far as possible from the head (it just passed under 
+>> the head).
 > 
-> well the primary worry is the build failure with gcc 4.3.1 that i've 
-> posted. If that's simple to fix we could re-try with your existing 
-> series.
-> 
-> But to be defensive it's alway useful to move one component at a time. 
-> Even if you dont end up doing a mechanical unification - the stuff you 
-> move you should be able to claim to be exactly identical. I.e. the final 
-> step can be mechanic in that it unifies exactly the same content (even 
-> though both files still have remaining bits).
-> 
-> Then we'll end up with nice bisection reports to the specific area that 
-> is impacted by a problem.
-> 
-> 	Ingo
-I already have a fix for that. But I'll repost it in a way in which I 
-can claim the (part of the) files to be identical. For now, can you trim 
-the tree at that point? I think it's the best option.
+> Fair enough. That exaplains the behaviour. Would AIO help here? If we 
+> are able to enqueue next write before the first one is finished, it can 
+> start writing it immediately without waiting for a revolution.
 
-As for bisection, note that I did everything with bisection in mind, so 
-I do know the importance of it. It's more a failure than a fundamental 
-mistake.
+If you could get them queued at the disk level, things that would need to be 
+watched were if the disk can queue things up (and all controllers/drivers 
+support it), and how many things the disk can queue up, and how large each of 
+those things can be, if they aren't queued at the disk, there is the chance that 
+the machine cannot get the data to the disk faster enough for that next sector.
 
-Thanks.
+I have always avoided fully sync operations as things *ALWAYS* got really really 
+slow because of all of the requirements need to make sure that it always got the 
+data to disk correctly on a unexpected crash, and typically the type of 
+applications I dealt with, if the machine crashed the currently outputting data 
+was known to be incomplete and generally useless, so things were reran.
+
+Depending on your application you could always get a small fast solid state 
+device (no seek or RPM issues), and use it to keep a journal that could be 
+replayed on an unexpected crash...and then just use various syncs to force 
+things to disk at various points.
+
+> 
+>>> We also ran the same test on a different system with recent SAS disks
+>>> connected via a HP/Compaq CCISS controller.  I don't have the exact
+>>> details of the drives used, since I don't know how to get them out of
+>>> the cciss driver, but the latencies we got were around 4 msec.  Whilst
+>>> this is better than the "commodity" hardware used in the tests above, it
+>>> still seems excessive.
+>>
+>> Almost the same case as for the 7200 rpm disk, but I bet these SAS 
+>> drives are 15k drives?   If so 60/15000=4ms.
+> 
+> Bingo!
+
+Note that in my experience the SAS drives do deal with more concurrently a lot 
+better than the SATA drives, one would expect a SAS drive to scale about 2x 
+better than a SATA drive (faster RPM) but the test results indicate that they 
+were considerably better when hitting it with more concurrent streams that would 
+be expected.
+
+                              Roger
