@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761963AbYF3RJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762432AbYF3RJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761963AbYF3RJU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbYF3RJM
+	id S1762432AbYF3RJq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 13:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbYF3RJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:09:12 -0400
-Received: from edna.telenet-ops.be ([195.130.132.58]:36359 "EHLO
-	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751232AbYF3RJL (ORCPT
+	Mon, 30 Jun 2008 13:09:36 -0400
+Received: from ganesha.gnumonks.org ([213.95.27.120]:53391 "EHLO
+	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752522AbYF3RJf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:09:11 -0400
-Date: Mon, 30 Jun 2008 19:09:08 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: JosephChan@via.com.tw
-cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 1/13] viafb: viafb.modes, viafb.txt
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E7705@exchtp03.taipei.via.com.tw>
-Message-ID: <Pine.LNX.4.64.0806301902390.26408@anakin>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E7705@exchtp03.taipei.via.com.tw>
+	Mon, 30 Jun 2008 13:09:35 -0400
+X-Greylist: delayed 1763 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jun 2008 13:09:35 EDT
+Date: Tue, 1 Jul 2008 00:36:01 +0800
+From: Harald Welte <laforge@openmoko.org>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, linux-kernel@vger.kernel.org,
+       tk@maintech.de
+Subject: Re: [patch v4 02/17] MMC: S3C24XX: Fix the checkpatch.pl errors in
+	the s3cmci driver
+Message-ID: <20080630163601.GD5043@prithivi.gnumonks.org>
+References: <20080630152547.755285683@fluff.org.uk> <20080630152747.132370982@fluff.org.uk> <20080630175018.356568b7@mjolnir.drzeus.cx> <20080630161537.GD8489@trinity.fluff.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080630161537.GD8489@trinity.fluff.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jun 2008, JosephChan@via.com.tw wrote:
-> +[Bootup with viafb]:
-> +--------------------
-> +    Add the following line to your grub.conf:
-> +    append = "video=viafb:viafb_mode=1024x768,via_fb_bpp=32,viafb_refresh=85"
+On Mon, Jun 30, 2008 at 05:15:37PM +0100, Ben Dooks wrote:
+> On Mon, Jun 30, 2008 at 05:50:18PM +0200, Pierre Ossman wrote:
+> > On Mon, 30 Jun 2008 16:25:49 +0100
+> > Ben Dooks <ben-linux@fluff.org> wrote:
+> > 
+> > > Fix the checkpatch and other problems pointed out by
+> > > akpm.
+> > > 
+> > > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> > > 
+> > 
+> > I prefer to have this one merged into 01 as you'll end up with a commit
+> > that you cannot compile otherwise. Besides, running checkpatch is
+> > something you do before submitting anyway, not as a separate cleanup. :)
+> 
+> In this case I kept it seperate as the cleanups where done by myself
+> as the original driver authour is not interested or too busy to do
+> these himself. Basically, I was trying to keep the driver and my own
+> cleanup work seperate.
 
-Why not support simply video=1024x768-32@85 (or
-video=viafb:1024x768-32@85, if you have other video cards too), as can be
-parsed by fb_find_mode()?
+don't worry about that.  Thomas Kleffel is unlikely to return to do any
+active work on it (I know him personally), and the OpenMoko community
+will inevitably rebase its patches based on whatever ends up in
+mainline.  So nobody is worried if you merge all that stuff into one
+patch.  It's probably polite to add the significant contributors (such
+as yourself and myself) to the list of authors at the beginning of the
+file though - given the amount of changes the driver has received
+compared to Tomas' original.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Thanks for all your work,
+-- 
+- Harald Welte <laforge@openmoko.org>          	        http://openmoko.org/
+============================================================================
+Software for the world's first truly open Free Software mobile phone
