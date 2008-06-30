@@ -1,147 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762869AbYF3Sxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763890AbYF3Sxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762869AbYF3Sxe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 14:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbYF3SxZ
+	id S1763890AbYF3Sxs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 14:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762255AbYF3Sxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 14:53:25 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:50852 "EHLO e3.ny.us.ibm.com"
+	Mon, 30 Jun 2008 14:53:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43153 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753148AbYF3SxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 14:53:24 -0400
-Date: Mon, 30 Jun 2008 13:53:18 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Security Modules List 
-	<linux-security-module@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] security: filesystem capabilities bugfix2
-Message-ID: <20080630185318.GB30669@us.ibm.com>
-References: <20080627205905.GB17415@us.ibm.com> <486357EC.5060205@kernel.org> <7852.1214837604@redhat.com>
+	id S1761770AbYF3Sxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 14:53:31 -0400
+Date: Mon, 30 Jun 2008 20:53:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Glauber Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, x86@kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 25/39] merge common parts of uaccess.
+Message-ID: <20080630185311.GB27398@elte.hu>
+References: <1214602486-17080-19-git-send-email-gcosta@redhat.com> <1214602486-17080-20-git-send-email-gcosta@redhat.com> <1214602486-17080-21-git-send-email-gcosta@redhat.com> <1214602486-17080-22-git-send-email-gcosta@redhat.com> <1214602486-17080-23-git-send-email-gcosta@redhat.com> <1214602486-17080-24-git-send-email-gcosta@redhat.com> <1214602486-17080-25-git-send-email-gcosta@redhat.com> <1214602486-17080-26-git-send-email-gcosta@redhat.com> <20080630063030.GA31336@elte.hu> <48692A76.70304@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7852.1214837604@redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <48692A76.70304@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting David Howells (dhowells@redhat.com):
-> Serge E. Hallyn <serue@us.ibm.com> wrote:
-> 
-> > If I understand this right, then LSM_UNSAFE_PTRACE_CAP will only be set
-> > if the tracer didn't have CAP_SYS_PTRACE.  So this seems sane to me.
-> 
-> Erm...  Firstly:
 
-Yeah, inverse of what I said...
+* Glauber Costa <gcosta@redhat.com> wrote:
 
-> 	int ptrace_attach(struct task_struct *task)
-> 	{
-> 	...
-> 		if (capable(CAP_SYS_PTRACE))
-> 			task->ptrace |= PT_PTRACE_CAP;
-> 	...
-> 	}
-> 
-> Then:
-> 
-> 	static int unsafe_exec(struct task_struct *p)
-> 	{
-> 		int unsafe = 0;
-> 		if (p->ptrace & PT_PTRACED) {
-> 			if (p->ptrace & PT_PTRACE_CAP)
-> 				unsafe |= LSM_UNSAFE_PTRACE_CAP;
-> 			else
-> 				unsafe |= LSM_UNSAFE_PTRACE;
-> 		}
-> 		if (atomic_read(&p->fs->count) > 1 ||
-> 		    atomic_read(&p->files->count) > 1 ||
-> 		    atomic_read(&p->sighand->count) > 1)
-> 			unsafe |= LSM_UNSAFE_SHARE;
-> 
-> 		return unsafe;
-> 	}
-> 
-> So LSM_UNSAFE_PTRACE_CAP will only be set if the tracer _does_ have
-> CAP_SYS_PTRACE.  That will be irrelevant, however, if any of fs, files or
-> sighand are shared.
-> 
-> And finally:
-> 
-> 	void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
-> 	{
-> 	...
-> 		if (bprm->e_uid != current->uid ||
-> 		    bprm->e_gid != current->gid ||
-> 		    !cap_issubset (new_permitted, current->cap_permitted)) {
-> 	...
-> 			if (unsafe & ~LSM_UNSAFE_PTRACE_CAP) {
-> 				if (!capable(CAP_SETUID)) {
-> 					bprm->e_uid = current->uid;
-> 					bprm->e_gid = current->gid;
-> 				}
-> 				if (!capable (CAP_SETPCAP)) {
-> 					new_permitted = cap_intersect(
-> 						new_permitted,
-> 						current->cap_permitted);
-> 				}
-> 			}
-> 	...
-> 	}
-> 
-> So if it's a 'set-privilege' binary, then if the tracer _doesn't_ have
-> CAP_SYS_PTRACE, we look at downgrading the privileges of the process.
-> 
-> Without Andrew's patch, we only downgrade the capabilities if we don't have
-> CAP_SETPCAP (and aren't sharing inheritables).
-> 
-> With Andrew's patch, capabilities are downgraded regardless of whether we have
-> CAP_SETPCAP or not.  I guess that means that if you're tracing a binary whose
-> filecaps say that it wants CAP_SETPCAP, then it retains CAP_SETPCAP.
+> Ingo Molnar wrote:
+>> * Glauber Costa <gcosta@redhat.com> wrote:
+>>
+>>> common parts of uaccess_32.h and uaccess_64.h
+>>> are put in uaccess.h.
+>>
+>> -tip testing found that it causes this build failure:
+>>
+>>   fs/binfmt_aout.c: Assembler messages:
+>>   fs/binfmt_aout.c:152: Error: suffix or operands invalid for `cmp'
+>>
+>> with:
+>>
+>>   http://redhat.com/~mingo/misc/config-Mon_Jun_30_08_17_42_CEST_2008.bad
+>>
+>> and comparing the 32-bit and unified version is not simple and the  
+>> commit is rather large.
+>>
+>> I'm sure the fix is simple, but this bug shows a structural problem 
+>> with this unification patch. The proper way to unify files is to first 
+>> bring both the 32-bit and the 64-bit version up to a unified form via  
+>> finegrained changes, so that uaccess_32.h and uaccess_64.h becomes  
+>> exactly the same file.
+>>
+>> ... _then_ only, in a final 'mechanic unification' step the two files  
+>> are merged into uaccess.h. (but no change is done to the content)
+>>
+>> If anything breaks during such a series it's bisectable to a 
+>> finegrained patch on either the 32-bit or the 64-bit side. If this 
+>> commit was shaped that way i could now report to you the exact 
+>> bisection result - instead of this too-broad bisection result.
+>>
+>> So please rework this commit in that fashion (not just to fix this  
+>> breakage but in anticipation of future commits) - uaccess.h is central  
+>> enough for us to be super careful about it.
+>>
+>> 	Ingo
+> Fair.
+>
+> However, as I wrote in the first patch of the series, I'm not doing a  
+> complete unification of uaccess.h. Part of it is left for future work,  
+> since it's a little bit trickier.
+>
+> So I didn't have the option of a mechanical move. I did tried, however,  
+> to make sure this patch was only a code move, with everything that is  
+> going to the common file being equal in both files.
+>
+> Needless to say, I failed. ;-) This was for a very tiny piece, but still...
+>
+> The options I see are:
+>
+> * to redo the uaccess.h unification this way, making sure a diff 
+> between the diffs of the arch-files report nothing different, or: * to 
+> remove the topmost patches that touches uaccess*.h, and leave only the 
+> ones that integrate the .c and .S files, until I can really integrate 
+> the whole of it.
+>
+> For the second, however, although I was careful to make incremental 
+> changes, some small differences may exist. Examples of these 
+> differences are places in which I introduce a few ifdefs. It's close 
+> to nothing, but still not mechanical. Because of that, you might want 
+> me to redo the whole series.
+>
+> Your call.
 
-I don't understand where that last sentence comes from.  Why would it
-retain CAP_SETPCAP?
+well the primary worry is the build failure with gcc 4.3.1 that i've 
+posted. If that's simple to fix we could re-try with your existing 
+series.
 
-> I wonder if the tracing task should be examined here, and any capability the
-> tracer isn't permitted should be denied the process doing the exec.
+But to be defensive it's alway useful to move one component at a time. 
+Even if you dont end up doing a mechanical unification - the stuff you 
+move you should be able to claim to be exactly identical. I.e. the final 
+step can be mechanic in that it unifies exactly the same content (even 
+though both files still have remaining bits).
 
-That sounds reasonable on its own, but it opens up a dangerous ability
-for the partially-privileged tracer to manipulate the capability set for
-the traced task.
+Then we'll end up with nice bisection reports to the specific area that 
+is impacted by a problem.
 
-Note that (as of recently) we do not allow the execution of a file with
-partial privileges in its pE', precisely because it is dangerous to
-allow pick-and-choosing of capabilities in a capability-unaware binary.
-
-So frankly I wonder whether the existing downgrade is really safe...
-
--serge
-
-> Anyway, in my commoncap.c prettification patch, I've dressed the limiter
-> function up as follows:
-> 
-> 	/*
-> 	 * Determine whether a exec'ing process's new permitted capabilities
-> 	 * should be limited to just what it already has.
-> 	 *
-> 	 * This prevents processes that are being ptraced from gaining access
-> 	 * to CAP_SETPCAP, unless the process they're tracing already has it,
-> 	 * and the binary they're executing has filecaps that elevate it.
-> 	 *
-> 	 *  Returns 1 if they should be limited, 0 if they are not.
-> 	 */
-> 	static inline int cap_limit_ptraced_target(void)
-> 	{
-> 	#ifndef CONFIG_SECURITY_FILE_CAPABILITIES
-> 		if (capable(CAP_SETPCAP))
-> 			return 0;
-> 	#endif
-> 		return 1;
-> 	}
-> 
-> David
+	Ingo
