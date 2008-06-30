@@ -1,94 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763252AbYF3PcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYF3Pcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763252AbYF3PcQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 11:32:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757549AbYF3P16
+	id S1755609AbYF3Pcu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 11:32:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbYF3P17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 11:27:58 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:60318 "EHLO
+	Mon, 30 Jun 2008 11:27:59 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:60312 "EHLO
 	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752522AbYF3P1u (ORCPT
+	with ESMTP id S1752040AbYF3P1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 11:27:50 -0400
-Message-Id: <20080630152748.917942940@fluff.org.uk>
+	Mon, 30 Jun 2008 11:27:49 -0400
+Message-Id: <20080630152748.431167315@fluff.org.uk>
 References: <20080630152547.755285683@fluff.org.uk>
 User-Agent: quilt/0.46-1
-Date: Mon, 30 Jun 2008 16:25:57 +0100
+Date: Mon, 30 Jun 2008 16:25:55 +0100
 From: Ben Dooks <ben-linux@fluff.org>
 To: linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx
 Cc: tk@maintech.de, laforge@openmoko.org, Ben Dooks <ben-linux@fluff.org>
-Subject: [patch v4 10/17] MMC: S3C24XX: Allow card-detect on non-IRQ capable pin
-Content-Disposition: inline; filename=simtec/s3c24xx-sdmmc-nocdirq.patch
+Subject: [patch v4 08/17] MMC: S3C24XX: Add support to invert write protect line
+Content-Disposition: inline; filename=simtec/s3c24xx-sdmmc-roinvert.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support to the S3C24XX MMC driver to have the card detect be on
-a pin that is not IRQ capable.
+Support for inverting the sense of the MMC driver's write
+protect detection line.
 
 Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
 Index: linux-2.6.26-rc8-next20080627/drivers/mmc/host/s3cmci.c
 ===================================================================
---- linux-2.6.26-rc8-next20080627.orig/drivers/mmc/host/s3cmci.c	2008-06-30 12:36:49.000000000 +0100
-+++ linux-2.6.26-rc8-next20080627/drivers/mmc/host/s3cmci.c	2008-06-30 12:36:51.000000000 +0100
-@@ -1150,8 +1150,6 @@ static int __devinit s3cmci_probe(struct
- 	host->pio_active 	= XFER_NONE;
+--- linux-2.6.26-rc8-next20080627.orig/drivers/mmc/host/s3cmci.c	2008-06-30 12:31:46.000000000 +0100
++++ linux-2.6.26-rc8-next20080627/drivers/mmc/host/s3cmci.c	2008-06-30 12:36:42.000000000 +0100
+@@ -1083,11 +1083,18 @@ static void s3cmci_reset(struct s3cmci_h
+ static int s3cmci_get_ro(struct mmc_host *mmc)
+ {
+ 	struct s3cmci_host *host = mmc_priv(mmc);
++	struct s3c24xx_mci_pdata *pdata = host->pdata;
++	int ret;
  
- 	host->dma		= S3CMCI_DMA;
--	host->irq_cd = s3c2410_gpio_getirq(host->pdata->gpio_detect);
--	s3c2410_gpio_cfgpin(host->pdata->gpio_detect, S3C2410_GPIO_IRQ);
+-	if (host->pdata->gpio_wprotect == 0)
++	if (pdata->gpio_wprotect == 0)
+ 		return 0;
  
- 	host->mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (!host->mem) {
-@@ -1197,14 +1195,20 @@ static int __devinit s3cmci_probe(struct
+-	return s3c2410_gpio_getpin(host->pdata->gpio_wprotect);
++	ret = s3c2410_gpio_getpin(pdata->gpio_wprotect);
++
++	if (pdata->wprotect_invert)
++		ret = !ret;
++
++	return ret;
+ }
  
- 	disable_irq(host->irq);
+ static struct mmc_host_ops s3cmci_ops = {
+Index: linux-2.6.26-rc8-next20080627/include/asm-arm/plat-s3c24xx/mci.h
+===================================================================
+--- linux-2.6.26-rc8-next20080627.orig/include/asm-arm/plat-s3c24xx/mci.h	2008-06-30 12:31:37.000000000 +0100
++++ linux-2.6.26-rc8-next20080627/include/asm-arm/plat-s3c24xx/mci.h	2008-06-30 12:36:42.000000000 +0100
+@@ -2,6 +2,8 @@
+ #define _ARCH_MCI_H
  
--	s3c2410_gpio_cfgpin(host->pdata->gpio_detect, S3C2410_GPIO_IRQ);
--	set_irq_type(host->irq_cd, IRQT_BOTHEDGE);
-+	host->irq_cd = s3c2410_gpio_getirq(host->pdata->gpio_detect);
- 
--	if (request_irq(host->irq_cd, s3cmci_irq_cd, 0, DRIVER_NAME, host)) {
--		dev_err(&pdev->dev,
--			"failed to request card detect interrupt.\n");
--		ret = -ENOENT;
--		goto probe_free_irq;
-+	if (host->irq_cd >= 0) {
-+		if (request_irq(host->irq_cd, s3cmci_irq_cd,
-+				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
-+				DRIVER_NAME, host)) {
-+			dev_err(&pdev->dev, "can't get card detect irq.\n");
-+			ret = -ENOENT;
-+			goto probe_free_irq;
-+		}
-+	} else {
-+		dev_warn(&pdev->dev, "host detect has no irq available\n");
-+		s3c2410_gpio_cfgpin(host->pdata->gpio_detect,
-+				    S3C2410_GPIO_INPUT);
- 	}
- 
- 	if (host->pdata->gpio_wprotect)
-@@ -1273,7 +1277,8 @@ static int __devinit s3cmci_probe(struct
- 	clk_put(host->clk);
- 
-  probe_free_irq_cd:
--	free_irq(host->irq_cd, host);
-+	if (host->irq_cd >= 0)
-+		free_irq(host->irq_cd, host);
- 
-  probe_free_irq:
- 	free_irq(host->irq, host);
-@@ -1303,7 +1308,8 @@ static int s3cmci_remove(struct platform
- 	tasklet_disable(&host->pio_tasklet);
- 	s3c2410_dma_free(S3CMCI_DMA, &s3cmci_dma_client);
- 
--	free_irq(host->irq_cd, host);
-+	if (host->irq_cd >= 0)
-+		free_irq(host->irq_cd, host);
- 	free_irq(host->irq, host);
- 
- 	iounmap(host->base);
+ struct s3c24xx_mci_pdata {
++	unsigned int	wprotect_invert : 1;
++
+ 	unsigned int	gpio_detect;
+ 	unsigned int	gpio_wprotect;
+ 	unsigned long	ocr_avail;
 
 -- 
 Ben (ben@fluff.org, http://www.fluff.org/)
