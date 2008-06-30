@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760381AbYF3JW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760699AbYF3JXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760381AbYF3JW4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 05:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755034AbYF3JWK
+	id S1760699AbYF3JXg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 05:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760158AbYF3JWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 05:22:10 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:62538 "EHLO bagnes.atmel.com"
+	Mon, 30 Jun 2008 05:22:36 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:62559 "EHLO bagnes.atmel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754882AbYF3JWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 05:22:07 -0400
+	id S1755393AbYF3JWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 05:22:35 -0400
 From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 To: kernel@avr32linux.org
-Cc: linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Andrew Victor <linux@maxim.org.za>
-Subject: [PATCH 2/8] atmel_serial: Drain console TX shifter before suspending
-Date: Mon, 30 Jun 2008 11:21:10 +0200
-Message-Id: <1214817676-30378-3-git-send-email-haavard.skinnemoen@atmel.com>
+Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH 5/8] avr32: Enable SDRAMC clock at startup
+Date: Mon, 30 Jun 2008 11:21:13 +0200
+Message-Id: <1214817676-30378-6-git-send-email-haavard.skinnemoen@atmel.com>
 X-Mailer: git-send-email 1.5.5.4
-In-Reply-To: <1214817676-30378-2-git-send-email-haavard.skinnemoen@atmel.com>
+In-Reply-To: <1214817676-30378-5-git-send-email-haavard.skinnemoen@atmel.com>
 References: <1214817676-30378-1-git-send-email-haavard.skinnemoen@atmel.com>
  <1214817676-30378-2-git-send-email-haavard.skinnemoen@atmel.com>
-X-OriginalArrivalTime: 30 Jun 2008 09:21:07.0570 (UTC) FILETIME=[A0AAFD20:01C8DA92]
+ <1214817676-30378-3-git-send-email-haavard.skinnemoen@atmel.com>
+ <1214817676-30378-4-git-send-email-haavard.skinnemoen@atmel.com>
+ <1214817676-30378-5-git-send-email-haavard.skinnemoen@atmel.com>
+X-OriginalArrivalTime: 30 Jun 2008 09:21:07.0914 (UTC) FILETIME=[A0DF7AA0:01C8DA92]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Funny things may happen if we stop the USART clock before the shifter is
-empty. Prevent this from happening by waiting until the shifter is
-completely drained before allowing suspend to continue.
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: Andrew Victor <linux@maxim.org.za>
+The SDRAM controller needs a clock in order to respond to our
+commands, and suspend doesn't work very well without the SDRAM in
+self-refresh mode.
+
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 ---
- drivers/serial/atmel_serial.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ arch/avr32/mach-at32ap/at32ap700x.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-index 5f0414f..6aeef22 100644
---- a/drivers/serial/atmel_serial.c
-+++ b/drivers/serial/atmel_serial.c
-@@ -1454,6 +1454,12 @@ static int atmel_serial_suspend(struct platform_device *pdev,
- 	struct uart_port *port = platform_get_drvdata(pdev);
- 	struct atmel_uart_port *atmel_port = to_atmel_uart_port(port);
+diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
+index baf4680..3ee5e72 100644
+--- a/arch/avr32/mach-at32ap/at32ap700x.c
++++ b/arch/avr32/mach-at32ap/at32ap700x.c
+@@ -675,6 +675,14 @@ static struct clk hramc_clk = {
+ 	.users		= 1,
+ 	.index		= 3,
+ };
++static struct clk sdramc_clk = {
++	.name		= "sdramc_clk",
++	.parent		= &pbb_clk,
++	.mode		= pbb_clk_mode,
++	.get_rate	= pbb_clk_get_rate,
++	.users		= 1,
++	.index		= 14,
++};
  
-+	if (atmel_is_console_port(port) && console_suspend_enabled) {
-+		/* Drain the TX shifter */
-+		while (!(UART_GET_CSR(port) & ATMEL_US_TXEMPTY))
-+			cpu_relax();
-+	}
-+
- 	if (device_may_wakeup(&pdev->dev)
- 	    && !atmel_serial_clk_will_stop())
- 		enable_irq_wake(port->irq);
+ static struct resource smc0_resource[] = {
+ 	PBMEM(0xfff03400),
+@@ -1998,6 +2006,7 @@ struct clk *at32_clock_list[] = {
+ 	&hmatrix_clk,
+ 	&ebi_clk,
+ 	&hramc_clk,
++	&sdramc_clk,
+ 	&smc0_pclk,
+ 	&smc0_mck,
+ 	&pdc_hclk,
 -- 
 1.5.5.4
 
