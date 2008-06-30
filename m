@@ -1,92 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761943AbYF3MY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbYF3Mhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761943AbYF3MY1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 08:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761734AbYF3MYM
+	id S1757975AbYF3Mhh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 08:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbYF3Mh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 08:24:12 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:35976 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761679AbYF3MYJ (ORCPT
+	Mon, 30 Jun 2008 08:37:28 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:36657 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753146AbYF3Mh1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 08:24:09 -0400
-To: akpm@linux-foundation.org, viro@ZenIV.linux.org.uk
-Cc: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       axboe@kernel.dk, mtk.manpages@googlemail.com
-Subject: [PATCH 2/3] Remove XFS specific ioctl interfaces for freeze feature
-Message-Id: <20080630212339t-sato@mail.jp.nec.com>
-Mime-Version: 1.0
-X-Mailer: WeMail32[2.51] ID:1K0086
-From: Takashi Sato <t-sato@yk.jp.nec.com>
-Date: Mon, 30 Jun 2008 21:23:39 +0900
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Jun 2008 08:37:27 -0400
+Date: Mon, 30 Jun 2008 08:37:25 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+cc: Noah Watkins <noahwatkins@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       paulmck <paulmck@linux.vnet.ibm.com>
+Subject: Re: [BUG RT] 2.6.25.8-rt7 on 8-way
+In-Reply-To: <1214778205.13292.6.camel@dd.thebigcorporation.com>
+Message-ID: <Pine.LNX.4.58.0806300835050.5403@gandalf.stny.rr.com>
+References: <7618ba960806291432l20b7b6b5lea4b60bafa68c3bf@mail.gmail.com>
+ <1214778205.13292.6.camel@dd.thebigcorporation.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It removes XFS specific ioctl interfaces and request codes
-for freeze feature.
-This patch has been supplied by David Chinner.
 
-Signed-off-by: Dave Chinner <dgc@sgi.com>
-Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
----
-diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7-freeze/fs/xfs/linux-2.6/xfs_ioctl.c linux-2.6
-.26-rc7-xfs/fs/xfs/linux-2.6/xfs_ioctl.c
---- linux-2.6.26-rc7-freeze/fs/xfs/linux-2.6/xfs_ioctl.c	2008-06-25 12:00:40.000000000 +0900
-+++ linux-2.6.26-rc7-xfs/fs/xfs/linux-2.6/xfs_ioctl.c	2008-06-25 12:07:19.000000000 +0900
-@@ -1233,21 +1233,6 @@ xfs_ioctl(
- 		return -error;
- 	}
- 
--	case XFS_IOC_FREEZE:
--		if (!capable(CAP_SYS_ADMIN))
--			return -EPERM;
--
--		if (inode->i_sb->s_frozen == SB_UNFROZEN)
--			freeze_bdev(inode->i_sb->s_bdev);
--		return 0;
--
--	case XFS_IOC_THAW:
--		if (!capable(CAP_SYS_ADMIN))
--			return -EPERM;
--		if (inode->i_sb->s_frozen != SB_UNFROZEN)
--			thaw_bdev(inode->i_sb->s_bdev, inode->i_sb);
--		return 0;
--
- 	case XFS_IOC_GOINGDOWN: {
- 		__uint32_t in;
- 
-diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7-freeze/fs/xfs/linux-2.6/xfs_ioctl32.c linux-2
-.6.26-rc7-xfs/fs/xfs/linux-2.6/xfs_ioctl32.c
---- linux-2.6.26-rc7-freeze/fs/xfs/linux-2.6/xfs_ioctl32.c	2008-06-25 12:00:40.000000000 +0900
-+++ linux-2.6.26-rc7-xfs/fs/xfs/linux-2.6/xfs_ioctl32.c	2008-06-25 12:07:19.000000000 +0900
-@@ -398,8 +398,6 @@ xfs_compat_ioctl(
- 	case XFS_IOC_FSGROWFSDATA:
- 	case XFS_IOC_FSGROWFSLOG:
- 	case XFS_IOC_FSGROWFSRT:
--	case XFS_IOC_FREEZE:
--	case XFS_IOC_THAW:
- 	case XFS_IOC_GOINGDOWN:
- 	case XFS_IOC_ERROR_INJECTION:
- 	case XFS_IOC_ERROR_CLEARALL:
-diff -uprN -X linux-2.6.26-rc7.org/Documentation/dontdiff linux-2.6.26-rc7-freeze/fs/xfs/xfs_fs.h linux-2.6.26-rc7-xfs/f
-s/xfs/xfs_fs.h
---- linux-2.6.26-rc7-freeze/fs/xfs/xfs_fs.h	2008-06-25 12:00:40.000000000 +0900
-+++ linux-2.6.26-rc7-xfs/fs/xfs/xfs_fs.h	2008-06-25 12:07:19.000000000 +0900
-@@ -473,8 +473,8 @@ typedef struct xfs_handle {
- #define XFS_IOC_ERROR_INJECTION	     _IOW ('X', 116, struct xfs_error_injection)
- #define XFS_IOC_ERROR_CLEARALL	     _IOW ('X', 117, struct xfs_error_injection)
- /*	XFS_IOC_ATTRCTL_BY_HANDLE -- deprecated 118	 */
--#define XFS_IOC_FREEZE		     _IOWR('X', 119, int)
--#define XFS_IOC_THAW		     _IOWR('X', 120, int)
-+/*	XFS_IOC_FREEZE		  -- FIFREEZE   119	 */
-+/*	XFS_IOC_THAW		  -- FITHAW     120	 */
- #define XFS_IOC_FSSETDM_BY_HANDLE    _IOW ('X', 121, struct xfs_fsop_setdm_handlereq)
- #define XFS_IOC_ATTRLIST_BY_HANDLE   _IOW ('X', 122, struct xfs_fsop_attrlist_handlereq)
- #define XFS_IOC_ATTRMULTI_BY_HANDLE  _IOW ('X', 123, struct xfs_fsop_attrmulti_handlereq)
+On Sun, 29 Jun 2008, Sven-Thorsten Dietrich wrote:
+
+>
+> On Sun, 2008-06-29 at 16:32 -0500, Noah Watkins wrote:
+> > My kernel is very, very noisy with the following bug:
+> >
+> > - Full dmesg below
+> > - Please CC me
+> >
+>
+> I found this as well (adding Paul).
+>
+> If you disable CONFIG_PREEMPT_RCU_BOOST, does it go away?
+>
+
+Turning off CONFIG_RCU_TRACE will also make it go away. The bug is that
+the tracing of the RCU boost code uses smp_processor_id while the RCU
+boost code is not in an atomic section.
+
+Paul has a fix for this already, and will be out in the next releases.
+
+-- Steve
