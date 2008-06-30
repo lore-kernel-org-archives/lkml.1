@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758555AbYF3Gzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758584AbYF3G7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758555AbYF3Gzh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 02:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbYF3Gz2
+	id S1758584AbYF3G7R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 02:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbYF3G7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 02:55:28 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:6958 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753107AbYF3Gz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 02:55:27 -0400
-Date: Mon, 30 Jun 2008 08:55:25 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Erez Zilber <erezzi.list@gmail.com>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Should a block device enforce block atomicity?
-Message-ID: <20080630065525.GI20826@kernel.dk>
-References: <ce513bcc0806292351t7f4ad933l920112381f4ebb4@mail.gmail.com>
+	Mon, 30 Jun 2008 02:59:06 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47314 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753289AbYF3G7F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 02:59:05 -0400
+Message-ID: <486883D0.8070409@jp.fujitsu.com>
+Date: Mon, 30 Jun 2008 15:57:20 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ce513bcc0806292351t7f4ad933l920112381f4ebb4@mail.gmail.com>
+To: Paul Jackson <pj@sgi.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Lee.Schermerhorn@hp.com,
+       linux-kernel@vger.kernel.org,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, rientjes@google.com
+Subject: Re: [PATCH] doc: Document the relax_domain_level kernel boot argument
+References: <20080630045640.20308.22031.sendpatchset@polaris-admin.engr.sgi.com>
+In-Reply-To: <20080630045640.20308.22031.sendpatchset@polaris-admin.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30 2008, Erez Zilber wrote:
-> Hi,
+Hi Paul,
+
+Paul Jackson wrote:
+> From: Paul Jackson <pj@sgi.com>
 > 
-> I have a question about block devices and whether they are required to
-> enforce block atomicity:
+> Document the kernel boot parameter: relax_domain_level=.
 > 
-> I read the code of drivers/block/brd.c, and I didn't see any locking
-> when blocks are read/written. I also looked at the block layer code
-> that calls brd and didn't find any locking there. Does it mean that
-> there's no block atomicity (i.e. multiple threads can write a single
-> block at the same time)? Is there any hidden assumption here? Is this
-> the responsibility of the application to do that (e.g. not start a
-> WRITE request before other READ/WRITE requests to the same block were
-> completed)?
+> Signed-off-by: Paul Jackson <pj@sgi.com>
+> 
+> ---
+>  Documentation/cpusets.txt           |    3 +++
+>  Documentation/kernel-parameters.txt |    4 ++++
+>  2 files changed, 7 insertions(+)
+> 
+> --- 2.6.26-rc5-mm3.orig/Documentation/cpusets.txt	2008-06-27 06:55:34.000000000 -0700
+> +++ 2.6.26-rc5-mm3/Documentation/cpusets.txt	2008-06-29 21:49:53.984674621 -0700
+> @@ -546,6 +546,9 @@ otherwise initial value -1 that indicate
+>   ( 4  : search nodes in a chunk of node [on NUMA system] )
+>   ( 5~ : search system wide [on NUMA system])
+>  
+> +The system default is 0 (no search).  The system default can be
+> +changed using the relax_domain_level= boot parameter.
 
-The block layer doesn't give such guarentees, not for "regular" block
-devices either. If the IO goes through the page cache then that will
-serialize IO to a given page, but with eg O_DIRECT IO, you could have
-the same block in flight several times. So if you are doing raw IO, the
-application has to ensure ordering of the same block.
+The system default is architecture dependent. You can change your
+system's default using the relax_domain_level= boot parameter.
 
--- 
-Jens Axboe
-
+Thanks,
+H.Seto
