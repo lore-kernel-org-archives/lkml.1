@@ -1,107 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756225AbYF3HsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759323AbYF3Hsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756225AbYF3HsL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 03:48:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYF3Hr5
+	id S1759323AbYF3Hsx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 03:48:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYF3Hso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 03:47:57 -0400
-Received: from mga01.intel.com ([192.55.52.88]:41706 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753478AbYF3Hr4 convert rfc822-to-8bit (ORCPT
+	Mon, 30 Jun 2008 03:48:44 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:44181 "EHLO
+	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753478AbYF3Hsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 03:47:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,726,1204531200"; 
-   d="scan'208";a="583361251"
-Subject: Re: [PATCH 1/2] x86 boot: add E820_RESVD_KERN
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-In-Reply-To: <86802c440806300034x5bb9b7a1s168bbeaee17e5124@mail.gmail.com>
-References: <1214461978.10809.6.camel@caritas-dev.intel.com>
-	 <86802c440806260025v3fc1970aq682b568cccba4b4e@mail.gmail.com>
-	 <1214466513.11346.30.camel@caritas-dev.intel.com>
-	 <86802c440806260247p19f5b850r8757c51280912ae9@mail.gmail.com>
-	 <86802c440806261922n3f13b454o5e543e28d9a34e8e@mail.gmail.com>
-	 <1214534894.10865.6.camel@caritas-dev.intel.com>
-	 <86802c440806271505n78275758re235ef6616d95b3d@mail.gmail.com>
-	 <1214809434.2887.8.camel@caritas-dev.intel.com>
-	 <86802c440806300034x5bb9b7a1s168bbeaee17e5124@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Date: Mon, 30 Jun 2008 15:51:43 +0800
-Message-Id: <1214812303.3187.10.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-X-OriginalArrivalTime: 30 Jun 2008 07:47:37.0281 (UTC) FILETIME=[90ACD310:01C8DA85]
+	Mon, 30 Jun 2008 03:48:43 -0400
+Message-ID: <48688FCB.9040205@linux.vnet.ibm.com>
+Date: Mon, 30 Jun 2008 13:18:27 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC 5/5] Memory controller soft limit reclaim on contention
+References: <20080627151808.31664.36047.sendpatchset@balbir-laptop> <20080627151906.31664.7247.sendpatchset@balbir-laptop> <20080630161657.37E3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080630161657.37E3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-30 at 00:34 -0700, Yinghai Lu wrote:
-> On Mon, Jun 30, 2008 at 12:03 AM, Huang, Ying <ying.huang@intel.com> wrote:
-> > On Fri, 2008-06-27 at 15:05 -0700, Yinghai Lu wrote:
-> >> On Thu, Jun 26, 2008 at 7:48 PM, Huang, Ying <ying.huang@intel.com> wrote:
-> >> > On Thu, 2008-06-26 at 19:22 -0700, Yinghai Lu wrote:
-> >> >> On Thu, Jun 26, 2008 at 2:47 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >> >> > On Thu, Jun 26, 2008 at 12:48 AM, Huang, Ying <ying.huang@intel.com> wrote:
-> >> >> >> On Thu, 2008-06-26 at 00:25 -0700, Yinghai Lu wrote:
-> >> >> >> [...]
-> >> >> >>> >                if (pfn >= limit_pfn)
-> >> >> >>> > @@ -977,7 +978,7 @@ u64 __init early_reserve_e820(u64 startt
-> >> >> >>> >                return 0;
-> >> >> >>> >
-> >> >> >>> >        addr = round_down(start + size - sizet, align);
-> >> >> >>> > -       e820_update_range(addr, sizet, E820_RAM, E820_RESERVED);
-> >> >> >>> > +       e820_update_range(addr, sizet, E820_RAM, E820_RESVD_KERN);
-> >> >> >>>
-> >> >> >>> this line is not needed.
-> >> >> >>
-> >> >> >> Why? Memory reserved by early_rserved_e820 should not be saved during
-> >> >> >> hibernation? shoudl not be saved by kdump?
-> >> >> >>
-> >> >
-> >> > Can you tell me why this line is not needed?
-> >> >
-> >> > [...]
-> >> >> some like the attach patch...
-> >> >>
-> >> >> you still can merge parse_setup_data parse_e820_ext
-> >> >> also entries in parse_e820_ext is not initialized..., __copy_e820_map
-> >> >> will do nothing.
-> >> >
-> >> > ﻿OK. Because some E820 entries are available after parse_setup_data(),
-> >> > it is better to call reserve_setup_data() after calling
-> >> > parse_setup_data() if update_e820_range() is used instead of
-> >> > reserve_early().
-> >>
-> >> please modify it and test on your platforms then submit to Ingo..
-> >
-> > It seems that there is an issue:
-> >
-> > - If parse_setup_data() is called before reserve_setup_data(), and there
-> > is a conflict between memory area used by setup_data and other memory
-> > area, it is possible that the contents of setup_data is changed. So that
-> > system may panic before reporting memory area conflict. And it seems
-> > that memory area conflict is not checked by e820_update_range().
+KOSAKI Motohiro wrote:
+> Hi
 > 
-> what is "other memory area"? returned from find_e820_area? no one use that yet.
+> this code survive stress testing?
+> 
+> 
+>> +		while (count-- &&
+>> +			((mem = heap_delete_max(&mem_cgroup_heap)) != NULL)) {
+>> +			BUG_ON(!mem->on_heap);
+>> +			spin_unlock_irqrestore(&mem_cgroup_heap_lock, flags);
+>> +			nr_reclaimed += try_to_free_mem_cgroup_pages(mem,
+>> +								gfp_mask);
+>> +			cond_resched();
+>> +			spin_lock_irqsave(&mem_cgroup_heap_lock, flags);
+>> +			mem->on_heap = 0;
+>> +			/*
+>> +			 * What should be the basis of breaking out?
+>> +			 */
+>> +			if (nr_reclaimed)
+>> +				goto done;
+> 
+> doubtful shortcut.
+> we shouldn't assume we need only one page.
+> 
 
-I mean memory area reserved with reserved_early() or e820_update_range()
-before reserve_setup_data() is called.
+There's a comment on top -- what should be the basis of breaking out? It
+definitely needs refinement, the current solution seemed to be working, so I
+kept it.
 
-And because there is no conflict check in e820_update_range(), what to
-deal with potential conflict between setup_data and other memory area
-regardless which one is reserved earlier?
+> 
+> 
+>>  #endif /* _LINUX_MEMCONTROL_H */
+>> diff -puN mm/vmscan.c~memory-controller-soft-limit-reclaim-on-contention mm/vmscan.c
+>> diff -puN mm/page_alloc.c~memory-controller-soft-limit-reclaim-on-contention mm/page_alloc.c
+>> --- linux-2.6.26-rc5/mm/page_alloc.c~memory-controller-soft-limit-reclaim-on-contention	2008-06-27 20:43:10.000000000 +0530
+>> +++ linux-2.6.26-rc5-balbir/mm/page_alloc.c	2008-06-27 20:43:10.000000000 +0530
+>> @@ -1669,7 +1669,14 @@ nofail_alloc:
+>>  	reclaim_state.reclaimed_slab = 0;
+>>  	p->reclaim_state = &reclaim_state;
+>>  
+>> -	did_some_progress = try_to_free_pages(zonelist, order, gfp_mask);
+>> +	/*
+>> +	 * First try to reclaim from memory control groups that have
+>> +	 * exceeded their soft limit
+>> +	 */
+>> +	did_some_progress = mem_cgroup_reclaim_on_contention(gfp_mask);
+>> +	if (!did_some_progress)
+>> +		did_some_progress = try_to_free_pages(zonelist, order,
+>> +							gfp_mask);
+> 
+> try_to_free_mem_cgroup_pages() assume memcg need only one page.
+> but this code break it.
+> 
+> if anyone need several continuous memory, mem_cgroup_reclaim_on_contention() reclaim 
+> one or a very few page and return >0, then cause page allocation failure.
+> 
+> shouldn't we extend try_to_free_mem_cgroup_pages() agruments?
+> 
+> 
+> in addition, if we don't assume try_to_free_mem_cgroup_pages() need one page,
+> we should implement lumpy reclaim to mem_cgroup_isolate_pages().
+> otherwise, cpu wasting significant increase.
 
+The memory controller currently controls just *user* pages, which are all of
+order 1. Since pages are faulted in at different times, lumpy reclaim was not
+the highest priority for the memory controller. NOTE: the pages are duplicated
+on the per-zone LRU, so lumpy reclaim from there should work just fine.
 
-Another issue related:
-
-Because some memmap entries are available via extended E820 memmap
-(SETUP_E820_EXT), it is not strictly safe to use e820_update_range()
-between setup_memory_map() and parse_setup_data(). It may be better to
-parse extended E820 memmap right after setup_memory_map().
-
-Best Regards,
-Huang Ying
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
