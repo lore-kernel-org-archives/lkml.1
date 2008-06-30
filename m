@@ -1,109 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762402AbYF3NZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762830AbYF3N0N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762402AbYF3NZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 09:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753558AbYF3NZS
+	id S1762830AbYF3N0N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 09:26:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756413AbYF3NZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 09:25:18 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:63857 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752856AbYF3NZP (ORCPT
+	Mon, 30 Jun 2008 09:25:57 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:13610 "EHLO
+	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754287AbYF3NZ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 09:25:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hNOG3E8+Dz6NvYA8Xqh3C6dbAtu15z6EAGQLe0efJy4T0JQSgAOQTWNMtgb801km0d
-         311+3htD1uXjgSwF6avYC11q1H82x0wYnwUFAt265h0sZ/grJAyuzIHMFzS4njY1RYIu
-         qRwbyrZo1pAoklaVd0P+QCg5F3iBZqgyhgptY=
-Date: Mon, 30 Jun 2008 15:25:12 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] workqueues: implement flush_work()
-Message-ID: <20080630132512.GA2663@ami.dom.local>
-References: <20080629144926.GA4347@tv-sign.ru>
+	Mon, 30 Jun 2008 09:25:56 -0400
+X-BigFish: VPS-39(zz1432R98dR7efV1805M179dR873fnzz10d3izzz32i6bh43j65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0K3A2MV-03-HTU-01
+Date: Mon, 30 Jun 2008 15:25:45 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, bhavna.sarathy@amd.com,
+       Sebastian.Biemueller@amd.com, robert.richter@amd.com, joro@8bytes.org
+Subject: Re: [PATCH 26/34] AMD IOMMU: add mapping functions for scatter gather lists
+Message-ID: <20080630132545.GP1303@amd.com>
+References: <1214508490-29683-1-git-send-email-joerg.roedel@amd.com> <1214508490-29683-27-git-send-email-joerg.roedel@amd.com> <20080630000023F.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20080629144926.GA4347@tv-sign.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080630000023F.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 30 Jun 2008 13:25:45.0390 (UTC) FILETIME=[CD5494E0:01C8DAB4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 29, 2008 at 06:49:26PM +0400, Oleg Nesterov wrote:
-...
-> --- 26-rc2/kernel/workqueue.c~WQ_2_FLUSH_WORK	2008-06-12 21:28:13.000000000 +0400
-> +++ 26-rc2/kernel/workqueue.c	2008-06-29 18:20:33.000000000 +0400
-> @@ -399,6 +399,52 @@ void flush_workqueue(struct workqueue_st
->  }
->  EXPORT_SYMBOL_GPL(flush_workqueue);
->  
-> +/**
-> + * flush_work - block until a work_struct's callback has terminated
-> + * @work: the work which is to be flushed
-> + *
-> + * It is expected that, prior to calling flush_work(), the caller has
-> + * arranged for the work to not be requeued, otherwise it doesn't make
-> + * sense to use this function.
-> + */
-
-I missed this before, and probably it's not required, but "Returns..."
-could be added here.
-
-> +int flush_work(struct work_struct *work)
-> +{
-> +	struct cpu_workqueue_struct *cwq;
-> +	struct list_head *prev;
-> +	struct wq_barrier barr;
-> +
-> +	might_sleep();
-> +	cwq = get_wq_data(work);
-> +	if (!cwq)
-> +		return 0;
-> +
-> +	prev = NULL;
-> +	spin_lock_irq(&cwq->lock);
-> +	if (!list_empty(&work->entry)) {
-> +		/*
-> +		 * See the comment near try_to_grab_pending()->smp_rmb().
-> +		 * If it was re-queued under us we are not going to wait.
-> +		 */
-> +		smp_rmb();
-> +		if (unlikely(cwq != get_wq_data(work)))
-> +			goto out;
-> +		prev = &work->entry;
-> +	} else {
-
-Probably it doesn't matter too much, but one little doubt: don't we
-need (for consistency) smp_rmb() for this branch as well? It seems
-this cwq could be read out of order here too.
-
-> +		if (cwq->current_work != work)
-> +			goto out;
-> +		prev = &cwq->worklist;
-> +	}
-> +	insert_wq_barrier(cwq, &barr, prev->next);
-> +out:
-> +	spin_unlock_irq(&cwq->lock);
-> +	if (!prev)
-> +		return 0;
-> +
-> +	wait_for_completion(&barr.done);
-> +	return 1;
-> +}
-> +EXPORT_SYMBOL_GPL(flush_work);
-> +
->  /*
->   * Upon a successful return (>= 0), the caller "owns" WORK_STRUCT_PENDING bit,
->   * so this work can't be re-armed in any way.
+On Mon, Jun 30, 2008 at 12:07:16AM +0900, FUJITA Tomonori wrote:
+> On Thu, 26 Jun 2008 21:28:02 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
 > 
+> > This patch adds the dma_ops functions for mapping and unmapping scatter gather
+> > lists.
+> > 
+> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> > ---
+> >  arch/x86/kernel/amd_iommu.c |   98 +++++++++++++++++++++++++++++++++++++++++++
+> >  1 files changed, 98 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+> > index b4079f6..f4747fe 100644
+> > --- a/arch/x86/kernel/amd_iommu.c
+> > +++ b/arch/x86/kernel/amd_iommu.c
+> > @@ -700,3 +700,101 @@ static void unmap_single(struct device *dev, dma_addr_t dma_addr,
+> >  	spin_unlock_irqrestore(&domain->lock, flags);
+> >  }
+> >  
+> > +static int map_sg_no_iommu(struct device *dev, struct scatterlist *sglist,
+> > +			   int nelems, int dir)
+> > +{
+> > +	struct scatterlist *s;
+> > +	int i;
+> > +
+> > +	for_each_sg(sglist, s, nelems, i) {
+> > +		s->dma_address = (dma_addr_t)sg_phys(s);
+> > +		s->dma_length  = s->length;
+> > +	}
+> > +
+> > +	return nelems;
+> > +}
+> > +
+> > +static int map_sg(struct device *dev, struct scatterlist *sglist,
+> > +		  int nelems, int dir)
+> > +{
+> > +	unsigned long flags;
+> > +	struct amd_iommu *iommu;
+> > +	struct protection_domain *domain;
+> > +	u16 devid;
+> > +	int i;
+> > +	struct scatterlist *s;
+> > +	phys_addr_t paddr;
+> > +	int mapped_elems = 0;
+> > +
+> > +	get_device_resources(dev, &iommu, &domain, &devid);
+> > +
+> > +	if (!iommu || !domain)
+> > +		return map_sg_no_iommu(dev, sglist, nelems, dir);
+> 
+> VT-d put a pointer in struct dev_archdata to store IOMMU info per
+> device. Is is useful for you too?
 
-Otherwise, all looks correct to me as before.
+Hmm yes. Thank you for that hint. I can save at least one of my arrays
+with that method.
 
-Regards,
-Jarek P.
+Joerg
+
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
