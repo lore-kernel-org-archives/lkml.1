@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933536AbYF3Wxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933561AbYF3Wz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933536AbYF3Wxd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 18:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763469AbYF3WxZ
+	id S933561AbYF3Wz5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 18:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763763AbYF3Wzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 18:53:25 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:6481 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763460AbYF3WxY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 18:53:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YrS67PmLK6t7zK2ZTevF/tu5GFuSrM7825vruza4tgT2xy168INS0k/Glp58A3Xn2p
-         sq5d6ctTx+R1ONYx7Ea91rxvW5EW8yPUskcA/w0EZW9AUhSGY1gMKu/xWyX7ggrdVqpI
-         XdJfnw1uhggOXZCKKQm1SfGahamH0IV9alhRg=
-Message-ID: <86802c440806301553y240b020bh9dc448e8085fe60d@mail.gmail.com>
-Date: Mon, 30 Jun 2008 15:53:23 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 1/2] x86 boot: add E820_RESVD_KERN
-Cc: "Huang, Ying" <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       andi@firstfloor.org, mingo@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080630191628.GA15366@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 30 Jun 2008 18:55:46 -0400
+Received: from vena.lwn.net ([206.168.112.25]:53399 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762391AbYF3Wzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 18:55:45 -0400
+Date: Mon, 30 Jun 2008 16:55:43 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
+       general@lists.openfabrics.org
+Subject: Re: [PATCH] IB/uverbs: BKL is not needed for ib_uverbs_open()
+Message-ID: <20080630165543.1ccd8858@bike.lwn.net>
+In-Reply-To: <adaskuylfk7.fsf@cisco.com>
+References: <20080627095418.2353267d@bike.lwn.net>
+	<adaskuylfk7.fsf@cisco.com>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <86802c440806260247p19f5b850r8757c51280912ae9@mail.gmail.com>
-	 <1214534894.10865.6.camel@caritas-dev.intel.com>
-	 <86802c440806271505n78275758re235ef6616d95b3d@mail.gmail.com>
-	 <1214809434.2887.8.camel@caritas-dev.intel.com>
-	 <86802c440806300034x5bb9b7a1s168bbeaee17e5124@mail.gmail.com>
-	 <1214812303.3187.10.camel@caritas-dev.intel.com>
-	 <86802c440806300215w31abbcb3h6a42395e11701713@mail.gmail.com>
-	 <1214818706.23677.8.camel@caritas-dev.intel.com>
-	 <86802c440806301205y35563326rd2ada495a0024441@mail.gmail.com>
-	 <20080630191628.GA15366@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 12:16 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> > For find_e820_area, this is safe enough. But what about conflict
->> > between setup_data and ebda or ramdisk?
->>
->> can you have setup_data and ebda at the same time?
->>
->> setup_data and ramdisk should be ok, because bootloader is supposed to
->> make them not to be conflicts.
->
-> the more sanity checks we do before relying on some crutial data, the
-> better. It's easier to panic or sanitize data in some structured way and
-> complain about it in the syslog than to let things get corrupted. Boot
-> loaders are ... not unknown to be have bugs too, at times.
+On Fri, 27 Jun 2008 14:43:20 -0700
+Roland Dreier <rdreier@cisco.com> wrote:
 
-to address Ying's concern, we could let reserve_setup_data
-call reserve_early in addition to e820_update_range...
+> Is this sort of patch the next step in the BKL-removal plan?  Is now
+> an appropriate time to send such things?
+> 
+> If this looks good to you I will do a careful audit of the rest of
+> drivers/infiniband/core and send you a few more similar patches.
 
-reserve_early will panic if RAMDISK overlap efi setup_data...
+That's the general idea: audit the code where the BKL appears and
+remove it when it's safe to do so.  It's always an appropriate time;
+the only question is whether you think this change is good to go into
+the tree for 2.6.27, or whether it should hang out in linux-next for
+one more cycle.  I would assume that the extra time would not be
+necessary.
 
-YH
+Thanks,
+
+jon
