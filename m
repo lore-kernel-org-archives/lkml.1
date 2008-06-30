@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbYF3Rfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759764AbYF3Rkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759232AbYF3Rfy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYF3Rfr
+	id S1759764AbYF3Rkk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 13:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYF3Rkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:35:47 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:57119 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752064AbYF3Rfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:35:46 -0400
-Date: Mon, 30 Jun 2008 13:35:35 -0400
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Avi Kivity <avi@qumranet.com>,
-       =?utf-8?B?VMO2csO2aw==?= Edwin <edwintorok@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Ctrl+C doesn't interrupt process waiting for I/O
-Message-ID: <20080630173535.GB4877@fieldses.org>
-References: <48661488.10304@gmail.com> <4866F6FE.9000503@goop.org> <486704AC.2090207@qumranet.com> <48671A12.90205@goop.org>
+	Mon, 30 Jun 2008 13:40:32 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:45124 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752064AbYF3Rkb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 13:40:31 -0400
+Date: Mon, 30 Jun 2008 23:09:40 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, heiko.carstens@de.ibm.com
+Subject: Re: [git pull] scheduler fixes
+Message-ID: <20080630173940.GA6133@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20080630153124.GA21919@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48671A12.90205@goop.org>
+In-Reply-To: <20080630153124.GA21919@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 28, 2008 at 10:13:54PM -0700, Jeremy Fitzhardinge wrote:
-> Avi Kivity wrote:
->>>
->>> Yes, it's intended behaviour.  Filesystem IO syscalls are considered  
->>> "fast" and are interruptible.  Usermode code can reasonably expect  
->>> that file IO will never return EINTR.
->>
->> That's filesystem dependent; if you mount an nfs filesystem with the  
->> 'intr' mount option, it will be interruptible (which makes sense, as  
->> it is impossible to guarantee the server's responsiveness).
->
-> 'intr' is a pretty bad idea, and I would never recommend it ('soft' is  
-> better).
+On Mon, Jun 30, 2008 at 05:31:24PM +0200, Ingo Molnar wrote:
+> Linus,
+> 
+> Please pull the latest scheduler fixes git tree from:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+> 
+> Thanks,
+> 
+> 	Ingo
+> 
+> ------------------>
+> Dmitry Adamushko (1):
+>       sched: fix cpu hotplug
+> 
 
-Yipes.
+Ingo,
 
-> It's an excellent way to destroy data when a stray signal  
-> causes a syscall to fail with EINTR in an unexpected way (write being  
-> the obvious one, but link, unlink, truncate or even close can fail in  
-> odd ways can cause havok).
+You might want to put this is as a candidate for stable. I recall seeing
+a similar crash in 2.6.24 rt as well. And Heiko mentioned bisection
+taking him to 2.6.23
 
-And with "soft" all that can happen with the need for the stray
-signal....
-
-I suppose the relative likelihoods of hitting the problem under "soft"
-and "intr" may vary depending on the details of your setup.  But in
-general I'd've thought it'd be easier to control stray signals than,
-say, stray network problems.
-
---b.
-
-> I don't know of any other filesystem with a similarly bad option.
+Thanks,
+-- 
+regards,
+Dhaval
