@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763536AbYF3Szz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932175AbYF3S4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763536AbYF3Szz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 14:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbYF3Szp
+	id S932175AbYF3S4e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 14:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbYF3S4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 14:55:45 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:4214 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbYF3Szn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 14:55:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=bl1W/1Oa1aS2FBORFB+ZhF5scgbsMCzMY0MrGPz/7pba/p67ai4JHEEdYSlFYYqy65
-         xcqkxSmFes6ZIj88vNIQdRBesxOkTQtlMgC0MxBRoOuQQZnEkg8pWeDECTcoU4SjcWIS
-         Duf6gc7COH0w83h/0FHtg1e1OuHVQWBQDDaMQ=
-Message-ID: <ea11fea30806301155u3daccf0eo2daf690396b5616f@mail.gmail.com>
-Date: Tue, 1 Jul 2008 00:25:37 +0530
-From: "Manish Katiyar" <mkatiyar@gmail.com>
-To: linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] ext4 : Remove unused variable journal from ext4_show_options
+	Mon, 30 Jun 2008 14:56:25 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43632 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753244AbYF3S4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 14:56:24 -0400
+Date: Mon, 30 Jun 2008 20:56:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH] x86_64/paravirt: fix compile errors with
+	IA32_EMULATION off
+Message-ID: <20080630185608.GC27398@elte.hu>
+References: <486921AD.8010409@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <486921AD.8010409@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0995]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-=======================================================================
 
-Signed-off-by : Manish Katiyar <mkatiyar@gmail.com>
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
----
- fs/ext4/super.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index cb96f12..d9d12c1 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -671,7 +671,6 @@ static int ext4_show_options(struct seq_file *seq,
-struct vfsmount *vfs)
-        unsigned long def_mount_opts;
-        struct super_block *sb = vfs->mnt_sb;
-        struct ext4_sb_info *sbi = EXT4_SB(sb);
--       journal_t *journal = sbi->s_journal;
-        struct ext4_super_block *es = sbi->s_es;
+applied to tip/x86/xen-64bit, thanks Jeremy.
 
-        def_mount_opts = le32_to_cpu(es->s_default_mount_opts);
--- 
-1.5.4.3
-
-========================================================================
-
--- 
-Thanks & Regards,
-********************************************
-Manish Katiyar ( http://mkatiyar.googlepages.com )
-3rd Floor, Fair Winds Block
-EGL Software Park
-Off Intermediate Ring Road
-Bangalore 560071, India
-***********************************************
+	Ingo
