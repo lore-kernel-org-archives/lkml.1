@@ -1,49 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763975AbYF3UMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764286AbYF3UNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763975AbYF3UMV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 16:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYF3UMM
+	id S1764286AbYF3UNN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 16:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYF3UM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 16:12:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53118 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751553AbYF3UML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 16:12:11 -0400
-Date: Mon, 30 Jun 2008 22:11:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Andy Whitcroft <apw@shadowen.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 30
-Message-ID: <20080630201116.GA13605@elte.hu>
-References: <20080701001656.e156585c.sfr@canb.auug.org.au> <48690385.7030500@linux.vnet.ibm.com> <48690D3C.1060803@linux.vnet.ibm.com> <20080630185943.GA24692@uranus.ravnborg.org> <20080630192610.GA6584@elte.hu> <20080630194727.GA26682@uranus.ravnborg.org> <20080630200623.GE6584@elte.hu>
+	Mon, 30 Jun 2008 16:12:57 -0400
+Received: from smtp1.riverbed.com ([206.169.144.12]:64285 "EHLO
+	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751862AbYF3UM4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 16:12:56 -0400
+Date: Mon, 30 Jun 2008 13:13:40 -0700
+From: Arthur Jones <ajones@riverbed.com>
+To: Doug Thompson <norsk5@yahoo.com>
+CC: Andi Kleen <andi@firstfloor.org>,
+       "dougthompson@xmission.com" <dougthompson@xmission.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "bluesmoke-devel@lists.sourceforge.net" 
+	<bluesmoke-devel@lists.sourceforge.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/13] EDAC i5100 new intel chipset driver
+Message-ID: <20080630201340.GI10571@ajones-laptop.nbttech.com>
+References: <20080630150346.GF10571@ajones-laptop.nbttech.com> <262167.11235.qm@web50105.mail.re2.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20080630200623.GE6584@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <262167.11235.qm@web50105.mail.re2.yahoo.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Doug,  ...
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, Jun 30, 2008 at 12:58:59PM -0700, Doug Thompson wrote:
+> 
+> --- Arthur Jones <ajones@riverbed.com> wrote:
+> 
+> > > Arthur, could you add some more text to the driver's output, before the call to the
+> > > core's output function, doing exactly that? Explaining just what you DO know, and what you
+> > don't
+> > > know?
+> >
+> > Everything should be good except the DIMM label.  There
+> > are all kinds of ways this could be wrong (mainboard labelling,
+> > mainboard routing, ...).  I think it might be better just
+> > to leave this blank.
+> >
+> > Are there any EDAC drivers that properly report the DIMM label?
+> 
+> The drivers don't print the information just because of these issues. The labeling action is left
+> to user space via edac-utils.  The label attributes in sysfs are initialized via a bootup daemon.
+> Thereby EDAC (and the driver) provides a mechanism of storing the DIMM Label. (The driver is free
+> to populate label if it so chooses, but that too could be overridden by userspace).
+> 
+> One driver I did for the Sicortex MIPS cluster only had TWO DIMMS, "East" and "West" on a 6 core
+> processor card. The driver labeled those inside itself.
+> 
+> >
+> > How do they get around these issues?
+> 
+> Late binding. Allow the setting of the label by userspace. edac-utils utilizes a file database of
+> motherboards, which must be maintained yes, but it is flexible. An additional userspace program
+> could source the labels via another mechanism.
+> 
+> Lawrence Livermore National Labs has tens of thousands of nodes, with 2, 4 or 8 CPUs per node, and
+> they are the ones who developed the edac-utils userspace daemon and scripts.
+> 
+> http://sourceforge.net/projects/edac-utils/
+> 
+> The model for EDAC modules IS to leave the DIMM label blank for late binding of that information.
 
-> ah, ok. So the patch below should solve this for now?
+Thanks, I didn't know about edac-utils, that sounds much better
+than what I was proposing.  I'll go have a look...
 
-s/patch below/hack below/. (The real fix has to tur it into a 
-well-documented limit instead of adding yet another hardcoded arbitrary 
-limit that we'll hit in 5 years or so.)
+Given this, I think it would be best to pull out the labels from
+the driver.  I'll see if I can put together a patch for that today
+or tomorrow...
 
-	Ingo
+Arthur
