@@ -1,46 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757066AbYF3IWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbYF3IWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757066AbYF3IWP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 04:22:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYF3IWA
+	id S1754073AbYF3IWb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 04:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755790AbYF3IWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 04:22:00 -0400
-Received: from ozlabs.org ([203.10.76.45]:33705 "EHLO ozlabs.org"
+	Mon, 30 Jun 2008 04:22:11 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55765 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752587AbYF3IV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 04:21:59 -0400
+	id S1754855AbYF3IWJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 04:22:09 -0400
+Date: Mon, 30 Jun 2008 10:21:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Nick Piggin <npiggin@suse.de>, Mark McLoughlin <markmc@redhat.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Eduardo Habkost <ehabkost@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Stephen Tweedie <sct@redhat.com>, x86@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for
+	64-bit Xen support
+Message-ID: <20080630082135.GA22844@elte.hu>
+References: <20080625084253.GA11524@elte.hu> <20080625152212.GA3442@elte.hu> <4862A6A9.1030109@goop.org> <20080626105722.GA12640@elte.hu> <20080626105818.GA13805@elte.hu> <4863A8E6.1010807@goop.org> <20080627160333.GA27072@elte.hu> <486539A3.3030102@goop.org> <20080629084318.GA28815@elte.hu> <48684CD4.7040403@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18536.38684.384039.662264@cargo.ozlabs.ibm.com>
-Date: Mon, 30 Jun 2008 18:19:40 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Eric B Munson <ebmunson@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V2] Keep 3 high personality bytes across exec
-In-Reply-To: <20080628000813.GA19960@us.ibm.com>
-References: <20080628000813.GA19960@us.ibm.com>
-X-Mailer: VM 8.0.9 under Emacs 22.1.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <48684CD4.7040403@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric B Munson writes:
 
-> --- a/include/asm-powerpc/elf.h
-> +++ b/include/asm-powerpc/elf.h
-> @@ -257,7 +257,8 @@ do {								\
->  	else							\
->  		clear_thread_flag(TIF_ABI_PENDING);		\
->  	if (personality(current->personality) != PER_LINUX32)	\
-> -		set_personality(PER_LINUX);			\
-> +		set_personality(PER_LINUX |			\
-> +			(current->personality & PER_INHERIT));	\
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Couldn't we use ~PER_MASK here instead of PER_INHERIT?  That would
-mean we wouldn't have to modify include/linux/personality.h, and we
-wouldn't have to keep updating PER_INHERIT as more flags get added.
+> Ingo Molnar wrote:
+>> with this config:
+>>
+>>   http://redhat.com/~mingo/misc/config-Sun_Jun_29_10_29_11_CEST_2008.bad
+>>
+>> i've saved the merged 2.6.26-rc8-tip-00241-gc6c8cb2-dirty tree into  
+>> tip/tmp.x86.xen-64bit.Sun_Jun_29_10 and pushed it out, so you can test  
+>> that exact version.
+>
+> Looks like the setup.c unification missed the early_ioremap init from 
+> the early_ioremap unification.  Unconditionally call 
+> early_ioremap_init().
 
-(Nice patch description, BTW.  Thanks.)
+applied to tip/x86/unify-setup - thanks Jeremy.
 
-Paul.
+I've reactived the x86/xen-64bit branch and i'm testing it currently.
+
+	Ingo
