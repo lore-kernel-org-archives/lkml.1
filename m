@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933168AbYF3Vgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933102AbYF3Vg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933168AbYF3Vgr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 17:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932788AbYF3Vej
+	id S933102AbYF3Vg2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 17:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932612AbYF3Vei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 17:34:39 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:51655 "EHLO pasmtpB.tele.dk"
+	Mon, 30 Jun 2008 17:34:38 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:48223 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762983AbYF3Vec (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762913AbYF3Vec (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Jun 2008 17:34:32 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: kbuild <linux-kbuild@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 09/24] kbuild: install all headers when arch is changed
-Date: Mon, 30 Jun 2008 23:35:03 +0200
-Message-Id: <1214861718-32626-9-git-send-email-sam@ravnborg.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, David Woodhouse <dwmw2@infradead.org>,
+       David Miller <davem@davemloft.net>
+Subject: [PATCH 03/24] kbuild: drop support of ALTARCH for headers_*
+Date: Mon, 30 Jun 2008 23:34:57 +0200
+Message-Id: <1214861718-32626-3-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.6.1.93.gef98
 In-Reply-To: <20080630213155.GA32479@uranus.ravnborg.org>
 References: <20080630213155.GA32479@uranus.ravnborg.org>
@@ -22,67 +23,157 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We see some header files that are selected dependent on
-the actual architecture so force a reinstallation
-of all header files when the arch changes.
-This slows down "make headers_check_all" but then
-we better reflect reality.
+ALTARCH is no longer used by any arch(*) so drop
+support for this from Makefile.headerinst
+
+Dropping ALTARCH support simplifies Makefile.headerinst
+
+(*) sparc64 uses it but work is ongoing to drop it
+and no furter usage is planned.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: David Miller <davem@davemloft.net>
 ---
- scripts/Makefile.headersinst |    7 ++++---
- scripts/headers_install.pl   |   13 ++++++++-----
- 2 files changed, 12 insertions(+), 8 deletions(-)
+ scripts/Makefile.headersinst |   84 ++++-------------------------------------
+ 1 files changed, 9 insertions(+), 75 deletions(-)
 
 diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
-index be2b70c..612dc13 100644
+index 22b17af..1fb8c00 100644
 --- a/scripts/Makefile.headersinst
 +++ b/scripts/Makefile.headersinst
-@@ -43,9 +43,10 @@ printdir = $(patsubst $(INSTALL_HDR_PATH)/%/,%,$(dir $@))
+@@ -23,30 +23,17 @@ HDRSED  := sed 	-e "s/ inline / __inline__ /g" \
  
- quiet_cmd_install = INSTALL $(printdir) ($(words $(all-files))\
-                             file$(if $(word 2, $(all-files)),s))
--      cmd_install = $(PERL) $< $(srctree)/$(obj) $(install) $(header-y); \
--                    $(PERL) $< $(objtree)/$(obj) $(install) $(objhdr-y); \
--	            touch $@
-+      cmd_install = \
-+        $(PERL) $< $(srctree)/$(obj) $(install) $(SRCARCH) $(header-y); \
-+        $(PERL) $< $(objtree)/$(obj) $(install) $(SRCARCH) $(objhdr-y); \
-+        touch $@
+ _dst := $(if $(dst),$(dst),$(obj))
  
- quiet_cmd_remove = REMOVE  $(unwanted)
-       cmd_remove = rm -f $(unwanted-file)
-diff --git a/scripts/headers_install.pl b/scripts/headers_install.pl
-index f0ff9a3..68591cd 100644
---- a/scripts/headers_install.pl
-+++ b/scripts/headers_install.pl
-@@ -3,10 +3,13 @@
- # headers_install prepare the listed header files for use in
- # user space and copy the files to their destination.
- #
--# Usage: headers_install.pl odir installdir [files...]
--# odir:    dir to open files
--# install: dir to install the files
--# files:   list of files to check
-+# Usage: headers_install.pl readdir installdir arch [files...]
-+# readdir:    dir to open files
-+# installdir: dir to install the files
-+# arch:       current architecture
-+#             arch is used to force a reinstallation when the arch
-+#             changes because kbuild then detect a command line change.
-+# files:      list of files to check
- #
- # Step in preparation for users space:
- # 1) Drop all use of compiler.h definitions
-@@ -16,7 +19,7 @@
- use strict;
- use warnings;
+-ifeq (,$(patsubst include/asm/%,,$(obj)/))
+-# For producing the generated stuff in include/asm for biarch builds, include
+-# both sets of Kbuild files; we'll generate anything which is mentioned in
+-# _either_ arch, and recurse into subdirectories which are mentioned in either
+-# arch. Since some directories may exist in one but not the other, we must
+-# use $(wildcard...). 
+-GENASM := 1
+-archasm	   := $(subst include/asm,asm-$(ARCH),$(obj))
+-altarchasm := $(subst include/asm,asm-$(ALTARCH),$(obj))
+-KBUILDFILES := $(wildcard $(srctree)/include/$(archasm)/Kbuild $(srctree)/include/$(altarchasm)/Kbuild)
+-else
+-KBUILDFILES := $(srctree)/$(obj)/Kbuild
+-endif
++kbuild-file := $(srctree)/$(obj)/Kbuild
++include $(kbuild-file)
  
--my ($readdir, $installdir, @files) = @ARGV;
-+my ($readdir, $installdir, $arch, @files) = @ARGV;
+-include $(KBUILDFILES)
++include scripts/Kbuild.include
  
- my $unifdef = "scripts/unifdef -U__KERNEL__";
+-include scripts/Kbuild.include 
+-
+-# If this is include/asm-$(ARCH) and there's no $(ALTARCH), then
+-# override $(_dst) so that we install to include/asm directly.
++# If this is include/asm-$(ARCH) then override $(_dst) so that
++# we install to include/asm directly.
+ # Unless $(BIASMDIR) is set, in which case we're probably doing
+ # a 'headers_install_all' build and we should keep the -$(ARCH)
+ # in the directory name.
+-ifeq ($(obj)$(ALTARCH),include/asm-$(ARCH)$(BIASMDIR))
++ifeq ($(obj),include/asm-$(ARCH)$(BIASMDIR))
+      _dst := include/asm
+ endif
  
+@@ -69,18 +56,6 @@ header-y 	:= $(patsubst %,$(INSTALL_HDR_PATH)/$(_dst)/%,$(header-y))
+ objhdr-y 	:= $(patsubst %,$(INSTALL_HDR_PATH)/$(_dst)/%,$(objhdr-y))
+ check-y 	:= $(patsubst %,$(INSTALL_HDR_PATH)/$(_dst)/%,$(check-y))
+ 
+-
+-ifdef ALTARCH
+-ifeq ($(obj),include/asm-$(ARCH))
+-altarch-y	:= altarch-dir
+-endif
+-endif
+-
+-# Make the definitions visible for recursive make invocations
+-export ALTARCH
+-export ARCHDEF
+-export ALTARCHDEF
+-
+ quiet_cmd_o_hdr_install   = INSTALL $(patsubst $(INSTALL_HDR_PATH)/%,%,$@)
+       cmd_o_hdr_install   = cp $(patsubst $(INSTALL_HDR_PATH)/$(_dst)/%,$(objtree)/$(obj)/%,$@) \
+ 			    $(INSTALL_HDR_PATH)/$(_dst)
+@@ -99,34 +74,6 @@ quiet_cmd_remove	  = REMOVE  $(_dst)/$@
+ quiet_cmd_mkdir		  = MKDIR   $(patsubst $(INSTALL_HDR_PATH)/%,%,$@)
+       cmd_mkdir		  = mkdir -p $@
+ 
+-quiet_cmd_gen		  = GEN     $(patsubst $(INSTALL_HDR_PATH)/%,%,$@)
+-      cmd_gen		  = \
+-FNAME=$(patsubst $(INSTALL_HDR_PATH)/$(_dst)/%,%,$@);			\
+-STUBDEF=__ASM_STUB_`echo $$FNAME | tr a-z.- A-Z__`;			\
+-(echo "/* File autogenerated by 'make headers_install' */" ;		\
+-echo "\#ifndef $$STUBDEF" ;						\
+-echo "\#define $$STUBDEF" ;						\
+-echo "\# if $(ARCHDEF)" ;						\
+-if [ -r $(subst /$(_dst)/,/include/$(archasm)/,$@) ]; then		\
+-	echo "\#  include <$(archasm)/$$FNAME>" ;			\
+-else									\
+-	echo "\#  error $(archasm)/$$FNAME does not exist in"		\
+-			"the $(ARCH) architecture" ;			\
+-fi ;									\
+-echo "\# elif $(ALTARCHDEF)" ;						\
+-if [ -r $(subst /$(_dst)/,/include/$(altarchasm)/,$@) ]; then		\
+-	echo "\#  include <$(altarchasm)/$$FNAME>" ;			\
+-else									\
+-	echo "\#  error $(altarchasm)/$$FNAME does not exist in"	\
+-			"the $(ALTARCH) architecture" ;			\
+-fi ;									\
+-echo "\# else" ;							\
+-echo "\#  warning This machine appears to be"				\
+-		 "neither $(ARCH) nor $(ALTARCH)." ;			\
+-echo "\# endif" ;							\
+-echo "\#endif /* $$STUBDEF */" ;					\
+-) > $@
+-
+ .PHONY: __headersinst __headerscheck
+ 
+ ifdef HDRCHECK
+@@ -144,7 +91,7 @@ include /dev/null $(wildcard $(check-y))
+ 
+ else
+ # Rules for installing headers
+-__headersinst: $(subdir-y) $(header-y) $(altarch-y) $(objhdr-y)
++__headersinst: $(subdir-y) $(header-y) $(objhdr-y)
+ 	@true
+ 
+ $(objhdr-y) $(subdir-y) $(header-y): | $(INSTALL_HDR_PATH)/$(_dst) $(unwanted)
+@@ -156,29 +103,16 @@ $(INSTALL_HDR_PATH)/$(_dst):
+ $(unwanted):
+ 	$(call cmd,remove)
+ 
+-ifdef GENASM
+-$(objhdr-y) $(header-y): $(KBUILDFILES)
+-	$(call cmd,gen)
+-
+-else
+-$(objhdr-y): $(INSTALL_HDR_PATH)/$(_dst)/%.h: $(objtree)/$(obj)/%.h $(KBUILDFILES)
++$(objhdr-y): $(INSTALL_HDR_PATH)/$(_dst)/%.h: $(objtree)/$(obj)/%.h $(kbuild-file)
+ 	$(call cmd,o_hdr_install)
+ 
+-$(header-y): $(INSTALL_HDR_PATH)/$(_dst)/%.h: $(srctree)/$(obj)/%.h $(KBUILDFILES)
++$(header-y): $(INSTALL_HDR_PATH)/$(_dst)/%.h: $(srctree)/$(obj)/%.h $(kbuild-file)
+ 	$(call cmd,unifdef)
+ 
+ endif
+-endif
+ 
+ hdrinst := -rR -f $(srctree)/scripts/Makefile.headersinst obj
+ 
+-.PHONY: altarch-dir
+-# All the files in the normal arch dir must be created first, since we test
+-# for their existence.
+-altarch-dir: $(subdir-y) $(header-y) $(objhdr-y)
+-	$(Q)$(MAKE) $(hdrinst)=include/asm-$(ALTARCH) dst=include/asm-$(ALTARCH)
+-	$(Q)$(MAKE) $(hdrinst)=include/asm dst=include/asm$(BIASMDIR)
+-
+ # Recursion
+ .PHONY: $(subdir-y)
+ $(subdir-y):
 -- 
 1.5.6.1.93.gef98
 
