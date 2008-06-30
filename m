@@ -1,51 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762290AbYF3Put@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761996AbYF3PwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762290AbYF3Put (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 11:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761650AbYF3Puh
+	id S1761996AbYF3PwA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 11:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYF3Pvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 11:50:37 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:45730 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752592AbYF3Puh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 11:50:37 -0400
-Date: Mon, 30 Jun 2008 17:50:34 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
-       tk@maintech.de, laforge@openmoko.org
-Subject: Re: [patch v4 17/17] MMC: S3C24XX:
-Message-ID: <20080630175034.3ff975c8@mjolnir.drzeus.cx>
-In-Reply-To: <20080630153611.GE21835@fluff.org.uk>
-References: <20080630152547.755285683@fluff.org.uk>
-	<20080630152750.578945866@fluff.org.uk>
-	<20080630153611.GE21835@fluff.org.uk>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+	Mon, 30 Jun 2008 11:51:49 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:37958 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752072AbYF3Pvs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 11:51:48 -0400
+Subject: Re: [regression] CD-DA delay needed after insertion
+	(http://bugzilla.kernel.org/show_bug.cgi?id=10974)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0806301120570.10868@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
+	 <1213540781.3517.18.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0806161659440.30122@vixen.sonytel.be>
+	 <1213648258.3420.12.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0806171530340.22840@vixen.sonytel.be>
+	 <1214605634.3394.91.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0806301120570.10868@vixen.sonytel.be>
+Content-Type: text/plain
+Date: Mon, 30 Jun 2008 10:51:42 -0500
+Message-Id: <1214841102.3381.5.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jun 2008 16:36:11 +0100
-Ben Dooks <ben-linux@fluff.org> wrote:
-
-> On Mon, Jun 30, 2008 at 04:26:04PM +0100, Ben Dooks wrote:
+On Mon, 2008-06-30 at 11:25 +0200, Geert Uytterhoeven wrote:
+> 	Hi James,
 > 
-> Should I resend this one, or the entire series with the 
-> subject line of this patch corrected?
+> On Fri, 27 Jun 2008, James Bottomley wrote:
+> > > git-bisect taught me it was introduced by
+> > > 
+> > > commit 38582a62ecd337de4212004c7d4844899dc57890
+> > > Author: James Bottomley <James.Bottomley@HansenPartnership.com>
+> > > Date:   Wed Feb 6 13:01:58 2008 -0600
+> > > 
+> > >     [SCSI] sr: fix test unit ready responses
+> > >     
+> > >     Commit 210ba1d1724f5c4ed87a2ab1a21ca861a915f734 updated sr.c to use
+> > >     the scsi_test_unit_ready() function.  Unfortunately, this has the
+> > >     wrong characteristic of eating NOT_READY returns which sr.c relies on
+> > >     for tray status.
+> > >     
+> > >     Fix by rolling an internal sr_test_unit_ready() that doesn't do this.
+> > 
+> > OK, I thought I had a test case for this, but when I revert this commit
+> > on git head (and fix up the one reject which just leaves the sr_
+> > function in place) I still produce the same behaviour.
+> > 
+> > What I'm trying is 
+> > 
+> > sg_start -i -l <cdrom>
+> > 
+> > to close the tray followed by your cdparanoia command
+> > 
+> > Could you see if reverting this commit on git head works for you (in
+> > which case I'm not reproducing it correctly)?
 > 
+> On 9bedbcb207ed9a571b239231d99c8fd4a34ae24d, the sequence
+> 
+>     eject; sg_start -i -l /dev/scd0; cdparanoia \
+> 	-d /dev/scd0 -Z -q 1-1[:1] /dev/null || echo failed
+> 
+> fails with
+> 
+>     004: Unable to read table of contents header
+> 
+> After reverting 38582a62ecd337de4212004c7d4844899dc57890, it works.
+> 
+> I added the eject as the PS3 has a slot-loading drive.
+> 
+> With kind regards,
 
-That's ok. I can fix it up manually.
+OK ... but this doesn't happen for me with or without this commit
+reverted.  This is what I see from stracing cdparanoia:
 
--- 
-     -- Pierre Ossman
+lstat64("/dev/scd0", {st_mode=S_IFBLK|0660, st_rdev=makedev(11, 0), ...}) = 0
+open("/dev/scd0", O_RDWR|O_NONBLOCK)    = 3
+ioctl(3, SG_IO, 0xbfc0afdc)             = -1 EINVAL (Invalid argument)
+close(3)                                = 0
+open("/dev/scd0", O_RDWR|O_NONBLOCK)    = 3
+dup(3)                                  = 4
+ioctl(3, CDROMAUDIOBUFSIZ or SCSI_IOCTL_GET_IDLUN, 0xbfc0b240) = 0
+ioctl(3, SCSI_IOCTL_GET_BUS_NUMBER, 0xbfc0b248) = 0
+ioctl(3, SG_IO, 0xbfc0af8c)             = 0
+ioctl(4, SG_EMULATED_HOST, 0xbfc0b2b8)  = 0
+ioctl(3, SG_IO, 0xbfc0b07c)             = 0
+ioctl(3, SG_IO, 0xbfc0b04c)             = 0
+write(2, "004: Unable to read table of con"..., 45004: Unable to read table of contents header) = 45
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+The O_NONBLOCK tells the cdrom layer not to do drive ready processing.
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+The three SG_IOs are INQUIRY, MODE_SENSE(10) and READ TOC/PMA/ATIP
+
+The latter one is returned with a check condition and sense data not
+ready; medium not present - tray open.
+
+There's no way the drive ready processing can have an effect on this
+sequence unless cdparanoia either invokes it from the cdrom layer or
+processes the not ready itself.  Could you strace your cdparanoia and
+see what sequence it is using?
+
+Thanks,
+
+James
+
+
+
