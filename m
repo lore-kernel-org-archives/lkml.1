@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760134AbYF3PYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759101AbYF3P2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760134AbYF3PYp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 11:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbYF3PYh
+	id S1759101AbYF3P2E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 11:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbYF3P1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 11:24:37 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:47023 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752522AbYF3PYg (ORCPT
+	Mon, 30 Jun 2008 11:27:49 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:60306 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750842AbYF3P1s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 11:24:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GBYyhvtPvu3hk2z9bWqpL+m/+FSeUmhY6CbcTkEE4RrneRvNT8XF+nCAVIqKd7nzP2
-         sndtzIN923eXvtrtNREx90B996xSXERB3HlJpTjiNA9c2SeKHgz3gckttamXxoulzG0F
-         ddIgUSqbGJfEM91he5xHgqYRyamBVS5RDS4PA=
-Date: Mon, 30 Jun 2008 11:24:31 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] WM9712: Warn if user attempts to use pressure
-	measurement with 5 wire mode
-Message-ID: <20080630112353.ZZRA012@mailhub.coreip.homeip.net>
-References: <1214829325-5414-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1214829325-5414-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 30 Jun 2008 11:27:48 -0400
+Message-Id: <20080630152747.755524270@fluff.org.uk>
+References: <20080630152547.755285683@fluff.org.uk>
+User-Agent: quilt/0.46-1
+Date: Mon, 30 Jun 2008 16:25:52 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx
+Cc: tk@maintech.de, laforge@openmoko.org, Ben Dooks <ben-linux@fluff.org>
+Subject: [patch v4 05/17] MMC: S3C24XX MMC/SD stop fix
+Content-Disposition: inline; filename=thirdparty/openmoko-mci/s3cmci-stop-fix.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
+From: Thomas Kleffel <tk@maintech.de>
 
-On Mon, Jun 30, 2008 at 01:35:25PM +0100, Mark Brown wrote:
-> This is not supported by the hardware.
-> 
+Fix the request finalisation by ensuring the controller
+is stopped.
 
-Applied to the 'next' tree, thank you.
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+Signed-off-by: Harald Welte <laforge@openmoko.org>
+
+Index: linux-2.6.26-rc8-next20080627/drivers/mmc/host/s3cmci.c
+===================================================================
+--- linux-2.6.26-rc8-next20080627.orig/drivers/mmc/host/s3cmci.c	2008-06-30 12:19:13.000000000 +0100
++++ linux-2.6.26-rc8-next20080627/drivers/mmc/host/s3cmci.c	2008-06-30 12:19:15.000000000 +0100
+@@ -677,7 +677,7 @@ static void finalize_request(struct s3cm
+ 
+ 	/* Cleanup controller */
+ 	writel(0, host->base + S3C2410_SDICMDARG);
+-	writel(0, host->base + S3C2410_SDIDCON);
++	writel(S3C2410_SDIDCON_STOP, host->base + S3C2410_SDIDCON);
+ 	writel(0, host->base + S3C2410_SDICMDCON);
+ 	writel(0, host->base + host->sdiimsk);
+ 
+@@ -803,7 +803,7 @@ static int s3cmci_setup_data(struct s3cm
+ 		dbg(host, dbg_err,
+ 		    "mci_setup_data() transfer stillin progress.\n");
+ 
+-		writel(0, host->base + S3C2410_SDIDCON);
++		writel(S3C2410_SDIDCON_STOP, host->base + S3C2410_SDIDCON);
+ 		s3cmci_reset(host);
+ 
+ 		if ((stoptries--) == 0) {
 
 -- 
-Dmitry
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
