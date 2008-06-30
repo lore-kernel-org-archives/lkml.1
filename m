@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759967AbYF3X4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbYF3X6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759967AbYF3X4Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 19:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755386AbYF3X4R
+	id S1759314AbYF3X6b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 19:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbYF3X6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 19:56:17 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:44983 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755024AbYF3X4O (ORCPT
+	Mon, 30 Jun 2008 19:58:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38962 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753620AbYF3X6V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 19:56:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=fCWmoNxlvCNuiYHXTw+TcVigG27/NwbsuXDYv+uEo8/Nva7lsK9C+g76rrzyBvFo6a
-         G5GuAy+l0FxYhItPuSGoUG8nuzlyTalhuDDT6Jpnztqltba6AhEkOenzuzSJWDs215Eq
-         wc3hCKzX1cPFaDke+2DCWdMTsRPk1oC+a+fA8=
-Message-ID: <396556a20806301656ydc44e3ey6deb229ab69904@mail.gmail.com>
-Date: Mon, 30 Jun 2008 16:56:13 -0700
-From: "Adam Langley" <agl@imperialviolet.org>
-To: "Peter Palfrader" <peter@palfrader.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.25.6: warn_on_slowpath in tcp_input.c
-In-Reply-To: <20080630230954.GS16698@anguilla.noreply.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Mon, 30 Jun 2008 19:58:21 -0400
+Date: Mon, 30 Jun 2008 16:57:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: lenb@kernel.org, jbarnes@virtuousgeek.org, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, linux-acpi@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 5/5] x86 PCI: use dev_printk when possible
+Message-Id: <20080630165737.2f9735f0.akpm@linux-foundation.org>
+In-Reply-To: <20080613165304.842091464@ldl.fc.hp.com>
+References: <20080613165209.507694130@ldl.fc.hp.com>
+	<20080613165304.842091464@ldl.fc.hp.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080630230954.GS16698@anguilla.noreply.org>
-X-Google-Sender-Auth: 91c7bc849b588b60
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 4:09 PM, Peter Palfrader <peter@palfrader.org> wrote:
-> I've had 13 or so of them since upgrading the machine to a 2.6.25 kernel
-> 20 days ago.
+On Fri, 13 Jun 2008 10:52:14 -0600
+Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 
-Which kernel was it running before?
+> I converted DBG() to dev_dbg().  This DBG() is from arch/x86/pci/pci.h
+> and requires source-code modification to enable, so dev_dbg() seems
+> roughly equivalent.
+> 
+> The printks in arch/x86/pci/irq.c were a little hairy, with lines
+> printed in several pieces.  I straightened it out a little, but
+> another set of eyes would be good.
+> 
+> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> 
+> ---
+>  arch/x86/pci/fixup.c |    3 +
+>  arch/x86/pci/i386.c  |   26 ++++++--------
+>  arch/x86/pci/irq.c   |   91 ++++++++++++++++++++++-----------------------------
+>  arch/x86/pci/numa.c  |    5 +-
 
-AGL
+Got a bunch of rejects in arch/x86/pci/irq.c due to pending whitespace
+fixes.  I fixed a couple of them but then I got bored, so the
+conversion in there is only partial.
 
--- 
-Adam Langley agl@imperialviolet.org http://www.imperialviolet.org
+Please prefer to raise patches against linux-next if poss, especially
+during late -rc's.
+
