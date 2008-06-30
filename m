@@ -1,112 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761807AbYF3Qhm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760621AbYF3Qnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761807AbYF3Qhm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 12:37:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbYF3Qhe
+	id S1760621AbYF3Qnt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 12:43:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbYF3Qnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 12:37:34 -0400
-Received: from wx-out-0506.google.com ([66.249.82.238]:19795 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751515AbYF3Qhd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 12:37:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=qDEqJMBfdNMjrN0eFylRBHMcdcDtHmbdM9Ql5nm3ZXo73hS5+yigRQI6HV8amNpYqv
-         fXlr2xngv7kuFP8qXas305Dkgtfoni2S1nVhme50d0lFGkMeBs7M/yMO/lEBVvugavIe
-         bn1iavVILujd350jobA2Ul0ImAYH2FX7C9cW8=
-Message-ID: <48690BC7.5060809@panasas.com>
-Date: Mon, 30 Jun 2008 19:37:27 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
+	Mon, 30 Jun 2008 12:43:39 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:42563 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751800AbYF3Qni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 12:43:38 -0400
+Date: Mon, 30 Jun 2008 19:43:24 +0300
+From: Adrian Bunk <bunk@kernel.org>
 To: Jeff Dike <jdike@addtoit.com>
-CC: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: Benny Halevy <bhalevy@panasas.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] fix extern inline errors with gcc 4.3.0
+Message-ID: <20080630164324.GA1536@cs181140183.pp.htv.fi>
 References: <1214488251-20927-1-git-send-email-bhalevy@panasas.com> <20080627162645.GC8381@c2.user-mode-linux.org> <7225594ED4A1304C9E43D030A886D221050BE1@daytona.int.panasas.com> <48673A9B.8050907@panasas.com> <20080630162201.GC6643@c2.user-mode-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 In-Reply-To: <20080630162201.GC6643@c2.user-mode-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun. 30, 2008, 19:22 +0300, Jeff Dike <jdike@addtoit.com> wrote:
+On Mon, Jun 30, 2008 at 12:22:01PM -0400, Jeff Dike wrote:
 > On Sun, Jun 29, 2008 at 10:32:43AM +0300, Benny Halevy wrote:
->> Note that the crash happened with gcc 4.1.2 and it will get the
->> -fno-unit-at-a-time flag with the proposed patch.
->>
->> That said, this option or the lack of it ought not to cause any
->> runtime crashes.  If it does, I'd feel much more comfortable to know
->> exactly what the root cause is before deciding to use the flag to
->> workaround^hide it.
+> > Note that the crash happened with gcc 4.1.2 and it will get the
+> > -fno-unit-at-a-time flag with the proposed patch.
+> > 
+> > That said, this option or the lack of it ought not to cause any
+> > runtime crashes.  If it does, I'd feel much more comfortable to know
+> > exactly what the root cause is before deciding to use the flag to
+> > workaround^hide it.
 > 
 > I agree.
 > 
 > The constraints on [no-]unit-at-a-time that I see are:
-> 	i386 uses no-unit-at-a-time for pre-4.0 (not 4.3)
+>...
 > 	x86_64 uses unit-at-a-time always
-> 
-> 	Uli reported a crash on x86_64 with gcc 4.1.2 with unit-at-a-time
-> 	Ingo reported a gcc internal error with gcc 4.3 with
-> no-unit-at-a-time 
-> 	You are seeing extern inlines not resolved with gcc 4.3 with
-> no-unit-at-a-time 
-> 
-> I'm tempted to follow x86 on this, with the results that
-> 	extern inlines should be fine
-> 	Ingo's gcc crash should not reappear
-> 	Uli's crash may reappear
-> 
-> If that crash does come back, I'd say we should just debug it.  It's
-> likely UML implicitly relying on some gcc behavior anyway.
+>...
 
-Agreed.
+The only gcc versions that ever supported unit-at-a-time without 
+enabling it by default was some patched gcc 3.3 that included a
+backport of unit-at-a-time to gcc 3.3.
 
-> 
-> This is the patch that I'm dropping into my tree:
-> 
-> Index: linux-2.6.22/arch/um/Makefile-i386
-> ===================================================================
-> --- linux-2.6.22.orig/arch/um/Makefile-i386	2008-05-29 11:21:25.000000000 -0400
-> +++ linux-2.6.22/arch/um/Makefile-i386	2008-06-30 12:20:01.000000000 -0400
-> @@ -32,4 +32,10 @@ cflags-y += $(call cc-option,-mpreferred
->  # an unresolved reference.
->  cflags-y += -ffreestanding
->  
-> +# Disable unit-at-a-time mode on pre-gcc-4.0 compilers, it makes gcc use
-> +# a lot more stack due to the lack of sharing of stacklots.  Also, gcc
-> +# 4.3.0 needs -funit-at-a-time for extern inline functions.
-> +KBUILD_CFLAGS += $(shell if [ $(call cc-version) -lt 0403 ] ; then \
+Just as a note that I doubt this matters in practice today.
 
-This isn't exactly aligned with the comment above.
-Should be -lt 0400, as in 22eecde2f9034764a3fd095eecfa3adfb8ec9a98?
-
-> +			echo $(call cc-option,-fno-unit-at-a-time); fi ;)
-> +
->  KBUILD_CFLAGS += $(cflags-y)
-> Index: linux-2.6.22/arch/um/Makefile-x86_64
-> ===================================================================
-> --- linux-2.6.22.orig/arch/um/Makefile-x86_64	2008-05-29 11:21:25.000000000 -0400
-> +++ linux-2.6.22/arch/um/Makefile-x86_64	2008-06-30 12:21:01.000000000 -0400
-> @@ -21,3 +21,6 @@ HEADER_ARCH := x86
->  
->  LINK-$(CONFIG_LD_SCRIPT_DYN) += -Wl,-rpath,/lib64
->  LINK-y += -m64
-> +
-> +# Do unit-at-a-time unconditionally on x86_64, following the host
-> +KBUILD_CFLAGS += $(call cc-option,-funit-at-a-time)
-
-Hmm, arch/um/Makefile includes $(srctree)/$(ARCH_DIR)/Makefile-$(SUBARCH)
-before add -fno-unit-at-a-time to KBUILD_CFLAGS.
-Will this override the flag set first here?
-
-Benny
-
-> 
 > 				Jeff
-> 
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
