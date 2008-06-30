@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbYF3H5p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759865AbYF3H6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755146AbYF3H5p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 03:57:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbYF3H5f
+	id S1759865AbYF3H6b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 03:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755389AbYF3H6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 03:57:35 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50179 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753687AbYF3H5e (ORCPT
+	Mon, 30 Jun 2008 03:58:20 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:2019 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755090AbYF3H6S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 03:57:34 -0400
-Date: Mon, 30 Jun 2008 16:56:34 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [RFC 5/5] Memory controller soft limit reclaim on contention
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <48688FCB.9040205@linux.vnet.ibm.com>
-References: <20080630161657.37E3.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48688FCB.9040205@linux.vnet.ibm.com>
-Message-Id: <20080630165125.37E6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Mon, 30 Jun 2008 03:58:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=slGvsGyHFUzkPtMCxSOC3hkvSwAaudVkp3N/iwFPJQYEShu1c4LLFv5C2EFgYD9S5g
+         zlie/YlCOzkxqk6ucWXtGS8BSLoBW6q3DZw1bwB7e+KzT5L35MEYaLcks1rZjyTmGt7q
+         Jk2N/gm1JxCc9ARzfv7GYKLH/uMKuUR7wun9o=
+Message-ID: <ce513bcc0806300058mbe0f15eya07fafbb9ba4a56@mail.gmail.com>
+Date: Mon, 30 Jun 2008 10:58:16 +0300
+From: "Erez Zilber" <erezzi.list@gmail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: Should a block device enforce block atomicity?
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080630065525.GI20826@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Disposition: inline
+References: <ce513bcc0806292351t7f4ad933l920112381f4ebb4@mail.gmail.com>
+	 <20080630065525.GI20826@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >>  #endif /* _LINUX_MEMCONTROL_H */
-> >> diff -puN mm/vmscan.c~memory-controller-soft-limit-reclaim-on-contention mm/vmscan.c
-> >> diff -puN mm/page_alloc.c~memory-controller-soft-limit-reclaim-on-contention mm/page_alloc.c
-> >> --- linux-2.6.26-rc5/mm/page_alloc.c~memory-controller-soft-limit-reclaim-on-contention	2008-06-27 20:43:10.000000000 +0530
-> >> +++ linux-2.6.26-rc5-balbir/mm/page_alloc.c	2008-06-27 20:43:10.000000000 +0530
-> >> @@ -1669,7 +1669,14 @@ nofail_alloc:
-> >>  	reclaim_state.reclaimed_slab = 0;
-> >>  	p->reclaim_state = &reclaim_state;
-> >>  
-> >> -	did_some_progress = try_to_free_pages(zonelist, order, gfp_mask);
-> >> +	/*
-> >> +	 * First try to reclaim from memory control groups that have
-> >> +	 * exceeded their soft limit
-> >> +	 */
-> >> +	did_some_progress = mem_cgroup_reclaim_on_contention(gfp_mask);
-> >> +	if (!did_some_progress)
-> >> +		did_some_progress = try_to_free_pages(zonelist, order,
-> >> +							gfp_mask);
-> > 
-> > try_to_free_mem_cgroup_pages() assume memcg need only one page.
-> > but this code break it.
-> > 
-> > if anyone need several continuous memory, mem_cgroup_reclaim_on_contention() reclaim 
-> > one or a very few page and return >0, then cause page allocation failure.
-> > 
-> > shouldn't we extend try_to_free_mem_cgroup_pages() agruments?
-> > 
-> > 
-> > in addition, if we don't assume try_to_free_mem_cgroup_pages() need one page,
-> > we should implement lumpy reclaim to mem_cgroup_isolate_pages().
-> > otherwise, cpu wasting significant increase.
-> 
-> The memory controller currently controls just *user* pages, which are all of
-> order 1. Since pages are faulted in at different times, lumpy reclaim was not
-> the highest priority for the memory controller. NOTE: the pages are duplicated
-> on the per-zone LRU, so lumpy reclaim from there should work just fine.
+On Mon, Jun 30, 2008 at 9:55 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Mon, Jun 30 2008, Erez Zilber wrote:
+>> Hi,
+>>
+>> I have a question about block devices and whether they are required to
+>> enforce block atomicity:
+>>
+>> I read the code of drivers/block/brd.c, and I didn't see any locking
+>> when blocks are read/written. I also looked at the block layer code
+>> that calls brd and didn't find any locking there. Does it mean that
+>> there's no block atomicity (i.e. multiple threads can write a single
+>> block at the same time)? Is there any hidden assumption here? Is this
+>> the responsibility of the application to do that (e.g. not start a
+>> WRITE request before other READ/WRITE requests to the same block were
+>> completed)?
+>
+> The block layer doesn't give such guarentees, not for "regular" block
+> devices either. If the IO goes through the page cache then that will
+> serialize IO to a given page, but with eg O_DIRECT IO, you could have
+> the same block in flight several times. So if you are doing raw IO, the
+> application has to ensure ordering of the same block.
+>
 
-yes, memcg used only one page.
-but mem_cgroup_reclaim_on_contention() reclaim for generic alloc_pages(), instead for memcg.
-we can't assume memcg usage.
-isn't it?
+So, do you say that people that write applications need to take care
+of I/O serialization, and block devices (and the block layer itself)
+don't need to care about this problem? I thought that standard disks
+guarantee block atomicity (i.e. they don't count on the layers above
+them to do that).
 
-
-
-
+Erez
