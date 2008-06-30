@@ -1,141 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759561AbYF3POE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbYF3PXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759561AbYF3POE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 11:14:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYF3PNz
+	id S1755339AbYF3PXM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 11:23:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYF3PXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 11:13:55 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:44673 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752665AbYF3PNy (ORCPT
+	Mon, 30 Jun 2008 11:23:00 -0400
+Received: from smtp1.riverbed.com ([206.169.144.12]:10374 "EHLO
+	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751345AbYF3PW7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 11:13:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=w99vDx21xU5BieA32zfxJFzkH0Zvd0ln9GWMNZpIaczL65USdemCNMdij6sdOczer6
-         JCSfKmID/mAjMCpSHtK4cVGHtf8ikr6iL5OpiIrQarHT2tHMItc+igHx6u/G7kcaQwkr
-         QT/bmezr4vurMX4Tor6kNe77/PQOZkcyNR4Fk=
-Date: Mon, 30 Jun 2008 11:13:50 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [git pull] Input updates for 2.6.26-rc8
-Message-ID: <20080630151349.GA19527@anvil.corenet.prv>
+	Mon, 30 Jun 2008 11:22:59 -0400
+Date: Mon, 30 Jun 2008 08:23:40 -0700
+From: Arthur Jones <ajones@riverbed.com>
+To: Doug Thompson <norsk5@yahoo.com>
+CC: Andi Kleen <andi@firstfloor.org>,
+       "dougthompson@xmission.com" <dougthompson@xmission.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "bluesmoke-devel@lists.sourceforge.net" 
+	<bluesmoke-devel@lists.sourceforge.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/13] EDAC i5100 new intel chipset driver
+Message-ID: <20080630152340.GH10571@ajones-laptop.nbttech.com>
+References: <87r6aip2pi.fsf@basil.nowhere.org> <77374.55758.qm@web50103.mail.re2.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <77374.55758.qm@web50103.mail.re2.yahoo.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Hi Doug, ...
 
-Please pull from:
+On Fri, Jun 27, 2008 at 11:15:06PM -0700, Doug Thompson wrote:
+> 
+> --- Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > dougthompson@xmission.com writes:
+> > >
+> > > 2)  I have not yet tackled the de-interleaving of the
+> > > rank/controller address space into the physical address
+> > > space of the CPU.  There is nothing fundamentally missing,
+> > > it is just ending up to be a lot of code, and I'd rather
+> > > keep it separate for now, esp since it doesn't work yet...
+> > >
+> > > 3)  The code depends on a particular i5100 chip select
+> > > to DIMM mainboard chip select mapping.  This mapping
+> > > seems obvious to me in order to support dual and single
+> > > ranked memory, but it is not unique and DIMM labels
+> > > could be wrong on other mainboards.  There is no way
+> > > to query this mapping that I know of.
+> >
+> > Since there's a non negligible probability that the output
+> > of this driver is completely misleading because of (2) and (3)
+> > and probably (4) too [reporting the wrong DIMMs etc.]
+> > would it be possible to add some flag to EDAC that
+> > warns the user that the output is not fully reliable?\
+> 
+> good idea.
+> 
+> Arthur, could you add some more text to the driver's output, before the call to the
+> core's output function, doing exactly that? Explaining just what you DO know, and what you don't
+> know?
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+Would it make sense to leave the DIMM labeling in, but
+conditional on a mainboard whitelist/blacklist?  E.g., I
+know the mapping on my mainboard is correct and I can get
+that info from DMI.  The thing is, it's very hard to know
+what DIMM went bad from the bank/rank/controller info
+in the dmesg output.
 
-to receive updates for the input subsystem. You will get a new keycode
-definition and changes to force-feedback core locking that bring it in
-sync with the recent locking changes in the input core. While these
-locking changes have not been exposed in 'next' I feel they should make
-into 2.6.26, because right now FF is simply broken - input_event takes a
-spinlock and then calls input_ff_event that tries to take a mutex.
+What do you think?  It's a lot of work, but it may be
+worth it?
 
-Changelog:
----------
+Arthur
 
-Bastien Nocera (1):
-      Input: add KEY_MEDIA_REPEAT definition
-
-Dmitry Torokhov (1):
-      Input: fix locking in force-feedback core
-
-
-Diffstat:
---------
-
- drivers/input/ff-core.c |   17 +++++++++++------
- include/linux/input.h   |    2 +-
- 2 files changed, 12 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/input/ff-core.c b/drivers/input/ff-core.c
-index eebc724..4c01464 100644
---- a/drivers/input/ff-core.c
-+++ b/drivers/input/ff-core.c
-@@ -166,8 +166,10 @@ int input_ff_upload(struct input_dev *dev, struct ff_effect *effect,
- 	if (ret)
- 		goto out;
- 
-+	spin_lock_irq(&dev->event_lock);
- 	ff->effects[id] = *effect;
- 	ff->effect_owners[id] = file;
-+	spin_unlock_irq(&dev->event_lock);
- 
-  out:
- 	mutex_unlock(&ff->mutex);
-@@ -189,16 +191,22 @@ static int erase_effect(struct input_dev *dev, int effect_id,
- 	if (error)
- 		return error;
- 
-+	spin_lock_irq(&dev->event_lock);
- 	ff->playback(dev, effect_id, 0);
-+	ff->effect_owners[effect_id] = NULL;
-+	spin_unlock_irq(&dev->event_lock);
- 
- 	if (ff->erase) {
- 		error = ff->erase(dev, effect_id);
--		if (error)
-+		if (error) {
-+			spin_lock_irq(&dev->event_lock);
-+			ff->effect_owners[effect_id] = file;
-+			spin_unlock_irq(&dev->event_lock);
-+
- 			return error;
-+		}
- 	}
- 
--	ff->effect_owners[effect_id] = NULL;
--
- 	return 0;
- }
- 
-@@ -263,8 +271,6 @@ int input_ff_event(struct input_dev *dev, unsigned int type,
- 	if (type != EV_FF)
- 		return 0;
- 
--	mutex_lock(&ff->mutex);
--
- 	switch (code) {
- 	case FF_GAIN:
- 		if (!test_bit(FF_GAIN, dev->ffbit) || value > 0xffff)
-@@ -286,7 +292,6 @@ int input_ff_event(struct input_dev *dev, unsigned int type,
- 		break;
- 	}
- 
--	mutex_unlock(&ff->mutex);
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(input_ff_event);
-diff --git a/include/linux/input.h b/include/linux/input.h
-index e075c4b..d150c57 100644
---- a/include/linux/input.h
-+++ b/include/linux/input.h
-@@ -534,8 +534,8 @@ struct input_absinfo {
- 
- #define KEY_FRAMEBACK		0x1b4	/* Consumer - transport controls */
- #define KEY_FRAMEFORWARD	0x1b5
--
- #define KEY_CONTEXT_MENU	0x1b6	/* GenDesc - system context menu */
-+#define KEY_MEDIA_REPEAT	0x1b7	/* Consumer - transport control */
- 
- #define KEY_DEL_EOL		0x1c0
- #define KEY_DEL_EOS		0x1c1
-
-
--- 
-Dmitry
+> > -Andi (who can just see people replacing the wrong DIMMs and
+> > then blaming Linux)
+> >
+> >
+> 
+> 
+> W1DUG
+> 
+> -------------------------------------------------------------------------
+> Check out the new SourceForge.net Marketplace.
+> It's the best place to buy or sell services for
+> just about anything Open Source.
+> http://sourceforge.net/services/buy/index.php
+> _______________________________________________
+> bluesmoke-devel mailing list
+> bluesmoke-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/bluesmoke-devel
