@@ -1,267 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761727AbYF3RKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762283AbYF3RLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761727AbYF3RKe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbYF3RKZ
+	id S1762283AbYF3RLw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 13:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYF3RLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:10:25 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:43782 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753154AbYF3RKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:10:23 -0400
-Date: Mon, 30 Jun 2008 13:10:19 -0400
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Neil Brown <neilb@suse.de>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH - take 2] knfsd: nfsd: Handle ERESTARTSYS from
-	syscalls. (and possible kthread_stop changes)
-Message-ID: <20080630171019.GA4877@fieldses.org>
-References: <20080619101025.24263.patches@notabene> <1080619001109.24338@suse.de> <20080618210947.2110a541@tleilax.poochiereds.net> <18521.50300.572838.123366@notabene.brown> <20080619063824.00ca6381@tleilax.poochiereds.net> <18526.60523.584503.68076@notabene.brown> <20080622205244.261a787d@tleilax.poochiereds.net> <18528.14347.525397.917553@notabene.brown> <20080630083536.680b093a@barsoom.rdu.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080630083536.680b093a@barsoom.rdu.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Mon, 30 Jun 2008 13:11:44 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:56354 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753241AbYF3RLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 13:11:43 -0400
+Date: Mon, 30 Jun 2008 19:11:33 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>
+Cc: Rene Herman <rene.herman@keyaccess.nl>,
+       ALSA devel <alsa-devel@alsa-project.org>, mulix@mulix.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [alsa-devel] looping S/PDIF data
+Message-ID: <20080630191133.7f7c349d@mjolnir.drzeus.cx>
+In-Reply-To: <485CF0AE.3020204@keyaccess.nl>
+References: <20080531112606.5884a1c9@mjolnir.drzeus.cx>
+	<20080617215504.3203a5ed@mjolnir.drzeus.cx>
+	<4858B84B.4030800@keyaccess.nl>
+	<s5hej6t91u1.wl%tiwai@suse.de>
+	<Pine.LNX.4.61.0806191435270.1798@tm8103-a.perex-int.cz>
+	<s5hskv97fqk.wl%tiwai@suse.de>
+	<20080620214516.28e9d3f3@mjolnir.drzeus.cx>
+	<485C0A97.7020909@keyaccess.nl>
+	<20080621000050.43160d47@mjolnir.drzeus.cx>
+	<485C2DF7.7080408@keyaccess.nl>
+	<20080621010910.018f880d@mjolnir.drzeus.cx>
+	<485CF0AE.3020204@keyaccess.nl>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
+X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-9717-1214845266-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 08:35:36AM -0400, Jeff Layton wrote:
-> The idea looks reasonable, but the patch above doesn't apply to Bruce's
-> for-2.6.27 tree. The nfsd() function has changed a bit. Actually, I
-> think we can make this even simpler. kthreads start with all signals
-> ignored and the new patch enables all of the ones in SHUTDOWN_SIGS. So
-> I don't think we need any signal masking at all.
-> 
-> How about this patch? It should apply on top of the patchset already
-> in Bruce's tree.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Looks reasonable to me; applied for 2.6.27 barring any test failures or
-objections.
+--=_freyr.drzeus.cx-9717-1214845266-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
---b.
+On Sat, 21 Jun 2008 14:14:38 +0200
+Rene Herman <rene.herman@keyaccess.nl> wrote:
 
-> 
-> ------------[snip]--------------
-> 
-> Subject: [PATCH] knfsd: treat all shutdown signals as equivalent
-> 
-> knfsd currently uses 2 signal masks when processing requests. A "loose"
-> mask (SHUTDOWN_SIGS) that it uses when receiving network requests, and
-> then a more "strict" mask (ALLOWED_SIGS, which is just SIGKILL) that it
-> allows when doing the actual operation on the local storage.
-> 
-> This is apparently unnecessarily complicated. The underlying filesystem
-> should be able to sanely handle a signal in the middle of an operation.
-> This patch removes the signal mask handling from knfsd altogether. When
-> knfsd is started as a kthread, all signals are ignored. It then allows
-> all of the signals in SHUTDOWN_SIGS. There's no need to set the mask
-> as well.
-> 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> ---
->  fs/nfsd/nfssvc.c |   20 ++------------------
->  1 files changed, 2 insertions(+), 18 deletions(-)
-> 
-> diff --git a/fs/nfsd/nfssvc.c b/fs/nfsd/nfssvc.c
-> index 96fdbca..d20a087 100644
-> --- a/fs/nfsd/nfssvc.c
-> +++ b/fs/nfsd/nfssvc.c
-> @@ -37,13 +37,7 @@
->  
->  #define NFSDDBG_FACILITY	NFSDDBG_SVC
->  
-> -/* these signals will be delivered to an nfsd thread 
-> - * when handling a request
-> - */
-> -#define ALLOWED_SIGS	(sigmask(SIGKILL))
-> -/* these signals will be delivered to an nfsd thread
-> - * when not handling a request. i.e. when waiting
-> - */
-> +/* These signals can be used to shutdown an nfsd thread. */
->  #define SHUTDOWN_SIGS	(sigmask(SIGKILL) | sigmask(SIGHUP) | sigmask(SIGINT) | sigmask(SIGQUIT))
->  
->  extern struct svc_program	nfsd_program;
-> @@ -414,7 +408,6 @@ nfsd(void *vrqstp)
->  {
->  	struct svc_rqst *rqstp = (struct svc_rqst *) vrqstp;
->  	struct fs_struct *fsp;
-> -	sigset_t shutdown_mask, allowed_mask;
->  	int err, preverr = 0;
->  	unsigned int signo;
->  
-> @@ -433,15 +426,12 @@ nfsd(void *vrqstp)
->  	current->fs = fsp;
->  	current->fs->umask = 0;
->  
-> -	siginitsetinv(&shutdown_mask, SHUTDOWN_SIGS);
-> -	siginitsetinv(&allowed_mask, ALLOWED_SIGS);
-> -
->  	/*
->  	 * thread is spawned with all signals set to SIG_IGN, re-enable
->  	 * the ones that matter
->  	 */
->  	for (signo = 1; signo <= _NSIG; signo++) {
-> -		if (!sigismember(&shutdown_mask, signo))
-> +		if (siginmask(signo, SHUTDOWN_SIGS))
->  			allow_signal(signo);
->  	}
->  
-> @@ -460,9 +450,6 @@ nfsd(void *vrqstp)
->  	 * The main request loop
->  	 */
->  	for (;;) {
-> -		/* Block all but the shutdown signals */
-> -		sigprocmask(SIG_SETMASK, &shutdown_mask, NULL);
-> -
->  		/*
->  		 * Find a socket with data available and call its
->  		 * recvfrom routine.
-> @@ -487,9 +474,6 @@ nfsd(void *vrqstp)
->  		/* Lock the export hash tables for reading. */
->  		exp_readlock();
->  
-> -		/* Process request with signals blocked. */
-> -		sigprocmask(SIG_SETMASK, &allowed_mask, NULL);
-> -
->  		svc_process(rqstp);
->  
->  		/* Unlock export hash tables */
-> -- 
-> 1.5.5.1
-> 
-> 
-> 
-> > > 
-> > > The latest patch doesn't use kthread_stop with nfsd. I figured it was
-> > > best to avoid having multiple takedown methods, and since we're using
-> > > signals here anyway, I just kept signaling as the only way to take down
-> > > nfsd. Plus, as you mention -- all kthread_stop's are serialized, which
-> > > could have meant that nfsd's would take a long time to come down on a
-> > > busy box with a lot of them.
-> > 
-> > Oh, good.  I must have been looking at an old patch.
-> > 
-> > > 
-> > > As a side note, I'm not terribly thrilled with how kthread_stop is
-> > > implemented. I worry that a stuck kthread would block unrelated
-> > > kthreads from coming down. I did a patch 6 mos ago or so to make it so
-> > > that kthread_stop's could be done in parallel. The downside was that it
-> > > added a new field to the task_struct (which is already too bloated,
-> > > IMO). It might be worth resurrecting that at some point (possibly
-> > > making the new field a union with another field that's unused in
-> > > kthreads), or considering a different approach to parallelize
-> > > kthread_stop.
-> > 
-> > One the one hand, kthreads are expected to not block and to check for
-> > kthread_should_stop very often, so this wouldn't be a problem.
-> > On the other hand, expectations like this are quickly invalidated, and
-> > the code probably should be fixed.
-> > I suspect we could do without adding anything to task_struct.
-> > Instead of just one kthread_stop_info, have a linked list, one entry
-> > for each thread being stopped at the moment.  kthread_stop adds to
-> > the list, sets PF_EXITING (I hope that is safe) and wakes the process.
-> > kthread_should_stop tests PF_EXITING.
-> > When kthread() finishes, it does a linear search (the list should be
-> > short) and calls complete and the relevant .done.
-> > 
-> > Something like this?
-> > 
-> > NeilBrown
-> > 
-> > 
-> > diff --git a/kernel/kthread.c b/kernel/kthread.c
-> > index bd1b9ea..107290a 100644
-> > --- a/kernel/kthread.c
-> > +++ b/kernel/kthread.c
-> > @@ -39,12 +39,13 @@ struct kthread_stop_info
-> >  	struct task_struct *k;
-> >  	int err;
-> >  	struct completion done;
-> > +	struct kthread_stp_info *next;
-> >  };
-> >  
-> >  /* Thread stopping is done by setthing this var: lock serializes
-> >   * multiple kthread_stop calls. */
-> >  static DEFINE_MUTEX(kthread_stop_lock);
-> > -static struct kthread_stop_info kthread_stop_info;
-> > +static struct kthread_stop_info *kthread_stop_info;
-> >  
-> >  /**
-> >   * kthread_should_stop - should this kthread return now?
-> > @@ -55,7 +56,7 @@ static struct kthread_stop_info kthread_stop_info;
-> >   */
-> >  int kthread_should_stop(void)
-> >  {
-> > -	return (kthread_stop_info.k == current);
-> > +	return test_bit(PF_EXITING, &current.flags);
-> >  }
-> >  EXPORT_SYMBOL(kthread_should_stop);
-> >  
-> > @@ -80,8 +81,17 @@ static int kthread(void *_create)
-> >  
-> >  	/* It might have exited on its own, w/o kthread_stop.  Check. */
-> >  	if (kthread_should_stop()) {
-> > -		kthread_stop_info.err = ret;
-> > -		complete(&kthread_stop_info.done);
-> > +		struct kthread_stop_info **ksip;
-> > +		mutex_lock(&kthread_stop_lock);
-> > +		for (ksip = &kthread_stop_info ; *ksip ; ksip = &(*ksip)->next)
-> > +			if ((*ksip)->k == current)
-> > +				break;
-> > +		*ksip = (*ksip)->next;
-> > +		(*ksip)->next = NULL;
-> > +		mutex_unlock(&kthread_stop_lock);
-> > +
-> > +		ksi->err = ret;
-> > +		complete(&ksi->done);
-> >  	}
-> >  	return 0;
-> >  }
-> > @@ -199,26 +209,20 @@ EXPORT_SYMBOL(kthread_bind);
-> >  int kthread_stop(struct task_struct *k)
-> >  {
-> >  	int ret;
-> > +	struct kthread_stop_info ksi;
-> >  
-> >  	mutex_lock(&kthread_stop_lock);
-> >  
-> > -	/* It could exit after stop_info.k set, but before wake_up_process. */
-> > -	get_task_struct(k);
-> > +	init_completion(&ksi->done);
-> > +	ksi->k = k;
-> >  
-> > -	/* Must init completion *before* thread sees kthread_stop_info.k */
-> > -	init_completion(&kthread_stop_info.done);
-> > -	smp_wmb();
-> > -
-> > -	/* Now set kthread_should_stop() to true, and wake it up. */
-> > -	kthread_stop_info.k = k;
-> > +	set_bit(PF_EXITING, &k->flags);
-> >  	wake_up_process(k);
-> > -	put_task_struct(k);
-> > +	mutex_unlock(&kthread_stop_lock);
-> >  
-> > -	/* Once it dies, reset stop ptr, gather result and we're done. */
-> > -	wait_for_completion(&kthread_stop_info.done);
-> > -	kthread_stop_info.k = NULL;
-> > +	/* Once it dies gather result and we're done. */
-> > +	wait_for_completion(&ksi->done);
-> >  	ret = kthread_stop_info.err;
-> > -	mutex_unlock(&kthread_stop_lock);
-> >  
-> >  	return ret;
-> >  }
-> 
-> 
-> That looks reasonable to me, though I tend to find standard list
-> functions easier to follow...
-> 
-> The main reason I was going to add a field to the task_struct was
-> because I wanted to make sure that kthread_should_stop() was a quick
-> operation. If we can just use PF_EXITING then that's definitely a
-> better scheme.
-> 
-> -- 
-> Jeff Layton <jlayton@redhat.com>
+> On 21-06-08 01:09, Pierre Ossman wrote:
+>=20
+> > trident: pause s/pdif output
+> >=20
+> > Stop the S/PDIF DMA engine and output when the device is told to pause.
+> > It will keep on looping the current buffer contents if this isn't done.
+> >=20
+> > Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+>=20
+> Verified to fix the reported pause problem on a 4DWaveNX (and indeed to=20
+> not affect a 4DWaveDX). The Trident SPDIF doesn't seem capable of 44100=20
+> which for me means it's not all that useful but you no doubt know=20
+> yourself that/if it is for you...
+>=20
+> Tested-by: Rene Herman <rene.herman@gmail.com>
+
+
+Sooo.... ack? nak? limbo?
+
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-9717-1214845266-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkhpE8sACgkQ7b8eESbyJLg17QCfXfHsi/d+P6UenxdmiLyAmBGw
+OVEAmgLJq9jIFYpx+N/nXnk1iUbP7RUR
+=GHVX
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-9717-1214845266-0001-2--
