@@ -1,52 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760767AbYF3JY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760816AbYF3JZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760767AbYF3JY7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 05:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760227AbYF3JYr
+	id S1760816AbYF3JZo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 05:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbYF3JZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 05:24:47 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:55457 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755095AbYF3JYp (ORCPT
+	Mon, 30 Jun 2008 05:25:34 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:48558 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754474AbYF3JZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 05:24:45 -0400
-Message-ID: <4868A659.2080308@firstfloor.org>
-Date: Mon, 30 Jun 2008 11:24:41 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Mon, 30 Jun 2008 05:25:33 -0400
+Date: Mon, 30 Jun 2008 11:25:28 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [regression] CD-DA delay needed after insertion
+ (http://bugzilla.kernel.org/show_bug.cgi?id=10974)
+In-Reply-To: <1214605634.3394.91.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0806301120570.10868@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
+ <1213540781.3517.18.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0806161659440.30122@vixen.sonytel.be>
+ <1213648258.3420.12.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0806171530340.22840@vixen.sonytel.be>
+ <1214605634.3394.91.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Andi Kleen <andi-suse@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <20080629200210.GB31633@elte.hu> <Pine.LNX.4.55.0806292104560.22548@cliff.in.clinika.pl> <200806300106.38414.rjw@sisk.pl> <Pine.LNX.4.55.0806300205180.22548@cliff.in.clinika.pl>
-In-Reply-To: <Pine.LNX.4.55.0806300205180.22548@cliff.in.clinika.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1262841680-1214817928=:10868"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
->  That is certainly true for standard hardware.  We have to take
-> responsibility for own bugs, sure.  I cannot readily understand why you
-> apparently try to imply hardware vendors do not.
+---584349381-1262841680-1214817928=:10868
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Sorry Maciej, you're totally off base on that. On consumer hardware
-vendors very rarely fix anything after release of the machine
-and in general users expect Linux to work around any BIOS or
-hardware bugs that happen (especially if it's a regression and worked
-before)
+	Hi James,
 
-So you either need to provide a workaround for the problem or your
-patches should be reverted.
+On Fri, 27 Jun 2008, James Bottomley wrote:
+> > git-bisect taught me it was introduced by
+> > 
+> > commit 38582a62ecd337de4212004c7d4844899dc57890
+> > Author: James Bottomley <James.Bottomley@HansenPartnership.com>
+> > Date:   Wed Feb 6 13:01:58 2008 -0600
+> > 
+> >     [SCSI] sr: fix test unit ready responses
+> >     
+> >     Commit 210ba1d1724f5c4ed87a2ab1a21ca861a915f734 updated sr.c to use
+> >     the scsi_test_unit_ready() function.  Unfortunately, this has the
+> >     wrong characteristic of eating NOT_READY returns which sr.c relies on
+> >     for tray status.
+> >     
+> >     Fix by rolling an internal sr_test_unit_ready() that doesn't do this.
+> 
+> OK, I thought I had a test case for this, but when I revert this commit
+> on git head (and fix up the one reject which just leaves the sr_
+> function in place) I still produce the same behaviour.
+> 
+> What I'm trying is 
+> 
+> sg_start -i -l <cdrom>
+> 
+> to close the tray followed by your cdparanoia command
+> 
+> Could you see if reverting this commit on git head works for you (in
+> which case I'm not reproducing it correctly)?
 
--Andi
+On 9bedbcb207ed9a571b239231d99c8fd4a34ae24d, the sequence
 
+    eject; sg_start -i -l /dev/scd0; cdparanoia \
+	-d /dev/scd0 -Z -q 1-1[:1] /dev/null || echo failed
+
+fails with
+
+    004: Unable to read table of contents header
+
+After reverting 38582a62ecd337de4212004c7d4844899dc57890, it works.
+
+I added the eject as the PS3 has a slot-loading drive.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Technology and Software Centre Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis 293-0376800-10 GEBA-BE-BB
+---584349381-1262841680-1214817928=:10868--
