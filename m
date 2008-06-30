@@ -1,90 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934126AbYF3VxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934181AbYF3Vxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934126AbYF3VxW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 17:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933626AbYF3Vnw
+	id S934181AbYF3Vxt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 17:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933691AbYF3Von
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 17:43:52 -0400
-Received: from atlantis.8hz.com ([212.129.237.78]:54074 "EHLO atlantis.8hz.com"
+	Mon, 30 Jun 2008 17:44:43 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:54200 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933600AbYF3Vnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 17:43:51 -0400
-Date: Mon, 30 Jun 2008 21:43:47 +0000
-From: Sean Young <sean@mess.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       "H. Anvin" <hpa@zytor.com>
-Subject: Re: Regression: boot failure on AMD Elan TS-5500
-Message-ID: <20080630214347.GA57988@atlantis.8hz.com>
-References: <20080616121138.GA51097@atlantis.8hz.com> <200806162327.34912.rusty@rustcorp.com.au> <48566C88.6000702@goop.org> <20080616161944.GA53539@atlantis.8hz.com>
-Mime-Version: 1.0
+	id S933694AbYF3Vol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 17:44:41 -0400
+Date: Mon, 30 Jun 2008 16:44:23 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Tejun Heo <htejun@gmail.com>, Benjamin Thery <benjamin.thery@bull.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 06/11] sysfs: Implement sysfs tagged directory support.
+Message-ID: <20080630214421.GA29605@us.ibm.com>
+References: <20080618170729.808539948@theryb.frec.bull.fr> <20080618170731.002784342@theryb.frec.bull.fr> <485F04E1.70204@gmail.com> <m1y74svtff.fsf@frodo.ebiederm.org> <486706C9.9040303@gmail.com> <m18wwmsqdv.fsf@frodo.ebiederm.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080616161944.GA53539@atlantis.8hz.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <m18wwmsqdv.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 04:19:44PM +0000, Sean Young wrote:
-> On Mon, Jun 16, 2008 at 06:37:12AM -0700, Jeremy Fitzhardinge wrote:
-> > Rusty Russell wrote:
-> > >On Monday 16 June 2008 22:11:39 Sean Young wrote:
-> > >  
-> > >>The symptons are either a crash or reboot on booting the kernel. No
-> > >>printk's have occurred yet -- even with early printk on.
-> > >>
-> > >>2.6.15 worked on this board however current does not. I've bisected it to:
-> > >>
-> > >>	commit a24e785111a32ccb7cebafd24b1b1cb474ea8e5d
-> > >>	Author: Rusty Russell <rusty@rustcorp.com.au>
-> > >>	Date:   Sun Oct 21 16:41:35 2007 -0700
-> > >>
-> > >>	    i386: paravirt boot sequence
-> > >>    
-> > >
-> > >Hi Sean,
-> > >
-> > >   Thanks for tracking this down.  Can we try reverting this in pieces to 
-> > >   see exactly what the cause was?
-> > >
-> > >1) Revert arch/x86/boot/compressed/head_32.S
-> > >2) If that doesn't fix it, Try removing the 8 lines which were added to 
-> > >arch/x86/kernel/head_32.S
-> > >  
-> > And the arch/x86/boot/compressed/misc_32.c change too, just in case...
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> Tejun Heo <htejun@gmail.com> writes:
 > 
-> Reverting only head_32.S makes the problem go away. I didn't try any other
-> changes.
+> > Hello, Eric.
+> >
+> > Eric W. Biederman wrote:
+> >> Tejun thank you for the review, and my apologies for the delayed
+> >> reply.
+> >
+> > Me being the king of delays, no need for apologies.  :-)
+> >
+> >>> As before, I can't bring myself to like this interface.  Is computing
+> >>> tags dynamically really necessary?  Can't we do the followings?
+> >> 
+> >> It isn't so much computing tags dynamically but rather it is reading them
+> >> from where they are stored.
+> >
+> > It's still dynamic from sysfs's POV and I think that will make
+> > maintenance more difficult.
+> 
+> Potentially.  I have no problem make it clear that things are more static.
+> 
+> >> There is also a second dimension here we multiplex different
+> >> directories based on different sets of tags.   One directory based
+> >> on user namespaces another on the network namespaces.
+> >
+> > No matter which criteria is used to select ns, it should end up being
+> > mapped to a set of tags (here, ida allocated numbers).  Unless tags can
+> > change dynamically, there shouldn't be functional difference.
+> >
+> >> The tags in practice are just pointers to the namespace pointers.
+> >> 
+> >> So while we could use the ida technique to specify which set of tags
+> >> we are talking about for a directory it isn't sufficient.
+> >
+> > I failed to follow here.  Can you please elaborate a bit?  If you can
+> > describe a simple example to me, it would be much appreciated.
+> 
+> See below.
+> 
+> >> The question sysfs_tag_enabled(sb, tag) makes no sense to me.
+> >> Especially in the context of needed a sysfs_sb_show_tag(sb, tag);
+> >> 
+> >> The current structure is because of all of the darn fool races and
+> >> magic that sysfs does.  We have to say for a given directory:  Your
+> >> contents will always be tagged, and only those that one tag that
+> >> matches what was captured by the superblock when sysfs is mounted
+> >> will be shown.
+> >
+> > sysfs_tag_enabled() was meant to test whether a directory which is
+> > tagged should be shown under the current sb.
+> 
+> Ah.  When we are doing readdir or lookup.  Yes that makes sense.
+> 
+> See below.  I honestly think sysfs_tab_enabled is the wrong question.
+> 
+> >>> Tags which can change dynamically seems too confusing to me and it
+> >>> makes things difficult to verify as it's unclear how those tags are
+> >>> gonna to change.
+> >> 
+> >> We have a  fundamental issue that we have to handle, and it sounds like
+> >> you are proposing something that will not handle it.
+> >> 
+> >> - network devices can move between namespaces.
+> >> - network devices have driver specific sysfs attributes hanging off of them.
+> >> 
+> >> So we have to move the network devices and their sysfs attributes
+> >> between namespaces, and I implemented that in kobject_rename,
+> >> sysfs_rename path.
+> >> 
+> >> The tags on a kobject can only change during a rename operation.
+> >> So when the change happens is well defined.  Further there is a
+> >> set of functions:  sysfs_creation_tag, sysfs_removal_tag,
+> >> sysfs_lookup_tag, sysfs_dirent_tag which makes it clear what we
+> >> are doing.
+> >> 
+> >> If you really don't like how the tags are managed we need to talk
+> >> about how we store the tags on kobjects and on the super block.
+> >> 
+> >> Registering a set of tags could easily make the sb_tag function
+> >> obsolete, and that is one small piece of code so it is no big deal.
+> >> 
+> >> struct sysfs_tag_type_operations {
+> >> 	const void *(*mount_tag)(void);
+> >>         const void *(*kobject_tag)(struct kobject *kobj);
+> >> };
+> >> 
+> >> Then we could do:
+> >> struct sysfs_sbtag_operations *tag_type_ops[MAX_TAG_TYPES];
+> >> 
+> >> And sysfs_tag_info could become.
+> >> struct sysfs_tag_info {
+> >>        void *tag[MAX_TAG_TYPES];
+> >> };
+> >> 
+> >> During subsystem initialization we could call
+> >> tag_type = sysfs_allocate_tag_type();
+> >> 
+> >> Just after the subsystem creates a directory.
+> >> sysfs_enable_tagging(kobj/sd, tag_type);
+> >> 
+> >> Then anytime we currently call sb_tag during lookup we can instead
+> >> just look at sysfs_info(sb)->tag[tag_type] and compare that with
+> >> sd->s_tag.tag.
+> >
+> > What you described is pretty much what I'm talking about.  The only
+> > difference is whether to use caller-provided pointer as tag or an
+> > ida-allocated integer.  The last sentence of the above paragraph is
+> > basically sys_tag_enabled() function (maybe misnamed).
+> 
+> So some concrete code examples here.  In the current code in lookup
+> what I am doing is: 
+> 
+> 	tag = sysfs_lookup_tag(parent_sd, parent->d_sb);
+> 	sd = sysfs_find_dirent(parent_sd, tag, dentry->d_name.name);
+> 
+> With the proposed change of adding tag types sysfs_lookup_tag becomes:
+> 
+> const void *sysfs_lookup_tag(struct sysfs_dirent *dir_sd, struct super_block *sb)
+> {
+> 	const void *tag = NULL;
+> 
+> 	if (dir_sd->s_flags & SYSFS_FLAG_TAGGED)
+> 		tag = sysfs_info(sb)->tag[dir_sd->tag_type];
+> 
+> 	return tag;
+> }	    
+> 
+> Which means that in practice I can lookup that tag that I am displaying
+> once.
+> 
+> Then in sysfs_find_dirent we do:
+> 
+> 	for (sd = parent_sd->s_dir.children; sd; sd = sd->s_sibling) {
+> 		 if ((parent_sd->s_flags & SYSFS_FLAG_TAGGED) &&		
+> 		     (sd->s_tag.tag != tag))			  
+> 			 continue;
+> 		 if (!strcmp(sd->s_name, name))
+> 			 return sd;					  
+> 	}						    
+> 
+> That should keep the implementation sufficiently inside of sysfs for there
+> to be no guessing.  In addition as a practical matter we can only allow
+> one tag to be visible in a directory at once or else we can not check
+> for duplicate names.  Which is the problem I see with a bitmap based test
+> too unnecessary many degrees of freedom.
+> 
+> The number of tag types will be low as it is the number of subsystems
+> that use the feature.  Simple enough that I expect statically allocating
+> the tag types in an enumeration is a safe and sane way to operate.
+> i.e.
+> 
+> enum sysfs_tag_types {
+> 	SYSFS_TAG_NETNS,
+> 	SYSFS_TAG_USERNS,
+>         SYSFS_TAG_MAX
+> };
+> 
+> > The main reason why I'm whining about this so much is because I think
+> > tag should be something abstracted inside sysfs proper.  It's something
+> > which affects very internal operation of sysfs and I really want to keep
+> > the implementation details inside sysfs.  Spreading implementation over
+> > kobject and sysfs didn't turn out too pretty after all.
+> 
+> I agree. Most of the implementation is in sysfs already.  We just have
+> a few corner cases.  
+> 
+> Fundamentally it is the subsystems responsibility that creates the
+> kobjects and the sysfs entries.  The only case where I can see an
+> ida generated number being a help is if we start having lifetime
+> issues.  Further the  extra work to allocate and free tags ida based
+> tags seems unnecessary.
+> 
+> I don't doubt that there is a lot we can do better.  My current goal
+> is for something that is clean enough it won't get us into trouble
+> later, and then merging the code.  In tree where people can see
+> the code and the interactions I expect it will be easier to talk
+> about.
+> 
+> Currently the interface with the users is very small.  Adding the
+> tag_type enumeration should make it smaller and make things more
+> obviously static.
+> 
+> Guys can we please make something useful happen?
+> 
+> Eric
 
-Looking at the beginning of startup_32, it seems ds is used before it is set:
+Now that the iproute2 patch is upstream, this patchset really is the
+only thing keeping us from using network namespaces.  Given that the
+details of the tagging are trivially changeable with no abi changes, I'd
+personally much rather see the patches go in as is, with whatever new
+tagging patches Benjamin whips up, using ida or some new idea, being
+applied later if we feel the need.
 
-startup_32:
-        cld
-        /* test KEEP_SEGMENTS flag to see if the bootloader is asking
-         * us to not reload segments */
-        testb $(1<<6), BP_loadflags(%esi)
-        jnz 1f
-
-        cli
-        movl $(__BOOT_DS),%eax
-        movl %eax,%ds
-        movl %eax,%es
-        movl %eax,%fs
-        movl %eax,%gs
-        movl %eax,%ss
-1:
-
-Since the testb instruction is a dereference, ds is implicitly used. If
-I move the testb to after "movl %eax,%ds" it seems to work (not that it
-would make any sense there, but just to prove the point).
-
-1) Am I barking up the wrong tree?
-
-2) If I'm right I have no idea what the correct solution is; it seems that
-   a chicken & egg issue is introduced.
-
-Please advise. I am very new to all of this.
-
-
-Sean
+-serge
