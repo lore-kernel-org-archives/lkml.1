@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760914AbYF3NB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbYF3NH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760914AbYF3NB2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 09:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbYF3NBU
+	id S1758187AbYF3NH1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 09:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbYF3NHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 09:01:20 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:38752 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753936AbYF3NBU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 09:01:20 -0400
-Date: Mon, 30 Jun 2008 08:01:16 -0500
-From: Paul Jackson <pj@sgi.com>
-To: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Cc: lizf@cn.fujitsu.com, akpm@linux-foundation.org, Lee.Schermerhorn@hp.com,
-       seto.hidetoshi@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       rientjes@google.com
-Subject: Re: [PATCH] doc: Document the relax_domain_level kernel boot
- argument
-Message-Id: <20080630080116.6c237590.pj@sgi.com>
-In-Reply-To: <cfd18e0f0806300010n2141fd39s3983143c9aeb97b8@mail.gmail.com>
-References: <20080630045640.20308.22031.sendpatchset@polaris-admin.engr.sgi.com>
-	<48687871.3040407@cn.fujitsu.com>
-	<cfd18e0f0806300010n2141fd39s3983143c9aeb97b8@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Jun 2008 09:07:15 -0400
+Received: from lazybastard.de ([212.112.238.170]:51272 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753558AbYF3NHO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 09:07:14 -0400
+Date: Mon, 30 Jun 2008 15:06:52 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       David Brownell <david-b@pacbell.net>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RESEND 1/3] atmel_nand speedup via {read,write}s{b,w}()
+Message-ID: <20080630130652.GA28159@logfs.org>
+References: <1214655248-15707-1-git-send-email-haavard.skinnemoen@atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1214655248-15707-1-git-send-email-haavard.skinnemoen@atmel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael wrote:
-> Paul doesn't like apostrophes ;-)
+On Sat, 28 June 2008 14:14:06 +0200, Haavard Skinnemoen wrote:
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> [haavard.skinnemoen@atmel.com: rebase onto atmel_nand rename]
+> Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+> Acked-by: Andrew Victor <linux@maxim.org.za>
 
-You got that right -- I hate them ;).
+Acked-by: Joern Engel <joern@logfs.org>
+
+Same goes for the other two patches in the series.
+
+Jörn
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Joern's library part 9:
+http://www.scl.ameslab.gov/Publications/Gus/TwelveWays.html
