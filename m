@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762796AbYF3QPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762898AbYF3QRF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762796AbYF3QPr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 12:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756812AbYF3QPj
+	id S1762898AbYF3QRF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 12:17:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758717AbYF3QQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 12:15:39 -0400
-Received: from trinity.fluff.org ([89.145.97.151]:49848 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753502AbYF3QPj (ORCPT
+	Mon, 30 Jun 2008 12:16:54 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59519 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757549AbYF3QQx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 12:15:39 -0400
-Date: Mon, 30 Jun 2008 17:15:37 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
-       tk@maintech.de, laforge@openmoko.org
-Subject: Re: [patch v4 02/17] MMC: S3C24XX: Fix the checkpatch.pl errors in the s3cmci driver
-Message-ID: <20080630161537.GD8489@trinity.fluff.org>
-References: <20080630152547.755285683@fluff.org.uk> <20080630152747.132370982@fluff.org.uk> <20080630175018.356568b7@mjolnir.drzeus.cx>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080630175018.356568b7@mjolnir.drzeus.cx>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+	Mon, 30 Jun 2008 12:16:53 -0400
+Message-ID: <486906F2.5030803@firstfloor.org>
+Date: Mon, 30 Jun 2008 18:16:50 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Vitaly Mayatskikh <v.mayatskih@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 3/3] Fix copy_user on x86_64
+References: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0806281108240.4371@hp.linux-foundation.org> <m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 05:50:18PM +0200, Pierre Ossman wrote:
-> On Mon, 30 Jun 2008 16:25:49 +0100
-> Ben Dooks <ben-linux@fluff.org> wrote:
+
+One optimization (I haven't explored) is that the startup overhead
+of rep ; movs might make it worthwhile to branch to a special version
+for copies larger than 8 bytes (which are optimized in uaccess
+for constant counts) and smaller than the threshold.
+
+Best heuristic unfortunately varies per CPU core (and possible
+even per stepping)
+
 > 
-> > Fix the checkpatch and other problems pointed out by
-> > akpm.
-> > 
-> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-> > 
-> 
-> I prefer to have this one merged into 01 as you'll end up with a commit
-> that you cannot compile otherwise. Besides, running checkpatch is
-> something you do before submitting anyway, not as a separate cleanup. :)
+> and we historically haven't cared much, because the above _naturally_ 
+> happens for the bulk of the important cases (copy whole pages, which 
+> happens not just in the VM for COW, but also when a user reads a regular 
+> file in aligned chunks). But again, for networking buffers, it _might_ 
+> make sense to try to help trigger this case explicitly.
 
-In this case I kept it seperate as the cleanups where done by myself
-as the original driver authour is not interested or too busy to do
-these himself. Basically, I was trying to keep the driver and my own
-cleanup work seperate.
+The problem (I did some measurements on that a long time ago) is that
+often the source and destination alignments are different and you can't
+really fix that up in copy_*_user.
 
--- 
-Ben
+That is why I dropped the original "fix up alignments" code.
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+One way to do that would be use a alignment hint from the user address
+while allocating the destination buffer (or rather adding an offset),
+so that source and destination are (mis)aligned  in the same way
+and that can be fixed up then.
 
+But that is not trivial for networking. Not sure it would be really
+worth the effort.
+
+For the file system is not feasible at all because the page cache
+offsets are fixed.
+
+-Andi
