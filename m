@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758957AbYF3JRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759500AbYF3JSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758957AbYF3JRo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 05:17:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbYF3JRg
+	id S1759500AbYF3JSc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 05:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbYF3JSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 05:17:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46686 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754082AbYF3JRf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 05:17:35 -0400
-Date: Mon, 30 Jun 2008 11:17:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@qumranet.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] CFS vs cpu hotplug
-Message-ID: <20080630091711.GA26637@elte.hu>
-References: <20080619161949.GA11062@osiris.ibm.com> <b647ffbd0806251512i3ab6efedv75a5bddd865ef618@mail.gmail.com> <b647ffbd0806281516i57392230idf06f99ff02d22cf@mail.gmail.com> <20080630090744.GB6598@osiris.boeblingen.de.ibm.com>
+	Mon, 30 Jun 2008 05:18:24 -0400
+Received: from namei.org ([69.55.235.186]:51041 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754145AbYF3JSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 05:18:23 -0400
+Date: Mon, 30 Jun 2008 19:13:15 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>,
+       Reiner Sailer <sailer@us.ibm.com>, Mimi Zohar <zohar@us.ibm.com>,
+       Debora Velarde <dvelarde@us.ibm.com>
+Subject: Re: [RFC][PATCH 1/5] integrity: TPM cleanup
+In-Reply-To: <1214583735.28077.14.camel@new-host.home>
+Message-ID: <Xine.LNX.4.64.0806301912510.23266@us.intercode.com.au>
+References: <20080627131946.225566613@linux.vnet.ibm.com>
+ <1214583735.28077.14.camel@new-host.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080630090744.GB6598@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 27 Jun 2008, Mimi Zohar wrote:
 
-* Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> This is a request for comments for a redesign of the integrity patches.
+> This patchset contains 5 patches.
+> 	Patch 1/5 integrity: TPM cleanup (scripts/Lindent and other)
+> 	Patch 2/5 integrity: TPM internal kernel interface
+> 	Patch 3/5 integrity: special fs magic
+> 	Patch 4/5 integrity: Linux Integrity Module(LIM)
+> 	Patch 5/5 integrity: IMA as an integrity service provider
+>  
+> Signed-off-by: Debora Velarde <dvelarde@us.ibm.com>
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 
-> On Sun, Jun 29, 2008 at 12:16:56AM +0200, Dmitry Adamushko wrote:
-> > Hello,
-> > 
-> > 
-> > it seems to be related to migrate_dead_tasks().
-> > 
-> > Firstly I added traces to see all tasks being migrated with
-> > migrate_live_tasks() and migrate_dead_tasks(). On my setup the problem
-> > pops up (the one with "se == NULL" in the loop of
-> > pick_next_task_fair()) shortly after the traces indicate that some has
-> > been migrated with migrate_dead_tasks()). btw., I can reproduce it
-> > much faster now with just a plain cpu down/up loop.
-> > 
-> > [disclaimer] Well, unless I'm really missing something important in
-> > this late hour [/desclaimer] pick_next_task() is not something
-> > appropriate for migrate_dead_tasks() :-)
-> > 
-> > the following change seems to eliminate the problem on my setup
-> > (although, I kept it running only for a few minutes to get a few
-> > messages indicating migrate_dead_tasks() does move tasks and the
-> > system is still ok)
-> > 
-> > [ quick hack ]
-> > 
-> > @@ -5887,6 +5907,7 @@ static void migrate_dead_tasks(unsigned int dead_cpu)
-> >                 next = pick_next_task(rq, rq->curr);
-> >                 if (!next)
-> >                         break;
-> > +               next->sched_class->put_prev_task(rq, next);
-> >                 migrate_dead(dead_cpu, next);
-> > 
-> >         }
-> 
-> Thanks Dmitry! With your patch I cannot reproduce the bug anymore.
+Reviewed-by: James Morris <jmorris@namei.org>
 
-thanks - it passed my testing too. It's lined up for v2.6.26 merge, in 
-tip/sched/urgent.
 
-Avi, does this patch fix your CPU hotplug problems too?
-
-	Ingo
+-- 
+James Morris
+<jmorris@namei.org>
