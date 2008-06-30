@@ -1,117 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764211AbYF3Tr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763993AbYF3Trn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764211AbYF3Tr0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 15:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754945AbYF3Tqp
+	id S1763993AbYF3Trn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 15:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764172AbYF3TrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 15:46:45 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:43637 "EHLO pasmtpB.tele.dk"
+	Mon, 30 Jun 2008 15:47:24 -0400
+Received: from www.tglx.de ([62.245.132.106]:47782 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751762AbYF3Tqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 15:46:42 -0400
-Date: Mon, 30 Jun 2008 21:47:27 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Andy Whitcroft <apw@shadowen.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 30
-Message-ID: <20080630194727.GA26682@uranus.ravnborg.org>
-References: <20080701001656.e156585c.sfr@canb.auug.org.au> <48690385.7030500@linux.vnet.ibm.com> <48690D3C.1060803@linux.vnet.ibm.com> <20080630185943.GA24692@uranus.ravnborg.org> <20080630192610.GA6584@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080630192610.GA6584@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	id S1764139AbYF3TrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 15:47:23 -0400
+Date: Mon, 30 Jun 2008 21:46:55 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Daniel J Blueman <daniel.blueman@gmail.com>
+Subject: Re: [git pull] core kernel fixes
+In-Reply-To: <19f34abd0806301143u2067d593kf162d7419b653a8b@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0806302145140.3297@apollo.tec.linutronix.de>
+References: <20080630153200.GA22360@elte.hu>  <19f34abd0806301002o7bdbd3a3y63d4d036ce5c26b0@mail.gmail.com>  <20080630182038.GA32211@elte.hu> <19f34abd0806301143u2067d593kf162d7419b653a8b@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 09:26:10PM +0200, Ingo Molnar wrote:
+On Mon, 30 Jun 2008, Vegard Nossum wrote:
+> On Mon, Jun 30, 2008 at 8:20 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> > The patch was tested with our standard tests so it's certainly good in
+> > practice - but i havent specifically tried your testcase (maybe Thomas
+> > has). Can you see any problem with the fix?
 > 
-> * Sam Ravnborg <sam@ravnborg.org> wrote:
+> Well, what I can see is that the patch that was committed has some
+> missing changes. In Daniel's patch:
 > 
-> > On Mon, Jun 30, 2008 at 10:13:40PM +0530, Kamalesh Babulal wrote:
-> > > Kamalesh Babulal wrote:
-> > > > Hi Stephen,
-> > > > 
-> > > > next-20080630 kernel build fails x86 box 
-> > > > 
-> > > > fs/bio-integrity.c: In function `bio_integrity_add_page':
-> > > > include/linux/bio.h:368: sorry, unimplemented: inlining failed in call to 'bvec_nr_vecs': function body not available
-> > > > fs/bio-integrity.c:135: sorry, unimplemented: called from here
-> > > > make[1]: *** [fs/bio-integrity.o] Error 1
-> > > > make: *** [fs] Error 2
-> > > > 
-> > > > # gcc -v
-> > > > Reading specs from /usr/lib/gcc/i386-redhat-linux/3.4.6/specs
-> > > > Configured with: ../configure --prefix=/usr --mandir=/usr/share/man
-> > > > --infodir=/usr/share/info --enable-shared --enable-threads=posix
-> > > > --disable-checking --with-system-zlib --enable-__cxa_atexit
-> > > > --disable-libunwind-exceptions --enable-java-awt=gtk
-> > > > --host=i386-redhat-linux
-> > > > Thread model: posix
-> > > > gcc version 3.4.6 20060404 (Red Hat 3.4.6-10)
-> > > > 
-> > > > 
-> > > Another build failure on the same box/config file
-> > > 
-> > > make[2]: `scripts/unifdef' is up to date.
-> > >   RELOCS  arch/x86/boot/compressed/vmlinux.relocs
-> > > 101 section headers supported: 100
-> > > make[2]: *** [arch/x86/boot/compressed/vmlinux.relocs] Error 1
-> > > make[1]: *** [arch/x86/boot/compressed/vmlinux] Error 2
-> > > make: *** [bzImage] Error 2
-> > 
-> > In a i386 specific part of the kernel - so let's cc x86 maintainers.
+> -repeat:
+> -	spin_lock(&pool_lock);
+> +	spin_lock_irqsave(&pool_lock, flags);
+>  	if (obj_pool.first) {
+>  		obj	    = hlist_entry(obj_pool.first, typeof(*obj), node);
 > 
-> that's an allyesconfig kernel and i cannot reproduce the failure with 
-> linux-next v2.6.26-rc8-6206-gf1c7436:
+> The patch that was committed:
 > 
->   [...]
->   RELOCS  arch/x86/boot/compressed/vmlinux.relocs
->   BUILD   arch/x86/boot/compressed/vmlinux.bin.all
->   GZIP    arch/x86/boot/compressed/vmlinux.bin.gz
->   LD      arch/x86/boot/compressed/piggy.o
->   LD      arch/x86/boot/compressed/vmlinux
->   OFFSETS arch/x86/boot/offsets.h
->   OBJCOPY arch/x86/boot/vmlinux.bin
->   AS      arch/x86/boot/header.o
->   LD      arch/x86/boot/setup.elf
->   OBJCOPY arch/x86/boot/setup.bin
->   BUILD   arch/x86/boot/bzImage
->  Root device is (8, 17)
->  Setup is 12524 bytes (padded to 12800 bytes).
->  System is 17840 kB
->  CRC bccb6201
->  Kernel: arch/x86/boot/bzImage is ready  (#10848)
+> -repeat:
+>         spin_lock(&pool_lock);
+>         if (obj_pool.first) {
+>                 obj         = hlist_entry(obj_pool.first, typeof(*obj), node);
 > 
-> (nor has anything substantial change in that area changed in the x86 
-> tree recently that sticks out at first sight.)
+> Was it not necessary to make the pool lock irq-safe in this place?
+> 
+> For reference:
+> 
+> Daniel's patch: http://lkml.org/lkml/2008/6/15/27
+> Actual commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=70c85057e0bde35eb56352a293ecb5d1641a0334;hp=e6100f23375c0c71ce595d04551fa6553b611918
 
-Just to see the number of sections you hit could you try following stupid patch.
-It will casue relocs to terminate but will print out the section header count we have
-in your allyesconfig build.
+alloc_object() is called with interrupts disabled from __debug_object_init()
 
-It is 'funny' that we just passed the limit in the error report.
-
-	Sam
-
-diff --git a/arch/x86/boot/compressed/relocs.c b/arch/x86/boot/compressed/relocs.c
-index edaadea..88d27f6 100644
---- a/arch/x86/boot/compressed/relocs.c
-+++ b/arch/x86/boot/compressed/relocs.c
-@@ -244,7 +244,7 @@ static void read_ehdr(FILE *fp)
- static void read_shdrs(FILE *fp)
- {
- 	int i;
--	if (ehdr.e_shnum > MAX_SHDRS) {
-+	if (1 || ehdr.e_shnum > MAX_SHDRS) {
- 		die("%d section headers supported: %d\n",
- 			ehdr.e_shnum, MAX_SHDRS);
- 	}
-
-> 
-> 	Ingo
+Thanks,
+	tglx
+ 
