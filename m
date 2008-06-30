@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933413AbYF3WJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933404AbYF3WPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933413AbYF3WJv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 18:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762913AbYF3WJn
+	id S933404AbYF3WPw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 18:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762544AbYF3WPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 18:09:43 -0400
-Received: from atlantis.8hz.com ([212.129.237.78]:59257 "EHLO atlantis.8hz.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762841AbYF3WJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 18:09:43 -0400
-Date: Mon, 30 Jun 2008 22:09:39 +0000
-From: Sean Young <sean@mess.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       "H. Anvin" <hpa@zytor.com>
-Subject: Re: Regression: boot failure on AMD Elan TS-5500
-Message-ID: <20080630220939.GA58260@atlantis.8hz.com>
-References: <20080616121138.GA51097@atlantis.8hz.com> <200806162327.34912.rusty@rustcorp.com.au> <48566C88.6000702@goop.org> <20080616161944.GA53539@atlantis.8hz.com> <20080630214347.GA57988@atlantis.8hz.com> <4869558A.9020907@goop.org>
-Mime-Version: 1.0
+	Mon, 30 Jun 2008 18:15:43 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:63228 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762094AbYF3WPl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 18:15:41 -0400
+Date: Tue, 1 Jul 2008 00:14:17 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, Max Krasnyansky <maxk@qualcomm.com>,
+       Paul Jackson <pj@sgi.com>, Paul Menage <menage@google.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] workqueues: make get_online_cpus() useable for
+	work->func()
+Message-ID: <20080630221417.GA4727@osiris.boeblingen.de.ibm.com>
+References: <20080629165131.GA11215@tv-sign.ru> <20080630134349.GB7686@osiris.boeblingen.de.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4869558A.9020907@goop.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080630134349.GB7686@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 02:52:10PM -0700, Jeremy Fitzhardinge wrote:
-> It's a bit odd that the boot loader neglected to set up ds properly, but 
-> changing the testb line to
+On Mon, Jun 30, 2008 at 03:43:49PM +0200, Heiko Carstens wrote:
+> On Sun, Jun 29, 2008 at 08:51:31PM +0400, Oleg Nesterov wrote:
+> > workqueue_cpu_callback(CPU_DEAD) flushes cwq->thread under
+> > cpu_maps_update_begin(). This means that the multithreaded workqueues can't
+> > use get_online_cpus() due to the possible deadlock, very bad and very old
+> > problem.
+> > 
+> > Introduce the new state, CPU_POST_DEAD, which is called after
+> > cpu_hotplug_done() but before cpu_maps_update_done().
+> > 
+> > Change workqueue_cpu_callback() to use CPU_POST_DEAD instead of CPU_DEAD.
+> > This means that create/destroy functions can't rely on get_online_cpus()
+> > any longer and should take cpu_add_remove_lock instead.
 > 
-> 	testb $(1<<6), %cs:BP_loadflags(%esi)
+> Ah, nice!
 > 
-> should work.  (Or perhaps a %ss: override would be better?)
+> > --- 26-rc2/kernel/cpu.c~WQ_4_GET_ONLINE_CPUS	2008-05-18 15:44:18.000000000 +0400
+> > +++ 26-rc2/kernel/cpu.c	2008-06-29 20:03:19.000000000 +0400
+> > @@ -261,6 +261,11 @@ out_allowed:
+> >  	set_cpus_allowed_ptr(current, &old_allowed);
+> >  out_release:
+> >  	cpu_hotplug_done();
+> > +	if (!err) {
+> 
+> This should be (!err && !cpu_online(cpu)), no?
+> 
+> This is because it might be that __stop_machine_run() succeeded, but
+> take_cpu_down() failed and therefore our cpu is still online.
 
-Yup, it does (%cs: prefix).
-
-> I'm assuming that the GDT setup isn't completely mad and that the 
-> segments have the same base at least.
-
-Where do I go from here?
-
-Thanks
-Sean
+Erk.. it's ok as is since err will contain the return value of take_cpu_down()
+after err = kthread_stop(p).
+Never mind, just ignore me :)
