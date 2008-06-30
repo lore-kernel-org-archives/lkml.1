@@ -1,127 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759896AbYF3RDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761562AbYF3REW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759896AbYF3RDE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbYF3RCz
+	id S1761562AbYF3REW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 13:04:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbYF3REO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:02:55 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:53331 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751232AbYF3RCy (ORCPT
+	Mon, 30 Jun 2008 13:04:14 -0400
+Received: from trinity.fluff.org ([89.145.97.151]:55381 "EHLO
+	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751027AbYF3REN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:02:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Ravsl0L+4cQ7vRAbAl3GvG4PAAW+gHIhszCtcybDi4QJLQTjs6AZ8un8EbrX1PJLlT
-         lJdfYSVdUloqX5bLSqYXRcc7asWsa/IH4ZkF7JKykOgmCL3RTtjRGhzd8bD8anTfMUUh
-         l1aBVBhSuXtb9rn9tEwyeJHtEkdbRzjpK4f8U=
-Message-ID: <19f34abd0806301002o7bdbd3a3y63d4d036ce5c26b0@mail.gmail.com>
-Date: Mon, 30 Jun 2008 19:02:51 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [git pull] core kernel fixes
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Daniel J Blueman" <daniel.blueman@gmail.com>
-In-Reply-To: <20080630153200.GA22360@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Jun 2008 13:04:13 -0400
+Date: Mon, 30 Jun 2008 18:04:08 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Harald Welte <laforge@openmoko.org>
+Cc: Ben Dooks <ben-linux@fluff.org>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       linux-kernel@vger.kernel.org, tk@maintech.de
+Subject: Re: [patch v4 02/17] MMC: S3C24XX: Fix the checkpatch.pl errors in the s3cmci driver
+Message-ID: <20080630170408.GE8489@trinity.fluff.org>
+References: <20080630152547.755285683@fluff.org.uk> <20080630152747.132370982@fluff.org.uk> <20080630175018.356568b7@mjolnir.drzeus.cx> <20080630161537.GD8489@trinity.fluff.org> <20080630163601.GD5043@prithivi.gnumonks.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080630153200.GA22360@elte.hu>
+In-Reply-To: <20080630163601.GD5043@prithivi.gnumonks.org>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.9i
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 5:32 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> diff --git a/lib/debugobjects.c b/lib/debugobjects.c
-> index a76a5e1..85b18d7 100644
-> --- a/lib/debugobjects.c
-> +++ b/lib/debugobjects.c
-> @@ -68,6 +68,7 @@ static int fill_pool(void)
->  {
->        gfp_t gfp = GFP_ATOMIC | __GFP_NORETRY | __GFP_NOWARN;
->        struct debug_obj *new;
-> +       unsigned long flags;
->
->        if (likely(obj_pool_free >= ODEBUG_POOL_MIN_LEVEL))
->                return obj_pool_free;
-> @@ -81,10 +82,10 @@ static int fill_pool(void)
->                if (!new)
->                        return obj_pool_free;
->
-> -               spin_lock(&pool_lock);
-> +               spin_lock_irqsave(&pool_lock, flags);
->                hlist_add_head(&new->node, &obj_pool);
->                obj_pool_free++;
-> -               spin_unlock(&pool_lock);
-> +               spin_unlock_irqrestore(&pool_lock, flags);
->        }
->        return obj_pool_free;
->  }
-> @@ -110,16 +111,13 @@ static struct debug_obj *lookup_object(void *addr, struct debug_bucket *b)
->  }
->
->  /*
-> - * Allocate a new object. If the pool is empty and no refill possible,
-> - * switch off the debugger.
-> + * Allocate a new object. If the pool is empty, switch off the debugger.
->  */
->  static struct debug_obj *
->  alloc_object(void *addr, struct debug_bucket *b, struct debug_obj_descr *descr)
->  {
->        struct debug_obj *obj = NULL;
-> -       int retry = 0;
->
-> -repeat:
->        spin_lock(&pool_lock);
->        if (obj_pool.first) {
->                obj         = hlist_entry(obj_pool.first, typeof(*obj), node);
-> @@ -141,9 +139,6 @@ repeat:
->        }
->        spin_unlock(&pool_lock);
->
-> -       if (fill_pool() && !obj && !retry++)
-> -               goto repeat;
-> -
->        return obj;
->  }
->
-> @@ -261,6 +256,8 @@ __debug_object_init(void *addr, struct debug_obj_descr *descr, int onstack)
->        struct debug_obj *obj;
->        unsigned long flags;
->
-> +       fill_pool();
-> +
->        db = get_bucket((unsigned long) addr);
->
->        spin_lock_irqsave(&db->lock, flags);
-> --
+On Tue, Jul 01, 2008 at 12:36:01AM +0800, Harald Welte wrote:
+> On Mon, Jun 30, 2008 at 05:15:37PM +0100, Ben Dooks wrote:
+> > On Mon, Jun 30, 2008 at 05:50:18PM +0200, Pierre Ossman wrote:
+> > > On Mon, 30 Jun 2008 16:25:49 +0100
+> > > Ben Dooks <ben-linux@fluff.org> wrote:
+> > > 
+> > > > Fix the checkpatch and other problems pointed out by
+> > > > akpm.
+> > > > 
+> > > > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> > > > 
+> > > 
+> > > I prefer to have this one merged into 01 as you'll end up with a commit
+> > > that you cannot compile otherwise. Besides, running checkpatch is
+> > > something you do before submitting anyway, not as a separate cleanup. :)
+> > 
+> > In this case I kept it seperate as the cleanups where done by myself
+> > as the original driver authour is not interested or too busy to do
+> > these himself. Basically, I was trying to keep the driver and my own
+> > cleanup work seperate.
+> 
+> don't worry about that.  Thomas Kleffel is unlikely to return to do any
+> active work on it (I know him personally), and the OpenMoko community
+> will inevitably rebase its patches based on whatever ends up in
+> mainline.  So nobody is worried if you merge all that stuff into one
+> patch.  It's probably polite to add the significant contributors (such
+> as yourself and myself) to the list of authors at the beginning of the
+> file though - given the amount of changes the driver has received
+> compared to Tomas' original.
 
-Hm. I have to wonder where this patch came from.
+Thanks, having an public discussion about the position of the original
+authour is useful. I was intending on submitting a patch once this lot
+is merged to add myself and select others to the driver after the fact
+so that everyone can acknowledge it.
 
-This was my (faulty) patch: http://lkml.org/lkml/2008/6/14/193
-and Daniel J Blueman followed up with this: http://lkml.org/lkml/2008/6/15/27
+You have missed part of the point. My extra work is not a small
+set of changes which won't get counted when profiling the Kernel
+contributors. My employers have given me time to sort these
+items out, and we do get work off the fact that we're shown to be in
+the leading contributors (iirc, 18th last-year) so I was trying to
+ensure that this wasn't lost.
 
-..but this one looks different from both. I am guessing the last bits
-were added (or removed?) by Thomas?
-
-I am wondering if the final patch was tested with the reproducible
-test case (if so, by whom?) and whether should be credited to Daniel
-(or Thomas?) instead...
-
-?
-
-
-Vegard
+If Pierre or Thomas has objections to either then the series can
+be reposted with #1 and #2 merged together.
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
