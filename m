@@ -1,324 +1,432 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbYF3ORW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756865AbYF3OS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755601AbYF3ORW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 10:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbYF3ORH
+	id S1756865AbYF3OS5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 10:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbYF3OSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 10:17:07 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:33517 "EHLO smtps.tip.net.au"
+	Mon, 30 Jun 2008 10:18:48 -0400
+Received: from kumera.dghda.com ([80.68.90.171]:1960 "EHLO kumera.dghda.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751262AbYF3ORE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 10:17:04 -0400
-Date: Tue, 1 Jul 2008 00:16:56 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for June 30
-Message-Id: <20080701001656.e156585c.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__1_Jul_2008_00_16_56_+1000_7qL/1s33Uquz9sxC"
+	id S1751361AbYF3OSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 10:18:47 -0400
+From: "Duane Griffin" <duaneg@dghda.com>
+To: linux-ext4@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, sct@redhat.com,
+       adilger@clusterfs.com, Sami Liedes <sliedes@cc.hut.fi>,
+       jochen.voss@googlemail.com, Jan Kara <jack@suse.cz>,
+       Duane Griffin <duaneg@dghda.com>
+Subject: [PATCH, v4] ext3: validate directory entry data before use
+Date: Mon, 30 Jun 2008 15:18:42 +0100
+Message-Id: <1214835522-5414-1-git-send-email-duaneg@dghda.com>
+X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <200806291857.m5TIv1k5001781@imap1.linux-foundation.org>
+References: <200806291857.m5TIv1k5001781@imap1.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__1_Jul_2008_00_16_56_+1000_7qL/1s33Uquz9sxC
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Various places in fs/ext3/namei.c use ext3_next_entry to loop over
+directory entries, but not all of them verify that entries are valid before
+attempting to move to the next one. In the case where rec_len == 0 this
+causes an infinite loop.
 
-Hi all,
+Introduce a new version of ext3_next_entry that checks the validity of the
+entry before using its data to find the next one. Rename the original
+function to __ext3_next_entry and use it in places where we already know
+the data is valid.
 
-Changes since next-20080627:
+Note that the changes to empty_dir follow the original code in reporting
+the directory as empty in the presence of errors.
 
-New trees: md-current, md, cris (I forgot to add the latter to the Trees
-file).
+This patch fixes the first case (image hdb.25.softlockup.gz) reported in
+http://bugzilla.kernel.org/show_bug.cgi?id=10882.
 
-The usb tree required a commit reverted due to a build failure after
-merging with the pci tree.
+Signed-off-by: Duane Griffin <duaneg@dghda.com>
+--
 
-The v4l-dvb tree gained three conflicts against Linus' tree. But its
-build failure has been fixed.
+This is version 4. It fixes the problems reported by checkpatch by giving a
+variable a shorter name instead of omitting whitespace.
 
-The ide tree needed a commit reverted and a patch added for build
-failures.
+Please note that I've only properly tested the originally reported failure
+case (i.e. the changes to ext3_dx_find_entry).
 
-The acpi tree gained several more conflicts against the x86 tree.
+Reviewers may want to pay particular attention to the changes to do_split,
+make_indexed_dir and empty_dir. I've tried to follow the original code's
+error handling conventions, as noted above for empty_dir, but I'm not sure
+this is the best way to do things.
 
-The net tree lost a conflict against Linus' tree and its build failure.
+---
 
-The gfs2 tree lost its build failure so it no longer needed a commit
-reverted.
-
-the blk-removal tree gained a conflict against the nfs tree.
-
-The block tree lost all its conflicts and build problems.
-
-The firmware tree gained several conflicts that required the reversion of
-a commit.
-
-I have also applied the following patches for know problems:
-	module: fix NULL pointer dereference in find_symbol()
-
-The following build fixes were no longer needed:
-	fujitsu-laptop: depends on INPUT
-	iwlwifi: fix build for CONFIG_INPUT=3Dn
-	xfs fix 1 (fixes some ACL defines)
-
-The i386 defconfig test build failed.
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 98 trees (counting Linus' and 14 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-2.6.26
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-CONFLICT (content): Merge conflict in kernel/Makefile
-CONFLICT (content): Merge conflict in kernel/sched_rt.c
-Applying sched: fix rculist split fallout
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging x86/auto-x86-next
-CONFLICT (content): Merge conflict in arch/x86/kernel/entry_32.S
-CONFLICT (content): Merge conflict in arch/x86/kernel/process_32.c
-CONFLICT (content): Merge conflict in arch/x86/kernel/process_64.c
-Applying acpi-acpi_numa_init-build-fix
-Applying ia64, acpi: fix Altix boot breakage in ACPI
-Applying acpi: fix boot breakage on Altix
-Merging pci/linux-next
-CONFLICT (content): Merge conflict in arch/x86/kernel/setup_64.c
-CONFLICT (content): Merge conflict in arch/x86/pci/irq.c
-CONFLICT (content): Merge conflict in arch/x86/pci/pci.h
-CONFLICT (content): Merge conflict in include/linux/device.h
-Created commit c3d3bbe: Revert "USB: Force unbinding of drivers lacking res=
-et_resume or other methods"
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-CONFLICT (content): Merge conflict in drivers/i2c/i2c-core.c
-Merging quilt/kernel-doc
-Merging avr32/avr32-arch
-Merging v4l-dvb/stable
-CONFLICT (content): Merge conflict in drivers/media/video/cx18/cx18-cards.h
-CONFLICT (content): Merge conflict in drivers/media/video/em28xx/em28xx-car=
-ds.c
-CONFLICT (content): Merge conflict in drivers/media/video/videodev.c
-Applying v4l-dvb: class_for_each_device API change fallout
-Merging s390/features
-CONFLICT (content): Merge conflict in drivers/s390/block/dasd.c
-CONFLICT (content): Merge conflict in drivers/s390/block/dasd_eckd.c
-CONFLICT (content): Merge conflict in drivers/s390/block/dasd_fba.c
-CONFLICT (content): Merge conflict in drivers/s390/char/tape_core.c
-CONFLICT (content): Merge conflict in drivers/s390/cio/device_fsm.c
-CONFLICT (content): Merge conflict in drivers/s390/cio/qdio.c
-CONFLICT (content): Merge conflict in drivers/s390/net/claw.c
-CONFLICT (content): Merge conflict in drivers/s390/net/ctcm_main.c
-CONFLICT (content): Merge conflict in drivers/s390/net/lcs.c
-Merging sh/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Created commit 977acb8: Revert "ide: add struct ide_host (take 2)"
-Applying ide: export ide_init_port_hw to modules
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
-CONFLICT (content): Merge conflict in arch/ia64/kernel/process.c
-CONFLICT (content): Merge conflict in arch/x86/kernel/process.c
-CONFLICT (content): Merge conflict in arch/x86/kernel/srat_32.c
-CONFLICT (content): Merge conflict in drivers/acpi/processor_core.c
-CONFLICT (content): Merge conflict in drivers/acpi/processor_throttling.c
-CONFLICT (content): Merge conflict in drivers/acpi/sleep/main.c
-CONFLICT (content): Merge conflict in include/asm-ia64/processor.h
-CONFLICT (content): Merge conflict in include/asm-x86/processor.h
-Merging blackfin/for-linus
-Merging nfsd/nfsd-next
-CONFLICT (content): Merge conflict in net/sunrpc/auth_gss/auth_gss.c
-CONFLICT (content): Merge conflict in net/sunrpc/svc.c
-Merging ieee1394/for-next
-Merging hwmon/testing
-Merging ubi/master
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Applying scsi: fix fallout from the class_find_device API change
-Applying scsi: fix fallout from KOBJ_NAME_LEN removal
-Merging ia64/test
-Merging tests/master
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging ocfs2/linux-next
-Merging selinux/for-akpm
-Merging quilt/m68k
-Merging powerpc/powerpc-next
-Merging lblnet/master
-Merging ext4/next
-Merging 4xx/next
-Merging async_tx/next
-Merging udf/for_next
-Merging security-testing/next
-Merging net/master
-CONFLICT (content): Merge conflict in Documentation/powerpc/booting-without=
--of.txt
-Merging sparc/master
-CONFLICT (content): Merge conflict in include/asm-m68k/sbus.h
-Merging galak/powerpc-next
-CONFLICT (content): Merge conflict in Documentation/powerpc/booting-without=
--of.txt
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-Merging vfs/vfs-2.6.25
-Merging sound/master
-Merging arm/devel
-CONFLICT (content): Merge conflict in arch/arm/mach-at91/board-yl-9200.c
-Merging cpufreq/next
-CONFLICT (content): Merge conflict in drivers/cpufreq/cpufreq.c
-Merging v9fs/for-next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in drivers/char/hvc_console.h
-CONFLICT (content): Merge conflict in kernel/stop_machine.c
-Applying rr fix patch 1
-Applying virtio: virtio console can be a module
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging semaphore/semaphore
-Merging semaphore-removal/semaphore-removal
-CONFLICT (content): Merge conflict in drivers/net/ps3_gelic_wireless.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_attr.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_def.h
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mbx.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mid.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_os.c
-Merging bkl-removal/bkl-removal
-CONFLICT (content): Merge conflict in fs/nfs/file.c
-Merging trivial/next
-Merging ubifs/for_andrew
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in drivers/atm/Kconfig
-CONFLICT (content): Merge conflict in drivers/atm/Makefile
-CONFLICT (content): Merge conflict in drivers/atm/fore200e.c
-CONFLICT (content): Merge conflict in drivers/atm/fore200e.h
-CONFLICT (content): Merge conflict in drivers/char/ip2/ip2main.c
-CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Makefile
-CONFLICT (content): Merge conflict in drivers/usb/misc/isight_firmware.c
-CONFLICT (delete/modify): drivers/usb/serial/ti_fw_3410.h deleted in firmwa=
-re/master and modified in HEAD. Version HEAD of drivers/usb/serial/ti_fw_34=
-10.h left in tree.
-CONFLICT (delete/modify): drivers/usb/serial/ti_fw_5052.h deleted in firmwa=
-re/master and modified in HEAD. Version HEAD of drivers/usb/serial/ti_fw_50=
-52.h left in tree.
-CONFLICT (content): Merge conflict in drivers/usb/serial/ti_usb_3410_5052.c
-CONFLICT (content): Merge conflict in sound/pci/Kconfig
-CONFLICT (content): Merge conflict in sound/pci/maestro3.c
-CONFLICT (content): Merge conflict in sound/pci/ymfpci/ymfpci_main.c
-$ git reset --hard
-$ git checkout -b tmp firmware/master^^
-$ git checkout master
-CONFLICT (content): Merge conflict in drivers/atm/Makefile
-CONFLICT (content): Merge conflict in drivers/char/ip2/ip2main.c
-CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Makefile
-CONFLICT (content): Merge conflict in drivers/usb/misc/isight_firmware.c
-CONFLICT (delete/modify): drivers/usb/serial/ti_fw_3410.h deleted in tmp an=
-d modified in HEAD. Version HEAD of drivers/usb/serial/ti_fw_3410.h left in=
- tree.
-CONFLICT (delete/modify): drivers/usb/serial/ti_fw_5052.h deleted in tmp an=
-d modified in HEAD. Version HEAD of drivers/usb/serial/ti_fw_5052.h left in=
- tree.
-CONFLICT (content): Merge conflict in drivers/usb/serial/ti_usb_3410_5052.c
-CONFLICT (content): Merge conflict in sound/pci/Kconfig
-CONFLICT (content): Merge conflict in sound/pci/maestro3.c
-CONFLICT (content): Merge conflict in sound/pci/ymfpci/ymfpci_main.c
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-CONFLICT (content): Merge conflict in drivers/video/backlight/Kconfig
-CONFLICT (content): Merge conflict in drivers/video/backlight/Makefile
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging m68knommu/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging cris/cris
-Applying module: fix NULL pointer dereference in find_symbol()
-
---Signature=_Tue__1_Jul_2008_00_16_56_+1000_7qL/1s33Uquz9sxC
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkho6tgACgkQjjKRsyhoI8zzrQCbB9d0UY9KZC9sYi1vYl4OoCaz
-lDwAoLaFvamk1rlJkWcDe4wbJ8w45MnU
-=r0GQ
------END PGP SIGNATURE-----
-
---Signature=_Tue__1_Jul_2008_00_16_56_+1000_7qL/1s33Uquz9sxC--
+diff --git a/fs/ext3/dir.c b/fs/ext3/dir.c
+index 8ca3bfd..5c85ffa 100644
+--- a/fs/ext3/dir.c
++++ b/fs/ext3/dir.c
+@@ -187,8 +187,8 @@ revalidate:
+ 		while (!error && filp->f_pos < inode->i_size
+ 		       && offset < sb->s_blocksize) {
+ 			de = (struct ext3_dir_entry_2 *) (bh->b_data + offset);
+-			if (!ext3_check_dir_entry ("ext3_readdir", inode, de,
+-						   bh, offset)) {
++			if (!ext3_check_dir_entry(__func__, inode, de,
++						  bh, offset)) {
+ 				/* On error, skip the f_pos to the
+                                    next block. */
+ 				filp->f_pos = (filp->f_pos |
+diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+index 0b8cf80..37f7e9d 100644
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -185,13 +185,27 @@ static int ext3_dx_add_entry(handle_t *handle, struct dentry *dentry,
+  * p is at least 6 bytes before the end of page
+  */
+ static inline struct ext3_dir_entry_2 *
+-ext3_next_entry(struct ext3_dir_entry_2 *p)
++__ext3_next_entry(struct ext3_dir_entry_2 *p)
+ {
+ 	return (struct ext3_dir_entry_2 *)((char *)p +
+ 		ext3_rec_len_from_disk(p->rec_len));
+ }
+ 
+ /*
++ * Checks the directory entry looks sane before using it to find the next one.
++ * Returns NULL and reports an error if an invalid entry is passed.
++ */
++static inline struct ext3_dir_entry_2 *
++ext3_next_entry(const char *func, struct inode *dir,
++		struct ext3_dir_entry_2 *de, struct buffer_head *bh, int offset)
++{
++	if (ext3_check_dir_entry(func, dir, de, bh, offset))
++		return __ext3_next_entry(de);
++	else
++		return NULL;
++}
++
++/*
+  * Future: use high four bits of block for coalesce-on-delete flags
+  * Mask them off for now.
+  */
+@@ -271,15 +285,17 @@ struct stats
+ 	unsigned bcount;
+ };
+ 
+-static struct stats dx_show_leaf(struct dx_hash_info *hinfo, struct ext3_dir_entry_2 *de,
+-				 int size, int show_names)
++static struct stats dx_show_leaf(struct dx_hash_info *hinfo, struct inode *dir,
++				 struct buffer_head *bh, int size,
++				 int show_names)
+ {
++	struct ext3_dir_entry_2 *de = (struct ext3_dir_entry_2 *) bh->b_data;
+ 	unsigned names = 0, space = 0;
+ 	char *base = (char *) de;
+ 	struct dx_hash_info h = *hinfo;
+ 
+ 	printk("names: ");
+-	while ((char *) de < base + size)
++	while (de && (char *) de < base + size)
+ 	{
+ 		if (de->inode)
+ 		{
+@@ -295,7 +311,7 @@ static struct stats dx_show_leaf(struct dx_hash_info *hinfo, struct ext3_dir_ent
+ 			space += EXT3_DIR_REC_LEN(de->name_len);
+ 			names++;
+ 		}
+-		de = ext3_next_entry(de);
++		de = ext3_next_entry(__func__, dir, de, bh, 0);
+ 	}
+ 	printk("(%i)\n", names);
+ 	return (struct stats) { names, space, 1 };
+@@ -319,7 +335,7 @@ struct stats dx_show_entries(struct dx_hash_info *hinfo, struct inode *dir,
+ 		if (!(bh = ext3_bread (NULL,dir, block, 0,&err))) continue;
+ 		stats = levels?
+ 		   dx_show_entries(hinfo, dir, ((struct dx_node *) bh->b_data)->entries, levels - 1):
+-		   dx_show_leaf(hinfo, (struct ext3_dir_entry_2 *) bh->b_data, blocksize, 0);
++		   dx_show_leaf(hinfo, dir, bh, blocksize, 0);
+ 		names += stats.names;
+ 		space += stats.space;
+ 		bcount += stats.bcount;
+@@ -583,8 +599,8 @@ static int htree_dirblock_to_tree(struct file *dir_file,
+ 	top = (struct ext3_dir_entry_2 *) ((char *) de +
+ 					   dir->i_sb->s_blocksize -
+ 					   EXT3_DIR_REC_LEN(0));
+-	for (; de < top; de = ext3_next_entry(de)) {
+-		if (!ext3_check_dir_entry("htree_dirblock_to_tree", dir, de, bh,
++	for (; de < top; de = __ext3_next_entry(de)) {
++		if (!ext3_check_dir_entry(__func__, dir, de, bh,
+ 					(block<<EXT3_BLOCK_SIZE_BITS(dir->i_sb))
+ 						+((char *)de - bh->b_data))) {
+ 			/* On error, skip the f_pos to the next block. */
+@@ -658,7 +674,11 @@ int ext3_htree_fill_tree(struct file *dir_file, __u32 start_hash,
+ 	}
+ 	if (start_hash < 2 || (start_hash ==2 && start_minor_hash==0)) {
+ 		de = (struct ext3_dir_entry_2 *) frames[0].bh->b_data;
+-		de = ext3_next_entry(de);
++		de = ext3_next_entry(__func__, dir, de, frames[0].bh, 0);
++		if (de == NULL) {
++			err = -EIO;
++			goto errout;
++		}
+ 		if ((err = ext3_htree_store_dirent(dir_file, 2, 0, de)) != 0)
+ 			goto errout;
+ 		count++;
+@@ -726,8 +746,7 @@ static int dx_make_map (struct ext3_dir_entry_2 *de, int size,
+ 			count++;
+ 			cond_resched();
+ 		}
+-		/* XXX: do we need to check rec_len == 0 case? -Chris */
+-		de = ext3_next_entry(de);
++		de = __ext3_next_entry(de);
+ 	}
+ 	return count;
+ }
+@@ -804,7 +823,7 @@ static inline int ext3_match (int len, const char * const name,
+ static inline int search_dirblock(struct buffer_head * bh,
+ 				  struct inode *dir,
+ 				  struct dentry *dentry,
+-				  unsigned long offset,
++				  unsigned long off,
+ 				  struct ext3_dir_entry_2 ** res_dir)
+ {
+ 	struct ext3_dir_entry_2 * de;
+@@ -822,8 +841,7 @@ static inline int search_dirblock(struct buffer_head * bh,
+ 		if ((char *) de + namelen <= dlimit &&
+ 		    ext3_match (namelen, name, de)) {
+ 			/* found a match - just to be sure, do a full check */
+-			if (!ext3_check_dir_entry("ext3_find_entry",
+-						  dir, de, bh, offset))
++			if (!ext3_check_dir_entry(__func__, dir, de, bh, off))
+ 				return -1;
+ 			*res_dir = de;
+ 			return 1;
+@@ -832,7 +850,7 @@ static inline int search_dirblock(struct buffer_head * bh,
+ 		de_len = ext3_rec_len_from_disk(de->rec_len);
+ 		if (de_len <= 0)
+ 			return -1;
+-		offset += de_len;
++		off += de_len;
+ 		de = (struct ext3_dir_entry_2 *) ((char *) de + de_len);
+ 	}
+ 	return 0;
+@@ -991,24 +1009,27 @@ static struct buffer_head * ext3_dx_find_entry(struct dentry *dentry,
+ 		de = (struct ext3_dir_entry_2 *) bh->b_data;
+ 		top = (struct ext3_dir_entry_2 *) ((char *) de + sb->s_blocksize -
+ 				       EXT3_DIR_REC_LEN(0));
+-		for (; de < top; de = ext3_next_entry(de))
+-		if (ext3_match (namelen, name, de)) {
+-			if (!ext3_check_dir_entry("ext3_find_entry",
+-						  dir, de, bh,
+-				  (block<<EXT3_BLOCK_SIZE_BITS(sb))
+-					  +((char *)de - bh->b_data))) {
+-				brelse (bh);
++		for (; de < top; de = __ext3_next_entry(de)) {
++			int off = (block << EXT3_BLOCK_SIZE_BITS(sb))
++				  + ((char *) de - bh->b_data);
++
++			if (!ext3_check_dir_entry(__func__, dir, de, bh, off)) {
++				brelse(bh);
+ 				*err = ERR_BAD_DX_DIR;
+ 				goto errout;
+ 			}
+-			*res_dir = de;
+-			dx_release (frames);
+-			return bh;
++
++			if (ext3_match(namelen, name, de)) {
++				*res_dir = de;
++				dx_release(frames);
++				return bh;
++			}
+ 		}
+ 		brelse (bh);
++
+ 		/* Check to see if we should continue to search */
+-		retval = ext3_htree_next_block(dir, hash, frame,
+-					       frames, NULL);
++		retval = ext3_htree_next_block(dir, hash, frame, frames, NULL);
++
+ 		if (retval < 0) {
+ 			ext3_warning(sb, __func__,
+ 			     "error reading index page in directory #%lu",
+@@ -1141,7 +1162,7 @@ static struct ext3_dir_entry_2* dx_pack_dirents(char *base, int size)
+ 
+ 	prev = to = de;
+ 	while ((char*)de < base + size) {
+-		next = ext3_next_entry(de);
++		next = __ext3_next_entry(de);
+ 		if (de->inode && de->name_len) {
+ 			rec_len = EXT3_DIR_REC_LEN(de->name_len);
+ 			if (de > to)
+@@ -1172,9 +1193,22 @@ static struct ext3_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
+ 	struct dx_map_entry *map;
+ 	char *data1 = (*bh)->b_data, *data2;
+ 	unsigned split, move, size, i;
+-	struct ext3_dir_entry_2 *de = NULL, *de2;
++	struct ext3_dir_entry_2 *de, *de2;
+ 	int	err = 0;
+ 
++	/* Verify directory entries are sane before trying anything else. */
++	de = (struct ext3_dir_entry_2 *) data1;
++	de2 = (struct ext3_dir_entry_2 *) data1 +
++		dir->i_sb->s_blocksize - EXT3_DIR_REC_LEN(0);
++	while (de < de2) {
++		de = ext3_next_entry(__func__, dir, de, *bh, 0);
++		if (de == NULL) {
++			brelse(*bh);
++			*bh = NULL;
++			goto errout;
++		}
++	}
++
+ 	bh2 = ext3_append (handle, dir, &newblock, &err);
+ 	if (!(bh2)) {
+ 		brelse(*bh);
+@@ -1271,7 +1305,7 @@ static int add_dirent_to_buf(handle_t *handle, struct dentry *dentry,
+ 	struct inode	*dir = dentry->d_parent->d_inode;
+ 	const char	*name = dentry->d_name.name;
+ 	int		namelen = dentry->d_name.len;
+-	unsigned long	offset = 0;
++	unsigned long	off = 0;
+ 	unsigned short	reclen;
+ 	int		nlen, rlen, err;
+ 	char		*top;
+@@ -1281,8 +1315,7 @@ static int add_dirent_to_buf(handle_t *handle, struct dentry *dentry,
+ 		de = (struct ext3_dir_entry_2 *)bh->b_data;
+ 		top = bh->b_data + dir->i_sb->s_blocksize - reclen;
+ 		while ((char *) de <= top) {
+-			if (!ext3_check_dir_entry("ext3_add_entry", dir, de,
+-						  bh, offset)) {
++			if (!ext3_check_dir_entry(__func__, dir, de, bh, off)) {
+ 				brelse (bh);
+ 				return -EIO;
+ 			}
+@@ -1295,7 +1328,7 @@ static int add_dirent_to_buf(handle_t *handle, struct dentry *dentry,
+ 			if ((de->inode? rlen - nlen: rlen) >= reclen)
+ 				break;
+ 			de = (struct ext3_dir_entry_2 *)((char *)de + rlen);
+-			offset += rlen;
++			off += rlen;
+ 		}
+ 		if ((char *) de > top)
+ 			return -ENOSPC;
+@@ -1397,8 +1430,13 @@ static int make_indexed_dir(handle_t *handle, struct dentry *dentry,
+ 	memcpy (data1, de, len);
+ 	de = (struct ext3_dir_entry_2 *) data1;
+ 	top = data1 + len;
+-	while ((char *)(de2 = ext3_next_entry(de)) < top)
++
++	de2 = de;
++	while (de2 != NULL && de2 < top) {
+ 		de = de2;
++		de2 = ext3_next_entry(__func__, dir, de, bh, 0);
++	}
++
+ 	de->rec_len = ext3_rec_len_to_disk(data1 + blocksize - (char *) de);
+ 	/* Initialize the root; the dot dirents already exist */
+ 	de = (struct ext3_dir_entry_2 *) (&root->dotdot);
+@@ -1637,7 +1675,7 @@ static int ext3_delete_entry (handle_t *handle,
+ 	pde = NULL;
+ 	de = (struct ext3_dir_entry_2 *) bh->b_data;
+ 	while (i < bh->b_size) {
+-		if (!ext3_check_dir_entry("ext3_delete_entry", dir, de, bh, i))
++		if (!ext3_check_dir_entry(__func__, dir, de, bh, i))
+ 			return -EIO;
+ 		if (de == de_del)  {
+ 			BUFFER_TRACE(bh, "get_write_access");
+@@ -1655,7 +1693,7 @@ static int ext3_delete_entry (handle_t *handle,
+ 		}
+ 		i += ext3_rec_len_from_disk(de->rec_len);
+ 		pde = de;
+-		de = ext3_next_entry(de);
++		de = __ext3_next_entry(de);
+ 	}
+ 	return -ENOENT;
+ }
+@@ -1792,7 +1830,7 @@ retry:
+ 	de->rec_len = ext3_rec_len_to_disk(EXT3_DIR_REC_LEN(de->name_len));
+ 	strcpy (de->name, ".");
+ 	ext3_set_de_type(dir->i_sb, de, S_IFDIR);
+-	de = ext3_next_entry(de);
++	de = __ext3_next_entry(de);
+ 	de->inode = cpu_to_le32(dir->i_ino);
+ 	de->rec_len = ext3_rec_len_to_disk(inode->i_sb->s_blocksize -
+ 					EXT3_DIR_REC_LEN(1));
+@@ -1825,7 +1863,7 @@ out_stop:
+ /*
+  * routine to check that the specified directory is empty (for rmdir)
+  */
+-static int empty_dir (struct inode * inode)
++static int empty_dir(struct inode *dir, struct inode *inode)
+ {
+ 	unsigned long offset;
+ 	struct buffer_head * bh;
+@@ -1846,8 +1884,14 @@ static int empty_dir (struct inode * inode)
+ 				     inode->i_ino);
+ 		return 1;
+ 	}
++
+ 	de = (struct ext3_dir_entry_2 *) bh->b_data;
+-	de1 = ext3_next_entry(de);
++	de1 = ext3_next_entry(__func__, dir, de, bh, 0);
++	if (de1 == NULL) {
++		brelse(bh);
++		return 1;
++	}
++
+ 	if (le32_to_cpu(de->inode) != inode->i_ino ||
+ 			!le32_to_cpu(de1->inode) ||
+ 			strcmp (".", de->name) ||
+@@ -1860,8 +1904,8 @@ static int empty_dir (struct inode * inode)
+ 	}
+ 	offset = ext3_rec_len_from_disk(de->rec_len) +
+ 			ext3_rec_len_from_disk(de1->rec_len);
+-	de = ext3_next_entry(de1);
+-	while (offset < inode->i_size ) {
++	de = ext3_next_entry(__func__, dir, de1, bh, offset);
++	while (de && offset < inode->i_size) {
+ 		if (!bh ||
+ 			(void *) de >= (void *) (bh->b_data+sb->s_blocksize)) {
+ 			err = 0;
+@@ -1879,7 +1923,7 @@ static int empty_dir (struct inode * inode)
+ 			}
+ 			de = (struct ext3_dir_entry_2 *) bh->b_data;
+ 		}
+-		if (!ext3_check_dir_entry("empty_dir", inode, de, bh, offset)) {
++		if (!ext3_check_dir_entry(__func__, inode, de, bh, offset)) {
+ 			de = (struct ext3_dir_entry_2 *)(bh->b_data +
+ 							 sb->s_blocksize);
+ 			offset = (offset | (sb->s_blocksize - 1)) + 1;
+@@ -1890,7 +1934,7 @@ static int empty_dir (struct inode * inode)
+ 			return 0;
+ 		}
+ 		offset += ext3_rec_len_from_disk(de->rec_len);
+-		de = ext3_next_entry(de);
++		de = __ext3_next_entry(de);
+ 	}
+ 	brelse (bh);
+ 	return 1;
+@@ -2068,7 +2112,7 @@ static int ext3_rmdir (struct inode * dir, struct dentry *dentry)
+ 		goto end_rmdir;
+ 
+ 	retval = -ENOTEMPTY;
+-	if (!empty_dir (inode))
++	if (!empty_dir(dir, inode))
+ 		goto end_rmdir;
+ 
+ 	retval = ext3_delete_entry(handle, dir, de, bh);
+@@ -2244,7 +2288,7 @@ retry:
+ }
+ 
+ #define PARENT_INO(buffer) \
+-	(ext3_next_entry((struct ext3_dir_entry_2 *)(buffer))->inode)
++	(__ext3_next_entry((struct ext3_dir_entry_2 *)(buffer))->inode)
+ 
+ /*
+  * Anybody can rename anything with this: the permission checks are left to the
+@@ -2297,7 +2341,7 @@ static int ext3_rename (struct inode * old_dir, struct dentry *old_dentry,
+ 	if (S_ISDIR(old_inode->i_mode)) {
+ 		if (new_inode) {
+ 			retval = -ENOTEMPTY;
+-			if (!empty_dir (new_inode))
++			if (!empty_dir(new_dir, new_inode))
+ 				goto end_rename;
+ 		}
+ 		retval = -EIO;
