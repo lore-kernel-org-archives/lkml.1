@@ -1,93 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763471AbYF3UjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764163AbYF3UkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763471AbYF3UjR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 16:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbYF3UjA
+	id S1764163AbYF3UkZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 16:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbYF3UkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 16:39:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42010 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752031AbYF3Ui7 (ORCPT
+	Mon, 30 Jun 2008 16:40:11 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48816 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753187AbYF3UkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 16:38:59 -0400
-Date: Mon, 30 Jun 2008 13:37:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dmitri Monakhov <dmonakhov@openvz.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] fix bio_add_page for non trivial merge_bvec_fn case
-Message-Id: <20080630133739.fc4effec.akpm@linux-foundation.org>
-In-Reply-To: <m3y75gszgb.fsf@dmon-lap.sw.ru>
-References: <m3y75gszgb.fsf@dmon-lap.sw.ru>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 30 Jun 2008 16:40:10 -0400
+Message-ID: <486943F1.80606@zytor.com>
+Date: Mon, 30 Jun 2008 13:37:05 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Andy Whitcroft <apw@shadowen.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, Vivek Goyal <vgoyal@in.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 30
+References: <20080701001656.e156585c.sfr@canb.auug.org.au> <48690385.7030500@linux.vnet.ibm.com> <48690D3C.1060803@linux.vnet.ibm.com> <20080630185943.GA24692@uranus.ravnborg.org> <20080630192610.GA6584@elte.hu> <20080630194727.GA26682@uranus.ravnborg.org> <20080630200623.GE6584@elte.hu> <20080630202506.GA28050@uranus.ravnborg.org>
+In-Reply-To: <20080630202506.GA28050@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 08 Jun 2008 19:45:08 +0400
-Dmitri Monakhov <dmonakhov@openvz.org> wrote:
-
-> We have to properly decrease all related bio's counters, especially bi_size
-> in order to merge_bvec_fn return right result. Usually this result in
-> false merge rejects for two absolutely valid bio_vecs. This may cause 
-> significant performance penalty for example Itanium: page_size == 16k,
-> fs_block_size == 1k and block device is raid with small chunk_size.
+Sam Ravnborg wrote:
+>> ah, ok. So the patch below should solve this for now?
+>>
+>> is there any particular reason why we are limited to 100 sections? (is 
+>> there some ELF limitation here perhaps?)
+> 
+> I would still like to know if you see significant different numbers than Kamalesh.
+> If you see a number close to 100 then OK.
+> But if you see a number say in the range of below 80 then we should dive deeper into this.
+> 
+> I do not even know what the program does - never looked at it befoe
+> so why the original limit was 100 I dunno.
 > 
 
-Please cc Jens on BIO changes.
+It looks to me that the people who did the relocatable kernel code just 
+put in a magic number.  There is certainly no inherent reason for this 
+limit.
 
-> ---
->  fs/bio.c |   16 ++++++++++++----
->  1 files changed, 12 insertions(+), 4 deletions(-)
-> 
-> diff --git a/fs/bio.c b/fs/bio.c
-> index 7856257..d713074 100644
-> --- a/fs/bio.c
-> +++ b/fs/bio.c
-> @@ -332,14 +332,21 @@ static int __bio_add_page(struct request_queue *q, struct bio *bio, struct page
->  
->  		if (page == prev->bv_page &&
->  		    offset == prev->bv_offset + prev->bv_len) {
-> +			/* Temprory detacth last bio_vec. */
+What's really ugly is that this is in a host-space program!  It would 
+have been one thing if it had been in a piece of code run in a 
+restricted environment, e.g. in the decompressor, but this one runs in 
+user space on the build environment.
 
-whoa, drunken speling.
+The quick solution is to change this number to something obscenely big 
+(say 10000, but even that could be an issue if we end up doing stuff 
+like section per function); the proper solution is to turn these arrays 
+into a structure and allocate the array dynamically.
 
-> +			bio->bi_size -= prev->bv_len;
-> +			bio->bi_vcnt--;
-> +			bio->bi_phys_segments--;
-> +			bio->bi_hw_segments--;
-> +
->  			prev->bv_len += len;
->  			if (q->merge_bvec_fn &&
->  			    q->merge_bvec_fn(q, bio, prev) < len) {
->  				prev->bv_len -= len;
-> -				return 0;
-> +				len = 0;
->  			}
->  
-> -			goto done;
-> +			bio->bi_size += prev->bv_len;
-> +			goto out_add_bvec;
->  		}
->  	}
->  
-> @@ -394,11 +401,12 @@ static int __bio_add_page(struct request_queue *q, struct bio *bio, struct page
->  	    BIOVEC_VIRT_MERGEABLE(bvec-1, bvec)))
->  		bio->bi_flags &= ~(1 << BIO_SEG_VALID);
->  
-> +	bio->bi_size += len;
-> +out_add_bvec:
->  	bio->bi_vcnt++;
->  	bio->bi_phys_segments++;
->  	bio->bi_hw_segments++;
-> - done:
-> -	bio->bi_size += len;
->  	return len;
->  }
+	-hpa
 
-For some reason patch(1) claims this hunk was corrupted.  I typed it in
-by hand.
 
