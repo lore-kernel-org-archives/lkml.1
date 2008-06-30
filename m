@@ -1,84 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760752AbYF3LGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760356AbYF3LPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760752AbYF3LGQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 07:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbYF3LF6
+	id S1760356AbYF3LPb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 07:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbYF3LPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 07:05:58 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:45082 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752856AbYF3LF5 (ORCPT
+	Mon, 30 Jun 2008 07:15:18 -0400
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:29068 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755196AbYF3LPR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 07:05:57 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: "Alfred E. Heggestad" <aeh@db.org>
-Subject: Re: [PATCH] input: driver for USB VoIP phones with CM109 chipset #2
-Date: Mon, 30 Jun 2008 13:06:27 +0200
+	Mon, 30 Jun 2008 07:15:17 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ztRVfC+F1a45o00bGnXXKdcvV3HWdH/wXCTyHo2rujYdY/oyzYsNU4sZApCx1ZRMJH+ZqlYEntlaDkfWdr8zbyPdJenvZQPz6ZndXMij9h2uqpCT3QwIAatwJFiqubjf2mGSeZj5zNt1nrgzr2ldlTFx+yQ7y822thO2TTL8waY=  ;
+X-YMail-OSG: eD2OqRAVM1nSBcR7..pxcs3O0Ap9GR_.Le295_lWgH__LeSZ8p7oWFDxxrYB2UI9h5PfFgjh0Xe0jhSOWMu4IDCdcKcr0Iwjbo8OUBB3a0pV2u4SC4eCVvFGJnHsor7fy.w-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Stefan Becker <Stefan.Becker@nokia.com>
+Subject: Re: PATCH: 2.6.26-rc8: Fix IRQF_DISABLED for shared interrupts
+Date: Mon, 30 Jun 2008 04:15:15 -0700
 User-Agent: KMail/1.9.9
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200806271424.50425.oliver@neukum.org> <486652D1.4010008@db.org>
-In-Reply-To: <486652D1.4010008@db.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       ext Alan Stern <stern@rowland.harvard.edu>,
+       ext Linus Torvalds <torvalds@linux-foundation.org>
+References: <Pine.LNX.4.44L0.0806281241200.23326-100000@netrider.rowland.org> <200806292009.26975.david-b@pacbell.net> <4868A8B1.3090805@nokia.com>
+In-Reply-To: <4868A8B1.3090805@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806301306.27933.oliver@neukum.org>
+Message-Id: <200806300415.15796.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag 28 Juni 2008 17:03:45 schrieb Alfred E. Heggestad:
- 
-Hello,
+On Monday 30 June 2008, Stefan Becker wrote:
+> It seems IRQF_SHARED | IRQF_DISABLED has already been discussed several 
+> times on LKML:
 
-> many many thanks for your patch and your suggested code improvements.
-> I have tested your patch and I have some comments:
-> 
-> * The first version of your patch was tested, and it applied cleanly
->    and compiled with out any errors. The module was loaded OK, but when
->    I inserted the CM109-device into the USB-port, the machine crashed.
->    I fixed that issue by adding this to the usb_probe() function:
-> 
-> 	init_waitqueue_head(&dev->wait);
+Given that, I'm surprised that nobody has added a warning that
+prints when those two flags are both passed to request_irq().
 
-Sorry about that.
+The problems have been around for a long time, "tested" and known
+to be broken.  They'll never go away without nag messages nudging
+developers to fix the problems.
 
-> * The second version of your patch was applied with some local mods.
->    This is now working as expected.
 
-Good.
+> Alan: should I try to implement his choice (f) insteadn, i.e. drop 
+> IRQF_DISABLED from USB HCD interrupts and disable interrupts in 
+> usb_hcd_irq() instead?
 
-> * I have tested suspend/resume with 2.6.25.9 and TuxOnIce 3.0-rc7
->    and it works fine (cm109 device was plugged in during suspend).
->    During suspend I get this in syslog:
-> 
->      drivers/input/misc/cm109.c: cm109: usb_suspend (event=1)
->      drivers/input/misc/cm109.c: urb_irq_callback: urb status -2
+That's the best solution for USB, given that IRQF_DISABLED isn't
+going to do what it claims to do.
 
-That is normal. It indicates that usb_kill_urb() had terminated the URB.
-Which logging level did you use?
+- Dave
 
-> * The flag "char disconnecting:1" is no longer used in your second
->    patch, and has been removed from the struct.
 
-Sorry again.
-
-> * When the buzzer is triggered by SND_TONE/SND_BELL, I get these
->    warnings in syslog:
-> 
->      drivers/input/misc/cm109.c: urb_ctl_callback: usb_submit_urb failed -22
->      drivers/input/misc/cm109.c: buzz: usb_submit_urb failed -22
->      drivers/input/misc/cm109.c: urb_ctl_callback: usb_submit_urb failed -22
->      drivers/input/misc/cm109.c: buzz: usb_submit_urb failed -22
-> 
->    It seems that the ctl URB is shared between buzzer and keypress
->    handling. I am thinking about adding a new URB just for the buzzer,
->    but I am not sure if that really is necesary. Any suggestions?
-
-Under which conditions did you get this? Was the device opened or not?
-
-	Regards
-		Oliver
