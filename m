@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932680AbYF3VBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762898AbYF3VDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932680AbYF3VBy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 17:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756413AbYF3VBp
+	id S1762898AbYF3VDE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 17:03:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753739AbYF3VCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 17:01:45 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:39852 "EHLO gir.skynet.ie"
+	Mon, 30 Jun 2008 17:02:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60808 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752522AbYF3VBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 17:01:45 -0400
-Date: Mon, 30 Jun 2008 22:01:42 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #10961] 2.6.26-rc: nfsd hangs for a few sec
-Message-ID: <20080630210142.GB20245@csn.ul.ie>
-References: <q5WW6DLC10O.A.dxC.R69ZIB@albercik> <X8mbwW6K81I.A.PjD.169ZIB@albercik>
+	id S1752364AbYF3VCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 17:02:52 -0400
+Message-ID: <4869497B.5040100@redhat.com>
+Date: Mon, 30 Jun 2008 18:00:43 -0300
+From: Glauber Costa <gcosta@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <X8mbwW6K81I.A.PjD.169ZIB@albercik>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       x86@kernel.org
+Subject: Re: [PATCH 17/39] clobber rbx in putuser_64.S
+References: <1214602486-17080-1-git-send-email-gcosta@redhat.com>	<1214602486-17080-3-git-send-email-gcosta@redhat.com>	<1214602486-17080-4-git-send-email-gcosta@redhat.com>	<1214602486-17080-5-git-send-email-gcosta@redhat.com>	<1214602486-17080-6-git-send-email-gcosta@redhat.com>	<1214602486-17080-7-git-send-email-gcosta@redhat.com>	<1214602486-17080-8-git-send-email-gcosta@redhat.com>	<1214602486-17080-9-git-send-email-gcosta@redhat.com>	<1214602486-17080-10-git-send-email-gcosta@redhat.com>	<1214602486-17080-11-git-send-email-gcosta@redhat.com>	<1214602486-17080-12-git-send-email-gcosta@redhat.com>	<1214602486-17080-13-git-send-email-gcosta@redhat.com>	<1214602486-17080-14-git-send-email-gcosta@redhat.com>	<1214602486-17080-15-git-send-email-gcosta@redhat.com>	<1214602486-17080-16-git-send-email-gcosta@redhat.com>	<1214602486-17080-17-git-send-email-gcosta@redhat.com>	<1214602486-17080-18-git-send-email-gcosta@redhat.com> <87abh5pxl6.fsf@basil.nowhere.org>
+In-Reply-To: <87abh5pxl6.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (29/06/08 20:18), Rafael J. Wysocki didst pronounce:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+Andi Kleen wrote:
+> Glauber Costa <gcosta@redhat.com> writes:
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
+>> Instead of clobbering r8, clobber rbx, which is the i386 way.
 > 
+> Note rbx is callee saved on 64bit, so using that one means
+> the surrounding function always has to save explicitely.
+> Not the case with r8.
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10961
-> Subject		: 2.6.26-rc: nfsd hangs for a few sec
-> Submitter	: Alexander Beregalov <a.beregalov@gmail.com>
-> Date		: 2008-06-21 12:57 (9 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121405308328004&w=4
-> 		  http://marc.info/?l=linux-kernel&m=121412880115289&w=4
-> Handled-By	: Linus Torvalds <torvalds@linux-foundation.org>
-> 		  Mel Gorman <mel@csn.ul.ie>
-> 		  Christoph Lameter <clameter@sgi.com>
+> There's a reason it is the way it is.
+> 
+> -Andi
+Right. Thanks for pointing this out.
+However, r8 is not available for i386. We could use %ax, but it
+holds part of the data for the call itself.
 
-I still have no useful reaction to this. According to Christoph Hellwig,
-this lockup has been appearing since lockdep was introduced but for some
-reason is easier to trigger now. It bisected to the two-zonelist changes
-but it still looks like a red herring as I cannot see how reclaim has
-changed significantly as a result of that patch.
+But for this case, I think we can come up with a macro that selects the 
+appropriate register for each of them. Should be easy to do now that the 
+code is merged.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Many thanks.
