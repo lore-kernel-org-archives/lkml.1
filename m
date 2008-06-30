@@ -1,92 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762733AbYF3R5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762963AbYF3R6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762733AbYF3R5t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbYF3R5i
+	id S1762963AbYF3R6H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 13:58:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762619AbYF3R5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:57:38 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:42247 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762190AbYF3R5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:57:33 -0400
-Message-ID: <48691E8B.4040605@sgi.com>
-Date: Mon, 30 Jun 2008 10:57:31 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 30 Jun 2008 13:57:45 -0400
+Received: from gw.goop.org ([64.81.55.164]:37043 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762579AbYF3R5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 13:57:44 -0400
+Message-ID: <48691E92.30809@goop.org>
+Date: Mon, 30 Jun 2008 10:57:38 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com>	<485947A8.8060801@goop.org> <4859511E.5050605@sgi.com>	<48596315.6020104@goop.org> <48596893.4040908@sgi.com>	<485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org>	<485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>	<485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com>	<485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com>	<485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>	<485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com> <m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com> <48691556.2080208@zytor.com>
-In-Reply-To: <48691556.2080208@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Nick Piggin <npiggin@suse.de>, Mark McLoughlin <markmc@redhat.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Eduardo Habkost <ehabkost@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Stephen Tweedie <sct@redhat.com>, x86@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for
+ 64-bit Xen support
+References: <20080625152212.GA3442@elte.hu> <4862A6A9.1030109@goop.org> <20080626105722.GA12640@elte.hu> <20080626105818.GA13805@elte.hu> <4863A8E6.1010807@goop.org> <20080627160333.GA27072@elte.hu> <486539A3.3030102@goop.org> <20080629084318.GA28815@elte.hu> <48684CD4.7040403@goop.org> <20080630082135.GA22844@elte.hu> <20080630092209.GA29815@elte.hu>
+In-Reply-To: <20080630092209.GA29815@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Mike Travis wrote:
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+>
+>   
+>> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 >>
->> FYI, I did try this out and it caused the bootloader to scramble the
->> loaded data.  The first corruption I found was the .x86cpuvendor.init
->> section contained all zeroes.
+>>     
+>>> Ingo Molnar wrote:
+>>>       
+>>>> with this config:
+>>>>
+>>>>   http://redhat.com/~mingo/misc/config-Sun_Jun_29_10_29_11_CEST_2008.bad
+>>>>
+>>>> i've saved the merged 2.6.26-rc8-tip-00241-gc6c8cb2-dirty tree into  
+>>>> tip/tmp.x86.xen-64bit.Sun_Jun_29_10 and pushed it out, so you can test  
+>>>> that exact version.
+>>>>         
+>>> Looks like the setup.c unification missed the early_ioremap init from 
+>>> the early_ioremap unification.  Unconditionally call 
+>>> early_ioremap_init().
+>>>       
+>> applied to tip/x86/unify-setup - thanks Jeremy.
 >>
-> 
-> Explain what you mean with "the bootloader" in this context.
-> 
->     -hpa
+>> I've reactived the x86/xen-64bit branch and i'm testing it currently.
+>>     
+>
+> -tip auto-testing found pagetable corruption (CPA self-test failure):
+>
+> [   32.956015] CPA self-test:
+> [   32.958822]  4k 2048 large 508 gb 0 x 2556[ffff880000000000-ffff88003fe00000] miss 0
+> [   32.964000] CPA ffff88001d54e000: bad pte 1d4000e3
+> [   32.968000] CPA ffff88001d54e000: unexpected level 2
+> [   32.972000] CPA ffff880022c5d000: bad pte 22c000e3
+> [   32.976000] CPA ffff880022c5d000: unexpected level 2
+> [   32.980000] CPA ffff8800200ce000: bad pte 200000e3
+> [   32.984000] CPA ffff8800200ce000: unexpected level 2
+> [   32.988000] CPA ffff8800210f0000: bad pte 210000e3
+>
+> config and full log can be found at:
+>
+>  http://redhat.com/~mingo/misc/config-Mon_Jun_30_11_11_51_CEST_2008.bad
+>   
 
+This config doesn't have CONFIG_DEBUG_KERNEL enabled, let alone 
+CONFIG_CPA_DEBUG.  I've noticed this seems to happen quite a lot: 
+there's a disconnect between the log file and the config which is 
+supposed to have built the kernel.  Is there a bug in your test 
+infrastructure?
 
-After the code was loaded (the compressed code, it seems that my GRUB
-doesn't support uncompressed loading), the above section contained
-zeroes.  I snapped it fairly early, around secondary_startup_64, and
-then printed it in x86_64_start_kernel.
-
-The object file had the correct data (as displayed by objdump) so I'm
-assuming that the bootloading process didn't load the section correctly.
-
-Below was the linker script I used:
-
---- linux-2.6.tip.orig/include/asm-generic/vmlinux.lds.h
-+++ linux-2.6.tip/include/asm-generic/vmlinux.lds.h
-@@ -373,9 +373,13 @@
-
- #ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
- #define PERCPU(align)                                                  \
--       . = ALIGN(align);                                               \
-+       .data.percpu.abs = .;                                           \
-        percpu : { } :percpu                                            \
--       __per_cpu_load = .;                                             \
-+       .data.percpu.rel : AT(.data.percpu.abs - LOAD_OFFSET) {         \
-+               BYTE(0)                                                 \
-+               . = ALIGN(align);                                       \
-+               __per_cpu_load = .;                                     \
-+       }                                                               \
-        .data.percpu 0 : AT(__per_cpu_load - LOAD_OFFSET) {             \
-                *(.data.percpu.first)                                   \
-                *(.data.percpu.shared_aligned)                          \
-@@ -383,8 +387,8 @@
-                *(.data.percpu.page_aligned)                            \
-                ____per_cpu_size = .;                                   \
-        }                                                               \
--       . = __per_cpu_load + ____per_cpu_size;                          \
--       data : { } :data
-+       . = __per_cpu_load + ____per_cpu_size;
-+
- #else
- #define PERCPU(align)                                                  \
-        . = ALIGN(align);                                               \
-
-It showed all the correct address in the map and __per_cpu_load was a
-relative symbol (which was the objective.)
-
-Btw, our simulator, which only loads uncompressed code, had the data correct,
-so it *may* only be a result of the code being compressed.
-
-Thanks,
-Mike
+    J
