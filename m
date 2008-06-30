@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762107AbYF3RH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761963AbYF3RJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762107AbYF3RH2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYF3RHU
+	id S1761963AbYF3RJU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 13:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbYF3RJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:07:20 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:33405 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752563AbYF3RHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:07:18 -0400
-Message-ID: <486912C4.8070705@sgi.com>
-Date: Mon, 30 Jun 2008 10:07:16 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 30 Jun 2008 13:09:12 -0400
+Received: from edna.telenet-ops.be ([195.130.132.58]:36359 "EHLO
+	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751232AbYF3RJL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 13:09:11 -0400
+Date: Mon, 30 Jun 2008 19:09:08 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: JosephChan@via.com.tw
+cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 1/13] viafb: viafb.modes, viafb.txt
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E7705@exchtp03.taipei.via.com.tw>
+Message-ID: <Pine.LNX.4.64.0806301902390.26408@anakin>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E7705@exchtp03.taipei.via.com.tw>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com>	<485947A8.8060801@goop.org> <4859511E.5050605@sgi.com>	<48596315.6020104@goop.org> <48596893.4040908@sgi.com>	<485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org>	<485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>	<485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com>	<485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com>	<485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>	<485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com> <m1skv7onvh.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1skv7onvh.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Mike Travis <travis@sgi.com> writes:
-...
->> Can we generate a new symbol which would account for LOAD_OFFSET?
-> 
-> Ouch.  Absolute symbols indeed.  On the 32bit kernel that may play havoc
-> with the relocatable kernel, although we have had similar absolute logic
-> for the last year. With __per_cpu_start and __per_cpu_end so it may
-> not be a problem.
-> 
-> To initialize the percpu data you do want to talk to the virtual address
-> at __per_coup_load.  But it is absolute Ugh.  
-> 
-> It might be worth saying something like.
-> .data.percpu.start : AT(.data.percpu.dummy - LOAD_OFFSET) {
-> 	DATA(0)                   
-> 	. = ALIGN(align);
->         __per_cpu_load = . ;                   
-> }
-> To make __per_cpu_load a relative symbol. ld has a bad habit of taking
-> symbols out of empty sections and making them absolute.  Which is why
-> I added the DATA(0).
-> 
-> Still I don't think that would be the 64bit problem.
-> 
-> Eric
+On Mon, 30 Jun 2008, JosephChan@via.com.tw wrote:
+> +[Bootup with viafb]:
+> +--------------------
+> +    Add the following line to your grub.conf:
+> +    append = "video=viafb:viafb_mode=1024x768,via_fb_bpp=32,viafb_refresh=85"
 
-FYI, I did try this out and it caused the bootloader to scramble the
-loaded data.  The first corruption I found was the .x86cpuvendor.init
-section contained all zeroes.
+Why not support simply video=1024x768-32@85 (or
+video=viafb:1024x768-32@85, if you have other video cards too), as can be
+parsed by fb_find_mode()?
 
-Mike
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
