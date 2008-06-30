@@ -1,92 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762283AbYF3RLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762561AbYF3RSM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762283AbYF3RLw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:11:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYF3RLo
+	id S1762561AbYF3RSM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 13:18:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbYF3RRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:11:44 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:56354 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753241AbYF3RLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:11:43 -0400
-Date: Mon, 30 Jun 2008 19:11:33 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>
-Cc: Rene Herman <rene.herman@keyaccess.nl>,
-       ALSA devel <alsa-devel@alsa-project.org>, mulix@mulix.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [alsa-devel] looping S/PDIF data
-Message-ID: <20080630191133.7f7c349d@mjolnir.drzeus.cx>
-In-Reply-To: <485CF0AE.3020204@keyaccess.nl>
-References: <20080531112606.5884a1c9@mjolnir.drzeus.cx>
-	<20080617215504.3203a5ed@mjolnir.drzeus.cx>
-	<4858B84B.4030800@keyaccess.nl>
-	<s5hej6t91u1.wl%tiwai@suse.de>
-	<Pine.LNX.4.61.0806191435270.1798@tm8103-a.perex-int.cz>
-	<s5hskv97fqk.wl%tiwai@suse.de>
-	<20080620214516.28e9d3f3@mjolnir.drzeus.cx>
-	<485C0A97.7020909@keyaccess.nl>
-	<20080621000050.43160d47@mjolnir.drzeus.cx>
-	<485C2DF7.7080408@keyaccess.nl>
-	<20080621010910.018f880d@mjolnir.drzeus.cx>
-	<485CF0AE.3020204@keyaccess.nl>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
-X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-9717-1214845266-0001-2"
+	Mon, 30 Jun 2008 13:17:32 -0400
+Received: from gw.goop.org ([64.81.55.164]:60052 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756300AbYF3RRa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 13:17:30 -0400
+Message-ID: <48691524.5010806@goop.org>
+Date: Mon, 30 Jun 2008 10:17:24 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Nick Piggin <npiggin@suse.de>, Mark McLoughlin <markmc@redhat.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Eduardo Habkost <ehabkost@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Stephen Tweedie <sct@redhat.com>, x86@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for
+ 64-bit Xen support
+References: <20080625152212.GA3442@elte.hu> <4862A6A9.1030109@goop.org> <20080626105722.GA12640@elte.hu> <20080626105818.GA13805@elte.hu> <4863A8E6.1010807@goop.org> <20080627160333.GA27072@elte.hu> <486539A3.3030102@goop.org> <20080629084318.GA28815@elte.hu> <48684CD4.7040403@goop.org> <20080630082135.GA22844@elte.hu> <20080630092209.GA29815@elte.hu>
+In-Reply-To: <20080630092209.GA29815@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+>
+>   
+>> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>>
+>>     
+>>> Ingo Molnar wrote:
+>>>       
+>>>> with this config:
+>>>>
+>>>>   http://redhat.com/~mingo/misc/config-Sun_Jun_29_10_29_11_CEST_2008.bad
+>>>>
+>>>> i've saved the merged 2.6.26-rc8-tip-00241-gc6c8cb2-dirty tree into  
+>>>> tip/tmp.x86.xen-64bit.Sun_Jun_29_10 and pushed it out, so you can test  
+>>>> that exact version.
+>>>>         
+>>> Looks like the setup.c unification missed the early_ioremap init from 
+>>> the early_ioremap unification.  Unconditionally call 
+>>> early_ioremap_init().
+>>>       
+>> applied to tip/x86/unify-setup - thanks Jeremy.
+>>
+>> I've reactived the x86/xen-64bit branch and i'm testing it currently.
+>>     
+>
+> -tip auto-testing found pagetable corruption (CPA self-test failure):
+>
+> [   32.956015] CPA self-test:
+> [   32.958822]  4k 2048 large 508 gb 0 x 2556[ffff880000000000-ffff88003fe00000] miss 0
+> [   32.964000] CPA ffff88001d54e000: bad pte 1d4000e3
+> [   32.968000] CPA ffff88001d54e000: unexpected level 2
+> [   32.972000] CPA ffff880022c5d000: bad pte 22c000e3
+> [   32.976000] CPA ffff880022c5d000: unexpected level 2
+> [   32.980000] CPA ffff8800200ce000: bad pte 200000e3
+> [   32.984000] CPA ffff8800200ce000: unexpected level 2
+> [   32.988000] CPA ffff8800210f0000: bad pte 210000e3
+>
+> config and full log can be found at:
+>
+>  http://redhat.com/~mingo/misc/config-Mon_Jun_30_11_11_51_CEST_2008.bad
+>   
 
---=_freyr.drzeus.cx-9717-1214845266-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+That config doesn't build for me.  When I put it in place and do "make 
+oldconfig" it still asks for lots of config options (which I just set to 
+default).  But when I build it fails with:
 
-On Sat, 21 Jun 2008 14:14:38 +0200
-Rene Herman <rene.herman@keyaccess.nl> wrote:
+  CC      arch/x86/kernel/asm-offsets.s
+In file included from include2/asm/page.h:40,
+                 from include2/asm/pda.h:8,
+                 from include2/asm/current.h:19,
+                 from include2/asm/processor.h:15,
+                 from /home/jeremy/hg/xen/paravirt/linux/include/linux/prefetch.h:14,
+                 from /home/jeremy/hg/xen/paravirt/linux/include/linux/list.h:6,
+                 from /home/jeremy/hg/xen/paravirt/linux/include/linux/module.h:9,
+                 from /home/jeremy/hg/xen/paravirt/linux/include/linux/crypto.h:21,
+                 from /home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/asm-offsets_64.c:7,
+                 from /home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/asm-offsets.c:4:
+include2/asm/page_64.h:46:2: error: #error "CONFIG_PHYSICAL_START must be a multiple of 2MB"
+make[3]: *** [arch/x86/kernel/asm-offsets.s] Error 1
 
-> On 21-06-08 01:09, Pierre Ossman wrote:
->=20
-> > trident: pause s/pdif output
-> >=20
-> > Stop the S/PDIF DMA engine and output when the device is told to pause.
-> > It will keep on looping the current buffer contents if this isn't done.
-> >=20
-> > Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
->=20
-> Verified to fix the reported pause problem on a 4DWaveNX (and indeed to=20
-> not affect a 4DWaveDX). The Trident SPDIF doesn't seem capable of 44100=20
-> which for me means it's not all that useful but you no doubt know=20
-> yourself that/if it is for you...
->=20
-> Tested-by: Rene Herman <rene.herman@gmail.com>
+I can fix that, of course, but it doesn't give me confidence I'm testing 
+what you are...
 
-
-Sooo.... ack? nak? limbo?
-
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-9717-1214845266-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkhpE8sACgkQ7b8eESbyJLg17QCfXfHsi/d+P6UenxdmiLyAmBGw
-OVEAmgLJq9jIFYpx+N/nXnk1iUbP7RUR
-=GHVX
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-9717-1214845266-0001-2--
+    J
