@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763449AbYF3TTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761061AbYF3TVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763449AbYF3TTZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 15:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbYF3TTR
+	id S1761061AbYF3TVP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 15:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbYF3TVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 15:19:17 -0400
-Received: from slow2-v.mail.gandi.net ([217.70.178.89]:43045 "EHLO
-	slow2-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750890AbYF3TTR (ORCPT
+	Mon, 30 Jun 2008 15:21:00 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:58546 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750882AbYF3TU7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 15:19:17 -0400
-X-Greylist: delayed 1269 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jun 2008 15:19:16 EDT
-To: hannes@saeurebad.de (Johannes Weiner)
-Cc: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@suse.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Longstanding bug in ac97/intel8x0 resume/init
-References: <87hcca3xkx.fsf@saeurebad.de>
-	<8763rsa5qk.fsf@skyscraper.fehenstaub.lan>
-X-Face: %JOeya=Dg!}[/#Go&*&cQ+)){p1c8}u\Fg2Q3&)kothIq|JnWoVzJtCFo~4X<uJ\9cHK'.w 3:{EoxBR
-From: Mathieu Chouquet-Stringer <mchouque@free.fr>
-Organization: Uh?
-Date: 30 Jun 2008 20:58:03 +0200
-In-Reply-To: <8763rsa5qk.fsf@skyscraper.fehenstaub.lan>
-Message-ID: <m3iqvq7nt0.fsf@mobydick.mine.nu>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
+	Mon, 30 Jun 2008 15:20:59 -0400
+Date: Mon, 30 Jun 2008 20:19:36 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] splitlru: memcg swapbacked pages active
+In-Reply-To: <20080630114439.da792361.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0806302010230.27080@blonde.site>
+References: <Pine.LNX.4.64.0806290117510.21758@blonde.site>
+ <Pine.LNX.4.64.0806290120270.21758@blonde.site>
+ <20080630114439.da792361.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-        Hey there,
+On Mon, 30 Jun 2008, KAMEZAWA Hiroyuki wrote:
+> On Sun, 29 Jun 2008 01:22:22 +0100 (BST)
+> Hugh Dickins <hugh@veritas.com> wrote:
+> > 
+> > --- mmotm/mm/memcontrol.c	2008-06-27 13:39:20.000000000 +0100
+> > +++ linux/mm/memcontrol.c	2008-06-27 17:32:29.000000000 +0100
+> > @@ -560,6 +560,8 @@ static int mem_cgroup_charge_common(stru
+> >  		pc->flags = PAGE_CGROUP_FLAG_CACHE;
+> >  		if (page_is_file_cache(page))
+> >  			pc->flags |= PAGE_CGROUP_FLAG_FILE;
+> > +		else
+> > +			pc->flags |= PAGE_CGROUP_FLAG_ACTIVE;
+> >  	} else
+> >  		pc->flags = PAGE_CGROUP_FLAG_ACTIVE;
+> >  
+>
+> Hmm, maybe no trouble but we'll have to care shmem's page is not marked as
+> PAGE_CGROUP_FLAG_CACHE but charged by mem_cgroup_charge_cache_page(). 
+> (I think why shmem is charged as cache is because shmem is used for tmpfs)
+> 
+> pc->flags |= PAGE_CGROUP_FLAG_FILE |  PAGE_CGROUP_FLAG_ACTIVE;
+> 
+> is bad ? (or not work ? I can't catch yet.)
 
-hannes@saeurebad.de (Johannes Weiner) writes:
-> Johannes Weiner <hannes@saeurebad.de> writes:
-> > my laptop has muted sound after resuming the soundcard (by
-> > s2ram/hibernation).  The problem seems to be that the cached register
-> > values are not written back to the device properly.
+Sorry, I've tried several times to understand you here, but still don't.
 
-I've got the same exact issue on a Thinkpad T30:
+I thought shmem's page is marked as PAGE_CGROUP_FLAG_CACHE, and is
+charged by mem_cgroup_charge_cache_page(), and that's what memcg wants?
 
- 0 [I82801CAICH3   ]: ICH - Intel 82801CA-ICH3
-                      Intel 82801CA-ICH3 with AD1881A at irq 5
+It is a bit weird that PAGE_CGROUP_FLAG_CACHE and PAGE_CGROUP_FLAG_FILE
+diverge, I'm not thrilled with that: that's an aspect of splitlru
+treating shmem/tmpfs pages as not-file pages, which I'm unhappy with.
 
-00:1f.5 Multimedia audio controller: Intel Corporation 82801CA/CAM AC'97 Audio Controller (rev 02)
-
-
--- 
-Mathieu Chouquet-Stringer
-            The sun itself sees not till heaven clears.
-	             -- William Shakespeare --
+Hugh
