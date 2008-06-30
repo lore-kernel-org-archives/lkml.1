@@ -1,146 +1,2816 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbYF3HrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbYF3HrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758798AbYF3HrA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 03:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbYF3Hqu
+	id S1759232AbYF3HrZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 03:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbYF3HrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 03:46:50 -0400
-Received: from mxl.seznam.cz ([77.75.72.44]:54401 "EHLO mxl.seznam.cz"
+	Mon, 30 Jun 2008 03:47:08 -0400
+Received: from mailtp.via.com.tw ([61.66.243.2]:63287 "EHLO mailtp.via.com.tw"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752216AbYF3Hqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 03:46:48 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=beta; d=seznam.cz;
-	h=In-Reply-To:Received:Date:Cc:To:From:Subject:Mime-Version:Message-Id:Content-Transfer-Encoding:Content-Type:X-Abuse:X-Seznam-User:X-QM-Mark;
-	b=n9gLnGAMWCboAxa4pVCTfG1la7xBB1rVgsfXlt2lvw/XAqgTHVmKJfcimfq+jf6pj
-	axfVsrI/5jrx6zHv7hd6LTUVyPxATdjtt/J7Ptl5CJTq45QsFMuPv/vJHLqX/2vDeLJ
-	+oEonuVcknVQtzU/4LZMAmlGHfO9fzJPsfBTxfU=
-In-Reply-To: <20080630033943.332471860046@mail171-va3.bigfish.com>
-Date: Mon, 30 Jun 2008 09:11:55 +0200 (CEST)
-Cc: =?us-ascii?Q?John=20Williams?= <john.williams@petalogix.com>,
-       grant.likely@secretlab.ca, linux-kernel@vger.kernel.org, arnd@arndb.de,
-       linux-arch@vger.kernel.org,
-       =?us-ascii?Q?John=20Linn?= <linnj@xilinx.com>, matthew@wil.cx,
-       will.newton@gmail.com, drepper@redhat.com, linuxppc-dev@ozlabs.org,
-       vapier.adi@gmail.com, alan@lxorguk.ukuu.org.uk, hpa@zytor.com,
-       =?us-ascii?Q?Michal=20Simek?= <monstr@monstr.eu>
-To: microblaze-uclinux@itee.uq.edu.au
-From: =?us-ascii?Q?Michal=20Simek?= <Monstr@seznam.cz>
-Subject: =?us-ascii?Q?RE=3A=20=5BPATCH=2012=2F60=5D=20microblaze=5Fv4=3A=20Generic=20dts=20file=20for=20platforms?=
-Mime-Version: 1.0
-Message-Id: <4121.6641-32593-1821693405-1214809915@seznam.cz>
-Content-Transfer-Encoding: 7bit
+	id S1758763AbYF3HrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 03:47:00 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-X-Abuse: abuse@seznam.cz
-X-Seznam-User: Monstr@seznam.cz
-X-QM-Mark: email-qm3<133774415>
+	charset="utf-8"
+Subject: [PATCH 11/13] viafb: viafbdev.c, viafbdev.h
+Date: Mon, 30 Jun 2008 15:46:56 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E7895@exchtp03.taipei.via.com.tw>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 11/13] viafb: viafbdev.c, viafbdev.h
+Thread-Index: AcjahXiQytzNW+1XQn2+xkEqhdVKkQ==
+From: <JosephChan@via.com.tw>
+To: <JosephChan@via.com.tw>, <linux-fbdev-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>
+Cc: <akpm@linux-foundation.org>, <geert@linux-m68k.org>
+X-OriginalArrivalTime: 30 Jun 2008 07:46:58.0302 (UTC) FILETIME=[797119E0:01C8DA85]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m5U7lffq019713
 
-Hi Steve, John a others,
+Initialization, remove and some other important functions of viafb.
 
->In my opionion, we should only include dts files for reference designs, and it
->must be documented how to get the design that the dts corresponds to.
->MD5 hashing might be one way to prevent people from getting the dts file wrong,
->however without some way of checking it automatically, I don't think
->anyone will have the patience to checksum the design they have (even worse, with
->whitespace changes, the md5 sum will change, so this is pretty fragile.
+Signed-off-by: Joseph Chan <josephchan@via.com.tw>
 
-What is reference design? Is reference design design from BSB or from Xilinx page?
-I don't want to add dts files to kernel which has relation with reference design. I added platform folder
-with generic one for preparing for others distribution which can add their supported board. I don't want 
-to added useless files to kernel. For non FPGA board make sense to me, they can't change everything.
-
-I see the way that I can add ref design to my pages with correspond DTS file with some MD5 sums 
-but I haven't seen to add for every reference board dts file. This is not way. I see that people will write to us
-that they use board ml401 and they set ml401 in menuconfig but the kernel doesn't work. IMHO, if no board specific options
-are not there, people will be looking for what is the next step. And If they want to use platform option which is there, they can add their own platform to his kernel. 
-
->Having a device tree in the kernel for documentation *shouldn't* be necessary,
->since noone should ever write their dts by hand. (right?)
->Hence, I'd prefer to not put the dts file in the kernel at all, and but to
->automatically generate the dts and store it in the blockram of the design.
->This inextricably associates the dts with the design.
-
-This should be one choice to add DTB to bram with design but this could be only one choice
-not in general. I can't imagine for example board where is reset logic on own IP which has specific 
-reason. Developers will be overwrite their DTS a lot. 
-I think this is the right time to stop discussion in this thread and annoying others with FPGA specific discuss. We can continue in specific thread.
-
->As for the copyright, I haven't been able to find much information on whether or
->not generated files are even copyrightable.  One might argue that they
->don't have sufficient 'creative value' to be copyrightable.  Or arguably, they
->are as copyrightable by the generator author as by the author or the .mhs file.
->I admit in this case, I've followed the safe route by claiming a copyright,
->which at least at Xilinx has significant precedent.
-
-This part can be discuss only on microblaze mailing list and has no relation with first pull to mainline kernel.
-As I wrote in previous email copyright on generic DTS will not be there.
-
-Michal
-
->Steve
-
------Original Message-----
-From: John Williams [mailto:john.williams@petalogix.com]
-Sent: Sun 6/29/2008 5:02 PM
-To: grant.likely@secretlab.ca
-Cc: monstr@seznam.cz; linux-kernel@vger.kernel.org; arnd@arndb.de;
-linux-arch@vger.kernel.org; Stephen Neuendorffer; John Linn; matthew@wil.cx;
-will.newton@gmail.com; drepper@redhat.com; microblaze-uclinux@itee.uq.edu.au;
-linuxppc-dev@ozlabs.org; vapier.adi@gmail.com; alan@lxorguk.ukuu.org.uk;
-hpa@zytor.com; Michal Simek
-Subject: Re: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
- 
-On Sat, Jun 28, 2008 at 3:49 PM, Grant Likely <grant.likely@secretlab.ca>
-wrote:
-> On Thu, Jun 26, 2008 at 5:29 AM,  <monstr@seznam.cz> wrote:
->> From: Michal Simek <monstr@monstr.eu>
-
->>  arch/microblaze/platform/generic/system.dts |  300
-+++++++++++++++++++++++++++
-
-> Since this is a generated file, and entirely bitstream specific, does
-> it make sense to include it in the kernel tree?  If it does, then is
-> it produced from one of the Xilinx reference designs?  Can you add
-> documentation to the header that specifies exactly which design
-> version this .dts is for?
-
-I think there's value in having a generic DTS as an example or
-template, even if it doesn't correspond to any specific machine.
-Agreed a comment block explaining this is valuable.
-
-I'd almost oppose any attempt to include a standard DTS for things
-like ML401 boards etc - they are just misleading.  Unless we do MD5
-hashes on MHS files, and use them as the filenames, any attempt to
-define a standard platform will just fail and confuse people.  Better
-to show them how to generate the DTS for their system.
-
->> +/*
->> + * (C) Copyright 2007-2008 Xilinx, Inc.
->> + * (C) Copyright 2007-2008 Michal Simek
->> + *
->> + * Michal SIMEK <monstr@monstr.eu>
->
-> If this is a generated file, then is this copyright notice even appropriate?
-
-I agree.  I think Michal is just copying Xilinx's habit of putting
-copyright headers in generated files, and it's one that we should stop
-now.
-
-Regards,
-
-John
-
-
-
-
-This email and any attachments are intended for the sole use of the named
-recipient(s) and contain(s) confidential information that may be proprietary,
-privileged or copyrighted under applicable law. If you are not the intended
-recipient, do not read, copy, or forward this email message or any attachments.
-Delete this email message and any attachments immediately.
-
-
-
+diff -Nur a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+--- a/drivers/video/via/viafbdev.c	1970-01-01 08:00:00.000000000 +0800
++++ b/drivers/video/via/viafbdev.c	2008-06-30 08:53:33.000000000 +0800
+@@ -0,0 +1,2659 @@
++/*
++ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
++
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation;
++ * either version 2, or (at your option) any later version.
++
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
++ * the implied warranty of MERCHANTABILITY or FITNESS FOR
++ * A PARTICULAR PURPOSE.See the GNU General Public License
++ * for more details.
++
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++#ifdef MODULE
++#include <linux/module.h>
++#endif
++#define _MASTER_FILE
++
++#include "global.h"
++
++static int MAX_CURS = 32;
++static struct fb_var_screeninfo default_var;
++static char *viafb_name = "Via";
++static u32 pseudo_pal[17];
++
++/* video mode */
++static char *viafb_mode = "640x480";
++static char *viafb_mode1 = "640x480";
++static int viafb_resMode = VIA_RES_640X480;
++
++/* Added for specifying active devices.*/
++char *viafb_active_dev = "";
++
++/* Added for specifying video on devices.*/
++char *viafb_video_dev = "";
++
++/*Added for specify lcd output port*/
++char *viafb_lcd_port = "";
++char *viafb_dvi_port = "";
++
++static int timer_on;
++struct timer_list timer_for3D;
++
++
++static void viafb_set_device(struct device_t active_dev);
++static int apply_device_setting(struct viafb_ioctl_setting setting_info,
++			 struct fb_info *info);
++static void apply_second_mode_setting(struct fb_var_screeninfo
++	*sec_var);
++static void retrieve_device_setting(struct viafb_ioctl_setting
++	*setting_info);
++static void viafb_set_video_device(u32 video_dev_info);
++static void viafb_get_video_device(u32 *video_dev_info);
++
++/* Mode information */
++static const struct viafb_modeinfo viafb_modentry[] = {
++	{480, 640, VIA_RES_480X640, "480x640"},
++	{640, 480, VIA_RES_640X480, "640x480"},
++	{800, 480, VIA_RES_800X480, "800x480"},
++	{800, 600, VIA_RES_800X600, "800x600"},
++	{1024, 768, VIA_RES_1024X768, "1024x768"},
++	{1152, 864, VIA_RES_1152X864, "1152x864"},
++	{1280, 1024, VIA_RES_1280X1024, "1280x1024"},
++	{1600, 1200, VIA_RES_1600X1200, "1600x1200"},
++	{1440, 1050, VIA_RES_1440X1050, "1440x1050"},
++	{1280, 768, VIA_RES_1280X768, "1280x768"},
++	{1280, 800, VIA_RES_1280X800, "1280x800"},
++	{1280, 960, VIA_RES_1280X960, "1280x960"},
++	{1920, 1440, VIA_RES_1920X1440, "1920x1440"},
++	{848, 480, VIA_RES_848X480, "848x480"},
++	{1400, 1050, VIA_RES_1400X1050, "1400x1050"},
++	{720, 480, VIA_RES_720X480, "720x480"},
++	{720, 576, VIA_RES_720X576, "720x576"},
++	{1024, 512, VIA_RES_1024X512, "1024x512"},
++	{1024, 576, VIA_RES_1024X576, "1024x576"},
++	{1024, 600, VIA_RES_1024X600, "1024x600"},
++	{1280, 720, VIA_RES_1280X720, "1280x720"},
++	{1920, 1080, VIA_RES_1920X1080, "1920x1080"},
++	{1366, 768, VIA_RES_1368X768, "1368x768"},
++	{1680, 1050, VIA_RES_1680X1050, "1680x1050"},
++	{960, 600, VIA_RES_960X600, "960x600"},
++	{1000, 600, VIA_RES_1000X600, "1000x600"},
++	{1024, 576, VIA_RES_1024X576, "1024x576"},
++	{1024, 600, VIA_RES_1024X600, "1024x600"},
++	{1088, 612, VIA_RES_1088X612, "1088x612"},
++	{1152, 720, VIA_RES_1152X720, "1152x720"},
++	{1200, 720, VIA_RES_1200X720, "1200x720"},
++	{1280, 600, VIA_RES_1280X600, "1280x600"},
++	{1360, 768, VIA_RES_1360X768, "1360x768"},
++	{1440, 900, VIA_RES_1440X900, "1440x900"},
++	{1600, 900, VIA_RES_1600X900, "1600x900"},
++	{1600, 1024, VIA_RES_1600X1024, "1600x1024"},
++	{1792, 1344, VIA_RES_1792X1344, "1792x1344"},
++	{1856, 1392, VIA_RES_1856X1392, "1856x1392"},
++	{1920, 1200, VIA_RES_1920X1200, "1920x1200"},
++	{2048, 1536, VIA_RES_2048X1536, "2048x1536"},
++	{0, 0, VIA_RES_INVALID, "640x480"}
++};
++
++static struct fb_ops viafb_ops;
++
++static void get_panel_max_scal_size(struct _panel_size_pos_info
++	*p_max_size)
++{
++	switch (p_max_size->device_type) {
++	case DVI_Device:
++		p_max_size->x = p_max_size->y = 0;
++		break;
++	default:
++		p_max_size->x = p_max_size->y = 0;
++	}
++}
++static void get_panel_max_scal_pos(struct _panel_size_pos_info *p_para)
++{
++	switch (p_para->device_type) {
++	case DVI_Device:
++		p_para->x = p_para->y = 0;
++		break;
++	default:
++		p_para->x = p_para->y = 0;
++	}
++}
++
++static void get_panel_scal_pos(struct _panel_size_pos_info *p_para)
++{
++	switch (p_para->device_type) {
++	case DVI_Device:
++		p_para->x = p_para->y = 0;
++		break;
++	default:
++		p_para->x = p_para->y = 0;
++	}
++}
++static void get_panel_scal_size(struct _panel_size_pos_info *p_para)
++{
++	switch (p_para->device_type) {
++	case DVI_Device:
++		p_para->x = p_para->y = 0;
++		break;
++	default:
++		p_para->x = p_para->y = 0;
++	}
++}
++
++static void set_panel_scal_pos(struct _panel_size_pos_info *p_para)
++{
++	switch (p_para->device_type) {
++	case DVI_Device:
++		break;
++	default:
++		;
++	}
++}
++
++static void set_panel_scal_size(struct _panel_size_pos_info *p_para)
++{
++	switch (p_para->device_type) {
++	case DVI_Device:
++		break;
++	default:
++		;
++	}
++}
++
++static int viafb_update_fix(struct fb_fix_screeninfo *fix, struct fb_info *info)
++{
++	struct viafb_par *ppar;
++	ppar = info->par;
++
++	DEBUG_MSG(KERN_INFO "viafb_update_fix!\n");
++
++	fix->visual =
++	    ppar->bpp == 8 ? FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
++	fix->line_length = ppar->linelength;
++
++	return 0;
++}
++
++
++static void viafb_setup_fixinfo(struct fb_fix_screeninfo *fix,
++	struct viafb_par *viaparinfo)
++{
++	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
++	strcpy(fix->id, viafb_name);
++
++	fix->smem_start = viaparinfo->fbmem;
++	fix->smem_len = viaparinfo->fbmem_free;
++	fix->mmio_start = viaparinfo->mmio_base;
++	fix->mmio_len = viaparinfo->mmio_len;
++
++	fix->type = FB_TYPE_PACKED_PIXELS;
++	fix->type_aux = 0;
++
++	fix->xpanstep = fix->ywrapstep = 0;
++	fix->ypanstep = 1;
++
++	/* Just tell the accel name */
++	viafbinfo->fix.accel = FB_ACCEL_VIA_UNICHROME;
++}
++static int viafb_open(struct fb_info *info, int user)
++{
++	DEBUG_MSG(KERN_INFO "viafb_open!\n");
++	return 0;
++}
++
++static int viafb_release(struct fb_info *info, int user)
++{
++	DEBUG_MSG(KERN_INFO "viafb_release!\n");
++	return 0;
++}
++
++static void viafb_update_viafb_par(struct fb_info *info)
++{
++	struct viafb_par *ppar;
++
++	ppar = info->par;
++	ppar->bpp = info->var.bits_per_pixel;
++	ppar->linelength = ((info->var.xres_virtual + 7) & ~7) * ppar->bpp / 8;
++	ppar->hres = info->var.xres;
++	ppar->vres = info->var.yres;
++	ppar->xoffset = info->var.xoffset;
++	ppar->yoffset = info->var.yoffset;
++}
++
++static int viafb_check_var(struct fb_var_screeninfo *var,
++	struct fb_info *info)
++{
++	int vmode_index, htotal, vtotal;
++	struct viafb_par *ppar;
++	u32 long_refresh;
++	struct viafb_par *p_viafb_par;
++	ppar = info->par;
++
++
++	DEBUG_MSG(KERN_INFO "viafb_check_var!\n");
++	/* Sanity check */
++	/* HW neither support interlacte nor double-scaned mode */
++	if (var->vmode & FB_VMODE_INTERLACED || var->vmode & FB_VMODE_DOUBLE)
++		return -EINVAL;
++
++	vmode_index = viafb_get_mode_index(var->xres, var->yres, 0);
++	if (vmode_index == VIA_RES_INVALID) {
++		DEBUG_MSG(KERN_INFO
++			  "viafb: Mode %dx%dx%d not supported!!\n",
++			  var->xres, var->yres, var->bits_per_pixel);
++		return -EINVAL;
++	}
++
++	if (24 == var->bits_per_pixel)
++		var->bits_per_pixel = 32;
++
++	if (var->bits_per_pixel != 8 && var->bits_per_pixel != 16 &&
++		var->bits_per_pixel != 32)
++		return -EINVAL;
++
++	if ((var->xres_virtual * (var->bits_per_pixel >> 3)) & 0x1F)
++		/*32 pixel alignment */
++		var->xres_virtual = (var->xres_virtual + 31) & ~31;
++	if (var->xres_virtual * var->yres_virtual * var->bits_per_pixel / 8 >
++		ppar->memsize)
++		return -EINVAL;
++
++	/* Based on var passed in to calculate the refresh,
++	 * because our driver use some modes special.
++	 */
++	htotal = var->xres + var->left_margin +
++	var->right_margin + var->hsync_len;
++	vtotal = var->yres + var->upper_margin +
++		var->lower_margin + var->vsync_len;
++	long_refresh = 1000000000UL / var->pixclock * 1000;
++	long_refresh /= (htotal * vtotal);
++
++	viafb_refresh = viafb_get_refresh(var->xres, var->yres, long_refresh);
++	/* Not supported by our driver, reutrn immediately */
++	if (!viafb_refresh)
++		return -EINVAL;
++
++	/* Adjust var according to our driver's own table */
++	viafb_fill_var_timing_info(var, viafb_refresh, vmode_index);
++
++	/* This is indeed a patch for VT3353 */
++	if (!info->par)
++		return -1;
++	p_viafb_par = (struct viafb_par *)info->par;
++	if (p_viafb_par->chip_info->gfx_chip_name == UNICHROME_VX800)
++		var->accel_flags = 0;
++
++	return 0;
++}
++
++static int viafb_set_par(struct fb_info *info)
++{
++	int vmode_index;
++	int vmode_index1 = 0;
++	DEBUG_MSG(KERN_INFO "viafb_set_par!\n");
++
++	viafb_update_device_setting(info->var.xres, info->var.yres,
++			      info->var.bits_per_pixel, viafb_refresh, 0);
++
++	vmode_index = viafb_get_mode_index(info->var.xres, info->var.yres, 0);
++
++	if (viafb_SAMM_ON == 1) {
++		DEBUG_MSG(KERN_INFO
++		"viafb_second_xres = %d, viafb_second_yres = %d, bpp = %d\n",
++			  viafb_second_xres, viafb_second_yres, via_fb_bpp1);
++		vmode_index1 = viafb_get_mode_index(viafb_second_xres,
++			viafb_second_yres, 1);
++		DEBUG_MSG(KERN_INFO "->viafb_SAMM_ON: index=%d\n",
++			vmode_index1);
++
++		viafb_update_device_setting(viafb_second_xres,
++			viafb_second_yres, via_fb_bpp1, viafb_refresh1, 1);
++	}
++
++	if (vmode_index != VIA_RES_INVALID) {
++		viafb_setmode(vmode_index, info->var.xres, info->var.yres,
++			info->var.bits_per_pixel, vmode_index1,
++			viafb_second_xres, viafb_second_yres, via_fb_bpp1);
++
++		/*We should set memory offset according virtual_x */
++		/*Fix me:put this function into viafb_setmode */
++		viafb_memory_pitch_patch(info);
++
++		/* Update ***fb_par information */
++		viafb_update_viafb_par(info);
++
++		/* Update other fixed information */
++		viafb_update_fix(&info->fix, info);
++		via_fb_bpp = info->var.bits_per_pixel;
++		/* Update via_fb_accel, it is necessary to our 2D accelerate */
++		via_fb_accel = info->var.accel_flags;
++
++		if (via_fb_accel)
++			viafb_set_2d_color_depth(info->var.bits_per_pixel);
++	}
++
++	return 0;
++}
++
++static int viafb_get_cmap_len(struct fb_var_screeninfo *var)
++{
++	DEBUG_MSG(KERN_INFO "viafb_get_cmap_len!\n");
++
++	return (var->bits_per_pixel == 8) ? 256 : 16;
++}
++
++/* Set one color register */
++static int viafb_setcolreg(unsigned regno, unsigned red, unsigned green,
++unsigned blue, unsigned transp, struct fb_info *info)
++{
++	u8 sr1a, sr1b, cr67, cr6a, rev = 0, shift = 10;
++	DEBUG_MSG(KERN_INFO "viafb_setcolreg!\n");
++	if (regno >= viafb_get_cmap_len(&info->var))
++		return 1;
++	if (UNICHROME_CLE266 == viaparinfo->chip_info->gfx_chip_name) {
++	/* Read PCI bus 0,dev 0,function 0,index 0xF6 to get chip rev. */
++		outl(0x80000000 | (0xf6 & ~3), (unsigned long)0xCF8);
++		rev = (inl((unsigned long)0xCFC) >> ((0xf6 & 3) * 8)) & 0xff;
++	}
++	switch (info->var.bits_per_pixel) {
++	case 8:
++		outb(0x1A, 0x3C4);
++		sr1a = inb(0x3C5);
++		outb(0x1B, 0x3C4);
++		sr1b = inb(0x3C5);
++		outb(0x67, 0x3D4);
++		cr67 = inb(0x3D5);
++		outb(0x6A, 0x3D4);
++		cr6a = inb(0x3D5);
++
++		/* Map the 3C6/7/8/9 to the IGA2 */
++		outb(0x1A, 0x3C4);
++		outb(sr1a | 0x01, 0x3C5);
++		/* Second Display Engine colck always on */
++		outb(0x1B, 0x3C4);
++		outb(sr1b | 0x80, 0x3C5);
++		/* Second Display Color Depth 8 */
++		outb(0x67, 0x3D4);
++		outb(cr67 & 0x3F, 0x3D5);
++		outb(0x6A, 0x3D4);
++		/* Second Display Channel Reset CR6A[6]) */
++		outb(cr6a & 0xBF, 0x3D5);
++		/* Second Display Channel Enable CR6A[7] */
++		outb(cr6a | 0x80, 0x3D5);
++		/* Second Display Channel stop reset) */
++		outb(cr6a | 0x40, 0x3D5);
++
++		/* Bit mask of palette */
++		outb(0xFF, 0x3c6);
++		/* Write one register of IGA2 */
++		outb(regno, 0x3C8);
++		if (UNICHROME_CLE266 == viaparinfo->chip_info->gfx_chip_name &&
++			rev >= 15) {
++			shift = 8;
++			viafb_write_reg_mask(CR6A, VIACR, BIT5, BIT5);
++			viafb_write_reg_mask(SR15, VIASR, BIT7, BIT7);
++		} else {
++			shift = 10;
++			viafb_write_reg_mask(CR6A, VIACR, 0, BIT5);
++			viafb_write_reg_mask(SR15, VIASR, 0, BIT7);
++		}
++		outb(red >> shift, 0x3C9);
++		outb(green >> shift, 0x3C9);
++		outb(blue >> shift, 0x3C9);
++
++		/* Map the 3C6/7/8/9 to the IGA1 */
++		outb(0x1A, 0x3C4);
++		outb(sr1a & 0xFE, 0x3C5);
++		/* Bit mask of palette */
++		outb(0xFF, 0x3c6);
++		/* Write one register of IGA1 */
++		outb(regno, 0x3C8);
++		outb(red >> shift, 0x3C9);
++		outb(green >> shift, 0x3C9);
++		outb(blue >> shift, 0x3C9);
++
++		outb(0x1A, 0x3C4);
++		outb(sr1a, 0x3C5);
++		outb(0x1B, 0x3C4);
++		outb(sr1b, 0x3C5);
++		outb(0x67, 0x3D4);
++		outb(cr67, 0x3D5);
++		outb(0x6A, 0x3D4);
++		outb(cr6a, 0x3D5);
++		break;
++	case 16:
++		((u32 *) info->pseudo_palette)[regno] = (red & 0xF800) |
++		    ((green & 0xFC00) >> 5) | ((blue & 0xF800) >> 11);
++		break;
++	case 32:
++		((u32 *) info->pseudo_palette)[regno] =
++		    ((transp & 0xFF00) << 16) |
++		    ((red & 0xFF00) << 8) |
++		    ((green & 0xFF00)) | ((blue & 0xFF00) >> 8);
++		break;
++	}
++
++	return 0;
++
++}
++
++/*CALLED BY: fb_set_cmap */
++/*           fb_set_var, pass 256 colors */
++/*CALLED BY: fb_set_cmap */
++/*           fbcon_set_palette, pass 16 colors */
++static int viafb_setcmap(struct fb_cmap *cmap, struct fb_info *info)
++{
++	u32 len = cmap->len;
++	u32 i;
++	u16 *pred = cmap->red;
++	u16 *pgreen = cmap->green;
++	u16 *pblue = cmap->blue;
++	u16 *ptransp = cmap->transp;
++	u8 sr1a, sr1b, cr67, cr6a, rev = 0, shift = 10;
++	if (len > 256)
++		return 1;
++	if (UNICHROME_CLE266 == viaparinfo->chip_info->gfx_chip_name) {
++	/* Read PCI bus 0, dev 0, function 0, index 0xF6 to get chip rev. */
++		outl(0x80000000 | (0xf6 & ~3), (unsigned long)0xCF8);
++		rev = (inl((unsigned long)0xCFC) >> ((0xf6 & 3) * 8)) & 0xff;
++	}
++	switch (info->var.bits_per_pixel) {
++	case 8:
++		outb(0x1A, 0x3C4);
++		sr1a = inb(0x3C5);
++		outb(0x1B, 0x3C4);
++		sr1b = inb(0x3C5);
++		outb(0x67, 0x3D4);
++		cr67 = inb(0x3D5);
++		outb(0x6A, 0x3D4);
++		cr6a = inb(0x3D5);
++		/* Map the 3C6/7/8/9 to the IGA2 */
++		outb(0x1A, 0x3C4);
++		outb(sr1a | 0x01, 0x3C5);
++		outb(0x1B, 0x3C4);
++		/* Second Display Engine colck always on */
++		outb(sr1b | 0x80, 0x3C5);
++		outb(0x67, 0x3D4);
++		/* Second Display Color Depth 8 */
++		outb(cr67 & 0x3F, 0x3D5);
++		outb(0x6A, 0x3D4);
++		/* Second Display Channel Reset CR6A[6]) */
++		outb(cr6a & 0xBF, 0x3D5);
++		/* Second Display Channel Enable CR6A[7] */
++		outb(cr6a | 0x80, 0x3D5);
++		/* Second Display Channel stop reset) */
++		outb(cr6a | 0xC0, 0x3D5);
++
++		/* Bit mask of palette */
++		outb(0xFF, 0x3c6);
++		outb(0x00, 0x3C8);
++		if (UNICHROME_CLE266 == viaparinfo->chip_info->gfx_chip_name &&
++			rev >= 15) {
++			shift = 8;
++			viafb_write_reg_mask(CR6A, VIACR, BIT5, BIT5);
++			viafb_write_reg_mask(SR15, VIASR, BIT7, BIT7);
++		} else {
++			shift = 10;
++			viafb_write_reg_mask(CR6A, VIACR, 0, BIT5);
++			viafb_write_reg_mask(SR15, VIASR, 0, BIT7);
++		}
++		for (i = 0; i < len; i++) {
++			outb((*(pred + i)) >> shift, 0x3C9);
++			outb((*(pgreen + i)) >> shift, 0x3C9);
++			outb((*(pblue + i)) >> shift, 0x3C9);
++		}
++
++		outb(0x1A, 0x3C4);
++		/* Map the 3C6/7/8/9 to the IGA1 */
++		outb(sr1a & 0xFE, 0x3C5);
++		/* Bit mask of palette */
++		outb(0xFF, 0x3c6);
++		outb(0x00, 0x3C8);
++		for (i = 0; i < len; i++) {
++			outb((*(pred + i)) >> shift, 0x3C9);
++			outb((*(pgreen + i)) >> shift, 0x3C9);
++			outb((*(pblue + i)) >> shift, 0x3C9);
++		}
++
++		outb(0x1A, 0x3C4);
++		outb(sr1a, 0x3C5);
++		outb(0x1B, 0x3C4);
++		outb(sr1b, 0x3C5);
++		outb(0x67, 0x3D4);
++		outb(cr67, 0x3D5);
++		outb(0x6A, 0x3D4);
++		outb(cr6a, 0x3D5);
++		break;
++	case 16:
++		if (len > 17)
++			return 0;	/* Because static u32 pseudo_pal[17]; */
++		for (i = 0; i < len; i++)
++			((u32 *) info->pseudo_palette)[i] =
++			    (*(pred + i) & 0xF800) |
++			    ((*(pgreen + i) & 0xFC00) >> 5) |
++			    ((*(pblue + i) & 0xF800) >> 11);
++		break;
++	case 32:
++		if (len > 17)
++			return 0;
++		if (ptransp) {
++			for (i = 0; i < len; i++)
++				((u32 *) info->pseudo_palette)[i] =
++				    ((*(ptransp + i) & 0xFF00) << 16) |
++				    ((*(pred + i) & 0xFF00) << 8) |
++				    ((*(pgreen + i) & 0xFF00)) |
++				    ((*(pblue + i) & 0xFF00) >> 8);
++		} else {
++			for (i = 0; i < len; i++)
++				((u32 *) info->pseudo_palette)[i] =
++				    0x00000000 |
++				    ((*(pred + i) & 0xFF00) << 8) |
++				    ((*(pgreen + i) & 0xFF00)) |
++				    ((*(pblue + i) & 0xFF00) >> 8);
++		}
++		break;
++	}
++	return 0;
++}
++
++static int viafb_pan_display(struct fb_var_screeninfo *var,
++	struct fb_info *info)
++{
++	unsigned int offset = 0;
++
++	DEBUG_MSG(KERN_INFO "viafb_pan_display!\n");
++
++	offset = (var->xoffset + (var->yoffset * var->xres)) *
++	    var->bits_per_pixel / 16;
++
++	DEBUG_MSG(KERN_INFO "\nviafb_pan_display,offset =%d ", offset);
++
++	viafb_write_reg_mask(0x48, 0x3d4, ((offset >> 24) & 0x3), 0x3);
++	viafb_write_reg_mask(0x34, 0x3d4, ((offset >> 16) & 0xff), 0xff);
++	viafb_write_reg_mask(0x0c, 0x3d4, ((offset >> 8) & 0xff), 0xff);
++	viafb_write_reg_mask(0x0d, 0x3d4, (offset & 0xff), 0xff);
++
++	return 0;
++}
++
++static int viafb_blank(int blank_mode, struct fb_info *info)
++{
++	DEBUG_MSG(KERN_INFO "viafb_blank!\n");
++	/* clear DPMS setting */
++
++	switch (blank_mode) {
++	case FB_BLANK_UNBLANK:
++		/* Screen: On, HSync: On, VSync: On */
++		/* control CRT monitor power management */
++		viafb_write_reg_mask(CR36, VIACR, 0x00, BIT4 + BIT5);
++		break;
++	case FB_BLANK_HSYNC_SUSPEND:
++		/* Screen: Off, HSync: Off, VSync: On */
++		/* control CRT monitor power management */
++		viafb_write_reg_mask(CR36, VIACR, 0x10, BIT4 + BIT5);
++		break;
++	case FB_BLANK_VSYNC_SUSPEND:
++		/* Screen: Off, HSync: On, VSync: Off */
++		/* control CRT monitor power management */
++		viafb_write_reg_mask(CR36, VIACR, 0x20, BIT4 + BIT5);
++		break;
++	case FB_BLANK_POWERDOWN:
++		/* Screen: Off, HSync: Off, VSync: Off */
++		/* control CRT monitor power management */
++		viafb_write_reg_mask(CR36, VIACR, 0x30, BIT4 + BIT5);
++		break;
++	}
++
++	return 0;
++}
++
++static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
++{
++	struct viafb_ioctl_info viainfo;
++	struct viafb_ioctl_mode viamode;
++	struct viafb_ioctl_samm viasamm;
++	struct viafb_driver_version driver_version;
++	struct fb_var_screeninfo sec_var;
++	struct _panel_size_pos_info panel_pos_size_para;
++	u32 state_info = 0;
++	u32 viafb_gamma_table[256];
++	char driver_name[10] = "viafb\0";
++
++	u32 __user *argp = (u32 __user *) arg;
++	u32 gpu32 = 0, ss;
++	u32 video_dev_info = 0;
++	struct viafb_ioctl_setting viafb_setting;
++	struct device_t active_dev;
++	ss = sizeof(active_dev);
++	memset(&active_dev, 0, ss);
++	memset(&viafb_setting, 0, sizeof(viafb_setting));
++
++	DEBUG_MSG(KERN_INFO "viafb_ioctl: 0x%X !!\n", cmd);
++
++	switch (cmd) {
++	case VIAFB_GET_CHIP_INFO:	/*struct chip_information chip_info ; */
++	if (copy_to_user((void __user *)arg, viaparinfo->chip_info,
++		sizeof(struct chip_information)))
++		return -EFAULT;
++		break;
++	case VIAFB_GET_INFO_SIZE:
++		return put_user(sizeof(viainfo), argp);
++	case VIAFB_GET_INFO:
++		return viafb_ioctl_get_viafb_info(arg);
++	case VIAFB_HOTPLUG:
++		return put_user((u32)
++				viafb_ioctl_hotplug(info->var.xres,
++					      info->var.yres,
++					      info->var.bits_per_pixel), argp);
++		break;
++	case VIAFB_SET_HOTPLUG_FLAG:
++		if (copy_from_user(&gpu32, argp, sizeof(gpu32)))
++			return -EFAULT;
++		via_fb_hotplug = (gpu32) ? 1 : 0;
++		break;
++	case VIAFB_GET_RESOLUTION:
++		viamode.xres = (u32) via_fb_hotplug_Xres;
++		viamode.yres = (u32) via_fb_hotplug_Yres;
++		viamode.refresh = (u32) via_fb_hotplug_refresh;
++		viamode.bpp = (u32) via_fb_hotplug_bpp;
++		if (viafb_SAMM_ON == 1) {
++			viamode.xres_sec = viafb_second_xres;
++			viamode.yres_sec = viafb_second_yres;
++			viamode.virtual_xres_sec = viafb_second_virtual_xres;
++			viamode.virtual_yres_sec = viafb_second_virtual_yres;
++			viamode.refresh_sec = viafb_refresh1;
++			viamode.bpp_sec = via_fb_bpp1;
++		} else {
++			viamode.xres_sec = 0;
++			viamode.yres_sec = 0;
++			viamode.virtual_xres_sec = 0;
++			viamode.virtual_yres_sec = 0;
++			viamode.refresh_sec = 0;
++			viamode.bpp_sec = 0;
++		}
++		if (copy_to_user((void __user *)arg,
++			&viamode, sizeof(viamode)))
++			return -EFAULT;
++		break;
++	case VIAFB_GET_SAMM_INFO:
++		viasamm.samm_status = viafb_SAMM_ON;
++
++		if (viafb_SAMM_ON == 1) {
++			if (viafb_dual_fb) {
++				viasamm.size_prim = viaparinfo->fbmem_free;
++				viasamm.size_sec = viaparinfo1->fbmem_free;
++			} else {
++				if (viafb_second_size) {
++					viasamm.size_prim =
++					    viaparinfo->fbmem_free -
++					    viafb_second_size * 1024 * 1024;
++					viasamm.size_sec =
++					    viafb_second_size * 1024 * 1024;
++				} else {
++					viasamm.size_prim =
++					    viaparinfo->fbmem_free >> 1;
++					viasamm.size_sec =
++					    (viaparinfo->fbmem_free >> 1);
++				}
++			}
++			viasamm.mem_base = viaparinfo->fbmem;
++			viasamm.offset_sec = viafb_second_offset;
++		} else {
++			viasamm.size_prim =
++			    viaparinfo->memsize - viaparinfo->fbmem_used;
++			viasamm.size_sec = 0;
++			viasamm.mem_base = viaparinfo->fbmem;
++			viasamm.offset_sec = 0;
++		}
++
++		if (copy_to_user((void __user *)arg,
++			&viasamm, sizeof(viasamm)))
++			return -EFAULT;
++
++		break;
++	case VIAFB_TURN_ON_OUTPUT_DEVICE:
++		if (copy_from_user(&gpu32, argp, sizeof(gpu32)))
++			return -EFAULT;
++		if (gpu32 & CRT_Device)
++			viafb_crt_enable();
++		if (gpu32 & DVI_Device)
++			viafb_dvi_enable();
++		if (gpu32 & LCD_Device)
++			viafb_lcd_enable();
++		break;
++	case VIAFB_TURN_OFF_OUTPUT_DEVICE:
++		if (copy_from_user(&gpu32, argp, sizeof(gpu32)))
++			return -EFAULT;
++		if (gpu32 & CRT_Device)
++			viafb_crt_disable();
++		if (gpu32 & DVI_Device)
++			viafb_dvi_disable();
++		if (gpu32 & LCD_Device)
++			viafb_lcd_disable();
++		break;
++	case VIAFB_SET_DEVICE:
++		if (copy_from_user(&active_dev, (void *)argp, ss))
++			return -EFAULT;
++		viafb_set_device(active_dev);
++		viafb_set_par(info);
++		break;
++	case VIAFB_GET_DEVICE:
++		active_dev.crt = viafb_CRT_ON;
++		active_dev.dvi = viafb_DVI_ON;
++		active_dev.lcd = viafb_LCD_ON;
++		active_dev.samm = viafb_SAMM_ON;
++		active_dev.primary_dev = viafb_primary_dev;
++
++		active_dev.lcd_dsp_cent = viafb_lcd_dsp_method;
++		active_dev.lcd_panel_id = viafb_lcd_panel_id;
++		active_dev.lcd_mode = viafb_lcd_mode;
++
++		active_dev.xres = via_fb_hotplug_Xres;
++		active_dev.yres = via_fb_hotplug_Yres;
++
++		active_dev.xres1 = viafb_second_xres;
++		active_dev.yres1 = viafb_second_yres;
++
++		active_dev.bpp = via_fb_bpp;
++		active_dev.bpp1 = via_fb_bpp1;
++		active_dev.refresh = viafb_refresh;
++		active_dev.refresh1 = viafb_refresh1;
++
++		active_dev.epia_dvi = viafb_platform_epia_dvi;
++		active_dev.lcd_dual_edge = viafb_device_lcd_dualedge;
++		active_dev.bus_width = via_bus_width;
++
++		if (copy_to_user((void __user *)arg, &active_dev, ss))
++			return -EFAULT;
++		break;
++
++	case VIAFB_GET_DRIVER_VERSION:
++		driver_version.iMajorNum = VERSION_MAJOR;
++		driver_version.iKernelNum = VERSION_KERNEL;
++		driver_version.iOSNum = VERSION_OS;
++		driver_version.iMinorNum = VERSION_MINOR;
++
++		if (copy_to_user
++		    ((void __user *)arg, &driver_version,
++		     sizeof(driver_version)))
++			return -EFAULT;
++
++		break;
++
++	case VIAFB_SET_DEVICE_INFO:
++		if (copy_from_user
++		    (&viafb_setting, (void *)argp, sizeof(viafb_setting)))
++			return -EFAULT;
++		if (apply_device_setting(viafb_setting, info) < 0)
++			return -EINVAL;
++
++		break;
++
++	case VIAFB_SET_SECOND_MODE:
++		if (copy_from_user(&sec_var, (void *)argp, sizeof(sec_var)))
++			return -EFAULT;
++		apply_second_mode_setting(&sec_var);
++		break;
++
++	case VIAFB_GET_DEVICE_INFO:
++
++		retrieve_device_setting(&viafb_setting);
++
++		if (copy_to_user
++		    ((void __user *)arg, &viafb_setting,
++		     sizeof(viafb_setting)))
++			return -EFAULT;
++
++		break;
++
++	case VIAFB_GET_DEVICE_SUPPORT:
++		get_device_support_state(&state_info);
++		if (put_user(state_info, argp))
++			return -EFAULT;
++		break;
++
++	case VIAFB_GET_DEVICE_CONNECT:
++		get_device_connect_state(&state_info);
++		if (put_user(state_info, argp))
++			return -EFAULT;
++		break;
++
++	case VIAFB_GET_PANEL_SUPPORT_EXPAND:
++		state_info =
++		    lcd_get_support_expand_state(info->var.xres,
++						 info->var.yres);
++		if (put_user(state_info, argp))
++			return -EFAULT;
++		break;
++
++	case VIAFB_GET_DRIVER_NAME:
++		if (copy_to_user
++		    ((void __user *)arg, driver_name, sizeof(driver_name)))
++			return -EFAULT;
++		break;
++
++	case VIAFB_SET_GAMMA_LUT:
++		if (copy_from_user
++		    (viafb_gamma_table, argp, sizeof(viafb_gamma_table)))
++			return -EFAULT;
++		set_gamma_table(via_fb_bpp, viafb_gamma_table);
++		break;
++
++	case VIAFB_GET_GAMMA_LUT:
++		get_gamma_table(viafb_gamma_table);
++		if (copy_to_user
++		    ((void __user *)arg, viafb_gamma_table,
++		     sizeof(viafb_gamma_table)))
++			return -EFAULT;
++		break;
++
++	case VIAFB_GET_GAMMA_SUPPORT_STATE:
++		get_gamma_support_state(via_fb_bpp, &state_info);
++		if (put_user(state_info, argp))
++			return -EFAULT;
++		break;
++	case VIAFB_SET_VIDEO_DEVICE:
++		get_user(video_dev_info, argp);
++		viafb_set_video_device(video_dev_info);
++		break;
++	case VIAFB_GET_VIDEO_DEVICE:
++		viafb_get_video_device(&video_dev_info);
++		if (put_user(video_dev_info, argp))
++			return -EFAULT;
++		break;
++	case VIAFB_SYNC_SURFACE:
++		DEBUG_MSG(KERN_INFO "lobo VIAFB_SYNC_SURFACE\n");
++		break;
++	case VIAFB_GET_DRIVER_CAPS:
++		break;
++
++	case VIAFB_GET_PANEL_MAX_SIZE:
++		if (copy_from_user
++		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++			return -EFAULT;
++		get_panel_max_scal_size(&panel_pos_size_para);
++		if (copy_to_user
++		    ((void __user *)arg, &panel_pos_size_para,
++		     sizeof(panel_pos_size_para)))
++			return -EFAULT;
++		break;
++	case VIAFB_GET_PANEL_MAX_POSITION:
++		if (copy_from_user
++		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++			return -EFAULT;
++		get_panel_max_scal_pos(&panel_pos_size_para);
++		if (copy_to_user
++		    ((void __user *)arg, &panel_pos_size_para,
++		     sizeof(panel_pos_size_para)))
++			return -EFAULT;
++		break;
++
++	case VIAFB_GET_PANEL_POSITION:
++		if (copy_from_user
++		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++			return -EFAULT;
++		get_panel_scal_pos(&panel_pos_size_para);
++		if (copy_to_user
++		    ((void __user *)arg, &panel_pos_size_para,
++		     sizeof(panel_pos_size_para)))
++			return -EFAULT;
++		break;
++	case VIAFB_GET_PANEL_SIZE:
++		if (copy_from_user
++		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++			return -EFAULT;
++		get_panel_scal_size(&panel_pos_size_para);
++		if (copy_to_user
++		    ((void __user *)arg, &panel_pos_size_para,
++		     sizeof(panel_pos_size_para)))
++			return -EFAULT;
++		break;
++
++	case VIAFB_SET_PANEL_POSITION:
++		if (copy_from_user
++		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++			return -EFAULT;
++		set_panel_scal_pos(&panel_pos_size_para);
++		break;
++	case VIAFB_SET_PANEL_SIZE:
++		if (copy_from_user
++		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++			return -EFAULT;
++		set_panel_scal_size(&panel_pos_size_para);
++		break;
++
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static void viafb_fillrect(struct fb_info *info,
++	const struct fb_fillrect *rect)
++{
++	u32 col = 0, rop = 0;
++	int pitch;
++
++	if (!via_fb_accel)
++		return cfb_fillrect(info, rect);
++
++	if (!rect->width || !rect->height)
++		return;
++
++	switch (rect->rop) {
++	case ROP_XOR:
++		rop = 0x5A;
++		break;
++	case ROP_COPY:
++	default:
++		rop = 0xF0;
++		break;
++	}
++
++	switch (info->var.bits_per_pixel) {
++	case 8:
++		col = rect->color;
++		break;
++	case 16:
++		col = ((u32 *) (info->pseudo_palette))[rect->color];
++		break;
++	case 32:
++		col = ((u32 *) (info->pseudo_palette))[rect->color];
++		break;
++	}
++
++	/* BitBlt Source Address */
++	MMIO_OUT32(VIA_REG_SRCPOS, 0x0);
++	/* Source Base Address */
++	MMIO_OUT32(VIA_REG_SRCBASE, 0x0);
++	/* Destination Base Address */
++	/*MMIO_OUT32(VIA_REG_DSTBASE, 0x0); */
++	MMIO_OUT32(VIA_REG_DSTBASE,
++		   ((u32) (info->screen_base) - (u32) viafb_FB_MM) >> 3);
++	/* Pitch */
++	pitch = (info->var.xres_virtual + 7) & ~7;
++	MMIO_OUT32(VIA_REG_PITCH,
++		   VIA_PITCH_ENABLE |
++		   (((pitch *
++		      info->var.bits_per_pixel >> 3) >> 3) |
++		      (((pitch * info->
++		      var.bits_per_pixel >> 3) >> 3) << 16)));
++	/* BitBlt Destination Address */
++	MMIO_OUT32(VIA_REG_DSTPOS, ((rect->dy << 16) | rect->dx));
++	/* Dimension: width & height */
++	MMIO_OUT32(VIA_REG_DIMENSION,
++		   (((rect->height - 1) << 16) | (rect->width - 1)));
++	/* Forground color or Destination color */
++	MMIO_OUT32(VIA_REG_FGCOLOR, col);
++	/* GE Command */
++	MMIO_OUT32(VIA_REG_GECMD, (0x01 | 0x2000 | (rop << 24)));
++
++}
++
++static void viafb_copyarea(struct fb_info *info,
++	const struct fb_copyarea *area)
++{
++	u32 dy = area->dy, sy = area->sy, direction = 0x0;
++	u32 sx = area->sx, dx = area->dx, width = area->width;
++	int pitch;
++
++	DEBUG_MSG(KERN_INFO "viafb_copyarea!!\n");
++
++	if (!via_fb_accel)
++		return cfb_copyarea(info, area);
++
++	if (!area->width || !area->height)
++		return;
++
++	if (sy < dy) {
++		dy += area->height - 1;
++		sy += area->height - 1;
++		direction |= 0x4000;
++	}
++
++	if (sx < dx) {
++		dx += width - 1;
++		sx += width - 1;
++		direction |= 0x8000;
++	}
++
++	/* Source Base Address */
++	/*MMIO_OUT32(VIA_REG_SRCBASE, 0x0); */
++	MMIO_OUT32(VIA_REG_SRCBASE,
++		   ((u32) (info->screen_base) - (u32) viafb_FB_MM) >> 3);
++	/* Destination Base Address */
++	/*MMIO_OUT32(VIA_REG_DSTBASE, 0x0); */
++	MMIO_OUT32(VIA_REG_DSTBASE,
++		   ((u32) (info->screen_base) - (u32) viafb_FB_MM) >> 3);
++	/* Pitch */
++	pitch = (info->var.xres_virtual + 7) & ~7;
++	/* VIA_PITCH_ENABLE can be omitted now. */
++	MMIO_OUT32(VIA_REG_PITCH,
++		   VIA_PITCH_ENABLE |
++		   (((pitch *
++		      info->var.bits_per_pixel >> 3) >> 3) | (((pitch *
++								info->var.
++								bits_per_pixel
++								>> 3) >> 3)
++							      << 16)));
++	/* BitBlt Source Address */
++	MMIO_OUT32(VIA_REG_SRCPOS, ((sy << 16) | sx));
++	/* BitBlt Destination Address */
++	MMIO_OUT32(VIA_REG_DSTPOS, ((dy << 16) | dx));
++	/* Dimension: width & height */
++	MMIO_OUT32(VIA_REG_DIMENSION,
++		   (((area->height - 1) << 16) | (area->width - 1)));
++	/* GE Command */
++	MMIO_OUT32(VIA_REG_GECMD, (0x01 | direction | (0xCC << 24)));
++
++}
++
++static void viafb_imageblit(struct fb_info *info,
++	const struct fb_image *image)
++{
++	u32 size, bg_col = 0, fg_col = 0, *udata;
++	int i;
++	int pitch;
++
++	if (!via_fb_accel)
++		return cfb_imageblit(info, image);
++
++	udata = (u32 *) image->data;
++
++	switch (info->var.bits_per_pixel) {
++	case 8:
++		bg_col = image->bg_color;
++		fg_col = image->fg_color;
++		break;
++	case 16:
++		bg_col = ((u32 *) (info->pseudo_palette))[image->bg_color];
++		fg_col = ((u32 *) (info->pseudo_palette))[image->fg_color];
++		break;
++	case 32:
++		bg_col = ((u32 *) (info->pseudo_palette))[image->bg_color];
++		fg_col = ((u32 *) (info->pseudo_palette))[image->fg_color];
++		break;
++	}
++	size = image->width * image->height;
++
++	/* Source Base Address */
++	MMIO_OUT32(VIA_REG_SRCBASE, 0x0);
++	/* Destination Base Address */
++	/*MMIO_OUT32(VIA_REG_DSTBASE, 0x0); */
++	MMIO_OUT32(VIA_REG_DSTBASE,
++		   ((u32) (info->screen_base) - (u32) viafb_FB_MM) >> 3);
++	/* Pitch */
++	pitch = (info->var.xres_virtual + 7) & ~7;
++	MMIO_OUT32(VIA_REG_PITCH,
++		   VIA_PITCH_ENABLE |
++		   (((pitch *
++		      info->var.bits_per_pixel >> 3) >> 3) | (((pitch *
++								info->var.
++								bits_per_pixel
++								>> 3) >> 3)
++							      << 16)));
++	/* BitBlt Source Address */
++	MMIO_OUT32(VIA_REG_SRCPOS, 0x0);
++	/* BitBlt Destination Address */
++	MMIO_OUT32(VIA_REG_DSTPOS, ((image->dy << 16) | image->dx));
++	/* Dimension: width & height */
++	MMIO_OUT32(VIA_REG_DIMENSION,
++		   (((image->height - 1) << 16) | (image->width - 1)));
++	/* fb color */
++	MMIO_OUT32(VIA_REG_FGCOLOR, fg_col);
++	/* bg color */
++	MMIO_OUT32(VIA_REG_BGCOLOR, bg_col);
++	/* GE Command */
++	MMIO_OUT32(VIA_REG_GECMD, 0xCC020142);
++
++	for (i = 0; i < size / 4; i++) {
++		MMIO_OUT32(VIA_MMIO_BLTBASE, *udata);
++		udata++;
++	}
++
++}
++
++static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
++{
++	u8 data[CURSOR_SIZE / 8];
++	u32 data_bak[CURSOR_SIZE / 32];
++	u32 temp, xx, yy, bg_col = 0, fg_col = 0;
++	int size, i, j = 0;
++	static int hw_cursor;
++	struct viafb_par *p_viafb_par;
++
++	if (via_fb_accel)
++		hw_cursor = 1;
++
++	if (!via_fb_accel) {
++		if (hw_cursor) {
++			viafb_show_hw_cursor(info, HW_Cursor_OFF);
++			hw_cursor = 0;
++		}
++		return soft_cursor(info, cursor);
++	}
++
++	if ((((struct viafb_par *)(info->par))->iga_path == IGA2)
++	    && (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266))
++		return soft_cursor(info, cursor);
++
++	/*When duoview and using lcd , use soft cursor */
++	if (viafb_LCD_ON || ((struct viafb_par *)(info->par))->duoview)
++		return soft_cursor(info, cursor);
++
++	viafb_show_hw_cursor(info, HW_Cursor_OFF);
++	viacursor = *cursor;
++
++	if (cursor->set & FB_CUR_SETHOT) {
++		viacursor.hot = cursor->hot;
++		temp = ((viacursor.hot.x) << 16) + viacursor.hot.y;
++		MMIO_OUT32(VIA_REG_CURSOR_ORG, temp);
++	}
++
++	if (cursor->set & FB_CUR_SETPOS) {
++		viacursor.image.dx = cursor->image.dx;
++		viacursor.image.dy = cursor->image.dy;
++		yy = cursor->image.dy - info->var.yoffset;
++		xx = cursor->image.dx - info->var.xoffset;
++		temp = yy & 0xFFFF;
++		temp |= (xx << 16);
++		MMIO_OUT32(VIA_REG_CURSOR_POS, temp);
++	}
++
++	if (cursor->set & FB_CUR_SETSIZE) {
++		temp = MMIO_IN32(VIA_REG_CURSOR_MODE);
++
++		if ((cursor->image.width <= 32)
++		    && (cursor->image.height <= 32)) {
++			MAX_CURS = 32;
++			temp |= 0x2;
++		} else if ((cursor->image.width <= 64)
++			   && (cursor->image.height <= 64)) {
++			MAX_CURS = 64;
++			temp &= 0xFFFFFFFD;
++		} else {
++			DEBUG_MSG(KERN_INFO
++			"The cursor image is biger than 64x64 bits...\n");
++			return -ENXIO;
++		}
++		MMIO_OUT32(VIA_REG_CURSOR_MODE, temp);
++
++		viacursor.image.height = cursor->image.height;
++		viacursor.image.width = cursor->image.width;
++	}
++
++	if (cursor->set & FB_CUR_SETCMAP) {
++		viacursor.image.fg_color = cursor->image.fg_color;
++		viacursor.image.bg_color = cursor->image.bg_color;
++
++		switch (info->var.bits_per_pixel) {
++		case 8:
++		case 16:
++		case 32:
++			bg_col =
++			    (0xFF << 24) |
++			    (((info->cmap.red)[viacursor.image.bg_color] &
++			    0xFF00) << 8) |
++			    ((info->cmap.green)[viacursor.image.bg_color] &
++			    0xFF00) |
++			    (((info->cmap.blue)[viacursor.image.bg_color] &
++			    0xFF00) >> 8);
++			fg_col =
++			    (0xFF << 24) |
++			    (((info->cmap.red)[viacursor.image.fg_color] &
++			    0xFF00) << 8) |
++			    ((info->cmap.green)[viacursor.image.fg_color] &
++			    0xFF00) |
++			    (((info->cmap.blue)[viacursor.image.fg_color] &
++			    0xFF00) >> 8);
++			break;
++		default:
++			return 0;
++		}
++
++		/* This is indeed a patch for VT3324/VT3353 */
++		if (!info->par)
++			return 0;
++		p_viafb_par = (struct viafb_par *)info->par;
++
++		if ((p_viafb_par->chip_info->gfx_chip_name ==
++			UNICHROME_CX700) ||
++			((p_viafb_par->chip_info->gfx_chip_name ==
++			UNICHROME_VX800))) {
++			bg_col =
++			    (((info->cmap.red)[viacursor.image.bg_color] &
++			    0xFFC0) << 14) |
++			    (((info->cmap.green)[viacursor.image.bg_color] &
++			    0xFFC0) << 4) |
++			    (((info->cmap.blue)[viacursor.image.bg_color] &
++			    0xFFC0) >> 6);
++			fg_col =
++			    (((info->cmap.red)[viacursor.image.fg_color] &
++			    0xFFC0) << 14) |
++			    (((info->cmap.green)[viacursor.image.fg_color] &
++			    0xFFC0) << 4) |
++			    (((info->cmap.blue)[viacursor.image.fg_color] &
++			    0xFFC0) >> 6);
++		}
++
++		MMIO_OUT32(VIA_REG_CURSOR_BG, bg_col);
++		MMIO_OUT32(VIA_REG_CURSOR_FG, fg_col);
++	}
++
++	if (cursor->set & FB_CUR_SETSHAPE) {
++		size =
++		    ((viacursor.image.width + 7) >> 3) *
++		    viacursor.image.height;
++
++		if (MAX_CURS == 32) {
++			for (i = 0; i < (CURSOR_SIZE / 32); i++) {
++				data_bak[i] = 0x0;
++				data_bak[i + 1] = 0xFFFFFFFF;
++				i += 1;
++			}
++		} else if (MAX_CURS == 64) {
++			for (i = 0; i < (CURSOR_SIZE / 32); i++) {
++				data_bak[i] = 0x0;
++				data_bak[i + 1] = 0x0;
++				data_bak[i + 2] = 0xFFFFFFFF;
++				data_bak[i + 3] = 0xFFFFFFFF;
++				i += 3;
++			}
++		}
++
++		switch (viacursor.rop) {
++		case ROP_XOR:
++			for (i = 0; i < size; i++)
++				data[i] = viacursor.mask[i];
++			break;
++		case ROP_COPY:
++
++			for (i = 0; i < size; i++)
++				data[i] = viacursor.mask[i];
++			break;
++		default:
++			break;
++		}
++
++		if (MAX_CURS == 32) {
++			for (i = 0; i < size; i++) {
++				data_bak[j] = (u32) data[i];
++				data_bak[j + 1] = ~data_bak[j];
++				j += 2;
++			}
++		} else if (MAX_CURS == 64) {
++			for (i = 0; i < size; i++) {
++				data_bak[j] = (u32) data[i];
++				data_bak[j + 1] = 0x0;
++				data_bak[j + 2] = ~data_bak[j];
++				data_bak[j + 3] = ~data_bak[j + 1];
++				j += 4;
++			}
++		}
++
++		memcpy(((struct viafb_par *)(info->par))->fbmem_virt +
++		       ((struct viafb_par *)(info->par))->cursor_start,
++		       data_bak, CURSOR_SIZE);
++	}
++
++	if (viacursor.enable)
++		viafb_show_hw_cursor(info, HW_Cursor_ON);
++
++	return 0;
++}
++
++static int viafb_sync(struct fb_info *info)
++{
++	if (via_fb_accel)
++		viafb_wait_engine_idle();
++	return 0;
++}
++
++int viafb_get_mode_index(int hres, int vres, int flag)
++{
++	u32 i;
++	DEBUG_MSG(KERN_INFO "viafb_get_mode_index!\n");
++
++	for (i = 0; viafb_modentry[i].mode_index != VIA_RES_INVALID; i++)
++		if (viafb_modentry[i].xres == hres &&
++			viafb_modentry[i].yres == vres)
++			break;
++
++	viafb_resMode = viafb_modentry[i].mode_index;
++	if (flag)
++		viafb_mode1 = viafb_modentry[i].mode_res;
++	else
++		viafb_mode = viafb_modentry[i].mode_res;
++
++	return viafb_resMode;
++}
++
++static void check_available_device_to_enable(int device_id)
++{
++	int device_num = 0;
++
++	/* Initialize: */
++	viafb_CRT_ON = STATE_OFF;
++	viafb_DVI_ON = STATE_OFF;
++	viafb_LCD_ON = STATE_OFF;
++	viafb_LCD2_ON = STATE_OFF;
++	viafb_DeviceStatus = None_Device;
++
++	if ((device_id & CRT_Device) && (device_num < MAX_ACTIVE_DEV_NUM)) {
++		viafb_CRT_ON = STATE_ON;
++		device_num++;
++		viafb_DeviceStatus |= CRT_Device;
++	}
++
++	if ((device_id & DVI_Device) && (device_num < MAX_ACTIVE_DEV_NUM)) {
++		viafb_DVI_ON = STATE_ON;
++		device_num++;
++		viafb_DeviceStatus |= DVI_Device;
++	}
++
++	if ((device_id & LCD_Device) && (device_num < MAX_ACTIVE_DEV_NUM)) {
++		viafb_LCD_ON = STATE_ON;
++		device_num++;
++		viafb_DeviceStatus |= LCD_Device;
++	}
++
++	if ((device_id & LCD2_Device) && (device_num < MAX_ACTIVE_DEV_NUM)) {
++		viafb_LCD2_ON = STATE_ON;
++		device_num++;
++		viafb_DeviceStatus |= LCD2_Device;
++	}
++
++	if (viafb_DeviceStatus == None_Device) {
++		/* Use CRT as default active device: */
++		viafb_CRT_ON = STATE_ON;
++		viafb_DeviceStatus = CRT_Device;
++	}
++	DEBUG_MSG(KERN_INFO "Device Status:%x", viafb_DeviceStatus);
++}
++
++static void viafb_set_device(struct device_t active_dev)
++{
++	/* Check available device to enable: */
++	int device_id = None_Device;
++	if (active_dev.crt)
++		device_id |= CRT_Device;
++	if (active_dev.dvi)
++		device_id |= DVI_Device;
++	if (active_dev.lcd)
++		device_id |= LCD_Device;
++
++	check_available_device_to_enable(device_id);
++
++	/* Check property of LCD: */
++	if (viafb_LCD_ON) {
++		if (active_dev.lcd_dsp_cent) {
++			viaparinfo->lvds_setting_info->display_method =
++				viafb_lcd_dsp_method = LCD_CENTERING;
++		} else {
++			viaparinfo->lvds_setting_info->display_method =
++				viafb_lcd_dsp_method = LCD_EXPANDSION;
++		}
++
++		if (active_dev.lcd_mode == LCD_SPWG) {
++			viaparinfo->lvds_setting_info->lcd_mode =
++				viafb_lcd_mode = LCD_SPWG;
++		} else {
++			viaparinfo->lvds_setting_info->lcd_mode =
++				viafb_lcd_mode = LCD_OPENLDI;
++		}
++
++		if (active_dev.lcd_panel_id <= LCD_PANEL_ID_MAXIMUM) {
++			viafb_lcd_panel_id = active_dev.lcd_panel_id;
++			viafb_init_lcd_size();
++		}
++	}
++
++	/* Check property of mode: */
++	if (!active_dev.xres1)
++		viafb_second_xres = 640;
++	else
++		viafb_second_xres = active_dev.xres1;
++	if (!active_dev.yres1)
++		viafb_second_yres = 480;
++	else
++		viafb_second_yres = active_dev.yres1;
++	if (active_dev.bpp != 0)
++		via_fb_bpp = active_dev.bpp;
++	if (active_dev.bpp1 != 0)
++		via_fb_bpp1 = active_dev.bpp1;
++	if (active_dev.refresh != 0)
++		viafb_refresh = active_dev.refresh;
++	if (active_dev.refresh1 != 0)
++		viafb_refresh1 = active_dev.refresh1;
++	if ((active_dev.samm == STATE_OFF)
++	    || (active_dev.samm == STATE_ON))
++	    viafb_SAMM_ON = active_dev.samm;
++	viafb_primary_dev = active_dev.primary_dev;
++
++	viafb_set_start_addr();
++	viafb_set_iga_path();
++}
++
++static void viafb_set_video_device(u32 video_dev_info)
++{
++	viaparinfo->video_on_crt = STATE_OFF;
++	viaparinfo->video_on_dvi = STATE_OFF;
++	viaparinfo->video_on_lcd = STATE_OFF;
++
++	/* Check available device to enable: */
++	if ((video_dev_info & CRT_Device) == CRT_Device)
++		viaparinfo->video_on_crt = STATE_ON;
++	else if ((video_dev_info & DVI_Device) == DVI_Device)
++		viaparinfo->video_on_dvi = STATE_ON;
++	else if ((video_dev_info & LCD_Device) == LCD_Device)
++		viaparinfo->video_on_lcd = STATE_ON;
++}
++
++static void viafb_get_video_device(u32 *video_dev_info)
++{
++	*video_dev_info = None_Device;
++	if (viaparinfo->video_on_crt == STATE_ON)
++		*video_dev_info |= CRT_Device;
++	else if (viaparinfo->video_on_dvi == STATE_ON)
++		*video_dev_info |= DVI_Device;
++	else if (viaparinfo->video_on_lcd == STATE_ON)
++		*video_dev_info |= LCD_Device;
++}
++
++static int get_primary_device(void)
++{
++	int primary_device = 0;
++	/* Rule: device on iga1 path are the primary device. */
++	if (viafb_SAMM_ON) {
++		if (viafb_CRT_ON) {
++			if (viaparinfo->crt_setting_info->iga_path == IGA1) {
++				DEBUG_MSG(KERN_INFO "CRT IGA Path:%d\n",
++					viaparinfo->
++					crt_setting_info->iga_path);
++				primary_device = CRT_Device;
++			}
++		}
++		if (viafb_DVI_ON) {
++			if (viaparinfo->tmds_setting_info->iga_path == IGA1) {
++				DEBUG_MSG(KERN_INFO "DVI IGA Path:%d\n",
++					viaparinfo->
++					tmds_setting_info->iga_path);
++				primary_device = DVI_Device;
++			}
++		}
++		if (viafb_LCD_ON) {
++			if (viaparinfo->lvds_setting_info->iga_path == IGA1) {
++				DEBUG_MSG(KERN_INFO "LCD IGA Path:%d\n",
++					viaparinfo->
++					lvds_setting_info->iga_path);
++				primary_device = LCD_Device;
++			}
++		}
++		if (viafb_LCD2_ON) {
++			if (viaparinfo->lvds_setting_info2->iga_path == IGA1) {
++				DEBUG_MSG(KERN_INFO "LCD2 IGA Path:%d\n",
++					viaparinfo->
++					lvds_setting_info2->iga_path);
++				primary_device = LCD2_Device;
++			}
++		}
++	}
++	return primary_device;
++}
++
++static u8 is_duoview(void)
++{
++	if (0 == viafb_SAMM_ON) {
++		if (viafb_LCD_ON + viafb_LCD2_ON +
++			viafb_DVI_ON + viafb_CRT_ON == 2)
++			return TRUE;
++		return FALSE;
++	} else {
++		return FALSE;
++	}
++}
++
++static void apply_second_mode_setting(struct fb_var_screeninfo
++	*sec_var)
++{
++	u32 htotal, vtotal, long_refresh;
++
++	htotal = sec_var->xres + sec_var->left_margin +
++		sec_var->right_margin + sec_var->hsync_len;
++	vtotal = sec_var->yres + sec_var->upper_margin +
++		sec_var->lower_margin + sec_var->vsync_len;
++	if ((sec_var->xres_virtual * (sec_var->bits_per_pixel >> 3)) & 0x1F) {
++		/*Is 32 bytes alignment? */
++		/*32 pixel alignment */
++		sec_var->xres_virtual = (sec_var->xres_virtual + 31) & ~31;
++	}
++
++	htotal = sec_var->xres + sec_var->left_margin +
++		sec_var->right_margin + sec_var->hsync_len;
++	vtotal = sec_var->yres + sec_var->upper_margin +
++		sec_var->lower_margin + sec_var->vsync_len;
++	long_refresh = 1000000000UL / sec_var->pixclock * 1000;
++	long_refresh /= (htotal * vtotal);
++
++	viafb_second_xres = sec_var->xres;
++	viafb_second_yres = sec_var->yres;
++	viafb_second_virtual_xres = sec_var->xres_virtual;
++	viafb_second_virtual_yres = sec_var->yres_virtual;
++	via_fb_bpp1 = sec_var->bits_per_pixel;
++	viafb_refresh1 = viafb_get_refresh(sec_var->xres, sec_var->yres,
++		long_refresh);
++}
++
++static int apply_device_setting(struct viafb_ioctl_setting setting_info,
++	struct fb_info *info)
++{
++	int need_set_mode = 0;
++	DEBUG_MSG(KERN_INFO "apply_device_setting\n");
++
++	if (setting_info.device_flag) {
++		need_set_mode = 1;
++		check_available_device_to_enable(setting_info.device_status);
++	}
++
++	/* Unlock LCD's operation according to LCD flag
++	   and check if the setting value is valid. */
++	/* If the value is valid, apply the new setting value to the device. */
++	if (viafb_LCD_ON) {
++		if (setting_info.lcd_operation_flag & OP_LCD_CENTERING) {
++			need_set_mode = 1;
++			if (setting_info.lcd_attributes.display_center) {
++				/* Centering */
++				viaparinfo->lvds_setting_info->display_method =
++				    LCD_CENTERING;
++				viafb_lcd_dsp_method = LCD_CENTERING;
++				viaparinfo->lvds_setting_info2->display_method =
++				    viafb_lcd_dsp_method = LCD_CENTERING;
++			} else {
++				/* expandsion */
++				viaparinfo->lvds_setting_info->display_method =
++				    LCD_EXPANDSION;
++				viafb_lcd_dsp_method = LCD_EXPANDSION;
++				viaparinfo->lvds_setting_info2->display_method =
++				    LCD_EXPANDSION;
++				viafb_lcd_dsp_method = LCD_EXPANDSION;
++			}
++		}
++
++		if (setting_info.lcd_operation_flag & OP_LCD_MODE) {
++			need_set_mode = 1;
++			if (setting_info.lcd_attributes.lcd_mode ==
++				LCD_SPWG) {
++				viaparinfo->lvds_setting_info->lcd_mode =
++					viafb_lcd_mode = LCD_SPWG;
++			} else {
++				viaparinfo->lvds_setting_info->lcd_mode =
++					viafb_lcd_mode = LCD_OPENLDI;
++			}
++			viaparinfo->lvds_setting_info2->lcd_mode =
++			    viaparinfo->lvds_setting_info->lcd_mode;
++		}
++
++		if (setting_info.lcd_operation_flag & OP_LCD_PANEL_ID) {
++			need_set_mode = 1;
++			if (setting_info.lcd_attributes.panel_id <=
++			    LCD_PANEL_ID_MAXIMUM) {
++				viafb_lcd_panel_id =
++				    setting_info.lcd_attributes.panel_id;
++				viafb_init_lcd_size();
++			}
++		}
++	}
++
++	if (0 != (setting_info.samm_status & OP_SAMM)) {
++		setting_info.samm_status =
++		    setting_info.samm_status & (~OP_SAMM);
++		if (setting_info.samm_status == 0
++		    || setting_info.samm_status == 1) {
++			viafb_SAMM_ON = setting_info.samm_status;
++
++			if (viafb_SAMM_ON)
++				viafb_primary_dev = setting_info.primary_device;
++
++			viafb_set_start_addr();
++			viafb_set_iga_path();
++		}
++		need_set_mode = 1;
++	}
++
++	viaparinfo->duoview = is_duoview();
++
++	if (!need_set_mode) {
++		;
++	} else {
++		viafb_set_iga_path();
++		viafb_set_par(info);
++	}
++	return TRUE;
++}
++
++static void retrieve_device_setting(struct viafb_ioctl_setting
++	*setting_info)
++{
++
++	/* get device status */
++	if (viafb_CRT_ON == 1)
++		setting_info->device_status = CRT_Device;
++	if (viafb_DVI_ON == 1)
++		setting_info->device_status |= DVI_Device;
++	if (viafb_LCD_ON == 1)
++		setting_info->device_status |= LCD_Device;
++	if (viafb_LCD2_ON == 1)
++		setting_info->device_status |= LCD2_Device;
++	if ((viaparinfo->video_on_crt == 1) && (viafb_CRT_ON == 1)) {
++		setting_info->video_device_status =
++			viaparinfo->crt_setting_info->iga_path;
++	} else if ((viaparinfo->video_on_dvi == 1) && (viafb_DVI_ON == 1)) {
++		setting_info->video_device_status =
++			viaparinfo->tmds_setting_info->iga_path;
++	} else if ((viaparinfo->video_on_lcd == 1) && (viafb_LCD_ON == 1)) {
++		setting_info->video_device_status =
++			viaparinfo->lvds_setting_info->iga_path;
++	} else {
++		setting_info->video_device_status = 0;
++	}
++
++	setting_info->samm_status = viafb_SAMM_ON;
++	setting_info->primary_device = get_primary_device();
++
++	setting_info->first_dev_bpp = via_fb_bpp;
++	setting_info->second_dev_bpp = via_fb_bpp1;
++
++	setting_info->first_dev_refresh = viafb_refresh;
++	setting_info->second_dev_refresh = viafb_refresh1;
++
++	setting_info->first_dev_hor_res = via_fb_hotplug_Xres;
++	setting_info->first_dev_ver_res = via_fb_hotplug_Yres;
++	setting_info->second_dev_hor_res = viafb_second_xres;
++	setting_info->second_dev_ver_res = viafb_second_yres;
++
++	/* Get lcd attributes */
++	setting_info->lcd_attributes.display_center = viafb_lcd_dsp_method;
++	setting_info->lcd_attributes.panel_id = viafb_lcd_panel_id;
++	setting_info->lcd_attributes.lcd_mode = viafb_lcd_mode;
++}
++
++static void parse_active_dev(void)
++{
++	viafb_CRT_ON = STATE_OFF;
++	viafb_DVI_ON = STATE_OFF;
++	viafb_LCD_ON = STATE_OFF;
++	viafb_LCD2_ON = STATE_OFF;
++	/* 1. Modify the active status of devices. */
++	/* 2. Keep the order of devices, so we can set corresponding
++	   IGA path to devices in SAMM case. */
++	/*    Note: The previous of active_dev is primary device,
++	   and the following is secondary device. */
++	if (!strncmp(viafb_active_dev, "CRT+DVI", 7)) {
++		/* CRT+DVI */
++		viafb_CRT_ON = STATE_ON;
++		viafb_DVI_ON = STATE_ON;
++		viafb_primary_dev = CRT_Device;
++	} else if (!strncmp(viafb_active_dev, "DVI+CRT", 7)) {
++		/* DVI+CRT */
++		viafb_CRT_ON = STATE_ON;
++		viafb_DVI_ON = STATE_ON;
++		viafb_primary_dev = DVI_Device;
++	} else if (!strncmp(viafb_active_dev, "CRT+LCD", 7)) {
++		/* CRT+LCD */
++		viafb_CRT_ON = STATE_ON;
++		viafb_LCD_ON = STATE_ON;
++		viafb_primary_dev = CRT_Device;
++	} else if (!strncmp(viafb_active_dev, "LCD+CRT", 7)) {
++		/* LCD+CRT */
++		viafb_CRT_ON = STATE_ON;
++		viafb_LCD_ON = STATE_ON;
++		viafb_primary_dev = LCD_Device;
++	} else if (!strncmp(viafb_active_dev, "DVI+LCD", 7)) {
++		/* DVI+LCD */
++		viafb_DVI_ON = STATE_ON;
++		viafb_LCD_ON = STATE_ON;
++		viafb_primary_dev = DVI_Device;
++	} else if (!strncmp(viafb_active_dev, "LCD+DVI", 7)) {
++		/* LCD+DVI */
++		viafb_DVI_ON = STATE_ON;
++		viafb_LCD_ON = STATE_ON;
++		viafb_primary_dev = LCD_Device;
++	} else if (!strncmp(viafb_active_dev, "LCD+LCD2", 8)) {
++		viafb_LCD_ON = STATE_ON;
++		viafb_LCD2_ON = STATE_ON;
++		viafb_primary_dev = LCD_Device;
++	} else if (!strncmp(viafb_active_dev, "LCD2+LCD", 8)) {
++		viafb_LCD_ON = STATE_ON;
++		viafb_LCD2_ON = STATE_ON;
++		viafb_primary_dev = LCD2_Device;
++	} else if (!strncmp(viafb_active_dev, "CRT", 3)) {
++		/* CRT only */
++		viafb_CRT_ON = STATE_ON;
++		viafb_SAMM_ON = STATE_OFF;
++	} else if (!strncmp(viafb_active_dev, "DVI", 3)) {
++		/* DVI only */
++		viafb_DVI_ON = STATE_ON;
++		viafb_SAMM_ON = STATE_OFF;
++	} else if (!strncmp(viafb_active_dev, "LCD", 3)) {
++		/* LCD only */
++		viafb_LCD_ON = STATE_ON;
++		viafb_SAMM_ON = STATE_OFF;
++	} else {
++		viafb_CRT_ON = STATE_ON;
++		viafb_SAMM_ON = STATE_OFF;
++	}
++	viaparinfo->duoview = is_duoview();
++}
++
++static void parse_video_dev(void)
++{
++	viaparinfo->video_on_crt = STATE_OFF;
++	viaparinfo->video_on_dvi = STATE_OFF;
++	viaparinfo->video_on_lcd = STATE_OFF;
++
++	if (!strncmp(viafb_video_dev, "CRT", 3)) {
++		/* Video on CRT */
++		viaparinfo->video_on_crt = STATE_ON;
++	} else if (!strncmp(viafb_video_dev, "DVI", 3)) {
++		/* Video on DVI */
++		viaparinfo->video_on_dvi = STATE_ON;
++	} else if (!strncmp(viafb_video_dev, "LCD", 3)) {
++		/* Video on LCD */
++		viaparinfo->video_on_lcd = STATE_ON;
++	}
++}
++
++static int parse_port(char *opt_str, int *output_interface)
++{
++	if (!strncmp(opt_str, "DVP0", 4))
++		*output_interface = INTERFACE_DVP0;
++	else if (!strncmp(opt_str, "DVP1", 4))
++		*output_interface = INTERFACE_DVP1;
++	else if (!strncmp(opt_str, "DFP_HIGHLOW", 11))
++		*output_interface = INTERFACE_DFP;
++	else if (!strncmp(opt_str, "DFP_HIGH", 8))
++		*output_interface = INTERFACE_DFP_HIGH;
++	else if (!strncmp(opt_str, "DFP_LOW", 8))
++		*output_interface = INTERFACE_DFP_LOW;
++	else
++		*output_interface = INTERFACE_NONE;
++	return 0;
++}
++
++static void parse_lcd_port(void)
++{
++	parse_port(viafb_lcd_port, &viaparinfo->chip_info->lvds_chip_info.
++		output_interface);
++	/*Initialize to avoid unexpected behavior */
++	viaparinfo->chip_info->lvds_chip_info2.output_interface =
++	INTERFACE_NONE;
++
++	DEBUG_MSG(KERN_INFO "parse_lcd_port: viafb_lcd_port:%s,interface:%d\n",
++		  viafb_lcd_port, iaparinfo->chip_info->lvds_chip_info.
++		  output_interface);
++}
++
++static void parse_dvi_port(void)
++{
++	parse_port(viafb_dvi_port, &viaparinfo->chip_info->tmds_chip_info.
++		output_interface);
++
++	DEBUG_MSG(KERN_INFO "parse_dvi_port: viafb_dvi_port:%s,interface:%d\n",
++		  viafb_dvi_port, viaparinfo->chip_info->tmds_chip_info.
++		  output_interface);
++}
++
++/*
++ * The proc filesystem read/write function, a simple proc implement to
++ * get/set the value of DPA  DVP0,   DVP0DataDriving,  DVP0ClockDriving, DVP1,
++ * DVP1Driving, DFPHigh, DFPLow CR96,   SR2A[5], SR1B[1], SR2A[4], SR1E[2],
++ * CR9B,    SR65,    CR97,    CR99
++ */
++static int viafb_dvp0_proc_read(char *buf, char **start, off_t offset,
++int count, int *eof, void *data)
++{
++	int len = 0;
++	u8 dvp0_data_dri = 0, dvp0_clk_dri = 0, dvp0 = 0;
++	dvp0_data_dri =
++	    (viafb_read_reg(VIASR, SR2A) & BIT5) >> 4 |
++	    (viafb_read_reg(VIASR, SR1B) & BIT1) >> 1;
++	dvp0_clk_dri =
++	    (viafb_read_reg(VIASR, SR2A) & BIT4) >> 3 |
++	    (viafb_read_reg(VIASR, SR1E) & BIT2) >> 2;
++	dvp0 = viafb_read_reg(VIACR, CR96) & 0x0f;
++	len +=
++	    sprintf(buf + len, "%x %x %x\n", dvp0, dvp0_data_dri, dvp0_clk_dri);
++	*eof = 1;		/*Inform kernel end of data */
++	return len;
++}
++static int viafb_dvp0_proc_write(struct file *file,
++	const char __user *buffer, unsigned long count, void *data)
++{
++	char buf[20], *value, *pbuf;
++	u8 reg_val = 0;
++	unsigned long length, i;
++	if (count < 1)
++		return -EINVAL;
++	length = count > 20 ? 20 : count;
++	if (copy_from_user(&buf[0], buffer, length))
++		return -EFAULT;
++	buf[length - 1] = '\0';	/*Ensure end string */
++	pbuf = &buf[0];
++	for (i = 0; i < 3; i++) {
++		value = strsep(&pbuf, " ");
++		if (value != NULL) {
++			strict_strtoul(value, 0, (unsigned long *)&reg_val);
++			DEBUG_MSG(KERN_INFO "DVP0:reg_val[%l]=:%x\n", i,
++				  reg_val);
++			switch (i) {
++			case 0:
++				viafb_write_reg_mask(CR96, VIACR,
++					reg_val, 0x0f);
++				break;
++			case 1:
++				viafb_write_reg_mask(SR2A, VIASR,
++					reg_val << 4, BIT5);
++				viafb_write_reg_mask(SR1B, VIASR,
++					reg_val << 1, BIT1);
++				break;
++			case 2:
++				viafb_write_reg_mask(SR2A, VIASR,
++					reg_val << 3, BIT4);
++				viafb_write_reg_mask(SR1E, VIASR,
++					reg_val << 2, BIT2);
++				break;
++			default:
++				break;
++			}
++		} else {
++			break;
++		}
++	}
++	return count;
++}
++static int viafb_dvp1_proc_read(char *buf, char **start, off_t offset,
++	int count, int *eof, void *data)
++{
++	int len = 0;
++	u8 dvp1 = 0, dvp1_data_dri = 0, dvp1_clk_dri = 0;
++	dvp1 = viafb_read_reg(VIACR, CR9B) & 0x0f;
++	dvp1_data_dri = (viafb_read_reg(VIASR, SR65) & 0x0c) >> 2;
++	dvp1_clk_dri = viafb_read_reg(VIASR, SR65) & 0x03;
++	len +=
++	    sprintf(buf + len, "%x %x %x\n", dvp1, dvp1_data_dri, dvp1_clk_dri);
++	*eof = 1;		/*Inform kernel end of data */
++	return len;
++}
++static int viafb_dvp1_proc_write(struct file *file,
++	const char __user *buffer, unsigned long count, void *data)
++{
++	char buf[20], *value, *pbuf;
++	u8 reg_val = 0;
++	unsigned long length, i;
++	if (count < 1)
++		return -EINVAL;
++	length = count > 20 ? 20 : count;
++	if (copy_from_user(&buf[0], buffer, length))
++		return -EFAULT;
++	buf[length - 1] = '\0';	/*Ensure end string */
++	pbuf = &buf[0];
++	for (i = 0; i < 3; i++) {
++		value = strsep(&pbuf, " ");
++		if (value != NULL) {
++			strict_strtoul(value, 0, (unsigned long *)&reg_val);
++			switch (i) {
++			case 0:
++				viafb_write_reg_mask(CR9B, VIACR,
++					reg_val, 0x0f);
++				break;
++			case 1:
++				viafb_write_reg_mask(SR65, VIASR,
++					reg_val << 2, 0x0c);
++				break;
++			case 2:
++				viafb_write_reg_mask(SR65, VIASR,
++					reg_val, 0x03);
++				break;
++			default:
++				break;
++			}
++		} else {
++			break;
++		}
++	}
++	return count;
++}
++
++static int viafb_dfph_proc_read(char *buf, char **start, off_t offset,
++	int count, int *eof, void *data)
++{
++	int len = 0;
++	u8 dfp_high = 0;
++	dfp_high = viafb_read_reg(VIACR, CR97) & 0x0f;
++	len += sprintf(buf + len, "%x\n", dfp_high);
++	*eof = 1;		/*Inform kernel end of data */
++	return len;
++}
++static int viafb_dfph_proc_write(struct file *file,
++	const char __user *buffer, unsigned long count, void *data)
++{
++	char buf[20];
++	u8 reg_val = 0;
++	unsigned long length;
++	if (count < 1)
++		return -EINVAL;
++	length = count > 20 ? 20 : count;
++	if (copy_from_user(&buf[0], buffer, length))
++		return -EFAULT;
++	buf[length - 1] = '\0';	/*Ensure end string */
++	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
++	viafb_write_reg_mask(CR97, VIACR, reg_val, 0x0f);
++	return count;
++}
++static int viafb_dfpl_proc_read(char *buf, char **start, off_t offset,
++	int count, int *eof, void *data)
++{
++	int len = 0;
++	u8 dfp_low = 0;
++	dfp_low = viafb_read_reg(VIACR, CR99) & 0x0f;
++	len += sprintf(buf + len, "%x\n", dfp_low);
++	*eof = 1;		/*Inform kernel end of data */
++	return len;
++}
++static int viafb_dfpl_proc_write(struct file *file,
++	const char __user *buffer, unsigned long count, void *data)
++{
++	char buf[20];
++	u8 reg_val = 0;
++	unsigned long length;
++	if (count < 1)
++		return -EINVAL;
++	length = count > 20 ? 20 : count;
++	if (copy_from_user(&buf[0], buffer, length))
++		return -EFAULT;
++	buf[length - 1] = '\0';	/*Ensure end string */
++	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
++	viafb_write_reg_mask(CR99, VIACR, reg_val, 0x0f);
++	return count;
++}
++static int viafb_vt1636_proc_read(char *buf, char **start,
++	off_t offset, int count, int *eof, void *data)
++{
++	int len = 0;
++	u8 vt1636_08 = 0, vt1636_09 = 0;
++	switch (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
++	case VT1636_LVDS:
++		vt1636_08 =
++		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info,
++		    &viaparinfo->chip_info->lvds_chip_info, 0x08) & 0x0f;
++		vt1636_09 =
++		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info,
++		    &viaparinfo->chip_info->lvds_chip_info, 0x09) & 0x1f;
++		len += sprintf(buf + len, "%x %x\n", vt1636_08, vt1636_09);
++		break;
++	default:
++		break;
++	}
++	switch (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
++	case VT1636_LVDS:
++		vt1636_08 =
++		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info2,
++			&viaparinfo->chip_info->lvds_chip_info2, 0x08) & 0x0f;
++		vt1636_09 =
++		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info2,
++			&viaparinfo->chip_info->lvds_chip_info2, 0x09) & 0x1f;
++		len += sprintf(buf + len, " %x %x\n", vt1636_08, vt1636_09);
++		break;
++	default:
++		break;
++	}
++	*eof = 1;		/*Inform kernel end of data */
++	return len;
++}
++static int viafb_vt1636_proc_write(struct file *file,
++	const char __user *buffer, unsigned long count, void *data)
++{
++	char buf[30], *value, *pbuf;
++	struct IODATA reg_val;
++	unsigned long length, i;
++	if (count < 1)
++		return -EINVAL;
++	length = count > 30 ? 30 : count;
++	if (copy_from_user(&buf[0], buffer, length))
++		return -EFAULT;
++	buf[length - 1] = '\0';	/*Ensure end string */
++	pbuf = &buf[0];
++	switch (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
++	case VT1636_LVDS:
++		for (i = 0; i < 2; i++) {
++			value = strsep(&pbuf, " ");
++			if (value != NULL) {
++				strict_strtoul(value, 0,
++					(unsigned long *)&reg_val.Data);
++				switch (i) {
++				case 0:
++					reg_val.Index = 0x08;
++					reg_val.Mask = 0x0f;
++					viafb_gpio_i2c_write_mask_lvds
++					    (viaparinfo->lvds_setting_info,
++					    &viaparinfo->
++					    chip_info->lvds_chip_info,
++					     reg_val);
++					break;
++				case 1:
++					reg_val.Index = 0x09;
++					reg_val.Mask = 0x1f;
++					viafb_gpio_i2c_write_mask_lvds
++					    (viaparinfo->lvds_setting_info,
++					    &viaparinfo->
++					    chip_info->lvds_chip_info,
++					     reg_val);
++					break;
++				default:
++					break;
++				}
++			} else {
++				break;
++			}
++		}
++		break;
++	default:
++		break;
++	}
++	switch (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
++	case VT1636_LVDS:
++		for (i = 0; i < 2; i++) {
++			value = strsep(&pbuf, " ");
++			if (value != NULL) {
++				strict_strtoul(value, 0,
++					(unsigned long *)&reg_val.Data);
++				switch (i) {
++				case 0:
++					reg_val.Index = 0x08;
++					reg_val.Mask = 0x0f;
++					viafb_gpio_i2c_write_mask_lvds
++					    (viaparinfo->lvds_setting_info2,
++					    &viaparinfo->
++					    chip_info->lvds_chip_info2,
++					     reg_val);
++					break;
++				case 1:
++					reg_val.Index = 0x09;
++					reg_val.Mask = 0x1f;
++					viafb_gpio_i2c_write_mask_lvds
++					    (viaparinfo->lvds_setting_info2,
++					    &viaparinfo->
++					    chip_info->lvds_chip_info2,
++					     reg_val);
++					break;
++				default:
++					break;
++				}
++			} else {
++				break;
++			}
++		}
++		break;
++	default:
++		break;
++	}
++	return count;
++}
++
++static void viafb_init_proc(struct proc_dir_entry *viafb_entry)
++{
++	struct proc_dir_entry *entry;
++	viafb_entry = proc_mkdir("viafb", NULL);
++	if (viafb_entry) {
++		entry = create_proc_entry("dvp0", 0, viafb_entry);
++		if (entry) {
++			entry->owner = THIS_MODULE;
++			entry->read_proc = viafb_dvp0_proc_read;
++			entry->write_proc = viafb_dvp0_proc_write;
++		}
++		entry = create_proc_entry("dvp1", 0, viafb_entry);
++		if (entry) {
++			entry->owner = THIS_MODULE;
++			entry->read_proc = viafb_dvp1_proc_read;
++			entry->write_proc = viafb_dvp1_proc_write;
++		}
++		entry = create_proc_entry("dfph", 0, viafb_entry);
++		if (entry) {
++			entry->owner = THIS_MODULE;
++			entry->read_proc = viafb_dfph_proc_read;
++			entry->write_proc = viafb_dfph_proc_write;
++		}
++		entry = create_proc_entry("dfpl", 0, viafb_entry);
++		if (entry) {
++			entry->owner = THIS_MODULE;
++			entry->read_proc = viafb_dfpl_proc_read;
++			entry->write_proc = viafb_dfpl_proc_write;
++		}
++		if (VT1636_LVDS == viaparinfo->chip_info->lvds_chip_info.
++			lvds_chip_name || VT1636_LVDS ==
++		    viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
++			entry = create_proc_entry("vt1636", 0, viafb_entry);
++			if (entry) {
++				entry->owner = THIS_MODULE;
++				entry->read_proc = viafb_vt1636_proc_read;
++				entry->write_proc = viafb_vt1636_proc_write;
++			}
++		}
++
++	}
++}
++static void viafb_remove_proc(struct proc_dir_entry *viafb_entry)
++{
++	/* no problem if it was not registered */
++	remove_proc_entry("dvp0", viafb_entry);/* parent dir */
++	remove_proc_entry("dvp1", viafb_entry);
++	remove_proc_entry("dfph", viafb_entry);
++	remove_proc_entry("dfpl", viafb_entry);
++	remove_proc_entry("vt1636", viafb_entry);
++	remove_proc_entry("vt1625", viafb_entry);
++}
++
++static int __devinit via_pci_probe(void)
++{
++
++	/*unsigned char revision; */
++	unsigned int default_xres, default_yres;
++	char *tmpc, *tmpm;
++	char *tmpc_sec, *tmpm_sec;
++	int vmode_index;
++    u32 tmds_length, lvds_length, crt_length, chip_length, viafb_par_length;
++
++	DEBUG_MSG(KERN_INFO "VIAFB PCI Probe!!\n");
++
++#define BYTES_PER_LONG (BITS_PER_LONG/8)
++#define PADDING(A) (BYTES_PER_LONG - (sizeof(A) % BYTES_PER_LONG))
++	viafb_par_length = sizeof(struct viafb_par) + PADDING(struct viafb_par);
++	tmds_length = sizeof(struct tmds_setting_information) +
++		PADDING(struct tmds_setting_information);
++	lvds_length = sizeof(struct lvds_setting_information) +
++		PADDING(struct lvds_setting_information);
++	crt_length = sizeof(struct crt_setting_information) +
++		PADDING(struct crt_setting_information);
++	chip_length = sizeof(struct chip_information) +
++		PADDING(struct chip_information);
++#undef PADDING
++#undef BYTES_PER_LONG
++
++	/* Allocate fb_info and ***_par here, also including some other needed
++	 * variables
++	*/
++	viafbinfo = framebuffer_alloc(viafb_par_length + 2 * lvds_length +
++	tmds_length + crt_length + chip_length, NULL);
++	if (!viafbinfo) {
++		printk(KERN_ERR"Could not allocate memory for viafb_info.\n");
++		return -ENODEV;
++	}
++
++	viaparinfo = (struct viafb_par *)viafbinfo->par;
++	viaparinfo->tmds_setting_info = (struct tmds_setting_information *)
++		((u32)viaparinfo + viafb_par_length);
++	viaparinfo->lvds_setting_info = (struct lvds_setting_information *)
++		((u32)viaparinfo->tmds_setting_info + tmds_length);
++	viaparinfo->lvds_setting_info2 = (struct lvds_setting_information *)
++		((u32)viaparinfo->lvds_setting_info + lvds_length);
++	viaparinfo->crt_setting_info = (struct crt_setting_information *)
++		((u32)viaparinfo->lvds_setting_info2 + lvds_length);
++	viaparinfo->chip_info = (struct chip_information *)
++		((u32)viaparinfo->crt_setting_info + crt_length);
++
++	if (viafb_dual_fb)
++		viafb_SAMM_ON = 1;
++	parse_active_dev();
++	parse_video_dev();
++	parse_lcd_port();
++	parse_dvi_port();
++
++	/* for dual-fb must viafb_SAMM_ON=1 and viafb_dual_fb=1 */
++	if (!viafb_SAMM_ON)
++		viafb_dual_fb = 0;
++
++	viafb_init_chip_info();
++	viafb_get_fb_info(&viaparinfo->fbmem, &viaparinfo->memsize);
++	viaparinfo->fbmem_free = viaparinfo->memsize;
++	viaparinfo->fbmem_used = 0;
++	viaparinfo->fbmem_virt = ioremap_nocache(viaparinfo->fbmem,
++		viaparinfo->memsize);
++	viafbinfo->screen_base = (char *)viaparinfo->fbmem_virt;
++
++	if (!viaparinfo->fbmem_virt) {
++		printk(KERN_INFO "ioremap failed\n");
++		return -1;
++	}
++
++	viafb_get_mmio_info(&viaparinfo->mmio_base, &viaparinfo->mmio_len);
++	viaparinfo->io_virt = ioremap_nocache(viaparinfo->mmio_base,
++		viaparinfo->mmio_len);
++
++	viafbinfo->node = 0;
++	viafbinfo->fbops = &viafb_ops;
++	viafbinfo->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
++
++	viafbinfo->pseudo_palette = pseudo_pal;
++	if (via_fb_accel) {
++		viafb_init_accel();
++		viafb_init_2d_engine();
++		viafb_hw_cursor_init();
++	}
++
++	if (viafb_second_size && (viafb_second_size < 8)) {
++		viafb_second_offset = viaparinfo->fbmem_free -
++			viafb_second_size * 1024 * 1024;
++	} else {
++		viafb_second_size = 8;
++		viafb_second_offset = viaparinfo->fbmem_free -
++			viafb_second_size * 1024 * 1024;
++	}
++
++	viafb_FB_MM = viaparinfo->fbmem_virt;
++	tmpm = viafb_mode;
++	tmpc = strsep(&tmpm, "x");
++	strict_strtoul(tmpc, 0, (unsigned long *)&default_xres);
++	strict_strtoul(tmpm, 0, (unsigned long *)&default_yres);
++
++	vmode_index = viafb_get_mode_index(default_xres, default_yres, 0);
++	DEBUG_MSG(KERN_INFO "0->index=%d\n", vmode_index);
++
++	if (viafb_SAMM_ON == 1) {
++		if (strcmp(viafb_mode, viafb_mode1)) {
++			tmpm_sec = viafb_mode1;
++			tmpc_sec = strsep(&tmpm_sec, "x");
++			strict_strtoul(tmpc_sec, 0,
++				(unsigned long *)&viafb_second_xres);
++			strict_strtoul(tmpm_sec, 0,
++				(unsigned long *)&viafb_second_yres);
++		} else {
++			viafb_second_xres = default_xres;
++			viafb_second_yres = default_yres;
++		}
++		if (0 == viafb_second_virtual_xres) {
++			switch (viafb_second_xres) {
++			case 1400:
++				viafb_second_virtual_xres = 1408;
++				break;
++			default:
++				viafb_second_virtual_xres = viafb_second_xres;
++				break;
++			}
++		}
++		if (0 == viafb_second_virtual_yres)
++			viafb_second_virtual_yres = viafb_second_yres;
++	}
++
++	switch (via_fb_bpp) {
++	case 0 ... 8:
++		via_fb_bpp = 8;
++		break;
++	case 9 ... 16:
++		via_fb_bpp = 16;
++		break;
++	case 17 ... 32:
++		via_fb_bpp = 32;
++		break;
++	default:
++		via_fb_bpp = 8;
++	}
++	default_var.xres = default_xres;
++	default_var.yres = default_yres;
++	switch (default_xres) {
++	case 1400:
++		default_var.xres_virtual = 1408;
++		break;
++	default:
++		default_var.xres_virtual = default_xres;
++		break;
++	}
++	default_var.yres_virtual = default_yres;
++	default_var.bits_per_pixel = via_fb_bpp;
++	if (default_var.bits_per_pixel == 15)
++		default_var.bits_per_pixel = 16;
++	default_var.pixclock =
++	    viafb_get_pixclock(default_xres, default_yres, viafb_refresh);
++	default_var.left_margin = (default_xres >> 3) & 0xf8;
++	default_var.right_margin = 32;
++	default_var.upper_margin = 16;
++	default_var.lower_margin = 4;
++	default_var.hsync_len = default_var.left_margin;
++	default_var.vsync_len = 4;
++	default_var.accel_flags = 0;
++
++	if (via_fb_accel) {
++		viafbinfo->flags |=
++		    (FBINFO_HWACCEL_COPYAREA | FBINFO_HWACCEL_FILLRECT |
++		     FBINFO_HWACCEL_IMAGEBLIT);
++		default_var.accel_flags |= FB_ACCELF_TEXT;
++	} else
++		viafbinfo->flags |= FBINFO_HWACCEL_DISABLED;
++
++	if (viafb_dual_fb) {
++		viafbinfo1 = framebuffer_alloc(viafb_par_length, NULL);
++		if (!viafbinfo1) {
++			printk(KERN_ERR
++			"allocate the second framebuffer struct error\n");
++			framebuffer_release(viafbinfo);
++			return -ENOMEM;
++		}
++		viaparinfo1 = viafbinfo1->par;
++		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
++		viaparinfo1->memsize = viaparinfo->memsize -
++			viafb_second_offset;
++		viaparinfo->memsize = viafb_second_offset;
++		viaparinfo1->fbmem_virt = viaparinfo->fbmem_virt +
++			viafb_second_offset;
++		viaparinfo1->fbmem = viaparinfo->fbmem + viafb_second_offset;
++
++		viaparinfo1->fbmem_used = viaparinfo->fbmem_used;
++		viaparinfo1->fbmem_free = viaparinfo1->memsize -
++			viaparinfo1->fbmem_used;
++		viaparinfo->fbmem_free = viaparinfo->memsize;
++		viaparinfo->fbmem_used = 0;
++		if (via_fb_accel) {
++			viaparinfo1->cursor_start =
++			    viaparinfo->cursor_start - viafb_second_offset;
++			viaparinfo1->VQ_start = viaparinfo->VQ_start -
++				viafb_second_offset;
++			viaparinfo1->VQ_end = viaparinfo->VQ_end -
++				viafb_second_offset;
++		}
++
++		memcpy(viafbinfo1, viafbinfo, sizeof(struct fb_info));
++		viafbinfo1->screen_base = viafbinfo->screen_base +
++			viafb_second_offset;
++		viafbinfo1->fix.smem_start = viaparinfo1->fbmem;
++		viafbinfo1->fix.smem_len = viaparinfo1->fbmem_free;
++
++		default_var.xres = viafb_second_xres;
++		default_var.yres = viafb_second_yres;
++		default_var.xres_virtual = viafb_second_virtual_xres;
++		default_var.yres_virtual = viafb_second_virtual_yres;
++		if (via_fb_bpp1 != via_fb_bpp)
++			via_fb_bpp1 = via_fb_bpp;
++		default_var.bits_per_pixel = via_fb_bpp1;
++		default_var.pixclock =
++		    viafb_get_pixclock(viafb_second_xres, viafb_second_yres,
++		    viafb_refresh);
++		default_var.left_margin = (viafb_second_xres >> 3) & 0xf8;
++		default_var.right_margin = 32;
++		default_var.upper_margin = 16;
++		default_var.lower_margin = 4;
++		default_var.hsync_len = default_var.left_margin;
++		default_var.vsync_len = 4;
++
++		viafb_setup_fixinfo(&viafbinfo1->fix, viaparinfo1);
++		viafb_check_var(&default_var, viafbinfo1);
++		viafbinfo1->var = default_var;
++		viafb_update_viafb_par(viafbinfo);
++		viafb_update_fix(&viafbinfo1->fix, viafbinfo1);
++	}
++
++	viafb_setup_fixinfo(&viafbinfo->fix, viaparinfo);
++	viafb_check_var(&default_var, viafbinfo);
++	viafbinfo->var = default_var;
++	viafb_update_viafb_par(viafbinfo);
++	viafb_update_fix(&viafbinfo->fix, viafbinfo);
++	default_var.activate = FB_ACTIVATE_NOW;
++	fb_alloc_cmap(&viafbinfo->cmap, 256, 0);
++
++	if (viafb_dual_fb && (viafb_primary_dev == LCD_Device)
++	    && (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266)) {
++		if (register_framebuffer(viafbinfo1) < 0)
++			return -EINVAL;
++	}
++	if (register_framebuffer(viafbinfo) < 0)
++		return -EINVAL;
++
++	if (viafb_dual_fb && ((viafb_primary_dev != LCD_Device)
++			|| (viaparinfo->chip_info->gfx_chip_name !=
++			UNICHROME_CLE266))) {
++		if (register_framebuffer(viafbinfo1) < 0)
++			return -EINVAL;
++	}
++	DEBUG_MSG(KERN_INFO "fb%d: %s frame buffer device %dx%d-%dbpp\n",
++		  viafbinfo->node, viafbinfo->fix.id, default_var.xres,
++		  default_var.yres, default_var.bits_per_pixel);
++
++	viafb_init_proc(viaparinfo->proc_entry);
++	viafb_init_dac(IGA2);
++	return 0;
++}
++
++static void __devexit via_pci_remove(void)
++{
++	DEBUG_MSG(KERN_INFO "via_pci_remove!\n");
++	fb_dealloc_cmap(&viafbinfo->cmap);
++	unregister_framebuffer(viafbinfo);
++	if (viafb_dual_fb)
++		unregister_framebuffer(viafbinfo1);
++	iounmap((void *)viaparinfo->fbmem_virt);
++
++	framebuffer_release(viafbinfo);
++	if (viafb_dual_fb)
++		framebuffer_release(viafbinfo1);
++
++	viafb_remove_proc(viaparinfo->proc_entry);
++}
++
++int __init viafb_init(void)
++{
++	DEBUG_MSG(KERN_INFO "viafb_init!\n");
++	printk(KERN_INFO
++       "VIA Graphics Intergration Chipset framebuffer %d.%d initializing\n",
++	       VERSION_MAJOR, VERSION_MINOR);
++#ifndef MODULE
++	char *option = NULL;
++	if (fb_get_options("viafb", &option))
++		return -ENODEV;
++	viafb_setup(option);
++#endif
++	return via_pci_probe();
++}
++
++void __exit viafb_exit(void)
++{
++	DEBUG_MSG(KERN_INFO "viafb_exit!\n");
++	if (timer_on) {
++		del_timer(&timer_for3D);
++		timer_on = 0;
++	}
++	via_pci_remove();
++}
++
++int __init viafb_setup(char *options)
++{
++	char *this_opt;
++	DEBUG_MSG(KERN_INFO "viafb_setup!\n");
++
++	if (!options || !*options)
++		return 0;
++
++	while ((this_opt = strsep(&options, ",")) != NULL) {
++		if (!*this_opt)
++			continue;
++
++		if (!strncmp(this_opt, "viafb_mode=", 11)) {
++			viafb_mode = kmalloc(strlen(this_opt + 5), GFP_KERNEL);
++			strcpy(viafb_mode, this_opt + 11);
++		} else if (!strncmp(this_opt, "viafb_mode1=", 12)) {
++			viafb_mode1 = kmalloc(strlen(this_opt + 11),
++				GFP_KERNEL);
++			strcpy(viafb_mode1, this_opt + 12);
++		} else if (!strncmp(this_opt, "via_fb_bpp=", 11))
++			strict_strtoul(this_opt + 11, 0,
++				(unsigned long *)&via_fb_bpp);
++		else if (!strncmp(this_opt, "via_fb_bpp1=", 12))
++			strict_strtoul(this_opt + 12, 0,
++				(unsigned long *)&via_fb_bpp1);
++		else if (!strncmp(this_opt, "viafb_refresh=", 14))
++			strict_strtoul(this_opt + 14, 0,
++				(unsigned long *)&viafb_refresh);
++		else if (!strncmp(this_opt, "viafb_refresh1=", 15))
++			strict_strtoul(this_opt + 15, 0,
++				(unsigned long *)&viafb_refresh1);
++		else if (!strncmp(this_opt, "viafb_lcd_dsp_method=", 21))
++			strict_strtoul(this_opt + 21, 0,
++				(unsigned long *)&viafb_lcd_dsp_method);
++		else if (!strncmp(this_opt, "viafb_lcd_panel_id=", 19))
++			strict_strtoul(this_opt + 19, 0,
++				(unsigned long *)&viafb_lcd_panel_id);
++		else if (!strncmp(this_opt, "via_fb_accel=", 13))
++			strict_strtoul(this_opt + 13, 0,
++				(unsigned long *)&via_fb_accel);
++		else if (!strncmp(this_opt, "viafb_SAMM_ON=", 14))
++			strict_strtoul(this_opt + 14, 0,
++				(unsigned long *)&viafb_SAMM_ON);
++		else if (!strncmp(this_opt, "viafb_active_dev=", 17)) {
++			viafb_active_dev = kmalloc(strlen(this_opt + 16),
++				GFP_KERNEL);
++			strcpy(viafb_active_dev, this_opt + 17);
++		} else if (!strncmp(this_opt,
++		"viafb_display_hardware_layout=", 30))
++			strict_strtoul(this_opt + 30, 0,
++				(unsigned long *)
++				&viafb_display_hardware_layout);
++		else if (!strncmp(this_opt, "viafb_second_size=", 18))
++			strict_strtoul(this_opt + 18, 0,
++				(unsigned long *)&viafb_second_size);
++		else if (!strncmp(this_opt,
++		"viafb_platform_epia_dvi=", 24))
++			strict_strtoul(this_opt + 24, 0,
++				(unsigned long *)&viafb_platform_epia_dvi);
++		else if (!strncmp(this_opt,
++		"viafb_device_lcd_dualedge=", 26))
++			strict_strtoul(this_opt + 26, 0,
++				(unsigned long *)&viafb_device_lcd_dualedge);
++		else if (!strncmp(this_opt, "via_bus_width=", 13))
++			strict_strtoul(this_opt + 13, 0,
++				(unsigned long *)&via_bus_width);
++		else if (!strncmp(this_opt, "viafb_lcd_mode=", 15))
++			strict_strtoul(this_opt + 15, 0,
++				(unsigned long *)&viafb_lcd_mode);
++		else if (!strncmp(this_opt, "viafb_video_dev=", 16)) {
++			viafb_video_dev = kmalloc(strlen(this_opt + 15),
++				GFP_KERNEL);
++			strcpy(viafb_video_dev, this_opt + 16);
++		} else if (!strncmp(this_opt, "viafb_lcd_port=", 15)) {
++			viafb_lcd_port = kmalloc(strlen(this_opt + 14),
++				GFP_KERNEL);
++			strcpy(viafb_lcd_port, this_opt + 15);
++		}
++	}
++	return 0;
++}
++
++static struct fb_ops viafb_ops = {
++	.owner = THIS_MODULE,
++	.fb_open = viafb_open,
++	.fb_release = viafb_release,
++	.fb_check_var = viafb_check_var,
++	.fb_set_par = viafb_set_par,
++	.fb_setcolreg = viafb_setcolreg,
++	.fb_pan_display = viafb_pan_display,
++	.fb_blank = viafb_blank,
++	.fb_fillrect = viafb_fillrect,
++	.fb_copyarea = viafb_copyarea,
++	.fb_imageblit = viafb_imageblit,
++	.fb_cursor = viafb_cursor,
++	.fb_ioctl = viafb_ioctl,
++	.fb_sync = viafb_sync,
++	.fb_setcmap = viafb_setcmap,
++};
++
++module_init(viafb_init);
++module_exit(viafb_exit);
++
++#ifdef MODULE
++module_param(via_fb_memsize, int, 0);
++
++module_param(viafb_mode, charp, 0);
++MODULE_PARM_DESC(viafb_mode, "Set resolution (default=640x480)");
++
++module_param(viafb_mode1, charp, 0);
++MODULE_PARM_DESC(viafb_mode1, "Set resolution (default=640x480)");
++
++module_param(via_fb_bpp, int, 0);
++MODULE_PARM_DESC(via_fb_bpp, "Set color depth (default=32bpp)");
++
++module_param(via_fb_bpp1, int, 0);
++MODULE_PARM_DESC(via_fb_bpp1, "Set color depth (default=32bpp)");
++
++module_param(viafb_refresh, int, 0);
++MODULE_PARM_DESC(viafb_refresh,
++	"Set CRT viafb_refresh rate (default = 60)");
++
++module_param(viafb_refresh1, int, 0);
++MODULE_PARM_DESC(viafb_refresh1,
++	"Set CRT refresh rate (default = 60)");
++
++module_param(viafb_lcd_panel_id, int, 0);
++MODULE_PARM_DESC(viafb_lcd_panel_id,
++	"Set Flat Panel type(Default=1024x768)");
++
++module_param(viafb_lcd_dsp_method, int, 0);
++MODULE_PARM_DESC(viafb_lcd_dsp_method,
++	"Set Flat Panel display scaling method.(Default=Expandsion)");
++
++module_param(viafb_SAMM_ON, int, 0);
++MODULE_PARM_DESC(viafb_SAMM_ON,
++	"Turn on/off flag of SAMM(Default=OFF)");
++
++module_param(via_fb_accel, int, 0);
++MODULE_PARM_DESC(via_fb_accel,
++	"Set 2D Hardware Acceleration.(Default = OFF)");
++
++module_param(viafb_active_dev, charp, 0);
++MODULE_PARM_DESC(viafb_active_dev, "Specify active devices.");
++
++module_param(viafb_display_hardware_layout, int, 0);
++MODULE_PARM_DESC(viafb_display_hardware_layout,
++	"Display Hardware Layout (LCD Only, DVI Only...,etc)");
++
++module_param(viafb_second_size, int, 0);
++MODULE_PARM_DESC(viafb_second_size,
++	"Set secondary device memory size");
++
++module_param(viafb_dual_fb, int, 0);
++MODULE_PARM_DESC(viafb_dual_fb,
++	"Turn on/off flag of dual framebuffer devices.(Default = OFF)");
++
++module_param(viafb_platform_epia_dvi, int, 0);
++MODULE_PARM_DESC(viafb_platform_epia_dvi,
++	"Turn on/off flag of DVI devices on EPIA board.(Default = OFF)");
++
++module_param(viafb_device_lcd_dualedge, int, 0);
++MODULE_PARM_DESC(viafb_device_lcd_dualedge,
++	"Turn on/off flag of dual edge panel.(Default = OFF)");
++
++module_param(via_bus_width, int, 0);
++MODULE_PARM_DESC(via_bus_width,
++	"Set bus width of panel.(Default = 12)");
++
++module_param(viafb_lcd_mode, int, 0);
++MODULE_PARM_DESC(viafb_lcd_mode,
++	"Set Flat Panel mode(Default=OPENLDI)");
++
++module_param(viafb_video_dev, charp, 0);
++MODULE_PARM_DESC(viafb_video_dev, "Specify video devices.");
++
++module_param(viafb_lcd_port, charp, 0);
++MODULE_PARM_DESC(viafb_lcd_port, "Specify LCD output port.");
++
++module_param(viafb_dvi_port, charp, 0);
++MODULE_PARM_DESC(viafb_dvi_port, "Specify DVI output port.");
++
++MODULE_LICENSE("GPL");
++#endif
+diff -Nur a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
+--- a/drivers/video/via/viafbdev.h	1970-01-01 08:00:00.000000000 +0800
++++ b/drivers/video/via/viafbdev.h	2008-06-30 08:53:33.000000000 +0800
+@@ -0,0 +1,110 @@
++/*
++ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
++
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation;
++ * either version 2, or (at your option) any later version.
++
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
++ * the implied warranty of MERCHANTABILITY or FITNESS FOR
++ * A PARTICULAR PURPOSE.See the GNU General Public License
++ * for more details.
++
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++#ifndef __VIAFBDEV_H__
++#define __VIAFBDEV_H__
++
++#include <linux/proc_fs.h>
++#include <linux/fb.h>
++#include "ioctl.h"
++#include "share.h"
++#include "chip.h"
++#include "hw.h"
++
++#define VERSION_MAJOR       2
++#define VERSION_KERNEL      6	/* For kernel 2.6 */
++
++#define VERSION_OS          0	/* 0: for 32 bits OS, 1: for 64 bits OS */
++#define VERSION_MINOR       4
++
++struct viafb_par {
++	int bpp;
++	int hres;
++	int vres;
++	int linelength;
++	u32 xoffset;
++	u32 yoffset;
++
++	void __iomem *fbmem_virt;	/*framebuffer virtual memory address */
++	void __iomem *io_virt;	/*iospace virtual memory address */
++	unsigned int fbmem;	/*framebuffer physical memory address */
++	unsigned int memsize;	/*size of fbmem */
++	unsigned int io;	/*io space address */
++	unsigned long mmio_base;	/*mmio base address */
++	unsigned long mmio_len;	/*mmio base length */
++	u32 fbmem_free;		/* Free FB memory */
++	u32 fbmem_used;		/* Use FB memory size */
++	u32 cursor_start;	/* Cursor Start Address */
++	u32 VQ_start;		/* Virtual Queue Start Address */
++	u32 VQ_end;		/* Virtual Queue End Address */
++	u32 iga_path;
++	struct proc_dir_entry *proc_entry;	/*viafb proc entry */
++	u8 duoview;		/*Is working in duoview mode? */
++
++	/* All the information will be needed to set engine */
++	struct tmds_setting_information *tmds_setting_info;
++	struct crt_setting_information *crt_setting_info;
++	struct lvds_setting_information *lvds_setting_info;
++	struct lvds_setting_information *lvds_setting_info2;
++	struct chip_information *chip_info;
++
++	/* some information related to video playing */
++	int video_on_crt;
++	int video_on_dvi;
++	int video_on_lcd;
++
++};
++struct viafb_modeinfo {
++	u32 xres;
++	u32 yres;
++	int mode_index;
++	char *mode_res;
++};
++extern unsigned int viafb_second_virtual_yres;
++extern unsigned int viafb_second_virtual_xres;
++extern unsigned int viafb_second_offset;
++extern int viafb_second_size;
++extern int viafb_SAMM_ON;
++extern int viafb_dual_fb;
++extern int viafb_LCD2_ON;
++extern int viafb_LCD_ON;
++extern int viafb_DVI_ON;
++extern int via_fb_accel;
++extern int via_fb_hotplug;
++extern int via_fb_memsize;
++
++extern int soft_cursor(struct fb_info *info, struct fb_cursor *cursor);
++
++extern int strict_strtoul(const char *cp, unsigned int base,
++	unsigned long *res);
++
++void viafb_memory_pitch_patch(struct fb_info *info);
++void viafb_fill_var_timing_info(struct fb_var_screeninfo *var, int refresh,
++			  int mode_index);
++int viafb_get_mode_index(int hres, int vres, int flag);
++int __init viafb_setup(char *options);
++u8 viafb_gpio_i2c_read_lvds(struct lvds_setting_information
++	*plvds_setting_info, struct lvds_chip_information
++	*plvds_chip_info, u8 index);
++void viafb_gpio_i2c_write_mask_lvds(struct lvds_setting_information
++			      *plvds_setting_info, struct lvds_chip_information
++			      *plvds_chip_info, struct IODATA io_data);
++#endif /* __VIAFBDEV_H__ */
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
