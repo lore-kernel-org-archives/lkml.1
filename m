@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbYF3OEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462AbYF3OJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755364AbYF3OEI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 10:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbYF3ODz
+	id S1755462AbYF3OJV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 10:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbYF3OJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 10:03:55 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:47058 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751189AbYF3ODy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 10:03:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Wf5t6C28Of0kk2kngEF9IcFdh9tBB3OwMzrZYVJFSVuY9903UbAXOTTo7TdDQiBGn4
-         jV6bLyhqiEhyef4Vyrr8nvnx1H9ewfVGrIejagjsIgE4dzJv/ydnk+rfRfRWeXUGnqxQ
-         sBQkaISYZ38acKn1eXW7qT9GfNg5tEVf524c0=
-Message-ID: <38b2ab8a0806300703j7c0f0567w4cf1730fbe375c00@mail.gmail.com>
-Date: Mon, 30 Jun 2008 16:03:52 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Oliver Neukum" <oliver@neukum.org>
-Subject: Re: usb_get_status(): what a weird implementation !
-Cc: "David Brownell" <david-b@pacbell.net>, linux-usb@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200806301551.42252.oliver@neukum.org>
+	Mon, 30 Jun 2008 10:09:11 -0400
+Received: from lucidpixels.com ([75.144.35.66]:48666 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751405AbYF3OJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 10:09:10 -0400
+Date: Mon, 30 Jun 2008 10:09:09 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: crmotherboard@mailbox.cps.intel.com, Jesse Barnes <jesse.barnes@intel.com>,
+       Dan Williams <dan.j.williams@intel.com>
+cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Intel DG965WH / Case 745-44-22 (slow bios/upgrade) [UPDATE] / Intel,
+ status of HECI support patch for the kernel?
+Message-ID: <alpine.DEB.1.10.0806300958070.13171@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200806261011.00287.oliver@neukum.org>
-	 <200806301346.11267.oliver@neukum.org>
-	 <38b2ab8a0806300541q756e9b6fl445a5ee69d403ce7@mail.gmail.com>
-	 <200806301551.42252.oliver@neukum.org>
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 3:51 PM, Oliver Neukum <oliver@neukum.org> wrote:
->
-> If your buffer is smaller than CACHE_LINE_SIZE it should work.
-> However, this needs input from people who understand DMA in and out.
+Hello,
 
-yeah, that's the reason why it's a hack.
+I have two revisions of the 965WH motherboard, one that supports dual-core 
+only and another quad-core.
 
-Maybe adding a new helper in  the dma API would be better...
+I have an E6300 in the old one and a Q6600 in the new one with 4GiB and 
+8GiB of RAM respectively.
 
-> But how large is 2 * CACHE_LINE_SIZE compared to the kernel stack?
+I would like to report a success and also a bug with BIOS 1738.
 
-CACHE_LINE_SIZE = 32 bytes is common for embedded systems I guess.
-For big system, I dunno.
+The success is this case can be resolved, the Linux/memory/mapping is 
+correct now and I no longer have to use mem="8832M" in my LILO 
+configuration to avoid the bios setting memory that is not cachable.
 
-Kernel stack size is usually  4KiB.
+However, on my new revision 965WH (I did not check with my old motherboard), 
+that supports the quad-core CPU, I went into the BIOS and went to the 
+[Hard Disks] option and when I selected it, the part of the screen that should 
+update showing me the hard disks in the system was blank, I could not escape 
+out of the bios or go to another menu, I had to reboot to get back into the 
+bios.  This is not normal behavior, can someone at Intel attach 1-6 (I use 6) 
+WD Veliciraptor 300GiB drives to this motherboard to replicate the problem if
+it is not obvious in the code/bios how to fix it?  I cannot view the hard disks in that menu, I believe its the 2nd or 3rd menu over when you initially enter 
+the BIOS.  I do not recall if this problem existed prior to 1738.
 
--- 
-Francis
+Also, people have e-mailed me in relation to my posts and I am curious as well
+to follow up, when will the HECI/fan/voltage sensor support (that is a project
+at Intel) be merged into the kernel tree so that lm sensors will eventually be
+able to read these values?
+
+This is from 2007:
+http://softwareblogs.intel.com/2007/04/13/intel-me-interface-heci-now-available/
+
+Their updated project page:
+http://www.openamt.org/
+
+Justin.
