@@ -1,81 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764286AbYF3UNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932281AbYF3UNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764286AbYF3UNN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 16:13:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYF3UM5
+	id S932281AbYF3UNx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 16:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYF3UNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 16:12:57 -0400
-Received: from smtp1.riverbed.com ([206.169.144.12]:64285 "EHLO
-	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751862AbYF3UM4 (ORCPT
+	Mon, 30 Jun 2008 16:13:43 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:65399 "EHLO
+	viefep23-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751690AbYF3UNm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 16:12:56 -0400
-Date: Mon, 30 Jun 2008 13:13:40 -0700
-From: Arthur Jones <ajones@riverbed.com>
-To: Doug Thompson <norsk5@yahoo.com>
-CC: Andi Kleen <andi@firstfloor.org>,
-       "dougthompson@xmission.com" <dougthompson@xmission.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "bluesmoke-devel@lists.sourceforge.net" 
-	<bluesmoke-devel@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/13] EDAC i5100 new intel chipset driver
-Message-ID: <20080630201340.GI10571@ajones-laptop.nbttech.com>
-References: <20080630150346.GF10571@ajones-laptop.nbttech.com> <262167.11235.qm@web50105.mail.re2.yahoo.com>
+	Mon, 30 Jun 2008 16:13:42 -0400
+From: Daniel Ritz <daniel.ritz-ml@swissonline.ch>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] input: Add support for eGalax TouchKit USB touchscreen used on HP tx1305us
+Date: Mon, 30 Jun 2008 22:18:36 +0200
+User-Agent: KMail/1.9.6
+Cc: Alastair Bridgewater <nyef_sbcl@lisphacker.com>,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
+References: <200806281719.16837.daniel.ritz-ml@swissonline.ch> <48668070.3040902@lisphacker.com> <20080630112020.ZZRA012@mailhub.coreip.homeip.net>
+In-Reply-To: <20080630112020.ZZRA012@mailhub.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <262167.11235.qm@web50105.mail.re2.yahoo.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200806302218.37165.daniel.ritz-ml@swissonline.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Doug,  ...
+On Monday 30 June 2008 17:23:35 Dmitry Torokhov wrote:
+> Hi Alastair,
+> 
+> On Sat, Jun 28, 2008 at 02:18:24PM -0400, Alastair Bridgewater wrote:
+> >       bInterfaceClass         3 Human Interface Devices
+> >       bInterfaceSubClass      1 Boot Interface Subclass
+> >       bInterfaceProtocol      2 Mouse
+> 
+> I think we can try to make usbtouchscreen ignore eGalaxes with
+> interface class set to HID?
+> 
 
-On Mon, Jun 30, 2008 at 12:58:59PM -0700, Doug Thompson wrote:
-> 
-> --- Arthur Jones <ajones@riverbed.com> wrote:
-> 
-> > > Arthur, could you add some more text to the driver's output, before the call to the
-> > > core's output function, doing exactly that? Explaining just what you DO know, and what you
-> > don't
-> > > know?
-> >
-> > Everything should be good except the DIMM label.  There
-> > are all kinds of ways this could be wrong (mainboard labelling,
-> > mainboard routing, ...).  I think it might be better just
-> > to leave this blank.
-> >
-> > Are there any EDAC drivers that properly report the DIMM label?
-> 
-> The drivers don't print the information just because of these issues. The labeling action is left
-> to user space via edac-utils.  The label attributes in sysfs are initialized via a bootup daemon.
-> Thereby EDAC (and the driver) provides a mechanism of storing the DIMM Label. (The driver is free
-> to populate label if it so chooses, but that too could be overridden by userspace).
-> 
-> One driver I did for the Sicortex MIPS cluster only had TWO DIMMS, "East" and "West" on a 6 core
-> processor card. The driver labeled those inside itself.
-> 
-> >
-> > How do they get around these issues?
-> 
-> Late binding. Allow the setting of the label by userspace. edac-utils utilizes a file database of
-> motherboards, which must be maintained yes, but it is flexible. An additional userspace program
-> could source the labels via another mechanism.
-> 
-> Lawrence Livermore National Labs has tens of thousands of nodes, with 2, 4 or 8 CPUs per node, and
-> they are the ones who developed the edac-utils userspace daemon and scripts.
-> 
-> http://sourceforge.net/projects/edac-utils/
-> 
-> The model for EDAC modules IS to leave the DIMM label blank for late binding of that information.
+yeah, i was thinking of that too...something like the attached?
+it's completely untested, so no signed-off-by yet...
 
-Thanks, I didn't know about edac-utils, that sounds much better
-than what I was proposing.  I'll go have a look...
+rgds
+-daniel
 
-Given this, I think it would be best to pull out the labels from
-the driver.  I'll see if I can put together a patch for that today
-or tomorrow...
+diff --git a/drivers/input/touchscreen/usbtouchscreen.c b/drivers/input/touchscreen/usbtouchscreen.c
+index 3a0a8ca..c5b18e6 100644
+--- a/drivers/input/touchscreen/usbtouchscreen.c
++++ b/drivers/input/touchscreen/usbtouchscreen.c
+@@ -49,6 +49,7 @@
+ #include <linux/init.h>
+ #include <linux/usb.h>
+ #include <linux/usb/input.h>
++#include <linux/hid.h>
+ 
+ 
+ #define DRIVER_VERSION		"v0.6"
+@@ -101,7 +102,7 @@ struct usbtouch_usb {
+ 
+ /* device types */
+ enum {
+-	DEVTPYE_DUMMY = -1,
++	DEVTYPE_IGNORE = -1,
+ 	DEVTYPE_EGALAX,
+ 	DEVTYPE_PANJIT,
+ 	DEVTYPE_3M,
+@@ -115,8 +116,21 @@ enum {
+ 	DEVTYPE_GOTOP,
+ };
+ 
++#define USB_DEVICE_HID_CLASS(vend, prod) \
++	.match_flags = USB_DEVICE_ID_MATCH_INT_CLASS \
++		| USB_DEVICE_ID_MATCH_DEVICE, \
++	.idVendor = (vend), \
++	.idProduct = (prod), \
++	.bInterfaceClass = USB_INTERFACE_CLASS_HID, \
++	.bInterfaceProtocol = USB_INTERFACE_PROTOCOL_MOUSE
++
+ static struct usb_device_id usbtouch_devices[] = {
+ #ifdef CONFIG_TOUCHSCREEN_USB_EGALAX
++	/* ignore the HID capable devices, handled by usbhid */
++	{USB_DEVICE_HID_CLASS(0x0eef, 0x0001), .driver_info = DEVTYPE_IGNORE},
++	{USB_DEVICE_HID_CLASS(0x0eef, 0x0002), .driver_info = DEVTYPE_IGNORE},
++
++	/* normal device IDs */
+ 	{USB_DEVICE(0x3823, 0x0001), .driver_info = DEVTYPE_EGALAX},
+ 	{USB_DEVICE(0x3823, 0x0002), .driver_info = DEVTYPE_EGALAX},
+ 	{USB_DEVICE(0x0123, 0x0001), .driver_info = DEVTYPE_EGALAX},
+@@ -857,6 +871,10 @@ static int usbtouch_probe(struct usb_interface *intf,
+ 	struct usbtouch_device_info *type;
+ 	int err = -ENOMEM;
+ 
++	/* some devices are ignored */
++	if (id->driver_info == DEVTYPE_IGNORE)
++		return -ENODEV;
++
+ 	interface = intf->cur_altsetting;
+ 	endpoint = &interface->endpoint[0].desc;
+ 
 
-Arthur
