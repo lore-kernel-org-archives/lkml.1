@@ -1,126 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933219AbYF3WNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933613AbYF3WRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933219AbYF3WNm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 18:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761864AbYF3WNd
+	id S933613AbYF3WRg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 18:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763412AbYF3WRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 18:13:33 -0400
-Received: from gate.crashing.org ([63.228.1.57]:59877 "EHLO gate.crashing.org"
+	Mon, 30 Jun 2008 18:17:20 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3623 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760284AbYF3WNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 18:13:32 -0400
-Subject: Re: [RT] MPIC edge sensitive issues with hardirq preemption (was:
-	Re: [PATCH v2 -rt] ide: workaround buggy hardware issues with preemptable
-	hardirqs)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: avorontsov@ru.mvista.com
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Daniel Walker <dwalker@mvista.com>
-In-Reply-To: <20080630190132.GA6492@polina.dev.rtsoft.ru>
-References: <20080623234037.GA6793@polina.dev.rtsoft.ru>
-	 <20080623235141.GB17297@elte.hu>
-	 <20080624000016.GA12547@polina.dev.rtsoft.ru>
-	 <20080625123431.GA25452@polina.dev.rtsoft.ru>
-	 <20080628005436.GA1956@polina.dev.rtsoft.ru>
-	 <1214781974.20711.7.camel@pasglop>
-	 <20080630190132.GA6492@polina.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Tue, 01 Jul 2008 07:59:57 +1000
-Message-Id: <1214863197.20711.57.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	id S1762094AbYF3WRR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 18:17:17 -0400
+Date: Mon, 30 Jun 2008 17:56:51 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: pull request: wireless-next-2.6 2008-06-30
+Message-ID: <20080630215651.GA666@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 	
-> Thanks for the idea. With hardirq preempton, fasteoi path does not replay
-> edge interrupts indeed (at least for MPIC).
-> 
-> Here how I tested this: I have external interrupt connected to the button
-> on this board, thus I registered irq handler which is doing exactly this
-> (irq is edge sensitive):
-> 
-> printk("handled\n"); mdelay(2000);
-> 
-> Without hardirq preemption: pressing button twice prints two messages.
-> With hardirq preemption: pressing button twice prints just one message.
-> 
-> This happens because:
-> - irq has come;
-> - fasteoi handler mask()s it, and wakes up the thread;
+Dave,
 
-Do we eoi first ? We should.
+Here is another slew of updates for 2.6.27.  The bulk of this batch is
+for iwlwifi, with some mac80211 and other bits thrown-in.
 
-> - thread calls irq handler;
-> - another IRQ is coming, but MPIC's IRQ is still masked and MPIC does not
->   see it.
-> - thread unmasks the IRQ, second IRQ got lost.
->
-> But how this could be a bug in the PIC code? IMO this is a bug in the
-> kernel/irq code, since it assumes that fasteoi PIC will retrigger masked
-> edge sources... This isn't true for at least MPIC. To make this work for
-> all fasteoi PICs, we should mask edge sensitive interrupts very very
-> carefully.
+Let me know if there are problems!
 
-Well, retriggering of edge irqs while masked is some new "assumption"
-that I deduced from your explanations of how RT works and indeed is not
-provided by most PICs which will disable edge detection on masked
-interrupts...
+Thanks,
 
-I'll double check if the MPIC/OpenPIC spec says anything about this.
+John
 
-I think it's a bug in the RT code to assume that. It should not mask
-edge interrupts basically. That does mean that it would have to
-differenciate edge and level, and thus can't use the same fasteoi
-handler for both I suppose...
+---
 
-> Also...
-> 
-> I found that I completely messed with MPIC's sense types: my brain was
-> jammed with the idea that MPIC irq type 0 is low level sensitive, but the
-> true thing is that it is rising edge sensitive. (Ah, I know where I got
-> confused, type 0 is active-low for ISA PICs).
-> 
-> So in all my previous emails I was wrong when I was saying "mpic is
-> programmed to low level sensitive". It was programmed for rising edge
-> sensitive. An all my further reasonings were flawed because of this.
-> 
-> Re-programming MPIC to high level sensitive also makes IDE work. But
-> this doesn't mean that IRQ code is correct.
-> 
-> So, in the end, this isn't IDE issue... Much thanks to everyone for
-> ideas and help... instead of one bug, it seems I've found two. :-)
-> None in the IDE code.
-> 
-> 
-> Following patch fixes MPIC edge sensitive interrupts processing with
-> hardirqs preemption.
-> 
-> We're still using handle_fasteoi_irq, but passing control to
-> thread_edge_irq if interrupt is edge sensitive. Otherwise usual fasteoi
-> path handles the IRQ.
-> 
-> Plys, we're masking edge interrupt _and_ marking it as pending and masked
-> only if we're already handling one (exactly as we do with !preemptable
-> hardirqs). And the trick is that thread_edge_irq() will unmask it before
-> executing handle_IRQ_event.
-> 
-> 
-> So here is the patch, how does it look?
-> 
-> (quite weird that I have to pass irq trigger flags to desc->status,
-> but really, there is no other way. it seems safe though, because
-> all irqactions should conform only to one trigger type).
+Individual patches are available here:
 
-I'll let Thomas and Ingo provide feedback here...
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-next-2.6/
+---
 
-Ben.
+The following changes since commit 28f49d8fec19833672a6a813bfde0068fee50bc9:
+  David S. Miller (1):
+        Merge branch 'master' of master.kernel.org:/.../linville/wireless-next-2.6
 
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-next-2.6.git master
+
+Abhijeet Kolekar (2):
+      iwlwifi : Patch adds rfkill subsystem for 3945
+      iwlwifi: Remove unnecessary code
+
+Adel Gadllah (3):
+      iwlwifi: fix rfkill deps and remove input device usage
+      b43/b43legacy: use RFKILL_STATE_UNBLOCKED instead of RFKILL_STATE_ON
+      b43/b43legacy: add RFKILL_STATE_HARD_BLOCKED support
+
+Adrian Bunk (1):
+      build algorithms into the mac80211 module
+
+Assaf Krauss (2):
+      mac80211: add beacon timestamp to beacon template in IBSS
+      iwlwifi: adjust TSF in IBSS
+
+Emmanuel Grumbach (12):
+      mac80211: add last beacon time in scan list
+      iwlwifi: better station table maintenance
+      iwlwifi: add REPLY_TX_POWER_DBM_CMD to get_cmd_string
+      iwlwifi: send ADD_STA before RXON with assoc bit
+      iwlwifi: move RX stats to core, and move temperature to handler
+      iwlwifi: don't send REPLY_REMOVE_ALL_STA upon exit
+      iwlwifi: move RX handlers to iwl-rx.c
+      iwlwifi: remove useless network and duplicate checking
+      iwlwifi: setup compressed BA handler
+      iwlwifi: don't bring up interface if RF-kill avoids radio
+      iwlwifi: blocking mac_start until uCode is complete
+      iwlwifi: clean up HW RF-kill state machine and restarts
+
+Ester Kummer (1):
+      mac80211: removing duplicated parsing of information elements
+
+Gregory Greenman (1):
+      iwlwifi: configure uCode to use open loop tx power algorithm
+
+Johannes Berg (3):
+      mac80211: get rid of function pointers in TX path
+      mac80211: get rid of function pointers in RX path
+      mac80211: rework debug settings and make debugging safer
+
+John W. Linville (1):
+      iwl-rfkill.c: correct 'recieved' typo
+
+Larry.Finger@lwfinger.net (1):
+      p54: Add quality output to iwlist and iwconfig
+
+Mohamed Abbas (1):
+      iwlwifi: keep the STATUS_EXIT_PENDING flag till the end of down flow
+
+Pavel Roskin (3):
+      hostap: don't skip any headers in hostap_80211_header_parse()
+      hostap: add radiotap support in monitor mode
+      hostap: use radiotap headers by default
+
+Rick Farrington (2):
+      iwlwifi: fix incorrect 5GHz rates reported in monitor mode
+      iwlwifi: fix incorrect monitor mode operation
+
+Ron Rindjunsky (6):
+      iwlwifi: use iwl_is_associated when possible
+      iwlwifi: move rx aggregation functions to iwl-rx.c
+      iwlwifi: remove obsolete lq_ready use
+      iwlwifi: unite common settings of HW params
+      iwlwifi: control 11n capabilities through module param
+      iwlwifi: eliminate iwl4965_mac_get_tsf
+
+Stefanik Gábor (1):
+      iwlwifi: enable packet injection for iwl3945
+
+Tomas Winkler (5):
+      mac80211: add spectrum capabilities
+      mac80211: fix warning: unused variable invoke_tx_handlers
+      iwlwifi: Add eeprom version to the version file in sysfs
+      iwlwifi: fix IBSS association flow
+      iwlwifi: fix 4965 uCode load
+
+Yi Zhu (1):
+      mac80211: add MAC80211_VERBOSE_SPECT_MGMT_DEBUG Kconfig option
+
+Zhu Yi (3):
+      iwlwifi: drop skb silently for Tx request in monitor mode
+      iwlwifi: fix iwl4965 temperature callback calibration issue
+      iwl3945: remove RFKILL_STATE_HARD_BLOCKED warnings
+
+ drivers/net/wireless/b43/rfkill.c             |   20 +-
+ drivers/net/wireless/b43legacy/rfkill.c       |   20 +-
+ drivers/net/wireless/hostap/hostap_80211_rx.c |   21 +
+ drivers/net/wireless/hostap/hostap_hw.c       |    1 +
+ drivers/net/wireless/hostap/hostap_ioctl.c    |    5 +-
+ drivers/net/wireless/hostap/hostap_main.c     |   20 +-
+ drivers/net/wireless/hostap/hostap_wlan.h     |   14 +-
+ drivers/net/wireless/iwlwifi/Kconfig          |    1 -
+ drivers/net/wireless/iwlwifi/iwl-3945.c       |    6 +-
+ drivers/net/wireless/iwlwifi/iwl-3945.h       |   25 +
+ drivers/net/wireless/iwlwifi/iwl-4965-rs.c    |   22 +-
+ drivers/net/wireless/iwlwifi/iwl-4965-rs.h    |    8 -
+ drivers/net/wireless/iwlwifi/iwl-4965.c       |  995 +------------------------
+ drivers/net/wireless/iwlwifi/iwl-5000.c       |   27 +-
+ drivers/net/wireless/iwlwifi/iwl-calib.c      |    4 +-
+ drivers/net/wireless/iwlwifi/iwl-calib.h      |    4 +-
+ drivers/net/wireless/iwlwifi/iwl-commands.h   |   12 +-
+ drivers/net/wireless/iwlwifi/iwl-core.c       |   63 ++-
+ drivers/net/wireless/iwlwifi/iwl-core.h       |   17 +-
+ drivers/net/wireless/iwlwifi/iwl-dev.h        |   20 +-
+ drivers/net/wireless/iwlwifi/iwl-hcmd.c       |    1 +
+ drivers/net/wireless/iwlwifi/iwl-rfkill.c     |   41 +-
+ drivers/net/wireless/iwlwifi/iwl-rfkill.h     |    2 -
+ drivers/net/wireless/iwlwifi/iwl-rx.c         |  860 +++++++++++++++++++++
+ drivers/net/wireless/iwlwifi/iwl-sta.c        |  149 +++--
+ drivers/net/wireless/iwlwifi/iwl-sta.h        |    2 +-
+ drivers/net/wireless/iwlwifi/iwl-tx.c         |  143 ++++
+ drivers/net/wireless/iwlwifi/iwl3945-base.c   |  245 +++++--
+ drivers/net/wireless/iwlwifi/iwl4965-base.c   |  442 ++++--------
+ drivers/net/wireless/p54/p54common.c          |    1 +
+ include/net/mac80211.h                        |    5 +
+ net/mac80211/Kconfig                          |  162 +++--
+ net/mac80211/Makefile                         |   18 +-
+ net/mac80211/ieee80211_i.h                    |    6 +
+ net/mac80211/iface.c                          |    6 +-
+ net/mac80211/main.c                           |   35 +-
+ net/mac80211/mesh_pathtbl.c                   |    1 -
+ net/mac80211/mlme.c                           |  426 +++++------
+ net/mac80211/rate.h                           |    4 +-
+ net/mac80211/rc80211_pid_algo.c               |   10 -
+ net/mac80211/rx.c                             |  203 ++----
+ net/mac80211/sta_info.c                       |    2 +
+ net/mac80211/tx.c                             |   77 +-
+ net/mac80211/wep.c                            |   13 +-
+ net/mac80211/wme.c                            |    1 -
+ net/mac80211/wpa.c                            |   28 +-
+ 46 files changed, 2053 insertions(+), 2135 deletions(-)
+
+Omnibus patch available here:
+
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-next-2.6-2008-06-30.patch.bz2
+-- 
+John W. Linville
+linville@tuxdriver.com
