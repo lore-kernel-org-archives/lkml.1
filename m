@@ -1,97 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbYF3OsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbYF3OyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756812AbYF3OsU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 10:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbYF3OsJ
+	id S1755288AbYF3OyV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 10:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYF3OyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 10:48:09 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:45152 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331AbYF3OsI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 10:48:08 -0400
-Message-Id: <4868B841.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Mon, 30 Jun 2008 08:41:05 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <rostedt@goodmis.org>, <peterz@infradead.org>, <npiggin@suse.de>,
-       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH 0/3] sched: newidle and RT wake-buddy fixes
-References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com>
- <20080630131511.GA7506@elte.hu>
-In-Reply-To: <20080630131511.GA7506@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Mon, 30 Jun 2008 10:54:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51625 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751361AbYF3OyG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 10:54:06 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080627205905.GB17415@us.ibm.com>
+References: <20080627205905.GB17415@us.ibm.com> <486357EC.5060205@kernel.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/4] security: filesystem capabilities bugfix2
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Mon, 30 Jun 2008 15:53:24 +0100
+Message-ID: <7852.1214837604@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Mon, Jun 30, 2008 at  9:15 AM, in message <20080630131511.GA7506@elte.hu>,
-Ingo Molnar <mingo@elte.hu> wrote: 
+Serge E. Hallyn <serue@us.ibm.com> wrote:
 
-> * Gregory Haskins <ghaskins@novell.com> wrote:
-> 
->> Hi Ingo,
->>   The following patches apply to linux-tip/sched/devel and enhance the
->> performance of the kernel (specifically in PREEMPT_RT, though they do
->> not regress mainline performance as far as I can tell).  They offer
->> somewhere between 50-100% speedups in netperf performance, depending
->> on the test.
-> 
-> -tip testing found this boot hang:
+> If I understand this right, then LSM_UNSAFE_PTRACE_CAP will only be set
+> if the tracer didn't have CAP_SYS_PTRACE.  So this seems sane to me.
 
-Ok, I dug in a little bit here.  I haven't verified this out yet, but I think the problem is that
-your config is PREEMPT_VOLUNTARY which NOPs the preempt_disable() in schedule() that
-I rely on to allow the lock to be dropped.  (Doh!)
+Erm...  Firstly:
 
-One way I can fix this is to fixup the newidle() code to only play the irq dropping tricks
-ifdef CONFIG_PREEMPT == TRUE.  Does this sound reasonable, or is there a better way
-to address this?
+	int ptrace_attach(struct task_struct *task)
+	{
+	...
+		if (capable(CAP_SYS_PTRACE))
+			task->ptrace |= PT_PTRACE_CAP;
+	...
+	}
 
--Greg
+Then:
 
-> 
->  Linux version 2.6.26-rc8-tip (mingo@dione) (gcc version 4.2.3) #12917 
->  SMP Mon Jun 30 15:06:32 CEST 2008
->  [...]
->  CPU 1/1 -> Node 0
->  CPU: Physical Processor ID: 0
->  CPU: Processor Core ID: 1
->  CPU1: AMD Athlon(tm) 64 X2 Dual Core Processor 3800+ stepping 02
->  Brought up 2 CPUs
->  Total of 2 processors activated (8041.15 BogoMIPS).
->  [ hard hang ]
-> 
-> with this config:
-> 
->   http://redhat.com/~mingo/misc/config-Mon_Jun_30_14_54_19_CEST_2008.bad
-> 
-> full bootlog:
-> 
->   http://redhat.com/~mingo/misc/hang-Mon_Jun_30_14_54_19_CEST_2008.bad
-> 
-> it should continue with this bootup sequence:
-> 
->   calling  net_ns_init+0x0/0x1a0
->   net_namespace: 376 bytes
->   initcall net_ns_init+0x0/0x1a0 returned 0 after 0 msecs
->   calling  init_smp_flush+0x0/0x60
-> 
-> i've bisected it down to:
-> 
-> --------------
-> | commit cc8160c56843201891766660e3816d2e546c1b17
-> | Author: Gregory Haskins <ghaskins@novell.com>
-> | Date:   Fri Jun 27 14:29:50 2008 -0600
-> |
-> |     sched: enable interrupts and drop rq-lock during newidle balancing
-> --------------
-> 
-> so i've reverted that change for now.
-> 
-> 	Ingo
+	static int unsafe_exec(struct task_struct *p)
+	{
+		int unsafe = 0;
+		if (p->ptrace & PT_PTRACED) {
+			if (p->ptrace & PT_PTRACE_CAP)
+				unsafe |= LSM_UNSAFE_PTRACE_CAP;
+			else
+				unsafe |= LSM_UNSAFE_PTRACE;
+		}
+		if (atomic_read(&p->fs->count) > 1 ||
+		    atomic_read(&p->files->count) > 1 ||
+		    atomic_read(&p->sighand->count) > 1)
+			unsafe |= LSM_UNSAFE_SHARE;
 
+		return unsafe;
+	}
 
+So LSM_UNSAFE_PTRACE_CAP will only be set if the tracer _does_ have
+CAP_SYS_PTRACE.  That will be irrelevant, however, if any of fs, files or
+sighand are shared.
+
+And finally:
+
+	void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
+	{
+	...
+		if (bprm->e_uid != current->uid ||
+		    bprm->e_gid != current->gid ||
+		    !cap_issubset (new_permitted, current->cap_permitted)) {
+	...
+			if (unsafe & ~LSM_UNSAFE_PTRACE_CAP) {
+				if (!capable(CAP_SETUID)) {
+					bprm->e_uid = current->uid;
+					bprm->e_gid = current->gid;
+				}
+				if (!capable (CAP_SETPCAP)) {
+					new_permitted = cap_intersect(
+						new_permitted,
+						current->cap_permitted);
+				}
+			}
+	...
+	}
+
+So if it's a 'set-privilege' binary, then if the tracer _doesn't_ have
+CAP_SYS_PTRACE, we look at downgrading the privileges of the process.
+
+Without Andrew's patch, we only downgrade the capabilities if we don't have
+CAP_SETPCAP (and aren't sharing inheritables).
+
+With Andrew's patch, capabilities are downgraded regardless of whether we have
+CAP_SETPCAP or not.  I guess that means that if you're tracing a binary whose
+filecaps say that it wants CAP_SETPCAP, then it retains CAP_SETPCAP.
+
+I wonder if the tracing task should be examined here, and any capability the
+tracer isn't permitted should be denied the process doing the exec.
+
+Anyway, in my commoncap.c prettification patch, I've dressed the limiter
+function up as follows:
+
+	/*
+	 * Determine whether a exec'ing process's new permitted capabilities
+	 * should be limited to just what it already has.
+	 *
+	 * This prevents processes that are being ptraced from gaining access
+	 * to CAP_SETPCAP, unless the process they're tracing already has it,
+	 * and the binary they're executing has filecaps that elevate it.
+	 *
+	 *  Returns 1 if they should be limited, 0 if they are not.
+	 */
+	static inline int cap_limit_ptraced_target(void)
+	{
+	#ifndef CONFIG_SECURITY_FILE_CAPABILITIES
+		if (capable(CAP_SETPCAP))
+			return 0;
+	#endif
+		return 1;
+	}
+
+David
