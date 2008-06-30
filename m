@@ -1,425 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760893AbYF3Poa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760223AbYF3PtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760893AbYF3Poa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 11:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbYF3PoW
+	id S1760223AbYF3PtR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 11:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbYF3PtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 11:44:22 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:60710 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751515AbYF3PoV (ORCPT
+	Mon, 30 Jun 2008 11:49:01 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:39607 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751860AbYF3PtA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 11:44:21 -0400
-Date: Mon, 30 Jun 2008 16:43:48 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: JosephChan@via.com.tw
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, geert@linux-m68k.org
-Subject: Re: [PATCH 12/13] viafb: via_i2c.c, via_i2c.h, viamode.c, viamode.c
-Message-ID: <20080630154348.GF21835@fluff.org.uk>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E78AA@exchtp03.taipei.via.com.tw>
-MIME-Version: 1.0
+	Mon, 30 Jun 2008 11:49:00 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsYFAK2XaEhMQWVt/2dsb2JhbACBWq8C
+Date: Mon, 30 Jun 2008 11:43:54 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       "'Alexey Dobriyan'" <adobriyan@gmail.com>,
+       "'Peter Zijlstra'" <peterz@infradead.org>,
+       "'Steven Rostedt'" <rostedt@goodmis.org>,
+       "'Frank Ch. Eigler'" <fche@redhat.com>, "'Ingo Molnar'" <mingo@elte.hu>,
+       "'LKML'" <linux-kernel@vger.kernel.org>,
+       "'systemtap-ml'" <systemtap@sources.redhat.com>,
+       "'Hideo AOKI'" <haoki@redhat.com>
+Subject: Re: [RFC PATCH] Kernel Tracepoints
+Message-ID: <20080630154354.GF17388@Krystal>
+References: <007601c8d5ca$18fa0e10$4aee2a30$@css.fujitsu.com> <48611B03.1000003@redhat.com> <20080625011951.D83E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48612879.5090809@redhat.com> <20080625235214.GA14249@Krystal> <486403F0.4020801@redhat.com> <20080627131442.GA13751@Krystal> <48656D9A.8000602@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E78AA@exchtp03.taipei.via.com.tw>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <48656D9A.8000602@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:41:40 up 25 days, 20:22,  5 users,  load average: 3.39, 1.52,
+	1.25
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 03:51:19PM +0800, JosephChan@via.com.tw wrote:
-> via_i2c.c, via_i2c.h: Implement i2c specification.
-> viamode.c, viamode.c: all support modes information.
+* Masami Hiramatsu (mhiramat@redhat.com) wrote:
 > 
 > 
-> Signed-off-by: Joseph Chan <josephchan@via.com.tw>
+> Mathieu Desnoyers wrote:
+> > * Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> >> Hi Mathieu,
+> >>
+> >> Thank you for making this so soon!
+> >>
+> > 
+> > Hi Masami,
+> > 
+> > Thanks for the comments, I will rework the patch accordingly.
+> > 
+> > Also, one thing I thought about yesterday which I dislike is that if we
+> > have two modules declaring the same tracepoint in different headers with
+> > different prototypes, each declaration will be valid but the
+> > registration will try to connect a probe expecting wrong parameters to
+> > the other tracepoint.
+> > 
+> > It would be the case if someone does :
+> > 
+> > drivers/somedrivera/mydriver1-trace.h
+> > 
+> > DECLARE_TRACE(really_generic_name, TPPTOTO(void), TPARGS()));
+> > 
+> > 
+> > drivers/somedriverb/mydriver2-trace.h
+> > 
+> > DECLARE_TRACE(really_generic_name, TPPTOTO(struct somestruct *s), TPARGS(s)));
+> > 
+> > Do you think it's worth it to append the prototype string to the
+> > tracepoint name ? I think it should fix the problem.
 > 
-> diff -Nur a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
-> --- a/drivers/video/via/via_i2c.c	1970-01-01 08:00:00.000000000 +0800
-> +++ b/drivers/video/via/via_i2c.c	2008-06-30 08:53:33.000000000 +0800
-> @@ -0,0 +1,377 @@
-> +/*
-> + * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-> + * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-> +
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public
-> + * License as published by the Free Software Foundation;
-> + * either version 2, or (at your option) any later version.
-> +
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-> + * the implied warranty of MERCHANTABILITY or FITNESS FOR
-> + * A PARTICULAR PURPOSE.See the GNU General Public License
-> + * for more details.
-> +
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc.,
-> + * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-> + */
-> +
-> +#include "global.h"
-> +
-> +/* i2c delay for microsecond*/
-> +void viafb_delays(int count)
-> +{
-> +	u8 data;
-> +	while (count--) {
-> +		/* delay 1 us */
-> +		data = inb(DELAYPORT);
-> +		data = inb(DELAYPORT);
-> +		data = inb(DELAYPORT);
-> +		data = inb(DELAYPORT);
-> +		data = inb(DELAYPORT);
-> +	}
-> +
-> +}
-> +
-> +/*  Write I2C BUS SDA And SCL*/
-> +static void i2cWriteSdaScl(u8 sda, u8 scl)
-> +{
-> +	u8 data;
-> +	u16 port_addr;
-> +
-> +	if (viaparinfo->chip_info->chip_on_slot == PORT_ON_AMR) {
-> +
-> +		data = ((scl << 1) | sda) << 4;
-> +		/* enable I2C port */
-> +		data = data | BIT0;
-> +
-> +		port_addr = I2CPORT;
-> +		/* Write Register Value */
-> +		viafb_write_reg(I2CPORTINDEX, port_addr, data);
-> +	} else {
-> +		if (viaparinfo->chip_info->chip_on_slot == PORT_ON_AGP) {
-> +			data = ((scl << 1) | sda) << 4;
-> +			/* enable GPIO write port */
-> +			data = data | (BIT6 + BIT7);
-> +			port_addr = GPIOPORT;
-> +			/* Write Register Value */
-> +			viafb_write_reg(GPIOPORTINDEX, port_addr, data);
-> +		}
-> +	}
-> +}
-> +
-> +static void i2cReadSdaScl(u8 *pSda, u8 *pScl)
-> +{
-> +	u8 data;
-> +	u16 port_addr;
-> +
-> +	if (viaparinfo->chip_info->chip_on_slot == PORT_ON_AMR) {
-> +		port_addr = I2CPORT;
-> +		data = viafb_read_reg(port_addr, I2CPORTINDEX);
-> +		*pSda = (data >> 2) & BIT0;	/* get sda */
-> +		*pScl = (data >> 3) & BIT0;	/* get scl */
-> +	} else {
-> +		if (viaparinfo->chip_info->chip_on_slot == PORT_ON_AGP) {
-> +			port_addr = GPIOPORT;
-> +			data = viafb_read_reg(port_addr, GPIOPORTINDEX);
-> +			*pSda = (data >> 2) & BIT0;	/* get sda */
-> +			*pScl = (data >> 3) & BIT0;	/* get scl */
-> +		}
-> +	}
-> +}
-> +
-> +static void i2cWriteSdaSclDelay(u8 sda, u8 scl)
-> +{
-> +	i2cWriteSdaScl(sda, scl);
-> +	viafb_delays(16);		/* Wait 16 uS */
-> +}
-> +
-> +static void i2cStartSignal(void)
-> +{
-> +	i2cWriteSdaSclDelay(1, 1);
-> +	i2cWriteSdaSclDelay(0, 1);
-> +	i2cWriteSdaSclDelay(0, 0);
-> +}
-> +
-> +static void i2cStopSignal(void)
-> +{
-> +	u8 data;
-> +	u16 port_addr;
-> +
-> +	i2cWriteSdaSclDelay(0, 0);
-> +	i2cWriteSdaSclDelay(0, 1);
-> +	i2cWriteSdaSclDelay(1, 1);
-> +
-> +	if (viaparinfo->chip_info->chip_on_slot == PORT_ON_AGP) {
-> +		/* disable GPIO write port */
-> +		data = 0x3c;
-> +		port_addr = GPIOPORT;
-> +		/* Write Register Value */
-> +		viafb_write_reg(GPIOPORTINDEX, port_addr, data);
-> +	}
-> +	viafb_delays(2);
-> +
-> +}
-> +
-> +static void disableSdaGPIO(void)
-> +{
-> +	u8 data;
-> +	u16 port_addr;
-> +
-> +	if (viaparinfo->chip_info->chip_on_slot == PORT_ON_AGP) {
-> +		port_addr = GPIOPORT;
-> +		data = viafb_read_reg(port_addr, GPIOPORTINDEX);
-> +		/* disable GPIO write port */
-> +		data = data & (~BIT6);
-> +		/* Write Register Value */
-> +		viafb_write_reg(GPIOPORTINDEX, port_addr, data);
-> +	}
-> +}
-> +
-> +static void writeSclGPIO(u8 scl)
-> +{
-> +	u8 data;
-> +	u16 port_addr;
-> +
-> +	if (viaparinfo->chip_info->chip_on_slot == PORT_ON_AGP) {
-> +		port_addr = GPIOPORT;
-> +		data = viafb_read_reg(port_addr, GPIOPORTINDEX);
-> +		data = data & (~BIT5);
-> +		/* write data to clock */
-> +		data = (data | (scl << 5)) & (~BIT6);
-> +		/* Write Register Value */
-> +		viafb_write_reg(GPIOPORTINDEX, port_addr, data);
-> +	}
-> +}
-> +
-> +static int i2CWaitForSlave(void)
-> +{
-> +	int time_out = 20000;
-> +	u8 sda, scl;
-> +
-> +	while (time_out--) {
-> +		i2cReadSdaScl(&sda, &scl);
-> +		if (scl)
-> +			return OK;	/* Successful stall */
-> +		viafb_delays(1);	/* wait 1 uS */
-> +	}
-> +	return FAIL;		/* Slave fail */
-> +}
-> +
-> +static int i2cOutByte(u8 data)
-> +{
-> +	u8 sda, scl;
-> +	u8 out_byte;
-> +	int bit_count = 8;
-> +	int status;
-> +
-> +	out_byte = data;
-> +	while (bit_count--) {
-> +		sda = (out_byte >> 7) & 1;	/* Load MSB */
-> +		out_byte = out_byte << 1;	/* next bit. */
-> +		i2cWriteSdaSclDelay(sda, 0);
-> +		i2cWriteSdaSclDelay(sda, 1);
-> +
-> +		status = i2CWaitForSlave();
-> +		if (status == FAIL)
-> +			return status;
-> +		i2cWriteSdaSclDelay(sda, 0);
-> +
-> +	}
-> +
-> +	if ((viaparinfo->chip_info->chip_on_slot == PORT_ON_AGP)) {
-> +
-> +		writeSclGPIO(0);
-> +		disableSdaGPIO();
-> +		viafb_delays(2);
-> +		writeSclGPIO(1);
-> +		viafb_delays(2);
-> +		i2cReadSdaScl(&sda, &scl);
-> +		writeSclGPIO(0);
-> +		viafb_delays(2);
-> +		if (sda == 0)
-> +			status = OK;
-> +		else
-> +			status = FAIL;
-> +	} else {
-> +		i2cWriteSdaSclDelay(1, 0);
-> +		i2cWriteSdaSclDelay(1, 1);
-> +		status = i2CWaitForSlave();
-> +		if (status == FAIL)
-> +			return status;
-> +
-> +		i2cReadSdaScl(&sda, &scl);
-> +		if (sda == 0) {
-> +			i2cWriteSdaSclDelay(1, 0);
-> +			status = OK;
-> +		} else {
-> +
-> +			i2cWriteSdaSclDelay(1, 0);
-> +			status = FAIL;
-> +		}
-> +	}
-> +	return status;
-> +}
-> +
-> +static int i2cInputByte(u8 *pInByte, int ack)
-> +{
-> +
-> +	int bit_count = 8;
-> +	u8 sda, scl;
-> +	u8 data = 0;
-> +	int status;
-> +
-> +	disableSdaGPIO();
-> +
-> +	while (bit_count--) {
-> +		if ((viaparinfo->chip_info->chip_on_slot == PORT_ON_AGP)) {
-> +
-> +			writeSclGPIO(1);
-> +			viafb_delays(2);
-> +			status = i2CWaitForSlave();
-> +			if (status == FAIL)
-> +				return FAIL;
-> +			i2cReadSdaScl(&sda, &scl);
-> +			data = data << 1;
-> +			data |= sda;
-> +			writeSclGPIO(0);
-> +			viafb_delays(2);
-> +
-> +		} else {
-> +			i2cWriteSdaSclDelay(1, 1);
-> +			status = i2CWaitForSlave();
-> +			if (status == FAIL)
-> +				return FAIL;
-> +			i2cReadSdaScl(&sda, &scl);
-> +			data = data << 1;
-> +			data |= sda;
-> +			i2cWriteSdaSclDelay(1, 0);
-> +		}
-> +	}
-> +	*pInByte = data;
-> +
-> +	if (ack) {
-> +		i2cWriteSdaSclDelay(0, 0);
-> +		i2cWriteSdaSclDelay(0, 1);
-> +		status = i2CWaitForSlave();
-> +		if (status == FAIL)
-> +			return status;
-> +		i2cWriteSdaSclDelay(0, 0);
-> +	} else {
-> +		i2cWriteSdaSclDelay(1, 0);
-> +		i2cWriteSdaSclDelay(1, 1);
-> +		status = i2CWaitForSlave();
-> +		if (status == FAIL)
-> +			return status;
-> +	}
-> +	i2cWriteSdaSclDelay(1, 0);
-> +
-> +	return OK;
-> +}
-> +
-> +int viafb_i2cReadByte(u8 slave_addr, u8 index, u8 *pData)
-> +{
-> +
-> +	int status;
-> +
-> +	i2cStartSignal();
-> +
-> +	status = i2cOutByte(slave_addr);
-> +	if (status == FAIL) {
-> +		i2cStopSignal();
-> +		return FAIL;
-> +	}
-> +	status = i2cOutByte(index);
-> +
-> +	if (status == FAIL) {
-> +		i2cStopSignal();
-> +		return FAIL;
-> +	}
-> +
-> +	i2cStartSignal();
-> +	status = i2cOutByte(slave_addr | BIT0);
-> +	if (status == FAIL) {
-> +		i2cStopSignal();
-> +		return FAIL;
-> +	}
-> +	status = i2cInputByte(pData, 0);
-> +	if (status == FAIL) {
-> +		i2cStopSignal();
-> +		return FAIL;
-> +	}
-> +
-> +	i2cStopSignal();
-> +	return OK;
-> +}
-> +
-> +int viafb_i2cWriteByte(u8 slave_addr, u8 index, u8 data)
-> +{
-> +
-> +	int status;
-> +
-> +	i2cStartSignal();
-> +	status = i2cOutByte(slave_addr);
-> +	if (status == FAIL) {
-> +		i2cStopSignal();
-> +		return FAIL;
-> +	}
-> +	status = i2cOutByte(index);
-> +	if (status == FAIL) {
-> +		i2cStopSignal();
-> +		return FAIL;
-> +	}
-> +	status = i2cOutByte(data);
-> +	if (status == FAIL) {
-> +		i2cStopSignal();
-> +		return FAIL;
-> +	}
-> +	i2cStopSignal();
-> +	return OK;
-> +}
-> +
-> +int viafb_i2cReadBytes(u8 slave_addr, u8 index, u8 *buff, int buff_len)
-> +{
-> +
-> +	int status, i;
-> +
-> +	i2cStartSignal();
-> +
-> +	status = i2cOutByte(slave_addr);
-> +	if (status == FAIL) {
-> +		i2cStopSignal();
-> +		return FAIL;
-> +	}
-> +
-> +	status = i2cOutByte(index);
-> +	if (status == FAIL) {
-> +		i2cStopSignal();
-> +		return FAIL;
-> +	}
-> +
-> +	i2cStartSignal();
-> +	status = i2cOutByte(slave_addr | BIT0);
-> +	if (status == FAIL) {
-> +		i2cStopSignal();
-> +		return FAIL;
-> +	}
-> +
-> +	for (i = 0; i < buff_len; i++) {
-> +		if (buff_len == 1)
-> +			status = i2cInputByte(buff, 0);	/* send NACK */
-> +		else if (i < buff_len - 1)
-> +			status = i2cInputByte(buff, 1);	/* send ACK */
-> +		else
-> +			status = i2cInputByte(buff, 0);	/* send NACK */
-> +		if (status == FAIL) {
-> +			i2cStopSignal();
-> +			return (FAIL);
-> +		}
-> +		buff++;
-> +	}
-> +
-> +	i2cStopSignal();
-> +	return OK;
-> +}
+> Hmm, I think we'd better send a fix patch to them in that case.
+> (I hope we can find that kind of conflicts soon)
+> I think we can make an external tool which detect those conflicts.
 
-This looks like an attempt at re-doing the already extant i2c gpio
-algorithm. Either export via gpiolib and use the i2c-gpio adapter or
-use the i2c bit-banging algorithm.
+Hrm, ideally, we could output this information in a file which looks
+like the Marker file generated by depmod, and automatically check for
+duplicate tracepoints with different prototypes. That should also deal
+with modules built outside of the kernel tree.
+
+> Anyway, signature based checking idea is good to me. I think ":" is
+> better delimiter.
+
+Yes, changing it for :.
+
+If we append the prototype to the tracepoint name, then at least we can
+later add the consistency check in depmod.
+
+Mathieu
+
+> 
+> 
+> Thank you,
+> 
+> 
+> -- 
+> Masami Hiramatsu
+> 
+> Software Engineer
+> Hitachi Computer Products (America) Inc.
+> Software Solutions Division
+> 
+> e-mail: mhiramat@redhat.com
+> 
 
 -- 
-Ben
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
