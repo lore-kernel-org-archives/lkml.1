@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbYF3GeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758611AbYF3GfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758233AbYF3GeL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 02:34:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbYF3Gd5
+	id S1758611AbYF3GfA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 02:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbYF3Gex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 02:33:57 -0400
-Received: from mailtp.via.com.tw ([61.66.243.2]:52710 "EHLO mailtp.via.com.tw"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752408AbYF3Gd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 02:33:56 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 30 Jun 2008 02:34:53 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:20356 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752408AbYF3Gew (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 02:34:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=iG1pGd1rPb3YmEYXyaKAiVOInBl/BiLugm92Tqs1FKXcZ+oATdEpQaHU+1D0ec/H6X
+         IMYDc+/8T/WPZ5Rs34hhkaAmMAmMgorDXaTr4FLOfcrRs3KVS6qr7gZuTu+JuiYRbNar
+         1lJ+8PpIGaSUKGpgNqzRIQYLpg0ufdBccBPXQ=
+Message-ID: <ca0148c30806292334ka5a1f24sa9f880008033589d@mail.gmail.com>
+Date: Mon, 30 Jun 2008 09:34:50 +0300
+From: "Matti Linnanvuori" <mattilinn@gmail.com>
+To: "Jan Engelhardt" <jengelh@medozas.de>
+Subject: Re: [patch] x86: add compilation checks to pci_unmap_ macros
+Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LNX.1.10.0806291450170.6280@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: [PATCH 2/13] viafb: Makefile, Kconfig
-Date: Mon, 30 Jun 2008 14:33:54 +0800
-Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E7716@exchtp03.taipei.via.com.tw>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2/13] viafb: Makefile, Kconfig
-Thread-Index: Acjae0SEUHEIcRkrTfeWKJTHxhRRNQ==
-From: <JosephChan@via.com.tw>
-To: <JosephChan@via.com.tw>, <linux-fbdev-devel@lists.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>
-Cc: <akpm@linux-foundation.org>, <geert@linux-m68k.org>
-X-OriginalArrivalTime: 30 Jun 2008 06:33:55.0060 (UTC) FILETIME=[44D37340:01C8DA7B]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <ca0148c30806282322u51cf8ecct700f442466b58ee4@mail.gmail.com>
+	 <alpine.LNX.1.10.0806291450170.6280@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m5U6YEfq018026
 
-Modified drivers/video/Makefile and drivers/video/Kconfig files of 2.6.26-rc8 kernel.
+2008/6/29 Jan Engelhardt <jengelh@medozas.de>:
+>
+> On Sunday 2008-06-29 08:22, Matti Linnanvuori wrote:
+>>+#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)     dma_addr_t ADDR_NAME[0];
+>>+#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)       unsigned LEN_NAME[0];
+>>+#define pci_unmap_addr(PTR, ADDR_NAME)        sizeof((PTR)->ADDR_NAME)
+>>+#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL) \
+>>+      do { break; } while (pci_unmap_addr(PTR, ADDR_NAME))
+>
+> Mh. If addr_name happens to be non-0 for some reason (like, a typo),
+> then this just introduces a lockup.
+> (Better to have a no-op with a typo than a sudden lockup.
 
-Signed-off-by: Joseph Chan <josephchan@via.com.tw>
+No, it does not lock up because there is a break statement in the do block.
 
-diff -Nur a/drivers/video/Kconfig b/drivers/video/Kconfig
---- a/drivers/video/Kconfig	2008-06-30 09:54:30.000000000 +0800
-+++ b/drivers/video/Kconfig	2008-06-30 09:55:20.000000000 +0800
-@@ -1498,6 +1498,23 @@
- 	  (315/H/PRO, 55x, 650, 651, 740, 330, 661, 741, 760, 761) as well
- 	  as XGI V3XT, V5, V8 and Z7.
- 
-+config FB_VIA
-+       tristate "VIA UniChrome (Pro) and Chrome9 display support"
-+       depends on FB && PCI
-+       select FB_CFB_FILLRECT
-+       select FB_CFB_COPYAREA
-+       select FB_CFB_IMAGEBLIT
-+       select FB_SOFT_CURSOR
-+       help
-+	  This is the frame buffer device driver for Graphics chips of VIA 
-+	  UniChrome (Pro) Family (CLE266,PM800/CN400,P4M800CE/P4M800Pro/
-+	  CN700/VN800,CX700/VX700,P4M890) and Chrome9 Family (K8M890,CN896
-+ 	  /P4M900,VX800)
-+	  Say Y if you have a VIA UniChrome graphics board.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called viafb.
-+
- config FB_NEOMAGIC
- 	tristate "NeoMagic display support"
- 	depends on FB && PCI
-diff -Nur a/drivers/video/Makefile b/drivers/video/Makefile
---- a/drivers/video/Makefile	2008-06-30 09:53:16.000000000 +0800
-+++ b/drivers/video/Makefile	2008-06-30 09:55:24.000000000 +0800
-@@ -43,6 +43,7 @@
- obj-$(CONFIG_FB_ATY128)		  += aty/ macmodes.o
- obj-$(CONFIG_FB_RADEON)		  += aty/
- obj-$(CONFIG_FB_SIS)		  += sis/
-+obj-$(CONFIG_FB_VIA)		  += via/
- obj-$(CONFIG_FB_KYRO)             += kyro/
- obj-$(CONFIG_FB_SAVAGE)		  += savage/
- obj-$(CONFIG_FB_GEODE)		  += geode/
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+> Given
+> that these are no-ops means they are deprecated, is not it the case?)
+
+I don't think they are deprecated. There is no text about the
+deprecation in kernel documents.
