@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761615AbYF3NJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761921AbYF3NJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761615AbYF3NJF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 09:09:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756940AbYF3NIr
+	id S1761921AbYF3NJc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 09:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbYF3NJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 09:08:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49319 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756337AbYF3NIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 09:08:46 -0400
-Date: Mon, 30 Jun 2008 15:08:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 3/3] softlockup: fix watchdog task wakeup frequency
-Message-ID: <20080630130837.GA332@elte.hu>
-References: <20080627000445.346130358@saeurebad.de> <20080627000805.504878592@saeurebad.de> <20080627120350.GB30872@elte.hu> <87prq3xdjv.fsf@skyscraper.fehenstaub.lan> <20080627124329.GA14576@elte.hu> <87d4m3xbzq.fsf@skyscraper.fehenstaub.lan> <87od5ms7yh.fsf@skyscraper.fehenstaub.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87od5ms7yh.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 30 Jun 2008 09:09:12 -0400
+Received: from vsmtp03.dti.ne.jp ([202.216.231.138]:64854 "EHLO
+	vsmtp03.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756940AbYF3NJL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 09:09:11 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: [PATCH] fsstack: fsstack_copy_inode_size locking 
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       mhalcrow@us.ibm.com, hch@infradead.org, viro@zeniv.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0806301238080.6538@blonde.site>
+References: <Pine.LNX.4.64.0806290101160.20280@blonde.site> <8725.1214800317@jrobl> <Pine.LNX.4.64.0806301238080.6538@blonde.site>
+Date: Mon, 30 Jun 2008 22:08:12 +0900
+Message-ID: <7439.1214831292@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Johannes Weiner <hannes@saeurebad.de> wrote:
+Hugh Dickins:
+> It certainly shouldn't be.  The problem would have come from two
+> racing i_size_write(dst)s, one of the unlocked increments getting
+> lost, leaving seqcount odd, so the next i_size_read(dst) would
+> spin forever waiting for it to go even.
 
-> > +	/*
-> > +	 * Wake up the high-prio watchdog task twice per
-> > +	 * threshold timespan.
-> > +	 */
-> > +	if (now > touch_timestamp + softlockup_thresh/2)
-> >  		wake_up_process(per_cpu(watchdog_task, this_cpu));
-> 
-> That defeats patch 1/3 and I think it can be dropped (#1).
+I see.
+The unlocked increment can cause the next i_size_read() hang.
 
-applied this updated patch to tip/core/softlockup. #3 didnt apply - 
-could you send a delta patch against tip/core/softlockup please? You can 
-pick it up via:
 
-  http://people.redhat.com/mingo/tip.git/README
+> I'm not sure what you mean by that.  i_size_read() doesn't fail,
+> but it may loop; and if the seqcount has got out of step from
+> concurrent unlocked i_size_write()s, then it'll spin forever.
 
-do:
+What I meant by "fail" was "loop" actually.
+And I understand that you didn't writing directly (bypassing unionfs)
+too.
 
-  git-checkout -b core/softlockup tip/core/softlockup
 
-to check it out.
-
-	Ingo
+Junjiro Okajima
