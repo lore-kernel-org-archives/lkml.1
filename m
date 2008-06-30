@@ -1,64 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762333AbYF3QNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758702AbYF3QOB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762333AbYF3QNn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 12:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbYF3QNf
+	id S1758702AbYF3QOB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 12:14:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758717AbYF3QNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 12:13:35 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:55290 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751650AbYF3QNf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 12:13:35 -0400
-Subject: Re: [Bug #10861] 2.6.26-rc4-git2 - long pause during boot
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: chris2553@googlemail.com
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Hannes Reinecke <hare@suse.de>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>
-In-Reply-To: <200806301601.59199.chris2553@googlemail.com>
-References: <q5WW6DLC10O.A.dxC.R69ZIB@albercik>
-	 <X8mbwW6K81I.A.BRF.E89ZIB@albercik>
-	 <200806301601.59199.chris2553@googlemail.com>
-Content-Type: text/plain
-Date: Mon, 30 Jun 2008 18:13:45 +0200
-Message-Id: <1214842425.24597.4.camel@linux.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/ZkTQwix3QdquiJCI4nvIXXFwWVapVfAGOfP5
- KfjC8O3T6as4vAC0f8gkn1oQwV54hncPRGN6PBXVBeFx+tEaOI
- hu4mpOJ00rquIVL/0NknN+85QmSRupZ
+	Mon, 30 Jun 2008 12:13:50 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:56233 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752717AbYF3QNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 12:13:49 -0400
+From: Eric Munson <ebmunson@us.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Eric Munson <ebmunson@us.ibm.com>
+Subject: [PATCH V3] Keep 3 high personality bytes across exec
+Date: Mon, 30 Jun 2008 09:12:13 -0700
+Message-Id: <1214842333-21428-1-git-send-email-ebmunson@us.ibm.com>
+X-Mailer: git-send-email 1.5.6.1
+In-Reply-To: <20080628000813.GA19960@us.ibm.com>
+References: <20080628000813.GA19960@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-30 at 16:01 +0000, Chris Clayton wrote:
-> On Sunday 29 June 2008, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.25.  Please verify if it still should be listed.
-> >
-> 
-> As far as I'm concerned, the entry can be closed..
+Currently when a 32 bit process is exec'd on a powerpc 64 bit host the value
+in the top three bytes of the personality is clobbered.  This patch adds a
+check in the SET_PERSONALITY macro that will carry all the values in the top
+three bytes across the exec.
 
-I think so too.
+These three bytes currently carry flags to disable address randomisation,
+limit the address space, force zeroing of an mmapped page, etc.  Should an
+application set any of these bits they will be maintained and honoured on
+homogeneous environment but discarded and ignored on a heterogeneous
+environment.  So if an application requires all mmapped pages to be initialised
+to zero and a wrapper is used to setup the personality and exec the target,
+these flags will remain set on an all 32 or all 64 bit envrionment, but they
+will be lost in the exec on a mixed 32/64 bit environment.  Losing these bits
+means that the same application would behave differently in different
+environments.  Tested on a POWER5+ machine with 64bit kernel and a mixed
+64/32 bit user space.
 
-> As I've said before, the 
-> patch did have a bad effect on existing user space, but, as Kay pointed out, 
-> there's no getting away from the fact that the rule in Slackware rules 
-> distributed with udev is a bad rule. the Slackware distribution does not 
-> include that rule in its udev rules.
-> 
-> I assume Kay will fix it in the udev package.
+Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
+---
+V3
+Based on 2.6.26-rc8
 
-It was fixed in the udev package on 11 Mar 2007. But since a while, the
-whole rule is deleted, as it is not needed for newer kernels, which have
-proper SCSI sysfs timing.
+Changes from V2:
+Use ~PER_MASK instead of PER_INHERIT
+Remove PER_INHERIT
+Rebase to 2.6.26-rc8
 
-Thanks,
-Kay
+Changes from V1:
+Updated changelog with a better description of why this change is useful
+
+ include/asm-powerpc/elf.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/include/asm-powerpc/elf.h b/include/asm-powerpc/elf.h
+index 9080d85..5eee73e 100644
+--- a/include/asm-powerpc/elf.h
++++ b/include/asm-powerpc/elf.h
+@@ -257,7 +257,8 @@ do {								\
+ 	else							\
+ 		clear_thread_flag(TIF_ABI_PENDING);		\
+ 	if (personality(current->personality) != PER_LINUX32)	\
+-		set_personality(PER_LINUX);			\
++		set_personality(PER_LINUX |			\
++			(current->personality & (~PER_MASK)));	\
+ } while (0)
+ /*
+  * An executable for which elf_read_implies_exec() returns TRUE will
+-- 
+1.5.6.1
 
