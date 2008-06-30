@@ -1,101 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764044AbYF3T1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763921AbYF3TaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764044AbYF3T1V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 15:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763935AbYF3T1A
+	id S1763921AbYF3TaI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 15:30:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYF3T34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 15:27:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40041 "EHLO mx3.mail.elte.hu"
+	Mon, 30 Jun 2008 15:29:56 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:33714 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763796AbYF3T05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 15:26:57 -0400
-Date: Mon, 30 Jun 2008 21:26:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Andy Whitcroft <apw@shadowen.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 30
-Message-ID: <20080630192610.GA6584@elte.hu>
-References: <20080701001656.e156585c.sfr@canb.auug.org.au> <48690385.7030500@linux.vnet.ibm.com> <48690D3C.1060803@linux.vnet.ibm.com> <20080630185943.GA24692@uranus.ravnborg.org>
+	id S1752344AbYF3T3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 15:29:55 -0400
+Date: Mon, 30 Jun 2008 15:29:51 -0400
+To: Jeff Layton <jlayton@redhat.com>
+Cc: Neil Brown <neilb@suse.de>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH - take 2] knfsd: nfsd: Handle ERESTARTSYS from
+	syscalls. (and possible kthread_stop changes)
+Message-ID: <20080630192951.GC6502@fieldses.org>
+References: <1080619001109.24338@suse.de> <20080618210947.2110a541@tleilax.poochiereds.net> <18521.50300.572838.123366@notabene.brown> <20080619063824.00ca6381@tleilax.poochiereds.net> <18526.60523.584503.68076@notabene.brown> <20080622205244.261a787d@tleilax.poochiereds.net> <18528.14347.525397.917553@notabene.brown> <20080630083536.680b093a@barsoom.rdu.redhat.com> <20080630171019.GA4877@fieldses.org> <20080630140946.34154d4c@barsoom.rdu.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080630185943.GA24692@uranus.ravnborg.org>
+In-Reply-To: <20080630140946.34154d4c@barsoom.rdu.redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Sam Ravnborg <sam@ravnborg.org> wrote:
-
-> On Mon, Jun 30, 2008 at 10:13:40PM +0530, Kamalesh Babulal wrote:
-> > Kamalesh Babulal wrote:
-> > > Hi Stephen,
-> > > 
-> > > next-20080630 kernel build fails x86 box 
-> > > 
-> > > fs/bio-integrity.c: In function `bio_integrity_add_page':
-> > > include/linux/bio.h:368: sorry, unimplemented: inlining failed in call to 'bvec_nr_vecs': function body not available
-> > > fs/bio-integrity.c:135: sorry, unimplemented: called from here
-> > > make[1]: *** [fs/bio-integrity.o] Error 1
-> > > make: *** [fs] Error 2
-> > > 
-> > > # gcc -v
-> > > Reading specs from /usr/lib/gcc/i386-redhat-linux/3.4.6/specs
-> > > Configured with: ../configure --prefix=/usr --mandir=/usr/share/man
-> > > --infodir=/usr/share/info --enable-shared --enable-threads=posix
-> > > --disable-checking --with-system-zlib --enable-__cxa_atexit
-> > > --disable-libunwind-exceptions --enable-java-awt=gtk
-> > > --host=i386-redhat-linux
-> > > Thread model: posix
-> > > gcc version 3.4.6 20060404 (Red Hat 3.4.6-10)
-> > > 
-> > > 
-> > Another build failure on the same box/config file
-> > 
-> > make[2]: `scripts/unifdef' is up to date.
-> >   RELOCS  arch/x86/boot/compressed/vmlinux.relocs
-> > 101 section headers supported: 100
-> > make[2]: *** [arch/x86/boot/compressed/vmlinux.relocs] Error 1
-> > make[1]: *** [arch/x86/boot/compressed/vmlinux] Error 2
-> > make: *** [bzImage] Error 2
+On Mon, Jun 30, 2008 at 02:09:46PM -0400, Jeff Layton wrote:
+> On Mon, 30 Jun 2008 13:10:19 -0400
+> "J. Bruce Fields" <bfields@fieldses.org> wrote:
 > 
-> In a i386 specific part of the kernel - so let's cc x86 maintainers.
+> > On Mon, Jun 30, 2008 at 08:35:36AM -0400, Jeff Layton wrote:
+> > > The idea looks reasonable, but the patch above doesn't apply to Bruce's
+> > > for-2.6.27 tree. The nfsd() function has changed a bit. Actually, I
+> > > think we can make this even simpler. kthreads start with all signals
+> > > ignored and the new patch enables all of the ones in SHUTDOWN_SIGS. So
+> > > I don't think we need any signal masking at all.
+> > > 
+> > > How about this patch? It should apply on top of the patchset already
+> > > in Bruce's tree.
+> > 
+> > Looks reasonable to me; applied for 2.6.27 barring any test failures or
+> > objections.
+> > 
+> > --b.
+> > 
+> 
+> Actually, here's an even simpler version. How about we just get rid of
+> the loop and just have a series of allow_signal() calls. We can get
+> rid of a local variable that way and since we're only referencing
+> SHUTDOWN_SIGS once, I don't see any reason to keep it around.
 
-that's an allyesconfig kernel and i cannot reproduce the failure with 
-linux-next v2.6.26-rc8-6206-gf1c7436:
+Yep, it's one less definition to track down when you read the code....
+Thanks!
 
-  [...]
-  RELOCS  arch/x86/boot/compressed/vmlinux.relocs
-  BUILD   arch/x86/boot/compressed/vmlinux.bin.all
-  GZIP    arch/x86/boot/compressed/vmlinux.bin.gz
-  LD      arch/x86/boot/compressed/piggy.o
-  LD      arch/x86/boot/compressed/vmlinux
-  OFFSETS arch/x86/boot/offsets.h
-  OBJCOPY arch/x86/boot/vmlinux.bin
-  AS      arch/x86/boot/header.o
-  LD      arch/x86/boot/setup.elf
-  OBJCOPY arch/x86/boot/setup.bin
-  BUILD   arch/x86/boot/bzImage
- Root device is (8, 17)
- Setup is 12524 bytes (padded to 12800 bytes).
- System is 17840 kB
- CRC bccb6201
- Kernel: arch/x86/boot/bzImage is ready  (#10848)
+--b.
 
-(nor has anything substantial change in that area changed in the x86 
-tree recently that sticks out at first sight.)
-
-	Ingo
+> 
+> -------[snip]-----------
+> 
+> knfsd: treat all shutdown signals as equivalent
+> 
+> knfsd currently uses 2 signal masks when processing requests. A "loose"
+> mask (SHUTDOWN_SIGS) that it uses when receiving network requests, and
+> then a more "strict" mask (ALLOWED_SIGS, which is just SIGKILL) that it
+> allows when doing the actual operation on the local storage.
+> 
+> This is apparently unnecessarily complicated. The underlying filesystem
+> should be able to sanely handle a signal in the middle of an operation.
+> This patch removes the signal mask handling from knfsd altogether. When
+> knfsd is started as a kthread, all signals are ignored. It then allows
+> all of the signals in SHUTDOWN_SIGS. There's no need to set the mask
+> as well.
+> 
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> ---
+>  fs/nfsd/nfssvc.c |   30 +++++-------------------------
+>  1 files changed, 5 insertions(+), 25 deletions(-)
+> 
+> diff --git a/fs/nfsd/nfssvc.c b/fs/nfsd/nfssvc.c
+> index 96fdbca..80292ff 100644
+> --- a/fs/nfsd/nfssvc.c
+> +++ b/fs/nfsd/nfssvc.c
+> @@ -37,15 +37,6 @@
+>  
+>  #define NFSDDBG_FACILITY	NFSDDBG_SVC
+>  
+> -/* these signals will be delivered to an nfsd thread 
+> - * when handling a request
+> - */
+> -#define ALLOWED_SIGS	(sigmask(SIGKILL))
+> -/* these signals will be delivered to an nfsd thread
+> - * when not handling a request. i.e. when waiting
+> - */
+> -#define SHUTDOWN_SIGS	(sigmask(SIGKILL) | sigmask(SIGHUP) | sigmask(SIGINT) | sigmask(SIGQUIT))
+> -
+>  extern struct svc_program	nfsd_program;
+>  static int			nfsd(void *vrqstp);
+>  struct timeval			nfssvc_boot;
+> @@ -414,9 +405,7 @@ nfsd(void *vrqstp)
+>  {
+>  	struct svc_rqst *rqstp = (struct svc_rqst *) vrqstp;
+>  	struct fs_struct *fsp;
+> -	sigset_t shutdown_mask, allowed_mask;
+>  	int err, preverr = 0;
+> -	unsigned int signo;
+>  
+>  	/* Lock module and set up kernel thread */
+>  	mutex_lock(&nfsd_mutex);
+> @@ -433,17 +422,14 @@ nfsd(void *vrqstp)
+>  	current->fs = fsp;
+>  	current->fs->umask = 0;
+>  
+> -	siginitsetinv(&shutdown_mask, SHUTDOWN_SIGS);
+> -	siginitsetinv(&allowed_mask, ALLOWED_SIGS);
+> -
+>  	/*
+>  	 * thread is spawned with all signals set to SIG_IGN, re-enable
+> -	 * the ones that matter
+> +	 * the ones that will bring down the thread
+>  	 */
+> -	for (signo = 1; signo <= _NSIG; signo++) {
+> -		if (!sigismember(&shutdown_mask, signo))
+> -			allow_signal(signo);
+> -	}
+> +	allow_signal(SIGKILL);
+> +	allow_signal(SIGHUP);
+> +	allow_signal(SIGINT);
+> +	allow_signal(SIGQUIT);
+>  
+>  	nfsdstats.th_cnt++;
+>  	mutex_unlock(&nfsd_mutex);
+> @@ -460,9 +446,6 @@ nfsd(void *vrqstp)
+>  	 * The main request loop
+>  	 */
+>  	for (;;) {
+> -		/* Block all but the shutdown signals */
+> -		sigprocmask(SIG_SETMASK, &shutdown_mask, NULL);
+> -
+>  		/*
+>  		 * Find a socket with data available and call its
+>  		 * recvfrom routine.
+> @@ -487,9 +470,6 @@ nfsd(void *vrqstp)
+>  		/* Lock the export hash tables for reading. */
+>  		exp_readlock();
+>  
+> -		/* Process request with signals blocked. */
+> -		sigprocmask(SIG_SETMASK, &allowed_mask, NULL);
+> -
+>  		svc_process(rqstp);
+>  
+>  		/* Unlock export hash tables */
+> -- 
+> 1.5.5.1
+> 
