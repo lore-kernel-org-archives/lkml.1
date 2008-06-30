@@ -1,69 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764354AbYF3Tys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764554AbYF3TzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764354AbYF3Tys (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 15:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762107AbYF3Tyj
+	id S1764554AbYF3TzF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 15:55:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764281AbYF3Tym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 15:54:39 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:55695 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752805AbYF3Tyh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 15:54:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=x2sVGF/IReWASiKqt7nIGznUXtO1qPPRkp8ibbfxub2lvSllH7ZZe1j65lkqQqVPy5
-         Yo20KQO7Tk65j32pFP6d2foXPjDmI7kGs8Fv7S/pXmdnDieJtcHVO903jh25Jpz4yfEp
-         H43ILQCd5D66tmjV66zjmh1Ey+uaYGjP7HTuo=
-Message-ID: <4869396B.8060401@gmail.com>
-Date: Mon, 30 Jun 2008 21:52:11 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Mon, 30 Jun 2008 15:54:42 -0400
+Received: from www.tglx.de ([62.245.132.106]:56245 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763798AbYF3Tyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 15:54:41 -0400
+Date: Mon, 30 Jun 2008 21:54:19 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Daniel J Blueman <daniel.blueman@gmail.com>
+Subject: Re: [git pull] core kernel fixes
+In-Reply-To: <19f34abd0806301251h321dce9ere61fbca01f2d4134@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0806302153270.3297@apollo.tec.linutronix.de>
+References: <20080630153200.GA22360@elte.hu>  <19f34abd0806301002o7bdbd3a3y63d4d036ce5c26b0@mail.gmail.com>  <20080630182038.GA32211@elte.hu>  <19f34abd0806301143u2067d593kf162d7419b653a8b@mail.gmail.com>  <alpine.LFD.1.10.0806302145140.3297@apollo.tec.linutronix.de>
+ <19f34abd0806301251h321dce9ere61fbca01f2d4134@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: JosephChan@via.com.tw
-CC: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, geert@linux-m68k.org
-Subject: Re: [PATCH 7/13] viafb: iface.c, iface.h, ioctl.c, ioctl.h
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E7804@exchtp03.taipei.via.com.tw>
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E7804@exchtp03.taipei.via.com.tw>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> diff -Nur a/drivers/video/via/ioctl.h b/drivers/video/via/ioctl.h
-> --- a/drivers/video/via/ioctl.h	1970-01-01 08:00:00.000000000 +0800
-> +++ b/drivers/video/via/ioctl.h	2008-06-30 08:53:33.000000000 +0800
-> @@ -0,0 +1,212 @@
-[...]
-> +struct device_t {
-> +	unsigned short crt:1;
-> +	unsigned short dvi:1;
-> +	unsigned short lcd:1;
-> +	unsigned short samm:1;
-> +	unsigned short primary_dev;
-> +
-> +	unsigned short lcd_dsp_cent:1;
-> +	unsigned char lcd_panel_id;
-> +	unsigned char lcd_mode:1;
-> +
-> +	unsigned short xres, yres;
-> +	unsigned short xres1, yres1;
-> +	unsigned short refresh;
-> +	unsigned short bpp;
-> +	unsigned short refresh1;
-> +	unsigned short bpp1;
-> +	unsigned short sequence;
-> +
-> +	unsigned short epia_dvi:1;
-> +	unsigned short lcd_dual_edge:1;
-> +	unsigned short bus_width;
-> +	unsigned short lcd2:1;
-> +};
+On Mon, 30 Jun 2008, Vegard Nossum wrote:
+> >
+> > alloc_object() is called with interrupts disabled from __debug_object_init()
+> 
+> Ok, thanks for clearing that up! :-)
+> 
+> (I'm just wary of patches that mutate when they have my name on the top...)
 
-Bitfields suck (and generate ugly code).
+Yeah, that's why I added:
+
+[ daniel.blueman@gmail.com: pool_lock needs to be taken irq safe in fill_pool ]
+
+Thanks,
+	tglx
