@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759797AbYF3MLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759848AbYF3MTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759797AbYF3MLm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 08:11:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbYF3MLb
+	id S1759848AbYF3MTF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 08:19:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756566AbYF3MSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 08:11:31 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:54460 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755122AbYF3MLa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 08:11:30 -0400
-Date: Mon, 30 Jun 2008 13:10:55 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: hooanon05@yahoo.co.jp
-cc: Erez Zadok <ezk@cs.sunysb.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       mhalcrow@us.ibm.com, hch@infradead.org, viro@zeniv.linux.org.uk,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fsstack: fsstack_copy_inode_size locking 
-In-Reply-To: <8725.1214800317@jrobl>
-Message-ID: <Pine.LNX.4.64.0806301238080.6538@blonde.site>
-References: <Pine.LNX.4.64.0806290101160.20280@blonde.site> <8725.1214800317@jrobl>
+	Mon, 30 Jun 2008 08:18:53 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46918 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755751AbYF3MSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 08:18:53 -0400
+Date: Mon, 30 Jun 2008 14:18:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: TAKADA Yoshihito <takada@mbf.nifty.com>
+Cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH] ptrace GET/SET FPXREGS broken
+Message-ID: <20080630121823.GB25092@elte.hu>
+References: <20080630.134445.193700135.takada@mbf.nifty.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080630.134445.193700135.takada@mbf.nifty.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.2061]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jun 2008, hooanon05@yahoo.co.jp wrote:
-> Hugh Dickins:
-> > LTP's iogen01 doio tests used to hang nicely on 32-bit SMP when /tmp was a
-> > unionfs mount of a tmpfs, i_size_read spinning forever, waiting for a lost
-> > seqcount update: fixed by taking i_lock around i_size_write when 32-bit SMP.
 
-(That, of course, is already fixed in Erez's unionfs git, so in mm;
-but I thought I'd better repeat the history because some of akpm's
-objections to pushing the fix to mainline came from the lack of
-this explanation when the patch was submitted for mainline.)
+* TAKADA Yoshihito <takada@mbf.nifty.com> wrote:
 
-> 
-> I don't know why dst->i_lock is affected by src->i_size_seqcount.
+> Hi
+> When I update kernel 2.6.25 from 2.6.24, gdb does not work.
+> On 2.6.25, ptrace(PTRACE_GETFPXREGS, ...) returns ENODEV.
+> But 2.6.24 kernel's ptrace() returns EIO.
+> It is issue of compatibility.
+> I attached test program as pt.c and patch for fix it.
 
-It certainly shouldn't be.  The problem would have come from two
-racing i_size_write(dst)s, one of the unlocked increments getting
-lost, leaving seqcount odd, so the next i_size_read(dst) would
-spin forever waiting for it to go even.
+this is a side-effect of the "x86: x86 i387 user_regset" commit, 
+v2.6.24-4379-g4421011. Roland Cc:-ed.
 
-> Do you mean that your test issued write(2) to the lower/actual file
-
-I was merely running LTP, on a Core(2) Quad machine, with /tmp as
-unionfs mount of a tmpfs.  It wouldn't have been doing anything
-directly to the lower file, that would all have been coming via
-the unionfs mount.
-
-> so frequently that i_size_read() in unionfs always failed?
-
-I'm not sure what you mean by that.  i_size_read() doesn't fail,
-but it may loop; and if the seqcount has got out of step from
-concurrent unlocked i_size_write()s, then it'll spin forever.
-
-> 
-> Is your test
-> iogen01 export LTPROOT; rwtest -N iogen01 -i 120s -s read,write -Da -Dv -n 2 500b:doio.f1.$$ 1000b:doio.f2.$$
-> line in runtest/fs?
-
-That looks like it: I don't think I ever tried it as a standalone test,
-just investigated what was happening when standard LTP runs hung here.
-
-Hugh
+	Ingo
