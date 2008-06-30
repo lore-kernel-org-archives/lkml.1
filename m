@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759433AbYF3Idf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758493AbYF3Irg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759433AbYF3Idf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 04:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbYF3IdW
+	id S1758493AbYF3Irg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 04:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbYF3IrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 04:33:22 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57802 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758817AbYF3IdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 04:33:20 -0400
-Date: Mon, 30 Jun 2008 10:33:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: fix init_memory_mapping over boundary v4
-Message-ID: <20080630083306.GA8283@elte.hu>
-References: <200806251748.06743.yhlu.kernel@gmail.com> <200806271538.46829.yhlu.kernel@gmail.com> <200806272247.11971.yhlu.kernel@gmail.com> <200806281749.02000.yhlu.kernel@gmail.com> <20080629070833.GA4898@elte.hu> <86802c440806290030u43129a6dm57a93a07533fa0b9@mail.gmail.com>
+	Mon, 30 Jun 2008 04:47:25 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:26358 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752619AbYF3IrY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 04:47:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=fBdXhz0zm5GIka0iqKmWGGwLiZqiTQ3OQhZsPaCDJT5UmhPxOIz3F+ohng1mGD3ZQv
+         uC4ZxClrME4s1tzxPR4t2RKEAYvQGeqDEh17irXqVqYk0XQUrT8vjJxjPbIIWgrRQ8Ms
+         dp5jAxdNS2jMvK5bQ5+ulcYKQ3sTgzM6nAvEo=
+Message-ID: <ac8af0be0806300147i1970a6f7mb705c0ce590326@mail.gmail.com>
+Date: Mon, 30 Jun 2008 16:47:23 +0800
+From: "Zhao Forrest" <forrest.zhao@gmail.com>
+To: "Boaz Harrosh" <bharrosh@panasas.com>
+Subject: Re: Should a block device enforce block atomicity?
+Cc: "Erez Zilber" <erezzi.list@gmail.com>,
+       "Jens Axboe" <jens.axboe@oracle.com>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <48689857.1050908@panasas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <86802c440806290030u43129a6dm57a93a07533fa0b9@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <ce513bcc0806292351t7f4ad933l920112381f4ebb4@mail.gmail.com>
+	 <20080630065525.GI20826@kernel.dk>
+	 <ce513bcc0806300058mbe0f15eya07fafbb9ba4a56@mail.gmail.com>
+	 <48689857.1050908@panasas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>
+> Don't forget that all IO requests are queued on the device. With a
+> modern HW and disk you usually have NCQ and most drives will throw
+> away write request to the same sector if they see a later write to
+> the same sector in the queue.
+>
+> That said. There is nothing wrong with writing again and again to
+> the same sector on disk. File/record locking is done at the FileSystem
+> level. An application that wants exclusive write need to open the file
+> that way. Other wise it could even be written from another machine not
+> even another thread.
+>
+> What is it you are concerned with?
+>
+I happen to read the email and have a question, that may not be Erez's
+real question :)
+Let's suppose the following example:
+1 pdflush find a dirty inode and decides to flush a set of dirty pages
+to harddrive
+2 while this set of dirty pages is being committed to
+harddrive(dma_mapping is done, but dirty pages are not really written
+to disk media), application/FS is trying to update some pages in this
+set of dirty pages.
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+Then what happens? Will application be put into sleep until page
+flushing to disk media is done?
 
-> On Sun, Jun 29, 2008 at 12:08 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >
-> >> some end boundary is only page alignment, instead of 2M alignment,
-> >> so call ker_phycial_mapping_init three times.
-> >> then don't overmap above the max_low_pfn
-> >>
-> >> v2: make init_memory_mapping more solid: start could be any value other than 0
-> >> v3: fix NON PAE by handling left over in kernel_physical_mapping
-> >> v4: revert back to v2, and use PMD_SHIFT to calculate boundary
-> >>     also adjust size for pre-allocated table size
-> >
-> > i've got v3 applied to tip/master and it worked well in testing - on the
-> > old, 512m RAM problem laptop too. So could you send v4 as a delta patch
-> > instead please, against tip/master?
-> 
-> will. before that delta patch please do test on your 512M system .
-
-i've tested it thoroughly on all systems over the weekend and it's all 
-fine now. Thanks,
-
-	Ingo
+Thanks,
+Forrest
