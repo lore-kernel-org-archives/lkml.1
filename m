@@ -1,67 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbYF3DDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbYF3DJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754625AbYF3DDE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jun 2008 23:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbYF3DCu
+	id S1754913AbYF3DJj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jun 2008 23:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYF3DJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jun 2008 23:02:50 -0400
-Received: from gw.goop.org ([64.81.55.164]:58144 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751263AbYF3DCu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jun 2008 23:02:50 -0400
-Message-ID: <48684CD4.7040403@goop.org>
-Date: Sun, 29 Jun 2008 20:02:44 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 29 Jun 2008 23:09:29 -0400
+Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:24996 "HELO
+	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750877AbYF3DJ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jun 2008 23:09:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=kJ4+5fi56CoEJrzmIqgor1W/vVrOf4v/k1zhNs/FrQGn2yAAV0HxZWmavmzAL4mCAwtU+r5JCmCIL3Qe0MzfDrmxIQSRNvV6WmVrWs6B6FvHzJT4UYyvz7wodjTb645/oDhqggXZHFvsU6Gd0siq8yfchXAK88GpYFhzPdAYBXw=  ;
+X-YMail-OSG: m2nb1hYVM1nHGjHXd_Dychrz7kbgPTtBeeHLHtygfinS9KkSVNV7RzaypSN21w19Q2_Tiejd1XxG4aY7FtPAm1uTg481WWzex4z6rtUfjoBsESQnGzaTVgdovRRzZL.CssM-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Stefan Becker <Stefan.Becker@nokia.com>
+Subject: Re: PATCH: 2.6.26-rc8: Fix IRQF_DISABLED for shared interrupts
+Date: Sun, 29 Jun 2008 20:09:26 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       ext Alan Stern <stern@rowland.harvard.edu>
+References: <Pine.LNX.4.44L0.0806281241200.23326-100000@netrider.rowland.org> <200806281251.21299.david-b@pacbell.net> <4867A2DE.3070509@nokia.com>
+In-Reply-To: <4867A2DE.3070509@nokia.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Nick Piggin <npiggin@suse.de>, Mark McLoughlin <markmc@redhat.com>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Eduardo Habkost <ehabkost@redhat.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Stephen Tweedie <sct@redhat.com>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for
- 64-bit Xen support
-References: <patchbomb.1214367536@localhost> <20080625084253.GA11524@elte.hu> <20080625152212.GA3442@elte.hu> <4862A6A9.1030109@goop.org> <20080626105722.GA12640@elte.hu> <20080626105818.GA13805@elte.hu> <4863A8E6.1010807@goop.org> <20080627160333.GA27072@elte.hu> <486539A3.3030102@goop.org> <20080629084318.GA28815@elte.hu>
-In-Reply-To: <20080629084318.GA28815@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200806292009.26975.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> with this config:
->
->   http://redhat.com/~mingo/misc/config-Sun_Jun_29_10_29_11_CEST_2008.bad
->
-> i've saved the merged 2.6.26-rc8-tip-00241-gc6c8cb2-dirty tree into 
-> tip/tmp.x86.xen-64bit.Sun_Jun_29_10 and pushed it out, so you can test 
-> that exact version.
+On Sunday 29 June 2008, Stefan Becker wrote:
+> The problem is caused by this code in handle_IRQ_event():
+> 
+>         if (!(action->flags & IRQF_DISABLED))
+>                 local_irq_enable_in_hardirq();
+> 
+>         do {
+>                 ret = action->handler(irq, action->dev_id);
+>          ...
+>                 action = action->next;
+>         } while (action);
+> 
+> For shared interrupts IRQF_DISABLED will only take effect if the first 
+> registered handler sets it.
 
-Looks like the setup.c unification missed the early_ioremap init from 
-the early_ioremap unification.  Unconditionally call early_ioremap_init().
+I was suspecting something rude like that ...
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+By the way, did you notice the oddness of IRQF_SAMPLE_RANDOM there?
+For a shared IRQ, I would rather think that if any IRQ was flagged
+as "too predictable for use as IRQ randomness" (by not having that
+flag set) then the IRQ should never be sampled ... there's some odd
+thought (or non-thought) involved in IRQ sharing.
 
-diff -r 5c26177fdf8c arch/x86/kernel/setup.c
---- a/arch/x86/kernel/setup.c	Sun Jun 29 16:57:52 2008 -0700
-+++ b/arch/x86/kernel/setup.c	Sun Jun 29 19:57:00 2008 -0700
-@@ -523,11 +523,12 @@
- 	memcpy(&boot_cpu_data, &new_cpu_data, sizeof(new_cpu_data));
- 	pre_setup_arch_hook();
- 	early_cpu_init();
--	early_ioremap_init();
- 	reserve_setup_data();
- #else
- 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
- #endif
-+
-+	early_ioremap_init();
- 
- 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
- 	screen_info = boot_params.screen_info;
 
+> The attached changes fix the problem for me.
+
+And it looks plausible to me.  Seems like this patch (or a variant)
+should be merged for 2.6.26-final, yes?  Disregarding IRQF_DISABLED
+has -- as you noted -- significant potential for oopsage.
+
+I suggest you provide a fully cleaned-up version of this patch with
+your signed-off-by line and a proper patch description ... do this
+ASAP, since RC8 is getting a bit late for patches to merge!
+
+
+One technical comment:
+
+> --- a/kernel/irq/internals.h
+> +++ b/kernel/irq/internals.h
+> @@ -2,6 +2,13 @@
+>   * IRQ subsystem internal functions and variables:
+>   */
+>  
+> +/*
+> + * Internal interrupt flags
+> + *
+> + * IRQF_DISABLED_CUMULATIVE - one handler in the chain has IRQF_DISABLED
+> set + */
+> +#define IRQF_DISABLED_CUMULATIVE       0x80000000
+> +
+>  extern int noirqdebug;
+>  
+>  /* Set default functions for irq_chip structures: */
+
+I don't think you should need that flag; and if you did, it should be
+declared in <linux/irq.h> to prevent anyone else from using that bit
+for some other purpose.
+
+Instead, I think you can set IRQF_DISABLED in irq_desc[irq].status
+to achieve the same effect.
+
+- Dave
 
