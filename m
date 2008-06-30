@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762466AbYF3NpP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932202AbYF3Npt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762466AbYF3NpP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 09:45:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755758AbYF3No6
+	id S932202AbYF3Npt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 09:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756610AbYF3Npl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 09:44:58 -0400
-Received: from main.gmane.org ([80.91.229.2]:51019 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758043AbYF3No5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 09:44:57 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Subject: Re: linux-next: Tree for June 27 - build fails at
- tc6393xb_attach_irq() with randconfig build
-Date: Mon, 30 Jun 2008 13:44:41 +0000 (UTC)
-Message-ID: <g4ao09$be3$1@ger.gmane.org>
-References: <20080627182406.a54b00c1.sfr@canb.auug.org.au>
-	<48653871.9040106@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: iap-pxy-mow1.siemens.ru
-User-Agent: Pan/0.132 (Waxed in Black)
-Cc: linux-next@vger.kernel.org
+	Mon, 30 Jun 2008 09:45:41 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:4432 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755758AbYF3Npk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 09:45:40 -0400
+Date: Mon, 30 Jun 2008 15:45:37 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, Max Krasnyansky <maxk@qualcomm.com>,
+       Paul Jackson <pj@sgi.com>, Paul Menage <menage@google.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] S390 topology: don't use kthread() for
+	arch_reinit_sched_domains()
+Message-ID: <20080630134537.GC7686@osiris.boeblingen.de.ibm.com>
+References: <20080629165132.GA11218@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080629165132.GA11218@tv-sign.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kamalesh Babulal wrote:
-
-> Hi Stephen,
+On Sun, Jun 29, 2008 at 08:51:32PM +0400, Oleg Nesterov wrote:
+> Untested, needs Heiko's ack.
 > 
-> randconfig build fails on next-20080627 kernelk with CONFIG_MFD_TC6393XB
-> enabled
+> Now that it is safe to use get_online_cpus() we can revert
 > 
->   CC      drivers/mfd/tc6393xb.o
-> drivers/mfd/tc6393xb.c: In function ‘tc6393xb_attach_irq’:
-> drivers/mfd/tc6393xb.c:269: error: implicit declaration of function
-> ‘set_irq_flags’ drivers/mfd/tc6393xb.c:269: error: ‘IRQF_VALID’
-> undeclared (first use in this function) drivers/mfd/tc6393xb.c:269:
-> error: (Each undeclared identifier is reported only once
-> drivers/mfd/tc6393xb.c:269: error: for each function it appears in.)
-> drivers/mfd/tc6393xb.c:269: error: ‘IRQF_PROBE’ undeclared (first use in
-> this function) drivers/mfd/tc6393xb.c:272: error: ‘IRQT_FALLING’
-> undeclared (first use in this function) make[2]: ***
-> [drivers/mfd/tc6393xb.o] Error 1 make[1]: *** [drivers/mfd] Error 2
-> make: *** [drivers] Error 2
+> 	[S390] cpu topology: Fix possible deadlock.
+> 	commit: fd781fa25c9e9c6fd1599df060b05e7c4ad724e5
+> 
+> and call arch_reinit_sched_domains() directly from topology_work_fn().
+> 
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> 
+> --- 26-rc2/arch/s390/kernel/topology.c~WQ_5_TOPOLOGY	2008-05-18 15:43:28.000000000 +0400
+> +++ 26-rc2/arch/s390/kernel/topology.c	2008-06-29 20:42:38.000000000 +0400
+> @@ -9,7 +9,6 @@
+>  #include <linux/device.h>
+>  #include <linux/bootmem.h>
+>  #include <linux/sched.h>
+> -#include <linux/kthread.h>
+>  #include <linux/workqueue.h>
+>  #include <linux/cpu.h>
+>  #include <linux/smp.h>
+> @@ -230,20 +229,9 @@ void arch_update_cpu_topology(void)
+>  	}
+>  }
+> 
+> -static int topology_kthread(void *data)
+> -{
+> -	arch_reinit_sched_domains();
+> -	return 0;
+> -}
+> -
+>  static void topology_work_fn(struct work_struct *work)
+>  {
+> -	/* We can't call arch_reinit_sched_domains() from a multi-threaded
+> -	 * workqueue context since it may deadlock in case of cpu hotplug.
+> -	 * So we have to create a kernel thread in order to call
+> -	 * arch_reinit_sched_domains().
+> -	 */
+> -	kthread_run(topology_kthread, NULL, "topology_update");
+> +	arch_reinit_sched_domains();
 
+Thank you! Tested and still works ;)
 
-IRQT_FALLING will be replaced with IRQ_TYPE_FALLING_EDGE.
-However I've a question. set_irq_flags is arm-only thing to change the 
-status IRQ_NOREQUEST, IRQ_NOPROBE etc. Most other arches (except ppc) 
-don't even bother touching IRQ_NOREQUEST. Should I change tc6393xb to 
-depend on ARM or make call to set_irq_flags ARM-dependant?
-
-
--- 
-With best wishes
-Dmitry
-
-
+Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
