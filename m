@@ -1,53 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933007AbYF3VzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934206AbYF3Vzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933007AbYF3VzF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 17:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933860AbYF3Vs3
+	id S934206AbYF3Vzg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 17:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933555AbYF3VwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 17:48:29 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:21574 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933800AbYF3Vs1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 17:48:27 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=n3gV7yJl6yKIr6IEIGpRFT065GGAuTNDvXY3OaAaRMaKjAee3ZDwfCiT+M/aqvEFywBle2zoOMMXtswenU9WHqmOD9ZK4NZwLMuIHDFsf+vyAQdhwzUmBeh8zkSp3J6EqD5H2tjT5jyCT9e1tqL8DXzzD2qe6tdcVvwUU6i+jGE=  ;
-X-YMail-OSG: 9dcPZ5YVM1l_A9s.a5xfGuXfcKJqc5HKUgUMYJ5C6uhlK.rNnLcS3cxxlJznZxS5Jue7IE.zf0xt9KWnujIfHmMOX2ghUb9tfbr7xYYWu.KS7pqDAESTfv2dwdb8M8rQoMI-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Alan Stern <stern@rowland.harvard.edu>,
-       Stefan Becker <Stefan.Becker@nokia.com>
-Subject: Re: [PATCH] USB: fix interrupt disabling for HCDs with shared interrupt handlers
-Date: Mon, 30 Jun 2008 14:48:24 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <Pine.LNX.4.44L0.0806301728220.13119-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0806301728220.13119-100000@iolanthe.rowland.org>
+	Mon, 30 Jun 2008 17:52:19 -0400
+Received: from gw.goop.org ([64.81.55.164]:49631 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764596AbYF3VwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 17:52:15 -0400
+Message-ID: <4869558A.9020907@goop.org>
+Date: Mon, 30 Jun 2008 14:52:10 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200806301448.24412.david-b@pacbell.net>
+To: Sean Young <sean@mess.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       "H. Anvin" <hpa@zytor.com>
+Subject: Re: Regression: boot failure on AMD Elan TS-5500
+References: <20080616121138.GA51097@atlantis.8hz.com> <200806162327.34912.rusty@rustcorp.com.au> <48566C88.6000702@goop.org> <20080616161944.GA53539@atlantis.8hz.com> <20080630214347.GA57988@atlantis.8hz.com>
+In-Reply-To: <20080630214347.GA57988@atlantis.8hz.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 30 June 2008, Alan Stern wrote:
-> 
-> > How about this one instead?  I think it's probably almost midnight
-> > where Stefan is, so I'd not expect Stefan to have an updated
-> > patch very soon ... :)
-> 
-> It certainly looks right.  We'll let Stefan test it.
+Sean Young wrote:
+> On Mon, Jun 16, 2008 at 04:19:44PM +0000, Sean Young wrote:
+>   
+>> On Mon, Jun 16, 2008 at 06:37:12AM -0700, Jeremy Fitzhardinge wrote:
+>>     
+>>> Rusty Russell wrote:
+>>>       
+>>>> On Monday 16 June 2008 22:11:39 Sean Young wrote:
+>>>>  
+>>>>         
+>>>>> The symptons are either a crash or reboot on booting the kernel. No
+>>>>> printk's have occurred yet -- even with early printk on.
+>>>>>
+>>>>> 2.6.15 worked on this board however current does not. I've bisected it to:
+>>>>>
+>>>>> 	commit a24e785111a32ccb7cebafd24b1b1cb474ea8e5d
+>>>>> 	Author: Rusty Russell <rusty@rustcorp.com.au>
+>>>>> 	Date:   Sun Oct 21 16:41:35 2007 -0700
+>>>>>
+>>>>> 	    i386: paravirt boot sequence
+>>>>>    
+>>>>>           
+>>>> Hi Sean,
+>>>>
+>>>>   Thanks for tracking this down.  Can we try reverting this in pieces to 
+>>>>   see exactly what the cause was?
+>>>>
+>>>> 1) Revert arch/x86/boot/compressed/head_32.S
+>>>> 2) If that doesn't fix it, Try removing the 8 lines which were added to 
+>>>> arch/x86/kernel/head_32.S
+>>>>  
+>>>>         
+>>> And the arch/x86/boot/compressed/misc_32.c change too, just in case...
+>>>       
+>> Reverting only head_32.S makes the problem go away. I didn't try any other
+>> changes.
+>>     
+>
+> Looking at the beginning of startup_32, it seems ds is used before it is set:
+>
+> startup_32:
+>         cld
+>         /* test KEEP_SEGMENTS flag to see if the bootloader is asking
+>          * us to not reload segments */
+>         testb $(1<<6), BP_loadflags(%esi)
+>         jnz 1f
+>
+>         cli
+>         movl $(__BOOT_DS),%eax
+>         movl %eax,%ds
+>         movl %eax,%es
+>         movl %eax,%fs
+>         movl %eax,%gs
+>         movl %eax,%ss
+> 1:
+>
+> Since the testb instruction is a dereference, ds is implicitly used. If
+> I move the testb to after "movl %eax,%ds" it seems to work (not that it
+> would make any sense there, but just to prove the point).
+>
+> 1) Am I barking up the wrong tree?
+>
+> 2) If I'm right I have no idea what the correct solution is; it seems that
+>    a chicken & egg issue is introduced.
+>
+> Please advise. I am very new to all of this.
 
-Why don't we go with the version Stefan just sent, courtesy of
-the rain which was keeping him awake ... he tested it, it works
-vs just "obviously correct".
+It's a bit odd that the boot loader neglected to set up ds properly, but 
+changing the testb line to
 
-- Dave
+	testb $(1<<6), %cs:BP_loadflags(%esi)
 
+should work.  (Or perhaps a %ss: override would be better?)
 
+I'm assuming that the GDT setup isn't completely mad and that the 
+segments have the same base at least.
+
+    J
