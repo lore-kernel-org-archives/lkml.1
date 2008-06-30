@@ -1,91 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932135AbYF3N1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762004AbYF3N1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932135AbYF3N1S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 09:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757883AbYF3N1G
+	id S1762004AbYF3N1f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 09:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932206AbYF3N1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 09:27:06 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:41505 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755852AbYF3N1F convert rfc822-to-8bit (ORCPT
+	Mon, 30 Jun 2008 09:27:21 -0400
+Received: from mail51.messagelabs.com ([216.82.244.179]:4528 "EHLO
+	mail51.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932159AbYF3N1T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 09:27:05 -0400
-Message-Id: <48688930.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Mon, 30 Jun 2008 05:20:16 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <rostedt@goodmis.org>, <peterz@infradead.org>, <npiggin@suse.de>,
-       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH 0/3] sched: newidle and RT wake-buddy fixes
-References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com>
- <20080630131511.GA7506@elte.hu>
-In-Reply-To: <20080630131511.GA7506@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Mon, 30 Jun 2008 09:27:19 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-11.tower-51.messagelabs.com!1214832437!4658953!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: <trivail@bre-cln-ukleine.digi.com>, <linux-kernel@vger.kernel.org>
+CC: Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: [PATCH] Fix name of Russell King in various comments
+Date: Mon, 30 Jun 2008 15:27:13 +0200
+Message-ID: <1214832433-11893-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+X-Mailer: git-send-email 1.5.6
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 30 Jun 2008 13:27:14.0457 (UTC) FILETIME=[026B2090:01C8DAB5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Mon, Jun 30, 2008 at  9:15 AM, in message <20080630131511.GA7506@elte.hu>,
-Ingo Molnar <mingo@elte.hu> wrote: 
+This patch was created by
 
-> * Gregory Haskins <ghaskins@novell.com> wrote:
-> 
->> Hi Ingo,
->>   The following patches apply to linux-tip/sched/devel and enhance the
->> performance of the kernel (specifically in PREEMPT_RT, though they do
->> not regress mainline performance as far as I can tell).  They offer
->> somewhere between 50-100% speedups in netperf performance, depending
->> on the test.
-> 
-> -tip testing found this boot hang:
+	git grep -E -l 'Rus(el|s?e)l King' | xargs -r -t perl -p -i -e 's/Rus(el|s?e)l King/Russell King/g'
 
-Ill take a look, Ingo.  Sorry for the inconvenience and thanks for the bisect.
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+---
+ drivers/usb/host/ohci-au1xxx.c  |    2 +-
+ drivers/usb/host/ohci-lh7a404.c |    2 +-
+ drivers/usb/host/ohci-s3c2410.c |    2 +-
+ drivers/usb/host/ohci-sa1111.c  |    2 +-
+ include/asm-avr32/setup.h       |    2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
 
--Greg
-
-> 
->  Linux version 2.6.26-rc8-tip (mingo@dione) (gcc version 4.2.3) #12917 
->  SMP Mon Jun 30 15:06:32 CEST 2008
->  [...]
->  CPU 1/1 -> Node 0
->  CPU: Physical Processor ID: 0
->  CPU: Processor Core ID: 1
->  CPU1: AMD Athlon(tm) 64 X2 Dual Core Processor 3800+ stepping 02
->  Brought up 2 CPUs
->  Total of 2 processors activated (8041.15 BogoMIPS).
->  [ hard hang ]
-> 
-> with this config:
-> 
->   http://redhat.com/~mingo/misc/config-Mon_Jun_30_14_54_19_CEST_2008.bad
-> 
-> full bootlog:
-> 
->   http://redhat.com/~mingo/misc/hang-Mon_Jun_30_14_54_19_CEST_2008.bad
-> 
-> it should continue with this bootup sequence:
-> 
->   calling  net_ns_init+0x0/0x1a0
->   net_namespace: 376 bytes
->   initcall net_ns_init+0x0/0x1a0 returned 0 after 0 msecs
->   calling  init_smp_flush+0x0/0x60
-> 
-> i've bisected it down to:
-> 
-> --------------
-> | commit cc8160c56843201891766660e3816d2e546c1b17
-> | Author: Gregory Haskins <ghaskins@novell.com>
-> | Date:   Fri Jun 27 14:29:50 2008 -0600
-> |
-> |     sched: enable interrupts and drop rq-lock during newidle balancing
-> --------------
-> 
-> so i've reverted that change for now.
-> 
-> 	Ingo
-
+diff --git a/drivers/usb/host/ohci-au1xxx.c b/drivers/usb/host/ohci-au1xxx.c
+index 1b9abdb..2ec3584 100644
+--- a/drivers/usb/host/ohci-au1xxx.c
++++ b/drivers/usb/host/ohci-au1xxx.c
+@@ -8,7 +8,7 @@
+  * Bus Glue for AMD Alchemy Au1xxx
+  *
+  * Written by Christopher Hoover <ch@hpl.hp.com>
+- * Based on fragments of previous driver by Rusell King et al.
++ * Based on fragments of previous driver by Russell King et al.
+  *
+  * Modified for LH7A404 from ohci-sa1111.c
+  *  by Durgesh Pattamatta <pattamattad@sharpsec.com>
+diff --git a/drivers/usb/host/ohci-lh7a404.c b/drivers/usb/host/ohci-lh7a404.c
+index 96d14fa..65fe275 100644
+--- a/drivers/usb/host/ohci-lh7a404.c
++++ b/drivers/usb/host/ohci-lh7a404.c
+@@ -8,7 +8,7 @@
+  * Bus Glue for Sharp LH7A404
+  *
+  * Written by Christopher Hoover <ch@hpl.hp.com>
+- * Based on fragments of previous driver by Rusell King et al.
++ * Based on fragments of previous driver by Russell King et al.
+  *
+  * Modified for LH7A404 from ohci-sa1111.c
+  *  by Durgesh Pattamatta <pattamattad@sharpsec.com>
+diff --git a/drivers/usb/host/ohci-s3c2410.c b/drivers/usb/host/ohci-s3c2410.c
+index a73d2ff..d3fcd0b 100644
+--- a/drivers/usb/host/ohci-s3c2410.c
++++ b/drivers/usb/host/ohci-s3c2410.c
+@@ -8,7 +8,7 @@
+  * USB Bus Glue for Samsung S3C2410
+  *
+  * Written by Christopher Hoover <ch@hpl.hp.com>
+- * Based on fragments of previous driver by Rusell King et al.
++ * Based on fragments of previous driver by Russell King et al.
+  *
+  * Modified for S3C2410 from ohci-sa1111.c, ohci-omap.c and ohci-lh7a40.c
+  *	by Ben Dooks, <ben@simtec.co.uk>
+diff --git a/drivers/usb/host/ohci-sa1111.c b/drivers/usb/host/ohci-sa1111.c
+index 99438c6..4f5e423 100644
+--- a/drivers/usb/host/ohci-sa1111.c
++++ b/drivers/usb/host/ohci-sa1111.c
+@@ -8,7 +8,7 @@
+  * SA1111 Bus Glue
+  *
+  * Written by Christopher Hoover <ch@hpl.hp.com>
+- * Based on fragments of previous driver by Rusell King et al.
++ * Based on fragments of previous driver by Russell King et al.
+  *
+  * This file is licenced under the GPL.
+  */
+diff --git a/include/asm-avr32/setup.h b/include/asm-avr32/setup.h
+index ea3070f..ff5b7cf 100644
+--- a/include/asm-avr32/setup.h
++++ b/include/asm-avr32/setup.h
+@@ -2,7 +2,7 @@
+  * Copyright (C) 2004-2006 Atmel Corporation
+  *
+  * Based on linux/include/asm-arm/setup.h
+- *   Copyright (C) 1997-1999 Russel King
++ *   Copyright (C) 1997-1999 Russell King
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License version 2 as
+-- 
+1.5.6
 
