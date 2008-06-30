@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757549AbYF3G2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757821AbYF3G2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757549AbYF3G2T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 02:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYF3G2A
+	id S1757821AbYF3G2j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 02:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbYF3G22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 02:28:00 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:54028 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752826AbYF3G17 (ORCPT
+	Mon, 30 Jun 2008 02:28:28 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:60821 "EHLO
+	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757466AbYF3G21 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 02:27:59 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <48687CDE.5010502@s5r6.in-berlin.de>
-Date: Mon, 30 Jun 2008 08:27:42 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080614 SeaMonkey/1.1.9
+	Mon, 30 Jun 2008 02:28:27 -0400
+Message-ID: <48687CF7.6020702@linux.vnet.ibm.com>
+Date: Mon, 30 Jun 2008 11:58:07 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Git Mailing List <git@vger.kernel.org>
-Subject: Re: Updated Kernel Hacker's guide to git
-References: <200612241807.kBOI746w008739@laptop13.inf.utfsm.cl> <476E42BF.1010300@garzik.org> <Pine.LNX.4.64.0712310349260.2093@fbirervta.pbzchgretzou.qr> <4778D1CD.4020001@s5r6.in-berlin.de> <48684A46.7040802@garzik.org>
-In-Reply-To: <48684A46.7040802@garzik.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] memcg: mem_cgroup_shrink_usage css_put
+References: <Pine.LNX.4.64.0806290108110.20280@blonde.site> <Pine.LNX.4.64.0806290114380.20280@blonde.site> <20080630112704.632d2f6d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080630112704.632d2f6d.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Stefan Richter wrote:
->> A while ago the default behavior of git pull was changed to fetch all
->> tags which point to objects that can be reached from any of the tracked
->> heads.
+KAMEZAWA Hiroyuki wrote:
+> On Sun, 29 Jun 2008 01:15:38 +0100 (BST)
+> Hugh Dickins <hugh@veritas.com> wrote:
 > 
+>> mem_cgroup_shrink_usage makes no charge: balance its css_get with a css_put.
+>>
+>> Signed-off-by: Hugh Dickins <hugh@veritas.com>
 > 
-> This does not work in all cases.  When I retrieve the latest kernel, it 
-> downloads the tags:
+> Sorry for my mistakes
 > 
->     cd /spare/repo/linux-2.6
->     git pull
-> 
-> but when I pull those changes into another local repo, the tags do -not- 
-> follow the objects:
-> 
->     cd /spare/repo/misc-2.6
->     git checkout master
->     git pull ../linux-2.6
->     git fetch --tags ../linux-2.6    # still required to this day
+> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-I guess this is because /spare/repo/misc-2.6 does not have branches of 
-/spare/repo/linux-2.6 configured as remote (tracking) branches.
+Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+
 -- 
-Stefan Richter
--=====-==--- -==- ====-
-http://arcgraph.de/sr/
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
