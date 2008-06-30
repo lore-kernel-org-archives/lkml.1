@@ -1,246 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933678AbYF3Voh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933723AbYF3Vo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933678AbYF3Voh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 17:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763057AbYF3VfU
+	id S933723AbYF3Vo5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 17:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933450AbYF3VlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 17:35:20 -0400
-Received: from mail11b.verio-web.com ([204.202.242.87]:11731 "HELO
-	mail11b.verio-web.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1764010AbYF3VfR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 17:35:17 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jun 2008 17:35:17 EDT
-Date: Mon, 30 Jun 2008 14:28:34 -0700 (PDT)
-From: "Dean A." <dean@sensoray.com>
-Subject: [PATCH] Sensoray 2255 V4l driver checkpatch fixes
-To: mchehab@infradead.org, greg@kroah.com, v4l-vdb-maintainer@linuxtv.org,
-       video4linux-list@redhat.com, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-cc: dean@sensoray.com
-Message-ID: <tkrat.5cc12a6138632636@sensoray.com>
+	Mon, 30 Jun 2008 17:41:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43609 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933445AbYF3Vk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 17:40:59 -0400
+Message-ID: <486952BA.4090208@redhat.com>
+Date: Mon, 30 Jun 2008 18:40:10 -0300
+From: Glauber Costa <gcosta@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
-X-Spam: [F=0.1000000000; S=0.100(2008062001); MH=0.500(2008063026)]
-X-MAIL-FROM: <dean@sensoray.com>
-X-SOURCE-IP: [161.58.148.42]
-X-SF-Loop: 1
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       x86@kernel.org
+Subject: Re: [PATCH 17/39] clobber rbx in putuser_64.S
+References: <1214602486-17080-1-git-send-email-gcosta@redhat.com>	<1214602486-17080-3-git-send-email-gcosta@redhat.com>	<1214602486-17080-4-git-send-email-gcosta@redhat.com>	<1214602486-17080-5-git-send-email-gcosta@redhat.com>	<1214602486-17080-6-git-send-email-gcosta@redhat.com>	<1214602486-17080-7-git-send-email-gcosta@redhat.com>	<1214602486-17080-8-git-send-email-gcosta@redhat.com>	<1214602486-17080-9-git-send-email-gcosta@redhat.com>	<1214602486-17080-10-git-send-email-gcosta@redhat.com>	<1214602486-17080-11-git-send-email-gcosta@redhat.com>	<1214602486-17080-12-git-send-email-gcosta@redhat.com>	<1214602486-17080-13-git-send-email-gcosta@redhat.com>	<1214602486-17080-14-git-send-email-gcosta@redhat.com>	<1214602486-17080-15-git-send-email-gcosta@redhat.com>	<1214602486-17080-16-git-send-email-gcosta@redhat.com>	<1214602486-17080-17-git-send-email-gcosta@redhat.com>	<1214602486-17080-18-git-send-email-gcosta@redhat.com> <87abh5pxl6.fsf@basil.nowhere.org>
+In-Reply-To: <87abh5pxl6.fsf@basil.nowhere.org>
+Content-Type: multipart/mixed;
+ boundary="------------050506070307050002070902"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dean Anderson <dean@sensoray.com>
+This is a multi-part message in MIME format.
+--------------050506070307050002070902
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-This patch fixes some coding style issues.
-It also fixes a NULL de-reference on driver unload.
-The permissions for the module parameters were changed to 0644.
+Andi Kleen wrote:
+> Glauber Costa <gcosta@redhat.com> writes:
+> 
+>> Instead of clobbering r8, clobber rbx, which is the i386 way.
+> 
+> Note rbx is callee saved on 64bit, so using that one means
+> the surrounding function always has to save explicitely.
+> Not the case with r8.
+> 
+> There's a reason it is the way it is.
+> 
+> -Andi
 
-Signed-off-by: Dean Anderson <dean@sensoray.com>
+Andi, how about this one ?
+
+--------------050506070307050002070902
+Content-Type: text/plain;
+ name="0001-Use-r8-as-clobber-for-putuser-at-x86_64.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-Use-r8-as-clobber-for-putuser-at-x86_64.patch"
+
+>From d7162c0499da551b71c2894fa8357c148cc3b974 Mon Sep 17 00:00:00 2001
+From: Glauber Costa <gcosta@redhat.com>
+Date: Mon, 30 Jun 2008 18:30:32 -0300
+Subject: [PATCH] Use r8 as clobber for putuser at x86_64.
+
+As pointed out by Andi Kleen, we can do a little bit
+better with putuser, regarding code generation. (As
+a matter of fact, we used to.)
+
+So use either r8 or ebx in the clobber list, depending
+on which platform we are. This patch also provides comments
+on the reasoning behind it.
+
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
+CC: Andi Kleen <andi@firstfloor.org>
 ---
+ arch/x86/lib/putuser.S    |   39 ++++++++++++++++++++++++++++-----------
+ include/asm-x86/uaccess.h |   16 +++++++++-------
+ 2 files changed, 37 insertions(+), 18 deletions(-)
 
-Diff from v4l-dvb development tree.
-
-
-diff -r cb6162341029 linux/drivers/media/video/s2255drv.c
---- a/linux/drivers/media/video/s2255drv.c	Sun Jun 29 08:54:08 2008 -0300
-+++ b/linux/drivers/media/video/s2255drv.c	Mon Jun 30 13:56:21 2008 -0700
-@@ -68,17 +68,17 @@
- /* maximum time for DSP to start responding after last FW word loaded(ms) */
- #define S2255_DSP_BOOTTIME      400
- /* maximum time to wait for firmware to load (ms) */
--#define S2255_LOAD_TIMEOUT      (5000+S2255_DSP_BOOTTIME)
-+#define S2255_LOAD_TIMEOUT      (5000 + S2255_DSP_BOOTTIME)
- #define S2255_DEF_BUFS          16
- #define MAX_CHANNELS		4
- #define FRAME_MARKER		0x2255DA4AL
--#define MAX_PIPE_USBBLOCK	(40*1024)
--#define DEFAULT_PIPE_USBBLOCK	(16*1024)
-+#define MAX_PIPE_USBBLOCK	(40 * 1024)
-+#define DEFAULT_PIPE_USBBLOCK	(16 * 1024)
- #define MAX_CHANNELS		4
- #define MAX_PIPE_BUFFERS	1
- #define SYS_FRAMES		4
- /* maximum size is PAL full size plus room for the marker header(s) */
--#define SYS_FRAMES_MAXSIZE	(720*288*2*2 + 4096)
-+#define SYS_FRAMES_MAXSIZE	(720 * 288 * 2 * 2 + 4096)
- #define DEF_USB_BLOCK		(4096)
- #define LINE_SZ_4CIFS_NTSC	640
- #define LINE_SZ_2CIFS_NTSC	640
-@@ -169,7 +169,7 @@ struct s2255_bufferi {
+diff --git a/arch/x86/lib/putuser.S b/arch/x86/lib/putuser.S
+index 36b0d15..896667d 100644
+--- a/arch/x86/lib/putuser.S
++++ b/arch/x86/lib/putuser.S
+@@ -30,14 +30,31 @@
+  */
  
- #define DEF_MODEI_NTSC_CONT	{FORMAT_NTSC, DEF_SCALE, DEF_COLOR,	\
- 			DEF_FDEC, DEF_BRIGHT, DEF_CONTRAST, DEF_SATURATION, \
--			DEF_HUE, 0, DEF_USB_BLOCK, 0 }
-+			DEF_HUE, 0, DEF_USB_BLOCK, 0}
- 
- struct s2255_dmaqueue {
- 	struct list_head	active;
-@@ -276,6 +276,10 @@ struct s2255_fh {
- 	struct s2255_mode	mode;
- };
+ #define ENTER	CFI_STARTPROC ; \
+-		GET_THREAD_INFO(%_ASM_BX)
++		GET_THREAD_INFO(%SCRATCH_REG)
+ #define EXIT	ret ; \
+ 		CFI_ENDPROC
  
 +/*
-+ * TODO: fixme S2255_MAX_USERS. Do not limit open driver handles.
-+ * Limit V4L to one stream at a time.
++ * i386 calling convention determines that eax, ecx and edx belongs
++ * to the called function (caller-saved). This means that if we used any
++ * of those registers, the compiler would not need to save and restore it.
++ * However, all those registers are used for parameter passing in i386,
++ * and we have to trash one of them anyway. We randomly choose ebx.
++ *
++ * x86_64 has many more caller-saved registers, and we can pick one of them
++ * to use here. Again at random, we pick r8. This should lead to better code
++ * generation in the later platform.
 + */
- #define S2255_MAX_USERS         1
++#ifdef CONFIG_X86_64
++#define SCRATCH_REG r8
++#else
++#define SCRATCH_REG ebx
++#endif
++
+ .text
+ ENTRY(__put_user_1)
+ 	ENTER
+-	cmp TI_addr_limit(%_ASM_BX),%_ASM_CX
++	cmp TI_addr_limit(%SCRATCH_REG),%_ASM_CX
+ 	jae bad_put_user
+ 1:	movb %al,(%_ASM_CX)
+ 	xor %eax,%eax
+@@ -46,9 +63,9 @@ ENDPROC(__put_user_1)
  
- #define CUR_USB_FWVER	774	/* current cypress EEPROM firmware version */
-@@ -294,7 +298,7 @@ struct s2255_fh {
- #define PREFIX_SIZE		512
+ ENTRY(__put_user_2)
+ 	ENTER
+-	mov TI_addr_limit(%_ASM_BX),%_ASM_BX
+-	sub $1,%_ASM_BX
+-	cmp %_ASM_BX,%_ASM_CX
++	mov TI_addr_limit(%SCRATCH_REG),%SCRATCH_REG
++	sub $1,%SCRATCH_REG
++	cmp %SCRATCH_REG,%_ASM_CX
+ 	jae bad_put_user
+ 2:	movw %ax,(%_ASM_CX)
+ 	xor %eax,%eax
+@@ -57,9 +74,9 @@ ENDPROC(__put_user_2)
  
- /* Channels on box are in reverse order */
--static unsigned long G_chnmap[MAX_CHANNELS] = { 3, 2, 1, 0 };
-+static unsigned long G_chnmap[MAX_CHANNELS] = {3, 2, 1, 0};
+ ENTRY(__put_user_4)
+ 	ENTER
+-	mov TI_addr_limit(%_ASM_BX),%_ASM_BX
+-	sub $3,%_ASM_BX
+-	cmp %_ASM_BX,%_ASM_CX
++	mov TI_addr_limit(%SCRATCH_REG),%SCRATCH_REG
++	sub $3,%SCRATCH_REG
++	cmp %SCRATCH_REG,%_ASM_CX
+ 	jae bad_put_user
+ 3:	movl %eax,(%_ASM_CX)
+ 	xor %eax,%eax
+@@ -68,9 +85,9 @@ ENDPROC(__put_user_4)
  
- static LIST_HEAD(s2255_devlist);
+ ENTRY(__put_user_8)
+ 	ENTER
+-	mov TI_addr_limit(%_ASM_BX),%_ASM_BX
+-	sub $7,%_ASM_BX
+-	cmp %_ASM_BX,%_ASM_CX
++	mov TI_addr_limit(%SCRATCH_REG),%SCRATCH_REG
++	sub $7,%SCRATCH_REG
++	cmp %SCRATCH_REG,%_ASM_CX
+ 	jae bad_put_user
+ 4:	mov %_ASM_AX,(%_ASM_CX)
+ #ifdef CONFIG_X86_32
+diff --git a/include/asm-x86/uaccess.h b/include/asm-x86/uaccess.h
+index f6fa4d8..c00fbc3 100644
+--- a/include/asm-x86/uaccess.h
++++ b/include/asm-x86/uaccess.h
+@@ -178,12 +178,6 @@ extern int __get_user_bad(void);
+ 	__ret_gu;							\
+ })
  
-@@ -330,11 +334,11 @@ static unsigned int vid_limit = 16;	/* V
- /* start video number */
- static int video_nr = -1;	/* /dev/videoN, -1 for autodetect */
- 
--module_param(debug, int, 0);
-+module_param(debug, int, 0644);
- MODULE_PARM_DESC(debug, "Debug level(0-100) default 0");
--module_param(vid_limit, int, 0);
-+module_param(vid_limit, int, 0644);
- MODULE_PARM_DESC(vid_limit, "video memory limit(Mb)");
--module_param(video_nr, int, 0);
-+module_param(video_nr, int, 0644);
- MODULE_PARM_DESC(video_nr, "start video minor(-1 default autodetect)");
- 
- /* USB device table */
-@@ -438,7 +442,10 @@ static int norm_minh(struct video_device
- }
- 
- 
--/* converts 2255 planar format to yuyv or uyvy */
-+/*
-+ * TODO: fixme: move YUV reordering to hardware
-+ * converts 2255 planar format to yuyv or uyvy
-+ */
- static void planar422p_to_yuv_packed(const unsigned char *in,
- 				     unsigned char *out,
- 				     int width, int height,
-@@ -503,7 +510,7 @@ static void s2255_fwchunk_complete(struc
- 	struct usb_device *udev = urb->dev;
- 	int len;
- 	dprintk(100, "udev %p urb %p", udev, urb);
+-#define __put_user_x(size, x, ptr, __ret_pu)			\
+-	asm volatile("call __put_user_" #size : "=a" (__ret_pu)	\
+-		     :"0" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
 -
-+	/* TODO: fixme.  reflect change in status */
- 	if (urb->status) {
- 		dev_err(&udev->dev, "URB failed with status %d", urb->status);
- 		return;
-@@ -683,7 +690,7 @@ static int buffer_setup(struct videobuf_
- 	if (0 == *count)
- 		*count = S2255_DEF_BUFS;
- 
--	while (*size * *count > vid_limit * 1024 * 1024)
-+	while (*size * (*count) > vid_limit * 1024 * 1024)
- 		(*count)--;
- 
- 	return 0;
-@@ -790,7 +797,7 @@ static int res_get(struct s2255_dev *dev
- 
- static int res_locked(struct s2255_dev *dev, struct s2255_fh *fh)
- {
--	return (dev->resources[fh->channel]);
-+	return dev->resources[fh->channel];
- }
- 
- static void res_free(struct s2255_dev *dev, struct s2255_fh *fh)
-@@ -807,7 +814,8 @@ static int vidioc_querycap(struct file *
- 	struct s2255_dev *dev = fh->dev;
- 	strlcpy(cap->driver, "s2255", sizeof(cap->driver));
- 	strlcpy(cap->card, "s2255", sizeof(cap->card));
--	strlcpy(cap->bus_info, dev_name(&dev->udev->dev), sizeof(cap->bus_info));
-+	strlcpy(cap->bus_info, dev_name(&dev->udev->dev),
-+		sizeof(cap->bus_info));
- 	cap->version = S2255_VERSION;
- 	cap->capabilities = V4L2_CAP_VIDEO_CAPTURE | V4L2_CAP_STREAMING;
- 	return 0;
-@@ -840,8 +848,7 @@ static int vidioc_g_fmt_vid_cap(struct f
- 	f->fmt.pix.pixelformat = fh->fmt->fourcc;
- 	f->fmt.pix.bytesperline = f->fmt.pix.width * (fh->fmt->depth >> 3);
- 	f->fmt.pix.sizeimage = f->fmt.pix.height * f->fmt.pix.bytesperline;
 -
--	return (0);
-+	return 0;
- }
- 
- static int vidioc_try_fmt_vid_cap(struct file *file, void *priv,
-@@ -962,7 +969,7 @@ static int vidioc_s_fmt_vid_cap(struct f
- 	ret = vidioc_try_fmt_vid_cap(file, fh, f);
- 
- 	if (ret < 0)
--		return (ret);
-+		return ret;
- 
- 	fmt = format_by_fourcc(f->fmt.pix.pixelformat);
- 
-@@ -1337,7 +1344,7 @@ static int vidioc_enum_input(struct file
- 	inp->type = V4L2_INPUT_TYPE_CAMERA;
- 	inp->std = S2255_NORMS;
- 	strlcpy(inp->name, "Camera", sizeof(inp->name));
--	return (0);
-+	return 0;
- }
- 
- static int vidioc_g_input(struct file *file, void *priv, unsigned int *i)
-@@ -1361,7 +1368,7 @@ static int vidioc_queryctrl(struct file 
- 	for (i = 0; i < ARRAY_SIZE(s2255_qctrl); i++)
- 		if (qc->id && qc->id == s2255_qctrl[i].id) {
- 			memcpy(qc, &(s2255_qctrl[i]), sizeof(*qc));
--			return (0);
-+			return 0;
- 		}
- 
- 	dprintk(4, "query_ctrl -EINVAL %d\n", qc->id);
-@@ -1376,7 +1383,7 @@ static int vidioc_g_ctrl(struct file *fi
- 	for (i = 0; i < ARRAY_SIZE(s2255_qctrl); i++)
- 		if (ctrl->id == s2255_qctrl[i].id) {
- 			ctrl->value = qctl_regs[i];
--			return (0);
-+			return 0;
- 		}
- 	dprintk(4, "g_ctrl -EINVAL\n");
- 
-@@ -1396,7 +1403,7 @@ static int vidioc_s_ctrl(struct file *fi
- 		if (ctrl->id == s2255_qctrl[i].id) {
- 			if (ctrl->value < s2255_qctrl[i].minimum ||
- 			    ctrl->value > s2255_qctrl[i].maximum)
--				return (-ERANGE);
-+				return -ERANGE;
- 
- 			qctl_regs[i] = ctrl->value;
- 			/* update the mode to the corresponding value */
-@@ -1572,6 +1579,11 @@ static void s2255_destroy(struct kref *k
- 		usb_free_urb(dev->fw_data->fw_urb);
- 		dev->fw_data->fw_urb = NULL;
- 	}
-+	/*
-+	 * TODO: fixme(above, below): potentially leaving timers alive.
-+	 *                            do not ignore timeout below if
-+	 *                            it occurs.
-+	 */
- 
- 	/* make sure we aren't waiting for the DSP */
- 	if (atomic_read(&dev->fw_data->fw_state) == S2255_FW_LOADED_DSPWAIT) {
-@@ -1583,13 +1595,10 @@ static void s2255_destroy(struct kref *k
- 	}
- 
- 	if (dev->fw_data) {
-+		if (dev->fw_data->fw)
-+			release_firmware(dev->fw_data->fw);
- 		kfree(dev->fw_data->pfw_data);
- 		kfree(dev->fw_data);
--	}
 -
--	if (dev->fw_data->fw) {
--		release_firmware(dev->fw_data->fw);
--		dev->fw_data->fw = NULL;
- 	}
+ #ifdef CONFIG_X86_32
+ #define __put_user_u64(x, addr, err)					\
+ 	asm volatile("1:	movl %%eax,0(%2)\n"			\
+@@ -201,17 +195,25 @@ extern int __get_user_bad(void);
+ #define __put_user_x8(x, ptr, __ret_pu)				\
+ 	asm volatile("call __put_user_8" : "=a" (__ret_pu)	\
+ 		     : "A" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
++#define PUT_USER_REG_CLOBBER	"ebx"
+ #else
+ #define __put_user_u64(x, ptr, retval) \
+ 	__put_user_asm(x, ptr, retval, "q", "", "Zr", -EFAULT)
+ #define __put_user_x8(x, ptr, __ret_pu) __put_user_x(8, x, ptr, __ret_pu)
++#define PUT_USER_REG_CLOBBER	"r8"
+ #endif
  
- 	usb_put_dev(dev->udev);
++#define __put_user_x(size, x, ptr, __ret_pu)			\
++	asm volatile("call __put_user_" #size : "=a" (__ret_pu)	\
++		     :"0" ((typeof(*(ptr)))(x)), "c" (ptr)	\
++		     : PUT_USER_REG_CLOBER )
++
+ extern void __put_user_bad(void);
+ 
+ /*
+  * Strange magic calling convention: pointer in %ecx,
+- * value in %eax(:%edx), return value in %eax. clobbers %rbx
++ * value in %eax(:%edx), return value in %eax.
++ * For clobbers, refer to the explanation at putuser.S
+  */
+ extern void __put_user_1(void);
+ extern void __put_user_2(void);
+-- 
+1.5.5.1
 
+
+--------------050506070307050002070902--
