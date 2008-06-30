@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933533AbYF3WgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933015AbYF3WhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933533AbYF3WgU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 18:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763191AbYF3WgK
+	id S933015AbYF3WhX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 18:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764018AbYF3WhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 18:36:10 -0400
-Received: from gw.goop.org ([64.81.55.164]:52650 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752563AbYF3WgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 18:36:09 -0400
-Message-ID: <48695FD5.7000605@goop.org>
-Date: Mon, 30 Jun 2008 15:36:05 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 30 Jun 2008 18:37:09 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:15822 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1764013AbYF3WhI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 18:37:08 -0400
+Date: Tue, 1 Jul 2008 02:37:05 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [RT] MPIC edge sensitive issues with hardirq preemption (was:
+	Re: [PATCH v2 -rt] ide: workaround buggy hardware issues with
+	preemptable hardirqs)
+Message-ID: <20080630223705.GA28503@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080623234037.GA6793@polina.dev.rtsoft.ru> <20080623235141.GB17297@elte.hu> <20080624000016.GA12547@polina.dev.rtsoft.ru> <20080625123431.GA25452@polina.dev.rtsoft.ru> <20080628005436.GA1956@polina.dev.rtsoft.ru> <1214781974.20711.7.camel@pasglop> <20080630190132.GA6492@polina.dev.rtsoft.ru> <1214863197.20711.57.camel@pasglop>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Sean Young <sean@mess.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Regression: boot failure on AMD Elan TS-5500
-References: <20080616121138.GA51097@atlantis.8hz.com> <200806162327.34912.rusty@rustcorp.com.au> <48566C88.6000702@goop.org> <20080616161944.GA53539@atlantis.8hz.com> <20080630214347.GA57988@atlantis.8hz.com> <4869558A.9020907@goop.org> <48695871.8000805@zytor.com> <48695ACE.9040806@zytor.com>
-In-Reply-To: <48695ACE.9040806@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <1214863197.20711.57.camel@pasglop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> H. Peter Anvin wrote:
->>>>
->>>> startup_32:
->>>>         cld
->>>>         /* test KEEP_SEGMENTS flag to see if the bootloader is asking
->>>>          * us to not reload segments */
->>>>         testb $(1<<6), BP_loadflags(%esi)
->>>>         jnz 1f
->>>>
->>>>         cli
->>>>         movl $(__BOOT_DS),%eax
->>>>         movl %eax,%ds
->>>>         movl %eax,%es
->>>>         movl %eax,%fs
->>>>         movl %eax,%gs
->>>>         movl %eax,%ss
->>>> 1:
->
-> On this general subject... I keep thinking that it would be better to 
-> have this as:
->
->     movl    %cs, %eax
->     addl    $8, %eax
->     movl    %eax, %cs
+On Tue, Jul 01, 2008 at 07:59:57AM +1000, Benjamin Herrenschmidt wrote:
+> > 	
+> > Thanks for the idea. With hardirq preempton, fasteoi path does not replay
+> > edge interrupts indeed (at least for MPIC).
+> > 
+> > Here how I tested this: I have external interrupt connected to the button
+> > on this board, thus I registered irq handler which is doing exactly this
+> > (irq is edge sensitive):
+> > 
+> > printk("handled\n"); mdelay(2000);
+> > 
+> > Without hardirq preemption: pressing button twice prints two messages.
+> > With hardirq preemption: pressing button twice prints just one message.
+> > 
+> > This happens because:
+> > - irq has come;
+> > - fasteoi handler mask()s it, and wakes up the thread;
+> 
+> Do we eoi first ? We should.
 
-What's your intent?  You can't directly load %cs; do you mean the other 
-segment registers?
+Yup. I just left over this small detail.
 
->
-> ... instead of a hard-coded constant.  That actually removes all 
-> hard-coded uses of BOOT_CS/BOOT_DS until we eventually load the 
-> kernel's own boot GDT at head_32.S:94.
->
-> Does anyone see any problem with that?  As far as I can tell, we're 
-> requiring %cs == BOOT_CS for the current code anyway (unless 
-> KEEP_SEGMENTS), but %ds == %cs + 8 seems like a more sensible 
-> requirement.
->
+Without my patch the code was firstly masking the IRQ, then sending EOI.
+Now we don't mask it, but simply send an EOI. If the edge IRQ came again
+(while we were processing the same IRQ), non-threaded handler marks IRQ
+that it should be replayed, then masks it and sends EOI. When thread
+awakes, it unmasks the IRQ before handle_IRQ_event, so that we can catch
+next edge IRQ. That is, we handle EOI quite correctly.
 
-Oh, you mean
-
-	mov %cs, %eax
-	add $8, %eax
-	mov %eax, %ds (etc)
-?
-
-Seems reasonable.
-
-	J
-
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
