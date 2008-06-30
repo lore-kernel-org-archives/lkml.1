@@ -1,99 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762561AbYF3RSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761936AbYF3RUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762561AbYF3RSM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 13:18:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbYF3RRc
+	id S1761936AbYF3RUF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 13:20:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbYF3RTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 13:17:32 -0400
-Received: from gw.goop.org ([64.81.55.164]:60052 "EHLO mail.goop.org"
+	Mon, 30 Jun 2008 13:19:53 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:54344 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756300AbYF3RRa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 13:17:30 -0400
-Message-ID: <48691524.5010806@goop.org>
-Date: Mon, 30 Jun 2008 10:17:24 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Nick Piggin <npiggin@suse.de>, Mark McLoughlin <markmc@redhat.com>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Eduardo Habkost <ehabkost@redhat.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Stephen Tweedie <sct@redhat.com>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for
- 64-bit Xen support
-References: <20080625152212.GA3442@elte.hu> <4862A6A9.1030109@goop.org> <20080626105722.GA12640@elte.hu> <20080626105818.GA13805@elte.hu> <4863A8E6.1010807@goop.org> <20080627160333.GA27072@elte.hu> <486539A3.3030102@goop.org> <20080629084318.GA28815@elte.hu> <48684CD4.7040403@goop.org> <20080630082135.GA22844@elte.hu> <20080630092209.GA29815@elte.hu>
-In-Reply-To: <20080630092209.GA29815@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1751733AbYF3RTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 13:19:52 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -1.639
+Date: Mon, 30 Jun 2008 10:19:48 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       <netdev@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add missing skb->dev assignment in Frame Relay RX code
+Message-ID: <20080630101948.535496a9@extreme>
+In-Reply-To: <m3od5kaqx8.fsf@maximus.localdomain>
+References: <m3wsk8aupw.fsf@maximus.localdomain>
+	<20080629130420.62d00d59@extreme>
+	<m3od5kaqx8.fsf@maximus.localdomain>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
->
->   
->> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->>
->>     
->>> Ingo Molnar wrote:
->>>       
->>>> with this config:
->>>>
->>>>   http://redhat.com/~mingo/misc/config-Sun_Jun_29_10_29_11_CEST_2008.bad
->>>>
->>>> i've saved the merged 2.6.26-rc8-tip-00241-gc6c8cb2-dirty tree into  
->>>> tip/tmp.x86.xen-64bit.Sun_Jun_29_10 and pushed it out, so you can test  
->>>> that exact version.
->>>>         
->>> Looks like the setup.c unification missed the early_ioremap init from 
->>> the early_ioremap unification.  Unconditionally call 
->>> early_ioremap_init().
->>>       
->> applied to tip/x86/unify-setup - thanks Jeremy.
->>
->> I've reactived the x86/xen-64bit branch and i'm testing it currently.
->>     
->
-> -tip auto-testing found pagetable corruption (CPA self-test failure):
->
-> [   32.956015] CPA self-test:
-> [   32.958822]  4k 2048 large 508 gb 0 x 2556[ffff880000000000-ffff88003fe00000] miss 0
-> [   32.964000] CPA ffff88001d54e000: bad pte 1d4000e3
-> [   32.968000] CPA ffff88001d54e000: unexpected level 2
-> [   32.972000] CPA ffff880022c5d000: bad pte 22c000e3
-> [   32.976000] CPA ffff880022c5d000: unexpected level 2
-> [   32.980000] CPA ffff8800200ce000: bad pte 200000e3
-> [   32.984000] CPA ffff8800200ce000: unexpected level 2
-> [   32.988000] CPA ffff8800210f0000: bad pte 210000e3
->
-> config and full log can be found at:
->
->  http://redhat.com/~mingo/misc/config-Mon_Jun_30_11_11_51_CEST_2008.bad
->   
+On Sun, 29 Jun 2008 23:10:11 +0200
+Krzysztof Halasa <khc@pm.waw.pl> wrote:
 
-That config doesn't build for me.  When I put it in place and do "make 
-oldconfig" it still asks for lots of config options (which I just set to 
-default).  But when I build it fails with:
+> Stephen Hemminger <shemminger@vyatta.com> writes:
+> 
+> >> --- a/drivers/net/wan/hdlc_fr.c
+> >> +++ b/drivers/net/wan/hdlc_fr.c
+> >> @@ -1008,6 +1008,7 @@ static int fr_rx(struct sk_buff *skb)
+> >>  		stats->rx_bytes += skb->len;
+> >>  		if (pvc->state.becn)
+> >>  			stats->rx_compressed++;
+> >> +		skb->dev = dev;
+> >>  		netif_rx(skb);
+> >>  		return NET_RX_SUCCESS;
+> >>  	} else {
+> >
+> > Better to use netdev_alloc_skb for receive buffers instead.
+> > --- a/drivers/net/wan/hdlc_fr.c	2008-06-29 13:02:42.000000000 -0700
+> > +++ b/drivers/net/wan/hdlc_fr.c	2008-06-29 13:04:01.000000000 -0700
+> > @@ -515,7 +515,7 @@ static void fr_lmi_send(struct net_devic
+> >  		}
+> >  	}
+> >  
+> > -	skb = dev_alloc_skb(len);
+> > +	skb = netdev_alloc_skb(dev, len);
+> >  	if (!skb) {
+> >  		printk(KERN_WARNING "%s: Memory squeeze on fr_lmi_send()\n",
+> >  		       dev->name);
+> 
+> Well, no, that's another story - the missing assignment is in fr_rx(),
+> in the regular receive path (similar to 802.1q case, ethX ->
+> ethX.VLAN_ID transition). I.e., we get incoming packet from a hardware
+> driver, with skb->dev pointing to hardware hdlcX device, and we change
+> it to point to a logical pvcX device.
+> 
+> fr_lmi_send() is for control messages (generated locally) only, in TX
+> path. IOW we alloc skb and send it through hw driver immediately. Not
+> related to the bug.
+> 
+> That said, perhaps I should indeed use netdev_alloc_skb() for those
+> control messages? Or is it RX-only?
 
-  CC      arch/x86/kernel/asm-offsets.s
-In file included from include2/asm/page.h:40,
-                 from include2/asm/pda.h:8,
-                 from include2/asm/current.h:19,
-                 from include2/asm/processor.h:15,
-                 from /home/jeremy/hg/xen/paravirt/linux/include/linux/prefetch.h:14,
-                 from /home/jeremy/hg/xen/paravirt/linux/include/linux/list.h:6,
-                 from /home/jeremy/hg/xen/paravirt/linux/include/linux/module.h:9,
-                 from /home/jeremy/hg/xen/paravirt/linux/include/linux/crypto.h:21,
-                 from /home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/asm-offsets_64.c:7,
-                 from /home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/asm-offsets.c:4:
-include2/asm/page_64.h:46:2: error: #error "CONFIG_PHYSICAL_START must be a multiple of 2MB"
-make[3]: *** [arch/x86/kernel/asm-offsets.s] Error 1
-
-I can fix that, of course, but it doesn't give me confidence I'm testing 
-what you are...
-
-    J
+netdev_alloc_skb does two things:
+  1) it sets skb->dev
+  2) on some platforms it can choose memory "closer" to the device.
+     but this is really a NUMA issue
