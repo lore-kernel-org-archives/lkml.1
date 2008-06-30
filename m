@@ -1,59 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbYF3Eks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756282AbYF3Ep1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756105AbYF3Eks (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 00:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYF3Eki
+	id S1756282AbYF3Ep1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 00:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYF3EpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 00:40:38 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:46886 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751344AbYF3Ekh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 00:40:37 -0400
-Message-ID: <486863C6.6090304@linux.vnet.ibm.com>
-Date: Mon, 30 Jun 2008 10:10:38 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [RFC 0/5] Memory controller soft limit introduction (v3)
-References: <20080627151808.31664.36047.sendpatchset@balbir-laptop> <20080628133615.a5fa16cf.kamezawa.hiroyu@jp.fujitsu.com> <4867174B.3090005@linux.vnet.ibm.com> <20080630102054.ee214765.kamezawa.hiroyu@jp.fujitsu.com> <486855DF.2070100@linux.vnet.ibm.com> <20080630125737.4b14785f.kamezawa.hiroyu@jp.fujitsu.com> <48685A72.3090102@linux.vnet.ibm.com> <20080630131920.68d2cc23.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080630131920.68d2cc23.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 30 Jun 2008 00:45:17 -0400
+Received: from pxy2nd.nifty.com ([202.248.175.14]:54634 "HELO pxy2nd.nifty.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750878AbYF3EpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 00:45:16 -0400
+X-Nifty-SrcIP: [61.124.20.110]
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=pxy2nd-default; d=mbf.nifty.com;
+  b=Tnt2tLb7FTj+u4hl97A1O8/RYDtCZo3OxZidVhKWUi2xJNhrHjNe0f69WQyxCSlk7myg3OCj+H3SkO3r54+odg==  ;
+Date: Mon, 30 Jun 2008 13:44:45 +0900 (JST)
+Message-Id: <20080630.134445.193700135.takada@mbf.nifty.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] ptrace GET/SET FPXREGS broken
+From: TAKADA Yoshihito <takada@mbf.nifty.com>
+X-Mailer: Mew version 6.0.50 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Multipart/Mixed;
+ boundary="--Next_Part(Mon_Jun_30_13_44_45_2008_097)--"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Mon, 30 Jun 2008 09:30:50 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> KAMEZAWA Hiroyuki wrote:
->>> Hmm, that is the case where "share" works well. Why soft-limit ?
->>> i/o conroller doesn't support share ? (I don' know sorry.)
->>>
->> Share is a proportional allocation of a resource. Typically that resource is
->> soft-limits, but not necessarily. If we re-use resource counters, my expectation
->> is that
->>
->> A share implementation would under-neath use soft-limits.
->>
-> Hmm...I don't convice at this point. (because it's future problem)
-> At least, please find lock-less approach to check soft-limit.
+----Next_Part(Mon_Jun_30_13_44_45_2008_097)--
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-I've been looking at improving res_counter scalability. One simple approach is
-to convert the spin lock to rw spinlock so that reading data can happen in
-parallel. The next step would be to explore RCU for resource counters.
+Hi
+When I update kernel 2.6.25 from 2.6.24, gdb does not work.
+On 2.6.25, ptrace(PTRACE_GETFPXREGS, ...) returns ENODEV.
+But 2.6.24 kernel's ptrace() returns EIO.
+It is issue of compatibility.
+I attached test program as pt.c and patch for fix it.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+----Next_Part(Mon_Jun_30_13_44_45_2008_097)--
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="pt.c"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+#include <errno.h>
+#include <sys/ptrace.h>
+#include <sys/types.h>
+
+
+struct user_fxsr_struct {
+	unsigned short	cwd;
+	unsigned short	swd;
+	unsigned short	twd;
+	unsigned short	fop;
+	long	fip;
+	long	fcs;
+	long	foo;
+	long	fos;
+	long	mxcsr;
+	long	reserved;
+	long	st_space[32];	/* 8*16 bytes for each FP-reg = 128 bytes */
+	long	xmm_space[32];	/* 8*16 bytes for each XMM-reg = 128 bytes */
+	long	padding[56];
+};
+
+int main(void)
+{
+  pid_t pid;
+
+  pid = fork();
+
+  switch(pid){
+  case -1:/*  error */
+    break;
+  case 0:/*  child */
+    child();
+    break;
+  default:
+    parent(pid);
+    break;
+  }
+  return 0;
+}
+
+int child(void)
+{
+  ptrace(PTRACE_TRACEME);
+  kill(getpid(), SIGSTOP);
+  sleep(10);
+  return 0;
+}
+int parent(pid_t pid)
+{
+  int ret;
+  struct user_fxsr_struct fpxregs;
+
+  ret = ptrace(PTRACE_GETFPXREGS, pid, 0, &fpxregs);
+  if(ret < 0){
+    printf("%d: %s.\n", errno, strerror(errno));
+  }
+  kill(pid, SIGCONT);
+  wait(pid);
+  return 0;
+}
+
+/* in the kerel, at kernel/i387.c get_fpxregs() */
+
+----Next_Part(Mon_Jun_30_13_44_45_2008_097)--
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="fxsr.patch"
+
+--- a/arch/x86/kernel/i387.c	2008-04-17 11:49:44.000000000 +0900
++++ b/arch/x86/kernel/i387.c	2008-06-30 13:22:57.000000000 +0900
+@@ -130,7 +130,7 @@
+ 		void *kbuf, void __user *ubuf)
+ {
+ 	if (!cpu_has_fxsr)
+-		return -ENODEV;
++		return -EIO;
+ 
+ 	init_fpu(target);
+ 
+@@ -145,7 +145,7 @@
+ 	int ret;
+ 
+ 	if (!cpu_has_fxsr)
+-		return -ENODEV;
++		return -EIO;
+ 
+ 	init_fpu(target);
+ 	set_stopped_child_used_math(target);
+
+----Next_Part(Mon_Jun_30_13_44_45_2008_097)----
