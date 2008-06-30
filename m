@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760968AbYF3P2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761130AbYF3P2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760968AbYF3P2Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 11:28:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYF3P1u
+	id S1761130AbYF3P2i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 11:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbYF3P1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 11:27:50 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:60302 "EHLO
+	Mon, 30 Jun 2008 11:27:51 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:60304 "EHLO
 	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751040AbYF3P1s (ORCPT
+	with ESMTP id S1751156AbYF3P1s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Jun 2008 11:27:48 -0400
-Message-Id: <20080630152747.341389424@fluff.org.uk>
+Message-Id: <20080630152747.550249750@fluff.org.uk>
 References: <20080630152547.755285683@fluff.org.uk>
 User-Agent: quilt/0.46-1
-Date: Mon, 30 Jun 2008 16:25:50 +0100
+Date: Mon, 30 Jun 2008 16:25:51 +0100
 From: Ben Dooks <ben-linux@fluff.org>
 To: linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx
 Cc: tk@maintech.de, laforge@openmoko.org, Ben Dooks <ben-linux@fluff.org>
-Subject: [patch v4 03/17] MMC: S3C24XX MMC/SD driver write fixes
-Content-Disposition: inline; filename=thirdparty/openmoko-mci/s3cmci_dbg.patch
+Subject: [patch v4 04/17] MMC: DMA free fix for S3C24XX SD/MMC driver
+Content-Disposition: inline; filename=thirdparty/openmoko-mci/s3cmci-dma-free.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Harald Welte <laforge@openmoko.org>
 
-This patch is a workaround of some S3C2410 MMC chip bug
+Bugfix to ensure DMA channel allocated is freed on exit.
 
 Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
 Index: linux-2.6.26-rc8-next20080627/drivers/mmc/host/s3cmci.c
 ===================================================================
---- linux-2.6.26-rc8-next20080627.orig/drivers/mmc/host/s3cmci.c	2008-06-30 12:18:49.000000000 +0100
-+++ linux-2.6.26-rc8-next20080627/drivers/mmc/host/s3cmci.c	2008-06-30 12:19:04.000000000 +0100
-@@ -461,9 +461,19 @@ static irqreturn_t s3cmci_irq(int irq, v
+--- linux-2.6.26-rc8-next20080627.orig/drivers/mmc/host/s3cmci.c	2008-06-30 12:19:04.000000000 +0100
++++ linux-2.6.26-rc8-next20080627/drivers/mmc/host/s3cmci.c	2008-06-30 12:19:13.000000000 +0100
+@@ -1254,6 +1254,7 @@ static int s3cmci_remove(struct platform
+ 	clk_put(host->clk);
  
- 	if (mci_csta & S3C2410_SDICMDSTAT_CRCFAIL) {
- 		if (cmd->flags & MMC_RSP_CRC) {
--			cmd->error = -EILSEQ;
--			host->status = "error: bad command crc";
--			goto fail_transfer;
-+			if (host->mrq->cmd->flags & MMC_RSP_136) {
-+				dbg(host, dbg_irq,
-+				    "fixup: ignore CRC fail with long rsp\n");
-+			} else {
-+				/* note, we used to fail the transfer
-+				 * here, but it seems that this is just
-+				 * the hardware getting it wrong.
-+				 *
-+				 * cmd->error = -EILSEQ;
-+				 * host->status = "error: bad command crc";
-+				 * goto fail_transfer;
-+				*/
-+			}
- 		}
+ 	tasklet_disable(&host->pio_tasklet);
++	s3c2410_dma_free(S3CMCI_DMA, &s3cmci_dma_client);
  
- 		mci_cclear |= S3C2410_SDICMDSTAT_CRCFAIL;
+ 	free_irq(host->irq_cd, host);
+ 	free_irq(host->irq, host);
 
 -- 
 Ben (ben@fluff.org, http://www.fluff.org/)
