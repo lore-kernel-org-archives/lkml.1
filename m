@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbYGAJMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbYGAJNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756262AbYGAJMw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 05:12:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbYGAJMo
+	id S1755287AbYGAJNi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 05:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756757AbYGAJN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 05:12:44 -0400
-Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:47199 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753173AbYGAJMn (ORCPT
+	Tue, 1 Jul 2008 05:13:26 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:45017 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753451AbYGAJNY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 05:12:43 -0400
-Message-ID: <4869F502.5030201@davidnewall.com>
-Date: Tue, 01 Jul 2008 18:42:34 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Tue, 1 Jul 2008 05:13:24 -0400
+Message-Id: <6B16FAEFB450496A9AA95BFF27BD6AE6@nsl.ad.nec.co.jp>
+From: "Takashi Sato" <t-sato@yk.jp.nec.com>
+To: "Alasdair G Kergon" <agk@redhat.com>
+Cc: <akpm@linux-foundation.org>, <viro@ZenIV.linux.org.uk>, <axboe@kernel.dk>,
+       <mtk.manpages@googlemail.com>, <linux-kernel@vger.kernel.org>,
+       <xfs@oss.sgi.com>, <dm-devel@redhat.com>,
+       <linux-fsdevel@vger.kernel.org>, <linux-ext4@vger.kernel.org>
+References: <20080630212005t-sato@mail.jp.nec.com> <20080630135433.GA22522@agk.fab.redhat.com>
+In-Reply-To: <20080630135433.GA22522@agk.fab.redhat.com>
+Subject: Re: [dm-devel] [PATCH 0/3] freeze feature ver 1.8
+Date: Tue, 1 Jul 2008 18:12:32 +0900
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-CC: Elias Oltmanns <eo@nebensachen.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Joe Peterson <joe@skyrush.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Ctrl+C doesn't interrupt process waiting for I/O
-References: <48661488.10304@gmail.com> <87fxqurqpz.fsf@denkblock.local> <4869EFF2.7030807@davidnewall.com> <4869F252.8040600@gmail.com>
-In-Reply-To: <4869F252.8040600@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Windows Mail 6.0.6000.16480
+X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6000.16545
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Török Edwin wrote:
-> David Newall wrote:
->   
->> Elias Oltmanns wrote:
->>   
->>     
->>> -			if (!L_NOFLSH(tty)) {
->>> -				n_tty_flush_buffer(tty);
->>> -				tty_driver_flush_buffer(tty);
->>> -			}
->>>  			if (L_ECHO(tty))
->>>  				echo_char(c, tty);
->>> -			if (tty->pgrp)
->>> -				kill_pgrp(tty->pgrp, signal, 1);
->>> +			isig(signal, tty, 0);
->>>     
->>>       
->> My first reaction is that tty->pgrp must be null.  Perhaps the patch
->> could be simplified...
->>
->>  			if (tty->pgrp)
->>  				kill_pgrp(tty->pgrp, signal, 1);
->> +			else
->> +				isig(signal, tty, 0);
->>
->>
->> Thoughts?
->>   
->>     
->
-> isig has the same check, if it is NULL, isig won't deliver the signal
-> either
->   
+Hi,
 
-That is odd.  We did see the control-key echoed, so, other than not
-flushing output, what's funcitonally different?
+Alasdair G Kergon wrote:
+>> Currently, ext3 in mainline Linux doesn't have the freeze feature which
+>> suspends write requests.  So, we cannot take a backup which keeps
+>> the filesystem's consistency with the storage device's features
+>> (snapshot and replication) while it is mounted.
+>> In many case, a commercial filesystem (e.g. VxFS) has
+>> the freeze feature and it would be used to get the consistent backup.
+>> If Linux's standard filesytem ext3 has the freeze feature, we can do it
+>> without a commercial filesystem.
+>
+> Is the following a fair summary?
+
+Yes, you are right.
+We'd like to use the freeze feature without device-mapper/LVM.
+
+> 1. Some filesystems have a freeze/thaw feature.  XFS exports this to
+> userspace directly through a couple of ioctls, but other filesystems
+> don't.  For filesystems on device-mapper block devices it is exported to
+> userspace through the DM_DEV_SUSPEND ioctl which LVM uses.
+>
+> 2. There is a desire to access this feature from userspace on non-XFS
+> filesystems without having to use device-mapper/LVM.
+>
+> Alasdair
+
+Cheers, Takashi 
