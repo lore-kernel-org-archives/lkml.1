@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758684AbYGANQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbYGANWF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758684AbYGANQk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 09:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757526AbYGANPh
+	id S1756848AbYGANWF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 09:22:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbYGANVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 09:15:37 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:38055 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757339AbYGANPg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 09:15:36 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/7] fat: Fix VFAT_IOCTL_READDIR_xxx and cleanup for userland
-References: <9edbdefc3e848699cfe111608.ps@mail.parknet.co.jp>
-	<129170883e848699cff211608.ps@mail.parknet.co.jp>
-	<20080701122039.GB25580@infradead.org>
-Date: Tue, 01 Jul 2008 22:15:30 +0900
-In-Reply-To: <20080701122039.GB25580@infradead.org> (Christoph Hellwig's
-	message of "Tue, 1 Jul 2008 08:20:40 -0400")
-Message-ID: <87vdzpvj7x.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 1 Jul 2008 09:21:54 -0400
+Received: from mail.macqel.be ([194.78.208.39]:4936 "EHLO mail.macqel.be"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753110AbYGANVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 09:21:53 -0400
+Date: Tue, 1 Jul 2008 15:21:49 +0200
+From: Philippe De Muyter <phdm@macqel.be>
+To: linux-kernel@vger.kernel.org, libdc1394-devel@lists.sourceforge.net
+Subject: mmap'ed memory in core files ?
+Message-ID: <20080701132149.GA32510@frolo.macqel>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> writes:
+Hello everybody,
 
->>  #include <linux/magic.h>
->> +#include <asm/byteorder.h>
->
-> Why do we need this in the user-visible part of the header?
+I develop video acquisition software using the video1394 interface.
+The images grabbed by the camera and iee1394 bus are kept in kernel
+memory and made available to the user program through a mmap call done
+in the libdc1394 library :
 
-It was just moved from line below of this.
+dma_ring_buffer= mmap(0, vmmap.nb_buffers * vmmap.buf_size,
+		PROT_READ|PROT_WRITE,MAP_SHARED, craw->capture.dma_fd, 0);
 
->> +struct __fat_dirent {
->> +	long		d_ino;
->> +	__kernel_off_t	d_off;
->> +	unsigned short	d_reclen;
->> +	char		d_name[256]; /* We must not include limits.h! */
->> +};
->
-> Any reason this is not called fat_dirent? 
+Sometimes, my program crashes and produces a core file :)  It seems to
+me that the core file does not contain the mmap'ed memory and hence
+I cannot replay my program with the same image for debugging purpose.
 
-It was suggested, and I thought it's safe.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Is it possible to configure the kernel through /proc, or through the mmap
+system call to have that mmapped segment in the core file, or do I need
+to modify the kernel itself to obtain the behaviour I want ?  If I
+need to modify the kernel, can some kind soul provide me some pointers ?
+
+Best regards
+
+Philippe
