@@ -1,119 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbYGARHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbYGARJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757050AbYGARHb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 13:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbYGARHU
+	id S1756782AbYGARJv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 13:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbYGARJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 13:07:20 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:51073 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751245AbYGARHS (ORCPT
+	Tue, 1 Jul 2008 13:09:42 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:42672 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750826AbYGARJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 13:07:18 -0400
-Subject: [GIT PATCH] SCSI bug fixes for 2.6.26-rc8
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 01 Jul 2008 12:07:14 -0500
-Message-Id: <1214932034.3316.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+	Tue, 1 Jul 2008 13:09:40 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: Greg KH <greg@kroah.com>
+Subject: Re: linux-next: Tree for June 30 (USB: cdc-acm)
+Date: Tue, 1 Jul 2008 19:10:08 +0200
+User-Agent: KMail/1.9.9
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+References: <20080701001656.e156585c.sfr@canb.auug.org.au> <20080630114332.b797e5e4.randy.dunlap@oracle.com> <20080630190125.GA3553@kroah.com>
+In-Reply-To: <20080630190125.GA3553@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807011910.09251.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These are all pretty minor (but bug fixes none the less).
+Am Montag 30 Juni 2008 21:01:25 schrieb Greg KH:
+> On Mon, Jun 30, 2008 at 11:43:32AM -0700, Randy Dunlap wrote:
+> > cdc-acm fails to build when CONFIG_PM=n:
+> > 
+> > linux-next-20080630/drivers/usb/class/cdc-acm.c: In function 'acm_suspend':
+> > linux-next-20080630/drivers/usb/class/cdc-acm.c:1263: error: 'struct usb_device' has no member named 'auto_pm'
+> > make[4]: *** [drivers/usb/class/cdc-acm.o] Error 1
+> 
+> Yeah, known issue due to the pm and usb trees conflicting here.  It will
+> be fixed up at the merge time with Linus.
 
-The patch is available here:
+Here's the fix. cdc-wdm has the same problem. The fix is the same.
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+	Regards
+		Oliver
 
-The short changelog is:
-
-David S. Miller (1):
-      esp: Fix OOPS in esp_reset_cleanup().
-
-James Bottomley (1):
-      esp: tidy up target reference counting
-
-Matthew Wilcox (1):
-      ses: Fix timeout
-
-And the diffstat:
-
- drivers/scsi/esp_scsi.c |   22 ++++++++++++++++++++--
- drivers/scsi/ses.c      |    2 +-
- 2 files changed, 21 insertions(+), 3 deletions(-)
-
-Full diff is below
-
-James
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
 
 ---
 
-diff --git a/drivers/scsi/esp_scsi.c b/drivers/scsi/esp_scsi.c
-index a0b6d41..59fbef0 100644
---- a/drivers/scsi/esp_scsi.c
-+++ b/drivers/scsi/esp_scsi.c
-@@ -2359,6 +2359,24 @@ void scsi_esp_unregister(struct esp *esp)
+--- linux-2.6.26-greg/drivers/usb/class/cdc-acm.alt.c	2008-07-01 11:22:06.000000000 +0200
++++ linux-2.6.26-greg/drivers/usb/class/cdc-acm.c	2008-07-01 11:24:24.000000000 +0200
+@@ -1258,6 +1258,7 @@ static void acm_disconnect(struct usb_in
+ 		tty_hangup(acm->tty);
  }
- EXPORT_SYMBOL(scsi_esp_unregister);
  
-+static int esp_target_alloc(struct scsi_target *starget)
-+{
-+	struct esp *esp = shost_priv(dev_to_shost(&starget->dev));
-+	struct esp_target_data *tp = &esp->target[starget->id];
-+
-+	tp->starget = starget;
-+
-+	return 0;
-+}
-+
-+static void esp_target_destroy(struct scsi_target *starget)
-+{
-+	struct esp *esp = shost_priv(dev_to_shost(&starget->dev));
-+	struct esp_target_data *tp = &esp->target[starget->id];
-+
-+	tp->starget = NULL;
-+}
-+
- static int esp_slave_alloc(struct scsi_device *dev)
++#ifdef CONFIG_PM
+ static int acm_suspend(struct usb_interface *intf, pm_message_t message)
  {
- 	struct esp *esp = shost_priv(dev->host);
-@@ -2370,8 +2388,6 @@ static int esp_slave_alloc(struct scsi_device *dev)
- 		return -ENOMEM;
- 	dev->hostdata = lp;
- 
--	tp->starget = dev->sdev_target;
--
- 	spi_min_period(tp->starget) = esp->min_period;
- 	spi_max_offset(tp->starget) = 15;
- 
-@@ -2608,6 +2624,8 @@ struct scsi_host_template scsi_esp_template = {
- 	.name			= "esp",
- 	.info			= esp_info,
- 	.queuecommand		= esp_queuecommand,
-+	.target_alloc		= esp_target_alloc,
-+	.target_destroy		= esp_target_destroy,
- 	.slave_alloc		= esp_slave_alloc,
- 	.slave_configure	= esp_slave_configure,
- 	.slave_destroy		= esp_slave_destroy,
-diff --git a/drivers/scsi/ses.c b/drivers/scsi/ses.c
-index 45df83b..0fe031f 100644
---- a/drivers/scsi/ses.c
-+++ b/drivers/scsi/ses.c
-@@ -61,7 +61,7 @@ static int ses_probe(struct device *dev)
- 	return err;
+ 	struct acm *acm = usb_get_intfdata(intf);
+@@ -1323,6 +1324,8 @@ err_out:
+ 	mutex_unlock(&acm->mutex);
+ 	return rv;
  }
++
++#endif /* CONFIG_PM */
+ /*
+  * USB driver structure.
+  */
+@@ -1378,10 +1381,14 @@ static struct usb_driver acm_driver = {
+ 	.name =		"cdc_acm",
+ 	.probe =	acm_probe,
+ 	.disconnect =	acm_disconnect,
++#ifdef CONFIG_PM
+ 	.suspend =	acm_suspend,
+ 	.resume =	acm_resume,
++#endif
+ 	.id_table =	acm_ids,
++#ifdef CONFIG_PM
+ 	.supports_autosuspend = 1,
++#endif
+ };
  
--#define SES_TIMEOUT 30
-+#define SES_TIMEOUT (30 * HZ)
- #define SES_RETRIES 3
+ /*
+--- linux-2.6.26-greg/drivers/usb/class/cdc-wdm.alt.c	2008-07-01 11:36:03.000000000 +0200
++++ linux-2.6.26-greg/drivers/usb/class/cdc-wdm.c	2008-07-01 11:36:35.000000000 +0200
+@@ -750,12 +750,16 @@ static int wdm_suspend(struct usb_interf
+ 	dev_dbg(&desc->intf->dev, "wdm%d_suspend\n", intf->minor);
  
- static int ses_recv_diag(struct scsi_device *sdev, int page_code,
-
-
+ 	mutex_lock(&desc->plock);
++#ifdef CONFIG_PM
+ 	if (interface_to_usbdev(desc->intf)->auto_pm && test_bit(WDM_IN_USE, &desc->flags)) {
+ 		rv = -EBUSY;
+ 	} else {
++#endif
+ 		cancel_work_sync(&desc->rxwork);
+ 		kill_urbs(desc);
++#ifdef CONFIG_PM
+ 	}
++#endif
+ 	mutex_unlock(&desc->plock);
+ 
+ 	return rv;
