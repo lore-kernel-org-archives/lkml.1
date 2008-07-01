@@ -1,108 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760842AbYGACLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761423AbYGACXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760842AbYGACLA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 22:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbYGACKt
+	id S1761423AbYGACXk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 22:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756570AbYGACX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 22:10:49 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:34848 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755357AbYGACKs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 22:10:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=kbg8SIiSszRB040HgOu2XrHtSt3DQMIQ3XxYq7Ct1Z9Ane+IFXFhc+c6+rVZ9Izfm/
-         VdEg63nwMk7ntHpJU9Pw/wQE5qNPc6jMIbU/2MFqlXKfZhiyM2dlmFMzBH7J7LqxVQm0
-         ruWmE2NnOvH4bguoFNYXq2rTCsxc9QWBGrVZ0=
-Message-ID: <dd18b0c30806301910j32668e9ufad8ec04a3784152@mail.gmail.com>
-Date: Tue, 1 Jul 2008 02:10:44 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: GPE storm detected, disabling EC GPE
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org,
-       "Alexey Starikovskiy" <alexey.y.starikovskiy@intel.com>,
-       "Andi Kleen" <andi@firstfloor.org>
-In-Reply-To: <200806302159.51768.rjw@sisk.pl>
+	Mon, 30 Jun 2008 22:23:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42369 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756429AbYGACX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 22:23:28 -0400
+Date: Mon, 30 Jun 2008 22:10:46 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Andy Whitcroft <apw@shadowen.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, Vivek Goyal <vgoyal@in.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 30
+Message-ID: <20080701021046.GA30401@redhat.com>
+References: <20080701001656.e156585c.sfr@canb.auug.org.au> <48690385.7030500@linux.vnet.ibm.com> <48690D3C.1060803@linux.vnet.ibm.com> <20080630185943.GA24692@uranus.ravnborg.org> <20080630192610.GA6584@elte.hu> <20080630194727.GA26682@uranus.ravnborg.org> <20080630200623.GE6584@elte.hu> <20080630202506.GA28050@uranus.ravnborg.org> <486943F1.80606@zytor.com> <48695449.5010602@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <dd18b0c30806051401j28a57871ke4e1c76a4c8ea425@mail.gmail.com>
-	 <20080630123454.7f48b7e0.akpm@linux-foundation.org>
-	 <200806302159.51768.rjw@sisk.pl>
+In-Reply-To: <48695449.5010602@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 7:59 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, 30 of June 2008, Andrew Morton wrote:
->> On Thu, 5 Jun 2008 21:01:55 +0000
->> "Justin Mattock" <justinmattock@gmail.com> wrote:
->>
->> > FWIW I noticed a post where the person had changed 5 to 20, and it
->> > seemed to work for them;
->> > So with that in mind I decide to give that a go, here is the location:
->> > drivers/acpi/ec.c
->> > @@ -527,47 +488,51 @@ static u32 acpi_ec_gpe_handler(void *data)
->> >  {
->> >         acpi_status status = AE_OK;
->> >         struct acpi_ec *ec = data;
->> >        u8 state = acpi_ec_read_status(ec);
->> >
->> >         pr_debug(PREFIX "~~~> interrupt\n");
->> >        atomic_inc(&ec->irq_count);
->> > -       if (atomic_read(&ec->irq_count) > 5) {
->> > +       if (atomic_read(&ec->irq_count) > 20) {
->> >                pr_err(PREFIX "GPE storm detected, disabling EC GPE\n");
->> >                ec_switch_to_poll_mode(ec);
->> >                goto end;
->> >        }
->> >
->> > Now I don't know if this will work for other brands, but for
->> > me(Macbook Pro ATI chipset) I have not received the
->> > GPE storm detected, disabling EC GPE message, but it's only been an
->> > hour, maybe after two or three this might appear.
->> > Also is this good or bad to set 5 to 20 for the system?
->> > regards;
->>
->> We've had a few reports of this GPE-storm problem and I've rather lost
->> track of what's happening.  Has anyone looked into it?
+On Mon, Jun 30, 2008 at 02:46:49PM -0700, H. Peter Anvin wrote:
+> Here is a patch to replace the hard-coded limit with dynamic allocation.  
+>  I have only build-tested it, but it seems to work.
 >
-> Yes, the problem is still being worked on, AFAICS.
+> Please try it out; barring any screams to the contrary I'll add it to -tip.
 >
->> If not, do we have a bugzilla report where we can work on this?
->
-> There's a bugzilla entry at http://bugzilla.kernel.org/show_bug.cgi?id=10724 .
->
-> Thanks,
-> Rafael
->
+> 	-hpa
 
-Hello; I must be honest I'm not real sure on what Is happening with
-this. The above: if (atomic_read(&ec->irq_count) > 20) {
-just prolongs the message from going off(doesn't deal with the main problem).
-Now it is interesting from over here with a macbook, due to this message having
-to deal with the battery(if that's the case) i.g. removing the battery
-results in no gpe storm being detected(or not too many interrupts), on
-the contrary the other laptops acer or whatever was experiencing the
-same issue, was in something completely different. Now just out of
-curiosity
-I was thinking back to when this wasn't happening and it must have
-been around april or so, after looking at the activity with acpi the
-only
-real scenario I saw that might have led to this would be:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=cf7acfab032ff262f42954328cdfd20a5d9aaaac
-/ but like I said out of curiosity maybe this was what might be
-triggering
-the interrupts to fire this message off, but could be something
-completely in an other location.
-As for right now I'm open to any ideas.
-regards;
+I think there was no specific reason for limit 100. Just that probably at
+that point Eric thought 100 is sufficient. Dynamic allocation is much
+better.
 
--- 
-Justin P. Mattock
+This patch looks good. Thanks.
+
+Vivek
