@@ -1,40 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbYGAIGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756381AbYGAIJC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756548AbYGAIGK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 04:06:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbYGAIFp
+	id S1756381AbYGAIJC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 04:09:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYGAIIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 04:05:45 -0400
-Received: from styx.suse.cz ([82.119.242.94]:59128 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755839AbYGAIFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 04:05:42 -0400
-Date: Tue, 1 Jul 2008 10:05:41 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] HID: fix quirk handling in usbmouse/kbd
-In-Reply-To: <1214597365-21719-1-git-send-email-jirislaby@gmail.com>
-Message-ID: <alpine.LNX.1.10.0807011005270.6375@jikos.suse.cz>
-References: <1214597365-21719-1-git-send-email-jirislaby@gmail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Tue, 1 Jul 2008 04:08:52 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49402 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752190AbYGAIIt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 04:08:49 -0400
+Date: Tue, 1 Jul 2008 04:08:44 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Takashi Sato <t-sato@yk.jp.nec.com>
+Cc: akpm@linux-foundation.org, viro@ZenIV.linux.org.uk,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       axboe@kernel.dk, mtk.manpages@googlemail.com
+Subject: Re: [PATCH 1/3] Implement generic freeze feature
+Message-ID: <20080701080844.GA16691@infradead.org>
+References: <20080630212323t-sato@mail.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080630212323t-sato@mail.jp.nec.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jun 2008, Jiri Slaby wrote:
+>  {
+>  	struct super_block *sb;
+>  
+> +	if (test_and_set_bit(BD_FREEZE_OP, &bdev->bd_state))
+> +		return ERR_PTR(-EBUSY);
+> +
+> +	sb = get_super(bdev);
+> +
+> +	/* If super_block has been already frozen, return. */
+> +	if (sb && sb->s_frozen != SB_UNFROZEN) {
+> +		drop_super(sb);
+> +		clear_bit(BD_FREEZE_OP, &bdev->bd_state);
+> +		return sb;
+> +	}
+> +
+> +	if (sb)
+> +		drop_super(sb);
+> +
+>  	down(&bdev->bd_mount_sem);
+>  	sb = get_super(bdev);
+>  	if (sb && !(sb->s_flags & MS_RDONLY)) {
+> @@ -219,6 +234,8 @@ struct super_block *freeze_bdev(struct b
+>  	}
+>  
+>  	sync_blockdev(bdev);
+> +	clear_bit(BD_FREEZE_OP, &bdev->bd_state);
+> +
 
-> When usbmouse/kbd is set to build, USB_HID is never defined due to
-> the USB_HID!=y Kconfig rule. Test CONFIG_USB_HID_MODULE in both
-> drivers instead.
+Please only clear BD_FREEZE_OP in thaw_bdev, that way you can also get
+rid of the frozen check above, and the double-get_super.  Also
+bd_mount_sem could be removed that way by checking for BD_FREEZE_OP
+in the unmount path.
 
-Hi Jiri,
+>  /*
+> + * ioctl_freeze - Freeze the filesystem.
+> + *
+> + * @filp:	target file
+> + *
+> + * Call freeze_bdev() to freeze the filesystem.
+> + */
 
-good catch, applied, thanks a lot.
+This is not a kerneldoc comment.  But I think it can be simply removed
+anyway, as it's a quite trivial function with static scope.
 
--- 
-Jiri Kosina
-SUSE Labs
+> +/*
+> + * ioctl_thaw - Thaw the filesystem.
+> + *
+> + * @filp:	target file
+> + *
+> + * Call thaw_bdev() to thaw the filesystem.
+> + */
+
+Same here.
+
