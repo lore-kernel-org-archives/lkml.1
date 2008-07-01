@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbYGAJ2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbYGAJ3H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757566AbYGAJ2p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 05:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbYGAJ2f
+	id S1756492AbYGAJ3H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 05:29:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757981AbYGAJ2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 05:28:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43128 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753493AbYGAJ2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 05:28:34 -0400
-Date: Tue, 1 Jul 2008 11:28:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] x86: more header fixes
-Message-ID: <20080701092820.GA31309@elte.hu>
-References: <20080610214544.GA14824@damson.getinternet.no> <20080618103006.GF15255@elte.hu> <19f34abd0806180919v5a8c21e7ua7e1f928d8a53ab4@mail.gmail.com> <20080626120202.GH29619@elte.hu> <19f34abd0806260953h504ff85dmf11a59171df3442b@mail.gmail.com>
+	Tue, 1 Jul 2008 05:28:51 -0400
+Received: from outbound.icp-qv1-irony-out4.iinet.net.au ([203.59.1.150]:58646
+	"EHLO outbound.icp-qv1-irony-out4.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753493AbYGAJ2t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 05:28:49 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEADSWaUjLO9AP/2dsb2JhbACyBw
+X-IronPort-AV: E=Sophos;i="4.27,730,1204470000"; 
+   d="scan'208";a="242140515"
+From: Ian Kent <raven@themaw.net>
+Subject: [PATCH 1/5] autofs4 - fix symlink name allocation
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: autofs mailing list <autofs@linux.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Tue, 01 Jul 2008 17:25:50 +0800
+Message-ID: <20080701092548.12041.69868.stgit@raven.themaw.net>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0806260953h504ff85dmf11a59171df3442b@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The length of the symlink name has been moved but it needs to be
+set before allocating space for it in the dentry info struct.
+This corrects a mistake in a recent patch.
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+Signed-off-by: Ian Kent <raven@themaw.net>
 
-> > or perhaps we could include it in tip/master right now as well, if 
-> > you did another branch that excluded the files below. That would 
-> > make merging a lot easier - and we could do a second phase in 
-> > v2.6.27-rc1. Hm?
-> 
-> I don't think we really need to resolve conflicts at all. What we can 
-> do is simply to re-run the scripts against tip/master whenever you 
-> want the update.
+---
 
-ok, lets do it that way.
+ fs/autofs4/root.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> Also, by the way: Can -tip now be cloned with --shared to save space 
-> as long as I only have branches with references to commits in 
-> tip/master? Or is this still to be considered unsafe?
 
-it's unsafe if we ever rewind a commit that you rely on later, and 
-git-gc zaps it from tip.git?
-
-i think it would be better to not rely on that yet. The overwhelming 
-majority of activities in tip.git are append-only, but the integration 
-branches (which are included in tip/master) get regenerated frequently. 
-If you base on a topic branch itself (say tip/x86/nmi) - that should be 
-pretty stable.
-
-	Ingo
+diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
+index 7f3ebf1..10add99 100644
+--- a/fs/autofs4/root.c
++++ b/fs/autofs4/root.c
+@@ -774,6 +774,7 @@ static int autofs4_dir_symlink(struct inode *dir,
+ 		list_del_init(&ino->active);
+ 	spin_unlock(&sbi->lookup_lock);
+ 
++	ino->size = strlen(symname);
+ 	cp = kmalloc(ino->size + 1, GFP_KERNEL);
+ 	if (!cp) {
+ 		if (!dentry->d_fsdata)
+@@ -805,7 +806,6 @@ static int autofs4_dir_symlink(struct inode *dir,
+ 		atomic_inc(&p_ino->count);
+ 	ino->inode = inode;
+ 
+-	ino->size = strlen(symname);
+ 	ino->u.symlink = cp;
+ 	dir->i_mtime = CURRENT_TIME;
+ 
