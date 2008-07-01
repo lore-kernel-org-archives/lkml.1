@@ -1,55 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbYGAKCM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbYGAKFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbYGAKCM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 06:02:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYGAKB4
+	id S1754889AbYGAKFq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 06:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbYGAKFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 06:01:56 -0400
-Received: from nebensachen.de ([195.34.83.29]:55793 "EHLO mail.nebensachen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752471AbYGAKB4 convert rfc822-to-8bit (ORCPT
+	Tue, 1 Jul 2008 06:05:39 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35825 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752093AbYGAKFi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 06:01:56 -0400
-X-Hashcash: 1:20:080701:edwintorok@gmail.com::WaC+m1gwZw/QHLtR:000000000000000000000000000000000000000006uAv
-X-Hashcash: 1:20:080701:alan@lxorguk.ukuu.org.uk::w7+lQ8TTKqaq2aNv:00000000000000000000000000000000000000JSL
-X-Hashcash: 1:20:080701:joe@skyrush.com::xY1JphxA66/tBr55:001GB/
-X-Hashcash: 1:20:080701:linux-kernel@vger.kernel.org::WLRDyiY0U7SCtcGn:0000000000000000000000000000000009U0k
-From: Elias Oltmanns <eo@nebensachen.de>
-To: =?iso-8859-1?Q?T=F6r=F6k?= Edwin <edwintorok@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Joe Peterson <joe@skyrush.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Ctrl+C doesn't interrupt process waiting for I/O
-References: <48661488.10304@gmail.com> <87fxqurqpz.fsf@denkblock.local>
-	<87abh2rpzg.fsf@denkblock.local> <4869EABD.1090009@gmail.com>
-Date: Tue, 01 Jul 2008 11:59:23 +0200
-In-Reply-To: <4869EABD.1090009@gmail.com> (=?iso-8859-1?Q?=22T=F6r=F6k?=
- Edwin"'s message of "Tue, 01
-	Jul 2008 11:28:45 +0300")
-Message-ID: <87prpyx6v8.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 1 Jul 2008 06:05:38 -0400
+Date: Tue, 1 Jul 2008 10:47:47 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Eugene Teo <eugeneteo@kernel.sg>
+Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>
+Subject: Re: [PATCH] hamradio: add missing sanity check to tty operation
+Message-ID: <20080701104747.5b023c7f@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080701082800.GA25223@kernel.sg>
+References: <20080701082800.GA25223@kernel.sg>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Török Edwin <edwintorok@gmail.com> wrote:
-> Elias Oltmanns wrote:
-[...]
->> Since commit ec5b1157f8e819c72fc93aa6d2d5117c08cdc961, users have been
->> unable to interrupt interactive processes reliably by pressing CTRL+C.
->> This patch reverts the original commit except for the most important
->> part: actually echoing ^C is preserved.
->>   
->
-> Thanks for the patch , the process seems to respond faster to Ctrl-C,
-> but I'll have to find a way to measure that reliably.
-> However ^C is not echoed anymore for me.
+On Tue, 1 Jul 2008 09:28:00 +0100
+Eugene Teo <eugeneteo@kernel.sg> wrote:
 
-Very odd, it most definitely is echoed here. Are you quite sure you
-haven't inadvertently changed anything else in the meantime?
+> Add missing sanity check to tty operation.
+> 
+> Cc: Alan Cox <alan@redhat.com>
+> Signed-off-by: Eugene Teo <eteo@redhat.com>
 
-Regards,
-
-Elias
+Acked-by: Alan Cox <alan@redhat.com>
