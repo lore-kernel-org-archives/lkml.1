@@ -1,124 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759420AbYGAJag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758387AbYGAJdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759420AbYGAJag (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 05:30:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758229AbYGAJ3Y
+	id S1758387AbYGAJdH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 05:33:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbYGAJc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 05:29:24 -0400
-Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.108]:24462
-	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758060AbYGAJ3W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 05:29:22 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAEyVaUjLO9AP/2dsb2JhbACxfw
-X-IronPort-AV: E=Sophos;i="4.27,730,1204470000"; 
-   d="scan'208";a="350438443"
-From: Ian Kent <raven@themaw.net>
-Subject: [PATCH 5/5] autofs4 - fix waitq memory leak
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: autofs mailing list <autofs@linux.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Tue, 01 Jul 2008 17:26:23 +0800
-Message-ID: <20080701092621.12041.86472.stgit@raven.themaw.net>
-In-Reply-To: <20080701092548.12041.69868.stgit@raven.themaw.net>
-References: <20080701092548.12041.69868.stgit@raven.themaw.net>
-User-Agent: StGIT/0.14.1
+	Tue, 1 Jul 2008 05:32:56 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44040 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754043AbYGAJcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 05:32:54 -0400
+Date: Tue, 1 Jul 2008 11:31:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@qumranet.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG] CFS vs cpu hotplug
+Message-ID: <20080701093124.GC31309@elte.hu>
+References: <20080619161949.GA11062@osiris.ibm.com> <b647ffbd0806251512i3ab6efedv75a5bddd865ef618@mail.gmail.com> <b647ffbd0806281516i57392230idf06f99ff02d22cf@mail.gmail.com> <20080630090744.GB6598@osiris.boeblingen.de.ibm.com> <20080630091711.GA26637@elte.hu> <4869F770.6050103@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4869F770.6050103@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If an autofs mount becomes catatonic before autofs4_wait_release() is
-called the wait queue counter will not be decremented down to zero
-and the entry will never be freed. There are also races decrementing
-the wait counter in the wait release function. To deal with this the
-counter needs to be updated while holding the wait queue mutex and
-waiters need to be woken up unconditionally when the wait is removed
-from the queue to ensure we eventually free the wait.
 
-Signed-off-by: Ian Kent <raven@themaw.net>
+* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
----
+> The following oops still occurred whether this patch is applied or not.
 
- fs/autofs4/autofs_i.h |    2 +-
- fs/autofs4/waitq.c    |   18 +++++++++---------
- 2 files changed, 10 insertions(+), 10 deletions(-)
+>  [<ffffffff8059372c>] notifier_call_chain+0x33/0x5b
+>  [<ffffffff802476a9>] __raw_notifier_call_chain+0x9/0xb
+>  [<ffffffff802476ba>] raw_notifier_call_chain+0xf/0x11
+>  [<ffffffff805736d6>] _cpu_down+0x191/0x256
+>  [<ffffffff805737c1>] cpu_down+0x26/0x36
+>  [<ffffffff805749c1>] store_online+0x32/0x75
+>  [<ffffffff803d1982>] sysdev_store+0x24/0x26
+>  [<ffffffff802d2551>] sysfs_write_file+0xe0/0x11c
+>  [<ffffffff80290e6b>] vfs_write+0xae/0x137
+>  [<ffffffff802913d3>] sys_write+0x47/0x70
+>  [<ffffffff8020b1eb>] system_call_after_swapgs+0x7b/0x80
 
+hm, there were multiple problems in this area and a lot of dormant bugs. 
+Do you have this recent upstream commit in your tree:
 
-diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
-index da8882f..058e180 100644
---- a/fs/autofs4/autofs_i.h
-+++ b/fs/autofs4/autofs_i.h
-@@ -84,7 +84,7 @@ struct autofs_wait_queue {
- 	pid_t tgid;
- 	/* This is for status reporting upon return */
- 	int status;
--	atomic_t wait_ctr;
-+	unsigned int wait_ctr;
- };
- 
- #define AUTOFS_SBI_MAGIC 0x6d4a556d
-diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
-index aa7b526..bcb6c52 100644
---- a/fs/autofs4/waitq.c
-+++ b/fs/autofs4/waitq.c
-@@ -46,6 +46,7 @@ void autofs4_catatonic_mode(struct autofs_sb_info *sbi)
- 			kfree(wq->name.name);
- 			wq->name.name = NULL;
- 		}
-+		wq->wait_ctr--;
- 		wake_up_interruptible(&wq->queue);
- 		wq = nwq;
- 	}
-@@ -384,7 +385,7 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- 		wq->pid = current->pid;
- 		wq->tgid = current->tgid;
- 		wq->status = -EINTR; /* Status return if interrupted */
--		atomic_set(&wq->wait_ctr, 2);
-+		wq->wait_ctr = 2;
- 		mutex_unlock(&sbi->wq_mutex);
- 
- 		if (sbi->version < 5) {
-@@ -410,7 +411,7 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- 		/* autofs4_notify_daemon() may block */
- 		autofs4_notify_daemon(sbi, wq, type);
- 	} else {
--		atomic_inc(&wq->wait_ctr);
-+		wq->wait_ctr++;
- 		mutex_unlock(&sbi->wq_mutex);
- 		kfree(qstr.name);
- 		DPRINTK("existing wait id = 0x%08lx, name = %.*s, nfy=%d",
-@@ -446,8 +447,10 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- 	status = wq->status;
- 
- 	/* Are we the last process to need status? */
--	if (atomic_dec_and_test(&wq->wait_ctr))
-+	mutex_lock(&sbi->wq_mutex);
-+	if (!--wq->wait_ctr)
- 		kfree(wq);
-+	mutex_unlock(&sbi->wq_mutex);
- 
- 	return status;
- }
-@@ -471,14 +474,11 @@ int autofs4_wait_release(struct autofs_sb_info *sbi, autofs_wqt_t wait_queue_tok
- 	*wql = wq->next;	/* Unlink from chain */
- 	kfree(wq->name.name);
- 	wq->name.name = NULL;	/* Do not wait on this queue */
--	mutex_unlock(&sbi->wq_mutex);
--
- 	wq->status = status;
--
--	if (atomic_dec_and_test(&wq->wait_ctr))	/* Is anyone still waiting for this guy? */
-+	wake_up_interruptible(&wq->queue);
-+	if (!--wq->wait_ctr)
- 		kfree(wq);
--	else
--		wake_up_interruptible(&wq->queue);
-+	mutex_unlock(&sbi->wq_mutex);
- 
- 	return 0;
- }
+| commit fcb43042ef55d2f46b0efa5d7746967cef38f056
+| Author: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+| Date:   Tue Jun 24 16:06:23 2008 +0800
+|
+|    x86: fix cpu hotplug crash
+|
+|    Vegard Nossum reported crashes during cpu hotplug tests:
+|
+|      http://marc.info/?l=linux-kernel&m=121413950227884&w=4
+
+?
+
+	Ingo
