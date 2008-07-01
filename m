@@ -1,132 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbYGAJVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758163AbYGAJWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756262AbYGAJVv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 05:21:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755691AbYGAJVj
+	id S1758163AbYGAJWb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 05:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755151AbYGAJWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 05:21:39 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:39551 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755300AbYGAJVg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 05:21:36 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Tejun Heo <htejun@gmail.com>
-Cc: Benjamin Thery <benjamin.thery@bull.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
-       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>
-References: <20080618170729.808539948@theryb.frec.bull.fr>
-	<20080618170731.002784342@theryb.frec.bull.fr>
-	<485F04E1.70204@gmail.com> <m1y74svtff.fsf@frodo.ebiederm.org>
-	<486706C9.9040303@gmail.com> <m18wwmsqdv.fsf@frodo.ebiederm.org>
-	<4869D314.5030403@gmail.com>
-Date: Tue, 01 Jul 2008 02:20:20 -0700
-In-Reply-To: <4869D314.5030403@gmail.com> (Tejun Heo's message of "Tue, 01 Jul
-	2008 15:47:48 +0900")
-Message-ID: <m1ej6enep7.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 1 Jul 2008 05:22:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48658 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753881AbYGAJWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 05:22:18 -0400
+Date: Tue, 1 Jul 2008 11:21:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Nick Piggin <npiggin@suse.de>, Mark McLoughlin <markmc@redhat.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Eduardo Habkost <ehabkost@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Stephen Tweedie <sct@redhat.com>, x86@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for
+	64-bit Xen support
+Message-ID: <20080701092152.GA18918@elte.hu>
+References: <20080626105818.GA13805@elte.hu> <4863A8E6.1010807@goop.org> <20080627160333.GA27072@elte.hu> <486539A3.3030102@goop.org> <20080629084318.GA28815@elte.hu> <48684CD4.7040403@goop.org> <20080630082135.GA22844@elte.hu> <20080630092209.GA29815@elte.hu> <48696690.90907@goop.org> <20080701085204.GA23289@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Tejun Heo <htejun@gmail.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.0565]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 06/11] sysfs: Implement sysfs tagged directory support.
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20080701085204.GA23289@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <htejun@gmail.com> writes:
 
-> Hello, Eric.
->
-> Eric W. Biederman wrote:
->>> It's still dynamic from sysfs's POV and I think that will make
->>> maintenance more difficult.
->> 
->> Potentially.  I have no problem make it clear that things are more static.
->
-> Great. :-)
->
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> Having enumed tag types limits that a sb can have map to only one tag
-> but it doesn't really prevent multiple possibly visible entries which is
-> the real unnecessary degrees of freedom.  That said, I don't really
-> think it's an issue.
+> great - i've applied your fix and re-integrated x86/xen-64bit, it's 
+> under testing now. (no problems so far)
 
-Having a single tag type per directory and thus a single tag visible per
-directory does prevent multiple possible visible entries.
+hm, -tip testing still triggers a 64-bit bootup crash:
 
-That is we can check when we add the sd if there will be a conflict in
-the directory.
+[    0.000000] init_memory_mapping
+[    0.000000] kernel direct mapping tables up to 3fff0000 @ 8000-a000
+PANIC: early exception 0e rip 10:ffffffff80418f81 error 0 cr2 ffffffffff300000
+[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.26-rc8-tip #13363
+[    0.000000]
+[    0.000000] Call Trace:
+[    0.000000]  [<ffffffff807f088b>] ? init_memory_mapping+0x341/0x56b
+[    0.000000]  [<ffffffff80dba19f>] early_idt_handler+0x5f/0x73
+[    0.000000]  [<ffffffff80418f81>] ? __memcpy_fromio+0xd/0x1e
+[    0.000000]  [<ffffffff80de238a>] dmi_scan_machine+0x41/0x19b
+[    0.000000]  [<ffffffff80dbeba8>] setup_arch+0x46d/0x5d8
+[    0.000000]  [<ffffffff802896a0>] ? kernel_text_unlock+0x10/0x12
+[    0.000000]  [<ffffffff80263b86>] ? raw_notifier_chain_register+0x9/0xb
+[    0.000000]  [<ffffffff80dba140>] ? early_idt_handler+0x0/0x73
+[    0.000000]  [<ffffffff80dbac5a>] start_kernel+0xf4/0x3b3
+[    0.000000]  [<ffffffff80dba140>] ? early_idt_handler+0x0/0x73
+[    0.000000]  [<ffffffff80dba2a4>] x86_64_start_reservations+0xa9/0xad
+[    0.000000]  [<ffffffff80dba3b8>] x86_64_start_kernel+0x110/0x11f
+[    0.000000]
 
->> The number of tag types will be low as it is the number of subsystems
->> that use the feature.  Simple enough that I expect statically allocating
->> the tag types in an enumeration is a safe and sane way to operate.
->> i.e.
->> 
->> enum sysfs_tag_types {
->> 	SYSFS_TAG_NETNS,
->> 	SYSFS_TAG_USERNS,
->>         SYSFS_TAG_MAX
->> };
->
-> I still would prefer something which is more generic.  The abstraction
-> is clearer too.  A sb shows untagged and a set of tags.  A sd can either
-> be untagged or tagged (a single tag).
+  http://redhat.com/~mingo/misc/crash.log-Tue_Jul__1_10_55_47_CEST_2008.bad
+  http://redhat.com/~mingo/misc/config-Tue_Jul__1_10_55_47_CEST_2008.bad
 
-That is the abstraction now.
+Excluding the x86/xen-64bit topic solves the problem.
 
-The only difference is how we represent the set of tags.
-I use and array of the valid tags.
-You use a bitmap.
+It triggered on two 64-bit machines so it seems readily reproducible 
+with that config.
 
-And array allows the lookup of the tag I am looking for before
-I search for the sd.  An bitmap requires me to compare each entry.
+i've pushed the failing tree out to tip/tmp.xen-64bit.Tue_Jul__1_10_55
 
-For me that is a deal breaker.  Currently in certain pathological
-cases we have scaling issues with sysctl and sysfs that we can
-have enormous directories that start running slowly.  To fix
-lookup performance requires that we know the full name before
-we do the directory search which is the name string and the
-tag.
+	Ingo
 
-So I having a type of tag as being of fundamental importance in
-the interface now so we don't need to refactor all of the users
-later.  In addition to the fact that we need the type to know
-how to set the tags when mounting a superblock and when
-given a new kobject to create an sd for.
-
-We could make the types dynamic rather then a static enumeration but
-that seems needless complexity for now.
-
-> Using ida (or idr if a pointer for private data is necessary) is really
-> easy.  It'll probably take a few tens of lines of code.  That said, I
-> don't think I have enough rationale to nack what you described.  So, as
-> long as the tags are made static, I won't object.
-
-Sounds good.  The only justification I can think of for ida tags is that
-they are smaller, and so can keep the sysfs_dirents smaller.    Which
-occasionally is a significant concern.  Still that should be an optimization
-that we can apply later, as it is not a structural difference in the code.
-
-Just to confirm.  Do you the two operations:
-  mount_tag - called only when the sb is mounted 
-  kobject_tag - called when we create new sd or rename an sd
-
-Cause you to view an the tags as dynamic?
-
-Eric
