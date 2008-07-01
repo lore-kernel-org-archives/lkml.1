@@ -1,99 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760379AbYGAUut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760936AbYGAUwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760379AbYGAUut (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 16:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755367AbYGAUul
+	id S1760936AbYGAUwV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 16:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbYGAUwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 16:50:41 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:28413 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754348AbYGAUuj (ORCPT
+	Tue, 1 Jul 2008 16:52:12 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:35202 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755367AbYGAUwK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 16:50:39 -0400
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, kernel-testers@vger.kernel.org,
-       linux-nfs@vger.kernel.org, Trond Myklebust <Trond.Myklebust@netapp.com>
-Message-Id: <BC46CA27-0F46-4F1B-950D-562B36B19A0B@oracle.com>
-From: Chuck Lever <chuck.lever@oracle.com>
+	Tue, 1 Jul 2008 16:52:10 -0400
+Message-ID: <486A98F7.1080203@firstfloor.org>
+Date: Tue, 01 Jul 2008 22:52:07 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <200807012236.19400.rjw@sisk.pl>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       kernel-testers@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
+References: <200807010148.02135.rjw@sisk.pl> <200807012239.44105.rjw@sisk.pl> <486A96C1.2020106@firstfloor.org> <200807012250.39930.rjw@sisk.pl>
+In-Reply-To: <200807012250.39930.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: inux-next: Tree for July 1
-Date: Tue, 1 Jul 2008 16:49:32 -0400
-References: <20080702011434.6fb403d5.sfr@canb.auug.org.au> <200807012236.19400.rjw@sisk.pl>
-X-Mailer: Apple Mail (2.926)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 1, 2008, at 4:36 PM, Rafael J. Wysocki wrote:
-> On Tuesday, 1 of July 2008, Stephen Rothwell wrote:
->> Hi all,
->>
->> Changes since next-20080630:
->>
->> New tree: ttydev - unfortunately it had to be reverted because of  
->> build
->> failures after lots of conflict resolution (which may have caused the
->> build failures).
->>
->> Changed tree: the cris tree changed branch names.
->>
->> The sched tree gained a couple of conflicts against the ftrace and
->> cpus4096 trees.
->>
->> The pci tree gained a conflict against the x86 tree.
->>
->> The usb tree reverted due to a build failure after merging with the  
->> pci
->> tree was changed for a fixup patch.
->>
->> The v4l-dvb tree lost its three conflicts against Linus' tree.
->>
->> The s390 tree gained a conflict against the diver-core tree.
->>
->> The ide tree fixed its build problems.
->>
->> The nfsd tree lost a conflict against the nfs tree.
->>
->> The powerpc tree gained a conflict against the ide tree.
->>
->> The net tree gained two conflicts against the powerpc tree.
->>
->> The galak tree lost its conflict against the net tree.
->>
->> the blk-removal tree gained a conflict against the s390 tree.
->>
->> The firmware tree lost several conflicts against the net tree so  
->> didn't
->> need a commit reverted any more.
->>
->> Merging the ttydev tree got several conflicts against the usb and
->> firmware trees.  Unfortunately, it also would not build and so was
->> reverted.
->>
->> I have also applied the following patches for know problems:
->> 	module: fix NULL pointer dereference in find_symbol()
->
-> I can't mount NFS shares with this kernel.  I get something of this  
-> sort in
-> dmesg and it seems to be 100% reproducible:
->
-> [  314.058858] RPC: Registered udp transport module.
-> [  314.058863] RPC: Registered tcp transport module.
-> [  314.490970] RPC: transport (0) not supported
-> [  319.246987] __ratelimit: 23 messages suppressed
->
-> linux-next from yesterday was fine with the same .config .
+Rafael J. Wysocki wrote:
+> On Tuesday, 1 of July 2008, Andi Kleen wrote:
+>>> I have tested it on the nx6325 (64-bit) on top of the today's linux-next.  It
+>>> works fine for me.
+>> Could a few more people with different laptops please test too?
+> 
+> Well, I think we can put it into the 2.6.27 queue in the hope it gets more
+> testing in linux-next over time.
 
-What's your mount command line?
+I'm just not sure how many people really put linux-next on their laptops.
+Better would be some directed testing.
 
---
-Chuck Lever
-chuck[dot]lever[at]oracle[dot]com
+We'll see if that kernel-testers list actually does something or is just a placebo.
+
+-Andi
