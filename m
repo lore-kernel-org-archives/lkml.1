@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbYGAS7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758841AbYGAS7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757458AbYGAS7R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 14:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbYGAS7G
+	id S1758841AbYGAS7w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 14:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbYGAS7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 14:59:06 -0400
-Received: from mga02.intel.com ([134.134.136.20]:7108 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752623AbYGAS7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 14:59:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,732,1204531200"; 
-   d="scan'208";a="404139269"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Subject: Re: Intel DG965WH / Case 745-44-22 (slow bios/upgrade) [UPDATE] / Intel, status of HECI support patch for the kernel?
-Date: Tue, 1 Jul 2008 11:58:45 -0700
-User-Agent: KMail/1.9.9
-Cc: "crmotherboard@mailbox.intel.com" <crmotherboard@mailbox.cps.intel.com>,
-       "Williams, Dan J" <dan.j.williams@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>,
-       Anas Nashif <anas.nashif@intel.com>
-References: <alpine.DEB.1.10.0806300958070.13171@p34.internal.lan> <alpine.DEB.1.10.0807011442500.18141@p34.internal.lan>
-In-Reply-To: <alpine.DEB.1.10.0807011442500.18141@p34.internal.lan>
+	Tue, 1 Jul 2008 14:59:41 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:39133 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753140AbYGAS7k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 14:59:40 -0400
+Date: Tue, 1 Jul 2008 14:59:38 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <gregkh@suse.de>
+cc: Stefan Becker <Stefan.Becker@nokia.com>, <linux-usb@vger.kernel.org>,
+       ext David Brownell <david-b@pacbell.net>,
+       <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       ext Leonardo Chiquitto <leonardo.lists@gmail.com>
+Subject: Re: [PATCH] USB: fix interrupt disabling for HCDs with shared
+ interrupt handlers
+In-Reply-To: <20080701182543.GA32098@suse.de>
+Message-ID: <Pine.LNX.4.44L0.0807011456370.6796-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807011158.46258.jesse.barnes@intel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, July 01, 2008 11:43 am Justin Piszcz wrote:
-> > This is from 2007:
-> > http://softwareblogs.intel.com/2007/04/13/intel-me-interface-heci-now-ava
-> >ilable/
-> >
-> > Their updated project page:
-> > http://www.openamt.org/
-> >
-> > Justin.
->
-> The issue regarding accessing the hard drive menu was fixed by simpling
-> power cycling/rebooting the host.
+On Tue, 1 Jul 2008, Greg KH wrote:
 
-And the problem hasn't come back?
+> Hm, isn't this also an issue in 2.6.25 as well?  I've had a few very
+> strange reports of USB just locking up in 2.6.25, could this also be the
+> cause there?
 
-> All issues are now resolved (regarding the slow speed/memory/etc)..
+It could go back a lot farther than that.  I don't think our interrupt 
+setup has been changed significantly for a long time, with one 
+exception: We added the IRQF_DISABLED flag fairly recently.  But of 
+course, we now know that it doesn't do what we expected.
 
-Hopefully there's a more recent BIOS available that doesn't need to trim the 
-memory for you?
+It's surprising that more people haven't experienced this problem and 
+reported it.
 
-> Only other question left is the HECI support in the kernel.
+> Alan and Dave, do you both ack this thing?  I know you've been involved
+> in creating it, just want to get the formal approval :)
 
-I'll defer that question to Anas, he's been handling the HECI stuff.
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
 
-Jesse
+There still are a few places where spaces were used instead of tabs for 
+indenting.  Aside from that it looks fine.
+
+Alan Stern
+
