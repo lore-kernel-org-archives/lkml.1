@@ -1,107 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757718AbYGANCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbYGANDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757718AbYGANCt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 09:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754962AbYGANCD
+	id S1758048AbYGANDO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 09:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756005AbYGANCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 09:02:03 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:44036 "EHLO
+	Tue, 1 Jul 2008 09:02:06 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:44039 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755207AbYGANCA (ORCPT
+	with ESMTP id S1755419AbYGANCB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 09:02:00 -0400
-Message-Id: <20080701130154.992343794@szeredi.hu>
+	Tue, 1 Jul 2008 09:02:01 -0400
+Message-Id: <20080701130156.863544252@szeredi.hu>
 References: <20080701130125.529844715@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Tue, 01 Jul 2008 15:01:28 +0200
+Date: Tue, 01 Jul 2008 15:01:29 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: viro@ZenIV.linux.org.uk
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        hch@infradead.org, akpm@linux-foundation.org,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: [patch 3/4] fat: dont call notify_change
-Content-Disposition: inline; filename=fat-dont-call-notify_change.patch
+       Ulrich Drepper <drepper@redhat.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>
+Subject: [patch 4/4] vfs: immutable inode checking cleanup
+Content-Disposition: inline; filename=vfs-immutable-inode-checking-cleanup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-The FAT_IOCTL_SET_ATTRIBUTES ioctl() calls notify_change() to change
-the file mode before changing the inode attributes.  Replace with
-explicit calls to security_inode_setattr(), fat_setattr() and
-fsnotify_change().
+Move the immutable and append-only checks from chmod, chown and utimes
+into notify_change().  Checks for immutable and append-only files are
+always performed by the VFS and not by the filesystem (see
+permission() and may_...() in namei.c), so these belong in
+notify_change(), and not in inode_change_ok().
 
-This is equivalent to the original.  The reason it is needed, is that
-later in the series we move the immutable check into notify_change().
-That would break the FAT_IOCTL_SET_ATTRIBUTES ioctl, as it needs to
-perform the mode change regardless of the immutability of the file.
+This should be completely equivalent.
 
-[Fix error if fat is built as a module.  Thanks to OGAWA Hirofumi for
-noticing.]
-
+CC: Ulrich Drepper <drepper@redhat.com>
+CC: Michael Kerrisk <mtk.manpages@gmail.com>
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-Acked-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 ---
- fs/fat/file.c       |   15 ++++++++++++++-
- security/security.c |    1 +
- 2 files changed, 15 insertions(+), 1 deletion(-)
+ fs/attr.c   |    5 +++++
+ fs/open.c   |   24 ++----------------------
+ fs/utimes.c |    4 ----
+ 3 files changed, 7 insertions(+), 26 deletions(-)
 
-Index: linux-2.6/fs/fat/file.c
+Index: linux-2.6/fs/attr.c
 ===================================================================
---- linux-2.6.orig/fs/fat/file.c	2008-06-27 22:09:08.000000000 +0200
-+++ linux-2.6/fs/fat/file.c	2008-07-01 13:52:26.000000000 +0200
-@@ -16,6 +16,8 @@
- #include <linux/writeback.h>
- #include <linux/backing-dev.h>
- #include <linux/blkdev.h>
-+#include <linux/fsnotify.h>
-+#include <linux/security.h>
+--- linux-2.6.orig/fs/attr.c	2008-07-01 13:52:20.000000000 +0200
++++ linux-2.6/fs/attr.c	2008-07-01 13:52:29.000000000 +0200
+@@ -108,6 +108,11 @@ int notify_change(struct dentry * dentry
+ 	struct timespec now;
+ 	unsigned int ia_valid = attr->ia_valid;
  
- int fat_generic_ioctl(struct inode *inode, struct file *filp,
- 		      unsigned int cmd, unsigned long arg)
-@@ -65,6 +67,7 @@ int fat_generic_ioctl(struct inode *inod
- 
- 		/* Equivalent to a chmod() */
- 		ia.ia_valid = ATTR_MODE | ATTR_CTIME;
-+		ia.ia_ctime = current_fs_time(inode->i_sb);
- 		if (is_dir) {
- 			ia.ia_mode = MSDOS_MKMODE(attr,
- 				S_IRWXUGO & ~sbi->options.fs_dmask)
-@@ -91,11 +94,21 @@ int fat_generic_ioctl(struct inode *inod
- 			}
- 		}
- 
-+		/*
-+		 * The security check is questionable...  We single
-+		 * out the RO attribute for checking by the security
-+		 * module, just because it maps to a file mode.
-+		 */
-+		err = security_inode_setattr(filp->f_path.dentry, &ia);
-+		if (err)
-+			goto up;
++	if (ia_valid & (ATTR_MODE | ATTR_UID | ATTR_GID | ATTR_TIMES_SET)) {
++		if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
++			return -EPERM;
++	}
 +
- 		/* This MUST be done before doing anything irreversible... */
--		err = notify_change(filp->f_path.dentry, &ia);
-+		err = fat_setattr(filp->f_path.dentry, &ia);
- 		if (err)
- 			goto up;
+ 	now = current_fs_time(inode->i_sb);
  
-+		fsnotify_change(filp->f_path.dentry, ia.ia_valid);
- 		if (sbi->options.sys_immutable) {
- 			if (attr & ATTR_SYS)
- 				inode->i_flags |= S_IMMUTABLE;
-Index: linux-2.6/security/security.c
+ 	attr->ia_ctime = now;
+Index: linux-2.6/fs/open.c
 ===================================================================
---- linux-2.6.orig/security/security.c	2008-06-27 22:09:08.000000000 +0200
-+++ linux-2.6/security/security.c	2008-07-01 13:52:26.000000000 +0200
-@@ -476,6 +476,7 @@ int security_inode_setattr(struct dentry
- 		return 0;
- 	return security_ops->inode_setattr(dentry, attr);
- }
-+EXPORT_SYMBOL_GPL(security_inode_setattr);
+--- linux-2.6.orig/fs/open.c	2008-07-01 13:52:17.000000000 +0200
++++ linux-2.6/fs/open.c	2008-07-01 13:52:29.000000000 +0200
+@@ -598,9 +598,6 @@ asmlinkage long sys_fchmod(unsigned int 
+ 	err = mnt_want_write(file->f_path.mnt);
+ 	if (err)
+ 		goto out_putf;
+-	err = -EPERM;
+-	if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
+-		goto out_drop_write;
+ 	mutex_lock(&inode->i_mutex);
+ 	if (mode == (mode_t) -1)
+ 		mode = inode->i_mode;
+@@ -608,8 +605,6 @@ asmlinkage long sys_fchmod(unsigned int 
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+ 	err = notify_change(dentry, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+-
+-out_drop_write:
+ 	mnt_drop_write(file->f_path.mnt);
+ out_putf:
+ 	fput(file);
+@@ -633,11 +628,6 @@ asmlinkage long sys_fchmodat(int dfd, co
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto dput_and_out;
+-
+-	error = -EPERM;
+-	if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
+-		goto out_drop_write;
+-
+ 	mutex_lock(&inode->i_mutex);
+ 	if (mode == (mode_t) -1)
+ 		mode = inode->i_mode;
+@@ -645,8 +635,6 @@ asmlinkage long sys_fchmodat(int dfd, co
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+ 	error = notify_change(nd.path.dentry, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+-
+-out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ dput_and_out:
+ 	path_put(&nd.path);
+@@ -661,18 +649,10 @@ asmlinkage long sys_chmod(const char __u
  
- int security_inode_getattr(struct vfsmount *mnt, struct dentry *dentry)
+ static int chown_common(struct dentry * dentry, uid_t user, gid_t group)
  {
+-	struct inode * inode;
++	struct inode *inode = dentry->d_inode;
+ 	int error;
+ 	struct iattr newattrs;
+ 
+-	error = -ENOENT;
+-	if (!(inode = dentry->d_inode)) {
+-		printk(KERN_ERR "chown_common: NULL inode\n");
+-		goto out;
+-	}
+-	error = -EPERM;
+-	if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
+-		goto out;
+ 	newattrs.ia_valid =  ATTR_CTIME;
+ 	if (user != (uid_t) -1) {
+ 		newattrs.ia_valid |= ATTR_UID;
+@@ -688,7 +668,7 @@ static int chown_common(struct dentry * 
+ 	mutex_lock(&inode->i_mutex);
+ 	error = notify_change(dentry, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+-out:
++
+ 	return error;
+ }
+ 
+Index: linux-2.6/fs/utimes.c
+===================================================================
+--- linux-2.6.orig/fs/utimes.c	2008-07-01 13:52:23.000000000 +0200
++++ linux-2.6/fs/utimes.c	2008-07-01 13:52:29.000000000 +0200
+@@ -64,10 +64,6 @@ static int utimes_common(struct path *pa
+ 
+ 	newattrs.ia_valid = ATTR_CTIME | ATTR_MTIME | ATTR_ATIME;
+ 	if (times) {
+-		error = -EPERM;
+-                if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
+-			goto mnt_drop_write_and_out;
+-
+ 		if (times[0].tv_nsec == UTIME_OMIT)
+ 			newattrs.ia_valid &= ~ATTR_ATIME;
+ 		else if (times[0].tv_nsec != UTIME_NOW) {
 
 --
