@@ -1,252 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759464AbYGAOTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759844AbYGAOUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759464AbYGAOTq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 10:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbYGAOTi
+	id S1759844AbYGAOUU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 10:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759602AbYGAOT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 10:19:38 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:34168 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755826AbYGAOTh (ORCPT
+	Tue, 1 Jul 2008 10:19:59 -0400
+Received: from rn-out-0910.google.com ([64.233.170.188]:24381 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755892AbYGAOT6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 10:19:37 -0400
+	Tue, 1 Jul 2008 10:19:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=mwwWXzwVkPLr33vTPSM9bcCWKtXhL1aYGm13zozNaHkkvgZRH6zC7qVg5NwOI7jPpZ
-         RJUB7JemIMrfcjNXGLOqg0yhPf0JwOObNCKd1A7HGOxLdmMIrgV6CaeD1ysds0BjmFdy
-         /z9yT7+QlKakps/XTyLZz62khXdX8p4KT4glY=
-Message-ID: <b647ffbd0807010719q23fb591eh272e755a1d5c8efa@mail.gmail.com>
-Date: Tue, 1 Jul 2008 16:19:35 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [sched-devel, patch-rfc] rework #2 of "prioritize non-migratable tasks over migratable ones"
-Cc: "Gregory Haskins" <ghaskins@novell.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.58.0807011008001.26650@gandalf.stny.rr.com>
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=JVbAdqNXrHyFoASCFKgP9lx/yCLYchSsWScxNbwOOPi6MAP8cfpU1M6NsO1swcFBGG
+         26GdDCRTeqg4EHJYqoCDNIibCUSnoqenSNOPIg2RDKYz8agBqyLRI0Fn0RhbtpnGbDzS
+         4lcYt0SlqxLwPeN/ZqOTXI/miFXKz2MnuZUac=
+Message-ID: <c2d0b6ec0807010719x32fd74d8r99ed9c46ee4da67@mail.gmail.com>
+Date: Tue, 1 Jul 2008 11:19:55 -0300
+From: "Leonardo Chiquitto" <leonardo.lists@gmail.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] USB: fix interrupt disabling for HCDs with shared interrupt handlers
+Cc: "Stefan Becker" <Stefan.Becker@nokia.com>,
+       "ext David Brownell" <david-b@pacbell.net>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0807011005430.2780-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_22737_22846645.1214921975686"
-References: <b647ffbd0807010632o64a61ab9le6039465cee85e9c@mail.gmail.com>
-	 <Pine.LNX.4.58.0807011008001.26650@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48694F9A.4010008@nokia.com>
+	 <Pine.LNX.4.44L0.0807011005430.2780-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_22737_22846645.1214921975686
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-2008/7/1 Steven Rostedt <rostedt@goodmis.org>:
+>> It is, put the rain pouring down on my house is keeping me awake :-)
+>>
+>> Looks like you posted the same changes though...
 >
-> [ ... ]
->
->> +
->> +static void check_preempt_equal_prio(struct rq *rq, struct task_struct *p)
->> +{
->> +       cpumask_t mask;
->> +
->> +       if (rq->curr.rt.nr_cpus_allowed == 1 || p->rt.nr_cpus_allowed == 1)
->> +               return;
->
-> I can understand why we break out when current is bound to a single CPU,
-> but why do we break out when p is bound to a single CPU.
+> A few minor problems...  You should post a revised patch with CC: to
+> Greg KH.  It makes things a little easier if you can put the patch in
+> the body of the email message instead of attaching it.
 
-yes, my fault. Thanks, Steven!
+It would be nice if this could be included in 2.6.26, as it also fixes a
+problem reported in [1] and discussed in [2]
 
-This version should be better:
+[1] https://bugzilla.novell.com/show_bug.cgi?id=378509
+[2] http://marc.info/?l=linux-usb&m=121137189719281&w=4
 
----
---- sched_rt-old.c      2008-07-01 11:42:30.000000000 +0200
-+++ sched_rt.c  2008-07-01 16:16:48.000000000 +0200
-@@ -599,11 +599,7 @@ static void __enqueue_rt_entity(struct s
-        if (group_rq && (rt_rq_throttled(group_rq) ||
-!group_rq->rt_nr_running))                return;
-
--       if (rt_se->nr_cpus_allowed == 1)
--               list_add(&rt_se->run_list, queue);
--       else
--               list_add_tail(&rt_se->run_list, queue);
--
-+       list_add_tail(&rt_se->run_list, queue);
-        __set_bit(rt_se_prio(rt_se), array->bitmap);
-
-        inc_rt_tasks(rt_se, rt_rq);
-@@ -689,31 +685,33 @@ static void dequeue_task_rt(struct rq *r
-  * followed by enqueue.
-  */
- static
--void requeue_rt_entity(struct rt_rq *rt_rq, struct sched_rt_entity *rt_se)
-+void requeue_rt_entity(struct rt_rq *rt_rq, struct sched_rt_entity
-*rt_se, int head)
- {
--       struct rt_prio_array *array = &rt_rq->active;
--
-        if (on_rt_rq(rt_se)) {
--               list_del_init(&rt_se->run_list);
--               list_add_tail(&rt_se->run_list,
--                             array->queue + rt_se_prio(rt_se));
-+               struct rt_prio_array *array = &rt_rq->active;
-+               struct list_head *queue = array->queue + rt_se_prio(rt_se);
-+
-+               if (head)
-+                       list_move(&rt_se->run_list, queue);
-+               else
-+                       list_move_tail(&rt_se->run_list, queue);
-        }
- }
-
--static void requeue_task_rt(struct rq *rq, struct task_struct *p)
-+static void requeue_task_rt(struct rq *rq, struct task_struct *p, int head)
- {
-        struct sched_rt_entity *rt_se = &p->rt;
-        struct rt_rq *rt_rq;
-
-        for_each_sched_rt_entity(rt_se) {
-                rt_rq = rt_rq_of_se(rt_se);
--               requeue_rt_entity(rt_rq, rt_se);
-+               requeue_rt_entity(rt_rq, rt_se, head);
-        }
- }
-
- static void yield_task_rt(struct rq *rq)
- {
--       requeue_task_rt(rq, rq->curr);
-+       requeue_task_rt(rq, rq->curr, 0);
- }
-
- #ifdef CONFIG_SMP
-@@ -753,6 +751,30 @@ static int select_task_rq_rt(struct task
-         */
-        return task_cpu(p);
- }
-+
-+static void check_preempt_equal_prio(struct rq *rq, struct task_struct *p)
-+{
-+       cpumask_t mask;
-+
-+       if (rq->curr.rt.nr_cpus_allowed == 1)
-+               return;
-+
-+       if (p->rt.nr_cpus_allowed != 1
-+           && cpupri_find(&rq->rd->cpupri, p, &mask))
-+               return;
-+
-+       if (!cpupri_find(&rq->rd->cpupri, rq->curr, &mask))
-+               return;
-+
-+       /*
-+        * There appears to be other cpus that can accept
-+        * current and none to run 'p', so lets reschedule
-+        * to try and push current away:
-+        */
-+       requeue_task_rt(rq, p, 1);
-+       resched_task(rq->curr);
-+}
-+
- #endif /* CONFIG_SMP */
-
- /*
-@@ -778,18 +800,8 @@ static void check_preempt_curr_rt(struct
-         * to move current somewhere else, making room for our non-migratable
-         * task.
-         */
--       if((p->prio == rq->curr->prio)
--          && p->rt.nr_cpus_allowed == 1
--          && rq->curr->rt.nr_cpus_allowed != 1) {
--               cpumask_t mask;
--
--               if (cpupri_find(&rq->rd->cpupri, rq->curr, &mask))
--                       /*
--                        * There appears to be other cpus that can accept
--                        * current, so lets reschedule to try and push it away
--                        */
--                       resched_task(rq->curr);
--       }
-+       if (p->prio == rq->curr->prio && !need_resched())
-+               check_preempt_equal_prio(rq, p);
- #endif
- }
-
-@@ -1415,7 +1427,7 @@ static void task_tick_rt(struct rq *rq,
-         * on the queue:
-         */
-        if (p->rt.run_list.prev != p->rt.run_list.next) {
--               requeue_task_rt(rq, p);
-+               requeue_task_rt(rq, p, 0);
-                set_tsk_need_resched(p);
-        }
- }
-
----
-
-
--- 
-Best regards,
-Dmitry Adamushko
-
-------=_Part_22737_22846645.1214921975686
-Content-Type: text/x-patch; name=resched-eqial-prio.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fi4l5hei0
-Content-Disposition: attachment; filename=resched-eqial-prio.patch
-
-LS0tIHNjaGVkX3J0LW9sZC5jCTIwMDgtMDctMDEgMTE6NDI6MzAuMDAwMDAwMDAwICswMjAwCisr
-KyBzY2hlZF9ydC5jCTIwMDgtMDctMDEgMTY6MTY6NDguMDAwMDAwMDAwICswMjAwCkBAIC01OTks
-MTEgKzU5OSw3IEBAIHN0YXRpYyB2b2lkIF9fZW5xdWV1ZV9ydF9lbnRpdHkoc3RydWN0IHMKIAlp
-ZiAoZ3JvdXBfcnEgJiYgKHJ0X3JxX3Rocm90dGxlZChncm91cF9ycSkgfHwgIWdyb3VwX3JxLT5y
-dF9ucl9ydW5uaW5nKSkKIAkJcmV0dXJuOwogCi0JaWYgKHJ0X3NlLT5ucl9jcHVzX2FsbG93ZWQg
-PT0gMSkKLQkJbGlzdF9hZGQoJnJ0X3NlLT5ydW5fbGlzdCwgcXVldWUpOwotCWVsc2UKLQkJbGlz
-dF9hZGRfdGFpbCgmcnRfc2UtPnJ1bl9saXN0LCBxdWV1ZSk7Ci0KKwlsaXN0X2FkZF90YWlsKCZy
-dF9zZS0+cnVuX2xpc3QsIHF1ZXVlKTsKIAlfX3NldF9iaXQocnRfc2VfcHJpbyhydF9zZSksIGFy
-cmF5LT5iaXRtYXApOwogCiAJaW5jX3J0X3Rhc2tzKHJ0X3NlLCBydF9ycSk7CkBAIC02ODksMzEg
-KzY4NSwzMyBAQCBzdGF0aWMgdm9pZCBkZXF1ZXVlX3Rhc2tfcnQoc3RydWN0IHJxICpyCiAgKiBm
-b2xsb3dlZCBieSBlbnF1ZXVlLgogICovCiBzdGF0aWMKLXZvaWQgcmVxdWV1ZV9ydF9lbnRpdHko
-c3RydWN0IHJ0X3JxICpydF9ycSwgc3RydWN0IHNjaGVkX3J0X2VudGl0eSAqcnRfc2UpCit2b2lk
-IHJlcXVldWVfcnRfZW50aXR5KHN0cnVjdCBydF9ycSAqcnRfcnEsIHN0cnVjdCBzY2hlZF9ydF9l
-bnRpdHkgKnJ0X3NlLCBpbnQgaGVhZCkKIHsKLQlzdHJ1Y3QgcnRfcHJpb19hcnJheSAqYXJyYXkg
-PSAmcnRfcnEtPmFjdGl2ZTsKLQogCWlmIChvbl9ydF9ycShydF9zZSkpIHsKLQkJbGlzdF9kZWxf
-aW5pdCgmcnRfc2UtPnJ1bl9saXN0KTsKLQkJbGlzdF9hZGRfdGFpbCgmcnRfc2UtPnJ1bl9saXN0
-LAotCQkJICAgICAgYXJyYXktPnF1ZXVlICsgcnRfc2VfcHJpbyhydF9zZSkpOworCQlzdHJ1Y3Qg
-cnRfcHJpb19hcnJheSAqYXJyYXkgPSAmcnRfcnEtPmFjdGl2ZTsKKwkJc3RydWN0IGxpc3RfaGVh
-ZCAqcXVldWUgPSBhcnJheS0+cXVldWUgKyBydF9zZV9wcmlvKHJ0X3NlKTsKKworCQlpZiAoaGVh
-ZCkKKwkJCWxpc3RfbW92ZSgmcnRfc2UtPnJ1bl9saXN0LCBxdWV1ZSk7CisJCWVsc2UKKwkJCWxp
-c3RfbW92ZV90YWlsKCZydF9zZS0+cnVuX2xpc3QsIHF1ZXVlKTsKIAl9CiB9CiAKLXN0YXRpYyB2
-b2lkIHJlcXVldWVfdGFza19ydChzdHJ1Y3QgcnEgKnJxLCBzdHJ1Y3QgdGFza19zdHJ1Y3QgKnAp
-CitzdGF0aWMgdm9pZCByZXF1ZXVlX3Rhc2tfcnQoc3RydWN0IHJxICpycSwgc3RydWN0IHRhc2tf
-c3RydWN0ICpwLCBpbnQgaGVhZCkKIHsKIAlzdHJ1Y3Qgc2NoZWRfcnRfZW50aXR5ICpydF9zZSA9
-ICZwLT5ydDsKIAlzdHJ1Y3QgcnRfcnEgKnJ0X3JxOwogCiAJZm9yX2VhY2hfc2NoZWRfcnRfZW50
-aXR5KHJ0X3NlKSB7CiAJCXJ0X3JxID0gcnRfcnFfb2Zfc2UocnRfc2UpOwotCQlyZXF1ZXVlX3J0
-X2VudGl0eShydF9ycSwgcnRfc2UpOworCQlyZXF1ZXVlX3J0X2VudGl0eShydF9ycSwgcnRfc2Us
-IGhlYWQpOwogCX0KIH0KIAogc3RhdGljIHZvaWQgeWllbGRfdGFza19ydChzdHJ1Y3QgcnEgKnJx
-KQogewotCXJlcXVldWVfdGFza19ydChycSwgcnEtPmN1cnIpOworCXJlcXVldWVfdGFza19ydChy
-cSwgcnEtPmN1cnIsIDApOwogfQogCiAjaWZkZWYgQ09ORklHX1NNUApAQCAtNzUzLDYgKzc1MSwz
-MCBAQCBzdGF0aWMgaW50IHNlbGVjdF90YXNrX3JxX3J0KHN0cnVjdCB0YXNrCiAJICovCiAJcmV0
-dXJuIHRhc2tfY3B1KHApOwogfQorCitzdGF0aWMgdm9pZCBjaGVja19wcmVlbXB0X2VxdWFsX3By
-aW8oc3RydWN0IHJxICpycSwgc3RydWN0IHRhc2tfc3RydWN0ICpwKQoreworCWNwdW1hc2tfdCBt
-YXNrOworCisJaWYgKHJxLT5jdXJyLnJ0Lm5yX2NwdXNfYWxsb3dlZCA9PSAxKQorCQlyZXR1cm47
-CisKKwlpZiAocC0+cnQubnJfY3B1c19hbGxvd2VkICE9IDEKKwkgICAgJiYgY3B1cHJpX2ZpbmQo
-JnJxLT5yZC0+Y3B1cHJpLCBwLCAmbWFzaykpCisJCXJldHVybjsKKwkKKwlpZiAoIWNwdXByaV9m
-aW5kKCZycS0+cmQtPmNwdXByaSwgcnEtPmN1cnIsICZtYXNrKSkKKwkJcmV0dXJuOworCisJLyoK
-KwkgKiBUaGVyZSBhcHBlYXJzIHRvIGJlIG90aGVyIGNwdXMgdGhhdCBjYW4gYWNjZXB0CisJICog
-Y3VycmVudCBhbmQgbm9uZSB0byBydW4gJ3AnLCBzbyBsZXRzIHJlc2NoZWR1bGUKKwkgKiB0byB0
-cnkgYW5kIHB1c2ggY3VycmVudCBhd2F5OgorCSAqLworCXJlcXVldWVfdGFza19ydChycSwgcCwg
-MSk7CisJcmVzY2hlZF90YXNrKHJxLT5jdXJyKTsKK30KKwogI2VuZGlmIC8qIENPTkZJR19TTVAg
-Ki8KIAogLyoKQEAgLTc3OCwxOCArODAwLDggQEAgc3RhdGljIHZvaWQgY2hlY2tfcHJlZW1wdF9j
-dXJyX3J0KHN0cnVjdAogCSAqIHRvIG1vdmUgY3VycmVudCBzb21ld2hlcmUgZWxzZSwgbWFraW5n
-IHJvb20gZm9yIG91ciBub24tbWlncmF0YWJsZQogCSAqIHRhc2suCiAJICovCi0JaWYoKHAtPnBy
-aW8gPT0gcnEtPmN1cnItPnByaW8pCi0JICAgJiYgcC0+cnQubnJfY3B1c19hbGxvd2VkID09IDEK
-LQkgICAmJiBycS0+Y3Vyci0+cnQubnJfY3B1c19hbGxvd2VkICE9IDEpIHsKLQkJY3B1bWFza190
-IG1hc2s7Ci0KLQkJaWYgKGNwdXByaV9maW5kKCZycS0+cmQtPmNwdXByaSwgcnEtPmN1cnIsICZt
-YXNrKSkKLQkJCS8qCi0JCQkgKiBUaGVyZSBhcHBlYXJzIHRvIGJlIG90aGVyIGNwdXMgdGhhdCBj
-YW4gYWNjZXB0Ci0JCQkgKiBjdXJyZW50LCBzbyBsZXRzIHJlc2NoZWR1bGUgdG8gdHJ5IGFuZCBw
-dXNoIGl0IGF3YXkKLQkJCSAqLwotCQkJcmVzY2hlZF90YXNrKHJxLT5jdXJyKTsKLQl9CisJaWYg
-KHAtPnByaW8gPT0gcnEtPmN1cnItPnByaW8gJiYgIW5lZWRfcmVzY2hlZCgpKQorCQljaGVja19w
-cmVlbXB0X2VxdWFsX3ByaW8ocnEsIHApOwogI2VuZGlmCiB9CiAKQEAgLTE0MTUsNyArMTQyNyw3
-IEBAIHN0YXRpYyB2b2lkIHRhc2tfdGlja19ydChzdHJ1Y3QgcnEgKnJxLCAKIAkgKiBvbiB0aGUg
-cXVldWU6CiAJICovCiAJaWYgKHAtPnJ0LnJ1bl9saXN0LnByZXYgIT0gcC0+cnQucnVuX2xpc3Qu
-bmV4dCkgewotCQlyZXF1ZXVlX3Rhc2tfcnQocnEsIHApOworCQlyZXF1ZXVlX3Rhc2tfcnQocnEs
-IHAsIDApOwogCQlzZXRfdHNrX25lZWRfcmVzY2hlZChwKTsKIAl9CiB9Cg==
-------=_Part_22737_22846645.1214921975686--
+Thanks,
+Leonardo
