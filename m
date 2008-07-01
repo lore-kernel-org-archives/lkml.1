@@ -1,105 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759536AbYGAUXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759987AbYGAUYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759536AbYGAUXR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 16:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934AbYGAUXB
+	id S1759987AbYGAUYB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 16:24:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYGAUXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 16:23:01 -0400
-Received: from gw.goop.org ([64.81.55.164]:38485 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755681AbYGAUXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 16:23:00 -0400
-Message-ID: <486A921E.2070306@goop.org>
-Date: Tue, 01 Jul 2008 13:22:54 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Sean Young <sean@mess.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Regression: boot failure on AMD Elan TS-5500
-References: <20080616121138.GA51097@atlantis.8hz.com> <200806162327.34912.rusty@rustcorp.com.au> <48566C88.6000702@goop.org> <20080616161944.GA53539@atlantis.8hz.com> <20080630214347.GA57988@atlantis.8hz.com> <4869558A.9020907@goop.org> <48695871.8000805@zytor.com> <48695F88.9080905@goop.org> <48696167.6050000@zytor.com> <20080701195942.GA76608@atlantis.8hz.com>
-In-Reply-To: <20080701195942.GA76608@atlantis.8hz.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 1 Jul 2008 16:23:53 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:19739 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755455AbYGAUXw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 16:23:52 -0400
+Message-ID: <23433248.1214943818230.JavaMail.oracle@acsmt302.oracle.com>
+Date: Tue, 1 Jul 2008 15:23:38 -0500 (CDT)
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -next] bug.h: add empty warn_on_slowpath() for CONFIG_BUG=n
+Cc: linux-kernel@vger.kernel.org, andi@firstfloor.org
+In-Reply-To: <20080701131714.5093fa49.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
+References: <20080701103339.b5acc1f3.randy.dunlap@oracle.com> <20080701131714.5093fa49.akpm@linux-foundation.org>
+X-Priority: 3
+X-Mailer: Oracle Webmail Client(UIX)
+Content-Language: en-US
+Accept-Language: en-US
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sean Young wrote:
-> On Mon, Jun 30, 2008 at 03:42:47PM -0700, H. Peter Anvin wrote:
->   
->> Jeremy Fitzhardinge wrote:
->>     
->>> Maybe it really does require the far jump immediately after setting PE 
->>> in cr0...
->>>
->>> Hm, I don't remember this paragraph being in vol 3a, section 8.9.1 
->>> before.  Is it a recent addition?
->>>
->>>   Random failures can occur if other instructions exist between steps
->>>   3 and 4 above.  Failures will be readily seen in some situations,
->>>   such as when instructions that reference memory are inserted between
->>>   steps 3 and 4 while in system management mode.
->>>
->>>       
->> I don't remember that, either.
->>     
->
-> Which document are we talking about? 
->   
+--- Original Message ---
+> On Tue, 1 Jul 2008 10:33:39 -0700
+> Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > Add an empty function for warn_on_slowpath() when CONFIG_BUG=n so that
+> > this build error does not happen:
+> > 
+> > linux-next-20080701/drivers/acpi/utilities/utmisc.c: In function 'acpi_ut_error':
+> > linux-next-20080701/drivers/acpi/utilities/utmisc.c:1028: error: implicit declaration of function 'warn_on_slowpath'
+> > 
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > ---
+> >  include/asm-generic/bug.h |    5 +++++
+> >  1 file changed, 5 insertions(+)
+> > 
+> > --- linux-next-20080701.orig/include/asm-generic/bug.h
+> > +++ linux-next-20080701/include/asm-generic/bug.h
+> > @@ -81,4 +81,9 @@ extern void warn_on_slowpath(const char 
+> >  # define WARN_ON_SMP(x)			do { } while (0)
+> >  #endif
+> >  
+> > +#ifndef __ASSEMBLY__
+> > +static inline void warn_on_slowpath(const char *file, const int line)
+> > +{ }
+> > +#endif
+> > +
+> >  #endif
+> > 
+> 
+> This looks like a needed-in-mainline fix?  or is there something
+> in linux-next which causes the bug?
 
-*The* document ;)
-http://www.intel.com/products/processor/manuals/ specifically, Volume 
-3a: System Programming Guide, Part 1. 
+Looks like only linux-next has this code:
 
-Section 8.9.1 describes the steps needed to turn on protected mode 
-correctly.  It says that you need to do a far jump or call immediately 
-after turning on protected mode.  Linux has not done it immediately, and 
-there has been a school of thought that this advice is a workaround for 
-some obsolete CPU, and is not something we have to worry about now.
+> > linux-next-20080701/drivers/acpi/utilities/utmisc.c: In function 'acpi_ut_error':
+> > linux-next-20080701/drivers/acpi/utilities/utmisc.c:1028: error: implicit declaration of function 'warn_on_slowpath'
 
-However, the paragraph I quoted was added since the previous release of 
-the manual, and so presumably documents a current concern.  
-Specifically, the mention of SMM is interesting, because I gather that 
-embedded-class processors like the Elan are very SMM-dependent.
 
->> Sean: could you try the following patch?
->>
->> 	-hpa
->>     
->
->   
->> diff --git a/arch/x86/boot/pmjump.S b/arch/x86/boot/pmjump.S
->> index ab049d4..141b6e2 100644
->> --- a/arch/x86/boot/pmjump.S
->> +++ b/arch/x86/boot/pmjump.S
->> @@ -33,6 +33,8 @@ protected_mode_jump:
->>  	movw	%cs, %bx
->>  	shll	$4, %ebx
->>  	addl	%ebx, 2f
->> +	jmp	1f			# Short jump to serialize on 386/486
->> +1:
->>  
->>  	movw	$__BOOT_DS, %cx
->>  	movw	$__BOOT_TSS, %di
->> @@ -40,8 +42,6 @@ protected_mode_jump:
->>  	movl	%cr0, %edx
->>  	orb	$X86_CR0_PE, %dl	# Protected mode
->>  	movl	%edx, %cr0
->> -	jmp	1f			# Short jump to serialize on 386/486
->> -1:
->>  
->>  	# Transition to 32-bit mode
->>  	.byte	0x66, 0xea		# ljmpl opcode
->>     
->
-> I'm afraid it doesn't work. Maybe I can find something in the AMD Elan
-> documentation. Would a fence make sense?
->   
+~Randy
 
-Not really, but if it fixes the bug it won't hurt anyone else (unless 
-older processors treat it as an illegal instruction).
-
-    J
