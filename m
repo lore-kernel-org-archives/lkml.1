@@ -1,51 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYGALWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbYGALXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbYGALWt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 07:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYGALWl
+	id S1755326AbYGALXV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 07:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbYGALXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 07:22:41 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:51119 "EHLO minas.ics.muni.cz"
+	Tue, 1 Jul 2008 07:23:08 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:34473 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750884AbYGALWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 07:22:40 -0400
-Date: Tue, 1 Jul 2008 13:22:31 +0200
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: 2.6.26-rc1 regression since 2.6.25 - problem in 2.6.26-rc8
-	again
-Message-ID: <20080701112231.GA5111@ics.muni.cz>
-References: <20080630122626.GB4413@ics.muni.cz> <Pine.LNX.4.44L0.0806301318570.2138-100000@iolanthe.rowland.org>
+	id S1753096AbYGALXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 07:23:07 -0400
+Date: Tue, 1 Jul 2008 14:22:48 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/7] fat: Fix VFAT_IOCTL_READDIR_xxx and cleanup for
+	userland
+Message-ID: <20080701112248.GA17558@cs181140183.pp.htv.fi>
+References: <9edbdefc3e848699cfe111608.ps@mail.parknet.co.jp> <129170883e848699cff211608.ps@mail.parknet.co.jp> <20080701074033.GB30362@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.44L0.0806301318570.2138-100000@iolanthe.rowland.org>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+In-Reply-To: <20080701074033.GB30362@infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 147.251.3.109
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 01 Jul 2008 13:22:33 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 01:21:00PM -0400, Alan Stern wrote:
-> Ah, good.  I see the problem now.
+On Tue, Jul 01, 2008 at 03:40:33AM -0400, Christoph Hellwig wrote:
+> On Tue, Jul 01, 2008 at 11:57:03AM +0900, OGAWA Hirofumi wrote:
+> > 
+> > "struct dirent" is a kernel type here, but is a **different type** in 
+> > userspace!  This means both the structure and the IOCTL number is wrong!
+> > 
+> > So, this adds new "struct __fat_dirent" to generate correct IOCTL
+> > number.  And kernel stuff moves to under __KERNEL__.
 > 
-> To tell the truth, this has been fixed in the development tree for so 
-> long that I had forgotten about it.  Unfortunately those fixes won't 
-> get into the regular kernel until 2.6.27.  Until then we need another 
-> fix.
-> 
-> The patch below should take care of the problem.  Let me know how it 
-> works.
+> Given that the current version can't actually work without defininig
+> it's own dirent and thus ioctl number symbolic name I wonder if these
+> ioctls are used at all?  They must have been completely untested for
+> a while, and I suspect we'd be better off just removing them.
 
-seems to be OK. Please push..
+I had the same thought, but when checking this I noticed that at least 
+wine works around this problem:
+
+<--  snip  -->
+
+/* just in case... */
+#undef VFAT_IOCTL_READDIR_BOTH
+#undef USE_GETDENTS
+
+#ifdef linux
+
+/* We want the real kernel dirent structure, not the libc one */
+typedef struct
+{
+    long d_ino;
+    long d_off;
+    unsigned short d_reclen;
+    char d_name[256];
+} KERNEL_DIRENT;
+
+/* Define the VFAT ioctl to get both short and long file names */
+#define VFAT_IOCTL_READDIR_BOTH  _IOR('r', 1, KERNEL_DIRENT [2] )
+
+<--  snip  -->
+
+
+cu
+Adrian
 
 -- 
-Luká¹ Hejtmánek
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
