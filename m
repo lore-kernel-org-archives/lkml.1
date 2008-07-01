@@ -1,73 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761527AbYGAPY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761184AbYGAPZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761527AbYGAPY6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 11:24:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757330AbYGAPWh
+	id S1761184AbYGAPZf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 11:25:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758458AbYGAPZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 11:22:37 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58256 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760626AbYGAPWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 11:22:35 -0400
-Date: Tue, 1 Jul 2008 08:19:21 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Max Asbock <masbock@linux.vnet.ibm.com>,
-       Glauber Costa <gcosta@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 9/9] x86: shift bits the right way in native_read_tscp
-Message-ID: <20080701151921.GJ3536@suse.de>
-References: <20080701151057.930340322@mini.kroah.org>
+	Tue, 1 Jul 2008 11:25:07 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:45334 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758248AbYGAPZG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 11:25:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=fGNirZoBZfl8I710dhqMXawUbtp0SNtFrgEUbZwaegdfIMGeo98Cx+bgSoY9Ns4qqq
+         FIK2c/rYrDUn6mAkJgZBOgloJvKhm0QAKBw7Lc04EIYW39NvCbvbu06bPiJ4Rx5csR9l
+         8M19qr185AhgOmokeC9i0Y/0xKQI66PNdfvQ0=
+Message-ID: <a4423d670807010825t7ea2eb44oda3f08dc007c40a2@mail.gmail.com>
+Date: Tue, 1 Jul 2008 19:25:03 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org, sparclinux@vger.kernel.org,
+       "David Miller" <davem@davemloft.net>, sagar.abhishek@gmail.com,
+       rostedt@goodmis.org, "Ingo Molnar" <mingo@elte.hu>
+Subject: next-0630: sparc64: build failed
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-shift-bits-the-right-way-in-native_read_tscp.patch"
-In-Reply-To: <20080701151835.GA3536@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.25-stable review patch.  If anyone has any objections, please let us
-know.
+Hi David, Abhishek
 
-------------------
+$ make CROSS_COMPILE=sparc64-unknown-linux-gnu- image modules && sudo
+make modules_install
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CALL    scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+dnsdomainname: Unknown host
+  CC      arch/sparc64/kernel/sparc64_ksyms.o
+arch/sparc64/kernel/sparc64_ksyms.c:116: error: '_mcount' undeclared
+here (not in a function)
+cc1: warnings being treated as errors
+arch/sparc64/kernel/sparc64_ksyms.c:116: error: type defaults to 'int'
+in declaration of '_mcount'
 
-From: Max Asbock <masbock@us.ibm.com>
+This commit is cause.
 
-Commit 41aefdcc98fdba47459eab67630293d67e855fc3 upstream
+commit 395a59d0f8e86bb39cd700c3d185d30c670bb958
+Author: Abhishek Sagar <sagar.abhishek@gmail.com>
+Date:   Sat Jun 21 23:47:27 2008 +0530
 
-x86: shift bits the right way in native_read_tscp
+    ftrace: store mcount address in rec->ip
 
-native_read_tscp shifts the bits in the high order value in the
-wrong direction, the attached patch fixes that.
+    Record the address of the mcount call-site. Currently all archs
+except sparc64
+    record the address of the instruction following the mcount call-site. Some
+    general cleanups are entailed. Storing mcount addresses in rec->ip enables
+    looking them up in the kprobe hash table later on to check if
+they're kprobe'd.
 
-Signed-off-by: Max Asbock <masbock@linux.vnet.ibm.com>
-Acked-by: Glauber Costa <gcosta@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+    Signed-off-by: Abhishek Sagar <sagar.abhishek@gmail.com>
+    Cc: davem@davemloft.net
+    Cc: Steven Rostedt <rostedt@goodmis.org>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
----
- include/asm-x86/msr.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+diff --git a/arch/sparc64/kernel/sparc64_ksyms.c
+b/arch/sparc64/kernel/sparc64_ksyms.c
+index 8ac0b99..b80d982 100644
+--- a/arch/sparc64/kernel/sparc64_ksyms.c
++++ b/arch/sparc64/kernel/sparc64_ksyms.c
+@@ -53,6 +53,7 @@
+ #include <asm/ns87303.h>
+ #include <asm/timer.h>
+ #include <asm/cpudata.h>
++#include <asm/ftrace.h>
 
---- a/include/asm-x86/msr.h
-+++ b/include/asm-x86/msr.h
-@@ -18,7 +18,7 @@ static inline unsigned long long native_
- 	unsigned long low, high;
- 	asm volatile (".byte 0x0f,0x01,0xf9"
- 		      : "=a" (low), "=d" (high), "=c" (*aux));
--	return low | ((u64)high >> 32);
-+	return low | ((u64)high << 32);
- }
- 
- /*
+ struct poll {
+        int fd;
+@@ -112,7 +113,6 @@ EXPORT_SYMBOL(smp_call_function);
+ #endif /* CONFIG_SMP */
 
--- 
+ #if defined(CONFIG_MCOUNT)
+-extern void _mcount(void);
+ EXPORT_SYMBOL(_mcount);
+ #endif
+
+
+gcc version 4.3.1 (Gentoo 4.3.1 p1.0)
