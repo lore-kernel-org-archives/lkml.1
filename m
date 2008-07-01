@@ -1,120 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759534AbYGATNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbYGATQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759534AbYGATNh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 15:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759159AbYGATNS
+	id S1758219AbYGATQQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 15:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbYGATQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 15:13:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53286 "EHLO mx1.redhat.com"
+	Tue, 1 Jul 2008 15:16:00 -0400
+Received: from mx2.suse.de ([195.135.220.15]:44982 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758614AbYGATNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 15:13:15 -0400
-Date: Tue, 1 Jul 2008 15:11:26 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: linux kernel mailing list <linux-kernel@vger.kernel.org>
-Cc: Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>, Peter Zijlstra <pzijlstr@redhat.com>,
-       kamezawa.hiroyu@jp.fujitsu.com, Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
-       Morton Andrew Morton <akpm@linux-foundation.org>
-Subject: [RFC] How to handle the rules engine for cgroups
-Message-ID: <20080701191126.GA17376@redhat.com>
+	id S1752888AbYGATP7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 15:15:59 -0400
+Date: Tue, 1 Jul 2008 12:13:43 -0700
+From: Greg KH <gregkh@suse.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Stefan Becker <Stefan.Becker@nokia.com>, linux-usb@vger.kernel.org,
+       ext David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       ext Leonardo Chiquitto <leonardo.lists@gmail.com>
+Subject: Re: [PATCH] USB: fix interrupt disabling for HCDs with shared
+	interrupt handlers
+Message-ID: <20080701191343.GA26068@suse.de>
+References: <20080701182543.GA32098@suse.de> <Pine.LNX.4.44L0.0807011456370.6796-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <Pine.LNX.4.44L0.0807011456370.6796-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Jul 01, 2008 at 02:59:38PM -0400, Alan Stern wrote:
+> On Tue, 1 Jul 2008, Greg KH wrote:
+> 
+> > Hm, isn't this also an issue in 2.6.25 as well?  I've had a few very
+> > strange reports of USB just locking up in 2.6.25, could this also be the
+> > cause there?
+> 
+> It could go back a lot farther than that.  I don't think our interrupt 
+> setup has been changed significantly for a long time, with one 
+> exception: We added the IRQF_DISABLED flag fairly recently.  But of 
+> course, we now know that it doesn't do what we expected.
+> 
+> It's surprising that more people haven't experienced this problem and 
+> reported it.
 
-While development is going on for cgroup and various controllers, we also
-need a facility so that an admin/user can specify the group creation and
-also specify the rules based on which tasks should be placed in respective
-groups. Group creation part will be handled by libcg which is already
-under development. We still need to tackle the issue of how to specify
-the rules and how these rules are enforced (rules engine).
+Ok, I'll queue it up for -stable as well.
 
-I have gathered few views, with regards to how rule engine can possibly be
-implemented, I am listing these down.
+> > Alan and Dave, do you both ack this thing?  I know you've been involved
+> > in creating it, just want to get the formal approval :)
+> 
+> Acked-by: Alan Stern <stern@rowland.harvard.edu>
+> 
+> There still are a few places where spaces were used instead of tabs for 
+> indenting.  Aside from that it looks fine.
 
-Proposal 1
-==========
-Let user space daemon hanle all that. Daemon will open a netlink socket
-and receive the notifications for various kernel events. Daemon will
-also parse appropriate admin specified rules config file and place the
-processes in right cgroup based on rules as and when events happen.
+Thanks, I'll clean that up by hand, not a big deal :)
 
-I have written a prototype user space program which does that. Program 
-can be found here. Currently it is in very crude shape.
-
-http://people.redhat.com/vgoyal/misc/rules-engine-daemon/user-id-based-namespaces.patch
-
-Various people have raised two main issues with this approach.
-
-- netlink is not a reliable protocol.
-	- Messages can be dropped and one can loose message. That means a
-	  newly forked process might never go into right group as meant.
-
-- How to handle delays in rule exectuion?
-	- For example, if an "exec" happens and by the time process is moved to
-	 right group, it might have forked off few more processes or might
-	 have done quite some amount of memory allocation which will be
-   	 charged to the wring group. Or, newly exec process might get
- 	 killed in existing cgroup because of lack of memory (despite the
-	 fact that destination cgroup has sufficient memory).
-
-Proposal 2
-==========
-Implement one or more kernel modules which will implement the rule engine.
-User space program can parse the config files and pass it to module.
-Kernel will be patched only on select points to look for the rules (as
-provided by modules). Very minimal code running inside the kernel if there
-are no rules loaded.
-
-Concerns:
-- Rules can become complex and we don't want to handle that complexity in
-  kernel.
-
-Pros:
-- Reliable and precise movement of tasks in right cgroup based on rules.
-
-Proposal 3
-==========
-How about if additional parameters can be passed to system calls and one
-can pass destination cgroup as additional parameter. Probably something
-like sys_indirect proposal. Maybe glibc can act as a wrapper to pass
-additional parameter so that applications don't need any modifications.
-
-Concerns:
-========
-- Looks like sys_indirect interface for passing extra flags was rejected.
-- Requires extra work in glibc which can also involve parsing of rule
-  files. :-(
-
-Proposal 4
-==========
-Some vauge thoughts are there regarding how about kind of freezing the
-process or thread upon fork, exec and unfreeze it once the thread has been
-placed in right cgroup. 
-
-Concerns:
-========
-- Requires reliable netlink protocol otherwise there is a possibility that
-  a task never gets unfrozen.
-- On what basis does one freeze a thread. There might not be any rules to
-  process for that thread we will unnecessarily delay it.
-
-
-Please provide your inputs regarding what's the best way to handle the
-rules engine.
-
-To me, letting the rules live in separate module/modules seems to be a
-reasonable way to move forward which will provide reliable and timely
-execution of rules and by making it modular, we can remove most of the
-complexity from core kernel code.
-
-Thanks
-Vivek
+greg k-h
