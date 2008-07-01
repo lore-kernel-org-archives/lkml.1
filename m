@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759700AbYGAUkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760848AbYGAUll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759700AbYGAUkz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 16:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbYGAUkq
+	id S1760848AbYGAUll (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 16:41:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbYGAUld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 16:40:46 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:43277 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753709AbYGAUkp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 16:40:45 -0400
-To: jmorris@namei.org
-CC: jjohansen@suse.de, akpm@linux-foundation.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch] security: fix dummy xattr functions
-Message-Id: <E1KDmeW-0006KB-2x@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 01 Jul 2008 22:40:40 +0200
+	Tue, 1 Jul 2008 16:41:33 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:33005 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754348AbYGAUlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 16:41:32 -0400
+Date: Tue, 1 Jul 2008 21:41:30 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] DRM/i915: only use tiled blits on 965+
+In-Reply-To: <200807011232.53124.jbarnes@virtuousgeek.org>
+Message-ID: <alpine.DEB.0.82.0807012140570.30359@skynet.skynet.ie>
+References: <200807011232.53124.jbarnes@virtuousgeek.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi James,
 
-If this (untested) patch looks OK, could you please apply it to your
-tree?
+> When scheduled swaps occur, we need to blit between front & back buffers.  If
+> the buffers are tiled, we need to set the appropriate XY_SRC_COPY tile bit,
+> but only on 965 chips, since it will cause corruption on pre-965 (e.g. 945).
+> 
+> Bug reported by and fix tested by Tomas Janousek <tomi@nomi.cz>.
+> 
+> Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-Thanks,
-Miklos
+Acked-by: Dave Airlie <airlied@linux.ie>
 
-----
-From: Miklos Szeredi <mszeredi@suse.cz>
+Linus please push for -final.
 
-Replace open coded xattr checks with cap_inode_xxx() function calls in
-dummy_inode_setxattr() and dummy_inode_removexattr().  The old ones
-were out of sync with the cap_inode_xxx() implementation, which could
-even be a security problem.
+Dave.
 
-Noticed by John Johansen.
-
-CC: John Johansen <jjohansen@suse.de>
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- security/dummy.c |   12 ++----------
- 1 file changed, 2 insertions(+), 10 deletions(-)
-
-Index: linux-2.6/security/dummy.c
-===================================================================
---- linux-2.6.orig/security/dummy.c	2008-07-01 21:44:03.000000000 +0200
-+++ linux-2.6/security/dummy.c	2008-07-01 21:51:08.000000000 +0200
-@@ -370,11 +370,7 @@ static void dummy_inode_delete (struct i
- static int dummy_inode_setxattr (struct dentry *dentry, const char *name,
- 				 const void *value, size_t size, int flags)
- {
--	if (!strncmp(name, XATTR_SECURITY_PREFIX,
--		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
--	    !capable(CAP_SYS_ADMIN))
--		return -EPERM;
--	return 0;
-+	return cap_inode_setxattr(dentry, name, value, size, flags);
- }
- 
- static void dummy_inode_post_setxattr (struct dentry *dentry, const char *name,
-@@ -395,11 +391,7 @@ static int dummy_inode_listxattr (struct
- 
- static int dummy_inode_removexattr (struct dentry *dentry, const char *name)
- {
--	if (!strncmp(name, XATTR_SECURITY_PREFIX,
--		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
--	    !capable(CAP_SYS_ADMIN))
--		return -EPERM;
--	return 0;
-+	return cap_inode_removexattr(dentry, name);
- }
- 
- static int dummy_inode_need_killpriv(struct dentry *dentry)
+> 
+> diff --git a/drivers/char/drm/i915_irq.c b/drivers/char/drm/i915_irq.c
+> index f7f16e7..df03611 100644
+> --- a/drivers/char/drm/i915_irq.c
+> +++ b/drivers/char/drm/i915_irq.c
+> @@ -62,11 +62,11 @@ static void i915_vblank_tasklet(struct drm_device *dev)
+>  	u32 ropcpp = (0xcc << 16) | ((cpp - 1) << 24);
+>  	RING_LOCALS;
+>  
+> -	if (sarea_priv->front_tiled) {
+> +	if (IS_I965G(dev) && sarea_priv->front_tiled) {
+>  		cmd |= XY_SRC_COPY_BLT_DST_TILED;
+>  		dst_pitch >>= 2;
+>  	}
+> -	if (sarea_priv->back_tiled) {
+> +	if (IS_I965G(dev) && sarea_priv->back_tiled) {
+>  		cmd |= XY_SRC_COPY_BLT_SRC_TILED;
+>  		src_pitch >>= 2;
+>  	}
+> 
+> 
