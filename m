@@ -1,189 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbYGAMyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbYGAMzP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757415AbYGAMyy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 08:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757787AbYGAMvn
+	id S1757388AbYGAMzP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 08:55:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757234AbYGAMyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 08:51:43 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:27898 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757742AbYGAMvj (ORCPT
+	Tue, 1 Jul 2008 08:54:18 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:33329 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756841AbYGAMyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 08:51:39 -0400
-Message-Id: <20080701125000.522100111@de.ibm.com>
-References: <20080701124809.319736054@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 01 Jul 2008 14:48:21 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Felix Beck <felix.beck@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 12/14] ap: Use high-resolution timer for polling
-Content-Disposition: inline; filename=131-ap-hrtimer.diff
+	Tue, 1 Jul 2008 08:54:15 -0400
+Date: Tue, 1 Jul 2008 06:53:57 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: ksummit-2008-discuss@lists.linux-foundation.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [Ksummit-2008-discuss] Delayed interrupt work, thread pools
+Message-ID: <20080701125357.GT14894@parisc-linux.org>
+References: <1214916335.20711.141.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1214916335.20711.141.camel@pasglop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Felix Beck <felix.beck@de.ibm.com>
+On Tue, Jul 01, 2008 at 10:45:35PM +1000, Benjamin Herrenschmidt wrote:
+> In various areas (I'll come up with some examples later), kernel code
+> such as drivers want to defer some processing to "task level", for
+> various reasons such as locking (taking mutexes), memory allocation,
+> interrupt latency, or simply doing things that may take more time than
+> is reasonable to do at interrupt time or do things that may block.
+> 
+> Currently, the main mechanism we provide to do that is workqueues. They
+> somewhat solve the problem, but at the same time, somewhat can make it
+> worse.
 
-The ap poll mechanism is converted to use a high-resolution timer for
-polling. This allows more specific polling. With this a new sysfs
-attribute is introduced to specify the polling rate in nanoseconds.
-
-Signed-off-by: Felix Beck <felix.beck@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- drivers/s390/crypto/ap_bus.c |   63 ++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 53 insertions(+), 10 deletions(-)
-
-Index: quilt-2.6/drivers/s390/crypto/ap_bus.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/crypto/ap_bus.c
-+++ quilt-2.6/drivers/s390/crypto/ap_bus.c
-@@ -34,13 +34,15 @@
- #include <linux/mutex.h>
- #include <asm/s390_rdev.h>
- #include <asm/reset.h>
-+#include <linux/hrtimer.h>
-+#include <linux/ktime.h>
- 
- #include "ap_bus.h"
- 
- /* Some prototypes. */
- static void ap_scan_bus(struct work_struct *);
- static void ap_poll_all(unsigned long);
--static void ap_poll_timeout(unsigned long);
-+static enum hrtimer_restart ap_poll_timeout(struct hrtimer *);
- static int ap_poll_thread_start(void);
- static void ap_poll_thread_stop(void);
- static void ap_request_timeout(unsigned long);
-@@ -80,12 +82,15 @@ static DECLARE_WORK(ap_config_work, ap_s
- /*
-  * Tasklet & timer for AP request polling.
-  */
--static struct timer_list ap_poll_timer = TIMER_INITIALIZER(ap_poll_timeout,0,0);
- static DECLARE_TASKLET(ap_tasklet, ap_poll_all, 0);
- static atomic_t ap_poll_requests = ATOMIC_INIT(0);
- static DECLARE_WAIT_QUEUE_HEAD(ap_poll_wait);
- static struct task_struct *ap_poll_kthread = NULL;
- static DEFINE_MUTEX(ap_poll_thread_mutex);
-+static struct hrtimer ap_poll_timer;
-+/* In LPAR poll with 4kHz frequency. Poll every 250000 nanoseconds.
-+ * If z/VM change to 1500000 nanoseconds to adjust to z/VM polling.*/
-+static unsigned long long poll_timeout = 250000;
- 
- /**
-  * ap_intructions_available() - Test if AP instructions are available.
-@@ -636,11 +641,39 @@ static ssize_t ap_poll_thread_store(stru
- 
- static BUS_ATTR(poll_thread, 0644, ap_poll_thread_show, ap_poll_thread_store);
- 
-+static ssize_t poll_timeout_show(struct bus_type *bus, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%llu\n", poll_timeout);
-+}
-+
-+static ssize_t poll_timeout_store(struct bus_type *bus, const char *buf,
-+				  size_t count)
-+{
-+	unsigned long long time;
-+	ktime_t hr_time;
-+
-+	/* 120 seconds = maximum poll interval */
-+	if (sscanf(buf, "%llu\n", &time) != 1 || time < 1 || time > 120000000000)
-+		return -EINVAL;
-+	poll_timeout = time;
-+	hr_time = ktime_set(0, poll_timeout);
-+
-+	if (!hrtimer_is_queued(&ap_poll_timer) ||
-+	    !hrtimer_forward(&ap_poll_timer, ap_poll_timer.expires, hr_time)) {
-+		ap_poll_timer.expires = hr_time;
-+		hrtimer_start(&ap_poll_timer, hr_time, HRTIMER_MODE_ABS);
-+	}
-+	return count;
-+}
-+
-+static BUS_ATTR(poll_timeout, 0644, poll_timeout_show, poll_timeout_store);
-+
- static struct bus_attribute *const ap_bus_attrs[] = {
- 	&bus_attr_ap_domain,
- 	&bus_attr_config_time,
- 	&bus_attr_poll_thread,
--	NULL
-+	&bus_attr_poll_timeout,
-+	NULL,
- };
- 
- /**
-@@ -895,9 +928,10 @@ ap_config_timeout(unsigned long ptr)
-  */
- static inline void ap_schedule_poll_timer(void)
- {
--	if (timer_pending(&ap_poll_timer))
-+	if (hrtimer_is_queued(&ap_poll_timer))
- 		return;
--	mod_timer(&ap_poll_timer, jiffies + AP_POLL_TIME);
-+	hrtimer_start(&ap_poll_timer, ktime_set(0, poll_timeout),
-+		      HRTIMER_MODE_ABS);
- }
- 
- /**
-@@ -1115,13 +1149,14 @@ EXPORT_SYMBOL(ap_cancel_message);
- 
- /**
-  * ap_poll_timeout(): AP receive polling for finished AP requests.
-- * @unused: Unused variable.
-+ * @unused: Unused pointer.
-  *
-- * Schedules the AP tasklet.
-+ * Schedules the AP tasklet using a high resolution timer.
-  */
--static void ap_poll_timeout(unsigned long unused)
-+static enum hrtimer_restart ap_poll_timeout(struct hrtimer *unused)
- {
- 	tasklet_schedule(&ap_tasklet);
-+	return HRTIMER_NORESTART;
- }
- 
- /**
-@@ -1344,6 +1379,14 @@ int __init ap_module_init(void)
- 	ap_config_timer.expires = jiffies + ap_config_time * HZ;
- 	add_timer(&ap_config_timer);
- 
-+	/* Setup the high resultion poll timer.
-+	 * If we are running under z/VM adjust polling to z/VM polling rate.
-+	 */
-+	if (MACHINE_IS_VM)
-+		poll_timeout = 1500000;
-+	hrtimer_init(&ap_poll_timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
-+	ap_poll_timer.function = ap_poll_timeout;
-+
- 	/* Start the low priority AP bus poll thread. */
- 	if (ap_thread_flag) {
- 		rc = ap_poll_thread_start();
-@@ -1355,7 +1398,7 @@ int __init ap_module_init(void)
- 
- out_work:
- 	del_timer_sync(&ap_config_timer);
--	del_timer_sync(&ap_poll_timer);
-+	hrtimer_cancel(&ap_poll_timer);
- 	destroy_workqueue(ap_work_queue);
- out_root:
- 	s390_root_dev_unregister(ap_root_device);
-@@ -1386,7 +1429,7 @@ void ap_module_exit(void)
- 	ap_reset_domain();
- 	ap_poll_thread_stop();
- 	del_timer_sync(&ap_config_timer);
--	del_timer_sync(&ap_poll_timer);
-+	hrtimer_cancel(&ap_poll_timer);
- 	destroy_workqueue(ap_work_queue);
- 	tasklet_kill(&ap_tasklet);
- 	s390_root_dev_unregister(ap_root_device);
+Why not just use a dedicated thread?  The API to start / stop threads is
+now pretty easy to use.
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
