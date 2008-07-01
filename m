@@ -1,197 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbYGAKL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbYGAKLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202AbYGAKL3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 06:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbYGAKLN
+	id S1756856AbYGAKLr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 06:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbYGAKLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 06:11:13 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:8959 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755589AbYGAKLK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 06:11:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=T2s/NlRf/UvbLxobyyRFfU63vs9d1MI1+c8XTbRwgC+D5l0gH8+qwcFyVTNuBnvNP4
-         vw+oDP2kLcSR1FeGMzemvGnUcaVKpDxHuplQWbvUZpieq84cyPljlVWhVnFVz+Y2OC9w
-         BoKUspG2mlAgwidy3CSZyVMiZhAJpu03TaAmE=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] (resend) reuse xxx_fifo_fops for xxx_pipe_fops
-Date: Tue, 1 Jul 2008 14:11:25 +0200
-User-Agent: KMail/1.8.2
-Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200807011103.02974.vda.linux@googlemail.com> <200807011203.50632.vda.linux@googlemail.com> <20080701011045.f4490332.akpm@linux-foundation.org>
-In-Reply-To: <20080701011045.f4490332.akpm@linux-foundation.org>
+	Tue, 1 Jul 2008 06:11:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44509 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756360AbYGAKLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 06:11:32 -0400
+Date: Tue, 1 Jul 2008 12:11:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, TAKADA Yoshihito <takada@mbf.nifty.com>
+Subject: Re: [PATCH] x86 ptrace: fix PTRACE_GETFPXREGS error
+Message-ID: <20080701101104.GF31309@elte.hu>
+References: <20080630.134445.193700135.takada@mbf.nifty.com> <20080630210241.93738154077@magilla.localdomain> <20080701090204.GA1729@elte.hu> <20080701093212.6D9DA15420E@magilla.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807011411.25411.vda.linux@googlemail.com>
+In-Reply-To: <20080701093212.6D9DA15420E@magilla.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 01 July 2008 10:10, Andrew Morton wrote:
-> On Tue, 1 Jul 2008 12:03:50 +0200 Denys Vlasenko <vda.linux@googlemail.com> wrote:
-> 
-> > I think since XXX_pipe_fops are only used in this file,
-> > just explaining this in the comment would be enough.
-> 
-> no, a comment is only needed when the code is unobvious.  Make
-> the code obvious and we don't need a comment.
-> 
-> As Christoph pointed out, open-coding shared_read_fops everywhere
-> might make sense too.  It'd make it harder to unshare them later
-> on, but that's pretty improbable.
 
-Ok.
+* Roland McGrath <roland@redhat.com> wrote:
 
-Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
---
-vda
+> > since the original fix is already upstream, i've applied the delta 
+> > patch below. Should we still do this for v2.6.26 or can we defer it 
+> > to v2.6.27? As ptrace is the only user of this facility for now this 
+> > would be an identity transformation AFAICS and the v2.6.26 release 
+> > is very close.
+> 
+> I don't think there's a problem with 2.6.26 either way.  I agree that 
+> the user_regset internal API does not matter much before 2.6.27.
 
---- linux-2.6.26-rc8/fs.org/fifo.c	Thu Apr 17 04:49:44 2008
-+++ linux-2.6.26-rc8/fs/fifo.c	Tue Jul  1 14:09:13 2008
-@@ -57,7 +57,7 @@
- 	 *  POSIX.1 says that O_NONBLOCK means return with the FIFO
- 	 *  opened, even when there is no process writing the FIFO.
- 	 */
--		filp->f_op = &read_fifo_fops;
-+		filp->f_op = &read_pipefifo_fops;
- 		pipe->r_counter++;
- 		if (pipe->readers++ == 0)
- 			wake_up_partner(inode);
-@@ -86,7 +86,7 @@
- 		if ((filp->f_flags & O_NONBLOCK) && !pipe->readers)
- 			goto err;
- 
--		filp->f_op = &write_fifo_fops;
-+		filp->f_op = &write_pipefifo_fops;
- 		pipe->w_counter++;
- 		if (!pipe->writers++)
- 			wake_up_partner(inode);
-@@ -105,7 +105,7 @@
- 	 *  This implementation will NEVER block on a O_RDWR open, since
- 	 *  the process can at least talk to itself.
- 	 */
--		filp->f_op = &rdwr_fifo_fops;
-+		filp->f_op = &rdwr_pipefifo_fops;
- 
- 		pipe->readers++;
- 		pipe->writers++;
-@@ -151,5 +151,5 @@
-  * depending on the access mode of the file...
-  */
- const struct file_operations def_fifo_fops = {
--	.open		= fifo_open,	/* will set read or write pipe_fops */
-+	.open		= fifo_open,	/* will set read_ or write_pipefifo_fops */
- };
---- linux-2.6.26-rc8/fs.org/pipe.c	Tue Jul  1 11:52:28 2008
-+++ linux-2.6.26-rc8/fs/pipe.c	Tue Jul  1 14:08:16 2008
-@@ -777,8 +777,10 @@
- /*
-  * The file_operations structs are not static because they
-  * are also used in linux/fs/fifo.c to do operations on FIFOs.
-+ *
-+ * Pipes reuse fifos' file_operations structs.
-  */
--const struct file_operations read_fifo_fops = {
-+const struct file_operations read_pipefifo_fops = {
- 	.llseek		= no_llseek,
- 	.read		= do_sync_read,
- 	.aio_read	= pipe_read,
-@@ -790,7 +792,7 @@
- 	.fasync		= pipe_read_fasync,
- };
- 
--const struct file_operations write_fifo_fops = {
-+const struct file_operations write_pipefifo_fops = {
- 	.llseek		= no_llseek,
- 	.read		= bad_pipe_r,
- 	.write		= do_sync_write,
-@@ -802,7 +804,7 @@
- 	.fasync		= pipe_write_fasync,
- };
- 
--const struct file_operations rdwr_fifo_fops = {
-+const struct file_operations rdwr_pipefifo_fops = {
- 	.llseek		= no_llseek,
- 	.read		= do_sync_read,
- 	.aio_read	= pipe_read,
-@@ -815,43 +817,6 @@
- 	.fasync		= pipe_rdwr_fasync,
- };
- 
--static const struct file_operations read_pipe_fops = {
--	.llseek		= no_llseek,
--	.read		= do_sync_read,
--	.aio_read	= pipe_read,
--	.write		= bad_pipe_w,
--	.poll		= pipe_poll,
--	.unlocked_ioctl	= pipe_ioctl,
--	.open		= pipe_read_open,
--	.release	= pipe_read_release,
--	.fasync		= pipe_read_fasync,
--};
--
--static const struct file_operations write_pipe_fops = {
--	.llseek		= no_llseek,
--	.read		= bad_pipe_r,
--	.write		= do_sync_write,
--	.aio_write	= pipe_write,
--	.poll		= pipe_poll,
--	.unlocked_ioctl	= pipe_ioctl,
--	.open		= pipe_write_open,
--	.release	= pipe_write_release,
--	.fasync		= pipe_write_fasync,
--};
--
--static const struct file_operations rdwr_pipe_fops = {
--	.llseek		= no_llseek,
--	.read		= do_sync_read,
--	.aio_read	= pipe_read,
--	.write		= do_sync_write,
--	.aio_write	= pipe_write,
--	.poll		= pipe_poll,
--	.unlocked_ioctl	= pipe_ioctl,
--	.open		= pipe_rdwr_open,
--	.release	= pipe_rdwr_release,
--	.fasync		= pipe_rdwr_fasync,
--};
--
- struct pipe_inode_info * alloc_pipe_info(struct inode *inode)
+okay - i've queued it up in tip/x86/ptrace for now.
+
+> My patch alone applies to 2.6.25, which is why I CC'd it to stable. I 
+> think applying that (and not takada's patch) to stable-2.6.25 would be 
+> best.
+
+i think Greg already queued the original fix up for v2.6.25, as per the 
+commit notifier below.
+
+so i think it is all sorted fine now?
+
+	Ingo
+
+---------------------->
+This is a note to let you know that we have just queued up the patch titled
+
+     Subject: ptrace GET/SET FPXREGS broken
+
+to the 2.6.25-stable tree.  Its filename is
+
+     ptrace-get-set-fpxregs-broken.patch
+
+A git repo of this tree can be found at 
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+
+>From stable-bounces@linux.kernel.org Mon Jun 30 09:22:46 2008
+From: TAKADA Yoshihito <takada@mbf.nifty.com>
+Date: Mon, 30 Jun 2008 18:22:07 +0200
+Subject: ptrace GET/SET FPXREGS broken
+To: stable@kernel.org
+Message-ID: <20080630162207.GC17710@elte.hu>
+Content-Disposition: inline
+
+From: TAKADA Yoshihito <takada@mbf.nifty.com>
+
+Commit 11dbc963a8f6128595d0f6ecf138dc369e144997 upstream
+
+ptrace GET/SET FPXREGS broken
+
+When I update kernel 2.6.25 from 2.6.24, gdb does not work.
+On 2.6.25, ptrace(PTRACE_GETFPXREGS, ...) returns ENODEV.
+
+But 2.6.24 kernel's ptrace() returns EIO.
+It is issue of compatibility.
+
+I attached test program as pt.c and patch for fix it.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+#include <errno.h>
+#include <sys/ptrace.h>
+#include <sys/types.h>
+
+struct user_fxsr_struct {
+	unsigned short	cwd;
+	unsigned short	swd;
+	unsigned short	twd;
+	unsigned short	fop;
+	long	fip;
+	long	fcs;
+	long	foo;
+	long	fos;
+	long	mxcsr;
+	long	reserved;
+	long	st_space[32];	/* 8*16 bytes for each FP-reg = 128 bytes */
+	long	xmm_space[32];	/* 8*16 bytes for each XMM-reg = 128 bytes */
+	long	padding[56];
+};
+
+int main(void)
+{
+  pid_t pid;
+
+  pid = fork();
+
+  switch(pid){
+  case -1:/*  error */
+    break;
+  case 0:/*  child */
+    child();
+    break;
+  default:
+    parent(pid);
+    break;
+  }
+  return 0;
+}
+
+int child(void)
+{
+  ptrace(PTRACE_TRACEME);
+  kill(getpid(), SIGSTOP);
+  sleep(10);
+  return 0;
+}
+int parent(pid_t pid)
+{
+  int ret;
+  struct user_fxsr_struct fpxregs;
+
+  ret = ptrace(PTRACE_GETFPXREGS, pid, 0, &fpxregs);
+  if(ret < 0){
+    printf("%d: %s.\n", errno, strerror(errno));
+  }
+  kill(pid, SIGCONT);
+  wait(pid);
+  return 0;
+}
+
+/* in the kerel, at kernel/i387.c get_fpxregs() */
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ arch/x86/kernel/i387.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/arch/x86/kernel/i387.c
++++ b/arch/x86/kernel/i387.c
+@@ -130,7 +130,7 @@ int xfpregs_get(struct task_struct *targ
+ 		void *kbuf, void __user *ubuf)
  {
- 	struct pipe_inode_info *pipe;
-@@ -927,7 +892,7 @@
- 	inode->i_pipe = pipe;
+ 	if (!cpu_has_fxsr)
+-		return -ENODEV;
++		return -EIO;
  
- 	pipe->readers = pipe->writers = 1;
--	inode->i_fop = &rdwr_pipe_fops;
-+	inode->i_fop = &rdwr_pipefifo_fops;
+ 	init_fpu(target);
  
- 	/*
- 	 * Mark the inode dirty from the very beginning,
-@@ -978,7 +943,7 @@
- 	d_instantiate(dentry, inode);
+@@ -145,7 +145,7 @@ int xfpregs_set(struct task_struct *targ
+ 	int ret;
  
- 	err = -ENFILE;
--	f = alloc_file(pipe_mnt, dentry, FMODE_WRITE, &write_pipe_fops);
-+	f = alloc_file(pipe_mnt, dentry, FMODE_WRITE, &write_pipefifo_fops);
- 	if (!f)
- 		goto err_dentry;
- 	f->f_mapping = inode->i_mapping;
-@@ -1021,7 +986,7 @@
+ 	if (!cpu_has_fxsr)
+-		return -ENODEV;
++		return -EIO;
  
- 	f->f_pos = 0;
- 	f->f_flags = O_RDONLY;
--	f->f_op = &read_pipe_fops;
-+	f->f_op = &read_pipefifo_fops;
- 	f->f_mode = FMODE_READ;
- 	f->f_version = 0;
- 
+ 	init_fpu(target);
+ 	set_stopped_child_used_math(target);
+
+
+Patches currently in stable-queue which might be from takada@mbf.nifty.com are
+
+queue-2.6.25/ptrace-get-set-fpxregs-broken.patch
