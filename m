@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761476AbYGAVxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761166AbYGAVzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761476AbYGAVxY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 17:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758972AbYGAVwz
+	id S1761166AbYGAVzU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 17:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbYGAVzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 17:52:55 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:17979 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760048AbYGAVwy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 17:52:54 -0400
-Date: Wed, 2 Jul 2008 01:52:51 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
-       cbou@mail.ru, dwmw2@infradead.org
-Subject: Re: [PATCH] Add support for power_supply on tosa
-Message-ID: <20080701215251.GA12957@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080620084917.GA20577@doriath.ww600.siemens.net> <20080701143232.cca14c86.akpm@linux-foundation.org>
+	Tue, 1 Jul 2008 17:55:07 -0400
+Received: from nebensachen.de ([195.34.83.29]:56286 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751872AbYGAVzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 17:55:06 -0400
+X-Hashcash: 1:20:080701:xfs-masters@oss.sgi.com::MA7OofUGazuwEi3Z:000000000000000000000000000000000000001iZq
+X-Hashcash: 1:20:080701:rjw@sisk.pl::ErSNaEsmqQp8BRC3:0000000HI2
+X-Hashcash: 1:20:080701:jeremy@goop.org::96JREbB8quZ08Ja2:0042Aj
+X-Hashcash: 1:20:080701:hmh@hmh.eng.br::v4G+VmrPqbhT0CO5:00057GC
+X-Hashcash: 1:20:080701:mrmacman_g4@mac.com::bXEoJWiiVSZdU9sK:00000000000000000000000000000000000000000048Nv
+X-Hashcash: 1:20:080701:mjg59@srcf.ucam.org::48i4tLTeyqHzT1mP:00000000000000000000000000000000000000000050Ju
+X-Hashcash: 1:20:080701:linux-kernel@vger.kernel.org::BuhXXzp7td5Gp4h/:00000000000000000000000000000000010eO
+X-Hashcash: 1:20:080701:jens.axboe@oracle.com::JL1BPZUQnxb1mZOw:0000000000000000000000000000000000000000075S
+From: Elias Oltmanns <eo@nebensachen.de>
+To: xfs-masters@oss.sgi.com
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [xfs-masters] Re: freeze vs freezer
+References: <4744FD87.7010301@goop.org> <200807010038.43362.rjw@sisk.pl>
+	<20080701063835.GQ29319@disturbed> <200807011635.44696.rjw@sisk.pl>
+	<87tzf9hcg6.fsf@denkblock.local> <20080701211550.GU29319@disturbed>
+Date: Tue, 01 Jul 2008 23:46:34 +0200
+Message-ID: <87abh1nupx.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20080701143232.cca14c86.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 01, 2008 at 02:32:32PM -0700, Andrew Morton wrote:
-> On Fri, 20 Jun 2008 12:49:17 +0400
-> Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
-> 
-> > Support the battery management on Sharp Zaurus SL-6000.
-> > 
-> > This patch depends on the tc6393xb support as found in the arm:devel
-> > or linux-next trees.
-> 
-> Which means that Anton can't really merge it into his tree, I guess.
+Dave Chinner <david@fromorbit.com> wrote:
+> On Tue, Jul 01, 2008 at 05:05:29PM +0200, Elias Oltmanns wrote:
+>> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+>
+>> > Do all of the filesystems implement the freezing?
+>> 
+>> There is some work in progress [1].
+> [....]
+>> [1] http://permalink.gmane.org/gmane.linux.file-systems/24716
+>
+> No, that's the userspace ioctl interface to enable freezing from
+> something other than dm-snapshot. The filesystems that is aimed at
+> already support freezing via freeze_bdev().
 
-Hm. Actually, yesterday I applied it to battery-2.6 with assumption
-that mfd part will get into mainline in 2.6.27.
+Yes, Christoph mentioned that too and I should have realised it had I
+looked at those patches properly.
 
-Since Kconfig specify that driver depends on MFD_TC6393XB, maximum we'd
-get for now is Kconfig warning wrt unknown symbol, but nothing could
-select it, thus can't break the build (we have few examples of such
-non-selectable drivers even in Linus' tree. For example
-drivers/net/cpmac.c: there is no such thing as CONFIG_AR7 -- it is still
-in openwrt tree).
+Regards,
 
-But I can git --reset, should I?
-
-[...]
-> > +	mutex_lock(&bat_lock);
-> > +	gpio_set_value(bat->gpio_bat, 1);
-> > +	mdelay(5);
-> 
-> msleep() is preferred over a busywait.
-
-I did review this patch, and did mention exactly the same, plus
-some other stuff:
-http://lkml.org/lkml/2008/6/23/17
-
-Dmitry posted fixed version that I applied:
-http://lkml.org/lkml/2008/6/24/266
-
-So, in case this goes through -mm, you'd probably want the fixed version.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Elias
