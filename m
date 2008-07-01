@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbYGAR1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbYGAR3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbYGAR1P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 13:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbYGAR1A
+	id S1754864AbYGAR3p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 13:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbYGAR3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 13:27:00 -0400
-Received: from gw.goop.org ([64.81.55.164]:50463 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751331AbYGAR07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 13:26:59 -0400
-Message-ID: <486A68DD.80702@goop.org>
-Date: Tue, 01 Jul 2008 10:26:53 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+	Tue, 1 Jul 2008 13:29:34 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:45270 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096AbYGAR3c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 13:29:32 -0400
+Message-ID: <486A6950.6050507@zytor.com>
+Date: Tue, 01 Jul 2008 10:28:48 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, Mike Travis <travis@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org>	<485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>	<485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com>	<485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com>	<485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>	<485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com>	<m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org> <m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>
-In-Reply-To: <486A61A7.1000902@zytor.com>
-X-Enigmail-Version: 0.95.6
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel-testers@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
+References: <200807010148.02135.rjw@sisk.pl> <20080701063133.GC16642@elte.hu> <4869D67B.4060902@zytor.com> <486A2AC3.2060107@firstfloor.org> <486A5378.7020601@zytor.com> <486A5977.8020905@firstfloor.org>
+In-Reply-To: <486A5977.8020905@firstfloor.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Eric W. Biederman wrote:
->>>
->>> The zero-based PDA mechanism requires the introduction of a new ELF 
->>> segment
->>> based at vaddr 0 which is sufficiently unusual that it wouldn't 
->>> surprise me if
->>> its triggering some toolchain bug.
->>
->> Agreed.  Given the previous description my hunch is that the bug is 
->> occurring
->> during objcopy.  If vmlinux is good and the compressed kernel is bad.
->>
->
-> Actually, it's not all that unusual... it's pretty common in various 
-> restricted environments.  That being said, it's probably uncommon for 
-> *64-bit* code.
+Andi Kleen wrote:
+> H. Peter Anvin wrote:
+>> Andi Kleen wrote:
+>>>> It still seems incredibly risky to push this for 2.6.26, especially
+>>>> given the Elan revelation.
+>>> Do Elans even support S3?
+>> I don't know if they do, but I don't know offhand the extent of machines
+>> that may have that problem, especially since Intel now document it as
+>> "failures are readily seen".
+> 
+> What document is that exactly?
+> 
 
-Well, it's also unusual because 1) it's vaddr 0, but paddr <high>, and 
-2) the PHDRs are not sorted by vaddr order.  2) might actually be a bug.
+Per Jeremy's recent email, volume 3a, section 8.9.1:
 
-    J
+>    Random failures can occur if other instructions exist between steps
+>    3 and 4 above.  Failures will be readily seen in some situations,
+>    such as when instructions that reference memory are inserted between
+>    steps 3 and 4 while in system management mode. 
+
+	-hpa
