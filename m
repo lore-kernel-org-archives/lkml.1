@@ -1,42 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbYGAMKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbYGAMQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756396AbYGAMKg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 08:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbYGAMK2
+	id S1755859AbYGAMQt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 08:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbYGAMQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 08:10:28 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:54626 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753812AbYGAMK1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 08:10:27 -0400
-Date: Tue, 1 Jul 2008 14:10:26 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: kbuild <linux-kbuild@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [PATCH 08/24] kbuild: make clean removes *.o.* as well
-In-Reply-To: <1214861718-32626-8-git-send-email-sam@ravnborg.org>
-Message-ID: <alpine.LNX.1.10.0807011409170.12878@fbirervta.pbzchgretzou.qr>
-References: <20080630213155.GA32479@uranus.ravnborg.org> <1214861718-32626-8-git-send-email-sam@ravnborg.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 1 Jul 2008 08:16:36 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:59683 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751727AbYGAMQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 08:16:35 -0400
+Message-Id: <20080701121635.056353000@polaris-admin.engr.sgi.com>
+References: <20080701121634.865966000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 01 Jul 2008 05:16:35 -0700
+From: Mike Travis <travis@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [RFC 1/5] x86_64: Fix early references to cpumask_of_cpu
+Content-Disposition: inline; filename=cleanup_percpu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  * Initialize the cpumask_of_cpu_map to contain a cpumask for cpu 0
+    in the initdata section.  This allows references before the real
+    cpumask_of_cpu_map is setup avoiding possible null pointer deref
+    panics.
 
-On Monday 2008-06-30 23:35, Sam Ravnborg wrote:
+Based on linux-2.6.tip/master
 
->From: Alexey Dobriyan <adobriyan@gmail.com>
->
->Those are left presumably from aborted ccache(1) compilations:
->
->	arch/x86/kernel/.tmp_io_apic_64.o.T5veul
->	arch/x86/kvm/.tmp_x86.o.SZWn69
->	arch/x86/mm/.tmp_pgtable.o.sL1LTf
->	drivers/ieee1394/.tmp_ieee1394_transactions.o.bUj6o1
->	drivers/infiniband/hw/mlx4/.tmp_main.o.vy0ep6
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ arch/x86/kernel/setup_percpu.c |   15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-I'd suggest using '.tmp_*.o.*' instead of '*.o.*'.
+--- linux-2.6.tip.orig/arch/x86/kernel/setup_percpu.c
++++ linux-2.6.tip/arch/x86/kernel/setup_percpu.c
+@@ -51,7 +51,7 @@ static void __init setup_node_to_cpumask
+ static inline void setup_node_to_cpumask_map(void) { }
+ #endif
+ 
+-#if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_SMP)
++#ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA
+ /*
+  * Copy data used in early init routines from the initial arrays to the
+  * per cpu data areas.  These arrays then become expendable and the
+@@ -81,16 +81,25 @@ static void __init setup_per_cpu_maps(vo
+ }
+ 
+ #ifdef CONFIG_HAVE_CPUMASK_OF_CPU_MAP
+-cpumask_t *cpumask_of_cpu_map __read_mostly;
++
++/* Configure an initial cpumask_of_cpu(0) for early users */
++static cpumask_t initial_cpumask_of_cpu_map __initdata = (cpumask_t) { {
++	[BITS_TO_LONGS(NR_CPUS)-1] = 1
++} };
++cpumask_t *cpumask_of_cpu_map __read_mostly =
++	(cpumask_t *)&initial_cpumask_of_cpu_map;
+ EXPORT_SYMBOL(cpumask_of_cpu_map);
+ 
+-/* requires nr_cpu_ids to be initialized */
++/* Requires nr_cpu_ids to be initialized */
+ static void __init setup_cpumask_of_cpu(void)
+ {
+ 	int i;
+ 
+ 	/* alloc_bootmem zeroes memory */
+ 	cpumask_of_cpu_map = alloc_bootmem_low(sizeof(cpumask_t) * nr_cpu_ids);
++#ifdef CONFIG_DEBUG_PER_CPU_MAPS
++	printk(KERN_DEBUG "cpumask_of_cpu_map %p\n", cpumask_of_cpu_map);
++#endif
+ 	for (i = 0; i < nr_cpu_ids; i++)
+ 		cpu_set(i, cpumask_of_cpu_map[i]);
+ }
+
+-- 
