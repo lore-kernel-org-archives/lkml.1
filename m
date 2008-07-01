@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbYGATdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757459AbYGATk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756146AbYGATdM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 15:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754681AbYGATc5
+	id S1757459AbYGATk4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 15:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYGATkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 15:32:57 -0400
-Received: from outbound-mail-102.bluehost.com ([69.89.22.12]:57262 "HELO
-	outbound-mail-102.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754027AbYGATc4 (ORCPT
+	Tue, 1 Jul 2008 15:40:46 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:55437 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752565AbYGATkp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 15:32:56 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] DRM/i915: only use tiled blits on 965+
-Date: Tue, 1 Jul 2008 12:32:52 -0700
-User-Agent: KMail/1.9.9
-Cc: Dave Airlie <airlied@linux.ie>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+	Tue, 1 Jul 2008 15:40:45 -0400
+Date: Tue, 1 Jul 2008 15:40:43 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: =?iso-8859-1?q?J=FCrgen_Mell?= <j.mell@t-online.de>
+cc: LKML <linux-kernel@vger.kernel.org>, rostedt@goodmis.org
+Subject: Re: BUG messages with real-time kernel 2.6.25.8-rt7
+In-Reply-To: <200807011947.48725.j.mell@t-online.de>
+Message-ID: <Pine.LNX.4.58.0807011507510.27372@gandalf.stny.rr.com>
+References: <200807011947.48725.j.mell@t-online.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807011232.53124.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When scheduled swaps occur, we need to blit between front & back buffers.  If
-the buffers are tiled, we need to set the appropriate XY_SRC_COPY tile bit,
-but only on 965 chips, since it will cause corruption on pre-965 (e.g. 945).
 
-Bug reported by and fix tested by Tomas Janousek <tomi@nomi.cz>.
+On Tue, 1 Jul 2008, Jürgen Mell wrote:
 
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+>
+> I am getting this bug message from a real-time kernel 2.6.25.8-rt7:
+>
+> Jul  1 07:58:30 cwc-003 kernel: BUG: sleeping function called from invalid
+> context IRQ-15(416) at arch/x86/mm/highmem_32.c:8
+> Jul  1 07:58:30 cwc-003 kernel: in_atomic():0 [00000000], irqs_disabled():1
+> Jul  1 07:58:30 cwc-003 kernel: Pid: 416, comm: IRQ-15 Not tainted
+> 2.6.25.8-rt7-hws #2
+> Jul  1 07:58:30 cwc-003 kernel:  [<c01125f5>] kmap+0x44/0x54
+> Jul  1 07:58:30 cwc-003 kernel:  [<f88507fd>] ata_hsm_move+0x3d5/0x666
 
-diff --git a/drivers/char/drm/i915_irq.c b/drivers/char/drm/i915_irq.c
-index f7f16e7..df03611 100644
---- a/drivers/char/drm/i915_irq.c
-+++ b/drivers/char/drm/i915_irq.c
-@@ -62,11 +62,11 @@ static void i915_vblank_tasklet(struct drm_device *dev)
- 	u32 ropcpp = (0xcc << 16) | ((cpp - 1) << 24);
- 	RING_LOCALS;
- 
--	if (sarea_priv->front_tiled) {
-+	if (IS_I965G(dev) && sarea_priv->front_tiled) {
- 		cmd |= XY_SRC_COPY_BLT_DST_TILED;
- 		dst_pitch >>= 2;
- 	}
--	if (sarea_priv->back_tiled) {
-+	if (IS_I965G(dev) && sarea_priv->back_tiled) {
- 		cmd |= XY_SRC_COPY_BLT_SRC_TILED;
- 		src_pitch >>= 2;
- 	}
+[...]
+
+>
+> Any ideas how to fix this? If you need any more information or if I can
+> test something, please let me know.
+
+I found the problem. In PREEMPT_RT we define kmap_atomic to kmap since we
+don't disable interrutps with spin_lock_irqsave nor do we disable
+preemption.
+
+In drivers/ata/libata-core.c we have:
+
+
+		/* FIXME: use bounce buffer */
+		local_irq_save(flags);
+		buf = kmap_atomic(page, KM_IRQ0);
+
+
+But PREEMPT_RT even kmap_atomic will call "might_sleep". So the fix here
+is for us to get rid of the local_irq_save. Perhaps simply add a
+spin_lock_irqsave(local_lock) here.
+
+Thanks for the report.
+
+-- Steve
+
