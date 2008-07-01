@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbYGFOrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752068AbYGAEFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757207AbYGFOrw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 10:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758017AbYGFOrj
+	id S1752068AbYGAEFi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 00:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750746AbYGAEF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 10:47:39 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2653 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757222AbYGFOrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 10:47:37 -0400
-Date: Sat, 28 Jun 2008 12:44:53 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Marin Mitov <mitov@issp.bas.bg>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
-       Clark Williams <clark.williams@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi-suse@firstfloor.org>
-Subject: Re: [PATCH][resubmit] x86: enable preemption in delay
-Message-ID: <20080628104453.GC10872@ucw.cz>
-References: <200805252108.25011.mitov@issp.bas.bg> <200806091911.21850.mitov@issp.bas.bg> <20080609161606.GA24841@elte.hu> <200806152058.17142.mitov@issp.bas.bg> <20080618075518.GD4135@elte.hu>
-Mime-Version: 1.0
+	Tue, 1 Jul 2008 00:05:28 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:40560 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750802AbYGAEFW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 00:05:22 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/7] Fix the case of jiffies wrapping in mm/pdflush.c
+References: <9edbdefc3e848699cfe111608.ps@mail.parknet.co.jp>
+	<129170883e848699cff211608.ps@mail.parknet.co.jp>
+	<d3ce91fd3e848699cff311608.ps@mail.parknet.co.jp>
+	<5be8ad613e848699cff411608.ps@mail.parknet.co.jp>
+	<555b858b3e848699cff511608.ps@mail.parknet.co.jp>
+	<670df4283e848699cff611608.ps@mail.parknet.co.jp>
+	<a553a85a3e848699d00711608.ps@mail.parknet.co.jp>
+	<20080630203401.f9bcfe84.akpm@linux-foundation.org>
+Date: Tue, 01 Jul 2008 13:05:18 +0900
+In-Reply-To: <20080630203401.f9bcfe84.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Mon, 30 Jun 2008 20:34:01 -0700")
+Message-ID: <87od5iw8ox.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080618075518.GD4135@elte.hu>
-User-Agent: Mutt/1.5.9i
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-06-18 09:55:18, Ingo Molnar wrote:
-> 
-> * Marin Mitov <mitov@issp.bas.bg> wrote:
-> 
-> > Why not something like that (do keep in mind I am not an expert :-):
-> > 
-> > static void delay_tsc(unsigned long loops)
-> > {
-> > 	get and store the mask of allowed cpus;
-> > 	/*     prevent the migration   */
-> > 	set the mask of allowed cpus to the current cpu only;
-> > 	/*     is it possible? could it be guaranteed?    */
-> > 	loop for the delay;
-> > 	restore the old mask of allowed cpus;
-> > }
-> > 
-> > You have got the idea. Could it be realized? Is it more expensive than 
-> > the current realization? So, comments, please.
-> 
-> hm, changing/saving/restorig cpus_allowed is really considered a 'heavy' 
-> operation compared to preempt_disable(). On a 4096 CPUs box cpus_allowed 
-> is 4096 bits which is half a kilobyte ...
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Time to RLE the bitmap? 
+>> @@ -151,7 +151,7 @@ static int __pdflush(struct pdflush_work
+>>  		if (nr_pdflush_threads <= MIN_PDFLUSH_THREADS)
+>>  			continue;
+>>  		pdf = list_entry(pdflush_list.prev, struct pdflush_work, list);
+>> -		if (jiffies - pdf->when_i_went_to_sleep > 1 * HZ) {
+>> +		if (time_after(jiffies, pdf->when_i_went_to_sleep + 1 * HZ)) {
+>>  			/* Limit exit rate */
+>>  			pdf->when_i_went_to_sleep = jiffies;
+>>  			break;					/* exeunt */
+>
+> I don't think this actually "fixes" anything, does it?  The old code
+> should be correct at runtime.
 
-<runs>							Pavel
+Um.. Yes. It seems I tested something wrong.
 
+> I renamed the patch to "pdflush: use time_after() instead of open-coding it".
+
+Thanks.
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
