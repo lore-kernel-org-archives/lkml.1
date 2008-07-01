@@ -1,25 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbYGADcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbYGADeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752457AbYGADcz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 23:32:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbYGADcp
+	id S1753089AbYGADeY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 23:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbYGADeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 23:32:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60317 "EHLO
+	Mon, 30 Jun 2008 23:34:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36281 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751023AbYGADco (ORCPT
+	by vger.kernel.org with ESMTP id S1751615AbYGADeF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 23:32:44 -0400
-Date: Mon, 30 Jun 2008 20:32:28 -0700
+	Mon, 30 Jun 2008 23:34:05 -0400
+Date: Mon, 30 Jun 2008 20:34:01 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: linux-kernel@vger.kernel.org, bunk@kernel.org
-Subject: Re: [PATCH 3/7] fat/dir.c: switch to struct __fat_dirent
-Message-Id: <20080630203228.7b3ac420.akpm@linux-foundation.org>
-In-Reply-To: <d3ce91fd3e848699cff311608.ps@mail.parknet.co.jp>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/7] Fix the case of jiffies wrapping in mm/pdflush.c
+Message-Id: <20080630203401.f9bcfe84.akpm@linux-foundation.org>
+In-Reply-To: <a553a85a3e848699d00711608.ps@mail.parknet.co.jp>
 References: <9edbdefc3e848699cfe111608.ps@mail.parknet.co.jp>
 	<129170883e848699cff211608.ps@mail.parknet.co.jp>
 	<d3ce91fd3e848699cff311608.ps@mail.parknet.co.jp>
+	<5be8ad613e848699cff411608.ps@mail.parknet.co.jp>
+	<555b858b3e848699cff511608.ps@mail.parknet.co.jp>
+	<670df4283e848699cff611608.ps@mail.parknet.co.jp>
+	<a553a85a3e848699d00711608.ps@mail.parknet.co.jp>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,22 +32,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 01 Jul 2008 11:57:03 +0900 OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
+On Tue, 01 Jul 2008 11:57:04 +0900 OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
 
-> struct __fat_dirent is what was formerly the kernel struct dirent
-> (that was different from the userspace struct dirent).
 > 
-> Converting all fat users to struct __fat_dirent will allow us to get 
-> rid of the conflicting struct dirent definition.
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 > Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> ---
+> 
+>  mm/pdflush.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff -puN mm/pdflush.c~pdfluh-jiffies-check-fix mm/pdflush.c
+> --- linux-2.6/mm/pdflush.c~pdfluh-jiffies-check-fix	2008-07-01 10:19:07.000000000 +0900
+> +++ linux-2.6-hirofumi/mm/pdflush.c	2008-07-01 10:19:07.000000000 +0900
+> @@ -130,7 +130,7 @@ static int __pdflush(struct pdflush_work
+>  		 * Thread creation: For how long have there been zero
+>  		 * available threads?
+>  		 */
+> -		if (jiffies - last_empty_jifs > 1 * HZ) {
+> +		if (time_after(jiffies, last_empty_jifs + 1 * HZ)) {
+>  			/* unlocked list_empty() test is OK here */
+>  			if (list_empty(&pdflush_list)) {
+>  				/* unlocked test is OK here */
+> @@ -151,7 +151,7 @@ static int __pdflush(struct pdflush_work
+>  		if (nr_pdflush_threads <= MIN_PDFLUSH_THREADS)
+>  			continue;
+>  		pdf = list_entry(pdflush_list.prev, struct pdflush_work, list);
+> -		if (jiffies - pdf->when_i_went_to_sleep > 1 * HZ) {
+> +		if (time_after(jiffies, pdf->when_i_went_to_sleep + 1 * HZ)) {
+>  			/* Limit exit rate */
+>  			pdf->when_i_went_to_sleep = jiffies;
+>  			break;					/* exeunt */
 
-I assume this was authored by Adrian.  Please tell me if that is wrong.
+I don't think this actually "fixes" anything, does it?  The old code
+should be correct at runtime.
 
-The way you sent this implies that you were the author.
+I renamed the patch to "pdflush: use time_after() instead of open-coding it".
 
-The way to communicate authorship with emailed patches is to place the
-author's "From:" line right at the top of the changelog.
-
-Thanks.
