@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbYGAI0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757245AbYGAI33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757357AbYGAI0A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 04:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbYGAIZp
+	id S1757245AbYGAI33 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 04:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757489AbYGAI21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 04:25:45 -0400
-Received: from mx1.suse.de ([195.135.220.2]:59685 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754031AbYGAIZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 04:25:44 -0400
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH] aio: aio_complete() will never be called in interrupt context
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: linux-aio@kvack.org, linux-kernel@vger.kernel.org,
-       Benjamin LaHaise <bcrl@kvack.org>, Jeff Moyer <jmoyer@redhat.com>
-References: <200806260930.59836.knikanth@suse.de> <48691B3E.5040402@oracle.com>
-In-Reply-To: <48691B3E.5040402@oracle.com>
+	Tue, 1 Jul 2008 04:28:27 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36880 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757442AbYGAI2T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 04:28:19 -0400
+Date: Tue, 1 Jul 2008 09:28:00 +0100
+From: Eugene Teo <eugeneteo@kernel.sg>
+To: linux-kernel@vger.kernel.org
+Cc: Alan Cox <alan@redhat.com>
+Subject: [PATCH] hamradio: add missing sanity check to tty operation
+Message-ID: <20080701082800.GA25223@kernel.sg>
+Reply-To: Eugene Teo <eugeneteo@kernel.sg>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Date: Tue, 1 Jul 2008 13:59:56 +0530
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200807011359.57164.knikanth@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 30 June 2008 23:13:26 Zach Brown wrote:
-> Nikanth Karthikesan wrote:
-> > aio_complete() is never called from interrupt context. It is called from
-> > user context or worker threads. Remove disabling interrupts and for
-> > kmap_atomic use KM_USER slots instead of KM_IRQ slots.
->
-> How are you testing these patches?
->
+Add missing sanity check to tty operation.
 
-I did not do any specific testing. Just ran multiple instances of a file-copy 
-utility that uses aio and a bit of Chris Mason's aio-stress.
+Cc: Alan Cox <alan@redhat.com>
+Signed-off-by: Eugene Teo <eteo@redhat.com>
+---
+ drivers/net/hamradio/mkiss.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thanks
-Nikanth karthikesan
-
-p.s: Is the archives of the linux-aio list available somewhere? The URL in the 
-mail footer seems to be unavailable.
-
-
-
-
+diff --git a/drivers/net/hamradio/mkiss.c b/drivers/net/hamradio/mkiss.c
+index 6516603..cdebc09 100644
+--- a/drivers/net/hamradio/mkiss.c
++++ b/drivers/net/hamradio/mkiss.c
+@@ -546,7 +546,7 @@ static int ax_xmit(struct sk_buff *skb, struct net_device *dev)
+ 		}
+ 
+ 		printk(KERN_ERR "mkiss: %s: transmit timed out, %s?\n", dev->name,
+-		       (ax->tty->ops->chars_in_buffer(ax->tty) || ax->xleft) ?
++		       (tty_chars_in_buffer(ax->tty) || ax->xleft) ?
+ 		       "bad line quality" : "driver error");
+ 
+ 		ax->xleft = 0;
+-- 
+1.5.5.1
 
