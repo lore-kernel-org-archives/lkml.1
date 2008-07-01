@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757245AbYGAILb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbYGAIQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757245AbYGAILb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 04:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbYGAILN
+	id S1756025AbYGAIQA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 04:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbYGAIPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 04:11:13 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:18608 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756928AbYGAILJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 04:11:09 -0400
-Date: Tue, 1 Jul 2008 17:08:01 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: akpm@linux-foundation.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       rth@twiddle.net, ink@jurassic.park.msu.ru, starvik@axis.com,
-       jesper.nilsson@axis.com, ysato@users.sourceforge.jp,
-       takata@linux-m32r.org, dhowells@redhat.com, mingo@redhat.com,
-       tglx@linutronix.de, rmk@arm.linux.org.uk
-Subject: Re: inflate: refactor inflate malloc code
-Message-ID: <20080701080801.GC4726@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
-	akpm@linux-foundation.org,
-	linux-kernel <linux-kernel@vger.kernel.org>, rth@twiddle.net,
-	ink@jurassic.park.msu.ru, starvik@axis.com, jesper.nilsson@axis.com,
-	ysato@users.sourceforge.jp, takata@linux-m32r.org,
-	dhowells@redhat.com, mingo@redhat.com, tglx@linutronix.de,
-	rmk@arm.linux.org.uk
-References: <20080630152334.4acc28ef@surf>
+	Tue, 1 Jul 2008 04:15:44 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51607 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751331AbYGAIPn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 04:15:43 -0400
+Date: Tue, 1 Jul 2008 04:15:40 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] (resend) reuse xxx_fifo_fops for xxx_pipe_fops
+Message-ID: <20080701081540.GA20332@infradead.org>
+References: <200807011103.02974.vda.linux@googlemail.com> <20080701003255.493f54e0.akpm@linux-foundation.org> <200807011203.50632.vda.linux@googlemail.com> <20080701011045.f4490332.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080630152334.4acc28ef@surf>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080701011045.f4490332.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 03:23:34PM +0200, Thomas Petazzoni wrote:
-> Because this patch touches several architectures, I've CC-ed all the
-> architecture maintainers concerned by the patch. For H8300, no
-> maintainer is listed in MAINTAINERS, so by looking at the git history,
-> I assumed that Yoshinori Sato <ysato@users.sourceforge.jp> would be
-> able to review the patch.
+On Tue, Jul 01, 2008 at 01:10:45AM -0700, Andrew Morton wrote:
+> On Tue, 1 Jul 2008 12:03:50 +0200 Denys Vlasenko <vda.linux@googlemail.com> wrote:
 > 
-There is, it's just hiding from you (the / is silent):
-
-UCLINUX FOR RENESAS H8/300
-P:      Yoshinori Sato
-M:      ysato@users.sourceforge.jp
-W:      http://uclinux-h8.sourceforge.jp/
-S:      Supported
-
-> Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+> > I think since XXX_pipe_fops are only used in this file,
+> > just explaining this in the comment would be enough.
 > 
-sh bits:
+> no, a comment is only needed when the code is unobvious.  Make
+> the code obvious and we don't need a comment.
+> 
+> As Christoph pointed out, open-coding shared_read_fops everywhere
+> might make sense too.  It'd make it harder to unshare them later
+> on, but that's pretty improbable.
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+Deny's latest patch doesn't have the #defines anymore and looks quite
+reasonable to me.  If you really insist on magic naming I think shared
+is a very bad choice because it doesn't have any useful meaning in this
+context.  If you insist on magic naming do _pipefifo_, but I think
+the current version with the comment is much better.
