@@ -1,121 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755709AbYGAANi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762012AbYGAAQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755709AbYGAANi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 20:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbYGAANO
+	id S1762012AbYGAAQB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 20:16:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbYGAAPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 20:13:14 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:62159 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753696AbYGAANM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 20:13:12 -0400
-Date: Tue, 1 Jul 2008 01:12:06 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Ingo Molnar <mingo@elte.hu>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-next@vger.kernel.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP systems
-Message-ID: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl>
+	Mon, 30 Jun 2008 20:15:53 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:33286 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754863AbYGAAPw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 20:15:52 -0400
+X-IronPort-AV: E=Sophos;i="4.27,729,1204531200"; 
+   d="scan'208";a="120661930"
+From: Roland Dreier <rdreier@cisco.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: general@lists.openfabrics.org, Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [ofa-general] Re: [PATCH] IB/uverbs: BKL is not needed for ib_uverbs_open()
+References: <20080627095418.2353267d@bike.lwn.net> <adaskuylfk7.fsf@cisco.com>
+	<20080630165543.1ccd8858@bike.lwn.net>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 30 Jun 2008 17:15:51 -0700
+In-Reply-To: <20080630165543.1ccd8858@bike.lwn.net> (Jonathan Corbet's message
+	of "Mon, 30 Jun 2008 16:55:43 -0600")
+Message-ID: <adaprpyfoi0.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 01 Jul 2008 00:15:51.0452 (UTC) FILETIME=[9EC14DC0:01C8DB0F]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+ > That's the general idea: audit the code where the BKL appears and
+ > remove it when it's safe to do so.  It's always an appropriate time;
+ > the only question is whether you think this change is good to go into
+ > the tree for 2.6.27, or whether it should hang out in linux-next for
+ > one more cycle.  I would assume that the extra time would not be
+ > necessary.
 
- Some HP laptops have a problem with their DSDT reporting as
-HP/SB400/10000, which includes some code which overrides all temperature
-trip points to 16C if the INTIN2 input of the I/O APIC is enabled.  This
-input is incorrectly designated the ISA IRQ 0 via an interrupt source
-override even though it is wired to the output of the master 8259A and
-INTIN0 is not connected at all.  So far two models have been identified, 
-namely nx6125 and nx6325.
+Yes, this change should be good to go for 2.6.27.
 
- Use a knob provided by the I/O APIC interrupt registration code to
-abandon any attempts to route IRQ 0 through the I/O APIC for these
-systems.
-
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
-Hello,
-
- Matthew, you have not added your sign-off with the original patch, please 
-do so now.
-
- Rafael, please try this change together with 
-patch-2.6.26-rc1-20080505-mpparse-acpi-noirq0-2 and see if this fixes your 
-system.
-
- I have tried the patches with a wildcard entry added to acpi_dmi_table[]
-so that it trips for my system.  The result is as follows:
-
-ENABLING IO-APIC IRQs
-..TIMER: vector=0x31 apic1=-1 pin1=-1 apic2=-1 pin2=-1
-...trying to set up timer as Virtual Wire IRQ... works.
-
-(note the absence of any timer pin), which means the changes work as
-expected.  Here the timer has been set up as a native local APIC interrupt
-routed through the 8259A set up as a "virtual wire".
-
- Ingo, please apply the two patches where appropriate.
-
-  Maciej
-
-patch-2.6.26-rc1-20080505-mjg59-acpi-noirq0-0
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/acpi/boot.c linux-2.6.26-rc1-20080505/arch/x86/kernel/acpi/boot.c
---- linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/acpi/boot.c	2008-05-05 02:55:24.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/arch/x86/kernel/acpi/boot.c	2008-06-30 23:31:48.000000000 +0000
-@@ -1049,6 +1049,17 @@ static int __init force_acpi_ht(const st
- }
- 
- /*
-+ * Don't register any I/O APIC entries for the 8254 timer IRQ.
-+ */
-+static int __init
-+dmi_disable_irq0_through_ioapic(const struct dmi_system_id *d)
-+{
-+	pr_notice("%s detected: disabling IRQ 0 through I/O APIC\n", d->ident);
-+	set_disable_irq0_through_ioapic(1);
-+	return 0;
-+}
-+
-+/*
-  * If your system is blacklisted here, but you find that acpi=force
-  * works for you, please contact acpi-devel@sourceforge.net
-  */
-@@ -1215,6 +1226,32 @@ static struct dmi_system_id __initdata a
- 		     DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 360"),
- 		     },
- 	 },
-+	/*
-+	 * HP laptops which use a DSDT reporting as HP/SB400/10000,
-+	 * which includes some code which overrides all temperature
-+	 * trip points to 16C if the INTIN2 input of the I/O APIC
-+	 * is enabled.  This input is incorrectly designated the
-+	 * ISA IRQ 0 via an interrupt source override even though
-+	 * it is wired to the output of the master 8259A and INTIN0
-+	 * is not connected at all.  Abandon any attempts to route
-+	 * IRQ 0 through the I/O APIC therefore.
-+	 */
-+	{
-+	 .callback = dmi_disable_irq0_through_ioapic,
-+	 .ident = "HP NX6125 laptop",
-+	 .matches = {
-+		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
-+		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6125"),
-+		     },
-+	 },
-+	{
-+	 .callback = dmi_disable_irq0_through_ioapic,
-+	 .ident = "HP NX6325 laptop",
-+	 .matches = {
-+		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
-+		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6325"),
-+		     },
-+	 },
- 	{}
- };
- 
+Thanks,
+  Roland
