@@ -1,78 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759882AbYGAT7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760022AbYGAT7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759882AbYGAT7Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 15:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbYGAT7Q
+	id S1760022AbYGAT7x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 15:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbYGAT7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 15:59:16 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58319 "EHLO mx3.mail.elte.hu"
+	Tue, 1 Jul 2008 15:59:44 -0400
+Received: from atlantis.8hz.com ([212.129.237.78]:58042 "EHLO atlantis.8hz.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753438AbYGAT7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 15:59:15 -0400
-Date: Tue, 1 Jul 2008 21:59:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] rcu fix
-Message-ID: <20080701195858.GA2740@elte.hu>
-MIME-Version: 1.0
+	id S1753268AbYGAT7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 15:59:43 -0400
+Date: Tue, 1 Jul 2008 19:59:42 +0000
+From: Sean Young <sean@mess.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: Regression: boot failure on AMD Elan TS-5500
+Message-ID: <20080701195942.GA76608@atlantis.8hz.com>
+References: <20080616121138.GA51097@atlantis.8hz.com> <200806162327.34912.rusty@rustcorp.com.au> <48566C88.6000702@goop.org> <20080616161944.GA53539@atlantis.8hz.com> <20080630214347.GA57988@atlantis.8hz.com> <4869558A.9020907@goop.org> <48695871.8000805@zytor.com> <48695F88.9080905@goop.org> <48696167.6050000@zytor.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <48696167.6050000@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Mon, Jun 30, 2008 at 03:42:47PM -0700, H. Peter Anvin wrote:
+> Jeremy Fitzhardinge wrote:
+> >
+> >Maybe it really does require the far jump immediately after setting PE 
+> >in cr0...
+> >
+> >Hm, I don't remember this paragraph being in vol 3a, section 8.9.1 
+> >before.  Is it a recent addition?
+> >
+> >   Random failures can occur if other instructions exist between steps
+> >   3 and 4 above.  Failures will be readily seen in some situations,
+> >   such as when instructions that reference memory are inserted between
+> >   steps 3 and 4 while in system management mode.
+> >
+> 
+> I don't remember that, either.
 
-Please pull the latest RCU fixes git tree from:
+Which document are we talking about? 
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
+> Sean: could you try the following patch?
+> 
+> 	-hpa
 
-Thanks,
+> diff --git a/arch/x86/boot/pmjump.S b/arch/x86/boot/pmjump.S
+> index ab049d4..141b6e2 100644
+> --- a/arch/x86/boot/pmjump.S
+> +++ b/arch/x86/boot/pmjump.S
+> @@ -33,6 +33,8 @@ protected_mode_jump:
+>  	movw	%cs, %bx
+>  	shll	$4, %ebx
+>  	addl	%ebx, 2f
+> +	jmp	1f			# Short jump to serialize on 386/486
+> +1:
+>  
+>  	movw	$__BOOT_DS, %cx
+>  	movw	$__BOOT_TSS, %di
+> @@ -40,8 +42,6 @@ protected_mode_jump:
+>  	movl	%cr0, %edx
+>  	orb	$X86_CR0_PE, %dl	# Protected mode
+>  	movl	%edx, %cr0
+> -	jmp	1f			# Short jump to serialize on 386/486
+> -1:
+>  
+>  	# Transition to 32-bit mode
+>  	.byte	0x66, 0xea		# ljmpl opcode
 
-	Ingo
+I'm afraid it doesn't work. Maybe I can find something in the AMD Elan
+documentation. Would a fence make sense?
 
------------------->
-Gautham R Shenoy (1):
-      rcu: fix hotplug vs rcu race
-
- kernel/rcuclassic.c |   16 +++++++++++++++-
- 1 files changed, 15 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-index f4ffbd0..a38895a 100644
---- a/kernel/rcuclassic.c
-+++ b/kernel/rcuclassic.c
-@@ -89,8 +89,22 @@ static void force_quiescent_state(struct rcu_data *rdp,
- 		/*
- 		 * Don't send IPI to itself. With irqs disabled,
- 		 * rdp->cpu is the current cpu.
-+		 *
-+		 * cpu_online_map is updated by the _cpu_down()
-+		 * using stop_machine_run(). Since we're in irqs disabled
-+		 * section, stop_machine_run() is not exectuting, hence
-+		 * the cpu_online_map is stable.
-+		 *
-+		 * However,  a cpu might have been offlined _just_ before
-+		 * we disabled irqs while entering here.
-+		 * And rcu subsystem might not yet have handled the CPU_DEAD
-+		 * notification, leading to the offlined cpu's bit
-+		 * being set in the rcp->cpumask.
-+		 *
-+		 * Hence cpumask = (rcp->cpumask & cpu_online_map) to prevent
-+		 * sending smp_reschedule() to an offlined CPU.
- 		 */
--		cpumask = rcp->cpumask;
-+		cpus_and(cpumask, rcp->cpumask, cpu_online_map);
- 		cpu_clear(rdp->cpu, cpumask);
- 		for_each_cpu_mask(cpu, cpumask)
- 			smp_send_reschedule(cpu);
+Thanks
+Sean
