@@ -1,60 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761166AbYGAVzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761511AbYGAVzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761166AbYGAVzU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 17:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbYGAVzH
+	id S1761511AbYGAVzk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 17:55:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbYGAVz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 17:55:07 -0400
-Received: from nebensachen.de ([195.34.83.29]:56286 "EHLO mail.nebensachen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751872AbYGAVzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 17:55:06 -0400
-X-Hashcash: 1:20:080701:xfs-masters@oss.sgi.com::MA7OofUGazuwEi3Z:000000000000000000000000000000000000001iZq
-X-Hashcash: 1:20:080701:rjw@sisk.pl::ErSNaEsmqQp8BRC3:0000000HI2
-X-Hashcash: 1:20:080701:jeremy@goop.org::96JREbB8quZ08Ja2:0042Aj
-X-Hashcash: 1:20:080701:hmh@hmh.eng.br::v4G+VmrPqbhT0CO5:00057GC
-X-Hashcash: 1:20:080701:mrmacman_g4@mac.com::bXEoJWiiVSZdU9sK:00000000000000000000000000000000000000000048Nv
-X-Hashcash: 1:20:080701:mjg59@srcf.ucam.org::48i4tLTeyqHzT1mP:00000000000000000000000000000000000000000050Ju
-X-Hashcash: 1:20:080701:linux-kernel@vger.kernel.org::BuhXXzp7td5Gp4h/:00000000000000000000000000000000010eO
-X-Hashcash: 1:20:080701:jens.axboe@oracle.com::JL1BPZUQnxb1mZOw:0000000000000000000000000000000000000000075S
-From: Elias Oltmanns <eo@nebensachen.de>
-To: xfs-masters@oss.sgi.com
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [xfs-masters] Re: freeze vs freezer
-References: <4744FD87.7010301@goop.org> <200807010038.43362.rjw@sisk.pl>
-	<20080701063835.GQ29319@disturbed> <200807011635.44696.rjw@sisk.pl>
-	<87tzf9hcg6.fsf@denkblock.local> <20080701211550.GU29319@disturbed>
-Date: Tue, 01 Jul 2008 23:46:34 +0200
-Message-ID: <87abh1nupx.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
+	Tue, 1 Jul 2008 17:55:26 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:53747 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761306AbYGAVzX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 17:55:23 -0400
+Date: Wed, 2 Jul 2008 03:24:48 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>, containers@lists.osdl.org,
+       Paul Jackson <pj@sgi.com>
+Subject: Re: Attaching PID 0 to a cgroup
+Message-ID: <20080701215448.GD5893@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20080701094545.GD3925@linux.vnet.ibm.com> <20080701094734.GE3925@linux.vnet.ibm.com> <486A06B7.7020906@cn.fujitsu.com> <486AA62F.40503@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <486AA62F.40503@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Chinner <david@fromorbit.com> wrote:
-> On Tue, Jul 01, 2008 at 05:05:29PM +0200, Elias Oltmanns wrote:
->> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Tue, Jul 01, 2008 at 11:48:31PM +0200, Andrea Righi wrote:
+> Li Zefan wrote:
+>> CC: Paul Jackson <pj@sgi.com>
+>>
+>> Dhaval Giani wrote:
+>>> [put in the wrong alias for containers list correcting it.]
+>>>
+>>> On Tue, Jul 01, 2008 at 03:15:45PM +0530, Dhaval Giani wrote:
+>>>> Hi Paul,
+>>>>
+>>>> Attaching PID 0 to a cgroup caused the current task to be attached to
+>>>> the cgroup. Looking at the code,
+>>>>
+>>
+>> [...]
+>>
+>>>> I was wondering, why this was done. It seems to be unexpected behavior.
+>>>> Wouldn't something like the following be a better response? (I've used
+>>>> EINVAL, but I can change it to ESRCH if that is better.)
+>>>>
+>>
+>> Why is it unexpected? it follows the behavior of cpuset, so this patch will
+>> break backward compatibility of cpuset.
+>>
+>> But it's better to document this.
+>>
+>> -----------------------------------------
+>>
+>> Document the following cgroup usage:
+>>  # echo 0 > /dev/cgroup/tasks
+>>
+>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+>> ---
+>>  cgroups.txt |    4 ++++
+>>  1 file changed, 4 insertions(+)
+>>
+>> diff --git a/Documentation/cgroups.txt b/Documentation/cgroups.txt
+>> index 824fc02..213f533 100644
+>> --- a/Documentation/cgroups.txt
+>> +++ b/Documentation/cgroups.txt
+>> @@ -390,6 +390,10 @@ If you have several tasks to attach, you have to do it one after another:
+>>  	...
+>>  # /bin/echo PIDn > tasks
+>>  +You can attach the current task by echoing 0:
+>> +
+>> +# /bin/echo 0 > tasks
+>> +
+>>  3. Kernel API
+>>  =============
 >
->> > Do all of the filesystems implement the freezing?
->> 
->> There is some work in progress [1].
-> [....]
->> [1] http://permalink.gmane.org/gmane.linux.file-systems/24716
+> Wouldn't be more meaningful to specify the bash's builtin echo here
+> even if it doesn't opportunely handle write() errors?
 >
-> No, that's the userspace ioctl interface to enable freezing from
-> something other than dm-snapshot. The filesystems that is aimed at
-> already support freezing via freeze_bdev().
+> Using /bin/echo would attach /bin/echo itself to the cgroup, that just
+> exists, so it seems like a kind of noop, isn't it?
+>
 
-Yes, Christoph mentioned that too and I should have realised it had I
-looked at those patches properly.
+Yes, you are right. this example should use bash's builtin echo.
 
-Regards,
-
-Elias
+-- 
+regards,
+Dhaval
