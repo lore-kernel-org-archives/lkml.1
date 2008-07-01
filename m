@@ -1,48 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764610AbYGAB56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760842AbYGACLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764610AbYGAB56 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 21:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757529AbYGAB5r
+	id S1760842AbYGACLA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 22:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbYGACKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 21:57:47 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:56917 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755090AbYGAB5q (ORCPT
+	Mon, 30 Jun 2008 22:10:49 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:34848 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755357AbYGACKs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 21:57:46 -0400
-Subject: Re: [PATCH] Add btgpio driver
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, mchehab@infradead.org
-In-Reply-To: <200807010206.38714.mb@bu3sch.de>
-References: <200807010206.38714.mb@bu3sch.de>
-Content-Type: text/plain
-Date: Tue, 01 Jul 2008 03:57:59 +0200
-Message-Id: <1214877479.11537.101.camel@violet.holtmann.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Mon, 30 Jun 2008 22:10:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=kbg8SIiSszRB040HgOu2XrHtSt3DQMIQ3XxYq7Ct1Z9Ane+IFXFhc+c6+rVZ9Izfm/
+         VdEg63nwMk7ntHpJU9Pw/wQE5qNPc6jMIbU/2MFqlXKfZhiyM2dlmFMzBH7J7LqxVQm0
+         ruWmE2NnOvH4bguoFNYXq2rTCsxc9QWBGrVZ0=
+Message-ID: <dd18b0c30806301910j32668e9ufad8ec04a3784152@mail.gmail.com>
+Date: Tue, 1 Jul 2008 02:10:44 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: GPE storm detected, disabling EC GPE
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org,
+       "Alexey Starikovskiy" <alexey.y.starikovskiy@intel.com>,
+       "Andi Kleen" <andi@firstfloor.org>
+In-Reply-To: <200806302159.51768.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30806051401j28a57871ke4e1c76a4c8ea425@mail.gmail.com>
+	 <20080630123454.7f48b7e0.akpm@linux-foundation.org>
+	 <200806302159.51768.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
+On Mon, Jun 30, 2008 at 7:59 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Monday, 30 of June 2008, Andrew Morton wrote:
+>> On Thu, 5 Jun 2008 21:01:55 +0000
+>> "Justin Mattock" <justinmattock@gmail.com> wrote:
+>>
+>> > FWIW I noticed a post where the person had changed 5 to 20, and it
+>> > seemed to work for them;
+>> > So with that in mind I decide to give that a go, here is the location:
+>> > drivers/acpi/ec.c
+>> > @@ -527,47 +488,51 @@ static u32 acpi_ec_gpe_handler(void *data)
+>> >  {
+>> >         acpi_status status = AE_OK;
+>> >         struct acpi_ec *ec = data;
+>> >        u8 state = acpi_ec_read_status(ec);
+>> >
+>> >         pr_debug(PREFIX "~~~> interrupt\n");
+>> >        atomic_inc(&ec->irq_count);
+>> > -       if (atomic_read(&ec->irq_count) > 5) {
+>> > +       if (atomic_read(&ec->irq_count) > 20) {
+>> >                pr_err(PREFIX "GPE storm detected, disabling EC GPE\n");
+>> >                ec_switch_to_poll_mode(ec);
+>> >                goto end;
+>> >        }
+>> >
+>> > Now I don't know if this will work for other brands, but for
+>> > me(Macbook Pro ATI chipset) I have not received the
+>> > GPE storm detected, disabling EC GPE message, but it's only been an
+>> > hour, maybe after two or three this might appear.
+>> > Also is this good or bad to set 5 to 20 for the system?
+>> > regards;
+>>
+>> We've had a few reports of this GPE-storm problem and I've rather lost
+>> track of what's happening.  Has anyone looked into it?
+>
+> Yes, the problem is still being worked on, AFAICS.
+>
+>> If not, do we have a bugzilla report where we can work on this?
+>
+> There's a bugzilla entry at http://bugzilla.kernel.org/show_bug.cgi?id=10724 .
+>
+> Thanks,
+> Rafael
+>
 
-> This adds the btgpio driver.
-> The purpose of the btgpio driver is to export all of the 24 GPIO pins
-> available on Brooktree 8xx chips to the kernel GPIO infrastructure.
-> 
-> This makes it possible to use a physically modified BT8xx card as
-> cheap digital GPIO card.
+Hello; I must be honest I'm not real sure on what Is happening with
+this. The above: if (atomic_read(&ec->irq_count) > 20) {
+just prolongs the message from going off(doesn't deal with the main problem).
+Now it is interesting from over here with a macbook, due to this message having
+to deal with the battery(if that's the case) i.g. removing the battery
+results in no gpe storm being detected(or not too many interrupts), on
+the contrary the other laptops acer or whatever was experiencing the
+same issue, was in something completely different. Now just out of
+curiosity
+I was thinking back to when this wasn't happening and it must have
+been around april or so, after looking at the activity with acpi the
+only
+real scenario I saw that might have led to this would be:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=cf7acfab032ff262f42954328cdfd20a5d9aaaac
+/ but like I said out of curiosity maybe this was what might be
+triggering
+the interrupts to fire this message off, but could be something
+completely in an other location.
+As for right now I'm open to any ideas.
+regards;
 
-do you mind calling the driver bt8xxgpio. I am a little bit worried that
-we otherwise clash with a potential Bluetooth GPIO driver at some point.
-The new generation of generic Bluetooth drivers are using bt* as names
-(like btsdio, btusb etc.).
-
-Regards
-
-Marcel
-
-
+-- 
+Justin P. Mattock
