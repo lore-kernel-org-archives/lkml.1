@@ -1,98 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760887AbYGAVM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761285AbYGAVMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760887AbYGAVM1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 17:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755367AbYGAVMS
+	id S1761285AbYGAVMn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 17:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758148AbYGAVMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 17:12:18 -0400
-Received: from metis.extern.pengutronix.de ([83.236.181.26]:59632 "EHLO
-	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753960AbYGAVMP (ORCPT
+	Tue, 1 Jul 2008 17:12:31 -0400
+Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:2111 "EHLO
+	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760932AbYGAVMa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 17:12:15 -0400
-Date: Tue, 1 Jul 2008 23:11:58 +0200
-From: Luotao Fu <l.fu@pengutronix.de>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Luotao Fu <l.fu@pengutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc8-rt1: Strange latencies on mpc5200 powerpc - RCU
-	issue?
-Message-ID: <20080701211158.GA8928@pengutronix.de>
-Mail-Followup-To: Wolfgang Grandegger <wg@grandegger.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	Luotao Fu <l.fu@pengutronix.de>,
-	LKML <linux-kernel@vger.kernel.org>,
-	RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-	Thomas Gleixner <tglx@linutronix.de>
-References: <479F2C3C.1020203@grandegger.com> <20080130010716.GB16069@linux.vnet.ibm.com> <47A032E9.4080105@grandegger.com> <20080130102255.GA24890@linux.vnet.ibm.com> <47A0552D.20605@grandegger.com> <20080130105715.GE24890@linux.vnet.ibm.com> <20080130111559.GC20089@pengutronix.de> <486A3EBB.6030905@grandegger.com> <Pine.LNX.4.58.0807011036510.26650@gandalf.stny.rr.com> <486A573E.60107@grandegger.com>
+	Tue, 1 Jul 2008 17:12:30 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AuYGANexXkh5LFnmWmdsb2JhbACSYAEdm0A
+X-IronPort-AV: E=Sophos;i="4.27,733,1204464600"; 
+   d="scan'208";a="147610385"
+Date: Wed, 2 Jul 2008 07:12:26 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: xfs-masters@oss.sgi.com
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Elias Oltmanns <eo@nebensachen.de>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [xfs-masters] Re: freeze vs freezer
+Message-ID: <20080701211226.GT29319@disturbed>
+Mail-Followup-To: xfs-masters@oss.sgi.com,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	Elias Oltmanns <eo@nebensachen.de>,
+	Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+	Kyle Moffett <mrmacman_g4@mac.com>,
+	Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Jens Axboe <jens.axboe@oracle.com>
+References: <4744FD87.7010301@goop.org> <200807010038.43362.rjw@sisk.pl> <20080701063835.GQ29319@disturbed> <200807011635.44696.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ibTvN161/egqYuK8"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <486A573E.60107@grandegger.com>
-X-PGP-Key-ID: 0xE5325261
-X-URL: http://www.pengutronix.de/
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Hannoversche
-	Str. 2, 31134 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-9 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 23:07:30 up  9:50, 16 users,  load average: 0.07, 0.15, 0.08
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 10.1.0.65
-X-SA-Exim-Mail-From: l.fu@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.extern.pengutronix.de); SAEximRunCond expanded to false
+In-Reply-To: <200807011635.44696.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jul 01, 2008 at 04:35:43PM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, 1 of July 2008, Dave Chinner wrote:
+> > On Tue, Jul 01, 2008 at 12:38:41AM +0200, Rafael J. Wysocki wrote:
+> > > On Tuesday, 1 of July 2008, Dave Chinner wrote:
+> > > > On Mon, Jun 30, 2008 at 11:00:43PM +0200, Rafael J. Wysocki wrote:
+> > > > > On Monday, 30 of June 2008, Dave Chinner wrote:
+> > > > > > On Sun, Jun 29, 2008 at 11:37:31PM -0700, Jeremy Fitzhardinge wrote:
+> > > > > > > Dave Chinner wrote:
+> > > > > > >> On Mon, Jun 30, 2008 at 01:22:47AM +0200, Rafael J. Wysocki wrote:
+> > > > > > >>> Well, it seems we can handle this on the block layer level, by temporarily
+> > > > > > >>> replacing the elevator with something that will selectively prevent fs I/O
+> > > > > > >>> from reaching the layers below it.
+> > > > > > >>
+> > > > > > >> Why? What part of freeze_bdev() doesn't work for you?
+> > > > > > >
+> > > > > > > Well, my original problem - which is still an issue - is that a process  
+> > > > > > > writing to a frozen XFS filesystem is stuck in D state, and therefore  
+> > > > > > > cannot be frozen as part of suspend.
+> > > > > 
+> > > > > I thought we were talking about the post-freezer situation.
+> > > > > 
+> > > > > > Silly me - how could I forget the three headed monkey getting in
+> > > > > > the way of our happy trip to beer island?
+> > > > > > 
+> > > > > > Seriously, though, how is stopping I/O in the elevator is going to
+> > > > > > change that?
+> > > > > 
+> > > > > We can do that after creating the image and before we let devices run again.
+> > > > > This way we won't need to worry about the freezer.
+> > > > 
+> > > > You're suggesting that you let processes trying to do I/O continue
+> > > > until *after* the memory image is taken?
+> > > 
+> > > I'm not going to let the data get to the disk.
+> > 
+> > Yes, but you still haven't answered the original question - What are
+> > you going to do with sync I/O that leaves a process in D state
+> > because you've prevented the I/O from being completed?
+> 
+> I don't want to intercept those processes, just allow them to block on that I/O.
 
---ibTvN161/egqYuK8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+So you're going to allow them to go to D state somewhere. Ok, so
+what's the problem with blocking them in vfs_check_frozen(), then?
 
-Hi Wolfgang,
+> Do all of the filesystems implement the freezing?
 
-On Tue, Jul 01, 2008 at 06:11:42PM +0200, Wolfgang Grandegger wrote:
-[...]
+Most of the major ones - those that implement ->write_super_lockfs()
+should work just fine.
 
-I'm out of office till next week. I will try to narrow down the issue you
-reported on my board asap. Unfortunately I was not able to produce such wor=
-st
-case results in my test runs till now. Anyhow I'll also have a look at the =
-code
-segment you found and play a little around there. Hopefully I'll find somet=
-hing
-useful. ;-)
+Cheers,
 
-Cheers
-Luotao Fu
---=20
-   Dipl.-Ing. Luotao Fu | Phone: +49-5121-206917-3
-Pengutronix - Linux Solutions for Science and Industry
-Entwicklungszentrum Nord     http://www.pengutronix.de
-
-
---ibTvN161/egqYuK8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIap2biruQY+UyUmERApIxAJ4gmry6saieIGVb0cfZjCTuY/E8bwCgj7V+
-8KRyCCI/5zFxSMpDF/Iq3AI=
-=4tfg
------END PGP SIGNATURE-----
-
---ibTvN161/egqYuK8--
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
