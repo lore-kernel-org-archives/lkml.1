@@ -1,163 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753738AbYGAHwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbYGAHxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753738AbYGAHwf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 03:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYGAHw1
+	id S1756255AbYGAHxR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 03:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYGAHxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 03:52:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53494 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752085AbYGAHw0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 03:52:26 -0400
-Date: Tue, 1 Jul 2008 00:51:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>,
-       "containers@lists.osdl.org" <containers@lists.osdl.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Paul Jackson <pj@sgi.com>
-Subject: Re: [PATCH] cgroup: support checking of subsystem dependencies (v2)
-Message-Id: <20080701005140.ec06af68.akpm@linux-foundation.org>
-In-Reply-To: <4859BBA8.6070808@cn.fujitsu.com>
-References: <4858C0ED.2080905@cn.fujitsu.com>
-	<6599ad830806181413y5d0ef1bfyfc54c17ee904d744@mail.gmail.com>
-	<4859BBA8.6070808@cn.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 1 Jul 2008 03:53:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43277 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752514AbYGAHxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 03:53:03 -0400
+Date: Tue, 1 Jul 2008 09:48:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, laijs@cn.fujitsu.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Rusty Russel <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] fix rcu vs hotplug race
+Message-ID: <20080701074824.GA19400@elte.hu>
+References: <20080626152728.GA24972@linux.vnet.ibm.com> <20080627044738.GC3419@in.ibm.com> <20080627051855.GD26167@in.ibm.com> <20080627054959.GB3309@linux.vnet.ibm.com> <20080627145845.GA9229@linux.vnet.ibm.com> <20080701053900.GB8205@in.ibm.com> <20080701061600.GF14658@elte.hu> <20080701062854.GD6131@linux.vnet.ibm.com> <20080701063531.GD16642@elte.hu> <20080701065226.GA24639@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080701065226.GA24639@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jun 2008 09:51:36 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> This allows one subsystem to require that it only be mounted when some
-> other subsystems are also present in the proposed hierarchy.
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> For example if subsystem foo depends on bar, the following will fail:
->  # mount -t cgroup -ofoo xxx /dev/cgroup
+> > > Ingo,
+> > > 
+> > > I believe Gautham's fix at http://lkml.org/lkml/2008/6/27/9 is 
+> > > better and also explains it better.
+> > 
+> > ah, indeed - picked that one up instead.
 > 
-> You should mount with both subsystems:
->  # mount -t cgroup -ofoo,bar xxx /dev/cgroup
+> this is the patch i picked up:
+
+for some reason my mail to lkml was cut in half - here it is again:
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> > Ingo,
+> > 
+> > I believe Gautham's fix at http://lkml.org/lkml/2008/6/27/9 is 
+> > better and also explains it better.
 > 
-> foo may implement the subsys_depend() callback this way:
-> 
-> static int foo_cgroup_subsys_depend(struct cgroup_subsys *ss,
-> 				    unsigned long subsys_bits)
-> {
-> 	if (!test_bit(bar_cgroup_subsys_id, &subsys_bits))
-> 		return -EINVAL;
-> 	return 0;
-> }
-> 
-> Changelog:
-> - call check_subsys_depend() in parse_cgroupfs_options(), but not in mount
->   and remount code.
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  Documentation/cgroups.txt |    6 ++++++
->  include/linux/cgroup.h    |    2 ++
->  kernel/cgroup.c           |   21 ++++++++++++++++++++-
->  3 files changed, 28 insertions(+), 1 deletions(-)
-> 
-> diff --git a/Documentation/cgroups.txt b/Documentation/cgroups.txt
-> index 824fc02..8252f5b 100644
-> --- a/Documentation/cgroups.txt
-> +++ b/Documentation/cgroups.txt
-> @@ -530,6 +530,12 @@ and root cgroup. Currently this will only involve movement between
->  the default hierarchy (which never has sub-cgroups) and a hierarchy
->  that is being created/destroyed (and hence has no sub-cgroups).
->  
-> +int subsys_depend(struct cgroup_subsys *ss, unsigned long subsys_bits)
-> +
-> +Called when a cgroup subsystem wants to check if some other subsystems
-> +are also present in the proposed hierarchy. If this method returns error,
-> +the mount of the cgroup filesystem will fail.
+> ah, indeed - picked that one up instead.
 
-OK, but the name subsys_depend is quite poor.
+this is the patch i picked up:
 
-check_subsys_dependency is better.  But it still has the failing that
-the reader cannot determine the sense of the function's return value
-from its name.  Does it return true on success, or false?
+-------------------------->
+Subject: rcu: fix hotplug vs rcu race
+From: Gautham R Shenoy <ego@in.ibm.com>
+Date: Fri, 27 Jun 2008 10:17:38 +0530
 
-A good name would be something like subsys_dependencies_ok().  Then
-code such as
+Dhaval Giani reported this warning during cpu hotplug stress-tests:
 
-	if (subsys_dependencies_ok(...))
-		go_wild();
-	else
-		bad_hair_day();
+| On running kernel compiles in parallel with cpu hotplug:
+|
+| WARNING: at arch/x86/kernel/smp.c:118
+| native_smp_send_reschedule+0x21/0x36()
+| Modules linked in:
+| Pid: 27483, comm: cc1 Not tainted 2.6.26-rc7 #1
+| [...]
+|  [<c0110355>] native_smp_send_reschedule+0x21/0x36
+|  [<c014fe8f>] force_quiescent_state+0x47/0x57
+|  [<c014fef0>] call_rcu+0x51/0x6d
+|  [<c01713b3>] __fput+0x130/0x158
+|  [<c0171231>] fput+0x17/0x19
+|  [<c016fd99>] filp_close+0x4d/0x57
+|  [<c016fdff>] sys_close+0x5c/0x97
 
-makes more sense.
+IMHO the warning is a spurious one.
 
+cpu_online_map is updated by the _cpu_down() using stop_machine_run().
+Since force_quiescent_state is invoked from irqs disabled section,
+stop_machine_run() won't be executing while a cpu is executing
+force_quiescent_state(). Hence the cpu_online_map is stable while we're
+in the irq disabled section.
 
->  4. Questions
->  ============
->  
-> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-> index e155aa7..fc99ba4 100644
-> --- a/include/linux/cgroup.h
-> +++ b/include/linux/cgroup.h
-> @@ -305,6 +305,8 @@ struct cgroup_subsys {
->  			struct cgroup *cgrp);
->  	void (*post_clone)(struct cgroup_subsys *ss, struct cgroup *cgrp);
->  	void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
-> +	int (*subsys_depend)(struct cgroup_subsys *ss,
-> +			      unsigned long subsys_bits);
->  	/*
->  	 * This routine is called with the task_lock of mm->owner held
->  	 */
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> index 15ac0e1..18e8132 100644
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -774,6 +774,25 @@ static int cgroup_show_options(struct seq_file *seq, struct vfsmount *vfs)
->  	return 0;
->  }
->  
-> +static int check_subsys_dependency(unsigned long subsys_bits)
+However, a cpu might have been offlined _just_ before we disabled irqs
+while entering force_quiescent_state(). And rcu subsystem might not yet
+have handled the CPU_DEAD notification, leading to the offlined cpu's
+bit being set in the rcp->cpumask.
 
-Would be nice to have a little comment explaining this function's role
-in the world.  It should document the meaning of the return values.
+Hence cpumask = (rcp->cpumask & cpu_online_map) to prevent sending
+smp_reschedule() to an offlined CPU.
 
-Perhaps it could return bool.  That depends upon a well-chosen name,
-and upon the thus-far-undocumented return-value meaning.
+Here's the timeline:
 
-> +{
-> +	int i;
-> +	int ret;
-> +	struct cgroup_subsys *ss;
-> +
-> +	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-> +		ss = subsys[i];
-> +
-> +		if (test_bit(i, &subsys_bits) && ss->subsys_depend) {
-> +			ret = ss->subsys_depend(ss, subsys_bits);
-> +			if (ret)
-> +				return ret;
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-
-
->  struct cgroup_sb_opts {
->  	unsigned long subsys_bits;
->  	unsigned long flags;
-> @@ -834,7 +853,7 @@ static int parse_cgroupfs_options(char *data,
->  	if (!opts->subsys_bits)
->  		return -EINVAL;
->  
-> -	return 0;
-> +	return check_subsys_dependency(opts->subsys_bits);
->  }
-
-The whole patch doesn't do anything.  Perhaps there's another patch in
-the pipeline somewhere which adds one or more ->subsys_depend
-implementations, but I cannot find it.  If so, I'd have expected this
-patch to be titled [1/N].
+CPU_A						 CPU_B
+--------------------------------------------------------------
+cpu_down():					.
+.					   	.
+.						.
+stop_machine(): /* disables preemption,		.
+		 * and irqs */			.
+.						.
+.						.
+take_cpu_down();				.
+.						.
+.						.
+.						.
+cpu_disable(); /*this removes cpu 		.
+		*from cpu_online_map 		.
+		*/				.
+.						.
+.						.
+restart_machine(); /* enables irqs */		.
+------WINDOW DURING WHICH rcp->cpumask is stale ---------------
+.						call_rcu();
+.						/* disables irqs here */
+.						.force_quiescent_state();
+.CPU_DEAD:					.for_each_cpu(rcp->cpumask)
+.						.   smp_send_reschedule();
+.						.
+.						.   WARN_ON() for offlined CPU!
