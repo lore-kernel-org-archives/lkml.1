@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbYGALwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbYGALxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754889AbYGALwq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 07:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbYGALwi
+	id S1754072AbYGALxv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 07:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbYGALxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 07:52:38 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:5114 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751768AbYGALwh (ORCPT
+	Tue, 1 Jul 2008 07:53:42 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:24425 "EHLO
+	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753176AbYGALxl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 07:52:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=t3id2Aj26c/6m0OygVVGlRk59drJ9MfKWEpnaOqXJaxReqUUoyw4Qlo03Lss5EyGRG
-         vXYwNeL9dRHAAZL1jKDTmQ7OmsDD14hLVnMtpD9G9OK9t5gOxlqIAx7Fim+ZWRnndc+l
-         hk5vKVXxXSQoBUcuomuNFgT/Xv5uDO8d9aCGM=
-Date: Tue, 1 Jul 2008 15:52:25 +0400
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Anton Vorontsov <cbouatmailru@gmail.com>, linux-kernel@vger.kernel.org,
-       cbou@mail.ru, dwmw2@infradead.org
-Subject: Re: [PATCH] Add support for power_supply on tosa
-Message-ID: <20080701115225.GA7238@doriath.ww600.siemens.net>
-References: <20080620084917.GA20577@doriath.ww600.siemens.net> <20080623061943.GA6080@zarina> <20080624145107.GB31719@doriath.ww600.siemens.net> <20080630153232.GA4785@doriath.ww600.siemens.net> <20080630190407.GA20400@polina.dev.rtsoft.ru>
+	Tue, 1 Jul 2008 07:53:41 -0400
+Message-ID: <486A1AA3.203@panasas.com>
+Date: Tue, 01 Jul 2008 14:53:07 +0300
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080630190407.GA20400@polina.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Hugh Dickins <hugh@veritas.com>
+CC: Andrea Arcangeli <andrea@qumranet.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: fix uninitialized variables for find_vma_prepare
+ callers
+References: <1214844882-22560-1-git-send-email-bhalevy@panasas.com> <Pine.LNX.4.64.0806301942220.22984@blonde.site>
+In-Reply-To: <Pine.LNX.4.64.0806301942220.22984@blonde.site>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Jul 2008 11:53:15.0991 (UTC) FILETIME=[0C0B3E70:01C8DB71]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 11:04:07PM +0400, Anton Vorontsov wrote:
-> On Mon, Jun 30, 2008 at 07:32:32PM +0400, Dmitry Baryshkov wrote:
-> > On Tue, Jun 24, 2008 at 06:51:07PM +0400, Dmitry Baryshkov wrote:
-> > > Hi,
-> > > 
-> > > Please consider this updated version
-> > > 
-> > > From 314de1f70b669344f5b26ac2e4f8854a9024f17a Mon Sep 17 00:00:00 2001
-> > > From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-> > > Date: Tue, 24 Jun 2008 18:50:18 +0400
-> > > Subject: [PATCH] Add support for power_supply on tosa
-> > > 
-> > > Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
-> > > ---
-> > >  drivers/power/Kconfig        |    7 +
-> > >  drivers/power/Makefile       |    1 +
-> > >  drivers/power/tosa_battery.c |  487 ++++++++++++++++++++++++++++++++++++++++++
-> > >  3 files changed, 495 insertions(+), 0 deletions(-)
-> > >  create mode 100644 drivers/power/tosa_battery.c
-> > > 
-> > 
-> > Any comments regarding this version?
+On Jun. 30, 2008, 22:00 +0300, Hugh Dickins <hugh@veritas.com> wrote:
+> On Mon, 30 Jun 2008, Benny Halevy wrote:
+>> gcc 4.3.0 correctly emits the following warnings.
+>> When a vma covering addr is found, find_vma_prepare indeed returns without
+>> setting pprev, rb_link, and rb_parent.
 > 
-> Looks good to me (the race is still there, actually. but I'll fix the
-> comment :-). I'll apply this patch asap to get it build tested with
-> linux-next.
+> That's amusing, thank you.
 > 
-> And again, much thanks for the patch!
+> You may wonder how the vma rb_tree has been working all these years
+> despite that.  The answer is that we only use find_vma_prepare when
+> about to insert a new vma: if there's anything already there, it's
+> either an error condition, or we go off and unmap the overlap without
+> taking any interest in those uninitialized values for linking.
+> 
+> It would be nicer to initialize them, and your patch is certainly
+> nice and simple.  Would it have the effect, that it returns with
+> vma == *pprev when addr falls within an existing vma?
+> That would be a sensible outcome, I think.
 
-Thank you!
+No, *pprev will be set to the last parent encountered with this
+patch, but doing what you suggested is possible, though I doubt
+it matters since apparently nobody is using pprev in this path
+otherwise stuff would've just broken.
 
--- 
-With best wishes
-Dmitry
+Benny
+
+> 
+> Hugh
+> 
+>> [warnings snipped]
+>>
+>> Signed-off-by: Benny Halevy <bhalevy@panasas.com>
+>> ---
+>>  mm/mmap.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/mm/mmap.c b/mm/mmap.c
+>> index 3354fdd..81b9873 100644
+>> --- a/mm/mmap.c
+>> +++ b/mm/mmap.c
+>> @@ -366,7 +366,7 @@ find_vma_prepare(struct mm_struct *mm, unsigned long addr,
+>>  		if (vma_tmp->vm_end > addr) {
+>>  			vma = vma_tmp;
+>>  			if (vma_tmp->vm_start <= addr)
+>> -				return vma;
+>> +				break;
+>>  			__rb_link = &__rb_parent->rb_left;
+>>  		} else {
+>>  			rb_prev = __rb_parent;
 
