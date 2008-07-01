@@ -1,137 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760060AbYGAPSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbYGAPSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760060AbYGAPSX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 11:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757152AbYGAPSN
+	id S1760608AbYGAPSi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 11:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758866AbYGAPSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 11:18:13 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:43686 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754944AbYGAPSM (ORCPT
+	Tue, 1 Jul 2008 11:18:20 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38386 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758774AbYGAPST (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 11:18:12 -0400
-Subject: Re: [regression] CD-DA delay needed after insertion
-	(http://bugzilla.kernel.org/show_bug.cgi?id=10974)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-In-Reply-To: <1214841102.3381.5.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
-	 <1213540781.3517.18.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0806161659440.30122@vixen.sonytel.be>
-	 <1213648258.3420.12.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0806171530340.22840@vixen.sonytel.be>
-	 <1214605634.3394.91.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0806301120570.10868@vixen.sonytel.be>
-	 <1214841102.3381.5.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 01 Jul 2008 10:18:07 -0500
-Message-Id: <1214925487.3316.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 1 Jul 2008 11:18:19 -0400
+Date: Tue, 1 Jul 2008 11:17:50 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Elias Oltmanns <eo@nebensachen.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Dave Chinner <david@fromorbit.com>,
+       xfs-masters@oss.sgi.com, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [xfs-masters] Re: freeze vs freezer
+Message-ID: <20080701151750.GA15018@infradead.org>
+References: <4744FD87.7010301@goop.org> <200807010038.43362.rjw@sisk.pl> <20080701063835.GQ29319@disturbed> <200807011635.44696.rjw@sisk.pl> <87tzf9hcg6.fsf@denkblock.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87tzf9hcg6.fsf@denkblock.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-30 at 10:51 -0500, James Bottomley wrote:
-> On Mon, 2008-06-30 at 11:25 +0200, Geert Uytterhoeven wrote:
-> > 	Hi James,
-> > 
-> > On Fri, 27 Jun 2008, James Bottomley wrote:
-> > > > git-bisect taught me it was introduced by
-> > > > 
-> > > > commit 38582a62ecd337de4212004c7d4844899dc57890
-> > > > Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > > > Date:   Wed Feb 6 13:01:58 2008 -0600
-> > > > 
-> > > >     [SCSI] sr: fix test unit ready responses
-> > > >     
-> > > >     Commit 210ba1d1724f5c4ed87a2ab1a21ca861a915f734 updated sr.c to use
-> > > >     the scsi_test_unit_ready() function.  Unfortunately, this has the
-> > > >     wrong characteristic of eating NOT_READY returns which sr.c relies on
-> > > >     for tray status.
-> > > >     
-> > > >     Fix by rolling an internal sr_test_unit_ready() that doesn't do this.
-> > > 
-> > > OK, I thought I had a test case for this, but when I revert this commit
-> > > on git head (and fix up the one reject which just leaves the sr_
-> > > function in place) I still produce the same behaviour.
-> > > 
-> > > What I'm trying is 
-> > > 
-> > > sg_start -i -l <cdrom>
-> > > 
-> > > to close the tray followed by your cdparanoia command
-> > > 
-> > > Could you see if reverting this commit on git head works for you (in
-> > > which case I'm not reproducing it correctly)?
-> > 
-> > On 9bedbcb207ed9a571b239231d99c8fd4a34ae24d, the sequence
-> > 
-> >     eject; sg_start -i -l /dev/scd0; cdparanoia \
-> > 	-d /dev/scd0 -Z -q 1-1[:1] /dev/null || echo failed
-> > 
-> > fails with
-> > 
-> >     004: Unable to read table of contents header
-> > 
-> > After reverting 38582a62ecd337de4212004c7d4844899dc57890, it works.
-> > 
-> > I added the eject as the PS3 has a slot-loading drive.
-> > 
-> > With kind regards,
-> 
-> OK ... but this doesn't happen for me with or without this commit
-> reverted.  This is what I see from stracing cdparanoia:
-> 
-> lstat64("/dev/scd0", {st_mode=S_IFBLK|0660, st_rdev=makedev(11, 0), ...}) = 0
-> open("/dev/scd0", O_RDWR|O_NONBLOCK)    = 3
-> ioctl(3, SG_IO, 0xbfc0afdc)             = -1 EINVAL (Invalid argument)
-> close(3)                                = 0
-> open("/dev/scd0", O_RDWR|O_NONBLOCK)    = 3
-> dup(3)                                  = 4
-> ioctl(3, CDROMAUDIOBUFSIZ or SCSI_IOCTL_GET_IDLUN, 0xbfc0b240) = 0
-> ioctl(3, SCSI_IOCTL_GET_BUS_NUMBER, 0xbfc0b248) = 0
-> ioctl(3, SG_IO, 0xbfc0af8c)             = 0
-> ioctl(4, SG_EMULATED_HOST, 0xbfc0b2b8)  = 0
-> ioctl(3, SG_IO, 0xbfc0b07c)             = 0
-> ioctl(3, SG_IO, 0xbfc0b04c)             = 0
-> write(2, "004: Unable to read table of con"..., 45004: Unable to read table of contents header) = 45
-> 
-> The O_NONBLOCK tells the cdrom layer not to do drive ready processing.
-> 
-> The three SG_IOs are INQUIRY, MODE_SENSE(10) and READ TOC/PMA/ATIP
-> 
-> The latter one is returned with a check condition and sense data not
-> ready; medium not present - tray open.
-> 
-> There's no way the drive ready processing can have an effect on this
-> sequence unless cdparanoia either invokes it from the cdrom layer or
-> processes the not ready itself.  Could you strace your cdparanoia and
-> see what sequence it is using?
+On Tue, Jul 01, 2008 at 05:05:29PM +0200, Elias Oltmanns wrote:
+> There is some work in progress [1]. If you think this will help you to
+> address this issue on the fs level, where I think it should be done, you
+> may even be able to request some changes to fit your needs before it
+> gets merged into mainline.
 
-OK ... I think I finally found the problem.  Our DVD drives obviously
-have a slight difference in the way they handle tray close.  Mine still
-returns tray open for a while after the close operation has been
-initiated.  To see the behaviour you need it to return not ready; in
-process of becoming ready.  The zero return from scsi_test_unit_ready()
-actually causes sr_media_changed() incorrectly to return zero.  But,
-before it does, it tries to update the CD information and capacity.
-This is where the delay occurs ... as long as the drive reports in
-process of becoming ready, sr_cd_check() will wait 2s and retry until it
-becomes ready and it can get the CD information.
-
-The problem is I don't think the new behaviour is a regression.
-cdparanoia requested O_NONBLOCK ... it's a bit counter to this if we
-wait for the drive to become ready.  cdparanoia doesn't care that we get
-the correct CD parameters on the open since it's using SG_IO to
-manipulate the device.  So, I think the bug is actually in cdparanoia.
-If it requests O_NONBLOCK, it's asking for full status immediately and
-is supposed to be able to cope with the returns (including knowing to
-retry the NOT_READY ones).
-
-James
-
+That is just a direct user interface to this functionality.  The
+functionality has been around for a long time.
 
