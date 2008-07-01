@@ -1,93 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbYGALFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753915AbYGALOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753856AbYGALFN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 07:05:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbYGALFA
+	id S1753915AbYGALOf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 07:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbYGALOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 07:05:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44672 "EHLO mx3.mail.elte.hu"
+	Tue, 1 Jul 2008 07:14:24 -0400
+Received: from bu3sch.de ([62.75.166.246]:43300 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751667AbYGALE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 07:04:59 -0400
-Date: Tue, 1 Jul 2008 13:04:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Michael Buesch <mb@bu3sch.de>
+	id S1751503AbYGALOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 07:14:24 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH RFC] x86: Add user configurable GPIO-lib support
+Date: Tue, 1 Jul 2008 13:13:40 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
 Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
        linux-kernel <linux-kernel@vger.kernel.org>,
        florian.fainelli@telecomint.eu,
        the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH RFC] x86: Add user configurable GPIO-lib support
-Message-ID: <20080701110436.GA32365@elte.hu>
-References: <200807011249.40551.mb@bu3sch.de>
+References: <200807011249.40551.mb@bu3sch.de> <20080701110436.GA32365@elte.hu>
+In-Reply-To: <20080701110436.GA32365@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200807011249.40551.mb@bu3sch.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200807011313.40598.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Michael Buesch <mb@bu3sch.de> wrote:
-
-> So this adds user-configurable GPIO support through gpiolib on 
-> subarchitectures that do not implement a GPIO implementation, yet. 
-> Currently that's everything except X86_RDC321X.
+On Tuesday 01 July 2008 13:04:37 Ingo Molnar wrote:
 > 
-> The advantage of this is to make it possible to use generic PCI (or 
-> other bus) GPIO extention cards in standard PCs through the standard 
-> GPIO API.
+> * Michael Buesch <mb@bu3sch.de> wrote:
 > 
-> If another subarch implements its own GPIO, it needs to add itself as 
-> an inverted dependency to GPIO_USERSELECTION to make sure the user 
-> does not enable two GPIO API implementations.
+> > So this adds user-configurable GPIO support through gpiolib on 
+> > subarchitectures that do not implement a GPIO implementation, yet. 
+> > Currently that's everything except X86_RDC321X.
+> > 
+> > The advantage of this is to make it possible to use generic PCI (or 
+> > other bus) GPIO extention cards in standard PCs through the standard 
+> > GPIO API.
+> > 
+> > If another subarch implements its own GPIO, it needs to add itself as 
+> > an inverted dependency to GPIO_USERSELECTION to make sure the user 
+> > does not enable two GPIO API implementations.
+> > 
+> > About the asm-x86/gpio.h:
+> > I'm not sure what this <gpio.h> include currently is.
+> > Can somebody explain that to me? Where is this supposed
+> > to include a gpio.h file from?
+> > 
+> > What's your opinion on this?
 > 
-> About the asm-x86/gpio.h:
-> I'm not sure what this <gpio.h> include currently is.
-> Can somebody explain that to me? Where is this supposed
-> to include a gpio.h file from?
+> ( i've Cc:-ed Florian on this who's maintaining the RDC R-321X bits. )
 > 
-> What's your opinion on this?
+> The longer-term goal is that we'd like to remove the explicit RDC 
+> sub-arch and just support such systems out of box on x86.
 
-( i've Cc:-ed Florian on this who's maintaining the RDC R-321X bits. )
+nice :)
 
-The longer-term goal is that we'd like to remove the explicit RDC 
-sub-arch and just support such systems out of box on x86.
+> ... and thus perhaps your GPIO_USERSELECTION patch should move into 
+> drivers/ and be generally accessible, not special to x86?
 
-We are almost there - Florian already moved a few special drivers out of 
-arch/x86, the only missing piece is this complication in 
-include/asm-x86/timex.h:
+Yes I'd really like to move it there, too. But currently that
+clashes with architectures like MIPS, some PPC flavours and probably
+others that implement their own GPIO API.
+We should have an ARCH_IMPLEMENT_GPIO or whatever, but currently we
+don't seem to have that.
 
- #ifdef CONFIG_X86_ELAN
- #  define PIT_TICK_RATE 1189200 /* AMD Elan has different frequency! */
- #elif defined(CONFIG_X86_RDC321X)
- #  define PIT_TICK_RATE 1041667 /* Underlying HZ for R8610 */
- #else
- #  define PIT_TICK_RATE 1193182 /* Underlying HZ */
- #endif
+So well. If it's desired to put the user selection into drivers/gpio
+(which I'd really prefer), I can try to make a patch that adds
+ARCH_IMPLEMENT_GPIO to every arch that implements their own GPIO API
+and make GPIO_USERSELECTION depend on !ARCH_IMPLEMENT_GPIO.
 
-... once that is made dynamic/quirkable we are there.
-
-And we could even remove the AMD Elan subarch that way: AFAICS it's a 
-486 compatible with an A20 quirk and this PIT_TICK quirk.
-
-... and if we do that we'll also remove these:
-
-        select GENERIC_GPIO
-        select LEDS_CLASS
-        select LEDS_GPIO
-        select NEW_LEDS
-
-... and thus perhaps your GPIO_USERSELECTION patch should move into 
-drivers/ and be generally accessible, not special to x86?
-
-	Ingo
+-- 
+Greetings Michael.
