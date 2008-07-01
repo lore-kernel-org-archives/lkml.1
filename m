@@ -1,147 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759991AbYGAVC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbYGAVED@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759991AbYGAVC7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 17:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYGAVCu
+	id S1757959AbYGAVED (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 17:04:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbYGAVDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 17:02:50 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:19330 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750826AbYGAVCs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 17:02:48 -0400
-Date: Tue, 1 Jul 2008 16:02:47 -0500
-From: Mike Miller <mike.miller@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       LKML-scsi <linux-scsi@vger.kernel.org>
-Subject: [PATCH 1/1] cciss: read config to obtain max outstanding commands per controller
-Message-ID: <20080701210247.GA5095@roadking.ldev.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 1 Jul 2008 17:03:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60126 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751124AbYGAVDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 17:03:49 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Chuck Lever <chuck.lever@oracle.com>
+Subject: Re: inux-next: Tree for July 1
+Date: Tue, 1 Jul 2008 23:05:11 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, kernel-testers@vger.kernel.org,
+       linux-nfs@vger.kernel.org, Trond Myklebust <Trond.Myklebust@netapp.com>
+References: <20080702011434.6fb403d5.sfr@canb.auug.org.au> <200807012236.19400.rjw@sisk.pl> <BC46CA27-0F46-4F1B-950D-562B36B19A0B@oracle.com>
+In-Reply-To: <BC46CA27-0F46-4F1B-950D-562B36B19A0B@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Message-Id: <200807012305.12041.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PATCH 1/1
+On Tuesday, 1 of July 2008, Chuck Lever wrote:
+> On Jul 1, 2008, at 4:36 PM, Rafael J. Wysocki wrote:
+> > On Tuesday, 1 of July 2008, Stephen Rothwell wrote:
+> >> Hi all,
+> >>
+> >> Changes since next-20080630:
+> >>
+> >> New tree: ttydev - unfortunately it had to be reverted because of  
+> >> build
+> >> failures after lots of conflict resolution (which may have caused the
+> >> build failures).
+> >>
+> >> Changed tree: the cris tree changed branch names.
+> >>
+> >> The sched tree gained a couple of conflicts against the ftrace and
+> >> cpus4096 trees.
+> >>
+> >> The pci tree gained a conflict against the x86 tree.
+> >>
+> >> The usb tree reverted due to a build failure after merging with the  
+> >> pci
+> >> tree was changed for a fixup patch.
+> >>
+> >> The v4l-dvb tree lost its three conflicts against Linus' tree.
+> >>
+> >> The s390 tree gained a conflict against the diver-core tree.
+> >>
+> >> The ide tree fixed its build problems.
+> >>
+> >> The nfsd tree lost a conflict against the nfs tree.
+> >>
+> >> The powerpc tree gained a conflict against the ide tree.
+> >>
+> >> The net tree gained two conflicts against the powerpc tree.
+> >>
+> >> The galak tree lost its conflict against the net tree.
+> >>
+> >> the blk-removal tree gained a conflict against the s390 tree.
+> >>
+> >> The firmware tree lost several conflicts against the net tree so  
+> >> didn't
+> >> need a commit reverted any more.
+> >>
+> >> Merging the ttydev tree got several conflicts against the usb and
+> >> firmware trees.  Unfortunately, it also would not build and so was
+> >> reverted.
+> >>
+> >> I have also applied the following patches for know problems:
+> >> 	module: fix NULL pointer dereference in find_symbol()
+> >
+> > I can't mount NFS shares with this kernel.  I get something of this  
+> > sort in
+> > dmesg and it seems to be 100% reproducible:
+> >
+> > [  314.058858] RPC: Registered udp transport module.
+> > [  314.058863] RPC: Registered tcp transport module.
+> > [  314.490970] RPC: transport (0) not supported
+> > [  319.246987] __ratelimit: 23 messages suppressed
+> >
+> > linux-next from yesterday was fine with the same .config .
+> 
+> What's your mount command line?
 
-This patch changes the way we determine the maximum number of outstanding
-commands for each controller. Most Smart Array controllers can support up
-to 1024 commands, the notable exceptions are the E200 and E200i.
-The next generation of controllers which were just added support a mode of
-operation called Zero Memory Raid (ZMR).  In this mode they only support 64 
-outstanding commands. In Full Function Raid (FFR) mode they support 1024. 
-We have been setting the queue depth by arbitrarily assigning some value for
-each controller. We needed a better way to set the queue depth to avoid lots 
-of annoying "fifo full" messages. So we made the driver a little smarter. We 
-now read the config table and subtract 4 from the returned value. The -4 is 
-to allow some room for ioctl calls which are not tracked the same way as io 
-commands are tracked.
+albercik:~ # mount -t nfs chimera:/home/rafael/src src/
+mount.nfs: Input/output error
 
-Please consider this for inclusion.
-
-Signed-off-by: Mike Miller <mike.miller@hp.com>
-
---------------------------------------------------------------------------------
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index b2b6fb1..0d5df43 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -106,35 +106,34 @@ MODULE_DEVICE_TABLE(pci, cciss_pci_device_id);
- /*  board_id = Subsystem Device ID & Vendor ID
-  *  product = Marketing Name for the board
-  *  access = Address of the struct of function pointers
-- *  nr_cmds = Number of commands supported by controller
-  */
- static struct board_type products[] = {
--	{0x40700E11, "Smart Array 5300", &SA5_access, 512},
--	{0x40800E11, "Smart Array 5i", &SA5B_access, 512},
--	{0x40820E11, "Smart Array 532", &SA5B_access, 512},
--	{0x40830E11, "Smart Array 5312", &SA5B_access, 512},
--	{0x409A0E11, "Smart Array 641", &SA5_access, 512},
--	{0x409B0E11, "Smart Array 642", &SA5_access, 512},
--	{0x409C0E11, "Smart Array 6400", &SA5_access, 512},
--	{0x409D0E11, "Smart Array 6400 EM", &SA5_access, 512},
--	{0x40910E11, "Smart Array 6i", &SA5_access, 512},
--	{0x3225103C, "Smart Array P600", &SA5_access, 512},
--	{0x3223103C, "Smart Array P800", &SA5_access, 512},
--	{0x3234103C, "Smart Array P400", &SA5_access, 512},
--	{0x3235103C, "Smart Array P400i", &SA5_access, 512},
--	{0x3211103C, "Smart Array E200i", &SA5_access, 120},
--	{0x3212103C, "Smart Array E200", &SA5_access, 120},
--	{0x3213103C, "Smart Array E200i", &SA5_access, 120},
--	{0x3214103C, "Smart Array E200i", &SA5_access, 120},
--	{0x3215103C, "Smart Array E200i", &SA5_access, 120},
--	{0x3237103C, "Smart Array E500", &SA5_access, 512},
--	{0x323D103C, "Smart Array P700m", &SA5_access, 512},
--	{0x3241103C, "Smart Array P212", &SA5_access, 384},
--	{0x3243103C, "Smart Array P410", &SA5_access, 384},
--	{0x3245103C, "Smart Array P410i", &SA5_access, 384},
--	{0x3247103C, "Smart Array P411", &SA5_access, 384},
--	{0x3249103C, "Smart Array P812", &SA5_access, 384},
--	{0xFFFF103C, "Unknown Smart Array", &SA5_access, 120},
-+	{0x40700E11, "Smart Array 5300", &SA5_access},
-+	{0x40800E11, "Smart Array 5i", &SA5B_access},
-+	{0x40820E11, "Smart Array 532", &SA5B_access},
-+	{0x40830E11, "Smart Array 5312", &SA5B_access},
-+	{0x409A0E11, "Smart Array 641", &SA5_access},
-+	{0x409B0E11, "Smart Array 642", &SA5_access},
-+	{0x409C0E11, "Smart Array 6400", &SA5_access},
-+	{0x409D0E11, "Smart Array 6400 EM", &SA5_access},
-+	{0x40910E11, "Smart Array 6i", &SA5_access},
-+	{0x3225103C, "Smart Array P600", &SA5_access},
-+	{0x3223103C, "Smart Array P800", &SA5_access},
-+	{0x3234103C, "Smart Array P400", &SA5_access},
-+	{0x3235103C, "Smart Array P400i", &SA5_access},
-+	{0x3211103C, "Smart Array E200i", &SA5_access},
-+	{0x3212103C, "Smart Array E200", &SA5_access},
-+	{0x3213103C, "Smart Array E200i", &SA5_access},
-+	{0x3214103C, "Smart Array E200i", &SA5_access},
-+	{0x3215103C, "Smart Array E200i", &SA5_access},
-+	{0x3237103C, "Smart Array E500", &SA5_access},
-+	{0x323D103C, "Smart Array P700m", &SA5_access},
-+	{0x3241103C, "Smart Array P212", &SA5_access},
-+	{0x3243103C, "Smart Array P410", &SA5_access},
-+	{0x3245103C, "Smart Array P410i", &SA5_access},
-+	{0x3247103C, "Smart Array P411", &SA5_access},
-+	{0x3249103C, "Smart Array P812", &SA5_access},
-+	{0xFFFF103C, "Unknown Smart Array", &SA5_access},
- };
- 
- /* How long to wait (in milliseconds) for board to go into simple mode */
-@@ -3086,11 +3085,20 @@ static int __devinit cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
- 	print_cfg_table(c->cfgtable);
- #endif				/* CCISS_DEBUG */
- 
-+	/* Some controllers support Zero Memory Raid (ZMR).
-+	 * When configured in ZMR mode the number of supported
-+	 * commands drops to 64. So instead of just setting an
-+	 * arbitrary value we make the driver a little smarter.
-+	 * We read the config table to tell us how many commands
-+	 * are supported on the controller then subtract 4 to
-+	 * leave a little room for ioctl calls.
-+	 */
-+	c->max_commands = readl(&(c->cfgtable->CmdsOutMax));
- 	for (i = 0; i < ARRAY_SIZE(products); i++) {
- 		if (board_id == products[i].board_id) {
- 			c->product_name = products[i].product_name;
- 			c->access = *(products[i].access);
--			c->nr_cmds = products[i].nr_cmds;
-+			c->nr_cmds = c->max_commands - 4;
- 			break;
- 		}
- 	}
-@@ -3110,7 +3118,7 @@ static int __devinit cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
- 		if (subsystem_vendor_id == PCI_VENDOR_ID_HP) {
- 			c->product_name = products[i-1].product_name;
- 			c->access = *(products[i-1].access);
--			c->nr_cmds = products[i-1].nr_cmds;
-+			c->nr_cmds = c->max_commands - 4;
- 			printk(KERN_WARNING "cciss: This is an unknown "
- 				"Smart Array controller.\n"
- 				"cciss: Please update to the latest driver "
+Thanks,
+Rafael
