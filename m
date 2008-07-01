@@ -1,83 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756AbYGASyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbYGAS6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753756AbYGASyU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 14:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbYGASyM
+	id S1756723AbYGAS6S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 14:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYGAS6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 14:54:12 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:40450 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751053AbYGASyM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 14:54:12 -0400
-Date: Tue, 1 Jul 2008 13:54:09 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: dhaval@linux.vnet.ibm.com, menage@google.com, akpm@linux-foundation.org,
-       balbir@in.ibm.com, skumar@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: Attaching PID 0 to a cgroup
-Message-Id: <20080701135409.5e68ccd8.pj@sgi.com>
-In-Reply-To: <486A06B7.7020906@cn.fujitsu.com>
-References: <20080701094545.GD3925@linux.vnet.ibm.com>
-	<20080701094734.GE3925@linux.vnet.ibm.com>
-	<486A06B7.7020906@cn.fujitsu.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 1 Jul 2008 14:58:08 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:44175 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752581AbYGAS6H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 14:58:07 -0400
+Message-ID: <486A7E3D.3050901@firstfloor.org>
+Date: Tue, 01 Jul 2008 20:58:05 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: small unifications of address printing
+References: <20080701155217.GA22318@damson.getinternet.no>	 <87d4lxtq3h.fsf@basil.nowhere.org> <19f34abd0807011146g2bb8baf0q2dbaa9ebe501657e@mail.gmail.com>
+In-Reply-To: <19f34abd0807011146g2bb8baf0q2dbaa9ebe501657e@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> But it's better to document this.
 
-Good idea.
+> Yes, it will, and correctly too:
+> 
+>         case 'p':
+>                 flags |= SMALL;
+>                 if (field_width == -1) {
+>                         field_width = 2*sizeof(void *);
+>                         flags |= ZEROPAD;
+>                 }
+> 
+> Or did I read this code wrong? field_width is initialized to -1 by
+> default unless overridden. The SMALL flag means lowercase hexadecimal
+> digits.
 
-Acked-by: Paul Jackson <pj@sgi.com>
+You're right. The kernel differs from user space/traditional behaviour
+in this regard.
 
-You (Li Zefan) might want to resend this as a patch, in case Andrew
-doesn't happen to see this embedded here.
-
-Something like the following:
-
-  Subject: [PATCH] cgroup: document zero pid means current task
-
-  From: Li Zefan <lizf@cn.fujitsu.com>
-
-  Document that a pid of zero(0) can be used to refer to the
-  current task when attaching a task to a cgroup, as in the
-  following usage:
-  
-    # echo 0 > /dev/cgroup/tasks
-
-  This is consistent with existing cpuset behavior.
-
-  Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-  Acked-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-  Acked-by: Paul Jackson <pj@sgi.com>
-
-  ---
-   cgroups.txt |    4 ++++
-   1 file changed, 4 insertions(+)
-
-  diff --git a/Documentation/cgroups.txt b/Documentation/cgroups.txt
-  index 824fc02..213f533 100644
-  --- a/Documentation/cgroups.txt
-  +++ b/Documentation/cgroups.txt
-  @@ -390,6 +390,10 @@ If you have several tasks to attach, you have to do it one after another:
- 	  ...
-   # /bin/echo PIDn > tasks
-
-  +You can attach the current task by echoing 0:
-  +
-  +# /bin/echo 0 > tasks
-  +
-   3. Kernel API
-   =============
-
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+-Andi
