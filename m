@@ -1,43 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbYGAIfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757868AbYGAI27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758349AbYGAIfK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 04:35:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756384AbYGAIeH
+	id S1757868AbYGAI27 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 04:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757465AbYGAI20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 04:34:07 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39158 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757878AbYGAIeE (ORCPT
+	Tue, 1 Jul 2008 04:28:26 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38203 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757428AbYGAI2T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 04:34:04 -0400
-Date: Tue, 1 Jul 2008 09:33:51 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-Cc: trivail@bre-cln-ukleine.digi.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix name of Russell King in various comments
-Message-ID: <20080701083351.GA22726@flint.arm.linux.org.uk>
-References: <1214832433-11893-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1214832433-11893-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 1 Jul 2008 04:28:19 -0400
+Date: Tue, 01 Jul 2008 17:26:51 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "MinChan Kim" <minchan.kim@gmail.com>
+Subject: [resend][PATCH -mm] split_lru: fix pagevec_move_tail() doesn't treat unevictable page 
+Cc: kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20080701155749.37F8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080701155749.37F8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20080701172223.3801.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 30, 2008 at 03:27:13PM +0200, Uwe Kleine-König wrote:
-> This patch was created by
-> 
-> 	git grep -E -l 'Rus(el|s?e)l King' | xargs -r -t perl -p -i -e 's/Rus(el|s?e)l King/Russell King/g'
-> 
-> Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-> Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
 
-Most-Definitely-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Agghh!
+I am really stupid. I forgot CCed Andrew ;-)
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+So, I resend this.
+
+
+--------------------------------------
+even under writebacking, page can move to unevictable list.
+so shouldn't pagevec_move_tail() check unevictable?
+
+if pagevec_move_tail() doesn't PageUnevictable(), 
+below race can occur.
+
+
+    CPU1                                       CPU2
+==================================================================
+1. rotate_reclaimable_page()
+2. PageUnevictable(page) return 0
+3. local_irq_save()
+4. pagevec_move_tail()
+                                       SetPageUnevictable()   //mlock?
+                                       move to unevictable list
+5. spin_lock(&zone->lru_lock);
+6. list_move_tail(); (move to inactive list)
+
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+---
+ mm/swap.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: b/mm/swap.c
+===================================================================
+--- a/mm/swap.c
++++ b/mm/swap.c
+@@ -116,7 +116,7 @@ static void pagevec_move_tail(struct pag
+ 			zone = pagezone;
+ 			spin_lock(&zone->lru_lock);
+ 		}
+-		if (PageLRU(page) && !PageActive(page)) {
++		if (PageLRU(page) && !PageActive(page) && !PageUnevictable(page)) {
+ 			int lru = page_is_file_cache(page);
+ 			list_move_tail(&page->lru, &zone->lru[lru].list);
+ 			pgmoved++;
+
+
+
+
