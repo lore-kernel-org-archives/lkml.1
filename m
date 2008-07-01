@@ -1,70 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbYGATmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYGATpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758173AbYGATmZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 15:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbYGATmR
+	id S1757983AbYGATpP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 15:45:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYGATpB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 15:42:17 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:52857 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752518AbYGATmQ (ORCPT
+	Tue, 1 Jul 2008 15:45:01 -0400
+Received: from viefep27-int.chello.at ([62.179.121.47]:58677 "EHLO
+	viefep27-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753268AbYGATpA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 15:42:16 -0400
-Date: Tue, 1 Jul 2008 15:42:14 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Noah Watkins <noahwatkins@gmail.com>
-cc: Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       paulmck <paulmck@linux.vnet.ibm.com>
-Subject: Re: [BUG RT] 2.6.25.8-rt7 on 8-way
-In-Reply-To: <7618ba960807011208n3aacbc65l41255e3996d2ee4b@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0807011541490.27372@gandalf.stny.rr.com>
-References: <7618ba960806291432l20b7b6b5lea4b60bafa68c3bf@mail.gmail.com> 
- <1214778205.13292.6.camel@dd.thebigcorporation.com> 
- <Pine.LNX.4.58.0806300835050.5403@gandalf.stny.rr.com>
- <7618ba960807011208n3aacbc65l41255e3996d2ee4b@mail.gmail.com>
+	Tue, 1 Jul 2008 15:45:00 -0400
+From: Daniel Ritz <daniel.ritz-ml@swissonline.ch>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] input: Add support for eGalax TouchKit USB touchscreen used on HP tx1305us
+Date: Tue, 1 Jul 2008 21:49:55 +0200
+User-Agent: KMail/1.9.6
+Cc: Alastair Bridgewater <nyef_sbcl@lisphacker.com>,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
+References: <200806281719.16837.daniel.ritz-ml@swissonline.ch> <200806302218.37165.daniel.ritz-ml@swissonline.ch> <20080630162327.ZZRA012@mailhub.coreip.homeip.net>
+In-Reply-To: <20080630162327.ZZRA012@mailhub.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807012149.56351.daniel.ritz-ml@swissonline.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 30 June 2008 22:24:09 Dmitry Torokhov wrote:
+> On Mon, Jun 30, 2008 at 10:18:36PM +0200, Daniel Ritz wrote:
+> > On Monday 30 June 2008 17:23:35 Dmitry Torokhov wrote:
+> > > Hi Alastair,
+> > > 
+> > > On Sat, Jun 28, 2008 at 02:18:24PM -0400, Alastair Bridgewater wrote:
+> > > >       bInterfaceClass         3 Human Interface Devices
+> > > >       bInterfaceSubClass      1 Boot Interface Subclass
+> > > >       bInterfaceProtocol      2 Mouse
+> > > 
+> > > I think we can try to make usbtouchscreen ignore eGalaxes with
+> > > interface class set to HID?
+> > > 
+> > 
+> > yeah, i was thinking of that too...something like the attached?
+> > it's completely untested, so no signed-off-by yet...
+> > 
+> 
+> Yeah, that looks nice. If both you guys could test it it'd be grand.
+> 
 
-On Tue, 1 Jul 2008, Noah Watkins wrote:
+ok, i got around testing the patch with my non-HID screen. it still works.
+so from my side it's ok...attached the patch with the signed-off-by line
+for your patch queue...
 
->
-> While I have disabled RCU tracing to suppress the messages, I am
-> getting them in another context:
->
-> BUG: using smp_processor_id() in preemptible [00000000] code: sshd/3114
-> caller is __qdisc_run+0x12e/0x1b5
-> Pid: 3114, comm: sshd Not tainted 2.6.25.8-rt7 #3
->
-> Call Trace:
->  [<ffffffff8112da39>] debug_smp_processor_id+0xad/0xb8
->  [<ffffffff8120e264>] __qdisc_run+0x12e/0x1b5
->  [<ffffffff811ff1c8>] dev_queue_xmit+0x140/0x278
->  [<ffffffff8122239e>] ip_queue_xmit+0x2c2/0x350
->  [<ffffffff8127f8a6>] add_preempt_count+0x12/0x94
->  [<ffffffff8108263e>] __inc_zone_state+0x6a/0x88
->  [<ffffffff81231ffe>] tcp_transmit_skb+0x77e/0x7ba
->  [<ffffffff8109aa60>] kmem_cache_alloc_node+0x129/0x152
->  [<ffffffff81233a75>] __tcp_push_pending_frames+0x713/0x7df
->  [<ffffffff81228da2>] tcp_sendmsg+0x93a/0xa52
->  [<ffffffff811f0e97>] sock_aio_write+0xf8/0x110
->  [<ffffffff8109feeb>] do_sync_write+0xc9/0x10c
->  [<ffffffff81046da6>] autoremove_wake_function+0x0/0x2e
->  [<ffffffff8103868b>] current_fs_time+0x1e/0x24
->  [<ffffffff810a06ae>] vfs_write+0xc0/0x156
->  [<ffffffff810a0c67>] sys_write+0x48/0x74
->  [<ffffffff8100bf6b>] tracesys+0xdc/0xe1
->
->
+rgds
+-daniel
+----
 
-Thanks for reporting this. This is a different issue. I'll investigate it.
+[PATCH] usbtouchscreen: ignore newer eGalax screens with HID protocol
 
--- Steve
+The newer versions of the eGalax/EETI screen implement the HID protocol.
+The device IDs are still the same, but the USB interface descriptor shows
+the device being of HID class. Change usbtouchscreen to ignore the HID
+models as they are handled by usbhid.
+
+Signed-off-by: Daniel Ritz <daniel.ritz@gmx.ch>
+
+diff --git a/drivers/input/touchscreen/usbtouchscreen.c b/drivers/input/touchscreen/usbtouchscreen.c
+index 3a0a8ca..4736262 100644
+--- a/drivers/input/touchscreen/usbtouchscreen.c
++++ b/drivers/input/touchscreen/usbtouchscreen.c
+@@ -49,6 +49,7 @@
+ #include <linux/init.h>
+ #include <linux/usb.h>
+ #include <linux/usb/input.h>
++#include <linux/hid.h>
+ 
+ 
+ #define DRIVER_VERSION		"v0.6"
+@@ -101,7 +102,7 @@ struct usbtouch_usb {
+ 
+ /* device types */
+ enum {
+-	DEVTPYE_DUMMY = -1,
++	DEVTYPE_IGNORE = -1,
+ 	DEVTYPE_EGALAX,
+ 	DEVTYPE_PANJIT,
+ 	DEVTYPE_3M,
+@@ -115,8 +116,21 @@ enum {
+ 	DEVTYPE_GOTOP,
+ };
+ 
++#define USB_DEVICE_HID_CLASS(vend, prod) \
++	.match_flags = USB_DEVICE_ID_MATCH_INT_CLASS \
++		| USB_DEVICE_ID_MATCH_DEVICE, \
++	.idVendor = (vend), \
++	.idProduct = (prod), \
++	.bInterfaceClass = USB_INTERFACE_CLASS_HID, \
++	.bInterfaceProtocol = USB_INTERFACE_PROTOCOL_MOUSE
++
+ static struct usb_device_id usbtouch_devices[] = {
+ #ifdef CONFIG_TOUCHSCREEN_USB_EGALAX
++	/* ignore the HID capable devices, handled by usbhid */
++	{USB_DEVICE_HID_CLASS(0x0eef, 0x0001), .driver_info = DEVTYPE_IGNORE},
++	{USB_DEVICE_HID_CLASS(0x0eef, 0x0002), .driver_info = DEVTYPE_IGNORE},
++
++	/* normal device IDs */
+ 	{USB_DEVICE(0x3823, 0x0001), .driver_info = DEVTYPE_EGALAX},
+ 	{USB_DEVICE(0x3823, 0x0002), .driver_info = DEVTYPE_EGALAX},
+ 	{USB_DEVICE(0x0123, 0x0001), .driver_info = DEVTYPE_EGALAX},
+@@ -857,6 +871,10 @@ static int usbtouch_probe(struct usb_interface *intf,
+ 	struct usbtouch_device_info *type;
+ 	int err = -ENOMEM;
+ 
++	/* some devices are ignored */
++	if (id->driver_info == DEVTYPE_IGNORE)
++		return -ENODEV;
++
+ 	interface = intf->cur_altsetting;
+ 	endpoint = &interface->endpoint[0].desc;
+ 
+
+
 
