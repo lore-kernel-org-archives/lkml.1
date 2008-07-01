@@ -1,97 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759536AbYGAUsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760488AbYGAUtH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759536AbYGAUsR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 16:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751124AbYGAUsB
+	id S1760488AbYGAUtH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 16:49:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbYGAUsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 16:48:01 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:48299 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750826AbYGAUsA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 16:48:00 -0400
-To: casey@schaufler-ca.com
-CC: akpm@linux-foundation.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [patch] smack: remove unnecessary xattr checks
-Message-Id: <E1KDmlY-0006ML-If@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 01 Jul 2008 22:47:56 +0200
+	Tue, 1 Jul 2008 16:48:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60003 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751124AbYGAUsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 16:48:52 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
+Date: Tue, 1 Jul 2008 22:50:39 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       kernel-testers@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>
+References: <200807010148.02135.rjw@sisk.pl> <200807012239.44105.rjw@sisk.pl> <486A96C1.2020106@firstfloor.org>
+In-Reply-To: <486A96C1.2020106@firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807012250.39930.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Casey,
+On Tuesday, 1 of July 2008, Andi Kleen wrote:
+> 
+> > I have tested it on the nx6325 (64-bit) on top of the today's linux-next.  It
+> > works fine for me.
+> 
+> Could a few more people with different laptops please test too?
 
-This is an untested patch, if it looks OK, can you please apply it to
-your tree (or ACK it)?
+Well, I think we can put it into the 2.6.27 queue in the hope it gets more
+testing in linux-next over time.
 
 Thanks,
-Miklos
-
-----
-From: Miklos Szeredi <mszeredi@suse.cz>
-
-getxattr() calls security_inode_permission(MAY_READ) so
-smack_inode_getxattr() is unnecessary.
-
-setxattr() and removexattr() call security_inode_permission(MAY_WRITE)
-so the write permission checks in smack_inode_setxattr() and
-smack_inode_removexattr() are unnecessary.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- security/smack/smack_lsm.c |   19 -------------------
- 1 file changed, 19 deletions(-)
-
-Index: linux-2.6/security/smack/smack_lsm.c
-===================================================================
---- linux-2.6.orig/security/smack/smack_lsm.c	2008-07-01 21:44:05.000000000 +0200
-+++ linux-2.6/security/smack/smack_lsm.c	2008-07-01 21:45:27.000000000 +0200
-@@ -588,9 +588,6 @@ static int smack_inode_setxattr(struct d
- 	} else
- 		rc = cap_inode_setxattr(dentry, name, value, size, flags);
- 
--	if (rc == 0)
--		rc = smk_curacc(smk_of_inode(dentry->d_inode), MAY_WRITE);
--
- 	return rc;
- }
- 
-@@ -636,18 +633,6 @@ static void smack_inode_post_setxattr(st
- }
- 
- /*
-- * smack_inode_getxattr - Smack check on getxattr
-- * @dentry: the object
-- * @name: unused
-- *
-- * Returns 0 if access is permitted, an error code otherwise
-- */
--static int smack_inode_getxattr(struct dentry *dentry, const char *name)
--{
--	return smk_curacc(smk_of_inode(dentry->d_inode), MAY_READ);
--}
--
--/*
-  * smack_inode_removexattr - Smack check on removexattr
-  * @dentry: the object
-  * @name: name of the attribute
-@@ -668,9 +653,6 @@ static int smack_inode_removexattr(struc
- 	} else
- 		rc = cap_inode_removexattr(dentry, name);
- 
--	if (rc == 0)
--		rc = smk_curacc(smk_of_inode(dentry->d_inode), MAY_WRITE);
--
- 	return rc;
- }
- 
-@@ -2606,7 +2588,6 @@ struct security_operations smack_ops = {
- 	.inode_getattr = 		smack_inode_getattr,
- 	.inode_setxattr = 		smack_inode_setxattr,
- 	.inode_post_setxattr = 		smack_inode_post_setxattr,
--	.inode_getxattr = 		smack_inode_getxattr,
- 	.inode_removexattr = 		smack_inode_removexattr,
- 	.inode_need_killpriv =		cap_inode_need_killpriv,
- 	.inode_killpriv =		cap_inode_killpriv,
+Rafael
