@@ -1,127 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbYGAFii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753080AbYGAFlG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752682AbYGAFii (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 01:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbYGAFi1
+	id S1753080AbYGAFlG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 01:41:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbYGAFkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 01:38:27 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:35935 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751287AbYGAFi0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 01:38:26 -0400
-Date: Tue, 1 Jul 2008 11:09:00 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       laijs@cn.fujitsu.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Rusty Russel <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] fix rcu vs hotplug race
-Message-ID: <20080701053900.GB8205@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20080623103700.GA4043@linux.vnet.ibm.com> <20080623105844.GC28192@elte.hu> <20080623114941.GB3160@in.ibm.com> <20080624110144.GA8695@elte.hu> <20080626152728.GA24972@linux.vnet.ibm.com> <20080627044738.GC3419@in.ibm.com> <20080627051855.GD26167@in.ibm.com> <20080627054959.GB3309@linux.vnet.ibm.com> <20080627145845.GA9229@linux.vnet.ibm.com>
+	Tue, 1 Jul 2008 01:40:55 -0400
+Received: from saeurebad.de ([85.214.36.134]:50200 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751048AbYGAFky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 01:40:54 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 3/3] softlockup: fix watchdog task wakeup frequency
+References: <20080627000445.346130358@saeurebad.de>
+	<20080627000805.504878592@saeurebad.de>
+	<20080627120350.GB30872@elte.hu>
+	<87prq3xdjv.fsf@skyscraper.fehenstaub.lan>
+	<20080627124329.GA14576@elte.hu>
+	<87d4m3xbzq.fsf@skyscraper.fehenstaub.lan>
+	<87od5ms7yh.fsf@skyscraper.fehenstaub.lan>
+	<20080630130837.GA332@elte.hu>
+Date: Tue, 01 Jul 2008 07:40:17 +0200
+In-Reply-To: <20080630130837.GA332@elte.hu> (Ingo Molnar's message of "Mon, 30
+	Jun 2008 15:08:37 +0200")
+Message-ID: <87abh26u2m.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080627145845.GA9229@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 07:58:45AM -0700, Paul E. McKenney wrote:
-> On Fri, Jun 27, 2008 at 11:19:59AM +0530, Dhaval Giani wrote:
-> > On Fri, Jun 27, 2008 at 10:48:55AM +0530, Dipankar Sarma wrote:
-> > > On Fri, Jun 27, 2008 at 10:17:38AM +0530, Gautham R Shenoy wrote:
-> > > > IMHO the warning is a spurious one.
-> > > > Here's the timeline.
-> > > > CPU_A						 CPU_B
-> > > > --------------------------------------------------------------
-> > > > cpu_down():					.
-> > > > .					   	.
-> > > > .						.
-> > > > stop_machine(): /* disables preemption,		.
-> > > > 		 * and irqs */			.
-> > > > .						.
-> > > > .						.
-> > > > take_cpu_down();				.
-> > > > .						.
-> > > > .						.
-> > > > .						.
-> > > > cpu_disable(); /*this removes cpu 		.
-> > > > 		*from cpu_online_map 		.
-> > > > 		*/				.
-> > > > .						.
-> > > > .						.
-> > > > restart_machine(); /* enables irqs */		.
-> > > > ------WINDOW DURING WHICH rcp->cpumask is stale ---------------
-> > > > .						call_rcu();
-> > > > .						/* disables irqs here */
-> > > > .						.force_quiescent_state();
-> > > > .CPU_DEAD:					.for_each_cpu(rcp->cpumask)
-> > > > .						.   smp_send_reschedule();
-> > > > .						.
-> > > > .						.   WARN_ON() for offlined CPU!
-> > > > .
-> > > 
-> > > Exactly. The call_rcu()s are coming from a different subsystem
-> > > and can happen anytime during the CPU hotplug path. So, RCU subsystem
-> > > doesn't have anything to do to keep rcu->cpumask consistent.
-> > > It is *safe* even if we miss poking a cpu or two while
-> > > forcing quiescent state in all CPUs. The worst that can happen
-> > > is a delay in grace period. No correctness problem here.
-> > > 
-> > 
-> > One question. What is preventing a CPU from clearing its mask after we
-> > have checked whether it is online but before we have called into
-> > smp_send_reschedule?
-> 
-> This is my concern as well.  Gautham, at which point in the above
-> timeline is the offlining CPU marked DYING?  Before stop_machine(), right?
+Hi,
 
-No :) The offlining CPU is marked DYING after stop_machine(), inside
-take_cpu_down() which is the work we want to execute after stopping the
-machine.
+Ingo Molnar <mingo@elte.hu> writes:
 
-it's like
-_cpu_down()
-|
-|-> stop_machine_run();
-|   |
-|   |-> stop_machine(); /* All CPUs irqs disabled. */
-|   |
-|   |-> take_cpu_down() --> sets state to CPU_DYING. disables irqs on
-|   |				offlined cpu
-|   |
-|   |-> restart_machine(); /* All CPUs irqs reenabled */
-|
-|-> send_CPU_DEAD_notification.
+> * Johannes Weiner <hannes@saeurebad.de> wrote:
+>
+>> > +	/*
+>> > +	 * Wake up the high-prio watchdog task twice per
+>> > +	 * threshold timespan.
+>> > +	 */
+>> > +	if (now > touch_timestamp + softlockup_thresh/2)
+>> >  		wake_up_process(per_cpu(watchdog_task, this_cpu));
+>> 
+>> That defeats patch 1/3 and I think it can be dropped (#1).
+>
+> applied this updated patch to tip/core/softlockup. #3 didnt apply - 
+> could you send a delta patch against tip/core/softlockup please? You can 
+> pick it up via:
+>
+>   http://people.redhat.com/mingo/tip.git/README
+>
+> do:
+>
+>   git-checkout -b core/softlockup tip/core/softlockup
+>
+> to check it out.
 
-The very fact that a thread is running with irqs disabled means that
-stop_machine_run() thread cannot start executing the work it has been
-assinged to execute. Because for Machine to be stopped, stop_machine()
-needs to create n-1 high priority threads on n-1 online cpus, which will
-disable interrupts and preemption, and stop the machine. Then it will
-run the task assigned to it on the ith cpu, which in this case is the
-cpu to be offlined.
+Uhm, I see this patch is already in.  Misunderstanding or did you fix it
+up yourself?
 
-So, it's the design of stop_machine() that's preventing someone
-from updating the cpu_online_map while
-force_quiescent_state() is performing the
-cpu_is_online() check. Becase we always call force_quiescent_state()
-with irqs disabled :)
-
-> 
-> If so, can't we just disable irqs, check for DYING or DEAD, and invoke
-> smp_send_reschedule() only if not DYING or DEAD?
-
-
-
-> 
-> 							Thanx, Paul
-
--- 
-Thanks and Regards
-gautham
+	Hannes
