@@ -1,220 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757808AbYGANPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbYGANP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757808AbYGANPo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 09:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbYGANPH
+	id S1758234AbYGANP5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 09:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbYGANPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 09:15:07 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:48082 "EHLO bagnes.atmel.com"
+	Tue, 1 Jul 2008 09:15:08 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:48078 "EHLO bagnes.atmel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754664AbYGANPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754669AbYGANPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 Jul 2008 09:15:04 -0400
 From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 To: Pierre Ossman <drzeus-list@drzeus.cx>
 Cc: linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Greg KH <greg@kroah.com>
-Subject: [PATCH v2 1/4] debugfs: Implement debugfs_remove_recursive()
-Date: Tue,  1 Jul 2008 15:14:51 +0200
-Message-Id: <1214918094-26758-1-git-send-email-haavard.skinnemoen@atmel.com>
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: [PATCH v2 3/4] mmc: Add per-card debugfs support
+Date: Tue,  1 Jul 2008 15:14:53 +0200
+Message-Id: <1214918094-26758-3-git-send-email-haavard.skinnemoen@atmel.com>
 X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1214843703-13199-1-git-send-email-haavard.skinnemoen@atmel.com>
+In-Reply-To: <1214918094-26758-2-git-send-email-haavard.skinnemoen@atmel.com>
 References: <1214843703-13199-1-git-send-email-haavard.skinnemoen@atmel.com>
-X-OriginalArrivalTime: 01 Jul 2008 13:14:57.0454 (UTC) FILETIME=[758B24E0:01C8DB7C]
+ <1214918094-26758-1-git-send-email-haavard.skinnemoen@atmel.com>
+ <1214918094-26758-2-git-send-email-haavard.skinnemoen@atmel.com>
+X-OriginalArrivalTime: 01 Jul 2008 13:14:57.0579 (UTC) FILETIME=[759E37B0:01C8DB7C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-debugfs_remove_recursive() will remove a dentry and all its children.
-Drivers can use this to zap their whole debugfs tree so that they don't
-need to keep track of every single debugfs dentry they created.
+For each card successfully added to the bus, create a subdirectory under
+the host's debugfs root with information about the card.
 
-It may fail to remove the whole tree in certain cases:
+Depending on the card type, up to two files are added to the card
+directory: "state" and "status". The former exists for all cards, and
+reflects the "state" field of struct mmc_card.
 
-sh-3.2# rmmod atmel-mci < /sys/kernel/debug/mmc0/ios/clock
-mmc0: card b368 removed
-atmel_mci atmel_mci.0: Lost dma0chan1, falling back to PIO
-sh-3.2# ls /sys/kernel/debug/mmc0/
-ios
-
-But I'm not sure if that case can be handled in any sane manner.
+The "status" field exists only for MMC and SD memory cards, not SDIO.
+Reading this file will ask the card about its current status and
+return it. This can be useful if the card just refuses to respond to
+any commands, which might indicate that the card state is not what the
+MMC core thinks it is (due to a missing stop command, for example.)
 
 Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: Greg KH <greg@kroah.com>
+
+Changes since v1:
+  * move card debugfs stuff into debugfs.c
+  * add "state" file corresponding to the "state" field in struct
+    mmc_card.
+  * only create the "status" file if the card is an MMC or SD memory
+    card since SDIO doesn't support the SEND_STATUS command.
 ---
-Resending this because the rest of the series depends on it.
+ drivers/mmc/core/bus.c     |    4 +++
+ drivers/mmc/core/core.h    |    3 ++
+ drivers/mmc/core/debugfs.c |   61 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/mmc/card.h   |    2 +
+ 4 files changed, 70 insertions(+), 0 deletions(-)
 
- fs/debugfs/inode.c      |  114 +++++++++++++++++++++++++++++++++++++++-------
- include/linux/debugfs.h |    4 ++
- 2 files changed, 100 insertions(+), 18 deletions(-)
-
-diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
-index e9602d8..08e28c9 100644
---- a/fs/debugfs/inode.c
-+++ b/fs/debugfs/inode.c
-@@ -309,6 +309,31 @@ struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
- }
- EXPORT_SYMBOL_GPL(debugfs_create_symlink);
+diff --git a/drivers/mmc/core/bus.c b/drivers/mmc/core/bus.c
+index fd95b18..5c0d15b 100644
+--- a/drivers/mmc/core/bus.c
++++ b/drivers/mmc/core/bus.c
+@@ -252,6 +252,8 @@ int mmc_add_card(struct mmc_card *card)
+ 	if (ret)
+ 		return ret;
  
-+static void __debugfs_remove(struct dentry *dentry, struct dentry *parent)
-+{
-+	int ret = 0;
++	mmc_add_card_debugfs(card);
 +
-+	if (debugfs_positive(dentry)) {
-+		if (dentry->d_inode) {
-+			dget(dentry);
-+			switch (dentry->d_inode->i_mode & S_IFMT) {
-+			case S_IFDIR:
-+				ret = simple_rmdir(parent->d_inode, dentry);
-+				break;
-+			case S_IFLNK:
-+				kfree(dentry->d_inode->i_private);
-+				/* fall through */
-+			default:
-+				simple_unlink(parent->d_inode, dentry);
-+				break;
-+			}
-+			if (!ret)
-+				d_delete(dentry);
-+			dput(dentry);
-+		}
-+	}
-+}
-+
- /**
-  * debugfs_remove - removes a file or directory from the debugfs filesystem
-  * @dentry: a pointer to a the dentry of the file or directory to be
-@@ -325,7 +350,6 @@ EXPORT_SYMBOL_GPL(debugfs_create_symlink);
- void debugfs_remove(struct dentry *dentry)
+ 	mmc_card_set_present(card);
+ 
+ 	return 0;
+@@ -263,6 +265,8 @@ int mmc_add_card(struct mmc_card *card)
+  */
+ void mmc_remove_card(struct mmc_card *card)
  {
- 	struct dentry *parent;
--	int ret = 0;
- 	
- 	if (!dentry)
- 		return;
-@@ -335,29 +359,83 @@ void debugfs_remove(struct dentry *dentry)
- 		return;
++	mmc_remove_card_debugfs(card);
++
+ 	if (mmc_card_present(card)) {
+ 		if (mmc_host_is_spi(card->host)) {
+ 			printk(KERN_INFO "%s: SPI card removed\n",
+diff --git a/drivers/mmc/core/core.h b/drivers/mmc/core/core.h
+index 745da98..c819eff 100644
+--- a/drivers/mmc/core/core.h
++++ b/drivers/mmc/core/core.h
+@@ -56,5 +56,8 @@ extern int use_spi_crc;
+ void mmc_add_host_debugfs(struct mmc_host *host);
+ void mmc_remove_host_debugfs(struct mmc_host *host);
  
- 	mutex_lock(&parent->d_inode->i_mutex);
--	if (debugfs_positive(dentry)) {
--		if (dentry->d_inode) {
--			dget(dentry);
--			switch (dentry->d_inode->i_mode & S_IFMT) {
--			case S_IFDIR:
--				ret = simple_rmdir(parent->d_inode, dentry);
--				break;
--			case S_IFLNK:
--				kfree(dentry->d_inode->i_private);
--				/* fall through */
--			default:
--				simple_unlink(parent->d_inode, dentry);
-+	__debugfs_remove(dentry, parent);
-+	mutex_unlock(&parent->d_inode->i_mutex);
-+	simple_release_fs(&debugfs_mount, &debugfs_mount_count);
-+}
-+EXPORT_SYMBOL_GPL(debugfs_remove);
++void mmc_add_card_debugfs(struct mmc_card *card);
++void mmc_remove_card_debugfs(struct mmc_card *card);
 +
-+/**
-+ * debugfs_remove_recursive - recursively removes a directory
-+ * @dentry: a pointer to a the dentry of the directory to be removed.
-+ *
-+ * This function recursively removes a directory tree in debugfs that
-+ * was previously created with a call to another debugfs function
-+ * (like debugfs_create_file() or variants thereof.)
-+ *
-+ * This function is required to be called in order for the file to be
-+ * removed, no automatic cleanup of files will happen when a module is
-+ * removed, you are responsible here.
-+ */
-+void debugfs_remove_recursive(struct dentry *dentry)
+ #endif
+ 
+diff --git a/drivers/mmc/core/debugfs.c b/drivers/mmc/core/debugfs.c
+index 133c6e5..1237bb4 100644
+--- a/drivers/mmc/core/debugfs.c
++++ b/drivers/mmc/core/debugfs.c
+@@ -12,9 +12,11 @@
+ #include <linux/seq_file.h>
+ #include <linux/stat.h>
+ 
++#include <linux/mmc/card.h>
+ #include <linux/mmc/host.h>
+ 
+ #include "core.h"
++#include "mmc_ops.h"
+ 
+ /* The debugfs functions are optimized away when CONFIG_DEBUG_FS isn't set. */
+ static int mmc_ios_show(struct seq_file *s, void *data)
+@@ -162,3 +164,62 @@ void mmc_remove_host_debugfs(struct mmc_host *host)
+ {
+ 	debugfs_remove_recursive(host->debugfs_root);
+ }
++
++static int mmc_dbg_card_status_get(void *data, u64 *val)
 +{
-+	struct dentry *child;
-+	struct dentry *parent;
++	struct mmc_card	*card = data;
++	u32		status;
++	int		ret;
 +
-+	if (!dentry)
++	mmc_claim_host(card->host);
++
++	ret = mmc_send_status(data, &status);
++	if (!ret)
++		*val = status;
++
++	mmc_release_host(card->host);
++
++	return ret;
++}
++DEFINE_SIMPLE_ATTRIBUTE(mmc_dbg_card_status_fops, mmc_dbg_card_status_get,
++		NULL, "%08llx\n");
++
++void mmc_add_card_debugfs(struct mmc_card *card)
++{
++	struct mmc_host	*host = card->host;
++	struct dentry	*root;
++
++	if (!host->debugfs_root)
 +		return;
 +
-+	parent = dentry->d_parent;
-+	if (!parent || !parent->d_inode)
++	root = debugfs_create_dir(mmc_card_id(card), host->debugfs_root);
++	if (IS_ERR(root))
++		/* Don't complain -- debugfs just isn't enabled */
 +		return;
++	if (!root)
++		/* Complain -- debugfs is enabled, but it failed to
++		 * create the directory. */
++		goto err;
 +
-+	parent = dentry;
-+	mutex_lock(&parent->d_inode->i_mutex);
++	card->debugfs_root = root;
 +
-+	while (1) {
-+		/*
-+		 * When all dentries under "parent" has been removed,
-+		 * walk up the tree until we reach our starting point.
-+		 */
-+		if (list_empty(&parent->d_subdirs)) {
-+			mutex_unlock(&parent->d_inode->i_mutex);
-+			if (parent == dentry)
- 				break;
--			}
--			if (!ret)
--				d_delete(dentry);
--			dput(dentry);
-+			parent = parent->d_parent;
-+			mutex_lock(&parent->d_inode->i_mutex);
-+		}
-+		child = list_entry(parent->d_subdirs.next, struct dentry,
-+				d_u.d_child);
++	if (!debugfs_create_x32("state", S_IRUSR, root, &card->state))
++		goto err;
 +
-+		/*
-+		 * If "child" isn't empty, walk down the tree and
-+		 * remove all its descendants first.
-+		 */
-+		if (!list_empty(&child->d_subdirs)) {
-+			mutex_unlock(&parent->d_inode->i_mutex);
-+			parent = child;
-+			mutex_lock(&parent->d_inode->i_mutex);
-+			continue;
- 		}
-+		__debugfs_remove(child, parent);
-+		if (parent->d_subdirs.next == &child->d_u.d_child) {
-+			/*
-+			 * Avoid infinite loop if we fail to remove
-+			 * one dentry.
-+			 */
-+			mutex_unlock(&parent->d_inode->i_mutex);
-+			break;
-+		}
-+		simple_release_fs(&debugfs_mount, &debugfs_mount_count);
- 	}
++	if (mmc_card_mmc(card) || mmc_card_sd(card))
++		if (!debugfs_create_file("status", S_IRUSR, root, card,
++					&mmc_dbg_card_status_fops))
++			goto err;
 +
-+	parent = dentry->d_parent;
-+	mutex_lock(&parent->d_inode->i_mutex);
-+	__debugfs_remove(dentry, parent);
- 	mutex_unlock(&parent->d_inode->i_mutex);
- 	simple_release_fs(&debugfs_mount, &debugfs_mount_count);
- }
--EXPORT_SYMBOL_GPL(debugfs_remove);
-+EXPORT_SYMBOL_GPL(debugfs_remove_recursive);
++	return;
++
++err:
++	debugfs_remove_recursive(root);
++	card->debugfs_root = NULL;
++	dev_err(&card->dev, "failed to initialize debugfs\n");
++}
++
++void mmc_remove_card_debugfs(struct mmc_card *card)
++{
++	debugfs_remove_recursive(card->debugfs_root);
++}
+diff --git a/include/linux/mmc/card.h b/include/linux/mmc/card.h
+index 0d508ac..ee6e822 100644
+--- a/include/linux/mmc/card.h
++++ b/include/linux/mmc/card.h
+@@ -111,6 +111,8 @@ struct mmc_card {
+ 	unsigned		num_info;	/* number of info strings */
+ 	const char		**info;		/* info strings */
+ 	struct sdio_func_tuple	*tuples;	/* unknown common tuples */
++
++	struct dentry		*debugfs_root;
+ };
  
- /**
-  * debugfs_rename - rename a file/directory in the debugfs filesystem
-diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-index 7266124..b67b375 100644
---- a/include/linux/debugfs.h
-+++ b/include/linux/debugfs.h
-@@ -42,6 +42,7 @@ struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
- 				      const char *dest);
- 
- void debugfs_remove(struct dentry *dentry);
-+void debugfs_remove_recursive(struct dentry *dentry);
- 
- struct dentry *debugfs_rename(struct dentry *old_dir, struct dentry *old_dentry,
-                 struct dentry *new_dir, const char *new_name);
-@@ -99,6 +100,9 @@ static inline struct dentry *debugfs_create_symlink(const char *name,
- static inline void debugfs_remove(struct dentry *dentry)
- { }
- 
-+static inline void debugfs_remove_recursive(struct dentry *dentry)
-+{ }
-+
- static inline struct dentry *debugfs_rename(struct dentry *old_dir, struct dentry *old_dentry,
-                 struct dentry *new_dir, char *new_name)
- {
+ #define mmc_card_mmc(c)		((c)->type == MMC_TYPE_MMC)
 -- 
 1.5.6
 
