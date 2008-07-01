@@ -1,142 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbYGAKv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbYGAKvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753990AbYGAKv1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 06:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYGAKvS
+	id S1755088AbYGAKvy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 06:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbYGAKvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 06:51:18 -0400
-Received: from bu3sch.de ([62.75.166.246]:38106 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750884AbYGAKvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 06:51:18 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
-Subject: [PATCH RFC] x86: Add user configurable GPIO-lib support
-Date: Tue, 1 Jul 2008 12:49:40 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>
+	Tue, 1 Jul 2008 06:51:43 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:38563 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754139AbYGAKvm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 06:51:42 -0400
+Date: Tue, 1 Jul 2008 16:21:26 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>, containers@lists.osdl.org,
+       Paul Jackson <pj@sgi.com>
+Subject: Re: Attaching PID 0 to a cgroup
+Message-ID: <20080701105126.GA10403@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20080701094545.GD3925@linux.vnet.ibm.com> <20080701094734.GE3925@linux.vnet.ibm.com> <486A06B7.7020906@cn.fujitsu.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807011249.40551.mb@bu3sch.de>
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <486A06B7.7020906@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So this adds user-configurable GPIO support through gpiolib
-on subarchitectures that do not implement a GPIO implementation, yet.
-Currently that's everything except X86_RDC321X.
+On Tue, Jul 01, 2008 at 06:28:07PM +0800, Li Zefan wrote:
+> CC: Paul Jackson <pj@sgi.com>
+> 
+> Dhaval Giani wrote:
+> > [put in the wrong alias for containers list correcting it.]
+> > 
+> > On Tue, Jul 01, 2008 at 03:15:45PM +0530, Dhaval Giani wrote:
+> >> Hi Paul,
+> >>
+> >> Attaching PID 0 to a cgroup caused the current task to be attached to
+> >> the cgroup. Looking at the code,
+> >>
+> 
+> [...]
+> 
+> >>
+> >> I was wondering, why this was done. It seems to be unexpected behavior.
+> >> Wouldn't something like the following be a better response? (I've used
+> >> EINVAL, but I can change it to ESRCH if that is better.)
+> >>
+> 
+> Why is it unexpected? it follows the behavior of cpuset, so this patch will
+> break backward compatibility of cpuset.
 
-The advantage of this is to make it possible to use generic PCI (or
-other bus) GPIO extention cards in standard PCs through the standard
-GPIO API.
+Ah, I was not aware of that. Thanks!
 
-If another subarch implements its own GPIO, it needs to add
-itself as an inverted dependency to GPIO_USERSELECTION to make
-sure the user does not enable two GPIO API implementations.
+> 
+> But it's better to document this.
+> 
 
-About the asm-x86/gpio.h:
-I'm not sure what this <gpio.h> include currently is.
-Can somebody explain that to me? Where is this supposed
-to include a gpio.h file from?
+Yes please.
 
+> -----------------------------------------
+> 
+> Document the following cgroup usage:
+>  # echo 0 > /dev/cgroup/tasks
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-What's your opinion on this?
+Acked-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
 
-
-Index: wireless-testing/arch/x86/Kconfig
-===================================================================
---- wireless-testing.orig/arch/x86/Kconfig	2008-06-30 23:00:29.000000000 +0200
-+++ wireless-testing/arch/x86/Kconfig	2008-06-30 23:07:04.000000000 +0200
-@@ -1675,6 +1675,19 @@
- 
- source "drivers/pci/hotplug/Kconfig"
- 
-+config GPIO_USERSELECTION
-+	bool "Enable generic GPIO support through gpiolib"
-+	depends on !X86_RDC321X
-+	select GENERIC_GPIO
-+	select HAVE_GPIO_LIB
-+	help
-+	  This enables GPIO support through the generic GPIO library.
-+	  You only need to enable this, if you also want to enable
-+	  one or more of the GPIO expansion card drivers in
-+	  "Device Drivers/GPIO Support".
-+
-+	  If unsure, say N.
-+
- endmenu
- 
- 
-Index: wireless-testing/include/asm-x86/gpio.h
-===================================================================
---- wireless-testing.orig/include/asm-x86/gpio.h	2008-06-30 23:28:55.000000000 +0200
-+++ wireless-testing/include/asm-x86/gpio.h	2008-06-30 23:36:20.000000000 +0200
-@@ -1,6 +1,62 @@
-+/*
-+ * Generic GPIO API implementation for x86.
-+ *
-+ * Derived from the generic GPIO API for powerpc:
-+ *
-+ * Copyright (c) 2007-2008  MontaVista Software, Inc.
-+ *
-+ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
- #ifndef _ASM_I386_GPIO_H
- #define _ASM_I386_GPIO_H
- 
-+#ifdef CONFIG_X86_RDC321X
- #include <gpio.h>
-+#else /* CONFIG_X86_RDC321X */
-+
-+#include <asm-generic/gpio.h>
-+
-+#ifdef CONFIG_HAVE_GPIO_LIB
-+
-+/*
-+ * Just call gpiolib.
-+ */
-+static inline int gpio_get_value(unsigned int gpio)
-+{
-+	return __gpio_get_value(gpio);
-+}
-+
-+static inline void gpio_set_value(unsigned int gpio, int value)
-+{
-+	__gpio_set_value(gpio, value);
-+}
-+
-+static inline int gpio_cansleep(unsigned int gpio)
-+{
-+	return __gpio_cansleep(gpio);
-+}
-+
-+/*
-+ * Not implemented, yet.
-+ */
-+static inline int gpio_to_irq(unsigned int gpio)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline int irq_to_gpio(unsigned int irq)
-+{
-+	return -EINVAL;
-+}
-+
-+#endif /* CONFIG_HAVE_GPIO_LIB */
-+
-+#endif /* CONFIG_X86_RDC321X */
- 
- #endif /* _ASM_I386_GPIO_H */
+> ---
+>  cgroups.txt |    4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/Documentation/cgroups.txt b/Documentation/cgroups.txt
+> index 824fc02..213f533 100644
+> --- a/Documentation/cgroups.txt
+> +++ b/Documentation/cgroups.txt
+> @@ -390,6 +390,10 @@ If you have several tasks to attach, you have to do it one after another:
+>  	...
+>  # /bin/echo PIDn > tasks
+> 
+> +You can attach the current task by echoing 0:
+> +
+> +# /bin/echo 0 > tasks
+> +
+>  3. Kernel API
+>  =============
+> 
+> 
 
 -- 
-Greetings Michael.
+regards,
+Dhaval
