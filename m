@@ -1,85 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752568AbYGAF2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbYGAFii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752568AbYGAF2e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 01:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbYGAF2X
+	id S1752682AbYGAFii (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 01:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbYGAFi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 01:28:23 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:40212 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750872AbYGAF2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 01:28:22 -0400
-Date: Tue, 1 Jul 2008 14:25:43 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Hideo Saito <saito@densan.co.jp>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: follow_page() performance regressions
-Message-ID: <20080701052543.GA4726@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Hideo Saito <saito@densan.co.jp>, linux-sh@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <20080701.132439.68562265.saito@densan.co.jp>
+	Tue, 1 Jul 2008 01:38:27 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:35935 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751287AbYGAFi0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 01:38:26 -0400
+Date: Tue, 1 Jul 2008 11:09:00 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       laijs@cn.fujitsu.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Rusty Russel <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] fix rcu vs hotplug race
+Message-ID: <20080701053900.GB8205@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20080623103700.GA4043@linux.vnet.ibm.com> <20080623105844.GC28192@elte.hu> <20080623114941.GB3160@in.ibm.com> <20080624110144.GA8695@elte.hu> <20080626152728.GA24972@linux.vnet.ibm.com> <20080627044738.GC3419@in.ibm.com> <20080627051855.GD26167@in.ibm.com> <20080627054959.GB3309@linux.vnet.ibm.com> <20080627145845.GA9229@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080701.132439.68562265.saito@densan.co.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080627145845.GA9229@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(adding Linus and l-k to Cc..)
-
-On Tue, Jul 01, 2008 at 01:24:39PM +0900, Hideo Saito wrote:
-> I have a question as to performance of kernel on linux-2.6.25.9, but
-> this may be off-topic, because the problem is not related to the SH
-> architecture directly.
+On Fri, Jun 27, 2008 at 07:58:45AM -0700, Paul E. McKenney wrote:
+> On Fri, Jun 27, 2008 at 11:19:59AM +0530, Dhaval Giani wrote:
+> > On Fri, Jun 27, 2008 at 10:48:55AM +0530, Dipankar Sarma wrote:
+> > > On Fri, Jun 27, 2008 at 10:17:38AM +0530, Gautham R Shenoy wrote:
+> > > > IMHO the warning is a spurious one.
+> > > > Here's the timeline.
+> > > > CPU_A						 CPU_B
+> > > > --------------------------------------------------------------
+> > > > cpu_down():					.
+> > > > .					   	.
+> > > > .						.
+> > > > stop_machine(): /* disables preemption,		.
+> > > > 		 * and irqs */			.
+> > > > .						.
+> > > > .						.
+> > > > take_cpu_down();				.
+> > > > .						.
+> > > > .						.
+> > > > .						.
+> > > > cpu_disable(); /*this removes cpu 		.
+> > > > 		*from cpu_online_map 		.
+> > > > 		*/				.
+> > > > .						.
+> > > > .						.
+> > > > restart_machine(); /* enables irqs */		.
+> > > > ------WINDOW DURING WHICH rcp->cpumask is stale ---------------
+> > > > .						call_rcu();
+> > > > .						/* disables irqs here */
+> > > > .						.force_quiescent_state();
+> > > > .CPU_DEAD:					.for_each_cpu(rcp->cpumask)
+> > > > .						.   smp_send_reschedule();
+> > > > .						.
+> > > > .						.   WARN_ON() for offlined CPU!
+> > > > .
+> > > 
+> > > Exactly. The call_rcu()s are coming from a different subsystem
+> > > and can happen anytime during the CPU hotplug path. So, RCU subsystem
+> > > doesn't have anything to do to keep rcu->cpumask consistent.
+> > > It is *safe* even if we miss poking a cpu or two while
+> > > forcing quiescent state in all CPUs. The worst that can happen
+> > > is a delay in grace period. No correctness problem here.
+> > > 
+> > 
+> > One question. What is preventing a CPU from clearing its mask after we
+> > have checked whether it is online but before we have called into
+> > smp_send_reschedule?
 > 
-> When I tested Hackbench benchmark test on our platform(SH7780, 400MHz),
-> the performance decreases as follows.
-> 
-> The result on linux-2.6.25.9:
-> #tcsh> ./hackbench 40 ; time ./hackbench 40 ; time ./hackbench 40
-> Time: 69.858
-> Time: 69.810
-> Time: 70.356
-> 
-> The result on linux-2.6.25.8:
-> #tcsh> ./hackbench 40 ; time ./hackbench 40 ; time ./hackbench 40
-> Time: 65.353
-> Time: 65.622
-> Time: 65.413
-> 
-> I confirmed that the cause is in the following changes. Isn't this
-> decrease of performance avoided, though it seems that this code is
-> changed in order to handle ZERO_PAGE?
-> 
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
->     pte = *ptep;
->     if (!pte_present(pte))
-> -       goto unlock;
-> +       goto no_page;
->     if ((flags & FOLL_WRITE) && !pte_write(pte))
->         goto unlock;
->     page = vm_normal_page(vma, address, pte);
->     if (unlikely(!page))
-> -       goto unlock;
-> +       goto bad_page;
-> 
->     if (flags & FOLL_GET)
->         get_page(page);
+> This is my concern as well.  Gautham, at which point in the above
+> timeline is the offlining CPU marked DYING?  Before stop_machine(), right?
 
-git blame points to:
+No :) The offlining CPU is marked DYING after stop_machine(), inside
+take_cpu_down() which is the work we want to execute after stopping the
+machine.
 
-commit 89f5b7da2a6bad2e84670422ab8192382a5aeb9f
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Fri Jun 20 11:18:25 2008 -0700
+it's like
+_cpu_down()
+|
+|-> stop_machine_run();
+|   |
+|   |-> stop_machine(); /* All CPUs irqs disabled. */
+|   |
+|   |-> take_cpu_down() --> sets state to CPU_DYING. disables irqs on
+|   |				offlined cpu
+|   |
+|   |-> restart_machine(); /* All CPUs irqs reenabled */
+|
+|-> send_CPU_DEAD_notification.
 
-    Reinstate ZERO_PAGE optimization in 'get_user_pages()' and fix XIP
+The very fact that a thread is running with irqs disabled means that
+stop_machine_run() thread cannot start executing the work it has been
+assinged to execute. Because for Machine to be stopped, stop_machine()
+needs to create n-1 high priority threads on n-1 online cpus, which will
+disable interrupts and preemption, and stop the machine. Then it will
+run the task assigned to it on the ith cpu, which in this case is the
+cpu to be offlined.
 
-...
+So, it's the design of stop_machine() that's preventing someone
+from updating the cpu_online_map while
+force_quiescent_state() is performing the
+cpu_is_online() check. Becase we always call force_quiescent_state()
+with irqs disabled :)
 
-So yes, the ZERO_PAGE handling in follow_page() is causing the slow-down here.
+> 
+> If so, can't we just disable irqs, check for DYING or DEAD, and invoke
+> smp_send_reschedule() only if not DYING or DEAD?
+
+
+
+> 
+> 							Thanx, Paul
+
+-- 
+Thanks and Regards
+gautham
