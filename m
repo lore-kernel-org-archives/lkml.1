@@ -1,51 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757263AbYGAMWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbYGAMbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757263AbYGAMWh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 08:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755144AbYGAMW1
+	id S1756117AbYGAMbv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 08:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbYGAMbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 08:22:27 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:48398 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756801AbYGAMW0 (ORCPT
+	Tue, 1 Jul 2008 08:31:40 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:47205 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750936AbYGAMbi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 08:22:26 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: Greg KH <greg@kroah.com>
-Subject: Re: linux-next: Tree for June 30 (USB: cdc-acm)
-Date: Tue, 1 Jul 2008 14:22:45 +0200
-User-Agent: KMail/1.9.9
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20080701001656.e156585c.sfr@canb.auug.org.au> <20080630114332.b797e5e4.randy.dunlap@oracle.com> <20080630190125.GA3553@kroah.com>
-In-Reply-To: <20080630190125.GA3553@kroah.com>
+	Tue, 1 Jul 2008 08:31:38 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Tejun Heo <htejun@gmail.com>
+Cc: Benjamin Thery <benjamin.thery@bull.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+References: <20080618170729.808539948@theryb.frec.bull.fr>
+	<20080618170731.002784342@theryb.frec.bull.fr>
+	<485F04E1.70204@gmail.com> <m1y74svtff.fsf@frodo.ebiederm.org>
+	<486706C9.9040303@gmail.com> <m18wwmsqdv.fsf@frodo.ebiederm.org>
+	<4869D314.5030403@gmail.com> <m1ej6enep7.fsf@frodo.ebiederm.org>
+	<486A0751.9080602@gmail.com>
+Date: Tue, 01 Jul 2008 05:30:47 -0700
+In-Reply-To: <486A0751.9080602@gmail.com> (Tejun Heo's message of "Tue, 01 Jul
+	2008 19:30:41 +0900")
+Message-ID: <m1wsk5hjm0.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807011422.46604.oliver@neukum.org>
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Tejun Heo <htejun@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.1324]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 06/11] sysfs: Implement sysfs tagged directory support.
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 30 Juni 2008 21:01:25 schrieb Greg KH:
-> On Mon, Jun 30, 2008 at 11:43:32AM -0700, Randy Dunlap wrote:
-> > cdc-acm fails to build when CONFIG_PM=n:
-> > 
-> > linux-next-20080630/drivers/usb/class/cdc-acm.c: In function 'acm_suspend':
-> > linux-next-20080630/drivers/usb/class/cdc-acm.c:1263: error: 'struct usb_device' has no member named 'auto_pm'
-> > make[4]: *** [drivers/usb/class/cdc-acm.o] Error 1
-> 
-> Yeah, known issue due to the pm and usb trees conflicting here.  It will
-> be fixed up at the merge time with Linus.
-> 
-> Or so Alan promises :)
+Tejun Heo <htejun@gmail.com> writes:
 
-No, I caused this. It'll require some #ifdefs. A patch is compiling.
+> Hello,
+>
+> Eric W. Biederman wrote:
+>>> Having enumed tag types limits that a sb can have map to only one tag
+>>> but it doesn't really prevent multiple possibly visible entries which is
+>>> the real unnecessary degrees of freedom.  That said, I don't really
+>>> think it's an issue.
+>> 
+>> Having a single tag type per directory and thus a single tag visible per
+>> directory does prevent multiple possible visible entries.
+>> 
+>> That is we can check when we add the sd if there will be a conflict in
+>> the directory.
+>
+> Yeap, that we can do.
 
-	Regards
-		Oliver
+What we are implementing is not, a sb with a set of tags that are displayed,
+but directories with a single tag that is displayed.  The sb just happens
+to hold the state for the directories.
+
+A directory displaying only a single tag is an necessary constraint for
+a large number of reasons.
+
+>> And array allows the lookup of the tag I am looking for before
+>> I search for the sd.  An bitmap requires me to compare each entry.
+>
+> How so?  sysfs_sb->bitmap which contains enough bits for all the defined
+> tags and determining whether a sd should be shown or not is as simple as
+> single test_bit.
+
+Yes. The compare happens to be test_bit. 
+
+With a bitmap you must visit each dirent with a given name and see if
+it has a tag that is displayed.
+
+With an array you can lookup the tag aprori and can potentially do a
+hash table lookup or a tree lookup and are not required to visit each
+entry.
+
+> What I'm feeling unease about is the extra level of abstraction added by
+> tag types.  A sd is given a tag.  A sb shows a set of tags.  The most
+> straight forward to implement that is to give sd a tag and test the tag
+> against sb's set of tags.  The type is added because pointer tag
+> requires sequential matching which is usually best to avoid.  It's
+> nothing fundamental.  It's an extra baggage.
+
+That is just one important aspect of it.   We need a way to describe
+which tag a sb,directory pair displays.  It is a fundamental concept.
+
+>>> Using ida (or idr if a pointer for private data is necessary) is really
+>>> easy.  It'll probably take a few tens of lines of code.  That said, I
+>>> don't think I have enough rationale to nack what you described.  So, as
+>>> long as the tags are made static, I won't object.
+>> 
+>> Sounds good.  The only justification I can think of for ida tags is that
+>> they are smaller, and so can keep the sysfs_dirents smaller.    Which
+>> occasionally is a significant concern.  Still that should be an optimization
+>> that we can apply later, as it is not a structural difference in the code.
+>> 
+>> Just to confirm.  Do you the two operations:
+>>   mount_tag - called only when the sb is mounted 
+>>   kobject_tag - called when we create new sd or rename an sd
+>> 
+>> Cause you to view an the tags as dynamic?
+>
+> The thing is that I don't really see why there's tagged_dir_ops at all.
+
+We need callbacks for interfacing with the kobject layer, and for
+selecting our set of tags at mount time.  Not tagged_dir_ops so much
+as tagged_type_ops.
+
+>  What's needed is tagged sd's and sb's which can show subset of those
+> tags, so adding callback ops for tags just doesn't make much sense to
+> me.  The interface should ideally be...
+
+> 1. alloc/release tag
+     Agreed.
+
+> 2. set / change / remove tag on sd
+     Essentially agreed.
+
+     Create an sd with a tag, change the tag on a sd.
+     Having an untagged sd in a directory that requires tags should
+     not be allowed.
+
+> 3. enable / disable tag on a sb
+     Disagree that is too flexible.  Tags on a sb need to be
+     unchanging or else we get vfs layer issues.
+
+    Further the abstraction is logically exactly one tag on a
+    (sb,directory) pair.
+
+    The operations needed are.
+    - Select the set of tags on a sb (at mount time)
+      This requires we call a set of callbacks.  [ My mount_sb callback ]
+
+    - release a tag (which implies removing all tagged entries and
+      removing the sb reference)
+
+4. Interface with the kobject layer.
+   kobject_add calls sysfs_create_dir
+   kboject_rename calls sysfs_rename_dir 
+   kobject_del calls sysfs_remove_dir
+
+   For the first two operations we need a helper function to go from a
+   kobject to a tag.
+
+   For the second two operations we need to go from a kobject to a sd.
+
+> This has been my opinion from the beginning.  Unless the tags need to be
+> changed dynamically on demand (which I hope is not the case), there just
+> is plainly no reason to have callbacks for tags.
+
+We don't need callbacks to poll to see if the tags on a sd have
+changed.
+
+We need helper functions for interfacing with the rest of the kernel. 
+
+Eric
