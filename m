@@ -1,48 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760122AbYGABET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760924AbYGABGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760122AbYGABET (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 21:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbYGABEL
+	id S1760924AbYGABGJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 21:06:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbYGABF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 21:04:11 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:43747 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755779AbYGABEK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 21:04:10 -0400
-Date: Tue, 1 Jul 2008 03:04:15 +0200
-From: Domenico Andreoli <cavokz@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add btgpio driver
-Message-ID: <20080701010414.GA5279@ska.dandreoli.com>
-Mail-Followup-To: linux-kernel <linux-kernel@vger.kernel.org>
-References: <200807010206.38714.mb@bu3sch.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807010206.38714.mb@bu3sch.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 30 Jun 2008 21:05:56 -0400
+Received: from mga02.intel.com ([134.134.136.20]:3162 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754747AbYGABF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 21:05:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,729,1204531200"; 
+   d="scan'208";a="403827654"
+Subject: Re: [PATCH 1/2] x86 boot: add E820_RESVD_KERN
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       andi@firstfloor.org, mingo@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <86802c440806301620hafa3ee3k8c5dbe6c45188d69@mail.gmail.com>
+References: <86802c440806260247p19f5b850r8757c51280912ae9@mail.gmail.com>
+	 <86802c440806271505n78275758re235ef6616d95b3d@mail.gmail.com>
+	 <1214809434.2887.8.camel@caritas-dev.intel.com>
+	 <86802c440806300034x5bb9b7a1s168bbeaee17e5124@mail.gmail.com>
+	 <1214812303.3187.10.camel@caritas-dev.intel.com>
+	 <86802c440806300215w31abbcb3h6a42395e11701713@mail.gmail.com>
+	 <1214818706.23677.8.camel@caritas-dev.intel.com>
+	 <86802c440806301205y35563326rd2ada495a0024441@mail.gmail.com>
+	 <20080630191628.GA15366@elte.hu>
+	 <86802c440806301553y240b020bh9dc448e8085fe60d@mail.gmail.com>
+	 <86802c440806301620hafa3ee3k8c5dbe6c45188d69@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 01 Jul 2008 09:09:42 +0800
+Message-Id: <1214874582.27760.0.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+X-OriginalArrivalTime: 01 Jul 2008 01:05:32.0612 (UTC) FILETIME=[8FAA3840:01C8DB16]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 01, 2008 at 02:06:38AM +0200, Michael Buesch wrote:
-> This adds the btgpio driver.
-> The purpose of the btgpio driver is to export all of the 24 GPIO pins
-> available on Brooktree 8xx chips to the kernel GPIO infrastructure.
+Hi, Yinghai,
+
+On Mon, 2008-06-30 at 16:20 -0700, Yinghai Lu wrote:
+> On Mon, Jun 30, 2008 at 3:53 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> > On Mon, Jun 30, 2008 at 12:16 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >>
+> >> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> >>
+> >>> > For find_e820_area, this is safe enough. But what about conflict
+> >>> > between setup_data and ebda or ramdisk?
+> >>>
+> >>> can you have setup_data and ebda at the same time?
+> >>>
+> >>> setup_data and ramdisk should be ok, because bootloader is supposed to
+> >>> make them not to be conflicts.
+> >>
+> >> the more sanity checks we do before relying on some crutial data, the
+> >> better. It's easier to panic or sanitize data in some structured way and
+> >> complain about it in the syslog than to let things get corrupted. Boot
+> >> loaders are ... not unknown to be have bugs too, at times.
+> >
+> > to address Ying's concern, we could let reserve_setup_data
+> > call reserve_early in addition to e820_update_range...
+> >
+> > reserve_early will panic if RAMDISK overlap efi setup_data...
+> >
 > 
-> This makes it possible to use a physically modified BT8xx card as
-> cheap digital GPIO card.
-> 
-> Signed-off-by: Michael Buesch <mb@bu3sch.de>
+> Ying,
+> please check the attached patch
 
-How one is supposed to test this driver? I am unable to switch on
-the GIPO lib support in my config. I tried also allyesconfig but no
-trace of gpio lib stuff.
+Which git-x86 head should I use to test the patch? It can not be applied
+to x86/master.
 
-thanks,
-Domenico
+Best Regards,
+Huang Ying
 
------[ Domenico Andreoli, aka cavok
- --[ http://www.dandreoli.com/gpgkey.asc
-   ---[ 3A0F 2F80 F79C 678A 8936  4FEE 0677 9033 A20E BC50
