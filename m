@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbYGATM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759146AbYGATNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbYGATM6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 15:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbYGATMt
+	id S1759146AbYGATNY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 15:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755083AbYGATNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 15:12:49 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:52346 "EHLO bagnes.atmel.com"
+	Tue, 1 Jul 2008 15:13:08 -0400
+Received: from mga11.intel.com ([192.55.52.93]:33292 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755067AbYGATMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 15:12:48 -0400
-Date: Tue, 1 Jul 2008 21:12:37 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Greg KH <greg@kroah.com>
-Cc: Pierre Ossman <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 1/4] debugfs: Implement debugfs_remove_recursive()
-Message-ID: <20080701211237.585d0b5a@siona.local>
-In-Reply-To: <20080701183733.GB4879@kroah.com>
-References: <1214843703-13199-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214918094-26758-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<20080701183733.GB4879@kroah.com>
-Organization: Atmel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1755055AbYGATNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 15:13:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,732,1204531200"; 
+   d="scan'208";a="583993504"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Subject: Re: Intel DG965WH / Case 745-44-22 (slow bios/upgrade) [UPDATE] / Intel, status of HECI support patch for the kernel?
+Date: Tue, 1 Jul 2008 12:13:03 -0700
+User-Agent: KMail/1.9.9
+Cc: "Williams, Dan J" <dan.j.williams@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>,
+       "Nashif, Anas" <anas.nashif@intel.com>
+References: <alpine.DEB.1.10.0806300958070.13171@p34.internal.lan> <200807011158.46258.jesse.barnes@intel.com> <alpine.DEB.1.10.0807011506450.18141@p34.internal.lan>
+In-Reply-To: <alpine.DEB.1.10.0807011506450.18141@p34.internal.lan>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Jul 2008 19:12:39.0680 (UTC) FILETIME=[6E06F000:01C8DBAE]
+Content-Disposition: inline
+Message-Id: <200807011213.03405.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Jul 2008 11:37:33 -0700
-Greg KH <greg@kroah.com> wrote:
+On Tuesday, July 01, 2008 12:08 pm Justin Piszcz wrote:
+> >> All issues are now resolved (regarding the slow speed/memory/etc)..
+> >
+> > Hopefully there's a more recent BIOS available that doesn't need to trim
+> > the memory for you?
+>
+> Erm, that is what I am trying to get across, version 1738 of the BIOS has
+> successfully solved the memory mapping/non-cachable memory issue.
 
-> If this is tied to some other series that needs to go through some other
-> maintainer, feel free to add:
-> 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> to the patch and let someone else take it.
-
-Well, if Pierre wants to take it, perhaps that's easiest?
-
-> Otherwise, if you need me to take it, I will be glad to do so, just let
-> me know what is easiest for you.
-
-As long as someone takes it, I'm happy.
+Oh, great.  Good to hear we actually fix those bugs! :)
 
 Thanks,
-
-Haavard
+Jesse
