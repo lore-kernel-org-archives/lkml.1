@@ -1,153 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbYGANDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbYGANDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758048AbYGANDO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 09:03:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756005AbYGANCG
+	id S1757454AbYGANDc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 09:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756018AbYGANCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 09:02:06 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:44039 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755419AbYGANCB (ORCPT
+	Tue, 1 Jul 2008 09:02:07 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34659 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755772AbYGANCC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 09:02:01 -0400
-Message-Id: <20080701130156.863544252@szeredi.hu>
-References: <20080701130125.529844715@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Tue, 01 Jul 2008 15:01:29 +0200
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: viro@ZenIV.linux.org.uk
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       hch@infradead.org, akpm@linux-foundation.org,
-       Ulrich Drepper <drepper@redhat.com>,
-       Michael Kerrisk <mtk.manpages@gmail.com>
-Subject: [patch 4/4] vfs: immutable inode checking cleanup
-Content-Disposition: inline; filename=vfs-immutable-inode-checking-cleanup.patch
+	Tue, 1 Jul 2008 09:02:02 -0400
+Message-ID: <486A2AC3.2060107@firstfloor.org>
+Date: Tue, 01 Jul 2008 15:01:55 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel-testers@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
+References: <200807010148.02135.rjw@sisk.pl> <20080701063133.GC16642@elte.hu> <4869D67B.4060902@zytor.com>
+In-Reply-To: <4869D67B.4060902@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
 
-Move the immutable and append-only checks from chmod, chown and utimes
-into notify_change().  Checks for immutable and append-only files are
-always performed by the VFS and not by the filesystem (see
-permission() and may_...() in namei.c), so these belong in
-notify_change(), and not in inode_change_ok().
+> 
+> It still seems incredibly risky to push this for 2.6.26, especially
+> given the Elan revelation.
 
-This should be completely equivalent.
+Do Elans even support S3?
 
-CC: Ulrich Drepper <drepper@redhat.com>
-CC: Michael Kerrisk <mtk.manpages@gmail.com>
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- fs/attr.c   |    5 +++++
- fs/open.c   |   24 ++----------------------
- fs/utimes.c |    4 ----
- 3 files changed, 7 insertions(+), 26 deletions(-)
+>  I think it needs to be tested on the 2.6.27
+> track, and then possibly be pushed back via the 2.6.26-stable route.
 
-Index: linux-2.6/fs/attr.c
-===================================================================
---- linux-2.6.orig/fs/attr.c	2008-07-01 13:52:20.000000000 +0200
-+++ linux-2.6/fs/attr.c	2008-07-01 13:52:29.000000000 +0200
-@@ -108,6 +108,11 @@ int notify_change(struct dentry * dentry
- 	struct timespec now;
- 	unsigned int ia_valid = attr->ia_valid;
- 
-+	if (ia_valid & (ATTR_MODE | ATTR_UID | ATTR_GID | ATTR_TIMES_SET)) {
-+		if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
-+			return -EPERM;
-+	}
-+
- 	now = current_fs_time(inode->i_sb);
- 
- 	attr->ia_ctime = now;
-Index: linux-2.6/fs/open.c
-===================================================================
---- linux-2.6.orig/fs/open.c	2008-07-01 13:52:17.000000000 +0200
-+++ linux-2.6/fs/open.c	2008-07-01 13:52:29.000000000 +0200
-@@ -598,9 +598,6 @@ asmlinkage long sys_fchmod(unsigned int 
- 	err = mnt_want_write(file->f_path.mnt);
- 	if (err)
- 		goto out_putf;
--	err = -EPERM;
--	if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
--		goto out_drop_write;
- 	mutex_lock(&inode->i_mutex);
- 	if (mode == (mode_t) -1)
- 		mode = inode->i_mode;
-@@ -608,8 +605,6 @@ asmlinkage long sys_fchmod(unsigned int 
- 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
- 	err = notify_change(dentry, &newattrs);
- 	mutex_unlock(&inode->i_mutex);
--
--out_drop_write:
- 	mnt_drop_write(file->f_path.mnt);
- out_putf:
- 	fput(file);
-@@ -633,11 +628,6 @@ asmlinkage long sys_fchmodat(int dfd, co
- 	error = mnt_want_write(nd.path.mnt);
- 	if (error)
- 		goto dput_and_out;
--
--	error = -EPERM;
--	if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
--		goto out_drop_write;
--
- 	mutex_lock(&inode->i_mutex);
- 	if (mode == (mode_t) -1)
- 		mode = inode->i_mode;
-@@ -645,8 +635,6 @@ asmlinkage long sys_fchmodat(int dfd, co
- 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
- 	error = notify_change(nd.path.dentry, &newattrs);
- 	mutex_unlock(&inode->i_mutex);
--
--out_drop_write:
- 	mnt_drop_write(nd.path.mnt);
- dput_and_out:
- 	path_put(&nd.path);
-@@ -661,18 +649,10 @@ asmlinkage long sys_chmod(const char __u
- 
- static int chown_common(struct dentry * dentry, uid_t user, gid_t group)
- {
--	struct inode * inode;
-+	struct inode *inode = dentry->d_inode;
- 	int error;
- 	struct iattr newattrs;
- 
--	error = -ENOENT;
--	if (!(inode = dentry->d_inode)) {
--		printk(KERN_ERR "chown_common: NULL inode\n");
--		goto out;
--	}
--	error = -EPERM;
--	if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
--		goto out;
- 	newattrs.ia_valid =  ATTR_CTIME;
- 	if (user != (uid_t) -1) {
- 		newattrs.ia_valid |= ATTR_UID;
-@@ -688,7 +668,7 @@ static int chown_common(struct dentry * 
- 	mutex_lock(&inode->i_mutex);
- 	error = notify_change(dentry, &newattrs);
- 	mutex_unlock(&inode->i_mutex);
--out:
-+
- 	return error;
- }
- 
-Index: linux-2.6/fs/utimes.c
-===================================================================
---- linux-2.6.orig/fs/utimes.c	2008-07-01 13:52:23.000000000 +0200
-+++ linux-2.6/fs/utimes.c	2008-07-01 13:52:29.000000000 +0200
-@@ -64,10 +64,6 @@ static int utimes_common(struct path *pa
- 
- 	newattrs.ia_valid = ATTR_CTIME | ATTR_MTIME | ATTR_ATIME;
- 	if (times) {
--		error = -EPERM;
--                if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
--			goto mnt_drop_write_and_out;
--
- 		if (times[0].tv_nsec == UTIME_OMIT)
- 			newattrs.ia_valid &= ~ATTR_ATIME;
- 		else if (times[0].tv_nsec != UTIME_NOW) {
+I'm just not sure how many suspend/resume cycles people really do
+on a early (pre -rc) mainline kernel (or in linux-next for that
+matter). You usually have to install on a laptop and actually
+use it.
 
---
+Since this code is only executed on resume some directed testing
+would be better. That is what Rafael asked for in this mail.
+
+I think it would be ok for .26 if we can get confirmation it works
+on a few systems with S3 suspend/resume.
+
+-Andi
+
