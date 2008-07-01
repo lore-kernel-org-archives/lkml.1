@@ -1,100 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760075AbYGAXkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbYGAXkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760075AbYGAXkV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 19:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbYGAXkI
+	id S1757521AbYGAXkj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 19:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759233AbYGAXkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 19:40:08 -0400
-Received: from pilet.ens-lyon.fr ([140.77.167.16]:39471 "EHLO
-	pilet.ens-lyon.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752053AbYGAXkG (ORCPT
+	Tue, 1 Jul 2008 19:40:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50900 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758494AbYGAXkO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 19:40:06 -0400
-X-Greylist: delayed 1227 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Jul 2008 19:40:06 EDT
-Date: Wed, 2 Jul 2008 01:19:27 +0200
-From: Benoit Boissinot <bboissin@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Jack Lloyd <lloyd@randombit.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Bug in random32.c: all-zero outputs with probability 1/2^32,
-	other seeding bugs
-Message-ID: <20080701231927.GW7647@pirzuine>
-References: <20080619153045.GC1455@randombit.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080619153045.GC1455@randombit.net>
-X-Sieve: CMU Sieve 2.2
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 1 Jul 2008 19:40:14 -0400
+Date: Tue, 1 Jul 2008 16:39:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, ming.m.lin@intel.com,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: [PATCH] Properly notify block layer of sync writes
+Message-Id: <20080701163949.d0cdf740.akpm@linux-foundation.org>
+In-Reply-To: <20080627131830.GC20826@kernel.dk>
+References: <20080627131830.GC20826@kernel.dk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[who maintains random32.c ?]
+On Fri, 27 Jun 2008 15:18:31 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-On Thu, Jun 19, 2008 at 5:30 PM, Jack Lloyd <lloyd@randombit.net> wrote:
 > Hi,
+> 
+> fsync_buffers_list() and sync_dirty_buffer() both issue async writes and
+> then immediately wait on them. Conceptually, that makes them sync writes
+> and we should treat them as such so that the IO schedulers can handle
+> them appropriately.
+> 
+> This patch fixes a write starvation issue that Lin Ming reported, where
+> xx is stuck for more than 2 minutes because of a large number of
+> synchronous IO in the system:
+> 
+> INFO: task kjournald:20558 blocked for more than 120 seconds.
+> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this
+> message.
+> kjournald     D ffff810010820978  6712 20558      2
+> ffff81022ddb1d10 0000000000000046 ffff81022e7baa10 ffffffff803ba6f2
+> ffff81022ecd0000 ffff8101e6dc9160 ffff81022ecd0348 000000008048b6cb
+> 0000000000000086 ffff81022c4e8d30 0000000000000000 ffffffff80247537
+> Call Trace:
+> [<ffffffff803ba6f2>] kobject_get+0x12/0x17
+> [<ffffffff80247537>] getnstimeofday+0x2f/0x83
+> [<ffffffff8029c1ac>] sync_buffer+0x0/0x3f
+> [<ffffffff8066d195>] io_schedule+0x5d/0x9f
+> [<ffffffff8029c1e7>] sync_buffer+0x3b/0x3f
+> [<ffffffff8066d3f0>] __wait_on_bit+0x40/0x6f
+> [<ffffffff8029c1ac>] sync_buffer+0x0/0x3f
+> [<ffffffff8066d48b>] out_of_line_wait_on_bit+0x6c/0x78
+> [<ffffffff80243909>] wake_bit_function+0x0/0x23
+> [<ffffffff8029e3ad>] sync_dirty_buffer+0x98/0xcb
+> [<ffffffff8030056b>] journal_commit_transaction+0x97d/0xcb6
+> [<ffffffff8023a676>] lock_timer_base+0x26/0x4b
+> [<ffffffff8030300a>] kjournald+0xc1/0x1fb
+> [<ffffffff802438db>] autoremove_wake_function+0x0/0x2e
+> [<ffffffff80302f49>] kjournald+0x0/0x1fb
+> [<ffffffff802437bb>] kthread+0x47/0x74
+> [<ffffffff8022de51>] schedule_tail+0x28/0x5d
+> [<ffffffff8020cac8>] child_rip+0xa/0x12
+> [<ffffffff80243774>] kthread+0x0/0x74
+> [<ffffffff8020cabe>] child_rip+0x0/0x12
+> 
+> Lin Ming confirms that this patch fixes the issue. I've run tests with
+> it for the past week and no ill effects have been observed, so I'm
+> proposing it for inclusion into 2.6.26.
+
+I expect we'll be wanting this in 2.6.25.x also?
+
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  fs/buffer.c        |   13 ++++++++-----
+>  include/linux/fs.h |    1 +
+>  2 files changed, 9 insertions(+), 5 deletions(-)
+> 
+> ...
 >
-> There appears to be an error in how random seeding is done in the
-> random32.c RNG. I am looking at 2.6.25.7.
->
-[snip]
->
-> An easy and straightforward fix for this that doesn't require changing
-> any interfaces is to add
->  s &= 0xFFFFFFFF;
-> before the check in __set_random32, which ensures this condition will
-> be caught by the check. Alternately, you could replace the check for
-> s == 0 with some logic like:
->  if((s & 0xFFFFFFFF) == 0)
->     s += 1;
-> since just chopping the seed to 32 bits does throw away some of your
-> seed input (with sizeof(long) == 8, at least; doesn't make any
-> difference for sizeof(long) == 4)
->
-
-I think it is cleaner to change the interface to account for long != u32
-
-The rest of your patch (ensuring values are big enough) looks valid to me.
-
-Signed-off-by: Benoit Boissinot <benoit.boissinot@ens-lyon.org>
-
-diff -r ced66ca0044f lib/random32.c
---- a/lib/random32.c	Mon Jun 30 08:58:09 2008 -0700
-+++ b/lib/random32.c	Wed Jul 02 01:13:12 2008 +0200
-@@ -56,7 +56,7 @@
- 	return (state->s1 ^ state->s2 ^ state->s3);
- }
-
--static void __set_random32(struct rnd_state *state, unsigned long s)
-+static void __set_random32(struct rnd_state *state, u32 s)
- {
- 	if (s == 0)
- 		s = 1;      /* default seed is 1 */
-@@ -84,7 +84,7 @@
-  */
- u32 random32(void)
- {
--	unsigned long r;
-+	u32 r;
- 	struct rnd_state *state = &get_cpu_var(net_rand_state);
- 	r = __random32(state);
- 	put_cpu_var(state);
-@@ -122,7 +122,7 @@
-
- 	for_each_possible_cpu(i) {
- 		struct rnd_state *state = &per_cpu(net_rand_state,i);
--		__set_random32(state, i + jiffies);
-+		__set_random32(state, (u32) i + jiffies);
- 	}
- 	return 0;
- }
-@@ -135,7 +135,7 @@
- static int __init random32_reseed(void)
- {
- 	int i;
--	unsigned long seed;
-+	u32 seed;
-
- 	for_each_possible_cpu(i) {
- 		struct rnd_state *state = &per_cpu(net_rand_state,i);
