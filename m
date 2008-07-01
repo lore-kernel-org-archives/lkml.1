@@ -1,81 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbYGALxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbYGALzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbYGALxv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 07:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbYGALxm
+	id S1755470AbYGALzl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 07:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbYGALzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 07:53:42 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:24425 "EHLO
-	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753176AbYGALxl (ORCPT
+	Tue, 1 Jul 2008 07:55:33 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:55873 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753037AbYGALzc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 07:53:41 -0400
-Message-ID: <486A1AA3.203@panasas.com>
-Date: Tue, 01 Jul 2008 14:53:07 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Tue, 1 Jul 2008 07:55:32 -0400
+Date: Tue, 1 Jul 2008 13:55:25 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dtor@mail.ru>
+cc: linux-input@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: [PATCH] drivers/input/ff-core.c needs <linux/sched.h>
+Message-ID: <Pine.LNX.4.64.0807011300110.21227@anakin>
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Andrea Arcangeli <andrea@qumranet.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: fix uninitialized variables for find_vma_prepare
- callers
-References: <1214844882-22560-1-git-send-email-bhalevy@panasas.com> <Pine.LNX.4.64.0806301942220.22984@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0806301942220.22984@blonde.site>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Jul 2008 11:53:15.0991 (UTC) FILETIME=[0C0B3E70:01C8DB71]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun. 30, 2008, 22:00 +0300, Hugh Dickins <hugh@veritas.com> wrote:
-> On Mon, 30 Jun 2008, Benny Halevy wrote:
->> gcc 4.3.0 correctly emits the following warnings.
->> When a vma covering addr is found, find_vma_prepare indeed returns without
->> setting pprev, rb_link, and rb_parent.
-> 
-> That's amusing, thank you.
-> 
-> You may wonder how the vma rb_tree has been working all these years
-> despite that.  The answer is that we only use find_vma_prepare when
-> about to insert a new vma: if there's anything already there, it's
-> either an error condition, or we go off and unmap the overlap without
-> taking any interest in those uninitialized values for linking.
-> 
-> It would be nicer to initialize them, and your patch is certainly
-> nice and simple.  Would it have the effect, that it returns with
-> vma == *pprev when addr falls within an existing vma?
-> That would be a sensible outcome, I think.
+commit 656acd2bbc4ce7f224de499ee255698701396c48
+Author: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Date:   Thu Jun 26 11:30:02 2008 -0400
 
-No, *pprev will be set to the last parent encountered with this
-patch, but doing what you suggested is possible, though I doubt
-it matters since apparently nobody is using pprev in this path
-otherwise stuff would've just broken.
+    Input: fix locking in force-feedback core
 
-Benny
+    The newly added event_lock spinlock in the input core disallows sleeping
+    and therefore using mutexes in event handlers. Convert force-feedback 
+    core to rely on event_lock instead of mutex to protect slots allocated  
+    for fore-feedback effects. The original mutex is still used to serialize
+    uploading and erasing of effects.
 
-> 
-> Hugh
-> 
->> [warnings snipped]
->>
->> Signed-off-by: Benny Halevy <bhalevy@panasas.com>
->> ---
->>  mm/mmap.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/mm/mmap.c b/mm/mmap.c
->> index 3354fdd..81b9873 100644
->> --- a/mm/mmap.c
->> +++ b/mm/mmap.c
->> @@ -366,7 +366,7 @@ find_vma_prepare(struct mm_struct *mm, unsigned long addr,
->>  		if (vma_tmp->vm_end > addr) {
->>  			vma = vma_tmp;
->>  			if (vma_tmp->vm_start <= addr)
->> -				return vma;
->> +				break;
->>  			__rb_link = &__rb_parent->rb_left;
->>  		} else {
->>  			rb_prev = __rb_parent;
+causes the following regression on m68k:
 
+| linux/drivers/input/ff-core.c: In function 'input_ff_upload':
+| linux/drivers/input/ff-core.c:172: error: dereferencing pointer to incomplete type
+| linux/drivers/input/ff-core.c: In function 'erase_effect':
+| linux/drivers/input/ff-core.c:197: error: dereferencing pointer to incomplete type
+| linux/drivers/input/ff-core.c:204: error: dereferencing pointer to incomplete type
+| make[4]: *** [drivers/input/ff-core.o] Error 1
+
+As the incomplete type is `struct task_struct', including <linux/sched.h> fixes
+it.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/input/ff-core.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/drivers/input/ff-core.c
++++ b/drivers/input/ff-core.c
+@@ -28,6 +28,7 @@
+ #include <linux/input.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
++#include <linux/sched.h>
+ 
+ /*
+  * Check that the effect_id is a valid effect and whether the user
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
