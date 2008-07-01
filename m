@@ -1,62 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758955AbYGAVBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759991AbYGAVC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758955AbYGAVBs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 17:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbYGAVBl
+	id S1759991AbYGAVC7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 17:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYGAVCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 17:01:41 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:9054 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751881AbYGAVBk convert rfc822-to-8bit (ORCPT
+	Tue, 1 Jul 2008 17:02:50 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:19330 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750826AbYGAVCs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 17:01:40 -0400
-From: "Altobelli, David" <david.altobelli@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Tue, 1 Jul 2008 21:01:01 +0000
-Subject: RE: [PATCH] HP iLO driver
-Thread-Topic: [PATCH] HP iLO driver
-Thread-Index: AcjbP/8GUqcRxcFSRgu8eJHAE1NWJwAfGL0Q
-Message-ID: <CF70AA892F109448AEA269483B3A983903B7153201@G1W1215.americas.hpqcorp.net>
-References: <20080616140729.GA377@ldl.fc.hp.com>
- <20080630230158.97e9d93b.akpm@linux-foundation.org>
-In-Reply-To: <20080630230158.97e9d93b.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Tue, 1 Jul 2008 17:02:48 -0400
+Date: Tue, 1 Jul 2008 16:02:47 -0500
+From: Mike Miller <mike.miller@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       LKML-scsi <linux-scsi@vger.kernel.org>
+Subject: [PATCH 1/1] cciss: read config to obtain max outstanding commands per controller
+Message-ID: <20080701210247.GA5095@roadking.ldev.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->
-> Doing a GFP_KERNEL allocation inside spin_lock() is a flagrant bug
-> which would have been detected had you enabled
-> CONFIG_DEBUG_SPINLOCK_SLEEP (which ia64 appears to support (if this is
-> an ia64-only driver?)) while testing.
->
-> Please see Documentation/SubmitChecklist
+PATCH 1/1
 
-Oops, sorry.  Right now, this is basically an x86 only driver.
+This patch changes the way we determine the maximum number of outstanding
+commands for each controller. Most Smart Array controllers can support up
+to 1024 commands, the notable exceptions are the E200 and E200i.
+The next generation of controllers which were just added support a mode of
+operation called Zero Memory Raid (ZMR).  In this mode they only support 64 
+outstanding commands. In Full Function Raid (FFR) mode they support 1024. 
+We have been setting the queue depth by arbitrarily assigning some value for
+each controller. We needed a better way to set the queue depth to avoid lots 
+of annoying "fifo full" messages. So we made the driver a little smarter. We 
+now read the config table and subtract 4 from the returned value. The -4 is 
+to allow some room for ioctl calls which are not tracked the same way as io 
+commands are tracked.
 
-> Using GFP_ATOMIC would be a poor solution for this - it is unreliable.
-> Better would be to speculatively perform the allocation outside the
-> spinlocked region and then toss it away if you didn't use it:
+Please consider this for inclusion.
 
-Will do.
+Signed-off-by: Mike Miller <mike.miller@hp.com>
 
-> OK, so this is available on all architectures?
->
-> There are pros and cons.  No avr32 user is likely to use this driver
-> ;), but otoh having it compiled on other architectures can expose
-> problems.
-
-My hope was to write code that would work across architectures,
-but the device is currently shipped only on x86.
+--------------------------------------------------------------------------------
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index b2b6fb1..0d5df43 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -106,35 +106,34 @@ MODULE_DEVICE_TABLE(pci, cciss_pci_device_id);
+ /*  board_id = Subsystem Device ID & Vendor ID
+  *  product = Marketing Name for the board
+  *  access = Address of the struct of function pointers
+- *  nr_cmds = Number of commands supported by controller
+  */
+ static struct board_type products[] = {
+-	{0x40700E11, "Smart Array 5300", &SA5_access, 512},
+-	{0x40800E11, "Smart Array 5i", &SA5B_access, 512},
+-	{0x40820E11, "Smart Array 532", &SA5B_access, 512},
+-	{0x40830E11, "Smart Array 5312", &SA5B_access, 512},
+-	{0x409A0E11, "Smart Array 641", &SA5_access, 512},
+-	{0x409B0E11, "Smart Array 642", &SA5_access, 512},
+-	{0x409C0E11, "Smart Array 6400", &SA5_access, 512},
+-	{0x409D0E11, "Smart Array 6400 EM", &SA5_access, 512},
+-	{0x40910E11, "Smart Array 6i", &SA5_access, 512},
+-	{0x3225103C, "Smart Array P600", &SA5_access, 512},
+-	{0x3223103C, "Smart Array P800", &SA5_access, 512},
+-	{0x3234103C, "Smart Array P400", &SA5_access, 512},
+-	{0x3235103C, "Smart Array P400i", &SA5_access, 512},
+-	{0x3211103C, "Smart Array E200i", &SA5_access, 120},
+-	{0x3212103C, "Smart Array E200", &SA5_access, 120},
+-	{0x3213103C, "Smart Array E200i", &SA5_access, 120},
+-	{0x3214103C, "Smart Array E200i", &SA5_access, 120},
+-	{0x3215103C, "Smart Array E200i", &SA5_access, 120},
+-	{0x3237103C, "Smart Array E500", &SA5_access, 512},
+-	{0x323D103C, "Smart Array P700m", &SA5_access, 512},
+-	{0x3241103C, "Smart Array P212", &SA5_access, 384},
+-	{0x3243103C, "Smart Array P410", &SA5_access, 384},
+-	{0x3245103C, "Smart Array P410i", &SA5_access, 384},
+-	{0x3247103C, "Smart Array P411", &SA5_access, 384},
+-	{0x3249103C, "Smart Array P812", &SA5_access, 384},
+-	{0xFFFF103C, "Unknown Smart Array", &SA5_access, 120},
++	{0x40700E11, "Smart Array 5300", &SA5_access},
++	{0x40800E11, "Smart Array 5i", &SA5B_access},
++	{0x40820E11, "Smart Array 532", &SA5B_access},
++	{0x40830E11, "Smart Array 5312", &SA5B_access},
++	{0x409A0E11, "Smart Array 641", &SA5_access},
++	{0x409B0E11, "Smart Array 642", &SA5_access},
++	{0x409C0E11, "Smart Array 6400", &SA5_access},
++	{0x409D0E11, "Smart Array 6400 EM", &SA5_access},
++	{0x40910E11, "Smart Array 6i", &SA5_access},
++	{0x3225103C, "Smart Array P600", &SA5_access},
++	{0x3223103C, "Smart Array P800", &SA5_access},
++	{0x3234103C, "Smart Array P400", &SA5_access},
++	{0x3235103C, "Smart Array P400i", &SA5_access},
++	{0x3211103C, "Smart Array E200i", &SA5_access},
++	{0x3212103C, "Smart Array E200", &SA5_access},
++	{0x3213103C, "Smart Array E200i", &SA5_access},
++	{0x3214103C, "Smart Array E200i", &SA5_access},
++	{0x3215103C, "Smart Array E200i", &SA5_access},
++	{0x3237103C, "Smart Array E500", &SA5_access},
++	{0x323D103C, "Smart Array P700m", &SA5_access},
++	{0x3241103C, "Smart Array P212", &SA5_access},
++	{0x3243103C, "Smart Array P410", &SA5_access},
++	{0x3245103C, "Smart Array P410i", &SA5_access},
++	{0x3247103C, "Smart Array P411", &SA5_access},
++	{0x3249103C, "Smart Array P812", &SA5_access},
++	{0xFFFF103C, "Unknown Smart Array", &SA5_access},
+ };
+ 
+ /* How long to wait (in milliseconds) for board to go into simple mode */
+@@ -3086,11 +3085,20 @@ static int __devinit cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
+ 	print_cfg_table(c->cfgtable);
+ #endif				/* CCISS_DEBUG */
+ 
++	/* Some controllers support Zero Memory Raid (ZMR).
++	 * When configured in ZMR mode the number of supported
++	 * commands drops to 64. So instead of just setting an
++	 * arbitrary value we make the driver a little smarter.
++	 * We read the config table to tell us how many commands
++	 * are supported on the controller then subtract 4 to
++	 * leave a little room for ioctl calls.
++	 */
++	c->max_commands = readl(&(c->cfgtable->CmdsOutMax));
+ 	for (i = 0; i < ARRAY_SIZE(products); i++) {
+ 		if (board_id == products[i].board_id) {
+ 			c->product_name = products[i].product_name;
+ 			c->access = *(products[i].access);
+-			c->nr_cmds = products[i].nr_cmds;
++			c->nr_cmds = c->max_commands - 4;
+ 			break;
+ 		}
+ 	}
+@@ -3110,7 +3118,7 @@ static int __devinit cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
+ 		if (subsystem_vendor_id == PCI_VENDOR_ID_HP) {
+ 			c->product_name = products[i-1].product_name;
+ 			c->access = *(products[i-1].access);
+-			c->nr_cmds = products[i-1].nr_cmds;
++			c->nr_cmds = c->max_commands - 4;
+ 			printk(KERN_WARNING "cciss: This is an unknown "
+ 				"Smart Array controller.\n"
+ 				"cciss: Please update to the latest driver "
