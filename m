@@ -1,234 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759478AbYGATp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759283AbYGATqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759478AbYGATp6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 15:45:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758700AbYGATpl
+	id S1759283AbYGATqb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 15:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbYGATqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 15:45:41 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57532 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755840AbYGATpj (ORCPT
+	Tue, 1 Jul 2008 15:46:21 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:49477 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754824AbYGATqT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 15:45:39 -0400
-Date: Tue, 1 Jul 2008 14:45:38 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] - Map UV chipset space - UV support
-Message-ID: <20080701194538.GA28410@sgi.com>
-Mime-Version: 1.0
+	Tue, 1 Jul 2008 15:46:19 -0400
+Date: Tue, 1 Jul 2008 12:46:13 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       laijs@cn.fujitsu.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Rusty Russel <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] fix rcu vs hotplug race
+Message-ID: <20080701194613.GC7488@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080623103700.GA4043@linux.vnet.ibm.com> <20080623105844.GC28192@elte.hu> <20080623114941.GB3160@in.ibm.com> <20080624110144.GA8695@elte.hu> <20080626152728.GA24972@linux.vnet.ibm.com> <20080627044738.GC3419@in.ibm.com> <20080627051855.GD26167@in.ibm.com> <20080627054959.GB3309@linux.vnet.ibm.com> <20080627145845.GA9229@linux.vnet.ibm.com> <20080701053900.GB8205@in.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20080701053900.GB8205@in.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create page table entries to map the SGI UV chipset GRU. local MMR &
-global MMR ranges.
+On Tue, Jul 01, 2008 at 11:09:00AM +0530, Gautham R Shenoy wrote:
+> On Fri, Jun 27, 2008 at 07:58:45AM -0700, Paul E. McKenney wrote:
+> > On Fri, Jun 27, 2008 at 11:19:59AM +0530, Dhaval Giani wrote:
+> > > On Fri, Jun 27, 2008 at 10:48:55AM +0530, Dipankar Sarma wrote:
+> > > > On Fri, Jun 27, 2008 at 10:17:38AM +0530, Gautham R Shenoy wrote:
+> > > > > IMHO the warning is a spurious one.
+> > > > > Here's the timeline.
+> > > > > CPU_A						 CPU_B
+> > > > > --------------------------------------------------------------
+> > > > > cpu_down():					.
+> > > > > .					   	.
+> > > > > .						.
+> > > > > stop_machine(): /* disables preemption,		.
+> > > > > 		 * and irqs */			.
+> > > > > .						.
+> > > > > .						.
+> > > > > take_cpu_down();				.
+> > > > > .						.
+> > > > > .						.
+> > > > > .						.
+> > > > > cpu_disable(); /*this removes cpu 		.
+> > > > > 		*from cpu_online_map 		.
+> > > > > 		*/				.
+> > > > > .						.
+> > > > > .						.
+> > > > > restart_machine(); /* enables irqs */		.
+> > > > > ------WINDOW DURING WHICH rcp->cpumask is stale ---------------
+> > > > > .						call_rcu();
+> > > > > .						/* disables irqs here */
+> > > > > .						.force_quiescent_state();
+> > > > > .CPU_DEAD:					.for_each_cpu(rcp->cpumask)
+> > > > > .						.   smp_send_reschedule();
+> > > > > .						.
+> > > > > .						.   WARN_ON() for offlined CPU!
+> > > > > .
+> > > > 
+> > > > Exactly. The call_rcu()s are coming from a different subsystem
+> > > > and can happen anytime during the CPU hotplug path. So, RCU subsystem
+> > > > doesn't have anything to do to keep rcu->cpumask consistent.
+> > > > It is *safe* even if we miss poking a cpu or two while
+> > > > forcing quiescent state in all CPUs. The worst that can happen
+> > > > is a delay in grace period. No correctness problem here.
+> > > > 
+> > > 
+> > > One question. What is preventing a CPU from clearing its mask after we
+> > > have checked whether it is online but before we have called into
+> > > smp_send_reschedule?
+> > 
+> > This is my concern as well.  Gautham, at which point in the above
+> > timeline is the offlining CPU marked DYING?  Before stop_machine(), right?
+> 
+> No :) The offlining CPU is marked DYING after stop_machine(), inside
+> take_cpu_down() which is the work we want to execute after stopping the
+> machine.
+> 
+> it's like
+> _cpu_down()
+> |
+> |-> stop_machine_run();
+> |   |
+> |   |-> stop_machine(); /* All CPUs irqs disabled. */
+> |   |
+> |   |-> take_cpu_down() --> sets state to CPU_DYING. disables irqs on
+> |   |				offlined cpu
+> |   |
+> |   |-> restart_machine(); /* All CPUs irqs reenabled */
+> |
+> |-> send_CPU_DEAD_notification.
+> 
+> The very fact that a thread is running with irqs disabled means that
+> stop_machine_run() thread cannot start executing the work it has been
+> assinged to execute. Because for Machine to be stopped, stop_machine()
+> needs to create n-1 high priority threads on n-1 online cpus, which will
+> disable interrupts and preemption, and stop the machine. Then it will
+> run the task assigned to it on the ith cpu, which in this case is the
+> cpu to be offlined.
+> 
+> So, it's the design of stop_machine() that's preventing someone
+> from updating the cpu_online_map while
+> force_quiescent_state() is performing the
+> cpu_is_online() check. Becase we always call force_quiescent_state()
+> with irqs disabled :)
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+Got it, so the patch looks good.
 
----
- arch/x86/kernel/genx2apic_uv_x.c |   75 ++++++++++++++++++++++++++++++++++++++-
- include/asm-x86/uv/uv_hub.h      |    2 +
- include/asm-x86/uv/uv_mmrs.h     |   46 +++++++++++++++++++++++
- 3 files changed, 122 insertions(+), 1 deletion(-)
+							Thanx, Paul
 
-Index: linux/arch/x86/kernel/genx2apic_uv_x.c
-===================================================================
---- linux.orig/arch/x86/kernel/genx2apic_uv_x.c	2008-07-01 14:36:00.000000000 -0500
-+++ linux/arch/x86/kernel/genx2apic_uv_x.c	2008-07-01 14:39:50.000000000 -0500
-@@ -8,6 +8,7 @@
-  * Copyright (C) 2007-2008 Silicon Graphics, Inc. All rights reserved.
-  */
- 
-+#include <linux/kernel.h>
- #include <linux/threads.h>
- #include <linux/cpumask.h>
- #include <linux/string.h>
-@@ -20,6 +21,7 @@
- #include <asm/smp.h>
- #include <asm/ipi.h>
- #include <asm/genapic.h>
-+#include <asm/pgtable.h>
- #include <asm/uv/uv_mmrs.h>
- #include <asm/uv/uv_hub.h>
- 
-@@ -213,14 +215,79 @@ static __init void get_lowmem_redirect(u
- 	BUG();
- }
- 
-+static __init void map_low_mmrs(void)
-+{
-+	init_extra_mapping_uc(UV_GLOBAL_MMR32_BASE, UV_GLOBAL_MMR32_SIZE);
-+	init_extra_mapping_uc(UV_LOCAL_MMR_BASE, UV_LOCAL_MMR_SIZE);
-+}
-+
-+enum map_type {map_wb, map_uc};
-+
-+static void map_high(char *id, unsigned long base, int shift, enum map_type map_type)
-+{
-+	unsigned long bytes, paddr;
-+
-+	paddr = base << shift;
-+	bytes = (1UL << shift);
-+	printk(KERN_INFO "UV: Map %s_HI 0x%lx - 0x%lx\n", id, paddr,
-+	       					paddr + bytes);
-+	if (map_type == map_uc)
-+		init_extra_mapping_uc(paddr, bytes);
-+	else
-+		init_extra_mapping_wb(paddr, bytes);
-+
-+}
-+static __init void map_gru_high(int max_pnode)
-+{
-+	union uvh_rh_gam_gru_overlay_config_mmr_u gru;
-+	int shift = UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR_BASE_SHFT;
-+
-+	gru.v = uv_read_local_mmr(UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR);
-+	if (gru.s.enable)
-+		map_high("GRU", gru.s.base, shift, map_wb);
-+}
-+
-+static __init void map_config_high(int max_pnode)
-+{
-+	union uvh_rh_gam_cfg_overlay_config_mmr_u cfg;
-+	int shift = UVH_RH_GAM_CFG_OVERLAY_CONFIG_MMR_BASE_SHFT;
-+
-+	cfg.v = uv_read_local_mmr(UVH_RH_GAM_CFG_OVERLAY_CONFIG_MMR);
-+	if (cfg.s.enable)
-+		map_high("CONFIG", cfg.s.base, shift, map_uc);
-+}
-+
-+static __init void map_mmr_high(int max_pnode)
-+{
-+	union uvh_rh_gam_mmr_overlay_config_mmr_u mmr;
-+	int shift = UVH_RH_GAM_MMR_OVERLAY_CONFIG_MMR_BASE_SHFT;
-+
-+	mmr.v = uv_read_local_mmr(UVH_RH_GAM_MMR_OVERLAY_CONFIG_MMR);
-+	if (mmr.s.enable)
-+		map_high("MMR", mmr.s.base, shift, map_uc);
-+}
-+
-+static __init void map_mmioh_high(int max_pnode)
-+{
-+	union uvh_rh_gam_mmioh_overlay_config_mmr_u mmioh;
-+	int shift = UVH_RH_GAM_MMIOH_OVERLAY_CONFIG_MMR_BASE_SHFT;
-+
-+	mmioh.v = uv_read_local_mmr(UVH_RH_GAM_MMIOH_OVERLAY_CONFIG_MMR);
-+	if (mmioh.s.enable)
-+		map_high("MMIOH", mmioh.s.base, shift, map_uc);
-+}
-+
- static __init void uv_system_init(void)
- {
- 	union uvh_si_addr_map_config_u m_n_config;
- 	union uvh_node_id_u node_id;
- 	unsigned long gnode_upper, lowmem_redir_base, lowmem_redir_size;
- 	int bytes, nid, cpu, lcpu, pnode, blade, i, j, m_val, n_val;
-+	int max_pnode = 0;
- 	unsigned long mmr_base, present;
- 
-+	map_low_mmrs();
-+
- 	m_n_config.v = uv_read_local_mmr(UVH_SI_ADDR_MAP_CONFIG);
- 	m_val = m_n_config.s.m_skt;
- 	n_val = m_n_config.s.n_skt;
-@@ -286,12 +353,18 @@ static __init void uv_system_init(void)
- 		uv_cpu_hub_info(cpu)->coherency_domain_number = 0;/* ZZZ */
- 		uv_node_to_blade[nid] = blade;
- 		uv_cpu_to_blade[cpu] = blade;
-+		max_pnode = max(pnode, max_pnode);
- 
--		printk(KERN_DEBUG "UV cpu %d, apicid 0x%x, pnode %d, nid %d, "
-+		printk(KERN_DEBUG "UV: cpu %d, apicid 0x%x, pnode %d, nid %d, "
- 			"lcpu %d, blade %d\n",
- 			cpu, per_cpu(x86_cpu_to_apicid, cpu), pnode, nid,
- 			lcpu, blade);
- 	}
-+
-+	map_gru_high(max_pnode);
-+	map_mmr_high(max_pnode);
-+	map_config_high(max_pnode);
-+	map_mmioh_high(max_pnode);
- }
- 
- /*
-Index: linux/include/asm-x86/uv/uv_mmrs.h
-===================================================================
---- linux.orig/include/asm-x86/uv/uv_mmrs.h	2008-07-01 14:36:00.000000000 -0500
-+++ linux/include/asm-x86/uv/uv_mmrs.h	2008-07-01 14:39:11.000000000 -0500
-@@ -713,6 +713,26 @@ union uvh_rh_gam_alias210_redirect_confi
- };
- 
- /* ========================================================================= */
-+/*                    UVH_RH_GAM_CFG_OVERLAY_CONFIG_MMR                      */
-+/* ========================================================================= */
-+#define UVH_RH_GAM_CFG_OVERLAY_CONFIG_MMR 0x1600020UL
-+
-+#define UVH_RH_GAM_CFG_OVERLAY_CONFIG_MMR_BASE_SHFT 26
-+#define UVH_RH_GAM_CFG_OVERLAY_CONFIG_MMR_BASE_MASK 0x00003ffffc000000UL
-+#define UVH_RH_GAM_CFG_OVERLAY_CONFIG_MMR_ENABLE_SHFT 63
-+#define UVH_RH_GAM_CFG_OVERLAY_CONFIG_MMR_ENABLE_MASK 0x8000000000000000UL
-+
-+union uvh_rh_gam_cfg_overlay_config_mmr_u {
-+    unsigned long	v;
-+    struct uvh_rh_gam_cfg_overlay_config_mmr_s {
-+	unsigned long	rsvd_0_25: 26;  /*    */
-+	unsigned long	base   : 20;  /* RW */
-+	unsigned long	rsvd_46_62: 17;  /*    */
-+	unsigned long	enable :  1;  /* RW */
-+    } s;
-+};
-+
-+/* ========================================================================= */
- /*                    UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR                      */
- /* ========================================================================= */
- #define UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR 0x1600010UL
-@@ -740,6 +760,32 @@ union uvh_rh_gam_gru_overlay_config_mmr_
- };
- 
- /* ========================================================================= */
-+/*                   UVH_RH_GAM_MMIOH_OVERLAY_CONFIG_MMR                     */
-+/* ========================================================================= */
-+#define UVH_RH_GAM_MMIOH_OVERLAY_CONFIG_MMR 0x1600030UL
-+
-+#define UVH_RH_GAM_MMIOH_OVERLAY_CONFIG_MMR_BASE_SHFT 30
-+#define UVH_RH_GAM_MMIOH_OVERLAY_CONFIG_MMR_BASE_MASK 0x00003fffc0000000UL
-+#define UVH_RH_GAM_MMIOH_OVERLAY_CONFIG_MMR_M_IO_SHFT 46
-+#define UVH_RH_GAM_MMIOH_OVERLAY_CONFIG_MMR_M_IO_MASK 0x000fc00000000000UL
-+#define UVH_RH_GAM_MMIOH_OVERLAY_CONFIG_MMR_N_IO_SHFT 52
-+#define UVH_RH_GAM_MMIOH_OVERLAY_CONFIG_MMR_N_IO_MASK 0x00f0000000000000UL
-+#define UVH_RH_GAM_MMIOH_OVERLAY_CONFIG_MMR_ENABLE_SHFT 63
-+#define UVH_RH_GAM_MMIOH_OVERLAY_CONFIG_MMR_ENABLE_MASK 0x8000000000000000UL
-+
-+union uvh_rh_gam_mmioh_overlay_config_mmr_u {
-+    unsigned long	v;
-+    struct uvh_rh_gam_mmioh_overlay_config_mmr_s {
-+	unsigned long	rsvd_0_29: 30;  /*    */
-+	unsigned long	base   : 16;  /* RW */
-+	unsigned long	m_io   :  6;  /* RW */
-+	unsigned long	n_io   :  4;  /* RW */
-+	unsigned long	rsvd_56_62:  7;  /*    */
-+	unsigned long	enable :  1;  /* RW */
-+    } s;
-+};
-+
-+/* ========================================================================= */
- /*                    UVH_RH_GAM_MMR_OVERLAY_CONFIG_MMR                      */
- /* ========================================================================= */
- #define UVH_RH_GAM_MMR_OVERLAY_CONFIG_MMR 0x1600028UL
-Index: linux/include/asm-x86/uv/uv_hub.h
-===================================================================
---- linux.orig/include/asm-x86/uv/uv_hub.h	2008-07-01 14:36:00.000000000 -0500
-+++ linux/include/asm-x86/uv/uv_hub.h	2008-07-01 14:39:11.000000000 -0500
-@@ -149,6 +149,8 @@ DECLARE_PER_CPU(struct uv_hub_info_s, __
- #define UV_LOCAL_MMR_BASE		0xf4000000UL
- #define UV_GLOBAL_MMR32_BASE		0xf8000000UL
- #define UV_GLOBAL_MMR64_BASE		(uv_hub_info->global_mmr_base)
-+#define UV_LOCAL_MMR_SIZE		(64UL * 1024 * 1024)
-+#define UV_GLOBAL_MMR32_SIZE		(64UL * 1024 * 1024)
- 
- #define UV_GLOBAL_MMR32_PNODE_SHIFT	15
- #define UV_GLOBAL_MMR64_PNODE_SHIFT	26
+> > If so, can't we just disable irqs, check for DYING or DEAD, and invoke
+> > smp_send_reschedule() only if not DYING or DEAD?
+> 
+> 
+> 
+> > 
+> > 							Thanx, Paul
+> 
+> -- 
+> Thanks and Regards
+> gautham
