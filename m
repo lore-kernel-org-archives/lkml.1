@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758815AbYGATxE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759405AbYGATxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758815AbYGATxE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 15:53:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbYGATwx
+	id S1759405AbYGATxp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 15:53:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbYGATxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 15:52:53 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58044 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753005AbYGATww (ORCPT
+	Tue, 1 Jul 2008 15:53:34 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45455 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752518AbYGATxd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 15:52:52 -0400
-Date: Tue, 1 Jul 2008 12:51:19 -0700
-From: Greg KH <greg@kroah.com>
-To: Stefan Becker <Stefan.Becker@nokia.com>
-Cc: ext Greg KH <gregkh@suse.de>, linux-usb@vger.kernel.org,
-       ext Alan Stern <stern@rowland.harvard.edu>,
-       ext David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       ext Leonardo Chiquitto <leonardo.lists@gmail.com>
-Subject: Re: [PATCH] USB: fix interrupt disabling for HCDs with shared
-	interrupt handlers
-Message-ID: <20080701195119.GA8184@kroah.com>
-References: <Pine.LNX.4.44L0.0807011005430.2780-100000@iolanthe.rowland.org> <486A590A.4090806@nokia.com> <20080701182543.GA32098@suse.de> <486A823C.4070805@nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <486A823C.4070805@nokia.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 1 Jul 2008 15:53:33 -0400
+Subject: Re: [2.6 patch] remove dummy asm/kvm.h files
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Adrian Bunk <bunk@kernel.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Avi Kivity <avi@qumranet.com>, linux-arch@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080701193236.GB10350@uranus.ravnborg.org>
+References: <20080701162716.GB32598@cs181140183.pp.htv.fi>
+	 <20080701193236.GB10350@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Tue, 01 Jul 2008 20:53:20 +0100
+Message-Id: <1214942000.10393.418.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 01, 2008 at 10:15:08PM +0300, Stefan Becker wrote:
-> Hi,
->
-> ext Greg KH wrote:
->> Hm, isn't this also an issue in 2.6.25 as well?  I've had a few very
->> strange reports of USB just locking up in 2.6.25, could this also be the
->> cause there?
->
-> As I wrote in the first mail of this thread the problem was uncovered on my 
-> machine by the following commit from 2.6.24-development:
->
-> commit e9df41c5c5899259541dc928872cad4d07b82076
-> USB: make HCDs responsible for managing endpoint queues
->
-> The interrupt problem exists also in 2.6.23 (and previous) but the USB code 
-> was not affected, as the old versions of the functions were using 
-> spin_lock_irqsave().
->
-> I just applied my patch to 2.6.24 & 2.6.25: it applies fine and compiles 
-> without problem. So it could be submitted to the 2.6.24.X and 2.6.25.X 
-> branches too.
+On Tue, 2008-07-01 at 21:32 +0200, Sam Ravnborg wrote:
+> On Tue, Jul 01, 2008 at 07:27:16PM +0300, Adrian Bunk wrote:
+> > This patch removes the dummy asm/kvm.h files on architectures not (yet) 
+> > supporting KVM and uses the same conditional headers installation as
+> > already used for a.out.h .
+> > 
+> > Also removed are superfluous install rules in the s390 and x86 Kbuild 
+> > files (they are already in Kbuild.asm).
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> I really do not like the way we implement these checks and
+> think this should be a kconfig option.
+> But we do not (yet) require a configured kernel when exporting
+> to userspace so this is not feasible right now.
 
-Thanks, I'll queue it up for there as well.
+I'm _really_ dubious about doing this kind of thing through Kconfig.
 
-greg k-h
+In the general case, we really don't want exported headers to have any
+differences based on the kernel configuration.
+
+Yes, I suppose it would be OK if we are very careful not to let anyone
+use config symbols that aren't hard-coded for the given architecture.
+But in practice I don't think there's any real chance that we'd manage
+to be careful _enough_. We'd find people using symbols they shouldn't
+be.
+
+> So despite the above this patch has my:
+> Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> 
+> Same for the asm/a.out patch you posted the other day.
+> 
+> David - I assume you take these via your tree?
+
+I can do.
+
+-- 
+dwmw2
+
