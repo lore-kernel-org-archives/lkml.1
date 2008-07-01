@@ -1,215 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbYGAMS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757491AbYGAMS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757184AbYGAMS1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 08:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbYGAMRS
+	id S1757491AbYGAMS7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 08:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756807AbYGAMRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 08:17:18 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:59704 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753422AbYGAMQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 08:16:36 -0400
-Message-Id: <20080701121635.464008000@polaris-admin.engr.sgi.com>
-References: <20080701121634.865966000@polaris-admin.engr.sgi.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 01 Jul 2008 05:16:38 -0700
-From: Mike Travis <travis@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [RFC 4/5] x86_64: Replace cpu_pda ops with percpu ops
-Content-Disposition: inline; filename=zero_based_replace_cpu_pda
+	Tue, 1 Jul 2008 08:17:51 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:58040 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756774AbYGAMRt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 08:17:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=TdUH3rpWRlLmAFUZ2YqDDKpb26NnFXxgjWD0ftwxGBdkoAzXEeCen6oj4GReMeq2qB
+         em/UybTDTjWylFpDq3S+PvBZtb47RQ9ugAglC2SsIsPmClivLz/R9oPQCVzJUfrHykTN
+         zAZirzszVTb8JfrHRW9JvubIVzm9v3aFwK1GI=
+Message-ID: <19f34abd0807010517w6e2003d6j86922df0aa0052ac@mail.gmail.com>
+Date: Tue, 1 Jul 2008 14:17:48 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: kmemcheck detected possible information leak to userspace?
+Cc: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <87skutu8pw.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0807010216k11a60382xf7a27b4b27f0819@mail.gmail.com>
+	 <20080701102459.GB30248@2ka.mipt.ru>
+	 <19f34abd0807010352t264fda16g826912a857e88140@mail.gmail.com>
+	 <87skutu8pw.fsf@basil.nowhere.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  * Replace cpu_pda(i) references with percpu(pda, i).
+On Tue, Jul 1, 2008 at 1:47 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> "Vegard Nossum" <vegard.nossum@gmail.com> writes:
+>
+>> But there is one thing I forgot: Is this memory initialized by DMA? If
+>> so, the warning is bogus and I will go hide in shame.
+>
+> Yes it is.
+>
+> [btw that was something I noted during the initial review and was then
+> ridiculed for]
 
-Based on linux-2.6.tip/master
+I just went back and reviewed the original thread. (I assume you're
+talking about the kmemcheck v3 thread,
+http://lkml.org/lkml/2008/2/7/500.)
 
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/x86/kernel/cpu/common_64.c |    2 +-
- arch/x86/kernel/irq_64.c        |   36 ++++++++++++++++++++----------------
- arch/x86/kernel/setup_percpu.c  |   22 ++++++++++++++--------
- arch/x86/kernel/smpboot.c       |    2 +-
- arch/x86/kernel/traps_64.c      |   11 +++++++----
- 5 files changed, 43 insertions(+), 30 deletions(-)
+I'm sorry about having forgotten this particular comment you made.
+Please take into account that before December last year, I didn't even
+know what an skbuff was. And I didn't know how DMA worked. There can
+be a lot of things that slip past when I don't have the basic mental
+hooks on which to hang them. (Though, I must say, those discussions
+have taught me a lot.) There was also the fact that Ingo for a long
+time carried patches to silence these warnings, but which were dropped
+before the 2.6.26 merge window because they should go through the
+right maintainers instead of the x86 tree. I forgot about it, so I've
+made a mistake this time.
 
---- linux-2.6.tip.orig/arch/x86/kernel/cpu/common_64.c
-+++ linux-2.6.tip/arch/x86/kernel/cpu/common_64.c
-@@ -477,7 +477,7 @@ __setup("noexec32=", nonx32_setup);
- 
- void pda_init(int cpu)
- {
--	struct x8664_pda *pda = cpu_pda(cpu);
-+	struct x8664_pda *pda = &per_cpu(pda, cpu);
- 
- 	/* Setup up data that may be needed in __get_free_pages early */
- 	asm volatile("movl %0,%%fs ; movl %0,%%gs" :: "r" (0));
---- linux-2.6.tip.orig/arch/x86/kernel/irq_64.c
-+++ linux-2.6.tip/arch/x86/kernel/irq_64.c
-@@ -115,39 +115,43 @@ skip:
- 	} else if (i == NR_IRQS) {
- 		seq_printf(p, "NMI: ");
- 		for_each_online_cpu(j)
--			seq_printf(p, "%10u ", cpu_pda(j)->__nmi_count);
-+			seq_printf(p, "%10u ", per_cpu(pda.__nmi_count, j));
- 		seq_printf(p, "  Non-maskable interrupts\n");
- 		seq_printf(p, "LOC: ");
- 		for_each_online_cpu(j)
--			seq_printf(p, "%10u ", cpu_pda(j)->apic_timer_irqs);
-+			seq_printf(p, "%10u ", per_cpu(pda.apic_timer_irqs, j));
- 		seq_printf(p, "  Local timer interrupts\n");
- #ifdef CONFIG_SMP
- 		seq_printf(p, "RES: ");
- 		for_each_online_cpu(j)
--			seq_printf(p, "%10u ", cpu_pda(j)->irq_resched_count);
-+			seq_printf(p, "%10u ",
-+				per_cpu(pda.irq_resched_count, j));
- 		seq_printf(p, "  Rescheduling interrupts\n");
- 		seq_printf(p, "CAL: ");
- 		for_each_online_cpu(j)
--			seq_printf(p, "%10u ", cpu_pda(j)->irq_call_count);
-+			seq_printf(p, "%10u ", per_cpu(pda.irq_call_count, j));
- 		seq_printf(p, "  function call interrupts\n");
- 		seq_printf(p, "TLB: ");
- 		for_each_online_cpu(j)
--			seq_printf(p, "%10u ", cpu_pda(j)->irq_tlb_count);
-+			seq_printf(p, "%10u ", per_cpu(pda.irq_tlb_count, j));
- 		seq_printf(p, "  TLB shootdowns\n");
- #endif
- #ifdef CONFIG_X86_MCE
- 		seq_printf(p, "TRM: ");
- 		for_each_online_cpu(j)
--			seq_printf(p, "%10u ", cpu_pda(j)->irq_thermal_count);
-+			seq_printf(p, "%10u ",
-+				per_cpu(pda.irq_thermal_count, j));
- 		seq_printf(p, "  Thermal event interrupts\n");
- 		seq_printf(p, "THR: ");
- 		for_each_online_cpu(j)
--			seq_printf(p, "%10u ", cpu_pda(j)->irq_threshold_count);
-+			seq_printf(p, "%10u ",
-+				per_cpu(pda.irq_threshold_count, j));
- 		seq_printf(p, "  Threshold APIC interrupts\n");
- #endif
- 		seq_printf(p, "SPU: ");
- 		for_each_online_cpu(j)
--			seq_printf(p, "%10u ", cpu_pda(j)->irq_spurious_count);
-+			seq_printf(p, "%10u ",
-+				per_cpu(pda.irq_spurious_count, j));
- 		seq_printf(p, "  Spurious interrupts\n");
- 		seq_printf(p, "ERR: %10u\n", atomic_read(&irq_err_count));
- 	}
-@@ -159,19 +163,19 @@ skip:
-  */
- u64 arch_irq_stat_cpu(unsigned int cpu)
- {
--	u64 sum = cpu_pda(cpu)->__nmi_count;
-+	u64 sum = per_cpu(pda.__nmi_count, cpu);
- 
--	sum += cpu_pda(cpu)->apic_timer_irqs;
-+	sum += per_cpu(pda.apic_timer_irqs, cpu);
- #ifdef CONFIG_SMP
--	sum += cpu_pda(cpu)->irq_resched_count;
--	sum += cpu_pda(cpu)->irq_call_count;
--	sum += cpu_pda(cpu)->irq_tlb_count;
-+	sum += per_cpu(pda.irq_resched_count, cpu);
-+	sum += per_cpu(pda.irq_call_count, cpu);
-+	sum += per_cpu(pda.irq_tlb_count, cpu);
- #endif
- #ifdef CONFIG_X86_MCE
--	sum += cpu_pda(cpu)->irq_thermal_count;
--	sum += cpu_pda(cpu)->irq_threshold_count;
-+	sum += per_cpu(pda.irq_thermal_count, cpu);
-+	sum += per_cpu(pda.irq_threshold_count, cpu);
- #endif
--	sum += cpu_pda(cpu)->irq_spurious_count;
-+	sum += per_cpu(pda.irq_spurious_count, cpu);
- 	return sum;
- }
- 
---- linux-2.6.tip.orig/arch/x86/kernel/setup_percpu.c
-+++ linux-2.6.tip/arch/x86/kernel/setup_percpu.c
-@@ -243,17 +243,23 @@ void __cpuinit numa_set_node(int cpu, in
- {
- 	int *cpu_to_node_map = early_per_cpu_ptr(x86_cpu_to_node_map);
- 
--	if (cpu_pda(cpu) && node != NUMA_NO_NODE)
--		cpu_pda(cpu)->nodenumber = node;
--
--	if (cpu_to_node_map)
-+	/* early setting, no percpu area yet */
-+	if (cpu_to_node_map) {
- 		cpu_to_node_map[cpu] = node;
-+		return;
-+	}
- 
--	else if (per_cpu_offset(cpu))
--		per_cpu(x86_cpu_to_node_map, cpu) = node;
-+#ifdef CONFIG_DEBUG_PER_CPU_MAPS
-+	if (cpu >= nr_cpu_ids || !per_cpu_offset(cpu)) {
-+		printk(KERN_ERR "numa_set_node: invalid cpu# (%d)\n", cpu);
-+		dump_stack();
-+		return;
-+	}
-+#endif
-+	per_cpu(x86_cpu_to_node_map, cpu) = node;
- 
--	else
--		Dprintk(KERN_INFO "Setting node for non-present cpu %d\n", cpu);
-+	if (node != NUMA_NO_NODE)
-+		per_cpu(pda.nodenumber, cpu) = node;
- }
- 
- void __cpuinit numa_clear_node(int cpu)
---- linux-2.6.tip.orig/arch/x86/kernel/smpboot.c
-+++ linux-2.6.tip/arch/x86/kernel/smpboot.c
-@@ -814,7 +814,7 @@ do_rest:
- 	/* Stack for startup_32 can be just as for start_secondary onwards */
- 	irq_ctx_init(cpu);
- #else
--	cpu_pda(cpu)->pcurrent = c_idle.idle;
-+	per_cpu(pda.pcurrent, cpu) = c_idle.idle;
- 	clear_tsk_thread_flag(c_idle.idle, TIF_FORK);
- 	initial_pda = (unsigned long)get_cpu_pda(cpu);
- #endif
---- linux-2.6.tip.orig/arch/x86/kernel/traps_64.c
-+++ linux-2.6.tip/arch/x86/kernel/traps_64.c
-@@ -265,7 +265,8 @@ void dump_trace(struct task_struct *tsk,
- 		const struct stacktrace_ops *ops, void *data)
- {
- 	const unsigned cpu = get_cpu();
--	unsigned long *irqstack_end = (unsigned long*)cpu_pda(cpu)->irqstackptr;
-+	unsigned long *irqstack_end =
-+		(unsigned long *)per_cpu(pda.irqstackptr, cpu);
- 	unsigned used = 0;
- 	struct thread_info *tinfo;
- 
-@@ -399,8 +400,10 @@ _show_stack(struct task_struct *tsk, str
- 	unsigned long *stack;
- 	int i;
- 	const int cpu = smp_processor_id();
--	unsigned long *irqstack_end = (unsigned long *) (cpu_pda(cpu)->irqstackptr);
--	unsigned long *irqstack = (unsigned long *) (cpu_pda(cpu)->irqstackptr - IRQSTACKSIZE);
-+	unsigned long *irqstack_end =
-+		(unsigned long *)per_cpu(pda.irqstackptr, cpu);
-+	unsigned long *irqstack =
-+		(unsigned long *)(per_cpu(pda.irqstackptr, cpu) - IRQSTACKSIZE);
- 
- 	// debugging aid: "show_stack(NULL, NULL);" prints the
- 	// back trace for this cpu.
-@@ -464,7 +467,7 @@ void show_registers(struct pt_regs *regs
- 	int i;
- 	unsigned long sp;
- 	const int cpu = smp_processor_id();
--	struct task_struct *cur = cpu_pda(cpu)->pcurrent;
-+	struct task_struct *cur = __get_cpu_var(pda.pcurrent);
- 	u8 *ip;
- 	unsigned int code_prologue = code_bytes * 43 / 64;
- 	unsigned int code_len = code_bytes;
+But I don't see that you were ever ridiculed. In fact, I am only
+grateful for all the comments you've made, and the help you've been.
+
+
+Vegard
+
+PS: The error I just reported was different from the ones we've had
+before, which is why I didn't recognize it immediately.
 
 -- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
