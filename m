@@ -1,80 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758238AbYGAOLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759207AbYGAOLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758238AbYGAOLU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 10:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbYGAOLI
+	id S1759207AbYGAOLf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 10:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757330AbYGAOLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 10:11:08 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:51650 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754566AbYGAOLH (ORCPT
+	Tue, 1 Jul 2008 10:11:25 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:45434 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755186AbYGAOLY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 10:11:07 -0400
-Date: Tue, 1 Jul 2008 10:11:03 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Stefan Becker <Stefan.Becker@nokia.com>
-cc: ext David Brownell <david-b@pacbell.net>, <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] USB: fix interrupt disabling for HCDs with shared
- interrupt handlers
-In-Reply-To: <48694F9A.4010008@nokia.com>
-Message-ID: <Pine.LNX.4.44L0.0807011005430.2780-100000@iolanthe.rowland.org>
+	Tue, 1 Jul 2008 10:11:24 -0400
+Date: Tue, 1 Jul 2008 10:11:20 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+cc: Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [sched-devel, patch-rfc] rework #2 of "prioritize non-migratable
+ tasks over migratable ones"
+In-Reply-To: <b647ffbd0807010632o64a61ab9le6039465cee85e9c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0807011008001.26650@gandalf.stny.rr.com>
+References: <b647ffbd0807010632o64a61ab9le6039465cee85e9c@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Jul 2008, Stefan Becker wrote:
 
-> It is, put the rain pouring down on my house is keeping me awake :-)
-> 
-> Looks like you posted the same changes though...
+On Tue, 1 Jul 2008, Dmitry Adamushko wrote:
 
-A few minor problems...  You should post a revised patch with CC: to
-Greg KH.  It makes things a little easier if you can put the patch in
-the body of the email message instead of attaching it.
-
-> --- a/drivers/usb/core/hcd.c
-> +++ b/drivers/usb/core/hcd.c
-> @@ -1683,20 +1683,27 @@ EXPORT_SYMBOL_GPL(usb_bus_start_enum);
+>
+> ---
+>
+> --- sched_rt-old.c      2008-07-01 11:42:30.000000000 +0200
+> +++ sched_rt.c  2008-07-01 15:00:55.000000000 +0200
+> @@ -599,11 +599,7 @@ static void __enqueue_rt_entity(struct s
+>         if (group_rq && (rt_rq_throttled(group_rq) ||
+> !group_rq->rt_nr_running))                return;
+>
+> -       if (rt_se->nr_cpus_allowed == 1)
+> -               list_add(&rt_se->run_list, queue);
+> -       else
+> -               list_add_tail(&rt_se->run_list, queue);
+> -
+> +       list_add_tail(&rt_se->run_list, queue);
+>         __set_bit(rt_se_prio(rt_se), array->bitmap);
+>
+>         inc_rt_tasks(rt_se, rt_rq);
+> @@ -689,31 +685,33 @@ static void dequeue_task_rt(struct rq *r
+>   * followed by enqueue.
 >   */
->  irqreturn_t usb_hcd_irq (int irq, void *__hcd)
+>  static
+> -void requeue_rt_entity(struct rt_rq *rt_rq, struct sched_rt_entity *rt_se)
+> +void requeue_rt_entity(struct rt_rq *rt_rq, struct sched_rt_entity
+> *rt_se, int head)
 >  {
-> -	struct usb_hcd		*hcd = __hcd;
-> -	int			start = hcd->state;
-> +	struct usb_hcd		*hcd  = __hcd;
-> +	unsigned int            flags = 0;
-
-flags must be unsigned long.  You don't have to initialize it to 0.
-
-> +	irqreturn_t             rc;
->  
-> -	if (unlikely(start == HC_STATE_HALT ||
-> -	    !test_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags)))
-> -		return IRQ_NONE;
-> -	if (hcd->driver->irq (hcd) == IRQ_NONE)
-> -		return IRQ_NONE;
-> +	local_irq_save(flags);
->  
-> -	set_bit(HCD_FLAG_SAW_IRQ, &hcd->flags);
-> +	if (unlikely(hcd->state == HC_STATE_HALT ||
-> +		     !test_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags))) {
-> +		rc = IRQ_NONE;
-> +	} else if (hcd->driver->irq (hcd) == IRQ_NONE) {
-
-The space after "irq" should be removed.
-
-> +		rc = IRQ_NONE;
-> +	} else {
-> +		set_bit(HCD_FLAG_SAW_IRQ, &hcd->flags);
+> -       struct rt_prio_array *array = &rt_rq->active;
+> -
+>         if (on_rt_rq(rt_se)) {
+> -               list_del_init(&rt_se->run_list);
+> -               list_add_tail(&rt_se->run_list,
+> -                             array->queue + rt_se_prio(rt_se));
+> +               struct rt_prio_array *array = &rt_rq->active;
+> +               struct list_head *queue = array->queue + rt_se_prio(rt_se);
 > +
-> +		if (unlikely(hcd->state == HC_STATE_HALT))
-> +			usb_hc_died (hcd);
+> +               if (head)
+> +                       list_move(&rt_se->run_list, queue);
+> +               else
+> +                       list_move_tail(&rt_se->run_list, queue);
+>         }
+>  }
+>
+> -static void requeue_task_rt(struct rq *rq, struct task_struct *p)
+> +static void requeue_task_rt(struct rq *rq, struct task_struct *p, int head)
+>  {
+>         struct sched_rt_entity *rt_se = &p->rt;
+>         struct rt_rq *rt_rq;
+>
+>         for_each_sched_rt_entity(rt_se) {
+>                 rt_rq = rt_rq_of_se(rt_se);
+> -               requeue_rt_entity(rt_rq, rt_se);
+> +               requeue_rt_entity(rt_rq, rt_se, head);
+>         }
+>  }
+>
+>  static void yield_task_rt(struct rq *rq)
+>  {
+> -       requeue_task_rt(rq, rq->curr);
+> +       requeue_task_rt(rq, rq->curr, 0);
+>  }
+>
+>  #ifdef CONFIG_SMP
+> @@ -753,6 +751,29 @@ static int select_task_rq_rt(struct task
+>          */
+>         return task_cpu(p);
+>  }
+> +
+> +static void check_preempt_equal_prio(struct rq *rq, struct task_struct *p)
+> +{
+> +       cpumask_t mask;
+> +
+> +       if (rq->curr.rt.nr_cpus_allowed == 1 || p->rt.nr_cpus_allowed == 1)
+> +               return;
 
-The space after "died" should be removed.
+I can understand why we break out when current is bound to a single CPU,
+but why do we break out when p is bound to a single CPU. Don't we want to
+push curr off if we can find a CPU for it?
 
-Alan Stern
+-- Steve
 
+> +
+> +       if (cpupri_find(&rq->rd->cpupri, p, &mask))
+> +               return;
+> +
+> +       if (!cpupri_find(&rq->rd->cpupri, rq->curr, &mask))
+> +               return;
+> +
+> +       /*
+> +        * There appears to be other cpus that can accept
+> +        * current and none to run 'p', so lets reschedule
+> +        * to try and push current away:
+> +        */
+> +       requeue_task_rt(rq, p, 1);
+> +       resched_task(rq->curr);
+> +}
+> +
+>  #endif /* CONFIG_SMP */
+>
