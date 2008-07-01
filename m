@@ -1,94 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761184AbYGAPZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758937AbYGAPbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761184AbYGAPZf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 11:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758458AbYGAPZH
+	id S1758937AbYGAPbQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 11:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbYGAPa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 11:25:07 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:45334 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758248AbYGAPZG (ORCPT
+	Tue, 1 Jul 2008 11:30:58 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58792 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755860AbYGAPam (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 11:25:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=fGNirZoBZfl8I710dhqMXawUbtp0SNtFrgEUbZwaegdfIMGeo98Cx+bgSoY9Ns4qqq
-         FIK2c/rYrDUn6mAkJgZBOgloJvKhm0QAKBw7Lc04EIYW39NvCbvbu06bPiJ4Rx5csR9l
-         8M19qr185AhgOmokeC9i0Y/0xKQI66PNdfvQ0=
-Message-ID: <a4423d670807010825t7ea2eb44oda3f08dc007c40a2@mail.gmail.com>
-Date: Tue, 1 Jul 2008 19:25:03 +0400
-From: "Alexander Beregalov" <a.beregalov@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org, sparclinux@vger.kernel.org,
-       "David Miller" <davem@davemloft.net>, sagar.abhishek@gmail.com,
-       rostedt@goodmis.org, "Ingo Molnar" <mingo@elte.hu>
-Subject: next-0630: sparc64: build failed
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 1 Jul 2008 11:30:42 -0400
+Date: Tue, 1 Jul 2008 08:30:36 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Agner Fog <agner@agner.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: ABI change for device drivers using future AVX instruction set
+Message-ID: <20080701083036.32d20d1c@infradead.org>
+In-Reply-To: <4865F0DA.2050906@agner.org>
+References: <48626514.2040905@agner.org>
+	<20080625092224.736c2541@infradead.org>
+	<4862ECAB.1040402@zytor.com>
+	<4864CFA5.9050901@agner.org>
+	<20080627072231.7337ba18@infradead.org>
+	<4865F0DA.2050906@agner.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David, Abhishek
+On Sat, 28 Jun 2008 10:05:46 +0200
+Agner Fog <agner@agner.org> wrote:
 
-$ make CROSS_COMPILE=sparc64-unknown-linux-gnu- image modules && sudo
-make modules_install
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-dnsdomainname: Unknown host
-  CC      arch/sparc64/kernel/sparc64_ksyms.o
-arch/sparc64/kernel/sparc64_ksyms.c:116: error: '_mcount' undeclared
-here (not in a function)
-cc1: warnings being treated as errors
-arch/sparc64/kernel/sparc64_ksyms.c:116: error: type defaults to 'int'
-in declaration of '_mcount'
+> Arjan van de Ven wrote:
+>  >the good news is that we review drivers before they get included
+>  >and 
+> we do catch such things.
+> 
+> Are you saying that some group should have the monopoly of approving 
+> device drivers? That is exectly the policy that Microsoft has been so 
+> much criticized for. You can only control the drivers that are
+> included in your own Linux distribution.
 
-This commit is cause.
+the linux model is that drivers (eventually) get included into the
+linux kernel source code. Everything we do process wise is centered
+around that concept.
 
-commit 395a59d0f8e86bb39cd700c3d185d30c670bb958
-Author: Abhishek Sagar <sagar.abhishek@gmail.com>
-Date:   Sat Jun 21 23:47:27 2008 +0530
-
-    ftrace: store mcount address in rec->ip
-
-    Record the address of the mcount call-site. Currently all archs
-except sparc64
-    record the address of the instruction following the mcount call-site. Some
-    general cleanups are entailed. Storing mcount addresses in rec->ip enables
-    looking them up in the kprobe hash table later on to check if
-they're kprobe'd.
-
-    Signed-off-by: Abhishek Sagar <sagar.abhishek@gmail.com>
-    Cc: davem@davemloft.net
-    Cc: Steven Rostedt <rostedt@goodmis.org>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/arch/sparc64/kernel/sparc64_ksyms.c
-b/arch/sparc64/kernel/sparc64_ksyms.c
-index 8ac0b99..b80d982 100644
---- a/arch/sparc64/kernel/sparc64_ksyms.c
-+++ b/arch/sparc64/kernel/sparc64_ksyms.c
-@@ -53,6 +53,7 @@
- #include <asm/ns87303.h>
- #include <asm/timer.h>
- #include <asm/cpudata.h>
-+#include <asm/ftrace.h>
-
- struct poll {
-        int fd;
-@@ -112,7 +113,6 @@ EXPORT_SYMBOL(smp_call_function);
- #endif /* CONFIG_SMP */
-
- #if defined(CONFIG_MCOUNT)
--extern void _mcount(void);
- EXPORT_SYMBOL(_mcount);
- #endif
+Nothing prevents you from going outside the process. But you need to
+realize that that is exactly that: outside the process. Meaning: you're
+partially on your own.
 
 
-gcc version 4.3.1 (Gentoo 4.3.1 p1.0)
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
