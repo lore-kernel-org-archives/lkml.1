@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbYGAQ7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbYGARFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756530AbYGAQ7d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 12:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYGAQ7Z
+	id S1755026AbYGARFO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 13:05:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbYGAREz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 12:59:25 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45227 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751988AbYGAQ7Y (ORCPT
+	Tue, 1 Jul 2008 13:04:55 -0400
+Received: from outbound-mail-130.bluehost.com ([67.222.38.30]:44278 "HELO
+	outbound-mail-130.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751331AbYGAREy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 12:59:24 -0400
-Message-ID: <486A61A7.1000902@zytor.com>
-Date: Tue, 01 Jul 2008 09:56:07 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 1 Jul 2008 13:04:54 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [git pull] PCI fixes for 2.6.26
+Date: Tue, 1 Jul 2008 10:04:47 -0700
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Mike Travis <travis@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org>	<485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>	<485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com>	<485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com>	<485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>	<485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com>	<m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org> <m1skuuov4t.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1skuuov4t.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807011004.47487.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
->>
->> The zero-based PDA mechanism requires the introduction of a new ELF segment
->> based at vaddr 0 which is sufficiently unusual that it wouldn't surprise me if
->> its triggering some toolchain bug.
-> 
-> Agreed.  Given the previous description my hunch is that the bug is occurring
-> during objcopy.  If vmlinux is good and the compressed kernel is bad.
-> 
+I'll stop making predictions about whether this is the last pull request for 
+2.6.26 or not, but it is an important one.  It turns out that we've had a 
+trivial DoS on machines containing PCI devices with bad VPDs.  We're 
+entertaining a few options for a scalable, long term fix, but in the 
+meantime, restricting access to the sysfs VPD file seems prudent.  I've 
+included the patch in lieu of a diffstat since it's so small.
 
-Actually, it's not all that unusual... it's pretty common in various 
-restricted environments.  That being said, it's probably uncommon for 
-*64-bit* code.
+Thanks,
+Jesse
 
-	-hpa
+Ben Hutchings (1):
+      PCI: Restrict VPD read permission to root
+
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index 6f3c744..1f855f0 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -738,7 +738,7 @@ int __must_check pci_create_sysfs_dev_files (struct 
+pci_dev
+                        pdev->vpd->attr = attr;
+                        attr->size = pdev->vpd->ops->get_size(pdev);
+                        attr->attr.name = "vpd";
+-                       attr->attr.mode = S_IRUGO | S_IWUSR;
++                       attr->attr.mode = S_IRUSR | S_IWUSR;
+                        attr->read = pci_read_vpd;
+                        attr->write = pci_write_vpd;
+                        retval = sysfs_create_bin_file(&pdev->dev.kobj, attr);
+
