@@ -1,92 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbYGAKqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbYGAKv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754141AbYGAKqb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 06:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYGAKqX
+	id S1753990AbYGAKv1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 06:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYGAKvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 06:46:23 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:42027 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751503AbYGAKqW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 06:46:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=fBAYFnFczyafqZ9Z7cf2tla4QshoFNbNlaGoefDuR3heYyASWJU8PSJcaUiWJprWPC
-         yC4FAdIzkgb/fiBS1I5A0yXggjci850RUhstIyFL3QniGCx2hwMv/X3chdG7tA996F1J
-         ccqE78ZZ6ePsXU8DLk5edlZzxw6A6vHHJSSXM=
-Message-ID: <b647ffbd0807010346l2833f376y4c394bcbf49fa086@mail.gmail.com>
-Date: Tue, 1 Jul 2008 12:46:20 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [sched-devel, patch-rfc] rework of "prioritize non-migratable tasks over migratable ones"
-Cc: "Gregory Haskins" <ghaskins@novell.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <1213643862.16944.142.camel@twins>
+	Tue, 1 Jul 2008 06:51:18 -0400
+Received: from bu3sch.de ([62.75.166.246]:38106 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750884AbYGAKvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 06:51:18 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Subject: [PATCH RFC] x86: Add user configurable GPIO-lib support
+Date: Tue, 1 Jul 2008 12:49:40 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1213138710.26530.51.camel@earth> <1213174382.31518.69.camel@twins>
-	 <b647ffbd0806110305p2be38608iadc1d2e91e3be57a@mail.gmail.com>
-	 <48563FDB.BA47.005A.0@novell.com>
-	 <b647ffbd0806161059q7048ea40id0f4235ab19d6ca0@mail.gmail.com>
-	 <1213643862.16944.142.camel@twins>
+Message-Id: <200807011249.40551.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/6/16 Peter Zijlstra <a.p.zijlstra@chello.nl>:
-> On Mon, 2008-06-16 at 19:59 +0200, Dmitry Adamushko wrote:
->
->> One way or another, we have different aritifacts (and mine have likely
->> more) but conceptually, both "violates" POSIX if a strict round-robin
->> scheduling is required.
->
-> http://www.opengroup.org/onlinepubs/009695399/functions/xsh_chap02_08.html#tag_02_08_04_01
->
-> Is quite strict on what FIFO should do, and I know of two points where
-> we deviate and should work to match.
->
+So this adds user-configurable GPIO support through gpiolib
+on subarchitectures that do not implement a GPIO implementation, yet.
+Currently that's everything except X86_RDC321X.
+
+The advantage of this is to make it possible to use generic PCI (or
+other bus) GPIO extention cards in standard PCs through the standard
+GPIO API.
+
+If another subarch implements its own GPIO, it needs to add
+itself as an inverted dependency to GPIO_USERSELECTION to make
+sure the user does not enable two GPIO API implementations.
+
+About the asm-x86/gpio.h:
+I'm not sure what this <gpio.h> include currently is.
+Can somebody explain that to me? Where is this supposed
+to include a gpio.h file from?
 
 
-btw., rt group scheduling seems to well, slightly wreck this (per-rq)
-FIFO model as well.
-
-say, group_A has N SCHED_FIFO tasks of equal prio. So far so good,
-they all run strictly one after another.
-
-Now group_B gets task_S. On a group layer, group_B gets enqueued after group_A.
-
-This changes when a current task (that belongs to group_A)
-relinquishes a CPU: dequeue_stack -> __enqueue_rt_entity() will place
-group_A in the tail of its list.
-
-So the next task to run is task_S, although group_A migth have plenty
-of tasks of the same prio that were enqueued ealrier.
-
-We can't get a strict FIFO ordering with this pure tree-like hierarchy.
+What's your opinion on this?
 
 
-btw #2,
-
-Gregory, our new modification also doesn't work nicely with group-scheduling.
-
-We may place a task in the head of its queue, yes. But its group will
-still remain where it was.
-
-rt_se->nr_cpus_allowed just has no adequat sense for groups and
-__enqueue_rt_entity() always places a group at the tail.
-
-IOW, even if check_preempt_curr_rt() calls resched_task() based on
-analysis of the newly arrived task 'p', 'p' won't be necessarily
-picked up by pick_next_task_rt(). Although, there is a way to fix it.
-
+Index: wireless-testing/arch/x86/Kconfig
+===================================================================
+--- wireless-testing.orig/arch/x86/Kconfig	2008-06-30 23:00:29.000000000 +0200
++++ wireless-testing/arch/x86/Kconfig	2008-06-30 23:07:04.000000000 +0200
+@@ -1675,6 +1675,19 @@
+ 
+ source "drivers/pci/hotplug/Kconfig"
+ 
++config GPIO_USERSELECTION
++	bool "Enable generic GPIO support through gpiolib"
++	depends on !X86_RDC321X
++	select GENERIC_GPIO
++	select HAVE_GPIO_LIB
++	help
++	  This enables GPIO support through the generic GPIO library.
++	  You only need to enable this, if you also want to enable
++	  one or more of the GPIO expansion card drivers in
++	  "Device Drivers/GPIO Support".
++
++	  If unsure, say N.
++
+ endmenu
+ 
+ 
+Index: wireless-testing/include/asm-x86/gpio.h
+===================================================================
+--- wireless-testing.orig/include/asm-x86/gpio.h	2008-06-30 23:28:55.000000000 +0200
++++ wireless-testing/include/asm-x86/gpio.h	2008-06-30 23:36:20.000000000 +0200
+@@ -1,6 +1,62 @@
++/*
++ * Generic GPIO API implementation for x86.
++ *
++ * Derived from the generic GPIO API for powerpc:
++ *
++ * Copyright (c) 2007-2008  MontaVista Software, Inc.
++ *
++ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
+ #ifndef _ASM_I386_GPIO_H
+ #define _ASM_I386_GPIO_H
+ 
++#ifdef CONFIG_X86_RDC321X
+ #include <gpio.h>
++#else /* CONFIG_X86_RDC321X */
++
++#include <asm-generic/gpio.h>
++
++#ifdef CONFIG_HAVE_GPIO_LIB
++
++/*
++ * Just call gpiolib.
++ */
++static inline int gpio_get_value(unsigned int gpio)
++{
++	return __gpio_get_value(gpio);
++}
++
++static inline void gpio_set_value(unsigned int gpio, int value)
++{
++	__gpio_set_value(gpio, value);
++}
++
++static inline int gpio_cansleep(unsigned int gpio)
++{
++	return __gpio_cansleep(gpio);
++}
++
++/*
++ * Not implemented, yet.
++ */
++static inline int gpio_to_irq(unsigned int gpio)
++{
++	return -ENOSYS;
++}
++
++static inline int irq_to_gpio(unsigned int irq)
++{
++	return -EINVAL;
++}
++
++#endif /* CONFIG_HAVE_GPIO_LIB */
++
++#endif /* CONFIG_X86_RDC321X */
+ 
+ #endif /* _ASM_I386_GPIO_H */
 
 -- 
-Best regards,
-Dmitry Adamushko
+Greetings Michael.
