@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760700AbYGAPWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbYGAPXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760700AbYGAPWn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 11:22:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758587AbYGAPWH
+	id S1760208AbYGAPXY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 11:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759273AbYGAPWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 11:22:07 -0400
-Received: from mail.suse.de ([195.135.220.2]:43245 "EHLO mx1.suse.de"
+	Tue, 1 Jul 2008 11:22:16 -0400
+Received: from ns.suse.de ([195.135.220.2]:43267 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758163AbYGAPWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 11:22:05 -0400
-Date: Tue, 1 Jul 2008 08:19:03 -0700
+	id S1759169AbYGAPWN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 11:22:13 -0400
+Date: Tue, 1 Jul 2008 08:19:08 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,15 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
-       David Holmes <david.holmes@sun.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 2/9] futexes: fix fault handling in futex_lock_pi
-Message-ID: <20080701151903.GC3536@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jie Luo <clotho67@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 4/9] DRM: enable bus mastering on i915 at resume time
+Message-ID: <20080701151908.GE3536@suse.de>
 References: <20080701151057.930340322@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="futexes-fix-fault-handling-in-futex_lock_pi.patch"
+Content-Disposition: inline; filename="drm-enable-bus-mastering-on-i915-at-resume-time.patch"
 In-Reply-To: <20080701151835.GA3536@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,204 +40,32 @@ know.
 
 ------------------
 
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Jie Luo <clotho67@gmail.com>
 
-commit 1b7558e457ed0de61023cfc913d2c342c7c3d9f2 upstream
+commit ea7b44c8e6baa1a4507f05ba2c0009ac21c3fe0b upstream
 
-This patch addresses a very sporadic pi-futex related failure in
-highly threaded java apps on large SMP systems.
+On 9xx chips, bus mastering needs to be enabled at resume time for much of the
+chip to function.  With this patch, vblank interrupts will work as expected
+on resume, along with other chip functions.   Fixes kernel bugzilla #10844.
 
-David Holmes reported that the pi_state consistency check in
-lookup_pi_state triggered with his test application. This means that
-the kernel internal pi_state and the user space futex variable are out
-of sync. First we assumed that this is a user space data corruption,
-but deeper investigation revieled that the problem happend because the
-pi-futex code is not handling a fault in the futex_lock_pi path when
-the user space variable needs to be fixed up.
-
-The fault happens when a fork mapped the anon memory which contains
-the futex readonly for COW or the page got swapped out exactly between
-the unlock of the futex and the return of either the new futex owner
-or the task which was the expected owner but failed to acquire the
-kernel internal rtmutex. The current futex_lock_pi() code drops out
-with an inconsistent in case it faults and returns -EFAULT to user
-space. User space has no way to fixup that state.
-
-When we wrote this code we thought that we could not drop the hash
-bucket lock at this point to handle the fault.
-
-After analysing the code again it turned out to be wrong because there
-are only two tasks involved which might modify the pi_state and the
-user space variable:
-
- - the task which acquired the rtmutex
- - the pending owner of the pi_state which did not get the rtmutex
-
-Both tasks drop into the fixup_pi_state() function before returning to
-user space. The first task which acquired the hash bucket lock faults
-in the fixup of the user space variable, drops the spinlock and calls
-futex_handle_fault() to fault in the page. Now the second task could
-acquire the hash bucket lock and tries to fixup the user space
-variable as well. It either faults as well or it succeeds because the
-first task already faulted the page in.
-
-One caveat is to avoid a double fixup. After returning from the fault
-handling we reacquire the hash bucket lock and check whether the
-pi_state owner has been modified already.
-
-Reported-by: David Holmes <david.holmes@sun.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Holmes <david.holmes@sun.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Jie Luo <clotho67@gmail.com>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/futex.c |   93 ++++++++++++++++++++++++++++++++++++++++++++-------------
- 1 file changed, 73 insertions(+), 20 deletions(-)
+ drivers/char/drm/i915_drv.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -1118,21 +1118,64 @@ static void unqueue_me_pi(struct futex_q
-  * private futexes.
-  */
- static int fixup_pi_state_owner(u32 __user *uaddr, struct futex_q *q,
--				struct task_struct *newowner)
-+				struct task_struct *newowner,
-+				struct rw_semaphore *fshared)
- {
- 	u32 newtid = task_pid_vnr(newowner) | FUTEX_WAITERS;
- 	struct futex_pi_state *pi_state = q->pi_state;
-+	struct task_struct *oldowner = pi_state->owner;
- 	u32 uval, curval, newval;
--	int ret;
-+	int ret, attempt = 0;
+--- a/drivers/char/drm/i915_drv.c
++++ b/drivers/char/drm/i915_drv.c
+@@ -385,6 +385,7 @@ static int i915_resume(struct drm_device
+ 	pci_restore_state(dev->pdev);
+ 	if (pci_enable_device(dev->pdev))
+ 		return -1;
++	pci_set_master(dev->pdev);
  
- 	/* Owner died? */
-+	if (!pi_state->owner)
-+		newtid |= FUTEX_OWNER_DIED;
-+
-+	/*
-+	 * We are here either because we stole the rtmutex from the
-+	 * pending owner or we are the pending owner which failed to
-+	 * get the rtmutex. We have to replace the pending owner TID
-+	 * in the user space variable. This must be atomic as we have
-+	 * to preserve the owner died bit here.
-+	 *
-+	 * Note: We write the user space value _before_ changing the
-+	 * pi_state because we can fault here. Imagine swapped out
-+	 * pages or a fork, which was running right before we acquired
-+	 * mmap_sem, that marked all the anonymous memory readonly for
-+	 * cow.
-+	 *
-+	 * Modifying pi_state _before_ the user space value would
-+	 * leave the pi_state in an inconsistent state when we fault
-+	 * here, because we need to drop the hash bucket lock to
-+	 * handle the fault. This might be observed in the PID check
-+	 * in lookup_pi_state.
-+	 */
-+retry:
-+	if (get_futex_value_locked(&uval, uaddr))
-+		goto handle_fault;
-+
-+	while (1) {
-+		newval = (uval & FUTEX_OWNER_DIED) | newtid;
-+
-+		curval = cmpxchg_futex_value_locked(uaddr, uval, newval);
-+
-+		if (curval == -EFAULT)
-+			goto handle_fault;
-+		if (curval == uval)
-+			break;
-+		uval = curval;
-+	}
-+
-+	/*
-+	 * We fixed up user space. Now we need to fix the pi_state
-+	 * itself.
-+	 */
- 	if (pi_state->owner != NULL) {
- 		spin_lock_irq(&pi_state->owner->pi_lock);
- 		WARN_ON(list_empty(&pi_state->list));
- 		list_del_init(&pi_state->list);
- 		spin_unlock_irq(&pi_state->owner->pi_lock);
--	} else
--		newtid |= FUTEX_OWNER_DIED;
-+	}
+ 	pci_write_config_byte(dev->pdev, LBB, dev_priv->saveLBB);
  
- 	pi_state->owner = newowner;
- 
-@@ -1140,26 +1183,35 @@ static int fixup_pi_state_owner(u32 __us
- 	WARN_ON(!list_empty(&pi_state->list));
- 	list_add(&pi_state->list, &newowner->pi_state_list);
- 	spin_unlock_irq(&newowner->pi_lock);
-+	return 0;
- 
- 	/*
--	 * We own it, so we have to replace the pending owner
--	 * TID. This must be atomic as we have preserve the
--	 * owner died bit here.
-+	 * To handle the page fault we need to drop the hash bucket
-+	 * lock here. That gives the other task (either the pending
-+	 * owner itself or the task which stole the rtmutex) the
-+	 * chance to try the fixup of the pi_state. So once we are
-+	 * back from handling the fault we need to check the pi_state
-+	 * after reacquiring the hash bucket lock and before trying to
-+	 * do another fixup. When the fixup has been done already we
-+	 * simply return.
- 	 */
--	ret = get_futex_value_locked(&uval, uaddr);
-+handle_fault:
-+	spin_unlock(q->lock_ptr);
- 
--	while (!ret) {
--		newval = (uval & FUTEX_OWNER_DIED) | newtid;
-+	ret = futex_handle_fault((unsigned long)uaddr, fshared, attempt++);
- 
--		curval = cmpxchg_futex_value_locked(uaddr, uval, newval);
-+	spin_lock(q->lock_ptr);
- 
--		if (curval == -EFAULT)
--			ret = -EFAULT;
--		if (curval == uval)
--			break;
--		uval = curval;
--	}
--	return ret;
-+	/*
-+	 * Check if someone else fixed it for us:
-+	 */
-+	if (pi_state->owner != oldowner)
-+		return 0;
-+
-+	if (ret)
-+		return ret;
-+
-+	goto retry;
- }
- 
- /*
-@@ -1524,7 +1576,7 @@ static int futex_lock_pi(u32 __user *uad
- 		 * that case:
- 		 */
- 		if (q.pi_state->owner != curr)
--			ret = fixup_pi_state_owner(uaddr, &q, curr);
-+			ret = fixup_pi_state_owner(uaddr, &q, curr, fshared);
- 	} else {
- 		/*
- 		 * Catch the rare case, where the lock was released
-@@ -1556,7 +1608,8 @@ static int futex_lock_pi(u32 __user *uad
- 				int res;
- 
- 				owner = rt_mutex_owner(&q.pi_state->pi_mutex);
--				res = fixup_pi_state_owner(uaddr, &q, owner);
-+				res = fixup_pi_state_owner(uaddr, &q, owner,
-+							   fshared);
- 
- 				/* propagate -EFAULT, if the fixup failed */
- 				if (res)
 
 -- 
