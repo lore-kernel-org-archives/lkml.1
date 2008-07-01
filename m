@@ -1,54 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753618AbYGAGT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbYGAGZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753618AbYGAGT1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 02:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYGAGTR
+	id S1753565AbYGAGZX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 02:25:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbYGAGZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 02:19:17 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:32877 "EHLO mx2.mail.elte.hu"
+	Tue, 1 Jul 2008 02:25:08 -0400
+Received: from gate.crashing.org ([63.228.1.57]:53053 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751492AbYGAGTQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 02:19:16 -0400
-Date: Tue, 1 Jul 2008 08:18:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] mpparse: Add a knob to disable IRQ 0 through I/O
-	APIC
-Message-ID: <20080701061815.GA16642@elte.hu>
-References: <Pine.LNX.4.55.0807010041030.30785@cliff.in.clinika.pl> <20080630215746.84ffb0f4.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080630215746.84ffb0f4.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751731AbYGAGZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 02:25:06 -0400
+Subject: RE: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Cc: John Williams <john.williams@petalogix.com>, grant.likely@secretlab.ca,
+       linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
+       vapier.adi@gmail.com, arnd@arndb.de, matthew@wil.cx,
+       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
+       John Linn <linnj@xilinx.com>, monstr@seznam.cz, drepper@redhat.com,
+       alan@lxorguk.ukuu.org.uk
+In-Reply-To: <20080630033943.332471860046@mail171-va3.bigfish.com>
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-6-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-7-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-8-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-9-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-10-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-11-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-12-git-send-email-monstr@seznam.cz>
+	 <1214483429-32360-13-git-send-email-monstr@seznam.cz>
+	 <fa686aa40806272249l7eae0c34k43a20ad41672b77a@mail.gmail.com>
+	 <1d3f23370806291702g4344a2f9lb62f85cbb475fca4@mail.gmail.com>
+	 <20080630033943.332471860046@mail171-va3.bigfish.com>
+Content-Type: text/plain
+Date: Tue, 01 Jul 2008 16:21:42 +1000
+Message-Id: <1214893302.20711.102.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> As for the copyright, I haven't been able to find much information on
+> whether or not generated files are even copyrightable.  One might
+> argue that they
+> don't have sufficient 'creative value' to be copyrightable.  Or
+> arguably, they are as copyrightable by the generator author as by the
+> author or the .mhs file.
+> I admit in this case, I've followed the safe route by claiming a
+> copyright, which at least at Xilinx has significant precedent.
 
-> What calls set_disable_irq0_through_ioapic() ?
+Also, thinking about your idea of sticking bits in BRAM etc...
 
-a DMI quirk in the next patch:
+what would be nice would be the ability to "merge" trees. We've been
+talking about that multiple times, it would be useful at several levels:
 
-+dmi_disable_irq0_through_ioapic(const struct dmi_system_id *d)
-+{
-+       pr_notice("%s detected: disabling IRQ 0 through I/O APIC\n", d->ident);
-+       set_disable_irq0_through_ioapic(1);
-+       return 0;
+ - We could provide pre-made DTs for known CPUs (ie, 440GP, 440GX,
+405EX, ...)
+ - Boards can then include that, and then "override" some properties
+(clocks, PHY wiring, ...)
+ - That could be done at the binary level too so that the BRAM contains
+on "overlay" on top of the base ref. platform device-tree that comes
+with the kernel for example.
 
-	Ingo
+This is slightly different between doing that in the .dts source via
+some kind of #include vs. doing that by merging blobs but we could make
+it be essentially be the same internally: The #include generates a blob
+that is then "merged in".
+
+Just random thoughts...
+
+Ben.
+ 
+
