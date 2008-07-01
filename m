@@ -1,269 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbYGAQtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964AbYGAQz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759284AbYGAQtt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 12:49:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYGAQsu
+	id S1754964AbYGAQz1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 12:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbYGAQzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 12:48:50 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:57533 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbYGAQsr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 12:48:47 -0400
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080701648.901668603@firstfloor.org>
-In-Reply-To: <20080701648.901668603@firstfloor.org>
-To: venkatesh.pallipadi@intel.com, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [4/4] Implement dynamic machine check banks support
-Message-Id: <20080701164844.EE7D11B4314@basil.firstfloor.org>
-Date: Tue,  1 Jul 2008 18:48:44 +0200 (CEST)
-X-OriginalArrivalTime: 01 Jul 2008 16:41:24.0085 (UTC) FILETIME=[4C8D0A50:01C8DB99]
+	Tue, 1 Jul 2008 12:55:18 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:33075 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751207AbYGAQzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 12:55:17 -0400
+Message-ID: <486A6171.5050909@sgi.com>
+Date: Tue, 01 Jul 2008 09:55:13 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org>	<485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>	<485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com>	<485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com>	<485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>	<485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com>	<m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org> <m1skuuov4t.fsf@frodo.ebiederm.org> <486A5AFC.1090707@goop.org>
+In-Reply-To: <486A5AFC.1090707@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge wrote:
+> Eric W. Biederman wrote:
+>> Jeremy Fitzhardinge <jeremy@goop.org> writes:
+>>
+>>  
+>>> No, the original crash being discussed was a GP fault in head_64.S as
+>>> it tries
+>>> to initialize the kernel segments.  The cause was that the prototype
+>>> GDT is all
+>>> zero, even though it's an initialized variable, and inspection of
+>>> vmlinux shows
+>>> that it has the right contents.  But somehow it's either 1) getting
+>>> zeroed on
+>>> load, or 2) is loaded to the wrong place.
+>>>
+>>> The zero-based PDA mechanism requires the introduction of a new ELF
+>>> segment
+>>> based at vaddr 0 which is sufficiently unusual that it wouldn't
+>>> surprise me if
+>>> its triggering some toolchain bug.
+>>>     
+>>
+>> Agreed.  Given the previous description my hunch is that the bug is
+>> occurring
+>> during objcopy.  If vmlinux is good and the compressed kernel is bad.
+>>
+>> It should be possible to look at vmlinux.bin and see if that was
+>> generated
+>> properly.
+>>
+>>  
+>>> Mike: what would happen if the PDA were based at 4k rather than 0? 
+>>> The stack
+>>> canary would still be at its small offset (0x20?), but it doesn't
+>>> need to be
+>>> initialized.  I'm not sure if doing so would fix anything, however.
+>>>     
+>>
+>> I'm dense today.  Why are we doing a zero based pda?  That seems the most
+>> likely culprit of linker trouble, and we should be able to  put a smaller
+>> offset in the segment register to allow for everything to work as
+>> expected.
+>>   
+> 
+> The only reason we need to do a zero-based PDA is because of the
+> boneheaded gcc/x86_64 ABI decision to put the stack canary at a fixed
+> offset from %gs (all they had to do was define it as a weak symbol we
+> could override).  If we want to support stack-protector and unify the
+> handling of per-cpu variables, we need to rebase the per-cpu area at
+> zero, starting with the PDA.
+> 
+> My own inclination would be to drop stack-protector support until gcc
+> gets fixed, rather than letting it prevent us from unifying an area
+> which is in need of unification...
+> 
+>    J
 
-[Note: this supercedes an earlier patch by Venki Pallipadi
-8edc5cc5ec880c96de8e6686fb0d7a5231e91c05. Venki's patch should be reverted
-first before applying this.  Also it requires an earlier sysfs infrastructure 
-patch.]
+I might be inclined to agree except most of the past few months of
+finding problems caused by NR_CPUS=4096 has been stack overflow.  So
+any help detecting this condition is very useful.  I can get static
+stacksizes (of course), but there's not a lot of help determining
+call chains except via actually executing the code.
 
-This patch replaces the hardcoded max number of machine check banks with 
-dynamic allocation depending on what the CPU reports. The sysfs
-data structures and the banks array are dynamically allocated.
-
-There is still a hard bank limit (128) because the mcelog protocol uses
-banks >= 128 as pseudo banks to escape other events. But we expect
-that 128 banks is beyond any reasonable CPU for now.
-
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- arch/x86/kernel/cpu/mcheck/mce_64.c |  128 ++++++++++++++++++++++++++++++------
- 1 file changed, 110 insertions(+), 18 deletions(-)
-
-Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c
-+++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c
-@@ -23,6 +23,8 @@
- #include <linux/ctype.h>
- #include <linux/kmod.h>
- #include <linux/kdebug.h>
-+#include <linux/kobject.h>
-+#include <linux/sysfs.h>
- #include <asm/processor.h>
- #include <asm/msr.h>
- #include <asm/mce.h>
-@@ -32,7 +34,12 @@
- #include "ancient.h"
- 
- #define MISC_MCELOG_MINOR 227
--#define NR_BANKS 6
-+
-+/*
-+ * To support more than 128 would need to escape the predefined
-+ * Linux defined extended banks first.
-+ */
-+#define MAX_NR_BANKS (MCE_EXTENDED_BANK - 1)
- 
- atomic_t mce_entry;
- 
-@@ -47,7 +54,7 @@ int mce_disabled __cpuinitdata;
-  */
- static int tolerant = 1;
- static int banks;
--static unsigned long bank[NR_BANKS] = { [0 ... NR_BANKS-1] = ~0UL };
-+static unsigned long *bank;
- static unsigned long notify_user;
- static int rip_msr;
- static int mce_bootlog = -1;
-@@ -426,20 +433,39 @@ static int dont_init_bank0;
- /*
-  * Initialize Machine Checks for a CPU.
-  */
--static void mce_init(void *dummy)
-+static void mce_cap_init(void)
- {
- 	u64 cap;
--	int i;
- 
- 	rdmsrl(MSR_IA32_MCG_CAP, cap);
--	banks = cap & 0xff;
--	if (banks > NR_BANKS) {
--		printk(KERN_INFO "MCE: warning: using only %d banks\n", banks);
--		banks = NR_BANKS;
-+	/* Handle the unlikely case of one CPU having less banks than others */
-+	if (banks == 0 || banks > (cap & 0xff))
-+		banks = cap & 0xff;
-+	if (banks > MAX_NR_BANKS) {
-+		printk(KERN_WARNING
-+		       "MCE: Using only %d machine check banks out of %u\n",
-+			banks, MAX_NR_BANKS);
-+		banks = MAX_NR_BANKS;
-+	}
-+	if (!bank) {
-+		bank = kmalloc(banks * sizeof(u64), GFP_KERNEL);
-+		if (!bank)
-+			return;
-+		memset(bank, 0xff, banks * sizeof(u64));
- 	}
-+
- 	/* Use accurate RIP reporting if available. */
- 	if ((cap & (1<<9)) && ((cap >> 16) & 0xff) >= 9)
- 		rip_msr = MSR_IA32_MCG_EIP;
-+}
-+
-+/*
-+ * Initialize Machine Checks for a CPU.
-+ */
-+static void mce_init(void *dummy)
-+{
-+	int i;
-+	u64 cap;
- 
- 	/* Log the machine checks left over from the previous reset.
- 	   This also clears all registers */
-@@ -447,6 +473,7 @@ static void mce_init(void *dummy)
- 
- 	set_in_cr4(X86_CR4_MCE);
- 
-+	rdmsrl(MSR_IA32_MCG_CAP, cap);
- 	if (cap & MCG_CTL_P)
- 		wrmsr(MSR_IA32_MCG_CTL, 0xffffffff, 0xffffffff);
- 
-@@ -530,6 +557,7 @@ void __cpuinit mcheck_init(struct cpuinf
- 
- 	mce_ancient_init(c);
- 	mce_cpu_quirks(c);
-+	mce_cap_init();
- 
- 	if (mce_disabled ||
- 	    cpu_test_and_set(smp_processor_id(), mce_cpus) ||
-@@ -780,13 +808,26 @@ DEFINE_PER_CPU(struct sys_device, device
- 	}								\
- 	static SYSDEV_ATTR(name, 0644, show_ ## name, set_ ## name);
- 
--/* TBD should generate these dynamically based on number of available banks */
--ACCESSOR(bank0ctl,bank[0],mce_restart())
--ACCESSOR(bank1ctl,bank[1],mce_restart())
--ACCESSOR(bank2ctl,bank[2],mce_restart())
--ACCESSOR(bank3ctl,bank[3],mce_restart())
--ACCESSOR(bank4ctl,bank[4],mce_restart())
--ACCESSOR(bank5ctl,bank[5],mce_restart())
-+static struct sysdev_attribute *bank_attrs;
-+
-+static ssize_t show_bank(struct sys_device *s, struct sysdev_attribute *attr,
-+			char *buf)
-+{
-+	u64 b = bank[attr - bank_attrs];
-+	return sprintf(buf, "%Lx\n", b);
-+}
-+
-+static ssize_t set_bank(struct sys_device *s, struct sysdev_attribute *attr,
-+			const char *buf, size_t siz)
-+{
-+	char *end;
-+	u64 new = simple_strtoull(buf, &end, 0);
-+	if (end == buf)
-+		return -EINVAL;
-+	bank[attr - bank_attrs] = new;
-+	mce_restart();
-+	return end-buf;
-+}
- 
- static ssize_t show_trigger(struct sys_device *s, struct sysdev_attribute *attr,
- 				char *buf)
-@@ -813,8 +854,6 @@ static SYSDEV_ATTR(trigger, 0644, show_t
- static SYSDEV_INT_ATTR(tolerant, 0644, tolerant);
- ACCESSOR(check_interval,check_interval,mce_restart())
- static struct sysdev_attribute *mce_attributes[] = {
--	&attr_bank0ctl, &attr_bank1ctl, &attr_bank2ctl,
--	&attr_bank3ctl, &attr_bank4ctl, &attr_bank5ctl,
- 	&attr_tolerant.attr, &attr_check_interval, &attr_trigger,
- 	NULL
- };
-@@ -844,11 +883,22 @@ static __cpuinit int mce_create_device(u
- 		if (err)
- 			goto error;
- 	}
-+	for (i = 0; i < banks; i++) {
-+		err = sysdev_create_file(&per_cpu(device_mce, cpu),
-+					&bank_attrs[i]);
-+		if (err)
-+			goto error2;
-+	}
- 	cpu_set(cpu, mce_device_initialized);
- 
- 	return 0;
-+error2:
-+	while (--i >= 0) {
-+		sysdev_remove_file(&per_cpu(device_mce, cpu),
-+					&bank_attrs[i]);
-+	}
- error:
--	while (i--) {
-+	while (--i >= 0) {
- 		sysdev_remove_file(&per_cpu(device_mce,cpu),
- 				   mce_attributes[i]);
- 	}
-@@ -867,6 +917,9 @@ static void mce_remove_device(unsigned i
- 	for (i = 0; mce_attributes[i]; i++)
- 		sysdev_remove_file(&per_cpu(device_mce,cpu),
- 			mce_attributes[i]);
-+	for (i = 0; i < banks; i++)
-+		sysdev_remove_file(&per_cpu(device_mce, cpu),
-+			&bank_attrs[i]);
- 	sysdev_unregister(&per_cpu(device_mce,cpu));
- 	cpu_clear(cpu, mce_device_initialized);
- }
-@@ -894,6 +947,34 @@ static struct notifier_block mce_cpu_not
- 	.notifier_call = mce_cpu_callback,
- };
- 
-+static __init int mce_init_banks(void)
-+{
-+	int i;
-+
-+	bank_attrs = kzalloc(sizeof(struct sysdev_attribute) * banks,
-+				GFP_KERNEL);
-+	if (!bank_attrs)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < banks; i++) {
-+		struct sysdev_attribute *a = &bank_attrs[i];
-+		a->attr.name = kasprintf(GFP_KERNEL, "bank%d", i);
-+		if (!a->attr.name)
-+			goto nomem;
-+		a->attr.mode = 0644;
-+		a->show = show_bank;
-+		a->store = set_bank;
-+	}
-+	return 0;
-+
-+nomem:
-+	while (--i >= 0)
-+		kfree(bank_attrs[i].attr.name);
-+	kfree(bank_attrs);
-+	bank_attrs = NULL;
-+	return -ENOMEM;
-+}
-+
- static __init int mce_init_device(void)
- {
- 	int err;
-@@ -901,6 +982,11 @@ static __init int mce_init_device(void)
- 
- 	if (!mce_available(&boot_cpu_data))
- 		return -EIO;
-+
-+	err = mce_init_banks();
-+	if (err)
-+		return err;
-+
- 	err = sysdev_class_register(&mce_sysclass);
- 	if (err)
- 		return err;
+Thanks,
+Mike
