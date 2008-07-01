@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759405AbYGATxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758841AbYGAT5M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759405AbYGATxp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 15:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbYGATxe
+	id S1758841AbYGAT5M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 15:57:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbYGAT45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 15:53:34 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45455 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752518AbYGATxd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 15:53:33 -0400
-Subject: Re: [2.6 patch] remove dummy asm/kvm.h files
-From: David Woodhouse <dwmw2@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Adrian Bunk <bunk@kernel.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Avi Kivity <avi@qumranet.com>, linux-arch@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080701193236.GB10350@uranus.ravnborg.org>
-References: <20080701162716.GB32598@cs181140183.pp.htv.fi>
-	 <20080701193236.GB10350@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Tue, 01 Jul 2008 20:53:20 +0100
-Message-Id: <1214942000.10393.418.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+	Tue, 1 Jul 2008 15:56:57 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59750 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752115AbYGAT4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 15:56:55 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP systems
+Date: Tue, 1 Jul 2008 21:58:33 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>, Len Brown <lenb@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl> <20080701001727.GA4174@srcf.ucam.org> <20080701084648.GA21727@elte.hu>
+In-Reply-To: <20080701084648.GA21727@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200807012158.34356.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-01 at 21:32 +0200, Sam Ravnborg wrote:
-> On Tue, Jul 01, 2008 at 07:27:16PM +0300, Adrian Bunk wrote:
-> > This patch removes the dummy asm/kvm.h files on architectures not (yet) 
-> > supporting KVM and uses the same conditional headers installation as
-> > already used for a.out.h .
+On Tuesday, 1 of July 2008, Ingo Molnar wrote:
+> 
+> * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> 
+> > Assuming it works for Rafael (still haven't had time to pull my nx6125 
+> > out of storage):
 > > 
-> > Also removed are superfluous install rules in the s390 and x86 Kbuild 
-> > files (they are already in Kbuild.asm).
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > Signed-off-by: mjg@redhat.com
 > 
-> I really do not like the way we implement these checks and
-> think this should be a kconfig option.
-> But we do not (yet) require a configured kernel when exporting
-> to userspace so this is not feasible right now.
-
-I'm _really_ dubious about doing this kind of thing through Kconfig.
-
-In the general case, we really don't want exported headers to have any
-differences based on the kernel configuration.
-
-Yes, I suppose it would be OK if we are very careful not to let anyone
-use config symbols that aren't hard-coded for the given architecture.
-But in practice I don't think there's any real chance that we'd manage
-to be careful _enough_. We'd find people using symbols they shouldn't
-be.
-
-> So despite the above this patch has my:
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> Rafael, could you please try the latest tip/master that i've just pushed 
+> out:
 > 
-> Same for the asm/a.out patch you posted the other day.
+>   http://people.redhat.com/mingo/tip.git/README
 > 
-> David - I assume you take these via your tree?
+> it has the final form of these changes integrated - it should in theory 
+> work out of box on your system, with no boot parameters or other 
+> explicit quirks needed anywhere.
 
-I can do.
+I tested patches [1/2] (your version) and [2/2] on top of today's linux-next
+and they work just fine.
 
--- 
-dwmw2
-
+Thanks,
+Rafael
