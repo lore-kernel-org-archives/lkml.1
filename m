@@ -1,125 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbYGAMmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755772AbYGAMq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756018AbYGAMmY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 08:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYGAMmP
+	id S1755772AbYGAMq1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 08:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYGAMqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 08:42:15 -0400
-Received: from khc.piap.pl ([195.187.100.11]:39212 "EHLO khc.piap.pl"
+	Tue, 1 Jul 2008 08:46:19 -0400
+Received: from gate.crashing.org ([63.228.1.57]:34959 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753933AbYGAMmO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 08:42:14 -0400
-To: Jeff Garzik <jeff@garzik.org>
-Cc: <netdev@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] WAN: Remove no longer needed pvc_desc in FR code.
-References: <m3d4ly4ns2.fsf@maximus.localdomain>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 01 Jul 2008 14:42:07 +0200
-In-Reply-To: <m3d4ly4ns2.fsf@maximus.localdomain> (Krzysztof Halasa's message of "Mon\, 30 Jun 2008 23\:26\:53 +0200")
-Message-ID: <m3bq1hvkrk.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 8BIT
+	id S1753518AbYGAMqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 08:46:18 -0400
+Subject: Delayed interrupt work, thread pools
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: ksummit-2008-discuss@lists.linux-foundation.org
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 01 Jul 2008 22:45:35 +1000
+Message-Id: <1214916335.20711.141.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove no longer needed struct pvc_desc in FR code.
-Requires "WAN: convert drivers to use built-in netdev_stats" patch.
+Here's something that's been running in the back of my mind for some
+time that could be a good topic of discussion at KS.
 
-Signed-off-by: Krzysztof Ha³asa <khc@pm.waw.pl>
+In various areas (I'll come up with some examples later), kernel code
+such as drivers want to defer some processing to "task level", for
+various reasons such as locking (taking mutexes), memory allocation,
+interrupt latency, or simply doing things that may take more time than
+is reasonable to do at interrupt time or do things that may block.
 
-diff --git a/drivers/net/wan/hdlc_fr.c b/drivers/net/wan/hdlc_fr.c
-index cb1b415..109bab3 100644
---- a/drivers/net/wan/hdlc_fr.c
-+++ b/drivers/net/wan/hdlc_fr.c
-@@ -135,10 +135,6 @@ typedef struct pvc_device_struct {
- 	}state;
- }pvc_device;
+Currently, the main mechanism we provide to do that is workqueues. They
+somewhat solve the problem, but at the same time, somewhat can make it
+worse.
+
+The problem is that delaying a potentially long/sleeping task to a work
+queue will have the effect of delaying everything else waiting on that
+work queue.
+
+The ability to have per-cpu work queues helps in areas where the problem
+scope is mostly per-cpu, but doesn't necessarily cover the case where
+the problem scope depends on the driver's activity, not necessarily tied
+to one CPU.
+
+Let's take some examples: The main one (which triggers my email) is
+spufs, ie, the management of the SPU "co-processors" on the cell
+processor, though the same thing mostly applies to any similar
+co-processor architecture that would require the need to service page
+faults to access user memory.
+
+In this case, various contexts running on the device may want to service
+long operations (ie. handle_mm_fault in this case), but using the main
+work queue or even a dedicated per-cpu one will cause a context to
+potentially hog other contexts or other drivers trying to do the same
+while the first one is blocked in the page fault code waiting for IOs...
+
+The basic interface that such drivers want it still about the same as
+workqueues tho: "call that function at task level as soon as possible".
+
+Thus the idea of turning workqueues into some kind of pool of threads. 
+
+At a given point in time, if none are available (idle) and work stacks
+up, the kernel can allocate a new bunch and dispatch more work. Of
+course, we would have to find tune what the actual algorithm is to
+decide whether to allocate new threads or just wait / throttle for
+current delayed work to complete. But I believe the basic premise still
+stand.
+
+So what about we allocate a "pool" of task structs, initially blocked,
+ready to service jobs dispatched from interrupt time, with some
+mechanism, possibly based on the existing base work queue, that can
+allocate more if too much work stacks up or (via some scheduler
+feedback) too many of the current ones are blocked (ie. waiting for IOs
+for example).
+
+For the specific SPU management issue we've been thinking about, we
+could just implement an ad-hoc mechanism locally, but it occurs to me
+that maybe this is a more generic problem and thus some kind of
+extension to workqueues would be a good idea here.
+
+Any comments ?
+
+Cheers,
+Ben.
  
--struct pvc_desc {
--	pvc_device *pvc;
--};
--
- struct frad_state {
- 	fr_proto settings;
- 	pvc_device *first_pvc;
-@@ -178,10 +174,6 @@ static inline struct frad_state* state(hdlc_device *hdlc)
- 	return(struct frad_state *)(hdlc->state);
- }
- 
--static inline struct pvc_desc* pvcdev_to_desc(struct net_device *dev)
--{
--	return dev->priv;
--}
- 
- static inline pvc_device* find_pvc(hdlc_device *hdlc, u16 dlci)
- {
-@@ -351,7 +343,7 @@ static int fr_hard_header(struct sk_buff **skb_p, u16 dlci)
- 
- static int pvc_open(struct net_device *dev)
- {
--	pvc_device *pvc = pvcdev_to_desc(dev)->pvc;
-+	pvc_device *pvc = dev->priv;
- 
- 	if ((pvc->frad->flags & IFF_UP) == 0)
- 		return -EIO;  /* Frad must be UP in order to activate PVC */
-@@ -371,7 +363,7 @@ static int pvc_open(struct net_device *dev)
- 
- static int pvc_close(struct net_device *dev)
- {
--	pvc_device *pvc = pvcdev_to_desc(dev)->pvc;
-+	pvc_device *pvc = dev->priv;
- 
- 	if (--pvc->open_count == 0) {
- 		hdlc_device *hdlc = dev_to_hdlc(pvc->frad);
-@@ -390,7 +382,7 @@ static int pvc_close(struct net_device *dev)
- 
- static int pvc_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
- {
--	pvc_device *pvc = pvcdev_to_desc(dev)->pvc;
-+	pvc_device *pvc = dev->priv;
- 	fr_proto_pvc_info info;
- 
- 	if (ifr->ifr_settings.type == IF_GET_PROTO) {
-@@ -418,7 +410,7 @@ static int pvc_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
- 
- static int pvc_xmit(struct sk_buff *skb, struct net_device *dev)
- {
--	pvc_device *pvc = pvcdev_to_desc(dev)->pvc;
-+	pvc_device *pvc = dev->priv;
- 
- 	if (pvc->state.active) {
- 		if (dev->type == ARPHRD_ETHER) {
-@@ -1079,7 +1071,7 @@ static void pvc_setup(struct net_device *dev)
- static int fr_add_pvc(struct net_device *frad, unsigned int dlci, int type)
- {
- 	hdlc_device *hdlc = dev_to_hdlc(frad);
--	pvc_device *pvc = NULL;
-+	pvc_device *pvc;
- 	struct net_device *dev;
- 	int result, used;
- 
-@@ -1095,10 +1087,9 @@ static int fr_add_pvc(struct net_device *frad, unsigned int dlci, int type)
- 	used = pvc_is_used(pvc);
- 
- 	if (type == ARPHRD_ETHER)
--		dev = alloc_netdev(sizeof(struct pvc_desc), "pvceth%d",
--				   ether_setup);
-+		dev = alloc_netdev(0, "pvceth%d", ether_setup);
- 	else
--		dev = alloc_netdev(sizeof(struct pvc_desc), "pvc%d", pvc_setup);
-+		dev = alloc_netdev(0, "pvc%d", pvc_setup);
- 
- 	if (!dev) {
- 		printk(KERN_WARNING "%s: Memory squeeze on fr_pvc()\n",
-@@ -1120,7 +1111,7 @@ static int fr_add_pvc(struct net_device *frad, unsigned int dlci, int type)
- 	dev->change_mtu = pvc_change_mtu;
- 	dev->mtu = HDLC_MAX_MTU;
- 	dev->tx_queue_len = 0;
--	pvcdev_to_desc(dev)->pvc = pvc;
-+	dev->priv = pvc;
- 
- 	result = dev_alloc_name(dev, dev->name);
- 	if (result < 0) {
+
