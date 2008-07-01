@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbYGAWSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbYGAWYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761580AbYGAWSf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 18:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758505AbYGAWSN
+	id S1760954AbYGAWYc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 18:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYGAWYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 18:18:13 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:55136 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757768AbYGAWSL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 18:18:11 -0400
-Date: Wed, 2 Jul 2008 00:18:08 +0200
-From: Sebastian Siewior <lkml@ml.breakpoint.cc>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jan Engelhardt <jengelh@medozas.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: linux fatal: cannot describe <sha1>
-Message-ID: <20080701221808.GA26272@Chamillionaire.breakpoint.cc>
-References: <alpine.LNX.1.10.0807011817230.20393@fbirervta.pbzchgretzou.qr> <20080701200951.GB10677@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20080701200951.GB10677@uranus.ravnborg.org>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 1 Jul 2008 18:24:24 -0400
+Received: from mx2.suse.de ([195.135.220.15]:54720 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751862AbYGAWYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 18:24:24 -0400
+Date: Wed, 2 Jul 2008 00:24:21 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add base_hi BAR for oxsemi_840
+Message-ID: <20080702002421.084d4f1c@kopernikus.site>
+In-Reply-To: <20080701150026.d0ee3457.akpm@linux-foundation.org>
+References: <20080701234529.67f59f49@kopernikus.site>
+	<20080701150026.d0ee3457.akpm@linux-foundation.org>
+Organization: SUSE LINUX Products GmbH
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.10; i686-pc-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Sam Ravnborg | 2008-07-01 22:09:51 [+0200]:
+* Andrew Morton <akpm@linux-foundation.org> [2008-07-01 15:00]:
+> > 
+> > --- a/drivers/parport/parport_pc.c
+> > +++ b/drivers/parport/parport_pc.c
+> > @@ -2877,7 +2877,7 @@ static struct parport_pc_pci {
+> >  	 * and 840 locks up if you write 1 to bit 2! */
+> >  	/* oxsemi_952 */		{ 1, { { 0, 1 }, } },
+> >  	/* oxsemi_954 */		{ 1, { { 0, -1 }, } },
+> > -	/* oxsemi_840 */		{ 1, { { 0, -1 }, } },
+> > +	/* oxsemi_840 */		{ 1, { { 0, 1 }, } },
+> >  	/* aks_0100 */                  { 1, { { 0, -1 }, } },
+> >  	/* mobility_pp */		{ 1, { { 0, 1 }, } },
+> >  	/* netmos_9705 */               { 1, { { 0, -1 }, } }, /* untested */
+> 
+> My parport knowledge doesn't permit me to understand how serious the
+> just-fixed bug was.  Non-functional parport?
+> 
+> If so, this looks like a 2.6.26 and 2.6.25.x fix?
 
->> Just a note that when you run git-describe, you should probably quiten it.
->> 
->> fatal: cannot describe 'bd7364a0fd5a4a2878fe4a224be1b142a4e6698e'
->> 
->> This happens when tags are not present, which can happen if Linus's tree 
->> is sent upwards again, IOW:
->> 
->>  machine1$  git-clone torvalds/linux-2.6.git
->>  machine1$  git push elsewhere master
->> 
->>  machine2$  git-clone elsewhere:/linux
->>  machine2$  git-describe HEAD
->>  fatal: cannot describe that
->
->Hi Jan.
->
->Any specific reason why you sent it to me?
->Maybe because I do not use git describe at all?
-Maybe he was thinking about this (and didn't know that you were moving):
+No, for good old printers, everything works. It's just that ECR
+register was not available (the base_hi stuff). Because of that,
+the TRISTATE detection did not work, which meant that for me my
+self-built logic analyzer which uses the parallel port did not work.
 
----
-scripts: don't desribe if there is nothing to describe
+Just merge in 2.6.27 is enough. :)
 
-Signed-off-by: Sebastian Siewior <sebastian@breakpoint.cc>
----
- scripts/setlocalversion |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/scripts/setlocalversion b/scripts/setlocalversion
-index 1c1bdaf..83b7512 100755
---- a/scripts/setlocalversion
-+++ b/scripts/setlocalversion
-@@ -12,7 +12,9 @@ cd "${1:-.}" || usage
- if head=`git rev-parse --verify HEAD 2>/dev/null`; then
- 	# Do we have an untagged version?
- 	if git name-rev --tags HEAD | grep -E '^HEAD[[:space:]]+(.*~[0-9]*|undefined)$' > /dev/null; then
--	        git describe | awk -F- '{printf("-%05d-%s", $(NF-1),$(NF))}'
-+		if tag=`git describe 2>/dev/null`; then
-+			echo $tag | awk -F- '{printf("-%05d-%s", $(NF-1),$(NF))}'
-+		fi
- 	fi
- 
- 	# Are there uncommitted changes?
+Bernhard
 -- 
-1.5.5.4
-
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
