@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbYGAR3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbYGARc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754864AbYGAR3p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 13:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbYGAR3e
+	id S1754525AbYGARc7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 13:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbYGARcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 13:29:34 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45270 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751096AbYGAR3c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 13:29:32 -0400
-Message-ID: <486A6950.6050507@zytor.com>
-Date: Tue, 01 Jul 2008 10:28:48 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 1 Jul 2008 13:32:52 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:34102 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751207AbYGARcv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 13:32:51 -0400
+Message-ID: <486A6A42.5050606@sgi.com>
+Date: Tue, 01 Jul 2008 10:32:50 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kernel-testers@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
-References: <200807010148.02135.rjw@sisk.pl> <20080701063133.GC16642@elte.hu> <4869D67B.4060902@zytor.com> <486A2AC3.2060107@firstfloor.org> <486A5378.7020601@zytor.com> <486A5977.8020905@firstfloor.org>
-In-Reply-To: <486A5977.8020905@firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/1] sched: Reduce stack size in isolated_cpu_setup()
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> H. Peter Anvin wrote:
->> Andi Kleen wrote:
->>>> It still seems incredibly risky to push this for 2.6.26, especially
->>>> given the Elan revelation.
->>> Do Elans even support S3?
->> I don't know if they do, but I don't know offhand the extent of machines
->> that may have that problem, especially since Intel now document it as
->> "failures are readily seen".
-> 
-> What document is that exactly?
-> 
+Subject: sched: Reduce stack size in isolated_cpu_setup()
 
-Per Jeremy's recent email, volume 3a, section 8.9.1:
+  * Remove 16k stack requirements in isolated_cpu_setup when NR_CPUS=4096.
 
->    Random failures can occur if other instructions exist between steps
->    3 and 4 above.  Failures will be readily seen in some situations,
->    such as when instructions that reference memory are inserted between
->    steps 3 and 4 while in system management mode. 
+(Somehow this patch was misplaced from some months back.)
 
-	-hpa
+Based on linux-2.6.tip/master
+
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ kernel/sched.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- linux-2.6.tip.orig/kernel/sched.c
++++ linux-2.6.tip/kernel/sched.c
+@@ -6739,7 +6739,8 @@ static cpumask_t cpu_isolated_map = CPU_
+ /* Setup the mask of cpus configured for isolated domains */
+ static int __init isolated_cpu_setup(char *str)
+ {
+-	int ints[NR_CPUS], i;
++	static int __initdata ints[NR_CPUS];
++	int i;
+ 
+ 	str = get_options(str, ARRAY_SIZE(ints), ints);
+ 	cpus_clear(cpu_isolated_map);
