@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760094AbYGAPwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbYGAP50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760094AbYGAPwe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 11:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYGAPwY
+	id S1758016AbYGAP50 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 11:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbYGAP5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 11:52:24 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:28250 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751820AbYGAPwX (ORCPT
+	Tue, 1 Jul 2008 11:57:16 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:53674 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753416AbYGAP5P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 11:52:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=TPaPSFZQaEB7Yrmv4bpE5WKy0l3YG4clmPIH/yGsnJgZSZeSwUzAfxxI+a5GlcRxQr
-         5LpEMm9dWQCPd12p0aSUW3HT+fo0Q8jUv+TOGm8rSRqHoLjUm8M82A0MuXbk5o74vDDv
-         l4BeTOx3ARdf3kvgJEQpT7hkPQj30/haqjnFc=
-Date: Tue, 1 Jul 2008 17:52:17 +0200
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] x86: small unifications of address printing
-Message-ID: <20080701155217.GA22318@damson.getinternet.no>
+	Tue, 1 Jul 2008 11:57:15 -0400
+Message-ID: <486A5378.7020601@zytor.com>
+Date: Tue, 01 Jul 2008 08:55:36 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel-testers@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
+References: <200807010148.02135.rjw@sisk.pl> <20080701063133.GC16642@elte.hu> <4869D67B.4060902@zytor.com> <486A2AC3.2060107@firstfloor.org>
+In-Reply-To: <486A2AC3.2060107@firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(resend to lkml)
+Andi Kleen wrote:
+>> It still seems incredibly risky to push this for 2.6.26, especially
+>> given the Elan revelation.
+> 
+> Do Elans even support S3?
 
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Tue, 1 Jul 2008 14:51:08 +0200
-Subject: [PATCH] x86: small unifications of address printing
+I don't know if they do, but I don't know offhand the extent of machines 
+that may have that problem, especially since Intel now document it as 
+"failures are readily seen".
 
-'man 3 printf' tells me that %p should be printed as if by %#x, but
-this is not true for the kernel, which does not use the '0x' prefix
-for the %p conversion specifier.
+>>  I think it needs to be tested on the 2.6.27
+>> track, and then possibly be pushed back via the 2.6.26-stable route.
+> 
+> I'm just not sure how many suspend/resume cycles people really do
+> on a early (pre -rc) mainline kernel (or in linux-next for that
+> matter). You usually have to install on a laptop and actually
+> use it.
+ >
+> Since this code is only executed on resume some directed testing
+> would be better. That is what Rafael asked for in this mail.
 
-A small cast to (void *) is also prettier than #ifdef/#else/#endif.
+The issue is mostly if it breaks some obscure system.  I have put it on 
+my laptop, Ingo has it on this test system with a suspend-testing cycle, 
+and so on, but the number of systems exposed is going to be small.
 
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- arch/x86/mm/fault.c |   16 ++++------------
- 1 files changed, 4 insertions(+), 12 deletions(-)
+> I think it would be ok for .26 if we can get confirmation it works
+> on a few systems with S3 suspend/resume.
 
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index cd0ea9d..179c159 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -409,11 +409,7 @@ static void show_fault_oops(struct pt_regs *regs, unsigned long error_code,
- 		printk(KERN_CONT "NULL pointer dereference");
- 	else
- 		printk(KERN_CONT "paging request");
--#ifdef CONFIG_X86_32
--	printk(KERN_CONT " at %08lx\n", address);
--#else
--	printk(KERN_CONT " at %016lx\n", address);
--#endif
-+	printk(KERN_CONT " at %p\n", (void *) address);
- 	printk(KERN_ALERT "IP:");
- 	printk_address(regs->ip, 1);
- 	dump_pagetable(address);
-@@ -830,14 +826,10 @@ bad_area_nosemaphore:
- 		if (show_unhandled_signals && unhandled_signal(tsk, SIGSEGV) &&
- 		    printk_ratelimit()) {
- 			printk(
--#ifdef CONFIG_X86_32
--			"%s%s[%d]: segfault at %lx ip %08lx sp %08lx error %lx",
--#else
--			"%s%s[%d]: segfault at %lx ip %lx sp %lx error %lx",
--#endif
-+			"%s%s[%d]: segfault at %lx ip %p sp %p error %lx",
- 			task_pid_nr(tsk) > 1 ? KERN_INFO : KERN_EMERG,
--			tsk->comm, task_pid_nr(tsk), address, regs->ip,
--			regs->sp, error_code);
-+			tsk->comm, task_pid_nr(tsk), address,
-+			(void *) regs->ip, (void *) regs->sp, error_code);
- 			print_vma_addr(" in ", regs->ip);
- 			printk("\n");
- 		}
--- 
-1.5.4.1
+That we already know it does, but it took a long time even until the 
+regression came to light.
+
+	-hpa
 
