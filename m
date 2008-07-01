@@ -1,186 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbYGANP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758404AbYGANQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758234AbYGANP5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 09:15:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbYGANPI
+	id S1758404AbYGANQY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 09:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbYGANPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 09:15:08 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:48078 "EHLO bagnes.atmel.com"
+	Tue, 1 Jul 2008 09:15:09 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:48084 "EHLO bagnes.atmel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754669AbYGANPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 09:15:04 -0400
+	id S1754086AbYGANPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 09:15:07 -0400
 From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 To: Pierre Ossman <drzeus-list@drzeus.cx>
 Cc: linux-kernel@vger.kernel.org,
        Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: [PATCH v2 3/4] mmc: Add per-card debugfs support
-Date: Tue,  1 Jul 2008 15:14:53 +0200
-Message-Id: <1214918094-26758-3-git-send-email-haavard.skinnemoen@atmel.com>
+Subject: [PATCH v2 4/4] atmel-mci: debugfs support
+Date: Tue,  1 Jul 2008 15:14:54 +0200
+Message-Id: <1214918094-26758-4-git-send-email-haavard.skinnemoen@atmel.com>
 X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1214918094-26758-2-git-send-email-haavard.skinnemoen@atmel.com>
+In-Reply-To: <1214918094-26758-3-git-send-email-haavard.skinnemoen@atmel.com>
 References: <1214843703-13199-1-git-send-email-haavard.skinnemoen@atmel.com>
  <1214918094-26758-1-git-send-email-haavard.skinnemoen@atmel.com>
  <1214918094-26758-2-git-send-email-haavard.skinnemoen@atmel.com>
-X-OriginalArrivalTime: 01 Jul 2008 13:14:57.0579 (UTC) FILETIME=[759E37B0:01C8DB7C]
+ <1214918094-26758-3-git-send-email-haavard.skinnemoen@atmel.com>
+X-OriginalArrivalTime: 01 Jul 2008 13:14:57.0626 (UTC) FILETIME=[75A563A0:01C8DB7C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For each card successfully added to the bus, create a subdirectory under
-the host's debugfs root with information about the card.
-
-Depending on the card type, up to two files are added to the card
-directory: "state" and "status". The former exists for all cards, and
-reflects the "state" field of struct mmc_card.
-
-The "status" field exists only for MMC and SD memory cards, not SDIO.
-Reading this file will ask the card about its current status and
-return it. This can be useful if the card just refuses to respond to
-any commands, which might indicate that the card state is not what the
-MMC core thinks it is (due to a missing stop command, for example.)
+Create additional files under the host's debugfs directory containing
+additional host-specific debug information.
 
 Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 
-Changes since v1:
-  * move card debugfs stuff into debugfs.c
-  * add "state" file corresponding to the "state" field in struct
-    mmc_card.
-  * only create the "status" file if the card is an MMC or SD memory
-    card since SDIO doesn't support the SEND_STATUS command.
+Changes since atmel-mci v4:
+  * Use seq_file to simplify `req' file ops
+  * Make the output from the `regs' debugfs file more readable to humans
 ---
- drivers/mmc/core/bus.c     |    4 +++
- drivers/mmc/core/core.h    |    3 ++
- drivers/mmc/core/debugfs.c |   61 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/mmc/card.h   |    2 +
- 4 files changed, 70 insertions(+), 0 deletions(-)
+ drivers/mmc/host/atmel-mci-regs.h |    2 +
+ drivers/mmc/host/atmel-mci.c      |  189 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 191 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/mmc/core/bus.c b/drivers/mmc/core/bus.c
-index fd95b18..5c0d15b 100644
---- a/drivers/mmc/core/bus.c
-+++ b/drivers/mmc/core/bus.c
-@@ -252,6 +252,8 @@ int mmc_add_card(struct mmc_card *card)
- 	if (ret)
- 		return ret;
+diff --git a/drivers/mmc/host/atmel-mci-regs.h b/drivers/mmc/host/atmel-mci-regs.h
+index a9a5657..26bd80e 100644
+--- a/drivers/mmc/host/atmel-mci-regs.h
++++ b/drivers/mmc/host/atmel-mci-regs.h
+@@ -82,6 +82,8 @@
+ # define MCI_OVRE		(  1 <<  30)	/* RX Overrun Error */
+ # define MCI_UNRE		(  1 <<  31)	/* TX Underrun Error */
  
-+	mmc_add_card_debugfs(card);
++#define MCI_REGS_SIZE		0x100
 +
- 	mmc_card_set_present(card);
- 
- 	return 0;
-@@ -263,6 +265,8 @@ int mmc_add_card(struct mmc_card *card)
+ /* Register access macros */
+ #define mci_readl(port,reg)				\
+ 	__raw_readl((port)->regs + MCI_##reg)
+diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
+index 25d5324..71f7fe5 100644
+--- a/drivers/mmc/host/atmel-mci.c
++++ b/drivers/mmc/host/atmel-mci.c
+@@ -9,6 +9,7 @@
   */
- void mmc_remove_card(struct mmc_card *card)
- {
-+	mmc_remove_card_debugfs(card);
-+
- 	if (mmc_card_present(card)) {
- 		if (mmc_host_is_spi(card->host)) {
- 			printk(KERN_INFO "%s: SPI card removed\n",
-diff --git a/drivers/mmc/core/core.h b/drivers/mmc/core/core.h
-index 745da98..c819eff 100644
---- a/drivers/mmc/core/core.h
-+++ b/drivers/mmc/core/core.h
-@@ -56,5 +56,8 @@ extern int use_spi_crc;
- void mmc_add_host_debugfs(struct mmc_host *host);
- void mmc_remove_host_debugfs(struct mmc_host *host);
+ #include <linux/blkdev.h>
+ #include <linux/clk.h>
++#include <linux/debugfs.h>
+ #include <linux/device.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+@@ -16,6 +17,8 @@
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+ #include <linux/scatterlist.h>
++#include <linux/seq_file.h>
++#include <linux/stat.h>
  
-+void mmc_add_card_debugfs(struct mmc_card *card);
-+void mmc_remove_card_debugfs(struct mmc_card *card);
-+
- #endif
- 
-diff --git a/drivers/mmc/core/debugfs.c b/drivers/mmc/core/debugfs.c
-index 133c6e5..1237bb4 100644
---- a/drivers/mmc/core/debugfs.c
-+++ b/drivers/mmc/core/debugfs.c
-@@ -12,9 +12,11 @@
- #include <linux/seq_file.h>
- #include <linux/stat.h>
- 
-+#include <linux/mmc/card.h>
  #include <linux/mmc/host.h>
  
- #include "core.h"
-+#include "mmc_ops.h"
+@@ -88,6 +91,188 @@ struct atmel_mci {
+ #define atmci_clear_pending(host, event)			\
+ 	clear_bit(event, &host->pending_events)
  
- /* The debugfs functions are optimized away when CONFIG_DEBUG_FS isn't set. */
- static int mmc_ios_show(struct seq_file *s, void *data)
-@@ -162,3 +164,62 @@ void mmc_remove_host_debugfs(struct mmc_host *host)
- {
- 	debugfs_remove_recursive(host->debugfs_root);
- }
-+
-+static int mmc_dbg_card_status_get(void *data, u64 *val)
++/*
++ * The debugfs stuff below is mostly optimized away when
++ * CONFIG_DEBUG_FS is not set.
++ */
++static int atmci_req_show(struct seq_file *s, void *v)
 +{
-+	struct mmc_card	*card = data;
-+	u32		status;
-+	int		ret;
++	struct atmel_mci	*host = s->private;
++	struct mmc_request	*mrq = host->mrq;
++	struct mmc_command	*cmd;
++	struct mmc_command	*stop;
++	struct mmc_data		*data;
 +
-+	mmc_claim_host(card->host);
++	/* Make sure we get a consistent snapshot */
++	spin_lock_irq(&host->mmc->lock);
 +
-+	ret = mmc_send_status(data, &status);
-+	if (!ret)
-+		*val = status;
++	if (mrq) {
++		cmd = mrq->cmd;
++		data = mrq->data;
++		stop = mrq->stop;
 +
-+	mmc_release_host(card->host);
++		if (cmd)
++			seq_printf(s,
++				"CMD%u(0x%x) flg %x rsp %x %x %x %x err %d\n",
++				cmd->opcode, cmd->arg, cmd->flags,
++				cmd->resp[0], cmd->resp[1], cmd->resp[2],
++				cmd->resp[2], cmd->error);
++		if (data)
++			seq_printf(s, "DATA %u / %u * %u flg %x err %d\n",
++				data->bytes_xfered, data->blocks,
++				data->blksz, data->flags, data->error);
++		if (stop)
++			seq_printf(s,
++				"CMD%u(0x%x) flg %x rsp %x %x %x %x err %d\n",
++				stop->opcode, stop->arg, stop->flags,
++				stop->resp[0], stop->resp[1], stop->resp[2],
++				stop->resp[2], stop->error);
++	}
 +
-+	return ret;
++	spin_unlock_irq(&host->mmc->lock);
++
++	return 0;
 +}
-+DEFINE_SIMPLE_ATTRIBUTE(mmc_dbg_card_status_fops, mmc_dbg_card_status_get,
-+		NULL, "%08llx\n");
 +
-+void mmc_add_card_debugfs(struct mmc_card *card)
++static int atmci_req_open(struct inode *inode, struct file *file)
 +{
-+	struct mmc_host	*host = card->host;
++	return single_open(file, atmci_req_show, inode->i_private);
++}
++
++static const struct file_operations atmci_req_fops = {
++	.owner		= THIS_MODULE,
++	.open		= atmci_req_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static void atmci_show_status_reg(struct seq_file *s,
++		const char *regname, u32 value)
++{
++	static const char	*sr_bit[] = {
++		[0]	= "CMDRDY",
++		[1]	= "RXRDY",
++		[2]	= "TXRDY",
++		[3]	= "BLKE",
++		[4]	= "DTIP",
++		[5]	= "NOTBUSY",
++		[8]	= "SDIOIRQA",
++		[9]	= "SDIOIRQB",
++		[16]	= "RINDE",
++		[17]	= "RDIRE",
++		[18]	= "RCRCE",
++		[19]	= "RENDE",
++		[20]	= "RTOE",
++		[21]	= "DCRCE",
++		[22]	= "DTOE",
++		[30]	= "OVRE",
++		[31]	= "UNRE",
++	};
++	unsigned int		i;
++
++	seq_printf(s, "%s:\t0x%08x", regname, value);
++	for (i = 0; i < ARRAY_SIZE(sr_bit); i++) {
++		if (value & (1 << i)) {
++			if (sr_bit[i])
++				seq_printf(s, " %s", sr_bit[i]);
++			else
++				seq_puts(s, " UNKNOWN");
++		}
++	}
++	seq_putc(s, '\n');
++}
++
++static int atmci_regs_show(struct seq_file *s, void *v)
++{
++	struct atmel_mci	*host = s->private;
++	u32			*buf;
++
++	buf = kmalloc(MCI_REGS_SIZE, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++
++	/* Grab a more or less consistent snapshot */
++	spin_lock_irq(&host->mmc->lock);
++	memcpy_fromio(buf, host->regs, MCI_REGS_SIZE);
++	spin_unlock_irq(&host->mmc->lock);
++
++	seq_printf(s, "MR:\t0x%08x%s%s CLKDIV=%u\n",
++			buf[MCI_MR / 4],
++			buf[MCI_MR / 4] & MCI_MR_RDPROOF ? " RDPROOF" : "",
++			buf[MCI_MR / 4] & MCI_MR_WRPROOF ? " WRPROOF" : "",
++			buf[MCI_MR / 4] & 0xff);
++	seq_printf(s, "DTOR:\t0x%08x\n", buf[MCI_DTOR / 4]);
++	seq_printf(s, "SDCR:\t0x%08x\n", buf[MCI_SDCR / 4]);
++	seq_printf(s, "ARGR:\t0x%08x\n", buf[MCI_ARGR / 4]);
++	seq_printf(s, "BLKR:\t0x%08x BCNT=%u BLKLEN=%u\n",
++			buf[MCI_BLKR / 4],
++			buf[MCI_BLKR / 4] & 0xffff,
++			(buf[MCI_BLKR / 4] >> 16) & 0xffff);
++
++	/* Don't read RSPR and RDR; it will consume the data there */
++
++	atmci_show_status_reg(s, "SR", buf[MCI_SR / 4]);
++	atmci_show_status_reg(s, "IMR", buf[MCI_IMR / 4]);
++
++	return 0;
++}
++
++static int atmci_regs_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, atmci_regs_show, inode->i_private);
++}
++
++static const struct file_operations atmci_regs_fops = {
++	.owner		= THIS_MODULE,
++	.open		= atmci_regs_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static void atmci_init_debugfs(struct atmel_mci *host)
++{
++	struct mmc_host	*mmc;
 +	struct dentry	*root;
++	struct dentry	*node;
++	struct resource	*res;
 +
-+	if (!host->debugfs_root)
-+		return;
-+
-+	root = debugfs_create_dir(mmc_card_id(card), host->debugfs_root);
-+	if (IS_ERR(root))
-+		/* Don't complain -- debugfs just isn't enabled */
-+		return;
++	mmc = host->mmc;
++	root = mmc->debugfs_root;
 +	if (!root)
-+		/* Complain -- debugfs is enabled, but it failed to
-+		 * create the directory. */
++		return;
++
++	node = debugfs_create_file("regs", S_IRUSR, root, host,
++			&atmci_regs_fops);
++	if (IS_ERR(node))
++		return;
++	if (!node)
 +		goto err;
 +
-+	card->debugfs_root = root;
++	res = platform_get_resource(host->pdev, IORESOURCE_MEM, 0);
++	node->d_inode->i_size = res->end - res->start + 1;
 +
-+	if (!debugfs_create_x32("state", S_IRUSR, root, &card->state))
++	node = debugfs_create_file("req", S_IRUSR, root, host, &atmci_req_fops);
++	if (!node)
 +		goto err;
 +
-+	if (mmc_card_mmc(card) || mmc_card_sd(card))
-+		if (!debugfs_create_file("status", S_IRUSR, root, card,
-+					&mmc_dbg_card_status_fops))
-+			goto err;
++	node = debugfs_create_x32("pending_events", S_IRUSR, root,
++				     (u32 *)&host->pending_events);
++	if (!node)
++		goto err;
++
++	node = debugfs_create_x32("completed_events", S_IRUSR, root,
++				     (u32 *)&host->completed_events);
++	if (!node)
++		goto err;
 +
 +	return;
 +
 +err:
-+	debugfs_remove_recursive(root);
-+	card->debugfs_root = NULL;
-+	dev_err(&card->dev, "failed to initialize debugfs\n");
++	dev_err(&host->pdev->dev,
++		"failed to initialize debugfs for controller\n");
 +}
-+
-+void mmc_remove_card_debugfs(struct mmc_card *card)
-+{
-+	debugfs_remove_recursive(card->debugfs_root);
-+}
-diff --git a/include/linux/mmc/card.h b/include/linux/mmc/card.h
-index 0d508ac..ee6e822 100644
---- a/include/linux/mmc/card.h
-+++ b/include/linux/mmc/card.h
-@@ -111,6 +111,8 @@ struct mmc_card {
- 	unsigned		num_info;	/* number of info strings */
- 	const char		**info;		/* info strings */
- 	struct sdio_func_tuple	*tuples;	/* unknown common tuples */
-+
-+	struct dentry		*debugfs_root;
- };
  
- #define mmc_card_mmc(c)		((c)->type == MMC_TYPE_MMC)
+ static void atmci_enable(struct atmel_mci *host)
+ {
+@@ -905,6 +1090,8 @@ static int __init atmci_probe(struct platform_device *pdev)
+ 			"Atmel MCI controller at 0x%08lx irq %d\n",
+ 			host->mapbase, irq);
+ 
++	atmci_init_debugfs(host);
++
+ 	return 0;
+ 
+ err_request_irq:
+@@ -923,6 +1110,8 @@ static int __exit atmci_remove(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, NULL);
+ 
+ 	if (host) {
++		/* Debugfs stuff is cleaned up by mmc core */
++
+ 		if (host->detect_pin >= 0) {
+ 			int pin = host->detect_pin;
+ 
 -- 
 1.5.6
 
