@@ -1,56 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759623AbYGAVIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbYGAVKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759623AbYGAVIQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 17:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755631AbYGAVIB
+	id S1760185AbYGAVKx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 17:10:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbYGAVKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 17:08:01 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:59807 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755367AbYGAVIA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 17:08:00 -0400
-To: jdike@linux.intel.com
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [patch] hppfs: remove hppfs_permission
-Message-Id: <E1KDn4s-0006Q2-Qb@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 01 Jul 2008 23:07:54 +0200
+	Tue, 1 Jul 2008 17:10:46 -0400
+Received: from gw.goop.org ([64.81.55.164]:36811 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753499AbYGAVKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 17:10:45 -0400
+Message-ID: <486A9D4F.8010508@goop.org>
+Date: Tue, 01 Jul 2008 14:10:39 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Mike Travis <travis@sgi.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<485AC5D4.6040302@goop.org> <485ACA8F.10006@sgi.com>	<485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org>	<485ADA12.5010505@sgi.com> <485ADC73.60009@goop.org>	<485BDB04.4090709@sgi.com> <485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com>	<m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>	<m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>	<486A68DD.80702@goop.org> <m1d4lxgwxj.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1d4lxgwxj.fsf@frodo.ebiederm.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+Eric W. Biederman wrote:
+> Jeremy Fitzhardinge <jeremy@goop.org> writes:
+>
+>   
+>> H. Peter Anvin wrote:
+>>     
+>>> Eric W. Biederman wrote:
+>>>       
+>>>>> The zero-based PDA mechanism requires the introduction of a new ELF segment
+>>>>> based at vaddr 0 which is sufficiently unusual that it wouldn't surprise me
+>>>>> if
+>>>>> its triggering some toolchain bug.
+>>>>>           
+>>>> Agreed.  Given the previous description my hunch is that the bug is occurring
+>>>> during objcopy.  If vmlinux is good and the compressed kernel is bad.
+>>>>
+>>>>         
+>>> Actually, it's not all that unusual... it's pretty common in various
+>>> restricted environments.  That being said, it's probably uncommon for *64-bit*
+>>> code.
+>>>       
+>> Well, it's also unusual because 1) it's vaddr 0, but paddr <high>, and 2) the
+>> PHDRs are not sorted by vaddr order.  2) might actually be a bug.
+>>     
+>
+> I just looked and gcc does not use this technique for thread local data.
+>   
 
-hppfs_permission() is equivalent to the '.permission == NULL' case.
+Which technique?  It does assume you put the thread-local data near %gs 
+(%fs in userspace), and it uses a small offset (positive or negative) to 
+reach it.
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- fs/hppfs/hppfs.c |    7 -------
- 1 file changed, 7 deletions(-)
+At present, the x86-64 only uses %gs-relative addressing to reach the 
+pda, which are always small positive offsets.  It always accesses 
+per-cpu data in a two-step process of getting the base of per-cpu data, 
+then offsetting to find the particular variable.
 
-Index: linux-2.6/fs/hppfs/hppfs.c
-===================================================================
---- linux-2.6.orig/fs/hppfs/hppfs.c	2008-06-09 19:16:43.000000000 +0200
-+++ linux-2.6/fs/hppfs/hppfs.c	2008-06-09 21:09:56.000000000 +0200
-@@ -655,20 +655,13 @@ static void *hppfs_follow_link(struct de
- 	return proc_dentry->d_inode->i_op->follow_link(proc_dentry, nd);
- }
- 
--int hppfs_permission(struct inode *inode, int mask, struct nameidata *nd)
--{
--	return generic_permission(inode, mask, NULL);
--}
--
- static const struct inode_operations hppfs_dir_iops = {
- 	.lookup		= hppfs_lookup,
--	.permission	= hppfs_permission,
- };
- 
- static const struct inode_operations hppfs_link_iops = {
- 	.readlink	= hppfs_readlink,
- 	.follow_link	= hppfs_follow_link,
--	.permission	= hppfs_permission,
- };
- 
- static struct inode *get_inode(struct super_block *sb, struct dentry *dentry)
+x86-32 has no pda, and arranges %fs so that %fs:variable gets the percpu 
+variant of variable.  The offsets are always quite large.
+
+> My initial concern about all of this was not making symbols section relative
+> is relieved as this all appears to be a 64bit arch thing where that doesn't
+> matter.
+>   
+
+Why's that?  I thought you cared particularly about making the x86-64 
+kernel relocatable for kdump, and that using non-absolute symbols was 
+part of that?
+
+> Has anyone investigated using the technique gcc uses for thread local storage?
+> http://people.redhat.com/drepper/tls.pdf
+>   
+
+The powerpc guys tried using gcc-level thread-local storage, but it 
+doesn't work well.  per-cpu data and per-thread data have different 
+constraints, and its hard to tell gcc about them.  For example, if you 
+have a section of preemptable code in your function, it's hard to tell 
+gcc not to cache a "thread-local" variable across it, even though we 
+could have switched CPUs in the meantime.
+
+> In particular using the local exec model so we can say:
+> movq %fs:x@tpoff,%rax
+>
+> To load the contents of a per cpu variable x into %rax ?
+>
+> If we can use that model it should make it easier to interface with things like
+> the stack protector code.  Although we would still need to be very careful
+> about thread switches.
+>   
+
+You mean cpu switches?  We don't really have a notion of thread-local 
+data in the kernel, other than things hanging off the kernel stack.
+
+    J
