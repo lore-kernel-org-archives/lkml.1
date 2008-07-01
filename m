@@ -1,462 +1,649 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761228AbYGAXAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759257AbYGAXGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761228AbYGAXAw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 19:00:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755721AbYGAXAm
+	id S1759257AbYGAXGn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 19:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbYGAXGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 19:00:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54572 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751053AbYGAXAj (ORCPT
+	Tue, 1 Jul 2008 19:06:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:40933 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752038AbYGAXGb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 19:00:39 -0400
-Date: Tue, 1 Jul 2008 15:59:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Henrik Rydberg <rydberg@euromail.se>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dmitry.torokhov@gmail.com, robfitz@273k.net, jikos@jikos.cz,
-       vojtech@suse.cz, dmonakhov@openvz.org, linux-usb@vger.kernel.org
-Subject: Re: [PATCH 001/002] linux-input:  bcm5974-0.31: fixed resource
- leak, removed work struct, device data struct introduced
-Message-Id: <20080701155925.a4c00a8e.akpm@linux-foundation.org>
-In-Reply-To: <1214653629.10495.11.camel@alnilam>
-References: <1214653629.10495.11.camel@alnilam>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 1 Jul 2008 19:06:31 -0400
+Date: Tue, 1 Jul 2008 16:01:57 -0700
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org
+Subject: linux-staging for 2.6.26-rc8
+Message-ID: <20080701230156.GA9335@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is the announcement for the linux-staging tree for 2.6.26-rc8.
 
-> Subject: [PATCH 001/002] linux-input:  bcm5974-0.31: fixed resource leak, removed work struct, device data struct introduced
+It currently contains 20+ drivers and one filesystem.
 
-hm, I wonder where [002/002] went.
+It can be downloaded from:
+	http://www.kernel.org/pub/linux/kernel/people/gregkh/linux-staging/linux-staging-2.6.26-rc8.bz2
 
-Please copy the USB list on USB patches.
+Differences from the 2.6.26-rc7 release:
+ - added mimio-xi input driver
+ - added wireless USB and UWB stacks as they were not playing well in
+   the USB tree
+ - added the vmware drivers vmmon, vmnet and vmblock as they are now
+   released under the GPLv2.
 
-On Sat, 28 Jun 2008 14:54:20 +0200
-Henrik Rydberg <rydberg@euromail.se> wrote:
+Diffstat of the whole tree can be found below along with the shortlog
+entry.  I'll respond to this message with the current status of the
+individual patches for people who are interested in it.
 
-> BCM5974: This driver adds support for the multitouch trackpad on the new
-> Apple Macbook Air and Macbook Pro Penryn laptops. It replaces the
-> appletouch driver on those computers, and integrates well with the
-> synaptics driver of the Xorg system. 
+For details about what the linux-staging tree is, how to use it, and the
+rules for it, please see the README file in the git tree at:
+	http://git.kernel.org/?p=linux/kernel/git/gregkh/staging.git;a=blob;f=README
 
-- erk, the driver uses two-spaces for indenting all over the place. 
-  Mayeb the email client mangled it in imaginative ways, but it _looks_
-  to be intentional.
-
-  If so, please don't do that.  Kernel code uses hard tabs at
-  8-cols-per-tab for indenting.
+The linux-staging tree can be found in git as a series of quilt patches
+at:
+	git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging.git
 
 
-> +config MOUSE_BCM5974
-> +	tristate "Apple USB BCM5974 Multitouch trackpad support"
-> +	depends on USB_ARCH_HAS_HCD
-> +	select USB
+thanks,
 
-selecting USB here seems like a bad idea, although I note that several
-other drivers had bad ideas.  `depends on' would be better, IMO.
+greg k-h
 
-> +	help
-> +	  Say Y here if you have an Apple USB BCM5974 Multitouch
-> +	  trackpad.
-> +
-> +          The BCM5974 is the multitouch trackpad found in the Macbook
-> +          Air (JAN2008) and Macbook Pro Penryn (FEB2008) laptops.
-> +
-> +          It is also found in the IPhone (2007) and Ipod Touch (2008).
-> +
-> +	  This driver provides multitouch functionality together with
-> +          the synaptics X11 driver.
-> +
-> +          The interface is currently identical to the appletouch interface,
-> +          for further information, see
-> +          <file:Documentation/input/appletouch.txt>.
-> +
-> +	  To compile this driver as a module, choose M here: the
-> +	  module will be called bcm5974.
-> +
->  config MOUSE_INPORT
->  	tristate "InPort/MS/ATIXL busmouse"
->  	depends on ISA
-> diff -puN drivers/input/mouse/Makefile~input-support-for-bcm5974-multitouch-trackpad drivers/input/mouse/Makefile
-> --- a/drivers/input/mouse/Makefile~input-support-for-bcm5974-multitouch-trackpad
-> +++ a/drivers/input/mouse/Makefile
-> @@ -6,6 +6,7 @@
->  
->  obj-$(CONFIG_MOUSE_AMIGA)	+= amimouse.o
->  obj-$(CONFIG_MOUSE_APPLETOUCH)	+= appletouch.o
-> +obj-$(CONFIG_MOUSE_BCM5974)	+= bcm5974.o
->  obj-$(CONFIG_MOUSE_ATARI)	+= atarimouse.o
->  obj-$(CONFIG_MOUSE_RISCPC)	+= rpcmouse.o
->  obj-$(CONFIG_MOUSE_INPORT)	+= inport.o
->
-> ...
->
-> +static inline
-> +const struct atp_config_t *atp_product_config(struct usb_device *udev)
-> +{
-> +  u16 id = le16_to_cpu(udev->descriptor.idProduct);
-> +  const struct atp_config_t *config;
-> +  for (config = atp_config_table; config->ansi; ++config)
-> +    if (config->ansi == id || config->iso == id || config->jis == id)
-> +      return config;
-> +  return atp_config_table;
-> +}
+-----------------------
 
-This is waaaaaaay too big for inlining.
+ Documentation/fb/viafb.modes                |  870 +++
+ Documentation/fb/viafb.txt                  |  232 +
+ Documentation/usb/WUSB-Design-overview.txt  |  448 ++
+ Documentation/usb/wusb-cbaf                 |  133 +
+ arch/arm/Kconfig                            |    2 +
+ arch/cris/Kconfig                           |    2 +
+ arch/h8300/Kconfig                          |    2 +
+ arch/v850/Kconfig                           |    2 +
+ drivers/Kconfig                             |    4 +
+ drivers/Makefile                            |    2 +
+ drivers/char/drm/Kconfig                    |    7 +
+ drivers/char/drm/Makefile                   |    2 +
+ drivers/char/drm/drm_pciids.h               |    9 +-
+ drivers/char/drm/via_3d_reg.h               |   12 +-
+ drivers/char/drm/via_chrome9_3d_reg.h       |  395 ++
+ drivers/char/drm/via_chrome9_dma.c          | 1147 +++
+ drivers/char/drm/via_chrome9_dma.h          |   68 +
+ drivers/char/drm/via_chrome9_drm.c          |  993 +++
+ drivers/char/drm/via_chrome9_drm.h          |  423 ++
+ drivers/char/drm/via_chrome9_drv.c          |  153 +
+ drivers/char/drm/via_chrome9_drv.h          |  145 +
+ drivers/char/drm/via_chrome9_mm.c           |  388 ++
+ drivers/char/drm/via_chrome9_mm.h           |   67 +
+ drivers/char/drm/via_dma.c                  |  353 +-
+ drivers/char/drm/via_dmablit.c              |  326 +-
+ drivers/char/drm/via_dmablit.h              |   22 +-
+ drivers/char/drm/via_drm.h                  |  144 +-
+ drivers/char/drm/via_drv.c                  |   13 +-
+ drivers/char/drm/via_drv.h                  |   93 +-
+ drivers/char/drm/via_irq.c                  |   66 +-
+ drivers/char/drm/via_map.c                  |   75 +-
+ drivers/char/drm/via_mm.c                   |  249 +-
+ drivers/char/drm/via_verifier.c             |  269 +-
+ drivers/char/drm/via_verifier.h             |   64 +-
+ drivers/char/drm/via_video.c                |   70 +-
+ drivers/hid/usbhid/hid-quirks.c             |    2 +
+ drivers/input/misc/Kconfig                  |   23 +
+ drivers/input/misc/Makefile                 |    2 +
+ drivers/input/misc/appleir.c                |  361 +
+ drivers/input/misc/mimio.c                  |  913 +++
+ drivers/media/dvb/Kconfig                   |    2 +
+ drivers/media/dvb/Makefile                  |    2 +-
+ drivers/media/dvb/firesat/Kconfig           |   11 +
+ drivers/media/dvb/firesat/Makefile          |   12 +
+ drivers/media/dvb/firesat/avc_api.c         |  848 +++
+ drivers/media/dvb/firesat/avc_api.h         |  381 +
+ drivers/media/dvb/firesat/cmp.c             |  230 +
+ drivers/media/dvb/firesat/cmp.h             |    9 +
+ drivers/media/dvb/firesat/firesat-ci.c      |   95 +
+ drivers/media/dvb/firesat/firesat-ci.h      |    9 +
+ drivers/media/dvb/firesat/firesat-rc.c      |   84 +
+ drivers/media/dvb/firesat/firesat-rc.h      |    9 +
+ drivers/media/dvb/firesat/firesat.h         |   85 +
+ drivers/media/dvb/firesat/firesat_1394.c    |  468 ++
+ drivers/media/dvb/firesat/firesat_dvb.c     |  350 +
+ drivers/media/dvb/firesat/firesat_fe.c      |  263 +
+ drivers/media/video/Kconfig                 |   10 +
+ drivers/media/video/Makefile                |    3 +
+ drivers/media/video/go7007/Kconfig          |   23 +
+ drivers/media/video/go7007/Makefile         |   18 +
+ drivers/media/video/go7007/go7007-driver.c  |  693 ++
+ drivers/media/video/go7007/go7007-fw.c      | 1643 +++++
+ drivers/media/video/go7007/go7007-i2c.c     |  309 +
+ drivers/media/video/go7007/go7007-priv.h    |  279 +
+ drivers/media/video/go7007/go7007-usb.c     | 1228 ++++
+ drivers/media/video/go7007/go7007-v4l2.c    | 1509 ++++
+ drivers/media/video/go7007/go7007.h         |  120 +
+ drivers/media/video/go7007/saa7134-go7007.c |  484 ++
+ drivers/media/video/go7007/snd-go7007.c     |  315 +
+ drivers/media/video/go7007/wis-i2c.h        |   55 +
+ drivers/media/video/go7007/wis-ov7640.c     |  146 +
+ drivers/media/video/go7007/wis-saa7113.c    |  378 +
+ drivers/media/video/go7007/wis-saa7115.c    |  507 ++
+ drivers/media/video/go7007/wis-sony-tuner.c |  757 ++
+ drivers/media/video/go7007/wis-tw2804.c     |  383 +
+ drivers/media/video/go7007/wis-tw9903.c     |  378 +
+ drivers/media/video/go7007/wis-uda1342.c    |  136 +
+ drivers/media/video/s2255drv.c              | 2486 +++++++
+ drivers/misc/Kconfig                        |   32 +
+ drivers/misc/Makefile                       |    4 +
+ drivers/misc/aectc/Makefile                 |    1 +
+ drivers/misc/aectc/aec_tc.c                 |  349 +
+ drivers/misc/aectc/aectc.h                  |   18 +
+ drivers/misc/aectc/read.c                   |   63 +
+ drivers/misc/aectc/write.c                  |   64 +
+ drivers/misc/kolter_1616.c                  |  199 +
+ drivers/misc/me4000.c                       | 6133 ++++++++++++++++
+ drivers/misc/me4000.h                       |  954 +++
+ drivers/misc/me4000_firmware.h              |10033 +++++++++++++++++++++++++++
+ drivers/misc/me4610_firmware.h              | 5409 +++++++++++++++
+ drivers/misc/oms/Makefile                   |    2 +
+ drivers/misc/oms/oms-core.c                 | 1295 ++++
+ drivers/misc/oms/oms-core.h                 |  143 +
+ drivers/misc/oms/oms-maxp.h                 |   85 +
+ drivers/misc/oms/oms-maxpdrv.c              | 1292 ++++
+ drivers/misc/oms/oms-maxpdrv.h              |  142 +
+ drivers/misc/oms/oms-pcix.h                 |   67 +
+ drivers/misc/oms/oms-pcixdrv.c              | 1119 +++
+ drivers/misc/oms/oms-pcixdrv.h              |   61 +
+ drivers/misc/oms/oms.h                      |   78 +
+ drivers/net/Kconfig                         |   32 +
+ drivers/net/Makefile                        |    3 +
+ drivers/net/et131x/Makefile                 |   18 +
+ drivers/net/et131x/et1310_address_map.h     | 2399 +++++++
+ drivers/net/et131x/et1310_eeprom.c          |  480 ++
+ drivers/net/et131x/et1310_eeprom.h          |   89 +
+ drivers/net/et131x/et1310_jagcore.c         |  220 +
+ drivers/net/et131x/et1310_jagcore.h         |  112 +
+ drivers/net/et131x/et1310_mac.c             |  792 +++
+ drivers/net/et131x/et1310_mac.h             |   93 +
+ drivers/net/et131x/et1310_phy.c             | 1281 ++++
+ drivers/net/et131x/et1310_phy.h             |  910 +++
+ drivers/net/et131x/et1310_pm.c              |  207 +
+ drivers/net/et131x/et1310_pm.h              |  125 +
+ drivers/net/et131x/et1310_rx.c              | 1391 ++++
+ drivers/net/et131x/et1310_rx.h              |  373 +
+ drivers/net/et131x/et1310_tx.c              | 1525 ++++
+ drivers/net/et131x/et1310_tx.h              |  242 +
+ drivers/net/et131x/et131x_adapter.h         |  347 +
+ drivers/net/et131x/et131x_config.c          |  325 +
+ drivers/net/et131x/et131x_config.h          |   67 +
+ drivers/net/et131x/et131x_debug.c           |  218 +
+ drivers/net/et131x/et131x_debug.h           |  201 +
+ drivers/net/et131x/et131x_defs.h            |  128 +
+ drivers/net/et131x/et131x_initpci.c         | 1046 +++
+ drivers/net/et131x/et131x_initpci.h         |   73 +
+ drivers/net/et131x/et131x_isr.c             |  488 ++
+ drivers/net/et131x/et131x_isr.h             |   65 +
+ drivers/net/et131x/et131x_netdev.c          |  856 +++
+ drivers/net/et131x/et131x_netdev.h          |   64 +
+ drivers/net/et131x/et131x_version.h         |   81 +
+ drivers/net/slicoss/Makefile                |    1 +
+ drivers/net/slicoss/gbdownload.h            | 8215 ++++++++++++++++++++++
+ drivers/net/slicoss/gbrcvucode.h            |  239 +
+ drivers/net/slicoss/oasisdbgdownload.h      | 6850 ++++++++++++++++++
+ drivers/net/slicoss/oasisdownload.h         | 6848 ++++++++++++++++++
+ drivers/net/slicoss/oasisrcvucode.h         |  205 +
+ drivers/net/slicoss/slic.h                  |  619 ++
+ drivers/net/slicoss/slic_os.h               |  150 +
+ drivers/net/slicoss/slicbuild.h             |   97 +
+ drivers/net/slicoss/slicdbg.h               |  100 +
+ drivers/net/slicoss/slicdump.h              |  282 +
+ drivers/net/slicoss/slichw.h                |  855 +++
+ drivers/net/slicoss/slicinc.h               |  215 +
+ drivers/net/slicoss/slicoss.c               | 6156 ++++++++++++++++
+ drivers/net/usb/Kconfig                     |   10 +
+ drivers/net/usb/Makefile                    |    1 +
+ drivers/net/usb/hso.c                       | 2836 ++++++++
+ drivers/usb/Kconfig                         |    2 +
+ drivers/usb/Makefile                        |    3 +
+ drivers/usb/class/Kconfig                   |   10 +
+ drivers/usb/class/Makefile                  |    1 +
+ drivers/usb/class/usbtmc.c                  | 1576 +++++
+ drivers/usb/class/usbtmc.h                  |  144 +
+ drivers/usb/core/hub.c                      |   83 +
+ drivers/usb/host/Kconfig                    |   26 +
+ drivers/usb/host/Makefile                   |    3 +
+ drivers/usb/host/hwa-hc.c                   |  935 +++
+ drivers/usb/host/whci/Kbuild                |   11 +
+ drivers/usb/host/whci/asl.c                 |  366 +
+ drivers/usb/host/whci/hcd.c                 |  339 +
+ drivers/usb/host/whci/hw.c                  |   80 +
+ drivers/usb/host/whci/init.c                |  181 +
+ drivers/usb/host/whci/int.c                 |   95 +
+ drivers/usb/host/whci/pzl.c                 |  398 ++
+ drivers/usb/host/whci/qset.c                |  563 ++
+ drivers/usb/host/whci/whcd.h                |  195 +
+ drivers/usb/host/whci/whci-hc.h             |  413 ++
+ drivers/usb/host/whci/wusb.c                |  241 +
+ drivers/usb/wusbcore/Kconfig                |   17 +
+ drivers/usb/wusbcore/Makefile               |   20 +
+ drivers/usb/wusbcore/cbaf.c                 |  620 ++
+ drivers/usb/wusbcore/crypto.c               |  538 ++
+ drivers/usb/wusbcore/dev-sysfs.c            |  199 +
+ drivers/usb/wusbcore/devconnect.c           | 1319 ++++
+ drivers/usb/wusbcore/mmc.c                  |  329 +
+ drivers/usb/wusbcore/pal.c                  |   39 +
+ drivers/usb/wusbcore/reservation.c          |  115 +
+ drivers/usb/wusbcore/rh.c                   |  477 ++
+ drivers/usb/wusbcore/security.c             |  644 ++
+ drivers/usb/wusbcore/wa-hc.c                |   83 +
+ drivers/usb/wusbcore/wa-hc.h                |  416 ++
+ drivers/usb/wusbcore/wa-nep.c               |  313 +
+ drivers/usb/wusbcore/wa-rpipe.c             |  562 ++
+ drivers/usb/wusbcore/wa-xfer.c              | 1709 +++++
+ drivers/usb/wusbcore/wusbhc.c               |  392 ++
+ drivers/usb/wusbcore/wusbhc.h               |  525 ++
+ drivers/uwb/Kconfig                         |   90 +
+ drivers/uwb/Makefile                        |   29 +
+ drivers/uwb/address.c                       |  374 +
+ drivers/uwb/beacon.c                        |  707 ++
+ drivers/uwb/driver.c                        |  142 +
+ drivers/uwb/drp-avail.c                     |  288 +
+ drivers/uwb/drp-ie.c                        |  233 +
+ drivers/uwb/drp.c                           |  451 ++
+ drivers/uwb/est.c                           |  414 ++
+ drivers/uwb/hwa-rc.c                        |  915 +++
+ drivers/uwb/i1480/Makefile                  |    2 +
+ drivers/uwb/i1480/dfu/Makefile              |    9 +
+ drivers/uwb/i1480/dfu/dfu.c                 |  281 +
+ drivers/uwb/i1480/dfu/i1480-dfu.h           |  263 +
+ drivers/uwb/i1480/dfu/mac.c                 |  529 ++
+ drivers/uwb/i1480/dfu/phy.c                 |  203 +
+ drivers/uwb/i1480/dfu/usb.c                 |  501 ++
+ drivers/uwb/i1480/i1480-est.c               |   99 +
+ drivers/uwb/i1480/i1480-wlp.h               |  155 +
+ drivers/uwb/i1480/i1480u-wlp/Makefile       |    8 +
+ drivers/uwb/i1480/i1480u-wlp/i1480u-wlp.h   |  269 +
+ drivers/uwb/i1480/i1480u-wlp/lc.c           |  421 ++
+ drivers/uwb/i1480/i1480u-wlp/netdev.c       |  367 +
+ drivers/uwb/i1480/i1480u-wlp/rx.c           |  491 ++
+ drivers/uwb/i1480/i1480u-wlp/sysfs.c        |  446 ++
+ drivers/uwb/i1480/i1480u-wlp/tx.c           |  638 ++
+ drivers/uwb/ie.c                            |  570 ++
+ drivers/uwb/lc-dev.c                        |  512 ++
+ drivers/uwb/lc-rc.c                         |  485 ++
+ drivers/uwb/neh.c                           |  615 ++
+ drivers/uwb/pal.c                           |   71 +
+ drivers/uwb/reset.c                         |  319 +
+ drivers/uwb/rsv.c                           |  677 ++
+ drivers/uwb/scan.c                          |  159 +
+ drivers/uwb/umc-bus.c                       |  185 +
+ drivers/uwb/umc-dev.c                       |  103 +
+ drivers/uwb/umc-drv.c                       |   31 +
+ drivers/uwb/uwb-debug.c                     |  367 +
+ drivers/uwb/uwb-internal.h                  |  283 +
+ drivers/uwb/uwbd.c                          |  425 ++
+ drivers/uwb/whc-rc.c                        |  511 ++
+ drivers/uwb/whci.c                          |  274 +
+ drivers/uwb/wlp/Makefile                    |   10 +
+ drivers/uwb/wlp/driver.c                    |   43 +
+ drivers/uwb/wlp/eda.c                       |  449 ++
+ drivers/uwb/wlp/messages.c                  | 1946 ++++++
+ drivers/uwb/wlp/sysfs.c                     |  715 ++
+ drivers/uwb/wlp/txrx.c                      |  374 +
+ drivers/uwb/wlp/wlp-internal.h              |  228 +
+ drivers/uwb/wlp/wlp-lc.c                    |  572 ++
+ drivers/uwb/wlp/wss-lc.c                    | 1056 +++
+ drivers/video/Kconfig                       |    6 +
+ drivers/video/Makefile                      |    1 +
+ drivers/video/viafb/Makefile                |    9 +
+ drivers/video/viafb/accel.c                 |  244 +
+ drivers/video/viafb/accel.h                 |  179 +
+ drivers/video/viafb/chip.h                  |  190 +
+ drivers/video/viafb/debug.h                 |   41 +
+ drivers/video/viafb/dvi.c                   |  720 ++
+ drivers/video/viafb/dvi.h                   |   64 +
+ drivers/video/viafb/global.c                |   60 +
+ drivers/video/viafb/global.h                |   92 +
+ drivers/video/viafb/hw.c                    | 2878 ++++++++
+ drivers/video/viafb/hw.h                    |  942 +++
+ drivers/video/viafb/iface.c                 |   78 +
+ drivers/video/viafb/iface.h                 |   38 +
+ drivers/video/viafb/ioctl.c                 |  112 +
+ drivers/video/viafb/ioctl.h                 |  212 +
+ drivers/video/viafb/lcd.c                   | 1831 +++++
+ drivers/video/viafb/lcd.h                   |   94 +
+ drivers/video/viafb/lcdtbl.h                |  591 ++
+ drivers/video/viafb/share.h                 | 1113 +++
+ drivers/video/viafb/tbl1636.c               |   71 +
+ drivers/video/viafb/tbl1636.h               |   34 +
+ drivers/video/viafb/tblDPASetting.c         |  109 +
+ drivers/video/viafb/tblDPASetting.h         |   47 +
+ drivers/video/viafb/via_i2c.c               |  379 +
+ drivers/video/viafb/via_i2c.h               |   36 +
+ drivers/video/viafb/via_utility.c           |  301 +
+ drivers/video/viafb/via_utility.h           |   35 +
+ drivers/video/viafb/viafb.modes             |  870 +++
+ drivers/video/viafb/viafbdev.c              | 2638 +++++++
+ drivers/video/viafb/viafbdev.h              |  107 +
+ drivers/video/viafb/viamode.c               | 1086 +++
+ drivers/video/viafb/viamode.h               |  177 +
+ drivers/video/viafb/vt1636.c                |  325 +
+ drivers/video/viafb/vt1636.h                |   44 +
+ drivers/vmware/Kconfig                      |   30 +
+ drivers/vmware/Makefile                     |    7 +
+ drivers/vmware/vmblock/Makefile             |   13 +
+ drivers/vmware/vmblock/block.c              |  611 ++
+ drivers/vmware/vmblock/block.h              |   47 +
+ drivers/vmware/vmblock/compat_completion.h  |  175 +
+ drivers/vmware/vmblock/compat_file.h        |   56 +
+ drivers/vmware/vmblock/compat_fs.h          |  247 +
+ drivers/vmware/vmblock/compat_init.h        |   38 +
+ drivers/vmware/vmblock/compat_kernel.h      |   83 +
+ drivers/vmware/vmblock/compat_list.h        |   55 +
+ drivers/vmware/vmblock/compat_mm.h          |  134 +
+ drivers/vmware/vmblock/compat_module.h      |   72 +
+ drivers/vmware/vmblock/compat_namei.h       |   57 +
+ drivers/vmware/vmblock/compat_page.h        |   75 +
+ drivers/vmware/vmblock/compat_sched.h       |  274 +
+ drivers/vmware/vmblock/compat_semaphore.h   |   44 +
+ drivers/vmware/vmblock/compat_slab.h        |   70 +
+ drivers/vmware/vmblock/compat_spinlock.h    |   68 +
+ drivers/vmware/vmblock/compat_statfs.h      |   32 +
+ drivers/vmware/vmblock/compat_string.h      |   42 +
+ drivers/vmware/vmblock/compat_uaccess.h     |   79 +
+ drivers/vmware/vmblock/compat_version.h     |  121 +
+ drivers/vmware/vmblock/compat_wait.h        |  225 +
+ drivers/vmware/vmblock/control.c            |  332 +
+ drivers/vmware/vmblock/dbllnklst.c          |  399 ++
+ drivers/vmware/vmblock/dbllnklst.h          |   69 +
+ drivers/vmware/vmblock/dentry.c             |  122 +
+ drivers/vmware/vmblock/driver-config.h      |   78 +
+ drivers/vmware/vmblock/file.c               |  274 +
+ drivers/vmware/vmblock/filesystem.c         |  618 ++
+ drivers/vmware/vmblock/filesystem.h         |  111 +
+ drivers/vmware/vmblock/inode.c              |  244 +
+ drivers/vmware/vmblock/module.c             |  175 +
+ drivers/vmware/vmblock/os.h                 |  117 +
+ drivers/vmware/vmblock/stubs.c              |   52 +
+ drivers/vmware/vmblock/stubs.h              |   36 +
+ drivers/vmware/vmblock/super.c              |  194 +
+ drivers/vmware/vmblock/vm_assert.h          |  308 +
+ drivers/vmware/vmblock/vm_basic_defs.h      |  553 ++
+ drivers/vmware/vmblock/vm_basic_types.h     |  847 +++
+ drivers/vmware/vmblock/vmblock.h            |  105 +
+ drivers/vmware/vmblock/vmblockInt.h         |   94 +
+ drivers/vmware/vmblock/vmblock_version.h    |   32 +
+ drivers/vmware/vmblock/vmware.h             |   58 +
+ drivers/vmware/vmmon/COPYING                |  339 +
+ drivers/vmware/vmmon/Makefile               |   13 +
+ drivers/vmware/vmmon/basic_initblock.h      |   64 +
+ drivers/vmware/vmmon/busmem_def.h           |   71 +
+ drivers/vmware/vmmon/circList.h             |  428 ++
+ drivers/vmware/vmmon/compat_completion.h    |  175 +
+ drivers/vmware/vmmon/compat_file.h          |   56 +
+ drivers/vmware/vmmon/compat_fs.h            |  247 +
+ drivers/vmware/vmmon/compat_highmem.h       |   40 +
+ drivers/vmware/vmmon/compat_interrupt.h     |   50 +
+ drivers/vmware/vmmon/compat_kernel.h        |   83 +
+ drivers/vmware/vmmon/compat_list.h          |   55 +
+ drivers/vmware/vmmon/compat_mm.h            |  134 +
+ drivers/vmware/vmmon/compat_module.h        |   72 +
+ drivers/vmware/vmmon/compat_page.h          |   75 +
+ drivers/vmware/vmmon/compat_pgtable.h       |  139 +
+ drivers/vmware/vmmon/compat_sched.h         |  274 +
+ drivers/vmware/vmmon/compat_semaphore.h     |   44 +
+ drivers/vmware/vmmon/compat_slab.h          |   70 +
+ drivers/vmware/vmmon/compat_spinlock.h      |   68 +
+ drivers/vmware/vmmon/compat_timer.h         |   95 +
+ drivers/vmware/vmmon/compat_uaccess.h       |   79 +
+ drivers/vmware/vmmon/compat_version.h       |  121 +
+ drivers/vmware/vmmon/compat_wait.h          |  225 +
+ drivers/vmware/vmmon/comport.c              |  203 +
+ drivers/vmware/vmmon/comport.h              |   41 +
+ drivers/vmware/vmmon/contextinfo.h          |   93 +
+ drivers/vmware/vmmon/cpuid.c                |  159 +
+ drivers/vmware/vmmon/cpuid.h                |   41 +
+ drivers/vmware/vmmon/cpuid_info.h           |  105 +
+ drivers/vmware/vmmon/crossgdt.h             |   78 +
+ drivers/vmware/vmmon/driver-config.h        |   78 +
+ drivers/vmware/vmmon/driver.c               | 2608 +++++++
+ drivers/vmware/vmmon/driver.h               |  109 +
+ drivers/vmware/vmmon/driverLog.c            |  207 +
+ drivers/vmware/vmmon/driverLog.h            |   37 +
+ drivers/vmware/vmmon/driver_vmcore.h        |   35 +
+ drivers/vmware/vmmon/hashFunc.c             |   61 +
+ drivers/vmware/vmmon/hashFunc.h             |  316 +
+ drivers/vmware/vmmon/hostKernel.h           |   83 +
+ drivers/vmware/vmmon/hostif.c               | 3653 ++++++++++
+ drivers/vmware/vmmon/hostif.h               |  202 +
+ drivers/vmware/vmmon/includeCheck.h         |   17 +
+ drivers/vmware/vmmon/initblock.h            |   43 +
+ drivers/vmware/vmmon/iocontrols.h           |  753 ++
+ drivers/vmware/vmmon/memtrack.c             |  381 +
+ drivers/vmware/vmmon/memtrack.h             |   62 +
+ drivers/vmware/vmmon/modulecall.h           |  512 ++
+ drivers/vmware/vmmon/modulecallstructs.h    |   83 +
+ drivers/vmware/vmmon/moduleloop.c           |  302 +
+ drivers/vmware/vmmon/mon_assert.h           |   87 +
+ drivers/vmware/vmmon/numa_defs.h            |   68 +
+ drivers/vmware/vmmon/pgtbl.h                |  381 +
+ drivers/vmware/vmmon/phystrack.c            |  384 +
+ drivers/vmware/vmmon/phystrack.h            |   49 +
+ drivers/vmware/vmmon/pshare_ext.h           |  177 +
+ drivers/vmware/vmmon/rateconv.h             |  141 +
+ drivers/vmware/vmmon/speaker_reg.h          |   51 +
+ drivers/vmware/vmmon/task.c                 | 2237 ++++++
+ drivers/vmware/vmmon/task.h                 |   40 +
+ drivers/vmware/vmmon/uccostTable.h          |   37 +
+ drivers/vmware/vmmon/vcpuid.h               |   53 +
+ drivers/vmware/vmmon/vcpuset.h              |  332 +
+ drivers/vmware/vmmon/versioned_atomic.h     |  142 +
+ drivers/vmware/vmmon/vm_asm.h               |   76 +
+ drivers/vmware/vmmon/vm_asm_x86.h           |  964 +++
+ drivers/vmware/vmmon/vm_asm_x86_64.h        |  119 +
+ drivers/vmware/vmmon/vm_assert.h            |  308 +
+ drivers/vmware/vmmon/vm_atomic.h            | 2049 ++++++
+ drivers/vmware/vmmon/vm_basic_asm.h         |  832 +++
+ drivers/vmware/vmmon/vm_basic_asm_x86.h     |  500 ++
+ drivers/vmware/vmmon/vm_basic_asm_x86_64.h  |  336 +
+ drivers/vmware/vmmon/vm_basic_defs.h        |  553 ++
+ drivers/vmware/vmmon/vm_basic_math.h        |   67 +
+ drivers/vmware/vmmon/vm_basic_types.h       |  847 +++
+ drivers/vmware/vmmon/vm_time.h              |  114 +
+ drivers/vmware/vmmon/vmhost.h               |  110 +
+ drivers/vmware/vmmon/vmm_constants.h        |   51 +
+ drivers/vmware/vmmon/vmmonInt.h             |   77 +
+ drivers/vmware/vmmon/vmware.h               |   58 +
+ drivers/vmware/vmmon/vmware_pack_begin.h    |   43 +
+ drivers/vmware/vmmon/vmware_pack_end.h      |   44 +
+ drivers/vmware/vmmon/vmware_pack_init.h     |   65 +
+ drivers/vmware/vmmon/vmx86.c                | 3043 ++++++++
+ drivers/vmware/vmmon/vmx86.h                |  200 +
+ drivers/vmware/vmmon/x86.h                  |   44 +
+ drivers/vmware/vmmon/x86_basic_defs.h       |  221 +
+ drivers/vmware/vmmon/x86apic.h              |  301 +
+ drivers/vmware/vmmon/x86cpuid.h             |  827 +++
+ drivers/vmware/vmmon/x86desc.h              |  623 ++
+ drivers/vmware/vmmon/x86fpu.h               |  389 ++
+ drivers/vmware/vmmon/x86msr.h               |  236 +
+ drivers/vmware/vmmon/x86paging.h            |  247 +
+ drivers/vmware/vmmon/x86regname.h           |   94 +
+ drivers/vmware/vmmon/x86segdescrs.h         |  113 +
+ drivers/vmware/vmmon/x86sel.h               |   68 +
+ drivers/vmware/vmmon/x86svm.h               |  335 +
+ drivers/vmware/vmmon/x86types.h             |  532 ++
+ drivers/vmware/vmmon/x86vt.h                |  623 ++
+ drivers/vmware/vmnet/Makefile               |   14 +
+ drivers/vmware/vmnet/bridge.c               | 1640 +++++
+ drivers/vmware/vmnet/compat_file.h          |   56 +
+ drivers/vmware/vmnet/compat_highmem.h       |   40 +
+ drivers/vmware/vmnet/compat_kdev_t.h        |   33 +
+ drivers/vmware/vmnet/compat_mm.h            |  134 +
+ drivers/vmware/vmnet/compat_module.h        |   72 +
+ drivers/vmware/vmnet/compat_netdevice.h     |  287 +
+ drivers/vmware/vmnet/compat_page.h          |   75 +
+ drivers/vmware/vmnet/compat_pgtable.h       |  139 +
+ drivers/vmware/vmnet/compat_sched.h         |  274 +
+ drivers/vmware/vmnet/compat_semaphore.h     |   44 +
+ drivers/vmware/vmnet/compat_skbuff.h        |  156 +
+ drivers/vmware/vmnet/compat_slab.h          |   70 +
+ drivers/vmware/vmnet/compat_sock.h          |  169 +
+ drivers/vmware/vmnet/compat_spinlock.h      |   68 +
+ drivers/vmware/vmnet/compat_uaccess.h       |   79 +
+ drivers/vmware/vmnet/compat_version.h       |  121 +
+ drivers/vmware/vmnet/compat_wait.h          |  225 +
+ drivers/vmware/vmnet/driver-config.h        |   78 +
+ drivers/vmware/vmnet/driver.c               | 1842 +++++
+ drivers/vmware/vmnet/epoll.c                |   36 +
+ drivers/vmware/vmnet/filter.c               | 1540 ++++
+ drivers/vmware/vmnet/geninclude.c           |   40 +
+ drivers/vmware/vmnet/hub.c                  |  741 ++
+ drivers/vmware/vmnet/includeCheck.h         |   17 +
+ drivers/vmware/vmnet/net.h                  |   75 +
+ drivers/vmware/vmnet/netdev_has_dev_net.c   |   37 +
+ drivers/vmware/vmnet/netdev_has_net.c       |   43 +
+ drivers/vmware/vmnet/netif.c                |  723 ++
+ drivers/vmware/vmnet/nfhook_uses_skb.c      |   45 +
+ drivers/vmware/vmnet/pgtbl.h                |  381 +
+ drivers/vmware/vmnet/procfs.c               |  402 ++
+ drivers/vmware/vmnet/setnice.c              |   32 +
+ drivers/vmware/vmnet/sk_alloc.c             |   39 +
+ drivers/vmware/vmnet/skblin.c               |   41 +
+ drivers/vmware/vmnet/smac.c                 | 3792 ++++++++++
+ drivers/vmware/vmnet/smac.h                 |  109 +
+ drivers/vmware/vmnet/smac_compat.c          |  524 ++
+ drivers/vmware/vmnet/smac_compat.h          |   63 +
+ drivers/vmware/vmnet/socket.c               |   33 +
+ drivers/vmware/vmnet/userif.c               | 1057 +++
+ drivers/vmware/vmnet/vm_atomic.h            | 2049 ++++++
+ drivers/vmware/vmnet/vm_basic_asm.h         |  832 +++
+ drivers/vmware/vmnet/vm_basic_asm_x86.h     |  500 ++
+ drivers/vmware/vmnet/vm_basic_asm_x86_64.h  |  336 +
+ drivers/vmware/vmnet/vm_basic_defs.h        |  553 ++
+ drivers/vmware/vmnet/vm_basic_types.h       |  847 +++
+ drivers/vmware/vmnet/vm_device_version.h    |  185 +
+ drivers/vmware/vmnet/vm_oui.h               |  177 +
+ drivers/vmware/vmnet/vmnetInt.h             |  169 +
+ drivers/vmware/vmnet/vmware_pack_begin.h    |   43 +
+ drivers/vmware/vmnet/vmware_pack_end.h      |   44 +
+ drivers/vmware/vmnet/vmware_pack_init.h     |   65 +
+ drivers/vmware/vmnet/vnet.h                 |  415 ++
+ drivers/vmware/vmnet/vnetEvent.c            |  549 ++
+ drivers/vmware/vmnet/vnetEvent.h            |   50 +
+ drivers/vmware/vmnet/vnetFilter.h           |  207 +
+ drivers/vmware/vmnet/vnetFilterInt.h        |   75 +
+ drivers/vmware/vmnet/vnetInt.h              |  351 +
+ drivers/vmware/vmnet/vnetKernel.h           |   85 +
+ drivers/vmware/vmnet/vnetUserListener.c     |  333 +
+ drivers/vmware/vmnet/x86cpuid.h             |  827 +++
+ fs/Kconfig                                  |    9 +
+ fs/Makefile                                 |    1 +
+ fs/novfs/Makefile                           |   19 +
+ fs/novfs/commands.h                         |  955 +++
+ fs/novfs/daemon.c                           | 2125 ++++++
+ fs/novfs/file.c                             | 1983 ++++++
+ fs/novfs/inode.c                            | 4742 +++++++++++++
+ fs/novfs/nwcapi.c                           | 2236 ++++++
+ fs/novfs/nwcapi.h                           | 1416 ++++
+ fs/novfs/nwerror.h                          |  658 ++
+ fs/novfs/proc.c                             |  153 +
+ fs/novfs/profile.c                          |  710 ++
+ fs/novfs/scope.c                            |  659 ++
+ fs/novfs/vfs.h                              |  453 ++
+ include/linux/bitmap.h                      |    1 +
+ include/linux/byteorder/bitfields.h         |  114 +
+ include/linux/usb.h                         |    3 +
+ include/linux/usb/wusb-wa.h                 |  281 +
+ include/linux/usb/wusb.h                    |  419 ++
+ include/linux/uwb.h                         |  759 ++
+ include/linux/uwb/debug-cmd.h               |   57 +
+ include/linux/uwb/debug.h                   |   82 +
+ include/linux/uwb/spec.h                    |  625 ++
+ include/linux/uwb/umc.h                     |  194 +
+ include/linux/uwb/whci.h                    |  117 +
+ include/linux/wlp.h                         |  728 ++
+ lib/bitmap.c                                |   22 +
+ 508 files changed, 230776 insertions(+), 646 deletions(-)
 
-> +/* Wellspring initialization constants */
-> +#define ATP_WELLSPRING_MODE_READ_REQUEST_ID   1
-> +#define ATP_WELLSPRING_MODE_WRITE_REQUEST_ID  9
-> +#define ATP_WELLSPRING_MODE_REQUEST_VALUE     0x300
-> +#define ATP_WELLSPRING_MODE_REQUEST_INDEX     0
-> +#define ATP_WELLSPRING_MODE_VENDOR_VALUE_1    0x01
-> +#define ATP_WELLSPRING_MODE_VENDOR_VALUE_2    0x05
-> +
-> +#define dprintk(format, a...) \
-> +  { if (debug) printk(KERN_DEBUG format, ##a); }
-> +
-> +MODULE_AUTHOR("Henrik Rydberg");
-> +MODULE_DESCRIPTION("Apple USB BCM5974 multitouch driver");
-> +MODULE_LICENSE("GPL");
-> +
-> +static int debug = 1;
-> +module_param(debug, int, 0644);
-> +MODULE_PARM_DESC(debug, "Activate debugging output");
-> +
-> +static int atp_wellspring_init(struct usb_device *udev)
-> +{
-> +  const struct atp_config_t *cfg = atp_product_config(udev);
-> +  char *data = kmalloc(8, GFP_DMA);
-> +  int size;
-> +
-> +  /* reset button endpoint */
-> +  if (usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
-> +		      USB_REQ_CLEAR_FEATURE, USB_RECIP_ENDPOINT,
-> +		      0, cfg->bt_ep, NULL, 0, 5000)) {
-> +    err("Could not reset button endpoint");
-> +    goto error;
-> +  }
-> +
-> +  /* reset trackpad endpoint */
-> +  if (usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
-> +		      USB_REQ_CLEAR_FEATURE, USB_RECIP_ENDPOINT,
-> +		      0, cfg->tp_ep, NULL, 0, 5000)) {
-> +    err("Could not reset trackpad endpoint");
-> +    goto error;
-> +  }
-> +
-> +  /* read configuration */
-> +  size = usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
-> +			 ATP_WELLSPRING_MODE_READ_REQUEST_ID,
-> +			 USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
-> +			 ATP_WELLSPRING_MODE_REQUEST_VALUE,
-> +			 ATP_WELLSPRING_MODE_REQUEST_INDEX, data, 8, 5000);
-> +
-> +  if (size != 8) {
-> +    err("Could not do mode read request from device (Wellspring Raw mode)");
-> +    goto error;
-> +  }
-> +
-> +  /* apply the mode switch */
-> +  data[0] = ATP_WELLSPRING_MODE_VENDOR_VALUE_1;
-> +  data[1] = ATP_WELLSPRING_MODE_VENDOR_VALUE_2;
+---------------
 
-This will crash the kernel if the kmalloc() failed.  And
-kmalloc(GFP_DMA) can easily fail.
+Anderson Lizardo (3):
+      WUSB: fix error path for wusb_set_dev_addr()
+      uwb: disable command/event filtering for D-Link DUB-1210
+      UWB: add Intel i1480 HWA to the UWB RC quirk table
 
-Do we really need memory from the GFP_DMA region for this driver?  It
-would be terribly old-fashioned.
+Andrew Morton (1):
+      WUSB: drivers/uwb/wlp/sysfs.c: move misplaced debug statement
 
-I dunno what USB driver normally use for their dma memory.  Perhaps
-dma_alloc_coherent()?
+Brandon Philips (1):
+      aectc: add the aectc driver
 
-> +  /* write configuration */
-> +  size = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
-> +			 ATP_WELLSPRING_MODE_WRITE_REQUEST_ID,
-> +			 USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
-> +			 ATP_WELLSPRING_MODE_REQUEST_VALUE,
-> +			 ATP_WELLSPRING_MODE_REQUEST_INDEX, data, 8, 5000);
-> +
-> +  if (size != 8) {
-> +    err("Could not do mode write request to device (Wellspring Raw mode)");
-> +    goto error;
-> +  }
-> +
-> +  kfree(data);
-> +  return 0;
-> +
-> + error:
-> +  kfree(data);
-> +  return -EIO;
-> +}
-> +
-> +/* Structure to hold all of our device specific stuff */
-> +struct atp {
-> +  char			phys[64];
-> +  struct usb_device    *udev;	      /* usb device */
-> +  struct input_dev     *input;	      /* input dev */
-> +  struct atp_config_t	cfg;	      /* device configuration */
-> +  unsigned		open;	      /* non-zero if opened */
-> +  struct urb	       *bt_urb;	      /* button usb request block */
-> +  signed char	       *bt_data;      /* button transferred data */
-> +  unsigned		bt_valid;     /* are the button sensors valid ? */
-> +  unsigned		bt_state;     /* current button state */
-> +  struct urb	       *tp_urb;	      /* trackpad usb request block */
-> +  signed char	       *tp_data;      /* trackpad transferred data */
-> +  unsigned		tp_valid;     /* are the trackpad sensors valid ? */
-> +};
-> +
-> +static inline int raw2int(__le16 x)
-> +{
-> +  return (short)le16_to_cpu(x);
+David Vrabel (9):
+      bitmap: add bitmap_copy_le()
+      uwb: add the UWB stack (reservation manager)
+      uwb: add the UWB stack (debug support)
+      uwb: add the umc bus
+      uwb: add the driver to enumerate WHCI capabilities
+      wusb: WHCI host controller driver
+      UWB: fix oops in uwbd_dev_offair()
+      UWB: fix oops when notifying of BG joining/leaving
+      UWB: make UWB selectable on all archs with USB support
 
-Given that this function returns signed 32-bit, I'd worry about what it
-does when it is presented with 0xffff.  otoh, perhaps you indeed
-intended to handle negative 16-bit quantities in that fashion, which
-would make sense.
+Dean Anderson (1):
+      USB: add Sensoray 2255 v4l driver
 
-> +}
-> +
-> +static inline int int2scale(const struct atp_params_t *p, int x)
-> +{
-> +  return ((p->max-p->min)*x)/(p->devmax-p->devmin);
-> +}
+Greg Kroah-Hartman (24):
+      USB: add option hso driver
+      Input: add appleir driver
+      DVB: add firesat driver
+      Video: add the go7007 driver
+      NET: add Alacritech slicoss driver
+      me4000 firmware file
+      me4000: add pci data collection driver
+      novfs: Add the Novell filesystem client kernel module
+      novfs: port the novfs 3.0 fixes to mainline
+      NET: add et131x driver
+      Framebuffer: add the VIA framebuffer driver
+      OMS: add OMS MAXp driver
+      via: add support for new via_chrome9 driver
+      via: codingstyle cleanpus for via drm drivers
+      USB: add USB test and measurement class driver
+      kolter_1616: add kolter_1616 PCI I/O driver
+      input: add mimio xi driver
+      uwb: add the UWB stack (build system)
+      uwb: add WiMedia LLC Protocol (build system)
+      wusb: add the Wireless USB core (build-system)
+      add drivers/vmware to the build
+      vmware: add vmblock driver
+      vmware: add vmnet driver
+      vmware: add vmmon driver
 
-Is there any way in which this can get a divide-by-zero?
+Inaky Perez-Gonzalez (18):
+      Add helper macros for little-endian bitfields
+      USB: add usb_dev_reset_delayed
+      uwb: add initial documentation
+      uwb: add the uwb include files
+      uwb: add the UWB stack (core files)
+      uwb: add the UWB stack (radio controller interface)
+      uwb: add the UWB stack (MLME)
+      uwb: add whc-rc radio control driver
+      uwb: add hwa-rc radio controller driver
+      uwb: add the i1480 DFU driver
+      uwb: add the i1480 WLP driver
+      wusb: add the Wireless USB include files.
+      wusb: add the Wireless USB core
+      wusb: add the Wireless USB core (protocol)
+      wusb: add the Wireless WUSB core (security)
+      wusb: add the USB wusb-cbaf driver
+      wusb: add the Wire Adapter (WA) core
+      wusb: add hwa-hc wireless host controller driver
 
-> +/**
-> + * all value ranges, both device and logical, are assumed to be [a,b).
-> + */
-> +static inline int int2bound(const struct atp_params_t *p, int x)
-> +{
-> +  int s = p->min+int2scale(p, x);
+Randy Dunlap (1):
+      uwb: fix Kconfig causing undefined references
 
-Please put a space around the operators in expressions like this.
-
-> +  return s < p->min?p->min:s >= p->max?p->max-1:s;
-
-That's just unreadable. Please simplify it.
-
-> +}
-> +
-> +/**
-
-This leadin is exclusively used to identify a kerneldoc-style comment.
-
-> + * check quality of reading.
-> + * -1: bad data
-> + * 0:  ignore this reading
-> + * 1:  good reading
-> + */
-
-But this is not a kerneldoc comment.  Please remove all the incorrect
-/** instances.
-
->
-> ...
->
-> +/**
-> + * convert raw data to synaptics sensor output.
-> + * returns the number of fingers on the trackpad,
-> + * or a negative number in vase of bad data.
-> + */
-> +static int compute_movement(int *abs_x, int *abs_y,
-> +			    int *rel_x, int *rel_y,
-> +			    int *pressure,
-> +			    struct atp_config_t *cfg,
-> +			    const unsigned char *data, int size)
-> +{
-> +  const int nfinger = (size-26)/28;
-> +  const struct tp_data_t *tp = (struct tp_data_t *) data;
-> +
-> +  if (nfinger) {
-> +    *abs_x = int2bound(&cfg->x, raw2int(tp->finger->abs_x) - cfg->x.devmin);
-> +    *abs_y = int2bound(&cfg->y, cfg->y.devmax - raw2int(tp->finger->abs_y));
-> +    *rel_x = int2scale(&cfg->x, raw2int(tp->finger->rel_x));
-> +    *rel_y = int2scale(&cfg->y, -raw2int(tp->finger->rel_y));
-> +    *pressure = int2bound(&cfg->p, raw2int(tp->finger->force_major));
-> +  } else {
-> +    *abs_x = 0;
-> +    *abs_y = 0;
-> +    *rel_x = 0;
-> +    *rel_y = 0;
-> +    *pressure = 0;
-> +  }
-> +
-> +  /* report zero fingers for zero pressure */
-> +  return *pressure > 0?nfinger:0;
-
-Normal style is
-
-	return *pressure > 0 ? nfinger : 0;
-
-(lots of other places)
-
-> +}
-> +
-> +static void atp_button(struct urb *urb)
-> +{
-> +  struct atp *dev = urb->context;
-> +  const unsigned char *data = dev->bt_data;
-> +  const int size = dev->bt_urb->actual_length;
-> +  int button = 0, retval;
-> +
-> +  switch (urb->status) {
-> +  case 0:
-> +    /* success */
-> +    break;
-> +  case -EOVERFLOW:
-> +  case -ECONNRESET:
-> +  case -ENOENT:
-> +  case -ESHUTDOWN:
-> +    /* This urb is terminated, clean up */
-> +    dbg("%s - urb shutting down with status: %d",
-> +	__func__, urb->status);
-> +    return;
-> +  default:
-> +    dbg("%s - nonzero urb status received: %d",
-> +	__func__, urb->status);
-> +    goto exit;
-> +  }
-> +
-> +  /* first sample data ignored */
-> +  if (!dev->bt_valid) {
-> +    dev->bt_valid = 1;
-> +    goto exit;
-> +  }
-> +
-> +  /* drop incomplete datasets */
-> +  if (size != 4) {
-> +    dprintk("bcm5974: incomplete button package (first byte: %d, length: %d)\n",
-> +	    (int)data[0], size);
-> +    goto exit;
-> +  }
-> +
-> +  button = data[1];
-> +
-> +  /* only report button state changes */
-> +  if (button != dev->bt_state) {
-> +    input_report_key(dev->input, BTN_LEFT, button);
-> +    input_sync(dev->input);
-> +  }
-> +
-> +  dev->bt_state = button;
-> +
-> + exit:
-> +  retval = usb_submit_urb(dev->bt_urb, GFP_ATOMIC);
-
-GFP_ATOMIC is a red flag.  Is this quite unrelaible allocation mode
-really needed here?
-
-> +  if (retval) {
-> +    err("%s - button usb_submit_urb failed with result %d",
-> +	__func__, retval);
-> +  }
-> +}
-> +
-> +static void atp_trackpad(struct urb *urb)
-> +{
-> +  struct atp *dev = urb->context;
-> +  int abs_x, abs_y, rel_x, rel_y, pressure;
-> +  int quality, nfinger, retval;
-> +
-> +  switch (urb->status) {
-> +  case 0:
-> +    /* success */
-> +    break;
-> +  case -EOVERFLOW:
-> +  case -ECONNRESET:
-> +  case -ENOENT:
-> +  case -ESHUTDOWN:
-> +    /* This urb is terminated, clean up */
-> +    dbg("%s - urb shutting down with status: %d",
-> +	__func__, urb->status);
-> +    return;
-> +  default:
-> +    dbg("%s - nonzero urb status received: %d",
-> +	__func__, urb->status);
-> +    goto exit;
-> +  }
-> +
-> +  /* first sample data ignored */
-> +  if (!dev->tp_valid) {
-> +    dev->tp_valid = 1;
-> +    goto exit;
-> +  }
-> +
-> +  /* determine quality of reading */
-> +  quality = compute_quality(dev->tp_data, dev->tp_urb->actual_length);
-> +
-> +  /* drop incomplete datasets */
-> +  if (quality < 0) {
-> +    dprintk("bcm5974: incomplete trackpad package "
-> +	    "(first byte: %d, length: %d)\n",
-> +	    (int)dev->tp_data[0], dev->tp_urb->actual_length);
-> +    goto exit;
-> +  }
-> +
-> +  /* drop poor quality readings */
-> +  if (quality == 0)
-> +    goto exit;
-> +
-> +  nfinger = compute_movement(&abs_x, &abs_y, &rel_x, &rel_y, &pressure,
-> +			     &dev->cfg,
-> +			     dev->tp_data, dev->tp_urb->actual_length);
-> +
-> +  if (debug > 1) {
-> +    printk(KERN_DEBUG "bcm5974: x: %04d y: %04d dx: %3d dy: %3d p: %3d\n",
-> +	   abs_x, abs_y, rel_x, rel_y, pressure);
-> +  }
-> +
-> +  /* input_report_key(dev->input,BTN_TOUCH,pressure>dev->cfg.p.fuzz); */
-> +  input_report_abs(dev->input, ABS_PRESSURE, pressure);
-> +  input_report_abs(dev->input, ABS_X, abs_x);
-> +  input_report_abs(dev->input, ABS_Y, abs_y);
-> +  /* input_report_rel(dev->input, REL_X, rel_x); */
-> +  /* input_report_rel(dev->input, REL_Y, rel_y); */
-> +  input_report_key(dev->input, BTN_TOOL_FINGER, nfinger == 1);
-> +  input_report_key(dev->input, BTN_TOOL_DOUBLETAP, nfinger == 2);
-> +  input_report_key(dev->input, BTN_TOOL_TRIPLETAP, nfinger > 2);
-> +  input_sync(dev->input);
-> +
-> + exit:
-> +  retval = usb_submit_urb(dev->tp_urb, GFP_ATOMIC);
-
-ditto.
-
-> +  if (retval) {
-> +    err("%s - trackpad usb_submit_urb failed with result %d",
-> +	__func__, retval);
-> +  }
-> +}
-> +
-> +static int atp_open(struct input_dev *input)
-> +{
-> +  struct atp *dev = input_get_drvdata(input);
-> +
-> +  if (usb_submit_urb(dev->bt_urb, GFP_ATOMIC))
-> +    goto error;
-> +
-> +  if (usb_submit_urb(dev->tp_urb, GFP_ATOMIC))
-> +    goto err_free_bt_urb;
-
-etc.
-
-> +  dev->open = 1;
-> +  return 0;
-> +
-> + err_free_bt_urb:
-> +  usb_free_urb(dev->bt_urb);
-> + error:
-> +  return -EIO;
-> +}
-> +
->
-> ...
->
+Reinette Chatre (3):
+      uwb: add the WiMedia LLC Protocol stack
+      uwb: add WiMedia LLC Protocol stack (messages)
+      uwb: add WiMedia LLC Protocol stack (WSS)
 
