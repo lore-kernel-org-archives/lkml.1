@@ -1,59 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbYGAWN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbYGAWRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754493AbYGAWN2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 18:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbYGAWNS
+	id S1760841AbYGAWRu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 18:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYGAWRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 18:13:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38844 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752425AbYGAWNR (ORCPT
+	Tue, 1 Jul 2008 18:17:42 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:57379 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752425AbYGAWRm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 18:13:17 -0400
-Date: Tue, 1 Jul 2008 15:04:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: dhowells@redhat.com, serue@us.ibm.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 1/4] security: filesystem capabilities bugfix1
-Message-Id: <20080701150406.2435593a.akpm@linux-foundation.org>
-In-Reply-To: <48635799.3010500@kernel.org>
-References: <48635799.3010500@kernel.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 1 Jul 2008 18:17:42 -0400
+Date: Tue, 1 Jul 2008 23:17:32 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: RFC: Add mtdset= to Documentation/kernel-parameters
+Message-ID: <20080701221732.GA16816@flint.arm.linux.org.uk>
+References: <20080701215726.GA22880@fluff.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080701215726.GA22880@fluff.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'll assume that patches 1 and 2 are needed in 2.6.26 and that
-patches 3 and 4 are for 2.6.27.
+On Tue, Jul 01, 2008 at 10:57:26PM +0100, Ben Dooks wrote:
+> Does anyone have any comments about adding this patch
+> to describe the ARM/S3C2412 Jive machine specific kernel
+> commandline parameter mtdset?
 
-Patches 1 and/or 2 caused a reject in
-security-protect-legacy-applications-from-executing-with-insufficient-privilege.patch:
-
-***************
-*** 350,357 ****
-  				bprm->e_gid = current->gid;
-  			}
-  			if (!capable (CAP_SETPCAP)) {
-- 				new_permitted = cap_intersect (new_permitted,
-- 							current->cap_permitted);
-  			}
-  		}
-  	}
---- 364,372 ----
-  				bprm->e_gid = current->gid;
-  			}
-  			if (!capable (CAP_SETPCAP)) {
-+ 				bprm->cap_post_exec_permitted = cap_intersect(
-+ 					bprm->cap_post_exec_permitted,
-+ 					current->cap_permitted);
-  			}
-  		}
-  	}
-
-which looked simple to fix.  I'll resend the resulting diff - please
-check.
-
+Only that it should be part of the patch which adds the mtdset=
+parameter rather than a separate stand alone patch.
