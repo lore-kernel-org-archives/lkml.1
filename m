@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbYGADeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753028AbYGADih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753089AbYGADeY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 23:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbYGADeF
+	id S1753028AbYGADih (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 23:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbYGADi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 23:34:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36281 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751615AbYGADeF (ORCPT
+	Mon, 30 Jun 2008 23:38:29 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:35374 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750719AbYGADi3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 23:34:05 -0400
-Date: Mon, 30 Jun 2008 20:34:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] Fix the case of jiffies wrapping in mm/pdflush.c
-Message-Id: <20080630203401.f9bcfe84.akpm@linux-foundation.org>
-In-Reply-To: <a553a85a3e848699d00711608.ps@mail.parknet.co.jp>
-References: <9edbdefc3e848699cfe111608.ps@mail.parknet.co.jp>
-	<129170883e848699cff211608.ps@mail.parknet.co.jp>
-	<d3ce91fd3e848699cff311608.ps@mail.parknet.co.jp>
-	<5be8ad613e848699cff411608.ps@mail.parknet.co.jp>
-	<555b858b3e848699cff511608.ps@mail.parknet.co.jp>
-	<670df4283e848699cff611608.ps@mail.parknet.co.jp>
-	<a553a85a3e848699d00711608.ps@mail.parknet.co.jp>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
+	Mon, 30 Jun 2008 23:38:29 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH] DMA Engine: fix error path(s) in fsl-dma driver
+Date: Tue, 1 Jul 2008 11:38:23 +0800
+Message-ID: <989B956029373F45A0B8AF029708189002563E31@zch01exm26.fsl.freescale.net>
+In-Reply-To: <20080630181856.GA6980@www.tglx.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] DMA Engine: fix error path(s) in fsl-dma driver
+Thread-Index: Acja3cpUenrngwuqQM+5ygndahRq2AAS5V9A
+References: <20080630181856.GA6980@www.tglx.de>
+From: "Li Yang" <LeoLi@freescale.com>
+To: "Sebastian Siewior" <bigeasy@linutronix.de>
+Cc: "Zhang Wei" <zw@zh-kernel.org>, <linuxppc-embedded@ozlabs.org>,
+       <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 01 Jul 2008 11:57:04 +0900 OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
-
+> -----Original Message-----
+> From: Sebastian Siewior [mailto:bigeasy@linutronix.de] 
+> Sent: Tuesday, July 01, 2008 2:19 AM
+> To: Li Yang
+> Cc: Zhang Wei; linuxppc-embedded@ozlabs.org; 
+> linux-kernel@vger.kernel.org
+> Subject: [PATCH] DMA Engine: fix error path(s) in fsl-dma driver
 > 
+> of_fsl_dma_probe:
+>  - kfree(NULL) doesn't hurt but dereferencing the pointer in 
+> iounmap does
+>  - also, the irq can be freed
 > 
-> Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-> ---
+> of_fsl_dma_chan_probe:
+> - iounmap(NULL) resolved in vunmap() what which in turn is 
+> able to handle NULL
+>   pointer but dereferencing still doesn't work
+> - don't clean up not yet allocated ressources, like list_del 
+> before list_add
 > 
->  mm/pdflush.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff -puN mm/pdflush.c~pdfluh-jiffies-check-fix mm/pdflush.c
-> --- linux-2.6/mm/pdflush.c~pdfluh-jiffies-check-fix	2008-07-01 10:19:07.000000000 +0900
-> +++ linux-2.6-hirofumi/mm/pdflush.c	2008-07-01 10:19:07.000000000 +0900
-> @@ -130,7 +130,7 @@ static int __pdflush(struct pdflush_work
->  		 * Thread creation: For how long have there been zero
->  		 * available threads?
->  		 */
-> -		if (jiffies - last_empty_jifs > 1 * HZ) {
-> +		if (time_after(jiffies, last_empty_jifs + 1 * HZ)) {
->  			/* unlocked list_empty() test is OK here */
->  			if (list_empty(&pdflush_list)) {
->  				/* unlocked test is OK here */
-> @@ -151,7 +151,7 @@ static int __pdflush(struct pdflush_work
->  		if (nr_pdflush_threads <= MIN_PDFLUSH_THREADS)
->  			continue;
->  		pdf = list_entry(pdflush_list.prev, struct pdflush_work, list);
-> -		if (jiffies - pdf->when_i_went_to_sleep > 1 * HZ) {
-> +		if (time_after(jiffies, pdf->when_i_went_to_sleep + 1 * HZ)) {
->  			/* Limit exit rate */
->  			pdf->when_i_went_to_sleep = jiffies;
->  			break;					/* exeunt */
+> fsl_dma_self_test:
+> - call fsl_dma_free_chan_resources() if the first dma trans 
+> didn't complete
 
-I don't think this actually "fixes" anything, does it?  The old code
-should be correct at runtime.
+Thanks Sebastian,
 
-I renamed the patch to "pdflush: use time_after() instead of open-coding it".
+But similar patch has already been waiting in sub-system maintainer's tree which can be found at 
 
+http://git.kernel.org/?p=linux/kernel/git/djbw/async_tx.git;a=commit;h=29ec9bdef73d68134e7070ee91ccda0718d46150
+
+- Leo
