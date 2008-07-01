@@ -1,86 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbYGAXkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761456AbYGAXlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757521AbYGAXkj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 19:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759233AbYGAXkQ
+	id S1761456AbYGAXlW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 19:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757403AbYGAXlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 19:40:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50900 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758494AbYGAXkO (ORCPT
+	Tue, 1 Jul 2008 19:41:10 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:55689 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751797AbYGAXlI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 19:40:14 -0400
-Date: Tue, 1 Jul 2008 16:39:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, ming.m.lin@intel.com,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: [PATCH] Properly notify block layer of sync writes
-Message-Id: <20080701163949.d0cdf740.akpm@linux-foundation.org>
-In-Reply-To: <20080627131830.GC20826@kernel.dk>
-References: <20080627131830.GC20826@kernel.dk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 1 Jul 2008 19:41:08 -0400
+Subject: Re: [PATCH 14/23] make section names compatible with
+	-ffunction-sections -fdata-sections: parisc
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: linux-arch@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>,
+       David Howells <dhowells@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Lennert Buytenhek <kernel@wantstofly.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Paul Mackerras <paulus@samba.org>,
+       David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tim Bird <tim.bird@am.sony.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Dave Miller <davem@davemloft.net>
+In-Reply-To: <200807020239.11410.vda.linux@googlemail.com>
+References: <200807020239.11410.vda.linux@googlemail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 01 Jul 2008 18:41:00 -0500
+Message-Id: <1214955660.3316.31.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jun 2008 15:18:31 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
+On Wed, 2008-07-02 at 02:39 +0200, Denys Vlasenko wrote:
+> The purpose of this patch is to make kernel buildable
+> with "gcc -ffunction-sections -fdata-sections".
+> This patch fixes parisc architecture.
+> 
+> Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
 
-> Hi,
-> 
-> fsync_buffers_list() and sync_dirty_buffer() both issue async writes and
-> then immediately wait on them. Conceptually, that makes them sync writes
-> and we should treat them as such so that the IO schedulers can handle
-> them appropriately.
-> 
-> This patch fixes a write starvation issue that Lin Ming reported, where
-> xx is stuck for more than 2 minutes because of a large number of
-> synchronous IO in the system:
-> 
-> INFO: task kjournald:20558 blocked for more than 120 seconds.
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this
-> message.
-> kjournald     D ffff810010820978  6712 20558      2
-> ffff81022ddb1d10 0000000000000046 ffff81022e7baa10 ffffffff803ba6f2
-> ffff81022ecd0000 ffff8101e6dc9160 ffff81022ecd0348 000000008048b6cb
-> 0000000000000086 ffff81022c4e8d30 0000000000000000 ffffffff80247537
-> Call Trace:
-> [<ffffffff803ba6f2>] kobject_get+0x12/0x17
-> [<ffffffff80247537>] getnstimeofday+0x2f/0x83
-> [<ffffffff8029c1ac>] sync_buffer+0x0/0x3f
-> [<ffffffff8066d195>] io_schedule+0x5d/0x9f
-> [<ffffffff8029c1e7>] sync_buffer+0x3b/0x3f
-> [<ffffffff8066d3f0>] __wait_on_bit+0x40/0x6f
-> [<ffffffff8029c1ac>] sync_buffer+0x0/0x3f
-> [<ffffffff8066d48b>] out_of_line_wait_on_bit+0x6c/0x78
-> [<ffffffff80243909>] wake_bit_function+0x0/0x23
-> [<ffffffff8029e3ad>] sync_dirty_buffer+0x98/0xcb
-> [<ffffffff8030056b>] journal_commit_transaction+0x97d/0xcb6
-> [<ffffffff8023a676>] lock_timer_base+0x26/0x4b
-> [<ffffffff8030300a>] kjournald+0xc1/0x1fb
-> [<ffffffff802438db>] autoremove_wake_function+0x0/0x2e
-> [<ffffffff80302f49>] kjournald+0x0/0x1fb
-> [<ffffffff802437bb>] kthread+0x47/0x74
-> [<ffffffff8022de51>] schedule_tail+0x28/0x5d
-> [<ffffffff8020cac8>] child_rip+0xa/0x12
-> [<ffffffff80243774>] kthread+0x0/0x74
-> [<ffffffff8020cabe>] child_rip+0x0/0x12
-> 
-> Lin Ming confirms that this patch fixes the issue. I've run tests with
-> it for the past week and no ill effects have been observed, so I'm
-> proposing it for inclusion into 2.6.26.
+Um ... if you look at the Makefile you'll see we already build parisc
+with -ffunction-sections; we have to: our relative jumps are too small
+to guarantee finding the stubs in large files.
 
-I expect we'll be wanting this in 2.6.25.x also?
+Since our text is -ffunction-sections compatible already, I question the
+need for transformations like this:
 
-> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> ---
->  fs/buffer.c        |   13 ++++++++-----
->  include/linux/fs.h |    1 +
->  2 files changed, 9 insertions(+), 5 deletions(-)
-> 
-> ...
->
+> ﻿-               *(.text.do_softirq)
+> -               *(.text.sys_exit)
+> -               *(.text.do_sigaltstack)
+> -               *(.text.do_fork)
+> +               *(.do_softirq.text)
+> +               *(.sys_exit.text)
+> +               *(.do_sigaltstack.text)
+> +               *(.do_fork.text)
+
+And thus by the same token the data transformations.
+
+James
+
+
