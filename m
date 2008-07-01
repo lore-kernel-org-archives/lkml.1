@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369AbYGAJSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbYGAJVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757369AbYGAJSr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 05:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbYGAJSi
+	id S1756937AbYGAJVU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 05:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbYGAJVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 05:18:38 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55288 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753565AbYGAJSh (ORCPT
+	Tue, 1 Jul 2008 05:21:12 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:48441 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752895AbYGAJVL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 05:18:37 -0400
-Date: Tue, 1 Jul 2008 11:19:38 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kernel-testers@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
-Message-ID: <20080701091937.GA1871@elf.ucw.cz>
-References: <200807010148.02135.rjw@sisk.pl> <20080701063133.GC16642@elte.hu> <4869D4A3.3020000@zytor.com>
+	Tue, 1 Jul 2008 05:21:11 -0400
+Message-ID: <4869F6FC.7040301@linux.vnet.ibm.com>
+Date: Tue, 01 Jul 2008 14:51:00 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4869D4A3.3020000@zytor.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Andy Whitcroft <apw@shadowen.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, Vivek Goyal <vgoyal@in.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 30
+References: <20080701001656.e156585c.sfr@canb.auug.org.au> <48690385.7030500@linux.vnet.ibm.com> <48690D3C.1060803@linux.vnet.ibm.com> <20080630185943.GA24692@uranus.ravnborg.org> <20080630192610.GA6584@elte.hu> <20080630194727.GA26682@uranus.ravnborg.org> <20080630200623.GE6584@elte.hu> <20080630202506.GA28050@uranus.ravnborg.org> <486943F1.80606@zytor.com> <48695449.5010602@zytor.com>
+In-Reply-To: <48695449.5010602@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+H. Peter Anvin wrote:
+> Here is a patch to replace the hard-coded limit with dynamic allocation. 
+>   I have only build-tested it, but it seems to work.
+> 
+> Please try it out; barring any screams to the contrary I'll add it to -tip.
+> 
+> 	-hpa
+> 
+> 
+> 
+<snip>
 
->>> The appended patch fixes a regression and is considered as 2.6.26 
->>> material. Everyone having a box with working suspend to RAM is gently 
->>> requested to test it and verify if it doesn't break things.
->>>
->>> The patch applies to the current -git.
->>
->> it's been under testing in tip/out-of-tree for about a week:
->>
->> | commit ee901dc1b9ab94a37ba2efc296fe9ba72bc75adf
->> | Author:     H. Peter Anvin <hpa@zytor.com>
->> | AuthorDate: Tue Jun 24 23:03:48 2008 +0200
->> | Commit:     Ingo Molnar <mingo@elte.hu>
->> | CommitDate: Wed Jun 25 18:48:13 2008 +0200
->> |
->> |     x86 ACPI: normalize segment descriptor register on resume
->>
->> no problems caused by it so far.
->>
->
-> Here is the incremental patch which should stick "strictly to the script" 
-> of ljmp immediately after writing CR0.PE.  This should be done to the boot 
-> code as well; I'm waiting for confirmation from the Elan original reporter 
-> before submitting that patch.
->
-> I decided to make this an incremental patch to make it bisectable versus 
-> the other one, however, it should probably be considered the right thing.
->
-> Note: I have not tested this beyond compilation, I'm afraid.
+Thanks, the patch is working good on my machine.
 
-I had to apply it by hand, then I tested it along with Rafael's patch
-and it does not seem to break anything here. So feel free to add my
-ACK to both.
-								Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
