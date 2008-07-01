@@ -1,148 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbYGAMJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbYGAMKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756045AbYGAMJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 08:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753812AbYGAMJv
+	id S1756396AbYGAMKg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 08:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbYGAMK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 08:09:51 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:40816 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753792AbYGAMJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 08:09:50 -0400
-Message-ID: <486A1E8C.2050209@sgi.com>
-Date: Tue, 01 Jul 2008 05:09:48 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 1 Jul 2008 08:10:28 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:54626 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753812AbYGAMK1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 08:10:27 -0400
+Date: Tue, 1 Jul 2008 14:10:26 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: kbuild <linux-kbuild@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [PATCH 08/24] kbuild: make clean removes *.o.* as well
+In-Reply-To: <1214861718-32626-8-git-send-email-sam@ravnborg.org>
+Message-ID: <alpine.LNX.1.10.0807011409170.12878@fbirervta.pbzchgretzou.qr>
+References: <20080630213155.GA32479@uranus.ravnborg.org> <1214861718-32626-8-git-send-email-sam@ravnborg.org>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<48596315.6020104@goop.org> <48596893.4040908@sgi.com>	<485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org>	<485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>	<485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com>	<485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com>	<485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>	<485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com>	<m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com> <m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>
-In-Reply-To: <48694B3B.3010600@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Eric W. Biederman wrote:
->> Mike Travis <travis@sgi.com> writes:
->>
->>  
->>> H. Peter Anvin wrote:
->>>    
->>>> Mike Travis wrote:
->>>>      
->>>>> FYI, I did try this out and it caused the bootloader to scramble the
->>>>> loaded data.  The first corruption I found was the .x86cpuvendor.init
->>>>> section contained all zeroes.
->>>>>
->>>>>         
->>>> Explain what you mean with "the bootloader" in this context.
->>>>
->>>>     -hpa
->>>>       
->>> After the code was loaded (the compressed code, it seems that my GRUB
->>> doesn't support uncompressed loading), the above section contained
->>> zeroes.  I snapped it fairly early, around secondary_startup_64, and
->>> then printed it in x86_64_start_kernel.
->>>
->>> The object file had the correct data (as displayed by objdump) so I'm
->>> assuming that the bootloading process didn't load the section correctly.
->>>
->>> Below was the linker script I used:
->>>
->>> --- linux-2.6.tip.orig/include/asm-generic/vmlinux.lds.h
->>> +++ linux-2.6.tip/include/asm-generic/vmlinux.lds.h
->>> @@ -373,9 +373,13 @@
->>>
->>>  #ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
->>>  #define
->>> PERCPU(align)                                                  \
->>> -       . =
->>> ALIGN(align);                                               \
->>> +       .data.percpu.abs =
->>> .;                                           \
->>>         percpu : { }
->>> :percpu                                            \
->>> -       __per_cpu_load =
->>> .;                                             \
->>> +       .data.percpu.rel : AT(.data.percpu.abs - LOAD_OFFSET)
->>> {         \
->>> +              
->>> BYTE(0)                                                 \
->>> +               . =
->>> ALIGN(align);                                       \
->>> +               __per_cpu_load =
->>> .;                                     \
->>> +      
->>> }                                                               \
->>>         .data.percpu 0 : AT(__per_cpu_load - LOAD_OFFSET)
->>> {             \
->>>                
->>> *(.data.percpu.first)                                   \
->>>                
->>> *(.data.percpu.shared_aligned)                          \
->>> @@ -383,8 +387,8 @@
->>>                
->>> *(.data.percpu.page_aligned)                            \
->>>                 ____per_cpu_size =
->>> .;                                   \
->>>        
->>> }                                                               \
->>> -       . = __per_cpu_load +
->>> ____per_cpu_size;                          \
->>> -       data : { } :data
->>> +       . = __per_cpu_load + ____per_cpu_size;
->>> +
->>>  #else
->>>  #define
->>> PERCPU(align)                                                  \
->>>         . =
->>> ALIGN(align);                                               \
->>>
->>> It showed all the correct address in the map and __per_cpu_load was a
->>> relative symbol (which was the objective.)
->>>
->>> Btw, our simulator, which only loads uncompressed code, had the data
->>> correct,
->>> so it *may* only be a result of the code being compressed.
->>>     
->>
->> Weird.  Grub doesn't get involved in the decompression the kernel does it
->> all itself so we should be able to track where things go bad.
->>
->> Last I looked the compressed code was formed by essentially.
->> objcopy vmlinux -O binary vmlinux.bin
->> gzip vmlinux.bin
->> And then we take on a magic header to the gzip compressed file.
->>
->> Are things only bad with the change above?
-> 
-> No, the original crash being discussed was a GP fault in head_64.S as it
-> tries to initialize the kernel segments.  The cause was that the
-> prototype GDT is all zero, even though it's an initialized variable, and
-> inspection of vmlinux shows that it has the right contents.  But somehow
-> it's either 1) getting zeroed on load, or 2) is loaded to the wrong place.
-> 
-> The zero-based PDA mechanism requires the introduction of a new ELF
-> segment based at vaddr 0 which is sufficiently unusual that it wouldn't
-> surprise me if its triggering some toolchain bug.
-> 
-> Mike: what would happen if the PDA were based at 4k rather than 0?  The
-> stack canary would still be at its small offset (0x20?), but it doesn't
-> need to be initialized.  I'm not sure if doing so would fix anything,
-> however.
-> 
->    J
 
-I don't know that the basing at 0 or 4k would matter.  I'll post the patch
-in it's current form (as an RFC?) to show what was needed to initialize the
-pda and gdt page pointer.
+On Monday 2008-06-30 23:35, Sam Ravnborg wrote:
 
-Thanks,
-Mike
+>From: Alexey Dobriyan <adobriyan@gmail.com>
+>
+>Those are left presumably from aborted ccache(1) compilations:
+>
+>	arch/x86/kernel/.tmp_io_apic_64.o.T5veul
+>	arch/x86/kvm/.tmp_x86.o.SZWn69
+>	arch/x86/mm/.tmp_pgtable.o.sL1LTf
+>	drivers/ieee1394/.tmp_ieee1394_transactions.o.bUj6o1
+>	drivers/infiniband/hw/mlx4/.tmp_main.o.vy0ep6
+
+I'd suggest using '.tmp_*.o.*' instead of '*.o.*'.
