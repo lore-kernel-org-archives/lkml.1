@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbYGAS6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbYGAS7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756723AbYGAS6S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 14:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYGAS6I
+	id S1757458AbYGAS7R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 14:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbYGAS7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 14:58:08 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44175 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752581AbYGAS6H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 14:58:07 -0400
-Message-ID: <486A7E3D.3050901@firstfloor.org>
-Date: Tue, 01 Jul 2008 20:58:05 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Tue, 1 Jul 2008 14:59:06 -0400
+Received: from mga02.intel.com ([134.134.136.20]:7108 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752623AbYGAS7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 14:59:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,732,1204531200"; 
+   d="scan'208";a="404139269"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Subject: Re: Intel DG965WH / Case 745-44-22 (slow bios/upgrade) [UPDATE] / Intel, status of HECI support patch for the kernel?
+Date: Tue, 1 Jul 2008 11:58:45 -0700
+User-Agent: KMail/1.9.9
+Cc: "crmotherboard@mailbox.intel.com" <crmotherboard@mailbox.cps.intel.com>,
+       "Williams, Dan J" <dan.j.williams@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>,
+       Anas Nashif <anas.nashif@intel.com>
+References: <alpine.DEB.1.10.0806300958070.13171@p34.internal.lan> <alpine.DEB.1.10.0807011442500.18141@p34.internal.lan>
+In-Reply-To: <alpine.DEB.1.10.0807011442500.18141@p34.internal.lan>
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: small unifications of address printing
-References: <20080701155217.GA22318@damson.getinternet.no>	 <87d4lxtq3h.fsf@basil.nowhere.org> <19f34abd0807011146g2bb8baf0q2dbaa9ebe501657e@mail.gmail.com>
-In-Reply-To: <19f34abd0807011146g2bb8baf0q2dbaa9ebe501657e@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807011158.46258.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday, July 01, 2008 11:43 am Justin Piszcz wrote:
+> > This is from 2007:
+> > http://softwareblogs.intel.com/2007/04/13/intel-me-interface-heci-now-ava
+> >ilable/
+> >
+> > Their updated project page:
+> > http://www.openamt.org/
+> >
+> > Justin.
+>
+> The issue regarding accessing the hard drive menu was fixed by simpling
+> power cycling/rebooting the host.
 
-> Yes, it will, and correctly too:
-> 
->         case 'p':
->                 flags |= SMALL;
->                 if (field_width == -1) {
->                         field_width = 2*sizeof(void *);
->                         flags |= ZEROPAD;
->                 }
-> 
-> Or did I read this code wrong? field_width is initialized to -1 by
-> default unless overridden. The SMALL flag means lowercase hexadecimal
-> digits.
+And the problem hasn't come back?
 
-You're right. The kernel differs from user space/traditional behaviour
-in this regard.
+> All issues are now resolved (regarding the slow speed/memory/etc)..
 
--Andi
+Hopefully there's a more recent BIOS available that doesn't need to trim the 
+memory for you?
+
+> Only other question left is the HECI support in the kernel.
+
+I'll defer that question to Anas, he's been handling the HECI stuff.
+
+Jesse
