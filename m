@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYGAQnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYGAQpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbYGAQnu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 12:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbYGAQnk
+	id S1756732AbYGAQpH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 12:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYGAQo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 12:43:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44302 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750813AbYGAQnj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 12:43:39 -0400
-Date: Tue, 1 Jul 2008 09:43:10 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-cc: Andrew Morton <akpm@linuxfoundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: A minimally power-aware driver treats all messages as SUSPEND?
-In-Reply-To: <20080701072911.GA6564@digi.com>
-Message-ID: <alpine.LFD.1.10.0807010942330.20870@hp.linux-foundation.org>
-References: <20080701072911.GA6564@digi.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 1 Jul 2008 12:44:56 -0400
+Received: from ns.suse.de ([195.135.220.2]:51689 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750874AbYGAQoz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 12:44:55 -0400
+Date: Tue, 1 Jul 2008 09:43:22 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 0/9] 2.6.25.10 -stable review
+Message-ID: <20080701164322.GA32543@suse.de>
+References: <20080701151835.GA3536@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080701151835.GA3536@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 1 Jul 2008, Uwe Kleine-König wrote:
+On Tue, Jul 01, 2008 at 08:18:35AM -0700, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.25.10 release.
+> There are 9 patches in this series, all will be posted as a response
+> to this one.  If anyone has any issues with these being applied, please
+> let us know.  If anyone is a maintainer of the proper subsystem, and
+> wants to add a Signed-off-by: line to the patch, please respond with it.
 > 
-> This was introduced in commit 82bb67f2 by David Brownell.  At this time
-> PM_EVENT_HIBERNATE didn't exist.  This was added in 3a2d5b70 by Rafael
-> J. Wysocki without updating the above sentence.  I think a minimally
-> power-aware driver should treat all messages as HIBERNATE, shouldn't it?
+> These patches are sent out with a number of different people on the
+> Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
+> to add your name to the list.  If you want to be off the reviewer list,
+> also email us.
+> 
+> Responses should be made by July 3, 15:00:00 UTC.  Anything received
+> after that time might be too late.
+> 
+> The whole patch series can be found in one patch at:
+> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.10-rc1.gz
+> and the diffstat can be found below.
 
-No.
+I have released 2.6.25.10-rc2 at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.10-rc2.gz
+due to a build error in the -rc1 patch.
 
-A minimally power-aware driver should aim to work with STR.
+Sorry about that.
 
-HIBERNATE should be a secondary goal (if even that).
+thanks,
 
-			Linus
+greg k-h
