@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760829AbYGAUh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759700AbYGAUkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760829AbYGAUh4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 16:37:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbYGAUhq
+	id S1759700AbYGAUkz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 16:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbYGAUkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 16:37:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59935 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754825AbYGAUhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 16:37:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
-Date: Tue, 1 Jul 2008 22:39:43 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Ingo Molnar <mingo@elte.hu>, kernel-testers@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>
-References: <200807010148.02135.rjw@sisk.pl> <20080701063133.GC16642@elte.hu> <4869D4A3.3020000@zytor.com>
-In-Reply-To: <4869D4A3.3020000@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807012239.44105.rjw@sisk.pl>
+	Tue, 1 Jul 2008 16:40:46 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:43277 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753709AbYGAUkp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 16:40:45 -0400
+To: jmorris@namei.org
+CC: jjohansen@suse.de, akpm@linux-foundation.org,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [patch] security: fix dummy xattr functions
+Message-Id: <E1KDmeW-0006KB-2x@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 01 Jul 2008 22:40:40 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 1 of July 2008, H. Peter Anvin wrote:
-> Ingo Molnar wrote:
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > 
-> >> Hi,
-> >>
-> >> The appended patch fixes a regression and is considered as 2.6.26 
-> >> material. Everyone having a box with working suspend to RAM is gently 
-> >> requested to test it and verify if it doesn't break things.
-> >>
-> >> The patch applies to the current -git.
-> > 
-> > it's been under testing in tip/out-of-tree for about a week:
-> > 
-> > | commit ee901dc1b9ab94a37ba2efc296fe9ba72bc75adf
-> > | Author:     H. Peter Anvin <hpa@zytor.com>
-> > | AuthorDate: Tue Jun 24 23:03:48 2008 +0200
-> > | Commit:     Ingo Molnar <mingo@elte.hu>
-> > | CommitDate: Wed Jun 25 18:48:13 2008 +0200
-> > |
-> > |     x86 ACPI: normalize segment descriptor register on resume
-> > 
-> > no problems caused by it so far.
-> > 
-> 
-> Here is the incremental patch which should stick "strictly to the 
-> script" of ljmp immediately after writing CR0.PE.  This should be done 
-> to the boot code as well; I'm waiting for confirmation from the Elan 
-> original reporter before submitting that patch.
-> 
-> I decided to make this an incremental patch to make it bisectable versus 
-> the other one, however, it should probably be considered the right thing.
-> 
-> Note: I have not tested this beyond compilation, I'm afraid.
+Hi James,
 
-I have tested it on the nx6325 (64-bit) on top of the today's linux-next.  It
-works fine for me.
+If this (untested) patch looks OK, could you please apply it to your
+tree?
 
 Thanks,
-Rafael
+Miklos
+
+----
+From: Miklos Szeredi <mszeredi@suse.cz>
+
+Replace open coded xattr checks with cap_inode_xxx() function calls in
+dummy_inode_setxattr() and dummy_inode_removexattr().  The old ones
+were out of sync with the cap_inode_xxx() implementation, which could
+even be a security problem.
+
+Noticed by John Johansen.
+
+CC: John Johansen <jjohansen@suse.de>
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+ security/dummy.c |   12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
+
+Index: linux-2.6/security/dummy.c
+===================================================================
+--- linux-2.6.orig/security/dummy.c	2008-07-01 21:44:03.000000000 +0200
++++ linux-2.6/security/dummy.c	2008-07-01 21:51:08.000000000 +0200
+@@ -370,11 +370,7 @@ static void dummy_inode_delete (struct i
+ static int dummy_inode_setxattr (struct dentry *dentry, const char *name,
+ 				 const void *value, size_t size, int flags)
+ {
+-	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+-		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
+-	    !capable(CAP_SYS_ADMIN))
+-		return -EPERM;
+-	return 0;
++	return cap_inode_setxattr(dentry, name, value, size, flags);
+ }
+ 
+ static void dummy_inode_post_setxattr (struct dentry *dentry, const char *name,
+@@ -395,11 +391,7 @@ static int dummy_inode_listxattr (struct
+ 
+ static int dummy_inode_removexattr (struct dentry *dentry, const char *name)
+ {
+-	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+-		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
+-	    !capable(CAP_SYS_ADMIN))
+-		return -EPERM;
+-	return 0;
++	return cap_inode_removexattr(dentry, name);
+ }
+ 
+ static int dummy_inode_need_killpriv(struct dentry *dentry)
