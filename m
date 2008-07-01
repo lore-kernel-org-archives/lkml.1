@@ -1,76 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758305AbYGAAej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758512AbYGAA62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758305AbYGAAej (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 20:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbYGAAe2
+	id S1758512AbYGAA62 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 20:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755000AbYGAA6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 20:34:28 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36608 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754774AbYGAAe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 20:34:27 -0400
-Date: Tue, 1 Jul 2008 10:34:17 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-next@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, mingo <mingo@redhat.com>,
-       tglx <tglx@linutronix.de>, hpa <hpa@zytor.com>,
-       akpm <akpm@linux-foundation.org>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH -next] fork and exit: need to include iocontext.h
-Message-Id: <20080701103417.c0c09538.sfr@canb.auug.org.au>
-In-Reply-To: <20080630183337.GD32211@elte.hu>
-References: <20080630105458.7c95e195.randy.dunlap@oracle.com>
-	<20080630180506.GC23739@elte.hu>
-	<20080630112222.f103e477.randy.dunlap@oracle.com>
-	<20080630183337.GD32211@elte.hu>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.10; i486-pc-linux-gnu)
+	Mon, 30 Jun 2008 20:58:09 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:45756 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754774AbYGAA6H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 20:58:07 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <25019527.1214873805265.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Tue, 1 Jul 2008 09:56:45 +0900 (JST)
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: Re: [RFC][PATCH] memcg: change shmem handler.
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0806302024050.27080@blonde.site>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__1_Jul_2008_10_34_17_+1000_BfUla51nsbwj7=OD"
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <Pine.LNX.4.64.0806302024050.27080@blonde.site>
+ <Pine.LNX.4.64.0806290117510.21758@blonde.site>
+ <Pine.LNX.4.64.0806290120270.21758@blonde.site>
+ <20080630173631.a252bb0e.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__1_Jul_2008_10_34_17_+1000_BfUla51nsbwj7=OD
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 30 Jun 2008 20:33:37 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+----- Original Message -----
+>> 
+>> With memcg.
+>>   - shmem is treted just as a file-cache. So, started from inactive list.
 >
-> normally there's an easy way to find out the source commit of build=20
-> failures. Try something like:
->=20
->  git-bisect reset
->  git-bisect start
->  git-bisect good v2.6.26-rc8
+>Depends on what set of patches we're talking about.
+>
+just means it's charged by mem_cgroup_cache_charge()
 
-More generally "git-bisect good linux-next/stable" - the stable branch is
-just where I started on Linus' tree and that is always good :-)
+>>   - shmem's page fault routine is sensitive to GFP_xxx in which used.
+>>     (GFP_NOWAIT is used) and pre-charge is done before add_to_page_cache.
+>
+>Nothing particular to shmem or page fault routine, I think; but
+>shmem implementation is peculiar in calling add_to_page_cache etc.
+>while holding a spinlock, so needs to precharge, yes.
+>
+>>   - shmem's page is removed by mem_cgroup_uncharge_cache_page(), So,
+>>     shmem's swapcache is not charged.
+>
+>Ah, that's interesting: I'd assumed you'd changed that in your
+>no-refcount patches, and had been surprised not to notice a slowdown
+>(waiting for swap to be written and freed before coming under limit).
+>Now you want to make them wait: not entirely an improvement,
+>but I see your point.
+>
+To do this is (maybe) a few line patch. I'll CC you if I wrote some.
 
->  git-bisect bad linux-next/master
->  git-bisect run make kernel/fork.o
->=20
-> ... this should lead you to the commit that broke the build=20
-> automatically. (as long as everyone keeps make oldconfig compatibility)
+>> 
+>> This patch fixes some mess by
+>>   - PAGE_CGROUP_FLAG_CACHE is deleted (and replaced by FLAG_FILE)
+>
+>That's good.
+>
+will do as an independent patch.
 
-Nice, I must try this.
+>>   - PAGE_CGROUP_FLAG_SHMEM is added.
+>
+>That's not good.
+>
+Hmm
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+>>   - add_to_page_cache_nocharge() is added.
+>>     This avoids mem_cgroup_charge_cache_page(). This is useful when page is
+>>     pre-charged.
+>
+>Do you have to?  I get so sick of such variants.  I agree the GFP_NOWAIT
+>test looked rather a hack, but it's really quite appropriate.  Fragile
+>in that it relies on the right thing having been done; but there's a
+>lot of fragility in the way the memcg microcosm is hoping to mimic
+>the global macrocosm.  (Sorry if I'm being pretentiously obscure!)
+>
+Hmm..okay, find a way to detect precharged case without adding anything.
 
---Signature=_Tue__1_Jul_2008_10_34_17_+1000_BfUla51nsbwj7=OD
-Content-Type: application/pgp-signature
+>>   - uses add_to_page_cache_nocharge() also in hugemem.
+>>     (I think hugemem controller should be independent from memcg.
+>>      Balbir, how do you think ?)
+>>   - PageSwapBacked() is checked.
+>>     (A imported patch from Hugh Dickins)
+>
+>Nothing to do with the rest of it?
+>
+Just imported I need it to this. I'm sorry if I don't catch what you mean.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkhpe4kACgkQjjKRsyhoI8x0UQCgh6yyFJrG3uD6w1Ec0cWpGhe9
-uloAnR3CkOaFWWLZWuqviP26qV0/4ASV
-=g2xi
------END PGP SIGNATURE-----
+>> 
+>> As result.
+>>   - shmem will be in SwapBacked/Active list at first.
+>
+>Assuming splitlru.  Didn't my two-liner deal with that?
+>
+yes. yours do. just want to use switch-case rather than unclear "if" s.
 
---Signature=_Tue__1_Jul_2008_10_34_17_+1000_BfUla51nsbwj7=OD--
+>>   - memcg has "shmem/tmpfs" counter.
+>
+>Is that a good thing?  If we really decide that globally we
+>need such a counter, then fine for memcg to follow; but I've
+>not yet heard it asked for.
+After swap-controller is introduced, I can imagine there will be a
+swap-full/swap-less cgroup. And shmem will be able to be swapped out.
+memcg handles limit of memory usage and Admin/Middleware will want to
+know current limit is good or bad. So, showing amount of tmpfs 
+will be good (It's now shown as Cache...a pages easily kicked out ;)
+
+>
+>> 
+>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>> 
+>> --
+>>  include/linux/pagemap.h |   16 +++++++++
+>>  mm/filemap.c            |   49 ++++++++++++++++++++++--------
+>>  mm/hugetlb.c            |    3 +
+>>  mm/memcontrol.c         |   78 +++++++++++++++++++++++++------------------
+-----
+>>  mm/shmem.c              |   17 ++++++----
+>>  5 files changed, 107 insertions(+), 56 deletions(-)
+>
+>Not so good (though hardly the end of the world).
+>
+I'll divide and make this clearer.
+Anyway I want to wait until -mm's VMM seems stable.
+
+Thanks,
+-Kame
+
