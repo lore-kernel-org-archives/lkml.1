@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761304AbYGAPYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761410AbYGAPYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761304AbYGAPYZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 11:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760408AbYGAPW2
+	id S1761410AbYGAPYn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 11:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760560AbYGAPWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 11:22:28 -0400
-Received: from mx2.suse.de ([195.135.220.15]:58207 "EHLO mx2.suse.de"
+	Tue, 1 Jul 2008 11:22:33 -0400
+Received: from cantor.suse.de ([195.135.220.2]:43349 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760392AbYGAPW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 11:22:27 -0400
-Date: Tue, 1 Jul 2008 08:19:16 -0700
+	id S1760530AbYGAPWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 11:22:31 -0400
+Date: Tue, 1 Jul 2008 08:19:18 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,13 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 7/9] ptrace GET/SET FPXREGS broken
-Message-ID: <20080701151915.GH3536@suse.de>
+       alan@lxorguk.ukuu.org.uk, Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 8/9] x86: fix cpu hotplug crash
+Message-ID: <20080701151918.GI3536@suse.de>
 References: <20080701151057.930340322@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ptrace-get-set-fpxregs-broken.patch"
+Content-Disposition: inline; filename="x86-fix-cpu-hotplug-crash.patch"
 In-Reply-To: <20080701151835.GA3536@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,112 +40,57 @@ know.
 
 ------------------
 
-From: TAKADA Yoshihito <takada@mbf.nifty.com>
+From: Yanmin Zhang <yanmin_zhang@linux.intel.com>
 
-Commit 11dbc963a8f6128595d0f6ecf138dc369e144997 upstream
+Commit fcb43042ef55d2f46b0efa5d7746967cef38f056 upstream
 
-ptrace GET/SET FPXREGS broken
+x86: fix cpu hotplug crash
 
-When I update kernel 2.6.25 from 2.6.24, gdb does not work.
-On 2.6.25, ptrace(PTRACE_GETFPXREGS, ...) returns ENODEV.
+Vegard Nossum reported crashes during cpu hotplug tests:
 
-But 2.6.24 kernel's ptrace() returns EIO.
-It is issue of compatibility.
+  http://marc.info/?l=linux-kernel&m=121413950227884&w=4
 
-I attached test program as pt.c and patch for fix it.
+In function _cpu_up, the panic happens when calling
+__raw_notifier_call_chain at the second time. Kernel doesn't panic when
+calling it at the first time. If just say because of nr_cpu_ids, that's
+not right.
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <errno.h>
-#include <sys/ptrace.h>
-#include <sys/types.h>
+By checking the source code, I found that function do_boot_cpu is the culprit.
+Consider below call chain:
+ _cpu_up=>__cpu_up=>smp_ops.cpu_up=>native_cpu_up=>do_boot_cpu.
 
-struct user_fxsr_struct {
-	unsigned short	cwd;
-	unsigned short	swd;
-	unsigned short	twd;
-	unsigned short	fop;
-	long	fip;
-	long	fcs;
-	long	foo;
-	long	fos;
-	long	mxcsr;
-	long	reserved;
-	long	st_space[32];	/* 8*16 bytes for each FP-reg = 128 bytes */
-	long	xmm_space[32];	/* 8*16 bytes for each XMM-reg = 128 bytes */
-	long	padding[56];
-};
+So do_boot_cpu is called in the end. In do_boot_cpu, if
+boot_error==true, cpu_clear(cpu, cpu_possible_map) is executed. So later
+on, when _cpu_up calls __raw_notifier_call_chain at the second time to
+report CPU_UP_CANCELED, because this cpu is already cleared from
+cpu_possible_map, get_cpu_sysdev returns NULL.
 
-int main(void)
-{
-  pid_t pid;
+Many resources are related to cpu_possible_map, so it's better not to
+change it.
 
-  pid = fork();
+Below patch against 2.6.26-rc7 fixes it by removing the bit clearing in
+cpu_possible_map.
 
-  switch(pid){
-  case -1:/*  error */
-    break;
-  case 0:/*  child */
-    child();
-    break;
-  default:
-    parent(pid);
-    break;
-  }
-  return 0;
-}
-
-int child(void)
-{
-  ptrace(PTRACE_TRACEME);
-  kill(getpid(), SIGSTOP);
-  sleep(10);
-  return 0;
-}
-int parent(pid_t pid)
-{
-  int ret;
-  struct user_fxsr_struct fpxregs;
-
-  ret = ptrace(PTRACE_GETFPXREGS, pid, 0, &fpxregs);
-  if(ret < 0){
-    printf("%d: %s.\n", errno, strerror(errno));
-  }
-  kill(pid, SIGCONT);
-  wait(pid);
-  return 0;
-}
-
-/* in the kerel, at kernel/i387.c get_fpxregs() */
-
+Signed-off-by: Zhang Yanmin <yanmin_zhang@linux.intel.com>
+Tested-by: Vegard Nossum <vegard.nossum@gmail.com>
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- arch/x86/kernel/i387.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kernel/i387.c
-+++ b/arch/x86/kernel/i387.c
-@@ -130,7 +130,7 @@ int xfpregs_get(struct task_struct *targ
- 		void *kbuf, void __user *ubuf)
- {
- 	if (!cpu_has_fxsr)
--		return -ENODEV;
-+		return -EIO;
- 
- 	init_fpu(target);
- 
-@@ -145,7 +145,7 @@ int xfpregs_set(struct task_struct *targ
- 	int ret;
- 
- 	if (!cpu_has_fxsr)
--		return -ENODEV;
-+		return -EIO;
- 
- 	init_fpu(target);
- 	set_stopped_child_used_math(target);
+---
+ arch/x86/kernel/smpboot_64.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -704,7 +704,6 @@ do_rest:
+ 		clear_bit(cpu, (unsigned long *)&cpu_initialized); /* was set by cpu_init() */
+ 		clear_node_cpumask(cpu); /* was set by numa_add_cpu */
+ 		cpu_clear(cpu, cpu_present_map);
+-		cpu_clear(cpu, cpu_possible_map);
+ 		per_cpu(x86_cpu_to_apicid, cpu) = BAD_APICID;
+ 		return -EIO;
+ 	}
 
 -- 
