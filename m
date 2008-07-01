@@ -1,108 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756895AbYGAIwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756895AbYGAIzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756895AbYGAIwm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 04:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbYGAIwf
+	id S1756895AbYGAIzh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 04:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYGAIz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 04:52:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57582 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753572AbYGAIwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 04:52:34 -0400
-Date: Tue, 1 Jul 2008 10:52:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Nick Piggin <npiggin@suse.de>, Mark McLoughlin <markmc@redhat.com>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Eduardo Habkost <ehabkost@redhat.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Stephen Tweedie <sct@redhat.com>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for
-	64-bit Xen support
-Message-ID: <20080701085204.GA23289@elte.hu>
-References: <20080626105722.GA12640@elte.hu> <20080626105818.GA13805@elte.hu> <4863A8E6.1010807@goop.org> <20080627160333.GA27072@elte.hu> <486539A3.3030102@goop.org> <20080629084318.GA28815@elte.hu> <48684CD4.7040403@goop.org> <20080630082135.GA22844@elte.hu> <20080630092209.GA29815@elte.hu> <48696690.90907@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48696690.90907@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 1 Jul 2008 04:55:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51179 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753110AbYGAIz2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 04:55:28 -0400
+Date: Tue, 1 Jul 2008 01:54:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>,
+       "containers@lists.osdl.org" <containers@lists.osdl.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Paul Jackson <pj@sgi.com>
+Subject: Re: [PATCH] cgroup: support checking of subsystem dependencies (v2)
+Message-Id: <20080701015438.43172fd7.akpm@linux-foundation.org>
+In-Reply-To: <4869EE32.6050708@cn.fujitsu.com>
+References: <4858C0ED.2080905@cn.fujitsu.com>
+	<6599ad830806181413y5d0ef1bfyfc54c17ee904d744@mail.gmail.com>
+	<4859BBA8.6070808@cn.fujitsu.com>
+	<20080701005140.ec06af68.akpm@linux-foundation.org>
+	<4869EE32.6050708@cn.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 01 Jul 2008 16:43:30 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> > The whole patch doesn't do anything.  Perhaps there's another patch in
+> > the pipeline somewhere which adds one or more ->subsys_depend
+> > implementations, but I cannot find it.  If so, I'd have expected this
+> > patch to be titled [1/N].
+> > 
+> 
+> Yes, the patch does nothing actually. Daisuke Nishimura-san's original swap
+> controller needed to be mounted with memory controller, but the newer
+> version makes it an addon to memory controller, so it currently doesn't
+> need the feature this patch provides.
+> 
+> Or I can keep this patch until some new cgroup subsystem needs it ?
 
-> Ingo Molnar wrote:
->> -tip auto-testing found pagetable corruption (CPA self-test failure):
->>
->> [   32.956015] CPA self-test:
->> [   32.958822]  4k 2048 large 508 gb 0 x 2556[ffff880000000000-ffff88003fe00000] miss 0
->> [   32.964000] CPA ffff88001d54e000: bad pte 1d4000e3
->> [   32.968000] CPA ffff88001d54e000: unexpected level 2
->> [   32.972000] CPA ffff880022c5d000: bad pte 22c000e3
->> [   32.976000] CPA ffff880022c5d000: unexpected level 2
->> [   32.980000] CPA ffff8800200ce000: bad pte 200000e3
->> [   32.984000] CPA ffff8800200ce000: unexpected level 2
->> [   32.988000] CPA ffff8800210f0000: bad pte 210000e3
->>
->> config and full log can be found at:
->>
->>  http://redhat.com/~mingo/misc/config-Mon_Jun_30_11_11_51_CEST_2008.bad
->>  http://redhat.com/~mingo/misc/log-Mon_Jun_30_11_11_51_CEST_2008.bad
->>
->> i've pushed that tree out into tip/tmp.xen-64bit.Mon_Jun_30_11_11. The  
->> only new item in that tree over a well-tested base is x86/xen-64bit, so 
->> i've taken it out again.
->>   
->
-> Phew.  OK, I've worked this out.  Short version is that's it's a false  
-> alarm, and there was no real failure here.  Long version:
->
->    * I changed the code to create the physical mapping pagetables to
->      reuse any existing mapping rather than replace it.   Specifically,
->      reusing an pud pointed to by the pgd caused this symptom to appear.
->    * The specific PUD being reused is the one created statically in
->      head_64.S, which creates an initial 1GB mapping.
->    * That mapping doesn't have _PAGE_GLOBAL set on it, due to the
->      inconsistency between __PAGE_* and PAGE_*.
->    * The CPA test attempts to clear _PAGE_GLOBAL, and then checks to
->      see that the resulting range is 1) shattered into 4k pages, and 2)
->      has no _PAGE_GLOBAL.
->    * However, since it didn't have _PAGE_GLOBAL on that range to start
->      with, change_page_attr_clear() had nothing to do, and didn't
->      bother shattering the range,
->    * resulting in the reported messages
->
-> The simple fix is to set _PAGE_GLOBAL in level2_ident_pgt.
->
-> An additional fix to make CPA testing more robust by using some other  
-> pagetable bit (one of the unused available-to-software ones).  This  
-> would solve spurious CPA test warnings under Xen which uses _PAGE_GLOBAL  
-> for its own purposes (ie, not under guest control).
->
-> Also, we should revisit the use of _PAGE_GLOBAL in asm-x86/pgtable.h, 
-> and use it consistently, and drop MAKE_GLOBAL.  The first time I 
-> proposed it it caused breakages in the very early CPA code; with luck 
-> that's all fixed now.
->
-> Anyway, the simple fix below.  [...]
+That would be better.  Once something needs this patch, we do
 
-great - i've applied your fix and re-integrated x86/xen-64bit, it's 
-under testing now. (no problems so far)
-
-> [...] I'll put together RFC patches for the other suggestions.  I also 
-> split the originating patch into tiny, tiny bisectable pieces.
-
-cool! :)
-
-	Ingo
+[patch 1/n]: cgroup: support checking of subsystem dependencies
+[patch 2/n]: <use it>
