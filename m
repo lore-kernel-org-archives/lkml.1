@@ -1,78 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbYGAGZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYGAG0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565AbYGAGZX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 02:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbYGAGZI
+	id S1753946AbYGAG0b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 02:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbYGAG0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 02:25:08 -0400
-Received: from gate.crashing.org ([63.228.1.57]:53053 "EHLO gate.crashing.org"
+	Tue, 1 Jul 2008 02:26:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43576 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751731AbYGAGZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 02:25:06 -0400
-Subject: RE: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Cc: John Williams <john.williams@petalogix.com>, grant.likely@secretlab.ca,
-       linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
-       vapier.adi@gmail.com, arnd@arndb.de, matthew@wil.cx,
-       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
-       John Linn <linnj@xilinx.com>, monstr@seznam.cz, drepper@redhat.com,
-       alan@lxorguk.ukuu.org.uk
-In-Reply-To: <20080630033943.332471860046@mail171-va3.bigfish.com>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-6-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-7-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-8-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-9-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-10-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-11-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-12-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-13-git-send-email-monstr@seznam.cz>
-	 <fa686aa40806272249l7eae0c34k43a20ad41672b77a@mail.gmail.com>
-	 <1d3f23370806291702g4344a2f9lb62f85cbb475fca4@mail.gmail.com>
-	 <20080630033943.332471860046@mail171-va3.bigfish.com>
-Content-Type: text/plain
-Date: Tue, 01 Jul 2008 16:21:42 +1000
-Message-Id: <1214893302.20711.102.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	id S1751615AbYGAG0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 02:26:22 -0400
+Date: Tue, 1 Jul 2008 08:26:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Raistlin <raistlin@linux.it>
+Cc: Michael Trimarchi <trimarchimichael@yahoo.it>,
+       PeterZijlstra <peterz@infradead.org>, "Daniel K." <dk@uw.no>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: divide error trying to set rt_period to zero
+Message-ID: <20080701062604.GB16642@elte.hu>
+References: <1214432249.5464.22.camel@Palanthas.Krynn> <20080626133924.GA20188@elte.hu> <1214499251.10344.7.camel@Palanthas.Krynn>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1214499251.10344.7.camel@Palanthas.Krynn>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> As for the copyright, I haven't been able to find much information on
-> whether or not generated files are even copyrightable.  One might
-> argue that they
-> don't have sufficient 'creative value' to be copyrightable.  Or
-> arguably, they are as copyrightable by the generator author as by the
-> author or the .mhs file.
-> I admit in this case, I've followed the safe route by claiming a
-> copyright, which at least at Xilinx has significant precedent.
+* Raistlin <raistlin@linux.it> wrote:
 
-Also, thinking about your idea of sticking bits in BRAM etc...
+> Ops! :-O
+> 
+> My fault, moving the 'if' back and forth from one function to another 
+> I finally sent the wrong (and broken!) version of the patch... Very 
+> sorry about it!
+> 
+> I know, I would have noticed just looking at the code... But I missed 
+> it. :-(
 
-what would be nice would be the ability to "merge" trees. We've been
-talking about that multiple times, it would be useful at several levels:
+hey, no problem.
 
- - We could provide pre-made DTs for known CPUs (ie, 440GP, 440GX,
-405EX, ...)
- - Boards can then include that, and then "override" some properties
-(clocks, PHY wiring, ...)
- - That could be done at the binary level too so that the BRAM contains
-on "overlay" on top of the base ref. platform device-tree that comes
-with the kernel for example.
+> Anyway, if still interested in, the following one build and work... 
+> I've just tried it and I'm quite sure this time. :-P
 
-This is slightly different between doing that in the .dts source via
-some kind of #include vs. doing that by merging blobs but we could make
-it be essentially be the same internally: The #include generates a blob
-that is then "merged in".
+applied to tip/sched/urgent - thanks Dario. We are interested in it of 
+course, you fixed a real bug in the scheduler :-)
 
-Just random thoughts...
+small sidenote:
 
-Ben.
- 
+> +++ b/kernel/sched.c
+> @@ -8501,6 +8501,9 @@ int sched_group_set_rt_period(struct task_group
+> *tg, long rt_period_us)
+>         rt_period = (u64)rt_period_us * NSEC_PER_USEC;
+>         rt_runtime = tg->rt_bandwidth.rt_runtime;
+>  
+> +       if (rt_period == 0)
+> +               return -EINVAL;
+> +
+>         return tg_set_bandwidth(tg, rt_period, rt_runtime);
+>  }
 
+that patch was whitespace damaged (lines wrapped and tabs converted to 
+spaces). I fixed it up by hand - you can avoid such problems with future 
+patches by sending patches a'la Documentation/email-clients.txt.
+
+	Ingo
