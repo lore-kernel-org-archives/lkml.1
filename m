@@ -1,131 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759283AbYGATqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758309AbYGATu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759283AbYGATqb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 15:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbYGATqV
+	id S1758309AbYGATu1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 15:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbYGATuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 15:46:21 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:49477 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754824AbYGATqT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 15:46:19 -0400
-Date: Tue, 1 Jul 2008 12:46:13 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       laijs@cn.fujitsu.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Rusty Russel <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] fix rcu vs hotplug race
-Message-ID: <20080701194613.GC7488@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080623103700.GA4043@linux.vnet.ibm.com> <20080623105844.GC28192@elte.hu> <20080623114941.GB3160@in.ibm.com> <20080624110144.GA8695@elte.hu> <20080626152728.GA24972@linux.vnet.ibm.com> <20080627044738.GC3419@in.ibm.com> <20080627051855.GD26167@in.ibm.com> <20080627054959.GB3309@linux.vnet.ibm.com> <20080627145845.GA9229@linux.vnet.ibm.com> <20080701053900.GB8205@in.ibm.com>
+	Tue, 1 Jul 2008 15:50:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52361 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752518AbYGATuS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 15:50:18 -0400
+Date: Tue, 1 Jul 2008 21:50:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Simple changes to make traps_32.c and traps_64.c
+	more similar
+Message-ID: <20080701195004.GA27557@elte.hu>
+References: <20080701193643.GA29695@mailshack.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080701053900.GB8205@in.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080701193643.GA29695@mailshack.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 01, 2008 at 11:09:00AM +0530, Gautham R Shenoy wrote:
-> On Fri, Jun 27, 2008 at 07:58:45AM -0700, Paul E. McKenney wrote:
-> > On Fri, Jun 27, 2008 at 11:19:59AM +0530, Dhaval Giani wrote:
-> > > On Fri, Jun 27, 2008 at 10:48:55AM +0530, Dipankar Sarma wrote:
-> > > > On Fri, Jun 27, 2008 at 10:17:38AM +0530, Gautham R Shenoy wrote:
-> > > > > IMHO the warning is a spurious one.
-> > > > > Here's the timeline.
-> > > > > CPU_A						 CPU_B
-> > > > > --------------------------------------------------------------
-> > > > > cpu_down():					.
-> > > > > .					   	.
-> > > > > .						.
-> > > > > stop_machine(): /* disables preemption,		.
-> > > > > 		 * and irqs */			.
-> > > > > .						.
-> > > > > .						.
-> > > > > take_cpu_down();				.
-> > > > > .						.
-> > > > > .						.
-> > > > > .						.
-> > > > > cpu_disable(); /*this removes cpu 		.
-> > > > > 		*from cpu_online_map 		.
-> > > > > 		*/				.
-> > > > > .						.
-> > > > > .						.
-> > > > > restart_machine(); /* enables irqs */		.
-> > > > > ------WINDOW DURING WHICH rcp->cpumask is stale ---------------
-> > > > > .						call_rcu();
-> > > > > .						/* disables irqs here */
-> > > > > .						.force_quiescent_state();
-> > > > > .CPU_DEAD:					.for_each_cpu(rcp->cpumask)
-> > > > > .						.   smp_send_reschedule();
-> > > > > .						.
-> > > > > .						.   WARN_ON() for offlined CPU!
-> > > > > .
-> > > > 
-> > > > Exactly. The call_rcu()s are coming from a different subsystem
-> > > > and can happen anytime during the CPU hotplug path. So, RCU subsystem
-> > > > doesn't have anything to do to keep rcu->cpumask consistent.
-> > > > It is *safe* even if we miss poking a cpu or two while
-> > > > forcing quiescent state in all CPUs. The worst that can happen
-> > > > is a delay in grace period. No correctness problem here.
-> > > > 
-> > > 
-> > > One question. What is preventing a CPU from clearing its mask after we
-> > > have checked whether it is online but before we have called into
-> > > smp_send_reschedule?
-> > 
-> > This is my concern as well.  Gautham, at which point in the above
-> > timeline is the offlining CPU marked DYING?  Before stop_machine(), right?
-> 
-> No :) The offlining CPU is marked DYING after stop_machine(), inside
-> take_cpu_down() which is the work we want to execute after stopping the
-> machine.
-> 
-> it's like
-> _cpu_down()
-> |
-> |-> stop_machine_run();
-> |   |
-> |   |-> stop_machine(); /* All CPUs irqs disabled. */
-> |   |
-> |   |-> take_cpu_down() --> sets state to CPU_DYING. disables irqs on
-> |   |				offlined cpu
-> |   |
-> |   |-> restart_machine(); /* All CPUs irqs reenabled */
-> |
-> |-> send_CPU_DEAD_notification.
-> 
-> The very fact that a thread is running with irqs disabled means that
-> stop_machine_run() thread cannot start executing the work it has been
-> assinged to execute. Because for Machine to be stopped, stop_machine()
-> needs to create n-1 high priority threads on n-1 online cpus, which will
-> disable interrupts and preemption, and stop the machine. Then it will
-> run the task assigned to it on the ith cpu, which in this case is the
-> cpu to be offlined.
-> 
-> So, it's the design of stop_machine() that's preventing someone
-> from updating the cpu_online_map while
-> force_quiescent_state() is performing the
-> cpu_is_online() check. Becase we always call force_quiescent_state()
-> with irqs disabled :)
 
-Got it, so the patch looks good.
+* Alexander van Heukelum <heukelum@mailshack.com> wrote:
 
-							Thanx, Paul
+> Tiny first step at unification of traps_32.c and traps_64.c. All
+> changes are meant to be trivial.
+>  - mostly whitespace changes
+>  - chose one of obviously equivalent pieces of code:
+> 	 - reordering of declarations
+> 	 - simple renaming of local variables
+> 	 - if (cond) { ... } -> if (!cond) goto end_of_block ...
+> 	 - local caching of current, cpu, etc...
+> 
+> This makes the diff between traps_32.c and traps_64.c smaller:
+> 
+> from:
+>   1474  +++++++++++++++++++++++++++++--------------------------------
+>   1 file changed, 722 insertions(+), 752 deletions(-)
+>   
+> to:
+>   1052  +++++++++++++++++++++++++++++--------------------------------
+>   1 file changed, 512 insertions(+), 540 deletions(-)
 
-> > If so, can't we just disable irqs, check for DYING or DEAD, and invoke
-> > smp_send_reschedule() only if not DYING or DEAD?
-> 
-> 
-> 
-> > 
-> > 							Thanx, Paul
-> 
-> -- 
-> Thanks and Regards
-> gautham
+nice. In terms of functionality, it is supposed to be a pure 
+no-changes-intended commit, correct?
+
+In that case it makes sense to split it in two: in the first (larger) 
+bit put the things that are provably invariant on the .o and can be 
+verified that way.
+
+In the second one, put the things that change the .o output slightly 
+(variable reordering can do that) - this we have to check more closely.
+
+(One can normally do such a splitup by editing the raw diff and 
+splitting it in half that way - by sorting each chunk into the 
+appropriate target patch - and then making sure the end result is still 
+the same.)
+
+	Ingo
