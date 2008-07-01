@@ -1,131 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758394AbYGANx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756909AbYGAN7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758394AbYGANx5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 09:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756531AbYGANxm
+	id S1756909AbYGAN7Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 09:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbYGAN7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 09:53:42 -0400
-Received: from mga01.intel.com ([192.55.52.88]:19166 "EHLO mga01.intel.com"
+	Tue, 1 Jul 2008 09:59:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50006 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757944AbYGANxk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 09:53:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,731,1204531200"; 
-   d="scan'208";a="583869918"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH v4 2/6] dmaengine: Add dma_chan_is_in_use() function
-Date: Tue, 1 Jul 2008 14:52:59 +0100
-Message-ID: <7F38996F7185A24AB9071ED4950AD8C101C21EC7@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <f12847240806270224v29de65e8h612a077e12c4d5e1@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH v4 2/6] dmaengine: Add dma_chan_is_in_use() function
-thread-index: AcjYN42+BODmtciGRRCrupvaxymocADSfUGQ
-From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-To: <haavard.skinnemoen@atmel.com>
-Cc: "Williams, Dan J" <dan.j.williams@intel.com>, <drzeus-list@drzeus.cx>,
-       "lkml" <linux-kernel@vger.kernel.org>, <linux-embedded@vger.kernel.org>,
-       <kernel@avr32linux.org>, "Nelson, Shannon" <shannon.nelson@intel.com>,
-       <david-b@pacbell.net>
-X-OriginalArrivalTime: 01 Jul 2008 13:53:00.0512 (UTC) FILETIME=[C65A2600:01C8DB81]
+	id S1753322AbYGAN7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 09:59:09 -0400
+Subject: Re: [patch resend] gfs2: don't call permission()
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <E1KDfzL-0005GI-DP@pomaz-ex.szeredi.hu>
+References: <E1K8DFJ-0006nQ-E7@pomaz-ex.szeredi.hu>
+	 <E1KDfzL-0005GI-DP@pomaz-ex.szeredi.hu>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Tue, 01 Jul 2008 14:51:50 +0100
+Message-Id: <1214920311.4011.80.camel@quoit>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ---------- Original message ----------
-> From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-> Date: Jun 26, 2008 3:23 PM
-> Subject: [PATCH v4 2/6] dmaengine: Add dma_chan_is_in_use() function
-> To: Dan Williams <dan.j.williams@intel.com>, Pierre Ossman
-> <drzeus-list@drzeus.cx>
-> Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-> kernel@avr32linux.org, shannon.nelson@intel.com, David Brownell
-> <david-b@pacbell.net>, Haavard Skinnemoen
-> <haavard.skinnemoen@atmel.com>
+Hi,
+
+On Tue, 2008-07-01 at 15:33 +0200, Miklos Szeredi wrote:
+> From: Miklos Szeredi <mszeredi@suse.cz>
 > 
+> GFS2 calls permission() to verify permissions after locks on the files
+> have been taken.
 > 
-> This moves the code checking if a DMA channel is in use from
-> show_in_use() into an inline helper function, dma_is_in_use(). DMA
-> controllers can use this in order to give clients exclusive access to
-> channels (usually necessary when setting up slave DMA.)
+> For this it's sufficient to call gfs2_permission() instead.  This
+> results in the following changes:
 > 
-> I have to admit that I don't really understand the channel refcounting
-> logic at all... dma_chan_get() simply increments a per-cpu value. How
-> can we be sure that whatever CPU calls dma_chan_is_in_use() sees the
-> same value?
+>   - IS_RDONLY() check is not performed
+>   - IS_IMMUTABLE() check is not performed
+>   - devcgroup_inode_permission() is not called
+>   - security_inode_permission() is not called
 > 
-> Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+> IS_RDONLY() should be unnecessary anyway, as the per-mount read-only
+> flag should provide protection against read-only remounts during
+> operations.  do_gfs2_set_flags() has been fixed to perform
+> mnt_want_write()/mnt_drop_write() to protect against remounting
+> read-only.
+> 
+> IS_IMMUTABLE has been added to gfs2_do_permission()
+> 
+> Repeating the security checks seems to be pointless, as they don't
+> normally change, and if they do, it's independent of the filesystem
+> state.
+> 
+> I also suspect the conditional locking in gfs2_do_permission() could
+> be cleaned up, due to the removal of the implicit recursion.
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 > ---
->  drivers/dma/dmaengine.c   |   12 +-----------
->  include/linux/dmaengine.h |   17 +++++++++++++++++
->  2 files changed, 18 insertions(+), 11 deletions(-)
+>  fs/gfs2/inode.c     |    6 +++---
+>  fs/gfs2/inode.h     |    1 +
+>  fs/gfs2/ops_file.c  |   11 +++++++++--
+>  fs/gfs2/ops_inode.c |   18 +++++++++++++-----
+>  4 files changed, 26 insertions(+), 10 deletions(-)
 > 
-> diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-> index a57c337..ad8d811 100644
-> --- a/drivers/dma/dmaengine.c
-> +++ b/drivers/dma/dmaengine.c
-> @@ -105,17 +105,7 @@ static ssize_t show_bytes_transferred(struct
-> device *dev, struct device_attribut
->  static ssize_t show_in_use(struct device *dev, struct
-> device_attribute *attr, char *buf)
+
+I've seen this patch drop into my inbox a number of times now. What is
+the status of the rest of the patches in the original series?
+
+I'm sorry that I've not got around to looking at this again a bit sooner
+(due to holidays and various things) but bearing in mind that both
+myself and Christoph have raised various points relating to this, it
+would have been nice to have seen them addressed rather than having to
+watch you post this via -mm and various other places, still in its
+original form.
+
+So going back to my original comment:
+
+>> That looks ok, but I wonder do we really need gfs2_do_permission()
+and
+>> gfs2_permission when the only difference seems to be one argument?
+
+>Later in this series ->permission() is changed to take a dentry as the
+>first argument, so a separate function would've had to be reintroduced
+>anyway.
+
+Is this still true? or are the later patches changed now? Even so I
+don't see why that means we need two functions there. I've lost track of
+what the other patches status is.
+
+Christoph: are you now happy with this patch as it stands?
+
+Steve.
+
+
+> Index: linux-2.6/fs/gfs2/inode.c
+> ===================================================================
+> --- linux-2.6.orig/fs/gfs2/inode.c	2008-06-09 19:16:43.000000000 +0200
+> +++ linux-2.6/fs/gfs2/inode.c	2008-06-09 21:10:11.000000000 +0200
+> @@ -504,7 +504,7 @@ struct inode *gfs2_lookupi(struct inode 
+>  	}
+>  
+>  	if (!is_root) {
+> -		error = permission(dir, MAY_EXEC, NULL);
+> +		error = gfs2_do_permission(dir, MAY_EXEC);
+>  		if (error)
+>  			goto out;
+>  	}
+> @@ -667,7 +667,7 @@ static int create_ok(struct gfs2_inode *
 >  {
->        struct dma_chan *chan = to_dma_chan(dev);
-> -       int in_use = 0;
-> -
-> -       if (unlikely(chan->slow_ref) &&
-> -               atomic_read(&chan->refcount.refcount) > 1)
-> -               in_use = 1;
-> -       else {
-> -               if (local_read(&(per_cpu_ptr(chan->local,
-> -                       get_cpu())->refcount)) > 0)
-> -                       in_use = 1;
-> -               put_cpu();
-> -       }
-> +       int in_use = dma_chan_is_in_use(chan);
-> 
->        return sprintf(buf, "%d\n", in_use);
+>  	int error;
+>  
+> -	error = permission(&dip->i_inode, MAY_WRITE | MAY_EXEC, NULL);
+> +	error = gfs2_do_permission(&dip->i_inode, MAY_WRITE | MAY_EXEC);
+>  	if (error)
+>  		return error;
+>  
+> @@ -1134,7 +1134,7 @@ int gfs2_unlink_ok(struct gfs2_inode *di
+>  	if (IS_APPEND(&dip->i_inode))
+>  		return -EPERM;
+>  
+> -	error = permission(&dip->i_inode, MAY_WRITE | MAY_EXEC, NULL);
+> +	error = gfs2_do_permission(&dip->i_inode, MAY_WRITE | MAY_EXEC);
+>  	if (error)
+>  		return error;
+>  
+> Index: linux-2.6/fs/gfs2/inode.h
+> ===================================================================
+> --- linux-2.6.orig/fs/gfs2/inode.h	2008-06-09 19:16:43.000000000 +0200
+> +++ linux-2.6/fs/gfs2/inode.h	2008-06-09 21:10:11.000000000 +0200
+> @@ -91,6 +91,7 @@ int gfs2_rmdiri(struct gfs2_inode *dip, 
+>  		struct gfs2_inode *ip);
+>  int gfs2_unlink_ok(struct gfs2_inode *dip, const struct qstr *name,
+>  		   const struct gfs2_inode *ip);
+> +int gfs2_do_permission(struct inode *inode, int mask);
+>  int gfs2_ok_to_move(struct gfs2_inode *this, struct gfs2_inode *to);
+>  int gfs2_readlinki(struct gfs2_inode *ip, char **buf, unsigned int *len);
+>  int gfs2_glock_nq_atime(struct gfs2_holder *gh);
+> Index: linux-2.6/fs/gfs2/ops_file.c
+> ===================================================================
+> --- linux-2.6.orig/fs/gfs2/ops_file.c	2008-06-09 19:16:43.000000000 +0200
+> +++ linux-2.6/fs/gfs2/ops_file.c	2008-06-09 21:10:11.000000000 +0200
+> @@ -15,6 +15,7 @@
+>  #include <linux/uio.h>
+>  #include <linux/blkdev.h>
+>  #include <linux/mm.h>
+> +#include <linux/mount.h>
+>  #include <linux/fs.h>
+>  #include <linux/gfs2_ondisk.h>
+>  #include <linux/ext2_fs.h>
+> @@ -220,10 +221,14 @@ static int do_gfs2_set_flags(struct file
+>  	int error;
+>  	u32 new_flags, flags;
+>  
+> -	error = gfs2_glock_nq_init(ip->i_gl, LM_ST_EXCLUSIVE, 0, &gh);
+> +	error = mnt_want_write(filp->f_path.mnt);
+>  	if (error)
+>  		return error;
+>  
+> +	error = gfs2_glock_nq_init(ip->i_gl, LM_ST_EXCLUSIVE, 0, &gh);
+> +	if (error)
+> +		goto out_drop_write;
+> +
+>  	flags = ip->i_di.di_flags;
+>  	new_flags = (flags & ~mask) | (reqflags & mask);
+>  	if ((new_flags ^ flags) == 0)
+> @@ -242,7 +247,7 @@ static int do_gfs2_set_flags(struct file
+>  	    !capable(CAP_LINUX_IMMUTABLE))
+>  		goto out;
+>  	if (!IS_IMMUTABLE(inode)) {
+> -		error = permission(inode, MAY_WRITE, NULL);
+> +		error = gfs2_do_permission(inode, MAY_WRITE);
+>  		if (error)
+>  			goto out;
+>  	}
+> @@ -272,6 +277,8 @@ out_trans_end:
+>  	gfs2_trans_end(sdp);
+>  out:
+>  	gfs2_glock_dq_uninit(&gh);
+> +out_drop_write:
+> +	mnt_drop_write(filp->f_path.mnt);
+>  	return error;
 >  }
-> diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-> index cffb95f..4b602d3 100644
-> --- a/include/linux/dmaengine.h
-> +++ b/include/linux/dmaengine.h
-> @@ -180,6 +180,23 @@ static inline void dma_chan_put(struct dma_chan
-*chan)
->        }
+>  
+> Index: linux-2.6/fs/gfs2/ops_inode.c
+> ===================================================================
+> --- linux-2.6.orig/fs/gfs2/ops_inode.c	2008-06-09 19:16:43.000000000 +0200
+> +++ linux-2.6/fs/gfs2/ops_inode.c	2008-06-09 21:10:11.000000000 +0200
+> @@ -163,7 +163,7 @@ static int gfs2_link(struct dentry *old_
+>  	if (error)
+>  		goto out;
+>  
+> -	error = permission(dir, MAY_WRITE | MAY_EXEC, NULL);
+> +	error = gfs2_do_permission(dir, MAY_WRITE | MAY_EXEC);
+>  	if (error)
+>  		goto out_gunlock;
+>  
+> @@ -669,7 +669,7 @@ static int gfs2_rename(struct inode *odi
+>  			}
+>  		}
+>  	} else {
+> -		error = permission(ndir, MAY_WRITE | MAY_EXEC, NULL);
+> +		error = gfs2_do_permission(ndir, MAY_WRITE | MAY_EXEC);
+>  		if (error)
+>  			goto out_gunlock;
+>  
+> @@ -704,7 +704,7 @@ static int gfs2_rename(struct inode *odi
+>  	/* Check out the dir to be renamed */
+>  
+>  	if (dir_rename) {
+> -		error = permission(odentry->d_inode, MAY_WRITE, NULL);
+> +		error = gfs2_do_permission(odentry->d_inode, MAY_WRITE);
+>  		if (error)
+>  			goto out_gunlock;
+>  	}
+> @@ -891,7 +891,7 @@ static void *gfs2_follow_link(struct den
+>   * Returns: errno
+>   */
+>  
+> -static int gfs2_permission(struct inode *inode, int mask, struct nameidata *nd)
+> +int gfs2_do_permission(struct inode *inode, int mask)
+>  {
+>  	struct gfs2_inode *ip = GFS2_I(inode);
+>  	struct gfs2_holder i_gh;
+> @@ -905,13 +905,21 @@ static int gfs2_permission(struct inode 
+>  		unlock = 1;
+>  	}
+>  
+> -	error = generic_permission(inode, mask, gfs2_check_acl);
+> +	if ((mask & MAY_WRITE) && IS_IMMUTABLE(inode))
+> +		error = -EACCES;
+> +	else
+> +		error = generic_permission(inode, mask, gfs2_check_acl);
+>  	if (unlock)
+>  		gfs2_glock_dq_uninit(&i_gh);
+>  
+>  	return error;
 >  }
-> 
-> +static inline bool dma_chan_is_in_use(struct dma_chan *chan)
+>  
+> +static int gfs2_permission(struct inode *inode, int mask, struct nameidata *nd)
 > +{
-> +       bool in_use = false;
-> +
-> +       if (unlikely(chan->slow_ref) &&
-> +               atomic_read(&chan->refcount.refcount) > 1)
-> +               in_use = true;
-> +       else {
-> +               if (local_read(&(per_cpu_ptr(chan->local,
-> +                       get_cpu())->refcount)) > 0)
-> +                       in_use = true;
-> +               put_cpu();
-> +       }
-> +
-> +       return in_use;
+> +	return gfs2_do_permission(inode, mask);
 > +}
 > +
->  /*
->  * typedef dma_event_callback - function pointer to a DMA event
-callback
->  * For each channel added to the system this routine is called for
-each
-> client. --
-> 1.5.5.4
+>  static int setattr_size(struct inode *inode, struct iattr *attr)
+>  {
+>  	struct gfs2_inode *ip = GFS2_I(inode);
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
-
-Regards,
-Maciej
