@@ -1,91 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbYGAN1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757128AbYGAN3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756848AbYGAN1X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 09:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbYGAN1J
+	id S1757128AbYGAN3W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 09:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYGAN3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 09:27:09 -0400
-Received: from wx-out-0506.google.com ([66.249.82.228]:49579 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753642AbYGAN1H (ORCPT
+	Tue, 1 Jul 2008 09:29:12 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:44953 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753146AbYGAN3L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 09:27:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=h19MHlCDQdWJ9abixGmMS2MaTGaGqLTHft7BhBPInNiaVmWMmFLb9er56qNBDe9abm
-         uINkiLoW/mdOkpnDaTAFjHABE3dILuYoOCdiAsThh2UUdHv9XpXXho/TQvpdUMposPT8
-         ofp5gPy2T0mwCE/spd21PonYO+2yVxURzNtXM=
-Date: Tue, 1 Jul 2008 09:27:02 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH] drivers/input/ff-core.c needs <linux/sched.h>
-Message-ID: <20080701092542.ZZRA012@mailhub.coreip.homeip.net>
-References: <Pine.LNX.4.64.0807011300110.21227@anakin> <20080701084316.ZZRA012@mailhub.coreip.homeip.net> <20080701130517.GA29863@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080701130517.GA29863@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 1 Jul 2008 09:29:11 -0400
+To: mhalcrow@us.ibm.com
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: [patch resend] ecryptfs: string copy cleanup
+Message-Id: <E1KDfuj-0005FW-7X@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 01 Jul 2008 15:28:57 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 01, 2008 at 04:05:17PM +0300, Adrian Bunk wrote:
-> On Tue, Jul 01, 2008 at 08:46:54AM -0400, Dmitry Torokhov wrote:
-> > On Tue, Jul 01, 2008 at 01:55:25PM +0200, Geert Uytterhoeven wrote:
-> > > commit 656acd2bbc4ce7f224de499ee255698701396c48
-> > > Author: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> > > Date:   Thu Jun 26 11:30:02 2008 -0400
-> > > 
-> > >     Input: fix locking in force-feedback core
-> > > 
-> > >     The newly added event_lock spinlock in the input core disallows sleeping
-> > >     and therefore using mutexes in event handlers. Convert force-feedback 
-> > >     core to rely on event_lock instead of mutex to protect slots allocated  
-> > >     for fore-feedback effects. The original mutex is still used to serialize
-> > >     uploading and erasing of effects.
-> > > 
-> > > causes the following regression on m68k:
-> > > 
-> > > | linux/drivers/input/ff-core.c: In function 'input_ff_upload':
-> > > | linux/drivers/input/ff-core.c:172: error: dereferencing pointer to incomplete type
-> > > | linux/drivers/input/ff-core.c: In function 'erase_effect':
-> > > | linux/drivers/input/ff-core.c:197: error: dereferencing pointer to incomplete type
-> > > | linux/drivers/input/ff-core.c:204: error: dereferencing pointer to incomplete type
-> > > | make[4]: *** [drivers/input/ff-core.o] Error 1
-> > > 
-> > 
-> > Argh! Sorry about it.
-> > 
-> > > As the incomplete type is `struct task_struct', including <linux/sched.h> fixes
-> > > it.
-> > 
-> > Not linux/spinlock.h? I wonder if I need to include linux/spinlock.h and
-> > linux/mutex.h directly from linux/input.h... What is the current
-> > policy on headers - do they need to include everything to be
-> > functional or it is responsibility of the user?
-> 
-> Theoretically it's the responsibility of the header to include 
-> everything it needs.
-> 
-> In practice we are after -rc8 and even thinking of this kind of #include 
-> changes under include/linux/ makes me nervous - like the fact that the 
-> ff-core.c problem occured _only_ on m68k our headers are too fragile for 
-> expecting such changes to simply work.
-> 
-> Can we go with Geert's patch for 2.6.26 and if you want to fix it 
-> properly you can send a patch for 2.6.27?
-> 
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-No, no, I am totally fine with Geert's fix, I am talking about later of
-course.
+Clean up overcomplicated string copy, which also gets rid of this
+bogus warning:
 
--- 
-Dmitry
+fs/ecryptfs/main.c: In function 'ecryptfs_parse_options':
+include/asm/arch/string_32.h:75: warning: array subscript is above array bounds
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+ fs/ecryptfs/main.c |   18 ++++++------------
+ 1 file changed, 6 insertions(+), 12 deletions(-)
+
+Index: linux-2.6/fs/ecryptfs/main.c
+===================================================================
+--- linux-2.6.orig/fs/ecryptfs/main.c	2008-06-09 14:14:27.000000000 +0200
++++ linux-2.6/fs/ecryptfs/main.c	2008-06-13 13:04:04.000000000 +0200
+@@ -314,7 +314,6 @@ static int ecryptfs_parse_options(struct
+ 	char *cipher_name_dst;
+ 	char *cipher_name_src;
+ 	char *cipher_key_bytes_src;
+-	int cipher_name_len;
+ 
+ 	if (!options) {
+ 		rc = -EINVAL;
+@@ -395,17 +394,12 @@ static int ecryptfs_parse_options(struct
+ 		goto out;
+ 	}
+ 	if (!cipher_name_set) {
+-		cipher_name_len = strlen(ECRYPTFS_DEFAULT_CIPHER);
+-		if (unlikely(cipher_name_len
+-			     >= ECRYPTFS_MAX_CIPHER_NAME_SIZE)) {
+-			rc = -EINVAL;
+-			BUG();
+-			goto out;
+-		}
+-		memcpy(mount_crypt_stat->global_default_cipher_name,
+-		       ECRYPTFS_DEFAULT_CIPHER, cipher_name_len);
+-		mount_crypt_stat->global_default_cipher_name[cipher_name_len]
+-		    = '\0';
++		int cipher_name_len = strlen(ECRYPTFS_DEFAULT_CIPHER);
++
++		BUG_ON(cipher_name_len >= ECRYPTFS_MAX_CIPHER_NAME_SIZE);
++
++		strcpy(mount_crypt_stat->global_default_cipher_name,
++		       ECRYPTFS_DEFAULT_CIPHER);
+ 	}
+ 	if (!cipher_key_bytes_set) {
+ 		mount_crypt_stat->global_default_cipher_key_size = 0;
+
