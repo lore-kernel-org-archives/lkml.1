@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbYGAL7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYGAMGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755314AbYGAL7S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 07:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbYGAL7G
+	id S1754830AbYGAMGT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 08:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYGAMGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 07:59:06 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:36094 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751768AbYGAL7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 07:59:05 -0400
-Date: Tue, 1 Jul 2008 14:58:46 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Dmitry Torokhov <dtor@mail.ru>, geert@linux-m68k.org,
-       zippel@linux-m68k.org
-Cc: linux-m68k@vger.kernel.org, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: m68k input/ff-core.c build error
-Message-ID: <20080701115845.GC17558@cs181140183.pp.htv.fi>
-References: <20080701115619.GB17558@cs181140183.pp.htv.fi>
+	Tue, 1 Jul 2008 08:06:05 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:46443 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752331AbYGAMGE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 08:06:04 -0400
+X-Greylist: delayed 1546 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Jul 2008 08:06:04 EDT
+Date: Tue, 1 Jul 2008 21:40:16 +1000
+From: Simon Horman <horms@verge.net.au>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: kexec@lists.infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+       vgoyal@redhat.com
+Subject: Re: [PATCH] x86: Fix documentation bug about relocatability
+Message-ID: <20080701114015.GA11207@verge.net.au>
+References: <1214510118-21405-1-git-send-email-bwalle@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080701115619.GB17558@cs181140183.pp.htv.fi>
+In-Reply-To: <1214510118-21405-1-git-send-email-bwalle@suse.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 01, 2008 at 02:56:19PM +0300, Adrian Bunk wrote:
-> Commit 656acd2bbc4ce7f224de499ee255698701396c48
-> (Input: fix locking in force-feedback core)
-> causes the following build error on m68k:
+On Thu, Jun 26, 2008 at 09:55:18PM +0200, Bernhard Walle wrote:
+> This patch fixes a small bug in documentation: x86_64 also has now
+> the ability to build a relocatable kernel.
 > 
-> <--  snip  -->
 > 
-> ...
->   CC      drivers/input/ff-core.o
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/input/ff-core.c: In function 'input_ff_upload':
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/input/ff-core.c:172: error: dereferencing pointer to incomplete type
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/input/ff-core.c: In function 'erase_effect':
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/input/ff-core.c:197: error: dereferencing pointer to incomplete type
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/input/ff-core.c:204: error: dereferencing pointer to incomplete type
-> make[3]: *** [drivers/input/ff-core.o] Error 1
-> 
-> <--  snip  -->
-> 
-> Not sure what exactly the problem is, the failures are the
-> added spin_unlock_irq(&dev->event_lock)'s.
+> Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
-And just before I send my email Geert already sends a fix...
+Acked-by: mon Horman <horms@verge.net.au>
 
-:-)
-
-cu
-Adrian
+> ---
+>  Documentation/kdump/kdump.txt |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/Documentation/kdump/kdump.txt b/Documentation/kdump/kdump.txt
+> index b8e52c0..9691c7f 100644
+> --- a/Documentation/kdump/kdump.txt
+> +++ b/Documentation/kdump/kdump.txt
+> @@ -109,7 +109,7 @@ There are two possible methods of using Kdump.
+>  2) Or use the system kernel binary itself as dump-capture kernel and there is
+>     no need to build a separate dump-capture kernel. This is possible
+>     only with the architecutres which support a relocatable kernel. As
+> -   of today i386 and ia64 architectures support relocatable kernel.
+> +   of today, i386, x86_64 and ia64 architectures support relocatable kernel.
+>  
+>  Building a relocatable kernel is advantageous from the point of view that
+>  one does not have to build a second kernel for capturing the dump. But
+> -- 
+> 1.5.6
+> 
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Horms
 
