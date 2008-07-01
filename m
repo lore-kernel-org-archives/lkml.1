@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbYGAVQC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbYGAVSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759444AbYGAVQC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 17:16:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYGAVPx
+	id S1758961AbYGAVSR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 17:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750724AbYGAVSB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 17:15:53 -0400
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:33372 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751149AbYGAVPx (ORCPT
+	Tue, 1 Jul 2008 17:18:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59845 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750700AbYGAVSA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 17:15:53 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuYGANexXkh5LFnmWmdsb2JhbACSYAEdm0A
-X-IronPort-AV: E=Sophos;i="4.27,733,1204464600"; 
-   d="scan'208";a="147611470"
-Date: Wed, 2 Jul 2008 07:15:50 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: xfs-masters@oss.sgi.com
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [xfs-masters] Re: freeze vs freezer
-Message-ID: <20080701211550.GU29319@disturbed>
-Mail-Followup-To: xfs-masters@oss.sgi.com,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Jeremy Fitzhardinge <jeremy@goop.org>,
-	Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-	Kyle Moffett <mrmacman_g4@mac.com>,
-	Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Jens Axboe <jens.axboe@oracle.com>
-References: <4744FD87.7010301@goop.org> <200807010038.43362.rjw@sisk.pl> <20080701063835.GQ29319@disturbed> <200807011635.44696.rjw@sisk.pl> <87tzf9hcg6.fsf@denkblock.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87tzf9hcg6.fsf@denkblock.local>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 1 Jul 2008 17:18:00 -0400
+Date: Tue, 1 Jul 2008 14:17:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ian Kent <raven@themaw.net>
+Cc: linux-kernel@vger.kernel.org, autofs@linux.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] autofs4 - detect invalid direct mount requests
+Message-Id: <20080701141715.62a2132b.akpm@linux-foundation.org>
+In-Reply-To: <20080620051301.9988.94307.stgit@raven.themaw.net>
+References: <20080620051301.9988.94307.stgit@raven.themaw.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 01, 2008 at 05:05:29PM +0200, Elias Oltmanns wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > Do all of the filesystems implement the freezing?
+On Fri, 20 Jun 2008 13:13:03 +0800
+Ian Kent <raven@themaw.net> wrote:
+
+> autofs v5 dierct and offset mounts within an autofs filesystem are
+> triggered by existing autofs triger mounts so the mount point dentry
+> must be positive. If the mount point dentry is negative then the
+> trigger doesn't exist so we can return fail immediately.
 > 
-> There is some work in progress [1].
-[....]
-> [1] http://permalink.gmane.org/gmane.linux.file-systems/24716
+> Signed-off-by: Ian Kent <raven@themaw.net>
+> 
+> ---
+> 
+>  fs/autofs4/waitq.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> 
+> diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
+> index cd21fd4..ae637d9 100644
+> --- a/fs/autofs4/waitq.c
+> +++ b/fs/autofs4/waitq.c
+> @@ -307,6 +307,10 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
+>  	if (sbi->catatonic)
+>  		return -ENOENT;
+>  
+> +	if (!dentry->d_inode &&
+> +	    (sbi->type & (AUTOFS_TYPE_DIRECT | AUTOFS_TYPE_OFFSET)))
+> +		return -ENOENT;
+> +
+>  	name = kmalloc(NAME_MAX + 1, GFP_KERNEL);
+>  	if (!name)
+>  		return -ENOMEM;
 
-No, that's the userspace ioctl interface to enable freezing from
-something other than dm-snapshot. The filesystems that is aimed at
-already support freezing via freeze_bdev().
+A good changelog would allow little old me to determine whether this
+patch should be merged into 2.6.25 and/or 2.6.26 and/or 2.6.27.  This
+wasn't a good changelog :(
 
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
