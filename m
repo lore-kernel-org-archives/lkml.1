@@ -1,58 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbYGARFO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbYGARHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755026AbYGARFO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 13:05:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbYGAREz
+	id S1757050AbYGARHb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 13:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbYGARHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 13:04:55 -0400
-Received: from outbound-mail-130.bluehost.com ([67.222.38.30]:44278 "HELO
-	outbound-mail-130.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751331AbYGAREy (ORCPT
+	Tue, 1 Jul 2008 13:07:20 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:51073 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751245AbYGARHS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 13:04:54 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [git pull] PCI fixes for 2.6.26
-Date: Tue, 1 Jul 2008 10:04:47 -0700
-User-Agent: KMail/1.9.9
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 1 Jul 2008 13:07:18 -0400
+Subject: [GIT PATCH] SCSI bug fixes for 2.6.26-rc8
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 01 Jul 2008 12:07:14 -0500
+Message-Id: <1214932034.3316.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807011004.47487.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'll stop making predictions about whether this is the last pull request for 
-2.6.26 or not, but it is an important one.  It turns out that we've had a 
-trivial DoS on machines containing PCI devices with bad VPDs.  We're 
-entertaining a few options for a scalable, long term fix, but in the 
-meantime, restricting access to the sysfs VPD file seems prudent.  I've 
-included the patch in lieu of a diffstat since it's so small.
+These are all pretty minor (but bug fixes none the less).
 
-Thanks,
-Jesse
+The patch is available here:
 
-Ben Hutchings (1):
-      PCI: Restrict VPD read permission to root
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
 
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index 6f3c744..1f855f0 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -738,7 +738,7 @@ int __must_check pci_create_sysfs_dev_files (struct 
-pci_dev
-                        pdev->vpd->attr = attr;
-                        attr->size = pdev->vpd->ops->get_size(pdev);
-                        attr->attr.name = "vpd";
--                       attr->attr.mode = S_IRUGO | S_IWUSR;
-+                       attr->attr.mode = S_IRUSR | S_IWUSR;
-                        attr->read = pci_read_vpd;
-                        attr->write = pci_write_vpd;
-                        retval = sysfs_create_bin_file(&pdev->dev.kobj, attr);
+The short changelog is:
+
+David S. Miller (1):
+      esp: Fix OOPS in esp_reset_cleanup().
+
+James Bottomley (1):
+      esp: tidy up target reference counting
+
+Matthew Wilcox (1):
+      ses: Fix timeout
+
+And the diffstat:
+
+ drivers/scsi/esp_scsi.c |   22 ++++++++++++++++++++--
+ drivers/scsi/ses.c      |    2 +-
+ 2 files changed, 21 insertions(+), 3 deletions(-)
+
+Full diff is below
+
+James
+
+---
+
+diff --git a/drivers/scsi/esp_scsi.c b/drivers/scsi/esp_scsi.c
+index a0b6d41..59fbef0 100644
+--- a/drivers/scsi/esp_scsi.c
++++ b/drivers/scsi/esp_scsi.c
+@@ -2359,6 +2359,24 @@ void scsi_esp_unregister(struct esp *esp)
+ }
+ EXPORT_SYMBOL(scsi_esp_unregister);
+ 
++static int esp_target_alloc(struct scsi_target *starget)
++{
++	struct esp *esp = shost_priv(dev_to_shost(&starget->dev));
++	struct esp_target_data *tp = &esp->target[starget->id];
++
++	tp->starget = starget;
++
++	return 0;
++}
++
++static void esp_target_destroy(struct scsi_target *starget)
++{
++	struct esp *esp = shost_priv(dev_to_shost(&starget->dev));
++	struct esp_target_data *tp = &esp->target[starget->id];
++
++	tp->starget = NULL;
++}
++
+ static int esp_slave_alloc(struct scsi_device *dev)
+ {
+ 	struct esp *esp = shost_priv(dev->host);
+@@ -2370,8 +2388,6 @@ static int esp_slave_alloc(struct scsi_device *dev)
+ 		return -ENOMEM;
+ 	dev->hostdata = lp;
+ 
+-	tp->starget = dev->sdev_target;
+-
+ 	spi_min_period(tp->starget) = esp->min_period;
+ 	spi_max_offset(tp->starget) = 15;
+ 
+@@ -2608,6 +2624,8 @@ struct scsi_host_template scsi_esp_template = {
+ 	.name			= "esp",
+ 	.info			= esp_info,
+ 	.queuecommand		= esp_queuecommand,
++	.target_alloc		= esp_target_alloc,
++	.target_destroy		= esp_target_destroy,
+ 	.slave_alloc		= esp_slave_alloc,
+ 	.slave_configure	= esp_slave_configure,
+ 	.slave_destroy		= esp_slave_destroy,
+diff --git a/drivers/scsi/ses.c b/drivers/scsi/ses.c
+index 45df83b..0fe031f 100644
+--- a/drivers/scsi/ses.c
++++ b/drivers/scsi/ses.c
+@@ -61,7 +61,7 @@ static int ses_probe(struct device *dev)
+ 	return err;
+ }
+ 
+-#define SES_TIMEOUT 30
++#define SES_TIMEOUT (30 * HZ)
+ #define SES_RETRIES 3
+ 
+ static int ses_recv_diag(struct scsi_device *sdev, int page_code,
+
 
