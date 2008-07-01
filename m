@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757459AbYGATk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbYGATmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757459AbYGATk4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 15:40:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYGATkq
+	id S1758173AbYGATmZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 15:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbYGATmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 15:40:46 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:55437 "EHLO
+	Tue, 1 Jul 2008 15:42:17 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:52857 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752565AbYGATkp convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1752518AbYGATmQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 15:40:45 -0400
-Date: Tue, 1 Jul 2008 15:40:43 -0400 (EDT)
+	Tue, 1 Jul 2008 15:42:16 -0400
+Date: Tue, 1 Jul 2008 15:42:14 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
-To: =?iso-8859-1?q?J=FCrgen_Mell?= <j.mell@t-online.de>
-cc: LKML <linux-kernel@vger.kernel.org>, rostedt@goodmis.org
-Subject: Re: BUG messages with real-time kernel 2.6.25.8-rt7
-In-Reply-To: <200807011947.48725.j.mell@t-online.de>
-Message-ID: <Pine.LNX.4.58.0807011507510.27372@gandalf.stny.rr.com>
-References: <200807011947.48725.j.mell@t-online.de>
+To: Noah Watkins <noahwatkins@gmail.com>
+cc: Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       paulmck <paulmck@linux.vnet.ibm.com>
+Subject: Re: [BUG RT] 2.6.25.8-rt7 on 8-way
+In-Reply-To: <7618ba960807011208n3aacbc65l41255e3996d2ee4b@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0807011541490.27372@gandalf.stny.rr.com>
+References: <7618ba960806291432l20b7b6b5lea4b60bafa68c3bf@mail.gmail.com> 
+ <1214778205.13292.6.camel@dd.thebigcorporation.com> 
+ <Pine.LNX.4.58.0806300835050.5403@gandalf.stny.rr.com>
+ <7618ba960807011208n3aacbc65l41255e3996d2ee4b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 1 Jul 2008, Jürgen Mell wrote:
+On Tue, 1 Jul 2008, Noah Watkins wrote:
 
 >
-> I am getting this bug message from a real-time kernel 2.6.25.8-rt7:
+> While I have disabled RCU tracing to suppress the messages, I am
+> getting them in another context:
 >
-> Jul  1 07:58:30 cwc-003 kernel: BUG: sleeping function called from invalid
-> context IRQ-15(416) at arch/x86/mm/highmem_32.c:8
-> Jul  1 07:58:30 cwc-003 kernel: in_atomic():0 [00000000], irqs_disabled():1
-> Jul  1 07:58:30 cwc-003 kernel: Pid: 416, comm: IRQ-15 Not tainted
-> 2.6.25.8-rt7-hws #2
-> Jul  1 07:58:30 cwc-003 kernel:  [<c01125f5>] kmap+0x44/0x54
-> Jul  1 07:58:30 cwc-003 kernel:  [<f88507fd>] ata_hsm_move+0x3d5/0x666
-
-[...]
-
+> BUG: using smp_processor_id() in preemptible [00000000] code: sshd/3114
+> caller is __qdisc_run+0x12e/0x1b5
+> Pid: 3114, comm: sshd Not tainted 2.6.25.8-rt7 #3
 >
-> Any ideas how to fix this? If you need any more information or if I can
-> test something, please let me know.
+> Call Trace:
+>  [<ffffffff8112da39>] debug_smp_processor_id+0xad/0xb8
+>  [<ffffffff8120e264>] __qdisc_run+0x12e/0x1b5
+>  [<ffffffff811ff1c8>] dev_queue_xmit+0x140/0x278
+>  [<ffffffff8122239e>] ip_queue_xmit+0x2c2/0x350
+>  [<ffffffff8127f8a6>] add_preempt_count+0x12/0x94
+>  [<ffffffff8108263e>] __inc_zone_state+0x6a/0x88
+>  [<ffffffff81231ffe>] tcp_transmit_skb+0x77e/0x7ba
+>  [<ffffffff8109aa60>] kmem_cache_alloc_node+0x129/0x152
+>  [<ffffffff81233a75>] __tcp_push_pending_frames+0x713/0x7df
+>  [<ffffffff81228da2>] tcp_sendmsg+0x93a/0xa52
+>  [<ffffffff811f0e97>] sock_aio_write+0xf8/0x110
+>  [<ffffffff8109feeb>] do_sync_write+0xc9/0x10c
+>  [<ffffffff81046da6>] autoremove_wake_function+0x0/0x2e
+>  [<ffffffff8103868b>] current_fs_time+0x1e/0x24
+>  [<ffffffff810a06ae>] vfs_write+0xc0/0x156
+>  [<ffffffff810a0c67>] sys_write+0x48/0x74
+>  [<ffffffff8100bf6b>] tracesys+0xdc/0xe1
+>
+>
 
-I found the problem. In PREEMPT_RT we define kmap_atomic to kmap since we
-don't disable interrutps with spin_lock_irqsave nor do we disable
-preemption.
-
-In drivers/ata/libata-core.c we have:
-
-
-		/* FIXME: use bounce buffer */
-		local_irq_save(flags);
-		buf = kmap_atomic(page, KM_IRQ0);
-
-
-But PREEMPT_RT even kmap_atomic will call "might_sleep". So the fix here
-is for us to get rid of the local_irq_save. Perhaps simply add a
-spin_lock_irqsave(local_lock) here.
-
-Thanks for the report.
+Thanks for reporting this. This is a different issue. I'll investigate it.
 
 -- Steve
 
