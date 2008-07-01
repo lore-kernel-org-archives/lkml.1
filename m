@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760049AbYGAQZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbYGAQ1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760049AbYGAQZM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 12:25:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbYGAQY7
+	id S1758678AbYGAQ1p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 12:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbYGAQ1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 12:24:59 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:32354 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751245AbYGAQY6 (ORCPT
+	Tue, 1 Jul 2008 12:27:35 -0400
+Received: from smtp.eu.citrix.com ([62.200.22.115]:3553 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750813AbYGAQ1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 12:24:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ouSe7YCNZQU6DiOuFGK5hBEnLWC49HDuZQpMmJYK8K83W7uFabSgbZweP30Fyalvnx
-         B/90hrdUdA8yPXVgsPEPWx1DizTMSgSUXWKuBxQoJmBQBxW1Skt3wsxEt301NGJ3ujW7
-         f0wDMwbnfO4gbeHpXrPOe0r5Yvk7YspFqpPrg=
-Date: Tue, 1 Jul 2008 20:24:25 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: I/O APIC: Add a 64-bit variation of
-	replace_pin_at_irq()
-Message-ID: <20080701162425.GA7043@cvg>
-References: <Pine.LNX.4.55.0807010112360.30785@cliff.in.clinika.pl>
+	Tue, 1 Jul 2008 12:27:34 -0400
+X-IronPort-AV: E=Sophos;i="4.27,732,1204502400"; 
+   d="scan'208";a="837787"
+Message-ID: <486A5B1A.6050901@eu.citrix.com>
+Date: Tue, 01 Jul 2008 17:28:10 +0100
+From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0807010112360.30785@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Jan Engelhardt <jengelh@medozas.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1 of 2] fbcon: bgcolor fix
+References: <486A4F64.3050904@eu.citrix.com> <alpine.LNX.1.10.0807011750570.20393@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LNX.1.10.0807011750570.20393@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Jul 2008 16:27:33.0477 (UTC) FILETIME=[5D785150:01C8DB97]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Maciej W. Rozycki - Tue, Jul 01, 2008 at 01:19:31AM +0100]
-|  When an interrupt is rerouted to a different I/O APIC pin the relevant
-| entry of the irq_2_pin list should get updated accordingly so that
-| operations are performed on the correct redirection entry.  This is
-| already done by the 32-bit variation of the code and here is a
-| complementing 64-bit implementation.  Should make someone's decision less
-| tough when merging the two. ;)
-| 
-| Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-| ---
+Jan Engelhardt wrote:
 
-Thanks Maciej :-)
+> On Tuesday 2008-07-01 17:38, Stefano Stabellini wrote:
+> 
+>> The forth bit of the background color is the blink property bit, not the
+>> intensity bit, as for the foreground color.
+>> Therefore it shouldn't be included in the background color.
+> 
+> I'm a bit skeptical, though I have not tried this.
 
-		- Cyrill -
+
+If you look at the build_attr function in drivers/char/vt.c you can see 
+that the blink attribute is stored as the forth bit of the background color.
+
+I tried the patches with both an ncurses application and manually using:
+
+echo -en '\E[5m'
+
+and they seems to work fine.
