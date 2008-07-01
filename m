@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbYGAHSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbYGAHUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754492AbYGAHSG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 03:18:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYGAHRz
+	id S1755197AbYGAHUk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 03:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYGAHUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 03:17:55 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:58631 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752412AbYGAHRx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 03:17:53 -0400
-Date: Tue, 1 Jul 2008 10:17:35 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: -Wmissing-prototypes (was: make foo() static)
-Message-ID: <20080701071735.GA17047@cs181140183.pp.htv.fi>
-References: <20080630221918.GI1536@cs181140183.pp.htv.fi> <4869D1F3.3030804@redhat.com>
+	Tue, 1 Jul 2008 03:20:31 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:35947 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752553AbYGAHUa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 03:20:30 -0400
+Date: Tue, 1 Jul 2008 09:20:29 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: NeilBrown <neilb@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH 001 of 29] md: Ensure interrupted recovery completed
+ properly (v1 metadata plus bitmap)
+In-Reply-To: <1080627064923.10270@suse.de>
+Message-ID: <alpine.LNX.1.10.0807010918070.26892@fbirervta.pbzchgretzou.qr>
+References: <20080627164503.9671.patches@notabene> <1080627064923.10270@suse.de>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4869D1F3.3030804@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 01, 2008 at 08:42:59AM +0200, Gerd Hoffmann wrote:
-> Adrian Bunk wrote:
-> 
-> > This patch makes the needlessly global kvm_smp_prepare_boot_cpu() static.
-> 
-> Hmm, maybe we should build the kernel with -Wmissing-prototypes?
-> That should make gcc print a warning for that ...
 
-I started 3 or 4 years ago cleaning up the kernel for 
--Wmissing-prototypes and I'm still working on it.
+On Friday 2008-06-27 08:49, NeilBrown wrote:
+>
+>[...] In this case it tells recovery to ignore the bitmap
+>and recovery all blocks.
+>
+>So without this fix, a raid1 ir raid4/5/6 array with version 1.x
+>metadata and a write intent bitmaps, that is stopped in the middle
+>of a recovery, will appear to complete the recovery instantly
+>after it is reassembled, but the recovery will not be correct.
 
-Many parts of the kernel now compile cleanly or nearly cleanly, but 
-looking at e.g. arch/ I know what kind of answers I would get if 
-suggesting adding -Wmissing-prototypes today...
+If the array is stopped in the middle of a recovery, should not
+it restart recovery where it left off when reassembled?
+That's what the write intent bitmap is for, is not it? Like..
 
-> cheers,
->   Gerd
+wait_for(assemble)
+for_all('1' bits in bitmap)
+    if (resync == success)
+        bitmap[pos] = '0';
+    if (signalled)
+        break;
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+and stopping the resync in the middle, the bitmap should still
+have '1' bits left to be processed on the next assemble.
+Or, where did I go wrong?
