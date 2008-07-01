@@ -1,29 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759079AbYGASr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757591AbYGASuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759079AbYGASr5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 14:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756570AbYGASrh
+	id S1757591AbYGASuT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 14:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbYGASuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 14:47:37 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:52528 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755039AbYGASre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 14:47:34 -0400
-Message-ID: <486A7BC4.7010204@sgi.com>
-Date: Tue, 01 Jul 2008 11:47:32 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 1 Jul 2008 14:50:05 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:18584 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754027AbYGASuB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 14:50:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Nnl31kyfj4s5kC5Fo4G2k+oHpncd9O9KBVrsWUZyvvIs+WmSZ75Di/+LxcmQfPqBR6
+         Jio+5oq0Pg8Sw8UWaDpC1YXwR34J1+1fKkebNG4dxUJNJuVUiYDg9JGtMEW3CMl0Rx7C
+         0IdCNELl/vxjaV5JixW/lVH3RfbDvxyJIuNoI=
+Message-ID: <486A7C19.5080905@gmail.com>
+Date: Wed, 02 Jul 2008 00:18:57 +0530
+From: Abhishek Sagar <sagar.abhishek@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Hugh Dickins <hugh@veritas.com>, Jack Steiner <steiner@sgi.com>
-Subject: Re: [RFC 0/5] percpu: Optimize percpu accesses
-References: <20080701121634.865966000@polaris-admin.engr.sgi.com> <20080701145417.GB18522@elte.hu> <20080701150313.GA30476@elte.hu>
-In-Reply-To: <20080701150313.GA30476@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>
+CC: Alexander Beregalov <a.beregalov@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org, sparclinux@vger.kernel.org,
+       rostedt@goodmis.org
+Subject: Re: next-0630: sparc64: build failed
+References: <a4423d670807010825t7ea2eb44oda3f08dc007c40a2@mail.gmail.com> <20080701154648.GA31057@elte.hu>
+In-Reply-To: <20080701154648.GA31057@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,154 +37,118 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Ingo Molnar wrote:
+>     Alexander Beregalov reported this build failure:
+>     
+>     $ make CROSS_COMPILE=sparc64-unknown-linux-gnu- image modules && sudo
+>     make modules_install
+>       CHK     include/linux/version.h
+>       CHK     include/linux/utsrelease.h
+>       CALL    scripts/checksyscalls.sh
+>       CHK     include/linux/compile.h
+>     dnsdomainname: Unknown host
+>       CC      arch/sparc64/kernel/sparc64_ksyms.o
+>     arch/sparc64/kernel/sparc64_ksyms.c:116: error: '_mcount' undeclared
+>     here (not in a function)
+>     cc1: warnings being treated as errors
+>     arch/sparc64/kernel/sparc64_ksyms.c:116: error: type defaults to 'int'
+>     in declaration of '_mcount'
+>     
+>     And bisected it back to:
+>     
+>     | commit 395a59d0f8e86bb39cd700c3d185d30c670bb958
+>     | Author: Abhishek Sagar <sagar.abhishek@gmail.com>
+>     | Date:   Sat Jun 21 23:47:27 2008 +0530
+>     |
+>     |     ftrace: store mcount address in rec->ip
+>     
+>     the mcount prototype is only available under CONFIG_FTRACE,
+>     extend it to CONFIG_MCOUNT as well.
+>     
+>     Reported-and-bisected-by: Alexander Beregalov <a.beregalov@gmail.com>
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-> 
-> full bootlog and config can be found at:
-> 
->   http://redhat.com/~mingo/misc/crashlog-Tue_Jul__1_16_48_45_CEST_2008.bad
->   http://redhat.com/~mingo/misc/config-Tue_Jul__1_16_48_45_CEST_2008.bad
-> 
-> (another 64-bit testbox crashed as well, so this should be readily 
-> reproducible.)
-> 
-> i've pushed this tree out to tip/tmp.core/percpu-zerobased.Jul__1_16_48 
-> topic branch, that is the 2.6.26-rc8-tip-00250-g90874b0 kernel you can 
-> see in the crashlog.
-> 
-> 	Ingo
+Hi Ingo/David,
 
-Ok, two problems here.  First, it's getting a stack overflow (proved by
-increasing THREAD_ORDER to 4 [probably 2 would work as well.])
+CONFIG_MCOUNT currently controls the compilation with -pg flag and the export
+of _mcount. But with ftrace, the former is redundant and the latter should be
+made unconditional since _mcount is always defined. In which case, does the
+inlined patch (untested) make sense? It should solve the build failure as well.
 
-Second, the following change caused the panic below.  I'll dissect the
-object code to see if I can spot the problem.  It does sounds a bit like
-the previous discussion in this thread:
+[for tip/master]
 
-"Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference"
-
-About the stack overflow, the largest users are listed last (this is after
-applying the "sched: Reduce stack size in isolated_cpu_setup()" patch which
-I just sent.)  My gcc (4.2.0) says this for "stackprotector".
-
-#warning You have selected the CONFIG_CC_STACKPROTECTOR option, 
-but the gcc used does not support this.
-
-... is there a known version where this _is_ supported?  Or any other
-advice on tracking this down?
-
-[I did take your advice and broke out every change in the last patch of the
-patchset into individual patches.  Was fairly easy in this case, and pinpointed
-the failing change very quickly.]
-
-Thanks!
-Mike
-
+Signed-off-by: Abhishek Sagar <sagar.abhishek@gmail.com>
 ---
- include/asm-x86/thread_info.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+sparc64: get rid of CONFIG_MCOUNT
 
---- linux-2.6.tip.orig/include/asm-x86/thread_info.h	2008-07-01 10:41:33.000000000 -0700
-+++ linux-2.6.tip/include/asm-x86/thread_info.h	2008-07-01 10:49:15.172370813 -0700
-@@ -200,7 +200,8 @@ static inline struct thread_info *curren
- static inline struct thread_info *current_thread_info(void)
- {
- 	struct thread_info *ti;
--	ti = (void *)(read_pda(kernelstack) + PDA_STACKOFFSET - THREAD_SIZE);
-+	ti = (void *)(x86_read_percpu(pda.kernelstack) +
-+						PDA_STACKOFFSET - THREAD_SIZE);
- 	return ti;
- }
+There are two possible (not necessarily exclusive) uses of the _mcount call:
+1. To do stack usage debugging.
+2. Function tracing.
+
+Both have separate CONFIG_* options and don't require an alias such as
+CONFIG_MCOUNT.
+
+diff --git a/arch/sparc64/Kconfig.debug b/arch/sparc64/Kconfig.debug
+index d6d32d1..6065be7 100644
+--- a/arch/sparc64/Kconfig.debug
++++ b/arch/sparc64/Kconfig.debug
+@@ -31,11 +31,6 @@ config DEBUG_PAGEALLOC
+ 	  This results in a large slowdown, but helps to find certain types
+ 	  of memory corruptions.
  
-ccessful
-[    0.188000] CPU0: Intel(R) Xeon(R) CPU           E5345  @ 2.33GHz stepping 07
-[    0.199685] Using local APIC timer interrupts.
-[    0.208000] APIC timer calibration result 20781829
-[    0.212000] Detected 20.781 MHz APIC timer.
-[    0.216000] BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
-[    0.216000] IP: [<0000000000000000>]
-[    0.216000] PGD 0
-[    0.216000] Oops: 0010 [1] SMP
-[    0.216000] CPU 0
-[    0.216000] Pid: 1, comm: swapper Not tainted 2.6.26-rc8-tip-ingo-bad-0701-00208-g79a4d68-dirty #17
-[    0.216000] RIP: 0010:[<0000000000000000>]  [<0000000000000000>]
-[    0.216000] RSP: 0000:ffff81022ed1fe18  EFLAGS: 00010282
-[    0.216000] RAX: 0000000000000001 RBX: ffff81022ed1fe84 RCX: ffffffff80ca6750
-[    0.216000] RDX: 0000000000000001 RSI: 0000000000000003 RDI: ffffffff80ca6750
-[    0.216000] RBP: ffff81022ed1fe50 R08: 0000000000000000 R09: ffff8100010ff710
-[    0.216000] R10: ffff8100010ed740 R11: 0000000000000000 R12: 00000000fffffffd
-[    0.216000] R13: ffffffff80ca7790 R14: 0000000000000001 R15: 0000000000000003
-[    0.216000] FS:  0000000000000000(0000) GS:ffff8100010eb000(0000) knlGS:0000000000000000
-[    0.216000] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-[    0.216000] CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
-[    0.216000] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[    0.216000] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[    0.216000] Process swapper (pid: 1, threadinfo ffff81022ed10000, task ffff81022ec930e0)
-[    0.216000] Stack:  ffffffff8024b800 0000000000000000 0000000000000001 0000000000000001
-[    0.216000]  00000000fffffff0 ffffffff80e263a0 0000000000092fd0 ffff81022ed1fe60
-[    0.216000]  ffffffff8024b880 ffff81022ed1fea0 ffffffff808e8526 0000000000000008
-[    0.216000] Call Trace:
-[    0.216000]  [<ffffffff8024b800>] ? notifier_call_chain+0x38/0x60
-[    0.216000]  [<ffffffff8024b880>] __raw_notifier_call_chain+0xe/0x10
-[    0.216000]  [<ffffffff808e8526>] cpu_up+0xa8/0x138
-[    0.216000]  [<ffffffff80ded993>] kernel_init+0xcf/0x316
-[    0.216000]  [<ffffffff8020d458>] child_rip+0xa/0x12
-[    0.216000]  [<ffffffff8020c8f5>] ? restore_args+0x0/0x30
-[    0.216000]  [<ffffffff80ded8c4>] ? kernel_init+0x0/0x316
-[    0.216000]  [<ffffffff8020d44e>] ? child_rip+0x0/0x12
-[    0.216000]
-[    0.216000]
-[    0.216000] Code:  Bad RIP value.
-[    0.216000] RIP  [<0000000000000000>]
-[    0.216000]  RSP <ffff81022ed1fe18>
-[    0.216000] CR2: 0000000000000000
-
-Stack usages >= 1000 bytes:
-
-2184 __build_sched_domains
-2056 kthreadd
-1576 tick_notify
-1576 setup_IO_APIC_irq
-1576 move_task_off_dead_cpu
-1560 arch_setup_ht_irq
-1560 __assign_irq_vector
-1544 tick_handle_oneshot_broadcast
-1352 zc0301_ioctl_v4l2
-1336 i2o_cfg_compat_ioctl
-1192 sn9c102_ioctl_v4l2
-1152 e1000_check_options
-1128 setup_IO_APIC
-1096 _cpu_down
-1080 sched_balance_self
-1080 do_ida_request
-1064 native_smp_call_function_mask
-1048 setup_timer_IRQ0_pin
-1048 setup_ioapic_dest
-1048 set_ioapic_affinity_irq
-1048 set_ht_irq_affinity
-1048 sched_rt_period_timer
-1048 native_machine_crash_shutdown
-1032 tick_do_periodic_broadcast
-1032 sched_setaffinity
-1032 native_flush_tlb_others
-1032 local_cpus_show
-1032 local_cpulist_show
-1032 irq_select_affinity
-1032 irq_complete_move
-1032 irq_affinity_write_proc
-1032 ioapic_retrigger_irq
-1032 flush_tlb_mm
-1032 flush_tlb_current_task
-1032 fixup_irqs
-1032 do_cciss_request
-1032 create_irq
-1024 uv_vector_allocation_domain
-1024 uv_send_IPI_allbutself
-1024 smp_call_function_single
-1024 smp_call_function
-1024 physflat_send_IPI_allbutself
-1024 pci_bus_show_cpuaffinity
-1024 move_masked_irq
-1024 flush_tlb_page
-1024 flat_send_IPI_allbutself
-1000 security_load_policy
-
+-config MCOUNT
+-	bool
+-	depends on STACK_DEBUG || FTRACE
+-	default y
+-
+ config FRAME_POINTER
+ 	bool
+ 	depends on MCOUNT
+diff --git a/arch/sparc64/Makefile b/arch/sparc64/Makefile
+index 4b8f2b0..c182e5c 100644
+--- a/arch/sparc64/Makefile
++++ b/arch/sparc64/Makefile
+@@ -19,8 +19,10 @@ KBUILD_CFLAGS += -m64 -pipe -mno-fpu -mcpu=ultrasparc -mcmodel=medlow \
+ KBUILD_CFLAGS += $(call cc-option,-mtune=ultrasparc3)
+ KBUILD_AFLAGS += -m64 -mcpu=ultrasparc -Wa,--undeclared-regs
+ 
+-ifeq ($(CONFIG_MCOUNT),y)
+-  KBUILD_CFLAGS += -pg
++ifneq ($(CONFIG_FTRACE),y)
++ifeq ($(CONFIG_STACK_DEBUG),y)
++KBUILD_CFLAGS += -pg
++endif
+ endif
+ 
+ head-y := arch/sparc64/kernel/head.o arch/sparc64/kernel/init_task.o
+diff --git a/arch/sparc64/kernel/sparc64_ksyms.c b/arch/sparc64/kernel/sparc64_ksyms.c
+index b80d982..13c243c 100644
+--- a/arch/sparc64/kernel/sparc64_ksyms.c
++++ b/arch/sparc64/kernel/sparc64_ksyms.c
+@@ -112,10 +112,7 @@ EXPORT_SYMBOL(__write_trylock);
+ EXPORT_SYMBOL(smp_call_function);
+ #endif /* CONFIG_SMP */
+ 
+-#if defined(CONFIG_MCOUNT)
+ EXPORT_SYMBOL(_mcount);
+-#endif
+-
+ EXPORT_SYMBOL(sparc64_get_clock_tick);
+ 
+ /* RW semaphores */
+diff --git a/include/asm-sparc64/ftrace.h b/include/asm-sparc64/ftrace.h
+index f76a40a..51036c3 100644
+--- a/include/asm-sparc64/ftrace.h
++++ b/include/asm-sparc64/ftrace.h
+@@ -4,11 +4,10 @@
+ #ifdef CONFIG_FTRACE
+ #define MCOUNT_ADDR		((long)(_mcount))
+ #define MCOUNT_INSN_SIZE	4 /* sizeof mcount call */
++#endif
+ 
+ #ifndef __ASSEMBLY__
+ extern void _mcount(void);
+ #endif
+ 
+-#endif
+-
+ #endif /* _ASM_SPARC64_FTRACE */
