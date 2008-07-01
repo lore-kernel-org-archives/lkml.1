@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbYGAW6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760303AbYGAW7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759916AbYGAW6W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 18:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbYGAW6F
+	id S1760303AbYGAW7z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 18:59:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYGAW7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 18:58:05 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:4946 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756505AbYGAW6D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 18:58:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=k89OY7kXufk2Z4saZMKhLBASqlferLu60HQgIcXABjctYO8IfMI9o6mwVzK3mEdLim
-         MrQ6PYC9qRiiSOb3kJI5uGhn+zbbgUt66hXZ7nSmLeTdjPPqYOz1s6SrF7CbMq33vsXD
-         cGKHIFGz/er2K7Mk2Ae8agVvcfQfZ14s4xBKI=
-Message-ID: <8bd0f97a0807011558u2c02f6fcre2f3af3d5cced936@mail.gmail.com>
-Date: Tue, 1 Jul 2008 18:58:02 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Denys Vlasenko" <vda.linux@googlemail.com>
-Subject: Re: [PATCH 5/23] make section names compatible with -ffunction-sections -fdata-sections: blackfin
-Cc: linux-arch@vger.kernel.org, "Russell King" <rmk@arm.linux.org.uk>,
-       "David Howells" <dhowells@redhat.com>,
-       "Ralf Baechle" <ralf@linux-mips.org>,
-       "Lennert Buytenhek" <kernel@wantstofly.org>,
-       "Josh Boyer" <jwboyer@linux.vnet.ibm.com>,
-       "Paul Mackerras" <paulus@samba.org>,
-       "David Woodhouse" <dwmw2@infradead.org>,
-       "Andi Kleen" <andi@firstfloor.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org,
-       "Paul Gortmaker" <paul.gortmaker@windriver.com>,
+	Tue, 1 Jul 2008 18:59:45 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:54525 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753649AbYGAW7o (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 18:59:44 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk@arm.linux.org.uk>,
+       David Howells <dhowells@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Lennert Buytenhek <kernel@wantstofly.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Paul Mackerras <paulus@samba.org>,
+       David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       torvalds@linux-foundation.org,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
        linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Tim Bird" <tim.bird@am.sony.com>,
-       "Martin Schwidefsky" <schwidefsky@de.ibm.com>,
-       "Dave Miller" <davem@davemloft.net>
-In-Reply-To: <200807020235.08025.vda.linux@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+       Tim Bird <tim.bird@am.sony.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Dave Miller <davem@davemloft.net>
+Subject: Re: [PATCH 1/23] make section names compatible with -ffunction-sections -fdata-sections
+In-Reply-To: Your message of "Wed, 02 Jul 2008 02:33:48 +0200."
+             <200807020233.48646.vda.linux@googlemail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <200807020233.48646.vda.linux@googlemail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1214952973_2982P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200807020235.08025.vda.linux@googlemail.com>
+Date: Tue, 01 Jul 2008 18:56:13 -0400
+Message-ID: <60320.1214952973@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 1, 2008 at 8:35 PM, Denys Vlasenko wrote:
-> The purpose of this patch is to make kernel buildable
+--==_Exmh_1214952973_2982P
+Content-Type: text/plain; charset=us-ascii
+
+On Wed, 02 Jul 2008 02:33:48 +0200, Denys Vlasenko said:
+
+> The purpose of these patches is to make kernel buildable
 > with "gcc -ffunction-sections -fdata-sections".
-> This patch fixes blackfin architecture.
+> 
+> Newer gcc and binutils can do dead code and data removal
+> at link time. It is achieved using combination of
+> -ffunction-sections -fdata-sections options for gcc and
+> --gc-sections for ld.
 
-the comment right above what you changed says it already works for
-Blackfin.  so you arent fixing it at all.
->                /* This gets done first, so the glob doesn't suck it in */
->                . = ALIGN(32);
-> -               *(.data.cacheline_aligned)
-> +               *(.cacheline_aligned.data)
+Interesting idea.  Do you happen to have before-and-after 'size vmlinux'
+numbers to show how much space is actually reclaimed?
 
-ive built Blackfin kernels with function/data sections a long time ago
-... but iirc, there were toolchain problems, so i havent pursued it
-since.
+--==_Exmh_1214952973_2982P
+Content-Type: application/pgp-signature
 
-if you're going to muck with names, you might as well do it right the
-first time: move the names into asm-generic/vmlinux.lds.h so we dont
-have to worry about this kind of churn again.
--mike
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIarYNcC3lWbTT17ARAh9sAJ9xjYck9zBa6K8R7tTHzDIj28eiwACeOD8Q
+hdump+CXw2+ZexG6of1uSVQ=
+=RKDh
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1214952973_2982P--
