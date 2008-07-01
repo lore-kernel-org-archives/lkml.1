@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760963AbYGAUg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760829AbYGAUh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760963AbYGAUg4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 16:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbYGAUgs
+	id S1760829AbYGAUh4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 16:37:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbYGAUhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 16:36:48 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48164 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754814AbYGAUgr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 16:36:47 -0400
-X-Authenticated: #5108953
-X-Provags-ID: V01U2FsdGVkX195HiEdoA55jsKLC7dnPuFUfhx9IlEVTA7KDze0zl
-	h96qf8EpQnRDwY
-From: Toralf =?iso-8859-15?q?F=F6rster?= <toralf.foerster@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [git pull] scheduler fixes
-Date: Tue, 1 Jul 2008 22:36:40 +0200
-User-Agent: KMail/1.9.9
+	Tue, 1 Jul 2008 16:37:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59935 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754825AbYGAUhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 16:37:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
+Date: Tue, 1 Jul 2008 22:39:43 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Ingo Molnar <mingo@elte.hu>, kernel-testers@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>
+References: <200807010148.02135.rjw@sisk.pl> <20080701063133.GC16642@elte.hu> <4869D4A3.3020000@zytor.com>
+In-Reply-To: <4869D4A3.3020000@zytor.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2464213.i8bOyPabV9";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200807012236.43780.toralf.foerster@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
+Content-Disposition: inline
+Message-Id: <200807012239.44105.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2464213.i8bOyPabV9
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tuesday, 1 of July 2008, H. Peter Anvin wrote:
+> Ingo Molnar wrote:
+> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > 
+> >> Hi,
+> >>
+> >> The appended patch fixes a regression and is considered as 2.6.26 
+> >> material. Everyone having a box with working suspend to RAM is gently 
+> >> requested to test it and verify if it doesn't break things.
+> >>
+> >> The patch applies to the current -git.
+> > 
+> > it's been under testing in tip/out-of-tree for about a week:
+> > 
+> > | commit ee901dc1b9ab94a37ba2efc296fe9ba72bc75adf
+> > | Author:     H. Peter Anvin <hpa@zytor.com>
+> > | AuthorDate: Tue Jun 24 23:03:48 2008 +0200
+> > | Commit:     Ingo Molnar <mingo@elte.hu>
+> > | CommitDate: Wed Jun 25 18:48:13 2008 +0200
+> > |
+> > |     x86 ACPI: normalize segment descriptor register on resume
+> > 
+> > no problems caused by it so far.
+> > 
+> 
+> Here is the incremental patch which should stick "strictly to the 
+> script" of ljmp immediately after writing CR0.PE.  This should be done 
+> to the boot code as well; I'm waiting for confirmation from the Elan 
+> original reporter before submitting that patch.
+> 
+> I decided to make this an incremental patch to make it bisectable versus 
+> the other one, however, it should probably be considered the right thing.
+> 
+> Note: I have not tested this beyond compilation, I'm afraid.
 
-Hello,
+I have tested it on the nx6325 (64-bit) on top of the today's linux-next.  It
+works fine for me.
 
-I've one question related to that patch:
-
-At Tue Jul  1 22:35:30 CEST 2008 Ingo Molnar wrote :
->diff --git a/kernel/sched.c b/kernel/sched.c
->index a66e856..94ead43 100644
->--- a/kernel/sched.c
->+++ b/kernel/sched.c
->@@ -8502,6 +8502,9 @@ int sched_group_set_rt_period(struct task_group *tg,=
- long rt_period_us)
-> 	rt_period =3D (u64)rt_period_us * NSEC_PER_USEC;
-> 	rt_runtime =3D tg->rt_bandwidth.rt_runtime;
->=20
->+	if (rt_period =3D=3D 0)
->+		return -EINVAL;
->+
-> 	return tg_set_bandwidth(tg, rt_period, rt_runtime);
-
-Why isn't the check be make before rt_runtime is set ?
-
-=2D-=20
-MfG/Sincerely
-
-Toralf F=F6rster
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
-
---nextPart2464213.i8bOyPabV9
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAkhqlVsACgkQhyrlCH22naMJCgCgrKUB3lFJ1evQegpJcQdKHP0q
-NicAniEtuq3NoQyU6Ec1KatYxJ1Fmywt
-=YHGA
------END PGP SIGNATURE-----
-
---nextPart2464213.i8bOyPabV9--
+Thanks,
+Rafael
