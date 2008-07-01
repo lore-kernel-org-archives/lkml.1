@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758786AbYGAUET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757701AbYGAUId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758786AbYGAUET (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 16:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbYGAUEH
+	id S1757701AbYGAUId (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 16:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbYGAUIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 16:04:07 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59258 "EHLO mx2.mail.elte.hu"
+	Tue, 1 Jul 2008 16:08:24 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:48861 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753802AbYGAUEF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 16:04:05 -0400
-Date: Tue, 1 Jul 2008 22:03:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Abhishek Sagar <sagar.abhishek@gmail.com>
-Cc: David Miller <davem@davemloft.net>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org, sparclinux@vger.kernel.org,
-       rostedt@goodmis.org
-Subject: Re: next-0630: sparc64: build failed
-Message-ID: <20080701200344.GA4896@elte.hu>
-References: <a4423d670807010825t7ea2eb44oda3f08dc007c40a2@mail.gmail.com> <20080701154648.GA31057@elte.hu> <486A7C19.5080905@gmail.com>
-MIME-Version: 1.0
+	id S1752547AbYGAUIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 16:08:23 -0400
+Date: Tue, 1 Jul 2008 22:09:10 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Adrian Bunk <bunk@kernel.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Avi Kivity <avi@qumranet.com>, linux-arch@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] remove dummy asm/kvm.h files
+Message-ID: <20080701200910.GA10677@uranus.ravnborg.org>
+References: <20080701162716.GB32598@cs181140183.pp.htv.fi> <20080701193236.GB10350@uranus.ravnborg.org> <1214942000.10393.418.camel@pmac.infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <486A7C19.5080905@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1214942000.10393.418.camel@pmac.infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Abhishek Sagar <sagar.abhishek@gmail.com> wrote:
-
-> Hi Ingo/David,
+On Tue, Jul 01, 2008 at 08:53:20PM +0100, David Woodhouse wrote:
+> On Tue, 2008-07-01 at 21:32 +0200, Sam Ravnborg wrote:
+> > On Tue, Jul 01, 2008 at 07:27:16PM +0300, Adrian Bunk wrote:
+> > > This patch removes the dummy asm/kvm.h files on architectures not (yet) 
+> > > supporting KVM and uses the same conditional headers installation as
+> > > already used for a.out.h .
+> > > 
+> > > Also removed are superfluous install rules in the s390 and x86 Kbuild 
+> > > files (they are already in Kbuild.asm).
+> > > 
+> > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > 
+> > I really do not like the way we implement these checks and
+> > think this should be a kconfig option.
+> > But we do not (yet) require a configured kernel when exporting
+> > to userspace so this is not feasible right now.
 > 
-> CONFIG_MCOUNT currently controls the compilation with -pg flag and the 
-> export of _mcount. But with ftrace, the former is redundant and the 
-> latter should be made unconditional since _mcount is always defined. 
-> In which case, does the inlined patch (untested) make sense? It should 
-> solve the build failure as well.
+> I'm _really_ dubious about doing this kind of thing through Kconfig.
+> 
+> In the general case, we really don't want exported headers to have any
+> differences based on the kernel configuration.
+> 
+> Yes, I suppose it would be OK if we are very careful not to let anyone
+> use config symbols that aren't hard-coded for the given architecture.
+> But in practice I don't think there's any real chance that we'd manage
+> to be careful _enough_. We'd find people using symbols they shouldn't
+> be.
+We have two cases now and I think we can manage it.
+But if we have only a few cases then we can also accept use of ARCH.
 
-hm, mcount is the facility - so it makes sense to have that defined. 
-Here you basically hide CONFIG_MCOUNT:
+> 
+> > So despite the above this patch has my:
+> > Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> > 
+> > Same for the asm/a.out patch you posted the other day.
+> > 
+> > David - I assume you take these via your tree?
+> 
+> I can do.
+Thanks,
 
-> -ifeq ($(CONFIG_MCOUNT),y)
-> -  KBUILD_CFLAGS += -pg
-> +ifneq ($(CONFIG_FTRACE),y)
-> +ifeq ($(CONFIG_STACK_DEBUG),y)
-> +KBUILD_CFLAGS += -pg
-> +endif
->  endif
-
-via two conditions. I'm not sure that's a win and i found CONFIG_MCOUNT 
-a logical switch - but it's David's call.
-
-	Ingo
+	Sam
