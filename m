@@ -1,46 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbYGANWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbYGAN1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756848AbYGANWF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 09:22:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbYGANVy
+	id S1756848AbYGAN1X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 09:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbYGAN1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 09:21:54 -0400
-Received: from mail.macqel.be ([194.78.208.39]:4936 "EHLO mail.macqel.be"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753110AbYGANVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 09:21:53 -0400
-Date: Tue, 1 Jul 2008 15:21:49 +0200
-From: Philippe De Muyter <phdm@macqel.be>
-To: linux-kernel@vger.kernel.org, libdc1394-devel@lists.sourceforge.net
-Subject: mmap'ed memory in core files ?
-Message-ID: <20080701132149.GA32510@frolo.macqel>
+	Tue, 1 Jul 2008 09:27:09 -0400
+Received: from wx-out-0506.google.com ([66.249.82.228]:49579 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753642AbYGAN1H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 09:27:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=h19MHlCDQdWJ9abixGmMS2MaTGaGqLTHft7BhBPInNiaVmWMmFLb9er56qNBDe9abm
+         uINkiLoW/mdOkpnDaTAFjHABE3dILuYoOCdiAsThh2UUdHv9XpXXho/TQvpdUMposPT8
+         ofp5gPy2T0mwCE/spd21PonYO+2yVxURzNtXM=
+Date: Tue, 1 Jul 2008 09:27:02 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH] drivers/input/ff-core.c needs <linux/sched.h>
+Message-ID: <20080701092542.ZZRA012@mailhub.coreip.homeip.net>
+References: <Pine.LNX.4.64.0807011300110.21227@anakin> <20080701084316.ZZRA012@mailhub.coreip.homeip.net> <20080701130517.GA29863@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080701130517.GA29863@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everybody,
+On Tue, Jul 01, 2008 at 04:05:17PM +0300, Adrian Bunk wrote:
+> On Tue, Jul 01, 2008 at 08:46:54AM -0400, Dmitry Torokhov wrote:
+> > On Tue, Jul 01, 2008 at 01:55:25PM +0200, Geert Uytterhoeven wrote:
+> > > commit 656acd2bbc4ce7f224de499ee255698701396c48
+> > > Author: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> > > Date:   Thu Jun 26 11:30:02 2008 -0400
+> > > 
+> > >     Input: fix locking in force-feedback core
+> > > 
+> > >     The newly added event_lock spinlock in the input core disallows sleeping
+> > >     and therefore using mutexes in event handlers. Convert force-feedback 
+> > >     core to rely on event_lock instead of mutex to protect slots allocated  
+> > >     for fore-feedback effects. The original mutex is still used to serialize
+> > >     uploading and erasing of effects.
+> > > 
+> > > causes the following regression on m68k:
+> > > 
+> > > | linux/drivers/input/ff-core.c: In function 'input_ff_upload':
+> > > | linux/drivers/input/ff-core.c:172: error: dereferencing pointer to incomplete type
+> > > | linux/drivers/input/ff-core.c: In function 'erase_effect':
+> > > | linux/drivers/input/ff-core.c:197: error: dereferencing pointer to incomplete type
+> > > | linux/drivers/input/ff-core.c:204: error: dereferencing pointer to incomplete type
+> > > | make[4]: *** [drivers/input/ff-core.o] Error 1
+> > > 
+> > 
+> > Argh! Sorry about it.
+> > 
+> > > As the incomplete type is `struct task_struct', including <linux/sched.h> fixes
+> > > it.
+> > 
+> > Not linux/spinlock.h? I wonder if I need to include linux/spinlock.h and
+> > linux/mutex.h directly from linux/input.h... What is the current
+> > policy on headers - do they need to include everything to be
+> > functional or it is responsibility of the user?
+> 
+> Theoretically it's the responsibility of the header to include 
+> everything it needs.
+> 
+> In practice we are after -rc8 and even thinking of this kind of #include 
+> changes under include/linux/ makes me nervous - like the fact that the 
+> ff-core.c problem occured _only_ on m68k our headers are too fragile for 
+> expecting such changes to simply work.
+> 
+> Can we go with Geert's patch for 2.6.26 and if you want to fix it 
+> properly you can send a patch for 2.6.27?
+> 
 
-I develop video acquisition software using the video1394 interface.
-The images grabbed by the camera and iee1394 bus are kept in kernel
-memory and made available to the user program through a mmap call done
-in the libdc1394 library :
+No, no, I am totally fine with Geert's fix, I am talking about later of
+course.
 
-dma_ring_buffer= mmap(0, vmmap.nb_buffers * vmmap.buf_size,
-		PROT_READ|PROT_WRITE,MAP_SHARED, craw->capture.dma_fd, 0);
-
-Sometimes, my program crashes and produces a core file :)  It seems to
-me that the core file does not contain the mmap'ed memory and hence
-I cannot replay my program with the same image for debugging purpose.
-
-Is it possible to configure the kernel through /proc, or through the mmap
-system call to have that mmapped segment in the core file, or do I need
-to modify the kernel itself to obtain the behaviour I want ?  If I
-need to modify the kernel, can some kind soul provide me some pointers ?
-
-Best regards
-
-Philippe
+-- 
+Dmitry
