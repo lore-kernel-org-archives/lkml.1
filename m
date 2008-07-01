@@ -1,47 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758971AbYGAX2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758889AbYGAXcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758971AbYGAX2A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 19:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbYGAX1t
+	id S1758889AbYGAXcY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 19:32:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbYGAXcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 19:27:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56159 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751537AbYGAX1s (ORCPT
+	Tue, 1 Jul 2008 19:32:15 -0400
+Received: from theia.rz.uni-saarland.de ([134.96.7.31]:4248 "EHLO
+	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750826AbYGAXcO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 19:27:48 -0400
-Date: Tue, 1 Jul 2008 16:27:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Peterson <joe@skyrush.com>
-Cc: hirofumi@mail.parknet.co.jp, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] UTC timestamp option for FAT filesystems
-Message-Id: <20080701162714.dfdbd7c1.akpm@linux-foundation.org>
-In-Reply-To: <486476A5.7040801@skyrush.com>
-References: <4861D685.4070308@skyrush.com>
-	<87od5pqh4o.fsf@basil.nowhere.org>
-	<4862DB28.3050001@skyrush.com>
-	<48630286.2050006@skyrush.com>
-	<87wskck5wi.fsf@devron.myhome.or.jp>
-	<48639863.808@skyrush.com>
-	<877iccxnwi.fsf@devron.myhome.or.jp>
-	<4863B9AF.4080105@skyrush.com>
-	<87zlp8w4br.fsf@devron.myhome.or.jp>
-	<4863D037.90504@skyrush.com>
-	<486476A5.7040801@skyrush.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 1 Jul 2008 19:32:14 -0400
+Date: Wed, 2 Jul 2008 01:31:34 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 4/7] x86: traps_xx: modify do_trap
+Message-ID: <20080701233134.GD29903@mailshack.com>
+References: <20080701193643.GA29695@mailshack.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080701193643.GA29695@mailshack.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Wed, 02 Jul 2008 01:32:01 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.0.59; VDF: 7.0.5.30; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jun 2008 23:12:05 -0600
-Joe Peterson <joe@skyrush.com> wrote:
+if (cond) block -> if (!cond) goto end_of_block
 
-> New mount option ("tz=UTC") for FAT (vfat/msdos) filesystems allowing
-> timestamps to be in coordinated universal time (UTC) rather than
-> local time in applications where doing this is advantageous (like
-> digital cameras, etc.)
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+---
+ arch/x86/kernel/traps_64.c |   56 ++++++++++++++++++++++----------------------
+ 1 files changed, 28 insertions(+), 28 deletions(-)
 
-Can we update Documentation/filesystems/vfat.txt please?
+diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
+index 1ae0d4d..b49c886 100644
+--- a/arch/x86/kernel/traps_64.c
++++ b/arch/x86/kernel/traps_64.c
+@@ -635,38 +635,38 @@ do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
+ {
+ 	struct task_struct *tsk = current;
+ 
+-	if (user_mode(regs)) {
+-		/*
+-		 * We want error_code and trap_no set for userspace
+-		 * faults and kernelspace faults which result in
+-		 * die(), but not kernelspace faults which are fixed
+-		 * up.  die() gives the process no chance to handle
+-		 * the signal and notice the kernel fault information,
+-		 * so that won't result in polluting the information
+-		 * about previously queued, but not yet delivered,
+-		 * faults.  See also do_general_protection below.
+-		 */
+-		tsk->thread.error_code = error_code;
+-		tsk->thread.trap_no = trapnr;
+-
+-		if (show_unhandled_signals && unhandled_signal(tsk, signr) &&
+-		    printk_ratelimit()) {
+-			printk(KERN_INFO
+-			       "%s[%d] trap %s ip:%lx sp:%lx error:%lx",
+-			       tsk->comm, tsk->pid, str,
+-			       regs->ip, regs->sp, error_code);
+-			print_vma_addr(" in ", regs->ip);
+-			printk("\n");
+-		}
++	if (!user_mode(regs))
++		goto kernel_trap;
+ 
+-		if (info)
+-			force_sig_info(signr, info, tsk);
+-		else
+-			force_sig(signr, tsk);
+-		return;
++	/*
++	 * We want error_code and trap_no set for userspace faults and
++	 * kernelspace faults which result in die(), but not
++	 * kernelspace faults which are fixed up.  die() gives the
++	 * process no chance to handle the signal and notice the
++	 * kernel fault information, so that won't result in polluting
++	 * the information about previously queued, but not yet
++	 * delivered, faults.  See also do_general_protection below.
++	 */
++	tsk->thread.error_code = error_code;
++	tsk->thread.trap_no = trapnr;
++
++	if (show_unhandled_signals && unhandled_signal(tsk, signr) &&
++	    printk_ratelimit()) {
++		printk(KERN_INFO
++		       "%s[%d] trap %s ip:%lx sp:%lx error:%lx",
++		       tsk->comm, tsk->pid, str,
++		       regs->ip, regs->sp, error_code);
++		print_vma_addr(" in ", regs->ip);
++		printk("\n");
+ 	}
+ 
++	if (info)
++		force_sig_info(signr, info, tsk);
++	else
++		force_sig(signr, tsk);
++	return;
+ 
++kernel_trap:
+ 	if (!fixup_exception(regs)) {
+ 		tsk->thread.error_code = error_code;
+ 		tsk->thread.trap_no = trapnr;
+-- 
+1.5.4.3
+
