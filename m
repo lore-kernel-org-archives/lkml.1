@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760647AbYGAPXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761304AbYGAPYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760647AbYGAPXj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 11:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756423AbYGAPWU
+	id S1761304AbYGAPYZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 11:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760408AbYGAPW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 11:22:20 -0400
-Received: from mail.suse.de ([195.135.220.2]:43305 "EHLO mx1.suse.de"
+	Tue, 1 Jul 2008 11:22:28 -0400
+Received: from mx2.suse.de ([195.135.220.15]:58207 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760022AbYGAPWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 11:22:19 -0400
-Date: Tue, 1 Jul 2008 08:19:10 -0700
+	id S1760392AbYGAPW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 11:22:27 -0400
+Date: Tue, 1 Jul 2008 08:19:16 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,16 +21,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Jeff Dike <jdike@addtoit.com>, Joris van Rantwijk <jorispubl@xs4all.nl>,
-       Thorsten Knabe <linux@thorsten-knabe.de>,
-       Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 5/9] x86_64 ptrace: fix sys32_ptrace task_struct leak
-Message-ID: <20080701151910.GF3536@suse.de>
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 7/9] ptrace GET/SET FPXREGS broken
+Message-ID: <20080701151915.GH3536@suse.de>
 References: <20080701151057.930340322@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86_64-ptrace-fix-sys32_ptrace-task_struct-leak.patch"
+Content-Disposition: inline; filename="ptrace-get-set-fpxregs-broken.patch"
 In-Reply-To: <20080701151835.GA3536@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,90 +39,112 @@ know.
 
 ------------------
 
-From: Roland McGrath <roland@redhat.com>
+From: TAKADA Yoshihito <takada@mbf.nifty.com>
 
-Commit 5a4646a4efed8c835f76c3b88f3155f6ab5b8d9b introduced a leak of
-task_struct refs into sys32_ptrace.  This bug has already gone away in
-for 2.6.26 in commit 562b80bafffaf42a6d916b0a2ee3d684220a1c10.
+Commit 11dbc963a8f6128595d0f6ecf138dc369e144997 upstream
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+ptrace GET/SET FPXREGS broken
+
+When I update kernel 2.6.25 from 2.6.24, gdb does not work.
+On 2.6.25, ptrace(PTRACE_GETFPXREGS, ...) returns ENODEV.
+
+But 2.6.24 kernel's ptrace() returns EIO.
+It is issue of compatibility.
+
+I attached test program as pt.c and patch for fix it.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+#include <errno.h>
+#include <sys/ptrace.h>
+#include <sys/types.h>
+
+struct user_fxsr_struct {
+	unsigned short	cwd;
+	unsigned short	swd;
+	unsigned short	twd;
+	unsigned short	fop;
+	long	fip;
+	long	fcs;
+	long	foo;
+	long	fos;
+	long	mxcsr;
+	long	reserved;
+	long	st_space[32];	/* 8*16 bytes for each FP-reg = 128 bytes */
+	long	xmm_space[32];	/* 8*16 bytes for each XMM-reg = 128 bytes */
+	long	padding[56];
+};
+
+int main(void)
+{
+  pid_t pid;
+
+  pid = fork();
+
+  switch(pid){
+  case -1:/*  error */
+    break;
+  case 0:/*  child */
+    child();
+    break;
+  default:
+    parent(pid);
+    break;
+  }
+  return 0;
+}
+
+int child(void)
+{
+  ptrace(PTRACE_TRACEME);
+  kill(getpid(), SIGSTOP);
+  sleep(10);
+  return 0;
+}
+int parent(pid_t pid)
+{
+  int ret;
+  struct user_fxsr_struct fpxregs;
+
+  ret = ptrace(PTRACE_GETFPXREGS, pid, 0, &fpxregs);
+  if(ret < 0){
+    printf("%d: %s.\n", errno, strerror(errno));
+  }
+  kill(pid, SIGCONT);
+  wait(pid);
+  return 0;
+}
+
+/* in the kerel, at kernel/i387.c get_fpxregs() */
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/ptrace.c |   45 ++++++++++++++++++++++++++-------------------
- 1 file changed, 26 insertions(+), 19 deletions(-)
+ arch/x86/kernel/i387.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -1309,42 +1309,49 @@ asmlinkage long sys32_ptrace(long reques
- 		break;
+--- a/arch/x86/kernel/i387.c
++++ b/arch/x86/kernel/i387.c
+@@ -130,7 +130,7 @@ int xfpregs_get(struct task_struct *targ
+ 		void *kbuf, void __user *ubuf)
+ {
+ 	if (!cpu_has_fxsr)
+-		return -ENODEV;
++		return -EIO;
  
- 	case PTRACE_GETREGS:	/* Get all gp regs from the child. */
--		return copy_regset_to_user(child, &user_x86_32_view,
--					   REGSET_GENERAL,
--					   0, sizeof(struct user_regs_struct32),
--					   datap);
-+		ret = copy_regset_to_user(child, &user_x86_32_view,
-+					  REGSET_GENERAL,
-+					  0, sizeof(struct user_regs_struct32),
-+					  datap);
-+		break;
+ 	init_fpu(target);
  
- 	case PTRACE_SETREGS:	/* Set all gp regs in the child. */
--		return copy_regset_from_user(child, &user_x86_32_view,
--					     REGSET_GENERAL, 0,
--					     sizeof(struct user_regs_struct32),
--					     datap);
-+		ret = copy_regset_from_user(child, &user_x86_32_view,
-+					    REGSET_GENERAL, 0,
-+					    sizeof(struct user_regs_struct32),
-+					    datap);
-+		break;
+@@ -145,7 +145,7 @@ int xfpregs_set(struct task_struct *targ
+ 	int ret;
  
- 	case PTRACE_GETFPREGS:	/* Get the child FPU state. */
--		return copy_regset_to_user(child, &user_x86_32_view,
--					   REGSET_FP, 0,
--					   sizeof(struct user_i387_ia32_struct),
--					   datap);
-+		ret = copy_regset_to_user(child, &user_x86_32_view,
-+					  REGSET_FP, 0,
-+					  sizeof(struct user_i387_ia32_struct),
-+					  datap);
-+		break;
+ 	if (!cpu_has_fxsr)
+-		return -ENODEV;
++		return -EIO;
  
- 	case PTRACE_SETFPREGS:	/* Set the child FPU state. */
--		return copy_regset_from_user(
-+		ret = copy_regset_from_user(
- 			child, &user_x86_32_view, REGSET_FP,
- 			0, sizeof(struct user_i387_ia32_struct), datap);
-+		break;
- 
- 	case PTRACE_GETFPXREGS:	/* Get the child extended FPU state. */
--		return copy_regset_to_user(child, &user_x86_32_view,
--					   REGSET_XFP, 0,
--					   sizeof(struct user32_fxsr_struct),
--					   datap);
-+		ret = copy_regset_to_user(child, &user_x86_32_view,
-+					  REGSET_XFP, 0,
-+					  sizeof(struct user32_fxsr_struct),
-+					  datap);
-+		break;
- 
- 	case PTRACE_SETFPXREGS:	/* Set the child extended FPU state. */
--		return copy_regset_from_user(child, &user_x86_32_view,
-+		ret = copy_regset_from_user(child, &user_x86_32_view,
- 					     REGSET_XFP, 0,
- 					     sizeof(struct user32_fxsr_struct),
- 					     datap);
-+		break;
- 
- 	default:
--		return compat_ptrace_request(child, request, addr, data);
-+		ret = compat_ptrace_request(child, request, addr, data);
-+		break;
- 	}
- 
-  out:
+ 	init_fpu(target);
+ 	set_stopped_child_used_math(target);
 
 -- 
