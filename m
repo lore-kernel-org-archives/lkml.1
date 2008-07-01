@@ -1,46 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760488AbYGAUtH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759008AbYGAUt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760488AbYGAUtH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 16:49:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbYGAUsx
+	id S1759008AbYGAUt5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 16:49:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbYGAUts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 16:48:53 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60003 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751124AbYGAUsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 16:48:52 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor register on resume
-Date: Tue, 1 Jul 2008 22:50:39 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       kernel-testers@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>
-References: <200807010148.02135.rjw@sisk.pl> <200807012239.44105.rjw@sisk.pl> <486A96C1.2020106@firstfloor.org>
-In-Reply-To: <486A96C1.2020106@firstfloor.org>
+	Tue, 1 Jul 2008 16:49:48 -0400
+Received: from xenotime.net ([66.160.160.81]:45040 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754999AbYGAUtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 16:49:46 -0400
+Date: Tue, 1 Jul 2008 13:41:00 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, kernel-testers@vger.kernel.org,
+       linux-nfs@vger.kernel.org, Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: Re: inux-next: Tree for July 1
+In-Reply-To: <200807012236.19400.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.64.0807011340170.26330@shark.he.net>
+References: <20080702011434.6fb403d5.sfr@canb.auug.org.au> <200807012236.19400.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807012250.39930.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 1 of July 2008, Andi Kleen wrote:
-> 
-> > I have tested it on the nx6325 (64-bit) on top of the today's linux-next.  It
-> > works fine for me.
-> 
-> Could a few more people with different laptops please test too?
+On Tue, 1 Jul 2008, Rafael J. Wysocki wrote:
 
-Well, I think we can put it into the 2.6.27 queue in the hope it gets more
-testing in linux-next over time.
+> On Tuesday, 1 of July 2008, Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > Changes since next-20080630:
+> > 
+> > New tree: ttydev - unfortunately it had to be reverted because of build
+> > failures after lots of conflict resolution (which may have caused the
+> > build failures).
+> > 
+> > Changed tree: the cris tree changed branch names.
+> > 
+> > The sched tree gained a couple of conflicts against the ftrace and
+> > cpus4096 trees.
+> > 
+> > The pci tree gained a conflict against the x86 tree.
+> > 
+> > The usb tree reverted due to a build failure after merging with the pci
+> > tree was changed for a fixup patch.
+> > 
+> > The v4l-dvb tree lost its three conflicts against Linus' tree.
+> > 
+> > The s390 tree gained a conflict against the diver-core tree.
+> > 
+> > The ide tree fixed its build problems.
+> > 
+> > The nfsd tree lost a conflict against the nfs tree.
+> > 
+> > The powerpc tree gained a conflict against the ide tree.
+> > 
+> > The net tree gained two conflicts against the powerpc tree.
+> > 
+> > The galak tree lost its conflict against the net tree.
+> > 
+> > the blk-removal tree gained a conflict against the s390 tree.
+> > 
+> > The firmware tree lost several conflicts against the net tree so didn't
+> > need a commit reverted any more.
+> > 
+> > Merging the ttydev tree got several conflicts against the usb and
+> > firmware trees.  Unfortunately, it also would not build and so was
+> > reverted.
+> > 
+> > I have also applied the following patches for know problems:
+> > 	module: fix NULL pointer dereference in find_symbol()
+> 
+> I can't mount NFS shares with this kernel.  I get something of this sort in
+> dmesg and it seems to be 100% reproducible:
+> 
+> [  314.058858] RPC: Registered udp transport module.
+> [  314.058863] RPC: Registered tcp transport module.
+> [  314.490970] RPC: transport (0) not supported
+> [  319.246987] __ratelimit: 23 messages suppressed
+> 
+> linux-next from yesterday was fine with the same .config .
 
-Thanks,
-Rafael
+Same problem for me.  Thanks for reporting it.
+I wondered if it was something that I did wrong...
+
+-- 
+~Randy
