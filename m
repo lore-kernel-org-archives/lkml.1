@@ -1,51 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750765AbYGAGl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756AbYGAGsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750765AbYGAGl6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 02:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYGAGlj
+	id S1753756AbYGAGsU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 02:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbYGAGsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 02:41:39 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:32938 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752115AbYGAGli (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 02:41:38 -0400
-Date: Tue, 1 Jul 2008 08:35:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Gautham R Shenoy <ego@in.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, laijs@cn.fujitsu.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Rusty Russel <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] fix rcu vs hotplug race
-Message-ID: <20080701063531.GD16642@elte.hu>
-References: <20080623114941.GB3160@in.ibm.com> <20080624110144.GA8695@elte.hu> <20080626152728.GA24972@linux.vnet.ibm.com> <20080627044738.GC3419@in.ibm.com> <20080627051855.GD26167@in.ibm.com> <20080627054959.GB3309@linux.vnet.ibm.com> <20080627145845.GA9229@linux.vnet.ibm.com> <20080701053900.GB8205@in.ibm.com> <20080701061600.GF14658@elte.hu> <20080701062854.GD6131@linux.vnet.ibm.com>
+	Tue, 1 Jul 2008 02:48:11 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:52079 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751767AbYGAGsK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 02:48:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=Otmb50WmWv/D3dDf+3QoG8ALLg7nVE58oq7J5duwKMbPDcpJrXgWMeF73EaXQWHTB4
+         EPBAOC9RwjT6sZYxTJPff0P1HVIvzp0f3i1ki1HQMS8NSYYe+BlZn0WffYAHxiRoTc4f
+         wd++uaVOWgNz3n5JWk5mYJuGWXhS3JKIVuObk=
+Message-ID: <4869D314.5030403@gmail.com>
+Date: Tue, 01 Jul 2008 15:47:48 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080701062854.GD6131@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Benjamin Thery <benjamin.thery@bull.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 06/11] sysfs: Implement sysfs tagged directory support.
+References: <20080618170729.808539948@theryb.frec.bull.fr>	<20080618170731.002784342@theryb.frec.bull.fr>	<485F04E1.70204@gmail.com> <m1y74svtff.fsf@frodo.ebiederm.org>	<486706C9.9040303@gmail.com> <m18wwmsqdv.fsf@frodo.ebiederm.org>
+In-Reply-To: <m18wwmsqdv.fsf@frodo.ebiederm.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello, Eric.
 
-* Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-
-> Ingo,
+Eric W. Biederman wrote:
+>> It's still dynamic from sysfs's POV and I think that will make
+>> maintenance more difficult.
 > 
-> I believe Gautham's fix at http://lkml.org/lkml/2008/6/27/9 is better 
-> and also explains it better.
+> Potentially.  I have no problem make it clear that things are more static.
 
-ah, indeed - picked that one up instead.
+Great. :-)
 
-	Ingo
+>> What you described is pretty much what I'm talking about.  The only
+>> difference is whether to use caller-provided pointer as tag or an
+>> ida-allocated integer.  The last sentence of the above paragraph is
+>> basically sys_tag_enabled() function (maybe misnamed).
+> 
+> So some concrete code examples here.  In the current code in lookup
+> what I am doing is: 
+> 
+> 	tag = sysfs_lookup_tag(parent_sd, parent->d_sb);
+> 	sd = sysfs_find_dirent(parent_sd, tag, dentry->d_name.name);
+> 
+> With the proposed change of adding tag types sysfs_lookup_tag becomes:
+> 
+> const void *sysfs_lookup_tag(struct sysfs_dirent *dir_sd, struct super_block *sb)
+> {
+> 	const void *tag = NULL;
+> 
+> 	if (dir_sd->s_flags & SYSFS_FLAG_TAGGED)
+> 		tag = sysfs_info(sb)->tag[dir_sd->tag_type];
+> 
+> 	return tag;
+> }	    
+> 
+> Which means that in practice I can lookup that tag that I am displaying
+> once.
+> 
+> Then in sysfs_find_dirent we do:
+> 
+> 	for (sd = parent_sd->s_dir.children; sd; sd = sd->s_sibling) {
+> 		 if ((parent_sd->s_flags & SYSFS_FLAG_TAGGED) &&		
+> 		     (sd->s_tag.tag != tag))			  
+> 			 continue;
+> 		 if (!strcmp(sd->s_name, name))
+> 			 return sd;					  
+> 	}						    
+> 
+> That should keep the implementation sufficiently inside of sysfs for there
+> to be no guessing.  In addition as a practical matter we can only allow
+> one tag to be visible in a directory at once or else we can not check
+> for duplicate names.  Which is the problem I see with a bitmap based test
+> too unnecessary many degrees of freedom.
+
+Having enumed tag types limits that a sb can have map to only one tag
+but it doesn't really prevent multiple possibly visible entries which is
+the real unnecessary degrees of freedom.  That said, I don't really
+think it's an issue.
+
+> The number of tag types will be low as it is the number of subsystems
+> that use the feature.  Simple enough that I expect statically allocating
+> the tag types in an enumeration is a safe and sane way to operate.
+> i.e.
+> 
+> enum sysfs_tag_types {
+> 	SYSFS_TAG_NETNS,
+> 	SYSFS_TAG_USERNS,
+>         SYSFS_TAG_MAX
+> };
+
+I still would prefer something which is more generic.  The abstraction
+is clearer too.  A sb shows untagged and a set of tags.  A sd can either
+be untagged or tagged (a single tag).
+
+>> The main reason why I'm whining about this so much is because I think
+>> tag should be something abstracted inside sysfs proper.  It's something
+>> which affects very internal operation of sysfs and I really want to keep
+>> the implementation details inside sysfs.  Spreading implementation over
+>> kobject and sysfs didn't turn out too pretty after all.
+> 
+> I agree. Most of the implementation is in sysfs already.  We just have
+> a few corner cases.  
+> 
+> Fundamentally it is the subsystems responsibility that creates the
+> kobjects and the sysfs entries.  The only case where I can see an
+> ida generated number being a help is if we start having lifetime
+> issues.  Further the  extra work to allocate and free tags ida based
+> tags seems unnecessary.
+> 
+> I don't doubt that there is a lot we can do better.  My current goal
+> is for something that is clean enough it won't get us into trouble
+> later, and then merging the code.  In tree where people can see
+> the code and the interactions I expect it will be easier to talk
+> about.
+> 
+> Currently the interface with the users is very small.  Adding the
+> tag_type enumeration should make it smaller and make things more
+> obviously static.
+
+Using ida (or idr if a pointer for private data is necessary) is really
+easy.  It'll probably take a few tens of lines of code.  That said, I
+don't think I have enough rationale to nack what you described.  So, as
+long as the tags are made static, I won't object.
+
+Thanks.
+
+-- 
+tejun
