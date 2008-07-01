@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762885AbYGABUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763978AbYGABVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762885AbYGABUm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jun 2008 21:20:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbYGABUf
+	id S1763978AbYGABVU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jun 2008 21:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756256AbYGABVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jun 2008 21:20:35 -0400
-Received: from mailtp.via.com.tw ([61.66.243.2]:23509 "EHLO mailtp.via.com.tw"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755090AbYGABUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jun 2008 21:20:34 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 30 Jun 2008 21:21:09 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:33003 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755357AbYGABVI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jun 2008 21:21:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XzA/0zdapA88FKvvJrEGKuonsizDwsesmDxbG/6zrNZGU3HTAR6DO5+RcnkLjZ1jH1
+         KSJQfMNLdbuwfxC8hkFW8tgTy5CAD0m3vKq0eEYvrVtVTrKbeEP/rkhqwN6vbNCCmm7y
+         DeJSvsuVLO1keO+XBmhV6teGOAVzGEcaRAgfM=
+Message-ID: <86802c440806301821j4d9b100cte6a3e0aee5e3867b@mail.gmail.com>
+Date: Mon, 30 Jun 2008 18:21:07 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 1/2] x86 boot: add E820_RESVD_KERN
+Cc: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       andi@firstfloor.org, mingo@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1214874582.27760.0.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: RE: [PATCH 7/13] viafb: iface.c, iface.h, ioctl.c, ioctl.h
-Date: Tue, 1 Jul 2008 09:20:31 +0800
-Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E7D07@exchtp03.taipei.via.com.tw>
-In-Reply-To: <20080630103939.23a24435@lxorguk.ukuu.org.uk>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 7/13] viafb: iface.c, iface.h, ioctl.c, ioctl.h
-Thread-Index: AcjaoJjgbuPtQHU1QD+fliO/WtyDJwAd6jaA
-From: <JosephChan@via.com.tw>
-To: <alan@lxorguk.ukuu.org.uk>
-Cc: <linux-fbdev-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>,
-       <akpm@linux-foundation.org>, <geert@linux-m68k.org>
-X-OriginalArrivalTime: 01 Jul 2008 01:20:32.0488 (UTC) FILETIME=[A8086680:01C8DB18]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <86802c440806260247p19f5b850r8757c51280912ae9@mail.gmail.com>
+	 <86802c440806300034x5bb9b7a1s168bbeaee17e5124@mail.gmail.com>
+	 <1214812303.3187.10.camel@caritas-dev.intel.com>
+	 <86802c440806300215w31abbcb3h6a42395e11701713@mail.gmail.com>
+	 <1214818706.23677.8.camel@caritas-dev.intel.com>
+	 <86802c440806301205y35563326rd2ada495a0024441@mail.gmail.com>
+	 <20080630191628.GA15366@elte.hu>
+	 <86802c440806301553y240b020bh9dc448e8085fe60d@mail.gmail.com>
+	 <86802c440806301620hafa3ee3k8c5dbe6c45188d69@mail.gmail.com>
+	 <1214874582.27760.0.camel@caritas-dev.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m611Kkfq007005
 
-Alan,
+On Mon, Jun 30, 2008 at 6:09 PM, Huang, Ying <ying.huang@intel.com> wrote:
+> Hi, Yinghai,
+>
+> On Mon, 2008-06-30 at 16:20 -0700, Yinghai Lu wrote:
+>> On Mon, Jun 30, 2008 at 3:53 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>> > On Mon, Jun 30, 2008 at 12:16 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>> >>
+>> >> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>> >>
+>> >>> > For find_e820_area, this is safe enough. But what about conflict
+>> >>> > between setup_data and ebda or ramdisk?
+>> >>>
+>> >>> can you have setup_data and ebda at the same time?
+>> >>>
+>> >>> setup_data and ramdisk should be ok, because bootloader is supposed to
+>> >>> make them not to be conflicts.
+>> >>
+>> >> the more sanity checks we do before relying on some crutial data, the
+>> >> better. It's easier to panic or sanitize data in some structured way and
+>> >> complain about it in the syslog than to let things get corrupted. Boot
+>> >> loaders are ... not unknown to be have bugs too, at times.
+>> >
+>> > to address Ying's concern, we could let reserve_setup_data
+>> > call reserve_early in addition to e820_update_range...
+>> >
+>> > reserve_early will panic if RAMDISK overlap efi setup_data...
+>> >
+>>
+>> Ying,
+>> please check the attached patch
+>
+> Which git-x86 head should I use to test the patch? It can not be applied
+> to x86/master.
+>
 
-Thanks to remind.
-Is it good to add viafb_ , ex: viafb_get_memsize(void)?
-It would be great to have your comment. Thanks again.
+tip/master
 
-BRs,
-Joseph Chan 
-
------Original Message-----
-From: Alan Cox [mailto:alan@lxorguk.ukuu.org.uk] 
-Sent: Monday, June 30, 2008 5:40 PM
-To: Joseph Chan
-Cc: Joseph Chan; linux-fbdev-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org; akpm@linux-foundation.org; geert@linux-m68k.org
-Subject: Re: [PATCH 7/13] viafb: iface.c, iface.h, ioctl.c, ioctl.h
-
-
-> +/* Get frame buffer size from VGA BIOS */
-> +
-> +unsigned int get_memsize(void)
-
-Not a good name for a globally visible function!
-
-> +unsigned long get_videobuf_addr(void) {
-
-Ditto
-
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+YH
