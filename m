@@ -1,129 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760159AbYGAVra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760828AbYGAVsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760159AbYGAVra (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 17:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbYGAVrW
+	id S1760828AbYGAVsr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 17:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756086AbYGAVsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 17:47:22 -0400
-Received: from smtp103.prem.mail.sp1.yahoo.com ([98.136.44.58]:48984 "HELO
-	smtp103.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751570AbYGAVrU (ORCPT
+	Tue, 1 Jul 2008 17:48:38 -0400
+Received: from gv-out-0910.google.com ([216.239.58.188]:5292 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751862AbYGAVsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 17:47:20 -0400
-X-YMail-OSG: SGyxMTUVM1mqM4aa3bgzBuGcaTiXeJjvEbyWih2usU6dv_3CHi_yXjbuLi.d1EzgxLuMZP7Ni.8V.dqUPCEm4bQhY1ARHr8i12xzoOKb5hR5JEbvZpKu4I_uW0A6VgGyD3w-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <486AA5E5.2010300@schaufler-ca.com>
-Date: Tue, 01 Jul 2008 14:47:17 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Tue, 1 Jul 2008 17:48:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=VuU1I8mpce8V9fCa1sgqJo03vesZ9UV3FOVnOL3u6I0v7eTIGY+wDzD1InrX+ICNa5
+         3EFxReO+D9wL1+wqtbnx5xCp8izrjl1HRjmXg0HDZhL1cno7Fd72aWB5DrB2CU1En/h0
+         l4KaE89lt0QGj0g73ZU7p5ns0vd79ok+4gGrA=
+Message-ID: <486AA62F.40503@gmail.com>
+Date: Tue, 01 Jul 2008 23:48:31 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: akpm@linux-foundation.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] smack: remove unnecessary xattr checks
-References: <E1KDmlY-0006ML-If@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1KDmlY-0006ML-If@pomaz-ex.szeredi.hu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>, containers@lists.osdl.org,
+       Paul Jackson <pj@sgi.com>
+Subject: Re: Attaching PID 0 to a cgroup
+References: <20080701094545.GD3925@linux.vnet.ibm.com> <20080701094734.GE3925@linux.vnet.ibm.com> <486A06B7.7020906@cn.fujitsu.com>
+In-Reply-To: <486A06B7.7020906@cn.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
-> Hi Casey,
->
-> This is an untested patch, if it looks OK, can you please apply it to
-> your tree (or ACK it)?
->
->   
-
-I will give it some review and a test or two
-then let you know. Things are hopping right now,
-so it may take a day or two.
-
-Thank you for the work you've put into this.
-
-> Thanks,
-> Miklos
->
-> ----
-> From: Miklos Szeredi <mszeredi@suse.cz>
->
-> getxattr() calls security_inode_permission(MAY_READ) so
-> smack_inode_getxattr() is unnecessary.
->
-> setxattr() and removexattr() call security_inode_permission(MAY_WRITE)
-> so the write permission checks in smack_inode_setxattr() and
-> smack_inode_removexattr() are unnecessary.
->
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Li Zefan wrote:
+> CC: Paul Jackson <pj@sgi.com>
+> 
+> Dhaval Giani wrote:
+>> [put in the wrong alias for containers list correcting it.]
+>>
+>> On Tue, Jul 01, 2008 at 03:15:45PM +0530, Dhaval Giani wrote:
+>>> Hi Paul,
+>>>
+>>> Attaching PID 0 to a cgroup caused the current task to be attached to
+>>> the cgroup. Looking at the code,
+>>>
+> 
+> [...]
+> 
+>>> I was wondering, why this was done. It seems to be unexpected behavior.
+>>> Wouldn't something like the following be a better response? (I've used
+>>> EINVAL, but I can change it to ESRCH if that is better.)
+>>>
+> 
+> Why is it unexpected? it follows the behavior of cpuset, so this patch will
+> break backward compatibility of cpuset.
+> 
+> But it's better to document this.
+> 
+> -----------------------------------------
+> 
+> Document the following cgroup usage:
+>  # echo 0 > /dev/cgroup/tasks
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 > ---
->  security/smack/smack_lsm.c |   19 -------------------
->  1 file changed, 19 deletions(-)
->
-> Index: linux-2.6/security/smack/smack_lsm.c
-> ===================================================================
-> --- linux-2.6.orig/security/smack/smack_lsm.c	2008-07-01 21:44:05.000000000 +0200
-> +++ linux-2.6/security/smack/smack_lsm.c	2008-07-01 21:45:27.000000000 +0200
-> @@ -588,9 +588,6 @@ static int smack_inode_setxattr(struct d
->  	} else
->  		rc = cap_inode_setxattr(dentry, name, value, size, flags);
+>  cgroups.txt |    4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/Documentation/cgroups.txt b/Documentation/cgroups.txt
+> index 824fc02..213f533 100644
+> --- a/Documentation/cgroups.txt
+> +++ b/Documentation/cgroups.txt
+> @@ -390,6 +390,10 @@ If you have several tasks to attach, you have to do it one after another:
+>  	...
+>  # /bin/echo PIDn > tasks
 >  
-> -	if (rc == 0)
-> -		rc = smk_curacc(smk_of_inode(dentry->d_inode), MAY_WRITE);
-> -
->  	return rc;
->  }
->  
-> @@ -636,18 +633,6 @@ static void smack_inode_post_setxattr(st
->  }
->  
->  /*
-> - * smack_inode_getxattr - Smack check on getxattr
-> - * @dentry: the object
-> - * @name: unused
-> - *
-> - * Returns 0 if access is permitted, an error code otherwise
-> - */
-> -static int smack_inode_getxattr(struct dentry *dentry, const char *name)
-> -{
-> -	return smk_curacc(smk_of_inode(dentry->d_inode), MAY_READ);
-> -}
-> -
-> -/*
->   * smack_inode_removexattr - Smack check on removexattr
->   * @dentry: the object
->   * @name: name of the attribute
-> @@ -668,9 +653,6 @@ static int smack_inode_removexattr(struc
->  	} else
->  		rc = cap_inode_removexattr(dentry, name);
->  
-> -	if (rc == 0)
-> -		rc = smk_curacc(smk_of_inode(dentry->d_inode), MAY_WRITE);
-> -
->  	return rc;
->  }
->  
-> @@ -2606,7 +2588,6 @@ struct security_operations smack_ops = {
->  	.inode_getattr = 		smack_inode_getattr,
->  	.inode_setxattr = 		smack_inode_setxattr,
->  	.inode_post_setxattr = 		smack_inode_post_setxattr,
-> -	.inode_getxattr = 		smack_inode_getxattr,
->  	.inode_removexattr = 		smack_inode_removexattr,
->  	.inode_need_killpriv =		cap_inode_need_killpriv,
->  	.inode_killpriv =		cap_inode_killpriv,
->
->
->   
+> +You can attach the current task by echoing 0:
+> +
+> +# /bin/echo 0 > tasks
+> +
+>  3. Kernel API
+>  =============
 
+Wouldn't be more meaningful to specify the bash's builtin echo here
+even if it doesn't opportunely handle write() errors?
 
--- 
+Using /bin/echo would attach /bin/echo itself to the cgroup, that just
+exists, so it seems like a kind of noop, isn't it?
 
-----------------------
-
-Casey Schaufler
-casey@schaufler-ca.com
-650.906.1780
-
-
+-Andrea
