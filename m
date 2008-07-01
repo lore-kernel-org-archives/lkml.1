@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbYGALTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbYGALVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188AbYGALTx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 07:19:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbYGALTp
+	id S1754614AbYGALVV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 07:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYGALVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 07:19:45 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40276 "EHLO mx3.mail.elte.hu"
+	Tue, 1 Jul 2008 07:21:06 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:44673 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751503AbYGALTp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 07:19:45 -0400
-Date: Tue, 1 Jul 2008 13:19:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       florian.fainelli@telecomint.eu,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH RFC] x86: Add user configurable GPIO-lib support
-Message-ID: <20080701111918.GA11809@elte.hu>
-References: <200807011249.40551.mb@bu3sch.de> <20080701110436.GA32365@elte.hu> <200807011313.40598.mb@bu3sch.de>
-MIME-Version: 1.0
+	id S1751503AbYGALVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 07:21:04 -0400
+Date: Tue, 1 Jul 2008 15:21:06 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: netdev@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: kmemcheck detected possible information leak to userspace?
+Message-ID: <20080701112106.GB17015@2ka.mipt.ru>
+References: <19f34abd0807010216k11a60382xf7a27b4b27f0819@mail.gmail.com> <20080701102459.GB30248@2ka.mipt.ru> <19f34abd0807010352t264fda16g826912a857e88140@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200807011313.40598.mb@bu3sch.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <19f34abd0807010352t264fda16g826912a857e88140@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Michael Buesch <mb@bu3sch.de> wrote:
-
-> > ... and thus perhaps your GPIO_USERSELECTION patch should move into 
-> > drivers/ and be generally accessible, not special to x86?
+On Tue, Jul 01, 2008 at 12:52:53PM +0200, Vegard Nossum (vegard.nossum@gmail.com) wrote:
+> The u means uninitialized. So it seems not to be just the end. But I
+> am not sure where the end of the buffer is anyway.
 > 
-> Yes I'd really like to move it there, too. But currently that clashes 
-> with architectures like MIPS, some PPC flavours and probably others 
-> that implement their own GPIO API. We should have an 
-> ARCH_IMPLEMENT_GPIO or whatever, but currently we don't seem to have 
-> that.
-> 
-> So well. If it's desired to put the user selection into drivers/gpio 
-> (which I'd really prefer), I can try to make a patch that adds 
-> ARCH_IMPLEMENT_GPIO to every arch that implements their own GPIO API 
-> and make GPIO_USERSELECTION depend on !ARCH_IMPLEMENT_GPIO.
+> But there is one thing I forgot: Is this memory initialized by DMA? If
+> so, the warning is bogus and I will go hide in shame.
 
-or we could try it the other way around: stick 
-ARCH_ALLOWS_TRULY_GENERAL_PURPOSE_INPUT_OUTPUT (note: please use a 
-better name ;-) into x86, add the user text to drivers/ and let other 
-architectures enable it too?
+It depends on driver, but sufficiently new hardware (or better say any
+non-crappy hardware) will do dma transafer just into skb->data.
 
-That way your commits would still be pretty focused (you'd avoid having 
-to touch a lot of architectures) and it would still work all across the 
-spectrum.
+To catch it you can put kmemcheck hooks into pci_map* and friend
+functions.
 
-hm?
-
-	Ingo
+-- 
+	Evgeniy Polyakov
