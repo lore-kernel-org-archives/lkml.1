@@ -1,58 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbYGATXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758377AbYGATYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758026AbYGATXE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 15:23:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbYGATWx
+	id S1758377AbYGATYq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 15:24:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbYGATYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 15:22:53 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:34234 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752646AbYGATWw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 15:22:52 -0400
-Message-ID: <486A823C.4070805@nokia.com>
-Date: Tue, 01 Jul 2008 22:15:08 +0300
-From: Stefan Becker <Stefan.Becker@nokia.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 1 Jul 2008 15:24:37 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:35658 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753913AbYGATYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 15:24:36 -0400
+Date: Tue, 1 Jul 2008 15:24:29 -0400
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, hch@infradead.org
+Subject: Re: [patch] nfsd: clean up mnt_want_write calls
+Message-ID: <20080701192429.GE23080@fieldses.org>
+References: <E1KDg43-0005HY-QR@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-To: ext Greg KH <gregkh@suse.de>, linux-usb@vger.kernel.org
-CC: ext Alan Stern <stern@rowland.harvard.edu>,
-       ext David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       ext Leonardo Chiquitto <leonardo.lists@gmail.com>
-Subject: Re: [PATCH] USB: fix interrupt disabling for HCDs with shared	interrupt
- handlers
-References: <Pine.LNX.4.44L0.0807011005430.2780-100000@iolanthe.rowland.org> <486A590A.4090806@nokia.com> <20080701182543.GA32098@suse.de>
-In-Reply-To: <20080701182543.GA32098@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Jul 2008 19:16:01.0015 (UTC) FILETIME=[E6083870:01C8DBAE]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1KDg43-0005HY-QR@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-ext Greg KH wrote:
+On Tue, Jul 01, 2008 at 03:38:35PM +0200, Miklos Szeredi wrote:
+> From: Miklos Szeredi <mszeredi@suse.cz>
 > 
-> Hm, isn't this also an issue in 2.6.25 as well?  I've had a few very
-> strange reports of USB just locking up in 2.6.25, could this also be the
-> cause there?
+> Multiple mnt_want_write() calls in the switch statement looks really
+> ugly.
 
-As I wrote in the first mail of this thread the problem was uncovered on my machine by the following commit from 2.6.24-development:
+Looks right to me; applied for 2.6.27; thanks, Miklos!
 
- commit e9df41c5c5899259541dc928872cad4d07b82076
- USB: make HCDs responsible for managing endpoint queues
+--b.
 
-The interrupt problem exists also in 2.6.23 (and previous) but the USB code was not affected, as the old versions of the functions were using spin_lock_irqsave().
-
-I just applied my patch to 2.6.24 & 2.6.25: it applies fine and compiles without problem. So it could be submitted to the 2.6.24.X and 2.6.25.X branches too.
-
-Regards,
-
-	Stefan
-
----
-Stefan Becker
-E-Mail: Stefan.Becker@nokia.com
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> Acked-by: Christoph Hellwig <hch@infradead.org>
+> ---
+>  fs/nfsd/vfs.c |   25 +++++++++++--------------
+>  1 file changed, 11 insertions(+), 14 deletions(-)
+> 
+> Index: linux-2.6/fs/nfsd/vfs.c
+> ===================================================================
+> --- linux-2.6.orig/fs/nfsd/vfs.c	2008-06-13 13:26:49.000000000 +0200
+> +++ linux-2.6/fs/nfsd/vfs.c	2008-06-13 13:26:52.000000000 +0200
+> @@ -1248,36 +1248,34 @@ nfsd_create(struct svc_rqst *rqstp, stru
+>  		iap->ia_mode = 0;
+>  	iap->ia_mode = (iap->ia_mode & S_IALLUGO) | type;
+>  
+> +	err = nfserr_inval;
+> +	if (!S_ISREG(type) && !S_ISDIR(type) && !special_file(type)) {
+> +		printk(KERN_WARNING "nfsd: bad file type %o in nfsd_create\n",
+> +		       type);
+> +		goto out;
+> +	}
+> +
+> +	host_err = mnt_want_write(fhp->fh_export->ex_path.mnt);
+> +	if (host_err)
+> +		goto out_nfserr;
+> +
+>  	/*
+>  	 * Get the dir op function pointer.
+>  	 */
+>  	err = 0;
+>  	switch (type) {
+>  	case S_IFREG:
+> -		host_err = mnt_want_write(fhp->fh_export->ex_path.mnt);
+> -		if (host_err)
+> -			goto out_nfserr;
+>  		host_err = vfs_create(dirp, dchild, iap->ia_mode, NULL);
+>  		break;
+>  	case S_IFDIR:
+> -		host_err = mnt_want_write(fhp->fh_export->ex_path.mnt);
+> -		if (host_err)
+> -			goto out_nfserr;
+>  		host_err = vfs_mkdir(dirp, dchild, iap->ia_mode);
+>  		break;
+>  	case S_IFCHR:
+>  	case S_IFBLK:
+>  	case S_IFIFO:
+>  	case S_IFSOCK:
+> -		host_err = mnt_want_write(fhp->fh_export->ex_path.mnt);
+> -		if (host_err)
+> -			goto out_nfserr;
+>  		host_err = vfs_mknod(dirp, dchild, iap->ia_mode, rdev);
+>  		break;
+> -	default:
+> -	        printk("nfsd: bad file type %o in nfsd_create\n", type);
+> -		host_err = -EINVAL;
+> -		goto out_nfserr;
+>  	}
+>  	if (host_err < 0) {
+>  		mnt_drop_write(fhp->fh_export->ex_path.mnt);
+> @@ -1289,7 +1287,6 @@ nfsd_create(struct svc_rqst *rqstp, stru
+>  		write_inode_now(dchild->d_inode, 1);
+>  	}
+>  
+> -
+>  	err2 = nfsd_create_setattr(rqstp, resfhp, iap);
+>  	if (err2)
+>  		err = err2;
