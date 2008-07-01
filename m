@@ -1,94 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbYGAJsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbYGAKCM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756243AbYGAJsT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 05:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbYGAJsB
+	id S1754551AbYGAKCM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 06:02:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYGAKB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 05:48:01 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:44700 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753972AbYGAJsA (ORCPT
+	Tue, 1 Jul 2008 06:01:56 -0400
+Received: from nebensachen.de ([195.34.83.29]:55793 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752471AbYGAKB4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 05:48:00 -0400
-Date: Tue, 1 Jul 2008 15:17:34 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>, containers@lists.osdl.org
-Subject: Re: Attaching PID 0 to a cgroup
-Message-ID: <20080701094734.GE3925@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20080701094545.GD3925@linux.vnet.ibm.com>
+	Tue, 1 Jul 2008 06:01:56 -0400
+X-Hashcash: 1:20:080701:edwintorok@gmail.com::WaC+m1gwZw/QHLtR:000000000000000000000000000000000000000006uAv
+X-Hashcash: 1:20:080701:alan@lxorguk.ukuu.org.uk::w7+lQ8TTKqaq2aNv:00000000000000000000000000000000000000JSL
+X-Hashcash: 1:20:080701:joe@skyrush.com::xY1JphxA66/tBr55:001GB/
+X-Hashcash: 1:20:080701:linux-kernel@vger.kernel.org::WLRDyiY0U7SCtcGn:0000000000000000000000000000000009U0k
+From: Elias Oltmanns <eo@nebensachen.de>
+To: =?iso-8859-1?Q?T=F6r=F6k?= Edwin <edwintorok@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Joe Peterson <joe@skyrush.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Ctrl+C doesn't interrupt process waiting for I/O
+References: <48661488.10304@gmail.com> <87fxqurqpz.fsf@denkblock.local>
+	<87abh2rpzg.fsf@denkblock.local> <4869EABD.1090009@gmail.com>
+Date: Tue, 01 Jul 2008 11:59:23 +0200
+In-Reply-To: <4869EABD.1090009@gmail.com> (=?iso-8859-1?Q?=22T=F6r=F6k?=
+ Edwin"'s message of "Tue, 01
+	Jul 2008 11:28:45 +0300")
+Message-ID: <87prpyx6v8.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080701094545.GD3925@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[put in the wrong alias for containers list correcting it.]
+Török Edwin <edwintorok@gmail.com> wrote:
+> Elias Oltmanns wrote:
+[...]
+>> Since commit ec5b1157f8e819c72fc93aa6d2d5117c08cdc961, users have been
+>> unable to interrupt interactive processes reliably by pressing CTRL+C.
+>> This patch reverts the original commit except for the most important
+>> part: actually echoing ^C is preserved.
+>>   
+>
+> Thanks for the patch , the process seems to respond faster to Ctrl-C,
+> but I'll have to find a way to measure that reliably.
+> However ^C is not echoed anymore for me.
 
-On Tue, Jul 01, 2008 at 03:15:45PM +0530, Dhaval Giani wrote:
-> Hi Paul,
-> 
-> Attaching PID 0 to a cgroup caused the current task to be attached to
-> the cgroup. Looking at the code,
-> 
->         if (pid) {
->                 rcu_read_lock();
->                 tsk = find_task_by_vpid(pid);
->                 if (!tsk || tsk->flags & PF_EXITING) {
->                         rcu_read_unlock();
->                         return -ESRCH;
->                 }
->                 get_task_struct(tsk);
->                 rcu_read_unlock();
-> 
->                 if ((current->euid) && (current->euid != tsk->uid)
->                     && (current->euid != tsk->suid)) {
->                         put_task_struct(tsk);
->                         return -EACCES;
->                 }
->         } else {
->                 tsk = current;
->                 get_task_struct(tsk);
->         }
-> 
-> I was wondering, why this was done. It seems to be unexpected behavior.
-> Wouldn't something like the following be a better response? (I've used
-> EINVAL, but I can change it to ESRCH if that is better.)
-> 
-> ---
-> cgroups: Don't allow PID 0 to be attached to a group
-> 
-> Currently when one trys to attach PID 0 to a cgroup, it attaches
-> the current task. That is not expected behavior. It should return
-> an error instead.
-> 
-> Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> 
-> Index: linux-2.6/kernel/cgroup.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/cgroup.c
-> +++ linux-2.6/kernel/cgroup.c
-> @@ -1309,8 +1309,7 @@ static int attach_task_by_pid(struct cgr
->  			return -EACCES;
->  		}
->  	} else {
-> -		tsk = current;
-> -		get_task_struct(tsk);
-> +			return -EINVAL;
->  	}
->  
->  	ret = cgroup_attach_task(cgrp, tsk);
-> -- 
-> regards,
-> Dhaval
+Very odd, it most definitely is echoed here. Are you quite sure you
+haven't inadvertently changed anything else in the meantime?
 
--- 
-regards,
-Dhaval
+Regards,
+
+Elias
