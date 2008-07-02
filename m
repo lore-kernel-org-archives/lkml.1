@@ -1,97 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759970AbYGBJ6D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbYGBJ6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759970AbYGBJ6D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 05:58:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbYGBJ5w
+	id S932190AbYGBJ6r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 05:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758872AbYGBJ6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 2 Jul 2008 05:58:03 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56994 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753480AbYGBJ5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 2 Jul 2008 05:57:52 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:43554 "EHLO pardus.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751660AbYGBJ5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 05:57:51 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [patch 1/9] TTY: fix for tty operations bugs
-Date: Wed, 2 Jul 2008 12:57:44 +0300
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, greg@kroah.com,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Cox <alan@redhat.com>
-References: <20080701151057.930340322@mini.kroah.org> <20080701151859.GB3536@suse.de> <20080701160132.GA4496@suse.de>
-In-Reply-To: <20080701160132.GA4496@suse.de>
+From: Jeff Layton <jlayton@redhat.com>
+Subject: [PATCH] [CIFS] fix inode leak in cifs_get_inode_info_unix
+To: smfrench@gmail.com
+Cc: niallain@gmail.com, linux-cifs-client@lists.samba.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Wed, 02 Jul 2008 05:57:38 -0400
+Message-ID: <20080702095734.31936.79354.stgit@dantu.usersys.redhat.com>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200807021257.47593.caglar@pardus.org.tr>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg;
+Try this:
 
-01 Tem 2008 Sal tarihinde, Greg KH şunları yazmıştı: 
-> On Tue, Jul 01, 2008 at 08:18:59AM -0700, Greg KH wrote:
-> > 2.6.25-stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > ------------------
-> > 
-> > From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> > 
-> > This is fixed with the recent tty operations rewrite in mainline in a
-> > different way, this is a selective backport of the relevant portions to
-> > the -stable tree.
-> > 
-> > Signed-off-by: Alan Cox <alan@redhat.com>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > ---
-> >  drivers/net/hamradio/6pack.c |    2 ++
-> >  drivers/net/hamradio/mkiss.c |    8 ++++++--
-> >  drivers/net/irda/irtty-sir.c |    4 +++-
-> 
-> Hm, there are a few build errors with this patch in these two files,
-> I'll go respin it and do a new -rc release...
-> 
-> Sorry for missing this before.
+    mount a share with unix extensions
+    create a file on it
+    umount the share
 
-I still have following build error 
+You'll get the following message in the ring buffer:
 
-[...]
-drivers/net/hamradio/mkiss.c: In function 'ax_xmit':
-drivers/net/hamradio/mkiss.c:548: error: 'struct tty_struct' has no member named 'drivers'
-drivers/net/hamradio/mkiss.c:549: error: 'struct tty_struct' has no member named 'chars_in_buffer'
-drivers/net/hamradio/mkiss.c:552: warning: format '%s' expects type 'char *', but argument 3 has type 'int'
-drivers/net/hamradio/mkiss.c:552: error: expected ';' before ')' token
-drivers/net/hamradio/mkiss.c:552: error: expected statement before ')' token
+VFS: Busy inodes after unmount of cifs. Self-destruct in 5 seconds.  Have a
+nice day...
 
-*** 4 errors, 1 warnings
-[...]
+...the problem is that cifs_get_inode_info_unix is creating and hashing
+a new inode even when it's going to return error anyway. The first
+lookup when creating a file returns an error so we end up leaking this
+inode before we do the actual create. This appears to be a regression
+caused by commit 0e4bbde94fdc33f5b3d793166b21bf768ca3e098.
 
-after your 
+The following patch seems to fix it for me, and fixes a minor
+formatting nit as well.
 
-commit bdd6248729d1f4a75e4623bce4f9c7737753b712
-Author: Greg Kroah-Hartman <gregkh@suse.de>
-Date:   Tue Jul 1 09:44:04 2008 -0700
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+---
 
-    fix build error in tty patch
+ fs/cifs/inode.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
 
-commit to stable-queue
+diff --git a/fs/cifs/inode.c b/fs/cifs/inode.c
+index 722be54..2e904bd 100644
+--- a/fs/cifs/inode.c
++++ b/fs/cifs/inode.c
+@@ -219,15 +219,15 @@ int cifs_get_inode_info_unix(struct inode **pinode,
+ 	rc = CIFSSMBUnixQPathInfo(xid, pTcon, full_path, &find_data,
+ 				  cifs_sb->local_nls, cifs_sb->mnt_cifs_flags &
+ 					CIFS_MOUNT_MAP_SPECIAL_CHR);
+-	if (rc) {
+-		if (rc == -EREMOTE && !is_dfs_referral) {
+-			is_dfs_referral = true;
+-			cFYI(DBG2, ("DFS ref"));
+-			/* for DFS, server does not give us real inode data */
+-			fill_fake_finddataunix(&find_data, sb);
+-			rc = 0;
+-		}
+-	}
++	if (rc == -EREMOTE && !is_dfs_referral) {
++		is_dfs_referral = true;
++		cFYI(DBG2, ("DFS ref"));
++		/* for DFS, server does not give us real inode data */
++		fill_fake_finddataunix(&find_data, sb);
++		rc = 0;
++	} else if (rc)
++		goto cgiiu_exit;
++
+ 	num_of_bytes = le64_to_cpu(find_data.NumOfBytes);
+ 	end_of_file = le64_to_cpu(find_data.EndOfFile);
+ 
+@@ -236,7 +236,7 @@ int cifs_get_inode_info_unix(struct inode **pinode,
+ 		*pinode = new_inode(sb);
+ 		if (*pinode == NULL) {
+ 			rc = -ENOMEM;
+-		goto cgiiu_exit;
++			goto cgiiu_exit;
+ 		}
+ 		/* Is an i_ino of zero legal? */
+ 		/* note ino incremented to unique num in new_inode */
 
-Cheers
--- 
-S.Çağlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
