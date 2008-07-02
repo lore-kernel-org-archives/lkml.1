@@ -1,134 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759847AbYGBBWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761099AbYGBBXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759847AbYGBBWU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 21:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755918AbYGBBWF
+	id S1761099AbYGBBXj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 21:23:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755918AbYGBBX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 21:22:05 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61729 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754045AbYGBBWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 21:22:01 -0400
-Date: Wed, 2 Jul 2008 02:19:38 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Andi Kleen <andi@firstfloor.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Andi Kleen <andi-suse@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-In-Reply-To: <4868A659.2080308@firstfloor.org>
-Message-ID: <Pine.LNX.4.55.0806301708490.30785@cliff.in.clinika.pl>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <20080629200210.GB31633@elte.hu>
- <Pine.LNX.4.55.0806292104560.22548@cliff.in.clinika.pl> <200806300106.38414.rjw@sisk.pl>
- <Pine.LNX.4.55.0806300205180.22548@cliff.in.clinika.pl> <4868A659.2080308@firstfloor.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 1 Jul 2008 21:23:29 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:60629 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753129AbYGBBX1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 21:23:27 -0400
+Subject: Re: [PATCH 14/23] make section names compatible with
+	-ffunction-sections -fdata-sections: parisc
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: linux-arch@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>,
+       David Howells <dhowells@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Lennert Buytenhek <kernel@wantstofly.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Paul Mackerras <paulus@samba.org>,
+       David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tim Bird <tim.bird@am.sony.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Dave Miller <davem@davemloft.net>
+In-Reply-To: <200807020200.49518.vda.linux@googlemail.com>
+References: <200807020239.11410.vda.linux@googlemail.com>
+	 <1214955660.3316.31.camel@localhost.localdomain>
+	 <200807020200.49518.vda.linux@googlemail.com>
+Content-Type: text/plain
+Date: Tue, 01 Jul 2008 20:23:19 -0500
+Message-Id: <1214961799.3316.36.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jun 2008, Andi Kleen wrote:
-
-> >  That is certainly true for standard hardware.  We have to take
-> > responsibility for own bugs, sure.  I cannot readily understand why you
-> > apparently try to imply hardware vendors do not.
+On Wed, 2008-07-02 at 02:00 +0200, Denys Vlasenko wrote:
+> On Wednesday 02 July 2008 01:41, James Bottomley wrote:
+> > On Wed, 2008-07-02 at 02:39 +0200, Denys Vlasenko wrote:
+> > > The purpose of this patch is to make kernel buildable
+> > > with "gcc -ffunction-sections -fdata-sections".
+> > > This patch fixes parisc architecture.
+> > > 
+> > > Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+> > 
+> > Um ... if you look at the Makefile you'll see we already build parisc
+> > with -ffunction-sections; we have to: our relative jumps are too small
+> > to guarantee finding the stubs in large files.
+> > 
+> > Since our text is -ffunction-sections compatible already, I question the
+> > need for transformations like this:
+> > 
+> > > -               *(.text.do_softirq)
+> > > -               *(.text.sys_exit)
+> > > -               *(.text.do_sigaltstack)
+> > > -               *(.text.do_fork)
+> > > +               *(.do_softirq.text)
+> > > +               *(.sys_exit.text)
+> > > +               *(.do_sigaltstack.text)
+> > > +               *(.do_fork.text)
 > 
-> Sorry Maciej, you're totally off base on that. On consumer hardware
+> arch/parisc/kernel/vmlinux.lds.S contains these lines:
+> 
+>                TEXT_TEXT
+>                SCHED_TEXT
+>                LOCK_TEXT
+>                *(.text.do_softirq)
+>                *(.text.sys_exit)
+>                *(.text.do_sigaltstack)
+>                *(.text.do_fork)
+> 
+> which suggested to me that for parisc it is important to have
+> these sections in that place (after LOCK_TEXT) and order.
 
- Am I?  Just a little bit maybe.  Or actually I am more like playing a
-devil's advocate here. ;)
+Yes ... moderately.
 
-> vendors very rarely fix anything after release of the machine
-> and in general users expect Linux to work around any BIOS or
-> hardware bugs that happen (especially if it's a regression and worked
-> before)
+> If you use -ffunction-sections, any function with the name
+> do_fork (say, a static function somewhere) will end up in
+> .text.do_fork function, and will be "mixed up" with
+> global do_fork(). For parisc it is maybe not a problem
+> (I am not an expert) but in other places/arches people
+> clearly would not want this kind of things to happen.
 
- Well, that's no news to me, but my point is are you happy with such a 
-state of affairs?  I am not.
+Erm, but we're trying to name text sections of the -ffunction-sections.
+We're doing this because we are trying to do a semblance of a reasonable
+arrangement for the relative jumps (and avoid stubs).  Your patch is
+explicitly breaking all of this.
 
- It is well known (at least to me) that quality of x86 firmware is
-questionable and has been such for many years now.  I recall bad
-experiences from as long ago as 15 years.  That was before I discovered
-Linux and even without knowing the quality of free software I considered
-many implementations of PC BIOSes a bad joke.
+> In order to handle these situations uniformly, in these patches
+> I decided to _never_ use .text.XXXX names for sections,
+> effectively leaving them "reserved for gcc's use".
 
- Of course it may sometimes be difficult to notice all the problematic
-bugs early enough.  Testing is expensive and takes a lot of time.  
-Proving functional correctness of a non-trivial piece of software against
-a complex specification is infeasible.  Back then firmware used to be
-included in a piece of EPROM memory, so for practical purposes it was cast
-in stone -- nobody would order new chips with an updated replacement for
-their PC, which was a practice quite common among workstation/server
-manufacturers though.
+We need to use the names gcc outputs, not some random name.
 
- These days the firmware is included in an easily reprogrammable piece of
-Flash memory, which means technically an update can be done by any user.  
-Yet apparently PC equipment manufacturers taught users (similarly to what
-some companies did about operating system software) that bad quality is an
-immanent property of firmware.  This way they can cut the cost of testing
-down, effectively shifting it to someone else.  They take no
-responsibility for their mistakes and make the others pay for them.  
-That's quite a convenient situation, isn't it? -- I wish I could apply it
-to myself as well.
+> Did I understand you right that in this chunk I need to
+> leave .text.FUNC_NAME as it was before?
 
- I do not blame the users.  For most of the users the internals of
-computer equipment are beyond comprehension and this is perfectly fine as
-nobody is meant to be skilled in everything.  Likewise I do not want to
-know in details how a bridge is to be constructed -- I only want to use it
-to cross the river.  I just need to trust someone the bridge is safe to
-use.  Similarly the user of a computer trusts someone to decide whether a
-given piece of equipment is good or not.  In this case I think it is our
-role to make users aware firmware bugs are not our responsibility, and our
-willingness to cope with them is more a courtesy than a duty.
+Yes.
 
- In a perfect world they would go back to the manufacturer, or better yet,
-to the point of sale and demand the piece of equipment to be replaced with
-a good one, fixed, discounted or refunded.  Just with all the other goods
--- if I buy a shirt and discover it has three sleeves despite being
-advertised for regular human beings, I will not demand from a coat
-manufacturer to get it fitted with three sleeves to match.  Instead I will
-go to the shop I got the shirt from and demand to get the situation
-rectified.  Of course I could go to a coat manufacturer instead and ask
-them nicely to add an extra sleeve and they might do it, but that's by no
-means their duty.
+> > And thus by the same token the data transformations.
+> 
+> It would be easiest for me if you will reply to the parisc patch
+> and indicate all parts where I should NOT do name change.
 
- As we are not in a perfect world, users are not likely to do so as they
-can be easily god ridden of, by ignoring them or giving arguments they
-feel not competent enough to dispute.  And if all manufacturers behaved
-consistently, users would have no alternative for their next purchase.  
+That would be the piece above.
 
- The cost remains though.  For example people involved with this case
-could have spent the time on something creative, like adding new
-functionality.  I do not consider it fair when someone shifts their costs 
-onto me and while I may accept it for a given case for some reasons, I am 
-not going to treat the situation as normal and will seek a proper 
-solution.
+James
 
- Here I think there is some potential interest to a few well-defined
-parties to get better support from hardware manufacturers when it comes to
-the firmware.  These parties may be vendors of Linux distributions who
-certainly bear costs of dealing with firmware bugs.  These parties may be
-x86 CPU vendors as well as the overall quality of equipment matters for
-their reputation.  And it is not that they can relax unconcerned in the
-belief the x86 is there forever -- times are changing and there
-alternatives on the horizon (the Jisus laptop may be just one swallow, but
-even if it fails, there will be followers), which are unlikely to be
-beaten by price, but may be beaten by quality.  While users will not care 
-how baroque the solution is, they certainly will not disregard how it 
-works.
 
- Sorry for such a long dissertation, but I think the current situation is
-too far from perfect not to do anything about it.  I do not seem to be a
-position to change it, but at least I may try to increase the awareness of
-the problem.  And refer users who complain to the respective
-manufacturers.  What I am sure of is if we just keep papering firmware
-bugs over and never come back with them to the (ir)responsible
-manufacturer, then the situation will never change.
-
-  Maciej
