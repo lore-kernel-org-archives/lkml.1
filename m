@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760751AbYGBBzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761422AbYGBB6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760751AbYGBBzo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 21:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756337AbYGBBzg
+	id S1761422AbYGBB6U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 21:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757484AbYGBB6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 21:55:36 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:43698 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753426AbYGBBzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 21:55:35 -0400
-Message-ID: <486AE015.5070308@sgi.com>
-Date: Tue, 01 Jul 2008 18:55:33 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 1 Jul 2008 21:58:05 -0400
+Received: from outbound-mail-07.bluehost.com ([69.89.17.207]:55592 "HELO
+	outbound-mail-07.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756337AbYGBB6E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 21:58:04 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 5/5] x86 PCI: use dev_printk when possible
+Date: Tue, 1 Jul 2008 18:57:41 -0700
+User-Agent: KMail/1.9.9
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, lenb@kernel.org, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, linux-acpi@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080613165209.507694130@ldl.fc.hp.com> <20080613165304.842091464@ldl.fc.hp.com> <20080630165737.2f9735f0.akpm@linux-foundation.org>
+In-Reply-To: <20080630165737.2f9735f0.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org>	<485ADA12.5010505@sgi.com> <485ADC73.60009@goop.org>	<485BDB04.4090709@sgi.com> <485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com>	<m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>	<m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>	<486A68DD.80702@goop.org> <m1d4lxgwxj.fsf@frodo.ebiederm.org>	<486A9D4F.8010508@goop.org> <m1skutffn4.fsf@frodo.ebiederm.org> <486AA72B.6010401@goop.org> <486AC9D9.9030506@zytor.com> <486AD6BD.9080600@sgi.com> <486ADD67.1020809@sgi.com> <486ADD9F.3000305@zytor.com>
-In-Reply-To: <486ADD9F.3000305@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807011857.42384.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Mike Travis wrote:
->> Mike Travis wrote:
->> ...  I'm still re-verifying that the source bits and config options
->>> are identical (it was a later git-remote update), and that in fact it is
->>> the gcc --version, but that may be the conclusion.  
->> ...
->>
->> Yup, it's the gcc --version that makes the difference.  GCC 4.2.0
->> couldn't
->> boot past the grub screen, GCC 4.2.4 made it to the login prompt.
->>
-> 
-> IIRC, 4.2.0, 4.2.1 and 4.3.0 are known to miscompile the kernel in one
-> way or another, however, that is from memory so don't quote me on it.
-> 
->     -hpa
+On Monday, June 30, 2008 4:57 pm Andrew Morton wrote:
+> On Fri, 13 Jun 2008 10:52:14 -0600
+>
+> Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> > I converted DBG() to dev_dbg().  This DBG() is from arch/x86/pci/pci.h
+> > and requires source-code modification to enable, so dev_dbg() seems
+> > roughly equivalent.
+> >
+> > The printks in arch/x86/pci/irq.c were a little hairy, with lines
+> > printed in several pieces.  I straightened it out a little, but
+> > another set of eyes would be good.
+> >
+> > Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> >
+> > ---
+> >  arch/x86/pci/fixup.c |    3 +
+> >  arch/x86/pci/i386.c  |   26 ++++++--------
+> >  arch/x86/pci/irq.c   |   91
+> > ++++++++++++++++++++++----------------------------- arch/x86/pci/numa.c 
+> > |    5 +-
+>
+> Got a bunch of rejects in arch/x86/pci/irq.c due to pending whitespace
+> fixes.  I fixed a couple of them but then I got bored, so the
+> conversion in there is only partial.
+>
+> Please prefer to raise patches against linux-next if poss, especially
+> during late -rc's.
 
-Great.  That's what's been on my devel server for the past 3 or 4 months now... 
+Yeah, the x86 tree(s) move too fast for me to keep up with.  The change seems 
+worthwhile though, maybe Ingo or one of the x86 team could just search & 
+replace?
 
-[And it's a big shared server that I'm but a small ant wandering around on it. ;-)]
+Jesse
