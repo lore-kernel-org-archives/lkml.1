@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759857AbYGBWXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbYGBWY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759857AbYGBWXy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 18:23:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbYGBWXo
+	id S1760693AbYGBWY4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 18:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbYGBWYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 18:23:44 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:58325 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754525AbYGBWXn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 18:23:43 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 21/23] make section names compatible with -ffunction-sections -fdata-sections: v850
-Date: Thu, 3 Jul 2008 00:17:52 +0200
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, vda.linux@googlemail.com,
-       linux-arch@vger.kernel.org, rmk@arm.linux.org.uk, dhowells@redhat.com,
-       ralf@linux-mips.org, kernel@wantstofly.org, jwboyer@linux.vnet.ibm.com,
-       paulus@samba.org, dwmw2@infradead.org, torvalds@linux-foundation.org,
-       paul.gortmaker@windriver.com, linux-embedded@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tim.bird@am.sony.com,
-       schwidefsky@de.ibm.com, davem@davemloft.net
-References: <200807020242.21960.vda.linux@googlemail.com> <20080702145859.a9af30ea.akpm@linux-foundation.org> <486BFC21.1040001@firstfloor.org>
-In-Reply-To: <486BFC21.1040001@firstfloor.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 2 Jul 2008 18:24:45 -0400
+Received: from mx2.suse.de ([195.135.220.15]:46273 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754149AbYGBWYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 18:24:44 -0400
+From: Neil Brown <neilb@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 3 Jul 2008 08:24:36 +1000
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807030017.53747.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+pO3ulzoL1vYV5myjhiTQYZLPT//yqhIruMsy
- oskMCewSSGPKHDp7An0sKborDfh18nMsR0orCz1hejs5jy8pDF
- Ku6IO+n01kmiehd6+myEw==
+Message-ID: <18540.36.610609.783148@notabene.brown>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PULL-REQUEST] md bugfixes for 2.6.26
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 03 July 2008, Andi Kleen wrote:
-> Same seems to be true for cris btw.
 
-Cris has seen significant updates in 2.6.25 by its maintainer.
-It's not a very active port, but skipping updates for one kernel
-version is on a completely different scale from doing nothing
-at all for over three years as in the v850 case.
+Hi Linus,
+ please pull as follows:  three bugfixs that also need to go to
+ -stable.
 
-I don't currently see any architecture (other than v850) in a
-state that justifies removing it entirely.
+Thanks,
+NeilBrown
 
-	Arnd <><
+
+
+The following changes since commit 543cf4cb3fe6f6cae3651ba918b9c56200b257d0:
+  Linus Torvalds (1):
+        Linux 2.6.26-rc8
+
+are available in the git repository at:
+
+  git://neil.brown.name/md for-2.6.26
+
+Neil Brown (3):
+      Ensure interrupted recovery completed properly (v1 metadata plus bitmap)
+      Don't acknowlege that stripe-expand is complete until it really is.
+      Fix error paths if md_probe fails.
+
+ drivers/md/md.c     |    6 ++++--
+ drivers/md/raid10.c |    2 ++
+ drivers/md/raid5.c  |    7 ++++++-
+ 3 files changed, 12 insertions(+), 3 deletions(-)
