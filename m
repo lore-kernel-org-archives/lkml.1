@@ -1,102 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752364AbYGBQlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbYGBQrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752364AbYGBQlZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 12:41:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYGBQlR
+	id S1753400AbYGBQrZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 12:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbYGBQrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 12:41:17 -0400
-Received: from theia.rz.uni-saarland.de ([134.96.7.31]:16607 "EHLO
-	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751386AbYGBQlQ (ORCPT
+	Wed, 2 Jul 2008 12:47:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52144 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751543AbYGBQrO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 12:41:16 -0400
-Date: Wed, 2 Jul 2008 18:39:01 +0200
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCHv2 6/7] x86: traps_xx: modify default_do_nmi
-Message-ID: <20080702163901.GA1283@mailshack.com>
-References: <20080701193643.GA29695@mailshack.com> <20080701233227.GF29903@mailshack.com> <20080702161220.GA7003@cvg>
+	Wed, 2 Jul 2008 12:47:14 -0400
+Date: Wed, 2 Jul 2008 09:47:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       greg@kroah.com
+Subject: Re: Is sysfs the right place to get cache and CPU topology info?
+Message-Id: <20080702094711.6a93ff77.akpm@linux-foundation.org>
+In-Reply-To: <18539.27303.187681.716560@cargo.ozlabs.ibm.com>
+References: <18539.8141.683072.967851@cargo.ozlabs.ibm.com>
+	<20080702003755.4daff613.akpm@linux-foundation.org>
+	<18539.20039.516803.51920@cargo.ozlabs.ibm.com>
+	<20080702030154.67a851d2.akpm@linux-foundation.org>
+	<18539.27303.187681.716560@cargo.ozlabs.ibm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080702161220.GA7003@cvg>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Wed, 02 Jul 2008 18:41:01 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.0.64; VDF: 7.0.5.39; host: AntiVir1)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- - local caching of smp_processor_id() in default_do_nmi()
- - v2: do not split default_do_nmi over two lines
+On Wed, 2 Jul 2008 21:46:47 +1000 Paul Mackerras <paulus@samba.org> wrote:
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-
----
-
-On Wed, Jul 02, 2008 at 08:12:20PM +0400, Cyrill Gorcunov wrote:
-> | -static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
-> | +static notrace __kprobes void
-> | +default_do_nmi(struct pt_regs *regs)
-> | [ ... ]
-> | -asmlinkage notrace  __kprobes void default_do_nmi(struct pt_regs *regs)
-> | +asmlinkage notrace __kprobes void
-> | +default_do_nmi(struct pt_regs *regs)
+> > If they're talking about using the existing ones then sure, those are
+> > cast in stone as far as I'm concerned.
+> > 
+> > But they do need to be a _bit_ defensive.  If they see a file which has
+> > multiple name:value fields (shouldn't happen) then don't fail if new
+> > tuples turn up later on.  Don't expect them to always be in the same
+> > order.  Don't fail if new files later turn up in a sysfs directory.  If
+> > a file has (a stupid) format like /proc/self/stat then be prepared for
+> > new columns to appear later on, etc.
+> > 
+> > But if basic and obvious steps like that are taken in the library, and
+> > later kernel changes cause that library to break, we get to fix the
+> > kernel to unbreak their library.
 > 
-> Hi Alexander, good done, thanks! But why did you split default_do_nmi
-> definition by two lines? I think it would be better to keep them as it
-> was before, ie by a single line
-> 
-> 	static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
+> I assume they can rely on finding the stuff they need under
+> /sys/devices/system/cpu.  Or do they need to traverse the whole of
+> /sys, and if so, how would they know which directories they should be
+> looking in?
 
-Thanks! Here is the replacement patch with default_do_nmi left on
-a single line. Patch 7 applies with 1 line fuzz.
-
-Greetings,
-    Alexander
-
-> 		- Cyrill -
-
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index bed6e72..9e3b0c4 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -793,9 +793,12 @@ void notrace __kprobes die_nmi(char *str, struct pt_regs *regs, int do_panic)
- static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
- {
- 	unsigned char reason = 0;
-+	int cpu;
-+
-+	cpu = smp_processor_id();
- 
--	/* Only the BSP gets external NMIs from the system: */
--	if (!smp_processor_id())
-+	/* Only the BSP gets external NMIs from the system. */
-+	if (!cpu)
- 		reason = get_nmi_reason();
- 
- 	if (!(reason & 0xc0)) {
-@@ -809,7 +812,7 @@ static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
- 		 */
- 		if (nmi_watchdog_tick(regs, reason))
- 			return;
--		if (!do_nmi_callback(regs, smp_processor_id()))
-+		if (!do_nmi_callback(regs, cpu))
- 			unknown_nmi_error(reason, regs);
- #else
- 		unknown_nmi_error(reason, regs);
-diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
-index 7511553..26ab0be 100644
---- a/arch/x86/kernel/traps_64.c
-+++ b/arch/x86/kernel/traps_64.c
-@@ -832,7 +832,7 @@ unknown_nmi_error(unsigned char reason, struct pt_regs * regs)
- 
- /* Runs on IST stack. This code must keep interrupts off all the time.
-    Nested NMIs are prevented by the CPU. */
--asmlinkage notrace  __kprobes void default_do_nmi(struct pt_regs *regs)
-+asmlinkage notrace __kprobes void default_do_nmi(struct pt_regs *regs)
- {
- 	unsigned char reason = 0;
- 	int cpu;
+/sys/devices/system/cpu sounds good to me.  Everyone's mounting it at
+/sys.
