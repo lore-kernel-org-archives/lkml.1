@@ -1,213 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759902AbYGBPz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760157AbYGBP4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759902AbYGBPz7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 11:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758416AbYGBPy1
+	id S1760157AbYGBP4W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 11:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758530AbYGBPy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 11:54:27 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51006 "EHLO
+	Wed, 2 Jul 2008 11:54:28 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51009 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757499AbYGBPyF (ORCPT
+	with ESMTP id S1757962AbYGBPyG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 11:54:05 -0400
-Date: Wed, 2 Jul 2008 08:48:11 -0700
-From: Greg KH <greg@kroah.com>
-To: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 02/04] s390: bus_id -> dev_set_name() changes
-Message-ID: <20080702154811.GB31083@kroah.com>
+	Wed, 2 Jul 2008 11:54:06 -0400
+Date: Wed, 2 Jul 2008 08:51:35 -0700
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, davem@davemloft.net
+Subject: Re: [PATCH] PCI: make pci_name use dev_name
+Message-ID: <20080702155135.GA31159@kroah.com>
+References: <20080702153524.GA30318@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080702153524.GA30318@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+On Wed, Jul 02, 2008 at 08:35:24AM -0700, Greg Kroah-Hartman wrote:
+> From: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> Also fixes up the sparc PCI code that was assuming this is not a
+> constant.
+> 
+> This is done in anticipation of removing the bus_id field from struct
+> driver.
+> 
+> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> ---
+>  arch/sparc64/kernel/pci.c |    2 +-
+>  include/linux/pci.h       |    4 ++--
+>  2 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> --- a/arch/sparc64/kernel/pci.c
+> +++ b/arch/sparc64/kernel/pci.c
+> @@ -408,7 +408,7 @@ struct pci_dev *of_create_pci_dev(struct
+>  	dev->class = class >> 8;
+>  	dev->revision = class & 0xff;
+>  
+> -	sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(bus),
+> +	sprintf(dev->dev.bus_id, "%04x:%02x:%02x.%d", pci_domain_nr(bus),
+>  		dev->bus->number, PCI_SLOT(devfn), PCI_FUNC(devfn));
+>  
+>  	if (ofpci_verbose)
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -977,9 +977,9 @@ static inline void pci_set_drvdata(struc
+>  /* If you want to know what to call your pci_dev, ask this function.
+>   * Again, it's a wrapper around the generic device.
+>   */
+> -static inline char *pci_name(struct pci_dev *pdev)
+> +static inline const char *pci_name(struct pci_dev *pdev)
 
-Convert most s390 users setting bus_id to dev_set_name().
-css and ccw busses are deferred since they need some special
-treatment.
+Andrew just pointed out to me that this causes a bunch of compiler
+warnings to be generated.  I'll go audit the tree to fix them as well
+and send you a follow-on patch if that's ok.
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+thanks,
 
----
- drivers/s390/block/dcssblk.c |    2 +-
- drivers/s390/char/vmlogrdr.c |    3 +--
- drivers/s390/cio/ccwgroup.c  |    3 +--
- drivers/s390/cio/chp.c       |    3 +--
- drivers/s390/cio/css.c       |    4 ++--
- drivers/s390/crypto/ap_bus.c |    4 ++--
- drivers/s390/net/netiucv.c   |    2 +-
- drivers/s390/s390_rdev.c     |    2 +-
- drivers/s390/scsi/zfcp_aux.c |   23 ++++++++---------------
- 9 files changed, 18 insertions(+), 28 deletions(-)
-
---- a/drivers/s390/block/dcssblk.c
-+++ b/drivers/s390/block/dcssblk.c
-@@ -349,7 +349,7 @@ dcssblk_add_store(struct device *dev, st
- 	}
- 
- 	strcpy(dev_info->segment_name, local_buf);
--	strlcpy(dev_info->dev.bus_id, local_buf, BUS_ID_SIZE);
-+	dev_set_name(&dev_info->dev, local_buf);
- 	dev_info->dev.release = dcssblk_release_segment;
- 	INIT_LIST_HEAD(&dev_info->lh);
- 
---- a/drivers/s390/char/vmlogrdr.c
-+++ b/drivers/s390/char/vmlogrdr.c
-@@ -738,8 +738,7 @@ static int vmlogrdr_register_device(stru
- 
- 	dev = kzalloc(sizeof(struct device), GFP_KERNEL);
- 	if (dev) {
--		snprintf(dev->bus_id, BUS_ID_SIZE, "%s",
--			 priv->internal_name);
-+		dev_set_name(dev, priv->internal_name);
- 		dev->bus = &iucv_bus;
- 		dev->parent = iucv_root;
- 		dev->driver = &vmlogrdr_driver;
---- a/drivers/s390/cio/ccwgroup.c
-+++ b/drivers/s390/cio/ccwgroup.c
-@@ -264,8 +264,7 @@ int ccwgroup_create_from_string(struct d
- 	gdev->dev.parent = root;
- 	gdev->dev.release = ccwgroup_release;
- 
--	snprintf (gdev->dev.bus_id, BUS_ID_SIZE, "%s",
--			dev_name(&gdev->cdev[0]->dev));
-+	dev_set_name(&gdev->dev, "%s", dev_name(&gdev->cdev[0]->dev));
- 
- 	rc = device_register(&gdev->dev);
- 	if (rc)
---- a/drivers/s390/cio/chp.c
-+++ b/drivers/s390/cio/chp.c
-@@ -401,8 +401,7 @@ int chp_new(struct chp_id chpid)
- 	chp->state = 1;
- 	chp->dev.parent = &channel_subsystems[chpid.cssid]->device;
- 	chp->dev.release = chp_release;
--	snprintf(chp->dev.bus_id, BUS_ID_SIZE, "chp%x.%02x", chpid.cssid,
--		 chpid.id);
-+	dev_set_name(&chp->dev, "chp%x.%02x", chpid.cssid, chpid.id);
- 
- 	/* Obtain channel path description and fill it in. */
- 	ret = chsc_determine_channel_path_description(chpid, &chp->desc);
---- a/drivers/s390/cio/css.c
-+++ b/drivers/s390/cio/css.c
-@@ -741,7 +741,7 @@ static int __init setup_css(int nr)
- 		return -ENOMEM;
- 	css->pseudo_subchannel->dev.parent = &css->device;
- 	css->pseudo_subchannel->dev.release = css_subchannel_release;
--	sprintf(css->pseudo_subchannel->dev.bus_id, "defunct");
-+	dev_set_name(&css->pseudo_subchannel->dev, "defunct");
- 	ret = cio_create_sch_lock(css->pseudo_subchannel);
- 	if (ret) {
- 		kfree(css->pseudo_subchannel);
-@@ -750,7 +750,7 @@ static int __init setup_css(int nr)
- 	mutex_init(&css->mutex);
- 	css->valid = 1;
- 	css->cssid = nr;
--	sprintf(css->device.bus_id, "css%x", nr);
-+	dev_set_name(&css->device, "css%x", nr);
- 	css->device.release = channel_subsystem_release;
- 	tod_high = (u32) (get_clock() >> 32);
- 	css_generate_pgid(css, tod_high);
---- a/drivers/s390/crypto/ap_bus.c
-+++ b/drivers/s390/crypto/ap_bus.c
-@@ -859,8 +859,8 @@ static void ap_scan_bus(struct work_stru
- 
- 		ap_dev->device.bus = &ap_bus_type;
- 		ap_dev->device.parent = ap_root_device;
--		snprintf(ap_dev->device.bus_id, BUS_ID_SIZE, "card%02x",
--			 AP_QID_DEVICE(ap_dev->qid));
-+		dev_set_name(&ap_dev->device, "card%02x",
-+			     AP_QID_DEVICE(ap_dev->qid));
- 		ap_dev->device.release = ap_device_release;
- 		rc = device_register(&ap_dev->device);
- 		if (rc) {
---- a/drivers/s390/net/netiucv.c
-+++ b/drivers/s390/net/netiucv.c
-@@ -1757,7 +1757,7 @@ static int netiucv_register_device(struc
- 	IUCV_DBF_TEXT(trace, 3, __func__);
- 
- 	if (dev) {
--		snprintf(dev->bus_id, BUS_ID_SIZE, "net%s", ndev->name);
-+		dev_set_name(dev, "net%s", ndev->name);
- 		dev->bus = &iucv_bus;
- 		dev->parent = iucv_root;
- 		/*
---- a/drivers/s390/s390_rdev.c
-+++ b/drivers/s390/s390_rdev.c
-@@ -30,7 +30,7 @@ s390_root_dev_register(const char *name)
- 	dev = kzalloc(sizeof(struct device), GFP_KERNEL);
- 	if (!dev)
- 		return ERR_PTR(-ENOMEM);
--	strncpy(dev->bus_id, name, min(strlen(name), (size_t)BUS_ID_SIZE));
-+	dev_set_name(dev, name);
- 	dev->release = s390_root_dev_release;
- 	ret = device_register(dev);
- 	if (ret) {
---- a/drivers/s390/scsi/zfcp_aux.c
-+++ b/drivers/s390/scsi/zfcp_aux.c
-@@ -839,7 +839,7 @@ zfcp_unit_enqueue(struct zfcp_port *port
- 	unit->fcp_lun = fcp_lun;
- 
- 	/* setup for sysfs registration */
--	snprintf(unit->sysfs_device.bus_id, BUS_ID_SIZE, "0x%016llx", fcp_lun);
-+	dev_set_name(&unit->sysfs_device, "0x%016llx", fcp_lun);
- 	unit->sysfs_device.parent = &port->sysfs_device;
- 	unit->sysfs_device.release = zfcp_sysfs_unit_release;
- 	dev_set_drvdata(&unit->sysfs_device, unit);
-@@ -1066,8 +1066,7 @@ zfcp_adapter_enqueue(struct ccw_device *
- 
- 	adapter->generic_services.parent = &adapter->ccw_device->dev;
- 	adapter->generic_services.release = zfcp_dummy_release;
--	snprintf(adapter->generic_services.bus_id, BUS_ID_SIZE,
--		 "generic_services");
-+	dev_set_name(&adapter->generic_services, "generic_services");
- 
- 	if (device_register(&adapter->generic_services))
- 		goto generic_services_failed;
-@@ -1218,24 +1217,19 @@ zfcp_port_enqueue(struct zfcp_adapter *a
- 	if (status & ZFCP_STATUS_PORT_WKA) {
- 		switch (d_id) {
- 		case ZFCP_DID_DIRECTORY_SERVICE:
--			snprintf(port->sysfs_device.bus_id, BUS_ID_SIZE,
--				 "directory");
-+			dev_set_name(&port->sysfs_device, "directory");
- 			break;
- 		case ZFCP_DID_MANAGEMENT_SERVICE:
--			snprintf(port->sysfs_device.bus_id, BUS_ID_SIZE,
--				 "management");
-+			dev_set_name(&port->sysfs_device, "management");
- 			break;
- 		case ZFCP_DID_KEY_DISTRIBUTION_SERVICE:
--			snprintf(port->sysfs_device.bus_id, BUS_ID_SIZE,
--				 "key_distribution");
-+			dev_set_name(&port->sysfs_device, "key_distribution");
- 			break;
- 		case ZFCP_DID_ALIAS_SERVICE:
--			snprintf(port->sysfs_device.bus_id, BUS_ID_SIZE,
--				 "alias");
-+			dev_set_name(&port->sysfs_device, "alias");
- 			break;
- 		case ZFCP_DID_TIME_SERVICE:
--			snprintf(port->sysfs_device.bus_id, BUS_ID_SIZE,
--				 "time");
-+			dev_set_name(&port->sysfs_device, "time");
- 			break;
- 		default:
- 			kfree(port);
-@@ -1244,8 +1238,7 @@ zfcp_port_enqueue(struct zfcp_adapter *a
- 		port->d_id = d_id;
- 		port->sysfs_device.parent = &adapter->generic_services;
- 	} else {
--		snprintf(port->sysfs_device.bus_id,
--			 BUS_ID_SIZE, "0x%016llx", wwpn);
-+		dev_set_name(&port->sysfs_device, "0x%016llx", wwpn);
- 		port->sysfs_device.parent = &adapter->ccw_device->dev;
- 	}
- 	port->sysfs_device.release = zfcp_sysfs_port_release;
+greg k-h
