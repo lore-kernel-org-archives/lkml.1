@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761906AbYGBDSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761906AbYGBDX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761906AbYGBDSQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 23:18:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbYGBDR1
+	id S1761906AbYGBDX5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 23:23:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbYGBDXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 23:17:27 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:14167 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761944AbYGBDRY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 23:17:24 -0400
-Date: Tue, 1 Jul 2008 20:15:14 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: inux-next: Tree for July 1
-Message-Id: <20080701201514.c2669693.randy.dunlap@oracle.com>
-In-Reply-To: <20080702011434.6fb403d5.sfr@canb.auug.org.au>
-References: <20080702011434.6fb403d5.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Tue, 1 Jul 2008 23:23:45 -0400
+Received: from waste.org ([66.93.16.53]:35437 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752887AbYGBDXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 23:23:44 -0400
+Subject: Re: Bug in random32.c: all-zero outputs with probability 1/2^32,
+	other seeding bugs
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Benoit Boissinot <bboissin@gmail.com>, linux-kernel@vger.kernel.org,
+       lloyd@randombit.net, "Theodore Ts'o" <tytso@mit.edu>,
+       netdev@vger.kernel.org
+In-Reply-To: <20080701173405.cb28db84.akpm@linux-foundation.org>
+References: <20080619153045.GC1455@randombit.net>
+	 <20080701231927.GW7647@pirzuine>
+	 <20080701173405.cb28db84.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 01 Jul 2008 22:22:31 -0500
+Message-Id: <1214968951.11311.122.camel@calx>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Jul 2008 01:14:34 +1000 Stephen Rothwell wrote:
 
-> Hi all,
+On Tue, 2008-07-01 at 17:34 -0700, Andrew Morton wrote:
+> On Wed, 2 Jul 2008 01:19:27 +0200
+> Benoit Boissinot <bboissin@gmail.com> wrote:
 > 
-> Changes since next-20080630:
+> > [who maintains random32.c ?]
+> 
+> ah.  I think it's ancient net code which was recently hoisted into lib/.
+> So: not really anybody.
+> 
+> I've been hopefully cc'ing Matt and Ted in the hope of fooling them
+> into looking at it.  But a netdev cc is appropriate also.
 
-It looks like localversion-next contains:
--next-20080702
-for the 20080701 kernel.  :(
-Makes my scripts fail.
+I did look at it, and it looks reasonable. So:
 
+Acked-by: Matt Mackall <mpm@selenic.com>
 
-http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commitdiff;h=55b50ebb424c5c4168077335f3909e3a925a6948
+Stephen Hemminger is responsible for the original code, I believe. I've
+been tempted to slurp this functionality into random.c but keep getting
+side-tracked into theoretical investigations of better functions, as I'm
+not a big fan of the current one from either a performance or strength
+perspective.
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+-- 
+Mathematics is the supreme nostalgia of our time.
+
