@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761938AbYGBCvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761951AbYGBC4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761938AbYGBCvr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 22:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758532AbYGBCvi
+	id S1761951AbYGBC4T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 22:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759173AbYGBC4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 22:51:38 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:32897 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758330AbYGBCvh (ORCPT
+	Tue, 1 Jul 2008 22:56:00 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:42789 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759128AbYGBCz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 22:51:37 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Mike Travis <travis@sgi.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>
-	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>
-	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com>
-	<m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>
-	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>
-	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>
-	<m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>
-	<486A68DD.80702@goop.org> <m1d4lxgwxj.fsf@frodo.ebiederm.org>
-	<486A9D4F.8010508@goop.org> <m1skutffn4.fsf@frodo.ebiederm.org>
-	<486AA72B.6010401@goop.org> <486AC9D9.9030506@zytor.com>
-	<486AD6BD.9080600@sgi.com> <m17ic5f4uh.fsf@frodo.ebiederm.org>
-	<486ADF06.1020006@sgi.com>
-Date: Tue, 01 Jul 2008 19:50:14 -0700
-In-Reply-To: <486ADF06.1020006@sgi.com> (Mike Travis's message of "Tue, 01 Jul
-	2008 18:51:02 -0700")
-Message-ID: <m1bq1hdmop.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 1 Jul 2008 22:55:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=MpwzCvJp6lJsytEL7t/Ul7Lz4CDcfT+MjurCZkNMdRiAGgYv6m7zEBNNXfLhy/+UR2
+         xkY7Mip7hu+ElK6i4x3783vSgFvQ+6bd3jQigD6vwSSkTEZca9PTXV0S8T9HiqYe12IA
+         nSPFzEhgedTwU+k8V4zG598pEFYuPhIJAyEOQ=
+Message-ID: <486AEE29.2010506@gmail.com>
+Date: Wed, 02 Jul 2008 11:55:37 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Mike Travis <travis@sgi.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0013]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu area
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: linux-kernel@vger.kernel.org,
+       =?ISO-8859-15?Q?Mathieu_B=E9rard?= <Mathieu.Berard@crans.org>,
+       linux-ide@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: 2.6.25 to 2.6.26-rc8 regression  (related to ahci and acpi _GTF)
+References: <4869FB3C.4060509@crans.org> <200807011614.21491.rjw@sisk.pl>
+In-Reply-To: <200807011614.21491.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis <travis@sgi.com> writes:
+Rafael J. Wysocki wrote:
+> [Adding CCs.]
+> 
+> On Tuesday, 1 of July 2008, Mathieu Bérard wrote:
+>> Hi,
+>> I have a laptop with an ICH6M SATA Controller and a Hitachi hard drive.
+>> While it worked well using the ahci module and Linux 2.6.25, 
+>> it get randomly 'stuck' for several seconds to several minutes with 2.6.26-rc8.
+>> Successive errors progressively reduce the ATA link speed.
+>>
+>> Passing the libata.noacpi parameter is an effective workaround.
+>>
+>> Please note that it's not the first time i have this kind of issue, see:
+>> http://marc.info/?l=linux-ide&m=117305595312399&w=2
+>> This was found to be a bad interaction between my _GTF taskfile, which enable the
+>> "Enable Device-Initiated Interface Power State Transitions" feature, and NCQ.
+>> The driver was later NCQ blacklisted to correct the problem.
 
-> Ouch.  How far into it do we need to investigate?  I can surely compare the
-> vmlinux object files, but I'm not cognizant enough about the linker internals
-> to examine much more than that.
+Can you please post the result of "hdparm -I /dev/sda" and full kernel
+boot log?  0xca is not a NCQ command so the it's not related to NCQ at
+all.  It seems we'll need to filter out DIPM commands from _GTF.
 
-As a first step we just need to know what we tell gcc or the linker
-to do, and what is incorrectly output.  Once the problem is
-understood we can think about how to deal with the problem.
+Thanks.
 
-What we really need is a recipe for success.
-A recipe for failure.
-
-At that point it should be much easier for someone else to reproduce
-the problem, and/or look into the specific details and see what is
-wrong or to suggest patches.
-
-The kernel is a significant enough program and a different enough one it
-is hard to predict how things go.
-
-Eric
+-- 
+tejun
