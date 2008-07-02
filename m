@@ -1,83 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761246AbYGBFOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762308AbYGBFSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761246AbYGBFOe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 01:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYGBFO0
+	id S1762308AbYGBFSS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 01:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbYGBFSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 01:14:26 -0400
-Received: from wx-out-0506.google.com ([66.249.82.227]:60509 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752799AbYGBFOZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 01:14:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=v4Uza7PKKwd+y0+P+VGJyoNxWnWbe8t/VD9cbwmhHIFAJjcDHGiPrOgAkaZRw/RMVF
-         okIkQqpMwEE+fsP6OzwGzsl5OC32/TykJ9fDxcqkS0T3n/vC31sJMb4Zmz0HUgeuJtSZ
-         AeR5RFXF49sOaN5YDObxrXsPD1IAeA4NAgxZ0=
-Message-ID: <cfd18e0f0807012214o78353faal84a5fa764d3210bf@mail.gmail.com>
-Date: Wed, 2 Jul 2008 07:14:22 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Bron Gondwana" <brong@fastmail.fm>
-Subject: Re: mmap'ed memory in core files ?
-Cc: "Michael Kerrisk" <mtk.manpages@gmail.com>,
-       "Philippe De Muyter" <phdm@macqel.be>, linux-kernel@vger.kernel.org,
-       robm@fastmail.fm
-In-Reply-To: <20080701214423.GA29875@brong.net>
+	Wed, 2 Jul 2008 01:18:08 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:58954 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753276AbYGBFSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 01:18:06 -0400
+Date: Wed, 2 Jul 2008 06:18:00 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, NeilBrown <neilb@suse.de>,
+       babydr@baby-dragons.com, cl@linux-foundation.org,
+       lee.schermerhorn@hp.com
+Subject: Re: [problem] raid performance loss with 2.6.26-rc8 on 32-bit x86 (bisected)
+Message-ID: <20080702051759.GA26338@csn.ul.ie>
+References: <1214877439.7885.40.camel@dwillia2-linux.ch.intel.com> <20080701080910.GA10865@csn.ul.ie> <20080701175855.GI32727@shadowen.org> <20080701190741.GB16501@csn.ul.ie> <1214944175.26855.18.camel@dwillia2-linux.ch.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-References: <20080701132149.GA32510@frolo.macqel>
-	 <517f3f820807011116g6ce1b3e1qf166070f7a4c523f@mail.gmail.com>
-	 <20080701214423.GA29875@brong.net>
+In-Reply-To: <1214944175.26855.18.camel@dwillia2-linux.ch.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 1, 2008 at 11:44 PM, Bron Gondwana <brong@fastmail.fm> wrote:
-> On Tue, Jul 01, 2008 at 08:16:11PM +0200, Michael Kerrisk wrote:
->> On 7/1/08, Philippe De Muyter <phdm@macqel.be> wrote:
->> > Hello everybody,
->> >
->> >  I develop video acquisition software using the video1394 interface.
->> >  The images grabbed by the camera and iee1394 bus are kept in kernel
->> >  memory and made available to the user program through a mmap call done
->> >  in the libdc1394 library :
->> >
->> >  dma_ring_buffer= mmap(0, vmmap.nb_buffers * vmmap.buf_size,
->> >                 PROT_READ|PROT_WRITE,MAP_SHARED, craw->capture.dma_fd, 0);
->> >
->> >  Sometimes, my program crashes and produces a core file :)  It seems to
->> >  me that the core file does not contain the mmap'ed memory and hence
->> >  I cannot replay my program with the same image for debugging purpose.
->> >
->> >  Is it possible to configure the kernel through /proc, or through the mmap
->> >  system call to have that mmapped segment in the core file, or do I need
->> >  to modify the kernel itself to obtain the behaviour I want ?  If I
->> >  need to modify the kernel, can some kind soul provide me some pointers ?
->>
->>
->> Have a look at the section "Controlling which mappings are written to
->> the core dump" in a recent core.5 man page:
->> http://www.kernel.org/doc/man-pages/online/pages/man5/core.5.html
->
-> Interesting (and somewhat off topic to your conversation here) - it
-> appears that when dumping mappings, the kernel ignores the maximum
-> core size set with "limit".
->
-> This is particularly interesting on a 64 bit kernel where a bug in
-> your code causes you to try to read something about 2Gb into your
-> alleged mmaped file (actual size ~500 bytes) and the segfault causes
-> a coredump.
+On (01/07/08 13:29), Dan Williams didst pronounce:
+> 
+> On Tue, 2008-07-01 at 12:07 -0700, Mel Gorman wrote:
+> > On (01/07/08 18:58), Andy Whitcroft didst pronounce:
+> > > > > Neil suggested CONFIG_NOHIGHMEM=y, I will give that a shot tomorrow.
+> > > > > Other suggestions / experiments?
+> > > > >
+> > >
+> > > Looking at the commit in question (54a6eb5c) there is one slight anomoly
+> > > in the conversion.  When nr_free_zone_pages() was converted to the new
+> > > iterators it started using the offset parameter to limit the zones
+> > > traversed; which is not unreasonable as that appears to be the
+> > > parameters purpose.  However, if we look at the original implementation
+> > > of this function (reproduced below) we can see it actually did nothing
+> > > with this parameter:
+> > >
+> > > static unsigned int nr_free_zone_pages(int offset)
+> > > {
+> > >       /* Just pick one node, since fallback list is circular */
+> > >       unsigned int sum = 0;
+> > >
+> > >       struct zonelist *zonelist = node_zonelist(numa_node_id(), GFP_KERNEL);
+> > >       struct zone **zonep = zonelist->zones;
+> > >       struct zone *zone;
+> > >
+> > >       for (zone = *zonep++; zone; zone = *zonep++) {
+> > >               unsigned long size = zone->present_pages;
+> > >               unsigned long high = zone->pages_high;
+> > >               if (size > high)
+> > >                       sum += size - high;
+> > >       }
+> > >
+> > >       return sum;
+> > > }
+> > >
+> > 
+> > This looks kinda promising and depends heavily on how this patch was
+> > tested in isolation. Dan, can you post the patch you use on 2.6.25
+> > because the commit in question should not have applied cleanly please?
+> > 
+> > To be clear, 2.6.25 used the offset parameter correctly to get a zonelist with
+> > the right zones in it. However, with two-zonelist, there is only one that
+> > gets filtered so using GFP_KERNEL to find a zone is equivilant as it gets
+> > filtered based on offset.  However, if this patch was tested in isolation,
+> > it could result in bogus values of vm_total_pages. Dan, can you confirm
+> > in your dmesg logs that the line like the following has similar values
+> > please?
+> > 
+> > Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 258544
+> 
+> The system is booted with mem=1024M on the kernel command line and with
+> or without Andy's patch this reports:
+> 
+> 	Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 227584
+> 
+> Performance is still sporadic with the change.  Moreover this condition
+> is reproducing even with CONFIG_NOHIGHMEM=y.
+> 
+> Let us take commit 8b3e6cdc out of the equation and just look at raid0 
+> performance:
+> 
+> revision   2.6.25.8-fc8 54a6eb5c 54a6eb5c-nohighmem 2.6.26-rc8
+>            279          278      273                277
+>            281          278      275                277
+>            281          113      68.7               66.8
+>            279          69.2     277                73.7
+>            278          75.6     62.5               80.3
+> MB/s (avg) 280          163      191                155
+> % change   0%           -42%     -32%               -45%
+> result     base         bad      bad                bad
+> 
 
-Do you have a ssimple example program for this?
+Ok, based on your other mail, 54a6eb5c here is a bisection point. The good
+figures are on par with the "good" kernel with some disasterous runs leading
+to a bad average. The thing is, the bad results are way worse than could be
+accounted for by two-zonelist alone. In fact, the figures look suspiciously
+like only 1 disk is in use as they are roughly quartered. Can you think of
+anything that would explain that? Can you also confirm that using a bisection
+point before two-zonelist runs steadily and with high performance as expected
+please? This is to rule out some other RAID patch being a factor.
+
+It would be worth running vmstat during the tests so we can see if IO
+rates are dropping from an overall system perspective. If possible,
+oprofile data from the same time would be helpful to see does it show up
+where we are getting stuck.
+
+> These numbers are taken from the results of:
+> for i in `seq 1 5`; do dd if=/dev/zero of=/dev/md0 bs=1024k count=2048; done
+> 
+> Where md0 is created by:
+> mdadm --create /dev/md0 /dev/sd[b-e] -n 4 -l 0
+> 
+> I will try your debug patch next Mel, and then try to collect more data
+> with blktrace.
+> 
+
+I tried reproducing this but I don't have the necessary hardware to even
+come close to reproducing your test case :( .  I got some dbench results
+with oprofile but found no significant differences between 2.6.25 and
+2.6.26-rc8. However, I did find the results of dbench varied less between
+runs with the "repork" patch that made next_zones_zonelist() an inline
+function. Have you tried that patch yet?
 
 -- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
