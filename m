@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbYGBU15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758532AbYGBU3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758166AbYGBU15 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 16:27:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757034AbYGBU0s
+	id S1758532AbYGBU3A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 16:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbYGBU2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 16:26:48 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:33191 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756512AbYGBU0r (ORCPT
+	Wed, 2 Jul 2008 16:28:50 -0400
+Received: from mga05.intel.com ([192.55.52.89]:58900 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753381AbYGBU2t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 16:26:47 -0400
-Date: Wed, 2 Jul 2008 13:24:53 -0700
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Steffen Klassert <klassert@mathematik.tu-chemnitz.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
-       davem@davemloft.net
-Subject: [patch 03/04] 3c59x: handle pci_name() being const
-Message-ID: <20080702202453.GC14024@kroah.com>
-References: <20080702200902.909349505@mini.kroah.org>
+	Wed, 2 Jul 2008 16:28:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,739,1204531200"; 
+   d="scan'208";a="584440833"
+Message-ID: <486BE4EA.5030808@linux.intel.com>
+Date: Wed, 02 Jul 2008 13:28:26 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="3c59x-handle-pci_name-being-const.patch"
-In-Reply-To: <20080702202200.GA14021@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, benh@kernel.crashing.org,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Jeremy Kerr <jk@ozlabs.org>
+Subject: Re: [Ksummit-2008-discuss] Delayed interrupt work, thread pools
+References: <1214916335.20711.141.camel@pasglop>	 <486B0298.5030508@linux.intel.com> <1214977447.21182.33.camel@pasglop>	 <1215007896.3330.6.camel@localhost.localdomain>	 <20080702200047.GA385@goodmis.org> <1215030120.3330.42.camel@localhost.localdomain>
+In-Reply-To: <1215030120.3330.42.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This changes vortex_prob1() to handle pci_name() now returning a
-constant string.
+James Bottomley wrote:
+> Easier to implement, yes.  Easier to program, unlikely, and coming with
+> a large amount of overhead, definitely.
+> 
+>> BTW, if something like this is implemented, I think that it should be a
+>> replacement for softirqs and tasklets.
+> 
+under the "better steal right (from other open source) than invent wrong" mantra:
+it's worth looking at what glib does here; I've used their threadpools before and
+it worked really well for me.... we could learn a lot from that
 
-Cc: Steffen Klassert <klassert@mathematik.tu-chemnitz.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/net/3c59x.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/drivers/net/3c59x.c
-+++ b/drivers/net/3c59x.c
-@@ -1010,7 +1010,7 @@ static int __devinit vortex_probe1(struc
- 	static int printed_version;
- 	int retval, print_info;
- 	struct vortex_chip_info * const vci = &vortex_info_tbl[chip_idx];
--	char *print_name = "3c59x";
-+	const char *print_name = "3c59x";
- 	struct pci_dev *pdev = NULL;
- 	struct eisa_device *edev = NULL;
- 	DECLARE_MAC_BUF(mac);
-
--- 
