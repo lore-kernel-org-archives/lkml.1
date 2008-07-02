@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbYGBJT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763082AbYGBJVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756029AbYGBJT3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 05:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbYGBJTU
+	id S1763082AbYGBJVR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 05:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYGBJVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 05:19:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52450 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752934AbYGBJTT (ORCPT
+	Wed, 2 Jul 2008 05:21:06 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:25801 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752910AbYGBJVF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 05:19:19 -0400
-Date: Wed, 2 Jul 2008 02:19:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: miaox@cn.fujitsu.com
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>, Paul Jackson <pj@sgi.com>,
-       Paul Menage <menage@google.com>
-Subject: Re: [PATCH 1/2] cpusets: restructure the function update_cpumask()
- and update_nodemask()
-Message-Id: <20080702021908.81a5f1bb.akpm@linux-foundation.org>
-In-Reply-To: <4843AFC9.7000100@cn.fujitsu.com>
-References: <4843AFC9.7000100@cn.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 2 Jul 2008 05:21:05 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=GPVWhtDK0GhJo9WQGcQ4helxawVPDdjpdMH7fAZ8pFHOgXBOvRfBQh9jsrgulMqT9bolhfEn1bpEoCUOFAca2DGEQpCUHJFSNJ/uFEyXcxiIMT4zB6AzHRtCFqoi+N9AXl6MTvigl3/TM/fC7GYRzdI12tTpARXZRQjKp70TE3w=  ;
+X-YMail-OSG: iOLMU4UVM1krK30mNv3Rr.0qR6328fMga2rjsxl378_mPm9xzL5c19WYEv1530NpQRHC6hdUpb5t4uKmRO660qXELN86MNPkvO934615K1S9eTs7Zvjl9g97Lz9jcbJXXV0-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2.6.26-rc8] drivers/power:  fix platform driver hotplug/coldplug
+Date: Wed, 2 Jul 2008 02:21:02 -0700
+User-Agent: KMail/1.9.9
+Cc: kay.sievers@vrfy.org, mreimer@vpop.net,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       lkml <linux-kernel@vger.kernel.org>
+References: <200807020013.14579.david-b@pacbell.net> <20080702014906.6303fd97.akpm@linux-foundation.org>
+In-Reply-To: <20080702014906.6303fd97.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807020221.02571.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 02 Jun 2008 16:31:05 +0800 Miao Xie <miaox@cn.fujitsu.com> wrote:
-
-> extract two functions from update_cpumask() and update_nodemask().They will be
-> used later for updating tasks' cpus_allowed and mems_allowed after CPU/NODE
-> offline/online.
+On Wednesday 02 July 2008, Andrew Morton wrote:
+> Do we think this is needed in 2.6.26?
 > 
-> Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
-> Acked-by: Paul Jackson <pj@sgi.com>
+> In 2.6.25.x?
 
-This patch has problems.
+I don't think either.  Arguably this particular type
+of driver should always be statically linked.  And
+these are new enough that they weren't hit by the
+regression (fix) aspect of $PATCH.
 
-kernel/cpuset.c: In function 'cpuset_write_resmask':
-kernel/cpuset.c:1374: warning: passing argument 2 of 'update_nodemask' discards qualifiers from pointer target type
-
-Did you not get this warning also?
-
-I don't know how to fix it.  cftype.write_string() requires a const
-char* in the third arg, but we then go on to call update_nodemask(),
-which does a strstrip() on this allegedly-const char array.
-
-Taking a copy of the string in update_nodemask() would fix things, but
-that's pretty lame.
+- Dave
 
