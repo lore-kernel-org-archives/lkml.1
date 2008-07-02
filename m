@@ -1,78 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757993AbYGBUkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbYGBUlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757993AbYGBUkY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 16:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754166AbYGBUkG
+	id S1758257AbYGBUlS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 16:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753998AbYGBUlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 16:40:06 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:63781 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753969AbYGBUkE (ORCPT
+	Wed, 2 Jul 2008 16:41:06 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:23174 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753938AbYGBUlF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 16:40:04 -0400
-Date: Wed, 2 Jul 2008 16:40:02 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: benh@kernel.crashing.org, Arjan van de Ven <arjan@linux.intel.com>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Jeremy Kerr <jk@ozlabs.org>
-Subject: Re: [Ksummit-2008-discuss] Delayed interrupt work, thread pools
-In-Reply-To: <1215030120.3330.42.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.58.0807021635470.22840@gandalf.stny.rr.com>
-References: <1214916335.20711.141.camel@pasglop>  <486B0298.5030508@linux.intel.com>
- <1214977447.21182.33.camel@pasglop>  <1215007896.3330.6.camel@localhost.localdomain>
-  <20080702200047.GA385@goodmis.org> <1215030120.3330.42.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 2 Jul 2008 16:41:05 -0400
+Date: Wed, 02 Jul 2008 13:40:57 -0700
+From: Adam Williamson <awilliamson@mandriva.com>
+Subject: Re: [Bug #10868] Oops on loading ipaq module since 2.6.26,
+	prevents use of device
+In-reply-to: <200806301509.09013.oliver@neukum.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@redhat.com>, bugme-daemon@bugzilla.kernel.org
+Message-id: <1215031257.6054.201.camel@lenovo.local.net>
+Organization: Mandriva
+MIME-version: 1.0
+X-Mailer: Evolution 2.22.2-3mdv2009.0
+Content-type: multipart/mixed; boundary="=-Cd8mhDVOn3ETUxeHH0p2"
+References: <RzbtSgMztjP.A.jRD._spXIB@albercik>
+ <200806251741.23589.oliver@neukum.org>
+ <1214594934.6054.117.camel@lenovo.local.net>
+ <200806301509.09013.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 2 Jul 2008, James Bottomley wrote:
-> >
-> > I think doing a "mini scheduler" inside a workgroup thread would be a
-> > major hack.  We would have to have hooks into the normal scheduler to
-> > let the mini-scheduler know something is blocking, and then have that
-> > scheduler do some work. Not to mention that we need to handle
-> > preemption.
->
-> Not necessarly ... a simplistic round robin is fine.
+--=-Cd8mhDVOn3ETUxeHH0p2
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Coming from the RT world I was hoping for something that we could have
-better control of prioritizing the tasks ;-)
+On Mon, 2008-06-30 at 15:09 +0200, Oliver Neukum wrote:
+> Am Freitag 27 Juni 2008 21:28:54 schrieb Adam Williamson:
+> > On Wed, 2008-06-25 at 17:41 +0200, Oliver Neukum wrote:
+> > > Am Mittwoch 25 Juni 2008 04:05:13 schrieb Adam Williamson:
+> > > > On Mon, 2008-06-23 at 20:41 +0200, Oliver Neukum wrote:
+> > > > 
+> > > > > It is the module option "debug" for usb-serial.
+> > > > 
+> > > > OK, here you go:
+> > > 
+> > > Please also set the debug module parameter for the ipaq module.
+> > 
+> > OK.
+> 
+> Your device is considered to have two ports but not enough endpoints.
+> Please provide the output of "lsusb -v"
 
->
-> The work to detect the "am I being blocked" has already been done for
-> some of the aio patches, so I'm merely suggesting another use for it.
+Here's the lsusb stanza for the device.
+-- 
+adamw
 
-Hmm, I didn't realize this. I'll have to go look at that code.
+--=-Cd8mhDVOn3ETUxeHH0p2
+Content-Disposition: attachment; filename=26_lsusb.txt
+Content-Type: text/plain; name=26_lsusb.txt; charset=utf-8
+Content-Transfer-Encoding: 7bit
 
->
-> Isn't preemption an orthogonal problem ... it will surely exist even in
-> the threadpool approach?
-
-I was just thinking that the scheduler would need to differentiate between
-being blocked and being preempted. Seems that anytime a task would sleep
-(outside preemption) the mini-scheduler would need to schedule the next
-task.
-
->
-> > Having a thread pool sounds much more reasonable and easier to
-> > implement.
->
-> Easier to implement, yes.  Easier to program, unlikely, and coming with
-> a large amount of overhead, definitely.
-
-Hmm, I'd argue about the "easier to program" part, but the overhead I,
-unfortunately, have to argee with you.
-
->
-> > BTW, if something like this is implemented, I think that it should be a
-> > replacement for softirqs and tasklets.
-
-
--- Steve
+Bus 003 Device 002: ID 03f0:1016 Hewlett-Packard Jornada 548 / iPAQ HW6515 Pocket PC 
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               1.00
+  bDeviceClass          255 Vendor Specific Class
+  bDeviceSubClass       255 Vendor Specific Subclass
+  bDeviceProtocol       255 Vendor Specific Protocol
+  bMaxPacketSize0        16
+  idVendor           0x03f0 Hewlett-Packard
+  idProduct          0x1016 Jornada 548 / iPAQ HW6515 Pocket PC 
+  bcdDevice            0.00
+  iManufacturer           0 
+  iProduct                0 
+  iSerial                 0 
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           32
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0 
+    bmAttributes         0x80
+      (Bus Powered)
+    MaxPower               50mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           2
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass    255 Vendor Specific Subclass
+      bInterfaceProtocol    255 Vendor Specific Protocol
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x04  EP 4 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+Device Status:     0x0000
+  (Bus Powered)
+--=-Cd8mhDVOn3ETUxeHH0p2--
 
