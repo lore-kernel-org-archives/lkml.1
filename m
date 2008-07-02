@@ -1,86 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762457AbYGBE6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762453AbYGBFAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762457AbYGBE6r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 00:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbYGBE6j
+	id S1762453AbYGBFAh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 01:00:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbYGBFA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 00:58:39 -0400
-Received: from il.qumranet.com ([212.179.150.194]:29561 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753073AbYGBE6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 00:58:38 -0400
-Message-ID: <486B0B0F.5010605@qumranet.com>
-Date: Wed, 02 Jul 2008 07:58:55 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 2 Jul 2008 01:00:29 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:52765 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751507AbYGBFA2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 01:00:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=V0Exh+IiC771yDOI0Nd/Vj/puiCNqlZRgRAbmzExtpa3wrmwvKL/rof8ZnhJ/CzmsU
+         XzyGXYH74mtHe9m2IJnjQiN1iGt779Fw5Ys2MQv1CD+G5E9EP3zpqy+4KwIoGHb2Hja5
+         6KsiOcT0ipLIXvMl3v4nICUZ+1RnXYvttnto8=
+Message-ID: <28c262360807012200x27711a0fq280504b00096f7e6@mail.gmail.com>
+Date: Wed, 2 Jul 2008 14:00:25 +0900
+From: "MinChan Kim" <minchan.kim@gmail.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [resend][PATCH -mm] split_lru: fix pagevec_move_tail() doesn't treat unevictable page
+Cc: "Rik van Riel" <riel@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20080702122850.380B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Andrea Arcangeli <andrea@qumranet.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, kvm@vger.kernel.org,
-       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Izik Eidus <izike@qumranet.com>, Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 0 of 3] mmu notifier v18 for -mm
-References: <patchbomb.1214440016@duo.random> <20080701214415.b3f93706.akpm@linux-foundation.org>
-In-Reply-To: <20080701214415.b3f93706.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (firebolt.argo.co.il [0.0.0.0]); Wed, 02 Jul 2008 07:58:55 +0300 (IDT)
+Content-Disposition: inline
+References: <20080701093840.07b48ced@bree.surriel.com>
+	 <28c262360807011739w5668920buf7880de6ed30f912@mail.gmail.com>
+	 <20080702122850.380B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 26 Jun 2008 02:26:56 +0200 Andrea Arcangeli <andrea@qumranet.com> wrote:
+On Wed, Jul 2, 2008 at 12:30 PM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
+> Hi Kim-san,
 >
->   
->> Hello,
+>> Hi, Rik and Kosaki-san
 >>
->> Christoph suggested me to repost v18 for merging in -mm, to give it more
->> exposure before the .27 merge window opens. There's no code change compared to
->> the previous v18 submission (the only change is the correction in the comment
->> in the mm_take_all_locks patch rightfully pointed out by Linus).
+>> I want to know exact race situation for remaining git log.
+>> As you know, git log is important for me who is newbie to understand source
 >>
->> Full patchset including other XPMEM support patches can be found here:
+>> There are many possibility in this race problem.
 >>
->> 	http://www.kernel.org/pub/linux/kernel/people/andrea/patches/v2.6/2.6.26-rc7/mmu-notifier-v18
->>
->> Only the three patches of the patchset I'm submitting here by email are ready
->> for merging, the rest you can find in the website is not ready for merging yet
->> for various performance degradations, lots of the XPMEM patches needs to be
->> elaborated to avoid any slowdown for the non-XPMEM case, but I keep
->> maintaining them to make life easier to XPMEM current development and later we
->> can keep work on them to make them suitable for inclusion to avoid any
->> performance degradation risk.
->>     
+>> Did you use hugepage in this test ?
+>> I think that If you used hugepage, it seems to happen following race.
 >
-> I'm a bit concerned about merging the first three patches when there
-> are eleven more patches of which some, afacit, are required to make
-> these three actually useful.  Committing these three would be signing a
-> blank cheque.
+> I don't use hugepage. but use SYSV-shmem.
+> so following scenario is very reasonable.
+
+It is not reasonable if you don't use hugepage.
+That's because file's address_space is still unevictable.
+Am I missing your point?
+
+I think following case is more reasonable rather than it,
+Please, Let you review this scenario.
+---
+
+CPU1							CPU2
+
+shrink_[in]active_list
+cull_unevictable_page
+putback_lru_page
+TestClearPageUnevicetable
+						rotate_reclaimable_page
+						!PageUnevictable(page)
+add_page_to_unevictable_list
+						pagevec_move_tail
+
+
+
+> OK.
+> I resend my patch with following description.
 >
->   
-
-The first three are useful for kvm, gru, and likely drm and rdma nics.
-
-It is only xpmem which requires the other eleven patches.
-
-> Because if we hit strong objections with the later patches we end up in a
-> cant-go-forward, cant-go-backward situation.
 >
->   
+>>
+>> --------------
+>>
+>> CPU1                                                           CPU2
+>>
+>> shm_unlock
+>> scan_mapping_unevictable_pages
+>> check_move_unevictable_page
+>> ClearPageUnevictable                                 rotate_reclaimable_page
+>>
+>> PageUnevictable(page) return 0
+>> SetPageUnevictable
+>> list_move(LRU_UNEVICTABLE)
+>>
+>> local_irq_save
+>>
+>> pagevec_move_tail
+>>
+>> Do you think it is possible ?
+>
+>
+>
 
-No, we end up in a some-people-are-happy, 
-some-have-to-redo-their-homework situation.
+
 
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+Kinds regards,
+MinChan Kim
