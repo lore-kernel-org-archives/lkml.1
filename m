@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758714AbYGBPJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757615AbYGBPOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758714AbYGBPJX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 11:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbYGBPJL
+	id S1757615AbYGBPOR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 11:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYGBPOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 11:09:11 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:53831 "EHLO pardus.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754689AbYGBPJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 11:09:10 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [patch 1/9] TTY: fix for tty operations bugs
-Date: Wed, 2 Jul 2008 18:09:05 +0300
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, greg@kroah.com,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Cox <alan@redhat.com>
-References: <20080701151057.930340322@mini.kroah.org> <200807021257.47593.caglar@pardus.org.tr> <20080702144149.GA16850@suse.de>
-In-Reply-To: <20080702144149.GA16850@suse.de>
+	Wed, 2 Jul 2008 11:14:06 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:52194 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753241AbYGBPOF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 11:14:05 -0400
+Message-ID: <486B9B3A.4060709@firstfloor.org>
+Date: Wed, 02 Jul 2008 17:14:02 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200807021809.07679.caglar@pardus.org.tr>
+To: Nathan Lynch <ntl@pobox.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: Re: Is sysfs the right place to get cache and CPU topology info?
+References: <18539.8141.683072.967851@cargo.ozlabs.ibm.com> <20080702003755.4daff613.akpm@linux-foundation.org> <87r6acsfo1.fsf@basil.nowhere.org> <20080702143554.GY9594@localdomain>
+In-Reply-To: <20080702143554.GY9594@localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi;
+Nathan Lynch wrote:
+> Andi Kleen wrote:
+>> Andrew Morton <akpm@linux-foundation.org> writes:
+>>> sysfs is part of the kernel ABI.  We should design our interfaces there
+>>> as carefully as we design any others.
+>> The basic problem is that sysfs exports an internal kernel object model
+>> and these tend to change. To really make it stable would require 
+>> splitting it into internal and presented interface.
+> 
+> True, but... /sys/devices/system/cpu has been there since around 2.6.5
+> iirc.  A google code search for that path shows plenty of programs
+> (including hal) that hard-code it.  Exposed object model or not,
+> changing that path would break lots of software.
 
-02 Tem 2008 Çar tarihinde, Greg KH şunları yazmıştı: 
-> Are you sure you redid your patch set, I see fixes for the error
-> messages above in that patch I did.  I also don't get the build problems
-> myself anymore.
+Yes it would.
 
-I start to hate myself :(, as you said refreshing whole patchset with quilt solved the compiliation problem, i thought i did refresh but i didn't, and compiled kernel works fine. I really have to drink some coffee.
+But Greg is making noises of getting rid of sysdevs and it wouldn't
+surprise me if that ended up being user visible since most object
+model changes end up being visible.
 
-> confused,
+> 
+> 
+>> I would be all
+>> for it, but it doesn't seem realistic to me currently. If we cannot
+>> even get basic interfaces like the syscall capability stable how would
+>> you expect to stabilize the complete kobjects? 
+>>
+>> And the specific problem with the x86 cache sysfs interface is that it's so
+>> complicated that no human can really read it directly. This means to
+>> actually use it you need some kind of frontend (i have a cheesy
+>> lscache script for this).
+> 
+> Human readability is nice, 
 
-Sorry for your time...
+When it's not human readable, then it's usually also not Joe Normal Programmer
+usable.
 
-> greg k-h
+> but a more important issue IMO is whether
+> the cache interface can be considered stable enough for programs to
+> rely on it.  I notice there's no entry for it in Documentation/ABI.
 
-Cheers
--- 
-S.Çağlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
+For x86 it follows closely the Intel CPUID  architectural specification, which
+can be considered stable (at least for Intel, other vendors do not
+necessarily implement it. But for AMD it is faked at least)
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
+-Andi
+
