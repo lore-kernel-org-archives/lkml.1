@@ -1,75 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbYGBAIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758956AbYGBAYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760878AbYGBAIy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 20:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758134AbYGBAIn
+	id S1758956AbYGBAYU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 20:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756102AbYGBAYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 20:08:43 -0400
-Received: from qb-out-0506.google.com ([72.14.204.236]:13492 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756337AbYGBAIl (ORCPT
+	Tue, 1 Jul 2008 20:24:04 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:43148 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755851AbYGBAYD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 20:08:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=rzgfz0qPjecD8gKwBUnPsRaNwjRRFanWDr0wOewBSIL5QRXYa+wqmIe30QzOgSy+cv
-         zay1iVWbcHKWC5EDbiAfKPIBqpilFdEQobIAbare/Z7cJpHt78vpmkf2rcGv9IA6fPBg
-         DRV+xDgG5paqnIS7xrZ26CaM6uAvNENfrR3ao=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [PATCH 5/23] make section names compatible with -ffunction-sections -fdata-sections: blackfin
-Date: Wed, 2 Jul 2008 02:08:33 +0200
-User-Agent: KMail/1.8.2
-Cc: linux-arch@vger.kernel.org, "Russell King" <rmk@arm.linux.org.uk>,
-       "David Howells" <dhowells@redhat.com>,
-       "Ralf Baechle" <ralf@linux-mips.org>,
-       "Lennert Buytenhek" <kernel@wantstofly.org>,
-       "Josh Boyer" <jwboyer@linux.vnet.ibm.com>,
-       "Paul Mackerras" <paulus@samba.org>,
-       "David Woodhouse" <dwmw2@infradead.org>,
-       "Andi Kleen" <andi@firstfloor.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org,
-       "Paul Gortmaker" <paul.gortmaker@windriver.com>,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Tim Bird" <tim.bird@am.sony.com>,
-       "Martin Schwidefsky" <schwidefsky@de.ibm.com>,
-       "Dave Miller" <davem@davemloft.net>
-References: <200807020235.08025.vda.linux@googlemail.com> <8bd0f97a0807011558u2c02f6fcre2f3af3d5cced936@mail.gmail.com>
-In-Reply-To: <8bd0f97a0807011558u2c02f6fcre2f3af3d5cced936@mail.gmail.com>
+	Tue, 1 Jul 2008 20:24:03 -0400
+Message-ID: <486AC9D9.9030506@zytor.com>
+Date: Tue, 01 Jul 2008 17:20:41 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Mike Travis <travis@sgi.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org>	<485ADA12.5010505@sgi.com> <485ADC73.60009@goop.org>	<485BDB04.4090709@sgi.com> <485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com>	<m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>	<m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>	<486A68DD.80702@goop.org> <m1d4lxgwxj.fsf@frodo.ebiederm.org>	<486A9D4F.8010508@goop.org> <m1skutffn4.fsf@frodo.ebiederm.org> <486AA72B.6010401@goop.org>
+In-Reply-To: <486AA72B.6010401@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807020208.33302.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 July 2008 00:58, Mike Frysinger wrote:
-> On Tue, Jul 1, 2008 at 8:35 PM, Denys Vlasenko wrote:
-> > The purpose of this patch is to make kernel buildable
-> > with "gcc -ffunction-sections -fdata-sections".
-> > This patch fixes blackfin architecture.
+Jeremy Fitzhardinge wrote:
 > 
-> the comment right above what you changed says it already works for
-> Blackfin.  so you arent fixing it at all.
-> >                /* This gets done first, so the glob doesn't suck it in */
-> >                . = ALIGN(32);
-> > -               *(.data.cacheline_aligned)
-> > +               *(.cacheline_aligned.data)
+> Yes, and there's no reason we couldn't do the same on 64-bit, aside from 
+> the stack-protector's use of %gs:40.  There's no code-size cost in large 
+> offsets, since they're always 32-bits anyway (there's no short absolute 
+> addressing mode).
+> 
+> If we manually generate %gs-relative references to percpu data, then 
+> it's no different to what we do with 32-bit, whether it be a specific 
+> symbol address or using the TLS relocations.
+> 
 
-This may pull in an unrelated data object named "cacheline_aligned"
-(say, a static variable in a driver). If that variable is not
-itself aligned to the cacheline size, it will mess up alignment of all
-objects in .data.cacheline_aligned which follow. Not good.
+If we think the problem is the zero-basing triggering linker bugs, we 
+should probably just use a small offset, like 64 (put a small dummy 
+section before the .percpu.data section to occupy this section.)
 
-To be safe from such weird and hard to debug problems
-it's better to not use names like .data.XXXX at all.
-I just uniformly renamed al such "special sections"
-in the kernel to .XXXXX.data
---
-vda
+I'm going to play with this a bit and see if I come up with something 
+sanish.
+
+	-hpa
