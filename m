@@ -1,84 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbYGBEKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760657AbYGBEKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbYGBEKO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 00:10:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYGBEJ7
+	id S1760657AbYGBEKn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 00:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYGBEKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 00:09:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46007 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751155AbYGBEJ6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 00:09:58 -0400
-Date: Tue, 1 Jul 2008 21:06:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: alexisb@us.ibm.com, linux-kernel@vger.kernel.org, muli@il.ibm.com,
-       mingo@elte.hu
-Subject: Re: [PATCH -mm] fix per-device dma_mapping_ops support
-Message-Id: <20080701210620.1e90e1fd.akpm@linux-foundation.org>
-In-Reply-To: <20080702124328B.fujita.tomonori@lab.ntt.co.jp>
-References: <1214949124.6553.9.camel@alexis>
-	<20080702113711Y.fujita.tomonori@lab.ntt.co.jp>
-	<20080701194840.258b500f.akpm@linux-foundation.org>
-	<20080702124328B.fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Jul 2008 00:10:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44108 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757981AbYGBEKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 00:10:20 -0400
+Date: Wed, 2 Jul 2008 00:09:22 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH 1/2] Avoid bio_endio recursion
+In-Reply-To: <20080626070723.GL20851@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0807020001290.9097@engineering.redhat.com>
+References: <Pine.LNX.4.64.0806240118250.24220@engineering.redhat.com>
+ <20080624080744.GL20851@kernel.dk> <Pine.LNX.4.64.0806241017390.23052@engineering.redhat.com>
+ <20080625082421.GU20851@kernel.dk> <Pine.LNX.4.64.0806252008380.11130@engineering.redhat.com>
+ <20080626070723.GL20851@kernel.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Jul 2008 12:43:39 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> Right, that wont work of course. Completions are typically done through
+> a softirq, so it is not currently done with hard interrupts disabled.
 
-> My initial patch has some bugs (wasn't tested because I don't have
-> Calgary hardware) but Alexis fixed the problems and submitted new one
-> (he successfully tested it). I had one minor comment about it then he
-> submitted another one.
-> 
-> http://marc.info/?l=linux-kernel&m=121329005131176&w=2
-> 
-> I think that it can get into mainline with the dma-mapping-per-device
-> patchset.
-> 
-> As we discussed, we could do better but it takes some time. I think
-> that it's better to fix Calgary problems now. Then I'll try to improve
-> dma-mapping-per-device stuff.
-> 
-> Here's a repost of Alexis's latest patch.
-> 
-> Thanks,
-> 
-> =
-> From: Alexis Bruemmer <alexisb@us.ibm.com>
-> Subject: [PATCH] x86 calgary: fix handling of devces that aren't behind the Calgary
-> 
-> The calgary code can give drivers addresses above 4GB which is very
-> bad for hardware that is only 32bit DMA addressable.
-> 
-> With this patch, the calgary code sets the global dma_ops to swiotlb
-> or nommu properly, and the dma_ops of devices behind the
-> Calgary/CalIOC2 to calgary_dma_ops. So the calgary code can handle
-> devices safely that aren't behind the Calgary/CalIOC2.
-> 
+I thought, from hardirq - that's what IDE is doing. And they are called 
+with interrupts disabled (maybe unless you specify unmaskirq, which is not 
+default). What block driver does completions with softirq? ... and why?
 
-OK..  Looks like this needs to be folded into
-dma-mapping-x86-per-device-dma_mapping_ops-support prior to merging to
-keep everything bisect-happy.
+> So it's a bit of a shame to impose this extra restriction, bio unrolling 
+> is necessarily a really short operation. We could reenable around the 
+> bi_end_io() call, but then we'd need to save and restore for each bio.
 
-> +		if(translation_enabled(tbl))
+I found another weird thing --- why does local_irq_save() execute that 
+microcoded "cli" instruction even if interrupts are already disabled? That 
+could be definitely optimized.
 
-checkpatch?
+And does local_irq_restore() need to execute even more costy "popf" when 
+it makes a transition from disabled to disabled state? What's 
+local_irq_restore semantics --- is it allowed to use local_irq_restore for 
+transition from interrupt-enabled state into interrupt-disabled state?
 
+> Please make that
+>
+>        bio->bi_flags &= ~(1 << BIO_SEG_VALID);
+>        bio->bi_phys_segments = error;
 
-btw, x86_64 allmodconfig says:
+OK, here is the updated patch:
 
-arch/x86/kernel/pci-calgary_64.c: In function 'build_detail_arrays':
-arch/x86/kernel/pci-calgary_64.c:1263: warning: comparison is always false due t
+Avoid recursion on bio_endio. bio_endio calls bio->bi_end_io which may in turn
+call bio_endio again. When this recursion happens, put the new bio to the queue
+and process it later, from the top-level bio_endio.
 
-which is
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
 
-	if (rio_table_hdr->num_scal_dev > MAX_NUMNODES){
+---
+  fs/bio.c            |   39 ++++++++++++++++++++++++++++++++++++---
+  include/linux/bio.h |    3 +++
+  2 files changed, 39 insertions(+), 3 deletions(-)
 
-so I'll cancel that order for a 512-node Calgary machine ;)
+Index: linux-2.6.26-rc8-devel/fs/bio.c
+===================================================================
+--- linux-2.6.26-rc8-devel.orig/fs/bio.c	2008-07-02 04:20:43.000000000 +0200
++++ linux-2.6.26-rc8-devel/fs/bio.c	2008-07-02 04:22:15.000000000 +0200
+@@ -1166,15 +1166,48 @@ void bio_check_pages_dirty(struct bio *b
+   *   bio unless they own it and thus know that it has an end_io
+   *   function.
+   **/
++static DEFINE_PER_CPU(struct bio **, bio_end_queue) = { NULL };
++
+  void bio_endio(struct bio *bio, int error)
+  {
++	struct bio ***bio_end_queue_ptr;
++	struct bio *bio_queue;
++
++	unsigned long flags;
++
++	bio->bi_flags &= ~(1 << BIO_SEG_VALID);
++	bio->bi_phys_segments = error;
+  	if (error)
+  		clear_bit(BIO_UPTODATE, &bio->bi_flags);
+  	else if (!test_bit(BIO_UPTODATE, &bio->bi_flags))
+-		error = -EIO;
++		bio->bi_phys_segments = -EIO;
++
++	local_irq_save(flags);
++	bio_end_queue_ptr = &__get_cpu_var(bio_end_queue);
++
++	if (*bio_end_queue_ptr) {
++		**bio_end_queue_ptr = bio;
++		*bio_end_queue_ptr = &bio->bi_next;
++		bio->bi_next = NULL;
++	} else {
++		bio_queue = NULL;
++		*bio_end_queue_ptr = &bio_queue;
++
++next_bio:
++		if (bio->bi_end_io)
++			bio->bi_end_io(bio, (short)bio->bi_phys_segments);
++
++		if (bio_queue) {
++			bio = bio_queue;
++			bio_queue = bio->bi_next;
++			if (!bio_queue)
++				*bio_end_queue_ptr = &bio_queue;
++			goto next_bio;
++		}
++		*bio_end_queue_ptr = NULL;
++	}
+
+-	if (bio->bi_end_io)
+-		bio->bi_end_io(bio, error);
++	local_irq_restore(flags);
+  }
+
+  void bio_pair_release(struct bio_pair *bp)
+Index: linux-2.6.26-rc8-devel/include/linux/bio.h
+===================================================================
+--- linux-2.6.26-rc8-devel.orig/include/linux/bio.h	2008-07-02 04:20:43.000000000 +0200
++++ linux-2.6.26-rc8-devel/include/linux/bio.h	2008-07-02 04:21:16.000000000 +0200
+@@ -86,6 +86,9 @@ struct bio {
+
+  	/* Number of segments in this BIO after
+  	 * physical address coalescing is performed.
++	 *
++	 * When ending a bio request in bio_endio, this field is temporarily
++	 * (ab)used to keep the error code.
+  	 */
+  	unsigned short		bi_phys_segments;
+
