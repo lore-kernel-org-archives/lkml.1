@@ -1,58 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760903AbYGBF5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761362AbYGBGN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760903AbYGBF5o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 01:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754129AbYGBF5e
+	id S1761362AbYGBGN4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 02:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbYGBGNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 01:57:34 -0400
-Received: from mis011.exch011.intermedia.net ([64.78.21.10]:13110 "EHLO
-	mis011.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754400AbYGBF5e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 01:57:34 -0400
-X-Greylist: delayed 909 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Jul 2008 01:57:34 EDT
-From: Amit Shah <amit.shah@qumranet.com>
-Organization: Qumranet Inc.
-To: iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 01/34] AMD IOMMU: add Kconfig entry
-Date: Wed, 2 Jul 2008 11:15:17 +0530
-User-Agent: KMail/1.9.9
-Cc: Joerg Roedel <joro@8bytes.org>, Muli Ben-Yehuda <muli@il.ibm.com>,
-       Adrian Bunk <bunk@kernel.org>, robert.richter@amd.com,
-       linux-kernel@vger.kernel.org, Ben-Ami Yassour1 <benami@il.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, Sebastian.Biemueller@amd.com,
-       tglx@linutronix.de, mingo@redhat.com, bhavna.sarathy@amd.com
-References: <1214508490-29683-2-git-send-email-joerg.roedel@amd.com> <20080627173100.GD26130@il.ibm.com> <20080627174034.GG10197@8bytes.org>
-In-Reply-To: <20080627174034.GG10197@8bytes.org>
+	Wed, 2 Jul 2008 02:13:42 -0400
+Received: from namei.org ([69.55.235.186]:58970 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754822AbYGBGNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 02:13:41 -0400
+Date: Wed, 2 Jul 2008 16:12:44 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: jjohansen@suse.de, Andrew Morton <akpm@linux-foundation.org>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>
+Subject: Re: [patch] security: fix dummy xattr functions
+In-Reply-To: <E1KDmeW-0006KB-2x@pomaz-ex.szeredi.hu>
+Message-ID: <Xine.LNX.4.64.0807021604120.26138@us.intercode.com.au>
+References: <E1KDmeW-0006KB-2x@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807021115.18242.amit.shah@qumranet.com>
-X-OriginalArrivalTime: 02 Jul 2008 05:42:23.0539 (UTC) FILETIME=[66F64830:01C8DC06]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 June 2008 23:10:35 Joerg Roedel wrote:
-> On Fri, Jun 27, 2008 at 01:31:00PM -0400, Muli Ben-Yehuda wrote:
+On Tue, 1 Jul 2008, Miklos Szeredi wrote:
 
-> > > > > and to handle devices with limited DMA address ranges.
-> > > >
-> > > > I'd be pretty surprised if you'll find such devices on machines which
-> > > > will have AMD's IOMMU...
-> > >
-> > > Think of 32bit PCI devices in a host with more than 4GB memory :)
-> >
-> > I am thinking of them and I'd be surprised if you'd find any in such
-> > machines. Certainly I assume none of the on-board devices will have
-> > this ancient limitation. But hey, it could happen ;-)
->
-> The IOMMU machine under my desk has a 32bit PCI slot with a card in it
+> Hi James,
+> 
+> If this (untested) patch looks OK, could you please apply it to your
+> tree?
 
-Also, remember the "odd-ball devices" we had in our "why is PCI passthrough 
-needed" slide? People might want to upgrade to newer servers and still retain 
-their old PCI devices and assign them to guests.
+As I understand it, filesystem capabilities is only enabled when either 
+LSM is disabled, or the LSM capabilities module is built.
 
-Amit
+In both cases, security/commoncap.o is built.  With LSM disabled, the 
+correct cap_inode_xxx functions will be linked.  With LSM+capabilities, 
+either the capability LSM will be loaded, or another LSM will need to 
+deliberately stack it.
+
+So, I think the existing code is correct.
+
+> 
+> Replace open coded xattr checks with cap_inode_xxx() function calls in
+> dummy_inode_setxattr() and dummy_inode_removexattr().  The old ones
+> were out of sync with the cap_inode_xxx() implementation, which could
+> even be a security problem.
+> 
+> Noticed by John Johansen.
+> 
+> CC: John Johansen <jjohansen@suse.de>
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> ---
+>  security/dummy.c |   12 ++----------
+>  1 file changed, 2 insertions(+), 10 deletions(-)
+> 
+> Index: linux-2.6/security/dummy.c
+> ===================================================================
+> --- linux-2.6.orig/security/dummy.c	2008-07-01 21:44:03.000000000 +0200
+> +++ linux-2.6/security/dummy.c	2008-07-01 21:51:08.000000000 +0200
+> @@ -370,11 +370,7 @@ static void dummy_inode_delete (struct i
+>  static int dummy_inode_setxattr (struct dentry *dentry, const char *name,
+>  				 const void *value, size_t size, int flags)
+>  {
+> -	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+> -		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
+> -	    !capable(CAP_SYS_ADMIN))
+> -		return -EPERM;
+> -	return 0;
+> +	return cap_inode_setxattr(dentry, name, value, size, flags);
+>  }
+>  
+>  static void dummy_inode_post_setxattr (struct dentry *dentry, const char *name,
+> @@ -395,11 +391,7 @@ static int dummy_inode_listxattr (struct
+>  
+>  static int dummy_inode_removexattr (struct dentry *dentry, const char *name)
+>  {
+> -	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+> -		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
+> -	    !capable(CAP_SYS_ADMIN))
+> -		return -EPERM;
+> -	return 0;
+> +	return cap_inode_removexattr(dentry, name);
+>  }
+>  
+>  static int dummy_inode_need_killpriv(struct dentry *dentry)
+> 
+
+-- 
+James Morris
+<jmorris@namei.org>
