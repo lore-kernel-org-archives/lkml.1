@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbYGBJI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761174AbYGBJKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758029AbYGBJI4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 05:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbYGBJIp
+	id S1761174AbYGBJKS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 05:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbYGBJKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 05:08:45 -0400
-Received: from smtprelay04.ispgateway.de ([80.67.18.16]:59655 "EHLO
-	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752464AbYGBJIo (ORCPT
+	Wed, 2 Jul 2008 05:10:05 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:40801 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752910AbYGBJKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 05:08:44 -0400
-X-Greylist: delayed 313 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Jul 2008 05:08:44 EDT
-Message-ID: <486B4460.5000702@selhorst.net>
-Date: Wed, 02 Jul 2008 11:03:28 +0200
-From: Marcel Selhorst <tpm@selhorst.net>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080618)
+	Wed, 2 Jul 2008 05:10:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=SaGxuOTKZlyZSkKle1//LG9iMod0pyhwzCm+0VDJiqweU7gxdtXRtPRNHiY39CGNna
+         ilKyZV/JbnzyAwrgrnEz2+NdvcojKohR7XUGFbKwHaP7zkcJntE0o6Kuu2Z0UwDE+hUm
+         SWKU5DVEUVMdO2ofFBoutM4CONT712pkYco9s=
+Message-ID: <a4423d670807020210i706dcf7du5cfb1e35fadb7cd7@mail.gmail.com>
+Date: Wed, 2 Jul 2008 13:10:02 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: next-0630: sparc64: build failed
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org, sparclinux@vger.kernel.org,
+       "David Miller" <davem@davemloft.net>, sagar.abhishek@gmail.com,
+       rostedt@goodmis.org
+In-Reply-To: <20080701154648.GA31057@elte.hu>
 MIME-Version: 1.0
-To: Marcin Obara <marcin_obara@users.sourceforge.net>
-CC: tpmdd-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tpm: add Intel TPM TIS device HID
-References: <alpine.DEB.1.00.0806281913410.7076@ip-195-3-221-75.vnet.pl>
-In-Reply-To: <alpine.DEB.1.00.0806281913410.7076@ip-195-3-221-75.vnet.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.1-5; AVE: 7.8.0.59; VDF: 7.0.5.34; host: mail)
-X-Df-Sender: 174499
+Content-Disposition: inline
+References: <a4423d670807010825t7ea2eb44oda3f08dc007c40a2@mail.gmail.com>
+	 <20080701154648.GA31057@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Marcel Selhorst <tpm@selhorst.net>
+2008/7/1 Ingo Molnar <mingo@elte.hu>:
+> thanks Alexander - does the patch below fix it for you?
+> commit 760378e1497841246ea7e42abad617d8a8ac0bcc
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Tue Jul 1 17:35:06 2008 +0200
+>
+>    fix "ftrace: store mcount address in rec->ip"
+>
 
-Marcin Obara schrieb:
-> This patch adds Intel TPM TIS device HID :  ICO0102
-> 
-> Signed-off-by: Marcin Obara <marcin_obara@users.sourceforge.net>
-> 
-> --- linux_tpm/drivers/char/tpm/tpm_tis.c	2008-06-05 20:51:13.000000000 +0200
-> +++ linux_intel/drivers/char/tpm/tpm_tis.c	2008-06-25 06:31:39.000000000 +0200
-> @@ -623,6 +623,7 @@ static struct pnp_device_id tpm_pnp_tbl[
->  	{"IFX0102", 0},		/* Infineon */
->  	{"BCM0101", 0},		/* Broadcom */
->  	{"NSC1200", 0},		/* National */
-> +	{"ICO0102", 0},		/* Intel */
->  	/* Add new here */
->  	{"", 0},		/* User Specified */
->  	{"", 0}			/* Terminator */
-> 
+Yes, it fixes the issue. I have tried next-0702 which already includes
+your patch.
+But it has a name a1d5d08eb4f5c76acd5bb115e13791ce87ec356b.
