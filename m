@@ -1,46 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762632AbYGBGdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762818AbYGBGe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762632AbYGBGdf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 02:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758809AbYGBGd2
+	id S1762818AbYGBGe3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 02:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759585AbYGBGeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 02:33:28 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:44177 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755653AbYGBGd1 (ORCPT
+	Wed, 2 Jul 2008 02:34:21 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:37200 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755795AbYGBGeU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 02:33:27 -0400
-Date: Wed, 2 Jul 2008 08:33:25 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Donkey Ia <d0nk3y.ia@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: option of kernel config
-In-Reply-To: <f2ae95280807011525t250ff74k2f20d876860f34e6@mail.gmail.com>
-Message-ID: <alpine.LNX.1.10.0807020829000.20393@fbirervta.pbzchgretzou.qr>
-References: <f2ae95280807011525t250ff74k2f20d876860f34e6@mail.gmail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 2 Jul 2008 02:34:20 -0400
+X-Sasl-enc: 8H+MVZlCODyyvMjJhjn3rVOebpDuGDhhjIwHVogJGfiW 1214980459
+Message-ID: <3f2201c8dc0d$d1012d60$0b01a8c0@robmhp>
+From: "Rob Mueller" <robm@fastmail.fm>
+To: "Michael Kerrisk" <mtk.manpages@googlemail.com>,
+       "Bron Gondwana" <brong@fastmail.fm>
+Cc: "Philippe De Muyter" <phdm@macqel.be>, <linux-kernel@vger.kernel.org>
+References: <20080701132149.GA32510@frolo.macqel> <517f3f820807011116g6ce1b3e1qf166070f7a4c523f@mail.gmail.com> <20080701214423.GA29875@brong.net> <cfd18e0f0807012214o78353faal84a5fa764d3210bf@mail.gmail.com>
+Subject: Re: mmap'ed memory in core files ?
+Date: Wed, 2 Jul 2008 16:35:22 +1000
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>> This is particularly interesting on a 64 bit kernel where a bug in
+>> your code causes you to try to read something about 2Gb into your
+>> alleged mmaped file (actual size ~500 bytes) and the segfault causes
+>> a coredump.
+>
+> Do you have a ssimple example program for this?
 
-On Wednesday 2008-07-02 00:25, Donkey Ia wrote:
+Trying to reproduce the problem, I think it's actually related to sparse 
+files.
 
->Please, excuse me - probably it's a very stupid question for this
->place, but i need to know - could you tell me please, ﻿which exactly
->option (or maybe options) of kernel config calls ide hard disks
->/dev/sdX instead /dev/hdX?
->N?????r??y??????X??ǧv???)޺{.n??????{????zX????ܨ}???Ơz??j:+v???????zZ+???zf???h???~????????z??w?????????&?)ߢf???jǫy?m???A?a????0???????
+$ cat a.c
+#include <stdlib.h>
+int main() {
+  unsigned int i;
+  char * a = malloc(3000000000u);
+  *(int *)0 = 0;
+}
+$ gcc a.c
+$ ulimit -c 10240 && ./a.out
+$ ls -l
+-rw------- 1 root root 3000082432 Jul  2 02:23 core.7761
+$
 
-There is no 'option', this is hardcoded in drivers/scsi/sd.c.
+It's clearly sparse, but slightly unintuitive that the ulimit doesn't 
+actually limit the filesize, just the size of the data written to the file.
 
-sd.c:           sprintf(gd->disk_name, "sd%c", 'a' + index % 26);
-sd.c:           sprintf(gd->disk_name, "sd%c%c",
-sd.c:           sprintf(gd->disk_name, "sd%c%c%c",
+If I change the code to include this line after the malloc():
 
-And you should not be changing this in that place.
+  for (i = 0; i < 3000000000u; i++) a[i] = i % 256;
 
-Well I prefer libata over oldide since the scsi stack is loaded anyway.
+I get:
+
+-rw------- 1 root root   10485760 Jul  2 02:25 core.8992
+
+More what you'd expect.
+
+One interesting side effect of running a 64-bit kernel + 32-bit userland is 
+that previously bugs that might have previously caused malloc() to fail (eg 
+underflowing integer to a huge value), now succeed and allocate a huge chunk 
+of memory rather than failing and causing the program to bailout/crash on 
+dereference.
+
+Rob
+
