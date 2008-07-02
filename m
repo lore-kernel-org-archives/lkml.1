@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763660AbYGBLId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763009AbYGBLNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763660AbYGBLId (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 07:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbYGBLIZ
+	id S1763009AbYGBLNz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 07:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbYGBLNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 07:08:25 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:5789 "EHLO
+	Wed, 2 Jul 2008 07:13:47 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:6270 "EHLO
 	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751748AbYGBLIZ (ORCPT
+	with ESMTP id S1752910AbYGBLNq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 07:08:25 -0400
-To: "Rob Mueller" <robm@fastmail.fm>
-Cc: "Michael Kerrisk" <mtk.manpages@googlemail.com>,
-       "Bron Gondwana" <brong@fastmail.fm>,
-       "Philippe De Muyter" <phdm@macqel.be>, <linux-kernel@vger.kernel.org>
-Subject: Re: mmap'ed memory in core files ?
+	Wed, 2 Jul 2008 07:13:46 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Paul Mackerras <paulus@samba.org>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: Re: Is sysfs the right place to get cache and CPU topology info?
 From: Andi Kleen <andi@firstfloor.org>
-References: <20080701132149.GA32510@frolo.macqel>
-	<517f3f820807011116g6ce1b3e1qf166070f7a4c523f@mail.gmail.com>
-	<20080701214423.GA29875@brong.net>
-	<cfd18e0f0807012214o78353faal84a5fa764d3210bf@mail.gmail.com>
-	<3f2201c8dc0d$d1012d60$0b01a8c0@robmhp>
-Date: Wed, 02 Jul 2008 13:07:22 +0200
-In-Reply-To: <3f2201c8dc0d$d1012d60$0b01a8c0@robmhp> (Rob Mueller's message of "Wed, 2 Jul 2008 16:35:22 +1000")
-Message-ID: <87vdzosfx1.fsf@basil.nowhere.org>
+References: <18539.8141.683072.967851@cargo.ozlabs.ibm.com>
+	<20080702003755.4daff613.akpm@linux-foundation.org>
+Date: Wed, 02 Jul 2008 13:12:46 +0200
+In-Reply-To: <20080702003755.4daff613.akpm@linux-foundation.org> (Andrew Morton's message of "Wed, 2 Jul 2008 00:37:55 -0700")
+Message-ID: <87r6acsfo1.fsf@basil.nowhere.org>
 User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 02 Jul 2008 11:00:01.0204 (UTC) FILETIME=[C6372F40:01C8DC32]
+X-OriginalArrivalTime: 02 Jul 2008 11:05:24.0721 (UTC) FILETIME=[870BF610:01C8DC33]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rob Mueller" <robm@fastmail.fm> writes:
+Andrew Morton <akpm@linux-foundation.org> writes:
 >
-> It's clearly sparse, but slightly unintuitive that the ulimit doesn't
-> actually limit the filesize, just the size of the data written to the
-> file.
+> sysfs is part of the kernel ABI.  We should design our interfaces there
+> as carefully as we design any others.
 
-It's the only sane semantic. Imagine ulimit would limit the address
-range as you seem to be asking for. This means if you set e.g. ulimit
--c 1G then the kernel would never dump any address (mmap or not) above
-1GB. Never dumping the process stack for example. Clearly doesn't make
-any sense. And mmap'ed files are not different from any other 
-mappings in this regard.
+The basic problem is that sysfs exports an internal kernel object model
+and these tend to change. To really make it stable would require 
+splitting it into internal and presented interface.  I would be all
+for it, but it doesn't seem realistic to me currently. If we cannot
+even get basic interfaces like the syscall capability stable how would
+you expect to stabilize the complete kobjects? 
+
+And the specific problem with the x86 cache sysfs interface is that it's so
+complicated that no human can really read it directly. This means to
+actually use it you need some kind of frontend (i have a cheesy
+lscache script for this). I expect that eventually we'll have a standard
+tool for this. Right now most people still rely on /proc/cpuinfo
+output (which is actually human readable!), but it only shows simple
+cache topologies (L2 only) and with L3 and more complicated ones
+being more wide spread that doesn't cut it anymore. So I expect
+eventually utils-linux will grow a standard lscache program for this.
+And I expect people will eventually just use the output frontend instead of 
+sysfs.
 
 -Andi
