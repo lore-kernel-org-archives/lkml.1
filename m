@@ -1,134 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761631AbYGBCCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761603AbYGBCFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761631AbYGBCCf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 22:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757990AbYGBCC0
+	id S1761603AbYGBCFF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 22:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757739AbYGBCEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 22:02:26 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:32406 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756337AbYGBCCZ (ORCPT
+	Tue, 1 Jul 2008 22:04:55 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:34302 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755860AbYGBCEy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 22:02:25 -0400
-Date: Tue, 1 Jul 2008 20:02:23 -0600
-From: Alex Chiang <achiang@hp.com>
-To: jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com
-Cc: garyhade@us.ibm.com, linux-pci@vger.kernel-org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] PCI Hotplug: acpiphp: cleanup notify handler on all root
-	bridges
-Message-ID: <20080702020223.GA32046@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>, jbarnes@virtuousgeek.org,
-	kristen.c.accardi@intel.com, garyhade@us.ibm.com,
-	linux-pci@vger.kernel-org, linux-kernel@vger.kernel.org
+	Tue, 1 Jul 2008 22:04:54 -0400
+Message-ID: <486AE182.1020906@zytor.com>
+Date: Tue, 01 Jul 2008 19:01:38 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Mike Travis <travis@sgi.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org>	<485ADA12.5010505@sgi.com> <485ADC73.60009@goop.org>	<485BDB04.4090709@sgi.com> <485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com>	<m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>	<m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>	<486A68DD.80702@goop.org> <m1d4lxgwxj.fsf@frodo.ebiederm.org>	<486A9D4F.8010508@goop.org> <m1skutffn4.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1skutffn4.fsf@frodo.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jesse, Kristen,
+Eric W. Biederman wrote:
+> 
+> For i386 since virtual address space is precious and because there were
+> concerns about putting code in __pa we actually relocate the kernel symbols
+> during load right after decompression.  When we do relocations absolute
+> symbols are a killer.
+> 
 
-During the development of the physical PCI slot patch series,
-Gary Hade kept on reporting strange oopses due to interactions
-between pci_slot and acpiphp.
+Well, it means making it clear to the relocator if it should relocate 
+those symbols or not.  Since IIRC we're doing "all or nothing" 
+relocation, the relative offsets are always the same, even between sections.
 
-	http://lkml.org/lkml/2007/11/28/319
-
-He got busy and went away for a while, and that's when I was able
-to sneak my patchset into Jesse's linux-next branch. ;)
-
-Recently, Gary got some time to test again on his x3950 M2
-system, and together, we finally figured out the oops.
-
-This bug has always been present in acpiphp so it's not a
-regression. So if you want to hold off until the next merge
-window, I'm ok with that.
-
-Otherwise, I feel it's pretty low-risk and could go into the next
--rc. Totally your call, I have no strong feelings either way.
-
-Incidentally, figuring out this oops makes me feel a lot more
-confident about the pci_slot changes, as this has been in the
-back of my mind for a while. (famous last words?)
-
-Thanks,
-
-/ac
-
-From: Alex Chiang <achiang@hp.com>
-
-find_root_bridges() unconditionally installs handle_hotplug_event_bridge()
-as an ACPI_SYSTEM_NOTIFY handler for all root bridges.
-
-However, during module cleanup, remove_bridge() will only remove the
-notify handler iff the root bridge had a hot-pluggable slot directly
-underneath. That is:
-
-	root bridge -> hotplug slot
-
-But, if the topology looks like either of the following:
-
-	root bridge -> non-hotplug slot
-	root bridge -> p2p bridge -> hotplug slot
-
-Then we currently do not remove the notify handler from that root bridge.
-
-This can cause a kernel oops if we modprobe acpiphp later and it gets
-loaded somewhere else in memory. If the root bridge then receives a
-hotplug event, it will then attempt to call a stale, non-existent notify 
-handler and we blow up.
-
-Much thanks goes to Gary Hade for his persistent debugging efforts.
-
-Signed-off-by: Alex Chiang <achiang@hp.com>
-Signed-off-by: Gary Hade <garyhade@us.ibm.com>
----
- drivers/pci/hotplug/acpiphp_glue.c |   17 ++++++++++++++---
- 1 files changed, 14 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-index 9342c84..a3e4705 100644
---- a/drivers/pci/hotplug/acpiphp_glue.c
-+++ b/drivers/pci/hotplug/acpiphp_glue.c
-@@ -705,9 +705,10 @@ cleanup_p2p_bridge(acpi_handle handle, u32 lvl, void *context, void **rv)
- 	acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
- 				cleanup_p2p_bridge, NULL, NULL);
- 
--	if (!(bridge = acpiphp_handle_to_bridge(handle)))
--		return AE_OK;
--	cleanup_bridge(bridge);
-+	bridge = acpiphp_handle_to_bridge(handle);
-+	if (bridge)
-+		cleanup_bridge(bridge);
-+
- 	return AE_OK;
- }
- 
-@@ -720,9 +721,19 @@ static void remove_bridge(acpi_handle handle)
- 	acpi_walk_namespace(ACPI_TYPE_DEVICE, handle,
- 				(u32)1, cleanup_p2p_bridge, NULL, NULL);
- 
-+	/*
-+	 * On root bridges with hotplug slots directly underneath (ie,
-+	 * no p2p bridge inbetween), we call cleanup_bridge(). 
-+	 *
-+	 * The else clause cleans up root bridges that either had no
-+	 * hotplug slots at all, or had a p2p bridge underneath.
-+	 */
- 	bridge = acpiphp_handle_to_bridge(handle);
- 	if (bridge)
- 		cleanup_bridge(bridge);
-+	else
-+		acpi_remove_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
-+					   handle_hotplug_event_bridge);
- }
- 
- static struct pci_dev * get_apic_pci_info(acpi_handle handle)
--- 
-1.5.3.1.1.g1e61
-
+	-hpa
