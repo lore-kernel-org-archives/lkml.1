@@ -1,81 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762163AbYGBEX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759829AbYGBEcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762163AbYGBEX5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 00:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbYGBEX2
+	id S1759829AbYGBEcT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 00:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbYGBEcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 00:23:28 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:29026 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751507AbYGBEXA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 00:23:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=BsnBBg5eMTc4QUegORrjYI9eZq+qZ60pRWZEO9yYKoQmyr17PgDwPtFbAi3gsJfZ0c
-         DSxYSE46ku+RiFR6N2re6VYMBYZXjqDoIDSp/iMS4A81WxKEO45XOudhgLYTtC0iFlj/
-         v4tjpDbEH4oibjDW6shJjcN+nz3Tl/sgKeos4=
-Message-ID: <863e9df20807012122u45f7d8dfmc4d11513b19aeadc@mail.gmail.com>
-Date: Wed, 2 Jul 2008 09:52:59 +0530
-From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: next-0630: sparc64: build failed
-Cc: "David Miller" <davem@davemloft.net>,
-       "Alexander Beregalov" <a.beregalov@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org, sparclinux@vger.kernel.org,
-       rostedt@goodmis.org
-In-Reply-To: <20080701200344.GA4896@elte.hu>
+	Wed, 2 Jul 2008 00:32:03 -0400
+Received: from colo.lackof.org ([198.49.126.79]:44628 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750774AbYGBEcB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 00:32:01 -0400
+Date: Tue, 1 Jul 2008 22:31:50 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Michael Buesch <mb@bu3sch.de>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-pci@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+       jejb <James.Bottomley@hansenpartnership.com>,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] PCI: add stub for pci_set_consistent_dma_mask()
+Message-ID: <20080702043150.GC19593@colo.lackof.org>
+References: <20080630113553.c133307f.randy.dunlap@oracle.com> <200806301142.31124.jbarnes@virtuousgeek.org> <200806302240.50416.mb@bu3sch.de> <200806301400.02455.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a4423d670807010825t7ea2eb44oda3f08dc007c40a2@mail.gmail.com>
-	 <20080701154648.GA31057@elte.hu> <486A7C19.5080905@gmail.com>
-	 <20080701200344.GA4896@elte.hu>
+In-Reply-To: <200806301400.02455.jbarnes@virtuousgeek.org>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 2, 2008 at 1:33 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> hm, mcount is the facility - so it makes sense to have that defined.
-> Here you basically hide CONFIG_MCOUNT:
->
->> -ifeq ($(CONFIG_MCOUNT),y)
->> -  KBUILD_CFLAGS += -pg
->> +ifneq ($(CONFIG_FTRACE),y)
->> +ifeq ($(CONFIG_STACK_DEBUG),y)
->> +KBUILD_CFLAGS += -pg
->> +endif
->>  endif
+On Mon, Jun 30, 2008 at 02:00:02PM -0700, Jesse Barnes wrote:
+> > > Applied to linux-next, thanks Randy.
+> >
+> > I guess this is probably also needed for 2.6.26.
+> 
+> Hm, current upstream seems to have pci_set_consistent_dma_mask under 
+> CONFIG_SSB_PCIHOST, which in turn depends on PCI = y (or PCI = SSB, what does 
+> that mean?).
+> 
+> But yeah, it wouldn't hurt to push this for 2.6.26 too.
 
-Even with CONFIG_MCOUNT we'd have to do something like this to prevent
-duplicate -pg flags (I hope there's a prettier way of writing this):
+While I don't expect problems, it's not a critical fix. And there
+are very few drivers that support both PCI and !PCI bus flavors.
+I personally would not apply this patch to any "stable" kernel.
 
-ifneq ($(CONFIG_FTRACE),y)
-ifeq ($(CONFIG_MCOUNT),y)
-KBUILD_CFLAGS += -pg
-endif
-endif
-
-> via two conditions. I'm not sure that's a win and i found CONFIG_MCOUNT
-> a logical switch - but it's David's call.
-
-Ok, but it really doesn't allow end user to switch between anything
-through any menu. It gets selected via:
-
-config MCOUNT
-        bool
-        depends on STACK_DEBUG || FTRACE
-        default y
-
-
-I was attempting to decouple MCOUNT and STACK_DEBUG, which
-incidentally made MCOUNT useless.
-
---
-Regards,
-Abhishek Sagar
+grant
