@@ -1,138 +1,245 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbYGBTKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbYGBTMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754805AbYGBTKa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 15:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbYGBTKS
+	id S1755561AbYGBTMg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 15:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbYGBTM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 15:10:18 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:25020 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbYGBTKQ (ORCPT
+	Wed, 2 Jul 2008 15:12:28 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:52547 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752000AbYGBTM0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 15:10:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type
-         :content-transfer-encoding:from;
-        b=XZfSymX5uFsq5nmdoWdzw5DsbN17RMSaIKARdjQw5lRP7F2AF5GiIEiIV/kw8U+IBi
-         iV1oAyjKuFzjzQey7b76/jejeBcXPIpeX2xV6AuEKKGWcQ1zuVZgFrc+HZRE6ddtDVVH
-         FhJNFd5M04Bx2WBbQmL1H4ZVO9j8TA74rTlnk=
-Message-ID: <486BD19B.7040302@gmail.com>
-Date: Wed, 02 Jul 2008 21:06:03 +0200
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org
-Subject: getcpu(2) man page
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
+	Wed, 2 Jul 2008 15:12:26 -0400
+To: swhiteho@redhat.com
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, hch@infradead.org
+Subject: [patch v2] gfs2: don't call permission()
+Message-Id: <E1KE7kH-0000aJ-0n@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 02 Jul 2008 21:12:01 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi,
+This is the updated version, with the promised renames:
 
-Long ago, when I ran out of time, things stalled on incorporating a getcpu.2 man page that you
-wrote ino man-pages.  There were still some open questions that I wanted to get sorted before
-releasing the page.  Could you take a look at the FIXME(ak)s below please?
+  gfs2_do_permission -> gfs2_permission
+  gfs2_permission -> gfs2_iop_permission
 
-Cheers,
+Thanks,
+Miklos
 
-Michael
+----
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-.\" This man page is Copyright (C) 2006 Andi Kleen <ak@muc.de>.
-.\" Permission is granted to distribute possibly modified copies
-.\" of this page provided the header is included verbatim,
-.\" and in case of nontrivial modification author and date
-.\" of the modification is added to the header.
-.TH getcpu 2 2008-06-02 "Linux" "Linux Programmer's Manual"
-.SH NAME
-getcpu \- determine CPU and NUMA node on which the calling thread is running
-.SH SYNOPSIS
-.nf
-.B #include <linux/getcpu.h>
-.sp
-.BI "int getcpu(unsigned *" cpu ", unsigned *" node \
-", struct getcpu_cache *" tcache );
-.fi
-.SH DESCRIPTION
-.BR getcpu ()
-identifies the processor and node on which the calling
-thread or process is currently
-running and writes them into the integers pointed to by the
-.I cpu
-and
-.I node
-arguments.
-The processor is a unique small integer identifying a CPU.
-The node is a unique small identifier identifying a NUMA node.
-When either
-.I cpu
-or
-.I node
-is NULL nothing is written to the respective pointer.
-.I tcache
-is a pointer to a
-.I struct getcpu_cache.
-The caller should put the cache into a thread
-local variable if the process is multithreaded because the cache
-cannot be shared between different threads.
-.I tcache
-can be NULL.
-If it is not NULL
-.BR getcpu ()
-will use it to speed up operation.
-The information inside the cache is private to the system call
-and should not be accessed by the user program.
-The information placed in the cache can change between kernel releases.
+GFS2 calls permission() to verify permissions after locks on the files
+have been taken.
 
-.\" FIXME(ak) If the following formulation is correct, I think it would
-.\" be better to substitute it instead of the next sentence:
-.\"     The information placed in \fIcpu\fP is only guaranteed to be
-.\"     current at the time of the call: ...
-This information is only a hint: unless the CPU affinity
-has been fixed using
-.BR sched_setaffinity (2),
-the kernel might change the CPU at any time.
-(Normally this does not happen
-because the scheduler tries to minimize movements between CPUs to
-keep caches hot, but it is possible.)
-.\" FIXME(ak) Can you explain what you mean in the next sentence when
-.\" you say "recover"
-The caller has to properly recover from the case when
-.I cpu
-and
-.I node
-are not the current CPU and node anymore.
-.\" FIXME(ak) In the following, what precisely do you mean by "advisory"?
-.\" It is not really clear to me whether you mean the information
-.\" may not be "true", or whether you are just reiterating the point that
-.\" the CPU/node might already have changed by the time the call returns.
-All information returned by
-.I getcpu(2)
-is just advisory and not a guarantee.
+For this it's sufficient to call gfs2_permission() instead.  This
+results in the following changes:
 
-When no cache is specified
-.BR getcpu ()
-will be slower, but always retrieve the current state.
-With a cache
-.\" FIXME(ak) what does the phrase "but might query the current state
-.\" only during a short implementation specific interval" mean?
-it will be faster, but might query the current state only during
-a short implementation specific interval.
+  - IS_RDONLY() check is not performed
+  - IS_IMMUTABLE() check is not performed
+  - devcgroup_inode_permission() is not called
+  - security_inode_permission() is not called
 
-Linux makes a best effort to make this call as fast possible. The
-intention of
-.I getcpu(2)
-is to allow programs to make optimizations with per-CPU data
-or for NUMA optimization.
-.SH VERSIONS
-.BR getcpu (2)
-was added in 2.6.19 for x86_64 and i386.
-.SH SEE ALSO
-.BR mbind (2),
-.BR set_mempolicy (2),
-.BR sched_setaffinity (2)
+IS_RDONLY() should be unnecessary anyway, as the per-mount read-only
+flag should provide protection against read-only remounts during
+operations.  do_gfs2_set_flags() has been fixed to perform
+mnt_want_write()/mnt_drop_write() to protect against remounting
+read-only.
 
+IS_IMMUTABLE has been added to gfs2_permission()
 
+Repeating the security checks seems to be pointless, as they don't
+normally change, and if they do, it's independent of the filesystem
+state.
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+ fs/gfs2/inode.c     |    6 +++---
+ fs/gfs2/inode.h     |    1 +
+ fs/gfs2/ops_file.c  |   11 +++++++++--
+ fs/gfs2/ops_inode.c |   25 +++++++++++++++++--------
+ 4 files changed, 30 insertions(+), 13 deletions(-)
+
+Index: linux-2.6/fs/gfs2/inode.c
+===================================================================
+--- linux-2.6.orig/fs/gfs2/inode.c	2008-07-01 18:11:32.000000000 +0200
++++ linux-2.6/fs/gfs2/inode.c	2008-07-01 19:15:59.000000000 +0200
+@@ -504,7 +504,7 @@ struct inode *gfs2_lookupi(struct inode 
+ 	}
+ 
+ 	if (!is_root) {
+-		error = permission(dir, MAY_EXEC, NULL);
++		error = gfs2_permission(dir, MAY_EXEC);
+ 		if (error)
+ 			goto out;
+ 	}
+@@ -667,7 +667,7 @@ static int create_ok(struct gfs2_inode *
+ {
+ 	int error;
+ 
+-	error = permission(&dip->i_inode, MAY_WRITE | MAY_EXEC, NULL);
++	error = gfs2_permission(&dip->i_inode, MAY_WRITE | MAY_EXEC);
+ 	if (error)
+ 		return error;
+ 
+@@ -1134,7 +1134,7 @@ int gfs2_unlink_ok(struct gfs2_inode *di
+ 	if (IS_APPEND(&dip->i_inode))
+ 		return -EPERM;
+ 
+-	error = permission(&dip->i_inode, MAY_WRITE | MAY_EXEC, NULL);
++	error = gfs2_permission(&dip->i_inode, MAY_WRITE | MAY_EXEC);
+ 	if (error)
+ 		return error;
+ 
+Index: linux-2.6/fs/gfs2/inode.h
+===================================================================
+--- linux-2.6.orig/fs/gfs2/inode.h	2008-07-01 18:11:32.000000000 +0200
++++ linux-2.6/fs/gfs2/inode.h	2008-07-01 19:15:59.000000000 +0200
+@@ -91,6 +91,7 @@ int gfs2_rmdiri(struct gfs2_inode *dip, 
+ 		struct gfs2_inode *ip);
+ int gfs2_unlink_ok(struct gfs2_inode *dip, const struct qstr *name,
+ 		   const struct gfs2_inode *ip);
++int gfs2_permission(struct inode *inode, int mask);
+ int gfs2_ok_to_move(struct gfs2_inode *this, struct gfs2_inode *to);
+ int gfs2_readlinki(struct gfs2_inode *ip, char **buf, unsigned int *len);
+ int gfs2_glock_nq_atime(struct gfs2_holder *gh);
+Index: linux-2.6/fs/gfs2/ops_file.c
+===================================================================
+--- linux-2.6.orig/fs/gfs2/ops_file.c	2008-07-01 18:11:32.000000000 +0200
++++ linux-2.6/fs/gfs2/ops_file.c	2008-07-01 19:15:59.000000000 +0200
+@@ -15,6 +15,7 @@
+ #include <linux/uio.h>
+ #include <linux/blkdev.h>
+ #include <linux/mm.h>
++#include <linux/mount.h>
+ #include <linux/fs.h>
+ #include <linux/gfs2_ondisk.h>
+ #include <linux/ext2_fs.h>
+@@ -220,10 +221,14 @@ static int do_gfs2_set_flags(struct file
+ 	int error;
+ 	u32 new_flags, flags;
+ 
+-	error = gfs2_glock_nq_init(ip->i_gl, LM_ST_EXCLUSIVE, 0, &gh);
++	error = mnt_want_write(filp->f_path.mnt);
+ 	if (error)
+ 		return error;
+ 
++	error = gfs2_glock_nq_init(ip->i_gl, LM_ST_EXCLUSIVE, 0, &gh);
++	if (error)
++		goto out_drop_write;
++
+ 	flags = ip->i_di.di_flags;
+ 	new_flags = (flags & ~mask) | (reqflags & mask);
+ 	if ((new_flags ^ flags) == 0)
+@@ -242,7 +247,7 @@ static int do_gfs2_set_flags(struct file
+ 	    !capable(CAP_LINUX_IMMUTABLE))
+ 		goto out;
+ 	if (!IS_IMMUTABLE(inode)) {
+-		error = permission(inode, MAY_WRITE, NULL);
++		error = gfs2_permission(inode, MAY_WRITE);
+ 		if (error)
+ 			goto out;
+ 	}
+@@ -272,6 +277,8 @@ out_trans_end:
+ 	gfs2_trans_end(sdp);
+ out:
+ 	gfs2_glock_dq_uninit(&gh);
++out_drop_write:
++	mnt_drop_write(filp->f_path.mnt);
+ 	return error;
+ }
+ 
+Index: linux-2.6/fs/gfs2/ops_inode.c
+===================================================================
+--- linux-2.6.orig/fs/gfs2/ops_inode.c	2008-07-01 18:11:32.000000000 +0200
++++ linux-2.6/fs/gfs2/ops_inode.c	2008-07-01 19:15:59.000000000 +0200
+@@ -163,7 +163,7 @@ static int gfs2_link(struct dentry *old_
+ 	if (error)
+ 		goto out;
+ 
+-	error = permission(dir, MAY_WRITE | MAY_EXEC, NULL);
++	error = gfs2_permission(dir, MAY_WRITE | MAY_EXEC);
+ 	if (error)
+ 		goto out_gunlock;
+ 
+@@ -669,7 +669,7 @@ static int gfs2_rename(struct inode *odi
+ 			}
+ 		}
+ 	} else {
+-		error = permission(ndir, MAY_WRITE | MAY_EXEC, NULL);
++		error = gfs2_permission(ndir, MAY_WRITE | MAY_EXEC);
+ 		if (error)
+ 			goto out_gunlock;
+ 
+@@ -704,7 +704,7 @@ static int gfs2_rename(struct inode *odi
+ 	/* Check out the dir to be renamed */
+ 
+ 	if (dir_rename) {
+-		error = permission(odentry->d_inode, MAY_WRITE, NULL);
++		error = gfs2_permission(odentry->d_inode, MAY_WRITE);
+ 		if (error)
+ 			goto out_gunlock;
+ 	}
+@@ -891,7 +891,7 @@ static void *gfs2_follow_link(struct den
+  * Returns: errno
+  */
+ 
+-static int gfs2_permission(struct inode *inode, int mask, struct nameidata *nd)
++int gfs2_permission(struct inode *inode, int mask)
+ {
+ 	struct gfs2_inode *ip = GFS2_I(inode);
+ 	struct gfs2_holder i_gh;
+@@ -905,13 +905,22 @@ static int gfs2_permission(struct inode 
+ 		unlock = 1;
+ 	}
+ 
+-	error = generic_permission(inode, mask, gfs2_check_acl);
++	if ((mask & MAY_WRITE) && IS_IMMUTABLE(inode))
++		error = -EACCES;
++	else
++		error = generic_permission(inode, mask, gfs2_check_acl);
+ 	if (unlock)
+ 		gfs2_glock_dq_uninit(&i_gh);
+ 
+ 	return error;
+ }
+ 
++static int gfs2_iop_permission(struct inode *inode, int mask,
++			       struct nameidata *nd)
++{
++	return gfs2_permission(inode, mask);
++}
++
+ static int setattr_size(struct inode *inode, struct iattr *attr)
+ {
+ 	struct gfs2_inode *ip = GFS2_I(inode);
+@@ -1141,7 +1150,7 @@ static int gfs2_removexattr(struct dentr
+ }
+ 
+ const struct inode_operations gfs2_file_iops = {
+-	.permission = gfs2_permission,
++	.permission = gfs2_iop_permission,
+ 	.setattr = gfs2_setattr,
+ 	.getattr = gfs2_getattr,
+ 	.setxattr = gfs2_setxattr,
+@@ -1160,7 +1169,7 @@ const struct inode_operations gfs2_dir_i
+ 	.rmdir = gfs2_rmdir,
+ 	.mknod = gfs2_mknod,
+ 	.rename = gfs2_rename,
+-	.permission = gfs2_permission,
++	.permission = gfs2_iop_permission,
+ 	.setattr = gfs2_setattr,
+ 	.getattr = gfs2_getattr,
+ 	.setxattr = gfs2_setxattr,
+@@ -1172,7 +1181,7 @@ const struct inode_operations gfs2_dir_i
+ const struct inode_operations gfs2_symlink_iops = {
+ 	.readlink = gfs2_readlink,
+ 	.follow_link = gfs2_follow_link,
+-	.permission = gfs2_permission,
++	.permission = gfs2_iop_permission,
+ 	.setattr = gfs2_setattr,
+ 	.getattr = gfs2_getattr,
+ 	.setxattr = gfs2_setxattr,
