@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753406AbYGBQjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbYGBQka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753406AbYGBQjQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 12:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbYGBQi7
+	id S1753726AbYGBQka (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 12:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYGBQkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 12:38:59 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:42920 "EHLO mail.screens.ru"
+	Wed, 2 Jul 2008 12:40:20 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:35463 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750794AbYGBQi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 12:38:58 -0400
-Date: Wed, 2 Jul 2008 20:40:38 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gautham R Shenoy <ego@in.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Max Krasnyansky <maxk@qualcomm.com>, Paul Jackson <pj@sgi.com>,
-       Paul Menage <menage@google.com>, Peter Zijlstra <peterz@infradead.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] workqueues: make get_online_cpus() useable for work->func()
-Message-ID: <20080702164038.GB565@tv-sign.ru>
-References: <20080629165131.GA11215@tv-sign.ru> <20080702013147.126feb34.akpm@linux-foundation.org>
+	id S1750826AbYGBQkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 12:40:18 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -2.094
+Date: Wed, 2 Jul 2008 09:40:10 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Benoit Boissinot <bboissin@gmail.com>, linux-kernel@vger.kernel.org,
+       lloyd@randombit.net, "Theodore Ts'o" <tytso@mit.edu>,
+       netdev@vger.kernel.org
+Subject: Re: Bug in random32.c: all-zero outputs with probability 1/2^32,
+ other seeding bugs
+Message-ID: <20080702094010.10232256@extreme>
+In-Reply-To: <1214968951.11311.122.camel@calx>
+References: <20080619153045.GC1455@randombit.net>
+	<20080701231927.GW7647@pirzuine>
+	<20080701173405.cb28db84.akpm@linux-foundation.org>
+	<1214968951.11311.122.camel@calx>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080702013147.126feb34.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/02, Andrew Morton wrote:
->
-> I know that Document/SubmitChecklist has a lot of stuff.  But a basic
-> allnoconfig only takes seconds and it's often the thing which breaks.
+On Tue, 01 Jul 2008 22:22:31 -0500
+Matt Mackall <mpm@selenic.com> wrote:
+
 > 
->  include/linux/cpu.h |   15 +++++++++++----
->  1 file changed, 11 insertions(+), 4 deletions(-)
+> On Tue, 2008-07-01 at 17:34 -0700, Andrew Morton wrote:
+> > On Wed, 2 Jul 2008 01:19:27 +0200
+> > Benoit Boissinot <bboissin@gmail.com> wrote:
+> > 
+> > > [who maintains random32.c ?]
+> > 
+> > ah.  I think it's ancient net code which was recently hoisted into lib/.
+> > So: not really anybody.
+> > 
+> > I've been hopefully cc'ing Matt and Ted in the hope of fooling them
+> > into looking at it.  But a netdev cc is appropriate also.
 > 
-> diff -puN include/linux/cpu.h~workqueues-make-get_online_cpus-useable-for-work-func-fix include/linux/cpu.h
-> --- a/include/linux/cpu.h~workqueues-make-get_online_cpus-useable-for-work-func-fix
-> +++ a/include/linux/cpu.h
-> @@ -69,10 +69,11 @@ static inline void unregister_cpu_notifi
->  #endif
->  
->  int cpu_up(unsigned int cpu);
-> -
->  extern void cpu_hotplug_init(void);
-> +extern void cpu_maps_update_begin(void);
-> +extern void cpu_maps_update_done(void);
->  
-> -#else
-> +#else	/* CONFIG_SMP */
->  
->  static inline int register_cpu_notifier(struct notifier_block *nb)
->  {
-> @@ -87,10 +88,16 @@ static inline void cpu_hotplug_init(void
->  {
->  }
->  
-> +static inline void cpu_maps_update_begin(void)
-> +{
-> +}
-> +
-> +static inline void cpu_maps_update_done(void)
-> +{
-> +}
+> I did look at it, and it looks reasonable. So:
+> 
+> Acked-by: Matt Mackall <mpm@selenic.com>
+> 
+> Stephen Hemminger is responsible for the original code, I believe. I've
+> been tempted to slurp this functionality into random.c but keep getting
+> side-tracked into theoretical investigations of better functions, as I'm
+> not a big fan of the current one from either a performance or strength
+> perspective.
+> 
 
-Oh thanks...
+Yes, I took it from gnu scientific lib it for use in netem.  The seeding
+fixes make sense.
 
-This also means that we can't kill workqueue_lock (as I was going to do),
-we still need it for !CONFIG_HOTPLUG_CPU case.
-
-Oleg.
-
+Note: this should not be a security issue since this routine is explicitly
+not intended for cryptographic use.
