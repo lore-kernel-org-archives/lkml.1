@@ -1,77 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757615AbYGBPOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYGBPch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757615AbYGBPOR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 11:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYGBPOG
+	id S1756732AbYGBPch (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 11:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbYGBPc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 11:14:06 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52194 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753241AbYGBPOF (ORCPT
+	Wed, 2 Jul 2008 11:32:26 -0400
+Received: from gv-out-0910.google.com ([216.239.58.191]:57742 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbYGBPcZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 11:14:05 -0400
-Message-ID: <486B9B3A.4060709@firstfloor.org>
-Date: Wed, 02 Jul 2008 17:14:02 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Wed, 2 Jul 2008 11:32:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=jsgtPRw2+i97mnFuH2hUs1rN9+kwES9DywmaMxNBgvaHh1PMQbvsr3GZCO52hP4q0Z
+         r03X52PgSgx/ERP8kqFKHotkfK4NUlgS3OQcgI2wL1e8/2JUmrj+o6lMlXJ9PziRsYhc
+         3yBXtc70/w6rqfwTLeUlTzsRlibF7tbX4httY=
+From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Vitaly Mayatskikh <v.mayatskih@gmail.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] Introduce copy_user_handle_tail routine
+References: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com>
+	<alpine.LFD.1.10.0806281108240.4371@hp.linux-foundation.org>
+	<m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com>
+	<alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org>
+	<m3fxqsjt22.fsf_-_@gravicappa.englab.brq.redhat.com>
+	<486B8B6C.2050109@firstfloor.org>
+	<m37ic4jr2w.fsf@gravicappa.englab.brq.redhat.com>
+	<486B9987.8000601@firstfloor.org>
+Date: Wed, 02 Jul 2008 17:32:20 +0200
+In-Reply-To: <486B9987.8000601@firstfloor.org> (Andi Kleen's message of "Wed,
+	02 Jul 2008 17:06:47 +0200")
+Message-ID: <m3y74ki9ob.fsf@gravicappa.englab.brq.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Nathan Lynch <ntl@pobox.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, greg@kroah.com
-Subject: Re: Is sysfs the right place to get cache and CPU topology info?
-References: <18539.8141.683072.967851@cargo.ozlabs.ibm.com> <20080702003755.4daff613.akpm@linux-foundation.org> <87r6acsfo1.fsf@basil.nowhere.org> <20080702143554.GY9594@localdomain>
-In-Reply-To: <20080702143554.GY9594@localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nathan Lynch wrote:
-> Andi Kleen wrote:
->> Andrew Morton <akpm@linux-foundation.org> writes:
->>> sysfs is part of the kernel ABI.  We should design our interfaces there
->>> as carefully as we design any others.
->> The basic problem is that sysfs exports an internal kernel object model
->> and these tend to change. To really make it stable would require 
->> splitting it into internal and presented interface.
-> 
-> True, but... /sys/devices/system/cpu has been there since around 2.6.5
-> iirc.  A google code search for that path shows plenty of programs
-> (including hal) that hard-code it.  Exposed object model or not,
-> changing that path would break lots of software.
+Andi Kleen <andi@firstfloor.org> writes:
 
-Yes it would.
+>>> >> Overall you could write it much simpler with a rep ; movs I think,
+>>> >> like traditional linux did.
+>> >
+>> > rep movs can fail.
+>
+> How? (if it's a byte copy?)
 
-But Greg is making noises of getting rid of sysdevs and it wouldn't
-surprise me if that ended up being user visible since most object
-model changes end up being visible.
+Parameter len is a number of uncopied bytes, it doesn't count bytes
+which were loaded into registers before GPF in unrolled
+loop. copy_user_handle_tail tries to do a byte copy for, possibly,
+remaining bytes, but it can fail at the first read/write, or at the
+second, etc. It doesn't know where it will fail.
 
-> 
-> 
->> I would be all
->> for it, but it doesn't seem realistic to me currently. If we cannot
->> even get basic interfaces like the syscall capability stable how would
->> you expect to stabilize the complete kobjects? 
->>
->> And the specific problem with the x86 cache sysfs interface is that it's so
->> complicated that no human can really read it directly. This means to
->> actually use it you need some kind of frontend (i have a cheesy
->> lscache script for this).
-> 
-> Human readability is nice, 
+> The old 2.4 copy_*_user always used to that and it worked just fine AFAIK.
 
-When it's not human readable, then it's usually also not Joe Normal Programmer
-usable.
+Again, Linus wanted it to be simple plain C routine. rep movs is not in
+C language ;)
 
-> but a more important issue IMO is whether
-> the cache interface can be considered stable enough for programs to
-> rely on it.  I notice there's no entry for it in Documentation/ABI.
+>>> >> If zerorest is ever 0 then retesting it on every iteration seems
+>>> >> somewhat dumb.
+>> >
+>> > If zerorest is 0, this cycle will never be executed.
+>
+> Ok but when it's not then it will be executed on each iteration.
 
-For x86 it follows closely the Intel CPUID  architectural specification, which
-can be considered stable (at least for Intel, other vendors do not
-necessarily implement it. But for AMD it is faked at least)
+Ok, that's matter.
 
--Andi
+>>> >> I think a simple memset would be actually ok, i don't think we ever zero
+>>> >> anything that faults. That would be obviously racy anyways. If the zero
+>>> >> are supposed to override something  then a racing user thread could always
+>>> >> catch it.
+>> >
+>> > Linus wanted this routine to be extremely dumb. This is the reason why tail
+>> > handling was moved from assembly to C. Yeah, my original patches were in
+>> > assembly and on the top of your realization.
+>
+> My point was that it could be simpler because zeroing should not ever fault
+> (copy_in_user is not supposed to zero)
 
+Why do you think that zeroing can never fail, even in userspace?
+-- 
+wbr, Vitaly
