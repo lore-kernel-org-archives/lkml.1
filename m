@@ -1,79 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761102AbYGBImO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756629AbYGBIqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761102AbYGBImO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 04:42:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbYGBIl5
+	id S1756629AbYGBIqS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 04:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbYGBIqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 04:41:57 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54876 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752361AbYGBIlz (ORCPT
+	Wed, 2 Jul 2008 04:46:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43057 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750874AbYGBIqF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 04:41:55 -0400
-Subject: Re: [PATCH 14/23] make section names compatible with
-	-ffunction-sections -fdata-sections: parisc
-From: David Woodhouse <dwmw2@infradead.org>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       linux-arch@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>,
-       David Howells <dhowells@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Lennert Buytenhek <kernel@wantstofly.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tim Bird <tim.bird@am.sony.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Dave Miller <davem@davemloft.net>
-In-Reply-To: <200807020200.49518.vda.linux@googlemail.com>
-References: <200807020239.11410.vda.linux@googlemail.com>
-	 <1214955660.3316.31.camel@localhost.localdomain>
-	 <200807020200.49518.vda.linux@googlemail.com>
-Content-Type: text/plain
-Date: Wed, 02 Jul 2008 09:41:47 +0100
-Message-Id: <1214988107.10393.444.camel@pmac.infradead.org>
+	Wed, 2 Jul 2008 04:46:05 -0400
+Date: Wed, 2 Jul 2008 01:45:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: rtc-linux@googlegroups.com, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2.6.26-mmotm] rtc: BCD codeshrink
+Message-Id: <20080702014502.c1052e84.akpm@linux-foundation.org>
+In-Reply-To: <200807012341.01684.david-b@pacbell.net>
+References: <200807012341.01684.david-b@pacbell.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-02 at 02:00 +0200, Denys Vlasenko wrote:
-> On Wednesday 02 July 2008 01:41, James Bottomley wrote:
-> > On Wed, 2008-07-02 at 02:39 +0200, Denys Vlasenko wrote:
-> > > The purpose of this patch is to make kernel buildable
-> > > with "gcc -ffunction-sections -fdata-sections".
-> > > This patch fixes parisc architecture.
-> > > 
-> > > Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
-> > 
-> > Um ... if you look at the Makefile you'll see we already build parisc
-> > with -ffunction-sections; we have to: our relative jumps are too small
-> > to guarantee finding the stubs in large files.
-> > 
-> > Since our text is -ffunction-sections compatible already, I question the
-> > need for transformations like this:
+On Tue, 1 Jul 2008 23:41:01 -0700 David Brownell <david-b@pacbell.net> wrote:
 
-We've been building FR-V kernels with --gc-sections for a long time,
-too.
+> This updates <linux/bcd.h> to define the key routines as constant
+> functions, which the macros will then call.  Newer code can now
+> call bcd2bin() instead of SCREAMING BCD2BIN() TO THE FOUR WINDS.
+> 
+> This lets each driver shrink their codespace by using N function
+> calls to a single (global) copy of those routines, instead of N
+> inlined copies of these functions per driver.
+> 
+> These routines aren't used in speed-critical code.  Almost all
+> callers are in the RTC framework.  Typical per-driver savings is
+> near 300 bytes.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> Acked-by:  Adrian Bunk <bunk@kernel.org>
+> ---
+>  include/linux/bcd.h |    9 +++++++--
+>  lib/Makefile        |    2 +-
+>  lib/bcd.c           |   14 ++++++++++++++
+>  3 files changed, 22 insertions(+), 3 deletions(-)
+> 
+> --- a/include/linux/bcd.h	2008-06-30 16:44:26.000000000 -0700
+> +++ b/include/linux/bcd.h	2008-06-30 21:38:24.000000000 -0700
+> @@ -10,8 +10,13 @@
+>  #ifndef _BCD_H
+>  #define _BCD_H
+>  
+> -#define BCD2BIN(val)	(((val) & 0x0f) + ((val)>>4)*10)
+> -#define BIN2BCD(val)	((((val)/10)<<4) + (val)%10)
+> +#include <linux/compiler.h>
+> +
+> +unsigned bcd2bin(unsigned char val) __attribute_const__;
+> +unsigned char bin2bcd(unsigned val) __attribute_const__;
+> +
+> +#define BCD2BIN(val)	bcd2bin(val)
+> +#define BIN2BCD(val)	bin2bcd(val)
 
-> In order to handle these situations uniformly, in these patches
-> I decided to _never_ use .text.XXXX names for sections,
-> effectively leaving them "reserved for gcc's use".
+It'd be good to nuke these things now.
 
-It makes a certain amount of sense to do this uniformly for all
-architectures -- leaving .text.* and .data.* for GCC, and using
-something else whenever we manually name sections. 
+Unfortunately you didn't cc the list where nukers lurk.  Please do cc
+linux-kernel on kernel-wide patches.
 
-Denys' patch for parisc would need a little more thought, but it's
-probably worth it to be consistent. Especially if we can move more stuff
-out of athe arch-specific linker scripts and into
-<asm-generic/vmlinux.lds.h>
-
--- 
-dwmw2
-
+>  /* backwards compat */
+>  #define BCD_TO_BIN(val) ((val)=BCD2BIN(val))
+> --- a/lib/Makefile	2008-06-30 16:44:26.000000000 -0700
+> +++ b/lib/Makefile	2008-06-30 21:38:24.000000000 -0700
+> @@ -13,7 +13,7 @@ lib-$(CONFIG_SMP) += cpumask.o
+>  
+>  lib-y	+= kobject.o kref.o klist.o
+>  
+> -obj-y += div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
+> +obj-y += bcd.o div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
+>  	 bust_spinlocks.o hexdump.o kasprintf.o bitmap.o scatterlist.o
+>  
+>  ifeq ($(CONFIG_DEBUG_KOBJECT),y)
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ b/lib/bcd.c	2008-06-30 21:38:24.000000000 -0700
+> @@ -0,0 +1,14 @@
+> +#include <linux/bcd.h>
+> +#include <linux/module.h>
+> +
+> +unsigned bcd2bin(unsigned char val)
+> +{
+> +	return (val & 0x0f) + (val >> 4) * 10;
+> +}
+> +EXPORT_SYMBOL(bcd2bin);
+> +
+> +unsigned char bin2bcd(unsigned val)
+> +{
+> +	return ((val / 10) << 4) + val % 10;
+> +}
+> +EXPORT_SYMBOL(bin2bcd);
