@@ -1,95 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760508AbYGBP4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbYGBP6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760508AbYGBP4i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 11:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758577AbYGBPy3
+	id S1759383AbYGBP6i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 11:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbYGBP6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 11:54:29 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51013 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757963AbYGBPyJ (ORCPT
+	Wed, 2 Jul 2008 11:58:30 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:52355 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754297AbYGBP63 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 11:54:09 -0400
-Date: Wed, 2 Jul 2008 08:50:06 -0700
-From: Greg KH <greg@kroah.com>
-To: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 04/04] s390: Use s390_root_dev_* in kvm_virtio.
-Message-ID: <20080702155006.GD31083@kroah.com>
+	Wed, 2 Jul 2008 11:58:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=aryu985VDnzDoH+vwy0NzAgu94lyHA3fJTRv5d3PKKGuSP7fGFP67Ar6HOj/tLFUVu
+         fFUoGgXCEXNHKX8Y072LCQzYt1FdN9G8XqQVm1HQbapWqMHA5T+VApTxRuI0hqGeoiLH
+         dQvwMWAYA76oeTodw7wNmbHi2+wlDbGWn4CmM=
+From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Vitaly Mayatskikh <v.mayatskih@gmail.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] Introduce copy_user_handle_tail routine
+References: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com>
+	<alpine.LFD.1.10.0806281108240.4371@hp.linux-foundation.org>
+	<m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com>
+	<alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org>
+	<m3fxqsjt22.fsf_-_@gravicappa.englab.brq.redhat.com>
+	<486B8B6C.2050109@firstfloor.org>
+	<m37ic4jr2w.fsf@gravicappa.englab.brq.redhat.com>
+	<486B9987.8000601@firstfloor.org>
+	<m3y74ki9ob.fsf@gravicappa.englab.brq.redhat.com>
+	<486BA181.5040908@firstfloor.org>
+Date: Wed, 02 Jul 2008 17:58:23 +0200
+In-Reply-To: <486BA181.5040908@firstfloor.org> (Andi Kleen's message of "Wed,
+	02 Jul 2008 17:40:49 +0200")
+Message-ID: <m3tzf8i8gw.fsf@gravicappa.englab.brq.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+Andi Kleen <andi@firstfloor.org> writes:
 
-No need to define a static device for the kvm_s390 root device,
-just use s390_root_dev_register().
+>>>>> rep movs can fail.
+>>> How? (if it's a byte copy?)
+>> 
+>> Parameter len is a number of uncopied bytes,
+>
+> But that is exactly what copy_*_user wants to return
 
-This is needed for the bus_id rework
+Last experience showed, it doesn't.
 
-Acked-by: Carsten Otte <cotte@de.ibm.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Ok, when unrolled version fails on reading quad word at unaligned
+address, it doesn't know where it was failed exactly. At this moment it
+hasn't correct number of uncopied bytes, because some bytes can still
+remain at the very end of the page. copy_user_handle_tail copies them
+and return correct value on uncopied bytes. Complicated logic for
+counting the number of these bytes is not necessary to optimize at
+assembly level, because we already missed performance. It's hard to
+complain against it.
 
----
- drivers/s390/kvm/kvm_virtio.c |   15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+> The original version I wrote returned "unfaulted bytes" which was wrong.
+> Correct is "uncopied" as fixed by Linus. rep ; movs returns uncopied.
 
---- a/drivers/s390/kvm/kvm_virtio.c
-+++ b/drivers/s390/kvm/kvm_virtio.c
-@@ -23,6 +23,7 @@
- #include <asm/kvm_virtio.h>
- #include <asm/setup.h>
- #include <asm/s390_ext.h>
-+#include <asm/s390_rdev.h>
- 
- #define VIRTIO_SUBCODE_64 0x0D00
- 
-@@ -236,10 +237,7 @@ static struct virtio_config_ops kvm_vq_c
-  * The root device for the kvm virtio devices.
-  * This makes them appear as /sys/devices/kvm_s390/0,1,2 not /sys/devices/0,1,2.
-  */
--static struct device kvm_root = {
--	.parent = NULL,
--	.bus_id = "kvm_s390",
--};
-+static struct device *kvm_root;
- 
- /*
-  * adds a new device and register it with virtio
-@@ -256,7 +254,7 @@ static void add_kvm_device(struct kvm_de
- 		return;
- 	}
- 
--	kdev->vdev.dev.parent = &kvm_root;
-+	kdev->vdev.dev.parent = kvm_root;
- 	kdev->vdev.id.device = d->type;
- 	kdev->vdev.config = &kvm_vq_configspace_ops;
- 	kdev->desc = d;
-@@ -312,15 +310,16 @@ static int __init kvm_devices_init(void)
- 	if (!MACHINE_IS_KVM)
- 		return -ENODEV;
- 
--	rc = device_register(&kvm_root);
--	if (rc) {
-+	kvm_root = s390_root_dev_register("kvm_s390");
-+	if (IS_ERR(kvm_root)) {
-+		rc = PTR_ERR(kvm_root);
- 		printk(KERN_ERR "Could not register kvm_s390 root device");
- 		return rc;
- 	}
- 
- 	rc = vmem_add_mapping(PFN_PHYS(max_pfn), PAGE_SIZE);
- 	if (rc) {
--		device_unregister(&kvm_root);
-+		s390_root_dev_unregister(kvm_root);
- 		return rc;
- 	}
- 
+It's not in C. If you have the proposal why it should be written in
+assembly, send it to Linus.
+
+>> Why do you think that zeroing can never fail, even in userspace?
+>
+> There's no zeroing in user space, only in kernel space.
+
+Agree.
+
+> The only reason kernel does it is to avoid leaking uninitialized data,
+> but for user space it doesn't make sense (see above)
+
+Ok, copy_in_user can pass zerorest=0 to copy_user_handle_tail. Is it ok
+for you?
+
+-- 
+wbr, Vitaly
