@@ -1,59 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbYGBSyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbYGBSzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755972AbYGBSyt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 14:54:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYGBSyN
+	id S1756531AbYGBSzF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 14:55:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbYGBSyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 14:54:13 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55309 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751784AbYGBSyI (ORCPT
+	Wed, 2 Jul 2008 14:54:41 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48449 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754808AbYGBSyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 14:54:08 -0400
-Date: Wed, 2 Jul 2008 11:51:45 -0700
-From: Greg KH <greg@kroah.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Nathan Lynch <ntl@pobox.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Is sysfs the right place to get cache and CPU topology info?
-Message-ID: <20080702185145.GB20938@kroah.com>
-References: <18539.8141.683072.967851@cargo.ozlabs.ibm.com> <20080702003755.4daff613.akpm@linux-foundation.org> <87r6acsfo1.fsf@basil.nowhere.org> <20080702143554.GY9594@localdomain> <486B9B3A.4060709@firstfloor.org>
+	Wed, 2 Jul 2008 14:54:39 -0400
+Message-ID: <486BCEEC.4060301@firstfloor.org>
+Date: Wed, 02 Jul 2008 20:54:36 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <486B9B3A.4060709@firstfloor.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+CC: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] Introduce copy_user_handle_tail routine
+References: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com>	<alpine.LFD.1.10.0806281108240.4371@hp.linux-foundation.org>	<m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com>	<alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org>	<m3fxqsjt22.fsf_-_@gravicappa.englab.brq.redhat.com>	<486B8B6C.2050109@firstfloor.org>	<m37ic4jr2w.fsf@gravicappa.englab.brq.redhat.com>	<486B9987.8000601@firstfloor.org>	<m3y74ki9ob.fsf@gravicappa.englab.brq.redhat.com>	<486BA181.5040908@firstfloor.org> <m3tzf8i8gw.fsf@gravicappa.englab.brq.redhat.com>
+In-Reply-To: <m3tzf8i8gw.fsf@gravicappa.englab.brq.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 02, 2008 at 05:14:02PM +0200, Andi Kleen wrote:
-> Nathan Lynch wrote:
-> > Andi Kleen wrote:
-> >> Andrew Morton <akpm@linux-foundation.org> writes:
-> >>> sysfs is part of the kernel ABI.  We should design our interfaces there
-> >>> as carefully as we design any others.
-> >> The basic problem is that sysfs exports an internal kernel object model
-> >> and these tend to change. To really make it stable would require 
-> >> splitting it into internal and presented interface.
-> > 
-> > True, but... /sys/devices/system/cpu has been there since around 2.6.5
-> > iirc.  A google code search for that path shows plenty of programs
-> > (including hal) that hard-code it.  Exposed object model or not,
-> > changing that path would break lots of software.
+Vitaly Mayatskikh wrote:
+> Andi Kleen <andi@firstfloor.org> writes:
 > 
-> Yes it would.
+>>>>>> rep movs can fail.
+>>>> How? (if it's a byte copy?)
+>>> Parameter len is a number of uncopied bytes,
+>> But that is exactly what copy_*_user wants to return
 > 
-> But Greg is making noises of getting rid of sysdevs and it wouldn't
-> surprise me if that ended up being user visible since most object
-> model changes end up being visible.
+> Last experience showed, it doesn't.
 
-I hope to make sysdevs go away in such a manner that the sysfs tree does
-not change at all.  That's my goal, but we still have a long ways to go
-before we can even consider attempting to do this, so don't worry about
-putting things in this location if you feel it is the best fit.
+?
 
-thanks,
+> Ok, when unrolled version fails on reading quad word at unaligned
+> address, it doesn't know where it was failed exactly. At this moment it
+> hasn't correct number of uncopied bytes, because some bytes can still
+> remain at the very end of the page. copy_user_handle_tail copies them
+> and return correct value on uncopied bytes. Complicated logic for
+> counting the number of these bytes is not necessary to optimize at
+> assembly level, because we already missed performance. It's hard to
+> complain against it.
 
-greg k-h
+Yes I'm talking about the "replay loop"
+
+There's no complicated logic in a rep ; movs. And it's still
+a byte copy. In fact it is far simpler than what you already have.
+
+>> The original version I wrote returned "unfaulted bytes" which was wrong.
+>> Correct is "uncopied" as fixed by Linus. rep ; movs returns uncopied.
+> 
+> It's not in C. If you have the proposal why it should be written in
+> assembly, send it to Linus.
+
+Well it would turn your 15+ lines C function in ~4 (well tested) lines or so.
+
+> 
+>>> Why do you think that zeroing can never fail, even in userspace?
+>> There's no zeroing in user space, only in kernel space.
+> 
+> Agree.
+> 
+>> The only reason kernel does it is to avoid leaking uninitialized data,
+>> but for user space it doesn't make sense (see above)
+> 
+> Ok, copy_in_user can pass zerorest=0 to copy_user_handle_tail. Is it ok
+> for you?
+
+My point was that for the zeroing you can just use memset(), there's
+no need to support faulting there at all.
+
+-Andi
+
