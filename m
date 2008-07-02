@@ -1,80 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760454AbYGBVvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbYGBV44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760454AbYGBVvW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 17:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756053AbYGBVvL
+	id S1758018AbYGBV44 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 17:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYGBV4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 17:51:11 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:59094 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754303AbYGBVvK (ORCPT
+	Wed, 2 Jul 2008 17:56:45 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:35963 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751997AbYGBV4p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 17:51:10 -0400
-Date: Wed, 2 Jul 2008 14:48:53 -0700
-From: Greg KH <greg@kroah.com>
+	Wed, 2 Jul 2008 17:56:45 -0400
+Subject: Re: b43 locks the machine when resuming after suspend to disk
+From: Johannes Berg <johannes@sipsolutions.net>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andi Kleen <andi@firstfloor.org>, Nathan Lynch <ntl@pobox.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Removing sysdevs? (was: Re: Is sysfs the right place to get
-	cache and CPU topology info?)
-Message-ID: <20080702214853.GA10451@kroah.com>
-References: <18539.8141.683072.967851@cargo.ozlabs.ibm.com> <486B9B3A.4060709@firstfloor.org> <20080702185145.GB20938@kroah.com> <200807022341.44965.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807022341.44965.rjw@sisk.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Cc: Giacomo Mulas <gmulas@ca.astro.it>, linux-kernel@vger.kernel.org,
+       debian-kernel@lists.debian.org,
+       Broadcom Linux <bcm43xx-dev@lists.berlios.de>
+In-Reply-To: <1215035167.13270.8.camel@johannes.berg>
+References: <alpine.DEB.1.10.0807021830300.32045@capitanata.ca.astro.it>
+	 <200807022340.31894.rjw@sisk.pl>  <1215035167.13270.8.camel@johannes.berg>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-d6ncXvM5dU+Vqv2gAoSP"
+Date: Wed, 02 Jul 2008 23:56:01 +0200
+Message-Id: <1215035761.13270.10.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 02, 2008 at 11:41:44PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, 2 of July 2008, Greg KH wrote:
-> > On Wed, Jul 02, 2008 at 05:14:02PM +0200, Andi Kleen wrote:
-> > > Nathan Lynch wrote:
-> > > > Andi Kleen wrote:
-> > > >> Andrew Morton <akpm@linux-foundation.org> writes:
-> > > >>> sysfs is part of the kernel ABI.  We should design our interfaces there
-> > > >>> as carefully as we design any others.
-> > > >> The basic problem is that sysfs exports an internal kernel object model
-> > > >> and these tend to change. To really make it stable would require 
-> > > >> splitting it into internal and presented interface.
-> > > > 
-> > > > True, but... /sys/devices/system/cpu has been there since around 2.6.5
-> > > > iirc.  A google code search for that path shows plenty of programs
-> > > > (including hal) that hard-code it.  Exposed object model or not,
-> > > > changing that path would break lots of software.
-> > > 
-> > > Yes it would.
-> > > 
-> > > But Greg is making noises of getting rid of sysdevs and it wouldn't
-> > > surprise me if that ended up being user visible since most object
-> > > model changes end up being visible.
-> > 
-> > I hope to make sysdevs go away in such a manner that the sysfs tree does
-> > not change at all.  That's my goal, but we still have a long ways to go
-> > before we can even consider attempting to do this, so don't worry about
-> > putting things in this location if you feel it is the best fit.
-> 
-> Speaking of which, I'm very interested in the removing of sysdevs, since they
-> don't fit into the new suspend/hibernation framework I'm working on.  Can you
-> please tell me what the plan is?
 
-The plan is:
-	- remaining driver core cleanups to allow for multiple drivers
-	  to be bound to individual devices
-	- add multiple binding support to the core
-	- migrate existing sysdevs to struct device, now that multiple
-	  binding is allowed
-	- delete sysdev structure
-	- profit!
+--=-d6ncXvM5dU+Vqv2gAoSP
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-It's that first step that is taking a while, the last big changes will
-be going into 2.6.27 to help accomplish this, after that merge happens
-for 2.6.27-rc1 I'll be working on the remaining steps.
 
-thanks,
+> > I think you need the appended patch, but it only applies to linux-next.
+>=20
+> A different version has been merged into what will become 2.6.26. I'll
+> see what we can do about stable.
 
-greg k-h
+http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
+itdiff;h=3Def3a62d272f033989e83eb1f26505f93f93e3e69;hp=3D6d1a3fb567a728d314=
+74636e167c324702a0c38b
+
+Anybody have a stable tree around to see if that applies? I think it
+should.
+
+johannes
+
+--=-d6ncXvM5dU+Vqv2gAoSP
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJIa/luAAoJEKVg1VMiehFYK1kQAJ9Sn36pXglZe5YI1IoNB8d6
+Z+0kCrYmXIfzP0Ubp3d8lX6Xh7aUQHvEAMvkbit6wM1uw6pEFqrQFqpCaZpYj/Fs
+iydrYMLgMGNu0S4XyuCxJLV9AJ5lA9ewSiFxIEFU0cmCHODz5dHfw/LTIGqyrxlT
+HxEQ0nSr4l2fSxhMp8VJQ0FlfyrKZWOfwalqqSt3qC3TbFBDqZCK8iTj/DZXyISX
+pjMupmLapjs9YkWAIWHI6Dq0ZM1tb8qAD+21nPV3AScwjqpuCxPuFFH1ltnk8QIS
+qgVYY0rZ4iBhGCdMhWk8MVkQBQ4zlyAGnFmZPLTbT2GGIuxgHtaZFMKG+n+QFsWG
+tbESfiIRYpkVnLFoFcyGr7ChFoXVfxLbPntZsL+L0pZEsucVSj6+SnJDSy0sEpCM
+OZaY0kITBdlVK+nOoxyS7RkrXaQ2w1umvCeaiZZFYBCsvtEjkgXpwPxvFCCYN+Vg
+WcTULYy//R8QQGOUfEiPnhpGkJEofE5R/63f1e9qzFfph+B00JzlpIcS7cc+5YeV
+s/WiAYLuijHlka2CfIkuFO6BQmGl/Ix7raWMI333J2Y6ONz6ROJIJu2kXeCBrwaD
+A6BcT4oswqjvjakY6uL5Cbn9iNEqHpUCs9yYoKBKh1uzpx1eSkud9WB3QXisUwNQ
+qr3WPJmxlmctrvKTTUJj
+=c4XD
+-----END PGP SIGNATURE-----
+
+--=-d6ncXvM5dU+Vqv2gAoSP--
+
