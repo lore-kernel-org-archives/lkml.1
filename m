@@ -1,109 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759263AbYGBAex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759254AbYGBAj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759263AbYGBAex (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 20:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbYGBAel
+	id S1759254AbYGBAj0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 20:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756994AbYGBAjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 20:34:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59964 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751005AbYGBAek (ORCPT
+	Tue, 1 Jul 2008 20:39:17 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:30390 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756179AbYGBAjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 20:34:40 -0400
-Date: Tue, 1 Jul 2008 17:34:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Benoit Boissinot <bboissin@gmail.com>
-Cc: linux-kernel@vger.kernel.org, lloyd@randombit.net,
-       "Theodore Ts'o" <tytso@mit.edu>, Matt Mackall <mpm@selenic.com>,
-       netdev@vger.kernel.org
-Subject: Re: Bug in random32.c: all-zero outputs with probability 1/2^32,
- other seeding bugs
-Message-Id: <20080701173405.cb28db84.akpm@linux-foundation.org>
-In-Reply-To: <20080701231927.GW7647@pirzuine>
-References: <20080619153045.GC1455@randombit.net>
-	<20080701231927.GW7647@pirzuine>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 1 Jul 2008 20:39:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=eSSfqUAoOUsc5vtmOC7fz8bd3hVBUFcskvNFmChpHDPZE65nhsvCob6XoNPbekL/WI
+         /7cfLdAWimtyXrRAsj7ENQ+yej04oAc/VK5N8nXKWZoZ6ShJ3w1Os3XRBl76n4FiWIKJ
+         pEwIWdTbGHpt67lsqvCzk5Eh9Y7nKW+yi+gDg=
+Message-ID: <28c262360807011739w5668920buf7880de6ed30f912@mail.gmail.com>
+Date: Wed, 2 Jul 2008 09:39:15 +0900
+From: "MinChan Kim" <minchan.kim@gmail.com>
+To: "Rik van Riel" <riel@redhat.com>,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [resend][PATCH -mm] split_lru: fix pagevec_move_tail() doesn't treat unevictable page
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20080701093840.07b48ced@bree.surriel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080701155749.37F8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080701172223.3801.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080701093840.07b48ced@bree.surriel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Jul 2008 01:19:27 +0200
-Benoit Boissinot <bboissin@gmail.com> wrote:
+Hi, Rik and Kosaki-san
 
-> [who maintains random32.c ?]
+I want to know exact race situation for remaining git log.
+As you know, git log is important for me who is newbie to understand source
 
-ah.  I think it's ancient net code which was recently hoisted into lib/.
-So: not really anybody.
+There are many possibility in this race problem.
 
-I've been hopefully cc'ing Matt and Ted in the hope of fooling them
-into looking at it.  But a netdev cc is appropriate also.
+Did you use hugepage in this test ?
+I think that If you used hugepage, it seems to happen following race.
 
-> On Thu, Jun 19, 2008 at 5:30 PM, Jack Lloyd <lloyd@randombit.net> wrote:
-> > Hi,
-> >
-> > There appears to be an error in how random seeding is done in the
-> > random32.c RNG. I am looking at 2.6.25.7.
-> >
-> [snip]
-> >
-> > An easy and straightforward fix for this that doesn't require changing
-> > any interfaces is to add
-> >  s &= 0xFFFFFFFF;
-> > before the check in __set_random32, which ensures this condition will
-> > be caught by the check. Alternately, you could replace the check for
-> > s == 0 with some logic like:
-> >  if((s & 0xFFFFFFFF) == 0)
-> >     s += 1;
-> > since just chopping the seed to 32 bits does throw away some of your
-> > seed input (with sizeof(long) == 8, at least; doesn't make any
-> > difference for sizeof(long) == 4)
-> >
-> 
-> I think it is cleaner to change the interface to account for long != u32
-> 
-> The rest of your patch (ensuring values are big enough) looks valid to me.
-> 
-> Signed-off-by: Benoit Boissinot <benoit.boissinot@ens-lyon.org>
-> 
-> diff -r ced66ca0044f lib/random32.c
-> --- a/lib/random32.c	Mon Jun 30 08:58:09 2008 -0700
-> +++ b/lib/random32.c	Wed Jul 02 01:13:12 2008 +0200
-> @@ -56,7 +56,7 @@
->  	return (state->s1 ^ state->s2 ^ state->s3);
->  }
-> 
-> -static void __set_random32(struct rnd_state *state, unsigned long s)
-> +static void __set_random32(struct rnd_state *state, u32 s)
->  {
->  	if (s == 0)
->  		s = 1;      /* default seed is 1 */
-> @@ -84,7 +84,7 @@
->   */
->  u32 random32(void)
->  {
-> -	unsigned long r;
-> +	u32 r;
->  	struct rnd_state *state = &get_cpu_var(net_rand_state);
->  	r = __random32(state);
->  	put_cpu_var(state);
-> @@ -122,7 +122,7 @@
-> 
->  	for_each_possible_cpu(i) {
->  		struct rnd_state *state = &per_cpu(net_rand_state,i);
-> -		__set_random32(state, i + jiffies);
-> +		__set_random32(state, (u32) i + jiffies);
->  	}
->  	return 0;
->  }
-> @@ -135,7 +135,7 @@
->  static int __init random32_reseed(void)
->  {
->  	int i;
-> -	unsigned long seed;
-> +	u32 seed;
-> 
->  	for_each_possible_cpu(i) {
->  		struct rnd_state *state = &per_cpu(net_rand_state,i);
+--------------
+
+CPU1                                                           CPU2
+
+shm_unlock
+scan_mapping_unevictable_pages
+check_move_unevictable_page
+ClearPageUnevictable                                 rotate_reclaimable_page
+
+PageUnevictable(page) return 0
+SetPageUnevictable
+list_move(LRU_UNEVICTABLE)
+
+local_irq_save
+
+pagevec_move_tail
+
+Do you think it is possible ?
+
+On Tue, Jul 1, 2008 at 10:38 PM, Rik van Riel <riel@redhat.com> wrote:
+> On Tue, 01 Jul 2008 17:26:51 +0900
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+>
+>> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>
+> Acked-by: Rik van Riel <riel@redhat.com>
+>
+> Good catch!
+>
+>> @@ -116,7 +116,7 @@ static void pagevec_move_tail(struct pag
+>>                       zone = pagezone;
+>>                       spin_lock(&zone->lru_lock);
+>>               }
+>> -             if (PageLRU(page) && !PageActive(page)) {
+>> +             if (PageLRU(page) && !PageActive(page) && !PageUnevictable(page)) {
+>>                       int lru = page_is_file_cache(page);
+>>                       list_move_tail(&page->lru, &zone->lru[lru].list);
+>>                       pgmoved++;
+>
+> --
+> All rights reversed.
+>
+
+
+
+-- 
+Kinds regards,
+MinChan Kim
