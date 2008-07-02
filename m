@@ -1,78 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756980AbYGBU5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759130AbYGBU5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756980AbYGBU5X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 16:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYGBU5O
+	id S1759130AbYGBU5r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 16:57:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbYGBU5i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 16:57:14 -0400
-Received: from averell.mail.tiscali.it ([213.205.33.55]:39537 "EHLO
-	averell.mail.tiscali.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753938AbYGBU5N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 16:57:13 -0400
-X-Greylist: delayed 351 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Jul 2008 16:57:13 EDT
-Date: Wed, 2 Jul 2008 22:51:10 +0200 (CEST)
-From: Giacomo Mulas <gmulas@ca.astro.it>
-Reply-To: Giacomo Mulas <gmulas@ca.astro.it>
-To: linux-kernel@vger.kernel.org
-cc: debian-kernel@lists.debian.org
-Subject: b43 locks the machine when resuming after suspend to disk
-Message-ID: <alpine.DEB.1.10.0807021830300.32045@capitanata.ca.astro.it>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	Wed, 2 Jul 2008 16:57:38 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47433 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753330AbYGBU5h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 16:57:37 -0400
+Subject: Re: [Ksummit-2008-discuss] Delayed interrupt work, thread pools
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Jeremy Kerr <jk@ozlabs.org>
+In-Reply-To: <87zlp0sg4l.fsf@basil.nowhere.org>
+References: <1214916335.20711.141.camel@pasglop>
+	 <486B0298.5030508@linux.intel.com> <1214977447.21182.33.camel@pasglop>
+	 <87zlp0sg4l.fsf@basil.nowhere.org>
+Content-Type: text/plain
+Date: Thu, 03 Jul 2008 06:57:16 +1000
+Message-Id: <1215032236.21182.52.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I tried searching on the list for this, before posting, but searching the
-mailing list archives with keywords such as b43, suspend, resume... brings
-up such a ludicrous amount of threads that it's not realistic to check them
-all, so just tell me what to look for if it's been asked already.
+On Wed, 2008-07-02 at 13:02 +0200, Andi Kleen wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> 
+> >> how much of this would be obsoleted if we had irqthreads ?
+> >
+> > I'm not sure irqthreads is what I want...
+> >
+> > First, can they call handle_mm_fault ? (ie, I'm not sure precisely what
+> > kind of context those operate into).
+> 
+> Interrupt threads would be kernel threads and kernel threads
+> run with lazy (= random) mm and calling handle_mm_fault on that
+> wouldn't be very useful because you would affect a random mm.
 
-Whenever I do a suspend to disk after using b43, the computer freezes hard
-as soon as it attempts again to access b43 after resume.
+That isn't a big issue. handle_mm_fault() takes the mm as an argument
+(like when called from get_user_pages()) and if there's anything fishy I
+can always attach/detach the mm to the thread. Been done before, works
+fine.
 
-Minimal how to reproduce the freeze:
-1) modprobe b43
-2) hibernate (using any suspend to disk, which one is irrelevant)
-3) resume
-4) ifconfig wlan0 up
+> Ok you could force them to run with a specific MM, but that would
+> cause first live time issues with the original MM (how could you
+> ever free it?) and also increase the interrupt handling latency
+> because the interrupt would be a nearly full blown VM context
+> switch then.
 
-This has been happening (at least) since b43 was included in the mainline
-kernel, on my Asus A6K laptop running an x86_64 kernel (now the latest
-2.6.25 stable release or compiled from the latest released debian sid
-sources). The nvidia module is not responsible: I explicitely booted my
-laptop in single user mode without any unnecessary modules, same result. It
-does not happen using the windows driver with ndiswrapper (which I would
-prefer to avoid for other reasons), so it definitely depends on b43 or
-something it depends on. Unloading and reloading the b43 module and all the
-other modules it depends on does not change anything. Just loading the
-module once, hibernating and resuming means freeze-up as soon as the module
-is actually initialised next time, regardless of it having been unloaded and
-reloaded any number of times before or after the suspend-resume cycle. No
-oopses, nothing on system logs, just instant freeze-up. Is there some
-testing a user can do to help nailing this? I am not a kernel developer,
-even if I am a decent C programmer.
+handle_mm_fault() shouldn't need an mm context switch. I can just
+refcount while I have a ref. to the mm in my queue. I can deal with
+lifetime, that isn't a big issue.
 
-Please CC me on replies, I am not on the list.
+> I also think interrupts threads are a bad idea in many cases because
+> their whole "advantage" over classical interrupts is that they can
+> block. Now blocking can be usually take a unbounded potentially long
+> time.
 
-Thanks in advance,
-Giacomo Mulas
+Yes, that's what I explain in the rest of my mail. That plus the fact
+that I need to context switch the SPU to other contexts while we block.
 
--- 
-_________________________________________________________________
+ .../...
 
-Giacomo Mulas <gmulas@ca.astro.it>
-_________________________________________________________________
+I agree with most of your points, which is why I believe interrupt
+threads aren't a good option for me.
 
-OSSERVATORIO ASTRONOMICO DI CAGLIARI
-Str. 54, Loc. Poggio dei Pini * 09012 Capoterra (CA)
+Interrupts for "normal" events will be handled in a short/bounded time.
 
-Tel. (OAC): +39 070 71180 248     Fax : +39 070 71180 222
-Tel. (UNICA): +39 070 675 4916
-_________________________________________________________________
+Interrupts coming from SPU page faults will be deferred to a thread from
+a pool (which can need more time if none is available, ie work queue ->
+allocate more, or just wait on one to free up, the stategy here is to be
+defined).
 
-"When the storms are raging around you, stay right where you are"
-                          (Freddy Mercury)
-_________________________________________________________________
+It's not a problem to have them delayed. I can context switch a faulting
+SPU to some other task and switch it back later when the fault is
+serviced. Anything time critical shouldn't operate on fault-able memory
+in the first place :-)
+
+So I need at most one kernel thread per SPU context for handling the
+faults. The idea of the thread pools is that most of the time, I don't
+take faults, and thus I don't nearly need as many threads in practice.
+Thus having a pool that can dynamically grow or shrink based on pressure
+would make sense.
+
+Ben.
+
+
