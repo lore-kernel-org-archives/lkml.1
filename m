@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbYGBDc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762387AbYGBDcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756146AbYGBDc0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 23:32:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755144AbYGBDcQ
+	id S1762387AbYGBDcl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 23:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbYGBDcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 1 Jul 2008 23:32:18 -0400
+Received: from xenotime.net ([66.160.160.81]:57139 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755866AbYGBDcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 Jul 2008 23:32:16 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40090 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752623AbYGBDcP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 23:32:15 -0400
-Date: Wed, 02 Jul 2008 12:30:39 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "MinChan Kim" <minchan.kim@gmail.com>
-Subject: Re: [resend][PATCH -mm] split_lru: fix pagevec_move_tail() doesn't treat unevictable page
-Cc: kosaki.motohiro@jp.fujitsu.com, "Rik van Riel" <riel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <28c262360807011739w5668920buf7880de6ed30f912@mail.gmail.com>
-References: <20080701093840.07b48ced@bree.surriel.com> <28c262360807011739w5668920buf7880de6ed30f912@mail.gmail.com>
-Message-Id: <20080702122850.380B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Date: Tue, 1 Jul 2008 20:32:11 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Mr. Charles Edward Lever" <Chuck.Lever@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, kernel-testers@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Subject: Re: inux-next: Tree for July 1
+Message-Id: <20080701203211.95244ebd.rdunlap@xenotime.net>
+In-Reply-To: <1214959743.10317.3.camel@localhost>
+References: <20080702011434.6fb403d5.sfr@canb.auug.org.au>
+	<200807012236.19400.rjw@sisk.pl>
+	<1214959743.10317.3.camel@localhost>
+Organization: YPO4
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kim-san,
+On Tue, 01 Jul 2008 20:49:03 -0400 Trond Myklebust wrote:
 
-> Hi, Rik and Kosaki-san
+> On Tue, 2008-07-01 at 22:36 +0200, Rafael J. Wysocki wrote:
+> > I can't mount NFS shares with this kernel.  I get something of this sort in
+> > dmesg and it seems to be 100% reproducible:
+> > 
+> > [  314.058858] RPC: Registered udp transport module.
+> > [  314.058863] RPC: Registered tcp transport module.
+> > [  314.490970] RPC: transport (0) not supported
+> > [  319.246987] __ratelimit: 23 messages suppressed
 > 
-> I want to know exact race situation for remaining git log.
-> As you know, git log is important for me who is newbie to understand source
-> 
-> There are many possibility in this race problem.
-> 
-> Did you use hugepage in this test ?
-> I think that If you used hugepage, it seems to happen following race.
+> Does this patch fix the problem for you?
 
-I don't use hugepage. but use SYSV-shmem.
-so following scenario is very reasonable.
-
-OK.
-I resend my patch with following description.
+Yes.  Thanks.
 
 
+> -----------------------------------------------------------------------------------
+> From: Trond Myklebust <Trond.Myklebust@netapp.com>
+> NFS: Fix the mount protocol defaults for binary mounts
 > 
-> --------------
+> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> ---
 > 
-> CPU1                                                           CPU2
+>  fs/nfs/super.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
-> shm_unlock
-> scan_mapping_unevictable_pages
-> check_move_unevictable_page
-> ClearPageUnevictable                                 rotate_reclaimable_page
+> diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+> index e09b1c2..85fbb98 100644
+> --- a/fs/nfs/super.c
+> +++ b/fs/nfs/super.c
+> @@ -1575,6 +1575,7 @@ static int nfs_validate_mount_data(void *options,
+>  
+>  		if (!(data->flags & NFS_MOUNT_TCP))
+>  			args->nfs_server.protocol = XPRT_TRANSPORT_UDP;
+> +		nfs_set_transport_defaults(args);
+>  		/* N.B. caller will free nfs_server.hostname in all cases */
+>  		args->nfs_server.hostname = kstrdup(data->hostname, GFP_KERNEL);
+>  		args->namlen		= data->namlen;
 > 
-> PageUnevictable(page) return 0
-> SetPageUnevictable
-> list_move(LRU_UNEVICTABLE)
 > 
-> local_irq_save
-> 
-> pagevec_move_tail
-> 
-> Do you think it is possible ?
+> -- 
 
-
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
