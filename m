@@ -1,88 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762165AbYGBIzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762957AbYGBI5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762165AbYGBIzw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 04:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbYGBIzo
+	id S1762957AbYGBI5V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 04:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYGBI5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 04:55:44 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:54953 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752512AbYGBIzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 04:55:43 -0400
-Date: Wed, 2 Jul 2008 11:55:19 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Brownell <david-b@pacbell.net>, rtc-linux@googlegroups.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2.6.26-mmotm] rtc: BCD codeshrink
-Message-ID: <20080702085519.GA4196@cs181140183.pp.htv.fi>
-References: <200807012341.01684.david-b@pacbell.net> <20080702014502.c1052e84.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 2 Jul 2008 04:57:14 -0400
+Received: from trinity.fluff.org ([89.145.97.151]:43535 "EHLO
+	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753334AbYGBI5M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 04:57:12 -0400
+Date: Wed, 2 Jul 2008 09:56:56 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, kay.sievers@vrfy.org,
+       lkml <linux-kernel@vger.kernel.org>, Ben Dooks <ben-linux@fluff.org>
+Subject: Re: [patch 2.6.26-rc8] parport: fix platform driver hotplug/coldplug
+Message-ID: <20080702085656.GS8489@trinity.fluff.org>
+References: <200807020020.22002.david-b@pacbell.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080702014502.c1052e84.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200807020020.22002.david-b@pacbell.net>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.9i
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 02, 2008 at 01:45:02AM -0700, Andrew Morton wrote:
-> On Tue, 1 Jul 2008 23:41:01 -0700 David Brownell <david-b@pacbell.net> wrote:
+On Wed, Jul 02, 2008 at 12:20:21AM -0700, David Brownell wrote:
+> From: Kay Sievers <kay.sievers@vrfy.org>
 > 
-> > This updates <linux/bcd.h> to define the key routines as constant
-> > functions, which the macros will then call.  Newer code can now
-> > call bcd2bin() instead of SCREAMING BCD2BIN() TO THE FOUR WINDS.
-> > 
-> > This lets each driver shrink their codespace by using N function
-> > calls to a single (global) copy of those routines, instead of N
-> > inlined copies of these functions per driver.
-> > 
-> > These routines aren't used in speed-critical code.  Almost all
-> > callers are in the RTC framework.  Typical per-driver savings is
-> > near 300 bytes.
-> > 
-> > Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> > Acked-by:  Adrian Bunk <bunk@kernel.org>
-> > ---
-> >  include/linux/bcd.h |    9 +++++++--
-> >  lib/Makefile        |    2 +-
-> >  lib/bcd.c           |   14 ++++++++++++++
-> >  3 files changed, 22 insertions(+), 3 deletions(-)
-> > 
-> > --- a/include/linux/bcd.h	2008-06-30 16:44:26.000000000 -0700
-> > +++ b/include/linux/bcd.h	2008-06-30 21:38:24.000000000 -0700
-> > @@ -10,8 +10,13 @@
-> >  #ifndef _BCD_H
-> >  #define _BCD_H
-> >  
-> > -#define BCD2BIN(val)	(((val) & 0x0f) + ((val)>>4)*10)
-> > -#define BIN2BCD(val)	((((val)/10)<<4) + (val)%10)
-> > +#include <linux/compiler.h>
-> > +
-> > +unsigned bcd2bin(unsigned char val) __attribute_const__;
-> > +unsigned char bin2bcd(unsigned val) __attribute_const__;
-> > +
-> > +#define BCD2BIN(val)	bcd2bin(val)
-> > +#define BIN2BCD(val)	bin2bcd(val)
+> Since 43cc71eed1250755986da4c0f9898f9a635cb3bf, the platform
+> modalias is prefixed with "platform:". Add MODULE_ALIAS() to the
+> hotpluggable parport platform drivers, to re-enable auto loading.
 > 
-> It'd be good to nuke these things now.
->...
- 
-Unless David is faster I plan to do this after the patch went into 
-Linus' tree.
+> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Acked-by: Ben Dooks <ben-linux@fluff.org>
+> ---
+>  drivers/parport/parport_ax88796.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> --- a/drivers/parport/parport_ax88796.c	2008-07-01 23:58:26.000000000 -0700
+> +++ b/drivers/parport/parport_ax88796.c	2008-07-01 23:59:18.000000000 -0700
+> @@ -406,6 +406,8 @@ static int parport_ax88796_resume(struct
+>  #define parport_ax88796_resume  NULL
+>  #endif
+>  
+> +MODULE_ALIAS("platform:ax88796-pp");
+> +
+>  static struct platform_driver axdrv = {
+>  	.driver		= {
+>  		.name	= "ax88796-pp",
 
-E.g. rtc-ramtron-fm3130-rtc-support.patch in 2.6.26-rc5-mm3 adds a new 
-user, and it should create less hassle if the actual removal of the 
-#define's happens around 2.6.27-rc1 when everything is merged into 
-Linus' tree.
-
-cu
-Adrian
 
 -- 
+Ben
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
 
