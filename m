@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbYGBXiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbYGBXjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753333AbYGBXiv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 19:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbYGBXin
+	id S1754271AbYGBXjQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 19:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbYGBXi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 19:38:43 -0400
-Received: from shards.monkeyblade.net ([198.137.202.13]:39173 "EHLO
-	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751760AbYGBXin (ORCPT
+	Wed, 2 Jul 2008 19:38:59 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:9819 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751862AbYGBXi6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 19:38:43 -0400
-X-Greylist: delayed 1802 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Jul 2008 19:38:43 EDT
-Message-ID: <486C0877.4070001@eaglescrag.net>
-Date: Wed, 02 Jul 2008 16:00:07 -0700
-From: "J.H." <warthog19@eaglescrag.net>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 2 Jul 2008 19:38:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=nUfu9zOEheBjn8RlixjQY0shO4HRtH5I1oDIFabnLoyUoBdfWnZpfjs8Cup4Hzv9ty
+         omuPPYZntjMQxKDsjGbKqHwV4Dr7qczn2fjVEoO+uLiqJkMwYMNaKJrRXTTjDPMYelR0
+         R57iCGFCGFK1ns/iCOStez/j3WxN1Q/OL1q1c=
+Message-ID: <86802c440807021638v7787800fkca21744e02b37df0@mail.gmail.com>
+Date: Wed, 2 Jul 2008 16:38:57 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Robert Richter" <robert.richter@amd.com>
+Subject: Re: [PATCH 04/11] x86/pci: Makefile merge: Decoupling options for mp_bus_to_node.o
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1215031829-29124-5-git-send-email-robert.richter@amd.com>
 MIME-Version: 1.0
-To: users@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       support@osuosl.org, git@vger.kernel.org
-Subject: [KORG] Master downtime
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-2.1.12 (shards.monkeyblade.net [198.137.202.13]); Wed, 02 Jul 2008 16:00:15 -0700 (PDT)
+Content-Disposition: inline
+References: <1215031829-29124-1-git-send-email-robert.richter@amd.com>
+	 <1215031829-29124-5-git-send-email-robert.richter@amd.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Wed, Jul 2, 2008 at 1:50 PM, Robert Richter <robert.richter@amd.com> wrote:
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> ---
+>  arch/x86/pci/Makefile |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/x86/pci/Makefile b/arch/x86/pci/Makefile
+> index 8491894..d69a0fe 100644
+> --- a/arch/x86/pci/Makefile
+> +++ b/arch/x86/pci/Makefile
+> @@ -14,14 +14,12 @@ pci-y                               := fixup.o
+>  # legacy/irq.o
+>  pci-$(CONFIG_ACPI)             += acpi.o
+>  pci-y                          += legacy.o irq.o
+> +pci-$(CONFIG_NUMA)             += mp_bus_to_node.o
+>
+>  # Careful: VISWS and NUMAQ overrule the pci-y above. The colons are
+>  # therefor correct. This needs a proper fix by distangling the code.
+>  pci-$(CONFIG_X86_VISWS)                := visws.o fixup.o
+> -pci-$(CONFIG_X86_NUMAQ)                := numa.o irq.o
 
-Afternoon everyone,
+looks like you didn't base on latest tip/master...
 
-Just a quick heads up we are going to be taking master down for hardware
-and software upgrades tomorrow, Thursday July 3rd 2008 at 15:00 UTC.
-During this time all back-end services, including wiki's, ssh and
-userweb to name a few things.
-
-The hardware portion of the upgrade should be complete within an hour,
-and the software upgrades will likely take another hour or two - though
-even when master comes back up expect intermittent service for a few
-hours after that while we deal with things.  Likely ETA for all work
-completed is Friday July 4th 2008 at 00:00 UTC.  If there are
-complications, I will kick another e-mail off with updates.
-
-If you have any questions, comments or concerns please don't hesitate to
-get ahold of me.
-
-- - John 'Warthog9' Hawley
-Chief Kernel.org Admin
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFIbAh3/E3kyWU9dicRAhOCAJ46E9rGDXQWwXCV932UEvo+cuqQwgCaAhQm
-aWIIEVf7IFaTErGqHkx0Pag=
-=woIy
------END PGP SIGNATURE-----
+YH
