@@ -1,110 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbYGBOLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbYGBOWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756241AbYGBOLv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 10:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbYGBOLo
+	id S1755009AbYGBOWc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 10:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbYGBOWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 10:11:44 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:56273 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753304AbYGBOLm (ORCPT
+	Wed, 2 Jul 2008 10:22:19 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:36780 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752474AbYGBOWR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 10:11:42 -0400
-Subject: Re: [Ksummit-2008-discuss] Delayed interrupt work, thread pools
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: benh@kernel.crashing.org
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Jeremy Kerr <jk@ozlabs.org>
-In-Reply-To: <1214977447.21182.33.camel@pasglop>
-References: <1214916335.20711.141.camel@pasglop>
-	 <486B0298.5030508@linux.intel.com>  <1214977447.21182.33.camel@pasglop>
-Content-Type: text/plain
-Date: Wed, 02 Jul 2008 09:11:36 -0500
-Message-Id: <1215007896.3330.6.camel@localhost.localdomain>
+	Wed, 2 Jul 2008 10:22:17 -0400
+Subject: Re: [ANNOUNCE] The Linux Test Project has been Released for JUNE
+	2008
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
+To: Kevin Winchester <kjwinchester@gmail.com>
+Cc: ltp-list <ltp-list@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Davide Libenzi <davidel@xmailserver.org>, rusty <rusty@rustcorp.com.au>,
+       Bryce Harrington <bryce@canonical.com>, Ren@pimp.vs19.net
+In-Reply-To: <48695883.3080508@gmail.com>
+References: <1214825814.4603.41.camel@subratamodak.linux.ibm.com>
+	 <48695883.3080508@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Organization: IBM
+Date: Wed, 02 Jul 2008 19:52:00 +0530
+Message-Id: <1215008520.4885.59.camel@subratamodak.linux.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-02 at 15:44 +1000, Benjamin Herrenschmidt wrote:
-> > how much of this would be obsoleted if we had irqthreads ?
+On Mon, 2008-06-30 at 19:04 -0300, Kevin Winchester wrote:
+> Subrata Modak wrote:
+> > Dear All,
+> > 
+> > The Linux Test Project test suite has been released for the month of
+> > JUNE 2008. The latest version of the test-suite contains 3000+ tests
+> > for the Linux OS and can be found at
+> > http://ltp.sourceforge.net/.
+> > Latest happenings in LTP can also be found at:
+> > http://ltp.sourceforge.net/wiki/,
+> > http://ltp.sourceforge.net/wikiArchives.php, and,
+> > IRC: irc.freenode.org #ltp.
+> > 
+> > 
+> > JUNE 2008 Highlights:
+> > 
+> > * Addition of timerfd(), utimensat(), gettid() & io_cancel() tests,
+> > * Addition of CPU & MEMORY HOTPLUG tests,
+> > * Addition of Process Event Connector tests,
+> > * Addition of Hackbench test,
+> > * RT tests fix for START_LATENCY,
+> > * FS_BIND fix for ia64 & for kernels below 2.6.15,
+> > * SE-Linux fix to build against the latest refpolicy headers,
+> > * Concurrency Fixes for some tests.
+> > 
+> > 
+> > JUNE 2008 LTP Contributors:
+> > 
+> > * Masatake YAMATO,
+> > * Davide Libenzi,
+> > * Rusty Russell,
+> > * Michael Kerrisk,
+> > * Bryce Harrington,
+> > * Stephen Smalley,
+> > * Renaud Lottiaux,
+> > * Vernon Mauery,
+> > * Louis Rilling,
+> > * Li Zefan,
+> > * Roy Lee,
+> > * Andrew Vagin,
+> > * Veerendra Chandrappa,
+> > * Le Rouzic,
+> > * Garrett Cooper,
+> > * Giuseppe Cavallaro,
+> > * Carmelo Amoroso,
+> > * Chirag Jog,
+> > * Max Stirling,
+> > * Shi Weihua,
+> > * Matthieu Fertré,
+> > * Matt Fleming,
+> > 
+> > 
+> > Note(s) from the Maintainer:
+> > 
+> > June 2008 saw the initiation of Project collaboration. Thanks to
+> > Masatake Yamato, who will help in porting a significant amount of
+> > syscall test cases from the Crackerjack Project to LTP. I am also
+> > excited to see that new test cases are being submitted to LTP with
+> > increasing pace. I hope that the pace accelerates much much more. The
+> > next half of 2008 will also see some major Infrastructural improvements
+> > in LTP along with our unending endeavor to add more test cases. From now
+> > onwards i would also like to acknowledge each and every contributor in
+> > this release mail for their valuable contribution(s). I will release
+> > results on 2 diff. kernels(one a bit old and another a bit younger) on
+> > same architecture and for those architectures available at my disposal.
+> > This will help us to compare results for 2 extreme kernels.
+> > 
+> > 
+> > Our web site also contains other information such as:
+> > - A Linux test tools matrix
+> > - Technical papers
+> > - How To's on Linux testing
+> > - Code coverage analysis tool.
+> > 
+> > We would encourage the community to post results to
+> > ltp-results@lists.sf.net,
+> > patches, new tests, bugs or comments/questions to ltp-list@lists.sf.net,
+> > http://sourceforge.net/tracker/?func=add&group_id=3382&atid=103382
+> > (for New Bug(s)),
+> > http://sourceforge.net/tracker/?func=add&group_id=3382&atid=303382
+> > (for New Patch(s)),
+> > http://sourceforge.net/tracker/?func=add&group_id=3382&atid=353382
+> > (for New Feature Request(s))
+> > 
+> > Please also see the Change Log Attached (JUNE 2008) for detailed
+> > changes.
+> > 
 > 
-> I'm not sure irqthreads is what I want...
+> Hi,
 > 
-> First, can they call handle_mm_fault ? (ie, I'm not sure precisely what
-> kind of context those operate into).
-> 
-> But even if that's ok, it doesn't quite satisfy my primary needs unless
-> we can fire off an irqthread per interrupt -occurence- rather than
-> having an irqthread per source.
-> 
-> There is two aspects to the problem. The less important is that I need
-> to be able to service other interrupts from that source
-> after firing off the "job".
-> 
-> For example, the GFX chip or the SPU in my case takes a page fault when
-> accessing the user mm context it's attached to, I fire off a thread to
-> handle it (which I attach/detach from the mm, catch signals, etc...),
-> but that doesn't stop execution. Transfers to/from main memory on the
-> SPU (and to some extend on graphic chips) are asynchronous and thus the
-> SPU can still run and emit other interrupts representing different
-> conditions (though not other page faults).
-> 
-> The second aspect which is more important in the SPU case is that they
-> context switch. While an SPU context causes a page fault, and I fire off
-> that thread to service it, I want to be able to context switch some
-> other context on the SPU which will itself emit interrupts etc... on
-> that same source.
-> 
-> I could get away by simply allocating a kernel thread per SPU context,
-> and that's what we're going to do in our proof-of-concept
-> implementation, but I was hoping to avoid it with the thread pools in
-> the long run, thus saving a few resources left and right and loading the
-> main scheduler lists less with huge amount of mostly idle threads.
-> 
-> Now regarding the other usage scenario mentioned here (XPC and the NFS
-> server) that already have thread pools, how much of these would be also
-> replaced by irqthreads ? I don't think much off hand but I can't say for
-> sure until I have a look ... Again, that may be me just not
-> understanding what irqthreads are but it looks to me that they are one
-> thread per IRQ source or so, not the ability for a single IRQ source to
-> fire off multiple threads. Maybe if irqthreads could fork() that would
-> be an option... 
-> 
-> In any case, Dave messages imply we have at least two existing in tree
-> thread pool implementations for two users and possibly spufs being a 3rd
-> one (I'm keeping graphics at bay for now as I see that being a more long
-> term scenario). Probably worth looking at some consolidation.
-> 
-> Anyway, time for me to go look at the XPC and NFS code and see if there
-> is anything worth putting in common in there. Might take me a little
-> while, there is nothing urgent (which is why I was thinking about a KS
-> chat but the list is fine too), we are doing a proof-of-concept
-> implementation using per-context threads in the meantime anyway.
+> I decided to give this LTP release a try on my workstation, and there 
 
-If you really need the full scheduling capabilities of threads, then it
-sounds like a threadpool is all you need (and we should just provide a
-unified interface).
+Thanks for starting to use LTP.
 
-Initially you were implying you'd prefer some type of non blockable
-workqueue (i.e. a workqueue that shifts to the next work item when and
-earlier item blocks).   I can see this construct being useful because it
-would have easier to use semantics and be more lightweight than a full
-thread spawn.  It strikes me we could use some of the syslets work to do
-this ... all the queue needs is an "next activation head", which will be
-the next job in the queue in the absence of blocking.  When a job
-blocks, syslets informs the workqueue and it moves on to the work on the
-"next activation head".  If a prior job unblocks, syslets informs the
-queue and it moves the "next activation head" to the unblocked job.
-What this is doing is implementing a really simple scheduler within a
-single workqueue, which I'm unsure is actually a good idea since
-schedulers are complex and tricky things, but it is probably worthy of
-discussion.
+> were quite a few test failures.  Is that expected?  I expect that some
 
-James
+Failures can be for various reasons. May be you have hit a kernel bug.
+But yes, there may be reasons for the corresponding support not being
+available in the Kernel.
 
+> of the failures are probably related to kernel features I have turned 
+> off (I try to get rid of stuff I don't need where possible).
+> 
+> If the failures are not expected, what should I do?  Would the log file 
+> be of any help?  Are there any extra options I should supply?  I just ran:
+
+You can try to use:
+
+./runltp -h
+
+for all options that you would like to use. If you like you can also use
+the:
+./runltp -g <html-filename.html>
+
+option to generate a swanky HTML output file, which will help you to
+decipher the exact reason for failure. You can also see the normal test
+output file, from where the HTML is parsed out at ltp/output directory.
+This will be available after the tests are complete.
+
+Meanwhile i will request you to give a try to the following test results
+that were uploaded to the site for the latest release. I tried to
+generate results for various architectures and kernel combinations. The
+file names are self explanatory. You can compare them with yours.
+
+http://ufpr.dl.sourceforge.net/sourceforge/ltp/ltp-full-20080630_results_kernel-2.6.16.21-0.8-default_architecture-ia64.html
+http://surfnet.dl.sourceforge.net/sourceforge/ltp/ltp-full-20080630_results_kernel-2.6.18-48.el5_architecture-ppc64.html
+http://switch.dl.sourceforge.net/sourceforge/ltp/ltp-full-20080630_results_kernel-2.6.18-92.el5_architecture-x86_64.html
+http://ufpr.dl.sourceforge.net/sourceforge/ltp/ltp-full-20080630_results_kernel-2.6.23.13_architecture-ia64.html
+http://ufpr.dl.sourceforge.net/sourceforge/ltp/ltp-full-20080630_results_kernel-2.6.25-gcov-nomodconfig-smp_architecture-i386.html
+http://switch.dl.sourceforge.net/sourceforge/ltp/ltp-full-20080630_results_kernel-2.6.5-7.244-pseries64_architecture-ppc64.html
+http://internap.dl.sourceforge.net/sourceforge/ltp/ltp-full-20080630_results_kernel-2.6.7_architecture-i386.html
+http://master.dl.sourceforge.net/sourceforge/ltp/ltp-full-20080630_results_kernel-2.6.9-67.ELsmp_architecture-x86_64.html
+
+Regards--
+Subrata
+
+> 
+> ./runltp -p -l result.yyyymmdd.log
+> 
+> 
+> If failures are expected on some systems or with some kernel 
+> configuration options, then let me know, and perhaps I can diff log 
+> files between kernel versions to look for new failures.
+> 
+> Thanks,
+> 
 
