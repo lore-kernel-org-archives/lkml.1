@@ -1,125 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763424AbYGBJWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761963AbYGBJZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763424AbYGBJWr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 05:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYGBJWj
+	id S1761963AbYGBJZi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 05:25:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbYGBJZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 05:22:39 -0400
-Received: from hull.simtec.co.uk ([78.105.113.97]:57672 "EHLO
-	ivanova.local.simtec.co.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752688AbYGBJWj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 05:22:39 -0400
-X-Greylist: delayed 2876 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Jul 2008 05:22:38 EDT
-Message-Id: <20080702083429.070304181@fluff.org>
-References: <20080702083428.963530966@fluff.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 02 Jul 2008 09:34:29 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-Cc: akpm@linux-foundation.org, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, lethal@linux-sh.org,
-       Ben Dooks <ben-linux@fluff.org>
-Subject: [patch 1/1] MFD: SM501 build fixes when CONFIG_MFD_SM501_GPIO unset.
-Content-Disposition: inline; filename=simtec/simtec-drivers-mfd-sm501-gpiofix.patch
-To: unlisted-recipients:; (no To-header on input)
+	Wed, 2 Jul 2008 05:25:30 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:51482 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752943AbYGBJZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 05:25:29 -0400
+Message-ID: <486B490C.3090902@cn.fujitsu.com>
+Date: Wed, 02 Jul 2008 17:23:24 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@qumranet.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG] CFS vs cpu hotplug
+References: <20080619161949.GA11062@osiris.ibm.com>	 <b647ffbd0806251512i3ab6efedv75a5bddd865ef618@mail.gmail.com>	 <b647ffbd0806281516i57392230idf06f99ff02d22cf@mail.gmail.com>	 <20080630090744.GB6598@osiris.boeblingen.de.ibm.com>	 <20080630091711.GA26637@elte.hu> <4869F770.6050103@cn.fujitsu.com>	 <20080701093124.GC31309@elte.hu> <486B2AB0.1080506@cn.fujitsu.com> <b647ffbd0807020150y650c3172me64b70710a8158d7@mail.gmail.com>
+In-Reply-To: <b647ffbd0807020150y650c3172me64b70710a8158d7@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the build problems if CONFIG_MFD_SM501_GPIO is not set,
-which is generally when there is no gpiolib support available
-as currently happens on x86 when building PCI SM501.
+Dmitry Adamushko wrote:
+> 2008/7/2 Lai Jiangshan <laijs@cn.fujitsu.com>:
+>> Ingo Molnar wrote:
+>>> * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+>>>
+>>>> The following oops still occurred whether this patch is applied or not.
+>>>>  [<ffffffff8059372c>] notifier_call_chain+0x33/0x5b
+>>>>  [<ffffffff802476a9>] __raw_notifier_call_chain+0x9/0xb
+>>>>  [<ffffffff802476ba>] raw_notifier_call_chain+0xf/0x11
+>>>>  [<ffffffff805736d6>] _cpu_down+0x191/0x256
+>>>>  [<ffffffff805737c1>] cpu_down+0x26/0x36
+>>>>  [<ffffffff805749c1>] store_online+0x32/0x75
+>>>>  [<ffffffff803d1982>] sysdev_store+0x24/0x26
+>>>>  [<ffffffff802d2551>] sysfs_write_file+0xe0/0x11c
+>>>>  [<ffffffff80290e6b>] vfs_write+0xae/0x137
+>>>>  [<ffffffff802913d3>] sys_write+0x47/0x70
+>>>>  [<ffffffff8020b1eb>] system_call_after_swapgs+0x7b/0x80
+>>> hm, there were multiple problems in this area and a lot of dormant bugs.
+>>> Do you have this recent upstream commit in your tree:
+>> Hi, Ingo
+>>        I tested it again with the most recent upstreams(including the
+>> following patch) committed, the oops still occurred.
+> 
+> [ taken from the oops ]
+>> kernel BUG at kernel/sched.c:6133!
+>>
+> 
+> is it BUG_ON(rq->nr_running != 0); in your sched.c?
+yes, I had test it twice yesterday, applied/not applied
+your patch(no debugging).
+> 
+> hum, it's line #6134 in the recent sched.c version. So with the recent
+> version it was "kernel BUG at kernel/sched.c:6134!" right?
+yes, and applied your's and Zhang's patch as Ingo's advice.
+> 
+> could you please try to get a crash with my additional debugging patch
+> (you may find it in this thread) applied?
+> We should see then all tasks that have been migrated (or failed to be
+> migrated) during migration_call(CPU_DEAD, ...).
+>
+Thank you. I'll test it again with your debugging patch applied
+and get more info.
+> TIA,
+> 
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-Index: linux-2.6.26-rc8-quilt3/drivers/mfd/sm501.c
-===================================================================
---- linux-2.6.26-rc8-quilt3.orig/drivers/mfd/sm501.c	2008-07-02 09:24:46.000000000 +0100
-+++ linux-2.6.26-rc8-quilt3/drivers/mfd/sm501.c	2008-07-02 09:27:11.000000000 +0100
-@@ -19,7 +19,6 @@
- #include <linux/device.h>
- #include <linux/platform_device.h>
- #include <linux/pci.h>
--#include <linux/gpio.h>
- #include <linux/i2c-gpio.h>
- 
- #include <linux/sm501.h>
-@@ -35,6 +34,9 @@ struct sm501_device {
- 
- struct sm501_gpio;
- 
-+#ifdef CONFIG_MFD_SM501_GPIO
-+#include <linux/gpio.h>
-+
- struct sm501_gpio_chip {
- 	struct gpio_chip	gpio;
- 	struct sm501_gpio	*ourgpio;	/* to get back to parent. */
-@@ -50,6 +52,11 @@ struct sm501_gpio {
- 	void __iomem		*regs;
- 	struct resource		*regs_res;
- };
-+#else
-+struct sm501_gpio {
-+	/* no gpio support, empty definition for sm501_devdata. */
-+};
-+#endif
- 
- struct sm501_devdata {
- 	spinlock_t			 reg_lock;
-@@ -1082,6 +1089,9 @@ static void sm501_gpio_remove(struct sm5
- 	struct sm501_gpio *gpio = &sm->gpio;
- 	int ret;
- 
-+	if (!sm->gpio.registered)
-+		return;
-+
- 	ret = gpiochip_remove(&gpio->low.gpio);
- 	if (ret)
- 		dev_err(sm->dev, "cannot remove low chip, cannot tidy up\n");
-@@ -1100,6 +1110,11 @@ static inline int sm501_gpio_pin2nr(stru
- 	struct sm501_gpio *gpio = &sm->gpio;
- 	return pin + (pin < 32) ? gpio->low.gpio.base : gpio->high.gpio.base;
- }
-+
-+static inline int sm501_gpio_isregistered(struct sm501_devdata *sm)
-+{
-+	return sm->gpio.registered;
-+}
- #else
- static inline int sm501_register_gpio(struct sm501_devdata *sm)
- {
-@@ -1114,6 +1129,11 @@ static inline int sm501_gpio_pin2nr(stru
- {
- 	return -1;
- }
-+
-+static inline int sm501_gpio_isregistered(struct sm501_devdata *sm)
-+{
-+	return 0;
-+}
- #endif
- 
- static int sm501_register_gpio_i2c_instance(struct sm501_devdata *sm,
-@@ -1330,8 +1350,8 @@ static int sm501_init_dev(struct sm501_d
- 	}
- 
- 	if (pdata->gpio_i2c != NULL && pdata->gpio_i2c_nr > 0) {
--		if (!sm->gpio.registered)
--			dev_err(sm->dev, "no gpio registered for i2c gpio.\n");
-+		if (!sm501_gpio_isregistered(sm))
-+			dev_err(sm->dev, "no gpio available for i2c gpio.\n");
- 		else
- 			sm501_register_gpio_i2c(sm, pdata);
- 	}
-@@ -1643,8 +1663,7 @@ static void sm501_dev_remove(struct sm50
- 
- 	device_remove_file(sm->dev, &dev_attr_dbg_regs);
- 
--	if (sm->gpio.registered)
--		sm501_gpio_remove(sm);
-+	sm501_gpio_remove(sm);
- }
- 
- static void sm501_pci_remove(struct pci_dev *dev)
 
--- 
