@@ -1,79 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbYGBO6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYGBPDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755607AbYGBO6R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 10:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbYGBO6A
+	id S1756732AbYGBPDf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 11:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbYGBPD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 10:58:00 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39522 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753304AbYGBO57 (ORCPT
+	Wed, 2 Jul 2008 11:03:26 -0400
+Received: from smtp1.riverbed.com ([206.169.144.12]:29658 "EHLO
+	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754050AbYGBPDZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 10:57:59 -0400
-Subject: Re: [PATCH 14/23] make section names compatible with
-	-ffunction-sections -fdata-sections: parisc
-From: David Woodhouse <dwmw2@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Denys Vlasenko <vda.linux@googlemail.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       linux-arch@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>,
-       David Howells <dhowells@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Lennert Buytenhek <kernel@wantstofly.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tim Bird <tim.bird@am.sony.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Dave Miller <davem@davemloft.net>
-In-Reply-To: <20080702145514.GC4196@cs181140183.pp.htv.fi>
-References: <200807020239.11410.vda.linux@googlemail.com>
-	 <1214955660.3316.31.camel@localhost.localdomain>
-	 <200807020200.49518.vda.linux@googlemail.com>
-	 <1214988107.10393.444.camel@pmac.infradead.org>
-	 <20080702145514.GC4196@cs181140183.pp.htv.fi>
-Content-Type: text/plain
-Date: Wed, 02 Jul 2008 15:57:42 +0100
-Message-Id: <1215010662.10393.459.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 2 Jul 2008 11:03:25 -0400
+Date: Wed, 2 Jul 2008 08:04:16 -0700
+From: Arthur Jones <ajones@riverbed.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: dougthompson@xmission.com, bluesmoke-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] drivers/edac: i5100 cleanup addendum
+Message-ID: <20080702150416.GA32745@ajones-laptop.nbttech.com>
+References: <20080702023345.2554ef15.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20080702023345.2554ef15.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-02 at 17:55 +0300, Adrian Bunk wrote:
-> On Wed, Jul 02, 2008 at 09:41:47AM +0100, David Woodhouse wrote:
-> > On Wed, 2008-07-02 at 02:00 +0200, Denys Vlasenko wrote:
-> > > On Wednesday 02 July 2008 01:41, James Bottomley wrote:
-> > > > On Wed, 2008-07-02 at 02:39 +0200, Denys Vlasenko wrote:
-> > > > > The purpose of this patch is to make kernel buildable
-> > > > > with "gcc -ffunction-sections -fdata-sections".
-> > > > > This patch fixes parisc architecture.
-> > > > > 
-> > > > > Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
-> > > > 
-> > > > Um ... if you look at the Makefile you'll see we already build parisc
-> > > > with -ffunction-sections; we have to: our relative jumps are too small
-> > > > to guarantee finding the stubs in large files.
-> > > > 
-> > > > Since our text is -ffunction-sections compatible already, I question the
-> > > > need for transformations like this:
-> > 
-> > We've been building FR-V kernels with --gc-sections for a long time,
-> > too.
-> >...
-> 
-> Is there any specific reason why it's not done in the upstream kernel?
+This follow-on cleanup patch fixes the following
+compiler warnings found by Andrew Morton:
 
-Isn't it? I thought it was.
+drivers/edac/i5100_edac.c:258: warning: function declaration isn't a prototype
+drivers/edac/i5100_edac.c:263: warning: function declaration isn't a prototype
+drivers/edac/i5100_edac.c: In function 'i5100_ctl_page_to_phys':
+drivers/edac/i5100_edac.c:372: warning: left shift count >= width of type
 
-Or maybe we were only doing that before we added MMU support. I remember
-the exception tables complicate matters a little.
+The i5100_ctl_page_to_phys was not used, it will be
+re-added when the controller -> cpu address space
+translations work.
 
+CC: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Arthur Jones <ajones@riverbed.com>
+---
+ drivers/edac/i5100_edac.c |   39 +++------------------------------------
+ 1 files changed, 3 insertions(+), 36 deletions(-)
+
+diff --git a/drivers/edac/i5100_edac.c b/drivers/edac/i5100_edac.c
+index a2007db..22db05a 100644
+--- a/drivers/edac/i5100_edac.c
++++ b/drivers/edac/i5100_edac.c
+@@ -254,12 +254,12 @@ static inline u32 i5100_recmema_dm_buf_id(u32 a)
+ 	return i5100_nrecmema_dm_buf_id(a);
+ }
+ 
+-static inline u32 i5100_recmemb_cas(a)
++static inline u32 i5100_recmemb_cas(u32 a)
+ {
+ 	return i5100_nrecmemb_cas(a);
+ }
+ 
+-static inline u32 i5100_recmemb_ras(a)
++static inline u32 i5100_recmemb_ras(u32 a)
+ {
+ 	return i5100_nrecmemb_ras(a);
+ }
+@@ -339,39 +339,6 @@ static int i5100_rank_to_slot(const struct mem_ctl_info *mci,
+ 	return -1;
+ }
+ 
+-/*
+- * The processor bus memory addresses are broken into three
+- * pieces, whereas the controller addresses are contiguous.
+- *
+- * here we map from the controller address space to the
+- * processor address space:
+- *
+- *    Processor Address Space
+- * +-----------------------------+
+- * |                             |
+- * |  "high" memory addresses    |
+- * |                             |
+- * +-----------------------------+ <- 4GB on the i5100
+- * |                             |
+- * |  other non-memory addresses |
+- * |                             |
+- * +-----------------------------+ <- top of low memory
+- * |                             |
+- * | "low" memory addresses      |
+- * |                             |
+- * +-----------------------------+
+- */
+-static unsigned long i5100_ctl_page_to_phys(struct mem_ctl_info *mci,
+-					    unsigned long cntlr_addr)
+-{
+-	const struct i5100_priv *priv = mci->pvt_info;
+-
+-	if (cntlr_addr < priv->tolm)
+-		return cntlr_addr;
+-
+-	return (1UL << 32) + (cntlr_addr - priv->tolm);
+-}
+-
+ static const char *i5100_err_msg(unsigned err)
+ {
+ 	static const char *merrs[] = {
+@@ -912,7 +879,7 @@ static int __devinit i5100_init_one(struct pci_dev *pdev,
+ 	mci->mod_ver = "not versioned";
+ 	mci->ctl_name = "i5100";
+ 	mci->dev_name = pci_name(pdev);
+-	mci->ctl_page_to_phys = i5100_ctl_page_to_phys;
++	mci->ctl_page_to_phys = NULL;
+ 
+ 	mci->edac_check = i5100_check_error;
+ 
 -- 
-dwmw2
-
+1.5.4.3
