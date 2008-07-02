@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762313AbYGBEs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762032AbYGBE4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762313AbYGBEs0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 00:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbYGBEsS
+	id S1762032AbYGBE4n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 00:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbYGBE4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 00:48:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42864 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752560AbYGBEsR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 00:48:17 -0400
-Date: Tue, 1 Jul 2008 21:46:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: alexisb@us.ibm.com, linux-kernel@vger.kernel.org, muli@il.ibm.com,
-       mingo@elte.hu
-Subject: Re: [PATCH -mm] fix per-device dma_mapping_ops support
-Message-Id: <20080701214614.be6937be.akpm@linux-foundation.org>
-In-Reply-To: <20080702132903E.fujita.tomonori@lab.ntt.co.jp>
-References: <20080701194840.258b500f.akpm@linux-foundation.org>
-	<20080702124328B.fujita.tomonori@lab.ntt.co.jp>
-	<20080701210620.1e90e1fd.akpm@linux-foundation.org>
-	<20080702132903E.fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 2 Jul 2008 00:56:33 -0400
+Received: from mail.suse.de ([195.135.220.2]:38688 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753625AbYGBE4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 00:56:32 -0400
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH] aio: aio_complete() will never be called in interrupt context
+Date: Wed, 2 Jul 2008 10:30:42 +0530
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: linux-aio@kvack.org, linux-kernel@vger.kernel.org,
+       Benjamin LaHaise <bcrl@kvack.org>, Jeff Moyer <jmoyer@redhat.com>
+References: <200806260930.59836.knikanth@suse.de> <200807011359.57164.knikanth@suse.de> <486A8A92.6050200@oracle.com>
+In-Reply-To: <486A8A92.6050200@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807021030.43009.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Jul 2008 13:29:19 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+On Wednesday 02 July 2008 01:20:42 Zach Brown wrote:
+> > I did not do any specific testing. Just ran multiple instances of a
+> > file-copy utility that uses aio and a bit of Chris Mason's aio-stress.
+>
+> Are you running these tests under a kernel with lockdep enabled?
+>
 
-> > OK..  Looks like this needs to be folded into
-> > dma-mapping-x86-per-device-dma_mapping_ops-support prior to merging to
-> > keep everything bisect-happy.
-> 
-> This doesn't need to be fold though it could.
-> 
-> This patch uses per-device-dma_mapping_ops support so this need to be
-> applied after the per-device-dma_mapping_ops patchset.
+Yes. I have CONFIG_LOCKDEP_SUPPORT=y and did not get any warning messages.
 
-OK, fine, let's keep them separate commits then.
+> > p.s: Is the archives of the linux-aio list available somewhere? The URL
+> > in the mail footer seems to be unavailable.
+>
+> The very first google hit for 'linux-aio mailing list archive' works:
+>
+>   http://marc.info/?l=linux-aio
+>
+
+Thanks and sorry for the noise.
+
+But it would be nice if the link in the mail footer(www.kvack.org/aio) is 
+changed to an active link or removed. The link redirects to 
+www.kvack.org/~blah/aio/ which returns 404
+
+Thanks
+Nikanth Karthikesan
