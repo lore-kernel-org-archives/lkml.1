@@ -1,108 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763529AbYGBHYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762989AbYGBH3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763529AbYGBHYG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 03:24:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762983AbYGBHXJ
+	id S1762989AbYGBH3e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 03:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759850AbYGBH30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 03:23:09 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:50576 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762957AbYGBHXH (ORCPT
+	Wed, 2 Jul 2008 03:29:26 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:20427 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759386AbYGBH3Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 03:23:07 -0400
-To: jmorris@namei.org
-CC: miklos@szeredi.hu, jjohansen@suse.de, akpm@linux-foundation.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       serue@us.ibm.com, morgan@kernel.org
-In-reply-to: <Xine.LNX.4.64.0807021604120.26138@us.intercode.com.au> (message
-	from James Morris on Wed, 2 Jul 2008 16:12:44 +1000 (EST))
-Subject: Re: [patch] security: fix dummy xattr functions
-References: <E1KDmeW-0006KB-2x@pomaz-ex.szeredi.hu> <Xine.LNX.4.64.0807021604120.26138@us.intercode.com.au>
-Message-Id: <E1KDwg7-0007OX-5D@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 02 Jul 2008 09:22:59 +0200
+	Wed, 2 Jul 2008 03:29:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=QKNqCfzxr6UYM1+GgGZnTgtitzbkxNTxOyW5Lpc574fGTssixR+4EvdzA1HKBz/ddP
+         MT54AAOHZoCRF775AkGxA4e26zvDIZUYHoSEiBcq2rf59xAHMtpn0Yw5v9DoEXeZ/mFY
+         4FSM6D9rEGwDc7s+4zN0k5OPP1IvSpHT0/1Mg=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: merge zones_sizes_init for numa and non numa on 32bit
+Date: Wed, 2 Jul 2008 00:31:02 -0700
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <200806301834.59156.yhlu.kernel@gmail.com>
+In-Reply-To: <200806301834.59156.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807020031.02945.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Jul 2008, James Morris wrote:
-> On Tue, 1 Jul 2008, Miklos Szeredi wrote:
-> 
-> > Hi James,
-> > 
-> > If this (untested) patch looks OK, could you please apply it to your
-> > tree?
-> 
-> As I understand it, filesystem capabilities is only enabled when either 
-> LSM is disabled, or the LSM capabilities module is built.
-> 
-> In both cases, security/commoncap.o is built.  With LSM disabled, the 
-> correct cap_inode_xxx functions will be linked.  With LSM+capabilities, 
-> either the capability LSM will be loaded, or another LSM will need to 
-> deliberately stack it.
-> 
-> So, I think the existing code is correct.
 
-So where do the dummy_ functions figure into this?  As I understand,
-they are called whenever LSM is disabled, but the LSM doesn't define a
-particular hook, so there's a default implementation.  Is that correct?
+move out e820_register_active_regions from non numa zones_sizes_init()
+and remove numa version zones_sizes_init().
 
-If so, then in theory it is still theoretically possible that with
-LSM+capabilities, the LSM doesn't explicitly stack inode_setxattr and
-inode_removexattr, and so the dummy implementation should do that
-instead.  What am I missing?
+and let 32 bit call remove_all_active_ranges in setup_arch directly like 64 bit
 
-Thanks,
-Miklos
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-> 
-> > 
-> > Replace open coded xattr checks with cap_inode_xxx() function calls in
-> > dummy_inode_setxattr() and dummy_inode_removexattr().  The old ones
-> > were out of sync with the cap_inode_xxx() implementation, which could
-> > even be a security problem.
-> > 
-> > Noticed by John Johansen.
-> > 
-> > CC: John Johansen <jjohansen@suse.de>
-> > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> > ---
-> >  security/dummy.c |   12 ++----------
-> >  1 file changed, 2 insertions(+), 10 deletions(-)
-> > 
-> > Index: linux-2.6/security/dummy.c
-> > ===================================================================
-> > --- linux-2.6.orig/security/dummy.c	2008-07-01 21:44:03.000000000 +0200
-> > +++ linux-2.6/security/dummy.c	2008-07-01 21:51:08.000000000 +0200
-> > @@ -370,11 +370,7 @@ static void dummy_inode_delete (struct i
-> >  static int dummy_inode_setxattr (struct dentry *dentry, const char *name,
-> >  				 const void *value, size_t size, int flags)
-> >  {
-> > -	if (!strncmp(name, XATTR_SECURITY_PREFIX,
-> > -		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
-> > -	    !capable(CAP_SYS_ADMIN))
-> > -		return -EPERM;
-> > -	return 0;
-> > +	return cap_inode_setxattr(dentry, name, value, size, flags);
-> >  }
-> >  
-> >  static void dummy_inode_post_setxattr (struct dentry *dentry, const char *name,
-> > @@ -395,11 +391,7 @@ static int dummy_inode_listxattr (struct
-> >  
-> >  static int dummy_inode_removexattr (struct dentry *dentry, const char *name)
-> >  {
-> > -	if (!strncmp(name, XATTR_SECURITY_PREFIX,
-> > -		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
-> > -	    !capable(CAP_SYS_ADMIN))
-> > -		return -EPERM;
-> > -	return 0;
-> > +	return cap_inode_removexattr(dentry, name);
-> >  }
-> >  
-> >  static int dummy_inode_need_killpriv(struct dentry *dentry)
-> > 
-> 
-> -- 
-> James Morris
-> <jmorris@namei.org>
-> 
+---
+ arch/x86/kernel/setup.c    |    2 --
+ arch/x86/mm/discontig_32.c |   16 ----------------
+ arch/x86/mm/init_32.c      |   10 ++++------
+ include/asm-x86/page_32.h  |    1 -
+ 4 files changed, 4 insertions(+), 25 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/setup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup.c
++++ linux-2.6/arch/x86/kernel/setup.c
+@@ -719,10 +719,8 @@ void __init setup_arch(char **cmdline_p)
+ 	 */
+ 	acpi_boot_table_init();
+ 
+-#ifdef CONFIG_X86_64
+ 	/* Remove active ranges so rediscovery with NUMA-awareness happens */
+ 	remove_all_active_ranges();
+-#endif
+ 
+ #ifdef CONFIG_ACPI_NUMA
+ 	/*
+Index: linux-2.6/arch/x86/mm/discontig_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/discontig_32.c
++++ linux-2.6/arch/x86/mm/discontig_32.c
+@@ -327,7 +327,6 @@ void __init initmem_init(unsigned long s
+ 	 * and ZONE_HIGHMEM.
+ 	 */
+ 
+-	remove_all_active_ranges();
+ 	get_memcfg_numa();
+ 
+ 	kva_pages = round_up(calculate_numa_remap_pages(), PTRS_PER_PTE);
+@@ -390,21 +389,6 @@ void __init initmem_init(unsigned long s
+ 	setup_bootmem_allocator();
+ }
+ 
+-void __init zone_sizes_init(void)
+-{
+-	unsigned long max_zone_pfns[MAX_NR_ZONES];
+-	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
+-	max_zone_pfns[ZONE_DMA] =
+-		virt_to_phys((char *)MAX_DMA_ADDRESS) >> PAGE_SHIFT;
+-	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
+-#ifdef CONFIG_HIGHMEM
+-	max_zone_pfns[ZONE_HIGHMEM] = highend_pfn;
+-#endif
+-
+-	free_area_init_nodes(max_zone_pfns);
+-	return;
+-}
+-
+ void __init set_highmem_pages_init(void)
+ {
+ #ifdef CONFIG_HIGHMEM
+Index: linux-2.6/arch/x86/mm/init_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/init_32.c
++++ linux-2.6/arch/x86/mm/init_32.c
+@@ -660,12 +660,14 @@ void __init initmem_init(unsigned long s
+ 	if (max_pfn > max_low_pfn)
+ 		highstart_pfn = max_low_pfn;
+ 	memory_present(0, 0, highend_pfn);
++	e820_register_active_regions(0, 0, highend_pfn);
+ 	printk(KERN_NOTICE "%ldMB HIGHMEM available.\n",
+ 		pages_to_mb(highend_pfn - highstart_pfn));
+ 	num_physpages = highend_pfn;
+ 	high_memory = (void *) __va(highstart_pfn * PAGE_SIZE - 1) + 1;
+ #else
+ 	memory_present(0, 0, max_low_pfn);
++	e820_register_active_regions(0, 0, max_low_pfn);
+ 	num_physpages = max_low_pfn;
+ 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE - 1) + 1;
+ #endif
+@@ -677,25 +679,21 @@ void __init initmem_init(unsigned long s
+ 
+ 	setup_bootmem_allocator();
+ }
++#endif /* !CONFIG_NEED_MULTIPLE_NODES */
+ 
+-void __init zone_sizes_init(void)
++static void __init zone_sizes_init(void)
+ {
+ 	unsigned long max_zone_pfns[MAX_NR_ZONES];
+ 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
+ 	max_zone_pfns[ZONE_DMA] =
+ 		virt_to_phys((char *)MAX_DMA_ADDRESS) >> PAGE_SHIFT;
+ 	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
+-	remove_all_active_ranges();
+ #ifdef CONFIG_HIGHMEM
+ 	max_zone_pfns[ZONE_HIGHMEM] = highend_pfn;
+-	e820_register_active_regions(0, 0, highend_pfn);
+-#else
+-	e820_register_active_regions(0, 0, max_low_pfn);
+ #endif
+ 
+ 	free_area_init_nodes(max_zone_pfns);
+ }
+-#endif /* !CONFIG_NEED_MULTIPLE_NODES */
+ 
+ void __init setup_bootmem_allocator(void)
+ {
+Index: linux-2.6/include/asm-x86/page_32.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/page_32.h
++++ linux-2.6/include/asm-x86/page_32.h
+@@ -101,7 +101,6 @@ extern void find_low_pfn_range(void);
+ extern unsigned long init_memory_mapping(unsigned long start,
+ 					 unsigned long end);
+ extern void initmem_init(unsigned long, unsigned long);
+-extern void zone_sizes_init(void);
+ extern void setup_bootmem_allocator(void);
+ 
+ 
