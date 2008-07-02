@@ -1,95 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYGBIZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756981AbYGBI1B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbYGBIZd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 04:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbYGBIZQ
+	id S1756981AbYGBI1B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 04:27:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYGBI0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 04:25:16 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:29228 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752427AbYGBIZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 04:25:14 -0400
-Date: Wed, 2 Jul 2008 10:25:11 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH 1/2] Avoid bio_endio recursion
-Message-ID: <20080702082511.GF20055@kernel.dk>
-References: <Pine.LNX.4.64.0806240118250.24220@engineering.redhat.com> <20080624080744.GL20851@kernel.dk> <Pine.LNX.4.64.0806241017390.23052@engineering.redhat.com> <20080625082421.GU20851@kernel.dk> <Pine.LNX.4.64.0806252008380.11130@engineering.redhat.com> <20080626070723.GL20851@kernel.dk> <Pine.LNX.4.64.0807020001290.9097@engineering.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0807020001290.9097@engineering.redhat.com>
+	Wed, 2 Jul 2008 04:26:47 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:44781 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752910AbYGBI0q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 04:26:46 -0400
+To: a.p.zijlstra@chello.nl
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] fix task dirty balancing
+X-Mailer: Cue version 0.8 (080625-0732/takashi)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20080702082644.BA45D5A17@siro.lan>
+Date: Wed,  2 Jul 2008 17:26:44 +0900 (JST)
+From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 02 2008, Mikulas Patocka wrote:
-> >Right, that wont work of course. Completions are typically done through
-> >a softirq, so it is not currently done with hard interrupts disabled.
-> 
-> I thought, from hardirq - that's what IDE is doing. And they are called 
-> with interrupts disabled (maybe unless you specify unmaskirq, which is not 
-> default). What block driver does completions with softirq? ... and why?
+hi,
 
-The key word is 'typically', the old IDE driver really isn't used very
-much. The SCSI layer and eg cciss uses the block layer softirq
-completions, so that is what 99% of the uses will be.
+task_dirty_inc doesn't seem to be called properly for
+filesystems which don't use set_page_dirty for write(2).
+eg. ext2 w/o nobh option.
 
-> >So it's a bit of a shame to impose this extra restriction, bio unrolling 
-> >is necessarily a really short operation. We could reenable around the 
-> >bi_end_io() call, but then we'd need to save and restore for each bio.
-> 
-> I found another weird thing --- why does local_irq_save() execute that 
-> microcoded "cli" instruction even if interrupts are already disabled? That 
-> could be definitely optimized.
-> 
-> And does local_irq_restore() need to execute even more costy "popf" when 
-> it makes a transition from disabled to disabled state? What's 
-> local_irq_restore semantics --- is it allowed to use local_irq_restore for 
-> transition from interrupt-enabled state into interrupt-disabled state?
+YAMAMOTO Takashi
 
-That's a question for the arch people. Probably nested _save and
-_restore aren't optimized.
 
-> 
-> >Please make that
-> >
-> >       bio->bi_flags &= ~(1 << BIO_SEG_VALID);
-> >       bio->bi_phys_segments = error;
-> 
-> OK, here is the updated patch:
-> 
-> Avoid recursion on bio_endio. bio_endio calls bio->bi_end_io which may in 
-> turn
-> call bio_endio again. When this recursion happens, put the new bio to the 
-> queue
-> and process it later, from the top-level bio_endio.
+Signed-off-by: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
+---
 
-Thanks that looks good, I'll throw this into the testing mix and see
-what happens.
+commit e68f05bf56d0652c107bba1cff3f8491e41a2117
+Author: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
+Date:   Wed Jul 2 16:17:33 2008 +0900
 
->  void bio_pair_release(struct bio_pair *bp)
-> Index: linux-2.6.26-rc8-devel/include/linux/bio.h
-> ===================================================================
-> --- linux-2.6.26-rc8-devel.orig/include/linux/bio.h	2008-07-02 
-> 04:20:43.000000000 +0200
-> +++ linux-2.6.26-rc8-devel/include/linux/bio.h	2008-07-02 
-> 04:21:16.000000000 +0200
-> @@ -86,6 +86,9 @@ struct bio {
-> 
->  	/* Number of segments in this BIO after
->  	 * physical address coalescing is performed.
-> +	 *
-> +	 * When ending a bio request in bio_endio, this field is temporarily
-> +	 * (ab)used to keep the error code.
->  	 */
->  	unsigned short		bi_phys_segments;
+    fix dirty balancing for tasks.
+    
+    call task_dirty_inc when dirtying a page with mark_buffer_dirty.
 
-I'll drop this comment, we don't really need it. Users must use
-bio_phys_segments() to retrieve the segment count anyway, in which case
-the count is ALWAYS valid.
-
--- 
-Jens Axboe
-
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 4788a9e..2f1c7c6 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -1219,8 +1219,9 @@ void mark_buffer_dirty(struct buffer_head *bh)
+ 			return;
+ 	}
+ 
+-	if (!test_set_buffer_dirty(bh))
+-		__set_page_dirty(bh->b_page, page_mapping(bh->b_page), 0);
++	if (!test_set_buffer_dirty(bh) &&
++	    __set_page_dirty(bh->b_page, page_mapping(bh->b_page), 0))
++		task_dirty_inc(current);
+ }
+ 
+ /*
+diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+index bd91987..61d0aec 100644
+--- a/include/linux/writeback.h
++++ b/include/linux/writeback.h
+@@ -95,6 +95,7 @@ int wakeup_pdflush(long nr_pages);
+ void laptop_io_completion(void);
+ void laptop_sync_completion(void);
+ void throttle_vm_writeout(gfp_t gfp_mask);
++void task_dirty_inc(struct task_struct *);
+ 
+ /* These are exported to sysctl. */
+ extern int dirty_background_ratio;
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 29b1d1e..4dc85d0 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -176,10 +176,11 @@ void bdi_writeout_inc(struct backing_dev_info *bdi)
+ }
+ EXPORT_SYMBOL_GPL(bdi_writeout_inc);
+ 
+-static inline void task_dirty_inc(struct task_struct *tsk)
++void task_dirty_inc(struct task_struct *tsk)
+ {
+ 	prop_inc_single(&vm_dirties, &tsk->dirties);
+ }
++EXPORT_SYMBOL_GPL(task_dirty_inc);
+ 
+ /*
+  * Obtain an accurate fraction of the BDI's portion.
