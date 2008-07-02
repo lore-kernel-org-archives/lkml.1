@@ -1,69 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759162AbYGBA3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759263AbYGBAex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759162AbYGBA3D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 20:29:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756827AbYGBA2u
+	id S1759263AbYGBAex (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 20:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbYGBAel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 20:28:50 -0400
-Received: from gate.crashing.org ([63.228.1.57]:48081 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751537AbYGBA2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 20:28:49 -0400
-Subject: RE: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Cc: John Williams <john.williams@petalogix.com>, grant.likely@secretlab.ca,
-       linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
-       vapier.adi@gmail.com, arnd@arndb.de, matthew@wil.cx,
-       microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
-       John Linn <linnj@xilinx.com>, monstr@seznam.cz, drepper@redhat.com,
-       alan@lxorguk.ukuu.org.uk
-In-Reply-To: <20080701155845.9DDE299004D@mail180-dub.bigfish.com>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-6-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-7-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-8-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-9-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-10-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-11-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-12-git-send-email-monstr@seznam.cz>
-	 <1214483429-32360-13-git-send-email-monstr@seznam.cz>
-	 <fa686aa40806272249l7eae0c34k43a20ad41672b77a@mail.gmail.com>
-	 <1d3f23370806291702g4344a2f9lb62f85cbb475fca4@mail.gmail.com>
-	 <20080630033943.332471860046@mail171-va3.bigfish.com>
-	 <1214893302.20711.102.camel@pasglop>
-	 <20080701155845.9DDE299004D@mail180-dub.bigfish.com>
-Content-Type: text/plain
-Date: Wed, 02 Jul 2008 10:25:30 +1000
-Message-Id: <1214958330.20711.205.camel@pasglop>
+	Tue, 1 Jul 2008 20:34:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59964 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751005AbYGBAek (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 20:34:40 -0400
+Date: Tue, 1 Jul 2008 17:34:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Benoit Boissinot <bboissin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, lloyd@randombit.net,
+       "Theodore Ts'o" <tytso@mit.edu>, Matt Mackall <mpm@selenic.com>,
+       netdev@vger.kernel.org
+Subject: Re: Bug in random32.c: all-zero outputs with probability 1/2^32,
+ other seeding bugs
+Message-Id: <20080701173405.cb28db84.akpm@linux-foundation.org>
+In-Reply-To: <20080701231927.GW7647@pirzuine>
+References: <20080619153045.GC1455@randombit.net>
+	<20080701231927.GW7647@pirzuine>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-01 at 08:58 -0700, Stephen Neuendorffer wrote:
-> Doing this at the binary level would be nice, but I see enough problems
-> just doing it at the source level and at least for my purposes, doing it
-> on a dtb would be overkill, I think.   
+On Wed, 2 Jul 2008 01:19:27 +0200
+Benoit Boissinot <bboissin@gmail.com> wrote:
+
+> [who maintains random32.c ?]
+
+ah.  I think it's ancient net code which was recently hoisted into lib/.
+So: not really anybody.
+
+I've been hopefully cc'ing Matt and Ted in the hope of fooling them
+into looking at it.  But a netdev cc is appropriate also.
+
+> On Thu, Jun 19, 2008 at 5:30 PM, Jack Lloyd <lloyd@randombit.net> wrote:
+> > Hi,
+> >
+> > There appears to be an error in how random seeding is done in the
+> > random32.c RNG. I am looking at 2.6.25.7.
+> >
+> [snip]
+> >
+> > An easy and straightforward fix for this that doesn't require changing
+> > any interfaces is to add
+> >  s &= 0xFFFFFFFF;
+> > before the check in __set_random32, which ensures this condition will
+> > be caught by the check. Alternately, you could replace the check for
+> > s == 0 with some logic like:
+> >  if((s & 0xFFFFFFFF) == 0)
+> >     s += 1;
+> > since just chopping the seed to 32 bits does throw away some of your
+> > seed input (with sizeof(long) == 8, at least; doesn't make any
+> > difference for sizeof(long) == 4)
+> >
 > 
-> The main difficulty remains how to deal with cross references between
-> nodes in a reasonable way where the references cross from one fragment
-> to another.
-
-I would have those done in the toplevel .dts
-
-You can always override the property with the reference....
-
-Ie. you #include your CPU or your SOC for example, and then override
-some property to point to something else using the override mechanism I
-mentioned.
-
-Ben.
-
-
-
-
+> I think it is cleaner to change the interface to account for long != u32
+> 
+> The rest of your patch (ensuring values are big enough) looks valid to me.
+> 
+> Signed-off-by: Benoit Boissinot <benoit.boissinot@ens-lyon.org>
+> 
+> diff -r ced66ca0044f lib/random32.c
+> --- a/lib/random32.c	Mon Jun 30 08:58:09 2008 -0700
+> +++ b/lib/random32.c	Wed Jul 02 01:13:12 2008 +0200
+> @@ -56,7 +56,7 @@
+>  	return (state->s1 ^ state->s2 ^ state->s3);
+>  }
+> 
+> -static void __set_random32(struct rnd_state *state, unsigned long s)
+> +static void __set_random32(struct rnd_state *state, u32 s)
+>  {
+>  	if (s == 0)
+>  		s = 1;      /* default seed is 1 */
+> @@ -84,7 +84,7 @@
+>   */
+>  u32 random32(void)
+>  {
+> -	unsigned long r;
+> +	u32 r;
+>  	struct rnd_state *state = &get_cpu_var(net_rand_state);
+>  	r = __random32(state);
+>  	put_cpu_var(state);
+> @@ -122,7 +122,7 @@
+> 
+>  	for_each_possible_cpu(i) {
+>  		struct rnd_state *state = &per_cpu(net_rand_state,i);
+> -		__set_random32(state, i + jiffies);
+> +		__set_random32(state, (u32) i + jiffies);
+>  	}
+>  	return 0;
+>  }
+> @@ -135,7 +135,7 @@
+>  static int __init random32_reseed(void)
+>  {
+>  	int i;
+> -	unsigned long seed;
+> +	u32 seed;
+> 
+>  	for_each_possible_cpu(i) {
+>  		struct rnd_state *state = &per_cpu(net_rand_state,i);
