@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbYGBXZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbYGBX2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755174AbYGBXZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 19:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbYGBXZs
+	id S1753931AbYGBX2f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 19:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYGBX21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 19:25:48 -0400
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:65142 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751111AbYGBXZr (ORCPT
+	Wed, 2 Jul 2008 19:28:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53915 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751111AbYGBX20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 19:25:47 -0400
-Message-ID: <486C0ED0.3080608@lwfinger.net>
-Date: Wed, 02 Jul 2008 18:27:12 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Johannes Berg <johannes@sipsolutions.net>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, debian-kernel@lists.debian.org,
-       Giacomo Mulas <gmulas@ca.astro.it>,
-       Broadcom Linux <bcm43xx-dev@lists.berlios.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: b43 locks the machine when resuming after suspend to disk
-References: <alpine.DEB.1.10.0807021830300.32045@capitanata.ca.astro.it>	<200807022340.31894.rjw@sisk.pl>	<1215039419.13270.18.camel@johannes.berg>	<200807030108.37614.rjw@sisk.pl> <1215040064.13270.20.camel@johannes.berg>
-In-Reply-To: <1215040064.13270.20.camel@johannes.berg>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 2 Jul 2008 19:28:26 -0400
+Date: Wed, 2 Jul 2008 16:28:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: jbarnes@virtuousgeek.org, klassert@mathematik.tu-chemnitz.de,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, davem@davemloft.net
+Subject: Re: [patch 03/04] 3c59x: handle pci_name() being const
+Message-Id: <20080702162809.dc3ddf0e.akpm@linux-foundation.org>
+In-Reply-To: <20080702202453.GC14024@kroah.com>
+References: <20080702200902.909349505@mini.kroah.org>
+	<20080702202453.GC14024@kroah.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Berg wrote:
-> On Thu, 2008-07-03 at 01:08 +0200, Rafael J. Wysocki wrote:
->> On Thursday, 3 of July 2008, Johannes Berg wrote:
->>> Rafael, you misled me :) This is a completely different thing.
->> Ah, sorry then.  I was too quick with my response.
+On Wed, 2 Jul 2008 13:24:53 -0700
+Greg Kroah-Hartman <gregkh@suse.de> wrote:
+
+> This changes vortex_prob1() to handle pci_name() now returning a
+> constant string.
 > 
-> No trouble, it reminded me that I wanted to ask stable to pick up that
-> patch anyway although I don't think we ever ran into the issue there.
+> Cc: Steffen Klassert <klassert@mathematik.tu-chemnitz.de>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 > 
-> This seems very odd though, Giacomo, are you sure it also happens if you
-> unload the module?
+> ---
+>  drivers/net/3c59x.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- a/drivers/net/3c59x.c
+> +++ b/drivers/net/3c59x.c
+> @@ -1010,7 +1010,7 @@ static int __devinit vortex_probe1(struc
+>  	static int printed_version;
+>  	int retval, print_info;
+>  	struct vortex_chip_info * const vci = &vortex_info_tbl[chip_idx];
+> -	char *print_name = "3c59x";
+> +	const char *print_name = "3c59x";
+>  	struct pci_dev *pdev = NULL;
+>  	struct eisa_device *edev = NULL;
+>  	DECLARE_MAC_BUF(mac);
+> 
 
-I'm confused. Should the "mac80211: detect driver tx bugs" patch be sent to stable?
+Well this one applied.  The others didn't.
 
-Larry
-
-
+Please prefer to not raise patches against a 30MB-old kernel ;)
