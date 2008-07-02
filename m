@@ -1,80 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763270AbYGAWlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762745AbYGAWmF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763270AbYGAWlm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 18:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762506AbYGAWlW
+	id S1762745AbYGAWmF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 18:42:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763151AbYGAWlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 18:41:22 -0400
-Received: from ik-out-1112.google.com ([66.249.90.176]:49268 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760457AbYGAWlV (ORCPT
+	Tue, 1 Jul 2008 18:41:31 -0400
+Received: from qb-out-0506.google.com ([72.14.204.228]:18988 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763138AbYGAWl2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 18:41:21 -0400
-Date: Wed, 2 Jul 2008 00:41:25 +0200
-From: Domenico Andreoli <cavokz@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add btgpio driver
-Message-ID: <20080701224124.GA31299@ska.dandreoli.com>
-Mail-Followup-To: linux-kernel <linux-kernel@vger.kernel.org>
-References: <200807010206.38714.mb@bu3sch.de> <20080701010414.GA5279@ska.dandreoli.com> <20080701220601.GA31029@ska.dandreoli.com> <Pine.LNX.4.64.0807011508180.26330@shark.he.net>
+	Tue, 1 Jul 2008 18:41:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
+         :content-type:content-transfer-encoding:message-id;
+        b=LwPlfN6B30jRB1yNLh/iAUh87WeASgKl/wYcCXobKBQvODXv9w0+6GY0ilUpdPBoKP
+         /3ytfLO18tOC4il1/gLwsCScNk0xL1pv64a8RBiSX/JHCxASz8UqIQIB+saFVP0fteJP
+         q0Ay5QtMw4PXreYdabjXQesVauhxtKFSXG/O0=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: linux-arch@vger.kernel.org
+Subject: [PATCH 19/23] make section names compatible with -ffunction-sections -fdata-sections: sparc
+Date: Wed, 2 Jul 2008 02:41:35 +0200
+User-Agent: KMail/1.8.2
+Cc: Russell King <rmk@arm.linux.org.uk>, David Howells <dhowells@redhat.com>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Lennert Buytenhek <kernel@wantstofly.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Paul Mackerras <paulus@samba.org>,
+       David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tim Bird <tim.bird@am.sony.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Dave Miller <davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0807011508180.26330@shark.he.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200807020241.35406.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 01, 2008 at 03:09:38PM -0700, Randy.Dunlap wrote:
-> On Wed, 2 Jul 2008, Domenico Andreoli wrote:
-> 
-> > On Tue, Jul 01, 2008 at 03:04:15AM +0200, Domenico Andreoli wrote:
-> > > On Tue, Jul 01, 2008 at 02:06:38AM +0200, Michael Buesch wrote:
-> > > > This adds the btgpio driver.
-> > > > The purpose of the btgpio driver is to export all of the 24 GPIO pins
-> > > > available on Brooktree 8xx chips to the kernel GPIO infrastructure.
-> > > > 
-> > > > This makes it possible to use a physically modified BT8xx card as
-> > > > cheap digital GPIO card.
-> > > > 
-> > > > Signed-off-by: Michael Buesch <mb@bu3sch.de>
-> > > 
-> > > How one is supposed to test this driver? I am unable to switch on
-> > > the GIPO lib support in my config. I tried also allyesconfig but no
-> > > trace of gpio lib stuff.
-> > 
-> > Really, GPIO menu is no present anywhere. While searching for GPIO
-> > finds stuff, I am unable to locate and select it. I am using 2.6.26-rc8.
-> 
-> For what $ARCH?  GPIO menu says this:
-> 
-> config HAVE_GPIO_LIB
-> 	bool
-> 	help
-> 	  Platforms select gpiolib if they use this infrastructure
-> 	  for all their GPIOs, usually starting with ones integrated
-> 	  into SOC processors.
-> 
-> and then the arch-es that select HAVE_GPIO_LIB are these:
-> 
-> ./arch/powerpc/platforms/52xx/Kconfig:50:       select HAVE_GPIO_LIB
-> ./arch/mips/Kconfig:803:        select HAVE_GPIO_LIB
-> ./arch/avr32/Kconfig:90:        select HAVE_GPIO_LIB
-> ./arch/avr32/Kconfig.orig:85:   select HAVE_GPIO_LIB
-> ./arch/arm/Kconfig:257: select HAVE_GPIO_LIB
-> ./arch/arm/Kconfig:396: select HAVE_GPIO_LIB
-> ./arch/arm/Kconfig:426: select HAVE_GPIO_LIB
-> ./arch/arm/Kconfig:466: select HAVE_GPIO_LIB
-> ./arch/arm/Kconfig.orig:401:    select HAVE_GPIO_LIB
-> 
-> so are you using one of those arches?
+The purpose of this patch is to make kernel buildable
+with "gcc -ffunction-sections -fdata-sections".
+This patch fixes sparc architecture.
 
-ah.. this explains, i am using x86_64. my Kconfig-foo is still too young.
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+--
+vda
 
-thanks,
-Domenico
 
------[ Domenico Andreoli, aka cavok
- --[ http://www.dandreoli.com/gpgkey.asc
-   ---[ 3A0F 2F80 F79C 678A 8936  4FEE 0677 9033 A20E BC50
+--- 0.org/arch/sparc/boot/btfixupprep.c	Wed Jul  2 00:40:42 2008
++++ 1.fixname/arch/sparc/boot/btfixupprep.c	Wed Jul  2 00:45:57 2008
+@@ -171,7 +171,7 @@
+ 			}
+ 		} else if (buffer[nbase+4] != '_')
+ 			continue;
+-		if (!strcmp (sect, ".text.exit"))
++		if (!strcmp (sect, ".exit.text"))
+ 			continue;
+ 		if (strcmp (sect, ".text") &&
+ 		    strcmp (sect, ".init.text") &&
+@@ -325,7 +325,7 @@
+ 		(*rr)->next = NULL;
+ 	}
+ 	printf("! Generated by btfixupprep. Do not edit.\n\n");
+-	printf("\t.section\t\".data.init\",#alloc,#write\n\t.align\t4\n\n");
++	printf("\t.section\t\".init.data\",#alloc,#write\n\t.align\t4\n\n");
+ 	printf("\t.global\t___btfixup_start\n___btfixup_start:\n\n");
+ 	for (i = 0; i < last; i++) {
+ 		f = array + i;
+--- 0.org/arch/sparc/kernel/head.S	Wed Jul  2 00:40:42 2008
++++ 1.fixname/arch/sparc/kernel/head.S	Wed Jul  2 00:44:28 2008
+@@ -742,7 +742,7 @@
+ 		 nop
+ 
+ /* The code above should be at beginning and we have to take care about
+- * short jumps, as branching to .text.init section from .text is usually
++ * short jumps, as branching to .init.text section from .text is usually
+  * impossible */
+ 		__INIT
+ /* Acquire boot time privileged register values, this will help debugging.
+--- 0.org/arch/sparc/kernel/vmlinux.lds.S	Wed Jul  2 00:40:42 2008
++++ 1.fixname/arch/sparc/kernel/vmlinux.lds.S	Wed Jul  2 00:45:51 2008
+@@ -86,12 +86,12 @@
+ 	. = ALIGN(PAGE_SIZE);
+ 	__init_end = .;
+ 	. = ALIGN(32);
+-	.data.cacheline_aligned : {
+-		*(.data.cacheline_aligned)
++	.cacheline_aligned.data : {
++		*(.cacheline_aligned.data)
+ 	}
+ 	. = ALIGN(32);
+-	.data.read_mostly : {
+-		*(.data.read_mostly)
++	.read_mostly.data : {
++		*(.read_mostly.data)
+ 	}
+ 
+ 	__bss_start = .;
+--- 0.org/arch/sparc64/kernel/head.S	Wed Jul  2 00:40:42 2008
++++ 1.fixname/arch/sparc64/kernel/head.S	Wed Jul  2 00:44:28 2008
+@@ -466,7 +466,7 @@
+ 	jmpl    %g2 + %g0, %g0
+ 	 nop
+ 
+-	.section	.text.init.refok
++	.section	.init.refok.text
+ sun4u_init:
+ 	BRANCH_IF_SUN4V(g1, sun4v_init)
+ 
+--- 0.org/arch/sparc64/kernel/vmlinux.lds.S	Wed Jul  2 00:40:42 2008
++++ 1.fixname/arch/sparc64/kernel/vmlinux.lds.S	Wed Jul  2 00:45:51 2008
+@@ -32,12 +32,12 @@
+ 		*(.data1)
+ 	}
+ 	. = ALIGN(64);
+-	.data.cacheline_aligned : {
+-		*(.data.cacheline_aligned)
++	.cacheline_aligned.data : {
++		*(.cacheline_aligned.data)
+ 	}
+ 	. = ALIGN(64);
+-	.data.read_mostly : {
+-		*(.data.read_mostly)
++	.read_mostly.data : {
++		*(.read_mostly.data)
+ 	}
+ 	_edata = .;
+ 	PROVIDE (edata = .);
+--- 0.org/include/asm-sparc/cache.h	Wed Jul  2 00:40:51 2008
++++ 1.fixname/include/asm-sparc/cache.h	Wed Jul  2 00:45:45 2008
+@@ -19,7 +19,7 @@
+ 
+ #define SMP_CACHE_BYTES (1 << SMP_CACHE_BYTES_SHIFT)
+ 
+-#define __read_mostly __attribute__((__section__(".data.read_mostly")))
++#define __read_mostly __attribute__((__section__(".read_mostly.data")))
+ 
+ #ifdef CONFIG_SPARC32
+ #include <asm/asi.h>
