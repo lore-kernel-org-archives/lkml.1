@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbYGBTY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbYGBTYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757042AbYGBTY4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 15:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755894AbYGBTXj
+	id S1757487AbYGBTYl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 15:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbYGBTXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 15:23:39 -0400
-Received: from khc.piap.pl ([195.187.100.11]:45870 "EHLO khc.piap.pl"
+	Wed, 2 Jul 2008 15:23:31 -0400
+Received: from khc.piap.pl ([195.187.100.11]:57324 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752863AbYGBTX3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 15:23:29 -0400
+	id S1752268AbYGBTX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 15:23:28 -0400
 To: <netdev@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: WAN: Remove dead code from wanmain.c, CONFIG_WANPIPE_MULTPPP doesn't exist
+Subject: WAN: Remove bogus dosyncppp variable from synclink drivers.
 From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 02 Jul 2008 21:12:55 +0200
-Message-ID: <m3r6ac3xs8.fsf@maximus.localdomain>
+Date: Wed, 02 Jul 2008 21:10:30 +0200
+Message-ID: <m3tzf83xw9.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
@@ -22,66 +22,150 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 For review only, the actual patch will be made available in git.
 
-Remove dead code from wanmain.c, CONFIG_WANPIPE_MULTPPP doesn't exist
-    
-diff --git a/net/wanrouter/wanmain.c b/net/wanrouter/wanmain.c
-index 9ab31a3..6c20205 100644
---- a/net/wanrouter/wanmain.c
-+++ b/net/wanrouter/wanmain.c
-@@ -565,9 +565,6 @@ static int wanrouter_device_new_if(struct wan_device *wandev,
- {
- 	wanif_conf_t *cnf;
- 	struct net_device *dev = NULL;
--#ifdef CONFIG_WANPIPE_MULTPPP
--	struct ppp_device *pppdev=NULL;
--#endif
- 	int err;
+Remove bogus dosyncppp variable from synclink drivers.
+
+diff --git a/drivers/char/pcmcia/synclink_cs.c b/drivers/char/pcmcia/synclink_cs.c
+index fb2fb15..cddfb11 100644
+--- a/drivers/char/pcmcia/synclink_cs.c
++++ b/drivers/char/pcmcia/synclink_cs.c
+@@ -232,7 +232,6 @@ typedef struct _mgslpc_info {
  
- 	if ((wandev->state == WAN_UNCONFIGURED) || (wandev->new_if == NULL))
-@@ -586,25 +583,10 @@ static int wanrouter_device_new_if(struct wan_device *wandev,
- 		goto out;
+ 	/* SPPP/Cisco HDLC device parts */
+ 	int netcount;
+-	int dosyncppp;
+ 	spinlock_t netlock;
  
- 	if (cnf->config_id == WANCONFIG_MPPP) {
--#ifdef CONFIG_WANPIPE_MULTPPP
--		pppdev = kzalloc(sizeof(struct ppp_device), GFP_KERNEL);
--		err = -ENOBUFS;
--		if (pppdev == NULL)
--			goto out;
--		pppdev->dev = kzalloc(sizeof(struct net_device), GFP_KERNEL);
--		if (pppdev->dev == NULL) {
--			kfree(pppdev);
--			err = -ENOBUFS;
--			goto out;
--		}
--		err = wandev->new_if(wandev, (struct net_device *)pppdev, cnf);
--		dev = pppdev->dev;
--#else
- 		printk(KERN_INFO "%s: Wanpipe Mulit-Port PPP support has not been compiled in!\n",
- 				wandev->name);
- 		err = -EPROTONOSUPPORT;
- 		goto out;
--#endif
- 	} else {
- 		dev = kzalloc(sizeof(struct net_device), GFP_KERNEL);
- 		err = -ENOBUFS;
-@@ -659,17 +641,9 @@ static int wanrouter_device_new_if(struct wan_device *wandev,
- 	kfree(dev->priv);
- 	dev->priv = NULL;
+ #if SYNCLINK_GENERIC_HDLC
+@@ -459,13 +458,11 @@ static int ttymajor=0;
  
--#ifdef CONFIG_WANPIPE_MULTPPP
--	if (cnf->config_id == WANCONFIG_MPPP)
--		kfree(pppdev);
--	else
--		kfree(dev);
--#else
- 	/* Sync PPP is disabled */
- 	if (cnf->config_id != WANCONFIG_MPPP)
- 		kfree(dev);
--#endif
--
- out:
- 	kfree(cnf);
- 	return err;
+ static int debug_level = 0;
+ static int maxframe[MAX_DEVICE_COUNT] = {0,};
+-static int dosyncppp[MAX_DEVICE_COUNT] = {1,1,1,1};
+ 
+ module_param(break_on_load, bool, 0);
+ module_param(ttymajor, int, 0);
+ module_param(debug_level, int, 0);
+ module_param_array(maxframe, int, NULL, 0);
+-module_param_array(dosyncppp, int, NULL, 0);
+ 
+ MODULE_LICENSE("GPL");
+ 
+@@ -2914,7 +2911,6 @@ static void mgslpc_add_device(MGSLPC_INFO *info)
+ 	if (info->line < MAX_DEVICE_COUNT) {
+ 		if (maxframe[info->line])
+ 			info->max_frame_size = maxframe[info->line];
+-		info->dosyncppp = dosyncppp[info->line];
+ 	}
+ 
+ 	mgslpc_device_count++;
+diff --git a/drivers/char/synclink.c b/drivers/char/synclink.c
+index 9d247d8..9b1748f 100644
+--- a/drivers/char/synclink.c
++++ b/drivers/char/synclink.c
+@@ -312,7 +312,6 @@ struct mgsl_struct {
+ 
+ 	/* generic HDLC device parts */
+ 	int netcount;
+-	int dosyncppp;
+ 	spinlock_t netlock;
+ 
+ #if SYNCLINK_GENERIC_HDLC
+@@ -876,7 +875,6 @@ static int irq[MAX_ISA_DEVICES];
+ static int dma[MAX_ISA_DEVICES];
+ static int debug_level;
+ static int maxframe[MAX_TOTAL_DEVICES];
+-static int dosyncppp[MAX_TOTAL_DEVICES];
+ static int txdmabufs[MAX_TOTAL_DEVICES];
+ static int txholdbufs[MAX_TOTAL_DEVICES];
+ 	
+@@ -887,7 +885,6 @@ module_param_array(irq, int, NULL, 0);
+ module_param_array(dma, int, NULL, 0);
+ module_param(debug_level, int, 0);
+ module_param_array(maxframe, int, NULL, 0);
+-module_param_array(dosyncppp, int, NULL, 0);
+ module_param_array(txdmabufs, int, NULL, 0);
+ module_param_array(txholdbufs, int, NULL, 0);
+ 
+@@ -4265,7 +4262,6 @@ static void mgsl_add_device( struct mgsl_struct *info )
+ 	if (info->line < MAX_TOTAL_DEVICES) {
+ 		if (maxframe[info->line])
+ 			info->max_frame_size = maxframe[info->line];
+-		info->dosyncppp = dosyncppp[info->line];
+ 
+ 		if (txdmabufs[info->line]) {
+ 			info->num_tx_dma_buffers = txdmabufs[info->line];
+diff --git a/drivers/char/synclink_gt.c b/drivers/char/synclink_gt.c
+index d88a607..aa4e1f2 100644
+--- a/drivers/char/synclink_gt.c
++++ b/drivers/char/synclink_gt.c
+@@ -128,17 +128,14 @@ static int slgt_device_count;
+ static int ttymajor;
+ static int debug_level;
+ static int maxframe[MAX_DEVICES];
+-static int dosyncppp[MAX_DEVICES];
+ 
+ module_param(ttymajor, int, 0);
+ module_param(debug_level, int, 0);
+ module_param_array(maxframe, int, NULL, 0);
+-module_param_array(dosyncppp, int, NULL, 0);
+ 
+ MODULE_PARM_DESC(ttymajor, "TTY major device number override: 0=auto assigned");
+ MODULE_PARM_DESC(debug_level, "Debug syslog output: 0=disabled, 1 to 5=increasing detail");
+ MODULE_PARM_DESC(maxframe, "Maximum frame size used by device (4096 to 65535)");
+-MODULE_PARM_DESC(dosyncppp, "Enable synchronous net device, 0=disable 1=enable");
+ 
+ /*
+  * tty support and callbacks
+@@ -356,7 +353,6 @@ struct slgt_info {
+ 	/* SPPP/Cisco HDLC device parts */
+ 
+ 	int netcount;
+-	int dosyncppp;
+ 	spinlock_t netlock;
+ #if SYNCLINK_GENERIC_HDLC
+ 	struct net_device *netdev;
+@@ -3393,7 +3389,6 @@ static void add_device(struct slgt_info *info)
+ 	if (info->line < MAX_DEVICES) {
+ 		if (maxframe[info->line])
+ 			info->max_frame_size = maxframe[info->line];
+-		info->dosyncppp = dosyncppp[info->line];
+ 	}
+ 
+ 	slgt_device_count++;
+diff --git a/drivers/char/synclinkmp.c b/drivers/char/synclinkmp.c
+index 10241ed..6a388e5 100644
+--- a/drivers/char/synclinkmp.c
++++ b/drivers/char/synclinkmp.c
+@@ -276,7 +276,6 @@ typedef struct _synclinkmp_info {
+ 
+ 	/* SPPP/Cisco HDLC device parts */
+ 	int netcount;
+-	int dosyncppp;
+ 	spinlock_t netlock;
+ 
+ #if SYNCLINK_GENERIC_HDLC
+@@ -475,13 +474,11 @@ static int ttymajor=0;
+  */
+ static int debug_level = 0;
+ static int maxframe[MAX_DEVICES] = {0,};
+-static int dosyncppp[MAX_DEVICES] = {0,};
+ 
+ module_param(break_on_load, bool, 0);
+ module_param(ttymajor, int, 0);
+ module_param(debug_level, int, 0);
+ module_param_array(maxframe, int, NULL, 0);
+-module_param_array(dosyncppp, int, NULL, 0);
+ 
+ static char *driver_name = "SyncLink MultiPort driver";
+ static char *driver_version = "$Revision: 4.38 $";
+@@ -3757,7 +3754,6 @@ static void add_device(SLMP_INFO *info)
+ 	if (info->line < MAX_DEVICES) {
+ 		if (maxframe[info->line])
+ 			info->max_frame_size = maxframe[info->line];
+-		info->dosyncppp = dosyncppp[info->line];
+ 	}
+ 
+ 	synclinkmp_device_count++;
 
 -- 
 Krzysztof Halasa
