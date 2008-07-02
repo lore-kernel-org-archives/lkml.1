@@ -1,76 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762180AbYGBJAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763133AbYGBJDH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762180AbYGBJAN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 05:00:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbYGBI7z
+	id S1763133AbYGBJDH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 05:03:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbYGBJCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 04:59:55 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:46246 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752986AbYGBI7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 04:59:53 -0400
-Date: Wed, 2 Jul 2008 03:59:50 -0500
-From: Robin Holt <holt@sgi.com>
+	Wed, 2 Jul 2008 05:02:54 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:37867 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751507AbYGBJCx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 05:02:53 -0400
+X-Sasl-enc: UdNtrRJfxNSk0NOGplUuqNSxbFMj4zv+IysyvILm3j5D 1214989372
+Subject: Re: [PATCH] autofs4 - detect invalid direct mount requests
+From: Ian Kent <raven@themaw.net>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Avi Kivity <avi@qumranet.com>, Andrea Arcangeli <andrea@qumranet.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, kvm@vger.kernel.org,
-       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Izik Eidus <izike@qumranet.com>, Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 0 of 3] mmu notifier v18 for -mm
-Message-ID: <20080702085950.GV9696@sgi.com>
-References: <patchbomb.1214440016@duo.random> <20080701214415.b3f93706.akpm@linux-foundation.org> <486B0B0F.5010605@qumranet.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <486B0B0F.5010605@qumranet.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Cc: linux-kernel@vger.kernel.org, autofs@linux.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20080701141715.62a2132b.akpm@linux-foundation.org>
+References: <20080620051301.9988.94307.stgit@raven.themaw.net>
+	 <20080701141715.62a2132b.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 02 Jul 2008 16:59:50 +0800
+Message-Id: <1214989192.3046.34.camel@raven.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 02, 2008 at 07:58:55AM +0300, Avi Kivity wrote:
-> Andrew Morton wrote:
->> On Thu, 26 Jun 2008 02:26:56 +0200 Andrea Arcangeli <andrea@qumranet.com> wrote:
->>
->>> Full patchset including other XPMEM support patches can be found here:
->>>
->>> 	http://www.kernel.org/pub/linux/kernel/people/andrea/patches/v2.6/2.6.26-rc7/mmu-notifier-v18
->>
->> I'm a bit concerned about merging the first three patches when there
->> are eleven more patches of which some, afacit, are required to make
->> these three actually useful.  Committing these three would be signing a
->> blank cheque.
->>
->>   
->
-> The first three are useful for kvm, gru, and likely drm and rdma nics.
->
-> It is only xpmem which requires the other eleven patches.
->
->> Because if we hit strong objections with the later patches we end up in a
->> cant-go-forward, cant-go-backward situation.
 
-SGI decided we need a functional GRU more than an enhanced XPMEM.
-We have, for 7 years now, told our customers that using XPMEM results
-in pages being permanently pinned and swap being disabled, and they
-have been accepting of that.  We have also put other restrictions on
-what parts of the address space could be exported.  It is not ideal,
-but it is functional.
+On Tue, 2008-07-01 at 14:17 -0700, Andrew Morton wrote:
+> On Fri, 20 Jun 2008 13:13:03 +0800
+> Ian Kent <raven@themaw.net> wrote:
+> 
+> > autofs v5 dierct and offset mounts within an autofs filesystem are
+> > triggered by existing autofs triger mounts so the mount point dentry
+> > must be positive. If the mount point dentry is negative then the
+> > trigger doesn't exist so we can return fail immediately.
+> > 
+> > Signed-off-by: Ian Kent <raven@themaw.net>
+> > 
+> > ---
+> > 
+> >  fs/autofs4/waitq.c |    4 ++++
+> >  1 files changed, 4 insertions(+), 0 deletions(-)
+> > 
+> > 
+> > diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
+> > index cd21fd4..ae637d9 100644
+> > --- a/fs/autofs4/waitq.c
+> > +++ b/fs/autofs4/waitq.c
+> > @@ -307,6 +307,10 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
+> >  	if (sbi->catatonic)
+> >  		return -ENOENT;
+> >  
+> > +	if (!dentry->d_inode &&
+> > +	    (sbi->type & (AUTOFS_TYPE_DIRECT | AUTOFS_TYPE_OFFSET)))
+> > +		return -ENOENT;
+> > +
+> >  	name = kmalloc(NAME_MAX + 1, GFP_KERNEL);
+> >  	if (!name)
+> >  		return -ENOMEM;
+> 
+> A good changelog would allow little old me to determine whether this
+> patch should be merged into 2.6.25 and/or 2.6.26 and/or 2.6.27.  This
+> wasn't a good changelog :(
 
-To work with distro kernels, we have requested 3 EXPORT_SYMBOL_GPL()s
-from SuSE (SLES-10) and 2 from RedHat (RHEL-5).  With that and an
-LD_PRELOAD library, we can support most types of clone2()s safely and
-the documentation lists what is not supported (like mmap() into the
-middle of a region of memory that has been used for calculations).
+Sorry, I guess I shouldn't have included it along with the other more
+serious bug fixes. It gets rid of an annoyance more than anything as the
+daemon still has to check for it.
 
-Thanks,
-Robin Holt
+It isn't important or urgent, just useful.
+
+Ian
+
+
+
