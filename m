@@ -1,59 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751832AbYGBIaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbYGBIeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751832AbYGBIaS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 04:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYGBIaF
+	id S1756811AbYGBIeX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 04:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbYGBIeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 04:30:05 -0400
-Received: from trinity.fluff.org ([89.145.97.151]:55632 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752118AbYGBIaD (ORCPT
+	Wed, 2 Jul 2008 04:34:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33693 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753381AbYGBIeJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 04:30:03 -0400
-Date: Wed, 2 Jul 2008 09:29:54 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ben Dooks <ben-linux@fluff.org>
-Subject: Re: [-mmotm] some different buliding failures
-Message-ID: <20080702082954.GP8489@trinity.fluff.org>
-References: <486B1EE0.9060303@cn.fujitsu.com> <20080702010212.7b4b9301.akpm@linux-foundation.org> <20080702082021.GA1327@linux-sh.org>
+	Wed, 2 Jul 2008 04:34:09 -0400
+Date: Wed, 2 Jul 2008 01:31:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Gautham R Shenoy <ego@in.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Max Krasnyansky <maxk@qualcomm.com>, Paul Jackson <pj@sgi.com>,
+       Paul Menage <menage@google.com>, Peter Zijlstra <peterz@infradead.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] workqueues: make get_online_cpus() useable for
+ work->func()
+Message-Id: <20080702013147.126feb34.akpm@linux-foundation.org>
+In-Reply-To: <20080629165131.GA11215@tv-sign.ru>
+References: <20080629165131.GA11215@tv-sign.ru>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080702082021.GA1327@linux-sh.org>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 02, 2008 at 05:20:21PM +0900, Paul Mundt wrote:
-> On Wed, Jul 02, 2008 at 01:02:12AM -0700, Andrew Morton wrote:
-> > On Wed, 02 Jul 2008 14:23:28 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > > drivers/mfd/sm501.c:39: error: field 'gpio' has incomplete type
-> > > 
-> > 
-> > Ben, can you please take a look?  I suspect the fix is to disable this
-> > driver on x86.
-> > 
-> Note that there are SM501 PCI cards that are architecture independent..
+On Sun, 29 Jun 2008 20:51:31 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-The best fix would be to enable the gpiolib[1] for x86. I agree the
-changes to ensure it builds with gpio turned off where incomplete. I'll
-re-issue these as soon as possible.
+> workqueue_cpu_callback(CPU_DEAD) flushes cwq->thread under
+> cpu_maps_update_begin(). This means that the multithreaded workqueues can't
+> use get_online_cpus() due to the possible deadlock, very bad and very old
+> problem.
+> 
+> Introduce the new state, CPU_POST_DEAD, which is called after
+> cpu_hotplug_done() but before cpu_maps_update_done().
+> 
+> Change workqueue_cpu_callback() to use CPU_POST_DEAD instead of CPU_DEAD.
+> This means that create/destroy functions can't rely on get_online_cpus()
+> any longer and should take cpu_add_remove_lock instead.
 
-[1] why is this a library anyway? it isn't as if you can export it to use
-    in other projects, and the choice is gpiolib or nothing.
+I know that Document/SubmitChecklist has a lot of stuff.  But a basic
+allnoconfig only takes seconds and it's often the thing which breaks.
 
--- 
-Ben
+ include/linux/cpu.h |   15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+diff -puN include/linux/cpu.h~workqueues-make-get_online_cpus-useable-for-work-func-fix include/linux/cpu.h
+--- a/include/linux/cpu.h~workqueues-make-get_online_cpus-useable-for-work-func-fix
++++ a/include/linux/cpu.h
+@@ -69,10 +69,11 @@ static inline void unregister_cpu_notifi
+ #endif
+ 
+ int cpu_up(unsigned int cpu);
+-
+ extern void cpu_hotplug_init(void);
++extern void cpu_maps_update_begin(void);
++extern void cpu_maps_update_done(void);
+ 
+-#else
++#else	/* CONFIG_SMP */
+ 
+ static inline int register_cpu_notifier(struct notifier_block *nb)
+ {
+@@ -87,10 +88,16 @@ static inline void cpu_hotplug_init(void
+ {
+ }
+ 
++static inline void cpu_maps_update_begin(void)
++{
++}
++
++static inline void cpu_maps_update_done(void)
++{
++}
++
+ #endif /* CONFIG_SMP */
+ extern struct sysdev_class cpu_sysdev_class;
+-extern void cpu_maps_update_begin(void);
+-extern void cpu_maps_update_done(void);
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ /* Stop CPUs going up and down. */
+_
 
