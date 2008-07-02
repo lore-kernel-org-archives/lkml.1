@@ -1,171 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762163AbYGBDzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbYGBEB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762163AbYGBDzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 23:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756804AbYGBDz3
+	id S1754054AbYGBEB4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 00:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750706AbYGBEBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 23:55:29 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:60136 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756512AbYGBDz2 (ORCPT
+	Wed, 2 Jul 2008 00:01:45 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:45233 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750701AbYGBEBn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 23:55:28 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5329"; a="4218884"
-Message-ID: <486AFC33.7010901@qualcomm.com>
-Date: Tue, 01 Jul 2008 20:55:31 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 2 Jul 2008 00:01:43 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Tejun Heo <htejun@gmail.com>
+Cc: Benjamin Thery <benjamin.thery@bull.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+References: <20080618170729.808539948@theryb.frec.bull.fr>
+	<20080618170731.002784342@theryb.frec.bull.fr>
+	<485F04E1.70204@gmail.com> <m1y74svtff.fsf@frodo.ebiederm.org>
+	<486706C9.9040303@gmail.com> <m18wwmsqdv.fsf@frodo.ebiederm.org>
+	<4869D314.5030403@gmail.com> <m1ej6enep7.fsf@frodo.ebiederm.org>
+	<486A0751.9080602@gmail.com> <m1wsk5hjm0.fsf@frodo.ebiederm.org>
+	<486AF4FA.8020805@gmail.com>
+Date: Tue, 01 Jul 2008 20:53:00 -0700
+In-Reply-To: <486AF4FA.8020805@gmail.com> (Tejun Heo's message of "Wed, 02 Jul
+	2008 12:24:42 +0900")
+Message-ID: <m1ej6d9c2r.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: a.p.zijlstra@chello.nl, pj@sgi.com, vegard.nossum@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] CGroups: Add a per-subsystem hierarchy lock
-References: <20080627075912.92AE43D6907@localhost> <6599ad830806271702y2c1df2edh3a75dda75336ddad@mail.gmail.com>
-In-Reply-To: <6599ad830806271702y2c1df2edh3a75dda75336ddad@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Tejun Heo <htejun@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0007]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 06/11] sysfs: Implement sysfs tagged directory support.
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
+Tejun Heo <htejun@gmail.com> writes:
 
-Sorry for the delay.
-
-Paul Menage wrote:
-> On Fri, Jun 27, 2008 at 12:59 AM, Paul Menage <menage@google.com> wrote:
->> This patch adds a hierarchy_mutex to the cgroup_subsys object that
->> protects changes to the hierarchy observed by that subsystem. It is
->> taken by the cgroup subsystem for the following operations:
->>
->> - linking a cgroup into that subsystem's cgroup tree
->> - unlinking a cgroup from that subsystem's cgroup tree
->> - moving the subsystem to/from a hierarchy (including across the
->>  bind() callback)
->>
->> Thus if the subsystem holds its own hierarchy_mutex, it can safely
->> traverse its ts own hierarchy.
->>
+> Hello,
 >
-> It struck me that there's a small race in this code now that we're not
-> doing cgroup_lock() in the hotplug path.
+> Eric W. Biederman wrote:
+>> What we are implementing is not, a sb with a set of tags that are displayed,
+>> but directories with a single tag that is displayed.  The sb just happens
+>> to hold the state for the directories.
+>> 
+>> A directory displaying only a single tag is an necessary constraint for
+>> a large number of reasons.
 >
-> - we start to attach a task T to cpuset C, with a single CPU "X" in
-> its "cpus" list
-> - cpuset_can_attach() returns successfully since the cpuset has a cpu
-> - CPU X gets hot-unplugged; any tasks in C are moved to their parent
-> cpuset and C loses its cpu.
-> - we update T->cgroups to point to C, which is broken since C has no cpus.
+> Okay, that isn't exactly the impression I get but... well.  Let's see.
+
+Well one of those reasons is not having duplicate entries in your directory listing.
+That is much harder otherwise.
+
+> A few things...
 >
-> So we'll need some additional locking work on top of this - but I
-> think this patch is still a step in the right direction.
-I was about to say "yeah, looks good" and then tried a couple of
-different hot-plug scenarious.
-We still have circular locking even with your patch
+> 1. The lookup is currently done linearly and is fast enough for now.
+> Also, most lookup ops are cached by vfs layer.  I'm not sure how
+> probable it is that we're gonna need hash or tree based sd lookup.
 
-[ INFO: possible circular locking dependency detected ]
-2.6.26-rc8 #4
--------------------------------------------------------
-bash/2779 is trying to acquire lock:
- (&cpu_hotplug.lock){--..}, at: [<ffffffff8025e024>] get_online_cpus+0x24/0x40
+I don't know how bad sysfs is.  On the sysctl side I have people complaining
+because I am doing a lookup during insert and that lookup is linear.  Sysfs
+appears to have the same complexity as sysctl but just smaller constants.
 
-but task is already holding lock:
- (sched_domains_mutex){--..}, at: [<ffffffff8022f5e9>]
-partition_sched_domains+0x29/0x2b0
+>> That is just one important aspect of it.   We need a way to describe
+>> which tag a sb,directory pair displays.  It is a fundamental concept.
+>
+> For netns, yes.  I just think it would be better if the sysfs mechanism
+> to support that concept is more generic especially because it doesn't
+> seem too difficult to make it that way.
 
-which lock already depends on the new lock.
+Well the envisioned use is for other namespaces and they all are similar
+to the network namespace in that way.
 
-the existing dependency chain (in reverse order) is:
+>>>> Cause you to view an the tags as dynamic?
+>>> The thing is that I don't really see why there's tagged_dir_ops at all.
+>> 
+>> We need callbacks for interfacing with the kobject layer, and for
+>> selecting our set of tags at mount time.  Not tagged_dir_ops so much
+>> as tagged_type_ops.
+>
+> The kobject op seems a bit strange way to interface to me.  For mount,
+> yeah, we'll need a hook somewhere or pass it via mount option maybe.
 
--> #2 (sched_domains_mutex){--..}:
-       [<ffffffff8025988f>] __lock_acquire+0x9cf/0xe50
-       [<ffffffff80259d6b>] lock_acquire+0x5b/0x80
-       [<ffffffff804d12c4>] mutex_lock_nested+0x94/0x250
-       [<ffffffff8022f5e9>] partition_sched_domains+0x29/0x2b0
-       [<ffffffff80268f9d>] rebuild_sched_domains+0x9d/0x3f0
-       [<ffffffff80269f05>] cpuset_handle_cpuhp+0x205/0x220
-       [<ffffffff804d688f>] notifier_call_chain+0x3f/0x80
-       [<ffffffff80250679>] __raw_notifier_call_chain+0x9/0x10
-       [<ffffffff804c1748>] _cpu_down+0xa8/0x290
-       [<ffffffff804c196b>] cpu_down+0x3b/0x60
-       [<ffffffff804c2c68>] store_online+0x48/0xa0
-       [<ffffffff803a46c4>] sysdev_store+0x24/0x30
-       [<ffffffff802eebba>] sysfs_write_file+0xca/0x140
-       [<ffffffff8029cb3b>] vfs_write+0xcb/0x170
-       [<ffffffff8029ccd0>] sys_write+0x50/0x90
-       [<ffffffff8020b92b>] system_call_after_swapgs+0x7b/0x80
-       [<ffffffffffffffff>] 0xffffffffffffffff
+I will look how if there is a place in the kobject layer to put it.  With
+a second but noticeably different user I can compare and see how hard that will be.
 
--> #1 (&ss->hierarchy_mutex){--..}:
-       [<ffffffff8025988f>] __lock_acquire+0x9cf/0xe50
-       [<ffffffff80259d6b>] lock_acquire+0x5b/0x80
-       [<ffffffff804d12c4>] mutex_lock_nested+0x94/0x250
-       [<ffffffff80269d39>] cpuset_handle_cpuhp+0x39/0x220
-       [<ffffffff804d688f>] notifier_call_chain+0x3f/0x80
-       [<ffffffff80250679>] __raw_notifier_call_chain+0x9/0x10
-       [<ffffffff804c1748>] _cpu_down+0xa8/0x290
-       [<ffffffff804c196b>] cpu_down+0x3b/0x60
-       [<ffffffff804c2c68>] store_online+0x48/0xa0
-       [<ffffffff803a46c4>] sysdev_store+0x24/0x30
-       [<ffffffff802eebba>] sysfs_write_file+0xca/0x140
-       [<ffffffff8029cb3b>] vfs_write+0xcb/0x170
-       [<ffffffff8029ccd0>] sys_write+0x50/0x90
-       [<ffffffff8020b92b>] system_call_after_swapgs+0x7b/0x80
-       [<ffffffffffffffff>] 0xffffffffffffffff
+>>> 3. enable / disable tag on a sb
+>>      Disagree that is too flexible.  Tags on a sb need to be
+>>      unchanging or else we get vfs layer issues.
+>
+> Yeah, this really should be something which can't change once it's mounted.
+The VFS chokes otherwise because it can't cache things properly.
 
--> #0 (&cpu_hotplug.lock){--..}:
-       [<ffffffff80259913>] __lock_acquire+0xa53/0xe50
-       [<ffffffff80259d6b>] lock_acquire+0x5b/0x80
-       [<ffffffff804d12c4>] mutex_lock_nested+0x94/0x250
-       [<ffffffff8025e024>] get_online_cpus+0x24/0x40
-       [<ffffffff8022fee1>] sched_getaffinity+0x11/0x80
-       [<ffffffff8026e6d9>] __synchronize_sched+0x19/0x90
-       [<ffffffff8022ed46>] detach_destroy_domains+0x46/0x50
-       [<ffffffff8022f6b9>] partition_sched_domains+0xf9/0x2b0
-       [<ffffffff80268f9d>] rebuild_sched_domains+0x9d/0x3f0
-       [<ffffffff8026a858>] cpuset_common_file_write+0x2b8/0x5c0
-       [<ffffffff8026657c>] cgroup_file_write+0x7c/0x1a0
-       [<ffffffff8029cb3b>] vfs_write+0xcb/0x170
-       [<ffffffff8029ccd0>] sys_write+0x50/0x90
-       [<ffffffff8020b92b>] system_call_after_swapgs+0x7b/0x80
-       [<ffffffffffffffff>] 0xffffffffffffffff
+>>     Further the abstraction is logically exactly one tag on a
+>>     (sb,directory) pair.
+>
+> I'm not so sure here.  As a policy, maybe but I don't really see a
+> fundamental reason that the mechanism should enforce this.
 
-other info that might help us debug this:
+Well in the first implementation.
 
-2 locks held by bash/2779:
- #0:  (cgroup_mutex){--..}, at: [<ffffffff802653e2>] cgroup_lock+0x12/0x20
- #1:  (sched_domains_mutex){--..}, at: [<ffffffff8022f5e9>]
-partition_sched_domains+0x29/0x2b0
+>> 4. Interface with the kobject layer.
+>>    kobject_add calls sysfs_create_dir
+>>    kboject_rename calls sysfs_rename_dir 
+>>    kobject_del calls sysfs_remove_dir
+>> 
+>>    For the first two operations we need a helper function to go from a
+>>    kobject to a tag.
+>
+> Why not just add a parameter to sysfs_create_dir()?  It's just twisted.
 
-stack backtrace:
-Pid: 2779, comm: bash Not tainted 2.6.26-rc8 #4
+I added it where it was easiest.  Adding a parameter to sysfs_create_dir
+simply means I have to add the function to the kobject layer.  It is certainly
+worth a second look though.
 
-Call Trace:
- [<ffffffff80258c0c>] print_circular_bug_tail+0x8c/0x90
- [<ffffffff802589c4>] ? print_circular_bug_entry+0x54/0x60
- [<ffffffff80259913>] __lock_acquire+0xa53/0xe50
- [<ffffffff8025e024>] ? get_online_cpus+0x24/0x40
- [<ffffffff80259d6b>] lock_acquire+0x5b/0x80
- [<ffffffff8025e024>] ? get_online_cpus+0x24/0x40
- [<ffffffff804d12c4>] mutex_lock_nested+0x94/0x250
- [<ffffffff8025867d>] ? mark_held_locks+0x4d/0x90
- [<ffffffff8025e024>] get_online_cpus+0x24/0x40
- [<ffffffff8022fee1>] sched_getaffinity+0x11/0x80
- [<ffffffff8026e6d9>] __synchronize_sched+0x19/0x90
- [<ffffffff8022ed46>] detach_destroy_domains+0x46/0x50
- [<ffffffff8022f6b9>] partition_sched_domains+0xf9/0x2b0
- [<ffffffff80258801>] ? trace_hardirqs_on+0xc1/0xe0
- [<ffffffff80268f9d>] rebuild_sched_domains+0x9d/0x3f0
- [<ffffffff8026a858>] cpuset_common_file_write+0x2b8/0x5c0
- [<ffffffff80268c00>] ? cpuset_test_cpumask+0x0/0x20
- [<ffffffff80269f20>] ? cpuset_change_cpumask+0x0/0x20
- [<ffffffff80265260>] ? started_after+0x0/0x50
- [<ffffffff8026657c>] cgroup_file_write+0x7c/0x1a0
- [<ffffffff8029cb3b>] vfs_write+0xcb/0x170
- [<ffffffff8029ccd0>] sys_write+0x50/0x90
- [<ffffffff8020b92b>] system_call_after_swapgs+0x7b/0x80
+>> We need helper functions for interfacing with the rest of the kernel. 
+>
+> Yes, that's why I view it as strange.  These can be done in forward way
+> (by passing in mount options and/or arguments) but it's done by first
+> going into the sysfs and then calling back out to outer layer.
 
-CPU3 attaching NULL sched-domain.
+Well in the case of mount the default parameter at least is current, and
+there are good reasons for that.
 
+On the other side I can't pass a tag through from the device layer to
+the kobject layer.  It isn't a concept the kobject layer supports.
 
+At least though the conversation is in relative agreement.  I will refresh
+the patches shortly and see where we are at.
+
+Eric
 
