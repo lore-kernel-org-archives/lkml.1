@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbYGBTXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbYGBTYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755702AbYGBTXq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 15:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbYGBTX1
+	id S1752522AbYGBTYX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 15:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYGBTX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 15:23:27 -0400
-Received: from khc.piap.pl ([195.187.100.11]:48621 "EHLO khc.piap.pl"
+	Wed, 2 Jul 2008 15:23:29 -0400
+Received: from khc.piap.pl ([195.187.100.11]:55961 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752044AbYGBTX0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752116AbYGBTX0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 2 Jul 2008 15:23:26 -0400
 To: <netdev@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: WAN: wanmain.c doesn't need syncppp.h
+Subject: WAN: Remove bogus variables from syncppp.[ch]
 From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 02 Jul 2008 21:13:58 +0200
-Message-ID: <m3prpw3xqh.fsf@maximus.localdomain>
+Date: Wed, 02 Jul 2008 21:11:56 +0200
+Message-ID: <m3skus3xtv.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
@@ -22,21 +22,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 For review only, the actual patch will be made available in git.
 
-wanmain.c doesn't need syncppp.h
+Remove bogus variables from syncppp.[ch]
 
-diff --git a/net/wanrouter/wanmain.c b/net/wanrouter/wanmain.c
-index 6c20205..34177f2 100644
---- a/net/wanrouter/wanmain.c
-+++ b/net/wanrouter/wanmain.c
-@@ -57,7 +57,6 @@
- #include <linux/vmalloc.h>	/* vmalloc, vfree */
- #include <asm/uaccess.h>        /* copy_to/from_user */
- #include <linux/init.h>         /* __initfunc et al. */
--#include <net/syncppp.h>
+diff --git a/drivers/net/wan/syncppp.c b/drivers/net/wan/syncppp.c
+index 29b4b94..327d585 100644
+--- a/drivers/net/wan/syncppp.c
++++ b/drivers/net/wan/syncppp.c
+@@ -230,13 +230,6 @@ static void sppp_input (struct net_device *dev, struct sk_buff *skb)
+ 	skb->dev=dev;
+ 	skb_reset_mac_header(skb);
  
- #define KMEM_SAFETYZONE 8
- 
-
+-	if (dev->flags & IFF_RUNNING)
+-	{
+-		/* Count received bytes, add FCS and one flag */
+-		sp->ibytes+= skb->len + 3;
+-		sp->ipkts++;
+-	}
+-
+ 	if (!pskb_may_pull(skb, PPP_HEADER_LEN)) {
+ 		/* Too small packet, drop it. */
+ 		if (sp->pp_flags & PP_DEBUG)
+@@ -832,7 +825,6 @@ static void sppp_cp_send (struct sppp *sp, u16 proto, u8 type,
+ 			sppp_print_bytes ((u8*) (lh+1), len);
+ 		printk (">\n");
+ 	}
+-	sp->obytes += skb->len;
+ 	/* Control is high priority so it doesn't get queued behind data */
+ 	skb->priority=TC_PRIO_CONTROL;
+ 	skb->dev = dev;
+@@ -875,7 +867,6 @@ static void sppp_cisco_send (struct sppp *sp, int type, u32 par1, u32 par2)
+ 		printk (KERN_WARNING "%s: cisco output: <%xh %xh %xh %xh %xh-%xh>\n",
+ 			dev->name,  ntohl (ch->type), ch->par1,
+ 			ch->par2, ch->rel, ch->time0, ch->time1);
+-	sp->obytes += skb->len;
+ 	skb->priority=TC_PRIO_CONTROL;
+ 	skb->dev = dev;
+ 	skb_queue_tail(&tx_queue, skb);
+diff --git a/include/net/syncppp.h b/include/net/syncppp.h
+index e43f407..9e306f7 100644
+--- a/include/net/syncppp.h
++++ b/include/net/syncppp.h
+@@ -43,8 +43,6 @@ struct sppp
+ 	u32		pp_rseq;	/* remote sequence number */
+ 	struct slcp	lcp;		/* LCP params */
+ 	struct sipcp	ipcp;		/* IPCP params */
+-	u32		ibytes,obytes;	/* Bytes in/out */
+-	u32		ipkts,opkts;	/* Packets in/out */
+ 	struct timer_list	pp_timer;
+ 	struct net_device	*pp_if;
+ 	char		pp_link_state;	/* Link status */
 
 -- 
 Krzysztof Halasa
