@@ -1,80 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757263AbYGBPG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757998AbYGBPH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757263AbYGBPG6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 11:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYGBPGu
+	id S1757998AbYGBPH1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 11:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757467AbYGBPHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 11:06:50 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:33441 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753241AbYGBPGu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 11:06:50 -0400
-Message-ID: <486B9987.8000601@firstfloor.org>
-Date: Wed, 02 Jul 2008 17:06:47 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Wed, 2 Jul 2008 11:07:03 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:45630 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757410AbYGBPHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 11:07:00 -0400
+Date: Wed, 2 Jul 2008 18:06:34 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       linux-arch@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>,
+       David Howells <dhowells@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Lennert Buytenhek <kernel@wantstofly.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tim Bird <tim.bird@am.sony.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Dave Miller <davem@davemloft.net>
+Subject: Re: [PATCH 14/23] make section names compatible with
+	-ffunction-sections -fdata-sections: parisc
+Message-ID: <20080702150634.GD4196@cs181140183.pp.htv.fi>
+References: <200807020239.11410.vda.linux@googlemail.com> <1214955660.3316.31.camel@localhost.localdomain> <200807020200.49518.vda.linux@googlemail.com> <1214988107.10393.444.camel@pmac.infradead.org> <20080702145514.GC4196@cs181140183.pp.htv.fi> <1215010662.10393.459.camel@pmac.infradead.org>
 MIME-Version: 1.0
-To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-CC: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] Introduce copy_user_handle_tail routine
-References: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com>	<alpine.LFD.1.10.0806281108240.4371@hp.linux-foundation.org>	<m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com>	<alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org>	<m3fxqsjt22.fsf_-_@gravicappa.englab.brq.redhat.com>	<486B8B6C.2050109@firstfloor.org> <m37ic4jr2w.fsf@gravicappa.englab.brq.redhat.com>
-In-Reply-To: <m37ic4jr2w.fsf@gravicappa.englab.brq.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1215010662.10393.459.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 02, 2008 at 03:57:42PM +0100, David Woodhouse wrote:
+> On Wed, 2008-07-02 at 17:55 +0300, Adrian Bunk wrote:
+> > On Wed, Jul 02, 2008 at 09:41:47AM +0100, David Woodhouse wrote:
+> > > On Wed, 2008-07-02 at 02:00 +0200, Denys Vlasenko wrote:
+> > > > On Wednesday 02 July 2008 01:41, James Bottomley wrote:
+> > > > > On Wed, 2008-07-02 at 02:39 +0200, Denys Vlasenko wrote:
+> > > > > > The purpose of this patch is to make kernel buildable
+> > > > > > with "gcc -ffunction-sections -fdata-sections".
+> > > > > > This patch fixes parisc architecture.
+> > > > > > 
+> > > > > > Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+> > > > > 
+> > > > > Um ... if you look at the Makefile you'll see we already build parisc
+> > > > > with -ffunction-sections; we have to: our relative jumps are too small
+> > > > > to guarantee finding the stubs in large files.
+> > > > > 
+> > > > > Since our text is -ffunction-sections compatible already, I question the
+> > > > > need for transformations like this:
+> > > 
+> > > We've been building FR-V kernels with --gc-sections for a long time,
+> > > too.
+> > >...
+> > 
+> > Is there any specific reason why it's not done in the upstream kernel?
+> 
+> Isn't it? I thought it was.
+>...
 
-[again with correct ccs sorry]
+It is in the Makefile, but only enabled through a nonexisting 
+CONFIG_GC_SECTIONS option.
 
-Vitaly Mayatskikh wrote:
-> > Andi Kleen <andi@firstfloor.org> writes:
-> >
->> >> get/put user are macros and it's normally not a good idea to use ++ in macro
->> >> arguments because they might expand multiple times.
->> >>
->> >> sizeof(char) is always 1
->> >>
->> >> Also hopefully there's no sign extension anywhere with the signed char
-> >
-> > I have tested it a lot. I don't know of any fail scenario at the moment.
-> >
->> >> Overall you could write it much simpler with a rep ; movs I think,
->> >> like traditional linux did.
-> >
-> > rep movs can fail.
+> dwmw2
 
-How? (if it's a byte copy?)
+cu
+Adrian
 
-The old 2.4 copy_*_user always used to that and it worked just fine AFAIK.
+-- 
 
-
->> >> Similar problem with ++
->> >>
->> >> If zerorest is ever 0 then retesting it on every iteration seems
->> >> somewhat dumb.
-> >
-> > If zerorest is 0, this cycle will never be executed.
-
-Ok but when it's not then it will be executed on each iteration.
-
->> >> I think a simple memset would be actually ok, i don't think we ever zero
->> >> anything that faults. That would be obviously racy anyways. If the zero
->> >> are supposed to override something  then a racing user thread could always
->> >> catch it.
-> >
-> > Linus wanted this routine to be extremely dumb. This is the reason why tail
-> > handling was moved from assembly to C. Yeah, my original patches were in
-> > assembly and on the top of your realization.
-
-My point was that it could be simpler because zeroing should not ever fault
-(copy_in_user is not supposed to zero)
-
--Andi
-
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
