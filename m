@@ -1,99 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759254AbYGBAj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759576AbYGBAtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759254AbYGBAj0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 20:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756994AbYGBAjR
+	id S1759576AbYGBAtV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 20:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757090AbYGBAtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 20:39:17 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:30390 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756179AbYGBAjR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 20:39:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=eSSfqUAoOUsc5vtmOC7fz8bd3hVBUFcskvNFmChpHDPZE65nhsvCob6XoNPbekL/WI
-         /7cfLdAWimtyXrRAsj7ENQ+yej04oAc/VK5N8nXKWZoZ6ShJ3w1Os3XRBl76n4FiWIKJ
-         pEwIWdTbGHpt67lsqvCzk5Eh9Y7nKW+yi+gDg=
-Message-ID: <28c262360807011739w5668920buf7880de6ed30f912@mail.gmail.com>
-Date: Wed, 2 Jul 2008 09:39:15 +0900
-From: "MinChan Kim" <minchan.kim@gmail.com>
-To: "Rik van Riel" <riel@redhat.com>,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [resend][PATCH -mm] split_lru: fix pagevec_move_tail() doesn't treat unevictable page
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20080701093840.07b48ced@bree.surriel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 1 Jul 2008 20:49:08 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:22639 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756335AbYGBAtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 20:49:06 -0400
+X-IronPort-AV: E=Sophos;i="4.27,734,1204531200"; 
+   d="scan'208";a="4146533"
+Subject: Re: inux-next: Tree for July 1
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, "Randy.Dunlap" <rdunlap@xenotime.net>,
+       "Mr. Charles Edward Lever" <Chuck.Lever@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, kernel-testers@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+In-Reply-To: <200807012236.19400.rjw@sisk.pl>
+References: <20080702011434.6fb403d5.sfr@canb.auug.org.au>
+	 <200807012236.19400.rjw@sisk.pl>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080701155749.37F8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080701172223.3801.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080701093840.07b48ced@bree.surriel.com>
+Organization: NetApp
+Date: Tue, 01 Jul 2008 20:49:03 -0400
+Message-Id: <1214959743.10317.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+X-OriginalArrivalTime: 02 Jul 2008 00:49:04.0095 (UTC) FILETIME=[6CE03EF0:01C8DBDD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Rik and Kosaki-san
+On Tue, 2008-07-01 at 22:36 +0200, Rafael J. Wysocki wrote:
+> I can't mount NFS shares with this kernel.  I get something of this sort in
+> dmesg and it seems to be 100% reproducible:
+> 
+> [  314.058858] RPC: Registered udp transport module.
+> [  314.058863] RPC: Registered tcp transport module.
+> [  314.490970] RPC: transport (0) not supported
+> [  319.246987] __ratelimit: 23 messages suppressed
 
-I want to know exact race situation for remaining git log.
-As you know, git log is important for me who is newbie to understand source
+Does this patch fix the problem for you?
+-----------------------------------------------------------------------------------
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+NFS: Fix the mount protocol defaults for binary mounts
 
-There are many possibility in this race problem.
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
 
-Did you use hugepage in this test ?
-I think that If you used hugepage, it seems to happen following race.
+ fs/nfs/super.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
---------------
-
-CPU1                                                           CPU2
-
-shm_unlock
-scan_mapping_unevictable_pages
-check_move_unevictable_page
-ClearPageUnevictable                                 rotate_reclaimable_page
-
-PageUnevictable(page) return 0
-SetPageUnevictable
-list_move(LRU_UNEVICTABLE)
-
-local_irq_save
-
-pagevec_move_tail
-
-Do you think it is possible ?
-
-On Tue, Jul 1, 2008 at 10:38 PM, Rik van Riel <riel@redhat.com> wrote:
-> On Tue, 01 Jul 2008 17:26:51 +0900
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
->
->> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->
-> Acked-by: Rik van Riel <riel@redhat.com>
->
-> Good catch!
->
->> @@ -116,7 +116,7 @@ static void pagevec_move_tail(struct pag
->>                       zone = pagezone;
->>                       spin_lock(&zone->lru_lock);
->>               }
->> -             if (PageLRU(page) && !PageActive(page)) {
->> +             if (PageLRU(page) && !PageActive(page) && !PageUnevictable(page)) {
->>                       int lru = page_is_file_cache(page);
->>                       list_move_tail(&page->lru, &zone->lru[lru].list);
->>                       pgmoved++;
->
-> --
-> All rights reversed.
->
-
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index e09b1c2..85fbb98 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -1575,6 +1575,7 @@ static int nfs_validate_mount_data(void *options,
+ 
+ 		if (!(data->flags & NFS_MOUNT_TCP))
+ 			args->nfs_server.protocol = XPRT_TRANSPORT_UDP;
++		nfs_set_transport_defaults(args);
+ 		/* N.B. caller will free nfs_server.hostname in all cases */
+ 		args->nfs_server.hostname = kstrdup(data->hostname, GFP_KERNEL);
+ 		args->namlen		= data->namlen;
 
 
 -- 
-Kinds regards,
-MinChan Kim
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
