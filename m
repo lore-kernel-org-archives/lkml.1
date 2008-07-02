@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849AbYGCL6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753605AbYGCL6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754849AbYGCL6g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 07:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbYGCL4W
+	id S1753605AbYGCL6t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 07:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbYGCL4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 07:56:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52563 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753419AbYGCL4O (ORCPT
+	Thu, 3 Jul 2008 07:56:38 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:63237 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753730AbYGCL4h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 07:56:14 -0400
-Date: Thu, 3 Jul 2008 02:02:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, npiggin@suse.de,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Rik Van Riel <riel@redhat.com>
-Subject: Re: [mmotm] build failure on x86_64 pci-calgary_64.c
-Message-Id: <20080703020203.02cd14d4.akpm@linux-foundation.org>
-In-Reply-To: <20080703174027.D6D7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <486C74B1.3000007@cn.fujitsu.com>
-	<20080703161028.D6CC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080703174027.D6D7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 3 Jul 2008 07:56:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=d3TmRr0spKUCpfJy50Uq8w9VPiWJ0v6SFJlGLB/T/yXao7SDIm3c8tZkIjRIgIs9iI
+         KUyMFautzDC4EcBliC7wyoGiPD70QxxgSVcvUpNuCeYl+G03wxu3rnB/WjhSDdNuiKo5
+         xGCeODBH0c9yb5B2/mp63XgdYlqJ1mf3JAJ+U=
+Subject: [PATCH] drivers/net/wireless/iwlwifi/iwl-3945.c Fix type issue on
+	64bit
+From: "Darren Jenkins\\" <darrenrjenkins@gmail.com>
+To: linville@tuxdriver.com
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ipw2100-admin@linux.intel.com, yi.zhu@intel.com
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 03 Jul 2008 09:41:38 +1000
+Message-Id: <1215042098.8635.14.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 Jul 2008 17:46:42 +0900 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+>> What about the format line in the IWL_DEBUG_RX that uses rate?
 
-> > > Seems the problematic patch is :
-> > > mmap-handle-mlocked-pages-during-map-remap-unmap.patch
-> > > 
-> > > I'm using mmotm uploaded yesterday by Andrew, so I guess this bug
-> > > has not been fixed ?
-> > > 
-> > > BUG: sleeping function called from invalid context at include/linux/pagemap.h:290
-> > > in_atomic():1, irqs_disabled():0
-> > 
-> > sorry for that.
-> > I started investigate this problem.
-> 
-> Hi Andrew,
-> 
-> on ia64, I can't reproduce this problem.
-> on x86_64, I can't build kernel because following error happned.
->            (end_pfn doesn't exist, but used)
-> 
-> 
-> -----------------------------------------------------
-> % LANG=C make -j 20
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CALL    scripts/checksyscalls.sh
->   CHK     include/linux/compile.h
->   CC      arch/x86/kernel/pci-calgary_64.o
-> arch/x86/kernel/pci-calgary_64.c: In function 'detect_calgary':
-> arch/x86/kernel/pci-calgary_64.c:1413: error: 'end_pfn' undeclared (first use in this function)
-> arch/x86/kernel/pci-calgary_64.c:1413: error: (Each undeclared identifier is reported only once
-> arch/x86/kernel/pci-calgary_64.c:1413: error: for each function it appears in.)
-> make[1]: *** [arch/x86/kernel/pci-calgary_64.o] Error 1
-> make: *** [arch/x86/kernel] Error 2
-> make: *** Waiting for unfinished jobs....
-> make: *** wait: No child processes.  Stop.
-> 
+I had figured that as rate was only positive it would work as is.
+However you are dead right, there is no point in a patch removing one
+example of bad programming only to introduce another.
 
-yup, thanks, I fixed that. 
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc8/2.6.26-rc8-mm1
-is there now.
+Here is the updated patch:
+
+
+Coverity CID: 2265 NEGATIVE_RETURNS
+
+"rate" is of an unsigned type, and the code requires a signed type.
+The following patch makes it so.
+
+﻿﻿Signed-off-by: Darren Jenkins <darrenrjenkins@gmailcom>
+
+diff --git a/drivers/net/wireless/iwlwifi/iwl-3945.c b/drivers/net/wireless/iwlwifi/iwl-3945.c
+index 62a3d8f..d97c025 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-3945.c
++++ b/drivers/net/wireless/iwlwifi/iwl-3945.c
+@@ -449,7 +449,7 @@ static void iwl3945_dbg_report_frame(struct iwl3945_priv *priv,
+ 
+ 	if (print_summary) {
+ 		char *title;
+-		u32 rate;
++		int rate;
+ 
+ 		if (hundred)
+ 			title = "100Frames";
+@@ -487,7 +487,7 @@ static void iwl3945_dbg_report_frame(struct iwl3945_priv *priv,
+ 		 *    but you can hack it to show more, if you'd like to. */
+ 		if (dataframe)
+ 			IWL_DEBUG_RX("%s: mhd=0x%04x, dst=0x%02x, "
+-				     "len=%u, rssi=%d, chnl=%d, rate=%u, \n",
++				     "len=%u, rssi=%d, chnl=%d, rate=%d, \n",
+ 				     title, fc, header->addr1[5],
+ 				     length, rssi, channel, rate);
+ 		else {
+
 
