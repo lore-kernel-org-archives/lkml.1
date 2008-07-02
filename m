@@ -1,48 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756788AbYGBTDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbYGBTKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756788AbYGBTDX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 15:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYGBTDN
+	id S1754805AbYGBTKa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 15:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbYGBTKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 15:03:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50415 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752522AbYGBTDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 15:03:11 -0400
-Date: Wed, 2 Jul 2008 20:03:06 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: device-mapper development <dm-devel@redhat.com>,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [dm-devel] [PATCH 2/6] drivers/md: remove null pointer dereference
-Message-ID: <20080702190306.GG22522@agk.fab.redhat.com>
-Mail-Followup-To: Julia Lawall <julia@diku.dk>,
-	device-mapper development <dm-devel@redhat.com>,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-References: <Pine.LNX.4.64.0805121537100.3694@ask.diku.dk> <20080702105434.GF22522@agk.fab.redhat.com> <Pine.LNX.4.64.0807021351270.4854@ask.diku.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0807021351270.4854@ask.diku.dk>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+	Wed, 2 Jul 2008 15:10:18 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:25020 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751295AbYGBTKQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 15:10:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type
+         :content-transfer-encoding:from;
+        b=XZfSymX5uFsq5nmdoWdzw5DsbN17RMSaIKARdjQw5lRP7F2AF5GiIEiIV/kw8U+IBi
+         iV1oAyjKuFzjzQey7b76/jejeBcXPIpeX2xV6AuEKKGWcQ1zuVZgFrc+HZRE6ddtDVVH
+         FhJNFd5M04Bx2WBbQmL1H4ZVO9j8TA74rTlnk=
+Message-ID: <486BD19B.7040302@gmail.com>
+Date: Wed, 02 Jul 2008 21:06:03 +0200
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org
+Subject: getcpu(2) man page
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 02, 2008 at 01:51:41PM +0200, Julia Lawall wrote:
-> In looking at it a little bit, it seems that ps.type is initialized in the
-> function stored in the ctr field of the target_type structure and this
-> function is called in the function stored in the message field of the same
-> structure.  The function in the message structure seems to be only called
-> from the function target_message in dm-ioctl.c, but I don't see the
-> relation to an invocation of the ctr field.  Is that guaranteed to be
-> invoked earlier?
- 
-ctr is short for constructor (perhaps we should rename these functions one day)
-and it has to run first to set up the data structures which a subsequent
-target_message may reference.
+Hi Andi,
 
-Alasdair
--- 
-agk@redhat.com
+Long ago, when I ran out of time, things stalled on incorporating a getcpu.2 man page that you
+wrote ino man-pages.  There were still some open questions that I wanted to get sorted before
+releasing the page.  Could you take a look at the FIXME(ak)s below please?
+
+Cheers,
+
+Michael
+
+.\" This man page is Copyright (C) 2006 Andi Kleen <ak@muc.de>.
+.\" Permission is granted to distribute possibly modified copies
+.\" of this page provided the header is included verbatim,
+.\" and in case of nontrivial modification author and date
+.\" of the modification is added to the header.
+.TH getcpu 2 2008-06-02 "Linux" "Linux Programmer's Manual"
+.SH NAME
+getcpu \- determine CPU and NUMA node on which the calling thread is running
+.SH SYNOPSIS
+.nf
+.B #include <linux/getcpu.h>
+.sp
+.BI "int getcpu(unsigned *" cpu ", unsigned *" node \
+", struct getcpu_cache *" tcache );
+.fi
+.SH DESCRIPTION
+.BR getcpu ()
+identifies the processor and node on which the calling
+thread or process is currently
+running and writes them into the integers pointed to by the
+.I cpu
+and
+.I node
+arguments.
+The processor is a unique small integer identifying a CPU.
+The node is a unique small identifier identifying a NUMA node.
+When either
+.I cpu
+or
+.I node
+is NULL nothing is written to the respective pointer.
+.I tcache
+is a pointer to a
+.I struct getcpu_cache.
+The caller should put the cache into a thread
+local variable if the process is multithreaded because the cache
+cannot be shared between different threads.
+.I tcache
+can be NULL.
+If it is not NULL
+.BR getcpu ()
+will use it to speed up operation.
+The information inside the cache is private to the system call
+and should not be accessed by the user program.
+The information placed in the cache can change between kernel releases.
+
+.\" FIXME(ak) If the following formulation is correct, I think it would
+.\" be better to substitute it instead of the next sentence:
+.\"     The information placed in \fIcpu\fP is only guaranteed to be
+.\"     current at the time of the call: ...
+This information is only a hint: unless the CPU affinity
+has been fixed using
+.BR sched_setaffinity (2),
+the kernel might change the CPU at any time.
+(Normally this does not happen
+because the scheduler tries to minimize movements between CPUs to
+keep caches hot, but it is possible.)
+.\" FIXME(ak) Can you explain what you mean in the next sentence when
+.\" you say "recover"
+The caller has to properly recover from the case when
+.I cpu
+and
+.I node
+are not the current CPU and node anymore.
+.\" FIXME(ak) In the following, what precisely do you mean by "advisory"?
+.\" It is not really clear to me whether you mean the information
+.\" may not be "true", or whether you are just reiterating the point that
+.\" the CPU/node might already have changed by the time the call returns.
+All information returned by
+.I getcpu(2)
+is just advisory and not a guarantee.
+
+When no cache is specified
+.BR getcpu ()
+will be slower, but always retrieve the current state.
+With a cache
+.\" FIXME(ak) what does the phrase "but might query the current state
+.\" only during a short implementation specific interval" mean?
+it will be faster, but might query the current state only during
+a short implementation specific interval.
+
+Linux makes a best effort to make this call as fast possible. The
+intention of
+.I getcpu(2)
+is to allow programs to make optimizations with per-CPU data
+or for NUMA optimization.
+.SH VERSIONS
+.BR getcpu (2)
+was added in 2.6.19 for x86_64 and i386.
+.SH SEE ALSO
+.BR mbind (2),
+.BR set_mempolicy (2),
+.BR sched_setaffinity (2)
+
+
