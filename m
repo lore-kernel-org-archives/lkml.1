@@ -1,77 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759370AbYGBBiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760583AbYGBBjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759370AbYGBBiZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 21:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbYGBBiR
+	id S1760583AbYGBBjh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 21:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756531AbYGBBj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 21:38:17 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:39819 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1756179AbYGBBiQ (ORCPT
+	Tue, 1 Jul 2008 21:39:29 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38256 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756337AbYGBBj2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 21:38:16 -0400
-Date: Wed, 2 Jul 2008 04:28:06 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk@arm.linux.org.uk>,
-       David Howells <dhowells@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Lennert Buytenhek <kernel@wantstofly.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Paul Mackerras <paulus@samba.org>,
-       David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       torvalds@linux-foundation.org,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tim Bird <tim.bird@am.sony.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Dave Miller <davem@davemloft.net>
-Subject: Re: [PATCH 1/23] make section names compatible with
- -ffunction-sections -fdata-sections
-Message-ID: <20080702042806.4078bb09@linux360.ro>
-In-Reply-To: <200807020233.48646.vda.linux@googlemail.com>
-References: <200807020233.48646.vda.linux@googlemail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 1 Jul 2008 21:39:28 -0400
+Date: Tue, 1 Jul 2008 20:39:27 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Robin Holt <holt@sgi.com>, ksummit-2008-discuss@lists.linux-foundation.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Delayed interrupt work, thread pools
+Message-ID: <20080702013927.GA2264@sgi.com>
+References: <1214916335.20711.141.camel@pasglop> <20080701130240.GD10511@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080701130240.GD10511@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Jul 2008 02:33:48 +0200
-Denys Vlasenko <vda.linux@googlemail.com> wrote:
-
-> Hi Andrew, folks,
+On Tue, Jul 01, 2008 at 08:02:40AM -0500, Robin Holt wrote:
+> Adding Dean Nelson to this discussion.  I don't think he actively
+> follows lkml.  We do something similar to this in xpc by managing our
+> own pool of threads.  I know he has talked about this type thing in the
+> past.
 > 
-> I am unsure how to synchronize propagation of these patches
-> across all architectures.
+> Thanks,
+> Robin
 > 
-> Andrew, how this can be done without causing lots of pain
-> for arch maintainers? Please advise.
+> 
+> On Tue, Jul 01, 2008 at 10:45:35PM +1000, Benjamin Herrenschmidt wrote:
+> > 
+> > For the specific SPU management issue we've been thinking about, we
+> > could just implement an ad-hoc mechanism locally, but it occurs to me
+> > that maybe this is a more generic problem and thus some kind of
+> > extension to workqueues would be a good idea here.
+> > 
+> > Any comments ?
 
-Hi,
+As Robin, mentioned XPC manages a pool of kthreads that can (for performance
+reasons) be quickly awakened by an interrupt handler and that are able to
+block for indefinite periods of time.
 
-AFAICS, there is a lot of code in .lds.S files which really is
-arch-independent, but still is duplicated in every arch. Kinda messy to
-change anything in there.
+In drivers/misc/sgi-xp/xpc_main.c you'll find a rather simplistic attempt
+at maintaining this pool of kthreads. 
 
-I noticed this while writing another patch, namely early (pre-SMP)
-initcall support. Fortunately, there was a generic header included by
-all .lds.S files and I could fit my modification in there.
+The kthreads are activated by calling xpc_activate_kthreads(). Either idle
+kthreads are awakened or new kthreads are created if a sufficent number of
+idle kthreads are not available.
 
-My suggestion is (for both you and arch maintainers)... why not make an
-effort to reduce code duplication in these files? Life would be so much
-easier. The idea is:
-- Write a macro to define all generic sections, possibly taking in
-alignment as an argument.
-- Have each arch's .lds.S file define arch-dependent stuff and use that
-macro for generic sections.
+Once finished with current 'work' a kthread waits for new work by calling
+wait_event_interruptible_exclusive(). (The call is found in
+xpc_kthread_waitmsgs().)
 
-This would surely be immediately useful, more readily accepted by
-maintainers and would open up the way for a lighter version of your
-patch, IMO.
+The number of idle kthreads is limited as is the total number of kthreads
+allowed to exist concurrently.
 
+It's certainly not optimal in the way it maintains the number of kthreads
+in the pool over time, but I've not had the time to spare to make it better.
 
-	Cheers,
-	Eduard
+I'd love it if a general mechanism were provided so that XPC could get out
+of maintaining its own pool.
+
+Thanks,
+Dean
