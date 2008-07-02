@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbYGBO3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757087AbYGBObU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756734AbYGBO3b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 10:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbYGBO3W
+	id S1757087AbYGBObU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 10:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbYGBObH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 10:29:22 -0400
-Received: from hull.simtec.co.uk ([78.105.113.97]:37133 "EHLO
-	ivanova.local.simtec.co.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753694AbYGBO3U (ORCPT
+	Wed, 2 Jul 2008 10:31:07 -0400
+Received: from n24.bullet.mail.mud.yahoo.com ([68.142.206.163]:29863 "HELO
+	n24.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754149AbYGBObG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 10:29:20 -0400
-Message-Id: <20080702142918.245723113@fluff.org>
-References: <20080702142918.143669690@fluff.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 02 Jul 2008 15:29:19 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Ben Dooks <ben-linux@fluff.org>
-Subject: [patch 1/1] MFD: SM501 fix gpio number calculation for upper bank
-Content-Disposition: inline; filename=simtec/simtec-drivers-mfd-sm501-gpionrfix.patch
+	Wed, 2 Jul 2008 10:31:06 -0400
+X-Greylist: delayed 342 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Jul 2008 10:31:06 EDT
+X-Yahoo-Newman-Id: 393367.39998.bm@omp406.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
+  b=Tn5W9LNB7bTLf9+eZOcoWrOwRz4cwEKw6PgJpUOyGKI2q3PIPOjNSkukd4d+JYUu+qlcE8z+3MBNaxgAlEByAkcw750uYcmgQhjKGk7JcKIdTg8ssZNOyj3kylNONP8iYyrL18XnzEvXLratVZmGADpajwhuJ6Xt9xeqx8wiev4=  ;
+X-YMail-OSG: 1KtHUTcVM1mNgYxlxOdstS0r0iVtd_qHI79eTdoOZDeFg.mwccIMENnV7xY4fIdd3n3qxwafwXpXjSqlNM5smXc8C5DX_1IfXEkHYI8VuQ--
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <486B8FCF.8080201@yahoo.it>
+Date: Wed, 02 Jul 2008 16:25:19 +0200
+From: Filippo Zangheri <filippo.zangheri@yahoo.it>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Darren Jenkins <darrenrjenkins@gmail.com>
+CC: kernel Janitors <kernel-janitors@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, ipw2100-admin@linux.intel.com,
+       yi.zhu@intel.com, reinette.chatre@intel.com,
+       linux-wireless@vger.kernel.org
+Subject: Re: [PATCH]  drivers/net/wireless/iwlwifi/iwl-3945.c
+References: <1214962647.18261.15.camel@localhost.localdomain>
+In-Reply-To: <1214962647.18261.15.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.6
+OpenPGP: id=6C1F2F2F;
+	url=http://keyserver.fabbione.net:11371/pks/lookup?op=get&search=0x8F3C4C1B6C1F2F2F
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sm501_gpio_pin2nr() routine returns the wrong values
-for gpios in the upper bank. 
+(Cc'ing linux-wireless)
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-
-Index: linux-2.6.26-rc8-quilt3/drivers/mfd/sm501.c
-===================================================================
---- linux-2.6.26-rc8-quilt3.orig/drivers/mfd/sm501.c	2008-07-02 14:17:49.000000000 +0100
-+++ linux-2.6.26-rc8-quilt3/drivers/mfd/sm501.c	2008-07-02 14:44:06.000000000 +0100
-@@ -1108,7 +1108,9 @@ static void sm501_gpio_remove(struct sm5
- static inline int sm501_gpio_pin2nr(struct sm501_devdata *sm, unsigned int pin)
- {
- 	struct sm501_gpio *gpio = &sm->gpio;
--	return pin + (pin < 32) ? gpio->low.gpio.base : gpio->high.gpio.base;
-+	int base = (pin < 32) ? gpio->low.gpio.base : gpio->high.gpio.base;
-+
-+	return (pin % 32) + base;
- }
- 
- static inline int sm501_gpio_isregistered(struct sm501_devdata *sm)
+On 02/07/2008 03:37, Darren Jenkins\ wrote:
+> G'day people
+> 
+> Coverity CID: 2265 NEGATIVE_RETURNS
+> 
+> "rate" is of an unsigned type, and the code requires a signed type.
+> The following patch makes it so.
+> 
+> Only compile tested.
+> 
+> ﻿Signed-off-by: Darren Jenkins <darrenrjenkins@gmailcom>
+> 
+> diff --git a/drivers/net/wireless/iwlwifi/iwl-3945.c b/drivers/net/wireless/iwlwifi/iwl-3945.c
+> index 62a3d8f..31d38cd 100644
+> --- a/drivers/net/wireless/iwlwifi/iwl-3945.c
+> +++ b/drivers/net/wireless/iwlwifi/iwl-3945.c
+> @@ -449,7 +449,7 @@ static void iwl3945_dbg_report_frame(struct iwl3945_priv *priv,
+>  
+>  	if (print_summary) {
+>  		char *title;
+> -		u32 rate;
+> +		int rate;
+>  
+>  		if (hundred)
+>  			title = "100Frames";
 
 -- 
+Filippo Zangheri
+
+GPG key ID: 0x6C1F2F2F
+
