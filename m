@@ -1,488 +1,1052 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbYGBPej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbYGBPjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757410AbYGBPej (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 11:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbYGBPeb
+	id S1757313AbYGBPjK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 11:39:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbYGBPi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 11:34:31 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:37952 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754351AbYGBPe3 (ORCPT
+	Wed, 2 Jul 2008 11:38:57 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:6183 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754204AbYGBPiz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 11:34:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:mime-version
-         :content-type:content-transfer-encoding:content-disposition;
-        b=R23GCdSK3jKKnQ/6YqFQoIm+hlq6sssaTAunGtXnYnCx1CwpLyTG99xZ/VJE3w9q7j
-         5hMDIKTtJaPZkBq+63c4lt1vjmYroJvotzQVvprRkMHieY7z/sI2E4gCe2hinuZ815Kg
-         VewnP03feLG2DL+T0EHpu3BrjMDA8vqczHgaU=
-Message-ID: <7c86c4470807020834p5f17fb83rbcaf80042f5ea052@mail.gmail.com>
-Date: Wed, 2 Jul 2008 17:34:28 +0200
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
+	Wed, 2 Jul 2008 11:38:55 -0400
+Date: Wed, 2 Jul 2008 09:38:53 -0600
+From: David Altobelli <david.altobelli@hp.com>
 To: linux-kernel@vger.kernel.org
-Subject: perfmon2 syscall interface rationale
-Cc: "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       "Ingo Molnar" <mingo@elte.hu>
+Cc: david.altobelli@hp.com, greg@kroah.com, tony.camuso@hp.com
+Subject: [PATCH][v5] HP iLO driver
+Message-ID: <20080702153853.GA18049@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-I have been asked several times to provide an explanation of the
-syscall interface
-currently implemented in perfmon2. This is the goal of the text that
-follows. It describes
-the structure of a monitoring session and some of the basic
-expectations. Those have
-driven the current design which is explained in the second part.
-
-The design is not fixed, it can certainly evolve. In the very last
-section, I try to elaborate
-on how we could make the interface easier and safer to extend.
-
-Feedback welcomed.
-Thanks.
-
-----------------------------------------------------------------------------------------------------------------------------
-
-1) monitoring session breakdown
-
-A monitoring session can be decomposed into a sequence of fundamental
-actions which
-are as follows:
-       - create the session
-       - program registers
-       - attach to target thread or CPU
-       - start monitoring
-       - stop monitoring
-       - read results
-       - detach from thread or CPU
-       - terminate session
-
-The order may not necessarily be like shown. For instance, the
-programming may happen
-after the session has been attached. Obviously, the start/stop operations may be
-repeated before results are read and results can be read multiple times.
-
-In the next sections, we examine each action separately.
-
-2) session creation
-
-  Perfmon2 supports 2 types of sessions: per-thread or per-CPU (so
-called system-wide)
-
-  During the creation of the session, certain attributes are set, they
-remain until the
-  session is terminated. For instance, the per-cpu attribute cannot be changed.
-
-  During creation, the kernel state to support the session is
-allocated and initialized.
-  No PMU hardware is actually accessed. Permissions to create a
-session may be checked.
-  Resource limits are also validated and memory consumption is accounted for.
-
-  The software state of the PMU is initialized, i.e., all
-configuration registers are
-  set to a quiescent value. Data registers are initialized to zero
-whenever possible.
-
-  Upon return, the kernel returns a unique identifier which is to be
-used for all
-  subsequent actions on the session.
-
-3) programming the registers
-
-  Programming of the PMU registers can occur at any time during the
-lifetime of a session,
-  the session does not need to be attached to a thread of CPU.
-
-  It may be necessary to change the settings, e.g., monitor another
-event or reset the counts
-  when sampling at the user level. Thus, the writing of the registers
-MUST be decoupled from
-  the creation of the session.
-
-  Similarly, writing of configuration and data registers must also be
-decoupled. Data
-  registers may be reprogrammed independently of their configuration
-registers, such as
-  when sampling, for instance.
-
-  The number of registers varies a lot from one PMU to the other. The
-relationships between
-  configuration and data registers can be more complex than just
-one-to-one. On most PMU,
-  writing of the PMU registers requires running at the most privileged
-level, i.e., in the
-  kernel. To amortize the cost of a system call, it is interesting to
-program multiple
-  registers in one call. Thus, it must be possible to pass vector
-arguments. Of course,
-  for security reasons, the system administrator may impose a limit on
-how big vectors can
-  actually be. The advantage is that vectors can vary in size and thus
-the amount of data
-  passed between application and kernel can be optimized to be just
-the minimal needed.
-  System call data needs to be copied into the kernel memory space
-before it can be used.
-
-4) attachment and detachment
-
- A session can be attached to a kernel-visible thread or a CPU. If
-there is attachment,
- then it must be possible to detach the session to possibly re-attach
-it to another thread
- or CPU. Detachment should not require destroying the session.
-
- There are 3 possibilities for attachment:
-       - when the session is created
-       - when the monitoring is activated
-       - with a dedicated call
-
- If the attachment is done during the creation of the session, then it
-means the target (thread or CPU)
- must to exist at that time. For a per-cpu session, this means that
-the session must be created while
- executing on that CPU. This does not seem unreasonable especially on
-NUMA systems.
-
- For a per-thread session however, this is a bit more problematic as
-this means it is not possible
- to prepare the session and the PMU registers before the thread
-exists. When monitoring across fork
- and pthread_create, it is important to minimize overhead. Creation of
-a session can trigger complex
- memory allocations in the kernel. Thus, it may be interesting to
-prepare a batch of ready-to-go sessions,
- which just need to be attached when the fork or pthread_create
-notification arrives.
-
- If the attachment is coupled with the creation of the session, it
-implies that the detachment is coupled
- with its destruction, by symmetry. Coupling of detachment with
-termination is problematic for both
- per-thread and CPU-wide mode. With the former, the termination of a
-thread is usually totally asynchronous
- with the termination of the session by the monitoring tool. The only
-case where they are synchronized is for
- self-monitored threads. When a tool is monitoring a thread in another
-process, the termination of that thread
- will cause the kernel to detach the session. But the session must not
-be closed because the tool likely wants
- to read the results. For CPU-wide, there is also an issue when a
-monitored CPU is put off-line dynamically as
- the session is detached by the kernel,  but it could not be destroyed
-because the tool still exists.
- Although it is conceivable to let the session is this transient state
-of detached but not destroyed, there
- would be no possibility for the tool to re-attach the session
-elsewhere. The only operation possible would
- be read the results and terminate.
-
- If the attachment is done when monitoring is activated, then the
-detachment is done when monitoring
- is deactivated. The following relationships are therefore enforced:
-
-       attached => activated
-       stopped  => detached
-
- It is expected that start/stop operations could be very frequent for
-self-monitored workloads. When used
- to monitor small sections of critical code, e.g., loop kernels, it is
-important to minimize overhead, thus
- the start/stop should be as simple as possible.
-
- Attaching requires loading the PMU machine state onto the PMU
-hardware. Conversely, detaching implies flushing
- the PMU state to memory so results can be read even after the
-termination of a thread, for instance.  Both
- operations are expensive due to the high cost of accessing the PMU registers.
-
- Furthermore, there are certain PMU models, e.g., Intel Itanium, where
-it is possible to let user level code
- start/stop monitoring with a single instruction. To minimize
-overhead, it is very important to allow this
- mechanism for self-monitored programs. Yet the session would have to
-be attached/detached somehow. With
- dedicated attach/detach calls, this can be supported transparently.
-One possible work-around with the coupled
- calls would be to require a system call to attach the session and do
-the initial activation, subsequent
- start/stop could use the lightweight instruction. The session would
-be stopped and detached with a system call.
-
- The dedicated attach/detach calls offer a maximum level of
-flexibility. The let applications create sessions
- in advance or on-demand. The actions on the session, start/stop and
-attach/detach, are perfectly symmetrical.
- The termination of the monitored target can cause its detachment, but
-the session remains accessible. Issuing
- of the detach call on a session already detached by the kernel is
-harmless. The cost of start/stop is not
- impacted. The following properties are enforced:
-
-       attachment => monitoring stopped
-       detachment => monitoring stopped
-
-5) start and stop
-
- It must be possible for an application to start and stop monitoring
-at will and at any moment.
- Start and stop can be called very frequently and not just at the
-beginning and end of a session.
- This is especially likely for self-monitored threads where it is
-customary to monitor execution of
- only one function or loop. Thus those operations can be on the
-critical path and they must therefore
- by as lightweight as possible. See the discussion in the section
-about attachment and detachment.
-
-
-6) reading the results
-
- The results are extracted by reading the PMU registers containing
-data (as opposed to configuration).
- The number of registers of interest can vary based on the PMU model,
-the type of measurement, the events
- measured.
-
- Reading can occur at regular interval, e.g., time-based user level
-sampling, and can therefore be on the
- critical path. Thus it must as lightweight as possible. Given that
-the cost of dominated by the latency
- of accessing the PMU registers, it is important to only read the
-registers that are used. Thus, the call
- must provide vector arguments just like for the calls to program the PMU.
-
- It must be possible to read the registers while the session is
-detached but also when it is attached to a
- thread or CPU.
-
-7) termination
-
- Termination of a session means all the associated resources are
-either released to the free pool or destroyed.
- After termination, no state remains. Termination implies, stopping
-monitoring and detaching the session if
- necessary.
-
- For the purpose of termination, one has to differentiate between the
-monitored entity and the controlling entity.
- When a tool monitors a thread in another process, all the threads
-from the tool are controlling entities, and the
- monitored thread is the monitored entity. Any entity can vanish at any time.
-
- If the monitored entity terminates voluntarily, i.e., normal exit, or
-involuntarily, e.g., core dump, the kernel
- simply detaches the session but it is not destroyed.
-
- Until the last controlling entity disappears, the session remains accessible.
-
- There are situations where all the controlling entities disappear
-before the monitored entity. In this case, the
- session becomes useless, results cannot be extracted, thus the
-session enters the zombie state. It will
- eventually be detached and its resources will be reclaimed by the
-kernel, i.e., the session will be terminated.
-
-8) extensibility
-
-  There is already a vast diversity with existing PMU models, this is
-unlikely to change, quite to the contrary
-  it is envisioned that the PMU will become a true valid-add and that
-vendors will therefore try to differentiate
-  one from the other. Moreover, the PMU will remain closely tied to
-the underlying micro-architecture. Therefore,
-  it is very important to ensure that the monitoring interface will be
-able to adapt easily to future PMU models
-  and their extended features, i.e., what is offered beyond counting events.
-
-  It is important to realize that extensibility is not limited to
-supporting more PMU registers. It also includes
-  supporting advanced sampling features or socket-level PMUs as
-opposed to just core-level PMUs.
-
-  It may be necessary to extend the system calls with new generic or
-architecture specific parameters, and this
-  without simply adding new system calls.
-
-9) current perfmon2 interface
-
-  The perfmon2 interface design is guided by the principles described
-in the previous sections.
-  We now explain each call is details.
-
-  As requested by the LKML community, the interface uses multiple
-system calls, one per action, instead
-  of a single multiplexing call, similar to ioctl(). Conseaquently,
-the number of syscalls is fairly large.
-  It should be possible, however, to mix the two as certain operations
-are similar in nature.
-
-  a) session creation
-
-     int pfm_create_session(struct pfarg_ctx *ctx, char *smpl_name,
-void *smpl_arg, size_t arg_size);
-
-     The function creates the perfmon session and returns a file
-descriptor used to manipulate the session
-     thereafter.
-
-     The calls takes several parameters which are as follows:
-        - pfarg_ctx: encapsulates all session parameters (see below)
-        - smpl_name: used when sampling to designate which format to use
-        - smpl_arg:  point to format-specific arguments
-        - smpl_size:  size of the structure passed in smpl_arg
-
-     The pfarg_ctx structure is defined as follows:
-        - flags: generic and arch-specific flags for the session
-        - reserved: reserved for future extensions
-
-     To provide for future extensions, the pfarg_ctx structure
-contains reserved fields. Reserved fields
-     must be zeroed.
-
-     To create a per-cpu session, the value PFM_CTX_SYSTEM_WIDE must
-be passed in flags.
-
-     When in-kernel sampling is not used smpl_name, smpl_arg, arg_size
-must be 0.
-
-  b) programming the registers
-
-     int pfm_write_pmcs(int fd, struct pfarg_pmc *pmcs, int n);
-     int pfm_write_pmds(int fd, struct pfarg_pmd *pmds, int n);
-
-     The calls are provided to program the configuration and data
-registers respectively. The parameters are
-     as follows:
-        - fd: file descriptor identifying the session
-        - pmc: pointer to parg_pmc structures
-        - pmd: pointer to parg_pmd structures
-        - n : number of elements in the pmc or pmd vector
-
-     It is possible to pass vector of parg_pmc or pfarg_pmd registers.
-The minimal size is 1, maximum size is
-     determined by system administrator.
-
-     The pfarg_pmc structure is defined as follows:
-     struct pfarg_pmc {
-        u16 reg_num;
-        u64 reg_value;
-        u64 reserved[];
-     };
-
-     The pfarg_pmd structure is defined as follows:
-     struct pfarg_pmd {
-        u16 reg_num;
-        u64 reg_value;
-        u64 reserved[];
-     };
-
-     Although both structures are currently identical, they will
-differ as more functionalities are added so better
-     to create two versions from the start.
-
-     Provisions for extensions are provided by the reserved field in
-each structure.
-
-
-  c) attachment and detachment
-
-     int pfm_load_context(int fd, struct pfarg_load *ld);
-     int pfm_unload_context(int fd);
-
-     The session is identified by the file descriptor, fd.
-
-     To attach, the targeted thread or CPU must be provided. For
-extensibility purposes, the target is passed in
-     in structure which is defined as follows:
-     struct pfarg_load {
-        u32 target;
-        u64 reserved[];
-     };
-     In per-thread mode, the target field must be set to the kernel
-thread identification (gettid()).
-
-     In per-cpu mode, the target field must be set to the logical CPU
-identification as seen by the kernel.
-     Furthermore, the caller must be running on the CPU to monitor
-otherwise the call fails.
-
-     Extensions can be implemented using the reserved field.
-
-
-  d) start and stop
-
-     int pfm_start(int fd);
-     int pfm_stop(int fd);
-
-     The session is identified by the file descriptor fd.
-
-     Currently no other parameters are supported for those calls.
-
-
-   e) reading results
-
-     int pfm_read_pmds(int fd, struct pfarg_pmd *pmds, int n);
-
-
-     The session is identified by the file descriptor fd.
-
-     Just like for programming the registers, it is possible to pass
-vectors of structures in pmds. The number
-     of elements is passed in n.
-
-
-   f) termination
-
-     int close(fd);
-
-     To terminate a session, the file descriptor has to be closed. The
-semantics of file descriptor sharing
-     applies, so if another reference to the session, i.e., another
-file descriptor exists, the session will
-     only be effectively destroyed, once that reference disappears.
-
-     Of course, the kernel does close all file descriptor on process
-termination, thus the associated sessions
-     will eventually be destroyed.
-
-     In per-cpu mode, it is not necessary, though recommended, to be
-on the monitored CPU to issue this call.
-
-
-   g) addressing extensibility issues
-
-      Most data structure have provisions for reserved fields which
-can be used to support new features.
-      Reserved fields are supposed to be set to 0. This works as long
-as 0 means 'do nothing' in the future
-      extensions.
-
-      It was suggested to us (Anrd Bergmann) that we could
-introduce/leverage a flags field in each struct to indicate
-      explicitly that a new feature is actually used. Such flag could
-be in the data structure, but it could also be
-      introduced at the syscall level whenever it makes sense. The
-idea is similar to what is going on today with the
-      open() syscall and the O_CREAT flag which triggers the lookup of
-the 3rd argument to the syscall. Note that such
-      mechanism would not alleviate the need for reserved fields in
-structure. At the syscall level, there is no
-      reserved parameters, however, the mechanism would allow
-introducing new paramters to a syscall.
-
-      If such mechanism is agreed upon by most people, then it should
-not be too hard to make the changes, though it
-      would possibly break existing applications.
+A driver for the HP iLO/iLO2 management processor, which allows userspace
+programs to query the management processor.  Programs can open a channel
+to the device (/dev/hpilo/dXccbN), and use this to send/receive queries.  
+The O_EXCL open flag is used to indicate that a particular channel cannot
+be shared between processes.  This driver will replace various packages
+HP has shipped, including hprsm and hp-ilo.
+
+	v4 -> v5
+	Converted more macros to inline functions
+	Reorganized to remove kzalloc under spinlock
+
+	v3 -> v4
+	Removed an upper case variable and some extra parens
+	Converted some macros to inline functions
+
+	v2 -> v3
+	Moved code from drivers/char to drivers/misc
+
+	v1 -> v2
+	Changed device path to /dev/hpilo/dXccbN.
+	Removed a volatile from fifobar variable.
+	Changed ILO_NAME to remove spaces.
+
+Please CC me on any replies, thanks for your time.
+
+Signed-off-by: David Altobelli <david.altobelli@hp.com>
+---
+ Kconfig  |   13 +
+ Makefile |    1 
+ hpilo.c  |  766 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ hpilo.h  |  189 +++++++++++++++
+ 4 files changed, 969 insertions(+)
+diff -urpN linux-2.6.26-rc7.orig/drivers/misc/hpilo.c linux-2.6.26-rc7/drivers/misc/hpilo.c
+--- linux-2.6.26-rc7.orig/drivers/misc/hpilo.c	1969-12-31 18:00:00.000000000 -0600
++++ linux-2.6.26-rc7/drivers/misc/hpilo.c	2008-07-02 10:21:00.000000000 -0500
+@@ -0,0 +1,766 @@
++/*
++ * Driver for HP iLO/iLO2 management processor.
++ *
++ * Copyright (C) 2008 Hewlett-Packard Development Company, L.P.
++ *	David Altobelli <david.altobelli@hp.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/module.h>
++#include <linux/fs.h>
++#include <linux/pci.h>
++#include <linux/ioport.h>
++#include <linux/device.h>
++#include <linux/file.h>
++#include <linux/cdev.h>
++#include <linux/spinlock.h>
++#include <linux/delay.h>
++#include <linux/uaccess.h>
++#include <linux/io.h>
++#include "hpilo.h"
++
++static struct class *ilo_class;
++static unsigned int ilo_major;
++static char ilo_hwdev[MAX_ILO_DEV];
++
++static inline int get_entry_id(int entry)
++{
++	return (entry & ENTRY_MASK_DESCRIPTOR) >> ENTRY_BITPOS_DESCRIPTOR;
++}
++
++static inline int get_entry_len(int entry)
++{
++	return ((entry & ENTRY_MASK_QWORDS) >> ENTRY_BITPOS_QWORDS) << 3;
++}
++
++static inline int mk_entry(int id, int len)
++{
++	int qlen = len & 7 ? (len >> 3) + 1 : len >> 3;
++	return id << ENTRY_BITPOS_DESCRIPTOR | qlen << ENTRY_BITPOS_QWORDS;
++}
++
++static inline int desc_mem_sz(int nr_entry)
++{
++	return nr_entry << L2_QENTRY_SZ;
++}
++
++/*
++ * FIFO queues, shared with hardware.
++ *
++ * If a queue has empty slots, an entry is added to the queue tail,
++ * and that entry is marked as occupied.
++ * Entries can be dequeued from the head of the list, when the device
++ * has marked the entry as consumed.
++ *
++ * Returns true on successful queue/dequeue, false on failure.
++ */
++static int fifo_enqueue(struct ilo_hwinfo *hw, char *fifobar, int entry)
++{
++	struct fifo *fifo_q = FIFOBARTOHANDLE(fifobar);
++	int ret = 0;
++
++	spin_lock(&hw->fifo_lock);
++	if (!(fifo_q->fifobar[(fifo_q->tail + 1) & fifo_q->imask]
++	      & ENTRY_MASK_O)) {
++		fifo_q->fifobar[fifo_q->tail & fifo_q->imask] |=
++				(entry & ENTRY_MASK_NOSTATE) | fifo_q->merge;
++		fifo_q->tail += 1;
++		ret = 1;
++	}
++	spin_unlock(&hw->fifo_lock);
++
++	return ret;
++}
++
++static int fifo_dequeue(struct ilo_hwinfo *hw, char *fifobar, int *entry)
++{
++	struct fifo *fifo_q = FIFOBARTOHANDLE(fifobar);
++	int ret = 0;
++	u64 c;
++
++	spin_lock(&hw->fifo_lock);
++	c = fifo_q->fifobar[fifo_q->head & fifo_q->imask];
++	if (c & ENTRY_MASK_C) {
++		if (entry)
++			*entry = c & ENTRY_MASK_NOSTATE;
++
++		fifo_q->fifobar[fifo_q->head & fifo_q->imask] =
++							(c | ENTRY_MASK) + 1;
++		fifo_q->head += 1;
++		ret = 1;
++	}
++	spin_unlock(&hw->fifo_lock);
++
++	return ret;
++}
++
++static int ilo_pkt_enqueue(struct ilo_hwinfo *hw, struct ccb *ccb,
++			   int dir, int id, int len)
++{
++	char *fifobar;
++	int entry;
++
++	if (dir == SENDQ)
++		fifobar = ccb->ccb_u1.send_fifobar;
++	else
++		fifobar = ccb->ccb_u3.recv_fifobar;
++
++	entry = mk_entry(id, len);
++	return fifo_enqueue(hw, fifobar, entry);
++}
++
++static int ilo_pkt_dequeue(struct ilo_hwinfo *hw, struct ccb *ccb,
++			   int dir, int *id, int *len, void **pkt)
++{
++	char *fifobar, *desc;
++	int entry = 0, pkt_id = 0;
++	int ret;
++
++	if (dir == SENDQ) {
++		fifobar = ccb->ccb_u1.send_fifobar;
++		desc = ccb->ccb_u2.send_desc;
++	} else {
++		fifobar = ccb->ccb_u3.recv_fifobar;
++		desc = ccb->ccb_u4.recv_desc;
++	}
++
++	ret = fifo_dequeue(hw, fifobar, &entry);
++	if (ret) {
++		pkt_id = get_entry_id(entry);
++		if (id)
++			*id = pkt_id;
++		if (len)
++			*len = get_entry_len(entry);
++		if (pkt)
++			*pkt = (void *)(desc + desc_mem_sz(pkt_id));
++	}
++
++	return ret;
++}
++
++static inline void doorbell_set(struct ccb *ccb)
++{
++	iowrite8(1, ccb->ccb_u5.db_base);
++}
++
++static inline void doorbell_clr(struct ccb *ccb)
++{
++	iowrite8(2, ccb->ccb_u5.db_base);
++}
++static inline int ctrl_set(int l2sz, int idxmask, int desclim)
++{
++	int active = 0, go = 1;
++	return l2sz << CTRL_BITPOS_L2SZ |
++	       idxmask << CTRL_BITPOS_FIFOINDEXMASK |
++	       desclim << CTRL_BITPOS_DESCLIMIT |
++	       active << CTRL_BITPOS_A |
++	       go << CTRL_BITPOS_G;
++}
++static void ctrl_setup(struct ccb *ccb, int nr_desc, int l2desc_sz)
++{
++	/* for simplicity, use the same parameters for send and recv ctrls */
++	ccb->send_ctrl = ctrl_set(l2desc_sz, nr_desc-1, nr_desc-1);
++	ccb->recv_ctrl = ctrl_set(l2desc_sz, nr_desc-1, nr_desc-1);
++}
++
++static inline int fifo_sz(int nr_entry)
++{
++	/* size of a fifo is determined by the number of entries it contains */
++	return (nr_entry * sizeof(u64)) + FIFOHANDLESIZE;
++}
++
++static void fifo_setup(void *base_addr, int nr_entry)
++{
++	struct fifo *fifo_q = base_addr;
++	int i;
++
++	/* set up an empty fifo */
++	fifo_q->head = 0;
++	fifo_q->tail = 0;
++	fifo_q->reset = 0;
++	fifo_q->nrents = nr_entry;
++	fifo_q->imask = nr_entry - 1;
++	fifo_q->merge = ENTRY_MASK_O;
++
++	for (i = 0; i < nr_entry; i++)
++		fifo_q->fifobar[i] = 0;
++}
++
++static void ilo_ccb_close(struct pci_dev *pdev, struct ccb_data *data)
++{
++	struct ccb *driver_ccb;
++	struct ccb __iomem *device_ccb;
++	int retries;
++
++	driver_ccb = &data->driver_ccb;
++	device_ccb = data->mapped_ccb;
++
++	/* complicated dance to tell the hw we are stopping */
++	doorbell_clr(driver_ccb);
++	iowrite32(ioread32(&device_ccb->send_ctrl) & ~(1 << CTRL_BITPOS_G),
++		  &device_ccb->send_ctrl);
++	iowrite32(ioread32(&device_ccb->recv_ctrl) & ~(1 << CTRL_BITPOS_G),
++		  &device_ccb->recv_ctrl);
++
++	/* give iLO some time to process stop request */
++	for (retries = 1000; retries > 0; retries--) {
++		doorbell_set(driver_ccb);
++		udelay(1);
++		if (!(ioread32(&device_ccb->send_ctrl) & (1 << CTRL_BITPOS_A))
++		    &&
++		    !(ioread32(&device_ccb->recv_ctrl) & (1 << CTRL_BITPOS_A)))
++			break;
++	}
++	if (retries == 0)
++		dev_err(&pdev->dev, "Closing, but controller still active\n");
++
++	/* clear the hw ccb */
++	memset_io(device_ccb, 0, sizeof(struct ccb));
++
++	/* free resources used to back send/recv queues */
++	pci_free_consistent(pdev, data->dma_size, data->dma_va, data->dma_pa);
++}
++
++static int ilo_ccb_open(struct ilo_hwinfo *hw, struct ccb_data *data, int slot)
++{
++	char *dma_va, *dma_pa;
++	int pkt_id, pkt_sz, i, error;
++	struct ccb *driver_ccb, *ilo_ccb;
++	struct pci_dev *pdev;
++
++	driver_ccb = &data->driver_ccb;
++	ilo_ccb = &data->ilo_ccb;
++	pdev = hw->ilo_dev;
++
++	data->dma_size = 2 * fifo_sz(NR_QENTRY) +
++			 2 * desc_mem_sz(NR_QENTRY) +
++			 ILO_START_ALIGN + ILO_CACHE_SZ;
++
++	error = -ENOMEM;
++	data->dma_va = pci_alloc_consistent(pdev, data->dma_size,
++					    &data->dma_pa);
++	if (!data->dma_va)
++		goto out;
++
++	dma_va = (char *)data->dma_va;
++	dma_pa = (char *)data->dma_pa;
++
++	memset(dma_va, 0, data->dma_size);
++
++	dma_va = (char *)roundup((unsigned long)dma_va, ILO_START_ALIGN);
++	dma_pa = (char *)roundup((unsigned long)dma_pa, ILO_START_ALIGN);
++
++	/*
++	 * Create two ccb's, one with virt addrs, one with phys addrs.
++	 * Copy the phys addr ccb to device shared mem.
++	 */
++	ctrl_setup(driver_ccb, NR_QENTRY, L2_QENTRY_SZ);
++	ctrl_setup(ilo_ccb, NR_QENTRY, L2_QENTRY_SZ);
++
++	fifo_setup(dma_va, NR_QENTRY);
++	driver_ccb->ccb_u1.send_fifobar = dma_va + FIFOHANDLESIZE;
++	ilo_ccb->ccb_u1.send_fifobar = dma_pa + FIFOHANDLESIZE;
++	dma_va += fifo_sz(NR_QENTRY);
++	dma_pa += fifo_sz(NR_QENTRY);
++
++	dma_va = (char *)roundup((unsigned long)dma_va, ILO_CACHE_SZ);
++	dma_pa = (char *)roundup((unsigned long)dma_pa, ILO_CACHE_SZ);
++
++	fifo_setup(dma_va, NR_QENTRY);
++	driver_ccb->ccb_u3.recv_fifobar = dma_va + FIFOHANDLESIZE;
++	ilo_ccb->ccb_u3.recv_fifobar = dma_pa + FIFOHANDLESIZE;
++	dma_va += fifo_sz(NR_QENTRY);
++	dma_pa += fifo_sz(NR_QENTRY);
++
++	driver_ccb->ccb_u2.send_desc = dma_va;
++	ilo_ccb->ccb_u2.send_desc = dma_pa;
++	dma_pa += desc_mem_sz(NR_QENTRY);
++	dma_va += desc_mem_sz(NR_QENTRY);
++
++	driver_ccb->ccb_u4.recv_desc = dma_va;
++	ilo_ccb->ccb_u4.recv_desc = dma_pa;
++
++	driver_ccb->channel = slot;
++	ilo_ccb->channel = slot;
++
++	driver_ccb->ccb_u5.db_base = hw->db_vaddr + (slot << L2_DB_SIZE);
++	ilo_ccb->ccb_u5.db_base = NULL; /* hw ccb's doorbell is not used */
++
++	/* copy the ccb with physical addrs to device memory */
++	data->mapped_ccb = (struct ccb __iomem *)
++				(hw->ram_vaddr + (slot * ILOHW_CCB_SZ));
++	memcpy_toio(data->mapped_ccb, ilo_ccb, sizeof(struct ccb));
++
++	/* put packets on the send and receive queues */
++	pkt_sz = 0;
++	for (pkt_id = 0; pkt_id < NR_QENTRY; pkt_id++) {
++		ilo_pkt_enqueue(hw, driver_ccb, SENDQ, pkt_id, pkt_sz);
++		doorbell_set(driver_ccb);
++	}
++
++	pkt_sz = desc_mem_sz(1);
++	for (pkt_id = 0; pkt_id < NR_QENTRY; pkt_id++)
++		ilo_pkt_enqueue(hw, driver_ccb, RECVQ, pkt_id, pkt_sz);
++
++	doorbell_clr(driver_ccb);
++
++	/* make sure iLO is really handling requests */
++	for (i = 1000; i > 0; i--) {
++		if (ilo_pkt_dequeue(hw, driver_ccb, SENDQ, &pkt_id, NULL, NULL))
++			break;
++		udelay(1);
++	}
++
++	if (i) {
++		ilo_pkt_enqueue(hw, driver_ccb, SENDQ, pkt_id, 0);
++		doorbell_set(driver_ccb);
++	} else {
++		dev_err(&pdev->dev, "Open could not dequeue a packet\n");
++		error = -EBUSY;
++		goto free;
++	}
++
++	return 0;
++free:
++	pci_free_consistent(pdev, data->dma_size, data->dma_va, data->dma_pa);
++out:
++	return error;
++}
++
++static inline int is_channel_reset(struct ccb *ccb)
++{
++	/* check for this particular channel needing a reset */
++	return FIFOBARTOHANDLE(ccb->ccb_u1.send_fifobar)->reset;
++}
++
++static inline void set_channel_reset(struct ccb *ccb)
++{
++	/* set a flag indicating this channel needs a reset */
++	FIFOBARTOHANDLE(ccb->ccb_u1.send_fifobar)->reset = 1;
++}
++
++static inline int is_device_reset(struct ilo_hwinfo *hw)
++{
++	/* check for global reset condition */
++	return ioread32(&hw->mmio_vaddr[DB_OUT]) & (1 << DB_RESET);
++}
++
++static inline void clear_device(struct ilo_hwinfo *hw)
++{
++	/* clear the device (reset bits, pending channel entries) */
++	iowrite32(-1, &hw->mmio_vaddr[DB_OUT]);
++}
++
++static void ilo_locked_reset(struct ilo_hwinfo *hw)
++{
++	int slot;
++
++	/*
++	 * Mapped memory is zeroed on ilo reset, so set a per ccb flag
++	 * to indicate that this ccb needs to be closed and reopened.
++	 */
++	for (slot = 0; slot < MAX_CCB; slot++) {
++		if (!hw->ccb_alloc[slot])
++			continue;
++		set_channel_reset(&hw->ccb_alloc[slot]->driver_ccb);
++	}
++
++	clear_device(hw);
++}
++
++static void ilo_reset(struct ilo_hwinfo *hw)
++{
++	spin_lock(&hw->alloc_lock);
++
++	/* reset might have been handled after lock was taken */
++	if (is_device_reset(hw))
++		ilo_locked_reset(hw);
++
++	spin_unlock(&hw->alloc_lock);
++}
++
++static ssize_t ilo_read(struct file *fp, char __user *buf,
++			size_t len, loff_t *off)
++{
++	int err, found, cnt, pkt_id, pkt_len;
++	struct ccb_data *data;
++	struct ccb *driver_ccb;
++	struct ilo_hwinfo *hw;
++	void *pkt;
++
++	data = fp->private_data;
++	driver_ccb = &data->driver_ccb;
++	hw = data->ilo_hw;
++
++	if (is_device_reset(hw) || is_channel_reset(driver_ccb)) {
++		/*
++		 * If the device has been reset, applications
++		 * need to close and reopen all ccbs.
++		 */
++		ilo_reset(hw);
++		return -ENODEV;
++	}
++
++	/*
++	 * This function is to be called when data is expected
++	 * in the channel, and will return an error if no packet is found
++	 * during the loop below.  The sleep/retry logic is to allow
++	 * applications to call read() immediately post write(),
++	 * and give iLO some time to process the sent packet.
++	 */
++	cnt = 20;
++	do {
++		/* look for a received packet */
++		found = ilo_pkt_dequeue(hw, driver_ccb, RECVQ, &pkt_id,
++					&pkt_len, &pkt);
++		if (found)
++			break;
++		cnt--;
++		msleep(100);
++	} while (!found && cnt);
++
++	if (!found)
++		return -EAGAIN;
++
++	/* only copy the length of the received packet */
++	if (pkt_len < len)
++		len = pkt_len;
++
++	err = copy_to_user(buf, pkt, len);
++
++	/* return the received packet to the queue */
++	ilo_pkt_enqueue(hw, driver_ccb, RECVQ, pkt_id, desc_mem_sz(1));
++
++	return err ? -EFAULT : len;
++}
++
++static ssize_t ilo_write(struct file *fp, const char __user *buf,
++			 size_t len, loff_t *off)
++{
++	int err, pkt_id, pkt_len;
++	struct ccb_data *data;
++	struct ccb *driver_ccb;
++	struct ilo_hwinfo *hw;
++	void *pkt;
++
++	data = fp->private_data;
++	driver_ccb = &data->driver_ccb;
++	hw = data->ilo_hw;
++
++	if (is_device_reset(hw) || is_channel_reset(driver_ccb)) {
++		/*
++		 * If the device has been reset, applications
++		 * need to close and reopen all ccbs.
++		 */
++		ilo_reset(hw);
++		return -ENODEV;
++	}
++
++	/* get a packet to send the user command */
++	if (!ilo_pkt_dequeue(hw, driver_ccb, SENDQ, &pkt_id, &pkt_len, &pkt))
++		return -EBUSY;
++
++	/* limit the length to the length of the packet */
++	if (pkt_len < len)
++		len = pkt_len;
++
++	/* on failure, set the len to 0 to return empty packet to the device */
++	err = copy_from_user(pkt, buf, len);
++	if (err)
++		len = 0;
++
++	/* send the packet */
++	ilo_pkt_enqueue(hw, driver_ccb, SENDQ, pkt_id, len);
++	doorbell_set(driver_ccb);
++
++	return err ? -EFAULT : len;
++}
++
++static int ilo_close(struct inode *ip, struct file *fp)
++{
++	int slot;
++	struct ccb_data *data;
++	struct ilo_hwinfo *hw;
++
++	slot = iminor(ip) % MAX_CCB;
++	hw = container_of(ip->i_cdev, struct ilo_hwinfo, cdev);
++
++	spin_lock(&hw->alloc_lock);
++
++	if (is_device_reset(hw))
++		ilo_locked_reset(hw);
++
++	if (hw->ccb_alloc[slot]->ccb_cnt == 1) {
++
++		data = fp->private_data;
++
++		ilo_ccb_close(hw->ilo_dev, data);
++
++		kfree(data);
++		hw->ccb_alloc[slot] = NULL;
++	} else
++		hw->ccb_alloc[slot]->ccb_cnt--;
++
++	spin_unlock(&hw->alloc_lock);
++
++	return 0;
++}
++
++static int ilo_open(struct inode *ip, struct file *fp)
++{
++	int slot, error;
++	struct ccb_data *data;
++	struct ilo_hwinfo *hw;
++
++	slot = iminor(ip) % MAX_CCB;
++	hw = container_of(ip->i_cdev, struct ilo_hwinfo, cdev);
++
++	/* new ccb allocation */
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	spin_lock(&hw->alloc_lock);
++
++	if (is_device_reset(hw))
++		ilo_locked_reset(hw);
++
++	/* each fd private_data holds sw/hw view of ccb */
++	if (hw->ccb_alloc[slot] == NULL) {
++		/* create a channel control block for this minor */
++		error = ilo_ccb_open(hw, data, slot);
++		if (!error) {
++			hw->ccb_alloc[slot] = data;
++			hw->ccb_alloc[slot]->ccb_cnt = 1;
++			hw->ccb_alloc[slot]->ccb_excl = fp->f_flags & O_EXCL;
++			hw->ccb_alloc[slot]->ilo_hw = hw;
++		} else
++			kfree(data);
++	} else {
++		kfree(data);
++		if (fp->f_flags & O_EXCL || hw->ccb_alloc[slot]->ccb_excl) {
++			/*
++			 * The channel exists, and either this open
++			 * or a previous open of this channel wants
++			 * exclusive access.
++			 */
++			error = -EBUSY;
++		} else {
++			hw->ccb_alloc[slot]->ccb_cnt++;
++			error = 0;
++		}
++	}
++	spin_unlock(&hw->alloc_lock);
++
++	if (!error)
++		fp->private_data = hw->ccb_alloc[slot];
++
++	return error;
++}
++
++static const struct file_operations ilo_fops = {
++	.owner		= THIS_MODULE,
++	.read		= ilo_read,
++	.write		= ilo_write,
++	.open 		= ilo_open,
++	.release 	= ilo_close,
++};
++
++static void ilo_unmap_device(struct pci_dev *pdev, struct ilo_hwinfo *hw)
++{
++	pci_iounmap(pdev, hw->db_vaddr);
++	pci_iounmap(pdev, hw->ram_vaddr);
++	pci_iounmap(pdev, hw->mmio_vaddr);
++}
++
++static int __devinit ilo_map_device(struct pci_dev *pdev, struct ilo_hwinfo *hw)
++{
++	int error = -ENOMEM;
++
++	/* map the memory mapped i/o registers */
++	hw->mmio_vaddr = pci_iomap(pdev, 1, 0);
++	if (hw->mmio_vaddr == NULL) {
++		dev_err(&pdev->dev, "Error mapping mmio\n");
++		goto out;
++	}
++
++	/* map the adapter shared memory region */
++	hw->ram_vaddr = pci_iomap(pdev, 2, MAX_CCB * ILOHW_CCB_SZ);
++	if (hw->ram_vaddr == NULL) {
++		dev_err(&pdev->dev, "Error mapping shared mem\n");
++		goto mmio_free;
++	}
++
++	/* map the doorbell aperture */
++	hw->db_vaddr = pci_iomap(pdev, 3, MAX_CCB * ONE_DB_SIZE);
++	if (hw->db_vaddr == NULL) {
++		dev_err(&pdev->dev, "Error mapping doorbell\n");
++		goto ram_free;
++	}
++
++	return 0;
++ram_free:
++	pci_iounmap(pdev, hw->ram_vaddr);
++mmio_free:
++	pci_iounmap(pdev, hw->mmio_vaddr);
++out:
++	return error;
++}
++
++static void ilo_remove(struct pci_dev *pdev)
++{
++	int i, minor;
++	struct ilo_hwinfo *ilo_hw = pci_get_drvdata(pdev);
++
++	clear_device(ilo_hw);
++
++	minor = MINOR(ilo_hw->cdev.dev);
++	for (i = minor; i < minor + MAX_CCB; i++)
++		device_destroy(ilo_class, MKDEV(ilo_major, i));
++
++	cdev_del(&ilo_hw->cdev);
++	ilo_unmap_device(pdev, ilo_hw);
++	pci_release_regions(pdev);
++	pci_disable_device(pdev);
++	kfree(ilo_hw);
++	ilo_hwdev[(minor / MAX_CCB)] = 0;
++}
++
++static int __devinit ilo_probe(struct pci_dev *pdev,
++			       const struct pci_device_id *ent)
++{
++	int devnum, minor, start, error;
++	struct ilo_hwinfo *ilo_hw;
++
++	/* find a free range for device files */
++	for (devnum = 0; devnum < MAX_ILO_DEV; devnum++) {
++		if (ilo_hwdev[devnum] == 0) {
++			ilo_hwdev[devnum] = 1;
++			break;
++		}
++	}
++
++	if (devnum == MAX_ILO_DEV) {
++		dev_err(&pdev->dev, "Error finding free device\n");
++		return -ENODEV;
++	}
++
++	/* track global allocations for this device */
++	error = -ENOMEM;
++	ilo_hw = kzalloc(sizeof(*ilo_hw), GFP_KERNEL);
++	if (!ilo_hw)
++		goto out;
++
++	ilo_hw->ilo_dev = pdev;
++	spin_lock_init(&ilo_hw->alloc_lock);
++	spin_lock_init(&ilo_hw->fifo_lock);
++
++	error = pci_enable_device(pdev);
++	if (error)
++		goto free;
++
++	pci_set_master(pdev);
++
++	error = pci_request_regions(pdev, ILO_NAME);
++	if (error)
++		goto disable;
++
++	error = ilo_map_device(pdev, ilo_hw);
++	if (error)
++		goto free_regions;
++
++	pci_set_drvdata(pdev, ilo_hw);
++	clear_device(ilo_hw);
++
++	cdev_init(&ilo_hw->cdev, &ilo_fops);
++	ilo_hw->cdev.owner = THIS_MODULE;
++	start = devnum * MAX_CCB;
++	error = cdev_add(&ilo_hw->cdev, MKDEV(ilo_major, start), MAX_CCB);
++	if (error) {
++		dev_err(&pdev->dev, "Could not add cdev\n");
++		goto unmap;
++	}
++
++	for (minor = 0 ; minor < MAX_CCB; minor++) {
++		if (IS_ERR(device_create(ilo_class, &pdev->dev,
++					 MKDEV(ilo_major, minor),
++					 "hpilo!d%dccb%d", devnum, minor)))
++			dev_err(&pdev->dev, "Could not create files\n");
++	}
++
++	return 0;
++unmap:
++	ilo_unmap_device(pdev, ilo_hw);
++free_regions:
++	pci_release_regions(pdev);
++disable:
++	pci_disable_device(pdev);
++free:
++	kfree(ilo_hw);
++out:
++	ilo_hwdev[devnum] = 0;
++	return error;
++}
++
++static struct pci_device_id ilo_devices[] = {
++	{ PCI_DEVICE(PCI_VENDOR_ID_COMPAQ, 0xB204) },
++	{ }
++};
++MODULE_DEVICE_TABLE(pci, ilo_devices);
++
++static struct pci_driver ilo_driver = {
++	.name 	  = ILO_NAME,
++	.id_table = ilo_devices,
++	.probe 	  = ilo_probe,
++	.remove   = __devexit_p(ilo_remove),
++};
++
++static int __init ilo_init(void)
++{
++	int error;
++	dev_t dev;
++
++	ilo_class = class_create(THIS_MODULE, "iLO");
++	if (IS_ERR(ilo_class)) {
++		error = PTR_ERR(ilo_class);
++		goto out;
++	}
++
++	error = alloc_chrdev_region(&dev, 0, MAX_OPEN, ILO_NAME);
++	if (error)
++		goto class_destroy;
++
++	ilo_major = MAJOR(dev);
++
++	error =	pci_register_driver(&ilo_driver);
++	if (error)
++		goto chr_remove;
++
++	return 0;
++chr_remove:
++	unregister_chrdev_region(dev, MAX_OPEN);
++class_destroy:
++	class_destroy(ilo_class);
++out:
++	return error;
++}
++
++static void __exit ilo_exit(void)
++{
++	pci_unregister_driver(&ilo_driver);
++	unregister_chrdev_region(MKDEV(ilo_major, 0), MAX_OPEN);
++	class_destroy(ilo_class);
++}
++
++MODULE_VERSION("0.05");
++MODULE_ALIAS(ILO_NAME);
++MODULE_DESCRIPTION(ILO_NAME);
++MODULE_AUTHOR("David Altobelli <david.altobelli@hp.com>");
++MODULE_LICENSE("GPL v2");
++
++module_init(ilo_init);
++module_exit(ilo_exit);
+diff -urpN linux-2.6.26-rc7.orig/drivers/misc/hpilo.h linux-2.6.26-rc7/drivers/misc/hpilo.h
+--- linux-2.6.26-rc7.orig/drivers/misc/hpilo.h	1969-12-31 18:00:00.000000000 -0600
++++ linux-2.6.26-rc7/drivers/misc/hpilo.h	2008-07-02 10:21:00.000000000 -0500
+@@ -0,0 +1,189 @@
++/*
++ * linux/drivers/char/hpilo.h
++ *
++ * Copyright (C) 2008 Hewlett-Packard Development Company, L.P.
++ *	David Altobelli <david.altobelli@hp.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#ifndef __HPILO_H
++#define __HPILO_H
++
++#define ILO_NAME "hpilo"
++
++/* max number of open channel control blocks per device, hw limited to 32 */
++#define MAX_CCB		8
++/* max number of supported devices */
++#define MAX_ILO_DEV	1
++/* max number of files */
++#define MAX_OPEN	(MAX_CCB * MAX_ILO_DEV)
++
++/*
++ * Per device, used to track global memory allocations.
++ */
++struct ilo_hwinfo {
++	/* mmio registers on device */
++	char __iomem *mmio_vaddr;
++
++	/* doorbell registers on device */
++	char __iomem *db_vaddr;
++
++	/* shared memory on device used for channel control blocks */
++	char __iomem *ram_vaddr;
++
++	/* files corresponding to this device */
++	struct ccb_data *ccb_alloc[MAX_CCB];
++
++	struct pci_dev *ilo_dev;
++
++	spinlock_t alloc_lock;
++	spinlock_t fifo_lock;
++
++	struct cdev cdev;
++};
++
++/* offset from mmio_vaddr */
++#define DB_OUT		0xD4
++/* DB_OUT reset bit */
++#define DB_RESET	26
++
++/*
++ * Channel control block. Used to manage hardware queues.
++ * The format must match hw's version.  The hw ccb is 128 bytes,
++ * but the context area shouldn't be touched by the driver.
++ */
++#define ILOSW_CCB_SZ	64
++#define ILOHW_CCB_SZ 	128
++struct ccb {
++	union {
++		char *send_fifobar;
++		u64 padding1;
++	} ccb_u1;
++	union {
++		char *send_desc;
++		u64 padding2;
++	} ccb_u2;
++	u64 send_ctrl;
++
++	union {
++		char *recv_fifobar;
++		u64 padding3;
++	} ccb_u3;
++	union {
++		char *recv_desc;
++		u64 padding4;
++	} ccb_u4;
++	u64 recv_ctrl;
++
++	union {
++		char __iomem *db_base;
++		u64 padding5;
++	} ccb_u5;
++
++	u64 channel;
++
++	/* unused context area (64 bytes) */
++};
++
++/* ccb queue parameters */
++#define SENDQ		1
++#define RECVQ 		2
++#define NR_QENTRY    	4
++#define L2_QENTRY_SZ 	12
++
++/* ccb ctrl bitfields */
++#define CTRL_BITPOS_L2SZ             0
++#define CTRL_BITPOS_FIFOINDEXMASK    4
++#define CTRL_BITPOS_DESCLIMIT        18
++#define CTRL_BITPOS_A                30
++#define CTRL_BITPOS_G                31
++
++/* ccb doorbell macros */
++#define L2_DB_SIZE		14
++#define ONE_DB_SIZE		(1 << L2_DB_SIZE)
++
++/*
++ * Per fd structure used to track the ccb allocated to that dev file.
++ */
++struct ccb_data {
++	/* software version of ccb, using virtual addrs */
++	struct ccb  driver_ccb;
++
++	/* hardware version of ccb, using physical addrs */
++	struct ccb  ilo_ccb;
++
++	/* hardware ccb is written to this shared mapped device memory */
++	struct ccb __iomem *mapped_ccb;
++
++	/* dma'able memory used for send/recv queues */
++	void       *dma_va;
++	dma_addr_t  dma_pa;
++	size_t      dma_size;
++
++	/* pointer to hardware device info */
++	struct ilo_hwinfo *ilo_hw;
++
++	/* usage count, to allow for shared ccb's */
++	int	    ccb_cnt;
++
++	/* open wanted exclusive access to this ccb */
++	int	    ccb_excl;
++};
++
++/*
++ * FIFO queue structure, shared with hw.
++ */
++#define ILO_START_ALIGN	4096
++#define ILO_CACHE_SZ 	 128
++struct fifo {
++    u64 nrents;	/* user requested number of fifo entries */
++    u64 imask;  /* mask to extract valid fifo index */
++    u64 merge;	/*  O/C bits to merge in during enqueue operation */
++    u64 reset;	/* set to non-zero when the target device resets */
++    u8  pad_0[ILO_CACHE_SZ - (sizeof(u64) * 4)];
++
++    u64 head;
++    u8  pad_1[ILO_CACHE_SZ - (sizeof(u64))];
++
++    u64 tail;
++    u8  pad_2[ILO_CACHE_SZ - (sizeof(u64))];
++
++    u64 fifobar[1];
++};
++
++/* convert between struct fifo, and the fifobar, which is saved in the ccb */
++#define FIFOHANDLESIZE (sizeof(struct fifo) - sizeof(u64))
++#define FIFOBARTOHANDLE(_fifo) \
++	((struct fifo *)(((char *)(_fifo)) - FIFOHANDLESIZE))
++
++/* the number of qwords to consume from the entry descriptor */
++#define ENTRY_BITPOS_QWORDS      0
++/* descriptor index number (within a specified queue) */
++#define ENTRY_BITPOS_DESCRIPTOR  10
++/* state bit, fifo entry consumed by consumer */
++#define ENTRY_BITPOS_C           22
++/* state bit, fifo entry is occupied */
++#define ENTRY_BITPOS_O           23
++
++#define ENTRY_BITS_QWORDS        10
++#define ENTRY_BITS_DESCRIPTOR    12
++#define ENTRY_BITS_C             1
++#define ENTRY_BITS_O             1
++#define ENTRY_BITS_TOTAL	\
++	(ENTRY_BITS_C + ENTRY_BITS_O + \
++	 ENTRY_BITS_QWORDS + ENTRY_BITS_DESCRIPTOR)
++
++/* extract various entry fields */
++#define ENTRY_MASK ((1 << ENTRY_BITS_TOTAL) - 1)
++#define ENTRY_MASK_C (((1 << ENTRY_BITS_C) - 1) << ENTRY_BITPOS_C)
++#define ENTRY_MASK_O (((1 << ENTRY_BITS_O) - 1) << ENTRY_BITPOS_O)
++#define ENTRY_MASK_QWORDS \
++	(((1 << ENTRY_BITS_QWORDS) - 1) << ENTRY_BITPOS_QWORDS)
++#define ENTRY_MASK_DESCRIPTOR \
++	(((1 << ENTRY_BITS_DESCRIPTOR) - 1) << ENTRY_BITPOS_DESCRIPTOR)
++
++#define ENTRY_MASK_NOSTATE (ENTRY_MASK >> (ENTRY_BITS_C + ENTRY_BITS_O))
++
++#endif /* __HPILO_H */
+diff -urpN linux-2.6.26-rc7.orig/drivers/misc/Kconfig linux-2.6.26-rc7/drivers/misc/Kconfig
+--- linux-2.6.26-rc7.orig/drivers/misc/Kconfig	2008-06-23 08:43:54.000000000 -0500
++++ linux-2.6.26-rc7/drivers/misc/Kconfig	2008-06-23 08:47:14.000000000 -0500
+@@ -391,4 +391,17 @@ config SGI_XP
+ 	  this feature will allow for direct communication between SSIs
+ 	  based on a network adapter and DMA messaging.
+ 
++config HP_ILO
++	tristate "Channel interface driver for HP iLO/iLO2 processor"
++	default n
++	help
++	  The channel interface driver allows applications to communicate
++	  with iLO/iLO2 management processors present on HP ProLiant
++	  servers.  Upon loading, the driver creates /dev/hpilo/dXccbN files, 
++	  which can be used to gather data from the management processor,
++	  via read and write system calls.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called hpilo.
++
+ endif # MISC_DEVICES
+diff -urpN linux-2.6.26-rc7.orig/drivers/misc/Makefile linux-2.6.26-rc7/drivers/misc/Makefile
+--- linux-2.6.26-rc7.orig/drivers/misc/Makefile	2008-06-23 08:43:54.000000000 -0500
++++ linux-2.6.26-rc7/drivers/misc/Makefile	2008-06-23 08:46:07.000000000 -0500
+@@ -26,3 +26,4 @@ obj-$(CONFIG_INTEL_MENLOW)	+= intel_menl
+ obj-$(CONFIG_ENCLOSURE_SERVICES) += enclosure.o
+ obj-$(CONFIG_KGDB_TESTS)	+= kgdbts.o
+ obj-$(CONFIG_SGI_XP)		+= sgi-xp/
++obj-$(CONFIG_HP_ILO)		+= hpilo.o
