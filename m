@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760748AbYGBWHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759143AbYGBWOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760748AbYGBWHr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 18:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755790AbYGBWHg
+	id S1759143AbYGBWOV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 18:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbYGBWOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 18:07:36 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39313 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755639AbYGBWHf (ORCPT
+	Wed, 2 Jul 2008 18:14:10 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:15873 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753805AbYGBWOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 18:07:35 -0400
-Message-ID: <486BFC21.1040001@firstfloor.org>
-Date: Thu, 03 Jul 2008 00:07:29 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Wed, 2 Jul 2008 18:14:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=VBq+p7YerGJWdFTXT/IYcO2A7ke/rJ9R2xUsANjWi/DK5Vr7f169A++DF3YC73LZ9t
+         9zklZoO2NJyDcMZeRE3xVLHq3rLOeQhyQKWPbxGErbDZqUgVl5YU5gltewNR/xPL8naL
+         9TuBm3ZpT2ujrjjriEOr8I522PB/O+81N0qug=
+Date: Thu, 3 Jul 2008 02:14:01 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-s390@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/04] s390: bus_id -> dev_set_name() changes
+Message-ID: <20080702221401.GA15142@zarina>
+Reply-To: cbouatmailru@gmail.com
+References: <20080702154811.GB31083@kroah.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Arnd Bergmann <arnd@arndb.de>, vda.linux@googlemail.com,
-       linux-arch@vger.kernel.org, rmk@arm.linux.org.uk, dhowells@redhat.com,
-       ralf@linux-mips.org, kernel@wantstofly.org, jwboyer@linux.vnet.ibm.com,
-       paulus@samba.org, dwmw2@infradead.org, torvalds@linux-foundation.org,
-       paul.gortmaker@windriver.com, linux-embedded@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tim.bird@am.sony.com,
-       schwidefsky@de.ibm.com, davem@davemloft.net
-Subject: Re: [PATCH 21/23] make section names compatible with -ffunction-sections
- -fdata-sections: v850
-References: <200807020242.21960.vda.linux@googlemail.com>	<200807022345.40184.arnd@arndb.de> <20080702145859.a9af30ea.akpm@linux-foundation.org>
-In-Reply-To: <20080702145859.a9af30ea.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <20080702154811.GB31083@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 2 Jul 2008 23:45:38 +0200
-> Arnd Bergmann <arnd@arndb.de> wrote:
+On Wed, Jul 02, 2008 at 08:48:11AM -0700, Greg KH wrote:
+> From: Cornelia Huck <cornelia.huck@de.ibm.com>
 > 
->> On Wednesday 02 July 2008, Denys Vlasenko wrote:
->>> This patch fixes v850 architecture.
->> For all I know, v850 has been broken and unmaintained for a few years now,
->> didn't someone have a patch to remove it entirely?
->>
+> Convert most s390 users setting bus_id to dev_set_name().
+> css and ccw busses are deferred since they need some special
+> treatment.
 > 
-> yup, it's queued for 2.6.27-rc1.
+> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> Cc: Kay Sievers <kay.sievers@vrfy.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> ---
+>  drivers/s390/block/dcssblk.c |    2 +-
+>  drivers/s390/char/vmlogrdr.c |    3 +--
+>  drivers/s390/cio/ccwgroup.c  |    3 +--
+>  drivers/s390/cio/chp.c       |    3 +--
+>  drivers/s390/cio/css.c       |    4 ++--
+>  drivers/s390/crypto/ap_bus.c |    4 ++--
+>  drivers/s390/net/netiucv.c   |    2 +-
+>  drivers/s390/s390_rdev.c     |    2 +-
+>  drivers/s390/scsi/zfcp_aux.c |   23 ++++++++---------------
+>  9 files changed, 18 insertions(+), 28 deletions(-)
+> 
+> --- a/drivers/s390/block/dcssblk.c
+> +++ b/drivers/s390/block/dcssblk.c
+> @@ -349,7 +349,7 @@ dcssblk_add_store(struct device *dev, st
+>  	}
+>  
+>  	strcpy(dev_info->segment_name, local_buf);
+> -	strlcpy(dev_info->dev.bus_id, local_buf, BUS_ID_SIZE);
+> +	dev_set_name(&dev_info->dev, local_buf);
 
-Same seems to be true for cris btw.
+As I see it, dev_set_name accepts printf like string, so this
+dev_set_name is quite dangerous (since local_buf is formed
+by the module param), no?
 
--Andi
-
-
-
-
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
