@@ -1,49 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760146AbYGBBtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761286AbYGBBuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760146AbYGBBtR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 21:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbYGBBtD
+	id S1761286AbYGBBuM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 21:50:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757381AbYGBBt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 21:49:03 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45878 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753395AbYGBBtB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 21:49:01 -0400
-Message-ID: <486ADD9F.3000305@zytor.com>
-Date: Tue, 01 Jul 2008 18:45:03 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 1 Jul 2008 21:49:58 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61884 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753426AbYGBBt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 21:49:57 -0400
+Date: Wed, 2 Jul 2008 02:48:11 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Ingo Molnar <mingo@elte.hu>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Andi Kleen <andi-suse@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+In-Reply-To: <200806301241.57781.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.55.0807020223140.6284@cliff.in.clinika.pl>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806300106.38414.rjw@sisk.pl>
+ <Pine.LNX.4.55.0806300205180.22548@cliff.in.clinika.pl> <200806301241.57781.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>	<485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org>	<485ADA12.5010505@sgi.com> <485ADC73.60009@goop.org>	<485BDB04.4090709@sgi.com> <485BE80E.10209@goop.org>	<Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com>	<m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>	<m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>	<486A68DD.80702@goop.org> <m1d4lxgwxj.fsf@frodo.ebiederm.org>	<486A9D4F.8010508@goop.org> <m1skutffn4.fsf@frodo.ebiederm.org> <486AA72B.6010401@goop.org> <486AC9D9.9030506@zytor.com> <486AD6BD.9080600@sgi.com> <486ADD67.1020809@sgi.com>
-In-Reply-To: <486ADD67.1020809@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Mike Travis wrote:
-> ...  I'm still re-verifying that the source bits and config options 
->> are identical (it was a later git-remote update), and that in fact it is
->> the gcc --version, but that may be the conclusion.  
-> ...
-> 
-> Yup, it's the gcc --version that makes the difference.  GCC 4.2.0 couldn't
-> boot past the grub screen, GCC 4.2.4 made it to the login prompt.
-> 
+On Mon, 30 Jun 2008, Rafael J. Wysocki wrote:
 
-IIRC, 4.2.0, 4.2.1 and 4.3.0 are known to miscompile the kernel in one 
-way or another, however, that is from memory so don't quote me on it.
+> Well, there are lots of pieces of hardware that are not up to the
+> specifications, more or less, and I don't think that's a good enough reason
+> for us to refuse to support them.  The same applies to BIOSes IMO.
 
-	-hpa
+ Refusing to support broken hardware would provide some incentive to
+manufacturers to improve it, because people would rather not buy
+unsupported pieces of junk.  I realise that may be impractical though --
+we would get the blame anyway, because "it runs the other OS just fine."  
+
+ I think we may legitimately request something in return for our effort
+though, for example at least minimal support from hardware manufacturers.  
+It is not that we would waste a lot of their time, because in general
+anything we do not filter out must be really tough.
+
+> Of course, the _default_ should be to follow the spec, but if that doesn't work
+> on given hardware/BIOS combination and we know what to do to handle it, we
+> should just handle it instead of asking users to fix their BIOSes.
+
+ I think we should insist on getting issues reported back to the 
+manufacturer.  We may implement workarounds independently and leave it up 
+to the users whether they want to do a BIOS upgrade or not.
+
+> I have seen enough failed BIOS upgrades to be very cautious about such things.
+> Certainly, I wouldn't have seriously asked anyone to upgrade the BIOS in a
+> notebook, because if that had failed, the user would have end up with a piece
+> of electronic junk.
+
+ That's a valid point, although making the point of quality yet clearer --
+being critical enough, I would expect it to have been thorougly tested by
+the manufacturer.  Also solutions like protected Flash areas have been
+available for many years now, which means a machine should be operative
+enough for recovery to be doable if an upgrade fails.  So perhaps the very
+first thing to do after a new purchase should be doing a BIOS update, so
+that you can claim your warranty if something goes wrong.
+
+ Technically upgrading a laptop should be safer as bearing an on-board UPS
+they are protected from power failures, which may be problematic for some
+users of other equipment.
+
+  Maciej
