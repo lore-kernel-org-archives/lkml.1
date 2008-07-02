@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761174AbYGBJKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbYGBJRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761174AbYGBJKS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 05:10:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbYGBJKF
+	id S1756563AbYGBJRj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 05:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbYGBJRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 05:10:05 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:40801 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752910AbYGBJKD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 05:10:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=SaGxuOTKZlyZSkKle1//LG9iMod0pyhwzCm+0VDJiqweU7gxdtXRtPRNHiY39CGNna
-         ilKyZV/JbnzyAwrgrnEz2+NdvcojKohR7XUGFbKwHaP7zkcJntE0o6Kuu2Z0UwDE+hUm
-         SWKU5DVEUVMdO2ofFBoutM4CONT712pkYco9s=
-Message-ID: <a4423d670807020210i706dcf7du5cfb1e35fadb7cd7@mail.gmail.com>
-Date: Wed, 2 Jul 2008 13:10:02 +0400
-From: "Alexander Beregalov" <a.beregalov@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: next-0630: sparc64: build failed
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org, sparclinux@vger.kernel.org,
-       "David Miller" <davem@davemloft.net>, sagar.abhishek@gmail.com,
-       rostedt@goodmis.org
-In-Reply-To: <20080701154648.GA31057@elte.hu>
+	Wed, 2 Jul 2008 05:17:23 -0400
+Received: from namei.org ([69.55.235.186]:32981 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752464AbYGBJRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 05:17:22 -0400
+Date: Wed, 2 Jul 2008 19:16:40 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: jjohansen@suse.de, akpm@linux-foundation.org,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       serue@us.ibm.com, morgan@kernel.org
+Subject: Re: [patch] security: fix dummy xattr functions
+In-Reply-To: <E1KDwg7-0007OX-5D@pomaz-ex.szeredi.hu>
+Message-ID: <Xine.LNX.4.64.0807021906350.26138@us.intercode.com.au>
+References: <E1KDmeW-0006KB-2x@pomaz-ex.szeredi.hu>
+ <Xine.LNX.4.64.0807021604120.26138@us.intercode.com.au>
+ <E1KDwg7-0007OX-5D@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a4423d670807010825t7ea2eb44oda3f08dc007c40a2@mail.gmail.com>
-	 <20080701154648.GA31057@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/1 Ingo Molnar <mingo@elte.hu>:
-> thanks Alexander - does the patch below fix it for you?
-> commit 760378e1497841246ea7e42abad617d8a8ac0bcc
-> Author: Ingo Molnar <mingo@elte.hu>
-> Date:   Tue Jul 1 17:35:06 2008 +0200
->
->    fix "ftrace: store mcount address in rec->ip"
->
+On Wed, 2 Jul 2008, Miklos Szeredi wrote:
 
-Yes, it fixes the issue. I have tried next-0702 which already includes
-your patch.
-But it has a name a1d5d08eb4f5c76acd5bb115e13791ce87ec356b.
+> So where do the dummy_ functions figure into this?  As I understand,
+> they are called whenever LSM is disabled, but the LSM doesn't define a
+> particular hook, so there's a default implementation.  Is that correct?
+
+If LSM is disabled, nothing is called (the security hooks are optimized 
+away).  It's for when LSM is enabled, but there is either no LSM module 
+selected, or as fallbacks for hooks which are not implemented by an LSM 
+module.
+
+> If so, then in theory it is still theoretically possible that with
+> LSM+capabilities, the LSM doesn't explicitly stack inode_setxattr and
+> inode_removexattr, and so the dummy implementation should do that
+> instead.  What am I missing?
+
+The LSM is responsible for performing this stacking (or not), depending on 
+which particular security models are desired.  It may, for example, not 
+want filesystem capabilities.
+
+I guess it might be safer to force the LSM to override fs capabilities if 
+it doesn't want them, but I'd like to see what others think.
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
