@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762727AbYGBHvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760861AbYGBH4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762727AbYGBHvP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 03:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbYGBHu7
+	id S1760861AbYGBH4g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 03:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYGBH4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 03:50:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43114 "EHLO
+	Wed, 2 Jul 2008 03:56:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41992 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751508AbYGBHu5 (ORCPT
+	by vger.kernel.org with ESMTP id S1752066AbYGBH4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 03:50:57 -0400
-Date: Wed, 2 Jul 2008 00:50:36 -0700
+	Wed, 2 Jul 2008 03:56:23 -0400
+Date: Wed, 2 Jul 2008 00:53:55 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       linuxppc-dev@ozlabs.org, kernel-testers@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.26-rc8-git2 - kernel BUG at mm/page_alloc.c:585
-Message-Id: <20080702005036.3b7a97ea.akpm@linux-foundation.org>
-In-Reply-To: <486B1F60.1030608@linux.vnet.ibm.com>
-References: <486B1F60.1030608@linux.vnet.ibm.com>
+To: Henrik Rydberg <rydberg@euromail.se>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dmitry.torokhov@gmail.com, robfitz@273k.net, jikos@jikos.cz,
+       vojtech@suse.cz, dmonakhov@openvz.org, linux-usb@vger.kernel.org
+Subject: Re: [PATCH 001/002] linux-input:  bcm5974-0.31: fixed resource
+ leak, removed work struct, device data struct introduced
+Message-Id: <20080702005355.8da89ef7.akpm@linux-foundation.org>
+In-Reply-To: <1214984799.11086.6.camel@alnilam>
+References: <1214653629.10495.11.camel@alnilam>
+	<20080701155925.a4c00a8e.akpm@linux-foundation.org>
+	<1214984799.11086.6.camel@alnilam>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,108 +31,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 02 Jul 2008 11:55:36 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+On Wed, 02 Jul 2008 09:46:39 +0200 Henrik Rydberg <rydberg@euromail.se> wrote:
 
-> Hi,
+> On Tue, 2008-07-01 at 15:59 -0700, Andrew Morton wrote:
+> > > Subject: [PATCH 001/002] linux-input:  bcm5974-0.31: fixed resource leak, removed work struct, device data struct introduced
+> > 
+> > hm, I wonder where [002/002] went.
 > 
-> when running kernbench on powerpc box booted with the 2.6.26-rc8-git2
-> kernel the machine drops to xmon with the kernel BUG
+> Thank you very much for your comments, I will return shortly with a new
+> version. I did not fully grasp, from reading
+> Documentation/SubmitPatches, how the numbering in the subject should
+> work; when I submit my new version in reply to your mail, should I
+> submit a complete patch against the vanilla kernel, with number 001/003?
 > 
-> kernel BUG at mm/page_alloc.c:585!
 
-static int bad_range(struct zone *zone, struct page *page)
-{
-	if (page_outside_zone_boundaries(zone, page))
-		return 1;
-	if (!page_is_consistent(zone, page))
-		return 1;
+no....
 
-	return 0;
-}
+The sequence numbering is only used when you're sending two or more
+patches at the same time.  It is used so that the recipient can work
+out what order they are to be applied in (they can get reordered in
+flight) and so that the recipient can verify that none were missed.
 
-Called from
+So for a single patch, don't include it at all.
 
-static inline void expand(struct zone *zone, struct page *page,
-	int low, int high, struct free_area *area,
-	int migratetype)
-{
-	unsigned long size = 1 << high;
-
-	while (high > low) {
-		area--;
-		high--;
-		size >>= 1;
-		VM_BUG_ON(bad_range(zone, &page[size]));
-		list_add(&page[size].lru, &area->free_list[migratetype]);
-		area->nr_free++;
-		set_page_order(&page[size], high);
-	}
-}
-
-We goofed - we now don't know whether page_outside_zone_boundaries()
-evaluated true, or if !page_is_consistent() evaluated true.  Bad us.
-
-I'd suspect that something went wrong in powerpc land.
-
-> cpu 0x0: Vector: 700 (Program Check) at [c0000000c389ed50]
->     pc: c0000000000e22ec: .__rmqueue+0x178/0x25c
->     lr: c0000000000e22ec: .__rmqueue+0x178/0x25c
->     sp: c0000000c389efd0
->    msr: 8000000000029032
->   current = 0xc0000000f6e0e790
->   paca    = 0xc000000000873480
->     pid   = 3421, comm = tar
-> kernel BUG at mm/page_alloc.c:585!
-> enter ? for help
-> [c0000000c389efd0] c0000000000e22d0 .__rmqueue+0x15c/0x25c (unreliable)
-> [c0000000c389f0a0] c0000000000e2438 .rmqueue_bulk+0x68/0xf0
-> [c0000000c389f170] c0000000000e43cc .get_page_from_freelist+0x2d0/0x848
-> [c0000000c389f2b0] c0000000000e4abc .__alloc_pages_internal+0x12c/0x494
-> [c0000000c389f3c0] c0000000000e4e6c .__alloc_pages+0x1c/0x30
-> [c0000000c389f440] c0000000001107d8 .kmem_getpages+0x90/0x198
-> [c0000000c389f4e0] c000000000111200 .fallback_alloc+0x190/0x26c
-> [c0000000c389f5b0] c000000000111478 .____cache_alloc_node+0x19c/0x1d0
-> [c0000000c389f660] c000000000111e90 .kmem_cache_alloc+0x150/0x1f8
-> [c0000000c389f710] d00000000019fb50 .ext3_alloc_inode+0x2c/0x74 [ext3]
-> [c0000000c389f790] c00000000013725c .alloc_inode+0x58/0x278
-> [c0000000c389f830] c0000000001374b4 .new_inode+0x38/0xd4
-> [c0000000c389f8d0] d000000000193930 .ext3_new_inode+0x90/0xc64 [ext3]
-> [c0000000c389f9f0] d00000000019dc28 .ext3_create+0xc4/0x16c [ext3]
-> [c0000000c389fab0] c000000000127944 .vfs_create+0x12c/0x1d4
-> [c0000000c389fb60] c00000000012b54c .do_filp_open+0x210/0x8b4
-> [c0000000c389fd00] c0000000001191f8 .do_sys_open+0x80/0x144
-> [c0000000c389fdb0] c00000000015f5d8 .compat_sys_open+0x2c/0x44
-> [c0000000c389fe30] c0000000000086dc syscall_exit+0x0/0x40
-> --- Exception: c00 (System Call) at 000000000ff0e6d4
-> SP (ffd3f5a0) is in userspace
-> 0:mon> r
-> R00 = 00000000f0008d00   R16 = 0000000000000001
-> R01 = c0000000c389efd0   R17 = 0000000000000044
-> R02 = c0000000007e74e0   R18 = 0000000000000001
-> R03 = 0000000000000001   R19 = c00000010ffff828
-> R04 = f000000000069000   R20 = c00000010ffff800
-> R05 = 0000000000000003   R21 = c0000001ffff5700
-> R06 = 0000000000000008   R22 = 0000000000000000
-> R07 = 0000000000000000   R23 = 0000000000000001
-> R08 = 0000000000001180   R24 = 0000000000000007
-> R09 = 00000000f0008cff   R25 = 0000000000000007
-> R10 = c0000001ffff5700   R26 = 0000000000000080
-> R11 = c000000000885df8   R27 = c0000001ffff5e28
-> R12 = c000000010010080   R28 = f000000000066000
-> R13 = c000000000873480   R29 = f000000000069000
-> R14 = 0000000000000001   R30 = c000000000791ce0
-> R15 = 0000000000000001   R31 = c0000000c389efd0
-> pc  = c0000000000e22ec .__rmqueue+0x178/0x25c
-> lr  = c0000000000e22ec .__rmqueue+0x178/0x25c
-> msr = 8000000000029032   cr  = 24000442
-> ctr = 0000000000000003   xer = 0000000020000000   trap =  700
-> 0:mon> u
-> SLB contents of cpu 0
-> 00 c000000008000000 40004f7ca3000510  1T  ESID=   c00000  VSID=       4f7ca3 LLP:110 
-> 01 d000000008000000 4000eb71b0000510  1T  ESID=   d00000  VSID=       eb71b0 LLP:110 
-> 11 0000000008000000 000020b2b24a4d90 256M ESID=        0  VSID=    20b2b24a4 LLP:110 
-> 12 00000000f8000000 00002bea2a039d90 256M ESID=        f  VSID=    2bea2a039 LLP:110 
-> 13 0000000048000000 000023b06bd10d90 256M ESID=        4  VSID=    23b06bd10 LLP:110 
-> 14 0000000018000000 0000217220abfd90 256M ESID=        1  VSID=    217220abf LLP:110 
-> 38 f000000008000000 4000235bcc000500  1T  ESID=   f00000  VSID=       235bcc LLP:100 
+Also, it is better to prepare 2.6.27 patches against linux-next, as
+that is the candidate 2.6.27 tree.  But in the case of a brand new
+driver it doesn't matter a lot.  Unless you're using some interface
+which we've gone and changed, but that's fairly uncommon.
 
