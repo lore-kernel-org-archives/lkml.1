@@ -1,275 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762021AbYGBDrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761894AbYGBDwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762021AbYGBDrf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 23:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757887AbYGBDrW
+	id S1761894AbYGBDwS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 23:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757159AbYGBDwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 23:47:22 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59545
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752465AbYGBDrU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 23:47:20 -0400
-Date: Tue, 01 Jul 2008 20:47:21 -0700 (PDT)
-Message-Id: <20080701.204721.57016319.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 1 Jul 2008 23:52:08 -0400
+Received: from sh.osrg.net ([192.16.179.4]:34498 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755151AbYGBDwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jul 2008 23:52:07 -0400
+Date: Wed, 2 Jul 2008 12:43:39 +0900
+To: akpm@linux-foundation.org
+Cc: fujita.tomonori@lab.ntt.co.jp, alexisb@us.ibm.com,
+       linux-kernel@vger.kernel.org, muli@il.ibm.com, mingo@elte.hu
+Subject: Re: [PATCH -mm] fix per-device dma_mapping_ops support
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080701194840.258b500f.akpm@linux-foundation.org>
+References: <1214949124.6553.9.camel@alexis>
+	<20080702113711Y.fujita.tomonori@lab.ntt.co.jp>
+	<20080701194840.258b500f.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080702124328B.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 1 Jul 2008 19:48:40 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Lots of small fixers all over, highlights:
+> On Wed, 2 Jul 2008 11:37:27 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> 
+> > > http://marc.info/?l=linux-kernel&m=121329005131176&w=2
+> > > 
+> > > Are they at a state where they can be picked-up?  If not what is needed
+> > > to progress?
+> > 
+> > The updated patch to fix the Calgary IOMMU driver looks fine to
+> > me. Andrew, can you put it in the -mm?
+> 
+> umm, put what into -mm?  I see four different patches and a string of
+> back-and-forth discussion with no clear testing results.  It is
+> unreasonsable and too error-prone to have me go picking through such a
+> thread attempting to work out which of those patches should be applied
+> and then writing people's changelogs for them.
 
-1) Kernel command line net device name parsing potential overflow.
-   Fix from Wang Chen.
+Sorry,
 
-2) Fix incomplete conversion over to RT6_LOOKUP_F_* flags in ipv6.
-   From YOSHIFUJI Hideaki.
+My initial patch has some bugs (wasn't tested because I don't have
+Calgary hardware) but Alexis fixed the problems and submitted new one
+(he successfully tested it). I had one minor comment about it then he
+submitted another one.
 
-3) Accidental positive errno usage in packet scheduler.
+http://marc.info/?l=linux-kernel&m=121329005131176&w=2
 
-4) poll() semantic fix for AF_UNIX sockets on connected datagram
-   sockets.  From Rainer Weikusat.
+I think that it can get into mainline with the dma-mapping-per-device
+patchset.
 
-5) Race fix in ipv4/ipv6 fragmentation code, from Pavel Emelyanov.
+As we discussed, we could do better but it takes some time. I think
+that it's better to fix Calgary problems now. Then I'll try to improve
+dma-mapping-per-device stuff.
 
-6) Fix possible double free in packet scheduler filter list destruction,
-   from Patrick McHardy.
+Here's a repost of Alexis's latest patch.
 
-7) TCP mem[] sysctls computed considering highmem, which is wrong.
-   From Miquel van Smoorenburg.
+Thanks,
 
-8) skb->ip_summed setting is made incorrectly when LRO is not possible.
-   Fix from Eli Cohen.
+=
+From: Alexis Bruemmer <alexisb@us.ibm.com>
+Subject: [PATCH] x86 calgary: fix handling of devces that aren't behind the Calgary
 
-9) The usual assortment of driver bug fixes via Jeff Garzik and
-   John Linville.
+The calgary code can give drivers addresses above 4GB which is very
+bad for hardware that is only 32bit DMA addressable.
 
-Please pull, thanks a lot!
+With this patch, the calgary code sets the global dma_ops to swiotlb
+or nommu properly, and the dma_ops of devices behind the
+Calgary/CalIOC2 to calgary_dma_ops. So the calgary code can handle
+devices safely that aren't behind the Calgary/CalIOC2.
 
-The following changes since commit b9f75f45a6b46a0ab4eb0857d437a0845871f314:
-  Eric W. Biederman (1):
-        netns: Don't receive new packets in a dead network namespace.
+Signed-off-by: Alexis Bruemmer <alexisb@us.ibm.com>
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/x86/kernel/pci-calgary_64.c |   72 ++++++++++++++-----------------------
+ include/asm-x86/iommu.h          |    1 +
+ 2 files changed, 28 insertions(+), 45 deletions(-)
 
-are available in the git repository at:
+diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
+index dca9a82..84a8d6b 100644
+--- a/arch/x86/kernel/pci-calgary_64.c
++++ b/arch/x86/kernel/pci-calgary_64.c
+@@ -36,6 +36,7 @@
+ #include <linux/delay.h>
+ #include <linux/scatterlist.h>
+ #include <linux/iommu-helper.h>
++#include <asm/iommu.h>
+ #include <asm/gart.h>
+ #include <asm/calgary.h>
+ #include <asm/tce.h>
+@@ -410,22 +411,6 @@ static void calgary_unmap_sg(struct device *dev,
+ 	}
+ }
+ 
+-static int calgary_nontranslate_map_sg(struct device* dev,
+-	struct scatterlist *sg, int nelems, int direction)
+-{
+-	struct scatterlist *s;
+-	int i;
+-
+-	for_each_sg(sg, s, nelems, i) {
+-		struct page *p = sg_page(s);
+-
+-		BUG_ON(!p);
+-		s->dma_address = virt_to_bus(sg_virt(s));
+-		s->dma_length = s->length;
+-	}
+-	return nelems;
+-}
+-
+ static int calgary_map_sg(struct device *dev, struct scatterlist *sg,
+ 	int nelems, int direction)
+ {
+@@ -436,9 +421,6 @@ static int calgary_map_sg(struct device *dev, struct scatterlist *sg,
+ 	unsigned long entry;
+ 	int i;
+ 
+-	if (!translation_enabled(tbl))
+-		return calgary_nontranslate_map_sg(dev, sg, nelems, direction);
+-
+ 	for_each_sg(sg, s, nelems, i) {
+ 		BUG_ON(!sg_page(s));
+ 
+@@ -474,7 +456,6 @@ error:
+ static dma_addr_t calgary_map_single(struct device *dev, phys_addr_t paddr,
+ 	size_t size, int direction)
+ {
+-	dma_addr_t dma_handle = bad_dma_address;
+ 	void *vaddr = phys_to_virt(paddr);
+ 	unsigned long uaddr;
+ 	unsigned int npages;
+@@ -483,12 +464,7 @@ static dma_addr_t calgary_map_single(struct device *dev, phys_addr_t paddr,
+ 	uaddr = (unsigned long)vaddr;
+ 	npages = num_dma_pages(uaddr, size);
+ 
+-	if (translation_enabled(tbl))
+-		dma_handle = iommu_alloc(dev, tbl, vaddr, npages, direction);
+-	else
+-		dma_handle = virt_to_bus(vaddr);
+-
+-	return dma_handle;
++	return iommu_alloc(dev, tbl, vaddr, npages, direction);
+ }
+ 
+ static void calgary_unmap_single(struct device *dev, dma_addr_t dma_handle,
+@@ -497,9 +473,6 @@ static void calgary_unmap_single(struct device *dev, dma_addr_t dma_handle,
+ 	struct iommu_table *tbl = find_iommu_table(dev);
+ 	unsigned int npages;
+ 
+-	if (!translation_enabled(tbl))
+-		return;
+-
+ 	npages = num_dma_pages(dma_handle, size);
+ 	iommu_free(tbl, dma_handle, npages);
+ }
+@@ -522,18 +495,12 @@ static void* calgary_alloc_coherent(struct device *dev, size_t size,
+ 		goto error;
+ 	memset(ret, 0, size);
+ 
+-	if (translation_enabled(tbl)) {
+-		/* set up tces to cover the allocated range */
+-		mapping = iommu_alloc(dev, tbl, ret, npages, DMA_BIDIRECTIONAL);
+-		if (mapping == bad_dma_address)
+-			goto free;
+-
+-		*dma_handle = mapping;
+-	} else /* non translated slot */
+-		*dma_handle = virt_to_bus(ret);
+-
++	/* set up tces to cover the allocated range */
++	mapping = iommu_alloc(dev, tbl, ret, npages, DMA_BIDIRECTIONAL);
++	if (mapping == bad_dma_address)
++		goto free;
++	*dma_handle = mapping;
+ 	return ret;
+-
+ free:
+ 	free_pages((unsigned long)ret, get_order(size));
+ 	ret = NULL;
+@@ -1230,6 +1197,16 @@ static int __init calgary_init(void)
+ 			goto error;
+ 	} while (1);
+ 
++	dev = NULL;
++	for_each_pci_dev(dev) {
++		struct iommu_table *tbl;
++
++		tbl = find_iommu_table(&dev->dev);
++
++		if(translation_enabled(tbl))
++			dev->dev.archdata.dma_ops = &calgary_dma_ops;
++	}
++
+ 	return ret;
+ 
+ error:
+@@ -1251,6 +1228,7 @@ error:
+ 		calgary_disable_translation(dev);
+ 		calgary_free_bus(dev);
+ 		pci_dev_put(dev); /* Undo calgary_init_one()'s pci_dev_get() */
++		dev->dev.archdata.dma_ops = NULL;
+ 	} while (1);
+ 
+ 	return ret;
+@@ -1430,6 +1408,10 @@ void __init detect_calgary(void)
+ 		printk(KERN_INFO "PCI-DMA: Calgary TCE table spec is %d, "
+ 		       "CONFIG_IOMMU_DEBUG is %s.\n", specified_table_size,
+ 		       debugging ? "enabled" : "disabled");
++
++		/* swiotlb for devices that aren't behind the Calgary. */
++		if (end_pfn > MAX_DMA32_PFN)
++			swiotlb = 1;
+ 	}
+ 	return;
+ 
+@@ -1446,7 +1428,7 @@ int __init calgary_iommu_init(void)
+ {
+ 	int ret;
+ 
+-	if (no_iommu || swiotlb)
++	if (no_iommu || (swiotlb && !calgary_detected))
+ 		return -ENODEV;
+ 
+ 	if (!calgary_detected)
+@@ -1459,15 +1441,15 @@ int __init calgary_iommu_init(void)
+ 	if (ret) {
+ 		printk(KERN_ERR "PCI-DMA: Calgary init failed %d, "
+ 		       "falling back to no_iommu\n", ret);
+-		if (end_pfn > MAX_DMA32_PFN)
+-			printk(KERN_ERR "WARNING more than 4GB of memory, "
+-					"32bit PCI may malfunction.\n");
+ 		return ret;
+ 	}
+ 
+ 	force_iommu = 1;
+ 	bad_dma_address = 0x0;
+-	dma_ops = &calgary_dma_ops;
++
++	/* dma_ops is set to swiotlb or nommu */
++	if (!dma_ops)
++		dma_ops = &nommu_dma_ops;
+ 
+ 	return 0;
+ }
+diff --git a/include/asm-x86/iommu.h b/include/asm-x86/iommu.h
+index 07862fd..1a5e7df 100644
+--- a/include/asm-x86/iommu.h
++++ b/include/asm-x86/iommu.h
+@@ -3,6 +3,7 @@
+ 
+ extern void pci_iommu_shutdown(void);
+ extern void no_iommu_init(void);
++extern struct dma_mapping_ops nommu_dma_ops;
+ extern int force_iommu, no_iommu;
+ extern int iommu_detected;
+ #ifdef CONFIG_IOMMU
+-- 
+1.5.5.GIT
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Adrian Bunk (2):
-      pkt_sched: Remove CONFIG_NET_SCH_RR
-      include/linux/netdevice.h: don't export MAX_HEADER to userspace
-
-Al Viro (1):
-      [netdrvr] netxen: fix netxen_pci_tbl[] breakage
-
-Andi Kleen (1):
-      [netdrvr] Fix IOMMU overflow checking in s2io.c
-
-Andre Haupt (1):
-      hamradio: remove unused variable
-
-Andy Gospodarek (1):
-      e1000: only enable TSO6 via ethtool when using correct hardware
-
-Atsushi Nemoto (2):
-      tc35815: Mark carrier-off before starting PHY
-      tc35815: Fix receiver hangup on Rx FIFO overflow
-
-Ben Hutchings (2):
-      qla3xxx: Hold RTNL while calling dev_close()
-      Hold RTNL while calling dev_close()
-
-David S. Miller (2):
-      Merge branch 'master' of master.kernel.org:/.../linville/wireless-2.6
-      Merge branch 'master' of master.kernel.org:/.../linville/wireless-2.6
-
-Eli Cohen (1):
-      net/inet_lro: remove setting skb->ip_summed when not LRO-able
-
-Emmanuel Grumbach (2):
-      mac80211: fix an oops in several failure paths in key allocation
-      mac80211: don't accept WEP keys other than WEP40 and WEP104
-
-Harvey Harrison (1):
-      prism: islpci_eth.c endianness fix
-
-Ingo Molnar (1):
-      [netdrvr] 3c59x: remove irqs_disabled warning from local_bh_enable
-
-Ivo van Doorn (2):
-      rt2x00: Fix unbalanced mutex locking
-      rt2x00: Fix lock dependency errror
-
-Jeff Kirsher (2):
-      igb: fix EEH recovery during reset on PPC
-      e1000e: fix EEH recovery during reset on PPC
-
-Joonwoo Park (1):
-      textsearch: fix Boyer-Moore text search bug
-
-Jozsef Kadlecsik (1):
-      netfilter: nf_conntrack_tcp: fixing to check the lower bound of valid ACK
-
-Julia Lawall (1):
-      drivers/net/r6040.c: Eliminate double sizeof
-
-Julius Volz (1):
-      netlink: Fix some doc comments in net/netlink/attr.c
-
-Kevin Hao (1):
-      e100: Do pci_dma_sync after skb_alloc for proper operation on ixp4xx
-
-Komuro (1):
-      pcnet_cs, axnet_cs: clear bogus interrupt before request_irq
-
-Li Zefan (1):
-      CONNECTOR: add a proc entry to list connectors
-
-Michael Buesch (4):
-      b43: Do not return TX_BUSY from op_tx
-      b43legacy: Do not return TX_BUSY from op_tx
-      b43: Fix possible MMIO access while device is down
-      b43legacy: Fix possible NULL pointer dereference in DMA code
-
-Michal Schmidt (1):
-      s2io: fix documentation about intr_type
-
-Miquel van Smoorenburg (1):
-      tcp: calculate tcp_mem based on low memory instead of all memory
-
-Octavian Purdila (1):
-      tcp: fix for splice receive when used with software LRO
-
-Patrick McHardy (4):
-      netfilter: ip6table_mangle: don't reroute in LOCAL_IN
-      net-sched: change tcf_destroy_chain() to clear start of filter list
-      net-sched: fix filter destruction in atm/hfsc qdisc destruction
-      net: fib_rules: fix error code for unsupported families
-
-Paul Larson (1):
-      ixgbe: fix EEH recovery during reset on PPC
-
-Paul Moore (1):
-      netlabel: Fix a problem when dumping the default IPv6 static labels
-
-Pavel Emelyanov (1):
-      inet fragments: fix race between inet_frag_find and inet_frag_secret_rebuild
-
-Pavel Roskin (2):
-      hostap: don't report useless WDS frames by default
-      hostap: fix sparse warnings
-
-Pekka Enberg (2):
-      ipg: fix jumbo frame compilation
-      ipg: use NULL, not zero, for pointers
-
-Rainer Weikusat (1):
-      af_unix: fix 'poll for write'/connected DGRAM sockets
-
-Ron Rindjunsky (1):
-      iwlwifi: improve scanning band selection management
-
-Stephen Hemminger (2):
-      tcp: /proc/net/tcp rto,ato values not scaled properly (v2)
-      ipv4: fix sysctl documentation of time related values
-
-Tony Vroon (1):
-      mac80211: implement EU regulatory domain
-
-WANG Cong (1):
-      pkt_sched: ERR_PTR() ususally encodes an negative errno, not positive.
-
-Wang Chen (4):
-      netdevice: Fix typo of dev_unicast_add() comment
-      netlink: Unneeded local variable
-      net: Tyop of sk_filter() comment
-      netdevice: Fix wrong string handle in kernel command line parsing
-
-YOSHIFUJI Hideaki (1):
-      ipv6 route: Convert rt6_device_match() to use RT6_LOOKUP_F_xxx flags.
-
- Documentation/networking/ip-sysctl.txt        |   12 ++----
- Documentation/networking/s2io.txt             |    6 +-
- drivers/connector/connector.c                 |   40 +++++++++++++++++++
- drivers/net/3c59x.c                           |    5 +-
- drivers/net/e100.c                            |    2 +
- drivers/net/e1000/e1000_ethtool.c             |    2 +-
- drivers/net/e1000e/netdev.c                   |    3 +-
- drivers/net/hamradio/dmascc.c                 |    2 -
- drivers/net/igb/igb_main.c                    |    3 +-
- drivers/net/ipg.c                             |   16 ++++----
- drivers/net/ixgbe/ixgbe_main.c                |    3 +-
- drivers/net/netxen/netxen_nic_main.c          |   18 +++++---
- drivers/net/pcmcia/axnet_cs.c                 |    2 +
- drivers/net/pcmcia/pcnet_cs.c                 |    3 +
- drivers/net/qla3xxx.c                         |    2 +
- drivers/net/r6040.c                           |    2 +-
- drivers/net/s2io.c                            |   35 ++++++-----------
- drivers/net/s2io.h                            |    4 --
- drivers/net/tc35815.c                         |    4 +-
- drivers/net/wan/x25_asy.c                     |    3 +
- drivers/net/wireless/b43/leds.c               |    3 +
- drivers/net/wireless/b43/main.c               |   12 ++++--
- drivers/net/wireless/b43legacy/dma.c          |    2 +-
- drivers/net/wireless/b43legacy/main.c         |    6 ++-
- drivers/net/wireless/hostap/hostap_80211_rx.c |    8 ++--
- drivers/net/wireless/hostap/hostap_ap.c       |    2 +-
- drivers/net/wireless/hostap/hostap_cs.c       |    8 ++--
- drivers/net/wireless/hostap/hostap_hw.c       |   10 ++--
- drivers/net/wireless/hostap/hostap_main.c     |    5 +-
- drivers/net/wireless/iwlwifi/iwl3945-base.c   |   33 +++++++++-------
- drivers/net/wireless/iwlwifi/iwl4965-base.c   |   39 ++++++++++---------
- drivers/net/wireless/prism54/islpci_eth.c     |    2 +-
- drivers/net/wireless/rt2x00/rt2500usb.c       |   36 ++++++++++-------
- drivers/net/wireless/rt2x00/rt2x00.h          |    1 +
- drivers/net/wireless/rt2x00/rt2x00dev.c       |   38 ++++++++++++------
- drivers/net/wireless/rt2x00/rt2x00mac.c       |    4 +-
- drivers/net/wireless/rt2x00/rt73usb.c         |   36 ++++++++++-------
- include/linux/inet_lro.h                      |    6 ++-
- include/linux/netdevice.h                     |    4 ++
- include/net/mac80211.h                        |    9 ++++
- include/net/sch_generic.h                     |    2 +-
- lib/ts_bm.c                                   |    2 +-
- net/core/dev.c                                |    6 +-
- net/core/fib_rules.c                          |    4 +-
- net/core/filter.c                             |    1 -
- net/core/skbuff.c                             |   17 ++++++--
- net/ipv4/inet_fragment.c                      |   16 +++++--
- net/ipv4/inet_lro.c                           |    3 +-
- net/ipv4/ip_fragment.c                        |    2 +
- net/ipv4/tcp.c                                |    9 +++-
- net/ipv4/tcp_ipv4.c                           |    6 +-
- net/ipv6/netfilter/ip6table_mangle.c          |    2 +-
- net/ipv6/netfilter/nf_conntrack_reasm.c       |    3 +-
- net/ipv6/reassembly.c                         |    2 +
- net/ipv6/route.c                              |    6 +-
- net/ipv6/tcp_ipv6.c                           |    6 +-
- net/mac80211/key.c                            |    9 ++++
- net/mac80211/wext.c                           |    7 +++
- net/mac80211/wme.c                            |    3 +-
- net/netfilter/nf_conntrack_proto_tcp.c        |   13 +++---
- net/netlabel/netlabel_unlabeled.c             |    2 +-
- net/netlink/af_netlink.c                      |    2 +-
- net/netlink/attr.c                            |    7 ++-
- net/sched/Kconfig                             |   11 -----
- net/sched/sch_api.c                           |    6 +-
- net/sched/sch_atm.c                           |    7 ++-
- net/sched/sch_cbq.c                           |    8 +--
- net/sched/sch_dsmark.c                        |    2 +-
- net/sched/sch_generic.c                       |    2 +-
- net/sched/sch_hfsc.c                          |    6 ++-
- net/sched/sch_htb.c                           |    4 +-
- net/sched/sch_ingress.c                       |    2 +-
- net/sched/sch_prio.c                          |    2 +-
- net/sched/sch_sfq.c                           |    2 +-
- net/unix/af_unix.c                            |   52 +++++++++++-------------
- net/wireless/reg.c                            |   18 +++++++++
- 76 files changed, 411 insertions(+), 272 deletions(-)
