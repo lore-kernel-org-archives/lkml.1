@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759537AbYGBEXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762163AbYGBEX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759537AbYGBEXj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 00:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbYGBEXZ
+	id S1762163AbYGBEX5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 00:23:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbYGBEX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 00:23:25 -0400
-Received: from mga10.intel.com ([192.55.52.92]:34568 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750774AbYGBEW5 (ORCPT
+	Wed, 2 Jul 2008 00:23:28 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:29026 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751507AbYGBEXA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 00:22:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,735,1204531200"; 
-   d="scan'208";a="347802544"
-Message-ID: <486B0298.5030508@linux.intel.com>
-Date: Tue, 01 Jul 2008 21:22:48 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 2 Jul 2008 00:23:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=BsnBBg5eMTc4QUegORrjYI9eZq+qZ60pRWZEO9yYKoQmyr17PgDwPtFbAi3gsJfZ0c
+         DSxYSE46ku+RiFR6N2re6VYMBYZXjqDoIDSp/iMS4A81WxKEO45XOudhgLYTtC0iFlj/
+         v4tjpDbEH4oibjDW6shJjcN+nz3Tl/sgKeos4=
+Message-ID: <863e9df20807012122u45f7d8dfmc4d11513b19aeadc@mail.gmail.com>
+Date: Wed, 2 Jul 2008 09:52:59 +0530
+From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: next-0630: sparc64: build failed
+Cc: "David Miller" <davem@davemloft.net>,
+       "Alexander Beregalov" <a.beregalov@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org, sparclinux@vger.kernel.org,
+       rostedt@goodmis.org
+In-Reply-To: <20080701200344.GA4896@elte.hu>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: ksummit-2008-discuss@lists.linux-foundation.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [Ksummit-2008-discuss] Delayed interrupt work, thread pools
-References: <1214916335.20711.141.camel@pasglop>
-In-Reply-To: <1214916335.20711.141.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a4423d670807010825t7ea2eb44oda3f08dc007c40a2@mail.gmail.com>
+	 <20080701154648.GA31057@elte.hu> <486A7C19.5080905@gmail.com>
+	 <20080701200344.GA4896@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> Here's something that's been running in the back of my mind for some
-> time that could be a good topic of discussion at KS.
-> 
-> In various areas (I'll come up with some examples later), kernel code
-> such as drivers want to defer some processing to "task level", for
-> various reasons such as locking (taking mutexes), memory allocation,
-> interrupt latency, or simply doing things that may take more time than
-> is reasonable to do at interrupt time or do things that may block.
-> 
-> Currently, the main mechanism we provide to do that is workqueues. They
-> somewhat solve the problem, but at the same time, somewhat can make it
-> worse.
-> 
-> The problem is that delaying a potentially long/sleeping task to a work
-> queue will have the effect of delaying everything else waiting on that
-> work queue.
-> 
+On Wed, Jul 2, 2008 at 1:33 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> hm, mcount is the facility - so it makes sense to have that defined.
+> Here you basically hide CONFIG_MCOUNT:
+>
+>> -ifeq ($(CONFIG_MCOUNT),y)
+>> -  KBUILD_CFLAGS += -pg
+>> +ifneq ($(CONFIG_FTRACE),y)
+>> +ifeq ($(CONFIG_STACK_DEBUG),y)
+>> +KBUILD_CFLAGS += -pg
+>> +endif
+>>  endif
 
-how much of this would be obsoleted if we had irqthreads ?
+Even with CONFIG_MCOUNT we'd have to do something like this to prevent
+duplicate -pg flags (I hope there's a prettier way of writing this):
+
+ifneq ($(CONFIG_FTRACE),y)
+ifeq ($(CONFIG_MCOUNT),y)
+KBUILD_CFLAGS += -pg
+endif
+endif
+
+> via two conditions. I'm not sure that's a win and i found CONFIG_MCOUNT
+> a logical switch - but it's David's call.
+
+Ok, but it really doesn't allow end user to switch between anything
+through any menu. It gets selected via:
+
+config MCOUNT
+        bool
+        depends on STACK_DEBUG || FTRACE
+        default y
+
+
+I was attempting to decouple MCOUNT and STACK_DEBUG, which
+incidentally made MCOUNT useless.
+
+--
+Regards,
+Abhishek Sagar
