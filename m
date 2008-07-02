@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbYGBX2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbYGBXiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753931AbYGBX2f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 19:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYGBX21
+	id S1753333AbYGBXiv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 19:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbYGBXin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 19:28:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53915 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751111AbYGBX20 (ORCPT
+	Wed, 2 Jul 2008 19:38:43 -0400
+Received: from shards.monkeyblade.net ([198.137.202.13]:39173 "EHLO
+	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751760AbYGBXin (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 19:28:26 -0400
-Date: Wed, 2 Jul 2008 16:28:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: jbarnes@virtuousgeek.org, klassert@mathematik.tu-chemnitz.de,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, davem@davemloft.net
-Subject: Re: [patch 03/04] 3c59x: handle pci_name() being const
-Message-Id: <20080702162809.dc3ddf0e.akpm@linux-foundation.org>
-In-Reply-To: <20080702202453.GC14024@kroah.com>
-References: <20080702200902.909349505@mini.kroah.org>
-	<20080702202453.GC14024@kroah.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 2 Jul 2008 19:38:43 -0400
+X-Greylist: delayed 1802 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Jul 2008 19:38:43 EDT
+Message-ID: <486C0877.4070001@eaglescrag.net>
+Date: Wed, 02 Jul 2008 16:00:07 -0700
+From: "J.H." <warthog19@eaglescrag.net>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: users@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       support@osuosl.org, git@vger.kernel.org
+Subject: [KORG] Master downtime
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-2.1.12 (shards.monkeyblade.net [198.137.202.13]); Wed, 02 Jul 2008 16:00:15 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Jul 2008 13:24:53 -0700
-Greg Kroah-Hartman <gregkh@suse.de> wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> This changes vortex_prob1() to handle pci_name() now returning a
-> constant string.
-> 
-> Cc: Steffen Klassert <klassert@mathematik.tu-chemnitz.de>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> ---
->  drivers/net/3c59x.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- a/drivers/net/3c59x.c
-> +++ b/drivers/net/3c59x.c
-> @@ -1010,7 +1010,7 @@ static int __devinit vortex_probe1(struc
->  	static int printed_version;
->  	int retval, print_info;
->  	struct vortex_chip_info * const vci = &vortex_info_tbl[chip_idx];
-> -	char *print_name = "3c59x";
-> +	const char *print_name = "3c59x";
->  	struct pci_dev *pdev = NULL;
->  	struct eisa_device *edev = NULL;
->  	DECLARE_MAC_BUF(mac);
-> 
+Afternoon everyone,
 
-Well this one applied.  The others didn't.
+Just a quick heads up we are going to be taking master down for hardware
+and software upgrades tomorrow, Thursday July 3rd 2008 at 15:00 UTC.
+During this time all back-end services, including wiki's, ssh and
+userweb to name a few things.
 
-Please prefer to not raise patches against a 30MB-old kernel ;)
+The hardware portion of the upgrade should be complete within an hour,
+and the software upgrades will likely take another hour or two - though
+even when master comes back up expect intermittent service for a few
+hours after that while we deal with things.  Likely ETA for all work
+completed is Friday July 4th 2008 at 00:00 UTC.  If there are
+complications, I will kick another e-mail off with updates.
+
+If you have any questions, comments or concerns please don't hesitate to
+get ahold of me.
+
+- - John 'Warthog9' Hawley
+Chief Kernel.org Admin
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFIbAh3/E3kyWU9dicRAhOCAJ46E9rGDXQWwXCV932UEvo+cuqQwgCaAhQm
+aWIIEVf7IFaTErGqHkx0Pag=
+=woIy
+-----END PGP SIGNATURE-----
