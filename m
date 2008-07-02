@@ -1,85 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbYGBLD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763830AbYGBLEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932117AbYGBLD1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 07:03:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755737AbYGBLC6
+	id S1763830AbYGBLEM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 07:04:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758992AbYGBLDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 07:02:58 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:24047 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755314AbYGBLCz (ORCPT
+	Wed, 2 Jul 2008 07:03:43 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:43172 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760533AbYGBLDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 07:02:55 -0400
-To: benh@kernel.crashing.org
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Jeremy Kerr <jk@ozlabs.org>
-Subject: Re: [Ksummit-2008-discuss] Delayed interrupt work, thread pools
-From: Andi Kleen <andi@firstfloor.org>
-References: <1214916335.20711.141.camel@pasglop>
-	<486B0298.5030508@linux.intel.com> <1214977447.21182.33.camel@pasglop>
-Date: Wed, 02 Jul 2008 13:02:50 +0200
-In-Reply-To: <1214977447.21182.33.camel@pasglop> (Benjamin Herrenschmidt's message of "Wed, 02 Jul 2008 15:44:07 +1000")
-Message-ID: <87zlp0sg4l.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 02 Jul 2008 10:55:29.0444 (UTC) FILETIME=[243BE640:01C8DC32]
+	Wed, 2 Jul 2008 07:03:42 -0400
+To: Artem.Bityutskiy@nokia.com
+CC: linux-kernel@vger.kernel.org, hch@infradead.org,
+       linux-fsdevel@vger.kernel.org, ext-Adrian.Hunter@nokia.com
+In-reply-to: <486B419F.7050407@nokia.com> (message from Artem Bityutskiy on
+	Wed, 02 Jul 2008 11:51:43 +0300)
+Subject: Re: Is VFS behavior fine?
+References: <486B419F.7050407@nokia.com>
+Message-Id: <E1KE07d-0007wx-M2@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 02 Jul 2008 13:03:37 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Wed, 02 Jul 2008, Artem Bityutskiy wrote:
+> The result of it was that the '->delete_inode()' operation for
+> the 'xxx' directory inode is not called. It is not called even
+> after 'cd /'. However, if we do not do the 'touch tmp' command
+> (which actually fails), '->delete_inode()' _is_ called for 'xxx'.
 
->> how much of this would be obsoleted if we had irqthreads ?
->
-> I'm not sure irqthreads is what I want...
->
-> First, can they call handle_mm_fault ? (ie, I'm not sure precisely what
-> kind of context those operate into).
+This certainly doesn't sound right.
 
-Interrupt threads would be kernel threads and kernel threads
-run with lazy (= random) mm and calling handle_mm_fault on that
-wouldn't be very useful because you would affect a random mm.
+<snip>
 
-Ok you could force them to run with a specific MM, but that would
-cause first live time issues with the original MM (how could you
-ever free it?) and also increase the interrupt handling latency
-because the interrupt would be a nearly full blown VM context
-switch then.
+> The 'tmp' dentry is freed eventually because of unmount or
+> memory pressure, but not earlier than that. So the deleted
+> inodes may be kept for really long time. Is this OK?
 
-I also think interrupts threads are a bad idea in many cases because
-their whole "advantage" over classical interrupts is that they can
-block. Now blocking can be usually take a unbounded potentially long
-time.
+No, deleted dentries should go away immediately, or if they are still
+referenced, then they are unhashed, and go away once the reference
+disappears.
 
-What do you do when there are more interrupts in that unbounded time?
+In this situation however, it seems that the unhashed dentry managed
+to acquire a child, which keeps it from being finally killed.  The VFS
+shouldn't allow this to happen.
 
-Create more interrupt threads?  At some point you'll have hundreds
-of threads doing nothing when you're unlucky.
+> I may just say that I fixed this in UBIFS by not calling
+> 'd_splice_alias()' for not found dentries if the parent
+> directory inode has 'n_link' = 0. However, ext[23] always
+> call 'd_splice_alias()' for not found direntries (passing
+> NULL as the 'inode' parameter).
+> 
+> Again, I am not 100% sure this is the right fix, because
+> I suspect this should be "fixed" in VFS. I tried to do this
+> and I have a small VFS patch, but it is probably incorrect.
 
-Keep the interrupt event blocked? Then you'll not be handling
-any events for a long time.
+The correct fix IMO is to make lookup return ENOENT on an IS_DEADDIR()
+inode, before even trying to create the child dentry.
 
-The usual Linux design that you design that interrupt to be fast
-and run in a bounded time seems far more sane to me.
+Untested patch attached.
 
-RT Linux has interrupt threads and they work around this problem
-by assuming that the block events are only short (only 
-what would be normally spinlocks).  If someone took a lock there
-long enough then the bad things described above would happen.
+Miklos
 
-Given if a spinlock is taken too long then a non RT kernel
-is usually also not too happy so it's usually ensured that
-that this is not the case.
+----
+Subject: vfs: fix lookup on deleted directory
 
-But for your case these guarantees (only short lock regions 
-block) would not be the case (handle_mm_fault can block for 
-a long time in some cases) and then all hell could break lose.
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-So in short I don't think interrupts are a solution to your
-problem or that they even solve any problem in a non RT kernel.
+Lookup can install a child dentry for a deleted directory.  This keeps
+the directory alive even after all external references have gone away.
 
--Andi 
+Fix this by returning ENOENT for all lookups on a S_DEAD directory
+before creating a child dentry.
 
+Reported-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+ fs/namei.c |   19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/fs/namei.c
+===================================================================
+--- linux-2.6.orig/fs/namei.c	2008-07-01 22:28:42.000000000 +0200
++++ linux-2.6/fs/namei.c	2008-07-02 12:57:27.000000000 +0200
+@@ -519,7 +519,14 @@ static struct dentry * real_lookup(struc
+ 	 */
+ 	result = d_lookup(parent, name);
+ 	if (!result) {
+-		struct dentry * dentry = d_alloc(parent, name);
++		struct dentry *dentry;
++
++		/* Don't create child dentry for a dead directory. */
++		result = ERR_PTR(-ENOENT);
++		if (IS_DEADDIR(dir))
++			goto out_unlock;
++
++		dentry = d_alloc(parent, name);
+ 		result = ERR_PTR(-ENOMEM);
+ 		if (dentry) {
+ 			result = dir->i_op->lookup(dir, dentry, nd);
+@@ -528,6 +535,7 @@ static struct dentry * real_lookup(struc
+ 			else
+ 				result = dentry;
+ 		}
++out_unlock:
+ 		mutex_unlock(&dir->i_mutex);
+ 		return result;
+ 	}
+@@ -1317,7 +1325,14 @@ static struct dentry *__lookup_hash(stru
+ 
+ 	dentry = cached_lookup(base, name, nd);
+ 	if (!dentry) {
+-		struct dentry *new = d_alloc(base, name);
++		struct dentry *new;
++
++		/* Don't create child dentry for a dead directory. */
++		dentry = ERR_PTR(-ENOENT);
++		if (IS_DEADDIR(inode))
++			goto out;
++
++		new = d_alloc(base, name);
+ 		dentry = ERR_PTR(-ENOMEM);
+ 		if (!new)
+ 			goto out;
