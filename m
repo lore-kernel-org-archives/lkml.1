@@ -1,72 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757956AbYGBPlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbYGBPyD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757956AbYGBPlA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 11:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbYGBPkw
+	id S1757335AbYGBPyD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 11:54:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbYGBPxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 11:40:52 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:53266 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754573AbYGBPkw (ORCPT
+	Wed, 2 Jul 2008 11:53:50 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50981 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754275AbYGBPxt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 11:40:52 -0400
-Message-ID: <486BA181.5040908@firstfloor.org>
-Date: Wed, 02 Jul 2008 17:40:49 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Wed, 2 Jul 2008 11:53:49 -0400
+Date: Wed, 2 Jul 2008 08:36:51 -0700
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: "David S. Miller" <davem@daveloft.net>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] sparc64: fix up bus_id changes in sparc core code
+Message-ID: <20080702153651.GB30318@kroah.com>
 MIME-Version: 1.0
-To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-CC: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] Introduce copy_user_handle_tail routine
-References: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com>	<alpine.LFD.1.10.0806281108240.4371@hp.linux-foundation.org>	<m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com>	<alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org>	<m3fxqsjt22.fsf_-_@gravicappa.englab.brq.redhat.com>	<486B8B6C.2050109@firstfloor.org>	<m37ic4jr2w.fsf@gravicappa.englab.brq.redhat.com>	<486B9987.8000601@firstfloor.org> <m3y74ki9ob.fsf@gravicappa.englab.brq.redhat.com>
-In-Reply-To: <m3y74ki9ob.fsf@gravicappa.englab.brq.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vitaly Mayatskikh wrote:
-> Andi Kleen <andi@firstfloor.org> writes:
-> 
->>>>>> Overall you could write it much simpler with a rep ; movs I think,
->>>>>> like traditional linux did.
->>>> rep movs can fail.
->> How? (if it's a byte copy?)
-> 
-> Parameter len is a number of uncopied bytes,
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-But that is exactly what copy_*_user wants to return
+This converts all instances of bus_id in the sparc core kernel to use
+either dev_set_name(), or dev_name() depending on the need.
 
- it doesn't count bytes
-> which were loaded into registers before GPF in unrolled
-> loop. copy_user_handle_tail tries to do a byte copy for, possibly,
-> remaining bytes, but it can fail at the first read/write, or at the
-> second, etc. It doesn't know where it will fail.
+This is done in anticipation of removing the bus_id field from struct
+driver.
 
-The original version I wrote returned "unfaulted bytes" which was wrong.
-Correct is "uncopied" as fixed by Linus. rep ; movs returns uncopied.
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-> 
->>>>>> I think a simple memset would be actually ok, i don't think we ever zero
->>>>>> anything that faults. That would be obviously racy anyways. If the zero
->>>>>> are supposed to override something  then a racing user thread could always
->>>>>> catch it.
->>>> Linus wanted this routine to be extremely dumb. This is the reason why tail
->>>> handling was moved from assembly to C. Yeah, my original patches were in
->>>> assembly and on the top of your realization.
->> My point was that it could be simpler because zeroing should not ever fault
->> (copy_in_user is not supposed to zero)
-> 
-> Why do you think that zeroing can never fail, even in userspace?
+---
+ arch/sparc64/kernel/ebus.c      |    4 ++--
+ arch/sparc64/kernel/of_device.c |    4 ++--
+ arch/sparc64/kernel/pci.c       |    2 +-
+ arch/sparc64/kernel/vio.c       |   16 +++++++---------
+ drivers/sbus/sbus.c             |    6 +++---
+ 5 files changed, 15 insertions(+), 17 deletions(-)
 
-There's no zeroing in user space, only in kernel space.
-
-The only reason kernel does it is to avoid leaking uninitialized data,
-but for user space it doesn't make sense (see above)
-
--Andi
-
-
+--- a/arch/sparc64/kernel/ebus.c
++++ b/arch/sparc64/kernel/ebus.c
+@@ -401,7 +401,7 @@ static void __init fill_ebus_device(stru
+ 	dev->ofdev.node = dp;
+ 	dev->ofdev.dev.parent = &dev->bus->ofdev.dev;
+ 	dev->ofdev.dev.bus = &ebus_bus_type;
+-	sprintf(dev->ofdev.dev.bus_id, "ebus[%08x]", dp->node);
++	dev_set_name(&dev->ofdev.dev, "ebus[%08x]", dp->node);
+ 
+ 	/* Register with core */
+ 	if (of_device_register(&dev->ofdev) != 0)
+@@ -501,7 +501,7 @@ void __init ebus_init(void)
+ 		ebus->ofdev.node = dp;
+ 		ebus->ofdev.dev.parent = &pdev->dev;
+ 		ebus->ofdev.dev.bus = &ebus_bus_type;
+-		sprintf(ebus->ofdev.dev.bus_id, "ebus%d", num_ebus);
++		dev_set_name(&ebus->ofdev.dev, "ebus%d", num_ebus);
+ 
+ 		/* Register with core */
+ 		if (of_device_register(&ebus->ofdev) != 0)
+--- a/arch/sparc64/kernel/of_device.c
++++ b/arch/sparc64/kernel/of_device.c
+@@ -797,9 +797,9 @@ static struct of_device * __init scan_on
+ 	op->dev.parent = parent;
+ 	op->dev.bus = &of_platform_bus_type;
+ 	if (!parent)
+-		strcpy(op->dev.bus_id, "root");
++		dev_set_name(&op->dev, "root");
+ 	else
+-		sprintf(op->dev.bus_id, "%08x", dp->node);
++		dev_set_name(&op->dev, "%08x", dp->node);
+ 
+ 	if (of_device_register(op)) {
+ 		printk("%s: Could not register of device.\n",
+--- a/arch/sparc64/kernel/pci.c
++++ b/arch/sparc64/kernel/pci.c
+@@ -408,7 +408,7 @@ struct pci_dev *of_create_pci_dev(struct
+ 	dev->class = class >> 8;
+ 	dev->revision = class & 0xff;
+ 
+-	sprintf(dev->dev.bus_id, "%04x:%02x:%02x.%d", pci_domain_nr(bus),
++	dev_set_name(&dev->dev, "%04x:%02x:%02x.%d", pci_domain_nr(bus),
+ 		dev->bus->number, PCI_SLOT(devfn), PCI_FUNC(devfn));
+ 
+ 	if (ofpci_verbose)
+--- a/arch/sparc64/kernel/vio.c
++++ b/arch/sparc64/kernel/vio.c
+@@ -260,16 +260,14 @@ static struct vio_dev *vio_create_one(st
+ 	vio_fill_channel_info(hp, mp, vdev);
+ 
+ 	if (!id) {
+-		snprintf(vdev->dev.bus_id, BUS_ID_SIZE, "%s",
+-			 bus_id_name);
++		dev_set_name(&vdev->dev, "%s", bus_id_name);
+ 		vdev->dev_no = ~(u64)0;
+ 	} else if (!cfg_handle) {
+-		snprintf(vdev->dev.bus_id, BUS_ID_SIZE, "%s-%lu",
+-			 bus_id_name, *id);
++		dev_set_name(&vdev->dev, "%s-%lu", bus_id_name, *id);
+ 		vdev->dev_no = *id;
+ 	} else {
+-		snprintf(vdev->dev.bus_id, BUS_ID_SIZE, "%s-%lu-%lu",
+-			 bus_id_name, *cfg_handle, *id);
++		dev_set_name(&vdev->dev, "%s-%lu-%lu", bus_id_name,
++			     *cfg_handle, *id);
+ 		vdev->dev_no = *cfg_handle;
+ 	}
+ 
+@@ -292,12 +290,12 @@ static struct vio_dev *vio_create_one(st
+ 	}
+ 	vdev->dp = dp;
+ 
+-	printk(KERN_INFO "VIO: Adding device %s\n", vdev->dev.bus_id);
++	printk(KERN_INFO "VIO: Adding device %s\n", dev_name(&vdev->dev));
+ 
+ 	err = device_register(&vdev->dev);
+ 	if (err) {
+ 		printk(KERN_ERR "VIO: Could not register device %s, err=%d\n",
+-		       vdev->dev.bus_id, err);
++		       dev_name(&vdev->dev), err);
+ 		kfree(vdev);
+ 		return NULL;
+ 	}
+@@ -330,7 +328,7 @@ static void vio_remove(struct mdesc_hand
+ 	dev = device_find_child(&root_vdev->dev, (void *) node,
+ 				vio_md_node_match);
+ 	if (dev) {
+-		printk(KERN_INFO "VIO: Removing device %s\n", dev->bus_id);
++		printk(KERN_INFO "VIO: Removing device %s\n", dev_name(dev));
+ 
+ 		device_unregister(dev);
+ 	}
+--- a/drivers/sbus/sbus.c
++++ b/drivers/sbus/sbus.c
+@@ -78,7 +78,7 @@ static void __init fill_sbus_device(stru
+ 	else
+ 		sdev->ofdev.dev.parent = &sdev->bus->ofdev.dev;
+ 	sdev->ofdev.dev.bus = &sbus_bus_type;
+-	sprintf(sdev->ofdev.dev.bus_id, "sbus[%08x]", dp->node);
++	dev_set_name(&sdev->ofdev.dev, "sbus[%08x]", dp->node);
+ 
+ 	if (of_device_register(&sdev->ofdev) != 0)
+ 		printk(KERN_DEBUG "sbus: device registration error for %s!\n",
+@@ -257,11 +257,11 @@ static void __init build_one_sbus(struct
+ 	sbus->ofdev.node = dp;
+ 	sbus->ofdev.dev.parent = NULL;
+ 	sbus->ofdev.dev.bus = &sbus_bus_type;
+-	sprintf(sbus->ofdev.dev.bus_id, "sbus%d", num_sbus);
++	dev_set_name(&sbus->ofdev.dev, "sbus%d", num_sbus);
+ 
+ 	if (of_device_register(&sbus->ofdev) != 0)
+ 		printk(KERN_DEBUG "sbus: device registration error for %s!\n",
+-		       sbus->ofdev.dev.bus_id);
++		       dev_name(&sbus->ofdev.dev));
+ 
+ 	dev_dp = dp->child;
+ 	while (dev_dp) {
