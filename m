@@ -1,134 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbYGBEiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761962AbYGBEkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755151AbYGBEiP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 00:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYGBEh7
+	id S1761962AbYGBEkO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 00:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbYGBEkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 00:37:59 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:45817 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751221AbYGBEh6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 00:37:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=Bw8CZ5SfgZKSqPhw06MMEUWk5FVku6X6Uy1NwXvDJXG6rrayeq+NctEee5gCq30CL0
-         UF719Ovhn4/t14OasyTxXEnn0OFxUvZvTZQItyAeC2MCsAo8Pwe83AzUMx83DOCXH1HC
-         VimowobfDIB7d3jPPdR1+QihHmCdrFVMrm49Q=
-Message-ID: <486B060C.7030607@gmail.com>
-Date: Wed, 02 Jul 2008 13:37:32 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Wed, 2 Jul 2008 00:40:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49291 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751536AbYGBEj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 00:39:59 -0400
+Date: Wed, 2 Jul 2008 00:39:35 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+To: David Miller <davem@davemloft.net>
+cc: helge.hafting@aitel.hist.no, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
+Subject: Re: [10 PATCHES] inline functions to avoid stack overflow
+In-Reply-To: <20080625.150931.182895076.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0807020032510.19403@engineering.redhat.com>
+References: <Pine.LNX.4.64.0806240136200.27784@engineering.redhat.com>
+ <486216E7.8000002@aitel.hist.no> <Pine.LNX.4.64.0806250843460.20379@engineering.redhat.com>
+ <20080625.150931.182895076.davem@davemloft.net>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Benjamin Thery <benjamin.thery@bull.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
-       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 06/11] sysfs: Implement sysfs tagged directory support.
-References: <20080618170729.808539948@theryb.frec.bull.fr>	<20080618170731.002784342@theryb.frec.bull.fr>	<485F04E1.70204@gmail.com> <m1y74svtff.fsf@frodo.ebiederm.org>	<486706C9.9040303@gmail.com> <m18wwmsqdv.fsf@frodo.ebiederm.org>	<4869D314.5030403@gmail.com> <m1ej6enep7.fsf@frodo.ebiederm.org>	<486A0751.9080602@gmail.com> <m1wsk5hjm0.fsf@frodo.ebiederm.org>	<486AF4FA.8020805@gmail.com> <m1ej6d9c2r.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1ej6d9c2r.fsf@frodo.ebiederm.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Eric W. Biederman wrote:
->>> A directory displaying only a single tag is an necessary constraint for
->>> a large number of reasons.
->> Okay, that isn't exactly the impression I get but... well.  Let's see.
-> 
-> Well one of those reasons is not having duplicate entries in your directory listing.
-> That is much harder otherwise.
 
-Agreed.
+On Wed, 25 Jun 2008, David Miller wrote:
 
->> For netns, yes.  I just think it would be better if the sysfs mechanism
->> to support that concept is more generic especially because it doesn't
->> seem too difficult to make it that way.
-> 
-> Well the envisioned use is for other namespaces and they all are similar
-> to the network namespace in that way.
+> From: Mikulas Patocka <mpatocka@redhat.com>
+> Date: Wed, 25 Jun 2008 08:53:10 -0400 (EDT)
+>
+>> Even worse, gcc doesn't use these additional bytes. If you try this:
+>>
+>> extern void f(int *i);
+>> void g()
+>> {
+>>          int a;
+>>          f(&a);
+>> }
+>>
+>> , it allocates additional 16 bytes for the variable "a" (so there's total
+>> 208 bytes), even though it could place the variable into 48-byte
+>> ABI-mandated area that it inherited from the caller or into it's own
+>> 16-byte padding that it made when calling "f".
+>
+> The extra 16 bytes of space allocated is so that GCC can perform a
+> secondary reload of a quad floating point value.  It always has to be
+> present, because we can't satisfy a secondary reload by emitting yet
+> another reload, it's the end of the possible level of recursions
+> allowed by the reload pass.
+>
+> GCC could be smart and eliminate that slot when it's not used, but
+> such a thing is not implemented yet.
+>
+> It would also require quite a bit of new code to determine cases
+> like you mention above, where the incoming arg slots from the
+> caller are unused, assuming this would be legal.
+>
+> And that legality is doubtful.  We'd need to be careful because I
+> think the caller is allowed to assume that those slots are untouched
+> by the callee, and thus can be assumed to have whatever values the
+> caller put there even after the callee returns.
 
-Something I've been curious about is a directory which contains both the
-untagged entries and tagged ones.  I can definitely imagine something
-like that to be useful for block device namespace.
+The ABI is very vague about it. The V9 ABI just displays that 6-word space 
+in a figure bug doesn't say anything about it's usage. The V8 ABI just 
+says that "the function may write incoming arguments there". If it may 
+write anything other, it is unknown --- probably yes, but it is not said 
+in the document.
 
->>>>> Cause you to view an the tags as dynamic?
->>>> The thing is that I don't really see why there's tagged_dir_ops at all.
->>> We need callbacks for interfacing with the kobject layer, and for
->>> selecting our set of tags at mount time.  Not tagged_dir_ops so much
->>> as tagged_type_ops.
->> The kobject op seems a bit strange way to interface to me.  For mount,
->> yeah, we'll need a hook somewhere or pass it via mount option maybe.
-> 
-> I will look how if there is a place in the kobject layer to put it.  With
-> a second but noticeably different user I can compare and see how hard that will be.
+The document nicely specifies who owns which registers, but doesn't say 
+that about the stack space :-(
 
-Great, thanks.
-
->>>     Further the abstraction is logically exactly one tag on a
->>>     (sb,directory) pair.
->> I'm not so sure here.  As a policy, maybe but I don't really see a
->> fundamental reason that the mechanism should enforce this.
-> 
-> Well in the first implementation.
-
-This pretty much defines the interface and is likely to force future
-users to fit themselves into it.
-
->>> 4. Interface with the kobject layer.
->>>    kobject_add calls sysfs_create_dir
->>>    kboject_rename calls sysfs_rename_dir 
->>>    kobject_del calls sysfs_remove_dir
->>>
->>>    For the first two operations we need a helper function to go from a
->>>    kobject to a tag.
->> Why not just add a parameter to sysfs_create_dir()?  It's just twisted.
-> 
-> I added it where it was easiest.  Adding a parameter to sysfs_create_dir
-> simply means I have to add the function to the kobject layer.  It is certainly
-> worth a second look though.
-
-Is it difficult to just export it via kobject and device layer?  If
-changing the default function is too much of a hassle (and I'm sure it
-would be), just add an extended version which takes @tag.  The current
-implementation feels like it tried too hard to not add intermediate
-interfaces and ended up shooting outside from the innermost layer.
-
->>> We need helper functions for interfacing with the rest of the kernel. 
->> Yes, that's why I view it as strange.  These can be done in forward way
->> (by passing in mount options and/or arguments) but it's done by first
->> going into the sysfs and then calling back out to outer layer.
-> 
-> Well in the case of mount the default parameter at least is current, and
-> there are good reasons for that.
-
-I was imagining something like...
-
-	mount -t sysfs -o ns=0,4,5 /my/sys
-
-And let the userland control which ns's are visible in the particular
-mount.  I'm not sure how useful that will be tho.
-
-> On the other side I can't pass a tag through from the device layer to
-> the kobject layer.  It isn't a concept the kobject layer supports.
-
-I think it's best to make kobject layer support it.
-
-> At least though the conversation is in relative agreement.  I will refresh
-> the patches shortly and see where we are at.
-
-Thanks a lot for the patience.  :-)
-
--- 
-tejun
+Mikulas
