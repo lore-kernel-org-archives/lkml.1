@@ -1,73 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760157AbYGBP4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760508AbYGBP4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760157AbYGBP4W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 11:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758530AbYGBPy2
+	id S1760508AbYGBP4i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 11:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758577AbYGBPy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 11:54:28 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51009 "EHLO
+	Wed, 2 Jul 2008 11:54:29 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51013 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757962AbYGBPyG (ORCPT
+	with ESMTP id S1757963AbYGBPyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 11:54:06 -0400
-Date: Wed, 2 Jul 2008 08:51:35 -0700
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, davem@davemloft.net
-Subject: Re: [PATCH] PCI: make pci_name use dev_name
-Message-ID: <20080702155135.GA31159@kroah.com>
-References: <20080702153524.GA30318@kroah.com>
+	Wed, 2 Jul 2008 11:54:09 -0400
+Date: Wed, 2 Jul 2008 08:50:06 -0700
+From: Greg KH <greg@kroah.com>
+To: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-s390@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 04/04] s390: Use s390_root_dev_* in kvm_virtio.
+Message-ID: <20080702155006.GD31083@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080702153524.GA30318@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 02, 2008 at 08:35:24AM -0700, Greg Kroah-Hartman wrote:
-> From: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> Also fixes up the sparc PCI code that was assuming this is not a
-> constant.
-> 
-> This is done in anticipation of removing the bus_id field from struct
-> driver.
-> 
-> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> ---
->  arch/sparc64/kernel/pci.c |    2 +-
->  include/linux/pci.h       |    4 ++--
->  2 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> --- a/arch/sparc64/kernel/pci.c
-> +++ b/arch/sparc64/kernel/pci.c
-> @@ -408,7 +408,7 @@ struct pci_dev *of_create_pci_dev(struct
->  	dev->class = class >> 8;
->  	dev->revision = class & 0xff;
->  
-> -	sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(bus),
-> +	sprintf(dev->dev.bus_id, "%04x:%02x:%02x.%d", pci_domain_nr(bus),
->  		dev->bus->number, PCI_SLOT(devfn), PCI_FUNC(devfn));
->  
->  	if (ofpci_verbose)
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -977,9 +977,9 @@ static inline void pci_set_drvdata(struc
->  /* If you want to know what to call your pci_dev, ask this function.
->   * Again, it's a wrapper around the generic device.
->   */
-> -static inline char *pci_name(struct pci_dev *pdev)
-> +static inline const char *pci_name(struct pci_dev *pdev)
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-Andrew just pointed out to me that this causes a bunch of compiler
-warnings to be generated.  I'll go audit the tree to fix them as well
-and send you a follow-on patch if that's ok.
+No need to define a static device for the kvm_s390 root device,
+just use s390_root_dev_register().
 
-thanks,
+This is needed for the bus_id rework
 
-greg k-h
+Acked-by: Carsten Otte <cotte@de.ibm.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/s390/kvm/kvm_virtio.c |   15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
+
+--- a/drivers/s390/kvm/kvm_virtio.c
++++ b/drivers/s390/kvm/kvm_virtio.c
+@@ -23,6 +23,7 @@
+ #include <asm/kvm_virtio.h>
+ #include <asm/setup.h>
+ #include <asm/s390_ext.h>
++#include <asm/s390_rdev.h>
+ 
+ #define VIRTIO_SUBCODE_64 0x0D00
+ 
+@@ -236,10 +237,7 @@ static struct virtio_config_ops kvm_vq_c
+  * The root device for the kvm virtio devices.
+  * This makes them appear as /sys/devices/kvm_s390/0,1,2 not /sys/devices/0,1,2.
+  */
+-static struct device kvm_root = {
+-	.parent = NULL,
+-	.bus_id = "kvm_s390",
+-};
++static struct device *kvm_root;
+ 
+ /*
+  * adds a new device and register it with virtio
+@@ -256,7 +254,7 @@ static void add_kvm_device(struct kvm_de
+ 		return;
+ 	}
+ 
+-	kdev->vdev.dev.parent = &kvm_root;
++	kdev->vdev.dev.parent = kvm_root;
+ 	kdev->vdev.id.device = d->type;
+ 	kdev->vdev.config = &kvm_vq_configspace_ops;
+ 	kdev->desc = d;
+@@ -312,15 +310,16 @@ static int __init kvm_devices_init(void)
+ 	if (!MACHINE_IS_KVM)
+ 		return -ENODEV;
+ 
+-	rc = device_register(&kvm_root);
+-	if (rc) {
++	kvm_root = s390_root_dev_register("kvm_s390");
++	if (IS_ERR(kvm_root)) {
++		rc = PTR_ERR(kvm_root);
+ 		printk(KERN_ERR "Could not register kvm_s390 root device");
+ 		return rc;
+ 	}
+ 
+ 	rc = vmem_add_mapping(PFN_PHYS(max_pfn), PAGE_SIZE);
+ 	if (rc) {
+-		device_unregister(&kvm_root);
++		s390_root_dev_unregister(kvm_root);
+ 		return rc;
+ 	}
+ 
