@@ -1,140 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763437AbYGBJgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762073AbYGBJkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763437AbYGBJgq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 05:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbYGBJgi
+	id S1762073AbYGBJkz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 05:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbYGBJkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 05:36:38 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:45736 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752943AbYGBJgg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 05:36:36 -0400
-From: "Kazunaga Ikeno" <k-ikeno@ak.jp.nec.com>
-To: "'Vivek Goyal'" <vgoyal@redhat.com>,
-       "'linux kernel mailing list'" <linux-kernel@vger.kernel.org>
-Cc: "'Libcg Devel Mailing List'" <libcg-devel@lists.sourceforge.net>,
-       "'Balbir Singh'" <balbir@linux.vnet.ibm.com>,
-       "'Dhaval Giani'" <dhaval@linux.vnet.ibm.com>,
-       "'Paul Menage'" <menage@google.com>,
-       "'Peter Zijlstra'" <pzijlstr@redhat.com>,
-       <kamezawa.hiroyu@jp.fujitsu.com>,
-       "'Morton Andrew Morton'" <akpm@linux-foundation.org>
-References: <20080701191126.GA17376@redhat.com>
-Subject: RE: [RFC] How to handle the rules engine for cgroups
-Date: Wed, 2 Jul 2008 18:33:08 +0900
-Message-Id: <000d01c8dc26$a3196e80$cc7d220a@kid0000>
+	Wed, 2 Jul 2008 05:40:47 -0400
+Received: from bu3sch.de ([62.75.166.246]:60567 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753077AbYGBJkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 05:40:47 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH RFC] x86: Add user configurable GPIO-lib support
+Date: Wed, 2 Jul 2008 11:40:23 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Florian Fainelli <florian.fainelli@telecomint.eu>
+References: <200807011957.41837.david-b@pacbell.net>
+In-Reply-To: <200807011957.41837.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <20080701191126.GA17376@redhat.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Thread-Index: AcjbrkbgiVVu4cAWRtO/dtTQxDPo7AAd+w+g
+Content-Disposition: inline
+Message-Id: <200807021140.23876.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
+On Wednesday 02 July 2008 04:57:41 David Brownell wrote:
+> More food for thought ... 
+> 
+> This makes the rdc321x support switch over to using gpiolib,
+> along with all of x86.  Quick'n'dirty.
+> 
+> It's perhaps best done in conjunction with something to
+> make GPIOLIB be user-configurable on systems where it's not
+> already selected by platform code.  The rdc321x stuff needs
+> more working, but this is a start.
+> 
+> - Dave
+> 
+> ---
+>  arch/x86/Kconfig                            |    6 +
+>  arch/x86/mach-rdc321x/gpio.c                |  107 ++++++++--------------------
+>  arch/x86/mach-rdc321x/platform.c            |    3 
+>  include/asm-x86/gpio.h                      |   22 +++++
+>  include/asm-x86/mach-rdc321x/gpio.h         |   52 -------------
+>  include/asm-x86/mach-rdc321x/rdc321x_defs.h |    2 
+>  6 files changed, 62 insertions(+), 130 deletions(-)
+> 
+> --- a/arch/x86/Kconfig	2008-07-01 16:46:11.000000000 -0700
+> +++ b/arch/x86/Kconfig	2008-07-01 16:46:13.000000000 -0700
+> @@ -87,7 +87,10 @@ config GENERIC_HWEIGHT
+>  	def_bool y
+>  
+>  config GENERIC_GPIO
+> -	def_bool n
+> +	def_bool y
+> +
+> +config HAVE_GPIO_LIB
+> +	def_bool y
 
-> Hi,
-> 
-> While development is going on for cgroup and various controllers, we also
-> need a facility so that an admin/user can specify the group creation and
-> also specify the rules based on which tasks should be placed in respective
-> groups. Group creation part will be handled by libcg which is already
-> under development. We still need to tackle the issue of how to specify
-> the rules and how these rules are enforced (rules engine).
-> 
-> I have gathered few views, with regards to how rule engine can possibly be
-> implemented, I am listing these down.
-> 
-> Proposal 1
-> ==========
-> Let user space daemon hanle all that. Daemon will open a netlink socket
-> and receive the notifications for various kernel events. Daemon will
-> also parse appropriate admin specified rules config file and place the
-> processes in right cgroup based on rules as and when events happen.
-> 
-> I have written a prototype user space program which does that. Program
-> can be found here. Currently it is in very crude shape.
-> 
-> http://people.redhat.com/vgoyal/misc/rules-engine-daemon/user-id-based-namespaces.patch
-> 
-> Various people have raised two main issues with this approach.
-> 
-> - netlink is not a reliable protocol.
-> 	- Messages can be dropped and one can loose message. That means a
-> 	  newly forked process might never go into right group as meant.
-> 
-> - How to handle delays in rule exectuion?
-> 	- For example, if an "exec" happens and by the time process is moved to
-> 	 right group, it might have forked off few more processes or might
-> 	 have done quite some amount of memory allocation which will be
->    	 charged to the wring group. Or, newly exec process might get
->  	 killed in existing cgroup because of lack of memory (despite the
-> 	 fact that destination cgroup has sufficient memory).
+I think we should not unconditionally compile in gpiolib.
+See my other patch that converts the stuff to be user selectable.
 
-right.
-
-I think it is necessary to avoid these issues.
-IMO, In particular a second one (handle may delay).
-This issue can always happen.
-
-> Proposal 2
-> ==========
-> Implement one or more kernel modules which will implement the rule engine.
-> User space program can parse the config files and pass it to module.
-> Kernel will be patched only on select points to look for the rules (as
-> provided by modules). Very minimal code running inside the kernel if there
-> are no rules loaded.
-> 
-> Concerns:
-> - Rules can become complex and we don't want to handle that complexity in
->   kernel.
-> 
-> Pros:
-> - Reliable and precise movement of tasks in right cgroup based on rules.
-> 
-> Proposal 3
-> ==========
-> How about if additional parameters can be passed to system calls and one
-> can pass destination cgroup as additional parameter. Probably something
-> like sys_indirect proposal. Maybe glibc can act as a wrapper to pass
-> additional parameter so that applications don't need any modifications.
-> 
-> Concerns:
-> ========
-> - Looks like sys_indirect interface for passing extra flags was rejected.
-> - Requires extra work in glibc which can also involve parsing of rule
->   files. :-(
-> 
-> Proposal 4
-> ==========
-> Some vauge thoughts are there regarding how about kind of freezing the
-> process or thread upon fork, exec and unfreeze it once the thread has been
-> placed in right cgroup.
-> 
-> Concerns:
-> ========
-> - Requires reliable netlink protocol otherwise there is a possibility that
->   a task never gets unfrozen.
-> - On what basis does one freeze a thread. There might not be any rules to
->   process for that thread we will unnecessarily delay it.
-> 
-> 
-> Please provide your inputs regarding what's the best way to handle the
-> rules engine.
-> 
-> To me, letting the rules live in separate module/modules seems to be a
-> reasonable way to move forward which will provide reliable and timely
-> execution of rules and by making it modular, we can remove most of the
-> complexity from core kernel code.
-
-I'd agree with your opinion.
-Strict movement of tasks is indispensable in enterprises scene.
+(Too bad all my mail bounces at Daves mailfilter and this won't reach him... :/ )
 
 
-Regards, Kazunaga Ikeno
-
+-- 
+Greetings Michael.
