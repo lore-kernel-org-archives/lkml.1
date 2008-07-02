@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760812AbYGAXoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759838AbYGBAAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760812AbYGAXoc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 19:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbYGAXoY
+	id S1759838AbYGBAAr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 20:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbYGBAAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 19:44:24 -0400
-Received: from theia.rz.uni-saarland.de ([134.96.7.31]:28629 "EHLO
-	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752765AbYGAXoX (ORCPT
+	Tue, 1 Jul 2008 20:00:35 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:47067 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751683AbYGBAAe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 19:44:23 -0400
-Date: Wed, 2 Jul 2008 01:42:10 +0200
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Simple changes to make traps_32.c and traps_64.c more similar
-Message-ID: <20080701234210.GA29962@mailshack.com>
-References: <20080701193643.GA29695@mailshack.com> <20080701195004.GA27557@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080701195004.GA27557@elte.hu>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Wed, 02 Jul 2008 01:44:00 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.0.59; VDF: 7.0.5.30; host: AntiVir1)
+	Tue, 1 Jul 2008 20:00:34 -0400
+Date: Tue, 1 Jul 2008 20:00:09 -0400
+Message-Id: <200807020000.m62009ug014713@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Michael Halcrow <mhalcrow@us.ibm.com>, Erez Zadok <ezk@cs.sunysb.edu>,
+       Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hooanon05@yahoo.co.jp,
+       viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fsstack: fsstack_copy_inode_size locking 
+In-reply-to: Your message of "Tue, 01 Jul 2008 03:03:50 EDT."
+             <20080701070350.GA22914@infradead.org> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 01, 2008 at 09:50:04PM +0200, Ingo Molnar wrote:
-> nice. In terms of functionality, it is supposed to be a pure 
-> no-changes-intended commit, correct?
+In message <20080701070350.GA22914@infradead.org>, Christoph Hellwig writes:
+> On Mon, Jun 30, 2008 at 04:49:01PM -0500, Michael Halcrow wrote:
+> > eCryptfs depends on the results of i_size_read() on the lower inode
+> > when it needs to interpolate the filesize when the metadata is stored
+> > in the lower file's xattr region.
 > 
-> In that case it makes sense to split it in two: in the first (larger) 
-> bit put the things that are provably invariant on the .o and can be 
-> verified that way.
-> 
-> In the second one, put the things that change the .o output slightly 
-> (variable reordering can do that) - this we have to check more closely.
-> 
-> (One can normally do such a splitup by editing the raw diff and 
-> splitting it in half that way - by sorting each chunk into the 
-> appropriate target patch - and then making sure the end result is still 
-> the same.)
+> please use vfs_getattr to get the size in thst case.
 
-Hi,
+So, Christoph, is using vfs_getattr() the preferred choice for stackable
+file systems in general to get the lower inode size?
 
-I ended up redoing it. The first patch has no influence on the generated
-code; the second one does not change code size and the others are more
-or less single logical changes.
+If so, the Hugh's fsstack_copy_inode_size patch will have to be updated: and
+we'll probably have to change the names of the src/dst parameters to
+lower/upper, possibly watch out for whether "src" was the lower or upper
+inode, and be careful about locking semantics when calling vfs_getattr.
 
-I sent the patches as a reply to the original patch (replying to this one
-would have been more logical... I need some sleep now). I tested compilation
-and using qemu after patch 1, 2, and 7. They all run fine.
+Who'd have thought that a concept as simple as
+      dst->i_size = src->i_size
+could turn out to be so hairy... 1/2 a :-)
 
-Greetings,
-    Alexander
-
-> 	Ingo
+Thanks,
+Erez.
