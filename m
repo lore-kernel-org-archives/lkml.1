@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759169AbYGBPyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbYGBPzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759169AbYGBPyu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 11:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756825AbYGBPyC
+	id S1757474AbYGBPzU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 11:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758029AbYGBPyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 11:54:02 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50989 "EHLO
+	Wed, 2 Jul 2008 11:54:18 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51005 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755300AbYGBPxy (ORCPT
+	with ESMTP id S1757467AbYGBPyF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 11:53:54 -0400
-Date: Wed, 2 Jul 2008 08:39:18 -0700
+	Wed, 2 Jul 2008 11:54:05 -0400
+Date: Wed, 2 Jul 2008 08:49:07 -0700
 From: Greg KH <greg@kroah.com>
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-arm-kernel@list.arm.linux.org.uk,
+To: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-s390@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] arm: bus_id -> dev_name() and dev_set_name() conversions
-Message-ID: <20080702153918.GC30318@kroah.com>
+Subject: [PATCH 03/04] s390: more bus_id -> dev_name conversions
+Message-ID: <20080702154907.GC31083@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,187 +26,143 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-This converts all instances of bus_id in the arm portion of the kernel
-to use either dev_set_name(), or dev_name() depending on the need.
+Some further bus_id -> dev_name() conversions in s390 code.
 
-This is done in anticipation of removing the bus_id field from struct
-driver.
-
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/arm/common/locomo.c         |    2 +-
- arch/arm/common/sa1111.c         |    7 +++----
- arch/arm/common/scoop.c          |    2 +-
- arch/arm/kernel/ecard.c          |    2 +-
- arch/arm/mach-integrator/impd1.c |    4 +---
- arch/arm/mach-integrator/lm.c    |    6 ++++--
- arch/arm/plat-omap/mailbox.c     |    2 +-
- drivers/net/arm/at91_ether.c     |    2 +-
- drivers/net/arm/ep93xx_eth.c     |    2 +-
- drivers/net/arm/etherh.c         |    6 +++---
- 10 files changed, 17 insertions(+), 18 deletions(-)
+ drivers/s390/char/raw3270.c  |    4 ++--
+ drivers/s390/net/claw.c      |   20 +++++++++++---------
+ drivers/s390/net/ctcm_main.c |    6 ++++--
+ drivers/s390/scsi/zfcp_def.h |    2 +-
+ 4 files changed, 18 insertions(+), 14 deletions(-)
 
---- a/arch/arm/common/locomo.c
-+++ b/arch/arm/common/locomo.c
-@@ -543,7 +543,6 @@ locomo_init_one_child(struct locomo *lch
+--- a/drivers/s390/char/raw3270.c
++++ b/drivers/s390/char/raw3270.c
+@@ -1181,7 +1181,7 @@ static int raw3270_create_attributes(str
+ 	rp->clttydev = device_create_drvdata(class3270, &rp->cdev->dev,
+ 					     MKDEV(IBM_TTY3270_MAJOR, rp->minor),
+ 					     NULL,
+-					     "tty%s", rp->cdev->dev.bus_id);
++					     "tty%s", dev_name(&rp->cdev->dev));
+ 	if (IS_ERR(rp->clttydev)) {
+ 		rc = PTR_ERR(rp->clttydev);
+ 		goto out_ttydev;
+@@ -1190,7 +1190,7 @@ static int raw3270_create_attributes(str
+ 	rp->cltubdev = device_create_drvdata(class3270, &rp->cdev->dev,
+ 					     MKDEV(IBM_FS3270_MAJOR, rp->minor),
+ 					     NULL,
+-					     "tub%s", rp->cdev->dev.bus_id);
++					     "tub%s", dev_name(&rp->cdev->dev));
+ 	if (!IS_ERR(rp->cltubdev))
+ 		goto out;
+ 
+--- a/drivers/s390/net/claw.c
++++ b/drivers/s390/net/claw.c
+@@ -323,7 +323,7 @@ claw_probe(struct ccwgroup_device *cgdev
+                 probe_error(cgdev);
+ 		put_device(&cgdev->dev);
+ 		printk(KERN_WARNING "Out of memory %s %s Exit Line %d \n",
+-			cgdev->cdev[0]->dev.bus_id,__func__,__LINE__);
++		       dev_name(&cgdev->cdev[0]->dev),__func__,__LINE__);
+ 		CLAW_DBF_TEXT_(2,setup,"probex%d",-ENOMEM);
+                 return -ENOMEM;
+         }
+@@ -340,11 +340,12 @@ claw_probe(struct ccwgroup_device *cgdev
+ 		probe_error(cgdev);
+ 		put_device(&cgdev->dev);
+ 		printk(KERN_WARNING "add_files failed %s %s Exit Line %d \n",
+-			cgdev->cdev[0]->dev.bus_id,__func__,__LINE__);
++		       dev_name(&cgdev->cdev[0]->dev),__func__,__LINE__);
+ 		CLAW_DBF_TEXT_(2,setup,"probex%d",rc);
+ 		return rc;
+ 	}
+-	printk(KERN_INFO "claw: sysfs files added for %s\n",cgdev->cdev[0]->dev.bus_id);
++	printk(KERN_INFO "claw: sysfs files added for %s\n",
++	       dev_name(&cgdev->cdev[0]->dev));
+ 	privptr->p_env->p_priv = privptr;
+         cgdev->cdev[0]->handler = claw_irq_handler;
+ 	cgdev->cdev[1]->handler = claw_irq_handler;
+@@ -3953,7 +3954,8 @@ claw_new_device(struct ccwgroup_device *
+ 	struct ccw_dev_id dev_id;
+ 
+ 	pr_debug("%s() called\n", __func__);
+-	printk(KERN_INFO "claw: add for %s\n",cgdev->cdev[READ]->dev.bus_id);
++	printk(KERN_INFO "claw: add for %s\n",
++	       dev_name(&cgdev->cdev[READ]->dev));
+ 	CLAW_DBF_TEXT(2,setup,"new_dev");
+ 	privptr = cgdev->dev.driver_data;
+ 	cgdev->cdev[READ]->dev.driver_data = privptr;
+@@ -3978,14 +3980,14 @@ claw_new_device(struct ccwgroup_device *
+ 	if (ret != 0) {
+ 		printk(KERN_WARNING
+ 		 "claw: ccw_device_set_online %s READ failed "
+-			"with ret = %d\n",cgdev->cdev[READ]->dev.bus_id,ret);
++		 "with ret = %d\n", dev_name(&cgdev->cdev[READ]->dev),ret);
  		goto out;
  	}
- 
--	strncpy(dev->dev.bus_id, info->name, sizeof(dev->dev.bus_id));
- 	/*
- 	 * If the parent device has a DMA mask associated with it,
- 	 * propagate it down to the children.
-@@ -553,6 +552,7 @@ locomo_init_one_child(struct locomo *lch
- 		dev->dev.dma_mask = &dev->dma_mask;
- 	}
- 
-+	dev_set_name(&dev->dev, "%s", info->name);
- 	dev->devid	 = info->devid;
- 	dev->dev.parent  = lchip->dev;
- 	dev->dev.bus     = &locomo_bus_type;
---- a/arch/arm/common/sa1111.c
-+++ b/arch/arm/common/sa1111.c
-@@ -550,9 +550,7 @@ sa1111_init_one_child(struct sa1111 *sac
+ 	ret = ccw_device_set_online(cgdev->cdev[WRITE]);
+ 	if (ret != 0) {
+ 		printk(KERN_WARNING
+ 		 "claw: ccw_device_set_online %s WRITE failed "
+-			"with ret = %d\n",cgdev->cdev[WRITE]->dev.bus_id, ret);
++		  "with ret = %d\n", dev_name(&cgdev->cdev[WRITE]->dev), ret);
  		goto out;
  	}
+ 	dev = alloc_netdev(0,"claw%d",claw_init_netdevice);
+@@ -4066,7 +4068,7 @@ claw_shutdown_device(struct ccwgroup_dev
+ 	int	ret;
  
--	snprintf(dev->dev.bus_id, sizeof(dev->dev.bus_id),
--		 "%4.4lx", info->offset);
--
-+	dev_set_name(&dev->dev, "%4.4lx", info->offset);
- 	dev->devid	 = info->devid;
- 	dev->dev.parent  = sachip->dev;
- 	dev->dev.bus     = &sa1111_bus_type;
-@@ -560,7 +558,7 @@ sa1111_init_one_child(struct sa1111 *sac
- 	dev->dev.coherent_dma_mask = sachip->dev->coherent_dma_mask;
- 	dev->res.start   = sachip->phys + info->offset;
- 	dev->res.end     = dev->res.start + 511;
--	dev->res.name    = dev->dev.bus_id;
-+	dev->res.name    = dev_name(&dev->dev);
- 	dev->res.flags   = IORESOURCE_MEM;
- 	dev->mapbase     = sachip->base + info->offset;
- 	dev->skpcr_mask  = info->skpcr_mask;
-@@ -570,6 +568,7 @@ sa1111_init_one_child(struct sa1111 *sac
- 	if (ret) {
- 		printk("SA1111: failed to allocate resource for %s\n",
- 			dev->res.name);
-+		dev_set_name(&dev->dev, NULL);
- 		kfree(dev);
- 		goto out;
+ 	pr_debug("%s() called\n", __func__);
+-	CLAW_DBF_TEXT_(2,setup,"%s",cgdev->dev.bus_id);
++	CLAW_DBF_TEXT_(2,setup,"%s", dev_name(&cgdev->dev));
+ 	priv = cgdev->dev.driver_data;
+ 	if (!priv)
+ 		return -ENODEV;
+@@ -4096,14 +4098,14 @@ claw_remove_device(struct ccwgroup_devic
+ 	struct claw_privbk *priv;
+ 
+ 	pr_debug("%s() called\n", __func__);
+-	CLAW_DBF_TEXT_(2,setup,"%s",cgdev->dev.bus_id);
++	CLAW_DBF_TEXT_(2,setup,"%s", dev_name(&cgdev->dev));
+ 	priv = cgdev->dev.driver_data;
+ 	if (!priv) {
+ 		printk(KERN_WARNING "claw: %s() no Priv exiting\n",__func__);
+ 		return;
  	}
---- a/arch/arm/common/scoop.c
-+++ b/arch/arm/common/scoop.c
-@@ -247,7 +247,7 @@ static int __devinit scoop_probe(struct 
- 	devptr->gpio.base = -1;
+ 	printk(KERN_INFO "claw: %s() called %s will be removed.\n",
+-			__func__,cgdev->cdev[0]->dev.bus_id);
++	       __func__, dev_name(&cgdev->cdev[0]->dev));
+ 	if (cgdev->state == CCWGROUP_ONLINE)
+ 		claw_shutdown_device(cgdev);
+ 	claw_remove_files(&cgdev->dev);
+--- a/drivers/s390/net/ctcm_main.c
++++ b/drivers/s390/net/ctcm_main.c
+@@ -1550,8 +1550,10 @@ static int ctcm_new_device(struct ccwgro
  
- 	if (inf->gpio_base != 0) {
--		devptr->gpio.label = pdev->dev.bus_id;
-+		devptr->gpio.label = dev_name(&pdev->dev);
- 		devptr->gpio.base = inf->gpio_base;
- 		devptr->gpio.ngpio = 12; /* PA11 = 0, PA12 = 1, etc. up to PA22 = 11 */
- 		devptr->gpio.set = scoop_gpio_set;
---- a/arch/arm/kernel/ecard.c
-+++ b/arch/arm/kernel/ecard.c
-@@ -783,7 +783,7 @@ static void ecard_proc_init(void)
+ 	type = get_channel_type(&cgdev->cdev[0]->id);
  
- #define ec_set_resource(ec,nr,st,sz)				\
- 	do {							\
--		(ec)->resource[nr].name = ec->dev.bus_id;	\
-+		(ec)->resource[nr].name = dev_name(&ec->dev);	\
- 		(ec)->resource[nr].start = st;			\
- 		(ec)->resource[nr].end = (st) + (sz) - 1;	\
- 		(ec)->resource[nr].flags = IORESOURCE_MEM;	\
---- a/arch/arm/mach-integrator/impd1.c
-+++ b/arch/arm/mach-integrator/impd1.c
-@@ -393,9 +393,7 @@ static int impd1_probe(struct lm_device 
- 		if (!d)
- 			continue;
+-	snprintf(read_id, CTCM_ID_SIZE, "ch-%s", cgdev->cdev[0]->dev.bus_id);
+-	snprintf(write_id, CTCM_ID_SIZE, "ch-%s", cgdev->cdev[1]->dev.bus_id);
++	snprintf(read_id, CTCM_ID_SIZE, "ch-%s",
++		 dev_name(&cgdev->cdev[0]->dev));
++	snprintf(write_id, CTCM_ID_SIZE, "ch-%s",
++		 dev_name(&cgdev->cdev[1]->dev));
  
--		snprintf(d->dev.bus_id, sizeof(d->dev.bus_id),
--			 "lm%x:%5.5lx", dev->id, idev->offset >> 12);
--
-+		dev_set_name(&d->dev, "lm%x:%5.5lx", dev->id, idev->offset >> 12);
- 		d->dev.parent	= &dev->dev;
- 		d->res.start	= dev->resource.start + idev->offset;
- 		d->res.end	= d->res.start + SZ_4K - 1;
---- a/arch/arm/mach-integrator/lm.c
-+++ b/arch/arm/mach-integrator/lm.c
-@@ -81,8 +81,10 @@ int lm_device_register(struct lm_device 
- 	dev->dev.release = lm_device_release;
- 	dev->dev.bus = &lm_bustype;
+ 	ret = add_channel(cgdev->cdev[0], type, priv);
+ 	if (ret)
+--- a/drivers/s390/scsi/zfcp_def.h
++++ b/drivers/s390/scsi/zfcp_def.h
+@@ -922,7 +922,7 @@ extern void _zfcp_hex_dump(char *, int);
+ 			_zfcp_hex_dump(addr, count); \
+ 		}
  
--	snprintf(dev->dev.bus_id, sizeof(dev->dev.bus_id), "lm%d", dev->id);
--	dev->resource.name = dev->dev.bus_id;
-+	ret = dev_set_name(&dev->dev, "lm%d", dev->id);
-+	if (ret)
-+		return ret;
-+	dev->resource.name = dev_name(&dev->dev);
- 
- 	ret = request_resource(&iomem_resource, &dev->resource);
- 	if (ret == 0) {
---- a/arch/arm/plat-omap/mailbox.c
-+++ b/arch/arm/plat-omap/mailbox.c
-@@ -334,7 +334,7 @@ static int omap_mbox_init(struct omap_mb
- 	}
- 
- 	mbox->dev.class = &omap_mbox_class;
--	strlcpy(mbox->dev.bus_id, mbox->name, BUS_ID_SIZE);
-+	dev_set_name(&mbox->dev, "%s", mbox->name);
- 	dev_set_drvdata(&mbox->dev, mbox);
- 
- 	ret = device_register(&mbox->dev);
---- a/drivers/net/arm/at91_ether.c
-+++ b/drivers/net/arm/at91_ether.c
-@@ -677,7 +677,7 @@ static void at91ether_get_drvinfo(struct
- {
- 	strlcpy(info->driver, DRV_NAME, sizeof(info->driver));
- 	strlcpy(info->version, DRV_VERSION, sizeof(info->version));
--	strlcpy(info->bus_info, dev->dev.parent->bus_id, sizeof(info->bus_info));
-+	strlcpy(info->bus_info, dev_name(dev->dev.parent), sizeof(info->bus_info));
- }
- 
- static const struct ethtool_ops at91ether_ethtool_ops = {
---- a/drivers/net/arm/ep93xx_eth.c
-+++ b/drivers/net/arm/ep93xx_eth.c
-@@ -848,7 +848,7 @@ static int ep93xx_eth_probe(struct platf
- 
- 	ep->res = request_mem_region(pdev->resource[0].start,
- 			pdev->resource[0].end - pdev->resource[0].start + 1,
--			pdev->dev.bus_id);
-+			dev_name(&pdev->dev));
- 	if (ep->res == NULL) {
- 		dev_err(&pdev->dev, "Could not reserve memory region\n");
- 		err = -ENOMEM;
---- a/drivers/net/arm/etherh.c
-+++ b/drivers/net/arm/etherh.c
-@@ -535,7 +535,7 @@ static int __init etherh_addr(char *addr
- 	
- 	if (!ecard_readchunk(&cd, ec, 0xf5, 0)) {
- 		printk(KERN_ERR "%s: unable to read podule description string\n",
--		       ec->dev.bus_id);
-+		       dev_name(&ec->dev));
- 		goto no_addr;
- 	}
- 
-@@ -554,7 +554,7 @@ static int __init etherh_addr(char *addr
- 	}
- 
- 	printk(KERN_ERR "%s: unable to parse MAC address: %s\n",
--	       ec->dev.bus_id, cd.d.string);
-+	       dev_name(&ec->dev), cd.d.string);
- 
-  no_addr:
- 	return -ENODEV;
-@@ -585,7 +585,7 @@ static void etherh_get_drvinfo(struct ne
- {
- 	strlcpy(info->driver, DRV_NAME, sizeof(info->driver));
- 	strlcpy(info->version, DRV_VERSION, sizeof(info->version));
--	strlcpy(info->bus_info, dev->dev.parent->bus_id,
-+	strlcpy(info->bus_info, dev_name(dev->dev.parent),
- 		sizeof(info->bus_info));
- }
+-#define zfcp_get_busid_by_adapter(adapter) (adapter->ccw_device->dev.bus_id)
++#define zfcp_get_busid_by_adapter(adapter) (dev_name(&adapter->ccw_device->dev))
+ #define zfcp_get_busid_by_port(port) (zfcp_get_busid_by_adapter(port->adapter))
+ #define zfcp_get_busid_by_unit(unit) (zfcp_get_busid_by_port(unit->port))
  
