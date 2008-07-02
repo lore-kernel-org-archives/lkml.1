@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932280AbYGBLt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756491AbYGBLu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932280AbYGBLt4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 07:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764021AbYGBLtg
+	id S1756491AbYGBLu3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 07:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759136AbYGBLuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 07:49:36 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:51146 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756453AbYGBLtf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 07:49:35 -0400
-Subject: Re: [patch] security: fix dummy xattr functions
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: James Morris <jmorris@namei.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, jjohansen@suse.de,
-       akpm@linux-foundation.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, serue@us.ibm.com, morgan@kernel.org
-In-Reply-To: <Xine.LNX.4.64.0807021906350.26138@us.intercode.com.au>
-References: <E1KDmeW-0006KB-2x@pomaz-ex.szeredi.hu>
-	 <Xine.LNX.4.64.0807021604120.26138@us.intercode.com.au>
-	 <E1KDwg7-0007OX-5D@pomaz-ex.szeredi.hu>
-	 <Xine.LNX.4.64.0807021906350.26138@us.intercode.com.au>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 02 Jul 2008 07:48:36 -0400
-Message-Id: <1214999316.22447.240.camel@moss-spartans.epoch.ncsc.mil>
+	Wed, 2 Jul 2008 07:50:09 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43865 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756335AbYGBLuH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 07:50:07 -0400
+Date: Wed, 2 Jul 2008 12:31:58 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <Uwe.Kleine-Koenig@digi.com>
+Cc: Magnus Damm <magnus.damm@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hjk@linutronix.de" <hjk@linutronix.de>,
+       "lethal@linux-sh.org" <lethal@linux-sh.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [PATCH] uio: User IRQ Mode
+Message-ID: <20080702123158.2c4fefc6@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080702114224.GB6891@digi.com>
+References: <20080702105951.22648.2197.sendpatchset@rx1.opensource.se>
+	<20080702121153.4d464885@lxorguk.ukuu.org.uk>
+	<20080702114224.GB6891@digi.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Note that the irq is disabled instead of acked.  So this should not be a
+> problem.  The userspace part then is responsible to ack (first) and
+> unmask the irq.
 
-On Wed, 2008-07-02 at 19:16 +1000, James Morris wrote:
-> On Wed, 2 Jul 2008, Miklos Szeredi wrote:
-> 
-> > So where do the dummy_ functions figure into this?  As I understand,
-> > they are called whenever LSM is disabled, but the LSM doesn't define a
-> > particular hook, so there's a default implementation.  Is that correct?
-> 
-> If LSM is disabled, nothing is called (the security hooks are optimized 
-> away).  It's for when LSM is enabled, but there is either no LSM module 
-> selected, or as fallbacks for hooks which are not implemented by an LSM 
-> module.
-> 
-> > If so, then in theory it is still theoretically possible that with
-> > LSM+capabilities, the LSM doesn't explicitly stack inode_setxattr and
-> > inode_removexattr, and so the dummy implementation should do that
-> > instead.  What am I missing?
-> 
-> The LSM is responsible for performing this stacking (or not), depending on 
-> which particular security models are desired.  It may, for example, not 
-> want filesystem capabilities.
-> 
-> I guess it might be safer to force the LSM to override fs capabilities if 
-> it doesn't want them, but I'd like to see what others think.
+That still doesn't make sense.
 
-As discussed elsewhere, the dummy module just needs to die, and
-capability needs to become the default module.  Then we no longer need
-to deal with keeping them in sync or figuring out to emulate/fake
-capabilities for userspace from dummy (since userspace expects them to
-exist in Linux ever since they were first introduced long ago).
-
-BTW, SELinux does not invoke the cap_ or dummy_
-inode_setxattr/removexattr hooks as that would cause CAP_SYS_ADMIN to be
-checked on the security.selinux attribute.  But
-selinux_inode_setotherxattr() has the right logic.
-
--- 
-Stephen Smalley
-National Security Agency
-
+If you call disable_irq in the IRQ handler you will deadlock because it
+waits until the IRQ handler has completed.
