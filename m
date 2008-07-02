@@ -1,147 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761277AbYGBCBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761631AbYGBCCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761277AbYGBCBO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 22:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757484AbYGBCA6
+	id S1761631AbYGBCCf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 22:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757990AbYGBCC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 22:00:58 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:35987 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753364AbYGBCA4 (ORCPT
+	Tue, 1 Jul 2008 22:02:26 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:32406 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756337AbYGBCCZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 22:00:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=gl4fRG+7G3prjeuN7ySW20f3FdFE+W5EtAaCyDk//WdkabFHG4wZ0ZrDSuEvaFGZfw
-         Pc0zaboFGq19JQBbekDzRcbygso85BSSUsFEVTU2XwitvTeWfmjQNVupTbupA7GHxOVe
-         IiZ1VZC/eNocJUtttc+bNEBZ4fFeF7hrOxrQc=
-Message-ID: <e9c3a7c20807011900x7b2ac3dx7536e0450202e3c0@mail.gmail.com>
-Date: Tue, 1 Jul 2008 19:00:55 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
-Subject: Re: [PATCH v4 2/6] dmaengine: Add dma_chan_is_in_use() function
-Cc: "Pierre Ossman" <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, kernel@avr32linux.org,
-       shannon.nelson@intel.com, "David Brownell" <david-b@pacbell.net>
-In-Reply-To: <e9c3a7c20807011831n74eb69b8r3095b62515fe5c9@mail.gmail.com>
+	Tue, 1 Jul 2008 22:02:25 -0400
+Date: Tue, 1 Jul 2008 20:02:23 -0600
+From: Alex Chiang <achiang@hp.com>
+To: jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com
+Cc: garyhade@us.ibm.com, linux-pci@vger.kernel-org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] PCI Hotplug: acpiphp: cleanup notify handler on all root
+	bridges
+Message-ID: <20080702020223.GA32046@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>, jbarnes@virtuousgeek.org,
+	kristen.c.accardi@intel.com, garyhade@us.ibm.com,
+	linux-pci@vger.kernel-org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com>
-	 <1214486603-23655-2-git-send-email-haavard.skinnemoen@atmel.com>
-	 <1214486603-23655-3-git-send-email-haavard.skinnemoen@atmel.com>
-	 <e9c3a7c20807011831n74eb69b8r3095b62515fe5c9@mail.gmail.com>
-X-Google-Sender-Auth: f94c538807242f92
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 1, 2008 at 6:31 PM, Dan Williams <dan.j.williams@intel.com> wrote:
-> On Thu, Jun 26, 2008 at 6:23 AM, Haavard Skinnemoen
-> <haavard.skinnemoen@atmel.com> wrote:
->> This moves the code checking if a DMA channel is in use from
->> show_in_use() into an inline helper function, dma_is_in_use(). DMA
->> controllers can use this in order to give clients exclusive access to
->> channels (usually necessary when setting up slave DMA.)
->>
->> I have to admit that I don't really understand the channel refcounting
->> logic at all... dma_chan_get() simply increments a per-cpu value. How
->> can we be sure that whatever CPU calls dma_chan_is_in_use() sees the
->> same value?
->
-> As Chris noted in the comments at the top of dmaengine.c this is an
-> implementation Rusty's 'bigref'.  It seeks to avoid the
-> cache-line-bouncing overhead of maintaining a single global refcount
-> in hot paths like tcp_v{4,6}_rcv().  When the channel is being
-> removed, a rare event, we transition to the accurate, yet slow, global
-> method.
->
-> Your observation is correct, dma_chan_is_in_use() may lie in the case
-> when the current cpu is not using the channel.  For this particular
-> test I think you can look to see if this channel's resources are
-> already allocated.  If they are then some other client got a hold of
-> this channel before the current attempt.  Hmm... that would also
-> require that we free the channel's resources in the case where the
-> client replies with DMA_NAK, probably something we should do anyways.
->
-> Thoughts?
->
+Hi Jesse, Kristen,
 
-Actually we will probably need something like the following.
-->client_count is protected by the dma_list_mutex.
+During the development of the physical PCI slot patch series,
+Gary Hade kept on reporting strange oopses due to interactions
+between pci_slot and acpiphp.
 
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 99c22b4..10de69e 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -183,9 +183,10 @@ static void dma_client_chan_alloc(struct
-dma_client *client)
- 				/* we are done once this client rejects
- 				 * an available resource
- 				 */
--				if (ack == DMA_ACK)
-+				if (ack == DMA_ACK) {
- 					dma_chan_get(chan);
--				else if (ack == DMA_NAK)
-+					chan->client_count++;
-+				} else if (ack == DMA_NAK)
- 					return;
- 			}
- 		}
-@@ -272,8 +273,10 @@ static void dma_clients_notify_removed(struct
-dma_chan *chan)
- 		/* client was holding resources for this channel so
- 		 * free it
- 		 */
--		if (ack == DMA_ACK)
-+		if (ack == DMA_ACK) {
- 			dma_chan_put(chan);
-+			chan->client_count--;
-+		}
- 	}
+	http://lkml.org/lkml/2007/11/28/319
 
- 	mutex_unlock(&dma_list_mutex);
-@@ -313,8 +316,10 @@ void dma_async_client_unregister(struct dma_client *client)
- 			ack = client->event_callback(client, chan,
- 				DMA_RESOURCE_REMOVED);
+He got busy and went away for a while, and that's when I was able
+to sneak my patchset into Jesse's linux-next branch. ;)
 
--			if (ack == DMA_ACK)
-+			if (ack == DMA_ACK) {
- 				dma_chan_put(chan);
-+				chan->client_count--;
-+			}
- 		}
+Recently, Gary got some time to test again on his x3950 M2
+system, and together, we finally figured out the oops.
 
- 	list_del(&client->global_node);
-@@ -394,6 +399,7 @@ int dma_async_device_register(struct dma_device *device)
- 		kref_get(&device->refcount);
- 		kref_get(&device->refcount);
- 		kref_init(&chan->refcount);
-+		chan->client_count = 0;
- 		chan->slow_ref = 0;
- 		INIT_RCU_HEAD(&chan->rcu);
- 	}
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index d08a5c5..6432b83 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -139,6 +139,7 @@ struct dma_chan_percpu {
-  * @rcu: the DMA channel's RCU head
-  * @device_node: used to add this to the device chan list
-  * @local: per-cpu pointer to a struct dma_chan_percpu
-+ * @client-count: how many clients are using this channel
-  */
- struct dma_chan {
- 	struct dma_device *device;
-@@ -154,6 +155,7 @@ struct dma_chan {
+This bug has always been present in acpiphp so it's not a
+regression. So if you want to hold off until the next merge
+window, I'm ok with that.
 
- 	struct list_head device_node;
- 	struct dma_chan_percpu *local;
-+	int client_count;
- };
+Otherwise, I feel it's pretty low-risk and could go into the next
+-rc. Totally your call, I have no strong feelings either way.
 
- #define to_dma_chan(p) container_of(p, struct dma_chan, dev)
+Incidentally, figuring out this oops makes me feel a lot more
+confident about the pci_slot changes, as this has been in the
+back of my mind for a while. (famous last words?)
+
+Thanks,
+
+/ac
+
+From: Alex Chiang <achiang@hp.com>
+
+find_root_bridges() unconditionally installs handle_hotplug_event_bridge()
+as an ACPI_SYSTEM_NOTIFY handler for all root bridges.
+
+However, during module cleanup, remove_bridge() will only remove the
+notify handler iff the root bridge had a hot-pluggable slot directly
+underneath. That is:
+
+	root bridge -> hotplug slot
+
+But, if the topology looks like either of the following:
+
+	root bridge -> non-hotplug slot
+	root bridge -> p2p bridge -> hotplug slot
+
+Then we currently do not remove the notify handler from that root bridge.
+
+This can cause a kernel oops if we modprobe acpiphp later and it gets
+loaded somewhere else in memory. If the root bridge then receives a
+hotplug event, it will then attempt to call a stale, non-existent notify 
+handler and we blow up.
+
+Much thanks goes to Gary Hade for his persistent debugging efforts.
+
+Signed-off-by: Alex Chiang <achiang@hp.com>
+Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+---
+ drivers/pci/hotplug/acpiphp_glue.c |   17 ++++++++++++++---
+ 1 files changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+index 9342c84..a3e4705 100644
+--- a/drivers/pci/hotplug/acpiphp_glue.c
++++ b/drivers/pci/hotplug/acpiphp_glue.c
+@@ -705,9 +705,10 @@ cleanup_p2p_bridge(acpi_handle handle, u32 lvl, void *context, void **rv)
+ 	acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
+ 				cleanup_p2p_bridge, NULL, NULL);
+ 
+-	if (!(bridge = acpiphp_handle_to_bridge(handle)))
+-		return AE_OK;
+-	cleanup_bridge(bridge);
++	bridge = acpiphp_handle_to_bridge(handle);
++	if (bridge)
++		cleanup_bridge(bridge);
++
+ 	return AE_OK;
+ }
+ 
+@@ -720,9 +721,19 @@ static void remove_bridge(acpi_handle handle)
+ 	acpi_walk_namespace(ACPI_TYPE_DEVICE, handle,
+ 				(u32)1, cleanup_p2p_bridge, NULL, NULL);
+ 
++	/*
++	 * On root bridges with hotplug slots directly underneath (ie,
++	 * no p2p bridge inbetween), we call cleanup_bridge(). 
++	 *
++	 * The else clause cleans up root bridges that either had no
++	 * hotplug slots at all, or had a p2p bridge underneath.
++	 */
+ 	bridge = acpiphp_handle_to_bridge(handle);
+ 	if (bridge)
+ 		cleanup_bridge(bridge);
++	else
++		acpi_remove_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
++					   handle_hotplug_event_bridge);
+ }
+ 
+ static struct pci_dev * get_apic_pci_info(acpi_handle handle)
+-- 
+1.5.3.1.1.g1e61
+
