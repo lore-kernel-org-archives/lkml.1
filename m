@@ -1,87 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761963AbYGBGQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762056AbYGBGSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761963AbYGBGQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 02:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbYGBGQS
+	id S1762056AbYGBGSS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 02:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbYGBGSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 02:16:18 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:51826 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754996AbYGBGQQ (ORCPT
+	Wed, 2 Jul 2008 02:18:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34950 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754400AbYGBGSG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 02:16:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=l8oTk5+u2V7YiRom3ymNtZbSFme0aDIwAzjctCmwPjafKO0aOI+VYcS1tieaJfhKH9
-         vddK4weH960W8Jcis3EHmqXP4zNRjit27rJL6HaouwCZCKrbTP5m146zEKAA+OVMSEgZ
-         W1k3IHg/oHdp+GCJRapFhJBYHsSEj9IyMHAmc=
-Message-ID: <dd18b0c30807012316u9fd43c9udc78dd9adcf273bd@mail.gmail.com>
-Date: Wed, 2 Jul 2008 06:16:15 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>
-Subject: Re: dsdt buggy acpi
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "ACPI Devel Maling List" <linux-acpi@vger.kernel.org>
-In-Reply-To: <20080702082555.0959ef2b@linux360.ro>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 2 Jul 2008 02:18:06 -0400
+Date: Tue, 1 Jul 2008 23:17:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Jan Beulich" <jbeulich@novell.com>
+Cc: <sam@ravnborg.org>, <stable@kernel.org>, <llipavsky@suse.cz>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] move __attribute__((__cold__)) functions back into
+ final .text section
+Message-Id: <20080701231717.047d580a.akpm@linux-foundation.org>
+In-Reply-To: <48590F41.76E4.0078.0@novell.com>
+References: <48590F41.76E4.0078.0@novell.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30806302339q7b3effybf8a7f619b009262@mail.gmail.com>
-	 <200807011619.53339.rjw@sisk.pl>
-	 <dd18b0c30807010918p48cfbe2bnb7e4a2bf00a01638@mail.gmail.com>
-	 <20080702082555.0959ef2b@linux360.ro>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 2, 2008 at 5:25 AM, Eduard - Gabriel Munteanu
-<eduard.munteanu@linux360.ro> wrote:
-> On Tue, 1 Jul 2008 16:18:45 +0000
-> "Justin Mattock" <justinmattock@gmail.com> wrote:
->
->> Cool; thanks.
->> I'll check that out and see where and how I can locate the dsdt
->> manufacture number,  then see if I can fix the broken dsdt error and
->> apply this to the kernel and see what happens.
->> regards;
->
-> Just one note here: DSDTs have nothing to do with the kernel. This is
-> just broken firmware. The most one can do _in-kernel_ is blacklist some
-> functionality or create a workaround, but this only happens for widely
-> used stuff. Broken DSDTs aren't widely used stuff, they are written by
-> the machine's vendor (the laptop's manufacturer for example, but this
-> could be different for desktops) and differ a lot from one machine to
-> another.
->
->
->        Eduard
->
+On Wed, 18 Jun 2008 12:36:01 +0100 "Jan Beulich" <jbeulich@novell.com> wrote:
 
-Cool, thanks for the info, As of right now I'm mainly trying to clean
-up as much acpi errors that I can
-find in my system, in hopes leading me to more info on fixing a bug(or
-someone else).: http://bugzilla.kernel.org/show_bug.cgi?id=10724
-For right now I have cleaned up all of the errors and warning from the
-dsdt.dsl and have
- plugged in the new dsdt.hex into the kernel.(everything seems O.K).,
-except for two messages I received
-from running iasl
- i.g. I've google but found not very many results for this
-No back ptr to Op: type 8
-No back ptr to Op: type 8
+> Due to the addition of __attribute__((__cold__)) to a few symbols
+> without adjusting the linker scripts, those symbols currently may end
+> up outside the [_stext,_etext) range, as they get placed in
+> .text.unlikely by (at least) gcc 4.3.0. This may confuse code not only
+> outside of the kernel, symbol_put_addr()'s BUG() could also trigger.
+> Hence we need to add .text.unlikely (and for future uses of
+> __attribute__((__hot__)) also .text.hot) to the TEXT_TEXT() macro.
+> 
+> Issue observed by Lukas Lipavsky.
+> 
+> Cc: Lukas Lipavsky <llipavsky@suse.cz>
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> 
+> ---
+>  include/asm-generic/vmlinux.lds.h |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> --- linux-2.6.26-rc6/include/asm-generic/vmlinux.lds.h	2008-04-17 04:49:44.000000000 +0200
+> +++ 2.6.26-rc6-hot-cold-text/include/asm-generic/vmlinux.lds.h	2008-06-18 12:19:22.000000000 +0200
+> @@ -204,6 +204,7 @@
+>   * during second ld run in second ld pass when generating System.map */
+>  #define TEXT_TEXT							\
+>  		ALIGN_FUNCTION();					\
+> +		*(.text.hot)						\
+>  		*(.text)						\
+>  		*(.ref.text)						\
+>  		*(.text.init.refok)					\
+> @@ -213,7 +214,8 @@
+>  	CPU_KEEP(init.text)						\
+>  	CPU_KEEP(exit.text)						\
+>  	MEM_KEEP(init.text)						\
+> -	MEM_KEEP(exit.text)
+> +	MEM_KEEP(exit.text)						\
+> +		*(.text.unlikely)
+>  
+>  
+>  /* sched.text is aling to function alignment to secure we have same
+> 
 
-After contemplating I decided to go ahead with the modified dsdt
-irregardless of the: No back ptr to Op: type 8
-message, but to my dismay I'm still receiving the BUG.  "gripes"
-on a positive not creating a custom dsdt and loading it into the
-kernel is "cake", figuring out how to fix the dsdt is a "bi*^h";
-anyways If you or anybody knows what this means, please send a message.
-regards;
+So this is now in Sam's
+git+ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-next.git.
+But it is not in the present linux-next.  Either because Sam added it
+after Stephen pulled Sam's tree, or because something screwed up.
 
--- 
-Justin P. Mattock
+So I'll now be dropping it.  Sam, please ensure that it gets into
+2.6.26 and 2.6.25.x (IMO).
+
+Thanks.
+
