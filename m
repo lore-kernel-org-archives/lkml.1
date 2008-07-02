@@ -1,245 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbYGBTMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbYGBTQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755561AbYGBTMg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 15:12:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbYGBTM2
+	id S1755576AbYGBTQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 15:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbYGBTQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 15:12:28 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:52547 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752000AbYGBTM0 (ORCPT
+	Wed, 2 Jul 2008 15:16:21 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:38952 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752571AbYGBTQU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 15:12:26 -0400
-To: swhiteho@redhat.com
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, hch@infradead.org
-Subject: [patch v2] gfs2: don't call permission()
-Message-Id: <E1KE7kH-0000aJ-0n@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 02 Jul 2008 21:12:01 +0200
+	Wed, 2 Jul 2008 15:16:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:subject:content-type
+         :content-transfer-encoding:from;
+        b=q3BUNGEr3R9qCaC8mPDf8T4NUdFkitA6KhI5b4JCcUejEjM9rflYdrT/zewFMxED8N
+         yjQVBbIYup1A/FxKhU1K6tYCYww9oc0c7fgWMLWZYo7Q+m1IhhLeT8mtud783MDAN/uK
+         UdMypXaGU/tWNmzwoWdmvV6P3zCnQxaHTY2aY=
+Message-ID: <486BD31E.8050602@gmail.com>
+Date: Wed, 02 Jul 2008 21:12:30 +0200
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: man-pages-3.02 is released
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the updated version, with the promised renames:
+Gidday
 
-  gfs2_do_permission -> gfs2_permission
-  gfs2_permission -> gfs2_iop_permission
+I've released man-pages-3.02.
 
-Thanks,
-Miklos
+This release is now available for download at:
 
-----
-From: Miklos Szeredi <mszeredi@suse.cz>
+     http://www.kernel.org/pub/linux/docs/man-pages
+     or ftp://ftp.kernel.org/pub/linux/docs/man-pages
 
-GFS2 calls permission() to verify permissions after locks on the files
-have been taken.
+This release is now available for download at:
 
-For this it's sufficient to call gfs2_permission() instead.  This
-results in the following changes:
+     http://www.kernel.org/pub/linux/docs/man-pages
+     or ftp://ftp.kernel.org/pub/linux/docs/man-pages
 
-  - IS_RDONLY() check is not performed
-  - IS_IMMUTABLE() check is not performed
-  - devcgroup_inode_permission() is not called
-  - security_inode_permission() is not called
+The online changelog is available at
+http://www.kernel.org/doc/man-pages/changelog.html
+(blogged at
+http://linux-man-pages.blogspot.com/2008/07/man-pages-302-is-released.html)
+and the current version of the pages is browsable at
+http://www.kernel.org/doc/man-pages/
 
-IS_RDONLY() should be unnecessary anyway, as the per-mount read-only
-flag should provide protection against read-only remounts during
-operations.  do_gfs2_set_flags() has been fixed to perform
-mnt_want_write()/mnt_drop_write() to protect against remounting
-read-only.
+An abridged version of the changes in this release that may be of
+interest to readers of this list is provided below.
 
-IS_IMMUTABLE has been added to gfs2_permission()
+Cheers,
 
-Repeating the security checks seems to be pointless, as they don't
-normally change, and if they do, it's independent of the filesystem
-state.
+Michael
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- fs/gfs2/inode.c     |    6 +++---
- fs/gfs2/inode.h     |    1 +
- fs/gfs2/ops_file.c  |   11 +++++++++--
- fs/gfs2/ops_inode.c |   25 +++++++++++++++++--------
- 4 files changed, 30 insertions(+), 13 deletions(-)
+==================== Changes in man-pages-3.02 ====================
 
-Index: linux-2.6/fs/gfs2/inode.c
-===================================================================
---- linux-2.6.orig/fs/gfs2/inode.c	2008-07-01 18:11:32.000000000 +0200
-+++ linux-2.6/fs/gfs2/inode.c	2008-07-01 19:15:59.000000000 +0200
-@@ -504,7 +504,7 @@ struct inode *gfs2_lookupi(struct inode 
- 	}
- 
- 	if (!is_root) {
--		error = permission(dir, MAY_EXEC, NULL);
-+		error = gfs2_permission(dir, MAY_EXEC);
- 		if (error)
- 			goto out;
- 	}
-@@ -667,7 +667,7 @@ static int create_ok(struct gfs2_inode *
- {
- 	int error;
- 
--	error = permission(&dip->i_inode, MAY_WRITE | MAY_EXEC, NULL);
-+	error = gfs2_permission(&dip->i_inode, MAY_WRITE | MAY_EXEC);
- 	if (error)
- 		return error;
- 
-@@ -1134,7 +1134,7 @@ int gfs2_unlink_ok(struct gfs2_inode *di
- 	if (IS_APPEND(&dip->i_inode))
- 		return -EPERM;
- 
--	error = permission(&dip->i_inode, MAY_WRITE | MAY_EXEC, NULL);
-+	error = gfs2_permission(&dip->i_inode, MAY_WRITE | MAY_EXEC);
- 	if (error)
- 		return error;
- 
-Index: linux-2.6/fs/gfs2/inode.h
-===================================================================
---- linux-2.6.orig/fs/gfs2/inode.h	2008-07-01 18:11:32.000000000 +0200
-+++ linux-2.6/fs/gfs2/inode.h	2008-07-01 19:15:59.000000000 +0200
-@@ -91,6 +91,7 @@ int gfs2_rmdiri(struct gfs2_inode *dip, 
- 		struct gfs2_inode *ip);
- int gfs2_unlink_ok(struct gfs2_inode *dip, const struct qstr *name,
- 		   const struct gfs2_inode *ip);
-+int gfs2_permission(struct inode *inode, int mask);
- int gfs2_ok_to_move(struct gfs2_inode *this, struct gfs2_inode *to);
- int gfs2_readlinki(struct gfs2_inode *ip, char **buf, unsigned int *len);
- int gfs2_glock_nq_atime(struct gfs2_holder *gh);
-Index: linux-2.6/fs/gfs2/ops_file.c
-===================================================================
---- linux-2.6.orig/fs/gfs2/ops_file.c	2008-07-01 18:11:32.000000000 +0200
-+++ linux-2.6/fs/gfs2/ops_file.c	2008-07-01 19:15:59.000000000 +0200
-@@ -15,6 +15,7 @@
- #include <linux/uio.h>
- #include <linux/blkdev.h>
- #include <linux/mm.h>
-+#include <linux/mount.h>
- #include <linux/fs.h>
- #include <linux/gfs2_ondisk.h>
- #include <linux/ext2_fs.h>
-@@ -220,10 +221,14 @@ static int do_gfs2_set_flags(struct file
- 	int error;
- 	u32 new_flags, flags;
- 
--	error = gfs2_glock_nq_init(ip->i_gl, LM_ST_EXCLUSIVE, 0, &gh);
-+	error = mnt_want_write(filp->f_path.mnt);
- 	if (error)
- 		return error;
- 
-+	error = gfs2_glock_nq_init(ip->i_gl, LM_ST_EXCLUSIVE, 0, &gh);
-+	if (error)
-+		goto out_drop_write;
-+
- 	flags = ip->i_di.di_flags;
- 	new_flags = (flags & ~mask) | (reqflags & mask);
- 	if ((new_flags ^ flags) == 0)
-@@ -242,7 +247,7 @@ static int do_gfs2_set_flags(struct file
- 	    !capable(CAP_LINUX_IMMUTABLE))
- 		goto out;
- 	if (!IS_IMMUTABLE(inode)) {
--		error = permission(inode, MAY_WRITE, NULL);
-+		error = gfs2_permission(inode, MAY_WRITE);
- 		if (error)
- 			goto out;
- 	}
-@@ -272,6 +277,8 @@ out_trans_end:
- 	gfs2_trans_end(sdp);
- out:
- 	gfs2_glock_dq_uninit(&gh);
-+out_drop_write:
-+	mnt_drop_write(filp->f_path.mnt);
- 	return error;
- }
- 
-Index: linux-2.6/fs/gfs2/ops_inode.c
-===================================================================
---- linux-2.6.orig/fs/gfs2/ops_inode.c	2008-07-01 18:11:32.000000000 +0200
-+++ linux-2.6/fs/gfs2/ops_inode.c	2008-07-01 19:15:59.000000000 +0200
-@@ -163,7 +163,7 @@ static int gfs2_link(struct dentry *old_
- 	if (error)
- 		goto out;
- 
--	error = permission(dir, MAY_WRITE | MAY_EXEC, NULL);
-+	error = gfs2_permission(dir, MAY_WRITE | MAY_EXEC);
- 	if (error)
- 		goto out_gunlock;
- 
-@@ -669,7 +669,7 @@ static int gfs2_rename(struct inode *odi
- 			}
- 		}
- 	} else {
--		error = permission(ndir, MAY_WRITE | MAY_EXEC, NULL);
-+		error = gfs2_permission(ndir, MAY_WRITE | MAY_EXEC);
- 		if (error)
- 			goto out_gunlock;
- 
-@@ -704,7 +704,7 @@ static int gfs2_rename(struct inode *odi
- 	/* Check out the dir to be renamed */
- 
- 	if (dir_rename) {
--		error = permission(odentry->d_inode, MAY_WRITE, NULL);
-+		error = gfs2_permission(odentry->d_inode, MAY_WRITE);
- 		if (error)
- 			goto out_gunlock;
- 	}
-@@ -891,7 +891,7 @@ static void *gfs2_follow_link(struct den
-  * Returns: errno
-  */
- 
--static int gfs2_permission(struct inode *inode, int mask, struct nameidata *nd)
-+int gfs2_permission(struct inode *inode, int mask)
- {
- 	struct gfs2_inode *ip = GFS2_I(inode);
- 	struct gfs2_holder i_gh;
-@@ -905,13 +905,22 @@ static int gfs2_permission(struct inode 
- 		unlock = 1;
- 	}
- 
--	error = generic_permission(inode, mask, gfs2_check_acl);
-+	if ((mask & MAY_WRITE) && IS_IMMUTABLE(inode))
-+		error = -EACCES;
-+	else
-+		error = generic_permission(inode, mask, gfs2_check_acl);
- 	if (unlock)
- 		gfs2_glock_dq_uninit(&i_gh);
- 
- 	return error;
- }
- 
-+static int gfs2_iop_permission(struct inode *inode, int mask,
-+			       struct nameidata *nd)
-+{
-+	return gfs2_permission(inode, mask);
-+}
-+
- static int setattr_size(struct inode *inode, struct iattr *attr)
- {
- 	struct gfs2_inode *ip = GFS2_I(inode);
-@@ -1141,7 +1150,7 @@ static int gfs2_removexattr(struct dentr
- }
- 
- const struct inode_operations gfs2_file_iops = {
--	.permission = gfs2_permission,
-+	.permission = gfs2_iop_permission,
- 	.setattr = gfs2_setattr,
- 	.getattr = gfs2_getattr,
- 	.setxattr = gfs2_setxattr,
-@@ -1160,7 +1169,7 @@ const struct inode_operations gfs2_dir_i
- 	.rmdir = gfs2_rmdir,
- 	.mknod = gfs2_mknod,
- 	.rename = gfs2_rename,
--	.permission = gfs2_permission,
-+	.permission = gfs2_iop_permission,
- 	.setattr = gfs2_setattr,
- 	.getattr = gfs2_getattr,
- 	.setxattr = gfs2_setxattr,
-@@ -1172,7 +1181,7 @@ const struct inode_operations gfs2_dir_i
- const struct inode_operations gfs2_symlink_iops = {
- 	.readlink = gfs2_readlink,
- 	.follow_link = gfs2_follow_link,
--	.permission = gfs2_permission,
-+	.permission = gfs2_iop_permission,
- 	.setattr = gfs2_setattr,
- 	.getattr = gfs2_getattr,
- 	.setxattr = gfs2_setxattr,
+New and rewritten pages
+-----------------------
+
+clock_nanosleep.2
+     mtk
+         A description of the clock_nanosleep() system call,
+         which was added in kernel 2.6.
+
+getgrouplist.3
+     mtk
+         A near complete rewrite, including additional information and
+         a new example program.
+
+gnu_get_libc_version.3
+     mtk
+         Documents gnu_get_libc_version(3) and gnu_get_libc_release(3).
+
+sigwait.3
+     mtk
+         Documents sigwait(3).
+
+shm_overview.7
+     mtk
+         An overview of the POSIX shared memory API.
+
+
+Changes to individual pages
+---------------------------
+
+sigreturn.2
+     mtk
+         Added a bit more detail on what sigreturn() actually does.
+
+sigwaitinfo.2
+     mtk
+         Describe behavior when multiple threads are blocked in
+         sigwaitinfo()/sigtimedwait().
+         SEE ALSO: Add sigwait(3).
+
+utmp.5
+     mtk
+         Add discussion of POSIX.1 utmpx specification.
+         Provide a little more detail on fields of utmp structure.
+         Added comments to macros for ut_type field.
+
+signal.7
+     mtk
+         Note that the delivery order of multiple pending standard
+         signals is unspecified.
+
