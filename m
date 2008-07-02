@@ -1,69 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbYGBQka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752364AbYGBQlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753726AbYGBQka (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 12:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYGBQkU
+	id S1752364AbYGBQlZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 12:41:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYGBQlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 12:40:20 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:35463 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750826AbYGBQkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 12:40:18 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -2.094
-Date: Wed, 2 Jul 2008 09:40:10 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Benoit Boissinot <bboissin@gmail.com>, linux-kernel@vger.kernel.org,
-       lloyd@randombit.net, "Theodore Ts'o" <tytso@mit.edu>,
-       netdev@vger.kernel.org
-Subject: Re: Bug in random32.c: all-zero outputs with probability 1/2^32,
- other seeding bugs
-Message-ID: <20080702094010.10232256@extreme>
-In-Reply-To: <1214968951.11311.122.camel@calx>
-References: <20080619153045.GC1455@randombit.net>
-	<20080701231927.GW7647@pirzuine>
-	<20080701173405.cb28db84.akpm@linux-foundation.org>
-	<1214968951.11311.122.camel@calx>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Wed, 2 Jul 2008 12:41:17 -0400
+Received: from theia.rz.uni-saarland.de ([134.96.7.31]:16607 "EHLO
+	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751386AbYGBQlQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 12:41:16 -0400
+Date: Wed, 2 Jul 2008 18:39:01 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCHv2 6/7] x86: traps_xx: modify default_do_nmi
+Message-ID: <20080702163901.GA1283@mailshack.com>
+References: <20080701193643.GA29695@mailshack.com> <20080701233227.GF29903@mailshack.com> <20080702161220.GA7003@cvg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080702161220.GA7003@cvg>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Wed, 02 Jul 2008 18:41:01 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.0.64; VDF: 7.0.5.39; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 01 Jul 2008 22:22:31 -0500
-Matt Mackall <mpm@selenic.com> wrote:
+ - local caching of smp_processor_id() in default_do_nmi()
+ - v2: do not split default_do_nmi over two lines
 
-> 
-> On Tue, 2008-07-01 at 17:34 -0700, Andrew Morton wrote:
-> > On Wed, 2 Jul 2008 01:19:27 +0200
-> > Benoit Boissinot <bboissin@gmail.com> wrote:
-> > 
-> > > [who maintains random32.c ?]
-> > 
-> > ah.  I think it's ancient net code which was recently hoisted into lib/.
-> > So: not really anybody.
-> > 
-> > I've been hopefully cc'ing Matt and Ted in the hope of fooling them
-> > into looking at it.  But a netdev cc is appropriate also.
-> 
-> I did look at it, and it looks reasonable. So:
-> 
-> Acked-by: Matt Mackall <mpm@selenic.com>
-> 
-> Stephen Hemminger is responsible for the original code, I believe. I've
-> been tempted to slurp this functionality into random.c but keep getting
-> side-tracked into theoretical investigations of better functions, as I'm
-> not a big fan of the current one from either a performance or strength
-> perspective.
-> 
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
-Yes, I took it from gnu scientific lib it for use in netem.  The seeding
-fixes make sense.
+---
 
-Note: this should not be a security issue since this routine is explicitly
-not intended for cryptographic use.
+On Wed, Jul 02, 2008 at 08:12:20PM +0400, Cyrill Gorcunov wrote:
+> | -static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
+> | +static notrace __kprobes void
+> | +default_do_nmi(struct pt_regs *regs)
+> | [ ... ]
+> | -asmlinkage notrace  __kprobes void default_do_nmi(struct pt_regs *regs)
+> | +asmlinkage notrace __kprobes void
+> | +default_do_nmi(struct pt_regs *regs)
+> 
+> Hi Alexander, good done, thanks! But why did you split default_do_nmi
+> definition by two lines? I think it would be better to keep them as it
+> was before, ie by a single line
+> 
+> 	static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
+
+Thanks! Here is the replacement patch with default_do_nmi left on
+a single line. Patch 7 applies with 1 line fuzz.
+
+Greetings,
+    Alexander
+
+> 		- Cyrill -
+
+diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+index bed6e72..9e3b0c4 100644
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -793,9 +793,12 @@ void notrace __kprobes die_nmi(char *str, struct pt_regs *regs, int do_panic)
+ static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
+ {
+ 	unsigned char reason = 0;
++	int cpu;
++
++	cpu = smp_processor_id();
+ 
+-	/* Only the BSP gets external NMIs from the system: */
+-	if (!smp_processor_id())
++	/* Only the BSP gets external NMIs from the system. */
++	if (!cpu)
+ 		reason = get_nmi_reason();
+ 
+ 	if (!(reason & 0xc0)) {
+@@ -809,7 +812,7 @@ static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
+ 		 */
+ 		if (nmi_watchdog_tick(regs, reason))
+ 			return;
+-		if (!do_nmi_callback(regs, smp_processor_id()))
++		if (!do_nmi_callback(regs, cpu))
+ 			unknown_nmi_error(reason, regs);
+ #else
+ 		unknown_nmi_error(reason, regs);
+diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
+index 7511553..26ab0be 100644
+--- a/arch/x86/kernel/traps_64.c
++++ b/arch/x86/kernel/traps_64.c
+@@ -832,7 +832,7 @@ unknown_nmi_error(unsigned char reason, struct pt_regs * regs)
+ 
+ /* Runs on IST stack. This code must keep interrupts off all the time.
+    Nested NMIs are prevented by the CPU. */
+-asmlinkage notrace  __kprobes void default_do_nmi(struct pt_regs *regs)
++asmlinkage notrace __kprobes void default_do_nmi(struct pt_regs *regs)
+ {
+ 	unsigned char reason = 0;
+ 	int cpu;
