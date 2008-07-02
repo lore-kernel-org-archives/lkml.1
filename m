@@ -1,105 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbYGBK6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762789AbYGBK7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760918AbYGBK6S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 06:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbYGBK6I
+	id S1762789AbYGBK7r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 06:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbYGBK7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 06:58:08 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:61180 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751748AbYGBK6H (ORCPT
+	Wed, 2 Jul 2008 06:59:36 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:31430 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754164AbYGBK7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 06:58:07 -0400
+	Wed, 2 Jul 2008 06:59:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=SvX5D2f/gjjOkxs5teH6J01MzAXtmPT9HTKvIjQ394bkn80NYXA1LCmylc/cfSRkSk
-         KIQh7Tw77b7HUF5kyy8dNE9F7YFRE0Nr+Mo71luDXEhl/pbnHGW7yAbISaECyijPUrRz
-         /B+wrpgUlOVVUuMQ97vtGWBL0vV33iJZ2uBDY=
-Message-ID: <cfd18e0f0807020358k317575c6ra0187428098f0160@mail.gmail.com>
-Date: Wed, 2 Jul 2008 12:58:05 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Philippe De Muyter" <phdm@macqel.be>
-Subject: Re: mmap'ed memory in core files ?
-Cc: "Michael Kerrisk" <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
-       libdc1394-devel@lists.sourceforge.net, hidehiro.kawai.ez@hitachi.com
-In-Reply-To: <20080702105027.GA1111@frolo.macqel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080701132149.GA32510@frolo.macqel>
-	 <517f3f820807011116g6ce1b3e1qf166070f7a4c523f@mail.gmail.com>
-	 <20080702105027.GA1111@frolo.macqel>
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=YpdXIxnmmvjx0JrdS2ULOvmCEt2pZ0uoJjmpl7XBV7Zzk4Dre+gazLHlFSOChxZHQ4
+         61pDCM+Lh5Q+agew56GXH3ZYkchJoQnb3eVQWitHwHsPcd1TUPBU3UfEHW7/cyZFeTU0
+         xZCHclh6blgTxHtFiGiraN6JSm8Jh53d756AQ=
+From: Magnus Damm <magnus.damm@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Uwe.Kleine-Koenig@digi.com, gregkh@suse.de, akpm@linux-foundation.org,
+       hjk@linutronix.de, lethal@linux-sh.org,
+       Magnus Damm <magnus.damm@gmail.com>, tglx@linutronix.de
+Date: Wed, 02 Jul 2008 19:59:51 +0900
+Message-Id: <20080702105951.22648.2197.sendpatchset@rx1.opensource.se>
+Subject: [PATCH] uio: User IRQ Mode
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[CC+= hidehiro.kawai.ez@hitachi.com]
+From: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
 
-On Wed, Jul 2, 2008 at 12:50 PM, Philippe De Muyter <phdm@macqel.be> wrote:
-> Hi Michael,
->
-> On Tue, Jul 01, 2008 at 08:16:11PM +0200, Michael Kerrisk wrote:
->> On 7/1/08, Philippe De Muyter <phdm@macqel.be> wrote:
->> > Hello everybody,
->> >
->> >  I develop video acquisition software using the video1394 interface.
->> >  The images grabbed by the camera and iee1394 bus are kept in kernel
->> >  memory and made available to the user program through a mmap call done
->> >  in the libdc1394 library :
->> >
->> >  dma_ring_buffer= mmap(0, vmmap.nb_buffers * vmmap.buf_size,
->> >                 PROT_READ|PROT_WRITE,MAP_SHARED, craw->capture.dma_fd, 0);
->> >
->> >  Sometimes, my program crashes and produces a core file :)  It seems to
->> >  me that the core file does not contain the mmap'ed memory and hence
->> >  I cannot replay my program with the same image for debugging purpose.
->> >
->> >  Is it possible to configure the kernel through /proc, or through the mmap
->> >  system call to have that mmapped segment in the core file, or do I need
->> >  to modify the kernel itself to obtain the behaviour I want ?  If I
->> >  need to modify the kernel, can some kind soul provide me some pointers ?
->>
->>
->> Have a look at the section "Controlling which mappings are written to
->> the core dump" in a recent core.5 man page:
->> http://www.kernel.org/doc/man-pages/online/pages/man5/core.5.html
->
-> thanks for the info.  I didn't know about /proc/PID/coredump_filter.
->
-> that part was promising :
->
->       bit 2  Dump file-backed private mappings.
->       bit 3  Dump file-backed shared mappings.
->
->    The default value of coredump_filter is 0x3; this reflects traditional
->    Linux behavior and means that only anonymous memory segments are dumped.
->
-> Unfortunately, the part that applies to me (I have tested it) is the next one :
->
->    Memory-mapped I/O pages such as frame buffer are never dumped, [...],
->    regardless of the coredump_filter value.
->
-> Is that a design decision, or a mere finding of the way it is implemented
-> now ?
->
-> So, back to my original question :
->
-> Can some kind soul provide me some pointers to the way I should modify
-> the kernel to make the inclusion of the video1394 mmapped segment in
-> core files possible ?
+This patch adds a "User IRQ Mode" to UIO. In this mode the user space driver
+is responsible for acknowledging and re-enabling the interrupt.
+Shared interrupts are not supported by this mode.
 
-Perhaps Hidehiro, who wrote the coredump_filter feature, can provide insight.
+Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
 
-Cheers,
+ Similar code has been posted some time ago as:
+ "[PATCH] uio_pdrv: Unique IRQ Mode"
+ "[PATCH 00/03][RFC] Reusable UIO Platform Driver".
 
-Michael
+ Changes since Uwe's last version:
+  - flags should be unsigned long
+  - simplify uio_userirq_handler()
 
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+ Needs "[PATCH 0/1] UIO: Add a write() function to enable/disable interrupts"
+
+ include/linux/uio_driver.h |   29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+
+--- 0020/include/linux/uio_driver.h
++++ work/include/linux/uio_driver.h	2008-07-02 19:45:55.000000000 +0900
+@@ -17,6 +17,7 @@
+ #include <linux/module.h>
+ #include <linux/fs.h>
+ #include <linux/interrupt.h>
++#include <linux/bitops.h>
+ 
+ struct uio_map;
+ 
+@@ -63,6 +64,7 @@ struct uio_info {
+ 	long			irq;
+ 	unsigned long		irq_flags;
+ 	void			*priv;
++	unsigned long		flags;
+ 	irqreturn_t (*handler)(int irq, struct uio_info *dev_info);
+ 	int (*mmap)(struct uio_info *info, struct vm_area_struct *vma);
+ 	int (*open)(struct uio_info *info, struct inode *inode);
+@@ -92,4 +94,31 @@ extern void uio_event_notify(struct uio_
+ #define UIO_MEM_LOGICAL	2
+ #define UIO_MEM_VIRTUAL 3
+ 
++/* defines for uio_info->flags */
++#define UIO_FLAGS_IRQDISABLED 0
++
++static inline irqreturn_t uio_userirq_handler(int irq,
++		struct uio_info *dev_info)
++{
++	int ret = -1;
++
++	if (likely(dev_info->irqcontrol))
++		ret = dev_info->irqcontrol(dev_info, 0);
++
++	return IRQ_RETVAL(ret == 0);
++}
++
++static inline int uio_userirq_irqcontrol(struct uio_info *info, s32 irq_on)
++{
++	if (irq_on) {
++		if (test_and_clear_bit(UIO_FLAGS_IRQDISABLED, &info->flags))
++			enable_irq(info->irq);
++	} else {
++		if (!test_and_set_bit(UIO_FLAGS_IRQDISABLED, &info->flags))
++			disable_irq(info->irq);
++	}
++
++	return 0;
++}
++
+ #endif /* _LINUX_UIO_DRIVER_H_ */
