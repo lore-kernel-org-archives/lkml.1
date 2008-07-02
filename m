@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763317AbYGBHjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762329AbYGBHsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763317AbYGBHjK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 03:39:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761696AbYGBHjA
+	id S1762329AbYGBHsi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 03:48:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbYGBHsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 03:39:00 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:17341 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759733AbYGBHi7 (ORCPT
+	Wed, 2 Jul 2008 03:48:22 -0400
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:39109 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754329AbYGBHsV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 03:38:59 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] remove dummy asm/kvm.h files
-Date: Wed, 2 Jul 2008 09:38:50 +0200
-User-Agent: KMail/1.9.9
-Cc: Avi Kivity <avi@qumranet.com>, linux-arch@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, David Woodhouse <dwmw2@infradead.org>
-References: <20080701162716.GB32598@cs181140183.pp.htv.fi>
-In-Reply-To: <20080701162716.GB32598@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 2 Jul 2008 03:48:21 -0400
+Subject: Re: [PATCH 001/002] linux-input:  bcm5974-0.31: fixed resource
+	leak, removed work struct, device data struct introduced
+From: Henrik Rydberg <rydberg@euromail.se>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dmitry.torokhov@gmail.com, robfitz@273k.net, jikos@jikos.cz,
+       vojtech@suse.cz, dmonakhov@openvz.org, linux-usb@vger.kernel.org
+In-Reply-To: <20080701155925.a4c00a8e.akpm@linux-foundation.org>
+References: <1214653629.10495.11.camel@alnilam>
+	 <20080701155925.a4c00a8e.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 02 Jul 2008 09:46:39 +0200
+Message-Id: <1214984799.11086.6.camel@alnilam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807020938.50194.borntraeger@de.ibm.com>
+X-Originating-IP: 83.248.38.185
+X-Scan-Result: No virus found in message 1KDx4d-0004pT-9e.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KDx4d-0004pT-9e f12ed308676232a80b4d0b71ea4bdd1d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 1. Juli 2008 schrieb Adrian Bunk:
-> This patch removes the dummy asm/kvm.h files on architectures not (yet) 
-> supporting KVM and uses the same conditional headers installation as
-> already used for a.out.h .
+On Tue, 2008-07-01 at 15:59 -0700, Andrew Morton wrote:
+> > Subject: [PATCH 001/002] linux-input:  bcm5974-0.31: fixed resource leak, removed work struct, device data struct introduced
 > 
-> Also removed are superfluous install rules in the s390 and x86 Kbuild 
-> files (they are already in Kbuild.asm).
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> hm, I wonder where [002/002] went.
 
-Seems to work on s390, ppc and arm as expected.
-Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Thank you very much for your comments, I will return shortly with a new
+version. I did not fully grasp, from reading
+Documentation/SubmitPatches, how the numbering in the subject should
+work; when I submit my new version in reply to your mail, should I
+submit a complete patch against the vanilla kernel, with number 001/003?
+
+Best Regards,
+Henrik Rydberg
+
+
