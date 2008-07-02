@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932526AbYGBMDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763653AbYGBMGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932526AbYGBMDp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 08:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756505AbYGBMDe
+	id S1763653AbYGBMGX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 08:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbYGBMGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 08:03:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50722 "EHLO mx1.redhat.com"
+	Wed, 2 Jul 2008 08:06:15 -0400
+Received: from main.gmane.org ([80.91.229.2]:49058 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756459AbYGBMDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 08:03:32 -0400
-From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH] [CIFS] fix wksidarr declaration to be big-endian friendly
-To: smfrench@gmail.com
-Cc: shirishpargaonkar@gmail.com, linux-cifs-client@lists.samba.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Wed, 02 Jul 2008 08:03:26 -0400
-Message-ID: <20080702120325.6787.84003.stgit@dantu.usersys.redhat.com>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	id S1754453AbYGBMGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 08:06:14 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Niels de Vos <niels.devos@wincor-nixdorf.com>
+Subject: Re: (unknown)
+Date: Wed, 2 Jul 2008 12:06:00 +0000 (UTC)
+Message-ID: <loom.20080702T120237-701@post.gmane.org>
+References: <E1KDz9I-000HIi-00.rusyasoft-mail-ru@f32.mail.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 80.154.98.132 (Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9b5) Gecko/2008052519 CentOS/3.0b5-0.beta5.6.el5.centos Firefox/3.0b5)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current definition of wksidarr works fine on little endian arches
-(since cpu_to_le32 is a no-op there), but on big-endian arches, it
-fails to compile with this error:
+RUSYA RAHIM <rusyasoft <at> mail.ru> writes:
 
-error: braced-group within expression allowed only inside a function
+> 
+> Hi for all, who read this message. My name is Rustam.
+> I am began study Linux kernel, device drivers. So I want some project for
+> improve my knowledge in this fields.
+> Ok who have some mini works, or who have some free time can help me on this
+> way.
+> 
 
-...the problem is that this static declaration has cpu_to_le32 embedded
-within it, and that expands into a function macro. We need to use
-__constant_cpu_to_le32() instead.
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
+Please see http://kernelnewbies.org/KernelProjects and/or
+http://kernelnewbies.org/KernelJanitors/Todo
 
- fs/cifs/cifsacl.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/fs/cifs/cifsacl.c b/fs/cifs/cifsacl.c
-index 34902cf..0e9fc2b 100644
---- a/fs/cifs/cifsacl.c
-+++ b/fs/cifs/cifsacl.c
-@@ -34,11 +34,11 @@
- static struct cifs_wksid wksidarr[NUM_WK_SIDS] = {
- 	{{1, 0, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0} }, "null user"},
- 	{{1, 1, {0, 0, 0, 0, 0, 1}, {0, 0, 0, 0, 0} }, "nobody"},
--	{{1, 1, {0, 0, 0, 0, 0, 5}, {cpu_to_le32(11), 0, 0, 0, 0} }, "net-users"},
--	{{1, 1, {0, 0, 0, 0, 0, 5}, {cpu_to_le32(18), 0, 0, 0, 0} }, "sys"},
--	{{1, 2, {0, 0, 0, 0, 0, 5}, {cpu_to_le32(32), cpu_to_le32(544), 0, 0, 0} }, "root"},
--	{{1, 2, {0, 0, 0, 0, 0, 5}, {cpu_to_le32(32), cpu_to_le32(545), 0, 0, 0} }, "users"},
--	{{1, 2, {0, 0, 0, 0, 0, 5}, {cpu_to_le32(32), cpu_to_le32(546), 0, 0, 0} }, "guest"} }
-+	{{1, 1, {0, 0, 0, 0, 0, 5}, {__constant_cpu_to_le32(11), 0, 0, 0, 0} }, "net-users"},
-+	{{1, 1, {0, 0, 0, 0, 0, 5}, {__constant_cpu_to_le32(18), 0, 0, 0, 0} }, "sys"},
-+	{{1, 2, {0, 0, 0, 0, 0, 5}, {__constant_cpu_to_le32(32), __constant_cpu_to_le32(544), 0, 0, 0} }, "root"},
-+	{{1, 2, {0, 0, 0, 0, 0, 5}, {__constant_cpu_to_le32(32), __constant_cpu_to_le32(545), 0, 0, 0} }, "users"},
-+	{{1, 2, {0, 0, 0, 0, 0, 5}, {__constant_cpu_to_le32(32), __constant_cpu_to_le32(546), 0, 0, 0} }, "guest"} }
- ;
- 
- 
+Good luck,
+Niels
 
