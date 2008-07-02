@@ -1,496 +1,328 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757006AbYGBUsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbYGBU4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757006AbYGBUsS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 16:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbYGBUr6
+	id S1757273AbYGBU4X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 16:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbYGBU4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 16:47:58 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43254 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753969AbYGBUr4 (ORCPT
+	Wed, 2 Jul 2008 16:56:13 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:40425 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753780AbYGBU4L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 16:47:56 -0400
-Date: Wed, 2 Jul 2008 15:47:55 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Tony Luck <tony.luck@gmail.com>, linux-ia64@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Jack Steiner <steiner@sgi.com>,
-       Russ Anderson <rja@sgi.com>
-Subject: [PATCH] Update ia64 mmr list for SGI uv
-Message-ID: <20080702204755.GA6744@sgi.com>
+	Wed, 2 Jul 2008 16:56:11 -0400
+Date: Thu, 3 Jul 2008 02:25:44 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Arun Bharadwaj <arun@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [x86-tip] panic during cpu_up
+Message-ID: <20080702205544.GB13252@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20080702190651.GA13252@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080702190651.GA13252@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch updates the ia64 mmr list for SGI uv.
+[Missed cc'ing the LKML last time around]
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+On Thu, Jul 03, 2008 at 12:36:51AM +0530, Dhaval Giani wrote:
+> Hi Ingo, Thomas,
+> 
+> I am hitting this on -tip. With 200a86b5d435a217c3d77f3b53cd32cb78c1fde8
+> as the top level commit. Wondering if it is known?
+> 
+> I am trying to fix it atm.
+> 
+> Thanks,
+> 
+> Red Hat Enterprise Linux AS release 4 (Nahant Update 2)
+> Kernel 2.6.26-rc8-tip on an i686
+> 
+> llm11.in.ibm.com login: root
+> Password: 
+> Last login: Thu Jul  3 00:30:47 on ttyS0
+> You have new mail.
+> cd[root@llm11 ~]# cd /sys/devices/system/cpu/cpu1/
+> [root@llm11 cpu1]# echo 0 > online 
+> Breaking affinity for irq 45
+> [root@llm11 cpu1]# echo 1 > online 
+> lockdep: fixing up alternatives.
+> BUG: unable to handle kernel <1>BUG: unable to handle kernel NULL
+> pointer dereference at 00000000
+> IP: [<00000000>]
+> *pde = 00000000 
+> Oops: 0000 [#1] SMP 
+> Modules linked in:
+> 
+> Pid: 0, comm: swapper Not tainted (2.6.26-rc8-tip #1)
+> EIP: 0060:[<00000000>] EFLAGS: 00010002 CPU: 2
+> EIP is at 0x0
+> EAX: c0614c00 EBX: 00000002 ECX: 0799d000 EDX: ffff3bdf
+> BUG: unable to handle kernel NULL pointer dereference at 00000000
+> IP:ESI: 00000000 EDI: 00000000 EBP: f7cadfac ESP: f7cadfa4
+>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+>  [<00000000>]
+> BUG: unable to handle kernel NULL pointer dereference*pde = 00000000
+> <1>BUG: unable to handle kernel  at 00000000
+> IP:<0>Process swapper (pid: 0, ti=f7cac000 task=f7caaee0
+> task.ti=f7cac000)NULL pointer dereference [<00000000>]
+> *pde = 00000000 <1>BUG: unable to handle kernel 
+> Stack: 
+>  at 00000000
+> IP:NULL pointer dereference [<00000000>]
+>  at 00000000
+> c01020c7 *pde = 00000000 <1>IP:
+> 
+>  [<00000000>]
+> 0402080c *pde = 00000000 f7cadfb4 
+> c040b6cf 00000000 00000000 00000000 00000000 
+>        00000000 00000000 00000000 00000000 00000000 00000000 000000d8
+> 00000000 
+>        00000000 00000000 00000000 00000000 00000000 00000000 00000000 
+> Call Trace:
+>  [<c01020c7>] ? cpu_idle+0x8a/0x9e
+>  [<c040b6cf>] ? start_secondary+0xbb/0xbd
+>  =======================
+> Code:  Bad EIP value.
+> EIP: [<00000000>] 0x0 SS:ESP 0068:f7cadfa4
+> Kernel panic - not syncing: Fatal exception
+> Oops: 0000 [#2] SMP 
+> Pid: 0, comm: swapper Tainted: G      D   2.6.26-rc8-tip #1
+> Modules linked in: [<c01276d7>] 
+> 
+> panic+0x38/0xe0
+> Pid: 0, comm: swapper Tainted: G      D   (2.6.26-rc8-tip #1)
+> EIP: 0060:[<00000000>] EFLAGS: 00010046 CPU: 3
+>  [<c0104bcd>] EIP is at 0x0
+> EAX: c0614c00 EBX: 00000003 ECX: 079a5000 EDX: ffff3bdf
+> ESI: 00000000 EDI: 00000000 EBP: f7cbbfac ESP: f7cbbfa4
+>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> Process swapper (pid: 0, ti=f7cba000 task=f7cb8fe0 task.ti=f7cba000)
+> Stack: die+0x130/0x147
+> c01020c7 0602080c f7cbbfb4 c040b6cf 00000000  [<c0411795>] 00000000
+> 00000000 00000000 
+>        00000000 do_page_fault+0x3bd/0x482
+> 00000000  [<c04113d8>] ? 00000000 00000000 00000000 00000000
+> do_page_fault+0x0/0x482
+> 000000d8 00000000  [<c040fbda>] 
+>        00000000 error_code+0x72/0x78
+> 00000000 00000000  [<c01020c7>] ? 00000000 00000000 cpu_idle+0x8a/0x9e
+> 00000000 00000000 
+> Call Trace:
+>  [<c040b6cf>] <0> [<c01020c7>] start_secondary+0xbb/0xbd
+> ?  =======================
+> cpu_idle+0x8a/0x9e
+>  [<c040b6cf>] ? start_secondary+0xbb/0xbd
+>  =======================
+> Code:  Bad EIP value.
+> EIP: [<00000000>] 0x0 SS:ESP 0068:f7cbbfa4
+> Oops: 0000 [#3] <0>Kernel panic - not syncing: Fatal exception
+> SMP Pid: 0, comm: swapper Tainted: G      D   2.6.26-rc8-tip #1
+> 
+>  [<c01276d7>] Modules linked in:
+> 
+> panic+0x38/0xe0
+> Pid: 0, comm: swapper Tainted: G      D   (2.6.26-rc8-tip #1)
+>  [<c0104bcd>] EIP: 0060:[<00000000>] EFLAGS: 00010046 CPU: 7
+> die+0x130/0x147
+> EIP is at 0x0
+>  [<c0411795>] EAX: c0614c00 EBX: 00000007 ECX: 079c5000 EDX: ffff3bdf
+> ESI: 00000000 EDI: 00000000 EBP: f7d1bfac ESP: f7d1bfa4
+>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> Process swapper (pid: 0, ti=f7d1a000 task=f7d18be0
+> task.ti=f7d1a000)do_page_fault+0x3bd/0x482
+> 
+> Stack:  [<c04113d8>] c01020c7 ? 0702080c f7d1bfb4
+> do_page_fault+0x0/0x482
+> c040b6cf  [<c040fbda>] 00000000 00000000 error_code+0x72/0x78
+> 00000000 00000000 
+>         [<c01020c7>] ? 00000000 00000000 cpu_idle+0x8a/0x9e
+> 00000000 00000000  [<c040b6cf>] 00000000 00000000 000000d8
+> start_secondary+0xbb/0xbd
+> 00000000  =======================
+> 
+>        00000000 00000000 00000000 00000000 00000000 00000000 00000000 
+> Call Trace:
+>  [<c01020c7>] ? cpu_idle+0x8a/0x9e
+>  [<c040b6cf>] ? start_secondary+0xbb/0xbd
+>  =======================
+> Code:  Bad EIP value.
+> EIP: [<00000000>] 0x0 SS:ESP 0068:f7d1bfa4
+> Kernel panic - not syncing: Fatal exception
+> Oops: 0000 [#4] SMP 
+> Pid: 0, comm: swapper Tainted: G      D   2.6.26-rc8-tip #1
+> Modules linked in: [<c01276d7>] 
+> panic+0x38/0xe0
+> 
+>  [<c0104bcd>] Pid: 0, comm: swapper Tainted: G      D   (2.6.26-rc8-tip
+> #1)
+> EIP: 0060:[<00000000>] EFLAGS: 00010046 CPU: 4
+> die+0x130/0x147
+> EIP is at 0x0
+> EAX: c0614c00 EBX: 00000004 ECX: 079ad000 EDX: ffff3bdf
+> ESI: 00000000 EDI: 00000000 EBP: f7ccbfac ESP: f7ccbfa4
+>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> Process swapper (pid: 0, ti=f7cca000 task=f7cc90e0 task.ti=f7cca000)
+> [<c0411795>] 
+> Stack: c01020c7 do_page_fault+0x3bd/0x482
+> 0102080c  [<c04113d8>] f7ccbfb4 c040b6cf 00000000 00000000 00000000
+> 00000000 ? 
+>        00000000 00000000 00000000 00000000 00000000
+> do_page_fault+0x0/0x482
+> 00000000 000000d8 00000000 
+>        00000000 00000000 00000000 00000000 00000000 00000000 00000000 
+> Call Trace:
+>  [<c040fbda>] <0> [<c01020c7>] ? error_code+0x72/0x78
+>  [<c01020c7>] ? cpu_idle+0x8a/0x9e
+> cpu_idle+0x8a/0x9e
+>  [<c040b6cf>] ?  [<c040b6cf>] start_secondary+0xbb/0xbd
+>  =======================
+> start_secondary+0xbb/0xbd
+>  =======================
+> Code:  Bad EIP value.
+> EIP: [<00000000>] 0x0 SS:ESP 0068:f7ccbfa4
+> Oops: 0000 [#5] <0>Kernel panic - not syncing: Fatal exception
+> SMP 
+> Pid: 0, comm: swapper Tainted: G      D   2.6.26-rc8-tip #1
+> Modules linked in: [<c01276d7>] 
+> 
+> panic+0x38/0xe0
+> Pid: 0, comm: swapper Tainted: G      D   (2.6.26-rc8-tip #1)
+>  [<c0104bcd>] EIP: 0060:[<00000000>] EFLAGS: 00010046 CPU: 6
+> die+0x130/0x147
+> EIP is at 0x0
+> EAX: c0614c00 EBX: 00000006 ECX: 079bd000 EDX: ffff3bdf
+> ESI: 00000000 EDI: 00000000 EBP: f7d0bfac ESP: f7d0bfa4
+>  [<c0411795>]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> Process swapper (pid: 0, ti=f7d0a000 task=f7d092e0
+> task.ti=f7d0a000)do_page_fault+0x3bd/0x482
+> 
+> Stack:  [<c04113d8>] ? c01020c7 0502080c do_page_fault+0x0/0x482
+> f7d0bfb4  [<c040fbda>] c040b6cf error_code+0x72/0x78
+> 00000000  [<c01020c7>] ? 00000000 cpu_idle+0x8a/0x9e
+> 00000000  [<c040b6cf>] 00000000 start_secondary+0xbb/0xbd
+> 
+>         =======================
+> 00000000 00000000 00000000 00000000 00000000 00000000 000000d8 00000000 
+>        00000000 00000000 00000000 00000000 00000000 00000000 00000000 
+> Call Trace:
+>  [<c01020c7>] ? cpu_idle+0x8a/0x9e
+>  [<c040b6cf>] ? start_secondary+0xbb/0xbd
+>  =======================
+> Code:  Bad EIP value.
+> EIP: [<00000000>] 0x0 SS:ESP 0068:f7d0bfa4
+> Kernel panic - not syncing: Fatal exception
+> Pid: 0, comm: swapper Tainted: G      D   2.6.26-rc8-tip #1
+>  [<c01276d7>] panic+0x38/0xe0
+>  [<c0104bcd>] die+0x130/0x147
+>  [<c0411795>] do_page_fault+0x3bd/0x482
+>  [<c04113d8>] ? do_page_fault+0x0/0x482
+>  [<c040fbda>] error_code+0x72/0x78
+>  [<c01020c7>] ? cpu_idle+0x8a/0x9e
+>  [<c040b6cf>] start_secondary+0xbb/0xbd
+>  =======================
+> NULL pointer dereference at 00000000
+> IP: [<00000000>]
+> *pde = 00000000 
+> Oops: 0000 [#6] SMP 
+> Modules linked in:
+> 
+> Pid: 0, comm: swapper Tainted: G      D   (2.6.26-rc8-tip #1)
+> EIP: 0060:[<00000000>] EFLAGS: 00010006 CPU: 1
+> EIP is at 0x0
+> EAX: c0614c00 EBX: 00000001 ECX: 07995000 EDX: ffff3bdf
+> ESI: 00000000 EDI: 00000000 EBP: f7c7ffb4 ESP: f7c7ffac
+>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> Process swapper (pid: 0, ti=f7c7e000 task=f7c7cde0 task.ti=f7c7e000)
+> Stack: c01020c7 0202080c f7c7ffbc c040b6cf 00000000 00000000 00000000
+> 00000000 
+>        00000000 00000000 00000000 00000000 000000d8 00000000 00000000
+> 00000000 
+>        00000000 00000000 00000000 00000000 00000000 
+> Call Trace:
+>  [<c01020c7>] ? cpu_idle+0x8a/0x9e
+>  [<c040b6cf>] ? start_secondary+0xbb/0xbd
+>  =======================
+> Code:  Bad EIP value.
+> EIP: [<00000000>] 0x0 SS:ESP 0068:f7c7ffac
+> Kernel panic - not syncing: Fatal exception
+> Pid: 0, comm: swapper Tainted: G      D   2.6.26-rc8-tip #1
+>  [<c01276d7>] panic+0x38/0xe0
+>  [<c0104bcd>] die+0x130/0x147
+>  [<c0411795>] do_page_fault+0x3bd/0x482
+>  [<c04113d8>] ? do_page_fault+0x0/0x482
+>  [<c040fbda>] error_code+0x72/0x78
+>  [<c01020c7>] ? cpu_idle+0x8a/0x9e
+>  [<c040b6cf>] start_secondary+0xbb/0xbd
+>  =======================
+> BUG: NMI Watchdog detected LOCKUP on CPU6, ip c0111959, registers:
+> Modules linked in:
+> 
+> Pid: 0, comm: swapper Tainted: G      D   (2.6.26-rc8-tip #1)
+> EIP: 0060:[<c0111959>] EFLAGS: 00000093 CPU: 6
+> EIP is at __smp_call_function+0x5d/0x7a
+> EAX: 0000009e EBX: 00000005 ECX: 00000006 EDX: f7d092e0
+> ESI: c01047d4 EDI: c0111a5a EBP: f7d0bf00 ESP: f7d0bed0
+>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> Process swapper (pid: 0, ti=f7d0a000 task=f7d092e0 task.ti=f7d0a000)
+> Stack: 00000000 c0111a5a 00000000 00000000 c01047d4 00000000 c029915b
+> f7d0bf6c 
+>        00000006 00000001 00000046 00000000 f7d0bf14 c0111acb 00000000
+> f7d0bf6c 
+>        00000006 f7d0bf20 c01276ee f7d0bf6c f7d0bf3c c0104bcd c04d922f
+> c04e06cf 
+> Call Trace:
+>  [<c0111a5a>] ? stop_this_cpu+0x0/0x3a
+>  [<c01047d4>] ? show_trace+0x10/0x12
+>  [<c029915b>] ? do_unblank_screen+0x2a/0xf9
+>  [<c0111acb>] ? native_smp_send_stop+0x37/0x6a
+>  [<c01276ee>] ? panic+0x4f/0xe0
+>  [<c0104bcd>] ? die+0x130/0x147
+>  [<c0411795>] ? do_page_fault+0x3bd/0x482
+>  [<c04113d8>] ? do_page_fault+0x0/0x482
+>  [<c040fbda>] ? error_code+0x72/0x78
+>  [<c01020c7>] ? cpu_idle+0x8a/0x9e
+>  [<c040b6cf>] ? start_secondary+0xbb/0xbd
+>  =======================
+> Code: 85 c0 0f 44 75 e0 89 45 e4 8d 45 d4 a3 d4 33 62 c0 89 75 e0 0f ae
+> f0 0f 1f 00 8b 15 e0 69 57 c0 b8 fb 00 00 00 ff 52 78 39 5d dc <74> 04
+> f3 90 eb f7 83 7d 08 00 74 09 39 5d e0 74 04 f3 90 eb f7 
+> 
 
+So after digging around a bit, it turns out the pm_idle is NULL. For
+some reason it is not getting set to default_idle if nothing works. I am
+not sure of the path being followed, and its a bit late for me to be
+trying anything serious :).
 
-Index: linux/include/asm-ia64/uv/uv_mmrs.h
+This seems to work as a temporary workaround, but obviously is not the
+right fix yet.
+
+---
+ arch/x86/kernel/process_32.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.26-rc8-tip/arch/x86/kernel/process_32.c
 ===================================================================
---- linux.orig/include/asm-ia64/uv/uv_mmrs.h	2008-07-02 14:15:39.000000000 -0500
-+++ linux/include/asm-ia64/uv/uv_mmrs.h	2008-07-02 14:18:09.000000000 -0500
-@@ -11,11 +11,284 @@
- #ifndef __ASM_IA64_UV_MMRS__
- #define __ASM_IA64_UV_MMRS__
- 
--/*
-- *       AUTO GENERATED - Do not edit
-- */
-+#define UV_MMR_ENABLE		(1UL << 63)
- 
-- #define UV_MMR_ENABLE		(1UL << 63)
-+/* ========================================================================= */
-+/*                           UVH_BAU_DATA_CONFIG                             */
-+/* ========================================================================= */
-+#define UVH_BAU_DATA_CONFIG 0x61680UL
-+#define UVH_BAU_DATA_CONFIG_32 0x0438
-+
-+#define UVH_BAU_DATA_CONFIG_VECTOR_SHFT 0
-+#define UVH_BAU_DATA_CONFIG_VECTOR_MASK 0x00000000000000ffUL
-+#define UVH_BAU_DATA_CONFIG_DM_SHFT 8
-+#define UVH_BAU_DATA_CONFIG_DM_MASK 0x0000000000000700UL
-+#define UVH_BAU_DATA_CONFIG_DESTMODE_SHFT 11
-+#define UVH_BAU_DATA_CONFIG_DESTMODE_MASK 0x0000000000000800UL
-+#define UVH_BAU_DATA_CONFIG_STATUS_SHFT 12
-+#define UVH_BAU_DATA_CONFIG_STATUS_MASK 0x0000000000001000UL
-+#define UVH_BAU_DATA_CONFIG_P_SHFT 13
-+#define UVH_BAU_DATA_CONFIG_P_MASK 0x0000000000002000UL
-+#define UVH_BAU_DATA_CONFIG_T_SHFT 15
-+#define UVH_BAU_DATA_CONFIG_T_MASK 0x0000000000008000UL
-+#define UVH_BAU_DATA_CONFIG_M_SHFT 16
-+#define UVH_BAU_DATA_CONFIG_M_MASK 0x0000000000010000UL
-+#define UVH_BAU_DATA_CONFIG_APIC_ID_SHFT 32
-+#define UVH_BAU_DATA_CONFIG_APIC_ID_MASK 0xffffffff00000000UL
-+
-+union uvh_bau_data_config_u {
-+    unsigned long	v;
-+    struct uvh_bau_data_config_s {
-+	unsigned long	vector_  :  8;  /* RW */
-+	unsigned long	dm       :  3;  /* RW */
-+	unsigned long	destmode :  1;  /* RW */
-+	unsigned long	status   :  1;  /* RO */
-+	unsigned long	p        :  1;  /* RO */
-+	unsigned long	rsvd_14  :  1;  /*    */
-+	unsigned long	t        :  1;  /* RO */
-+	unsigned long	m        :  1;  /* RW */
-+	unsigned long	rsvd_17_31: 15;  /*    */
-+	unsigned long	apic_id  : 32;  /* RW */
-+    } s;
-+};
-+
-+/* ========================================================================= */
-+/*                           UVH_EVENT_OCCURRED0                             */
-+/* ========================================================================= */
-+#define UVH_EVENT_OCCURRED0 0x70000UL
-+#define UVH_EVENT_OCCURRED0_32 0x005e8
-+
-+#define UVH_EVENT_OCCURRED0_LB_HCERR_SHFT 0
-+#define UVH_EVENT_OCCURRED0_LB_HCERR_MASK 0x0000000000000001UL
-+#define UVH_EVENT_OCCURRED0_GR0_HCERR_SHFT 1
-+#define UVH_EVENT_OCCURRED0_GR0_HCERR_MASK 0x0000000000000002UL
-+#define UVH_EVENT_OCCURRED0_GR1_HCERR_SHFT 2
-+#define UVH_EVENT_OCCURRED0_GR1_HCERR_MASK 0x0000000000000004UL
-+#define UVH_EVENT_OCCURRED0_LH_HCERR_SHFT 3
-+#define UVH_EVENT_OCCURRED0_LH_HCERR_MASK 0x0000000000000008UL
-+#define UVH_EVENT_OCCURRED0_RH_HCERR_SHFT 4
-+#define UVH_EVENT_OCCURRED0_RH_HCERR_MASK 0x0000000000000010UL
-+#define UVH_EVENT_OCCURRED0_XN_HCERR_SHFT 5
-+#define UVH_EVENT_OCCURRED0_XN_HCERR_MASK 0x0000000000000020UL
-+#define UVH_EVENT_OCCURRED0_SI_HCERR_SHFT 6
-+#define UVH_EVENT_OCCURRED0_SI_HCERR_MASK 0x0000000000000040UL
-+#define UVH_EVENT_OCCURRED0_LB_AOERR0_SHFT 7
-+#define UVH_EVENT_OCCURRED0_LB_AOERR0_MASK 0x0000000000000080UL
-+#define UVH_EVENT_OCCURRED0_GR0_AOERR0_SHFT 8
-+#define UVH_EVENT_OCCURRED0_GR0_AOERR0_MASK 0x0000000000000100UL
-+#define UVH_EVENT_OCCURRED0_GR1_AOERR0_SHFT 9
-+#define UVH_EVENT_OCCURRED0_GR1_AOERR0_MASK 0x0000000000000200UL
-+#define UVH_EVENT_OCCURRED0_LH_AOERR0_SHFT 10
-+#define UVH_EVENT_OCCURRED0_LH_AOERR0_MASK 0x0000000000000400UL
-+#define UVH_EVENT_OCCURRED0_RH_AOERR0_SHFT 11
-+#define UVH_EVENT_OCCURRED0_RH_AOERR0_MASK 0x0000000000000800UL
-+#define UVH_EVENT_OCCURRED0_XN_AOERR0_SHFT 12
-+#define UVH_EVENT_OCCURRED0_XN_AOERR0_MASK 0x0000000000001000UL
-+#define UVH_EVENT_OCCURRED0_SI_AOERR0_SHFT 13
-+#define UVH_EVENT_OCCURRED0_SI_AOERR0_MASK 0x0000000000002000UL
-+#define UVH_EVENT_OCCURRED0_LB_AOERR1_SHFT 14
-+#define UVH_EVENT_OCCURRED0_LB_AOERR1_MASK 0x0000000000004000UL
-+#define UVH_EVENT_OCCURRED0_GR0_AOERR1_SHFT 15
-+#define UVH_EVENT_OCCURRED0_GR0_AOERR1_MASK 0x0000000000008000UL
-+#define UVH_EVENT_OCCURRED0_GR1_AOERR1_SHFT 16
-+#define UVH_EVENT_OCCURRED0_GR1_AOERR1_MASK 0x0000000000010000UL
-+#define UVH_EVENT_OCCURRED0_LH_AOERR1_SHFT 17
-+#define UVH_EVENT_OCCURRED0_LH_AOERR1_MASK 0x0000000000020000UL
-+#define UVH_EVENT_OCCURRED0_RH_AOERR1_SHFT 18
-+#define UVH_EVENT_OCCURRED0_RH_AOERR1_MASK 0x0000000000040000UL
-+#define UVH_EVENT_OCCURRED0_XN_AOERR1_SHFT 19
-+#define UVH_EVENT_OCCURRED0_XN_AOERR1_MASK 0x0000000000080000UL
-+#define UVH_EVENT_OCCURRED0_SI_AOERR1_SHFT 20
-+#define UVH_EVENT_OCCURRED0_SI_AOERR1_MASK 0x0000000000100000UL
-+#define UVH_EVENT_OCCURRED0_RH_VPI_INT_SHFT 21
-+#define UVH_EVENT_OCCURRED0_RH_VPI_INT_MASK 0x0000000000200000UL
-+#define UVH_EVENT_OCCURRED0_SYSTEM_SHUTDOWN_INT_SHFT 22
-+#define UVH_EVENT_OCCURRED0_SYSTEM_SHUTDOWN_INT_MASK 0x0000000000400000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_0_SHFT 23
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_0_MASK 0x0000000000800000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_1_SHFT 24
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_1_MASK 0x0000000001000000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_2_SHFT 25
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_2_MASK 0x0000000002000000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_3_SHFT 26
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_3_MASK 0x0000000004000000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_4_SHFT 27
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_4_MASK 0x0000000008000000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_5_SHFT 28
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_5_MASK 0x0000000010000000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_6_SHFT 29
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_6_MASK 0x0000000020000000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_7_SHFT 30
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_7_MASK 0x0000000040000000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_8_SHFT 31
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_8_MASK 0x0000000080000000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_9_SHFT 32
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_9_MASK 0x0000000100000000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_10_SHFT 33
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_10_MASK 0x0000000200000000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_11_SHFT 34
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_11_MASK 0x0000000400000000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_12_SHFT 35
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_12_MASK 0x0000000800000000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_13_SHFT 36
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_13_MASK 0x0000001000000000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_14_SHFT 37
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_14_MASK 0x0000002000000000UL
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_15_SHFT 38
-+#define UVH_EVENT_OCCURRED0_LB_IRQ_INT_15_MASK 0x0000004000000000UL
-+#define UVH_EVENT_OCCURRED0_L1_NMI_INT_SHFT 39
-+#define UVH_EVENT_OCCURRED0_L1_NMI_INT_MASK 0x0000008000000000UL
-+#define UVH_EVENT_OCCURRED0_STOP_CLOCK_SHFT 40
-+#define UVH_EVENT_OCCURRED0_STOP_CLOCK_MASK 0x0000010000000000UL
-+#define UVH_EVENT_OCCURRED0_ASIC_TO_L1_SHFT 41
-+#define UVH_EVENT_OCCURRED0_ASIC_TO_L1_MASK 0x0000020000000000UL
-+#define UVH_EVENT_OCCURRED0_L1_TO_ASIC_SHFT 42
-+#define UVH_EVENT_OCCURRED0_L1_TO_ASIC_MASK 0x0000040000000000UL
-+#define UVH_EVENT_OCCURRED0_LTC_INT_SHFT 43
-+#define UVH_EVENT_OCCURRED0_LTC_INT_MASK 0x0000080000000000UL
-+#define UVH_EVENT_OCCURRED0_LA_SEQ_TRIGGER_SHFT 44
-+#define UVH_EVENT_OCCURRED0_LA_SEQ_TRIGGER_MASK 0x0000100000000000UL
-+#define UVH_EVENT_OCCURRED0_IPI_INT_SHFT 45
-+#define UVH_EVENT_OCCURRED0_IPI_INT_MASK 0x0000200000000000UL
-+#define UVH_EVENT_OCCURRED0_EXTIO_INT0_SHFT 46
-+#define UVH_EVENT_OCCURRED0_EXTIO_INT0_MASK 0x0000400000000000UL
-+#define UVH_EVENT_OCCURRED0_EXTIO_INT1_SHFT 47
-+#define UVH_EVENT_OCCURRED0_EXTIO_INT1_MASK 0x0000800000000000UL
-+#define UVH_EVENT_OCCURRED0_EXTIO_INT2_SHFT 48
-+#define UVH_EVENT_OCCURRED0_EXTIO_INT2_MASK 0x0001000000000000UL
-+#define UVH_EVENT_OCCURRED0_EXTIO_INT3_SHFT 49
-+#define UVH_EVENT_OCCURRED0_EXTIO_INT3_MASK 0x0002000000000000UL
-+#define UVH_EVENT_OCCURRED0_PROFILE_INT_SHFT 50
-+#define UVH_EVENT_OCCURRED0_PROFILE_INT_MASK 0x0004000000000000UL
-+#define UVH_EVENT_OCCURRED0_RTC0_SHFT 51
-+#define UVH_EVENT_OCCURRED0_RTC0_MASK 0x0008000000000000UL
-+#define UVH_EVENT_OCCURRED0_RTC1_SHFT 52
-+#define UVH_EVENT_OCCURRED0_RTC1_MASK 0x0010000000000000UL
-+#define UVH_EVENT_OCCURRED0_RTC2_SHFT 53
-+#define UVH_EVENT_OCCURRED0_RTC2_MASK 0x0020000000000000UL
-+#define UVH_EVENT_OCCURRED0_RTC3_SHFT 54
-+#define UVH_EVENT_OCCURRED0_RTC3_MASK 0x0040000000000000UL
-+#define UVH_EVENT_OCCURRED0_BAU_DATA_SHFT 55
-+#define UVH_EVENT_OCCURRED0_BAU_DATA_MASK 0x0080000000000000UL
-+#define UVH_EVENT_OCCURRED0_POWER_MANAGEMENT_REQ_SHFT 56
-+#define UVH_EVENT_OCCURRED0_POWER_MANAGEMENT_REQ_MASK 0x0100000000000000UL
-+union uvh_event_occurred0_u {
-+    unsigned long	v;
-+    struct uvh_event_occurred0_s {
-+	unsigned long	lb_hcerr             :  1;  /* RW, W1C */
-+	unsigned long	gr0_hcerr            :  1;  /* RW, W1C */
-+	unsigned long	gr1_hcerr            :  1;  /* RW, W1C */
-+	unsigned long	lh_hcerr             :  1;  /* RW, W1C */
-+	unsigned long	rh_hcerr             :  1;  /* RW, W1C */
-+	unsigned long	xn_hcerr             :  1;  /* RW, W1C */
-+	unsigned long	si_hcerr             :  1;  /* RW, W1C */
-+	unsigned long	lb_aoerr0            :  1;  /* RW, W1C */
-+	unsigned long	gr0_aoerr0           :  1;  /* RW, W1C */
-+	unsigned long	gr1_aoerr0           :  1;  /* RW, W1C */
-+	unsigned long	lh_aoerr0            :  1;  /* RW, W1C */
-+	unsigned long	rh_aoerr0            :  1;  /* RW, W1C */
-+	unsigned long	xn_aoerr0            :  1;  /* RW, W1C */
-+	unsigned long	si_aoerr0            :  1;  /* RW, W1C */
-+	unsigned long	lb_aoerr1            :  1;  /* RW, W1C */
-+	unsigned long	gr0_aoerr1           :  1;  /* RW, W1C */
-+	unsigned long	gr1_aoerr1           :  1;  /* RW, W1C */
-+	unsigned long	lh_aoerr1            :  1;  /* RW, W1C */
-+	unsigned long	rh_aoerr1            :  1;  /* RW, W1C */
-+	unsigned long	xn_aoerr1            :  1;  /* RW, W1C */
-+	unsigned long	si_aoerr1            :  1;  /* RW, W1C */
-+	unsigned long	rh_vpi_int           :  1;  /* RW, W1C */
-+	unsigned long	system_shutdown_int  :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_0         :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_1         :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_2         :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_3         :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_4         :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_5         :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_6         :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_7         :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_8         :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_9         :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_10        :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_11        :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_12        :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_13        :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_14        :  1;  /* RW, W1C */
-+	unsigned long	lb_irq_int_15        :  1;  /* RW, W1C */
-+	unsigned long	l1_nmi_int           :  1;  /* RW, W1C */
-+	unsigned long	stop_clock           :  1;  /* RW, W1C */
-+	unsigned long	asic_to_l1           :  1;  /* RW, W1C */
-+	unsigned long	l1_to_asic           :  1;  /* RW, W1C */
-+	unsigned long	ltc_int              :  1;  /* RW, W1C */
-+	unsigned long	la_seq_trigger       :  1;  /* RW, W1C */
-+	unsigned long	ipi_int              :  1;  /* RW, W1C */
-+	unsigned long	extio_int0           :  1;  /* RW, W1C */
-+	unsigned long	extio_int1           :  1;  /* RW, W1C */
-+	unsigned long	extio_int2           :  1;  /* RW, W1C */
-+	unsigned long	extio_int3           :  1;  /* RW, W1C */
-+	unsigned long	profile_int          :  1;  /* RW, W1C */
-+	unsigned long	rtc0                 :  1;  /* RW, W1C */
-+	unsigned long	rtc1                 :  1;  /* RW, W1C */
-+	unsigned long	rtc2                 :  1;  /* RW, W1C */
-+	unsigned long	rtc3                 :  1;  /* RW, W1C */
-+	unsigned long	bau_data             :  1;  /* RW, W1C */
-+	unsigned long	power_management_req :  1;  /* RW, W1C */
-+	unsigned long	rsvd_57_63           :  7;  /*    */
-+    } s;
-+};
-+
-+/* ========================================================================= */
-+/*                        UVH_EVENT_OCCURRED0_ALIAS                          */
-+/* ========================================================================= */
-+#define UVH_EVENT_OCCURRED0_ALIAS 0x0000000000070008UL
-+#define UVH_EVENT_OCCURRED0_ALIAS_32 0x005f0
-+
-+/* ========================================================================= */
-+/*                               UVH_INT_CMPB                                */
-+/* ========================================================================= */
-+#define UVH_INT_CMPB 0x22080UL
-+
-+#define UVH_INT_CMPB_REAL_TIME_CMPB_SHFT 0
-+#define UVH_INT_CMPB_REAL_TIME_CMPB_MASK 0x00ffffffffffffffUL
-+
-+union uvh_int_cmpb_u {
-+    unsigned long	v;
-+    struct uvh_int_cmpb_s {
-+	unsigned long	real_time_cmpb : 56;  /* RW */
-+	unsigned long	rsvd_56_63     :  8;  /*    */
-+    } s;
-+};
-+
-+/* ========================================================================= */
-+/*                               UVH_INT_CMPC                                */
-+/* ========================================================================= */
-+#define UVH_INT_CMPC 0x22100UL
-+
-+#define UVH_INT_CMPC_REAL_TIME_CMPC_SHFT 0
-+#define UVH_INT_CMPC_REAL_TIME_CMPC_MASK 0x00ffffffffffffffUL
-+
-+union uvh_int_cmpc_u {
-+    unsigned long	v;
-+    struct uvh_int_cmpc_s {
-+	unsigned long	real_time_cmpc : 56;  /* RW */
-+	unsigned long	rsvd_56_63     :  8;  /*    */
-+    } s;
-+};
-+
-+/* ========================================================================= */
-+/*                               UVH_INT_CMPD                                */
-+/* ========================================================================= */
-+#define UVH_INT_CMPD 0x22180UL
-+
-+#define UVH_INT_CMPD_REAL_TIME_CMPD_SHFT 0
-+#define UVH_INT_CMPD_REAL_TIME_CMPD_MASK 0x00ffffffffffffffUL
-+
-+union uvh_int_cmpd_u {
-+    unsigned long	v;
-+    struct uvh_int_cmpd_s {
-+	unsigned long	real_time_cmpd : 56;  /* RW */
-+	unsigned long	rsvd_56_63     :  8;  /*    */
-+    } s;
-+};
- 
- /* ========================================================================= */
- /*                               UVH_NODE_ID                                 */
-@@ -111,8 +384,8 @@ union uvh_rh_gam_alias210_redirect_confi
- 
- #define UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR_BASE_SHFT 28
- #define UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR_BASE_MASK 0x00003ffff0000000UL
--#define UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR_GR4_SHFT 46
--#define UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR_GR4_MASK 0x0000400000000000UL
-+#define UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR_GR4_SHFT 48
-+#define UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR_GR4_MASK 0x0001000000000000UL
- #define UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR_N_GRU_SHFT 52
- #define UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR_N_GRU_MASK 0x00f0000000000000UL
- #define UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR_ENABLE_SHFT 63
-@@ -123,8 +396,9 @@ union uvh_rh_gam_gru_overlay_config_mmr_
-     struct uvh_rh_gam_gru_overlay_config_mmr_s {
- 	unsigned long	rsvd_0_27: 28;  /*    */
- 	unsigned long	base   : 18;  /* RW */
-+	unsigned long	rsvd_46_47:  2;  /*    */
- 	unsigned long	gr4    :  1;  /* RW */
--	unsigned long	rsvd_47_51:  5;  /*    */
-+	unsigned long	rsvd_49_51:  3;  /*    */
- 	unsigned long	n_gru  :  4;  /* RW */
- 	unsigned long	rsvd_56_62:  7;  /*    */
- 	unsigned long	enable :  1;  /* RW */
-@@ -157,7 +431,7 @@ union uvh_rh_gam_mmr_overlay_config_mmr_
- /* ========================================================================= */
- /*                                 UVH_RTC                                   */
- /* ========================================================================= */
--#define UVH_RTC 0x28000UL
-+#define UVH_RTC 0x340000UL
- 
- #define UVH_RTC_REAL_TIME_CLOCK_SHFT 0
- #define UVH_RTC_REAL_TIME_CLOCK_MASK 0x00ffffffffffffffUL
-@@ -171,6 +445,139 @@ union uvh_rtc_u {
- };
- 
- /* ========================================================================= */
-+/*                           UVH_RTC1_INT_CONFIG                             */
-+/* ========================================================================= */
-+#define UVH_RTC1_INT_CONFIG 0x615c0UL
-+
-+#define UVH_RTC1_INT_CONFIG_VECTOR_SHFT 0
-+#define UVH_RTC1_INT_CONFIG_VECTOR_MASK 0x00000000000000ffUL
-+#define UVH_RTC1_INT_CONFIG_DM_SHFT 8
-+#define UVH_RTC1_INT_CONFIG_DM_MASK 0x0000000000000700UL
-+#define UVH_RTC1_INT_CONFIG_DESTMODE_SHFT 11
-+#define UVH_RTC1_INT_CONFIG_DESTMODE_MASK 0x0000000000000800UL
-+#define UVH_RTC1_INT_CONFIG_STATUS_SHFT 12
-+#define UVH_RTC1_INT_CONFIG_STATUS_MASK 0x0000000000001000UL
-+#define UVH_RTC1_INT_CONFIG_P_SHFT 13
-+#define UVH_RTC1_INT_CONFIG_P_MASK 0x0000000000002000UL
-+#define UVH_RTC1_INT_CONFIG_T_SHFT 15
-+#define UVH_RTC1_INT_CONFIG_T_MASK 0x0000000000008000UL
-+#define UVH_RTC1_INT_CONFIG_M_SHFT 16
-+#define UVH_RTC1_INT_CONFIG_M_MASK 0x0000000000010000UL
-+#define UVH_RTC1_INT_CONFIG_APIC_ID_SHFT 32
-+#define UVH_RTC1_INT_CONFIG_APIC_ID_MASK 0xffffffff00000000UL
-+
-+union uvh_rtc1_int_config_u {
-+    unsigned long	v;
-+    struct uvh_rtc1_int_config_s {
-+	unsigned long	vector_  :  8;  /* RW */
-+	unsigned long	dm       :  3;  /* RW */
-+	unsigned long	destmode :  1;  /* RW */
-+	unsigned long	status   :  1;  /* RO */
-+	unsigned long	p        :  1;  /* RO */
-+	unsigned long	rsvd_14  :  1;  /*    */
-+	unsigned long	t        :  1;  /* RO */
-+	unsigned long	m        :  1;  /* RW */
-+	unsigned long	rsvd_17_31: 15;  /*    */
-+	unsigned long	apic_id  : 32;  /* RW */
-+    } s;
-+};
-+
-+/* ========================================================================= */
-+/*                           UVH_RTC2_INT_CONFIG                             */
-+/* ========================================================================= */
-+#define UVH_RTC2_INT_CONFIG 0x61600UL
-+
-+#define UVH_RTC2_INT_CONFIG_VECTOR_SHFT 0
-+#define UVH_RTC2_INT_CONFIG_VECTOR_MASK 0x00000000000000ffUL
-+#define UVH_RTC2_INT_CONFIG_DM_SHFT 8
-+#define UVH_RTC2_INT_CONFIG_DM_MASK 0x0000000000000700UL
-+#define UVH_RTC2_INT_CONFIG_DESTMODE_SHFT 11
-+#define UVH_RTC2_INT_CONFIG_DESTMODE_MASK 0x0000000000000800UL
-+#define UVH_RTC2_INT_CONFIG_STATUS_SHFT 12
-+#define UVH_RTC2_INT_CONFIG_STATUS_MASK 0x0000000000001000UL
-+#define UVH_RTC2_INT_CONFIG_P_SHFT 13
-+#define UVH_RTC2_INT_CONFIG_P_MASK 0x0000000000002000UL
-+#define UVH_RTC2_INT_CONFIG_T_SHFT 15
-+#define UVH_RTC2_INT_CONFIG_T_MASK 0x0000000000008000UL
-+#define UVH_RTC2_INT_CONFIG_M_SHFT 16
-+#define UVH_RTC2_INT_CONFIG_M_MASK 0x0000000000010000UL
-+#define UVH_RTC2_INT_CONFIG_APIC_ID_SHFT 32
-+#define UVH_RTC2_INT_CONFIG_APIC_ID_MASK 0xffffffff00000000UL
-+
-+union uvh_rtc2_int_config_u {
-+    unsigned long	v;
-+    struct uvh_rtc2_int_config_s {
-+	unsigned long	vector_  :  8;  /* RW */
-+	unsigned long	dm       :  3;  /* RW */
-+	unsigned long	destmode :  1;  /* RW */
-+	unsigned long	status   :  1;  /* RO */
-+	unsigned long	p        :  1;  /* RO */
-+	unsigned long	rsvd_14  :  1;  /*    */
-+	unsigned long	t        :  1;  /* RO */
-+	unsigned long	m        :  1;  /* RW */
-+	unsigned long	rsvd_17_31: 15;  /*    */
-+	unsigned long	apic_id  : 32;  /* RW */
-+    } s;
-+};
-+
-+/* ========================================================================= */
-+/*                           UVH_RTC3_INT_CONFIG                             */
-+/* ========================================================================= */
-+#define UVH_RTC3_INT_CONFIG 0x61640UL
-+
-+#define UVH_RTC3_INT_CONFIG_VECTOR_SHFT 0
-+#define UVH_RTC3_INT_CONFIG_VECTOR_MASK 0x00000000000000ffUL
-+#define UVH_RTC3_INT_CONFIG_DM_SHFT 8
-+#define UVH_RTC3_INT_CONFIG_DM_MASK 0x0000000000000700UL
-+#define UVH_RTC3_INT_CONFIG_DESTMODE_SHFT 11
-+#define UVH_RTC3_INT_CONFIG_DESTMODE_MASK 0x0000000000000800UL
-+#define UVH_RTC3_INT_CONFIG_STATUS_SHFT 12
-+#define UVH_RTC3_INT_CONFIG_STATUS_MASK 0x0000000000001000UL
-+#define UVH_RTC3_INT_CONFIG_P_SHFT 13
-+#define UVH_RTC3_INT_CONFIG_P_MASK 0x0000000000002000UL
-+#define UVH_RTC3_INT_CONFIG_T_SHFT 15
-+#define UVH_RTC3_INT_CONFIG_T_MASK 0x0000000000008000UL
-+#define UVH_RTC3_INT_CONFIG_M_SHFT 16
-+#define UVH_RTC3_INT_CONFIG_M_MASK 0x0000000000010000UL
-+#define UVH_RTC3_INT_CONFIG_APIC_ID_SHFT 32
-+#define UVH_RTC3_INT_CONFIG_APIC_ID_MASK 0xffffffff00000000UL
-+
-+union uvh_rtc3_int_config_u {
-+    unsigned long	v;
-+    struct uvh_rtc3_int_config_s {
-+	unsigned long	vector_  :  8;  /* RW */
-+	unsigned long	dm       :  3;  /* RW */
-+	unsigned long	destmode :  1;  /* RW */
-+	unsigned long	status   :  1;  /* RO */
-+	unsigned long	p        :  1;  /* RO */
-+	unsigned long	rsvd_14  :  1;  /*    */
-+	unsigned long	t        :  1;  /* RO */
-+	unsigned long	m        :  1;  /* RW */
-+	unsigned long	rsvd_17_31: 15;  /*    */
-+	unsigned long	apic_id  : 32;  /* RW */
-+    } s;
-+};
-+
-+/* ========================================================================= */
-+/*                            UVH_RTC_INC_RATIO                              */
-+/* ========================================================================= */
-+#define UVH_RTC_INC_RATIO 0x350000UL
-+
-+#define UVH_RTC_INC_RATIO_FRACTION_SHFT 0
-+#define UVH_RTC_INC_RATIO_FRACTION_MASK 0x00000000000fffffUL
-+#define UVH_RTC_INC_RATIO_RATIO_SHFT 20
-+#define UVH_RTC_INC_RATIO_RATIO_MASK 0x0000000000700000UL
-+
-+union uvh_rtc_inc_ratio_u {
-+    unsigned long	v;
-+    struct uvh_rtc_inc_ratio_s {
-+	unsigned long	fraction : 20;  /* RW */
-+	unsigned long	ratio    :  3;  /* RW */
-+	unsigned long	rsvd_23_63: 41;  /*    */
-+    } s;
-+};
-+
-+/* ========================================================================= */
- /*                          UVH_SI_ADDR_MAP_CONFIG                           */
- /* ========================================================================= */
- #define UVH_SI_ADDR_MAP_CONFIG 0xc80000UL
+--- linux-2.6.26-rc8-tip.orig/arch/x86/kernel/process_32.c
++++ linux-2.6.26-rc8-tip/arch/x86/kernel/process_32.c
+@@ -144,7 +144,10 @@ void cpu_idle(void)
+ 			__get_cpu_var(irq_stat).idle_timestamp = jiffies;
+ 			/* Don't trace irqs off for idle */
+ 			stop_critical_timings();
+-			pm_idle();
++			if (pm_idle)
++				pm_idle();
++			else
++				default_idle();
+ 			start_critical_timings();
+ 		}
+ 		tick_nohz_restart_sched_tick();
+
+-- 
+regards,
+Dhaval
