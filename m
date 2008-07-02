@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbYGBXLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755110AbYGBXOh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754414AbYGBXLd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 19:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYGBXLY
+	id S1755110AbYGBXOh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 19:14:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbYGBXO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 19:11:24 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36394 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751691AbYGBXLX (ORCPT
+	Wed, 2 Jul 2008 19:14:29 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48406 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751058AbYGBXO2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 19:11:23 -0400
-Date: Wed, 2 Jul 2008 16:07:42 -0700
-From: Greg KH <greg@kroah.com>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Cc: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/04] s390: bus_id -> dev_set_name() changes
-Message-ID: <20080702230742.GA708@kroah.com>
-References: <20080702154811.GB31083@kroah.com> <20080702221401.GA15142@zarina>
-MIME-Version: 1.0
+	Wed, 2 Jul 2008 19:14:28 -0400
+Date: Thu, 3 Jul 2008 00:14:15 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Marek Vasut <marek.vasut@gmail.com>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] PalmTX initial support
+Message-ID: <20080702231415.GI19143@flint.arm.linux.org.uk>
+References: <200807022232.47294.marek.vasut@gmail.com> <20080702204110.GA22107@fluff.org.uk> <20080702220356.GE19143@flint.arm.linux.org.uk> <200807030053.00019.marek.vasut@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080702221401.GA15142@zarina>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <200807030053.00019.marek.vasut@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 03, 2008 at 02:14:01AM +0400, Anton Vorontsov wrote:
-> On Wed, Jul 02, 2008 at 08:48:11AM -0700, Greg KH wrote:
-> > From: Cornelia Huck <cornelia.huck@de.ibm.com>
-> > 
-> > Convert most s390 users setting bus_id to dev_set_name().
-> > css and ccw busses are deferred since they need some special
-> > treatment.
-> > 
-> > Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-> > Cc: Kay Sievers <kay.sievers@vrfy.org>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > ---
-> >  drivers/s390/block/dcssblk.c |    2 +-
-> >  drivers/s390/char/vmlogrdr.c |    3 +--
-> >  drivers/s390/cio/ccwgroup.c  |    3 +--
-> >  drivers/s390/cio/chp.c       |    3 +--
-> >  drivers/s390/cio/css.c       |    4 ++--
-> >  drivers/s390/crypto/ap_bus.c |    4 ++--
-> >  drivers/s390/net/netiucv.c   |    2 +-
-> >  drivers/s390/s390_rdev.c     |    2 +-
-> >  drivers/s390/scsi/zfcp_aux.c |   23 ++++++++---------------
-> >  9 files changed, 18 insertions(+), 28 deletions(-)
-> > 
-> > --- a/drivers/s390/block/dcssblk.c
-> > +++ b/drivers/s390/block/dcssblk.c
-> > @@ -349,7 +349,7 @@ dcssblk_add_store(struct device *dev, st
-> >  	}
-> >  
-> >  	strcpy(dev_info->segment_name, local_buf);
-> > -	strlcpy(dev_info->dev.bus_id, local_buf, BUS_ID_SIZE);
-> > +	dev_set_name(&dev_info->dev, local_buf);
+On Thu, Jul 03, 2008 at 12:52:59AM +0200, Marek Vasut wrote:
+> ok, I fixed what I was able to grasp. That is :
 > 
-> As I see it, dev_set_name accepts printf like string, so this
-> dev_set_name is quite dangerous (since local_buf is formed
-> by the module param), no?
+> -Are these useful? + Dittos
+> -Don't you have to configure GPIO47 as a GPIO to change its state?
+> Since you don't, and I assume you've tested this, I think you've
+> proven that you can delete the fiddling with GPIO47.
+> 
+> Actually GPIO47 was set up before by palmos (since Im not booting from clean 
+> state, but from palmOS) so it wasnt necessary to set it up again in linux and 
+> it didnt cause any problems. Booting it from clean state would cause 
+> problems, so I fixed it.
 
-So you would rather see:
-	dev_set_name(&dev_info->dev, "%s", local_buf);
+Bear in mind then that it may work for the first time you enable IrDA,
+but if you subseqently disable and re-enable it, GPIO47 will be assigned
+to the UART instead.
 
-instead?
+> That's it, but what I still dont understand is the pxa branch (and new PWM 
+> stuff). Im currently using mainline (linus's tree), so that's not the tree I 
+> should use ?
 
-thanks,
+from memory:
 
-greg k-h
+http://ftp.arm.linux.org.uk/pub/linux/arm/kernel/git-cur/linux-2.6-rmk pxa
+
+where 'http:...' is the URL and 'pxa' is the branch name.  It's currently
+quite a bit older than mainline at the moment.
