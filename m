@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762818AbYGBGe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762706AbYGBGiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762818AbYGBGe3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 02:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759585AbYGBGeV
+	id S1762706AbYGBGiZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 02:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755586AbYGBGiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 02:34:21 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:37200 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755795AbYGBGeU (ORCPT
+	Wed, 2 Jul 2008 02:38:17 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:53848 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755546AbYGBGiR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 02:34:20 -0400
-X-Sasl-enc: 8H+MVZlCODyyvMjJhjn3rVOebpDuGDhhjIwHVogJGfiW 1214980459
-Message-ID: <3f2201c8dc0d$d1012d60$0b01a8c0@robmhp>
-From: "Rob Mueller" <robm@fastmail.fm>
-To: "Michael Kerrisk" <mtk.manpages@googlemail.com>,
-       "Bron Gondwana" <brong@fastmail.fm>
-Cc: "Philippe De Muyter" <phdm@macqel.be>, <linux-kernel@vger.kernel.org>
-References: <20080701132149.GA32510@frolo.macqel> <517f3f820807011116g6ce1b3e1qf166070f7a4c523f@mail.gmail.com> <20080701214423.GA29875@brong.net> <cfd18e0f0807012214o78353faal84a5fa764d3210bf@mail.gmail.com>
-Subject: Re: mmap'ed memory in core files ?
-Date: Wed, 2 Jul 2008 16:35:22 +1000
+	Wed, 2 Jul 2008 02:38:17 -0400
+Date: Wed, 2 Jul 2008 08:38:16 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Benoit Boissinot <bboissin@gmail.com>
+cc: linux-kernel@vger.kernel.org, Jack Lloyd <lloyd@randombit.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Bug in random32.c: all-zero outputs with probability 1/2^32,
+ other seeding bugs
+In-Reply-To: <20080701231927.GW7647@pirzuine>
+Message-ID: <alpine.LNX.1.10.0807020835200.20393@fbirervta.pbzchgretzou.qr>
+References: <20080619153045.GC1455@randombit.net> <20080701231927.GW7647@pirzuine>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> This is particularly interesting on a 64 bit kernel where a bug in
->> your code causes you to try to read something about 2Gb into your
->> alleged mmaped file (actual size ~500 bytes) and the segfault causes
->> a coredump.
+
+On Wednesday 2008-07-02 01:19, Benoit Boissinot wrote:
+>@@ -122,7 +122,7 @@
+[ int i ]
 >
-> Do you have a ssimple example program for this?
+> 	for_each_possible_cpu(i) {
+> 		struct rnd_state *state = &per_cpu(net_rand_state,i);
+>-		__set_random32(state, i + jiffies);
+>+		__set_random32(state, (u32) i + jiffies);
+> 	}
+> 	return 0;
+> }
 
-Trying to reproduce the problem, I think it's actually related to sparse 
-files.
-
-$ cat a.c
-#include <stdlib.h>
-int main() {
-  unsigned int i;
-  char * a = malloc(3000000000u);
-  *(int *)0 = 0;
-}
-$ gcc a.c
-$ ulimit -c 10240 && ./a.out
-$ ls -l
--rw------- 1 root root 3000082432 Jul  2 02:23 core.7761
-$
-
-It's clearly sparse, but slightly unintuitive that the ulimit doesn't 
-actually limit the filesize, just the size of the data written to the file.
-
-If I change the code to include this line after the malloc():
-
-  for (i = 0; i < 3000000000u; i++) a[i] = i % 256;
-
-I get:
-
--rw------- 1 root root   10485760 Jul  2 02:25 core.8992
-
-More what you'd expect.
-
-One interesting side effect of running a 64-bit kernel + 32-bit userland is 
-that previously bugs that might have previously caused malloc() to fail (eg 
-underflowing integer to a huge value), now succeed and allocate a huge chunk 
-of memory rather than failing and causing the program to bailout/crash on 
-dereference.
-
-Rob
-
+This cast does not make sense since
+ (int)i + jiffies ≡ i + jiffies ≡ (u32)i + jiffies          mod 2^32
