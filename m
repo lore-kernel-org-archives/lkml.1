@@ -1,110 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756655AbYGBVeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbYGBVjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756655AbYGBVeR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 17:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756341AbYGBVd6
+	id S1758668AbYGBVjS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 17:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYGBVjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 17:33:58 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:39089 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755777AbYGBVd5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 17:33:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=ghYppyWZEiDQlxsjVf8xPFyFSIGoJE44O/0xup/41QUiureSXIMphdbb2dtxgY0bju
-         IT/uWbdNjS+JfvFfjQxoabHJa98/MR8+PmPg2EZPke1qwUQxqx/2qBSDH1xBzIh9Xxh8
-         I5Plg0JxQNfsqT7R0/nEo24Cq0QiVdo6nTpQc=
-Message-ID: <486BF426.9040907@gmail.com>
-Date: Wed, 02 Jul 2008 16:33:26 -0500
-From: Roger Heflin <rogerheflin@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 2 Jul 2008 17:39:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38736 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752746AbYGBVjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 17:39:08 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Giacomo Mulas <gmulas@ca.astro.it>
+Subject: Re: b43 locks the machine when resuming after suspend to disk
+Date: Wed, 2 Jul 2008 23:40:31 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org,
+       Broadcom Linux <bcm43xx-dev@lists.berlios.de>,
+       Johannes Berg <johannes@sipsolutions.net>
+References: <alpine.DEB.1.10.0807021830300.32045@capitanata.ca.astro.it>
+In-Reply-To: <alpine.DEB.1.10.0807021830300.32045@capitanata.ca.astro.it>
 MIME-Version: 1.0
-To: Martin Sustrik <sustrik@fastmq.com>
-CC: Martin Lucina <mato@kotelna.sk>, linux-kernel@vger.kernel.org
-Subject: Re: Higher than expected disk write(2) latency
-References: <20080628121131.GA14181@nodbug.moloch.sk> <48663873.5010200@gmail.com> <486921AD.8060308@fastmq.com> <48692DC0.6060904@gmail.com> <486BB14D.5060609@fastmq.com>
-In-Reply-To: <486BB14D.5060609@fastmq.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807022340.31894.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Sustrik wrote:
-> Hi Roger,
+On Wednesday, 2 of July 2008, Giacomo Mulas wrote:
+> I tried searching on the list for this, before posting, but searching the
+> mailing list archives with keywords such as b43, suspend, resume... brings
+> up such a ludicrous amount of threads that it's not realistic to check them
+> all, so just tell me what to look for if it's been asked already.
 > 
->>> Fair enough. That exaplains the behaviour. Would AIO help here? If we 
->>> are able to enqueue next write before the first one is finished, it 
->>> can start writing it immediately without waiting for a revolution.
->>
->> If you could get them queued at the disk level, things that would need 
->> to be watched were if the disk can queue things up (and all 
->> controllers/drivers support it), and how many things the disk can 
->> queue up, and how large each of those things can be, if they aren't 
->> queued at the disk, there is the chance that the machine cannot get 
->> the data to the disk faster enough for that next sector.
->>
->> I have always avoided fully sync operations as things *ALWAYS* got 
->> really really slow because of all of the requirements need to make 
->> sure that it always got the data to disk correctly on a unexpected 
->> crash, and typically the type of applications I dealt with, if the 
->> machine crashed the currently outputting data was known to be 
->> incomplete and generally useless, so things were reran.
->>
->> Depending on your application you could always get a small fast solid 
->> state device (no seek or RPM issues), and use it to keep a journal 
->> that could be replayed on an unexpected crash...and then just use 
->> various syncs to force things to disk at various points.
+> Whenever I do a suspend to disk after using b43, the computer freezes hard
+> as soon as it attempts again to access b43 after resume.
 > 
-> We've tried AIO and the results are quite disappointing. If you open the 
-> file with O_SYNC, the latencies are the same as with sync I/O - each 
-> write takes 8.3ms (7500rpm disk).
+> Minimal how to reproduce the freeze:
+> 1) modprobe b43
+> 2) hibernate (using any suspend to disk, which one is irrelevant)
+> 3) resume
+> 4) ifconfig wlan0 up
 > 
-> If you use O_ASYNC the latencies are nice (160us mean), however, the 
-> first one is ~900us meaning that the data were not physically written to 
-> the disk before AIO confirmation is sent. (Moving head to right position 
-> would take much more than 900us.)
+> This has been happening (at least) since b43 was included in the mainline
+> kernel, on my Asus A6K laptop running an x86_64 kernel (now the latest
+> 2.6.25 stable release or compiled from the latest released debian sid
+> sources). The nvidia module is not responsible: I explicitely booted my
+> laptop in single user mode without any unnecessary modules, same result. It
+> does not happen using the windows driver with ndiswrapper (which I would
+> prefer to avoid for other reasons), so it definitely depends on b43 or
+> something it depends on. Unloading and reloading the b43 module and all the
+> other modules it depends on does not change anything. Just loading the
+> module once, hibernating and resuming means freeze-up as soon as the module
+> is actually initialised next time, regardless of it having been unloaded and
+> reloaded any number of times before or after the suspend-resume cycle. No
+> oopses, nothing on system logs, just instant freeze-up. Is there some
+> testing a user can do to help nailing this? I am not a kernel developer,
+> even if I am a decent C programmer.
 > 
-> Still, my feeling is that our use case is pretty straightforward, i.e. 
-> write data to the disk with any optimisations you are able to do and 
-> notify me when the data are physically written to the medium.
-> 
-> Isn't there a way to achieve this kind of behaviour?
-> 
-> Martin
-> 
+> Please CC me on replies, I am not on the list.
 
-A lot depends on what your application requirements are.
+I think you need the appended patch, but it only applies to linux-next.
 
-Back in a long time ago, before disks had cache RLL and MFM drives used a trick 
-called interleave, instead of writing to sector n, n+1,n+2 with a interleave of 
-2 would write to n,n+2,n+4 as once they got the message that n was written the 
-machine had enough time to setup and send the next write to sector n+2 before 
-the head got there, the question with your hardware would be how many sectors 
-need to be skipped to be able to write immediately (and this would change with 
-hardware changes-and the file would need to be pre-allocated, and may have to 
-have some testing done against the given file to quantify the underlying disk 
-reality-and reality may change if the disk reallocates sectors), and this 
-assumes that can you live with the lower sequential read performance-interleave 
-of 2 had 1/2 the read performance, interleave of 3 had 1/3, though with proper 
-sector picking and the read cache on the disk, this interleave my not kill the 
-read performance if one goes n,n+2,...,n+2*x,n+1,n+3,... correctly knowing that 
-n+2*x and n+1 are close in seek time and I don't have any idea what sort of 
-interleave one would need to be using with modern hardware.
+Thanks,
+Rafael
 
-It would take a fairly intricate program to sort out what reality was, but it 
-would seem to be possible to figure out exactly what reality is, and work with 
-it.   And the first seek might take a while, but even that could be played 
-around with by having marker sectors be written to all of the time so one has 
-some idea of what is going to be under the head real soon, of course even if you 
-could get all of this correct there are still unknowns of the disk not always 
-doing what one expects since they do have a mind of their own, and the unknown 
-of can you get the correct sector supplied through everything to the disk fast 
-enough every time.
+---
+When a driver rejects a frame in it's ->tx() callback, it must also
+stop queues, otherwise mac80211 can go into a loop here. Detect this
+situation and abort the loop after five retries, warning about the
+driver bug.
 
-                             Roger
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+---
+ net/mac80211/tx.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-
+Index: linux-next/net/mac80211/tx.c
+===================================================================
+--- linux-next.orig/net/mac80211/tx.c
++++ linux-next/net/mac80211/tx.c
+@@ -1144,7 +1144,7 @@ static int ieee80211_tx(struct net_devic
+ 	struct ieee80211_tx_data tx;
+ 	ieee80211_tx_result res_prepare;
+ 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
+-	int ret, i;
++	int ret, i, retries = 0;
+ 	u16 queue;
+ 
+ 	queue = skb_get_queue_mapping(skb);
+@@ -1206,6 +1206,13 @@ retry:
+ 		 */
+ 		if (!__netif_subqueue_stopped(local->mdev, queue)) {
+ 			clear_bit(queue, local->queues_pending);
++			retries++;
++			/*
++			 * Driver bug, it's rejecting packets but
++			 * not stopping queues.
++			 */
++			if (WARN_ON_ONCE(retries > 5))
++				goto drop;
+ 			goto retry;
+ 		}
+ 		store->skb = skb;
