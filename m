@@ -1,219 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763736AbYGBLeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932408AbYGBLgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763736AbYGBLeq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 07:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763851AbYGBLdc
+	id S932408AbYGBLgR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 07:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754457AbYGBLgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 07:33:32 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2924 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932354AbYGBLda (ORCPT
+	Wed, 2 Jul 2008 07:36:03 -0400
+Received: from smtprelay03.ispgateway.de ([80.67.18.15]:35839 "EHLO
+	smtprelay03.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753805AbYGBLgB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 07:33:30 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: [PATCH 1/5] checkpatch: add checks for question mark and colon spacing
-Date: Wed,  2 Jul 2008 12:31:14 +0100
-Message-Id: <1214998278-11767-2-git-send-email-apw@shadowen.org>
-X-Mailer: git-send-email 1.5.6.1.201.g3e7d3
-In-Reply-To: <1214998278-11767-1-git-send-email-apw@shadowen.org>
-References: <1214998278-11767-1-git-send-email-apw@shadowen.org>
+	Wed, 2 Jul 2008 07:36:01 -0400
+Message-ID: <486B681D.5030605@selhorst.net>
+Date: Wed, 02 Jul 2008 13:35:57 +0200
+From: Marcel Selhorst <tpm@selhorst.net>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080618)
+MIME-Version: 1.0
+To: Marcin Obara <marcin_obara@users.sourceforge.net>
+CC: tpmdd-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tpm:correct tpm timeouts to jiffies conversion
+References: <alpine.DEB.0.99.0806052204440.8295@ip-195-3-221-75.vnet.pl>
+In-Reply-To: <alpine.DEB.0.99.0806052204440.8295@ip-195-3-221-75.vnet.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.1-5; AVE: 7.8.0.59; VDF: 7.0.5.34; host: mail)
+X-Df-Sender: 174499
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add checks for the question mark colon operator spacing, and also check
-the other uses of colon.  Colon means a number of things:
+Acked-by: Marcel Selhorst <tpm@selhorst.net>
 
- - it introduces the else part of the ?: operator,
- - it terminates a goto label,
- - it terminates the case value,
- - it separates the identifier from the bit size on bit fields, and
- - it is used to introduce option types in asm().
-
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
- scripts/checkpatch.pl |   81 +++++++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 72 insertions(+), 9 deletions(-)
-
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 8a3b0fd..88027f2 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -689,17 +689,20 @@ sub cat_vet {
- my $av_preprocessor = 0;
- my $av_pending;
- my @av_paren_type;
-+my $av_pend_colon;
- 
- sub annotate_reset {
- 	$av_preprocessor = 0;
- 	$av_pending = '_';
- 	@av_paren_type = ('E');
-+	$av_pend_colon = 'O';
- }
- 
- sub annotate_values {
- 	my ($stream, $type) = @_;
- 
- 	my $res;
-+	my $var = '_' x length($stream);
- 	my $cur = $stream;
- 
- 	print "$stream\n" if ($dbg_values > 1);
-@@ -784,7 +787,12 @@ sub annotate_values {
- 			$av_pending = 'N';
- 			$type = 'N';
- 
--		} elsif ($cur =~/^(return|case|else|goto)/o) {
-+		} elsif ($cur =~/^(case)/o) {
-+			print "CASE($1)\n" if ($dbg_values > 1);
-+			$av_pend_colon = 'C';
-+			$type = 'N';
-+
-+		} elsif ($cur =~/^(return|else|goto)/o) {
- 			print "KEYWORD($1)\n" if ($dbg_values > 1);
- 			$type = 'N';
- 
-@@ -809,6 +817,15 @@ sub annotate_values {
- 			$type = 'V';
- 			$av_pending = 'V';
- 
-+		} elsif ($cur =~ /^($Ident\s*):/) {
-+			if ($type eq 'E') {
-+				$av_pend_colon = 'L';
-+			} elsif ($type eq 'T') {
-+				$av_pend_colon = 'B';
-+			}
-+			print "IDENT_COLON($1,$type>$av_pend_colon)\n" if ($dbg_values > 1);
-+			$type = 'V';
-+
- 		} elsif ($cur =~ /^($Ident|$Constant)/o) {
- 			print "IDENT($1)\n" if ($dbg_values > 1);
- 			$type = 'V';
-@@ -820,8 +837,24 @@ sub annotate_values {
- 		} elsif ($cur =~/^(;|{|})/) {
- 			print "END($1)\n" if ($dbg_values > 1);
- 			$type = 'E';
-+			$av_pend_colon = 'O';
-+
-+		} elsif ($cur =~ /^(\?)/o) {
-+			print "QUESTION($1)\n" if ($dbg_values > 1);
-+			$type = 'N';
-+
-+		} elsif ($cur =~ /^(:)/o) {
-+			print "COLON($1,$av_pend_colon)\n" if ($dbg_values > 1);
-+
-+			substr($var, length($res), 1, $av_pend_colon);
-+			if ($av_pend_colon eq 'C' || $av_pend_colon eq 'L') {
-+				$type = 'E';
-+			} else {
-+				$type = 'N';
-+			}
-+			$av_pend_colon = 'O';
- 
--		} elsif ($cur =~ /^(;|\?|:|\[)/o) {
-+		} elsif ($cur =~ /^(;|\[)/o) {
- 			print "CLOSE($1)\n" if ($dbg_values > 1);
- 			$type = 'N';
- 
-@@ -840,7 +873,7 @@ sub annotate_values {
- 		}
- 	}
- 
--	return $res;
-+	return ($res, $var);
- }
- 
- sub possible {
-@@ -1294,12 +1327,14 @@ sub process {
- 
- 		# Track the 'values' across context and added lines.
- 		my $opline = $line; $opline =~ s/^./ /;
--		my $curr_values = annotate_values($opline . "\n", $prev_values);
-+		my ($curr_values, $curr_vars) =
-+				annotate_values($opline . "\n", $prev_values);
- 		$curr_values = $prev_values . $curr_values;
- 		if ($dbg_values) {
- 			my $outline = $opline; $outline =~ s/\t/ /g;
- 			print "$linenr > .$outline\n";
- 			print "$linenr > $curr_values\n";
-+			print "$linenr >  $curr_vars\n";
- 		}
- 		$prev_values = substr($curr_values, -1);
- 
-@@ -1490,7 +1525,8 @@ sub process {
- 				<<=|>>=|<=|>=|==|!=|
- 				\+=|-=|\*=|\/=|%=|\^=|\|=|&=|
- 				=>|->|<<|>>|<|>|=|!|~|
--				&&|\|\||,|\^|\+\+|--|&|\||\+|-|\*|\/|%
-+				&&|\|\||,|\^|\+\+|--|&|\||\+|-|\*|\/|%|
-+				\?|:
- 			}x;
- 			my @elements = split(/($ops|;)/, $opline);
- 			my $off = 0;
-@@ -1554,6 +1590,9 @@ sub process {
- 				#	print "UNARY: <$op_left$op_type $is_unary $a:$op:$c> <$ca:$op:$cc> <$unary_ctx>\n";
- 				#}
- 
-+				# Get the full operator variant.
-+				my $opv = $op . substr($curr_vars, $off, 1);
-+
- 				# Ignore operators passed as parameters.
- 				if ($op_type ne 'V' &&
- 				    $ca =~ /\s$/ && $cc =~ /^\s*,/) {
-@@ -1571,8 +1610,10 @@ sub process {
- 				# // is a comment
- 				} elsif ($op eq '//') {
- 
--				# -> should have no spaces
--				} elsif ($op eq '->') {
-+				# No spaces for:
-+				#   ->
-+				#   :   when part of a bitfield
-+				} elsif ($op eq '->' || $opv eq ':B') {
- 					if ($ctx =~ /Wx.|.xW/) {
- 						ERROR("spaces prohibited around that '$op' $at\n" . $hereptr);
- 					}
-@@ -1628,11 +1669,33 @@ sub process {
- 							$hereptr);
- 					}
- 
-+				# A colon needs no spaces before when it is
-+				# terminating a case value or a label.
-+				} elsif ($opv eq ':C' || $opv eq ':L') {
-+					if ($ctx =~ /Wx./) {
-+						ERROR("space prohibited before that '$op' $at\n" . $hereptr);
-+					}
-+
- 				# All the others need spaces both sides.
- 				} elsif ($ctx !~ /[EWC]x[CWE]/) {
-+					my $ok = 0;
-+
- 					# Ignore email addresses <foo@bar>
--					if (!($op eq '<' && $cb =~ /$;\S+\@\S+>/) &&
--					    !($op eq '>' && $cb =~ /<\S+\@\S+$;/)) {
-+					if (($op eq '<' &&
-+					     $cc =~ /^\S+\@\S+>/) ||
-+					    ($op eq '>' &&
-+					     $ca =~ /<\S+\@\S+$/))
-+					{
-+					    	$ok = 1;
-+					}
-+
-+					# Ignore ?:
-+					if (($opv eq ':O' && $ca =~ /\?$/) ||
-+					    ($op eq '?' && $cc =~ /^:/)) {
-+					    	$ok = 1;
-+					}
-+
-+					if ($ok == 0) {
- 						ERROR("spaces required around that '$op' $at\n" . $hereptr);
- 					}
- 				}
--- 
-1.5.6.1.201.g3e7d3
-
+Marcin Obara schrieb:
+> This patch fixes timeouts conversion to jiffies,
+> by replacing msecs_to_jiffies() calls with usecs_to_jiffies().
+> According to TCG TPM Specification Version 1.2 Revision 103 (pages 166, 167)
+> TPM timeouts and durations are returned in microseconds (usec)
+> not in miliseconds (msec).
+> 
+> Signed-off-by: Marcin Obara <marcin_obara@users.sourceforge.net>
+> 
+> --- linux/drivers/char/tpm/tpm.c	2008-06-05 20:57:06.000000000 +0200
+> +++ linux_tpm/drivers/char/tpm/tpm.c	2008-06-05 20:54:52.000000000 +0200
+> @@ -524,19 +524,19 @@ void tpm_get_timeouts(struct tpm_chip *c
+>  	timeout =
+>  	    be32_to_cpu(*((__be32 *) (data + TPM_GET_CAP_RET_UINT32_1_IDX)));
+>  	if (timeout)
+> -		chip->vendor.timeout_a = msecs_to_jiffies(timeout);
+> +		chip->vendor.timeout_a = usecs_to_jiffies(timeout);
+>  	timeout =
+>  	    be32_to_cpu(*((__be32 *) (data + TPM_GET_CAP_RET_UINT32_2_IDX)));
+>  	if (timeout)
+> -		chip->vendor.timeout_b = msecs_to_jiffies(timeout);
+> +		chip->vendor.timeout_b = usecs_to_jiffies(timeout);
+>  	timeout =
+>  	    be32_to_cpu(*((__be32 *) (data + TPM_GET_CAP_RET_UINT32_3_IDX)));
+>  	if (timeout)
+> -		chip->vendor.timeout_c = msecs_to_jiffies(timeout);
+> +		chip->vendor.timeout_c = usecs_to_jiffies(timeout);
+>  	timeout =
+>  	    be32_to_cpu(*((__be32 *) (data + TPM_GET_CAP_RET_UINT32_4_IDX)));
+>  	if (timeout)
+> -		chip->vendor.timeout_d = msecs_to_jiffies(timeout);
+> +		chip->vendor.timeout_d = usecs_to_jiffies(timeout);
+>  
+>  duration:
+>  	memcpy(data, tpm_cap, sizeof(tpm_cap));
+> @@ -553,15 +553,15 @@ duration:
+>  		return;
+>  
+>  	chip->vendor.duration[TPM_SHORT] =
+> -	    msecs_to_jiffies(be32_to_cpu
+> +	    usecs_to_jiffies(be32_to_cpu
+>  			     (*((__be32 *) (data +
+>  					    TPM_GET_CAP_RET_UINT32_1_IDX))));
+>  	chip->vendor.duration[TPM_MEDIUM] =
+> -	    msecs_to_jiffies(be32_to_cpu
+> +	    usecs_to_jiffies(be32_to_cpu
+>  			     (*((__be32 *) (data +
+>  					    TPM_GET_CAP_RET_UINT32_2_IDX))));
+>  	chip->vendor.duration[TPM_LONG] =
+> -	    msecs_to_jiffies(be32_to_cpu
+> +	    usecs_to_jiffies(be32_to_cpu
+>  			     (*((__be32 *) (data +
+>  					    TPM_GET_CAP_RET_UINT32_3_IDX))));
+>  }
+> 
