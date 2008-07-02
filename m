@@ -1,79 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763133AbYGBJDH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbYGBJI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763133AbYGBJDH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 05:03:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbYGBJCy
+	id S1758029AbYGBJI4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 05:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbYGBJIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 05:02:54 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:37867 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751507AbYGBJCx (ORCPT
+	Wed, 2 Jul 2008 05:08:45 -0400
+Received: from smtprelay04.ispgateway.de ([80.67.18.16]:59655 "EHLO
+	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752464AbYGBJIo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 05:02:53 -0400
-X-Sasl-enc: UdNtrRJfxNSk0NOGplUuqNSxbFMj4zv+IysyvILm3j5D 1214989372
-Subject: Re: [PATCH] autofs4 - detect invalid direct mount requests
-From: Ian Kent <raven@themaw.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, autofs@linux.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20080701141715.62a2132b.akpm@linux-foundation.org>
-References: <20080620051301.9988.94307.stgit@raven.themaw.net>
-	 <20080701141715.62a2132b.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 02 Jul 2008 16:59:50 +0800
-Message-Id: <1214989192.3046.34.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+	Wed, 2 Jul 2008 05:08:44 -0400
+X-Greylist: delayed 313 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Jul 2008 05:08:44 EDT
+Message-ID: <486B4460.5000702@selhorst.net>
+Date: Wed, 02 Jul 2008 11:03:28 +0200
+From: Marcel Selhorst <tpm@selhorst.net>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080618)
+MIME-Version: 1.0
+To: Marcin Obara <marcin_obara@users.sourceforge.net>
+CC: tpmdd-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tpm: add Intel TPM TIS device HID
+References: <alpine.DEB.1.00.0806281913410.7076@ip-195-3-221-75.vnet.pl>
+In-Reply-To: <alpine.DEB.1.00.0806281913410.7076@ip-195-3-221-75.vnet.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.1-5; AVE: 7.8.0.59; VDF: 7.0.5.34; host: mail)
+X-Df-Sender: 174499
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Acked-by: Marcel Selhorst <tpm@selhorst.net>
 
-On Tue, 2008-07-01 at 14:17 -0700, Andrew Morton wrote:
-> On Fri, 20 Jun 2008 13:13:03 +0800
-> Ian Kent <raven@themaw.net> wrote:
+Marcin Obara schrieb:
+> This patch adds Intel TPM TIS device HID :  ICO0102
 > 
-> > autofs v5 dierct and offset mounts within an autofs filesystem are
-> > triggered by existing autofs triger mounts so the mount point dentry
-> > must be positive. If the mount point dentry is negative then the
-> > trigger doesn't exist so we can return fail immediately.
-> > 
-> > Signed-off-by: Ian Kent <raven@themaw.net>
-> > 
-> > ---
-> > 
-> >  fs/autofs4/waitq.c |    4 ++++
-> >  1 files changed, 4 insertions(+), 0 deletions(-)
-> > 
-> > 
-> > diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
-> > index cd21fd4..ae637d9 100644
-> > --- a/fs/autofs4/waitq.c
-> > +++ b/fs/autofs4/waitq.c
-> > @@ -307,6 +307,10 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
-> >  	if (sbi->catatonic)
-> >  		return -ENOENT;
-> >  
-> > +	if (!dentry->d_inode &&
-> > +	    (sbi->type & (AUTOFS_TYPE_DIRECT | AUTOFS_TYPE_OFFSET)))
-> > +		return -ENOENT;
-> > +
-> >  	name = kmalloc(NAME_MAX + 1, GFP_KERNEL);
-> >  	if (!name)
-> >  		return -ENOMEM;
+> Signed-off-by: Marcin Obara <marcin_obara@users.sourceforge.net>
 > 
-> A good changelog would allow little old me to determine whether this
-> patch should be merged into 2.6.25 and/or 2.6.26 and/or 2.6.27.  This
-> wasn't a good changelog :(
-
-Sorry, I guess I shouldn't have included it along with the other more
-serious bug fixes. It gets rid of an annoyance more than anything as the
-daemon still has to check for it.
-
-It isn't important or urgent, just useful.
-
-Ian
-
-
-
+> --- linux_tpm/drivers/char/tpm/tpm_tis.c	2008-06-05 20:51:13.000000000 +0200
+> +++ linux_intel/drivers/char/tpm/tpm_tis.c	2008-06-25 06:31:39.000000000 +0200
+> @@ -623,6 +623,7 @@ static struct pnp_device_id tpm_pnp_tbl[
+>  	{"IFX0102", 0},		/* Infineon */
+>  	{"BCM0101", 0},		/* Broadcom */
+>  	{"NSC1200", 0},		/* National */
+> +	{"ICO0102", 0},		/* Intel */
+>  	/* Add new here */
+>  	{"", 0},		/* User Specified */
+>  	{"", 0}			/* Terminator */
+> 
