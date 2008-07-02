@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761614AbYGBJn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763148AbYGBJp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761614AbYGBJn2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 05:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbYGBJnU
+	id S1763148AbYGBJp7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 05:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbYGBJpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 05:43:20 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54878 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753292AbYGBJnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 05:43:20 -0400
-Message-ID: <486B4D52.80402@cn.fujitsu.com>
-Date: Wed, 02 Jul 2008 17:41:38 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 2 Jul 2008 05:45:52 -0400
+Received: from ozlabs.org ([203.10.76.45]:49987 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752612AbYGBJpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 05:45:51 -0400
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: miaox@cn.fujitsu.com, Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Paul Jackson <pj@sgi.com>, Paul Menage <menage@google.com>
-Subject: Re: [PATCH 1/2] cpusets: restructure the function update_cpumask()
- and update_nodemask()
-References: <4843AFC9.7000100@cn.fujitsu.com> <20080702021908.81a5f1bb.akpm@linux-foundation.org>
-In-Reply-To: <20080702021908.81a5f1bb.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18539.20039.516803.51920@cargo.ozlabs.ibm.com>
+Date: Wed, 2 Jul 2008 19:45:43 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       greg@kroah.com
+Subject: Re: Is sysfs the right place to get cache and CPU topology info?
+In-Reply-To: <20080702003755.4daff613.akpm@linux-foundation.org>
+References: <18539.8141.683072.967851@cargo.ozlabs.ibm.com>
+	<20080702003755.4daff613.akpm@linux-foundation.org>
+X-Mailer: VM 8.0.9 under Emacs 22.1.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 02 Jun 2008 16:31:05 +0800 Miao Xie <miaox@cn.fujitsu.com> wrote:
-> 
->> extract two functions from update_cpumask() and update_nodemask().They will be
->> used later for updating tasks' cpus_allowed and mems_allowed after CPU/NODE
->> offline/online.
->>
->> Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
->> Acked-by: Paul Jackson <pj@sgi.com>
-> 
-> This patch has problems.
-> 
-> kernel/cpuset.c: In function 'cpuset_write_resmask':
-> kernel/cpuset.c:1374: warning: passing argument 2 of 'update_nodemask' discards qualifiers from pointer target type
-> 
-> Did you not get this warning also?
-> 
-> I don't know how to fix it.  cftype.write_string() requires a const
-> char* in the third arg, but we then go on to call update_nodemask(),
-> which does a strstrip() on this allegedly-const char array.
-> 
+Andrew Morton writes:
 
-That strstrip() should be removed. because cgroup_write_string() already strstrip()ed
-the buffer. Paul M's original patch removed that 2 strstrip()s in cpuset.c.
+> Those are dopey weasel words and they should be removed.
 
-> Taking a copy of the string in update_nodemask() would fix things, but
-> that's pretty lame.
+Thanks.  That is my opinion too.
+
+> If we put stuff in sysfs then people WILL use it and we WILL need to
+> support it for ever.  Pointing at some document and saying "call my
+> lawyer" just won't cut it.
 > 
+> sysfs is part of the kernel ABI.  We should design our interfaces there
+> as carefully as we design any others.
+> 
+> > They read that to mean that sysfs is not a suitable interface for them
+> > to use to get information about the system.  In particular they read
+> > that to mean that if they do code their library to read sysfs, it will
+> > change in the future in such a way as to break their code.
+> > 
+> > In other words, they see sysfs as being completely useless for them
+> > because they can't depend on it as a stable interface.  Which is
+> > reasonable given the quoted paragraph, but on the other hand, I don't
+> > believe we break userspace interfaces as blithely as that paragraph
+> > suggests.
+> 
+> Well it's up to them - they own the files.  If they later change them
+> and break their own interfaces (and presumably their own applications),
+> well, perhaps they have chosen an inappropriate career?
+
+We have too many "they"s, perhaps.  I meant that these developers (of
+an HPC library that wants to know about cpu caches and topology) see
+sysfs as being completely useless as a source of information because
+they expect random kernel developers to keep changing it in
+incompatible ways.  So "they" (library developers) don't own the files
+- they're not kernel developers at all.
+
+> > So which is it?  Can they rely on the CPU cache and topology
+> > information under /sys/devices/system/cpu/cpu*, and rely on having
+> > that information there essentially forever?  Or are they correct in
+> > saying sysfs is useless and we need to find some other way to expose
+> > the cache and topology information?
+> 
+> Use sysfs.  Choose a representation which is maitainable in a
+> backward-compatible fashion for all time.  Maintain it.
+
+Thanks. :)
+
+Paul.
