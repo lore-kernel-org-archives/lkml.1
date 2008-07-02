@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762918AbYGBNZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbYGBNa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762918AbYGBNZT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 09:25:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbYGBNZG
+	id S1756130AbYGBNa2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 09:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbYGBNaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 09:25:06 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:52379 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753625AbYGBNZF (ORCPT
+	Wed, 2 Jul 2008 09:30:16 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60223 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753388AbYGBNaP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 09:25:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=h1WJRKzT5OFkujPKnaRHzNyRkLbKoPr2fI3eTCf52YQUXlGhbObqHXjLEfRcCUPvLS
-         gKv3PNG0KcEvMFeLRRIWA/r4o8Atc2ckUP+8zOe1YBF6pDnNzqokvnVsYjnB3TpPu2/x
-         ibDf4mY7NLjfj7iNkI/kID3oi/SSXRPvEombI=
-Subject: [PATCH]  drivers/net/wireless/iwlwifi/iwl-3945.c
-From: "Darren Jenkins\\" <darrenrjenkins@gmail.com>
-To: kernel Janitors <kernel-janitors@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Cc: ipw2100-admin@linux.intel.com, yi.zhu@intel.com, reinette.chatre@intel.com
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 02 Jul 2008 11:37:27 +1000
-Message-Id: <1214962647.18261.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 8bit
+	Wed, 2 Jul 2008 09:30:15 -0400
+Date: Wed, 2 Jul 2008 09:30:13 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Philippe De Muyter <phdm@macqel.be>
+Cc: Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
+       libdc1394-devel@lists.sourceforge.net
+Subject: Re: mmap'ed memory in core files ?
+Message-ID: <20080702133013.GA1848@infradead.org>
+References: <20080701132149.GA32510@frolo.macqel> <517f3f820807011116g6ce1b3e1qf166070f7a4c523f@mail.gmail.com> <20080702105027.GA1111@frolo.macqel>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080702105027.GA1111@frolo.macqel>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-G'day people
+On Wed, Jul 02, 2008 at 12:50:27PM +0200, Philippe De Muyter wrote:
+> Unfortunately, the part that applies to me (I have tested it) is the next one :
+> 
+>     Memory-mapped I/O pages such as frame buffer are never dumped, [...],
+>     regardless of the coredump_filter value.
+> 
+> Is that a design decision, or a mere finding of the way it is implemented
+> now ?
 
-Coverity CID: 2265 NEGATIVE_RETURNS
-
-"rate" is of an unsigned type, and the code requires a signed type.
-The following patch makes it so.
-
-Only compile tested.
-
-﻿Signed-off-by: Darren Jenkins <darrenrjenkins@gmailcom>
-
-diff --git a/drivers/net/wireless/iwlwifi/iwl-3945.c b/drivers/net/wireless/iwlwifi/iwl-3945.c
-index 62a3d8f..31d38cd 100644
---- a/drivers/net/wireless/iwlwifi/iwl-3945.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-3945.c
-@@ -449,7 +449,7 @@ static void iwl3945_dbg_report_frame(struct iwl3945_priv *priv,
- 
- 	if (print_summary) {
- 		char *title;
--		u32 rate;
-+		int rate;
- 
- 		if (hundred)
- 			title = "100Frames";
-
+It's an implementation issue, and there are patches queue for 2.6.27
+that allow gdb access to these regions, which should be easily
+extendable to cover core dumps, too.
 
