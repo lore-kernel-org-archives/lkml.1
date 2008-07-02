@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbYGBQa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758822AbYGBQbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758284AbYGBQa0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 12:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755009AbYGBQaP
+	id S1758822AbYGBQbS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 12:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbYGBQbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 12:30:15 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:9223 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754836AbYGBQaN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 12:30:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=R07dP29RQWi0zNPlh5d4h0TFKHL55HXZ1HlwAkjRFou40xb/gPOIWUgjye9xnHtI5x
-         OWxU+zJUX4rTAdpjn8IqGjH2in9srmo6dg2HBa7rebLPmr+6XhdULYWj4ubwKjcFzzHx
-         DVBdJNHcImtQ63XGk35rZpDESmYJyjCaVLCw4=
-Message-ID: <dd18b0c30807020930u43405fd5v2e328b6b76b833b0@mail.gmail.com>
-Date: Wed, 2 Jul 2008 16:30:11 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Matthew Garrett" <mjg59@srcf.ucam.org>
-Subject: Re: dsdt buggy acpi
-Cc: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "ACPI Devel Maling List" <linux-acpi@vger.kernel.org>
-In-Reply-To: <20080702115527.GA3396@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Jul 2008 12:31:09 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:53740 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754389AbYGBQbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 12:31:08 -0400
+Date: Wed, 2 Jul 2008 20:33:31 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] workqueues: implement flush_work()
+Message-ID: <20080702163331.GA565@tv-sign.ru>
+References: <20080629144926.GA4347@tv-sign.ru> <20080630132512.GA2663@ami.dom.local> <20080701125018.GA99@tv-sign.ru> <20080701210300.GA3272@ami.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <dd18b0c30806302339q7b3effybf8a7f619b009262@mail.gmail.com>
-	 <200807011619.53339.rjw@sisk.pl>
-	 <dd18b0c30807010918p48cfbe2bnb7e4a2bf00a01638@mail.gmail.com>
-	 <20080702082555.0959ef2b@linux360.ro>
-	 <20080702100935.GA699@srcf.ucam.org>
-	 <20080702144820.29f7d43d@linux360.ro>
-	 <20080702115527.GA3396@srcf.ucam.org>
+In-Reply-To: <20080701210300.GA3272@ami.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 2, 2008 at 11:55 AM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> On Wed, Jul 02, 2008 at 02:48:20PM +0300, Eduard - Gabriel Munteanu wrote:
->> On Wed, 2 Jul 2008 11:09:35 +0100
->> Matthew Garrett <mjg59@srcf.ucam.org> wrote:
->> > We've made a huge number of workarounds for buggy DSDT
->> > implementations.
->>
->> Of course, I myself used a custom DSDT for my laptop. But I was saying
->> that these workarounds generally do not belong to the kernel realm.
+On 07/01, Jarek Poplawski wrote:
 >
-> Of course they do. Nothing else is going to fix them up.
->
->> This isn't the regular "Pentium F00F bug" stuff; instead bugs in DSDTs
->> consist of compiling issues, non-standard compliant, plainly bad
->> code, Windows-only stuff, which can all be unique for every model of a
->> laptop for example. While the kernel may be able to get around some of
->> that stuff, the kernel won't have any Asus, Acer etc. specific
->> workarounds.
->
-> Windows doesn't have any Asus/Acer/whatever workarounds either. We just
-> need to be compatible with the Windows implementation. There's a
-> minority of cases where that isn't good enough, but almost every DSDT
-> issue can (and should) be handled by Linux if the machine works under
-> Windows.
->
-> --
-> Matthew Garrett | mjg59@srcf.ucam.org
->
+> On Tue, Jul 01, 2008 at 04:50:18PM +0400, Oleg Nesterov wrote:
+> ...
+> > Yes, cwq can be "stale", but this doesn't matter and we can't have
+> > the false positive here.
+> > 
+> > cwq->current_work is always changed under cwq->lock, and we hold this
+> > lock. If we see "cwq->current_work == work" we can safely insert the
+> > barrier and wait. Even if this work was already re-queued on another
+> > CPU or another workqueue_struct.
+> > 
+> > Note also that rmb() can't really help here.
+> 
+> Right! The question is how "stale" this cwq could be when read without
+> any lock or barrier. Of course, there can't be the false positive, but
+> I wonder if we really do enough, to check if a work isn't current on
+> some other cwq, even without any immediate re-queuing.
 
-Hello; what info is supplied with EFI i.g. I'm using a macbook pro.
-After looking at:
-http://acpi.sourceforge.net/dsdt/view.php I was unable to locate
-anything with apple, or at least
-couldn't find the manufacture number.
-If somebody has already done this, I was wondering if it would be O.K.
-if I can attached my dsdt.dsl with the errors,
-and my explanation of what I changed, just so If I did something
-completely wrong
-I can  adjust it, So I can feel at ease knowing that it's correct.
-regards;
--- 
-Justin P. Mattock
+Not sure I understand...
+
+Of course, the work can be current on _all_ CPUs. So no, we don't do
+enough. Please look at the changelog, in particular the note about
+flush_work_sync().
+
+But without re-queuing cwq can't be wrong? Once again, flush_work()
+flushes the result of the last visible queue_work(). If not requeued,
+the work is either current, or it is pending and list_empty() == F.
+
+Oleg.
+
