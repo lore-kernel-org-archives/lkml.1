@@ -1,83 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761558AbYGBCJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761836AbYGBCLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761558AbYGBCJe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jul 2008 22:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758091AbYGBCJX
+	id S1761836AbYGBCLO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jul 2008 22:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758171AbYGBCK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jul 2008 22:09:23 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:57812 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756179AbYGBCJV (ORCPT
+	Tue, 1 Jul 2008 22:10:59 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35287 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757751AbYGBCK6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jul 2008 22:09:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ng7UjB4At4Vp/4WILdXH29KQswIMS5OOMO4xk1Xav9qjvP2PHUYQd8S93qNvzj64Lz
-         Lw1SR47Q2WX3JTPvsDJEIxMlxXIANktjiWbzmdlY9LXxHJC+XcE+5HCurj27q91P7a+q
-         lHcYGpwMIjE6PXICsXZYeJaHlQAkur8xfVfmw=
-Message-ID: <8bd0f97a0807011909i53a347f5me4410a24dd27d5ab@mail.gmail.com>
-Date: Tue, 1 Jul 2008 22:09:20 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Denys Vlasenko" <vda.linux@googlemail.com>
-Subject: Re: [PATCH 5/23] make section names compatible with -ffunction-sections -fdata-sections: blackfin
-Cc: linux-arch@vger.kernel.org, "Russell King" <rmk@arm.linux.org.uk>,
-       "David Howells" <dhowells@redhat.com>,
-       "Ralf Baechle" <ralf@linux-mips.org>,
-       "Lennert Buytenhek" <kernel@wantstofly.org>,
-       "Josh Boyer" <jwboyer@linux.vnet.ibm.com>,
-       "Paul Mackerras" <paulus@samba.org>,
-       "David Woodhouse" <dwmw2@infradead.org>,
-       "Andi Kleen" <andi@firstfloor.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org,
-       "Paul Gortmaker" <paul.gortmaker@windriver.com>,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Tim Bird" <tim.bird@am.sony.com>,
-       "Martin Schwidefsky" <schwidefsky@de.ibm.com>,
-       "Dave Miller" <davem@davemloft.net>
-In-Reply-To: <200807020208.33302.vda.linux@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 1 Jul 2008 22:10:58 -0400
+Date: Wed, 2 Jul 2008 11:16:18 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: [RFC][PATCH] memcg: shmem swap cache
+Message-Id: <20080702111618.3d7138bd.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <25019527.1214873805265.kamezawa.hiroyu@jp.fujitsu.com>
+References: <Pine.LNX.4.64.0806302024050.27080@blonde.site>
+	<Pine.LNX.4.64.0806290117510.21758@blonde.site>
+	<Pine.LNX.4.64.0806290120270.21758@blonde.site>
+	<20080630173631.a252bb0e.kamezawa.hiroyu@jp.fujitsu.com>
+	<25019527.1214873805265.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200807020235.08025.vda.linux@googlemail.com>
-	 <8bd0f97a0807011558u2c02f6fcre2f3af3d5cced936@mail.gmail.com>
-	 <200807020208.33302.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 1, 2008 at 8:08 PM, Denys Vlasenko wrote:
-> On Wednesday 02 July 2008 00:58, Mike Frysinger wrote:
->> On Tue, Jul 1, 2008 at 8:35 PM, Denys Vlasenko wrote:
->> > The purpose of this patch is to make kernel buildable
->> > with "gcc -ffunction-sections -fdata-sections".
->> > This patch fixes blackfin architecture.
->>
->> the comment right above what you changed says it already works for
->> Blackfin.  so you arent fixing it at all.
->> >                /* This gets done first, so the glob doesn't suck it in */
->> >                . = ALIGN(32);
->> > -               *(.data.cacheline_aligned)
->> > +               *(.cacheline_aligned.data)
->
-> This may pull in an unrelated data object named "cacheline_aligned"
-> (say, a static variable in a driver). If that variable is not
-> itself aligned to the cacheline size, it will mess up alignment of all
-> objects in .data.cacheline_aligned which follow. Not good.
->
-> To be safe from such weird and hard to debug problems
-> it's better to not use names like .data.XXXX at all.
-> I just uniformly renamed al such "special sections"
-> in the kernel to .XXXXX.data
+On Tue, 1 Jul 2008 09:56:45 +0900 (JST)
+kamezawa.hiroyu@jp.fujitsu.com wrote:
 
-you're right of course ... i obviously hadnt thought of this.  please
-however still abstract this stuff into the common header.
+> >>   - shmem's page is removed by mem_cgroup_uncharge_cache_page(), So,
+> >>     shmem's swapcache is not charged.
+> >
+> >Ah, that's interesting: I'd assumed you'd changed that in your
+> >no-refcount patches, and had been surprised not to notice a slowdown
+> >(waiting for swap to be written and freed before coming under limit).
+> >Now you want to make them wait: not entirely an improvement,
+> >but I see your point.
+> >
+> To do this is (maybe) a few line patch. I'll CC you if I wrote some.
+> 
+maybe like this. how do you feel ?
+I'll stack this on my queue and test for a while.
 
-i just tested the current Blackfin kernel and it does build/link/run
-fine with -ffunction-sections/-fdata-sections.  however, --gc-sections
-still causes crashes (but this is because all of the .init.setup
-sections are flagged as unused).
--mike
+==
+SwapCache handling fix.
+
+memcg failed to handle shmem's swapcache. This patch tries to fix it.
+
+After this:
+
+Any page marked as SwapCache is not uncharged.
+(until delelte_from_swap_cache() delete the flag.)
+
+To check a page is alive shmem-page-cache or not we use
+ page->mapping && !PageAnon(page) instead of pc->flags & PAGE_CGROUP_FLAG_CACHE.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+Index: test-2.6.26-rc5-mm3++/mm/memcontrol.c
+===================================================================
+--- test-2.6.26-rc5-mm3++.orig/mm/memcontrol.c	2008-07-02 09:29:52.000000000 +0900
++++ test-2.6.26-rc5-mm3++/mm/memcontrol.c	2008-07-02 10:58:15.000000000 +0900
+@@ -685,11 +685,45 @@
+ 
+ 	VM_BUG_ON(pc->page != page);
+ 
+-	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+-	    && ((pc->flags & PAGE_CGROUP_FLAG_CACHE)
+-		|| page_mapped(page)
+-		|| PageSwapCache(page)))
++	/*
++	 * File Cache
++	 * If called with MEM_CGROUP_CHARGE_TYPE_MAPPED, check page->mapping.
++	 * add_to_page_cache() .... charged before inserting radix-tree.
++	 * remove_from_page_cache() .... uncharged at removing from radix-tree.
++	 * page->mapping && !PageAnon(page) catches file cache.
++	 *
++	 * Anon/Shmem.....We check PageSwapCache(page).
++	 * Anon .... charged before mapped.
++	 * Shmem .... charged at add_to_page_cache() as usual File Cache.
++	 *
++	 * This page will be finally uncharged when removed from swap-cache
++	 *
++	 * we treat 2 cases here.
++	 * A. anonymous page  B. shmem.
++	 * We never uncharge if page is marked as SwapCache.
++	 * add_to_swap_cache() have nothing to do with charge/uncharge.
++	 * SwapCache flag is deleted before delete_from_swap_cache() calls this
++	 *
++	 * shmem's behavior is following. (see shmem.c/swap_state.c also)
++	 * at swap-out:
++	 * 	0. add_to_page_cache()//charged at page creation.
++	 * 	1. add_to_swap_cache() (marked as SwapCache)
++	 *	2. remove_from_page_cache().  (calls this.)
++	 *	(finally) delete_from_swap_cache(). (calls this.)
++	 * at swap-in:
++	 * 	3. add_to_swap_cache() (no charge here.)
++	 * 	4. add_to_page_cache() (charged here.)
++	 * 	5. delete_from_swap_cache() (calls this.)
++	 * PageSwapCache(page) catches "2".
++	 * page->mapping && !PageAnon() catches "5" and avoid uncharging.
++	 */
++	if (PageSwapCache(page))
+ 		goto unlock;
++	/* called from unmap or delete_from_swap_cache() */
++	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
++		&& (page_mapped(page)
++		    || (page->mapping && !PageAnon(page))))/* alive cache ? */
++			goto unlock;
+ 
+ 	mz = page_cgroup_zoneinfo(pc);
+ 	spin_lock_irqsave(&mz->lru_lock, flags);
+
