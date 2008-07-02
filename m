@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762453AbYGBIAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013AbYGBIDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762453AbYGBIAh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 04:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbYGBH77
+	id S1755013AbYGBIDP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 04:03:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYGBICy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 03:59:59 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:59319 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751492AbYGBH76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 03:59:58 -0400
-Date: Wed, 2 Jul 2008 09:59:40 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: "Dan Williams" <dan.j.williams@intel.com>
-Cc: "Pierre Ossman" <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, kernel@avr32linux.org,
-       shannon.nelson@intel.com, "David Brownell" <david-b@pacbell.net>
-Subject: Re: [PATCH v4 2/6] dmaengine: Add dma_chan_is_in_use() function
-Message-ID: <20080702095940.699fe704@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <e9c3a7c20807011900x7b2ac3dx7536e0450202e3c0@mail.gmail.com>
-References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-2-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214486603-23655-3-git-send-email-haavard.skinnemoen@atmel.com>
-	<e9c3a7c20807011831n74eb69b8r3095b62515fe5c9@mail.gmail.com>
-	<e9c3a7c20807011900x7b2ac3dx7536e0450202e3c0@mail.gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Wed, 2 Jul 2008 04:02:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:32786 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751832AbYGBICw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 04:02:52 -0400
+Date: Wed, 2 Jul 2008 01:02:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ben Dooks <ben-linux@fluff.org>
+Subject: Re: [-mmotm] some different buliding failures
+Message-Id: <20080702010212.7b4b9301.akpm@linux-foundation.org>
+In-Reply-To: <486B1EE0.9060303@cn.fujitsu.com>
+References: <486B1EE0.9060303@cn.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Jul 2008 07:59:45.0961 (UTC) FILETIME=[97D41190:01C8DC19]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Dan Williams" <dan.j.williams@intel.com> wrote:
-> Actually we will probably need something like the following.
-> ->client_count is protected by the dma_list_mutex.  
+On Wed, 02 Jul 2008 14:23:28 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
+
 > 
-> diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-> index 99c22b4..10de69e 100644
-> --- a/drivers/dma/dmaengine.c
-> +++ b/drivers/dma/dmaengine.c
-> @@ -183,9 +183,10 @@ static void dma_client_chan_alloc(struct
-> dma_client *client)
->  				/* we are done once this client rejects
->  				 * an available resource
->  				 */
-> -				if (ack == DMA_ACK)
-> +				if (ack == DMA_ACK) {
->  					dma_chan_get(chan);
-> -				else if (ack == DMA_NAK)
-> +					chan->client_count++;
-> +				} else if (ack == DMA_NAK)
->  					return;
->  			}
+> drivers/mfd/sm501.c:39: error: field 'gpio' has incomplete type
+> 
 
-This looks good to me. I can use client_count to determine if dwc->dws
-is actually valid so that channels that were initially allocated for a
-slave but NAK'ed or DUP'ed can be reclaimed for other purposes.
+Ben, can you please take a look?  I suspect the fix is to disable this
+driver on x86.
 
-It still doesn't solve the issue with memory wastage, but we probably
-shouldn't expect to keep a lot of unused channels around anyway.
+> 
+> drivers/media/video/ivtv/ivtv-ioctl.c: In function 'ivtv_set_funcs':
+> drivers/media/video/ivtv/ivtv-ioctl.c:1899: error: 'struct video_device' has no member named 'vidioc_g_register'
+> drivers/media/video/ivtv/ivtv-ioctl.c:1900: error: 'struct video_device' has no member named 'vidioc_s_register'
 
-Thanks!
+Seems to have been fixed.
 
-Haavard
+> 
+> mm/hugetlb.c: In function 'vma_needs_reservation':
+> mm/hugetlb.c:859: error: implicit declaration of function 'vma_pagecache_offset'
+
+Against hugetlb-reservations-fix-hugetlb-map_private-reservations-across-vma-splits-v2.patch:
+
+ mm/hugetlb.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff -puN mm/hugetlb.c~hugetlb-reservations-fix-hugetlb-map_private-reservations-across-vma-splits-v2-fix mm/hugetlb.c
+--- a/mm/hugetlb.c~hugetlb-reservations-fix-hugetlb-map_private-reservations-across-vma-splits-v2-fix
++++ a/mm/hugetlb.c
+@@ -856,7 +856,7 @@ static int vma_needs_reservation(struct 
+ 
+ 	} else  {
+ 		int err;
+-		pgoff_t idx = vma_pagecache_offset(h, vma, addr);
++		pgoff_t idx = vma_hugecache_offset(h, vma, addr);
+ 		struct resv_map *reservations = vma_resv_map(vma);
+ 
+ 		err = region_chg(&reservations->regions, idx, idx + 1);
+@@ -876,7 +876,7 @@ static void vma_commit_reservation(struc
+ 		region_add(&inode->i_mapping->private_list, idx, idx + 1);
+ 
+ 	} else if (is_vma_resv_set(vma, HPAGE_RESV_OWNER)) {
+-		pgoff_t idx = vma_pagecache_offset(h, vma, addr);
++		pgoff_t idx = vma_hugecache_offset(h, vma, addr);
+ 		struct resv_map *reservations = vma_resv_map(vma);
+ 
+ 		/* Mark this page used in the map. */
+@@ -1553,8 +1553,8 @@ static void hugetlb_vm_op_close(struct v
+ 	unsigned long end;
+ 
+ 	if (reservations) {
+-		start = vma_pagecache_offset(h, vma, vma->vm_start);
+-		end = vma_pagecache_offset(h, vma, vma->vm_end);
++		start = vma_hugecache_offset(h, vma, vma->vm_start);
++		end = vma_hugecache_offset(h, vma, vma->vm_end);
+ 
+ 		reserve = (end - start) -
+ 			region_count(&reservations->regions, start, end);
+_
+
