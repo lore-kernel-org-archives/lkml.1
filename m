@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYGCOle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbYGCOlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbYGCOle (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 10:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbYGCOl0
+	id S1755510AbYGCOlx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 10:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbYGCOlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 10:41:26 -0400
-Received: from mail.ccur.com ([12.192.68.12]:30140 "EHLO mail.ccur.com"
+	Thu, 3 Jul 2008 10:41:40 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56341 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752489AbYGCOlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 10:41:25 -0400
-X-Greylist: delayed 328 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Jul 2008 10:41:24 EDT
-Message-ID: <486CE3CD.7090907@ccur.com>
-Date: Thu, 3 Jul 2008 10:35:57 -0400
-From: John Blackwood <john.blackwood@ccur.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	id S1751242AbYGCOlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 10:41:39 -0400
+Date: Thu, 3 Jul 2008 16:41:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: rostedt@goodmis.org, peterz@infradead.org, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH 0/3] sched: newidle and RT wake-buddy fixes
+Message-ID: <20080703144124.GA653@elte.hu>
+References: <20080627202444.3829.21595.stgit@lsg.lsg.lab.novell.com> <20080630131511.GA7506@elte.hu> <4868DCC7.BA47.005A.0@novell.com>
 MIME-Version: 1.0
-To: <linux-kernel@vger.kernel.org>
-CC: Andi Kleen <andi-suse@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Todd Allen <todd.allen@ccur.com>
-Subject: [PATCH] node meminfo Active & Inactive pages to Kbytes
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4868DCC7.BA47.005A.0@novell.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0004]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew and Andi,
 
-We found a minor bug in the output of
-/sys/devices/system/node/node[n]/meminfo
-where the Active and Inactive values are in pages instead of Kbytes.
+* Gregory Haskins <ghaskins@novell.com> wrote:
 
-Looks like this occurred back in 2.6.20 when the code was changed
-over to use node_page_state().
+> I may have found the issue: It looks like the hunk that initially 
+> disables interrupts in load_balance_newidle() was inadvertently 
+> applied to load_balance() instead during the merge to linux-tip.  If 
+> you fold the following patch into my original patch, it should set 
+> things right again.
 
-Thanks.
+ah, sorry - indeed! I've reactivated your patch and i'm testing it now.
 
---- linux.2.6.26-rc8/drivers/base/node.c	2008-07-03 09:26:01.000000000 -0400
-+++ new/drivers/base/node.c	2008-07-03 09:25:45.000000000 -0400
-@@ -84,8 +84,8 @@ static ssize_t node_read_meminfo(struct
-  		       nid, K(i.totalram),
-  		       nid, K(i.freeram),
-  		       nid, K(i.totalram - i.freeram),
--		       nid, node_page_state(nid, NR_ACTIVE),
--		       nid, node_page_state(nid, NR_INACTIVE),
-+		       nid, K(node_page_state(nid, NR_ACTIVE)),
-+		       nid, K(node_page_state(nid, NR_INACTIVE)),
-  #ifdef CONFIG_HIGHMEM
-  		       nid, K(i.totalhigh),
-  		       nid, K(i.freehigh),
+	Ingo
