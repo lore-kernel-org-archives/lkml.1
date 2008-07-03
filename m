@@ -1,76 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbYGCVd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbYGCVeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756956AbYGCVd7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 17:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbYGCVdt
+	id S1757205AbYGCVeh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 17:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbYGCVe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 17:33:49 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36056 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754231AbYGCVds (ORCPT
+	Thu, 3 Jul 2008 17:34:28 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:7222 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754214AbYGCVe1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 17:33:48 -0400
-Message-ID: <486D4596.60005@infradead.org>
-Date: Thu, 03 Jul 2008 22:33:10 +0100
-From: David Woodhouse <dwmw2@infradead.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 3 Jul 2008 17:34:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=gGf8t7RvgfaM41viRqaFHuwDPx8i/HFXDwNvuoQf9vFIh5rojqjh5cDlEPo4mGysq1
+         9DUltcQtV7O9AF/HNcxt0q57PqHinBfKoYPqwnb2HR2YAdKz4FFN7XCrSfu32cCxW/DU
+         rVzdQ6EZUw5HNzBSOSLw5NpaBz01d3j680Yzs=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86/acpi: remove have_arch_parse_srat
+Date: Thu, 3 Jul 2008 14:35:36 -0700
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Theodore Tso <tytso@mit.edu>, Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org>	 <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>	 <486CC440.9030909@garzik.org>	 <Pine.LNX.4.64.0807031353030.11033@blonde.site>	 <486CCFED.7010308@garzik.org>	 <1215091999.10393.556.camel@pmac.infradead.org>	 <486CD654.4020605@garzik.org>	 <1215093175.10393.567.camel@pmac.infradead.org>	 <20080703173040.GB30506@mit.edu> <1215111362.10393.651.camel@pmac.infradead.org> <486D3E88.9090900@garzik.org>
-In-Reply-To: <486D3E88.9090900@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200807031435.36508.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> David Woodhouse wrote:
->> Although it does make me wonder if it was better the way I had it
->> originally, with individual options like TIGON3_FIRMWARE_IN_KERNEL
->> attached to each driver, rather than a single FIRMWARE_IN_KERNEL option
->> which controls them all.
-> 
-> IMO, individual options would be better.
 
-They had individual options for a long time, but the consensus was that 
-I should remove them -- a consensus which was probably right. It was 
-moderately inconvenient going back through it all and recommitting it 
-without that, but it was worth it to get it right...
+we already have the same srat handling interface for 32bit.
 
-> Plus, unless I am misunderstanding, the firmware is getting built into 
-> the kernel image not the tg3 module?
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-That's right, although it doesn't really matter when they're both in the 
-vmlinux.
+---
+ arch/ia64/Kconfig          |    4 ----
+ arch/x86/Kconfig           |    4 ----
+ arch/x86/mm/discontig_32.c |   17 -----------------
+ drivers/acpi/numa.c        |    4 ----
+ include/linux/acpi.h       |    3 +--
+ 5 files changed, 1 insertion(+), 31 deletions(-)
 
-When it's actually a module, there really is no good reason not to let 
-request_firmware() get satisfied from userspace. If you can load 
-modules, then you can load firmware too -- the required udev stuff has 
-been there as standard for a _long_ time, as most modern drivers 
-_require_ it without even giving you the built-in-firmware option at all.
-
-It makes no more sense to object to that than it does to object to the 
-module depending on _other_ modules. Both those other modules, and the 
-required firmware, are _installed_ by the kernel Makefiles, after all.
-
-It wouldn't be _impossible_ to put firmware blobs into the foo.ko files 
-themselves and find them there. The firmware blobs in the kernel are 
-done in a separate section (like initcalls, exceptions tables, pci 
-fixups, and a bunch of other stuff). It'd just take some work in 
-module.c to link them into a global list, and some locking shenanigans 
-in the lookups (and lifetime issues to think about). But it just isn't 
-worth the added complexity, given that userspace is known to be alive 
-and working. It's pointless not to just use request_firmware() normally, 
-from a module.
-
--- 
-dwmw2
+Index: linux-2.6/arch/ia64/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/ia64/Kconfig
++++ linux-2.6/arch/ia64/Kconfig
+@@ -60,10 +60,6 @@ config RWSEM_XCHGADD_ALGORITHM
+ 	bool
+ 	default y
+ 
+-config HAVE_ARCH_PARSE_SRAT
+-	bool
+-	default y
+-
+ config ARCH_HAS_ILOG2_U32
+ 	bool
+ 	default n
+Index: linux-2.6/arch/x86/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/x86/Kconfig
++++ linux-2.6/arch/x86/Kconfig
+@@ -465,10 +465,6 @@ config ACPI_SRAT
+ 	depends on X86_32 && ACPI && NUMA && X86_GENERICARCH
+ 	select ACPI_NUMA
+ 
+-config HAVE_ARCH_PARSE_SRAT
+-	def_bool y
+-	depends on ACPI_SRAT
+-
+ config X86_SUMMIT_NUMA
+ 	def_bool y
+ 	depends on X86_32 && NUMA && X86_GENERICARCH
+Index: linux-2.6/arch/x86/mm/discontig_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/discontig_32.c
++++ linux-2.6/arch/x86/mm/discontig_32.c
+@@ -443,20 +443,3 @@ int memory_add_physaddr_to_nid(u64 addr)
+ EXPORT_SYMBOL_GPL(memory_add_physaddr_to_nid);
+ #endif
+ 
+-#if defined(CONFIG_ACPI_NUMA) && !defined(CONFIG_HAVE_ARCH_PARSE_SRAT)
+-/*
+- * Dummy on 32-bit, for now:
+- */
+-void __init acpi_numa_slit_init(struct acpi_table_slit *slit)
+-{
+-}
+-
+-void __init
+-acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
+-{
+-}
+-
+-void __init acpi_numa_arch_fixup(void)
+-{
+-}
+-#endif
+Index: linux-2.6/drivers/acpi/numa.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/numa.c
++++ linux-2.6/drivers/acpi/numa.c
+@@ -207,7 +207,6 @@ acpi_parse_processor_affinity(struct acp
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_HAVE_ARCH_PARSE_SRAT
+ static int __init
+ acpi_parse_memory_affinity(struct acpi_subtable_header * header,
+ 			   const unsigned long end)
+@@ -225,7 +224,6 @@ acpi_parse_memory_affinity(struct acpi_s
+ 
+ 	return 0;
+ }
+-#endif
+ 
+ static int __init acpi_parse_srat(struct acpi_table_header *table)
+ {
+@@ -254,11 +252,9 @@ int __init acpi_numa_init(void)
+ 	if (!acpi_table_parse(ACPI_SIG_SRAT, acpi_parse_srat)) {
+ 		acpi_table_parse_srat(ACPI_SRAT_TYPE_CPU_AFFINITY,
+ 				      acpi_parse_processor_affinity, NR_CPUS);
+-#ifdef CONFIG_HAVE_ARCH_PARSE_SRAT
+ 		acpi_table_parse_srat(ACPI_SRAT_TYPE_MEMORY_AFFINITY,
+ 				      acpi_parse_memory_affinity,
+ 				      NR_NODE_MEMBLKS);
+-#endif
+ 	}
+ 
+ 	/* SLIT: System Locality Information Table */
+Index: linux-2.6/include/linux/acpi.h
+===================================================================
+--- linux-2.6.orig/include/linux/acpi.h
++++ linux-2.6/include/linux/acpi.h
+@@ -94,8 +94,7 @@ int acpi_parse_mcfg (struct acpi_table_h
+ void acpi_table_print_madt_entry (struct acpi_subtable_header *madt);
+ 
+ /* the following four functions are architecture-dependent */
+-#if defined(CONFIG_HAVE_ARCH_PARSE_SRAT) && !defined(NR_NODE_MEMBLKS)
+-#define NR_NODE_MEMBLKS MAX_NUMNODES
++#ifndef CONFIG_ACPI_NUMA
+ #define acpi_numa_slit_init(slit) do {} while (0)
+ #define acpi_numa_processor_affinity_init(pa) do {} while (0)
+ #define acpi_numa_memory_affinity_init(ma) do {} while (0)
