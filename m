@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbYGCUvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbYGCUy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756551AbYGCUvU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 16:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbYGCUvK
+	id S1754950AbYGCUy5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 16:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYGCUyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 16:51:10 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:60814 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753029AbYGCUvJ (ORCPT
+	Thu, 3 Jul 2008 16:54:47 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35489 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752953AbYGCUyq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 16:51:09 -0400
-Date: Thu, 3 Jul 2008 21:50:31 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: [PATCH 2.6.26-rc8-mm1] memrlimit: fix mmap_sem deadlock
-Message-ID: <Pine.LNX.4.64.0807032143110.10641@blonde.site>
+	Thu, 3 Jul 2008 16:54:46 -0400
+Date: Thu, 3 Jul 2008 13:52:05 -0700
+From: Greg KH <greg@kroah.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, davem@davemloft.net
+Subject: Re: [PATCH] PCI: make pci_name use dev_name
+Message-ID: <20080703205205.GA17079@kroah.com>
+References: <20080702153524.GA30318@kroah.com> <200807031237.31063.jbarnes@virtuousgeek.org> <20080703202446.GB528@kroah.com> <200807031333.56892.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807031333.56892.jbarnes@virtuousgeek.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"ps -f" hung after "killall make" of make -j20 kernel builds.  It's
-generally considered bad manners to down_write something you already
-have down_read.  exit_mm up_reads before calling mm_update_next_owner,
-so I guess exec_mmap can safely do so too.  (And with that repositioning
-there's not much point in mm_need_new_owner allowing for NULL mm.)
+On Thu, Jul 03, 2008 at 01:33:56PM -0700, Jesse Barnes wrote:
+> On Thursday, July 03, 2008 1:24 pm Greg KH wrote:
+> > On Thu, Jul 03, 2008 at 12:37:30PM -0700, Jesse Barnes wrote:
+> > > On Wednesday, July 02, 2008 1:22 pm Greg KH wrote:
+> > > > On Wed, Jul 02, 2008 at 09:04:22AM -0700, Greg KH wrote:
+> > > > > Well, it's only used in 837 different places, so it might take me a
+> > > > > few hours to ensure I catch all the usages :(
+> > > >
+> > > > Ok, here are 4 patches that fix the few places that this pci change
+> > > > caused problems.
+> > > >
+> > > > Jesse, do you want to add these to your tree?  I can take the single
+> > > > USB one if you want, or you can take all 4, it's fine with me.
+> > >
+> > > I'd rather just take the PCI patch (which I'm doing now).  The other
+> > > stuff can come in through the appropriate tree.
+> >
+> > Fair enough, I'll make sure they don't get dropped.
+> 
+> Cool thanks.  I assume you'll only push the pci_name change once all or most 
+> of the compiler warnings have been fixed up?
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
-Fix to memrlimit-cgroup-mm-owner-callback-changes-to-add-task-info.patch
-quite independent of its recent sleeping-inside-spinlock fix; could even
-be applied to 2.6.26, though no deadlock there.  Gosh, I see those patches
-have spawned "Reviewed-by" tags in my name: sorry, no, just "Bug-found-by".
+As there were only 4 patches for the warnings, yes, I can handle that :)
 
- fs/exec.c     |    2 +-
- kernel/exit.c |    2 --
- 2 files changed, 1 insertion(+), 3 deletions(-)
+thanks,
 
---- 2.6.26-rc8-mm1/fs/exec.c	2008-07-03 11:35:20.000000000 +0100
-+++ linux/fs/exec.c	2008-07-03 20:27:20.000000000 +0100
-@@ -738,11 +738,11 @@ static int exec_mmap(struct mm_struct *m
- 	tsk->active_mm = mm;
- 	activate_mm(active_mm, mm);
- 	task_unlock(tsk);
--	mm_update_next_owner(old_mm);
- 	arch_pick_mmap_layout(mm);
- 	if (old_mm) {
- 		up_read(&old_mm->mmap_sem);
- 		BUG_ON(active_mm != old_mm);
-+		mm_update_next_owner(old_mm);
- 		mmput(old_mm);
- 		return 0;
- 	}
---- 2.6.26-rc8-mm1/kernel/exit.c	2008-07-03 11:35:37.000000000 +0100
-+++ linux/kernel/exit.c	2008-07-03 20:28:35.000000000 +0100
-@@ -588,8 +588,6 @@ mm_need_new_owner(struct mm_struct *mm, 
- 	 * If there are other users of the mm and the owner (us) is exiting
- 	 * we need to find a new owner to take on the responsibility.
- 	 */
--	if (!mm)
--		return 0;
- 	if (atomic_read(&mm->mm_users) <= 1)
- 		return 0;
- 	if (mm->owner != p)
+greg k-h
