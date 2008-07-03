@@ -1,339 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756279AbYGCMND@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757821AbYGCMNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756279AbYGCMND (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:13:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755397AbYGCMMO
+	id S1757821AbYGCMNh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756505AbYGCMMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:12:14 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:56830 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754660AbYGCMML (ORCPT
+	Thu, 3 Jul 2008 08:12:43 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:62779 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755005AbYGCMMl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:12:11 -0400
-Date: Thu, 3 Jul 2008 13:36:25 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [x86-tip] panic during cpu_up
-Message-ID: <20080703080625.GB4065@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20080702190651.GA13252@linux.vnet.ibm.com> <20080702205544.GB13252@linux.vnet.ibm.com> <20080703070242.GA16379@elte.hu>
+	Thu, 3 Jul 2008 08:12:41 -0400
+Message-Id: <9942A69CB65D4A41B39F36AF8EEF6F22@nsl.ad.nec.co.jp>
+From: "Takashi Sato" <t-sato@yk.jp.nec.com>
+To: "Christoph Hellwig" <hch@infradead.org>,
+       "Alasdair G Kergon" <agk@redhat.com>
+Cc: <linux-ext4@vger.kernel.org>, "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-fsdevel@vger.kernel.org>, <viro@ZenIV.linux.org.uk>,
+       <dm-devel@redhat.com>, <xfs@oss.sgi.com>,
+       <linux-kernel@vger.kernel.org>, <mtk.manpages@googlemail.com>,
+       <axboe@kernel.dk>
+References: <20080630212450t-sato@mail.jp.nec.com> <20080701081026.GB16691@infradead.org> <20080701105251.GC22522@agk.fab.redhat.com>
+In-Reply-To: <20080701105251.GC22522@agk.fab.redhat.com>
+Subject: Re: [dm-devel] Re: [PATCH 3/3] Add timeout feature
+Date: Thu, 3 Jul 2008 21:11:05 +0900
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080703070242.GA16379@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Windows Mail 6.0.6000.16480
+X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6000.16545
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 03, 2008 at 09:02:42AM +0200, Ingo Molnar wrote:
-> 
-> * Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> 
-> > [Missed cc'ing the LKML last time around]
-> > 
-> > On Thu, Jul 03, 2008 at 12:36:51AM +0530, Dhaval Giani wrote:
-> > > Hi Ingo, Thomas,
-> > > 
-> > > I am hitting this on -tip. With 200a86b5d435a217c3d77f3b53cd32cb78c1fde8
-> > > as the top level commit. Wondering if it is known?
-> > > 
-> > > I am trying to fix it atm.
-> > > 
-> > > Thanks,
-> > > 
-> > > Red Hat Enterprise Linux AS release 4 (Nahant Update 2)
-> > > Kernel 2.6.26-rc8-tip on an i686
-> > > 
-> > > llm11.in.ibm.com login: root
-> > > Password: 
-> > > Last login: Thu Jul  3 00:30:47 on ttyS0
-> > > You have new mail.
-> > > cd[root@llm11 ~]# cd /sys/devices/system/cpu/cpu1/
-> > > [root@llm11 cpu1]# echo 0 > online 
-> > > Breaking affinity for irq 45
-> > > [root@llm11 cpu1]# echo 1 > online 
-> > > lockdep: fixing up alternatives.
-> > > BUG: unable to handle kernel <1>BUG: unable to handle kernel NULL
-> > > pointer dereference at 00000000
-> > > IP: [<00000000>]
-> > > *pde = 00000000 
-> > > Oops: 0000 [#1] SMP 
-> > > Modules linked in:
-> > > 
-> > > Pid: 0, comm: swapper Not tainted (2.6.26-rc8-tip #1)
-> > > EIP: 0060:[<00000000>] EFLAGS: 00010002 CPU: 2
-> > > EIP is at 0x0
-> > > EAX: c0614c00 EBX: 00000002 ECX: 0799d000 EDX: ffff3bdf
-> > > BUG: unable to handle kernel NULL pointer dereference at 00000000
-> > > IP:ESI: 00000000 EDI: 00000000 EBP: f7cadfac ESP: f7cadfa4
-> > >  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> > >  [<00000000>]
-> > > BUG: unable to handle kernel NULL pointer dereference*pde = 00000000
-> > > <1>BUG: unable to handle kernel  at 00000000
-> > > IP:<0>Process swapper (pid: 0, ti=f7cac000 task=f7caaee0
-> > > task.ti=f7cac000)NULL pointer dereference [<00000000>]
-> > > *pde = 00000000 <1>BUG: unable to handle kernel 
-> > > Stack: 
-> > >  at 00000000
-> > > IP:NULL pointer dereference [<00000000>]
-> > >  at 00000000
-> > > c01020c7 *pde = 00000000 <1>IP:
-> > > 
-> > >  [<00000000>]
-> > > 0402080c *pde = 00000000 f7cadfb4 
-> > > c040b6cf 00000000 00000000 00000000 00000000 
-> > >        00000000 00000000 00000000 00000000 00000000 00000000 000000d8
-> > > 00000000 
-> > >        00000000 00000000 00000000 00000000 00000000 00000000 00000000 
-> > > Call Trace:
-> > >  [<c01020c7>] ? cpu_idle+0x8a/0x9e
-> > >  [<c040b6cf>] ? start_secondary+0xbb/0xbd
-> > >  =======================
-> > > Code:  Bad EIP value.
-> > > EIP: [<00000000>] 0x0 SS:ESP 0068:f7cadfa4
-> > > Kernel panic - not syncing: Fatal exception
-> > > Oops: 0000 [#2] SMP 
-> > > Pid: 0, comm: swapper Tainted: G      D   2.6.26-rc8-tip #1
-> > > Modules linked in: [<c01276d7>] 
-> > > 
-> > > panic+0x38/0xe0
-> > > Pid: 0, comm: swapper Tainted: G      D   (2.6.26-rc8-tip #1)
-> > > EIP: 0060:[<00000000>] EFLAGS: 00010046 CPU: 3
-> > >  [<c0104bcd>] EIP is at 0x0
-> > > EAX: c0614c00 EBX: 00000003 ECX: 079a5000 EDX: ffff3bdf
-> > > ESI: 00000000 EDI: 00000000 EBP: f7cbbfac ESP: f7cbbfa4
-> > >  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> > > Process swapper (pid: 0, ti=f7cba000 task=f7cb8fe0 task.ti=f7cba000)
-> > > Stack: die+0x130/0x147
-> > > c01020c7 0602080c f7cbbfb4 c040b6cf 00000000  [<c0411795>] 00000000
-> > > 00000000 00000000 
-> > >        00000000 do_page_fault+0x3bd/0x482
-> > > 00000000  [<c04113d8>] ? 00000000 00000000 00000000 00000000
-> > > do_page_fault+0x0/0x482
-> > > 000000d8 00000000  [<c040fbda>] 
-> > >        00000000 error_code+0x72/0x78
-> > > 00000000 00000000  [<c01020c7>] ? 00000000 00000000 cpu_idle+0x8a/0x9e
-> > > 00000000 00000000 
-> > > Call Trace:
-> > >  [<c040b6cf>] <0> [<c01020c7>] start_secondary+0xbb/0xbd
-> > > ?  =======================
-> > > cpu_idle+0x8a/0x9e
-> > >  [<c040b6cf>] ? start_secondary+0xbb/0xbd
-> > >  =======================
-> > > Code:  Bad EIP value.
-> > > EIP: [<00000000>] 0x0 SS:ESP 0068:f7cbbfa4
-> > > Oops: 0000 [#3] <0>Kernel panic - not syncing: Fatal exception
-> > > SMP Pid: 0, comm: swapper Tainted: G      D   2.6.26-rc8-tip #1
-> > > 
-> > >  [<c01276d7>] Modules linked in:
-> > > 
-> > > panic+0x38/0xe0
-> > > Pid: 0, comm: swapper Tainted: G      D   (2.6.26-rc8-tip #1)
-> > >  [<c0104bcd>] EIP: 0060:[<00000000>] EFLAGS: 00010046 CPU: 7
-> > > die+0x130/0x147
-> > > EIP is at 0x0
-> > >  [<c0411795>] EAX: c0614c00 EBX: 00000007 ECX: 079c5000 EDX: ffff3bdf
-> > > ESI: 00000000 EDI: 00000000 EBP: f7d1bfac ESP: f7d1bfa4
-> > >  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> > > Process swapper (pid: 0, ti=f7d1a000 task=f7d18be0
-> > > task.ti=f7d1a000)do_page_fault+0x3bd/0x482
-> > > 
-> > > Stack:  [<c04113d8>] c01020c7 ? 0702080c f7d1bfb4
-> > > do_page_fault+0x0/0x482
-> > > c040b6cf  [<c040fbda>] 00000000 00000000 error_code+0x72/0x78
-> > > 00000000 00000000 
-> > >         [<c01020c7>] ? 00000000 00000000 cpu_idle+0x8a/0x9e
-> > > 00000000 00000000  [<c040b6cf>] 00000000 00000000 000000d8
-> > > start_secondary+0xbb/0xbd
-> > > 00000000  =======================
-> > > 
-> > >        00000000 00000000 00000000 00000000 00000000 00000000 00000000 
-> > > Call Trace:
-> > >  [<c01020c7>] ? cpu_idle+0x8a/0x9e
-> > >  [<c040b6cf>] ? start_secondary+0xbb/0xbd
-> > >  =======================
-> > > Code:  Bad EIP value.
-> > > EIP: [<00000000>] 0x0 SS:ESP 0068:f7d1bfa4
-> > > Kernel panic - not syncing: Fatal exception
-> > > Oops: 0000 [#4] SMP 
-> > > Pid: 0, comm: swapper Tainted: G      D   2.6.26-rc8-tip #1
-> > > Modules linked in: [<c01276d7>] 
-> > > panic+0x38/0xe0
-> > > 
-> > >  [<c0104bcd>] Pid: 0, comm: swapper Tainted: G      D   (2.6.26-rc8-tip
-> > > #1)
-> > > EIP: 0060:[<00000000>] EFLAGS: 00010046 CPU: 4
-> > > die+0x130/0x147
-> > > EIP is at 0x0
-> > > EAX: c0614c00 EBX: 00000004 ECX: 079ad000 EDX: ffff3bdf
-> > > ESI: 00000000 EDI: 00000000 EBP: f7ccbfac ESP: f7ccbfa4
-> > >  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> > > Process swapper (pid: 0, ti=f7cca000 task=f7cc90e0 task.ti=f7cca000)
-> > > [<c0411795>] 
-> > > Stack: c01020c7 do_page_fault+0x3bd/0x482
-> > > 0102080c  [<c04113d8>] f7ccbfb4 c040b6cf 00000000 00000000 00000000
-> > > 00000000 ? 
-> > >        00000000 00000000 00000000 00000000 00000000
-> > > do_page_fault+0x0/0x482
-> > > 00000000 000000d8 00000000 
-> > >        00000000 00000000 00000000 00000000 00000000 00000000 00000000 
-> > > Call Trace:
-> > >  [<c040fbda>] <0> [<c01020c7>] ? error_code+0x72/0x78
-> > >  [<c01020c7>] ? cpu_idle+0x8a/0x9e
-> > > cpu_idle+0x8a/0x9e
-> > >  [<c040b6cf>] ?  [<c040b6cf>] start_secondary+0xbb/0xbd
-> > >  =======================
-> > > start_secondary+0xbb/0xbd
-> > >  =======================
-> > > Code:  Bad EIP value.
-> > > EIP: [<00000000>] 0x0 SS:ESP 0068:f7ccbfa4
-> > > Oops: 0000 [#5] <0>Kernel panic - not syncing: Fatal exception
-> > > SMP 
-> > > Pid: 0, comm: swapper Tainted: G      D   2.6.26-rc8-tip #1
-> > > Modules linked in: [<c01276d7>] 
-> > > 
-> > > panic+0x38/0xe0
-> > > Pid: 0, comm: swapper Tainted: G      D   (2.6.26-rc8-tip #1)
-> > >  [<c0104bcd>] EIP: 0060:[<00000000>] EFLAGS: 00010046 CPU: 6
-> > > die+0x130/0x147
-> > > EIP is at 0x0
-> > > EAX: c0614c00 EBX: 00000006 ECX: 079bd000 EDX: ffff3bdf
-> > > ESI: 00000000 EDI: 00000000 EBP: f7d0bfac ESP: f7d0bfa4
-> > >  [<c0411795>]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> > > Process swapper (pid: 0, ti=f7d0a000 task=f7d092e0
-> > > task.ti=f7d0a000)do_page_fault+0x3bd/0x482
-> > > 
-> > > Stack:  [<c04113d8>] ? c01020c7 0502080c do_page_fault+0x0/0x482
-> > > f7d0bfb4  [<c040fbda>] c040b6cf error_code+0x72/0x78
-> > > 00000000  [<c01020c7>] ? 00000000 cpu_idle+0x8a/0x9e
-> > > 00000000  [<c040b6cf>] 00000000 start_secondary+0xbb/0xbd
-> > > 
-> > >         =======================
-> > > 00000000 00000000 00000000 00000000 00000000 00000000 000000d8 00000000 
-> > >        00000000 00000000 00000000 00000000 00000000 00000000 00000000 
-> > > Call Trace:
-> > >  [<c01020c7>] ? cpu_idle+0x8a/0x9e
-> > >  [<c040b6cf>] ? start_secondary+0xbb/0xbd
-> > >  =======================
-> > > Code:  Bad EIP value.
-> > > EIP: [<00000000>] 0x0 SS:ESP 0068:f7d0bfa4
-> > > Kernel panic - not syncing: Fatal exception
-> > > Pid: 0, comm: swapper Tainted: G      D   2.6.26-rc8-tip #1
-> > >  [<c01276d7>] panic+0x38/0xe0
-> > >  [<c0104bcd>] die+0x130/0x147
-> > >  [<c0411795>] do_page_fault+0x3bd/0x482
-> > >  [<c04113d8>] ? do_page_fault+0x0/0x482
-> > >  [<c040fbda>] error_code+0x72/0x78
-> > >  [<c01020c7>] ? cpu_idle+0x8a/0x9e
-> > >  [<c040b6cf>] start_secondary+0xbb/0xbd
-> > >  =======================
-> > > NULL pointer dereference at 00000000
-> > > IP: [<00000000>]
-> > > *pde = 00000000 
-> > > Oops: 0000 [#6] SMP 
-> > > Modules linked in:
-> > > 
-> > > Pid: 0, comm: swapper Tainted: G      D   (2.6.26-rc8-tip #1)
-> > > EIP: 0060:[<00000000>] EFLAGS: 00010006 CPU: 1
-> > > EIP is at 0x0
-> > > EAX: c0614c00 EBX: 00000001 ECX: 07995000 EDX: ffff3bdf
-> > > ESI: 00000000 EDI: 00000000 EBP: f7c7ffb4 ESP: f7c7ffac
-> > >  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> > > Process swapper (pid: 0, ti=f7c7e000 task=f7c7cde0 task.ti=f7c7e000)
-> > > Stack: c01020c7 0202080c f7c7ffbc c040b6cf 00000000 00000000 00000000
-> > > 00000000 
-> > >        00000000 00000000 00000000 00000000 000000d8 00000000 00000000
-> > > 00000000 
-> > >        00000000 00000000 00000000 00000000 00000000 
-> > > Call Trace:
-> > >  [<c01020c7>] ? cpu_idle+0x8a/0x9e
-> > >  [<c040b6cf>] ? start_secondary+0xbb/0xbd
-> > >  =======================
-> > > Code:  Bad EIP value.
-> > > EIP: [<00000000>] 0x0 SS:ESP 0068:f7c7ffac
-> > > Kernel panic - not syncing: Fatal exception
-> > > Pid: 0, comm: swapper Tainted: G      D   2.6.26-rc8-tip #1
-> > >  [<c01276d7>] panic+0x38/0xe0
-> > >  [<c0104bcd>] die+0x130/0x147
-> > >  [<c0411795>] do_page_fault+0x3bd/0x482
-> > >  [<c04113d8>] ? do_page_fault+0x0/0x482
-> > >  [<c040fbda>] error_code+0x72/0x78
-> > >  [<c01020c7>] ? cpu_idle+0x8a/0x9e
-> > >  [<c040b6cf>] start_secondary+0xbb/0xbd
-> > >  =======================
-> > > BUG: NMI Watchdog detected LOCKUP on CPU6, ip c0111959, registers:
-> > > Modules linked in:
-> > > 
-> > > Pid: 0, comm: swapper Tainted: G      D   (2.6.26-rc8-tip #1)
-> > > EIP: 0060:[<c0111959>] EFLAGS: 00000093 CPU: 6
-> > > EIP is at __smp_call_function+0x5d/0x7a
-> > > EAX: 0000009e EBX: 00000005 ECX: 00000006 EDX: f7d092e0
-> > > ESI: c01047d4 EDI: c0111a5a EBP: f7d0bf00 ESP: f7d0bed0
-> > >  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> > > Process swapper (pid: 0, ti=f7d0a000 task=f7d092e0 task.ti=f7d0a000)
-> > > Stack: 00000000 c0111a5a 00000000 00000000 c01047d4 00000000 c029915b
-> > > f7d0bf6c 
-> > >        00000006 00000001 00000046 00000000 f7d0bf14 c0111acb 00000000
-> > > f7d0bf6c 
-> > >        00000006 f7d0bf20 c01276ee f7d0bf6c f7d0bf3c c0104bcd c04d922f
-> > > c04e06cf 
-> > > Call Trace:
-> > >  [<c0111a5a>] ? stop_this_cpu+0x0/0x3a
-> > >  [<c01047d4>] ? show_trace+0x10/0x12
-> > >  [<c029915b>] ? do_unblank_screen+0x2a/0xf9
-> > >  [<c0111acb>] ? native_smp_send_stop+0x37/0x6a
-> > >  [<c01276ee>] ? panic+0x4f/0xe0
-> > >  [<c0104bcd>] ? die+0x130/0x147
-> > >  [<c0411795>] ? do_page_fault+0x3bd/0x482
-> > >  [<c04113d8>] ? do_page_fault+0x0/0x482
-> > >  [<c040fbda>] ? error_code+0x72/0x78
-> > >  [<c01020c7>] ? cpu_idle+0x8a/0x9e
-> > >  [<c040b6cf>] ? start_secondary+0xbb/0xbd
-> > >  =======================
-> > > Code: 85 c0 0f 44 75 e0 89 45 e4 8d 45 d4 a3 d4 33 62 c0 89 75 e0 0f ae
-> > > f0 0f 1f 00 8b 15 e0 69 57 c0 b8 fb 00 00 00 ff 52 78 39 5d dc <74> 04
-> > > f3 90 eb f7 83 7d 08 00 74 09 39 5d e0 74 04 f3 90 eb f7 
-> > > 
-> > 
-> > So after digging around a bit, it turns out the pm_idle is NULL. For
-> > some reason it is not getting set to default_idle if nothing works. I am
-> > not sure of the path being followed, and its a bit late for me to be
-> > trying anything serious :).
-> > 
-> > This seems to work as a temporary workaround, but obviously is not the
-> > right fix yet.
-> 
-> hm, interesting - this is a new bug. I'm wondering where that NULL came 
-> from. x86 boot itself does not leave room for pm_idle to be NULL AFAICS.
-> 
+Hi Christoph and Alasdair,
 
-Well, it is not null at boot time, since the system does boot up. It is
-lost (corrupted?) sometime later.
+> On Tue, Jul 01, 2008 at 04:10:26AM -0400, Christoph Hellwig wrote:
+>> I still disagree with this whole patch.
+>
+> Same here - if you want a timeout, what stops you from implementing it in a
+> userspace process?  If your concern is that the process might die without
+> thawing the filesystem, take a look at the userspace LVM/multipath code for
+> ideas - lock into memory, disable OOM killer, run from ramdisk etc.
+> In practice, those techniques seem to be good enough.
 
-> One suspect would be cpuidle:
-> 
->  void cpuidle_uninstall_idle_handler(void)
->  {
->          if (enabled_devices && (pm_idle != pm_idle_old)) {
->                  pm_idle = pm_idle_old;
->                  cpuidle_kick_cpus();
-> 
-> The other suspect would be acpi idle:
-> 
->         /* Fall back to the default idle loop */
->         pm_idle = pm_idle_save;
-> 
-> Could you try latest tip/master or the debug patch below? It should show 
-> where the NULL comes from, without crashing.
-> 
+If the freezer accesses the frozen filesystem and causes a deadlock,
+the above ideas can't solve it.  The timeout is useful to solve such a deadlock.
+If you don't need the timeout, you can disable it by specifying "0" as the
+timeout period.
 
-Sure, will give it a run sometime soon.
+> Similarly if a device-mapper device is involved, how should the following
+> sequence behave - A, B or C?
+>
+> 1. dmsetup suspend (freezes)
+> 2. FIFREEZE
+> 3. FITHAW
+> 4. dmsetup resume (thaws)
+[...]
+> C:
+>  1 succeeds, freezes
+>  2 fails, remains frozen
+>  3 fails (because device-mapper owns the freeze/thaw), remains frozen
+>  4 succeeds, thaws
 
-thanks,
--- 
-regards,
-Dhaval
+I think C is appropriate and the following change makes it possible.
+How do you think?
+
+1. Add the new bit flag(BD_FREEZE_DM) in block_device.bd_state.
+   It means that the volume is frozen by the device-mapper.
+
+2. Operate and check this bit flag as followings.
+
+  - Bit operations in the device-mapper's freeze/thaw
+    FREEZE:
+      dm_suspend():   set BD_FREEZE_DM
+        freeze_bdev():set BD_FREEZE_OP
+
+    THAW:
+        thaw_bdev():   clear BD_FREEZE_OP
+      dm_resume():    clear BD_FREEZE_DM
+
+  -  Checks in FIFREEZE/FITHAW
+    FREEZE:
+      ioctl_freeze(): Not need to check BD_FREEZE_DM
+        freeze_bdev():set BD_FREEZE_OP
+
+    THAW:
+      ioctl_thaw():   If BD_FREEZE_DM is set, fail, otherwise, call thaw_bdev()
+        thaw_bdev():   clear BD_FREEZE_OP
+
+Cheers, Takashi
