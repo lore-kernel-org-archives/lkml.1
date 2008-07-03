@@ -1,81 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbYGCMj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbYGCMks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758527AbYGCMj0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756022AbYGCMjO
+	id S1756832AbYGCMks (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:40:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYGCMkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:39:14 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:5294 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757228AbYGCMjL (ORCPT
+	Thu, 3 Jul 2008 08:40:40 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:54267 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750707AbYGCMkk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:39:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=DcP+mreNVzKjxmKQ2X+FBOh0/qA5It7dZZtEyylK/IopS2byIy2KVtG1GZBCq+S0xB
-         O0NH4qWEp231+cB/UtK9BXO7hDp/tcKQ7hMTXd1urZq6Y7wee/kpTU5DGzHt1xvzndRk
-         B/LY2n4Fk/hLwBJceRYRltSckni7vnm3/Qijc=
-Date: Thu, 3 Jul 2008 08:38:28 -0400
-From: Joseph Fannin <jfannin@gmail.com>
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: inux-next 0701 mv643xx_eth powerpc build failure
-Message-ID: <20080703123828.GA1631@nineveh.local>
-Mail-Followup-To: Lennert Buytenhek <buytenh@wantstofly.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>
-References: <20080702011434.6fb403d5.sfr@canb.auug.org.au> <20080702031111.GA26752@nineveh.local> <20080702082117.GA18989@xi.wantstofly.org>
+	Thu, 3 Jul 2008 08:40:40 -0400
+Message-ID: <486CA7BD.10206@keyaccess.nl>
+Date: Thu, 03 Jul 2008 12:19:41 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080702082117.GA18989@xi.wantstofly.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: David Brownell <david-b@pacbell.net>, Michael Buesch <mb@bu3sch.de>,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] gpiolib: Allow user-selection
+References: <200807022346.53222.mb@bu3sch.de>	<20080702170431.56d4c929.akpm@linux-foundation.org>	<200807022200.49428.david-b@pacbell.net>	<20080702220842.44364045.akpm@linux-foundation.org>	<486C8F9C.7080507@keyaccess.nl> <20080703020106.fec84f0f.akpm@linux-foundation.org>
+In-Reply-To: <20080703020106.fec84f0f.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 02, 2008 at 10:21:18AM +0200, Lennert Buytenhek wrote:
-> On Tue, Jul 01, 2008 at 11:11:12PM -0400, Joseph Fannin wrote:
->
-> > I'm getting a build failure on 32bit powerpc in -next, but not in mainline:
-> >
-> > drivers/net/mv643xx_eth.c: In function 'mv643xx_eth_netpoll':
-> > drivers/net/mv643xx_eth.c:2115: error: 'INT_CAUSE_EXT' undeclared
-> > (first use in this function)
-> > drivers/net/mv643xx_eth.c:2115: error: (Each undeclared identifier is
-> > reported only once
-> > drivers/net/mv643xx_eth.c:2115: error: for each function it appears in.)
->
-> Does this fix it for you?
+On 03-07-08 11:01, Andrew Morton wrote:
 
-  Yes, it builds fine.  Thanks.
+> On Thu, 03 Jul 2008 10:36:44 +0200 Rene Herman <rene.herman@keyaccess.nl> wrote:
 
->
-> Index: linux-2.6.26-rc8/drivers/net/mv643xx_eth.c
-> ===================================================================
-> --- linux-2.6.26-rc8.orig/drivers/net/mv643xx_eth.c
-> +++ linux-2.6.26-rc8/drivers/net/mv643xx_eth.c
-> @@ -2184,7 +2184,7 @@ static void mv643xx_eth_netpoll(struct n
->
->  	mv643xx_eth_irq(dev->irq, dev);
->
-> -	wrl(mp, INT_MASK(mp->port_num), INT_TX_END | INT_RX | INT_CAUSE_EXT);
-> +	wrl(mp, INT_MASK(mp->port_num), INT_TX_END | INT_RX | INT_EXT);
->  }
->  #endif
->
->
->
-> > I haven't investigated any further than a quick check if this hardware
-> > even makes sense on 32bit powerpc -- it seems it does.
->
-> It does -- it is used on ARM, PPC and MIPS.
+>> Development needs to happen against something relatively stable 
+>> really and the last release would generally seem to be the best
+>> choice.
+> 
+> Well one can develop against mainline and port to linux-next and then
+> do a quick test.  But it seems like pointless additional overhead to
+> me.
 
---
-Joseph Fannin
-jfannin@gmail.com
+Other than developer needing a relatively stable base to develop against 
+and run so as to concentrate on the effects of own code certainly people 
+that said developer wants to test that which is in development want such 
+a base. Fewer testers can/will be testing a particular feature if to do 
+so they need to first drag in megabytes upon megabytes of other changes 
+as well.
 
+Last iteration I looked at and tested PNP patches and was using .25 as 
+base which went smoothly. Then at 26-rc1 I needed to start running that 
+since patches were against that which delayed things for a long time 
+while I needed to find time to deal with that many unrelated changes 
+some of which rather violently broke stuff here (ISA DMA most profoundly).
+
+So should I have caught the ISA DMA breakage before it hit -rc1? Given 
+that I tend to care about sound/isa which is its main user, perhaps. But 
+the point was that I was trying to test ISAPnP, yet another thing that 
+sound/isa is a main user of...
+
+Many users/testers simply do not want to be running bleedin' edge all of 
+the time because they'd be spending way too much time fighting bugs in 
+places that are of no particular interest to them and when features are 
+developed against said edge, you'd have just limited your tester base 
+further to those who either will, or have enough sophistication to take 
+the change in isolation and backport it to their current kernel 
+themselves. And do it again on the next iteration of the feature.
+
+As recently as yesterday I stalled on testing an ALSA patch when I saw 
+it fail against mainline and wished for some other model than always 
+having to run the very latest.
+
+Not to sound overly pompous (I hope) but not everyone can be responsible 
+for all these integration pains. People in corner A tend to care about 
+corner A and might consider corners B, C and D unwelcome distractions 
+mostly. Linux then has people like you and Linus to stand in the middle 
+and make all the corners get along again.
+
+Yes, porting to and checking -next before submission makes perfect sense 
+but developing against it -- please not...
+
+Rene.
