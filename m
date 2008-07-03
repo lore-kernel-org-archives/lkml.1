@@ -1,80 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbYGCWLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbYGCWWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756581AbYGCWLv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 18:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbYGCWLk
+	id S1756581AbYGCWWv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 18:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbYGCWWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 18:11:40 -0400
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:3337 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753353AbYGCWLj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 18:11:39 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEANexXkh5LBzp/2dsb2JhbACuPg
-X-IronPort-AV: E=Sophos;i="4.27,744,1204464600"; 
-   d="scan'208";a="149412958"
-Date: Fri, 4 Jul 2008 08:11:33 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Takashi Sato <t-sato@yk.jp.nec.com>, Christoph Hellwig <hch@infradead.org>,
-       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, viro@ZenIV.linux.org.uk,
-       dm-devel@redhat.com, xfs@oss.sgi.com, linux-kernel@vger.kernel.org,
-       mtk.manpages@googlemail.com, axboe@kernel.dk
-Subject: Re: [dm-devel] Re: [PATCH 3/3] Add timeout feature
-Message-ID: <20080703221133.GA29319@disturbed>
-Mail-Followup-To: Takashi Sato <t-sato@yk.jp.nec.com>,
-	Christoph Hellwig <hch@infradead.org>, linux-ext4@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-fsdevel@vger.kernel.org, viro@ZenIV.linux.org.uk,
-	dm-devel@redhat.com, xfs@oss.sgi.com, linux-kernel@vger.kernel.org,
-	mtk.manpages@googlemail.com, axboe@kernel.dk
-References: <20080630212450t-sato@mail.jp.nec.com> <20080701081026.GB16691@infradead.org> <20080701105251.GC22522@agk.fab.redhat.com> <9942A69CB65D4A41B39F36AF8EEF6F22@nsl.ad.nec.co.jp> <20080703124709.GI22522@agk.fab.redhat.com>
+	Thu, 3 Jul 2008 18:22:39 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:57364 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754216AbYGCWWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 18:22:38 -0400
+Message-ID: <486D511A.9020405@garzik.org>
+Date: Thu, 03 Jul 2008 18:22:18 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080703124709.GI22522@agk.fab.redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: David Woodhouse <dwmw2@infradead.org>
+CC: Theodore Tso <tytso@mit.edu>, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org>	 <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>	 <486CC440.9030909@garzik.org>	 <Pine.LNX.4.64.0807031353030.11033@blonde.site>	 <486CCFED.7010308@garzik.org>	 <1215091999.10393.556.camel@pmac.infradead.org>	 <486CD654.4020605@garzik.org>	 <1215093175.10393.567.camel@pmac.infradead.org>	 <20080703173040.GB30506@mit.edu> <1215111362.10393.651.camel@pmac.infradead.org> <486D3E88.9090900@garzik.org> <486D4596.60005@infradead.org>
+In-Reply-To: <486D4596.60005@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 03, 2008 at 01:47:10PM +0100, Alasdair G Kergon wrote:
-> On Thu, Jul 03, 2008 at 09:11:05PM +0900, Takashi Sato wrote:
-> > If the freezer accesses the frozen filesystem and causes a deadlock,
-> > the above ideas can't solve it
+David Woodhouse wrote:
+> Jeff Garzik wrote:
+>> David Woodhouse wrote:
+>>> Although it does make me wonder if it was better the way I had it
+>>> originally, with individual options like TIGON3_FIRMWARE_IN_KERNEL
+>>> attached to each driver, rather than a single FIRMWARE_IN_KERNEL option
+>>> which controls them all.
+>>
+>> IMO, individual options would be better.
 > 
-> But you could also say that if the 'freezer' process accesses the frozen
-> filesystem and deadlocks then that's just a bug and that userspace code
-> should be fixed and there's no need to introduce the complexity of a
-> timeout parameter.
-
-Seconded - that was also my primary objection to the timeout code.
-
-> The point I'm trying to make here is:
->   Under what real-world circumstances might multiple concurrent freezing
->   attempts occur, and which of A, B or C (or other variations) would be
->   the most appropriate way of handling such situations?
+> They had individual options for a long time, but the consensus was that 
+> I should remove them -- a consensus which was probably right. It was 
+> moderately inconvenient going back through it all and recommitting it 
+> without that, but it was worth it to get it right...
 > 
-> A common example is people running xfs_freeze followed by an lvm command
-> which also attempts to freeze the filesystem.
-
-Yes, I've seen that reported a number of times.
-
-> I can see a case for B or C, but personally I prefer A:
+>> Plus, unless I am misunderstanding, the firmware is getting built into 
+>> the kernel image not the tg3 module?
 > 
-> > > 1 succeeds, freezes
-> > > 2 succeeds, remains frozen
-> > > 3 succeeds, remains frozen
-> > > 4 succeeds, thaws
+> That's right, although it doesn't really matter when they're both in the 
+> vmlinux.
+> 
+> When it's actually a module, there really is no good reason not to let 
+> request_firmware() get satisfied from userspace. If you can load 
+> modules, then you can load firmware too -- the required udev stuff has 
+> been there as standard for a _long_ time, as most modern drivers 
+> _require_ it without even giving you the built-in-firmware option at all.
+> 
+> It makes no more sense to object to that than it does to object to the 
+> module depending on _other_ modules. Both those other modules, and the 
+> required firmware, are _installed_ by the kernel Makefiles, after all.
+> 
+> It wouldn't be _impossible_ to put firmware blobs into the foo.ko files 
+> themselves and find them there. The firmware blobs in the kernel are 
+> done in a separate section (like initcalls, exceptions tables, pci 
+> fixups, and a bunch of other stuff). It'd just take some work in 
+> module.c to link them into a global list, and some locking shenanigans 
+> in the lookups (and lifetime issues to think about). But it just isn't 
+> worth the added complexity, given that userspace is known to be alive 
+> and working. It's pointless not to just use request_firmware() normally, 
+> from a module.
 
-Agreed, though I'd modify the definition of that case to be "remain
-frozen until the last thaw occurs". That has the advantage that
-it's relatively simple to implement with just a counter...
+It is pointless -- if you assume everybody wants to run their distro and 
+universe your way.
 
-Cheers,
+If a firmware is built-in, then 'make firmware_install' is clearly 
+optional and may be omitted.  That invalidates several of your 
+assumptions above.
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+Further, all current kernel build and test etc. scripts are unaware of 
+'make firmware_install', and it is unfair to everybody to force a 
+flag-day build process change on people, just to keep their drivers in 
+the same working state today as it was yesterday.
+
+
+Conclusion - kernel build process must produce a working driver after 
+your changes are applied, even in absence of 'make firmware_install'.
+
+That does not, repeat /not/ exclude the desired end goal of course -- 
+separating the firmware from the driver, installing in /lib/firmware via 
+'make firmware_install', etc.
+
+
+I support your end goal, I really do.  But I continue to feel there is a 
+lack of regard for breakage and regressions.  You are either ignoring or 
+apparently just not seeing
+	* how many new ways this can produce a non-working driver
+	* how important it is in this specific case to fail-safe,
+	  and avoid a broken driver at all costs.
+
+As a concrete example, in the above quoted text you assume that a user 
+will never copy kernel modules around.  I can tell you that, with tg3.ko 
+being nice and self-contained, yes it does get copied around (to 
+multiple machines, etc.).  With the firmware newly separated from 
+tg3.ko, you have introduced breakage for any user that is unaware of 
+this new requirement (kernel module == requires additional file now).
+
+Scripts that build install disks must be updated, otherwise a script 
+that builds a boot image will include the drivers it knows about, but 
+/not/ include the crucial firmware.
+
+None of this stuff is "pointless", none of this stuff may be dismissed 
+as "making no sense".  All these are real world examples where users 
+FOLLOWING THEIR NORMAL, PROSCRIBED KERNEL PROCESSES will produce 
+non-working drivers.
+
+The only valid assumption here is to assume that the user is /unaware/ 
+of these new steps they must take in order to continue to have a working 
+system.
+
+Regards,
+
+	Jeff
+
+
+
+
