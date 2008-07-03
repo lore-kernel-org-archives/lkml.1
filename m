@@ -1,92 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbYGCVGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbYGCVJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755974AbYGCVGr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 17:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbYGCVGk
+	id S1755979AbYGCVJU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 17:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbYGCVJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 17:06:40 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:15620 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752905AbYGCVGj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 17:06:39 -0400
-Message-ID: <29631811.1215119177276.JavaMail.oracle@acsmt302.oracle.com>
-Date: Thu, 3 Jul 2008 16:06:17 -0500 (CDT)
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>, Rabin Vincent <rabin@rab.in>
-Subject: Re: [PATCH] doc: remove incorrect config option location
-Cc: trivial@kernel.org
-In-Reply-To: <20080703172257.GA1498@debian>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-References: <20080703172257.GA1498@debian>
-X-Priority: 3
-X-Mailer: Oracle Webmail Client(UIX)
-Content-Language: en-US
-Accept-Language: en-US
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 3 Jul 2008 17:09:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47031 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753409AbYGCVJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 17:09:08 -0400
+Date: Thu, 3 Jul 2008 17:08:10 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH 1/2] Avoid bio_endio recursion
+In-Reply-To: <20080702082511.GF20055@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0807031704120.20244@engineering.redhat.com>
+References: <Pine.LNX.4.64.0806240118250.24220@engineering.redhat.com>
+ <20080624080744.GL20851@kernel.dk> <Pine.LNX.4.64.0806241017390.23052@engineering.redhat.com>
+ <20080625082421.GU20851@kernel.dk> <Pine.LNX.4.64.0806252008380.11130@engineering.redhat.com>
+ <20080626070723.GL20851@kernel.dk> <Pine.LNX.4.64.0807020001290.9097@engineering.redhat.com>
+ <20080702082511.GF20055@kernel.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2 Jul 2008, Jens Axboe wrote:
 
---- Original Message ---
-> CONFIG_INITRAMFS_SOURCE is no longer under Devices->Block
-> Devices, but
-> is now in General Setup.  The correct location is easily found
-> using menuconfig's search, so remove the mention of the incorrect
-> location from the docs.
-> 
-> Signed-off-by: Rabin Vincent <rabin@rab.in>
+> On Wed, Jul 02 2008, Mikulas Patocka wrote:
+>>> Right, that wont work of course. Completions are typically done through
+>>> a softirq, so it is not currently done with hard interrupts disabled.
+>>
+>> I thought, from hardirq - that's what IDE is doing. And they are called
+>> with interrupts disabled (maybe unless you specify unmaskirq, which is not
+>> default). What block driver does completions with softirq? ... and why?
+>
+> The key word is 'typically', the old IDE driver really isn't used very
+> much. The SCSI layer and eg cciss uses the block layer softirq
+> completions, so that is what 99% of the uses will be.
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+I use the old IDE driver, I don't see a reason why driver should create 
+SCSI requests and lower layer translate them to ATA commands.
 
-Thanks.
+Just to look, this is the first version of the patch without disabling 
+interrupts. If you are concerned about disabling interrupts, you can go 
+this way.
 
-> ---
->  .../filesystems/ramfs-rootfs-initramfs.txt         |   11
-> +++++------
->  1 files changed, 5 insertions(+), 6 deletions(-)
-> 
-> diff --git a/Documentation/filesystems/ramfs-rootfs-initramfs.txt
-> b/Documentation/filesystems/ramfs-rootfs-initramfs.txt
-> index 7be232b..08547cf 100644
-> --- a/Documentation/filesystems/ramfs-rootfs-initramfs.txt
-> +++ b/Documentation/filesystems/ramfs-rootfs-initramfs.txt
-> @@ -130,12 +130,11 @@ The 2.6 kernel build process always
-> creates a gzipped cpio format initramfs
->  archive and links it into the resulting kernel binary.  By
-> default, this
->  archive is empty (consuming 134 bytes on x86).
->  
-> -The config option CONFIG_INITRAMFS_SOURCE (for some reason
-> buried under
-> -devices->block devices in menuconfig, and living in usr/Kconfig)
-> can be used
-> -to specify a source for the initramfs archive, which will
-> automatically be
-> -incorporated into the resulting binary.  This option can point
-> to an existing
-> -gzipped cpio archive, a directory containing files to be
-> archived, or a text
-> -file specification such as the following example:
-> +The config option CONFIG_INITRAMFS_SOURCE can be used to
-> specify a source for
-> +the initramfs archive, which will automatically be incorporated
-> into the
-> +resulting binary.  This option can point to an existing gzipped
-> cpio archive, a
-> +directory containing files to be archived, or a text file
-> specification such as
-> +the following example:
->  
->    dir /dev 755 0 0
->    nod /dev/console 644 0 0 c 5 1
-> -- 
-> 1.5.6
-> 
+Mikulas
 
+Index: linux-2.6.26-rc5-devel/fs/bio.c
+===================================================================
+--- linux-2.6.26-rc5-devel.orig/fs/bio.c	2008-06-18 16:05:45.000000000 +0200
++++ linux-2.6.26-rc5-devel/fs/bio.c	2008-06-18 23:27:28.000000000 +0200
+@@ -1168,6 +1168,25 @@
+   **/
+  void bio_endio(struct bio *bio, int error)
+  {
++	static DEFINE_PER_CPU(local_t, bio_end_queue) = LOCAL_INIT(0);
++	local_t *bio_end_queue_ptr;
++	unsigned long l;
++
++	bio->bi_next = NULL;
++
++	bio_end_queue_ptr = &get_cpu_var(bio_end_queue);
++	if (local_read(bio_end_queue_ptr)) {
++insert_race:
++		bio->bi_next = (void *)local_read(bio_end_queue_ptr);
++		if (unlikely(local_cmpxchg(bio_end_queue_ptr, (unsigned long)bio->bi_next, (unsigned long)bio) != (unsigned long)bio->bi_next))
++			goto insert_race;
++		put_cpu_var(bio_end_queue);
++		return;
++	}
++
++	local_set(bio_end_queue_ptr, 1);
++
++process_bio:
+  	if (error)
+  		clear_bit(BIO_UPTODATE, &bio->bi_flags);
+  	else if (!test_bit(BIO_UPTODATE, &bio->bi_flags))
+@@ -1175,6 +1194,19 @@
+
+  	if (bio->bi_end_io)
+  		bio->bi_end_io(bio, error);
++
++remove_race:
++	l = local_read(bio_end_queue_ptr);
++	if (l != 1) {
++		bio = (void *)l;
++		if (unlikely(local_cmpxchg(bio_end_queue_ptr, (unsigned long)bio, (unsigned long)bio->bi_next) != (unsigned long)bio))
++			goto remove_race;
++		goto process_bio;
++	}
++	if (unlikely(local_cmpxchg(bio_end_queue_ptr, 1, 0) != 1))
++		goto remove_race;
++
++	put_cpu_var(bio_end_queue);
+  }
+
+  void bio_pair_release(struct bio_pair *bp)
