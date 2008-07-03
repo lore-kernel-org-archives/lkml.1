@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbYGCQel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753862AbYGCQgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753490AbYGCQel (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 12:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYGCQeb
+	id S1753862AbYGCQgt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 12:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbYGCQgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 12:34:31 -0400
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:43498 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751222AbYGCQea (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 12:34:30 -0400
-Subject: Re: [PATCH 001/002] linux-input:  bcm5974-0.31: fixed resource
-	leak, removed work struct, device data struct introduced
-From: Henrik Rydberg <rydberg@euromail.se>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dmitry.torokhov@gmail.com, robfitz@273k.net, jikos@jikos.cz,
-       vojtech@suse.cz, dmonakhov@openvz.org, linux-usb@vger.kernel.org
-In-Reply-To: <20080701155925.a4c00a8e.akpm@linux-foundation.org>
-References: <1214653629.10495.11.camel@alnilam>
-	 <20080701155925.a4c00a8e.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 03 Jul 2008 18:33:40 +0200
-Message-Id: <1215102820.4138.17.camel@alnilam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: 83.248.35.11
-X-Scan-Result: No virus found in message 1KERlN-0005JX-8E.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KERlN-0005JX-8E 57707d73881069e9a4cd2a24542db8d9
+	Thu, 3 Jul 2008 12:36:42 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:36695 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750855AbYGCQgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 12:36:41 -0400
+Date: Thu, 3 Jul 2008 17:36:38 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Dan Williams <dan.j.williams@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, NeilBrown <neilb@suse.de>,
+       babydr@baby-dragons.com, lee.schermerhorn@hp.com, a.beregalov@gmail.com,
+       akpm@linux-foundation.org
+Subject: [PATCH] Do not clobber pgdat->nr_zones during memory initialisation
+Message-ID: <20080703163638.GC18055@csn.ul.ie>
+References: <20080701175855.GI32727@shadowen.org> <20080701190741.GB16501@csn.ul.ie> <1214944175.26855.18.camel@dwillia2-linux.ch.intel.com> <20080702051759.GA26338@csn.ul.ie> <1215049766.2840.43.camel@dwillia2-linux.ch.intel.com> <20080703042750.GB14614@csn.ul.ie> <alpine.LFD.1.10.0807022135360.18105@woody.linux-foundation.org> <20080703050036.GD14614@csn.ul.ie> <1215064455.15797.4.camel@dwillia2-linux.ch.intel.com> <486CD623.8030906@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <486CD623.8030906@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-07-01 at 15:59 -0700, Andrew Morton wrote:
-> > +  }
-> > +
-> > +  button = data[1];
-> > +
-> > +  /* only report button state changes */
-> > +  if (button != dev->bt_state) {
-> > +    input_report_key(dev->input, BTN_LEFT, button);
-> > +    input_sync(dev->input);
-> > +  }
-> > +
-> > +  dev->bt_state = button;
-> > +
-> > + exit:
-> > +  retval = usb_submit_urb(dev->bt_urb, GFP_ATOMIC);
+On (03/07/08 08:37), Christoph Lameter didst pronounce:
+> What a convoluted description. Simply put: We clobber the nr_zones field
+> because we write beyond the bounds of the node_zonelists[] array in
+> struct pglist_data.
 > 
-> GFP_ATOMIC is a red flag.  Is this quite unrelaible allocation mode
-> really needed here?
 
-Being new to kernel work, I rely a lot on how other drivers work.
-However, doing some reading, these are my observations:
+Subject: [PATCH] Do not clobber pgdat->nr_zones during memory initialisation
 
-* The URB works in interrupt mode.
+The nr_zones field is getting clobbered due to a write beyond the bounds of
+the node_zonelists[] array in struct pglist_data.
 
-* The call to usb_submit_urb above is within a completion handler.
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ mm/page_alloc.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-* From what I read on kerneltrap (2.6.22), such URBs should be
-resubmitted using the ATOMIC method. Maybe this changed, I could not
-tell.
-
-* Personally, I am starting to worry about concurrency races, with the
-two URBs writing to the same input device. I suppose it depends on
-whether they are issued on the same interrupt or not? Spin locks?
-
-Best regards,
-Henrik Rydberg
-
-
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.26-rc8-clean/mm/page_alloc.c linux-2.6.26-rc8-fix-kswapd-on-numa/mm/page_alloc.c
+--- linux-2.6.26-rc8-clean/mm/page_alloc.c	2008-06-24 18:58:20.000000000 -0700
++++ linux-2.6.26-rc8-fix-kswapd-on-numa/mm/page_alloc.c	2008-07-02 21:49:09.000000000 -0700
+@@ -2328,7 +2328,6 @@ static void build_zonelists(pg_data_t *p
+ static void build_zonelist_cache(pg_data_t *pgdat)
+ {
+ 	pgdat->node_zonelists[0].zlcache_ptr = NULL;
+-	pgdat->node_zonelists[1].zlcache_ptr = NULL;
+ }
+ 
+ #endif	/* CONFIG_NUMA */
