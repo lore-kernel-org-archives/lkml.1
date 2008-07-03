@@ -1,96 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757821AbYGCMNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbYGCMNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757821AbYGCMNh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756505AbYGCMMn
+	id S1757602AbYGCMNW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbYGCMM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:12:43 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:62779 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755005AbYGCMMl (ORCPT
+	Thu, 3 Jul 2008 08:12:26 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43982
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756032AbYGCMMY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:12:41 -0400
-Message-Id: <9942A69CB65D4A41B39F36AF8EEF6F22@nsl.ad.nec.co.jp>
-From: "Takashi Sato" <t-sato@yk.jp.nec.com>
-To: "Christoph Hellwig" <hch@infradead.org>,
-       "Alasdair G Kergon" <agk@redhat.com>
-Cc: <linux-ext4@vger.kernel.org>, "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-fsdevel@vger.kernel.org>, <viro@ZenIV.linux.org.uk>,
-       <dm-devel@redhat.com>, <xfs@oss.sgi.com>,
-       <linux-kernel@vger.kernel.org>, <mtk.manpages@googlemail.com>,
-       <axboe@kernel.dk>
-References: <20080630212450t-sato@mail.jp.nec.com> <20080701081026.GB16691@infradead.org> <20080701105251.GC22522@agk.fab.redhat.com>
-In-Reply-To: <20080701105251.GC22522@agk.fab.redhat.com>
-Subject: Re: [dm-devel] Re: [PATCH 3/3] Add timeout feature
-Date: Thu, 3 Jul 2008 21:11:05 +0900
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+	Thu, 3 Jul 2008 08:12:24 -0400
+Date: Thu, 03 Jul 2008 03:22:32 -0700 (PDT)
+Message-Id: <20080703.032232.103611092.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: + net-ipv4-tcpc-needs-linux-scatterlisth.patch added to -mm
+ tree
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200807030317.m633H5Ys017057@imap1.linux-foundation.org>
+References: <200807030317.m633H5Ys017057@imap1.linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Windows Mail 6.0.6000.16480
-X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6000.16545
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph and Alasdair,
+From: akpm@linux-foundation.org
+Date: Wed, 02 Jul 2008 20:04:57 -0700
 
-> On Tue, Jul 01, 2008 at 04:10:26AM -0400, Christoph Hellwig wrote:
->> I still disagree with this whole patch.
->
-> Same here - if you want a timeout, what stops you from implementing it in a
-> userspace process?  If your concern is that the process might die without
-> thawing the filesystem, take a look at the userspace LVM/multipath code for
-> ideas - lock into memory, disable OOM killer, run from ramdisk etc.
-> In practice, those techniques seem to be good enough.
+> Subject: net/ipv4/tcp.c needs linux/scatterlist.h
+> From: Andrew Morton <akpm@linux-foundation.org>
+> 
+> alpha:
+> 
+> net/ipv4/tcp.c: In function 'tcp_calc_md5_hash':
+> net/ipv4/tcp.c:2479: error: implicit declaration of function 'sg_init_table'    net/ipv4/tcp.c:2482: error: implicit declaration of function 'sg_set_buf'
+> net/ipv4/tcp.c:2507: error: implicit declaration of function 'sg_mark_end'      
+> 
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-If the freezer accesses the frozen filesystem and causes a deadlock,
-the above ideas can't solve it.  The timeout is useful to solve such a deadlock.
-If you don't need the timeout, you can disable it by specifying "0" as the
-timeout period.
-
-> Similarly if a device-mapper device is involved, how should the following
-> sequence behave - A, B or C?
->
-> 1. dmsetup suspend (freezes)
-> 2. FIFREEZE
-> 3. FITHAW
-> 4. dmsetup resume (thaws)
-[...]
-> C:
->  1 succeeds, freezes
->  2 fails, remains frozen
->  3 fails (because device-mapper owns the freeze/thaw), remains frozen
->  4 succeeds, thaws
-
-I think C is appropriate and the following change makes it possible.
-How do you think?
-
-1. Add the new bit flag(BD_FREEZE_DM) in block_device.bd_state.
-   It means that the volume is frozen by the device-mapper.
-
-2. Operate and check this bit flag as followings.
-
-  - Bit operations in the device-mapper's freeze/thaw
-    FREEZE:
-      dm_suspend():   set BD_FREEZE_DM
-        freeze_bdev():set BD_FREEZE_OP
-
-    THAW:
-        thaw_bdev():   clear BD_FREEZE_OP
-      dm_resume():    clear BD_FREEZE_DM
-
-  -  Checks in FIFREEZE/FITHAW
-    FREEZE:
-      ioctl_freeze(): Not need to check BD_FREEZE_DM
-        freeze_bdev():set BD_FREEZE_OP
-
-    THAW:
-      ioctl_thaw():   If BD_FREEZE_DM is set, fail, otherwise, call thaw_bdev()
-        thaw_bdev():   clear BD_FREEZE_OP
-
-Cheers, Takashi
+Applied to net-2.6, thanks Andrew.
