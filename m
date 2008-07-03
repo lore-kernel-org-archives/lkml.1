@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbYGCW4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757353AbYGCXBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757535AbYGCW4Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 18:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755906AbYGCWz5
+	id S1757353AbYGCXBh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 19:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755900AbYGCXB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 18:55:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50723 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756157AbYGCWz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 18:55:56 -0400
-Date: Thu, 3 Jul 2008 18:54:53 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH 1/2] Avoid bio_endio recursion
-In-Reply-To: <20080703220449.20688451@lxorguk.ukuu.org.uk>
-Message-ID: <Pine.LNX.4.64.0807031843480.10463@engineering.redhat.com>
-References: <Pine.LNX.4.64.0806240118250.24220@engineering.redhat.com>
- <20080624080744.GL20851@kernel.dk> <Pine.LNX.4.64.0806241017390.23052@engineering.redhat.com>
- <20080625082421.GU20851@kernel.dk> <Pine.LNX.4.64.0806252008380.11130@engineering.redhat.com>
- <20080626070723.GL20851@kernel.dk> <Pine.LNX.4.64.0807020001290.9097@engineering.redhat.com>
- <20080702082511.GF20055@kernel.dk> <Pine.LNX.4.64.0807031704120.20244@engineering.redhat.com>
- <20080703220449.20688451@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 3 Jul 2008 19:01:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56032 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755883AbYGCXB3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 19:01:29 -0400
+Date: Thu, 3 Jul 2008 16:01:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 2.6.26-rc8-mm1] memrlimit: fix mmap_sem deadlock
+Message-Id: <20080703160117.b3781463.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0807032143110.10641@blonde.site>
+References: <Pine.LNX.4.64.0807032143110.10641@blonde.site>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Jul 2008, Alan Cox wrote:
+On Thu, 3 Jul 2008 21:50:31 +0100 (BST)
+Hugh Dickins <hugh@veritas.com> wrote:
 
->> I use the old IDE driver, I don't see a reason why driver should create
->> SCSI requests and lower layer translate them to ATA commands.
->
-> Because modern drives are basically SCSI devices. Once you turn on NCQ
-> and stuff you need all the midlayer queueing magic ...
+> "ps -f" hung after "killall make" of make -j20 kernel builds.  It's
+> generally considered bad manners to down_write something you already
+> have down_read.  exit_mm up_reads before calling mm_update_next_owner,
+> so I guess exec_mmap can safely do so too.  (And with that repositioning
+> there's not much point in mm_need_new_owner allowing for NULL mm.)
+> 
 
-There is no piece of SCSI protocol in SATA disks. The command and response 
-FIS of SATA standard contain legacy IDE registers, there's nothing about 
-SCSI. Even the NCQ commands are done via IDE registers, not SCSI command 
-block. It seems like someone wanted to save few weeks of coding by reusing 
-the SCSI disk queuing ... and created a lot of other problems (example: if 
-you have disk error with IDE driver, it dumps IDE registers into log ... 
-if you have disk error with SATA driver, it dumps sense key ... but 
-there's no sense key in SATA standard ... the driver just had to make up 
-one because it pretends to be SCSI).
+thanks
 
-Mikulas
+> ---
+> Fix to memrlimit-cgroup-mm-owner-callback-changes-to-add-task-info.patch
+> quite independent of its recent sleeping-inside-spinlock fix; could even
+> be applied to 2.6.26, though no deadlock there.  Gosh, I see those patches
+> have spawned "Reviewed-by" tags in my name: sorry, no, just "Bug-found-by".
+
+I switched
+memrlimit-add-memrlimit-controller-accounting-and-control-memrlimit-improve-fork-and-error-handling.patch
+and
+memrlimit-cgroup-mm-owner-callback-changes-to-add-task-info-memrlimit-fix-sleep-inside-sleeplock-in-mm_update_next_owner.patch
+to Cc:you.
+
+There doesn't seem to have been much discussion regarding your recent
+objections to the memrlimit patches.  But it caused me to put a big
+black mark on them.  Perhaps sending it all again would be helpful.
