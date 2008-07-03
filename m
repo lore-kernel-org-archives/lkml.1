@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757081AbYGCXou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbYGCXsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757081AbYGCXou (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 19:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753745AbYGCXom
+	id S1757442AbYGCXsH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 19:48:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYGCXr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 19:44:42 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:36309 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753418AbYGCXol (ORCPT
+	Thu, 3 Jul 2008 19:47:56 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:62646 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753748AbYGCXrz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 19:44:41 -0400
+	Thu, 3 Jul 2008 19:47:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Ee36K5BW1xxqOBc1YtE+Iiye6HHZ9fku2bEn0x0AX55JkAzS+ABw90LOoSVr3IiQOx
-         FWHvXs9HPTrWzEjE0BcMCCHxgZJ3eszFO3UH/guR5eKsskslWV9V5K4Iu0PK0BYxC+o7
-         KUepiiz9MFMlKV5pMiIpy3kKnuWljCOlgrfEA=
-Message-ID: <45a44e480807031644vb5dcc31sf9558bffd772c8b9@mail.gmail.com>
-Date: Fri, 4 Jul 2008 07:44:38 +0800
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-To: "Markus Armbruster" <armbru@redhat.com>
-Subject: Re: "fb-defio: fix page list with concurrent processes"
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <m3mykyr7wf.fsf@crossbow.pond.sub.org>
+         :references:x-google-sender-auth;
+        b=r8/4BonaiENGfLNAa2M5KtCxW23dVANmytj6In2YP1Vq206SQlpo7/etmgxBcaLwPL
+         bki6mC2ATBgq7OKNnHZcjRn5LBdAeVCKXPoDINYccXge9n6BpXqYkBq3LyE6SBl8GVB5
+         Ffa9IxdmULQf/rs/snry8yQ2nuN+RXCuSeDmg=
+Message-ID: <e9c3a7c20807031647n36687828r8d5a7e5e64723bd1@mail.gmail.com>
+Date: Thu, 3 Jul 2008 16:47:48 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
+Subject: Re: [PATCH] dmatest: Simple DMA memcpy test client
+Cc: linux-kernel@vger.kernel.org, "Haavard Skinnemoen" <hskinnemoen@atmel.com>
+In-Reply-To: <1214396359-5776-1-git-send-email-haavard.skinnemoen@atmel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4856E38E.1040203@goop.org>
-	 <45a44e480806161811k423fecf2r2d79609a5c0d057@mail.gmail.com>
-	 <m3mykyr7wf.fsf@crossbow.pond.sub.org>
+References: <1214396359-5776-1-git-send-email-haavard.skinnemoen@atmel.com>
+X-Google-Sender-Auth: b6a3a5c8d1178ba7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 4, 2008 at 5:10 AM, Markus Armbruster <armbru@redhat.com> wrote:
+On Wed, Jun 25, 2008 at 5:19 AM, Haavard Skinnemoen
+<haavard.skinnemoen@atmel.com> wrote:
+> From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 >
-> Jaya, any news?
+> This client tests DMA memcpy using various lengths and various offsets
+> into the source and destination buffers. It will initialize both
+> buffers with a repeatable pattern and verify that the DMA engine copies
+> the requested region and nothing more. It will also verify that the
+> bytes aren't swapped around, and that the source buffer isn't modified.
+>
+> The dmatest module can be configured to test a specific device, a
+> specific channel. It can also test multiple channels at the same time,
+> and it can start multiple threads competing for the same channel.
+>
+> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 >
 
-Hi Markus,
-
-In the thread, as per your point:
-
-> better, somewhat slow code, or somewhat useless code?  I'd like to see
-> the fix merged as soon as possible.  You can always improve its
-> performance later.
-
-I responded:
-
-> Yup, I've got no problem if the old patch is requeued and merged.
-
-I'd assumed that you would requeue that patch.
+Applied, with your fix included.  It is a nice little framework and
+can hopefully grow support for xor and the other operations.
 
 Thanks,
-jaya
+Dan
