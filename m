@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761266AbYGCM7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761452AbYGCM61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761266AbYGCM7Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbYGCM7M
+	id S1761452AbYGCM61 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758081AbYGCM5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:59:12 -0400
-Received: from mailer2.option.com ([81.246.70.163]:28546 "EHLO
-	mailer2.option.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752481AbYGCM7L convert rfc822-to-8bit (ORCPT
+	Thu, 3 Jul 2008 08:57:45 -0400
+Received: from fallback.mail.elte.hu ([157.181.151.13]:48635 "EHLO
+	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757081AbYGCM5o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:59:11 -0400
-X-Greylist: delayed 3605 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Jul 2008 08:59:10 EDT
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8AAChUbEgKAAAZ/2dsb2JhbAAIsgk
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 3 Jul 2008 08:57:44 -0400
+X-Greylist: delayed 2595 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Jul 2008 08:57:44 EDT
+Date: Thu, 3 Jul 2008 10:27:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [RFC PATCH 4/4] x86_32: mark ACPI NVS memory region
+Message-ID: <20080703082720.GA4389@elte.hu>
+References: <1215051879.5628.36.camel@rzhang-dt.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: tcp/ip connect on demand
-Date: Thu, 3 Jul 2008 13:29:03 +0200
-Message-ID: <F67862BE33DC784289A6B34E92908FCF393FFE@SRV-SATURNUS.OPTION.local>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: tcp/ip connect on demand
-Thread-Index: Acjc//9kejefbADtTy6ghWMGQ9Adrg==
-From: "Jens-Michael Hoffmann" <J.Hoffmann@option.com>
-To: <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1215051879.5628.36.camel@rzhang-dt.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-hi,
+* Zhang Rui <rui.zhang@intel.com> wrote:
 
-what is the right way to implement a "connect on demand" feature?
-Example: user types url in firefox and presses return. Then
-the system should set up network devices and proceed as usual.
+> 
+> x86_32: Mark ACPI NVS memory region.
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  arch/x86/kernel/e820_32.c |   26 ++++++++++++++++++++++++++
 
-Is there a hook in the kernel we can use?
+please do this change against tip/master or linux-next, as this file has 
+been heavily modified and unified already. See:
 
-Best regards
+ http://people.redhat.com/mingo/tip.git/README
 
-Jens-Michael Hoffmann
-
-ps: please cc me in replies since I'am not subscribed with this email.
+	Ingo
