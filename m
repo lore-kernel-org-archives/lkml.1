@@ -1,74 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbYGCTDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbYGCTFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322AbYGCTDi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 15:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbYGCTD3
+	id S1755979AbYGCTFa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 15:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbYGCTFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 15:03:29 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:45720 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752924AbYGCTD1 (ORCPT
+	Thu, 3 Jul 2008 15:05:22 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:45604 "EHLO
+	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751910AbYGCTFV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 15:03:27 -0400
-Date: Thu, 3 Jul 2008 21:03:07 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       apw@shadowen.org, Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [BUILD-FAILURE] 2.6.26-rc8-mm1 - x86 -
-	__ptep_modify_prot_start() missing
-Message-ID: <20080703190307.GA4972@osiris.boeblingen.de.ibm.com>
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org> <20080703122943.GB6451@linux.vnet.ibm.com> <20080703104643.04ea2acb.akpm@linux-foundation.org> <486D13C3.3000409@goop.org> <20080703111418.19f568ca.akpm@linux-foundation.org>
+	Thu, 3 Jul 2008 15:05:21 -0400
+X-BigFish: VPS4(zzzz10d3izzz32i43j65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0K3FY6N-04-36W-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: mingo@redhat.com, tglx@linutronix.de
+CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       bhavna.sarathy@amd.com, robert.richter@amd.com,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 4/6] AMD IOMMU: honor iommu=off instead of amd_iommu=off
+Date: Thu, 3 Jul 2008 19:35:09 +0200
+Message-ID: <1215106511-12915-5-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.3.7
+In-Reply-To: <1215106511-12915-1-git-send-email-joerg.roedel@amd.com>
+References: <1215106511-12915-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 03 Jul 2008 17:35:12.0210 (UTC) FILETIME=[257D5320:01C8DD33]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080703111418.19f568ca.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 03, 2008 at 11:14:18AM -0700, Andrew Morton wrote:
-> On Thu, 03 Jul 2008 11:00:35 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> > >> make[1]: *** [arch/x86/kernel/paravirt.o] Error 1
-> > >> make: *** [arch/x86/kernel] Error 2
-> > >>
-> > >> linux-next patches has the changes to the adds the function
-> > >> __ptep_modify_prot_start as inline, the patch s390-build-fixes.patch
-> > >> is coverting it into macro. Reverting the s390-build-fixes.patch
-> > >> fixes the build failure.
-> > >>     
-> > >
-> > > grump.  Who did all this stuff?
-> > >
-> > > I dunno.  I'll drop s390-build-fixes.patch, add some ccs and stomp off.
-> > >
-> > >
-> > > From: Andrew Morton <akpm@linux-foundation.org>
-> > >
-> > > In file included from include/asm/pgtable.h:1087,
-> > >                  from include/linux/mm.h:39,
-> > >                  from arch/s390/mm/hugetlbpage.c:8:
-> > > include/asm-generic/pgtable.h: In function '__ptep_modify_prot_start':
-> > > include/asm-generic/pgtable.h:209: error: dereferencing pointer to incomplete type
-> > >   
-> > 
-> > We can't turn them into macros because we're expecting to be able to 
-> > take the address of __ptep_modify_prot_start/commit.  What type is not 
-> > defined on s390 at that point?  Would simply adding an extra include to 
-> > arch/s390/mm/hugetlbpage.c fix the problem?
+This patch removes the amd_iommu=off kernel parameter and honors the generic
+iommu=off parameter for the same purpose.
 
-We need struct task_struct... I added an include <linux/sched.h> to
-asm-s390/pgtable.h and it seems to fix the build problem.
-I expected include dependency hell...
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kernel/amd_iommu_init.c |    9 +--------
+ 1 files changed, 1 insertions(+), 8 deletions(-)
 
-> > In the worst case we could push __ptep_modify_proc_start/commit out of 
-> > line somewhere appropriate, but that's a bit sad given how simple they are.
-> 
-> I think the s390 guys just fixed the original build error.
+diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
+index 5d9e45c..c54c823 100644
+--- a/arch/x86/kernel/amd_iommu_init.c
++++ b/arch/x86/kernel/amd_iommu_init.c
+@@ -101,8 +101,6 @@ struct ivmd_header {
+ 	u64 range_length;
+ } __attribute__((packed));
+ 
+-static int __initdata amd_iommu_disable;
+-
+ u16 amd_iommu_last_bdf;
+ struct list_head amd_iommu_unity_map;
+ unsigned amd_iommu_aperture_order = 26;
+@@ -686,7 +684,7 @@ int __init amd_iommu_init(void)
+ 	int i, ret = 0;
+ 
+ 
+-	if (amd_iommu_disable) {
++	if (no_iommu) {
+ 		printk(KERN_INFO "AMD IOMMU disabled by kernel command line\n");
+ 		return 0;
+ 	}
+@@ -831,9 +829,6 @@ void __init amd_iommu_detect(void)
+ 	if (swiotlb || no_iommu || iommu_detected)
+ 		return;
+ 
+-	if (amd_iommu_disable)
+-		return;
+-
+ 	if (acpi_table_parse("IVRS", early_amd_iommu_detect) == 0) {
+ 		iommu_detected = 1;
+ #ifdef CONFIG_GART_IOMMU
+@@ -846,8 +841,6 @@ void __init amd_iommu_detect(void)
+ static int __init parse_amd_iommu_options(char *str)
+ {
+ 	for (; *str; ++str) {
+-		if (strcmp(str, "off") == 0)
+-			amd_iommu_disable = 1;
+ 		if (strcmp(str, "isolate") == 0)
+ 			amd_iommu_isolate = 1;
+ 	}
+-- 
+1.5.3.7
 
-Not this one, but if it works I'm going to push that to git-s390.
-Currently wading through the s390 build bugs in linux-next and trying to
-fix them all :/
+
