@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758975AbYGCOAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754392AbYGCOBD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758975AbYGCOAL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 10:00:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbYGCN7x
+	id S1754392AbYGCOBD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 10:01:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754901AbYGCOAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 09:59:53 -0400
-Received: from wx-out-0506.google.com ([66.249.82.234]:19398 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752652AbYGCN7w (ORCPT
+	Thu, 3 Jul 2008 10:00:53 -0400
+Received: from fallback.mail.elte.hu ([157.181.151.13]:38163 "EHLO
+	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754780AbYGCOAw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 09:59:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Twqn05CHpPkFanklT1wl2ix+UGBIiQ85UMuqoeZJo7rG/+9zRl+iTrxPJYEIRUe1Xg
-         un71iMeX3HKjfqH6loZLGQ/jLFZVfo5tVqbo0jcUctZqsTLUv0U11dgugv9WSZiW9QGH
-         m8Xd+5Idibsb+ehl58J4LL08polO1SSelkKU4=
-Message-ID: <a4423d670807030659p53e3c0a9ofd848ffa4e46e181@mail.gmail.com>
-Date: Thu, 3 Jul 2008 17:59:48 +0400
-From: "Alexander Beregalov" <a.beregalov@gmail.com>
-To: "Andi Kleen" <ak@linux.intel.com>
-Subject: Re: next-0702: ACPI Error (nseval-0159): Insufficient arguments
-Cc: lenb@kernel.org, linux-acpi@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org, akpm@osdl.org
-In-Reply-To: <486CD8C3.7030007@linux.intel.com>
+	Thu, 3 Jul 2008 10:00:52 -0400
+Date: Thu, 3 Jul 2008 10:34:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Ankita Garg <ankita@in.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, suresh.b.siddha@intel.com,
+       aneesh.kumar@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com,
+       vatsa@linux.vnet.ibm.com, David Bahi <DBahi@novell.com>
+Subject: Re: [ANNOUNCE] sched: schedtop utility
+Message-ID: <20080703083412.GA7873@elte.hu>
+References: <483545B4.BA47.005A.0@novell.com> <20080602124822.GA15410@in.ibm.com> <1212412051.6269.5.camel@lappy.programming.kicks-ass.net> <20080605052008.GA7635@in.ibm.com> <1213871234.10476.12.camel@twins> <20080701090006.GA7814@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a4423d670807030607s28bc7205l3bf46b49cff4176d@mail.gmail.com>
-	 <486CD8C3.7030007@linux.intel.com>
+In-Reply-To: <20080701090006.GA7814@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/3 Andi Kleen <ak@linux.intel.com>:
-> Is this something that you didn't see in older kernels? If yes when did it
-> start?
-It is the first kernel I tried to run on this host.
 
-> Can you please file a full report in http://bugzilla.kernel.org?
-Sure
+* Ankita Garg <ankita@in.ibm.com> wrote:
+
+> > OK, so task delay delay accounting is broken because it doesn't take
+> > migration into account.
+
+> Fixed. Pl. find the new patch below.
+
+applied to tip/sched/devel - thanks Ankita.
+
+	Ingo
