@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755041AbYGCU51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbYGCVBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755041AbYGCU51 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 16:57:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbYGCU5T
+	id S1754950AbYGCVBV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 17:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbYGCVBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 16:57:19 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54514 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753029AbYGCU5T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 16:57:19 -0400
-Subject: Re: [ANNOUNCE] sched: schedtop utility
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Ankita Garg <ankita@in.ibm.com>, Gregory Haskins <ghaskins@novell.com>,
-       linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-       suresh.b.siddha@intel.com, aneesh.kumar@linux.vnet.ibm.com,
-       dhaval@linux.vnet.ibm.com, vatsa@linux.vnet.ibm.com,
-       David Bahi <DBahi@novell.com>
-In-Reply-To: <20080703083412.GA7873@elte.hu>
-References: <483545B4.BA47.005A.0@novell.com>
-	 <20080602124822.GA15410@in.ibm.com>
-	 <1212412051.6269.5.camel@lappy.programming.kicks-ass.net>
-	 <20080605052008.GA7635@in.ibm.com> <1213871234.10476.12.camel@twins>
-	 <20080701090006.GA7814@in.ibm.com>  <20080703083412.GA7873@elte.hu>
-Content-Type: text/plain
-Date: Thu, 03 Jul 2008 22:56:37 +0200
-Message-Id: <1215118598.28676.38.camel@lappy.programming.kicks-ass.net>
+	Thu, 3 Jul 2008 17:01:13 -0400
+Received: from ns2.suse.de ([195.135.220.15]:58854 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752905AbYGCVBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 17:01:12 -0400
+Date: Thu, 3 Jul 2008 23:01:08 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ying Huang <ying.huang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: make e820_saved have update from setup_data
+Message-ID: <20080703230108.1dbe68cb@kopernikus.site>
+In-Reply-To: <200807031137.13984.yhlu.kernel@gmail.com>
+References: <200807031135.37465.yhlu.kernel@gmail.com>
+	<200807031137.13984.yhlu.kernel@gmail.com>
+Organization: SUSE LINUX Products GmbH
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.10; i686-pc-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-03 at 10:34 +0200, Ingo Molnar wrote:
-> * Ankita Garg <ankita@in.ibm.com> wrote:
-> 
-> > > OK, so task delay delay accounting is broken because it doesn't take
-> > > migration into account.
-> 
-> > Fixed. Pl. find the new patch below.
-> 
-> applied to tip/sched/devel - thanks Ankita.
+* Yinghai Lu <yhlu.kernel@gmail.com> [2008-07-03 11:37]:
+>
+> +	/* update the e820_saved too */
+> +	e820_reserve_setup_data();
 
-ACK
+Why do you want to update the e820_saved here? /sys/firmware/memmap
+should provide the real BIOS-provided memory map, IMO ...
 
+
+
+Bernhard
+-- 
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
