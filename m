@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679AbYGCTQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbYGCTTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754679AbYGCTQI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 15:16:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbYGCTP5
+	id S1754547AbYGCTTU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 15:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYGCTTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 15:15:57 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:39570 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752145AbYGCTP4 (ORCPT
+	Thu, 3 Jul 2008 15:19:12 -0400
+Received: from outbound-mail-106.bluehost.com ([69.89.22.6]:55601 "HELO
+	outbound-mail-106.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753402AbYGCTTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 15:15:56 -0400
-Message-ID: <486D2564.4030806@zytor.com>
-Date: Thu, 03 Jul 2008 12:15:48 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 3 Jul 2008 15:19:12 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Robert Richter <robert.richter@amd.com>
+Subject: Re: [PATCH 0/11] x86/pci 32/64 bit merge
+Date: Thu, 3 Jul 2008 12:19:01 -0700
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1215031829-29124-1-git-send-email-robert.richter@amd.com>
+In-Reply-To: <1215031829-29124-1-git-send-email-robert.richter@amd.com>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@medozas.de>
-CC: Jens-Michael Hoffmann <J.Hoffmann@option.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: tcp/ip connect on demand
-References: <F67862BE33DC784289A6B34E92908FCF393FFE@SRV-SATURNUS.OPTION.local> <486D1A66.6010006@zytor.com> <alpine.LNX.1.10.0807032106310.23294@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <alpine.LNX.1.10.0807032106310.23294@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807031219.01615.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Thursday 2008-07-03 20:28, H. Peter Anvin wrote:
->> Jens-Michael Hoffmann wrote:
->>> hi,
->>>
->>> what is the right way to implement a "connect on demand" feature?
->>> Example: user types url in firefox and presses return. Then
->>> the system should set up network devices and proceed as usual.
->>>
->>> Is there a hook in the kernel we can use?
->> In the kernel, no.  Nor do you need one; the best place to hook into this is
->> probably the name service system (so you catch it on trying to look up
->> hostnames.)
->>
->> Alternatively, you can set up a bridge device which you can listen to via a tap
->> device; when you see traffic, you bring up the real network and attach it to
->> the bridge.
-> 
-> There is on-demand for PPP devices; though that is probably specific
-> to PPP.
+On Wednesday, July 02, 2008 1:50 pm Robert Richter wrote:
+> This patch series merges the x86/pci code. It's relative to
+> tip/x86/cpu since there are already changes that touch pci code.
+>
+> I reworked parts of the subsys_initcalls to remove Makefile object
+> order dependencies. The kernel reboots for acpi/noacpi, smp/nosmp,
+> 32/64 bit. It compiles for numaq and visws (I don't have hardware
+> available for this configurations, so please test these configs if you
+> have hardware available).
+>
+> There is still some work to do in arch/x86/pci/amd_bus.c and for
+> mmconfig.
+>
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
 
-Yes, those monitor traffic at the PPP device port, I believe.
+In general it looks pretty nice and smaller than I would have guessed.  I'd 
+like to see each change have a nicer changelog though, explaining things more 
+than the one line patch summary (why, how, etc.).  And like Yinghai mentioned 
+there may be other changes in the x86 tree that you have to deal with in 
+order to merge this; I can pull those into my PCI linux-next tree though to 
+make things easier.
 
-	-hpa
+Jesse
