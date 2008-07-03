@@ -1,95 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbYGCRQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbYGCRYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753852AbYGCRQZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 13:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYGCRQO
+	id S1754086AbYGCRYV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 13:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYGCRYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 13:16:14 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:40368 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751054AbYGCRQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 13:16:13 -0400
-Date: Thu, 3 Jul 2008 18:16:10 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Dan Williams <dan.j.williams@intel.com>,
-       Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, NeilBrown <neilb@suse.de>,
-       babydr@baby-dragons.com, lee.schermerhorn@hp.com, a.beregalov@gmail.com,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Do not clobber pgdat->nr_zones during memory initialisation
-Message-ID: <20080703171610.GG18055@csn.ul.ie>
-References: <1214944175.26855.18.camel@dwillia2-linux.ch.intel.com> <20080702051759.GA26338@csn.ul.ie> <1215049766.2840.43.camel@dwillia2-linux.ch.intel.com> <20080703042750.GB14614@csn.ul.ie> <alpine.LFD.1.10.0807022135360.18105@woody.linux-foundation.org> <20080703050036.GD14614@csn.ul.ie> <1215064455.15797.4.camel@dwillia2-linux.ch.intel.com> <486CD623.8030906@linux-foundation.org> <20080703163638.GC18055@csn.ul.ie> <alpine.LFD.1.10.0807030942440.18105@woody.linux-foundation.org>
+	Thu, 3 Jul 2008 13:24:13 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:47248 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752478AbYGCRYM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 13:24:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent:sender;
+        b=QGpB2tYvGGgZwyyZ+q0enUU5xnaGt1/ibOJ3kEnvM7+xwnI37qTNnUToTYrhgUcu56
+         2IiLfBao42rWqxfXXi+W3IpSHND6AanEIKIQ9HnH5oeSznzO48nhDY7xNX0tEa9S/YAg
+         oZSnreysd2efUVRk9qQ9sNdOA9hHDZAsPTCI4=
+Date: Thu, 3 Jul 2008 22:52:57 +0530
+From: Rabin Vincent <rabin@rab.in>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: trivial@kernel.org, Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [PATCH] doc: remove incorrect config option location
+Message-ID: <20080703172257.GA1498@debian>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807030942440.18105@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (03/07/08 09:44), Linus Torvalds didst pronounce:
-> 
-> 
-> On Thu, 3 Jul 2008, Mel Gorman wrote:
-> > 
-> > Subject: [PATCH] Do not clobber pgdat->nr_zones during memory initialisation
-> 
-> Heh. I already applied it as ObviouslyCorrect(tm), but did the 
-> simplification I already pointed out (and which your second version 
-> already had) and rewrote your commit message a bit. So it's now committed 
-> as follows..
-> 
+CONFIG_INITRAMFS_SOURCE is no longer under Devices->Block Devices, but
+is now in General Setup.  The correct location is easily found using
+menuconfig's search, so remove the mention of the incorrect location
+from the docs.
 
-Perfect. The log even looks like it was written by a sane person. Thanks
-for that.
+Signed-off-by: Rabin Vincent <rabin@rab.in>
+---
+ .../filesystems/ramfs-rootfs-initramfs.txt         |   11 +++++------
+ 1 files changed, 5 insertions(+), 6 deletions(-)
 
-> 		Linus
-> 
-> ---
-> commit 494de90098784b8e2797598cefdd34188884ec2e
-> Author: Mel Gorman <mel@csn.ul.ie>
-> Date:   Thu Jul 3 05:27:51 2008 +0100
-> 
->     Do not overwrite nr_zones on !NUMA when initialising zlcache_ptr
->     
->     The non-NUMA case of build_zonelist_cache() would initialize the
->     zlcache_ptr for both node_zonelists[] to NULL.
->     
->     Which is problematic, since non-NUMA only has a single node_zonelists[]
->     entry, and trying to zero the non-existent second one just overwrote the
->     nr_zones field instead.
->     
->     As kswapd uses this value to determine what reclaim work is necessary,
->     the result is that kswapd never reclaims.  This causes processes to
->     stall frequently in low-memory situations as they always direct reclaim.
->     This patch initialises zlcache_ptr correctly.
->     
->     Signed-off-by: Mel Gorman <mel@csn.ul.ie>
->     Tested-by: Dan Williams <dan.j.williams@intel.com>
->     [ Simplified patch a bit ]
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> ---
->  mm/page_alloc.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 2f55295..f32fae3 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -2328,7 +2328,6 @@ static void build_zonelists(pg_data_t *pgdat)
->  static void build_zonelist_cache(pg_data_t *pgdat)
->  {
->  	pgdat->node_zonelists[0].zlcache_ptr = NULL;
-> -	pgdat->node_zonelists[1].zlcache_ptr = NULL;
->  }
->  
->  #endif	/* CONFIG_NUMA */
-> 
-
+diff --git a/Documentation/filesystems/ramfs-rootfs-initramfs.txt b/Documentation/filesystems/ramfs-rootfs-initramfs.txt
+index 7be232b..08547cf 100644
+--- a/Documentation/filesystems/ramfs-rootfs-initramfs.txt
++++ b/Documentation/filesystems/ramfs-rootfs-initramfs.txt
+@@ -130,12 +130,11 @@ The 2.6 kernel build process always creates a gzipped cpio format initramfs
+ archive and links it into the resulting kernel binary.  By default, this
+ archive is empty (consuming 134 bytes on x86).
+ 
+-The config option CONFIG_INITRAMFS_SOURCE (for some reason buried under
+-devices->block devices in menuconfig, and living in usr/Kconfig) can be used
+-to specify a source for the initramfs archive, which will automatically be
+-incorporated into the resulting binary.  This option can point to an existing
+-gzipped cpio archive, a directory containing files to be archived, or a text
+-file specification such as the following example:
++The config option CONFIG_INITRAMFS_SOURCE can be used to specify a source for
++the initramfs archive, which will automatically be incorporated into the
++resulting binary.  This option can point to an existing gzipped cpio archive, a
++directory containing files to be archived, or a text file specification such as
++the following example:
+ 
+   dir /dev 755 0 0
+   nod /dev/console 644 0 0 c 5 1
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+1.5.6
+
