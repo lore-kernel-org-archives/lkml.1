@@ -1,114 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbYGCPr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbYGCPrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753686AbYGCPr1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 11:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbYGCPrS
+	id S1754721AbYGCPrv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 11:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbYGCPrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 11:47:18 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:39729 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751433AbYGCPrR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 11:47:17 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ap0EABiObEhMQWVt/2dsb2JhbACBW7A4
-Date: Thu, 3 Jul 2008 11:47:15 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       "'Alexey Dobriyan'" <adobriyan@gmail.com>,
-       "'Peter Zijlstra'" <peterz@infradead.org>,
-       "'Steven Rostedt'" <rostedt@goodmis.org>,
-       "'Frank Ch. Eigler'" <fche@redhat.com>, "'Ingo Molnar'" <mingo@elte.hu>,
-       "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'systemtap-ml'" <systemtap@sources.redhat.com>,
-       "'Hideo AOKI'" <haoki@redhat.com>
-Subject: Re: [RFC PATCH] Kernel Tracepoints (update)
-Message-ID: <20080703154715.GB3102@Krystal>
-References: <007601c8d5ca$18fa0e10$4aee2a30$@css.fujitsu.com> <48611B03.1000003@redhat.com> <20080625011951.D83E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48612879.5090809@redhat.com> <20080625235214.GA14249@Krystal> <486403F0.4020801@redhat.com> <20080627133622.GA15210@Krystal> <486CEFDB.7070508@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 3 Jul 2008 11:47:41 -0400
+Received: from gw.goop.org ([64.81.55.164]:50967 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754007AbYGCPrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 11:47:40 -0400
+Message-ID: <486CF494.8090308@goop.org>
+Date: Thu, 03 Jul 2008 08:47:32 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Nick Piggin <npiggin@suse.de>, Mark McLoughlin <markmc@redhat.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Eduardo Habkost <ehabkost@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Stephen Tweedie <sct@redhat.com>, x86@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for
+ 64-bit Xen support
+References: <486539A3.3030102@goop.org> <20080629084318.GA28815@elte.hu> <48684CD4.7040403@goop.org> <20080630082135.GA22844@elte.hu> <20080630092209.GA29815@elte.hu> <48696690.90907@goop.org> <20080701085204.GA23289@elte.hu> <20080701092152.GA18918@elte.hu> <486A57C8.3010008@goop.org> <20080701203123.GG4896@elte.hu> <20080703091053.GA1883@elte.hu>
+In-Reply-To: <20080703091053.GA1883@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <486CEFDB.7070508@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:43:16 up 28 days, 20:24,  4 users,  load average: 0.31, 0.85,
-	0.96
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Hi Mathieu,
-> 
-> I found a bug.
-> Mathieu Desnoyers wrote:
-> [...]
-> 
-> > +/*
-> > + * Remove the tracepoint from the tracepoint hash table. Must be called with
-> > + * mutex_lock held.
-> > + */
-> > +static int remove_tracepoint(const char *name)
-> > +{
-> > +	struct hlist_head *head;
-> > +	struct hlist_node *node;
-> > +	struct tracepoint_entry *e;
-> > +	int found = 0;
-> > +	size_t len = strlen(name) + 1;
-> > +	u32 hash = jhash(name, len-1, 0);
-> > +
-> > +	head = &tracepoint_table[hash & ((1 << TRACEPOINT_HASH_BITS)-1)];
-> > +	hlist_for_each_entry(e, node, head, hlist) {
-> > +		if (!strcmp(name, e->name)) {
-> > +			found = 1;
-> > +			break;
-> > +		}
-> > +	}
-> > +	if (!found)
-> > +		return -ENOENT;
-> 
-> before removing, you have to ensure refcount == 0. So,
-> 	if (e->refcount != 0)
-> 		return -EBUSY;
-> 
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+>
+>   
+>> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>>
+>>     
+>>> Ingo Molnar wrote:
+>>>       
+>>>> Excluding the x86/xen-64bit topic solves the problem.
+>>>>
+>>>> It triggered on two 64-bit machines so it seems readily reproducible  
+>>>> with that config.
+>>>>
+>>>> i've pushed the failing tree out to tip/tmp.xen-64bit.Tue_Jul__1_10_55
+>>>>   
+>>>>         
+>>> The patch to fix this is on tip/x86/unify-setup: "x86: setup_arch() && 
+>>> early_ioremap_init()".  Logically that patch should probably be in the 
+>>> xen64 branch, since it's only meaningful with the early_ioremap 
+>>> unification.
+>>>       
+>> ah, indeed - it was missing from tip/master due to:
+>>
+>> | commit ac998c259605741efcfbd215533b379970ba1d9f
+>> | Author: Ingo Molnar <mingo@elte.hu>
+>> | Date:   Mon Jun 30 12:01:31 2008 +0200
+>> |
+>> |    Revert "x86: setup_arch() && early_ioremap_init()"
+>> |
+>> |    This reverts commit 181b3601a1a7d2ac3ace6b23cb3204450a4f9a27.
+>>
+>> because that change needed the other changes from xen-64bit.
+>>
+>> will retry tomorrow.
+>>     
+>
+> ok, i've re-added x86/xen-64bit and it's looking good in testing so far.
+>   
 
-Ah, right, I had
+Great.  I'm hoping this stuff will be OK for the next merge, so I'm 
+primed for fast turnaround bugfixes ;)
 
-
-        if (e->single.func != __mark_empty_function)
-                return -EBUSY;
-
-in the markers to test this and did not replace this test.
+Also, I have the series of followup patches to actually implement 64-bit 
+Xen which have much less impact on the non-Xen parts of the tree.  I'll 
+probably mail them out later today.
 
 Thanks,
-
-Mathieu
-
-> > +	hlist_del(&e->hlist);
-> > +	/* Make sure the call_rcu has been executed */
-> > +	if (e->rcu_pending)
-> > +		rcu_barrier();
-> > +	kfree(e);
-> > +	return 0;
-> > +}
-> 
-> Thank you,
-> 
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America) Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+    J
