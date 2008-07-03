@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762005AbYGCNMF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762420AbYGCNLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762005AbYGCNMF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 09:12:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbYGCNLw
+	id S1762420AbYGCNLc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 09:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbYGCNLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 09:11:52 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:44741 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753499AbYGCNLv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 09:11:51 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: benh@kernel.crashing.org
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Jeremy Kerr <jk@ozlabs.org>
-References: <1214916335.20711.141.camel@pasglop>
-	<486B0298.5030508@linux.intel.com> <1214977447.21182.33.camel@pasglop>
-	<1215007896.3330.6.camel@localhost.localdomain>
-	<1215032409.21182.56.camel@pasglop>
-Date: Thu, 03 Jul 2008 03:12:51 -0700
-In-Reply-To: <1215032409.21182.56.camel@pasglop> (Benjamin Herrenschmidt's
-	message of "Thu, 03 Jul 2008 07:00:09 +1000")
-Message-ID: <m1zlozmg2k.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 3 Jul 2008 09:11:19 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37001 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753728AbYGCNLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 09:11:18 -0400
+Message-ID: <486CCFED.7010308@garzik.org>
+Date: Thu, 03 Jul 2008 09:11:09 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;benh@kernel.crashing.org
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.0507]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [Ksummit-2008-discuss] Delayed interrupt work, thread pools
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+To: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org> <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com> <486CC440.9030909@garzik.org> <Pine.LNX.4.64.0807031353030.11033@blonde.site>
+In-Reply-To: <Pine.LNX.4.64.0807031353030.11033@blonde.site>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Hugh Dickins wrote:
+> On Thu, 3 Jul 2008, Jeff Garzik wrote:
+>> KOSAKI Motohiro wrote:
+>>> Hi Michael,
+>>>
+>>> my server output following error message on 2.6.26-rc8-mm1.
+>>> Is this a bug?
+>>>
+>>> ------------------------------------------------------------------
+>>> tg3.c:v3.93 (May 22, 2008)
+>>> GSI 72 (level, low) -> CPU 0 (0x0001) vector 51
+>>> tg3 0000:06:01.0: PCI INT A -> GSI 72 (level, low) -> IRQ 51
+>>> firmware: requesting tigon/tg3_tso.bin
+>>> tg3: Failed to load firmware "tigon/tg3_tso.bin"
+>>> tg3 0000:06:01.0: PCI INT A disabled
+>>> GSI 72 (level, low) -> CPU 0 (0x0001) vector 51 unregistered
+>>> tg3: probe of 0000:06:01.0 failed with error -2
+>>> GSI 73 (level, low) -> CPU 0 (0x0001) vector 51
+>>> tg3 0000:06:01.1: PCI INT B -> GSI 73 (level, low) -> IRQ 52
+>>> firmware: requesting tigon/tg3_tso.bin
+>> This change did not come from the network developers or Broadcom, so someone
+>> else broke tg3 in -mm...
+> 
+> I think it's a consequence of not choosing CONFIG_FIRMWARE_IN_KERNEL=y.
+> 
+> That caught me out on PowerMac G5 trying mmotm yesterday, it just hung
+> for a few minutes in earlyish boot with a message about tg3_tso.bin,
+> and then proceeded to boot up but without the network.  I was unclear
+> whether I'd been stupid, or the FIRMWARE_IN_KERNEL Kconfigery was poor.
+> 
+> I avoid initrd, and have tigon3 built in, if that's of any relevance.
+> 
+> I wonder if that's Andrew's problem with 2.6.26-rc8-mm1 on his G5:
+> mine here boots up fine (now I know to CONFIG_FIRMWARE_IN_KERNEL=y).
 
-> The question is: is that significantly less overhead than just spawning
-> a new full blown kernel thread ? enough to justify the complexity ? at
-> the end of the day, it means allocating a stack (which on ppc64 is still
-> 16K, I know it sucks)... 
 
-I looked at this a while ago.  And right  now kernel_thread is fairly light.
-kthread_create has latency issues because we need to queue up a task on
-our kernel thread spawning daemon, and let it fork the child.  Needing
-to go via the kthread spawning daemon didn't look fundamental, just something
-that was a challenge to sort out.
+dwmw2 has been told repeatedly that his changes will cause PRECISELY 
+these problems, but he refuses to take the simple steps necessary to 
+ensure people can continue to boot their kernels after his changes go in.
 
-Eric
+Presently his tg3 changes have been nak'd, in part, because of this 
+obviously, forseeable, work-around-able breakage.
+
+	Jeff
+
+
