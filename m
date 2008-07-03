@@ -1,56 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbYGCUpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756465AbYGCUq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756231AbYGCUpS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 16:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbYGCUpF
+	id S1756465AbYGCUq1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 16:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbYGCUqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 16:45:05 -0400
-Received: from mail.ccur.com ([12.192.68.12]:39040 "EHLO mail.ccur.com"
+	Thu, 3 Jul 2008 16:46:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43926 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753053AbYGCUpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 16:45:04 -0400
-Message-ID: <486D3A4A.6000502@ccur.com>
-Date: Thu, 3 Jul 2008 16:44:58 -0400
-From: John Blackwood <john.blackwood@ccur.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	id S1752978AbYGCUqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 16:46:17 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Handling of suspend/hibernation patches
+Date: Thu, 3 Jul 2008 22:47:32 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Pavel Machek <pavel@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>
 MIME-Version: 1.0
-To: <linux-kernel@vger.kernel.org>
-CC: Lee Schermerhorn <lee.schermerhorn@hp.com>, Joe Korty <joe.korty@ccur.com>
-Subject: [bug ?] do_get_mempolicy()
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200807032247.34049.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Lee,
+Hi,
 
-I'm having unexpected results with get_mempolicy(2) in 2.6.26, and
-I am hoping that you can either agree with me, or maybe comment on my
-misconceptions.
+Recently, we've had some problems with the handling of suspend/hibernation
+patches, because they tend to touch multiple subsystems at a time.  As a
+result, it usually is not clear which tree they should be included in and at
+the moment there are suspend/hibernation patches in the PCI, ACPI, x86
+trees, as well as in -mm.  Of course the resulting dependencies between those
+trees are a pain to Stephen and their maintainers.
 
-When I have a task with no special task mempolicy (the default mempolicy),
-when I call get_mempolicy(2), it returns a policy value of 2 (MPOL_BIND)
-with a NULL nodemask.
+After the last Kernel Summit we tried to create a branch in the ACPI tree for
+suspend/hibernation patches (thanks Len!) and that had worked quite well until
+we started to work on the core device power management.  This coincided with
+the creation of linux-next and collecting suspend/hibernation patches in the
+ACPI tree became inconvenient.
 
-I believe that this is because of the code in do_get_mempolicy() that does:
+Now, we could go back to the old way of handling suspend/hibernation patches,
+which was to merge them through -mm, but the disadvantage of this would be that
+the patches wouldn't go through linux-next.  However, I'd like
+suspend/hibernation patches to be included in linux-next, so that they can get
+as much testing as possible.
 
-  *policy |= pol->flags;
+For this reason I'd like to create a quilt-based series of suspend/hibernation
+(PM sleep) patches, that Stephen will be able to pull from, with the following
+rules:
+* the patch series will be based on linux-next and will be rebased as often
+  as necessary
+* the patch series will be periodically (most probably once a week) posted
+  to linux-pm and linux-acpi; additionally the maintainers of the subsystems
+  affected by the patches will be sent CCs of the messages with them, so that
+  they can pick those patches up
+* patches taken into the other subsystem trees will be dropped from the
+  patchset and the resulting dependencies will be reflected by the annotations
+  in the 'series' file
+* the patches that are still in the series when the merge window opens, but
+  are accepted by the appropriate maintainers, will be put into a git branch
+  and pushed to Linus towards the end of the merge window.
 
-in the else case when flags do not contain MPOL_F_NODE.
+If you agree to this plan, I'd like to start by creating the patch series out
+of the suspend/hibernation patches that are in -mm at the moment and one
+additional patch that was accepted by Len, but not added to the ACPI tree
+because of some dependencies with the other subsystem trees.
 
-I guess I don't understand why we are ORing in the pol->flags into the
-*policy value.  For example, when this is for the default_policy, the
-MPOL_F_LOCAL flag (which has a value of 2) gets stuffed into the *policy
-location, and a get_mempolicy(2) caller sees this as the MPOL_BIND
-mempolicy.
+Thanks,
+Rafael
 
-Maybe the "*policy |= pol->flags;" line should be removed ?
 
-That is, maybe it was valid at some point, but subsequent changes
-make this line of code no longer valid ?
-
-Sorry if I'm out-to-lunch here...
-
-Thanks very much for you time and considerations on this issue.
-
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
