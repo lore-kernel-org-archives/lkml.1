@@ -1,118 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbYGCT3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbYGCT3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755576AbYGCT3R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 15:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbYGCT3E
+	id S1756094AbYGCT3q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 15:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbYGCT3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 15:29:04 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:34911 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753409AbYGCT3B (ORCPT
+	Thu, 3 Jul 2008 15:29:36 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:56579 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753696AbYGCT3f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 15:29:01 -0400
+	Thu, 3 Jul 2008 15:29:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=ZuHlZgLBO+CpTZF/iyn1pX27yf0CDWrgYd2qLV1aB5OsJTH7m5peCh6Pfmtuo+Y7YS
-         gsJjz2tcXtpc5DCAX3DKVmC8BZL7lPKWeN+Xs/GASSSEODFcZ0rWc4NzxIHUlKwS3e78
-         DE9nZJHBhtL6mkReMGgLxUM/pmZTIuDXpU0MY=
-Message-ID: <6278d2220807031228q3be3ed47l158fb70d4357b498@mail.gmail.com>
-Date: Thu, 3 Jul 2008 20:28:55 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Justin Piszcz" <jpiszcz@lucidpixels.com>
-Subject: Re: Veliciraptor HDD 3.0gbps but UDMA/100 on PCI-e controller?
-Cc: "Jeff Garzik" <jeff@garzik.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=tyeQeCrKSoki9QhGNC3y0ZCXqSmmx0kfE/JNzvxTqGpZkPbpgxyPaB1BtkThTjqYwm
+         kwTEDNgwRZCifTy/j7y+OuBliUCEKJVXY67VpvhLEVcXPODJdm1Ww6VH/KCratGsFzgA
+         rhA8AGU2TLaVKQ7mN1g4usJu+S8VMin5LwX28=
+Message-ID: <86802c440807031229m4f39139ar961346bc30e4a41e@mail.gmail.com>
+Date: Thu, 3 Jul 2008 12:29:34 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>, "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for 64-bit Xen support
+Cc: "Nick Piggin" <npiggin@suse.de>, "Mark McLoughlin" <markmc@redhat.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       "Eduardo Habkost" <ehabkost@redhat.com>,
+       "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Stephen Tweedie" <sct@redhat.com>, x86@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440807031219w1355c31axb4daf78f3ec626ed@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_12171_26843270.1215113374916"
+References: <486539A3.3030102@goop.org> <486A57C8.3010008@goop.org>
+	 <20080701203123.GG4896@elte.hu> <20080703091053.GA1883@elte.hu>
+	 <86802c440807031120o6e87459em8c4f239eb1a2507c@mail.gmail.com>
+	 <486D19B1.1080402@goop.org>
+	 <86802c440807031130keada2fbva256f2efe3c4801@mail.gmail.com>
+	 <486D1D40.9050309@goop.org>
+	 <86802c440807031151o577d001g3e72bae3aa88df25@mail.gmail.com>
+	 <86802c440807031219w1355c31axb4daf78f3ec626ed@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3 Jul, 18:10, Justin Piszcz <jpis...@lucidpixels.com> wrote:
-> On Thu, 3 Jul 2008, Roger Heflin wrote:
-> > Justin Piszcz wrote:
->
-> >> On Thu, 3 Jul 2008, Jeff Garzik wrote:
->
-> >>> Justin Piszcz wrote:
->
-> > Well, given that pcie x1 is max 250MB/second, and a number of pcie cards are
-> > not native (they have a pcie to pci converter between them), "dmidecode -vvv"
-> > will give you more details on the actual layout of things, and given that I
-> > have seen several devices actually run slower by having the ability to
-> > oversubscribe the bandwidth that is available and seemingly actually run
-> > slower because of this ability, that may have some bearing,    Ie 2 slower
-> > disks may be faster than 2 fast disks on the pcie just because they don't
-> > oversubscribe the interfere. And given that if there is a pci converter that
-> > may lower the overall bandwidth even more, and cause the issue.   If this was
-> > old style ethernet I would have though collisions, but it must just come down
-> > to the arbitration setups not being carefully designed for high utilization,
-> > and high interference between devices.
->
-> >                               Roger
->
-> I have ordered a couple 4 port boards (that are PCI-e x4), my next plan
-> of action to acquire > 600MiB/s is as follows:
->
-> Current:
-> Mobo: 6 drives (full speed)
-> Silicon Image (3 cards, 2 drives each)
->
-> Future:
-> Mobo: 6 drives (full speed)
-> Silicon Image (3 cards, 1 drive each)
-> Four Port Card in x16 slot (the 3 remaining drives)
->
-> This should in theory allow 1000 MiB/s..
->
-> --
->
-> # dmidecode -vvv
-> dmidecode: invalid option -- v
->
-> Assume you mean lspci:
->
-> 05:00.0 RAID bus controller: Silicon Image, Inc. SiI 3132 Serial ATA Raid II Controller (rev 01)
->          Subsystem: Silicon Image, Inc. Device 7132
->          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
->          Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
->          Latency: 0, Cache Line Size: 64 bytes
->          Interrupt: pin A routed to IRQ 16
->          Region 0: Memory at e0104000 (64-bit, non-prefetchable) [size=128]
->          Region 2: Memory at e0100000 (64-bit, non-prefetchable) [size=16K]
->          Region 4: I/O ports at 2000 [size=128]
->          Expansion ROM at e0900000 [disabled] [size=512K]
->          Capabilities: [54] Power Management version 2
->                  Flags: PMEClk- DSI+ D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
->                  Status: D0 PME-Enable- DSel=0 DScale=1 PME-
->          Capabilities: [5c] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
->                  Address: 0000000000000000  Data: 0000
->          Capabilities: [70] Express (v1) Legacy Endpoint, MSI 00
->                  DevCap: MaxPayload 1024 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
->                          ExtTag- AttnBtn- AttnInd- PwrInd- RBE- FLReset-
->                  DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
->                          RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
->                          MaxPayload 128 bytes, MaxReadReq 512 bytes
->                  DevSta: CorrErr+ UncorrErr+ FatalErr- UnsuppReq+ AuxPwr- TransPend-
->                  LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s, Latency L0 unlimited, L1 unlimited
->                          ClockPM- Suprise- LLActRep- BwNot-
->                  LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
->                          ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
->                  LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
->          Capabilities: [100] Advanced Error Reporting <?>
->          Kernel driver in use: sata_sil24
+------=_Part_12171_26843270.1215113374916
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-PCIe (gen 1) x1 tops out around 186MB/s with 128 bytes Max Payload,
-after 8b/10b encoding,  DLLP and TLP protocols, so this would mostly
-account for the limits.
+On Thu, Jul 3, 2008 at 12:19 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Thu, Jul 3, 2008 at 11:51 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>> On Thu, Jul 3, 2008 at 11:41 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> ..
+>>> I modified the vmemmap code so it would create 4k mappings if PSE isn't
+>>> supported.  Did I get it wrong?  It should have no effect when PSE is
+>>> available (which is any time you're not running under Xen).
+>>>
+>>
+>> it could be address continuous checkup for printout in
+>> vmemmap_populated has some problem...
+>
+> you moved p_end = p + PMD_SIZE before...
+>
+> if (p_end != p || node_start != node) {
 
-Part of it may depend on implementation, you'll know what I mean if
-you've used hp's older (C)CISS controllers.
+Ingo,
 
-Daniel
--- 
-Daniel J Blueman
+please put attached patch after jeremy's xen pv64 patches.
+
+YH
+
+------=_Part_12171_26843270.1215113374916
+Content-Type: text/x-patch; name=xen64_vmemmap_printout.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fi7r5te20
+Content-Disposition: attachment; filename=xen64_vmemmap_printout.patch
+
+W1BBVENIXSB4ODY6IGZpeCB2bWVtbWFwIHByaW50b3V0IGNoZWNrCgpTaWduZWQtb2ZmLWJ5OiBZ
+aW5naGFpIEx1IDx5aGx1Lmtlcm5lbEBnbWFpbC5jb20+CgotLS0KIGFyY2gveDg2L21tL2luaXRf
+NjQuYyB8ICAgIDYgKysrLS0tCiAxIGZpbGUgY2hhbmdlZCwgMyBpbnNlcnRpb25zKCspLCAzIGRl
+bGV0aW9ucygtKQoKSW5kZXg6IGxpbnV4LTIuNi9hcmNoL3g4Ni9tbS9pbml0XzY0LmMKPT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PQotLS0gbGludXgtMi42Lm9yaWcvYXJjaC94ODYvbW0vaW5pdF82NC5jCisrKyBsaW51eC0y
+LjYvYXJjaC94ODYvbW0vaW5pdF82NC5jCkBAIC0xMDU3LDkgKzEwNTcsNiBAQCB2bWVtbWFwX3Bv
+cHVsYXRlKHN0cnVjdCBwYWdlICpzdGFydF9wYWdlCiAJCQkJCQlQQUdFX0tFUk5FTF9MQVJHRSk7
+CiAJCQkJc2V0X3BtZChwbWQsIF9fcG1kKHB0ZV92YWwoZW50cnkpKSk7CiAKLQkJCQlhZGRyX2Vu
+ZCA9IGFkZHIgKyBQTURfU0laRTsKLQkJCQlwX2VuZCA9IHAgKyBQTURfU0laRTsKLQogCQkJCS8q
+IGNoZWNrIHRvIHNlZSBpZiB3ZSBoYXZlIGNvbnRpZ3VvdXMgYmxvY2tzICovCiAJCQkJaWYgKHBf
+ZW5kICE9IHAgfHwgbm9kZV9zdGFydCAhPSBub2RlKSB7CiAJCQkJCWlmIChwX3N0YXJ0KQpAQCAt
+MTA2OSw2ICsxMDY2LDkgQEAgdm1lbW1hcF9wb3B1bGF0ZShzdHJ1Y3QgcGFnZSAqc3RhcnRfcGFn
+ZQogCQkJCQlub2RlX3N0YXJ0ID0gbm9kZTsKIAkJCQkJcF9zdGFydCA9IHA7CiAJCQkJfQorCisJ
+CQkJYWRkcl9lbmQgPSBhZGRyICsgUE1EX1NJWkU7CisJCQkJcF9lbmQgPSBwICsgUE1EX1NJWkU7
+CiAJCQl9IGVsc2UKIAkJCQl2bWVtbWFwX3ZlcmlmeSgocHRlX3QgKilwbWQsIG5vZGUsIGFkZHIs
+IG5leHQpOwogCQl9Cg==
+------=_Part_12171_26843270.1215113374916--
