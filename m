@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbYGCRI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbYGCRK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbYGCRI6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 13:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbYGCRIv
+	id S1755185AbYGCRK1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 13:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYGCRKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 13:08:51 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:4753 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752481AbYGCRIu (ORCPT
+	Thu, 3 Jul 2008 13:10:16 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:50502 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752771AbYGCRKP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 13:08:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Airxg+VlsX1Ih1f21kIgV2tvVT2GpUcKrne7Mj5HEgDwNeRxLRa/JuReSe7NZiOiET
-         +mOcNdDQqA9cjSI/JIDsDB4XaSqTOH1IKX9XD1NtyzOO8hTju8HUrh4iIgGqImMejuEr
-         7u72AAq5kAv6Vn9N7gDEMCVV3yofQoQ8IBU5M=
-Message-ID: <e2e108260807031008r3de9aad7v8222d41fd750b9da@mail.gmail.com>
-Date: Thu, 3 Jul 2008 19:08:48 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: Linux 2.6.25.10
-Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-In-Reply-To: <20080703035807.GA8190@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 3 Jul 2008 13:10:15 -0400
+Subject: Re: [PATCH 1/2] cleanup e820_setup_gap v2
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, "lenb@kernel.org" <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+In-Reply-To: <20080703130035.GA23060@elte.hu>
+References: <1214333310.27577.26.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080625160817.GC24967@elte.hu>
+	 <1214416962.27577.74.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <86802c440806261101k78c5057id8ca0649188bd132@mail.gmail.com>
+	 <20080703125227.GA14082@elte.hu>  <20080703130035.GA23060@elte.hu>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Thu, 03 Jul 2008 10:10:12 -0700
+Message-Id: <1215105012.20655.2.camel@promb-2n-dhcp368.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080703035807.GA8190@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 3, 2008 at 5:58 AM, Greg KH <gregkh@suse.de> wrote:
-> We (the -stable team) are announcing the release of the 2.6.25.10
-> kernel.
->
-> It contains a number of assorted bugfixes all over the tree.  And once
-> again, any users of the 2.6.25 kernel series are STRONGLY encouraged to
-> upgrade to this release.
+On Thu, 2008-07-03 at 06:00 -0700, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > > e820_search_gap also take a end_addr parameter to limit search
+> > > > from start_addr to end_addr.
+> > > >
+> > > > Signed-off-by: AloK N Kataria <akataria@vmware.com>
+> > >
+> > > Acked-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> >
+> > applied to tip/x86/unify-setup - thanks!
+> 
+> hm, it doesnt work too well:
+> 
+>   arch/x86/pci/acpi.c: In function 'search_gap':
+>   arch/x86/pci/acpi.c:130: error: too few arguments to function 'e820_search_gap'
+> 
+> was i supposed to revert:
+> 
+> | commit 2c0262493239814b06a8aaabd1cf09b2f8fa3519
+> | Author: Alok Kataria <akataria@vmware.com>
+> | Date:   Tue Jun 24 11:48:46 2008 -0700
+> |
+> |    acpi based pci gap caluculation v2
+> 
+> ?
 
-Hello Greg,
+No...I had sent a incremental patch to the above patch..
+http://marc.info/?l=linux-kernel&m=121441818818598&w=2
 
-Thanks for all the work you and the stable team are doing on the
-stable series. To me the above message is a little bit cryptic however
--- which bugs have been fixed, and what was their impact ? I know it
-takes time to write down such information, sometimes called release
-notes. But I think including this information with the announcements
-of the stable releases would be a great service to the people reading
-these announcements.
+Please apply this one too.
 
-Bart.
+Thanks,
+Alok
+> 
+>         Ingo
+
