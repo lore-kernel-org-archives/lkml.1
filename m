@@ -1,120 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759719AbYGCNdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760617AbYGCNeD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759719AbYGCNdq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 09:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbYGCNde
+	id S1760617AbYGCNeD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 09:34:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759532AbYGCNdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 09:33:34 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49881 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753015AbYGCNdc (ORCPT
+	Thu, 3 Jul 2008 09:33:43 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:60693 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759506AbYGCNdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 09:33:32 -0400
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-From: David Woodhouse <dwmw2@infradead.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-In-Reply-To: <486CCFED.7010308@garzik.org>
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
-	 <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <486CC440.9030909@garzik.org>
-	 <Pine.LNX.4.64.0807031353030.11033@blonde.site>
-	 <486CCFED.7010308@garzik.org>
-Content-Type: text/plain
-Date: Thu, 03 Jul 2008 14:33:19 +0100
-Message-Id: <1215091999.10393.556.camel@pmac.infradead.org>
+	Thu, 3 Jul 2008 09:33:41 -0400
+Date: Thu, 3 Jul 2008 14:32:44 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Sedji Gaouaou <sedji.gaouaou@atmel.com>
+Cc: Andrew Victor <avictor.za@gmail.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       VILCHEZ Patrice <Patrice.VILCHEZ@atmel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] Support for the at91sam9g20 : Atmel 400Mhz ARM 926ej-s SOC
+Message-ID: <20080703133244.GB17201@flint.arm.linux.org.uk>
+References: <4852324C.9000604@atmel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4852324C.9000604@atmel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-03 at 09:11 -0400, Jeff Garzik wrote:
-> Hugh Dickins wrote:
-> > On Thu, 3 Jul 2008, Jeff Garzik wrote:
-> >> KOSAKI Motohiro wrote:
-> >>> Hi Michael,
-> >>>
-> >>> my server output following error message on 2.6.26-rc8-mm1.
-> >>> Is this a bug?
-> >>>
-> >>> ------------------------------------------------------------------
-> >>> tg3.c:v3.93 (May 22, 2008)
-> >>> GSI 72 (level, low) -> CPU 0 (0x0001) vector 51
-> >>> tg3 0000:06:01.0: PCI INT A -> GSI 72 (level, low) -> IRQ 51
-> >>> firmware: requesting tigon/tg3_tso.bin
-> >>> tg3: Failed to load firmware "tigon/tg3_tso.bin"
-> >>> tg3 0000:06:01.0: PCI INT A disabled
-> >>> GSI 72 (level, low) -> CPU 0 (0x0001) vector 51 unregistered
-> >>> tg3: probe of 0000:06:01.0 failed with error -2
-> >>> GSI 73 (level, low) -> CPU 0 (0x0001) vector 51
-> >>> tg3 0000:06:01.1: PCI INT B -> GSI 73 (level, low) -> IRQ 52
-> >>> firmware: requesting tigon/tg3_tso.bin
-> >> This change did not come from the network developers or Broadcom, so someone
-> >> else broke tg3 in -mm...
-> > 
-> > I think it's a consequence of not choosing CONFIG_FIRMWARE_IN_KERNEL=y.
-> > 
-> > That caught me out on PowerMac G5 trying mmotm yesterday, it just hung
-> > for a few minutes in earlyish boot with a message about tg3_tso.bin,
-> > and then proceeded to boot up but without the network.  I was unclear
-> > whether I'd been stupid, or the FIRMWARE_IN_KERNEL Kconfigery was poor.
-
-I shall respectfully refrain from commenting on the likelihood of the
-former. With regard to the latter, here is the help text for the
-FIRMWARE_IN_KERNEL option:
-
-        help
-          The kernel source tree includes a number of firmware 'blobs'
-          which are used by various drivers. The recommended way to
-          use these is to run "make firmware_install" and to copy the
-          resulting binary files created in usr/lib/firmware directory
-          of the kernel tree to the /lib/firmware on your system so
-          that they can be loaded by userspace helpers on request.
-
-          Enabling this option will build each required firmware blob
-          into the kernel directly, where request_firmware() will find
-          them without having to call out to userspace. This may be
-          useful if your root file system requires a device which uses
-          such firmware, and do not wish to use an initrd.
-
-          This single option controls the inclusion of firmware for
-          every driver which usees request_firmare() and ships its
-          firmware in the kernel source tree, to avoid a proliferation
-          of 'Include firmware for xxx device' options.
-
-          Say 'N' and let firmware be loaded from userspace.
-
-If you think you can improve it, please let me have a revised attempt.
-
-> > I avoid initrd, and have tigon3 built in, if that's of any relevance.
-> > 
-> > I wonder if that's Andrew's problem with 2.6.26-rc8-mm1 on his G5:
-> > mine here boots up fine (now I know to CONFIG_FIRMWARE_IN_KERNEL=y).
+On Fri, Jun 13, 2008 at 10:39:40AM +0200, Sedji Gaouaou wrote:
+> Support for the at91sam9g20 : Atmel 400Mhz ARM 926ej-s SOC.
 > 
-> 
-> dwmw2 has been told repeatedly that his changes will cause PRECISELY 
-> these problems, but he refuses to take the simple steps necessary to 
-> ensure people can continue to boot their kernels after his changes go in.
+> At91sam9g20 is an evolution of the at91sam9260 with a faster clock speed.
+> We created a new board for this device but based the chip support directly
+> on 9260 files with little updates.
+> Here is the chip page on Atmel website :
+> http://atmel.com/dyn/products/product_card.asp?part_id=4337
 
-Complete nonsense. Setting CONFIG_FIRMWARE_IN_KERNEL isn't hard. But
-shouldn't be the _default_, either.
+I'm not sure what's going on, but the patch submitted to the patch system
+is different from the one in this message.  The patch in your message
+applies to my 'at91' branch just fine.  The one in the patch system
+doesn't.
 
-> Presently his tg3 changes have been nak'd, in part, because of this 
-> obviously, forseeable, work-around-able breakage.
+Plus, the description in the patch system is way too long in terms of
+line length.  Please wrap before column 72 unless you're quoting
+program output.
 
-They haven't even been reviewed. Nobody seems to have actually looked at
-the real changes (in particular, and commented on whether the device can
-run anyway without the TSO firmware being loaded, as some people seem to
-report). You're just throwing your toys out of the pram because of the
-'default n' on a patch about 30 commits earlier in my tree.
+> +/*
+> + * MCI (SD/MMC)
+> + */
+> +static struct at91_mmc_data __initdata ek_mmc_data = {
+> +	.slot_b		= 1,
+> +	.wire4		= 1,
+> +//	.det_pin	= ... not connected
+> +//	.wp_pin		= ... not connected
+> +//	.vcc_pin	= ... not connected
 
--- 
-dwmw2
-
+Please make these a proper comment, preferably inside the comment before
+the structure.  C++ comments are frowned upon in the kernel's source.
