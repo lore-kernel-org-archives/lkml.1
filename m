@@ -1,69 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759965AbYGCMl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760048AbYGCMmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759965AbYGCMl7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759770AbYGCMlj
+	id S1760048AbYGCMmd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbYGCMmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:41:39 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:61141 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759758AbYGCMlj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:41:39 -0400
-Subject: Re: Intel Microcode loader, tg3 driver, and the -rc8-mmotd New
-	World Order firmware...
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Valdis.Kletnieks@vt.edu, Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       jonathan@jonmasters.org, Shaohua Li <shaohua.li@intel.com>,
-       greg@kroah.com, arjan@infradead.org
-In-Reply-To: <1215087695.10393.538.camel@pmac.infradead.org>
-References: <4534.1215048758@turing-police.cc.vt.edu>
-	 <Pine.LNX.4.61.0807030716030.10434@ginsburg.homenet>
-	 <32146.1215066947@turing-police.cc.vt.edu>
-	 <Pine.LNX.4.61.0807030743230.10608@ginsburg.homenet>
-	 <1215077028.10393.497.camel@pmac.infradead.org>
-	 <65663.1215080245@turing-police.cc.vt.edu>
-	 <1215081029.10393.517.camel@pmac.infradead.org>
-	 <68763.1215084867@turing-police.cc.vt.edu>
-	 <1215087695.10393.538.camel@pmac.infradead.org>
-Content-Type: text/plain
-Date: Thu, 03 Jul 2008 14:41:45 +0200
-Message-Id: <1215088905.9721.86.camel@linux.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Thu, 3 Jul 2008 08:42:19 -0400
+Received: from bu3sch.de ([62.75.166.246]:37309 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753885AbYGCMmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 08:42:17 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] gpiolib: Allow user-selection
+Date: Thu, 3 Jul 2008 10:42:16 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Andrew Morton <akpm@linux-foundation.org>, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org
+References: <200807022346.53222.mb@bu3sch.de> <20080702170431.56d4c929.akpm@linux-foundation.org> <200807030125.08247.david-b@pacbell.net>
+In-Reply-To: <200807030125.08247.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/mkEyKOWzKXN4NlwNEP7qyTJ9QYWG2pa1a+s0
- KoGJWlTZ+cpGH6S41wCgqtvMudcMbYrj5HqY29J5gUEhRQjv/4
- n3jN6lYnAfNWlotGeKIsuxx4RfWKCbe
+Content-Disposition: inline
+Message-Id: <200807031042.16296.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-03 at 13:21 +0100, David Woodhouse wrote:
-> On Thu, 2008-07-03 at 07:34 -0400, Valdis.Kletnieks@vt.edu wrote:
-> > Actually, FIRMWARE_IN_KERNEL *did* make a difference - it busticated the tg3
-> > driver and while fighting with the 'firmware: requesting tigon/tg3_tso.bin'
-> > errors I had just inflicted on myself, 
+On Thursday 03 July 2008 10:25:08 David Brownell wrote:
+> On Wednesday 02 July 2008, Andrew Morton wrote:
+> > drivers/gpio/gpiolib.c: In function 'gpio_export':
+> > drivers/gpio/gpiolib.c:432: error: 'struct class' has no member named 'devices'
+> > drivers/gpio/gpiolib.c:456: error: implicit declaration of function 'device_create'
+> > drivers/gpio/gpiolib.c:457: warning: assignment makes pointer from integer without a cast
+> > drivers/gpio/gpiolib.c: In function 'gpio_unexport':
+> > drivers/gpio/gpiolib.c:509: warning: passing argument 2 of 'class_find_device' from incompatible pointer type
+> > drivers/gpio/gpiolib.c:509: error: too few arguments to function 'class_find_device'
+> > drivers/gpio/gpiolib.c: In function 'gpiochip_export':
+> > drivers/gpio/gpiolib.c:536: error: 'struct class' has no member named 'devices'
+> > drivers/gpio/gpiolib.c:542: warning: assignment makes pointer from integer without a cast
+> > drivers/gpio/gpiolib.c: In function 'gpiochip_unexport':
+> > drivers/gpio/gpiolib.c:575: warning: passing argument 2 of 'class_find_device' from incompatible pointer type
+> > drivers/gpio/gpiolib.c:575: error: too few arguments to function 'class_find_device'
 > 
-> Just to confirm: that works either with CONFIG_FIRMWARE_IN_KERNEL=y or
-> if you run 'make INSTALL_FW_PATH=/lib/firmware firmware_install', right?
+> Should be addressed by the following, at least in
+> terms of build problems aginst linux-next.
 > 
-> I'm not entirely sure whether we should make 'make firmware_install'
-> install to /lib/firmware by default, or to $(O)/usr/lib/firmware as it
-> does at the moment.
+> The resulting kernel doesn't seem bootable on any
+> board I currently have set up for testing gpio calls.
+> The build dies in the TTY stack.
+
+
+Thanks a lot Dave.
+I'm going to try this with my bt878 card, once I got linux-next pulled and built.
+
+> - Dave
 > 
-> The former is consistent with 'make modules_install', and the latter is
-> consistent with 'make headers_install'. Both of which have good reasons
-> for being the way they are.
+> 
+> =============	CUT HERE
+> Cope with some backwards-incompatible driver model API changes
+> now in the linux-next tree:
+> 
+>  - device_create() is going away, even for drivers using it safely,
+>    in favor of device_create_drvdata().
+>  - class->devices is gone, but testing class->p serves the same
+>    purpose (non-null when class is usable with driver model calls).
+>  - class_find_device() needs a new argument #2 (NULL)
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> ---
+>  drivers/gpio/gpiolib.c |   16 +++++++---------
+>  1 file changed, 7 insertions(+), 9 deletions(-)
+> 
+> --- a/drivers/gpio/gpiolib.c	2008-07-02 23:29:58.000000000 -0700
+> +++ b/drivers/gpio/gpiolib.c	2008-07-03 00:04:57.000000000 -0700
+> @@ -429,7 +429,7 @@ int gpio_export(unsigned gpio, bool dire
+>  	int			status = -EINVAL;
+>  
+>  	/* can't export until sysfs is available ... */
+> -	if (!gpio_class.devices.next) {
+> +	if (!gpio_class.p) {
+>  		pr_debug("%s: called too early!\n", __func__);
+>  		return -ENOENT;
+>  	}
+> @@ -453,10 +453,9 @@ int gpio_export(unsigned gpio, bool dire
+>  	if (status == 0) {
+>  		struct device	*dev;
+>  
+> -		dev = device_create(&gpio_class, desc->chip->dev, 0,
+> -				"gpio%d", gpio);
+> +		dev = device_create_drvdata(&gpio_class, desc->chip->dev, 0,
+> +				desc, "gpio%d", gpio);
+>  		if (dev) {
+> -			dev_set_drvdata(dev, desc);
+>  			if (direction_may_change)
+>  				status = sysfs_create_group(&dev->kobj,
+>  						&gpio_attr_group);
+> @@ -506,7 +505,7 @@ void gpio_unexport(unsigned gpio)
+>  	if (test_bit(FLAG_EXPORT, &desc->flags)) {
+>  		struct device	*dev = NULL;
+>  
+> -		dev = class_find_device(&gpio_class, desc, match_export);
+> +		dev = class_find_device(&gpio_class, NULL, desc, match_export);
+>  		if (dev) {
+>  			clear_bit(FLAG_EXPORT, &desc->flags);
+>  			put_device(dev);
+> @@ -533,15 +532,14 @@ static int gpiochip_export(struct gpio_c
+>  	 * export this later, in gpiolib_sysfs_init() ... here we just
+>  	 * verify that _some_ field of gpio_class got initialized.
+>  	 */
+> -	if (!gpio_class.devices.next)
+> +	if (!gpio_class.p)
+>  		return 0;
+>  
+>  	/* use chip->base for the ID; it's already known to be unique */
+>  	mutex_lock(&sysfs_lock);
+> -	dev = device_create(&gpio_class, chip->dev, 0,
+> +	dev = device_create_drvdata(&gpio_class, chip->dev, 0, chip,
+>  			"gpiochip%d", chip->base);
+>  	if (dev) {
+> -		dev_set_drvdata(dev, chip);
+>  		status = sysfs_create_group(&dev->kobj,
+>  				&gpiochip_attr_group);
+>  	} else
+> @@ -572,7 +570,7 @@ static void gpiochip_unexport(struct gpi
+>  	struct device		*dev;
+>  
+>  	mutex_lock(&sysfs_lock);
+> -	dev = class_find_device(&gpio_class, chip, match_export);
+> +	dev = class_find_device(&gpio_class, NULL, chip, match_export);
+>  	if (dev) {
+>  		put_device(dev);
+>  		device_unregister(dev);
+> 
+> 
+> 
 
-Headers are not needed for bootup, firmware might be. :) But /usr might
-be on a different partition/disk/storage at the time we need it, right?
 
-I would say /usr/lib/firmware should not even exist, udev does
-intentionally not even look there.
 
-Thanks,
-Kay
-
+-- 
+Greetings Michael.
