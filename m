@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbYGCMPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758522AbYGCMR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbYGCMPM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:15:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYGCMO6
+	id S1758522AbYGCMR0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbYGCMRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:14:58 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:59643 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752604AbYGCMO5 (ORCPT
+	Thu, 3 Jul 2008 08:17:17 -0400
+Received: from john.hrz.tu-chemnitz.de ([134.109.132.2]:60923 "EHLO
+	john.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751811AbYGCMRQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:14:57 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: Current List of Kernel Summit suggested topics from the discuss list
-Date: Thu, 3 Jul 2008 11:29:04 +0200
-User-Agent: KMail/1.9.9
-Cc: ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <1214577710.3394.14.camel@localhost.localdomain>
-In-Reply-To: <1214577710.3394.14.camel@localhost.localdomain>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Jul 2008 08:17:16 -0400
+Date: Thu, 3 Jul 2008 14:17:12 +0200
+From: Steffen Klassert <klassert@mathematik.tu-chemnitz.de>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
+       davem@davemloft.net, dhowells@redhat.com, jgarzik@pobox.com
+Subject: Re: [patch 03/04] 3c59x: handle pci_name() being const
+Message-ID: <20080703121712.GA3376@bayes.mathematik.tu-chemnitz.de>
+References: <20080702200902.909349505@mini.kroah.org> <20080702202453.GC14024@kroah.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807031129.05165.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+M94l67PtUSZbD5OM12JUbnHBcwKWR05H6GjL
- N2vHeBqdaPHkkFl6z/2TI3jtZ/y+Y8gQoXQluJlFbCvFoZDABW
- OaINcizWsZN+6GdDU2f1w==
+In-Reply-To: <20080702202453.GC14024@kroah.com>
+User-Agent: Mutt/1.4.2.1i
+X-Spam-Score: -1.4 (-)
+X-Spam-Report: --- Start der SpamAssassin 3.2.5 Textanalyse (-1.4 Punkte)
+	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
+	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
+	weitergeleitet
+	--- Ende der SpamAssassin Textanalyse
+X-Scan-Signature: c4f9a1b1b5ab3573312a634ab222e80e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 June 2008, James Bottomley wrote:
-
-> Agenda Topics:
+On Wed, Jul 02, 2008 at 01:24:53PM -0700, Greg Kroah-Hartman wrote:
+> This changes vortex_prob1() to handle pci_name() now returning a
+> constant string.
 > 
->      1. Asynchronous Operations - Ulrich Drepper
->               * How do we make programs more parallel (driven by
->                 multicore)
->               * Can we use tasklets for this
+I got the same patch from David Howells already,
+that one is acked and send to Jeff Garzik.
 
-I suppose you mean "threadlets" or "syslets" here, not "tasklets",
-which are a kernel internal concept, right?
-
-	Arnd <><
+Steffen
