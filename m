@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761544AbYGCNGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759024AbYGCNGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761544AbYGCNGe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 09:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756832AbYGCNGH
+	id S1759024AbYGCNGx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 09:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759485AbYGCNGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 09:06:07 -0400
+	Thu, 3 Jul 2008 09:06:09 -0400
 Received: from hera.kernel.org ([140.211.167.34]:33992 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752860AbYGCNGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 09:06:05 -0400
+	id S1756507AbYGCNGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 09:06:06 -0400
 From: Tejun Heo <tj@kernel.org>
 To: jeff@garzik.org, linux-ide@vger.kernel.org,
        James.Bottomley@HansenPartnership.com, bharrosh@panasas.com,
@@ -16,85 +16,104 @@ To: jeff@garzik.org, linux-ide@vger.kernel.org,
        brking@linux.vnet.ibm.com, liml@rtr.ca, jens.axboe@oracle.com,
        viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org, device@lanana.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 1/6] block: misc updates
-Date: Thu,  3 Jul 2008 17:33:01 +0900
-Message-Id: <1215073986-4709-2-git-send-email-tj@kernel.org>
+Subject: [PATCH 5/6] sd/ide-disk: apply extended minors to sd and ide
+Date: Thu,  3 Jul 2008 17:33:05 +0900
+Message-Id: <1215073986-4709-6-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1215073986-4709-1-git-send-email-tj@kernel.org>
 References: <1215073986-4709-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (hera.kernel.org [127.0.0.1]); Thu, 03 Jul 2008 08:33:40 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (hera.kernel.org [127.0.0.1]); Thu, 03 Jul 2008 08:33:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the following misc updates in preparation for
-extended block devt support.
+Update sd and ide-disk such that they can take advantage of extended
+minors.
 
-* make add_partition report on failrues
-* add hd_struct->disk which points to the containing gendisk
-* fix comment for gendisk->part
+ide-disk already has 64 minors per device and currently doesn't use
+extended minors although after this patch it can be turned on by
+simply tweaking constants.
+
+sd only had 16 minors per device causing problems on certain peculiar
+configurations.  This patch lifts the restriction and enables it to
+use upto 64 minors.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- fs/partitions/check.c |   11 ++++++++++-
- include/linux/genhd.h |    3 ++-
- 2 files changed, 12 insertions(+), 2 deletions(-)
+ drivers/ide/ide-disk.c |   11 ++++++++---
+ drivers/scsi/sd.c      |    9 +++++++--
+ 2 files changed, 15 insertions(+), 5 deletions(-)
 
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 6149e4b..b915ac2 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -346,19 +346,28 @@ static DEVICE_ATTR(whole_disk, S_IRUSR | S_IRGRP | S_IROTH,
+diff --git a/drivers/ide/ide-disk.c b/drivers/ide/ide-disk.c
+index 8e08d08..f8b091a 100644
+--- a/drivers/ide/ide-disk.c
++++ b/drivers/ide/ide-disk.c
+@@ -41,6 +41,10 @@
+ #include <asm/io.h>
+ #include <asm/div64.h>
  
- void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len, int flags)
- {
-+	char name[BDEVNAME_SIZE];
- 	struct hd_struct *p;
- 	int err;
- 
-+	disk_name(disk, part, name);
++#define IDE_DISK_PARTS		(1 << PARTN_BITS)
++#define IDE_DISK_MINORS		IDE_DISK_PARTS
++#define IDE_DISK_EXT_MINORS	(IDE_DISK_PARTS - IDE_DISK_MINORS)
 +
- 	p = kzalloc(sizeof(*p), GFP_KERNEL);
--	if (!p)
-+	if (!p) {
-+		printk(KERN_WARNING "%s: failed to allocate partition "
-+		       "structure (part=%d)\n", name, part);
- 		return;
-+	}
+ struct ide_disk_obj {
+ 	ide_drive_t	*drive;
+ 	ide_driver_t	*driver;
+@@ -1158,8 +1162,8 @@ static int ide_disk_probe(ide_drive_t *drive)
+ 	if (!idkp)
+ 		goto failed;
  
- 	if (!init_part_stats(p)) {
-+		printk(KERN_WARNING "%s: failed to initialize partition stats "
-+		       "structure (part=%d)\n", name, part);
- 		kfree(p);
- 		return;
- 	}
- 	p->start_sect = start;
- 	p->nr_sects = len;
-+	p->disk = disk;
- 	p->partno = part;
- 	p->policy = disk->policy;
+-	g = alloc_disk_node(1 << PARTN_BITS,
+-			hwif_to_node(drive->hwif));
++	g = alloc_disk_ext_node(IDE_DISK_MINORS, IDE_DISK_EXT_MINORS,
++				hwif_to_node(drive->hwif));
+ 	if (!g)
+ 		goto out_free_idkp;
  
-diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index ae7aec3..1f06681 100644
---- a/include/linux/genhd.h
-+++ b/include/linux/genhd.h
-@@ -88,6 +88,7 @@ struct hd_struct {
- 	sector_t start_sect;
- 	sector_t nr_sects;
- 	struct device dev;
-+	struct gendisk *disk;
- 	struct kobject *holder_dir;
- 	int policy, partno;
- #ifdef CONFIG_FAIL_MAKE_REQUEST
-@@ -117,7 +118,7 @@ struct gendisk {
- 	int minors;                     /* maximum number of minors, =1 for
-                                          * disks that can't be partitioned. */
- 	char disk_name[32];		/* name of major driver */
--	struct hd_struct **part;	/* [indexed by minor] */
-+	struct hd_struct **part;	/* [indexed by minor - 1] */
- 	struct block_device_operations *fops;
- 	struct request_queue *queue;
- 	void *private_data;
+@@ -1185,7 +1189,8 @@ static int ide_disk_probe(ide_drive_t *drive)
+ 	} else
+ 		drive->attach = 1;
+ 
+-	g->minors = 1 << PARTN_BITS;
++	g->minors = IDE_DISK_MINORS;
++	g->ext_minors = IDE_DISK_EXT_MINORS;
+ 	g->driverfs_dev = &drive->gendev;
+ 	g->flags = drive->removable ? GENHD_FL_REMOVABLE : 0;
+ 	set_capacity(g, idedisk_capacity(drive));
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index 01cefbb..8879c98 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -86,6 +86,10 @@ MODULE_ALIAS_SCSI_DEVICE(TYPE_DISK);
+ MODULE_ALIAS_SCSI_DEVICE(TYPE_MOD);
+ MODULE_ALIAS_SCSI_DEVICE(TYPE_RBC);
+ 
++#define SD_PARTS	64
++#define SD_MINORS	16
++#define SD_EXT_MINORS	(SD_PARTS - SD_MINORS)
++
+ static int  sd_revalidate_disk(struct gendisk *);
+ static int  sd_probe(struct device *);
+ static int  sd_remove(struct device *);
+@@ -1642,7 +1646,7 @@ static int sd_probe(struct device *dev)
+ 	if (!sdkp)
+ 		goto out;
+ 
+-	gd = alloc_disk(16);
++	gd = alloc_disk_ext(SD_MINORS, SD_EXT_MINORS);
+ 	if (!gd)
+ 		goto out_free;
+ 
+@@ -1684,7 +1688,8 @@ static int sd_probe(struct device *dev)
+ 
+ 	gd->major = sd_major((index & 0xf0) >> 4);
+ 	gd->first_minor = ((index & 0xf) << 4) | (index & 0xfff00);
+-	gd->minors = 16;
++	gd->minors = SD_MINORS;
++	gd->ext_minors = SD_EXT_MINORS;
+ 	gd->fops = &sd_fops;
+ 
+ 	if (index < 26) {
 -- 
 1.5.4.5
 
