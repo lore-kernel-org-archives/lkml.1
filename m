@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935024AbYGCHLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757284AbYGCIWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935024AbYGCHLv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbYGCG6V
+	id S1757284AbYGCIWa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 04:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbYGCIQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:58:21 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40478 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754811AbYGCFeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 01:34:01 -0400
-Subject: Re: [PATCH 1/4] ide-pmac: media-bay support fixes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <200806261140.39531.bzolnier@gmail.com>
-References: <200806162124.43005.bzolnier@gmail.com>
-	 <200806261051.34733.bzolnier@gmail.com> <1214470868.8011.455.camel@pasglop>
-	 <200806261140.39531.bzolnier@gmail.com>
-Content-Type: text/plain
-Date: Thu, 03 Jul 2008 15:33:56 +1000
-Message-Id: <1215063236.21182.85.camel@pasglop>
+	Thu, 3 Jul 2008 04:16:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39993 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759166AbYGCHFj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 03:05:39 -0400
+Date: Thu, 3 Jul 2008 00:04:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, npiggin@suse.de,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Rik Van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [-mm] BUG: sleeping function called from invalid context at
+ include/linux/pagemap.h:290
+Message-Id: <20080703000444.2463eee9.akpm@linux-foundation.org>
+In-Reply-To: <486C74B1.3000007@cn.fujitsu.com>
+References: <486C74B1.3000007@cn.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 03 Jul 2008 14:41:53 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> > That's ok, just tell me a tree and an SHA1 ID of a commit on top of
-> > which they apply, that will make my life easier :-)
+> Seems the problematic patch is :
+> mmap-handle-mlocked-pages-during-map-remap-unmap.patch
 > 
-> They are still for *linux-next* (since they depend on other IDE changes)
-> and apply fine on top of -20080625.
-> 
-> SHA1 ID is: 9ab50ba2f4958b593802ce91395d07148b611b71 but I don't know
-> whether it is useful in linux-next context.
+> I'm using mmotm uploaded yesterday by Andrew, so I guess this bug
+> has not been fixed ?
 
-Took me a while, kid was sick.
+Not as far as I know.  And I can't immediately spot the bug there.
 
-They apply on 20080625 (with various offset/fuzz but they do apply) and
-the tree builds. The media bay however fails the same way as before with
-IDE register errors.
-
-I'll see if I can find where they come from.
-
-Ben.
-
-
+> BUG: sleeping function called from invalid context at include/linux/pagemap.h:290
+> in_atomic():1, irqs_disabled():0
+> no locks held by gpg-agent/2134.
+> Pid: 2134, comm: gpg-agent Not tainted 2.6.26-rc8-mm1 #11
+>  [<c0421d38>] __might_sleep+0xbe/0xc5
+>  [<c04770a2>] __munlock_pte_handler+0x3c/0x9e
+>  [<c047c11f>] walk_page_range+0x15b/0x1b4
+>  [<c0477048>] __munlock_vma_pages_range+0x4e/0x5b
+>  [<c0476f0c>] ? __munlock_pmd_handler+0x0/0x10
+>  [<c0477066>] ? __munlock_pte_handler+0x0/0x9e
+>  [<c0477064>] munlock_vma_pages_range+0xf/0x11
+>  [<c0477dcb>] exit_mmap+0x32/0xf2
+>  [<c042ac12>] ? exit_mm+0xc7/0xda
+>  [<c042732a>] mmput+0x3a/0x8b
+>  [<c042ac20>] exit_mm+0xd5/0xda
+>  [<c042bf6a>] do_exit+0x1fb/0x5d5
+>  [<c045c4df>] ? audit_syscall_exit+0x2aa/0x2c5
+>  [<c042c3a3>] do_group_exit+0x5f/0x88
+>  [<c042c3db>] sys_exit_group+0xf/0x11
+>  [<c0403956>] syscall_call+0x7/0xb
+>  =======================
