@@ -1,84 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934633AbYGCHLM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934828AbYGCHLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934633AbYGCHLM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:11:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbYGCG6P
+	id S934828AbYGCHLf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 03:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbYGCG6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:58:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55772 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754750AbYGCFJC (ORCPT
+	Thu, 3 Jul 2008 02:58:18 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:41244 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754763AbYGCFLs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 01:09:02 -0400
-Date: Wed, 2 Jul 2008 22:08:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Michael Buesch <mb@bu3sch.de>, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] gpiolib: Allow user-selection
-Message-Id: <20080702220842.44364045.akpm@linux-foundation.org>
-In-Reply-To: <200807022200.49428.david-b@pacbell.net>
-References: <200807022346.53222.mb@bu3sch.de>
-	<20080702170431.56d4c929.akpm@linux-foundation.org>
-	<200807022200.49428.david-b@pacbell.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Jul 2008 01:11:48 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Tejun Heo <htejun@gmail.com>
+Cc: Benjamin Thery <benjamin.thery@bull.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+References: <20080618170729.808539948@theryb.frec.bull.fr>
+	<20080618170731.002784342@theryb.frec.bull.fr>
+	<485F04E1.70204@gmail.com> <m1y74svtff.fsf@frodo.ebiederm.org>
+	<486706C9.9040303@gmail.com> <m18wwmsqdv.fsf@frodo.ebiederm.org>
+	<4869D314.5030403@gmail.com> <m1ej6enep7.fsf@frodo.ebiederm.org>
+	<486A0751.9080602@gmail.com> <m1wsk5hjm0.fsf@frodo.ebiederm.org>
+	<486AF4FA.8020805@gmail.com> <m1ej6d9c2r.fsf@frodo.ebiederm.org>
+	<486B060C.7030607@gmail.com> <m14p78s02q.fsf@frodo.ebiederm.org>
+	<486C4515.1070007@gmail.com>
+Date: Wed, 02 Jul 2008 22:11:08 -0700
+In-Reply-To: <486C4515.1070007@gmail.com> (Tejun Heo's message of "Thu, 03 Jul
+	2008 12:18:45 +0900")
+Message-ID: <m1hcb7o8lv.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Tejun Heo <htejun@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.1252]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 06/11] sysfs: Implement sysfs tagged directory support.
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Jul 2008 22:00:49 -0700 David Brownell <david-b@pacbell.net> wrote:
+Tejun Heo <htejun@gmail.com> writes:
 
-> On Wednesday 02 July 2008, Andrew Morton wrote:
-> > On Wed, 2 Jul 2008 23:46:53 +0200
-> > Michael Buesch <mb@bu3sch.de> wrote:
-> > 
-> > > This patch adds functionality to the gpio-lib subsystem to
-> > > make it possible to enable the gpio-lib code even if the
-> > > architecture code didn't request to get it built in.
-> > 
-> > drivers/gpio/gpiolib.c: In function 'gpio_export':
-> > drivers/gpio/gpiolib.c:432: error: 'struct class' has no member named 'devices'
-> > drivers/gpio/gpiolib.c:456: error: implicit declaration of function 'device_create'
-> > drivers/gpio/gpiolib.c:457: warning: assignment makes pointer from integer without a cast
-> > drivers/gpio/gpiolib.c: In function 'gpio_unexport':
-> > drivers/gpio/gpiolib.c:509: warning: passing argument 2 of 'class_find_device' from incompatible pointer type
-> > drivers/gpio/gpiolib.c:509: error: too few arguments to function 'class_find_device'
-> > drivers/gpio/gpiolib.c: In function 'gpiochip_export':
-> > drivers/gpio/gpiolib.c:536: error: 'struct class' has no member named 'devices'
-> > drivers/gpio/gpiolib.c:542: warning: assignment makes pointer from integer without a cast
-> > drivers/gpio/gpiolib.c: In function 'gpiochip_unexport':
-> > drivers/gpio/gpiolib.c:575: warning: passing argument 2 of 'class_find_device' from incompatible pointer type
-> > drivers/gpio/gpiolib.c:575: error: too few arguments to function 'class_find_device'
-> > 
-> > I assume this patch was prepared against some ancient out-of-date
-> > kernel such as current Linus mainline.
-> 
-> May be, but shuffling headers around would not have caused
-> that type of breakage.
-> 
-> I'm thinking some driver model changes broke the gpio sysfs
-> interface code, and this happens to show up right now because
-> that code wasn't previously getting built.
-> 
-> Grumph.  I can easily switch the device_create() over to
-> use device_create_drvdata() -- didn't I already send in
-> a patch like that? -- but the other stuff is completely
-> backwards-incompatible.
-> 
+> There is rather large possibility that I'm just being dumb here
+> especially because I haven't reviewed the users of this facility, so all
+> the comments I'm making are from the POV of interfaces of sysfs and the
+> related layers.  I think I've made my concerns clear by now.  If you
+> still think the callbacks are the best way to go, please try to
+> enlighten me.  I really don't wanna be stopping something which is
+> better from ignorance.  Just give me some concrete examples or point me
+> to codes which show how and why the current interface is the best for
+> the users and switching isn't a good idea.
 
-beats me ididntdoitnobodysawmedoit.
+Currently I think a callback on to get the tag from a kobject is the
+best way to go.  That way we don't need to add a field to struct
+kobject (and don't need the associated redundancy), and we can lookup
+up the tag when we need it.
 
-But what I am repeatedly seeing is people cheerfully raising 2.6.27
-patches against the 2.6.26 tree when we have a nice 2.6.27 tree for
-developing against.  Those days are over, guys.
+I have been playing with the code and just about have it ready
+to go.  I just need to refactor all of my changes into clean
+patches at this point, plus a bit of review and test.  Ben & Daniel
+have given me a version of the previous patchset rebased unto the
+latest -mm so that should help for the unchanged parts.
 
+Introducing the sysfs_tag_type thing and pushing the functions to
+the edges helps.  It especially cleans up the ugly mount/umount
+situation allowing us to handle that with generic code.
 
+Moving the kobject_tag into struct ktype works and looks roughly
+as clean as what happens with attributes.  So I that seems reasonable,
+and doesn't result in a significant change in the users.
 
-I'm also seeing obvious signs that developers aren't _testing_ their
-new code within the context of the 2.6.27 tree.  They're obviously
-testing their stuff against 2.6.26 and then hoping and praying, only it
-doesn't always work out for them.
+The result of which means that I only have the helper function sysfs_creation_tag
+left in sysfs/dir.c  Left in there are some of the nasties in dealing with symlinks.
+
+At this point I believe I have achieved a nice degree of simplifying the sysfs
+code in the current patches without really changing the users or
+making it more complex for them.
+
+I have not implemented ida tags, and I don't plan to.  That is just
+unnecessary work right now.  The users are simple and the meat of the
+logic would not change so it should be simple to add.
+
+>> It looks to me like the clean solution is move kobject_tag into
+>> kobj_type, and have it call some higher level function.
+>> 
+>> We also need to remove the maintenance disaster that is
+>> kobject_set_name from sysfs_rename_dir.  And push it into
+>> kobject_rename instead.  The error handling is harder in
+>> that case but otherwise we should be in good shape.
+>
+> Heh... I personally think kobject layer as a whole should just be hidden
+> under the cabinet of device driver model but I'm having difficult time
+> convincing other people of it.  Anyways, fully agree the interaction
+> between kobject and sysfs is ugly at a lot of places.
+
+I would be happy if we could remove all nonsense kobject that are there just
+for structural purposes but have no purpose otherwise.  Things like kobjects
+for symlinks.  The kobject layer doesn't seem to have a clear identity
+and purpose that I can see right now.
+
+> Thanks a lot for your patience.
+
+Welcome.  The code reached a point a while ago where it didn't make sense
+to change it without review feedback.
+
+Eric
 
