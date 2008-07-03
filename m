@@ -1,88 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760088AbYGCOVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbYGCOTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760088AbYGCOVU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 10:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757297AbYGCOVD
+	id S1758803AbYGCOTz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 10:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757518AbYGCOT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 10:21:03 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:44036 "EHLO smtp6.pp.htv.fi"
+	Thu, 3 Jul 2008 10:19:29 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:57417 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751861AbYGCOVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 10:21:01 -0400
-Date: Thu, 3 Jul 2008 17:20:30 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Adam Williamson <awilliamson@mandriva.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@redhat.com>, bugme-daemon@bugzilla.kernel.org,
-       Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-       Matthias Geissert <matthias.geissert@web.de>
-Subject: Re: [Bug 10868] Oops on loading ipaq module since 2.6.26, prevents
-	use of device
-Message-ID: <20080703142025.GC11254@cs181140183.pp.htv.fi>
-References: <RzbtSgMztjP.A.jRD._spXIB@albercik> <200807031005.59691.oliver@neukum.org> <20080703085733.GB11254@cs181140183.pp.htv.fi> <200807031608.46457.oliver@neukum.org>
+	id S1757158AbYGCOT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 10:19:27 -0400
+Message-ID: <486CDFE5.9030105@atmel.com>
+Date: Thu, 03 Jul 2008 16:19:17 +0200
+From: Sedji Gaouaou <sedji.gaouaou@atmel.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200807031608.46457.oliver@neukum.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+CC: Andrew Victor <avictor.za@gmail.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       VILCHEZ Patrice <Patrice.VILCHEZ@atmel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] Support for the at91sam9g20 : Atmel 400Mhz ARM 926ej-s
+ SOC
+References: <4852324C.9000604@atmel.com> <20080703133244.GB17201@flint.arm.linux.org.uk>
+In-Reply-To: <20080703133244.GB17201@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 03, 2008 at 04:08:44PM +0200, Oliver Neukum wrote:
-> Am Donnerstag 03 Juli 2008 10:57:33 schrieb Adrian Bunk:
-> > On Thu, Jul 03, 2008 at 10:05:57AM +0200, Oliver Neukum wrote:
->  
-> > > As far as I can tell somebody changed the ipaq driver in 2.6.26-rc6. I cannot
-> > > find the exact patch that did it in Greg's directory. As it causes a regression
-> > > here's a reversal.
-> > 
-> > 
-> > It was changed by:
-> 
-> Thanks, did you do git magic?
+Hi Andrew,
+>   
+>> +/*
+>> + * MCI (SD/MMC)
+>> + */
+>> +static struct at91_mmc_data __initdata ek_mmc_data = {
+>> +	.slot_b		= 1,
+>> +	.wire4		= 1,
+>> +//	.det_pin	= ... not connected
+>> +//	.wp_pin		= ... not connected
+>> +//	.vcc_pin	= ... not connected
+>>     
+>
+> Please make these a proper comment, preferably inside the comment before
+> the structure.  C++ comments are frowned upon in the kernel's source.
+>
+>   
+I would like to know what do you suggest about this comment? Indeed we 
+already use this kind of comments, for instance in board-sam9260ek.c. I 
+don't mind changing it into the proper comment form, but I would like to 
+know first what do you suggest.
 
-I wouldn't call that "magic":
-
-$ git-log v2.6.25.. drivers/usb/serial/ipaq.c
-
->...
-> > --- a/drivers/usb/serial/ipaq.c
-> > +++ b/drivers/usb/serial/ipaq.c
-> > @@ -571,9 +571,9 @@ static struct usb_serial_driver ipaq_device = {
-> >  	.usb_driver = 		&ipaq_driver,
-> >  	.id_table =		ipaq_id_table,
-> >  	.num_interrupt_in =	NUM_DONT_CARE,
-> > -	.num_bulk_in =		1,
-> > -	.num_bulk_out =		1,
-> > -	.num_ports =		1,
-> > +	.num_bulk_in =		NUM_DONT_CARE,
-> > +	.num_bulk_out =		NUM_DONT_CARE,
-> 
-> This is good.
-
-These fields are removed by a later commit in 2.6.26...  8-)
-
-> > +	.num_ports =		2,
-> 
-> This is fatal.
-> 
-> The patch I sent reverts only this part, so this issue is solved.
-> 
-> 	Regards
-> 		Oliver
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Regards,
+Sedji
 
