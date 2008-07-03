@@ -1,69 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758804AbYGCVk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbYGCVko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758804AbYGCVk5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 17:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756761AbYGCVgr
+	id S1758699AbYGCVko (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 17:40:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756758AbYGCVgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 17:36:47 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:50780 "EHLO relay.sgi.com"
+	Thu, 3 Jul 2008 17:36:46 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:50779 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754863AbYGCVgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754840AbYGCVgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 3 Jul 2008 17:36:37 -0400
-Message-Id: <20080703213633.890647632@attica.americas.sgi.com>
+Message-Id: <20080703213633.668997502@attica.americas.sgi.com>
 References: <20080703213348.489120321@attica.americas.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 03 Jul 2008 16:34:00 -0500
+Date: Thu, 03 Jul 2008 16:33:59 -0500
 From: steiner@sgi.com
 To: akpm@osdl.org, linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com
-Subject: [patch 12/13] GRU Driver V3 -  export is_uv_system(), zap_page_range() & follow_page()
-Content-Disposition: inline; filename=grup_mm_exports
+Subject: [patch 11/13] GRU Driver V3 -  driver makefile
+Content-Disposition: inline; filename=grup_driver_makefile
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Exports needed by the GRU driver.
+This patch adds the GRU driver makefile
 
 
 Signed-off-by: Jack Steiner <steiner@sgi.com>
 
-
 ---
- mm/memory.c               |    2 ++
+ drivers/misc/sgi-gru/Makefile |    3 +++
+ files changed, 27 insertions(+)
 
----
- arch/x86/kernel/genapic_64.c |    1 +
- mm/memory.c                  |    2 ++
- 2 files changed, 3 insertions(+)
-
-Index: linux/mm/memory.c
+Index: linux/drivers/misc/sgi-gru/Makefile
 ===================================================================
---- linux.orig/mm/memory.c	2008-07-03 15:57:13.000000000 -0500
-+++ linux/mm/memory.c	2008-07-03 16:19:09.000000000 -0500
-@@ -995,6 +995,7 @@ unsigned long zap_page_range(struct vm_a
- 		tlb_finish_mmu(tlb, address, end);
- 	return end;
- }
-+EXPORT_SYMBOL_GPL(zap_page_range);
- 
- /*
-  * Do a quick page-table lookup for a single page.
-@@ -1089,6 +1090,7 @@ no_page_table:
- 	}
- 	return page;
- }
-+EXPORT_SYMBOL_GPL(follow_page);
- 
- /* Can we do the FOLL_ANON optimization? */
- static inline int use_zero_page(struct vm_area_struct *vma)
-Index: linux/arch/x86/kernel/genapic_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/genapic_64.c	2008-07-03 15:59:07.000000000 -0500
-+++ linux/arch/x86/kernel/genapic_64.c	2008-07-03 16:19:09.000000000 -0500
-@@ -102,3 +102,4 @@ int is_uv_system(void)
- {
- 	return uv_system_type != UV_NONE;
- }
-+EXPORT_SYMBOL_GPL(is_uv_system);
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/drivers/misc/sgi-gru/Makefile	2008-06-10 09:26:14.933653473 -0500
+@@ -0,0 +1,3 @@
++obj-$(CONFIG_SGI_GRU) := gru.o
++gru-y := grufile.o grumain.o grufault.o grutlbpurge.o gruprocfs.o grukservices.o
++
 
 -- 
