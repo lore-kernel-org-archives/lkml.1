@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbYGCVRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbYGCVRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755541AbYGCVRU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 17:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYGCVRF
+	id S1756777AbYGCVRe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 17:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756013AbYGCVRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 17:17:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44063 "EHLO ogre.sisk.pl"
+	Thu, 3 Jul 2008 17:17:22 -0400
+Received: from saeurebad.de ([85.214.36.134]:56936 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752953AbYGCVRD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 17:17:03 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Handling of suspend/hibernation patches
-Date: Thu, 3 Jul 2008 23:18:40 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       stern@rowland.harvard.edu, andi@firstfloor.org, greg@kroah.com,
-       jbarnes@virtuousgeek.org, lenb@kernel.org,
-       torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org,
-       sfr@canb.auug.org.au, pavel@suse.cz, mingo@elte.hu
-References: <200807032247.34049.rjw@sisk.pl> <20080703140154.18876f5a.akpm@linux-foundation.org>
-In-Reply-To: <20080703140154.18876f5a.akpm@linux-foundation.org>
+	id S1755840AbYGCVRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 17:17:21 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [Bug #10741] bug in `tty: BKL pushdown'?
+References: <q5WW6DLC10O.A.dxC.R69ZIB@albercik>
+	<X8mbwW6K81I.A.EyF.Q99ZIB@albercik>
+Date: Thu, 03 Jul 2008 23:15:51 +0200
+In-Reply-To: <X8mbwW6K81I.A.EyF.Q99ZIB@albercik> (Rafael J. Wysocki's message
+	of "Sun, 29 Jun 2008 20:18:42 +0200 (CEST)")
+Message-ID: <87zloy7jp4.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807032318.41446.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 3 of July 2008, Andrew Morton wrote:
-> On Thu, 3 Jul 2008 22:47:32 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > Hi,
-> > 
-> > Recently, we've had some problems with the handling of suspend/hibernation
-> > patches, because they tend to touch multiple subsystems at a time.  As a
-> > result, it usually is not clear which tree they should be included in and at
-> > the moment there are suspend/hibernation patches in the PCI, ACPI, x86
-> > trees, as well as in -mm.  Of course the resulting dependencies between those
-> > trees are a pain to Stephen and their maintainers.
-> > 
-> > After the last Kernel Summit we tried to create a branch in the ACPI tree for
-> > suspend/hibernation patches (thanks Len!) and that had worked quite well until
-> > we started to work on the core device power management.  This coincided with
-> > the creation of linux-next and collecting suspend/hibernation patches in the
-> > ACPI tree became inconvenient.
-> > 
-> > Now, we could go back to the old way of handling suspend/hibernation patches,
-> > which was to merge them through -mm, but the disadvantage of this would be that
-> > the patches wouldn't go through linux-next.  However, I'd like
-> > suspend/hibernation patches to be included in linux-next, so that they can get
-> > as much testing as possible.
-> 
-> I need to get butt into gear and get most-of-mm into linux-next.  I'll
-> be picking that up when 2.6.27-rc1 is done.
-> 
-> So we can just keep this tree in -mm (and hence linux-next) if you like.
+Hi,
 
-Well, that will save me quite a bit patch management work. :-)
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Let's keep that in -mm, then.
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
 
-Thanks,
-Rafael
+Yeah, it still exists.
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10741
+> Subject		: bug in `tty: BKL pushdown'?
+> Submitter	: Johannes Weiner <hannes@saeurebad.de>
+> Date		: 2008-05-18 2:16 (43 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121107706506181&w=4
+> 		  http://lkml.org/lkml/2008/6/16/104
+> Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
+
+	Hannes
