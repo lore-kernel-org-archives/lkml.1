@@ -1,78 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbYGCVEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbYGCVGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756824AbYGCVEx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 17:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbYGCVEo
+	id S1755974AbYGCVGr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 17:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbYGCVGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 17:04:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42792 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753800AbYGCVEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 17:04:43 -0400
-Date: Thu, 3 Jul 2008 17:03:44 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH 1/2] Avoid bio_endio recursion
-In-Reply-To: <20080702090048.2ec99b72@lxorguk.ukuu.org.uk>
-Message-ID: <Pine.LNX.4.64.0807031637040.20244@engineering.redhat.com>
-References: <Pine.LNX.4.64.0806240118250.24220@engineering.redhat.com>
- <20080624080744.GL20851@kernel.dk> <Pine.LNX.4.64.0806241017390.23052@engineering.redhat.com>
- <20080625082421.GU20851@kernel.dk> <Pine.LNX.4.64.0806252008380.11130@engineering.redhat.com>
- <20080626070723.GL20851@kernel.dk> <Pine.LNX.4.64.0807020001290.9097@engineering.redhat.com>
- <20080702090048.2ec99b72@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 3 Jul 2008 17:06:40 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:15620 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752905AbYGCVGj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 17:06:39 -0400
+Message-ID: <29631811.1215119177276.JavaMail.oracle@acsmt302.oracle.com>
+Date: Thu, 3 Jul 2008 16:06:17 -0500 (CDT)
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>, Rabin Vincent <rabin@rab.in>
+Subject: Re: [PATCH] doc: remove incorrect config option location
+Cc: trivial@kernel.org
+In-Reply-To: <20080703172257.GA1498@debian>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+References: <20080703172257.GA1498@debian>
+X-Priority: 3
+X-Mailer: Oracle Webmail Client(UIX)
+Content-Language: en-US
+Accept-Language: en-US
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Jul 2008, Alan Cox wrote:
 
-> On Wed, 2 Jul 2008 00:09:22 -0400 (EDT)
-> Mikulas Patocka <mpatocka@redhat.com> wrote:
->
->>> Right, that wont work of course. Completions are typically done through
->>> a softirq, so it is not currently done with hard interrupts disabled.
->>
->> I thought, from hardirq - that's what IDE is doing. And they are called
->
-> Even IDE will sometimes complete from a timer on an error.
->
->> And does local_irq_restore() need to execute even more costy "popf" when
->> it makes a transition from disabled to disabled state? What's
->> local_irq_restore semantics --- is it allowed to use local_irq_restore for
->> transition from interrupt-enabled state into interrupt-disabled state?
->
-> If you are worried about performance the network layer has _irq variants
-> of various functions that are faster and can only be called from the
-> right context (eg kfree_skb_irq), so you could do two versions of that
-> code.
->
-> Alan
+--- Original Message ---
+> CONFIG_INITRAMFS_SOURCE is no longer under Devices->Block
+> Devices, but
+> is now in General Setup.  The correct location is easily found
+> using menuconfig's search, so remove the mention of the incorrect
+> location from the docs.
+> 
+> Signed-off-by: Rabin Vincent <rabin@rab.in>
 
-I was thinking about a general optimization --- something like this. On 
-Core2 it doesn't make much sense --- cli is fast there (just 11 ticks). On 
-Pentium 4 it would make sense, because cli is much more costy there.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Mikulas
+Thanks.
 
----
-  include/asm-x86/irqflags.h |    3 ++-
-  1 file changed, 2 insertions(+), 1 deletion(-)
+> ---
+>  .../filesystems/ramfs-rootfs-initramfs.txt         |   11
+> +++++------
+>  1 files changed, 5 insertions(+), 6 deletions(-)
+> 
+> diff --git a/Documentation/filesystems/ramfs-rootfs-initramfs.txt
+> b/Documentation/filesystems/ramfs-rootfs-initramfs.txt
+> index 7be232b..08547cf 100644
+> --- a/Documentation/filesystems/ramfs-rootfs-initramfs.txt
+> +++ b/Documentation/filesystems/ramfs-rootfs-initramfs.txt
+> @@ -130,12 +130,11 @@ The 2.6 kernel build process always
+> creates a gzipped cpio format initramfs
+>  archive and links it into the resulting kernel binary.  By
+> default, this
+>  archive is empty (consuming 134 bytes on x86).
+>  
+> -The config option CONFIG_INITRAMFS_SOURCE (for some reason
+> buried under
+> -devices->block devices in menuconfig, and living in usr/Kconfig)
+> can be used
+> -to specify a source for the initramfs archive, which will
+> automatically be
+> -incorporated into the resulting binary.  This option can point
+> to an existing
+> -gzipped cpio archive, a directory containing files to be
+> archived, or a text
+> -file specification such as the following example:
+> +The config option CONFIG_INITRAMFS_SOURCE can be used to
+> specify a source for
+> +the initramfs archive, which will automatically be incorporated
+> into the
+> +resulting binary.  This option can point to an existing gzipped
+> cpio archive, a
+> +directory containing files to be archived, or a text file
+> specification such as
+> +the following example:
+>  
+>    dir /dev 755 0 0
+>    nod /dev/console 644 0 0 c 5 1
+> -- 
+> 1.5.6
+> 
 
-Index: linux-2.6.26-rc8/include/asm-x86/irqflags.h
-===================================================================
---- linux-2.6.26-rc8.orig/include/asm-x86/irqflags.h	2008-06-02 23:13:32.000000000 +0200
-+++ linux-2.6.26-rc8/include/asm-x86/irqflags.h	2008-07-03 22:53:32.000000000 +0200
-@@ -101,7 +101,8 @@ static inline unsigned long __raw_local_
-  {
-  	unsigned long flags = __raw_local_save_flags();
-
--	raw_local_irq_disable();
-+	if (flags & X86_EFLAGS_IF)
-+		raw_local_irq_disable();
-
-  	return flags;
-  }
