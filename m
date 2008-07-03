@@ -1,172 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933158AbYGCHIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933819AbYGCHJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933158AbYGCHIh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbYGCG5x
+	id S933819AbYGCHJk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 03:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbYGCG6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:57:53 -0400
-Received: from mail7.hitachi.co.jp ([133.145.228.42]:57734 "EHLO
-	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754705AbYGCDvw (ORCPT
+	Thu, 3 Jul 2008 02:58:03 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:43559 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751817AbYGCEll (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 23:51:52 -0400
-X-AuditID: 0ac90650-ae48fba0000062df-5c-486c4cd4766c
-Message-ID: <486C4CC5.2060006@hitachi.com>
-Date: Thu, 03 Jul 2008 12:51:33 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Thu, 3 Jul 2008 00:41:41 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Mike Travis <travis@sgi.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com>
+	<485BF8F5.6010802@goop.org> <485BFFC5.6020404@sgi.com>
+	<m1skv7onvh.fsf@frodo.ebiederm.org> <486912C4.8070705@sgi.com>
+	<48691556.2080208@zytor.com> <48691E8B.4040605@sgi.com>
+	<m14p7asl3x.fsf@frodo.ebiederm.org> <48694B3B.3010600@goop.org>
+	<m1skuuov4t.fsf@frodo.ebiederm.org> <486A61A7.1000902@zytor.com>
+	<486A68DD.80702@goop.org> <m1d4lxgwxj.fsf@frodo.ebiederm.org>
+	<486A9D4F.8010508@goop.org> <m1skutffn4.fsf@frodo.ebiederm.org>
+	<486AA72B.6010401@goop.org> <486AC9D9.9030506@zytor.com>
+	<486AD6BD.9080600@sgi.com> <486ADD67.1020809@sgi.com>
+	<486ADD9F.3000305@zytor.com> <486C062C.3090408@sgi.com>
+Date: Wed, 02 Jul 2008 21:34:17 -0700
+In-Reply-To: <486C062C.3090408@sgi.com> (Mike Travis's message of "Wed, 02 Jul
+	2008 15:50:20 -0700")
+Message-ID: <m1wsk3r3g6.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: Philippe De Muyter <phdm@macqel.be>,
-       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
-       libdc1394-devel@lists.sourceforge.net, stefanr@s5r6.in-berlin.de,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: Re: mmap'ed memory in core files ?
-References: <20080701132149.GA32510@frolo.macqel> 
-    <517f3f820807011116g6ce1b3e1qf166070f7a4c523f@mail.gmail.com> 
-    <20080702105027.GA1111@frolo.macqel> 
-    <cfd18e0f0807020358k317575c6ra0187428098f0160@mail.gmail.com>
-In-Reply-To: <cfd18e0f0807020358k317575c6ra0187428098f0160@mail.gmail.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Mike Travis <travis@sgi.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu area
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Mike Travis <travis@sgi.com> writes:
 
-Michael Kerrisk wrote:
+> will only boot and run with gcc-4.2.0, and does the "failure at grub" screen
+> with
+> gcc-4.2.4 ...!
 
-> [CC+= hidehiro.kawai.ez@hitachi.com]
-> 
-> On Wed, Jul 2, 2008 at 12:50 PM, Philippe De Muyter <phdm@macqel.be> wrote:
-> 
->>Hi Michael,
->>
->>On Tue, Jul 01, 2008 at 08:16:11PM +0200, Michael Kerrisk wrote:
->>
->>>On 7/1/08, Philippe De Muyter <phdm@macqel.be> wrote:
->>>
->>>>Hello everybody,
->>>>
->>>> I develop video acquisition software using the video1394 interface.
->>>> The images grabbed by the camera and iee1394 bus are kept in kernel
->>>> memory and made available to the user program through a mmap call done
->>>> in the libdc1394 library :
->>>>
->>>> dma_ring_buffer= mmap(0, vmmap.nb_buffers * vmmap.buf_size,
->>>>                PROT_READ|PROT_WRITE,MAP_SHARED, craw->capture.dma_fd, 0);
->>>>
->>>> Sometimes, my program crashes and produces a core file :)  It seems to
->>>> me that the core file does not contain the mmap'ed memory and hence
->>>> I cannot replay my program with the same image for debugging purpose.
->>>>
->>>> Is it possible to configure the kernel through /proc, or through the mmap
->>>> system call to have that mmapped segment in the core file, or do I need
->>>> to modify the kernel itself to obtain the behaviour I want ?  If I
->>>> need to modify the kernel, can some kind soul provide me some pointers ?
->>>
->>>
->>>Have a look at the section "Controlling which mappings are written to
->>>the core dump" in a recent core.5 man page:
->>>http://www.kernel.org/doc/man-pages/online/pages/man5/core.5.html
->>
->>thanks for the info.  I didn't know about /proc/PID/coredump_filter.
->>
->>that part was promising :
->>
->>      bit 2  Dump file-backed private mappings.
->>      bit 3  Dump file-backed shared mappings.
->>
->>   The default value of coredump_filter is 0x3; this reflects traditional
->>   Linux behavior and means that only anonymous memory segments are dumped.
->>
->>Unfortunately, the part that applies to me (I have tested it) is the next one :
->>
->>   Memory-mapped I/O pages such as frame buffer are never dumped, [...],
->>   regardless of the coredump_filter value.
->>
->>Is that a design decision, or a mere finding of the way it is implemented
->>now ?
+Do these tests have an early serial console enabled?  I want to confirm
+that the failure is very early in boot before or just as we reach C code.
 
-MMIO pages have been not dumped since a long time ago, and I didn't target
-them for the coredump_filter feature because I thought it was generally
-danger to read MMIO pages.  As for frame buffer we would be able to
-safely access to it, but there is no way to tell it from other MMIO
-mappings, AFAIK.
+If you don't have an early console we could be failing late in the process just
+not have visibility.
 
->>So, back to my original question :
->>
->>Can some kind soul provide me some pointers to the way I should modify
->>the kernel to make the inclusion of the video1394 mmapped segment in
->>core files possible ?
-> 
-> 
-> Perhaps Hidehiro, who wrote the coredump_filter feature, can provide insight.
+> Any other suggestions?
 
-The following patch may help.  To dump MMIO pages, set bit 5 of
-coredump_filter.
+If you have a serial console to add a little bit of instrumentation super duper early.
+Although looking at the generated objects might be just as interesting.
 
-$ echo 0x23 > /proc/<PID>/coredump_filter
-
-
-Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
----
-This patch is not intended to be merged to the upstream kernel
-because the safeness of reading VM_IO mappings has not been
-proved.
-
-Index: linux-2.6.26-rc5-mm3/fs/binfmt_elf.c
-===================================================================
---- linux-2.6.26-rc5-mm3.orig/fs/binfmt_elf.c
-+++ linux-2.6.26-rc5-mm3/fs/binfmt_elf.c
-@@ -1141,11 +1141,18 @@ static unsigned long vma_dump_size(struc
- 	if (vma->vm_flags & VM_ALWAYSDUMP)
- 		goto whole;
- 
--	/* Do not dump I/O mapped devices or special mappings */
--	if (vma->vm_flags & (VM_IO | VM_RESERVED))
-+#define FILTER(type)	(mm_flags & (1UL << MMF_DUMP_##type))
-+
-+	/* By default, do not dump memory mapped I/O mappings */
-+	if (vma->vm_flags & VM_IO) {
-+		if (FILTER(MMIO))
-+			goto whole;
- 		return 0;
-+	}
- 
--#define FILTER(type)	(mm_flags & (1UL << MMF_DUMP_##type))
-+	/* Do not dump special mappings */
-+	if (vma->vm_flags & VM_RESERVED)
-+		return 0;
- 
- 	/* By default, dump shared memory if mapped from an anonymous file. */
- 	if (vma->vm_flags & VM_SHARED) {
-Index: linux-2.6.26-rc5-mm3/include/linux/sched.h
-===================================================================
---- linux-2.6.26-rc5-mm3.orig/include/linux/sched.h
-+++ linux-2.6.26-rc5-mm3/include/linux/sched.h
-@@ -403,8 +403,9 @@ extern int get_dumpable(struct mm_struct
- #define MMF_DUMP_MAPPED_PRIVATE	4
- #define MMF_DUMP_MAPPED_SHARED	5
- #define MMF_DUMP_ELF_HEADERS	6
-+#define MMF_DUMP_MMIO		7
- #define MMF_DUMP_FILTER_SHIFT	MMF_DUMPABLE_BITS
--#define MMF_DUMP_FILTER_BITS	5
-+#define MMF_DUMP_FILTER_BITS	6
- #define MMF_DUMP_FILTER_MASK \
- 	(((1 << MMF_DUMP_FILTER_BITS) - 1) << MMF_DUMP_FILTER_SHIFT)
- #define MMF_DUMP_FILTER_DEFAULT \
-
-
-
-Regards,
--- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
+Eric
 
