@@ -1,257 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbYGCVtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758319AbYGCVvE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbYGCVtX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 17:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757473AbYGCVtB
+	id S1758319AbYGCVvE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 17:51:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbYGCVuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 17:49:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54737 "EHLO mx1.redhat.com"
+	Thu, 3 Jul 2008 17:50:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44207 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757158AbYGCVtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 17:49:00 -0400
-Message-ID: <486D48E0.9010708@redhat.com>
-Date: Thu, 03 Jul 2008 17:47:12 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1754305AbYGCVuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 17:50:50 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+Date: Thu, 3 Jul 2008 23:52:33 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Jeff Garzik <jeff@garzik.org>, Theodore Tso <tytso@mit.edu>,
+       Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org> <200807032342.01292.rjw@sisk.pl> <486D47F1.4080406@infradead.org>
+In-Reply-To: <486D47F1.4080406@infradead.org>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [RFC patch 1/3] Kernel Tracepoints
-References: <20080703160526.637679319@polymtl.ca> <20080703161102.721606976@polymtl.ca>
-In-Reply-To: <20080703161102.721606976@polymtl.ca>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807032352.35056.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mathieu,
-
-I couldn't apply this patch against 2.6.26-rc8, and have
-some trivial comments.
-
-Mathieu Desnoyers wrote:
-> Implementation of kernel tracepoints. Inspired from the Linux Kernel Markers.
+On Thursday, 3 of July 2008, David Woodhouse wrote:
+> Rafael J. Wysocki wrote:
+> > Still, maybe we can add some kbuild magic to build the blobs along with
+> > their modules and to install them under /lib/firmware (by default) when the
+> > modules are installed in /lib/modules/... ?
 > 
-> Allows complete typing verification. No format string required.
+> Something like appending this to Makefile?
 > 
-> TODO : Documentation/tracepoint.txt
+> firmware_and_modules_install: firmware_install modules_install
 > 
-> Changelog :
-> - Use #name ":" #proto as string to identify the tracepoint in the
->   tracepoint table. This will make sure not type mismatch happens due to
->   connexion of a probe with the wrong type to a tracepoint declared with
->   the same name in a different header.
-> 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: 'Peter Zijlstra' <peterz@infradead.org>
-> CC: "Frank Ch. Eigler" <fche@redhat.com>
-> CC: 'Ingo Molnar' <mingo@elte.hu>
-> CC: 'Hideo AOKI' <haoki@redhat.com>
-> CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-> CC: 'Steven Rostedt' <rostedt@goodmis.org>
-> CC: Alexander Viro <viro@zeniv.linux.org.uk>
-> ---
->  include/asm-generic/vmlinux.lds.h |    6 
->  include/linux/module.h            |   17 +
->  include/linux/tracepoint.h        |  139 ++++++++++
->  init/Kconfig                      |   16 +
->  kernel/Makefile                   |    1 
->  kernel/module.c                   |   66 ++++-
->  kernel/tracepoint.c               |  498 ++++++++++++++++++++++++++++++++++++++
->  7 files changed, 741 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6-lttng/init/Kconfig
-> ===================================================================
-> --- linux-2.6-lttng.orig/init/Kconfig	2008-07-03 11:47:15.000000000 -0400
-> +++ linux-2.6-lttng/init/Kconfig	2008-07-03 11:49:54.000000000 -0400
-> @@ -782,12 +782,28 @@ config PROFILING
->  	  Say Y here to enable the extended profiling support mechanisms used
->  	  by profilers such as OProfile.
->  
-> +config TRACEPOINTS
-> +	bool "Activate tracepoints"
-> +	default y
-> +	help
-> +	  Place an empty function call at each tracepoint site. Can be
-> +	  dynamically changed for a probe function.
-> +
->  config MARKERS
->  	bool "Activate markers"
->  	help
->  	  Place an empty function call at each marker site. Can be
->  	  dynamically changed for a probe function.
->  
-> +config TRACEPROBES
-> +	tristate "Compile generic tracing probes"
-> +	depends on MARKERS
-> +	default y
-> +	help
-> +	  Compile generic tracing probes, which connect to the tracepoints when
-> +	  loaded and format the information collected by the tracepoints with
-> +	  the Markers.
-> +
->  source "arch/Kconfig"
+> (I'm still wondering if we should make 'firmware_install' install to 
+> /lib/firmware by default, instead of into the build tree as 
+> 'headers_install' does. The Aunt Tillie answer would definitely be 
+> 'yes', although that means it requires root privs; like modules_install 
+> does.)
 
-might this part better go to PATCH 3/3?
-
-[...]
-> +
-> +
-> +#define TPPROTO(args...)	args
-> +#define TPARGS(args...)		args
-> +
-> +#ifdef CONFIG_TRACEPOINTS
-> +
-> +/*
-> + * Note : the empty asm volatile with read constraint is used here instead of a
-> + * "used" attribute to fix a gcc 4.1.x bug.
-
-There seems no empty asm...
-
-> + * Make sure the alignment of the structure in the __tracepoints section will
-> + * not add unwanted padding between the beginning of the section and the
-> + * structure. Force alignment to the same alignment as the section start.
-> + */
-> +#define DEFINE_TRACE(name, proto, args)					\
-> +	static inline void _do_trace_##name(struct tracepoint *tp, proto) \
-> +	{								\
-> +		int i;							\
-> +		struct tracepoint_probe_closure *multi;			\
-> +		preempt_disable();					\
-> +		multi = tp->multi;					\
-> +		smp_read_barrier_depends();				\
-> +		if (multi) {						\
-> +			for (i = 0; multi[i].func; i++) {		\
-> +				((void(*)(void *private_data, proto))	\
-> +				(multi[i].func))(multi[i].probe_private, args);\
-> +			}						\
-> +		}							\
-> +		preempt_enable();					\
-> +	}								\
-> +	static inline void trace_##name(proto)				\
-> +	{								\
-> +		static const char __tpstrtab_##name[]			\
-> +		__attribute__((section("__tracepoints_strings")))	\
-> +		= #name ":" #proto;					\
-> +		static struct tracepoint __tracepoint_##name		\
-> +		__attribute__((section("__tracepoints"), aligned(8))) =	\
-> +		{ __tpstrtab_##name, 0, NULL };				\
-> +		if (unlikely(__tracepoint_##name.state))		\
-> +			_do_trace_##name(&__tracepoint_##name, args);	\
-> +	}								\
-> +	static inline int register_trace_##name(			\
-> +		void (*probe)(void *private_data, proto),		\
-> +		void *private_data)					\
-> +	{								\
-> +		return tracepoint_probe_register(#name ":" #proto,	\
-> +			(void *)probe, private_data);			\
-> +	}								\
-> +	static inline void unregister_trace_##name(			\
-> +		void (*probe)(void *private_data, proto),		\
-> +		void *private_data)					\
-> +	{								\
-> +		tracepoint_probe_unregister(#name ":" #proto,		\
-> +			(void *)probe, private_data);			\
-> +	}
-> +
-
-As we are discussing on another thread, this macro can't handle
-non-argument tracepoint.
-
-[...]
-> Index: linux-2.6-lttng/kernel/tracepoint.c
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6-lttng/kernel/tracepoint.c	2008-07-03 11:54:30.000000000 -0400
-> @@ -0,0 +1,498 @@
-> +/*
-> + * Copyright (C) 2007 Mathieu Desnoyers
-
-trivial: it should be 2008?  :-)
-
-[...]
-> Index: linux-2.6-lttng/kernel/module.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/kernel/module.c	2008-07-03 11:49:54.000000000 -0400
-> +++ linux-2.6-lttng/kernel/module.c	2008-07-03 11:54:01.000000000 -0400
-> @@ -46,6 +46,7 @@
->  #include <asm/cacheflush.h>
->  #include <linux/license.h>
->  #include <asm/sections.h>
-> +#include <linux/tracepoint.h>
->  
->  #if 0
->  #define DEBUGP printk
-> @@ -1770,6 +1771,8 @@ static struct module *load_module(void _
->  	unsigned int unusedgplcrcindex;
->  	unsigned int markersindex;
->  	unsigned int markersstringsindex;
-> +	unsigned int tracepointsindex;
-> +	unsigned int tracepointsstringsindex;
->  	struct module *mod;
->  	long err = 0;
->  	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
-> @@ -2049,6 +2052,9 @@ static struct module *load_module(void _
->  	markersindex = find_sec(hdr, sechdrs, secstrings, "__markers");
->   	markersstringsindex = find_sec(hdr, sechdrs, secstrings,
->  					"__markers_strings");
-> +	tracepointsindex = find_sec(hdr, sechdrs, secstrings, "__tracepoints");
-> +	tracepointsstringsindex = find_sec(hdr, sechdrs, secstrings,
-> +					"__tracepoints_strings");
->  
->  	/* Now do relocations. */
->  	for (i = 1; i < hdr->e_shnum; i++) {
-> @@ -2076,6 +2082,12 @@ static struct module *load_module(void _
->  	mod->num_markers =
->  		sechdrs[markersindex].sh_size / sizeof(*mod->markers);
->  #endif
-> +#ifdef CONFIG_TRACEPOINTS
-> +	mod->tracepoints = (void *)sechdrs[tracepointsindex].sh_addr;
-> +	mod->num_tracepoints =
-> +		sechdrs[tracepointsindex].sh_size / sizeof(*mod->tracepoints);
-> +#endif
-> +
->  
->          /* Find duplicate symbols */
->  	err = verify_export_symbols(mod);
-> @@ -2094,11 +2106,16 @@ static struct module *load_module(void _
->  
->  	add_kallsyms(mod, sechdrs, symindex, strindex, secstrings);
->  
-> +	if (!(mod->taints & TAINT_FORCED_MODULE)) {
->  #ifdef CONFIG_MARKERS
-> -	if (!(mod->taints & TAINT_FORCED_MODULE))
->  		marker_update_probe_range(mod->markers,
->  			mod->markers + mod->num_markers);
-
-Here, this hunk was rejected, because "Markers Support for
-Proprierary Modules" patch doesn't merged yet.
-
->  #endif
-> +#ifdef CONFIG_TRACEPOINTS
-> +		tracepoint_update_probe_range(mod->tracepoints,
-> +			mod->tracepoints + mod->num_tracepoints);
-> +#endif
-> +	}
->  	err = module_finalize(hdr, sechdrs, mod);
->  	if (err < 0)
->  		goto cleanup;
-
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+I would prefer 'make firmware_install' to just copy the blobs into specific
+location in analogy with 'make modules_install', so that you can build the
+blobs as a normal user (for example, on an NFS server) and then put them
+into the right place as root (for example, on an NFS client that has no write
+privilege on the server).
