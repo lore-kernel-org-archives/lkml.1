@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758770AbYGCOdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760363AbYGCOeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758770AbYGCOdi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 10:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbYGCOd2
+	id S1760363AbYGCOeI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 10:34:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbYGCOdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 10:33:28 -0400
-Received: from mx.sjtu.edu.cn ([202.112.26.52]:47912 "EHLO mx2.sjtu.edu.cn"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753129AbYGCOd1 convert rfc822-to-8bit (ORCPT
+	Thu, 3 Jul 2008 10:33:54 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:46157 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbYGCOdx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 10:33:27 -0400
-Message-ID: <20080703223323.u3i8r8wg04ww48c8@webmail1.sjtu.edu.cn>
-Date: Thu, 03 Jul 2008 22:33:23 +0800
-From: xialiang <xiaiaxaxi@sjtu.edu.cn>
-To: linux-kernel@vger.kernel.org
-Subject: Why does migration take quite a long time?
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=GB2312;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.3)
+	Thu, 3 Jul 2008 10:33:53 -0400
+To: viro@ZenIV.linux.org.uk
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, hch@infradead.org,
+       Artem.Bityutskiy@nokia.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <20080702194249.GV28946@ZenIV.linux.org.uk> (message from Al Viro
+	on Wed, 2 Jul 2008 20:42:50 +0100)
+Subject: Re: [patch] vfs: fix lookup on deleted directory
+References: <E1KE81v-0000d8-Kp@pomaz-ex.szeredi.hu> <20080702194249.GV28946@ZenIV.linux.org.uk>
+Message-Id: <E1KEPsV-0002TO-5t@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 03 Jul 2008 16:33:43 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Al,
 
-     I've got a problem about the migration_thread. Migration_thread  
-is used to migrate a specific task from one cpu to another. I use it  
-to let one task migrate between cpus.
-     I am working on Intel Duo Core and with Linux 2.6.21. And my  
-problem is that the migration thread sometimes takes short time to  
-finish, but sometimes takes lots of time to finish. Because I can't do  
-another migration through migration thread before the previous  
-migration finishes, I can only wait a long time.
-     My function my_migrate() is called in softirq, just like  
-load_balance() does.
+On Wed, 2 Jul 2008, Al Viro wrote:
+> I wonder if it would be better to do that in a slightly different way:
+> if ->lookup() returns negative dentry, check if parent is dead and drop
+> the sucker if it is.
 
-My pseudocode is like following,
-/**********************/
-static int xl_migrate(int this_cpu, struct rq* this_rq)
-{
-	int dest_cpu;
-	static int flag = 0;
-	struct task_struct* curr;
+Either is fine by me.
 
-	/* flag = 1 means code is being run, and migration code is protected.*/
-         if(flag == 1)
-                 return 0;
+OT: could we have some feedback about patches I submitted during the
+last couple of weeks?  They aren't terribly complex, so really I don't
+think it would take more than 10 minutes of your time to review and
+ack/nack them.
 
-         if( Currently running is a task I want to migrate... ){
-                 flag = 1;
-                 Set dest_cpu...
-                 sched_migrate_task(curr, mycpu);
-                 printk("%s:migrate to cpu %d\n", today, mycpu);
-                 flag = 0;
-         }
-         return 0;
-}
-/**********************/
+But even just saying that you're busy and will look at them at
+whatever time would be better than the complete silence that usually
+follows patch submissions.
 
-      It seems that the printk is showed long after the thread  
-migration is done. I don't know why the completion of migration is so  
-slow. Or any code is wrong? Can anyone help me? Thanks!
+Also there's the unprivileged mounts patchset, that has been waiting
+for the last year or so.  That's a bit more complex stuff, but it's
+not going to get better by sitting around in -mm.  Is there a
+possibility of that getting reviewed for 2.6.27?
 
-Best regards,
-Liang
-
+Thanks,
+Miklos
