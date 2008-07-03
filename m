@@ -1,76 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbYGCRdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755136AbYGCRfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754966AbYGCRdU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 13:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbYGCRdJ
+	id S1755136AbYGCRfc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 13:35:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbYGCRfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 13:33:09 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:48178 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752481AbYGCRdI (ORCPT
+	Thu, 3 Jul 2008 13:35:24 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:17288 "EHLO
+	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753311AbYGCRfX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 13:33:08 -0400
-Date: Thu, 3 Jul 2008 13:30:40 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-Message-ID: <20080703173040.GB30506@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Jeff Garzik <jeff@garzik.org>, Hugh Dickins <hugh@veritas.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	mchan@broadcom.com, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, netdev@vger.kernel.org
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org> <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com> <486CC440.9030909@garzik.org> <Pine.LNX.4.64.0807031353030.11033@blonde.site> <486CCFED.7010308@garzik.org> <1215091999.10393.556.camel@pmac.infradead.org> <486CD654.4020605@garzik.org> <1215093175.10393.567.camel@pmac.infradead.org>
+	Thu, 3 Jul 2008 13:35:23 -0400
+X-BigFish: VPS2(z5edJzzz10d3izzz32i43j64h)
+X-Spam-TCS-SCL: 3:0
+X-WSS-ID: 0K3FY6J-04-36R-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: mingo@redhat.com, tglx@linutronix.de
+CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       bhavna.sarathy@amd.com, robert.richter@amd.com
+Subject: [PATCH 0/6] AMD IOMMU updates
+Date: Thu, 3 Jul 2008 19:35:05 +0200
+Message-ID: <1215106511-12915-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.3.7
+X-OriginalArrivalTime: 03 Jul 2008 17:35:12.0069 (UTC) FILETIME=[2567CF50:01C8DD33]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1215093175.10393.567.camel@pmac.infradead.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 03, 2008 at 02:52:55PM +0100, David Woodhouse wrote:
-> 
-> After feedback from a number of people, there is no individual Kconfig
-> option for the various firmwares; there is only one which controls them
-> all -- CONFIG_FIRMWARE_IN_KERNEL. The thing you're whining about isn't
-> even part of the patch which needs review.
-> 
-> > Because of your stubborn refusal on this Kconfig defaults issue, WE 
-> > ALREADY HAVE DRIVER-DOES-NOT-WORK BREAKAGE, JUST AS PREDICTED.
-> 
-> I strongly disagree that CONFIG_FIRMWARE_IN_KERNEL=y should be the
-> default. But if I add this patch elsewhere in the kernel, will you quit
-> your whining and actually review the patch you were asked to review? ...
+Hi,
 
-I don't think it's whining.  If your patch introduces changes which
-cause people .config to break by default after upgrading to a newer
-kernel and doing "make oldconfig" --- then that's a problem with your
-patch, and the missing hunk to enable CONFIG_FIRMWARE_IN_KERNEL=y is
-critically important.
+this series of patches contain some updates to the AMD IOMMU code currently in
+tip/master. The updates address some objections discussed on the initial
+patches and also contain optimization and small code cleanup.
+The code with these updates is tested on real hardware under load and showed no
+problems.
 
-Linus has ruled this way in the past, when he's gotten screwed by this
-sort of issue in the past, and he was justifiably annoyed.  We should
-treat the users who are willing to test and provide feedback on the
-latest kernel.org kernels with the same amount of regard.  And if
-there are licensing religious fundamentalists who feel strongly about
-the firmware issue, then fine, they can change the .config.  But the
-default should be to avoid users from having broken kernels, and a
-number of (quite clueful) users have already demonstrated that without
-setting CONFIG_FIRMWARE_IN_KERNEL=y as the default, your patches cause
-breakage.
+diffstat:
 
-Regards,
+ arch/x86/Kconfig                  |   10 +++++++++-
+ arch/x86/kernel/amd_iommu.c       |   15 ++++++++++-----
+ arch/x86/kernel/amd_iommu_init.c  |   16 ++++++----------
+ include/asm-x86/amd_iommu_types.h |    2 ++
+ 4 files changed, 27 insertions(+), 16 deletions(-)
 
-						- Ted
+
+
