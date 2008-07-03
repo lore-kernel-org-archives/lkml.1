@@ -1,78 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbYGCNuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759572AbYGCNtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760217AbYGCNuS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 09:50:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbYGCNuE
+	id S1759572AbYGCNtf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 09:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758380AbYGCNtT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 09:50:04 -0400
-Received: from fallback.mail.elte.hu ([157.181.151.13]:56494 "EHLO
-	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753950AbYGCNuD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 09:50:03 -0400
-Date: Thu, 3 Jul 2008 11:01:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Mike Travis <travis@sgi.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       mm-commits@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask
-	V3
-Message-ID: <20080703090100.GA10872@elte.hu>
-References: <200806090918.m599Ib0G012837@imap1.linux-foundation.org> <19f34abd0806090420r4100241cgb4b828441de3b102@mail.gmail.com> <20080609113547.GA1534@elte.hu> <484D54F2.4070603@sgi.com> <20080626113229.GB29619@elte.hu> <4863C334.2090007@sgi.com> <486452CC.8050502@sgi.com> <48651EF5.5090808@sgi.com> <20080703084401.GB7873@elte.hu> <19f34abd0807030155x22b0033dj780830bad840216f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0807030155x22b0033dj780830bad840216f@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 3 Jul 2008 09:49:19 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:50201 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758280AbYGCNtS (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 09:49:18 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       jonathan@jonmasters.org, Shaohua Li <shaohua.li@intel.com>,
+       greg@kroah.com, Kay Sievers <kay.sievers@vrfy.org>, arjan@infradead.org
+Subject: Re: Intel Microcode loader, tg3 driver, and the -rc8-mmotd New World Order firmware...
+In-Reply-To: Your message of "Thu, 03 Jul 2008 13:21:35 BST."
+             <1215087695.10393.538.camel@pmac.infradead.org>
+From: Valdis.Kletnieks@vt.edu
+References: <4534.1215048758@turing-police.cc.vt.edu> <Pine.LNX.4.61.0807030716030.10434@ginsburg.homenet> <32146.1215066947@turing-police.cc.vt.edu> <Pine.LNX.4.61.0807030743230.10608@ginsburg.homenet> <1215077028.10393.497.camel@pmac.infradead.org> <65663.1215080245@turing-police.cc.vt.edu> <1215081029.10393.517.camel@pmac.infradead.org> <68763.1215084867@turing-police.cc.vt.edu>
+            <1215087695.10393.538.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1215092936_4193P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 03 Jul 2008 09:48:56 -0400
+Message-ID: <76161.1215092936@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1215092936_4193P
+Content-Type: text/plain; charset=us-ascii
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
-
-> On Thu, Jul 3, 2008 at 10:44 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Mike Travis <travis@sgi.com> wrote:
-> >
-> >> Subject: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask V3
-> >>
-> >>   * When CONFIG_DEBUG_PER_CPU_MAPS is set, the node passed to
-> >>     node_to_cpumask and node_to_cpumask_ptr should be validated.
-> >>     If invalid, then a dump_stack is performed and a zero cpumask
-> >>     is returned.
-> >>
-> >> Based on "Fri Jun 27 10:06:06 PDT 2008" tip/master...  ;-)
-> >>
-> >> Signed-off-by: Mike Travis <travis@sgi.com>
-> >> ---
-> >> V2: Slightly different version to remove a compiler warning.
-> >> V3: Redone to reflect moving setup.c -> setup_percpu.c
-> >
-> > applied to tip/x86/unify-setup - thanks Mike.
-> >
-> > Vegard, can i add your Acked-by too?
+On Thu, 03 Jul 2008 13:21:35 BST, David Woodhouse said:
+> On Thu, 2008-07-03 at 07:34 -0400, Valdis.Kletnieks@vt.edu wrote:
+> > Actually, FIRMWARE_IN_KERNEL *did* make a difference - it busticated the tg
+3
+> > driver and while fighting with the 'firmware: requesting tigon/tg3_tso.bin'
+> > errors I had just inflicted on myself, 
 > 
-> To be honest, I'd prefer that the function returns a const pointer. 
-> Mike and I have both reviewed all callers independently and concluded 
-> that there is no problem in doing this, and that, in fact, this is the 
-> correct way to deal with it.
+> Just to confirm: that works either with CONFIG_FIRMWARE_IN_KERNEL=y or
+> if you run 'make INSTALL_FW_PATH=/lib/firmware firmware_install', right?
+
+The old config was FIRMWARE_IN_KERNEL=y, and that worked fine because the
+microcode was compiled into tg3.o and All Was Good.
+
+My current, *also* working config has FIRMWARE_IN_KERNEL=n, and CONFIG_TIGON3=m.
+System comes up, initrd runs, the real root gets loaded, udev gets started,
+and when the modprobe happens, /lib/firmware/tigon is there to handle the
+request_firmware that gets launched when the module loads.
+
+The *broken* config was FIRMWARE_IN_KERNEL=n, CONFIG_TIGON3=y.  System comes up,
+the request_firmware pops *very* early (as in while we're still on the initrd),
+and I couldn't figure out how to get Fedora/nash/etc to do the firmware load
+from the initrd (nash seems to want it in /firmware/tigon3, but putting it
+there didn't help any).  By the time udev gets launched, that request is DOA
+and the interface doesn't come up.  But as I said, that *seems* to be just a
+lack of clue on my part about what nash wants.
+
+> I'm not entirely sure whether we should make 'make firmware_install'
+> install to /lib/firmware by default, or to $(O)/usr/lib/firmware as it
+> does at the moment.
 > 
-> So if Mike submits a V4 with this const return type, or another patch 
-> on top of this one, I'll ack it :-)
+> The former is consistent with 'make modules_install', and the latter is
+> consistent with 'make headers_install'. Both of which have good reasons
+> for being the way they are.
 
-ok, i'll wait for v4 :)
+Somebody else can decide that one.  Kay does make a point in another mail
+that you *really* want it to end up in /lib/firmware for good reasons.
 
-(v3 is applied already so Mike please send a delta to v3.)
+--==_Exmh_1215092936_4193P
+Content-Type: application/pgp-signature
 
-	Ingo
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIbNjIcC3lWbTT17ARAod/AKCso+2tQsAp0Zt6u2pC6qzrd0EBVwCgrt/y
+4MBKRRhCPGtL9mt7fh+F97g=
+=7V6z
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1215092936_4193P--
