@@ -1,63 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933599AbYGCHJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933712AbYGCHJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933599AbYGCHJX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbYGCG57
+	id S933712AbYGCHJd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 03:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbYGCG6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:57:59 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47146 "EHLO smtps.tip.net.au"
+	Thu, 3 Jul 2008 02:58:00 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:49431 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751112AbYGCEPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 00:15:55 -0400
-Date: Thu, 3 Jul 2008 14:15:50 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Mike Travis <travis@sgi.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] Introduce new cpu_mask APIs
-Message-Id: <20080703141550.de7f8f22.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751195AbYGCE17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 00:27:59 -0400
+Date: Thu, 3 Jul 2008 05:27:51 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, NeilBrown <neilb@suse.de>,
+       babydr@baby-dragons.com, cl@linux-foundation.org,
+       lee.schermerhorn@hp.com, a.beregalov@gmail.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org
+Subject: Re: [problem] raid performance loss with 2.6.26-rc8 on 32-bit x86 (bisected)
+Message-ID: <20080703042750.GB14614@csn.ul.ie>
+References: <1214877439.7885.40.camel@dwillia2-linux.ch.intel.com> <20080701080910.GA10865@csn.ul.ie> <20080701175855.GI32727@shadowen.org> <20080701190741.GB16501@csn.ul.ie> <1214944175.26855.18.camel@dwillia2-linux.ch.intel.com> <20080702051759.GA26338@csn.ul.ie> <1215049766.2840.43.camel@dwillia2-linux.ch.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1215049766.2840.43.camel@dwillia2-linux.ch.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In linux-next there is a commit ("x86: Add performance variants of cpumask
-operators") which, as part of the 4096 cpu support work adds some new
-APIs for dealing with cpu masks.  Add thrivial versions of these now
-so that subsystems can update in a timely manner and avoid conflicts in
-linux-next and the next merge window.
+One-line-summary: kswapd is almost certainly broken on !NUMA and a candidate
+patch is below
 
-Cc: Mike Travis <travis@sgi.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- include/linux/cpumask.h |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+On (02/07/08 18:49), Dan Williams didst pronounce:
+> On Tue, 2008-07-01 at 22:18 -0700, Mel Gorman wrote:
+> > > Let us take commit 8b3e6cdc out of the equation and just look at raid0
+> > > performance:
+> > >
+> > > revision   2.6.25.8-fc8 54a6eb5c 54a6eb5c-nohighmem 2.6.26-rc8
+> > >            279          278      273                277
+> > >            281          278      275                277
+> > >            281          113      68.7               66.8
+> > >            279          69.2     277                73.7
+> > >            278          75.6     62.5               80.3
+> > > MB/s (avg) 280          163      191                155
+> > > % change   0%           -42%     -32%               -45%
+> > > result     base         bad      bad                bad
+> > >
+> > 
+> > Ok, based on your other mail, 54a6eb5c here is a bisection point. The good
+> > figures are on par with the "good" kernel with some disasterous runs leading
+> > to a bad average. The thing is, the bad results are way worse than could be
+> > accounted for by two-zonelist alone.  In fact, the figures look suspiciously
+> > like only 1 disk is in use as they are roughly quartered. Can you think of
+> > anything that would explain that?
+> 
+> raid0 in contrast to raid5 is fairly simple it just remaps the bio.
+> Then it is up to the block layer to do some merging before it hits the
+> block device driver.  Not much room for error, especially since single
+> drive performance seems to be unaffected.  The data seems to show that
+> the vm is not queuing pages to be written back fast enough.
+> 
 
-diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index 5df3db5..c24875b 100644
---- a/include/linux/cpumask.h
-+++ b/include/linux/cpumask.h
-@@ -353,6 +353,10 @@ static inline void __cpus_fold(cpumask_t *dstp, const cpumask_t *origp,
- 	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
- #endif /* NR_CPUS */
+That is exactly the case but I think I know why now.
+
+> > Can you also confirm that using a bisection
+> > point before two-zonelist runs steadily and with high performance as expected
+> > please? This is to rule out some other RAID patch being a factor.
+> 
+> The immediately preceeding commit 18ea7e71 always runs with high
+> performance, and raid0 was virtually untouched during the merge window:
+> 
+> $ git shortlog v2.6.25..v2.6.26-rc8 drivers/md/raid0.c
+> Neil Brown (1):
+>       Remove blkdev warning triggered by using md
+> 
+> > It would be worth running vmstat during the tests so we can see if IO
+> > rates are dropping from an overall system perspective. If possible,
+> > oprofile data from the same time would be helpful to see does it show up
+> > where we are getting stuck.
+> 
+> I watched /proc/vmstat during a dd run, and in the good case
+> nr_writeback never drops below 21,000.  In the bad case it may briefly
+> break a few hundred pages.
+> 
+> This picture generated by seekwatcher shows that there are gaps in i/o
+> submission:
+> 
+> 	http://userweb.kernel.org/~djbw/md0-bad2.png
+> 
+> Compared to a good run:
+> 
+> 	http://userweb.kernel.org/~djbw/md0-good.png
+> 
+> What is interesting is that I was only able to get this data with the
+> following command:
+> 
+> ./seekwatcher -W -t md0.trace -o md0-bad2.png -p 'dd if=/dev/zero of=/dev/md0 bs=1024k count=2048' -d /dev/md0 -d /dev/sdb
+> 
+> When I tried to watch all four disks, i.e. 5 blktrace tasks running
+> instead of 2:
+> 
+> ./seekwatcher -W -t md0.trace -o md0-bad2.png -p 'dd if=/dev/zero of=/dev/md0 bs=1024k count=2048' -d /dev/md0 -d /dev/sdb -d /dev/sdc -d /dev/sdd -d /dev/sde
+> 
+> ...it always measured good performance, as if having more tasks running
+> stimulates the vm to keep writeback going at a high rate.  Could
+> writeback be getting stalled on one cpu or more cpu's?
+> 
+
+Yes, we're stalling because the two-zonelist patch is breaking kswapd on
+!NUMA machines. The impact is that kswapd never reclaims and processes always
+directly reclaim. The result is you see large stalls.
+
+Alexander, I believe this may also be why lockdep is triggering and you're
+seeing periodic stalls in the XFS tests. The lockdep warning is a red herring
+but the fact it's easier to trigger could be because kswapd is not working
+and direct reclaim triggers the warning easily.
+
+Alexander and Dan, could you test the patch below and let me know if it
+fixes your respective problems please?
+
+===
+
+Subject: [PATCH] Do not overwrite nr_zones on !NUMA when initialising zlcache_ptr
+
+With the two-zonelist patches on !NUMA machines, there really is only one
+zonelist as __GFP_THISNODE is meaningless. However, during initialisation, the
+assumption is made that two zonelists exist when initialising zlcache_ptr. The
+result is that pgdat->nr_zones is always 0. As kswapd uses this value to
+determine what reclaim work is necessary, the result is that kswapd never
+reclaims. This causes processes to stall frequently in low-memory situations
+as they always direct reclaim.  This patch initialises zlcache_ptr correctly.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ page_alloc.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.26-rc8-clean/mm/page_alloc.c linux-2.6.26-rc8-fix-kswapd-on-numa/mm/page_alloc.c
+--- linux-2.6.26-rc8-clean/mm/page_alloc.c	2008-06-24 18:58:20.000000000 -0700
++++ linux-2.6.26-rc8-fix-kswapd-on-numa/mm/page_alloc.c	2008-07-02 21:14:16.000000000 -0700
+@@ -2328,7 +2328,8 @@ static void build_zonelists(pg_data_t *p
+ static void build_zonelist_cache(pg_data_t *pgdat)
+ {
+ 	pgdat->node_zonelists[0].zlcache_ptr = NULL;
+-	pgdat->node_zonelists[1].zlcache_ptr = NULL;
++	if (NUMA_BUILD)
++		pgdat->node_zonelists[1].zlcache_ptr = NULL;
+ }
  
-+#define next_cpu_nr(n, src)		next_cpu(n, src)
-+#define cpus_weight_nr(cpumask)		cpus_weight(cpumask)
-+#define for_each_cpu_mask_nr(cpu, mask)	for_each_cpu_mask(cpu, mask)
-+
- /*
-  * The following particular system cpumasks and operations manage
-  * possible, present and online cpus.  Each of them is a fixed size
--- 
-1.5.6
+ #endif	/* CONFIG_NUMA */
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
