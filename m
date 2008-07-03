@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758111AbYGCXnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757081AbYGCXou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758111AbYGCXnU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 19:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbYGCXnG
+	id S1757081AbYGCXou (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 19:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753745AbYGCXom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 19:43:06 -0400
-Received: from relay03.mail-hub.dodo.com.au ([123.2.6.238]:54621 "EHLO
-	relay03.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756650AbYGCXnE (ORCPT
+	Thu, 3 Jul 2008 19:44:42 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:36309 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753418AbYGCXol (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 19:43:04 -0400
-From: Grant Coady <grant_lkml@dodo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: 2.6.26-rc8-mm1--No e100 :( logs say missing firmware
-Date: Fri, 04 Jul 2008 09:42:54 +1000
-Organization: http://bugsplatter.mine.nu/
-Reply-To: Grant Coady <gcoady.lk@gmail.com>
-Message-ID: <6toq6493rbba4n4s8l2csvobo13673tgu5@4ax.com>
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
-In-Reply-To: <20080703020236.adaa51fa.akpm@linux-foundation.org>
-X-Mailer: Forte Agent 2.0/32.652
+	Thu, 3 Jul 2008 19:44:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Ee36K5BW1xxqOBc1YtE+Iiye6HHZ9fku2bEn0x0AX55JkAzS+ABw90LOoSVr3IiQOx
+         FWHvXs9HPTrWzEjE0BcMCCHxgZJ3eszFO3UH/guR5eKsskslWV9V5K4Iu0PK0BYxC+o7
+         KUepiiz9MFMlKV5pMiIpy3kKnuWljCOlgrfEA=
+Message-ID: <45a44e480807031644vb5dcc31sf9558bffd772c8b9@mail.gmail.com>
+Date: Fri, 4 Jul 2008 07:44:38 +0800
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+To: "Markus Armbruster" <armbru@redhat.com>
+Subject: Re: "fb-defio: fix page list with concurrent processes"
+Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <m3mykyr7wf.fsf@crossbow.pond.sub.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4856E38E.1040203@goop.org>
+	 <45a44e480806161811k423fecf2r2d79609a5c0d057@mail.gmail.com>
+	 <m3mykyr7wf.fsf@crossbow.pond.sub.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Jul 2008 02:02:36 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
+On Fri, Jul 4, 2008 at 5:10 AM, Markus Armbruster <armbru@redhat.com> wrote:
+>
+> Jaya, any news?
+>
 
->ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc8/2.6.26-rc8-mm1/
+Hi Markus,
 
-Hi, it booted up on a Core2Duo box but failed to connect via e100 NIC 
-to localnet.
+In the thread, as per your point:
 
-/var/log/messages:
+> better, somewhat slow code, or somewhat useless code?  I'd like to see
+> the fix merged as soon as possible.  You can always improve its
+> performance later.
 
-Jul  4 09:14:13 pooh kernel: firmware: requesting e100/d102e_ucode.bin
-Jul  4 09:14:13 pooh firmware.sh[1666]: Cannot find  firmware file 'e100/d102e_ucode.bin'
+I responded:
 
-/var/log/syslog:
+> Yup, I've got no problem if the old patch is requeued and merged.
 
-Jul  4 09:14:13 pooh kernel: e100: eth0: e100_request_firmware: Failed to load firmware "e100/d1
-02e_ucode.bin": -2
-Jul  4 09:14:13 pooh kernel: e100: eth0: e100_request_firmware: Failed to load firmware "e100/d1
-02e_ucode.bin": -2
-Jul  4 09:17:17 pooh kernel: e100: eth0: e100_request_firmware: Failed to load firmware "e100/d1
-02e_ucode.bin": -2
-Jul  4 09:17:30 pooh last message repeated 3 times
-
-So where did the firmware go? -- I been using these e100 NICs for years, 
-2.4 & 2.6 kernels, never seen this kind of failure...
-
-
-Duped mesg with typo corrected so searching Subject line works.
+I'd assumed that you would requeue that patch.
 
 Thanks,
-Grant.
+jaya
