@@ -1,114 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbYGCQWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbYGCQcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754755AbYGCQWv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 12:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbYGCQWn
+	id S1753110AbYGCQcq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 12:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbYGCQci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 12:22:43 -0400
-Received: from xsmtp0.ethz.ch ([82.130.70.14]:1721 "EHLO XSMTP0.ethz.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751538AbYGCQWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 12:22:42 -0400
-Message-ID: <486CFCD0.3080109@debian.org>
-Date: Thu, 03 Jul 2008 18:22:40 +0200
-From: "Giacomo A. Catenazzi" <cate@debian.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 3 Jul 2008 12:32:38 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:40182 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750855AbYGCQch (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 12:32:37 -0400
+Date: Thu, 3 Jul 2008 22:00:48 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [x86-tip] panic during cpu_up
+Message-ID: <20080703163048.GC4468@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20080702190651.GA13252@linux.vnet.ibm.com> <20080702205544.GB13252@linux.vnet.ibm.com> <20080703070242.GA16379@elte.hu> <20080703080625.GB4065@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       linux-kernel@vger.kernel.org, Simon Trimmer <simon@urbanmyth.org>
-Subject: Re: Intel Microcode loader, tg3 driver, and the -rc8-mmotd New	World
- Order firmware...
-References: <4534.1215048758@turing-police.cc.vt.edu>	 <Pine.LNX.4.61.0807030716030.10434@ginsburg.homenet>	 <32146.1215066947@turing-police.cc.vt.edu>	 <Pine.LNX.4.61.0807030743230.10608@ginsburg.homenet>	 <486C9AD2.6020604@debian.org>  <20080703065630.2aefc930@infradead.org> <1215100465.10393.585.camel@pmac.infradead.org>
-In-Reply-To: <1215100465.10393.585.camel@pmac.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Jul 2008 16:22:40.0656 (UTC) FILETIME=[03C2E100:01C8DD29]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080703080625.GB4065@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[recipient clean-up and adding Simon]
+> > 
+> > The other suspect would be acpi idle:
+> > 
+> >         /* Fall back to the default idle loop */
+> >         pm_idle = pm_idle_save;
+> > 
 
-David Woodhouse wrote:
-> On Thu, 2008-07-03 at 06:56 -0700, Arjan van de Ven wrote:
->> On Thu, 03 Jul 2008 11:24:34 +0200
->> "Giacomo A. Catenazzi" <cate@debian.org> wrote:
+Yep, you are right.
 
-> Actually there are three:
+> > Could you try latest tip/master or the debug patch below? It should show 
+> > where the NULL comes from, without crashing.
+> > 
 > 
-> 1. The text format 'microcode.dat', including updates for all CPUs.
-> 2. The binary format output by microcode_ctl, still including all CPUs.
-> 3. The smaller files with just the relevant subset of #2.
-
-we are diverging :-(
-
-The #2 is not on upstream microcode_ctl. BTW Debian/Ubuntu already
-diverge a lot in respect of upstream.
-Further, IIRC, Simon slowed/stopped developing microcode_ctl, because
-he think (IIRC) that distributions used other solutions or going to
-use #3.
-
-So if we need #2, I really want Simon (or someone) that take care
-of continuing microcode_ctl upstream and merging distribution
-patches.
-
-> The kernel (since 2006) can actually take either #2 or #3. The udev
-> scripts I just posted will use microcode_ctl to feed it #2, when they
-> find #1 on the file system.
-
-
-#1 and #2 have some problem in Debian/Ubuntu:
-- microcode_ctl is in /usr
-- it require a module, so we load the module and we wait that
-   the device is created (it is asynchronous)
-- initram would require an additional program, to an early load
-- split on architectures [32/64bit CPU] (but this is an internal
-   autobuild / non-free Debian problem)
-
+> Sure, will give it a run sometime soon.
 > 
-> A small amount of extra work in the userspace tool would let those udev
-> scripts feed #3 to the kernel, and then the code in the kernel to select
-> the appropriate update could be removed.
 
-I don't think Intel want this solution.
-Earlier Intel preferred to give us two version of microcode
-(new and old kernel) instead of let us to filter out one
-short microcode, which trigged a kernel bug.
+------------[ cut here ]------------
+WARNING: at drivers/acpi/processor_idle.c:1316
+acpi_processor_cst_has_changed+0x64/0xc0()
+Modules linked in:
+Pid: 4433, comm: bash Not tainted 2.6.26-rc8-tip #15
+ [<c0127a0a>] warn_on_slowpath+0x41/0x60
+ [<c0393a00>] ? __cpufreq_set_policy+0x135/0x1bf
+ [<c0141c28>] ? mark_held_locks+0x46/0x61
+ [<c0141d7d>] ? trace_hardirqs_on+0xb/0xd
+ [<c0141d4a>] ? trace_hardirqs_on_caller+0xe9/0x111
+ [<c0141d7d>] ? trace_hardirqs_on+0xb/0xd
+ [<c027fc1d>] ? acpi_processor_get_platform_limit+0x9f/0xac
+ [<c027f285>] acpi_processor_cst_has_changed+0x64/0xc0
+ [<c027cadd>] acpi_cpu_soft_notify+0x2a/0x39
+ [<c041193c>] notifier_call_chain+0x32/0x64
+ [<c013b87f>] __raw_notifier_call_chain+0xe/0x10
+ [<c013b88d>] raw_notifier_call_chain+0xc/0xe
+ [<c040cb33>] _cpu_up+0xb3/0xdc
+ [<c040cb9e>] cpu_up+0x42/0x52
+ [<c03fab35>] store_online+0x39/0x5d
+ [<c03faafc>] ? store_online+0x0/0x5d
+ [<c02c1e6c>] sysdev_store+0x20/0x25
+ [<c01b2190>] flush_write_buffer+0x3e/0x53
+ [<c01b21e3>] sysfs_write_file+0x3e/0x5d
+ [<c017e281>] vfs_write+0x8d/0x105
+ [<c017e394>] sys_write+0x3b/0x60
+ [<c0103931>] sysenter_past_esp+0x6a/0xa5
+ =======================
+---[ end trace 987615de2ae7cfa5 ]---
 
-I'm ready to do such script (really I've already
-a similar tool)
+Which corresponds to 
+
+        /* Fall back to the default idle loop */
+        WARN_ON_ONCE(!pm_idle_save);
+        if (pm_idle_save)
+                pm_idle = pm_idle_save;
+        synchronize_sched();    /* Relies on interrupts forcing exit from idle. */
 
 
-> 
->>> Actually Intel provides only the old methods.
->>> There was talks with Arjan and Intel about the distribution format
->>> for the new methods. But I don't have any new.
->>> I think that when the new format is fully specified (directory
->>> structure, tar, gzip,...) Intel will distribute the microcodes
->>> in the new form.
-> 
-> Doesn't the "new format" (#3) involve hard links too, since there are
-> some cases where the same microcode update applies to more than one CPU
-> revision?
-
-no, I don't think. Intel documentation on BIOS writing, document
-that microcode should be discarded if the header information don't
-match with current CPU.  I didn't checked if some microcode
-contains same data with different header (which anyway is not feeded
-to the CPU)
-
-> 
->> we hope to switch to the new form but there's the small case of
->> "installed base" using ancient kernels, and it's kind of not nice to
->> have to release 2 sets. At some point we will switch over though.
-> 
-> Do we really need to _ship_ it in a different form? It's not exactly
-> hard to convert from the text form (#1) to either of the other two --
-> either on the fly in udev scripts, or at installation time.
-
-It was a personal interpretation of Intel wishes.
-
-ciao
-	cate
+-- 
+regards,
+Dhaval
