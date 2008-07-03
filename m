@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753605AbYGCL6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbYGCMBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753605AbYGCL6t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 07:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbYGCL4i
+	id S1756205AbYGCMBe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755634AbYGCMAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 07:56:38 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:63237 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753730AbYGCL4h (ORCPT
+	Thu, 3 Jul 2008 08:00:09 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:53079 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753854AbYGCMAF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 07:56:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=d3TmRr0spKUCpfJy50Uq8w9VPiWJ0v6SFJlGLB/T/yXao7SDIm3c8tZkIjRIgIs9iI
-         KUyMFautzDC4EcBliC7wyoGiPD70QxxgSVcvUpNuCeYl+G03wxu3rnB/WjhSDdNuiKo5
-         xGCeODBH0c9yb5B2/mp63XgdYlqJ1mf3JAJ+U=
-Subject: [PATCH] drivers/net/wireless/iwlwifi/iwl-3945.c Fix type issue on
-	64bit
-From: "Darren Jenkins\\" <darrenrjenkins@gmail.com>
-To: linville@tuxdriver.com
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ipw2100-admin@linux.intel.com, yi.zhu@intel.com
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 03 Jul 2008 09:41:38 +1000
-Message-Id: <1215042098.8635.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 8bit
+	Thu, 3 Jul 2008 08:00:05 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: Adam Williamson <awilliamson@mandriva.com>
+Subject: Re: [Bug #10868] Oops on loading ipaq module since 2.6.26, prevents use of device
+Date: Thu, 3 Jul 2008 10:05:57 +0200
+User-Agent: KMail/1.9.9
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@redhat.com>, bugme-daemon@bugzilla.kernel.org,
+       Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org
+References: <RzbtSgMztjP.A.jRD._spXIB@albercik> <200807022333.25275.oliver@neukum.org> <1215034900.6054.204.camel@lenovo.local.net>
+In-Reply-To: <1215034900.6054.204.camel@lenovo.local.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807031005.59691.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> What about the format line in the IWL_DEBUG_RX that uses rate?
+Am Mittwoch 02 Juli 2008 23:41:40 schrieb Adam Williamson:
+> On Wed, 2008-07-02 at 23:33 +0200, Oliver Neukum wrote:
+> 
+> > This is odd. Your device shows one interface with one endpoint bulk and
+> > bulk out respectively. Yet two ports are created. Odd.
+> 
+> OK. If you mean /dev/ttyUSB0 and /dev/ttyUSB1 are always both created
+> when the device is plugged in - yep. This is the case in the working
 
-I had figured that as rate was only positive it would work as is.
-However you are dead right, there is no point in a patch removing one
-example of bad programming only to introduce another.
+Now this is very hard to explain. From the code in 2.6.25 it is clear that
+only ttyUSB0 will be created. Please verify that indeed you get ttyUSB0
+and ttyUSB1 with the kernel working for you.
 
-Here is the updated patch:
+> kernel too. From what I've seen in howtos and the like, this seems to be
+> the case for most such devices. Well, let me know what else you need
+> from me. :)
 
+As far as I can tell somebody changed the ipaq driver in 2.6.26-rc6. I cannot
+find the exact patch that did it in Greg's directory. As it causes a regression
+here's a reversal.
 
-Coverity CID: 2265 NEGATIVE_RETURNS
+	Regards
+		Oliver
 
-"rate" is of an unsigned type, and the code requires a signed type.
-The following patch makes it so.
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
 
-﻿﻿Signed-off-by: Darren Jenkins <darrenrjenkins@gmailcom>
+---
 
-diff --git a/drivers/net/wireless/iwlwifi/iwl-3945.c b/drivers/net/wireless/iwlwifi/iwl-3945.c
-index 62a3d8f..d97c025 100644
---- a/drivers/net/wireless/iwlwifi/iwl-3945.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-3945.c
-@@ -449,7 +449,7 @@ static void iwl3945_dbg_report_frame(struct iwl3945_priv *priv,
- 
- 	if (print_summary) {
- 		char *title;
--		u32 rate;
-+		int rate;
- 
- 		if (hundred)
- 			title = "100Frames";
-@@ -487,7 +487,7 @@ static void iwl3945_dbg_report_frame(struct iwl3945_priv *priv,
- 		 *    but you can hack it to show more, if you'd like to. */
- 		if (dataframe)
- 			IWL_DEBUG_RX("%s: mhd=0x%04x, dst=0x%02x, "
--				     "len=%u, rssi=%d, chnl=%d, rate=%u, \n",
-+				     "len=%u, rssi=%d, chnl=%d, rate=%d, \n",
- 				     title, fc, header->addr1[5],
- 				     length, rssi, channel, rate);
- 		else {
+--- linux-2.6.26-greg/drivers/usb/serial/ipaq.alt.c	2008-07-03 09:01:37.000000000 +0200
++++ linux-2.6.26-greg/drivers/usb/serial/ipaq.c	2008-07-03 09:01:47.000000000 +0200
+@@ -570,7 +570,7 @@ static struct usb_serial_driver ipaq_dev
+ 	.description =		"PocketPC PDA",
+ 	.usb_driver = 		&ipaq_driver,
+ 	.id_table =		ipaq_id_table,
+-	.num_ports =		2,
++	.num_ports =		1,
+ 	.open =			ipaq_open,
+ 	.close =		ipaq_close,
+ 	.attach =		ipaq_startup,
+
 
 
