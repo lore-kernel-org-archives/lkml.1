@@ -1,46 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbYGCVLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbYGCVMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756604AbYGCVLR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 17:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbYGCVLI
+	id S1756654AbYGCVMx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 17:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbYGCVMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 17:11:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47136 "EHLO mx1.redhat.com"
+	Thu, 3 Jul 2008 17:12:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47193 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753669AbYGCVLH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 17:11:07 -0400
-To: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: "fb-defio: fix page list with concurrent processes"
-References: <4856E38E.1040203@goop.org>
-	<45a44e480806161811k423fecf2r2d79609a5c0d057@mail.gmail.com>
-From: Markus Armbruster <armbru@redhat.com>
-Date: Thu, 03 Jul 2008 17:10:24 -0400
-In-Reply-To: <45a44e480806161811k423fecf2r2d79609a5c0d057@mail.gmail.com> (Jaya Kumar's message of "Mon\, 16 Jun 2008 18\:11\:14 -0700")
-Message-ID: <m3mykyr7wf.fsf@crossbow.pond.sub.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	id S1753779AbYGCVMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 17:12:43 -0400
+Date: Thu, 3 Jul 2008 17:12:18 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+To: David Miller <davem@davemloft.net>
+cc: helge.hafting@aitel.hist.no, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
+Subject: Re: [10 PATCHES] inline functions to avoid stack overflow
+In-Reply-To: <20080701.214507.261426026.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0807031708280.20244@engineering.redhat.com>
+References: <Pine.LNX.4.64.0806250843460.20379@engineering.redhat.com>
+ <20080625.150931.182895076.davem@davemloft.net>
+ <Pine.LNX.4.64.0807020032510.19403@engineering.redhat.com>
+ <20080701.214507.261426026.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Jaya Kumar" <jayakumar.lkml@gmail.com> writes:
+On Tue, 1 Jul 2008, David Miller wrote:
 
-> On Mon, Jun 16, 2008 at 3:05 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->> Your patch "fb-defio: fix page list with concurrent processes" definitely
->> seems to help with the suspend/resume problem I had with the Xen pvfb
->> device.  Is it queued up anywhere?  It seems to be a real bugfix, and should
->> probably be queued for 2.6.26...
+> From: Mikulas Patocka <mpatocka@redhat.com>
+> Date: Wed, 2 Jul 2008 00:39:35 -0400 (EDT)
 >
-> It isn't currently queued. I had intended to improve its performance
-> by taking advantage of Andrew's suggestion of using !list_empty on the
-> page->lru to avoid walking the page list to find the duplicate page,
-> but I ran into trouble since the page starts off being on the lru
-> list. I'll try to take a look at doing this next weekend.
+>> The ABI is very vague about it. The V9 ABI just displays that 6-word space
+>> in a figure bug doesn't say anything about it's usage. The V8 ABI just
+>> says that "the function may write incoming arguments there". If it may
+>> write anything other, it is unknown --- probably yes, but it is not said
+>> in the document.
+>>
+>> The document nicely specifies who owns which registers, but doesn't say
+>> that about the stack space :-(
 >
-> Thanks,
-> jaya
+> Actually, I know for a fact that you have to have those slots there.
+>
+> A long time ago in the sparc64 kernel, in the trap entry code, I tried
+> only giving 128 bytes of stack frame as the trap entry called into C
+> code.  And it did not work, I had to put the 6 slots there.
 
-Jaya, any news?
+The bad thing is that gcc can't use those slots optimally. If you have for 
+example:
+
+void f(int *x)
+{
+}
+
+void g()
+{
+ 	int a;
+ 	f(&a);
+}
+
+void h()
+{
+ 	g();
+}
+
+Then the variable "a" can't be placed into one of the 6 implicit slots for 
+g->f call (beacuse "f" may overwrite that slot). But "a" could be placed 
+into one of those 6 slots that "h" allocates for "g" (because these slots 
+are owned by "g"). But it isn't --- additional place is allocated for "a" 
+:-/
+
+Mikulas
