@@ -1,78 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762420AbYGCNLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbYGCNPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762420AbYGCNLc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 09:11:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbYGCNLT
+	id S1757303AbYGCNPi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 09:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbYGCNPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 09:11:19 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:37001 "EHLO mail.dvmed.net"
+	Thu, 3 Jul 2008 09:15:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45756 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753728AbYGCNLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 09:11:18 -0400
-Message-ID: <486CCFED.7010308@garzik.org>
-Date: Thu, 03 Jul 2008 09:11:09 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1752723AbYGCNP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 09:15:29 -0400
+Date: Thu, 3 Jul 2008 15:14:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@redhat.com>, x86@kernel.org,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: Find offset for crashkernel reservation
+	automatically
+Message-ID: <20080703131456.GA12102@elte.hu>
+References: <1214510048-21215-1-git-send-email-bwalle@suse.de> <20080627133256.GB5801@redhat.com> <20080627134212.GC5801@redhat.com> <20080627160656.06f71661@halley.suse.de> <20080627141910.GD5801@redhat.com> <20080627162223.2df5a8b9@halley.suse.de> <m1zlp6vjub.fsf@frodo.ebiederm.org> <20080627202932.16634031@kopernikus.site>
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org> <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com> <486CC440.9030909@garzik.org> <Pine.LNX.4.64.0807031353030.11033@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0807031353030.11033@blonde.site>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080627202932.16634031@kopernikus.site>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> On Thu, 3 Jul 2008, Jeff Garzik wrote:
->> KOSAKI Motohiro wrote:
->>> Hi Michael,
->>>
->>> my server output following error message on 2.6.26-rc8-mm1.
->>> Is this a bug?
->>>
->>> ------------------------------------------------------------------
->>> tg3.c:v3.93 (May 22, 2008)
->>> GSI 72 (level, low) -> CPU 0 (0x0001) vector 51
->>> tg3 0000:06:01.0: PCI INT A -> GSI 72 (level, low) -> IRQ 51
->>> firmware: requesting tigon/tg3_tso.bin
->>> tg3: Failed to load firmware "tigon/tg3_tso.bin"
->>> tg3 0000:06:01.0: PCI INT A disabled
->>> GSI 72 (level, low) -> CPU 0 (0x0001) vector 51 unregistered
->>> tg3: probe of 0000:06:01.0 failed with error -2
->>> GSI 73 (level, low) -> CPU 0 (0x0001) vector 51
->>> tg3 0000:06:01.1: PCI INT B -> GSI 73 (level, low) -> IRQ 52
->>> firmware: requesting tigon/tg3_tso.bin
->> This change did not come from the network developers or Broadcom, so someone
->> else broke tg3 in -mm...
+
+* Bernhard Walle <bwalle@suse.de> wrote:
+
+> > > But in general policy should go in userspace (if possible), so I 
+> > > agree with you that kexec-tools can handle that.
+> > 
+> > At a quick skim the patch looks good.  I thought I had initially 
+> > implemented the code to work this way but apparently in all of the 
+> > churn that aspect of it got lost.
+> > 
+> > Let's start with trying to allocate the memory as low as possible 
+> > for a crash kernel (I think you are already doing that).
 > 
-> I think it's a consequence of not choosing CONFIG_FIRMWARE_IN_KERNEL=y.
-> 
-> That caught me out on PowerMac G5 trying mmotm yesterday, it just hung
-> for a few minutes in earlyish boot with a message about tg3_tso.bin,
-> and then proceeded to boot up but without the network.  I was unclear
-> whether I'd been stupid, or the FIRMWARE_IN_KERNEL Kconfigery was poor.
-> 
-> I avoid initrd, and have tigon3 built in, if that's of any relevance.
-> 
-> I wonder if that's Andrew's problem with 2.6.26-rc8-mm1 on his G5:
-> mine here boots up fine (now I know to CONFIG_FIRMWARE_IN_KERNEL=y).
+> Yes, in 95 % of the cases the crashkernel still gets reserved at 16M.
 
+ok - i've applied it to tip/x86/crashdump - thanks Bernhard.
 
-dwmw2 has been told repeatedly that his changes will cause PRECISELY 
-these problems, but he refuses to take the simple steps necessary to 
-ensure people can continue to boot their kernels after his changes go in.
-
-Presently his tg3 changes have been nak'd, in part, because of this 
-obviously, forseeable, work-around-able breakage.
-
-	Jeff
-
-
+	Ingo
