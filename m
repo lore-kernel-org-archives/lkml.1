@@ -1,40 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752113AbYGCHAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbYGCHCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752113AbYGCHAO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:00:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbYGCG5J
+	id S1756510AbYGCHCb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 03:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbYGCG5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:57:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33069 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752171AbYGCBkT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 21:40:19 -0400
-Date: Wed, 2 Jul 2008 18:39:55 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH] drivers/input/ff-core.c needs <linux/sched.h>
-In-Reply-To: <20080702164128.ZZRA012@mailhub.coreip.homeip.net>
-Message-ID: <alpine.LFD.1.10.0807021839390.18105@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0807011300110.21227@anakin> <20080701084316.ZZRA012@mailhub.coreip.homeip.net> <20080701130517.GA29863@cs181140183.pp.htv.fi> <20080701092542.ZZRA012@mailhub.coreip.homeip.net> <20080702164128.ZZRA012@mailhub.coreip.homeip.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 3 Jul 2008 02:57:15 -0400
+Received: from mga14.intel.com ([143.182.124.37]:6256 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752361AbYGCBt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 21:49:27 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,741,1204531200"; 
+   d="scan'208";a="6041552"
+Subject: Re: [problem] raid performance loss with 2.6.26-rc8 on 32-bit x86
+	(bisected)
+From: Dan Williams <dan.j.williams@intel.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, NeilBrown <neilb@suse.de>,
+       babydr@baby-dragons.com, cl@linux-foundation.org,
+       lee.schermerhorn@hp.com
+In-Reply-To: <20080702051759.GA26338@csn.ul.ie>
+References: <1214877439.7885.40.camel@dwillia2-linux.ch.intel.com>
+	 <20080701080910.GA10865@csn.ul.ie> <20080701175855.GI32727@shadowen.org>
+	 <20080701190741.GB16501@csn.ul.ie>
+	 <1214944175.26855.18.camel@dwillia2-linux.ch.intel.com>
+	 <20080702051759.GA26338@csn.ul.ie>
+Content-Type: text/plain
+Date: Wed, 02 Jul 2008 18:49:26 -0700
+Message-Id: <1215049766.2840.43.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 2 Jul 2008, Dmitry Torokhov wrote:
+On Tue, 2008-07-01 at 22:18 -0700, Mel Gorman wrote:
+> > Let us take commit 8b3e6cdc out of the equation and just look at raid0
+> > performance:
+> >
+> > revision   2.6.25.8-fc8 54a6eb5c 54a6eb5c-nohighmem 2.6.26-rc8
+> >            279          278      273                277
+> >            281          278      275                277
+> >            281          113      68.7               66.8
+> >            279          69.2     277                73.7
+> >            278          75.6     62.5               80.3
+> > MB/s (avg) 280          163      191                155
+> > % change   0%           -42%     -32%               -45%
+> > result     base         bad      bad                bad
+> >
 > 
-> Linus, will you apply Geert's patch directly or you would prefer me
-> set up my tree for another pull?
+> Ok, based on your other mail, 54a6eb5c here is a bisection point. The good
+> figures are on par with the "good" kernel with some disasterous runs leading
+> to a bad average. The thing is, the bad results are way worse than could be
+> accounted for by two-zonelist alone.  In fact, the figures look suspiciously
+> like only 1 disk is in use as they are roughly quartered. Can you think of
+> anything that would explain that?
 
-I took it directly.
+raid0 in contrast to raid5 is fairly simple it just remaps the bio.
+Then it is up to the block layer to do some merging before it hits the
+block device driver.  Not much room for error, especially since single
+drive performance seems to be unaffected.  The data seems to show that
+the vm is not queuing pages to be written back fast enough.
 
-		Linus
+> Can you also confirm that using a bisection
+> point before two-zonelist runs steadily and with high performance as expected
+> please? This is to rule out some other RAID patch being a factor.
+
+The immediately preceeding commit 18ea7e71 always runs with high
+performance, and raid0 was virtually untouched during the merge window:
+
+$ git shortlog v2.6.25..v2.6.26-rc8 drivers/md/raid0.c
+Neil Brown (1):
+      Remove blkdev warning triggered by using md
+
+> It would be worth running vmstat during the tests so we can see if IO
+> rates are dropping from an overall system perspective. If possible,
+> oprofile data from the same time would be helpful to see does it show up
+> where we are getting stuck.
+
+I watched /proc/vmstat during a dd run, and in the good case
+nr_writeback never drops below 21,000.  In the bad case it may briefly
+break a few hundred pages.
+
+This picture generated by seekwatcher shows that there are gaps in i/o
+submission:
+
+	http://userweb.kernel.org/~djbw/md0-bad2.png
+
+Compared to a good run:
+
+	http://userweb.kernel.org/~djbw/md0-good.png
+
+What is interesting is that I was only able to get this data with the
+following command:
+
+./seekwatcher -W -t md0.trace -o md0-bad2.png -p 'dd if=/dev/zero of=/dev/md0 bs=1024k count=2048' -d /dev/md0 -d /dev/sdb
+
+When I tried to watch all four disks, i.e. 5 blktrace tasks running
+instead of 2:
+
+./seekwatcher -W -t md0.trace -o md0-bad2.png -p 'dd if=/dev/zero of=/dev/md0 bs=1024k count=2048' -d /dev/md0 -d /dev/sdb -d /dev/sdc -d /dev/sdd -d /dev/sde
+
+...it always measured good performance, as if having more tasks running
+stimulates the vm to keep writeback going at a high rate.  Could
+writeback be getting stalled on one cpu or more cpu's?
+
+Oprofile only seems to show that we are idling in the failure case:
+---good---
+samples  %        image name         symbol name
+18229    20.7171  vmlinux-18ea7e71   __copy_from_user_ll_nocache_nozero
+4518      5.1347  vmlinux-18ea7e71   clear_user
+2137      2.4287  vmlinux-18ea7e71   get_page_from_freelist
+1929      2.1923  vmlinux-18ea7e71   constant_test_bit
+1745      1.9832  vmlinux-18ea7e71   clear_bit
+1320      1.5002  vmlinux-18ea7e71   kmem_cache_alloc
+1290      1.4661  vmlinux-18ea7e71   blk_rq_map_sg
+1287      1.4627  vmlinux-18ea7e71   bio_put
+1022      1.1615  raid0.ko           raid0_make_request
+938       1.0660  vmlinux-18ea7e71   __make_request
+938       1.0660  vmlinux-18ea7e71   test_clear_page_writeback
+899       1.0217  vmlinux-18ea7e71   __percpu_counter_add
+---bad---
+samples  %        image name    symbol name
+17844    16.3714  vmlinux-54a6eb5c   __copy_from_user_ll_nocache_nozero
+4565      4.1883  vmlinux-54a6eb5c   clear_user
+2229      2.0450  vmlinux-54a6eb5c   get_page_from_freelist
+2202      2.0203  vmlinux-54a6eb5c   mwait_idle
+2129      1.9533  vmlinux-54a6eb5c   schedule
+1882      1.7267  vmlinux-54a6eb5c   constant_test_bit
+1730      1.5872  vmlinux-54a6eb5c   clear_bit
+1157      1.0615  vmlinux-54a6eb5c   kmem_cache_alloc
+
+
+> > These numbers are taken from the results of:
+> > for i in `seq 1 5`; do dd if=/dev/zero of=/dev/md0 bs=1024k count=2048; done
+> >
+> > Where md0 is created by:
+> > mdadm --create /dev/md0 /dev/sd[b-e] -n 4 -l 0
+> >
+> > I will try your debug patch next Mel, and then try to collect more data
+> > with blktrace.
+> >
+> 
+> I tried reproducing this but I don't have the necessary hardware to even
+> come close to reproducing your test case :( .  I got some dbench results
+> with oprofile but found no significant differences between 2.6.25 and
+> 2.6.26-rc8. However, I did find the results of dbench varied less between
+> runs with the "repork" patch that made next_zones_zonelist() an inline
+> function. Have you tried that patch yet?
+
+I gave the patch a shot but observed no change.  As you predicted we are
+looking at something more pronounced than some lost cpu cycles.
+
+--
+Dan
+
