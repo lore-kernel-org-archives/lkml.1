@@ -1,80 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933923AbYGCHJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759587AbYGCHF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933923AbYGCHJt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbYGCG6E
+	id S1759587AbYGCHF4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 03:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbYGCG5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:58:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60740 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751891AbYGCEnu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 00:43:50 -0400
-Date: Wed, 2 Jul 2008 21:43:05 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Dan Williams <dan.j.williams@intel.com>, Andy Whitcroft <apw@shadowen.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       NeilBrown <neilb@suse.de>, babydr@baby-dragons.com,
-       cl@linux-foundation.org, lee.schermerhorn@hp.com, a.beregalov@gmail.com,
-       akpm@linux-foundation.org
-Subject: Re: [problem] raid performance loss with 2.6.26-rc8 on 32-bit x86
- (bisected)
-In-Reply-To: <20080703042750.GB14614@csn.ul.ie>
-Message-ID: <alpine.LFD.1.10.0807022135360.18105@woody.linux-foundation.org>
-References: <1214877439.7885.40.camel@dwillia2-linux.ch.intel.com> <20080701080910.GA10865@csn.ul.ie> <20080701175855.GI32727@shadowen.org> <20080701190741.GB16501@csn.ul.ie> <1214944175.26855.18.camel@dwillia2-linux.ch.intel.com> <20080702051759.GA26338@csn.ul.ie>
- <1215049766.2840.43.camel@dwillia2-linux.ch.intel.com> <20080703042750.GB14614@csn.ul.ie>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 3 Jul 2008 02:57:32 -0400
+Received: from mga11.intel.com ([192.55.52.93]:23231 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753257AbYGCC0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 22:26:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,741,1204531200"; 
+   d="scan'208";a="584545902"
+Subject: [RFC PATCH 4/4] x86_32: mark ACPI NVS memory region
+From: Zhang Rui <rui.zhang@intel.com>
+To: linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain
+Date: Thu, 03 Jul 2008 10:24:39 +0800
+Message-Id: <1215051879.5628.36.camel@rzhang-dt.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+x86_32: Mark ACPI NVS memory region.
 
-On Thu, 3 Jul 2008, Mel Gorman wrote:
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ arch/x86/kernel/e820_32.c |   26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.26-rc8-clean/mm/page_alloc.c linux-2.6.26-rc8-fix-kswapd-on-numa/mm/page_alloc.c
-> --- linux-2.6.26-rc8-clean/mm/page_alloc.c	2008-06-24 18:58:20.000000000 -0700
-> +++ linux-2.6.26-rc8-fix-kswapd-on-numa/mm/page_alloc.c	2008-07-02 21:14:16.000000000 -0700
-> @@ -2328,7 +2328,8 @@ static void build_zonelists(pg_data_t *p
->  static void build_zonelist_cache(pg_data_t *pgdat)
->  {
->  	pgdat->node_zonelists[0].zlcache_ptr = NULL;
-> -	pgdat->node_zonelists[1].zlcache_ptr = NULL;
-> +	if (NUMA_BUILD)
-> +		pgdat->node_zonelists[1].zlcache_ptr = NULL;
->  }
+Index: linux-2.6/arch/x86/kernel/e820_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820_32.c	2008-07-01 09:32:27.000000000 +0800
++++ linux-2.6/arch/x86/kernel/e820_32.c	2008-07-03 09:00:37.000000000 +0800
+@@ -10,6 +10,8 @@
+ #include <linux/pfn.h>
+ #include <linux/uaccess.h>
+ #include <linux/suspend.h>
++#include <linux/efi.h>
++#include <linux/acpi.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/page.h>
+@@ -253,6 +255,30 @@
+ 			break;
+ 	}
+ }
++
++/* Mark ACPI NVS region so that OS can save/restore it during hibernation */
++static int __init e820_mark_nvs_memory(void)
++{
++	int i;
++
++	if (efi_enabled)
++		return 0;
++
++	for (i = 0; i < e820.nr_map; i++) {
++		struct e820entry *ei = &e820.map[i];
++		unsigned long start, end;
++
++		if (ei->type != E820_NVS)
++			continue;
++		start = PFN_UP(ei->addr);
++		end = PFN_DOWN(ei->addr + ei->size);
++		if (start >= end)
++			continue;
++		acpi_mark_nvs_region(start, end - 1);
++	}
++	return 0;
++}
++core_initcall(e820_mark_nvs_memory);
+ #endif
+ 
+ void __init add_memory_region(unsigned long long start,
 
-This makes no sense.
 
-That whole thing is inside a
-
-	#ifdef CONFIG_NUMA
-	... numa code ..
-	#else
-	... this code ..
-	#endif
-
-so CONFIG_NUMA will _not_ be set, and NUMA_BUILD is always 0.
-
-So why do that
-
-	if (NUMA_BUILD)
-		..
-
-at all, when it is known to be false?
-
-So the patch may be correct, but wouldn't it be better to just remove the 
-line entirely, instead of moving it into a conditional that cannot be 
-true?
-
-Also, I'm not quite seeing why those zonelists should be zeroed out at 
-all. Shouldn't a non-NUMA setup always aim to have node_zonelists[0] == 
-node_zonelists[1] == all appropriate zones?
-
-I have to say, the whole mmzoen thing is confusing. The code makes my eyes 
-bleed. I can't really follow it.
-
-		Linus
