@@ -1,44 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757027AbYGCWof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbYGCWsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757027AbYGCWof (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 18:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbYGCWoY
+	id S1757055AbYGCWsK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 18:48:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbYGCWr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 18:44:24 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52492 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755364AbYGCWoX (ORCPT
+	Thu, 3 Jul 2008 18:47:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40334 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755438AbYGCWr4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 18:44:23 -0400
-Date: Thu, 3 Jul 2008 23:25:54 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-Message-ID: <20080703232554.7271d645@lxorguk.ukuu.org.uk>
-In-Reply-To: <486D511A.9020405@garzik.org>
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
-	<20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<486CC440.9030909@garzik.org>
-	<Pine.LNX.4.64.0807031353030.11033@blonde.site>
-	<486CCFED.7010308@garzik.org>
-	<1215091999.10393.556.camel@pmac.infradead.org>
-	<486CD654.4020605@garzik.org>
-	<1215093175.10393.567.camel@pmac.infradead.org>
-	<20080703173040.GB30506@mit.edu>
-	<1215111362.10393.651.camel@pmac.infradead.org>
-	<486D3E88.9090900@garzik.org>
-	<486D4596.60005@infradead.org>
-	<486D511A.9020405@garzik.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 3 Jul 2008 18:47:56 -0400
+Date: Thu, 3 Jul 2008 15:47:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, debora@linux.vnet.ibm.com,
+       zohar@linux.vnet.ibm.com
+Subject: Re: [PATCH] Update MAINTAINERS file for the TPM device driver
+Message-Id: <20080703154723.029d2948.akpm@linux-foundation.org>
+In-Reply-To: <1214950956.2381.7.camel@blackbox>
+References: <1214950956.2381.7.camel@blackbox>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -46,25 +27,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-O
-> Further, all current kernel build and test etc. scripts are unaware of 
-> 'make firmware_install', and it is unfair to everybody to force a 
-> flag-day build process change on people, just to keep their drivers in 
-> the same working state today as it was yesterday.
+On Tue, 01 Jul 2008 19:22:36 -0300
+Rajiv Andrade <srajiv@linux.vnet.ibm.com> wrote:
 
-IMHO we want firmware built in as the default for the moment. If the
-firmware model makes sense (as I think it does) then the distributions
-will catch up, turn it on and sort out the default behaviour - exactly as
-they did all those years ago with modules, more recently with "use an
-initrd" and so on.
+> ___Update MAINTAINERS file for the TPM device driver.
+> 
+> Thanks,
+> Rajiv Andrade
+> IBM LTC Security Development
+> 
+> --
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 8f0ec46..5f72839 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3995,7 +3995,8 @@ W:        http://www.buzzard.org.uk/toshiba/
+>  S:     Maintained
+> 
+>  TPM DEVICE DRIVER
+> -P:     Kylene Hall
+> +P:     Debora Velarde
+> +P:     Rajiv Andrade
+>  M:     tpmdd-devel@lists.sourceforge.net
+>  W:     http://tpmdd.sourceforge.net
+>  P:     Marcel Selhorst
+> 
 
-> as "making no sense".  All these are real world examples where users 
-> FOLLOWING THEIR NORMAL, PROSCRIBED KERNEL PROCESSES will produce 
+Please always include a Signed-off-by: for kernel patches.  It seems
+particularly relevant for patches which transfer maintainership.  Of a
+security-related driver, no less.
 
-I hope you mean "prescribed" ;)
-
-> The only valid assumption here is to assume that the user is /unaware/ 
-> of these new steps they must take in order to continue to have a working 
-> system.
-
-To a large extent not the user but their distro - consider "make install"
