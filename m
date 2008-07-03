@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761262AbYGCM5D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759534AbYGCM6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761262AbYGCM5D (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:57:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757973AbYGCM4u
+	id S1759534AbYGCM6N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:58:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYGCM5n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:56:50 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:15419 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759499AbYGCM4t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:56:49 -0400
-Message-ID: <486CCC4A.8050909@fr.ibm.com>
-Date: Thu, 03 Jul 2008 14:55:38 +0200
-From: Daniel Lezcano <dlezcano@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 3 Jul 2008 08:57:43 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:56178 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751782AbYGCM5m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 08:57:42 -0400
+Date: Thu, 3 Jul 2008 11:25:35 +0200
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Philipp Zabel <philipp.zabel@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] mfd: fix a bug in the asic3 irq demux code
+Message-ID: <20080703092534.GA6436@caravaggio>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <1215020573.24941.1.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Thery <benjamin.thery@bull.net>
-Subject: Re: [PATCH 06/11] sysfs: Implement sysfs tagged directory support.
-References: <20080618170729.808539948@theryb.frec.bull.fr> <20080618170731.002784342@theryb.frec.bull.fr> <485F04E1.70204@gmail.com> <m1y74svtff.fsf@frodo.ebiederm.org> <486706C9.9040303@gmail.com> <m18wwmsqdv.fsf@frodo.ebiederm.org> <4869D314.5030403@gmail.com> <m1ej6enep7.fsf@frodo.ebiederm.org> <486A0751.9080602@gmail.com> <m1wsk5hjm0.fsf@frodo.ebiederm.org> <486AF4FA.8020805@gmail.com> <m1ej6d9c2r.fsf@frodo.ebiederm.org> <486B060C.7030607@gmail.com> <m14p78s02q.fsf@frodo.ebiederm.org> <486C4515.1070007@gmail.com> <m1hcb7o8lv.fsf@frodo.ebiederm.org> <486CB051.5000507@fr.ibm.com> <m14p77m9uy.fsf@frodo.ebiederm.org>
-In-Reply-To: <m14p77m9uy.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1215020573.24941.1.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Daniel Lezcano <dlezcano@fr.ibm.com> writes:
-> 
->> The kobject events are sent through a netlink message which is not currently per
->> network namespace. Shouldn't be useful to have a way to retrieve from the
->> kobject the network namespace or the uevent socket associated with it ? IMHO
->> having idr in the kobject + netns pointer associated may help to handle the
->> sysfs isolation and makes the uevent per namespace trivial, no ?
-> 
-> Grumble.  I have been conveniently been forgetting about that socket.
-> Similarly we have the user mode helpers to deal with.
-> 
-> For this conversation there is a simple answer.  All of that is in the
-> kobject layer, and works even when you compile sysfs out of your kernel.
-> Therefore it is a separate problem.  And sysfs idr tags have nothing
-> to do with it.
+Hi Philipp,
 
-Ah Ok, I am not really familiar with kobject/sysfs so I thought there 
-was a proposition to store the id in the kobject instead of using the 
-tag callbacks, so I figured, perhaps, the idr could have been used in 
-the kobject layer and the sysfs being built upon that.
+On Wed, Jul 02, 2008 at 07:42:53PM +0200, Philipp Zabel wrote:
+> Wrong irq numbers were given to desc->handle_irq, which
+> on some devices caused endless loops (asic3_irq_demux
+> calling itself, basically).
+Thanks, applied to my mfd tree.
 
-> It is most definitely something we need to come back to.  I bet there
-> are some interesting interactions when you have multiple network devices
-> with the same name generating events.
+Cheers,
+Samuel.
 
-Yes as mentionned Benjamin, we have the eth0 in the init_net which is 
-shut down when a network namespace with a netdev with the same name 
-exits. There is a udev rule which ifdown eth0 :)
+
+> Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
+> ---
+>  drivers/mfd/asic3.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/mfd/asic3.c b/drivers/mfd/asic3.c
+> index 8e41130..59ec9c6 100644
+> --- a/drivers/mfd/asic3.c
+> +++ b/drivers/mfd/asic3.c
+> @@ -308,7 +308,7 @@ static void asic3_irq_demux(unsigned int irq, struct irq_desc *desc)
+>  		for (i = ASIC3_NUM_GPIOS; i < ASIC3_NR_IRQS; i++) {
+>  			/* They start at bit 4 and go up */
+>  			if (status & (1 << (i - ASIC3_NUM_GPIOS + 4))) {
+> -				desc = irq_desc +  + i;
+> +				desc = irq_desc + asic->irq_base + i;
+>  				desc->handle_irq(asic->irq_base + i,
+>  						 desc);
+>  			}
+> -- 
+> 1.5.6
+> 
+> 
