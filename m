@@ -1,85 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761294AbYGCM5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761476AbYGCNAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761294AbYGCM5y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYGCM5m
+	id S1761476AbYGCNAk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 09:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbYGCNAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:57:42 -0400
-Received: from fallback.mail.elte.hu ([157.181.151.13]:48627 "EHLO
-	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751718AbYGCM5l (ORCPT
+	Thu, 3 Jul 2008 09:00:30 -0400
+Received: from wx-out-0506.google.com ([66.249.82.227]:51107 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754043AbYGCNA3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:57:41 -0400
-Date: Thu, 3 Jul 2008 11:20:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Barry Kasindorf <barry.kasindorf@amd.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Robert Richter <robert.richter@amd.com>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH 1/3] AMD Family10h+ IBS support for oProfile driver:
-	Setup routines
-Message-ID: <20080703092052.GA5548@elte.hu>
-References: <20080609175030.2844.77365.sendpatchset@localhost.localdomain>
+	Thu, 3 Jul 2008 09:00:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type;
+        b=lxfT0DUYfp+SPbL8BYUqILK5ibfhs6KYu72ac6h4iUx3iSJlkUD41W7eylqzxq+jfv
+         oew++9xkaLmzlWRNAygSRftLBjTWBTgnXiS52fW0mIkMZ+NV2ioD6fBC1UVdsriQA82o
+         GqFBWpJzIK2f5UCrvli9FChJRDN3GU2/2RX2E=
+Message-ID: <a4423d670807030600y3b1e651end20b9993ca5c8d94@mail.gmail.com>
+Date: Thu, 3 Jul 2008 17:00:27 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com
+Subject: next-0703: build failure in x86/entry_64.S
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080609175030.2844.77365.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_6304_880364.1215090027300"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------=_Part_6304_880364.1215090027300
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-* Barry Kasindorf <barry.kasindorf@amd.com> wrote:
+Hi
 
-> This patchset supports the new profiling hardware available in the 
-> latest AMD CPUs in the oProfile driver.
+  AS      arch/x86/kernel/entry_64.o
+arch/x86/kernel/entry_64.S: Assembler messages:
+arch/x86/kernel/entry_64.S:1200: Error: invalid character '_' in mnemonic
+arch/x86/kernel/entry_64.S:1204: Error: invalid character '_' in mnemonic
+arch/x86/kernel/entry_64.S:1208: Error: invalid character '_' in mnemonic
+arch/x86/kernel/entry_64.S:1212: Error: invalid character '_' in mnemonic
+arch/x86/kernel/entry_64.S:1248: Error: invalid character '_' in mnemonic
+arch/x86/kernel/entry_64.S:1252: Error: invalid character '_' in mnemonic
+arch/x86/kernel/entry_64.S:1256: Error: invalid character '_' in mnemonic
+arch/x86/kernel/entry_64.S:1260: Error: invalid character '_' in mnemonic
+arch/x86/kernel/entry_64.S:1272: Error: invalid character '_' in mnemonic
+arch/x86/kernel/entry_64.S:1276: Error: invalid character '_' in mnemonic
+arch/x86/kernel/entry_64.S:1288: Error: invalid character '_' in mnemonic
+arch/x86/kernel/entry_64.S:1292: Error: invalid character '_' in mnemonic
+arch/x86/kernel/entry_64.S:1296: Error: invalid character '_' in mnemonic
+arch/x86/kernel/entry_64.S:1300: Error: invalid character '_' in mnemonic
 
-Looks interesting! There are some patch logistics issues:
+gcc version 4.1.2 (Gentoo 4.1.2 p1.0.2)
 
-1) please rebase your patches ontop of -mm, which carries the oprofile 
-multiplexing cleanups and enhancements already which heavily interact 
-with your patchset.
+Config is attached.
 
-2) -mm is also based on linux-next which has a few other changes in 
-drivers/oprofile as well: i did a test-merge of your patches and 3/3 
-interacted heavily with API changes in linux-next. Part of the problem 
-was that you mixed whitespace changes into your patch which randomly 
-iteracted with other stuff. Cleanups are nice and welcome, but try to 
-keep them in a separate patch. (multiple patches if the situation 
-requires it)
+------=_Part_6304_880364.1215090027300
+Content-Type: application/x-gzip; name=config.gz
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fi7d6r5b0
+Content-Disposition: attachment; filename=config.gz
 
-3) please Cc: the x86 maintainers too because these patches change quite 
-a few things in the x86 architecture code.
-
-also:
-
->  		case 0x10:
->  			model = &op_athlon_spec;
-> -			cpu_type = "x86-64/family10";
-> +			cpu_type = "x86-64/family10h";
-> +			break;
-
-please just keep the ABI string at "x86-64/family10" - we can live with 
-this small quirk forever. The mess to remove that quirk is much larger 
-than the benefit it brings (which is small to non-existent).
-
-[ you really dont want such a small issue block your patches.]
-
-the next one is OK:
-
-> +		case 0x11:
-> +			model = &op_athlon_spec;
-> +			cpu_type = "x86-64/family11h";
-
-as it's really 0x11.
-
-	Ingo
+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
+D+sO4eQPyOw8ee1yAAA=
+------=_Part_6304_880364.1215090027300--
