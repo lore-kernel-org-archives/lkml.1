@@ -1,86 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbYGCQpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754514AbYGCQqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753852AbYGCQpk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 12:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbYGCQpc
+	id S1754514AbYGCQqw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 12:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYGCQqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 12:45:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50943 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751714AbYGCQpb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 12:45:31 -0400
-Date: Thu, 3 Jul 2008 09:44:27 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Christoph Lameter <cl@linux-foundation.org>,
-       Dan Williams <dan.j.williams@intel.com>,
-       Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, NeilBrown <neilb@suse.de>,
-       babydr@baby-dragons.com, lee.schermerhorn@hp.com, a.beregalov@gmail.com,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Do not clobber pgdat->nr_zones during memory
- initialisation
-In-Reply-To: <20080703163638.GC18055@csn.ul.ie>
-Message-ID: <alpine.LFD.1.10.0807030942440.18105@woody.linux-foundation.org>
-References: <20080701175855.GI32727@shadowen.org> <20080701190741.GB16501@csn.ul.ie> <1214944175.26855.18.camel@dwillia2-linux.ch.intel.com> <20080702051759.GA26338@csn.ul.ie> <1215049766.2840.43.camel@dwillia2-linux.ch.intel.com> <20080703042750.GB14614@csn.ul.ie>
- <alpine.LFD.1.10.0807022135360.18105@woody.linux-foundation.org> <20080703050036.GD14614@csn.ul.ie> <1215064455.15797.4.camel@dwillia2-linux.ch.intel.com> <486CD623.8030906@linux-foundation.org> <20080703163638.GC18055@csn.ul.ie>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 3 Jul 2008 12:46:45 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:47795 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752043AbYGCQqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 12:46:44 -0400
+X-Greylist: delayed 2074 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Jul 2008 12:46:44 EDT
+Message-Id: <20080703160526.637679319@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Thu, 03 Jul 2008 12:05:26 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [RFC patch 0/3] Tracepoints
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  3 Jul 2008 16:11:02 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+Here is the new tracepoint infrastructure, heavily inspired from the Markers. It
+applies on 2.6.26-rc8. I also post my fs/ LTTng instrumentation as an example
+of the resulting code using tracepoints. Please feel free to comment.
 
-On Thu, 3 Jul 2008, Mel Gorman wrote:
-> 
-> Subject: [PATCH] Do not clobber pgdat->nr_zones during memory initialisation
+- Tracepoints allow more complete type checking (at compile-time) than markers.
+- They allow to connect probes involving in-kernel tracers which must be aware
+  of complex types such as "struct task_struct *" (not just a void *).
+- They are not meant as a replacement for markers, since they do not allow
+  one-liner printk-style addition of tracing statements for debugging purpose.
+- They require a declaration in a header file, which creates a nice stable API.
 
-Heh. I already applied it as ObviouslyCorrect(tm), but did the 
-simplification I already pointed out (and which your second version 
-already had) and rewrote your commit message a bit. So it's now committed 
-as follows..
+Thanks,
 
-		Linus
+Mathieu
 
----
-commit 494de90098784b8e2797598cefdd34188884ec2e
-Author: Mel Gorman <mel@csn.ul.ie>
-Date:   Thu Jul 3 05:27:51 2008 +0100
-
-    Do not overwrite nr_zones on !NUMA when initialising zlcache_ptr
-    
-    The non-NUMA case of build_zonelist_cache() would initialize the
-    zlcache_ptr for both node_zonelists[] to NULL.
-    
-    Which is problematic, since non-NUMA only has a single node_zonelists[]
-    entry, and trying to zero the non-existent second one just overwrote the
-    nr_zones field instead.
-    
-    As kswapd uses this value to determine what reclaim work is necessary,
-    the result is that kswapd never reclaims.  This causes processes to
-    stall frequently in low-memory situations as they always direct reclaim.
-    This patch initialises zlcache_ptr correctly.
-    
-    Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-    Tested-by: Dan Williams <dan.j.williams@intel.com>
-    [ Simplified patch a bit ]
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
----
- mm/page_alloc.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 2f55295..f32fae3 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2328,7 +2328,6 @@ static void build_zonelists(pg_data_t *pgdat)
- static void build_zonelist_cache(pg_data_t *pgdat)
- {
- 	pgdat->node_zonelists[0].zlcache_ptr = NULL;
--	pgdat->node_zonelists[1].zlcache_ptr = NULL;
- }
- 
- #endif	/* CONFIG_NUMA */
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
