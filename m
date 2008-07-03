@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbYGCHDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758039AbYGCHEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757345AbYGCHDr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbYGCG5V
+	id S1758039AbYGCHEj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 03:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYGCG5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:57:21 -0400
-Received: from mga01.intel.com ([192.55.52.88]:60224 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752468AbYGCBxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 21:53:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,741,1204531200"; 
-   d="scan'208";a="348226080"
-Subject: Re: [PATCH]  drivers/net/wireless/iwlwifi/iwl-3945.c
-From: Zhu Yi <yi.zhu@intel.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Darren Jenkins <darrenrjenkins@gmail.com>,
-       kernel Janitors <kernel-janitors@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, ipw2100-admin@linux.intel.com,
-       reinette.chatre@intel.com
-In-Reply-To: <20080702192457.GB31288@tuxdriver.com>
-References: <1214962647.18261.15.camel@localhost.localdomain>
-	 <20080702192457.GB31288@tuxdriver.com>
-Content-Type: text/plain; charset=UTF-8
-Organization: Intel Corp.
-Date: Thu, 03 Jul 2008 09:51:52 +0800
-Message-Id: <1215049912.14590.525.camel@debian.sh.intel.com>
+	Thu, 3 Jul 2008 02:57:23 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:60760 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752553AbYGCCAx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 22:00:53 -0400
+X-Sasl-enc: I5fMajbsH7CcM/e2s/PPRLDU2j3sB1XnnjmWTNY+intN 1215050452
+Subject: Re: [PATCH] autofs4 - detect invalid direct mount requests
+From: Ian Kent <raven@themaw.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jeff Moyer <jmoyer@redhat.com>, linux-kernel@vger.kernel.org,
+       autofs@linux.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <20080702095459.f3761ff4.akpm@linux-foundation.org>
+References: <20080620051301.9988.94307.stgit@raven.themaw.net>
+	 <20080701141715.62a2132b.akpm@linux-foundation.org>
+	 <1214989192.3046.34.camel@raven.themaw.net>
+	 <x49tzf8pflh.fsf@segfault.boston.devel.redhat.com>
+	 <1215006622.3046.75.camel@raven.themaw.net>
+	 <20080702095459.f3761ff4.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 03 Jul 2008 09:57:47 +0800
+Message-Id: <1215050268.3046.84.camel@raven.themaw.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-02 at 15:24 -0400, John W. Linville wrote:
-> What about the format line in the IWL_DEBUG_RX that uses rate?
+
+On Wed, 2008-07-02 at 09:54 -0700, Andrew Morton wrote:
+> On Wed, 02 Jul 2008 21:50:21 +0800 Ian Kent <raven@themaw.net> wrote:
 > 
-> Also, please use an email subject that is more descriptive than just
-> the filename.  You should probably drop the "G'day..." line as well.
+> > > > serious bug fixes. It gets rid of an annoyance more than anything as the
+> > > > daemon still has to check for it.
+> > > >
+> > > > It isn't important or urgent, just useful.
+> > > 
+> > > And I'd still like to see a comment in there!  ;)
+> > 
+> > OK.
+> > 
+> > Andrew, could you drop that patch and I'll re-submit it with a better
+> > change log entry.
+> 
+> nope ;)
 
-Side with John.
+Hahahaha, OK.
 
-> On Wed, Jul 02, 2008 at 11:37:27AM +1000, Darren Jenkins" wrote:
-> > G'day people
-> > 
-> > Coverity CID: 2265 NEGATIVE_RETURNS
-> > 
-> > "rate" is of an unsigned type, and the code requires a signed type.
-> > The following patch makes it so.
-> > 
-> > Only compile tested.
-> > 
-> > ﻿Signed-off-by: Darren Jenkins <darrenrjenkins@gmailcom>
-> > 
-> > diff --git a/drivers/net/wireless/iwlwifi/iwl-3945.c b/drivers/net/wireless/iwlwifi/iwl-3945.c
-> > index 62a3d8f..31d38cd 100644
-> > --- a/drivers/net/wireless/iwlwifi/iwl-3945.c
-> > +++ b/drivers/net/wireless/iwlwifi/iwl-3945.c
-> > @@ -449,7 +449,7 @@ static void iwl3945_dbg_report_frame(struct iwl3945_priv *priv,
-> >  
-> >  	if (print_summary) {
-> >  		char *title;
-> > -		u32 rate;
-> > +		int rate;
-> >  
-> >  		if (hundred)
-> >  			title = "100Frames";
+> 
+> Today is try-to-get-rc8-mm1-to-work day and that's likely the last
+> 2.6.26-rcX-mmY.  We need to get everything we can runtime tested a bit.
 
-The rate variable here takes two roles: one for calculate the index
-(singed) and the other for the actual rate (unsigned). I think if you do
-want to fix this, create another local variable int idx to hold the
-index result.
+Yep, understood.
 
-Thanks,
--yi
+Ian
+
 
