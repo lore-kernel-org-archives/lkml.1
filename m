@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbYGCUXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbYGCU04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754608AbYGCUXn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 16:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYGCUXe
+	id S1755171AbYGCU04 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 16:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYGCU0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 16:23:34 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:56696 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752207AbYGCUXd (ORCPT
+	Thu, 3 Jul 2008 16:26:47 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51808 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752474AbYGCU0q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 16:23:33 -0400
-Date: Thu, 3 Jul 2008 21:22:50 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Paul Mundt <lethal@linux-sh.org>,
-       pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       tony@atomide.com, paul@pwsan.com, David Brownell <david-b@pacbell.net>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>, ian <spyro@f2s.com>
-Subject: Re: [PATCH 0/3] Clocklib: generic framework for clocks managing
-	[v3]
-Message-ID: <20080703202250.GA24620@fluff.org.uk>
-References: <20080626125033.GA7093@doriath.ww600.siemens.net>
+	Thu, 3 Jul 2008 16:26:46 -0400
+Date: Thu, 3 Jul 2008 13:24:46 -0700
+From: Greg KH <greg@kroah.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, davem@davemloft.net
+Subject: Re: [PATCH] PCI: make pci_name use dev_name
+Message-ID: <20080703202446.GB528@kroah.com>
+References: <20080702153524.GA30318@kroah.com> <20080702160422.GA2655@suse.de> <20080702202200.GA14021@kroah.com> <200807031237.31063.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080626125033.GA7093@doriath.ww600.siemens.net>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200807031237.31063.jbarnes@virtuousgeek.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 04:50:33PM +0400, Dmitry Baryshkov wrote:
-> Hi,
+On Thu, Jul 03, 2008 at 12:37:30PM -0700, Jesse Barnes wrote:
+> On Wednesday, July 02, 2008 1:22 pm Greg KH wrote:
+> > On Wed, Jul 02, 2008 at 09:04:22AM -0700, Greg KH wrote:
+> > > Well, it's only used in 837 different places, so it might take me a few
+> > > hours to ensure I catch all the usages :(
+> >
+> > Ok, here are 4 patches that fix the few places that this pci change
+> > caused problems.
+> >
+> > Jesse, do you want to add these to your tree?  I can take the single USB
+> > one if you want, or you can take all 4, it's fine with me.
 > 
-> This is again a set of patches to unify the management of clocks and
-> allow easy registration and unregistration of them. This is neccessary
-> to cleanly support such devices as toshiba mobile companion chips,
-> sa1111 companion, etc. Also it brings code unification, especially for a
-> lot of arm sub-arches which share nearly the same code, etc.
-> 
-> This is the "version 3" approach. Given the negative response to
-> kobjects, I've redesigned it to use plain krefs.
-> 
-> Debugfs support is merged into main clocklib patch. Documentation
-> for it's interface will come later. For now it provides tree structure
-> with single file per each clock directory.
+> I'd rather just take the PCI patch (which I'm doing now).  The other stuff can 
+> come in through the appropriate tree.
 
-I'd prefer not to see this called clocklib, it isn't of any use
-outside of the kernel, and once it is in there's little point in
-anyone not using it.
+Fair enough, I'll make sure they don't get dropped.
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+thanks,
 
-  'a smiley only costs 4 bytes'
+greg k-h
