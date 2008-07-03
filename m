@@ -1,107 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbYGCXeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbYGCXgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757457AbYGCXeW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 19:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbYGCXeL
+	id S1757623AbYGCXgO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 19:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbYGCXf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 19:34:11 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:5296 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756650AbYGCXeK (ORCPT
+	Thu, 3 Jul 2008 19:35:57 -0400
+Received: from relay03.mail-hub.dodo.com.au ([123.2.6.238]:48192 "EHLO
+	relay03.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756475AbYGCXf4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 19:34:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=BXwIfPi07dy5UMQsZO4PzzeUfs71HoRKxsXA9yKb0BtBcbWr+5zxvfFfFdYBXxU1Dt
-         YS2ZQKkIS/P2BCSf0EsiDFLNJ5ctwT0YvTNUu9/H4NlAMmrwVClWq2hBHCNQ30khJt7S
-         quoWaqF+sJ7PGtW9hgA+9h7WmYTSTgX/nOsNU=
-Subject: [PATCH] olpc: olpc_battery.c sparse endian annotations
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 03 Jul 2008 16:33:38 -0700
-Message-Id: <1215128019.16647.34.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Thu, 3 Jul 2008 19:35:56 -0400
+From: Grant Coady <grant_lkml@dodo.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: 2.6.26-rc8-mm1--No e100 :( logs say missing formware
+Date: Fri, 04 Jul 2008 09:35:43 +1000
+Organization: http://bugsplatter.mine.nu/
+Reply-To: Grant Coady <gcoady.lk@gmail.com>
+Message-ID: <29oq64tdu2lqj5pprhk42siri6f3qh4gr2@4ax.com>
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+In-Reply-To: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+X-Mailer: Forte Agent 2.0/32.652
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/power/olpc_battery.c |   20 ++++++++------------
- 1 files changed, 8 insertions(+), 12 deletions(-)
+On Thu, 3 Jul 2008 02:02:36 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
-index 32570af..5fbca26 100644
---- a/drivers/power/olpc_battery.c
-+++ b/drivers/power/olpc_battery.c
-@@ -205,9 +205,9 @@ static int olpc_bat_get_property(struct power_supply *psy,
- 				 union power_supply_propval *val)
- {
- 	int ret = 0;
--	int16_t ec_word;
-+	__be16 ec_word;
- 	uint8_t ec_byte;
--	uint64_t ser_buf;
-+	__be64 ser_buf;
- 
- 	ret = olpc_ec_cmd(EC_BAT_STATUS, NULL, 0, &ec_byte, 1);
- 	if (ret)
-@@ -257,16 +257,14 @@ static int olpc_bat_get_property(struct power_supply *psy,
- 		if (ret)
- 			return ret;
- 
--		ec_word = be16_to_cpu(ec_word);
--		val->intval = ec_word * 9760L / 32;
-+		val->intval = (int)be16_to_cpu(ec_word) * 9760L / 32;
- 		break;
- 	case POWER_SUPPLY_PROP_CURRENT_AVG:
- 		ret = olpc_ec_cmd(EC_BAT_CURRENT, NULL, 0, (void *)&ec_word, 2);
- 		if (ret)
- 			return ret;
- 
--		ec_word = be16_to_cpu(ec_word);
--		val->intval = ec_word * 15625L / 120;
-+		val->intval = (int)be16_to_cpu(ec_word) * 15625L / 120;
- 		break;
- 	case POWER_SUPPLY_PROP_CAPACITY:
- 		ret = olpc_ec_cmd(EC_BAT_SOC, NULL, 0, &ec_byte, 1);
-@@ -278,24 +276,22 @@ static int olpc_bat_get_property(struct power_supply *psy,
- 		ret = olpc_ec_cmd(EC_BAT_TEMP, NULL, 0, (void *)&ec_word, 2);
- 		if (ret)
- 			return ret;
--		ec_word = be16_to_cpu(ec_word);
--		val->intval = ec_word * 100 / 256;
-+
-+		val->intval = (int)be16_to_cpu(ec_word) * 100 / 256;
- 		break;
- 	case POWER_SUPPLY_PROP_TEMP_AMBIENT:
- 		ret = olpc_ec_cmd(EC_AMB_TEMP, NULL, 0, (void *)&ec_word, 2);
- 		if (ret)
- 			return ret;
- 
--		ec_word = be16_to_cpu(ec_word);
--		val->intval = ec_word * 100 / 256;
-+		val->intval = (int)be16_to_cpu(ec_word) * 100 / 256;
- 		break;
- 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
- 		ret = olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void *)&ec_word, 2);
- 		if (ret)
- 			return ret;
- 
--		ec_word = be16_to_cpu(ec_word);
--		val->intval = ec_word * 6250 / 15;
-+		val->intval = (int)be16_to_cpu(ec_word) * 6250 / 15;
- 		break;
- 	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
- 		ret = olpc_ec_cmd(EC_BAT_SERIAL, NULL, 0, (void *)&ser_buf, 8);
--- 
-1.5.6.1.281.g1087e
+>ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc8/2.6.26-rc8-mm1/
 
+Hi, it booted up on a Core2Duo box but failed to connect via e100 NIC 
+to localnet.
 
+/var/log/messages:
+
+Jul  4 09:14:13 pooh kernel: firmware: requesting e100/d102e_ucode.bin
+Jul  4 09:14:13 pooh firmware.sh[1666]: Cannot find  firmware file 'e100/d102e_ucode.bin'
+
+/var/log/syslog:
+
+Jul  4 09:14:13 pooh kernel: e100: eth0: e100_request_firmware: Failed to load firmware "e100/d1
+02e_ucode.bin": -2
+Jul  4 09:14:13 pooh kernel: e100: eth0: e100_request_firmware: Failed to load firmware "e100/d1
+02e_ucode.bin": -2
+Jul  4 09:17:17 pooh kernel: e100: eth0: e100_request_firmware: Failed to load firmware "e100/d1
+02e_ucode.bin": -2
+Jul  4 09:17:30 pooh last message repeated 3 times
+
+So where did the firmware go? -- I been using these e100 NICs for years, 
+2.4 & 2.6 kernels, never seen this kind of failure...
+
+Thanks,
+Grant.
