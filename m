@@ -1,113 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758811AbYGCMWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753746AbYGCMWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758811AbYGCMWk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:22:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbYGCMWa
+	id S1753746AbYGCMWZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757323AbYGCMVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:22:30 -0400
-Received: from mga01.intel.com ([192.55.52.88]:26576 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757323AbYGCMWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:22:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,742,1204531200"; 
-   d="scan'208";a="584649654"
-Subject: [PATCH 1/2] introduce new interface schedule_work_on
-From: Zhang Rui <rui.zhang@intel.com>
-To: linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, harbour@sfinx.od.ua
+	Thu, 3 Jul 2008 08:21:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48769 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757278AbYGCMVx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 08:21:53 -0400
+Subject: Re: Intel Microcode loader, tg3 driver, and the -rc8-mmotd New
+	World Order firmware...
+From: David Woodhouse <dwmw2@infradead.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       jonathan@jonmasters.org, Shaohua Li <shaohua.li@intel.com>,
+       greg@kroah.com, Kay Sievers <kay.sievers@vrfy.org>, arjan@infradead.org
+In-Reply-To: <68763.1215084867@turing-police.cc.vt.edu>
+References: <4534.1215048758@turing-police.cc.vt.edu>
+	 <Pine.LNX.4.61.0807030716030.10434@ginsburg.homenet>
+	 <32146.1215066947@turing-police.cc.vt.edu>
+	 <Pine.LNX.4.61.0807030743230.10608@ginsburg.homenet>
+	 <1215077028.10393.497.camel@pmac.infradead.org>
+	 <65663.1215080245@turing-police.cc.vt.edu>
+	 <1215081029.10393.517.camel@pmac.infradead.org>
+	 <68763.1215084867@turing-police.cc.vt.edu>
 Content-Type: text/plain
-Date: Thu, 03 Jul 2008 15:56:49 +0800
-Message-Id: <1215071809.3214.0.camel@rzhang-dt.sh.intel.com>
+Date: Thu, 03 Jul 2008 13:21:35 +0100
+Message-Id: <1215087695.10393.538.camel@pmac.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This interface allows adding a job on a specific cpu.
+On Thu, 2008-07-03 at 07:34 -0400, Valdis.Kletnieks@vt.edu wrote:
+> Actually, FIRMWARE_IN_KERNEL *did* make a difference - it busticated the tg3
+> driver and while fighting with the 'firmware: requesting tigon/tg3_tso.bin'
+> errors I had just inflicted on myself, 
 
-Although a work struct on a cpu will be scheduled to other cpu if the cpu dies,
-there is a recursion if a work task tries to offline the cpu it's running on.
-we need to schedule the task to a specific cpu in this case.
-http://bugzilla.kernel.org/show_bug.cgi?id=10897
+Just to confirm: that works either with CONFIG_FIRMWARE_IN_KERNEL=y or
+if you run 'make INSTALL_FW_PATH=/lib/firmware firmware_install', right?
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Tested-by: Rus <harbour@sfinx.od.ua>
----
- include/linux/workqueue.h |    1 +
- kernel/workqueue.c        |   38 ++++++++++++++++++++++++++++++++++++++
- 2 files changed, 39 insertions(+)
+I'm not entirely sure whether we should make 'make firmware_install'
+install to /lib/firmware by default, or to $(O)/usr/lib/firmware as it
+does at the moment.
 
-Index: linux-2.6/include/linux/workqueue.h
-===================================================================
---- linux-2.6.orig/include/linux/workqueue.h	2008-07-03 11:13:23.000000000 +0800
-+++ linux-2.6/include/linux/workqueue.h	2008-07-03 11:13:25.000000000 +0800
-@@ -188,6 +188,7 @@
- extern void flush_scheduled_work(void);
- 
- extern int schedule_work(struct work_struct *work);
-+extern int schedule_work_on(int cpu, struct work_struct *work);
- extern int schedule_delayed_work(struct delayed_work *work, unsigned long delay);
- extern int schedule_delayed_work_on(int cpu, struct delayed_work *work,
- 					unsigned long delay);
-Index: linux-2.6/kernel/workqueue.c
-===================================================================
---- linux-2.6.orig/kernel/workqueue.c	2008-07-03 11:13:23.000000000 +0800
-+++ linux-2.6/kernel/workqueue.c	2008-07-03 11:14:56.000000000 +0800
-@@ -175,6 +175,31 @@
- }
- EXPORT_SYMBOL_GPL(queue_work);
- 
-+/**
-+ * queue_work_on - queue work on specific cpu
-+ * @cpu: CPU number to execute work on
-+ * @wq: workqueue to use
-+ * @work: work to queue
-+ *
-+ * Returns 0 if @work was already on a queue, non-zero otherwise.
-+ *
-+ * We queue the work to a specific CPU
-+ */
-+static int
-+queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *work)
-+{
-+	int ret = 0;
-+
-+	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
-+		BUG_ON(!list_empty(&work->entry));
-+		preempt_disable();
-+		__queue_work(wq_per_cpu(wq, cpu), work);
-+		preempt_enable();
-+		ret = 1;
-+	}
-+	return ret;
-+}
-+
- static void delayed_work_timer_fn(unsigned long __data)
- {
- 	struct delayed_work *dwork = (struct delayed_work *)__data;
-@@ -553,6 +578,19 @@
- }
- EXPORT_SYMBOL(schedule_work);
- 
-+/*
-+ * schedule_work_on - put work task on a specific cpu
-+ * @cpu: cpu to put the work task on
-+ * @work: job to be done
-+ *
-+ * This puts a job on a specific cpu
-+ */
-+int schedule_work_on(int cpu, struct work_struct *work)
-+{
-+	return queue_work_on(cpu, keventd_wq, work);
-+}
-+EXPORT_SYMBOL(schedule_work_on);
-+
- /**
-  * schedule_delayed_work - put work task in global workqueue after delay
-  * @dwork: job to be done
+The former is consistent with 'make modules_install', and the latter is
+consistent with 'make headers_install'. Both of which have good reasons
+for being the way they are.
 
+-- 
+dwmw2
 
