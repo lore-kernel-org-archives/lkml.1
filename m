@@ -1,139 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbYGCOqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbYGCOrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755514AbYGCOqk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 10:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbYGCOqc
+	id S1756705AbYGCOrA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 10:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755843AbYGCOqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 10:46:32 -0400
-Received: from adelie.canonical.com ([91.189.90.139]:34345 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752374AbYGCOqb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 10:46:31 -0400
-Subject: Re: [PATCH] Config option to disable info from decompression of
-	the kernel
-From: Ben Collins <ben.collins@canonical.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20080703123642.GB9733@elte.hu>
-References: <1213812275.6575.25.camel@cunning>
-	 <20080703123642.GB9733@elte.hu>
-Content-Type: text/plain
-Organization: Canonical
-Date: Thu, 03 Jul 2008 10:46:28 -0400
-Message-Id: <1215096389.7068.687.camel@cunning>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Thu, 3 Jul 2008 10:46:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51704 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755662AbYGCOqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 10:46:42 -0400
+Message-ID: <486CE61C.50706@redhat.com>
+Date: Thu, 03 Jul 2008 09:45:48 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+MIME-Version: 1.0
+To: Takashi Sato <t-sato@yk.jp.nec.com>
+CC: Christoph Hellwig <hch@infradead.org>, Alasdair G Kergon <agk@redhat.com>,
+       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, viro@ZenIV.linux.org.uk,
+       dm-devel@redhat.com, xfs@oss.sgi.com, linux-kernel@vger.kernel.org,
+       mtk.manpages@googlemail.com, axboe@kernel.dk
+Subject: Re: [dm-devel] Re: [PATCH 3/3] Add timeout feature
+References: <20080630212450t-sato@mail.jp.nec.com> <20080701081026.GB16691@infradead.org> <20080701105251.GC22522@agk.fab.redhat.com> <9942A69CB65D4A41B39F36AF8EEF6F22@nsl.ad.nec.co.jp>
+In-Reply-To: <9942A69CB65D4A41B39F36AF8EEF6F22@nsl.ad.nec.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-03 at 14:36 +0200, Ingo Molnar wrote:
-> * Ben Collins <ben.collins@canonical.com> wrote:
+Takashi Sato wrote:
+> Hi Christoph and Alasdair,
 > 
-> > I submitted a similar patch some time ago, but rightfully it didn't 
-> > get accepted, as it just disabled all output from the decompress stage 
-> > (without a boot time option to enable it).
-> > 
-> > This patch just disables the information output from this stage, but 
-> > not the error output.
+>> On Tue, Jul 01, 2008 at 04:10:26AM -0400, Christoph Hellwig wrote:
+>>> I still disagree with this whole patch.
+>> Same here - if you want a timeout, what stops you from implementing it in a
+>> userspace process?  If your concern is that the process might die without
+>> thawing the filesystem, take a look at the userspace LVM/multipath code for
+>> ideas - lock into memory, disable OOM killer, run from ramdisk etc.
+>> In practice, those techniques seem to be good enough.
 > 
-> > +config NO_BZ_CHATTER
-> > +	bool "Disable decompress info messages"
-> > +	default n
-> > +	help
-> > +	  Disables just the informational output from the decompression stage
-> > +	  (e.g. bzImage) of the boot. You will still see errors. Do this if you
-> > +	  want to cleanup the bootup process.
+> If the freezer accesses the frozen filesystem and causes a deadlock,
+> the above ideas can't solve it.  The timeout is useful to solve such a deadlock.
+> If you don't need the timeout, you can disable it by specifying "0" as the
+> timeout period.
 > 
-> applied to tip/x86/setup - thanks Ben.
+>> Similarly if a device-mapper device is involved, how should the following
+>> sequence behave - A, B or C?
+>>
+>> 1. dmsetup suspend (freezes)
+>> 2. FIFREEZE
+>> 3. FITHAW
+>> 4. dmsetup resume (thaws)
+> [...]
+>> C:
+>>  1 succeeds, freezes
+>>  2 fails, remains frozen
+>>  3 fails (because device-mapper owns the freeze/thaw), remains frozen
+>>  4 succeeds, thaws
 > 
-> Note that i've flipped around the name (i.e. got rid of the 'NO_'), and 
-> i renamed it to the bit more generic X86_VERBOSE_BOOTUP config variable. 
-> We might want to make other output dependent on that flag, not just the 
-> decompressor messages. Find the commit below. (please double-check it)
+> I think C is appropriate and the following change makes it possible.
+> How do you think?
+> 
+> 1. Add the new bit flag(BD_FREEZE_DM) in block_device.bd_state.
+>    It means that the volume is frozen by the device-mapper.
 
-Looks good, thanks.
+Will we add a new bit/flag for every possible subysstem that may call
+freeze/thaw?  This seems odd to me.
 
-> 	Ingo
-> 
-> ----------------------->
-> commit 6bcb13b35a2ea39be6c7cc0292b8ad1191b1a748
-> Author: Ben Collins <ben.collins@canonical.com>
-> Date:   Wed Jun 18 14:04:35 2008 -0400
-> 
->     x86: config option to disable info from decompression of the kernel
->     
->     This patch allows the disabling of decompression messages during
->     x86 bootup.
->     
->     Signed-off-by: Ben Collins <ben.collins@canonical.com>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-> index ac1e31b..14abaa5 100644
-> --- a/arch/x86/Kconfig.debug
-> +++ b/arch/x86/Kconfig.debug
-> @@ -16,6 +16,14 @@ config NONPROMISC_DEVMEM
->  	  obviously disasterous, but specific access can be used by people
->  	  debugging the kernel.
->  
-> +config X86_VERBOSE_BOOTUP
-> +	bool "Enable verbose x86 bootup info messages"
-> +	default y
-> +	help
-> +	  Enables the informational output from the decompression stage
-> +	  (e.g. bzImage) of the boot. If you disable this you will still
-> +	  see errors. Disable this if you want silent bootup.
-> +
->  config EARLY_PRINTK
->  	bool "Early printk" if EMBEDDED
->  	default y
-> diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
-> index d10e727..11629e9 100644
-> --- a/arch/x86/boot/compressed/misc.c
-> +++ b/arch/x86/boot/compressed/misc.c
-> @@ -202,7 +202,8 @@ static void free(void *where);
->  static void *memset(void *s, int c, unsigned n);
->  static void *memcpy(void *dest, const void *src, unsigned n);
->  
-> -static void putstr(const char *);
-> +static void __putstr(int, const char *);
-> +#define putstr(__x)  __putstr(0, __x)
->  
->  #ifdef CONFIG_X86_64
->  #define memptr long
-> @@ -266,11 +267,16 @@ static void scroll(void)
->  		vidmem[i] = ' ';
->  }
->  
-> -static void putstr(const char *s)
-> +static void __putstr(int error, const char *s)
->  {
->  	int x, y, pos;
->  	char c;
->  
-> +#ifndef CONFIG_X86_VERBOSE_BOOTUP
-> +	if (!error)
-> +		return;
-> +#endif
-> +
->  #ifdef CONFIG_X86_32
->  	if (real_mode->screen_info.orig_video_mode == 0 &&
->  	    lines == 0 && cols == 0)
-> @@ -363,9 +369,9 @@ static void flush_window(void)
->  
->  static void error(char *x)
->  {
-> -	putstr("\n\n");
-> -	putstr(x);
-> -	putstr("\n\n -- System halted");
-> +	__putstr(1, "\n\n");
-> +	__putstr(1, x);
-> +	__putstr(1, "\n\n -- System halted");
->  
->  	while (1)
->  		asm("hlt");
+They are different paths to the same underlying mechanism; it should not
+matter if it is an existing freeze from DM or via FIFREEZE or via the
+xfs ioctl, or any other mechanism should it?  I don't think this generic
+interface should use any flag named *_DM, personally.
 
+It seems that nested freeze requests must be handled in a generic way
+regardless of what initiates any of the requests?
+
+Refcounting freezes as Alasdair suggests seems to make sense to me, i.e.
+freeze, freeze, thaw, thaw leads to:
+
+>> > > 1 (freeze) succeeds, freezes (frozen++)
+>> > > 2 (freeze) succeeds, remains frozen (frozen++)
+>> > > 3 (thaw) succeeds, remains frozen (frozen--)
+>> > > 4 (thaw) succeeds, thaws (frozen--)
+
+that way each caller of freeze is guaranteed that the fs is frozen at
+least until they call thaw?
+
+Thanks,
+-Eric
