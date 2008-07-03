@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756157AbYGCMhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757103AbYGCMjH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756157AbYGCMhp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756817AbYGCMhY
+	id S1757103AbYGCMjH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:39:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbYGCMiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:37:24 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43165 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756902AbYGCMhW (ORCPT
+	Thu, 3 Jul 2008 08:38:55 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:50148 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751069AbYGCMiy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:37:22 -0400
-Message-ID: <486CC81D.9010003@bull.net>
-Date: Thu, 03 Jul 2008 14:37:49 +0200
-From: Benjamin Thery <benjamin.thery@bull.net>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 3 Jul 2008 08:38:54 -0400
+Message-ID: <486C8F9C.7080507@keyaccess.nl>
+Date: Thu, 03 Jul 2008 10:36:44 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Daniel Lezcano <dlezcano@fr.ibm.com>, Tejun Heo <htejun@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 06/11] sysfs: Implement sysfs tagged directory support.
-References: <20080618170729.808539948@theryb.frec.bull.fr>	<20080618170731.002784342@theryb.frec.bull.fr>	<485F04E1.70204@gmail.com> <m1y74svtff.fsf@frodo.ebiederm.org>	<486706C9.9040303@gmail.com> <m18wwmsqdv.fsf@frodo.ebiederm.org>	<4869D314.5030403@gmail.com> <m1ej6enep7.fsf@frodo.ebiederm.org>	<486A0751.9080602@gmail.com> <m1wsk5hjm0.fsf@frodo.ebiederm.org>	<486AF4FA.8020805@gmail.com> <m1ej6d9c2r.fsf@frodo.ebiederm.org>	<486B060C.7030607@gmail.com> <m14p78s02q.fsf@frodo.ebiederm.org>	<486C4515.1070007@gmail.com> <m1hcb7o8lv.fsf@frodo.ebiederm.org>	<486CB051.5000507@fr.ibm.com> <m14p77m9uy.fsf@frodo.ebiederm.org>
-In-Reply-To: <m14p77m9uy.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: David Brownell <david-b@pacbell.net>, Michael Buesch <mb@bu3sch.de>,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] gpiolib: Allow user-selection
+References: <200807022346.53222.mb@bu3sch.de>	<20080702170431.56d4c929.akpm@linux-foundation.org>	<200807022200.49428.david-b@pacbell.net> <20080702220842.44364045.akpm@linux-foundation.org>
+In-Reply-To: <20080702220842.44364045.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Daniel Lezcano <dlezcano@fr.ibm.com> writes:
-> 
->> The kobject events are sent through a netlink message which is not currently per
->> network namespace. Shouldn't be useful to have a way to retrieve from the
->> kobject the network namespace or the uevent socket associated with it ? IMHO
->> having idr in the kobject + netns pointer associated may help to handle the
->> sysfs isolation and makes the uevent per namespace trivial, no ?
-> 
-> Grumble.  I have been conveniently been forgetting about that socket.
-> Similarly we have the user mode helpers to deal with.
-> 
-> For this conversation there is a simple answer.  All of that is in the
-> kobject layer, and works even when you compile sysfs out of your kernel.
-> Therefore it is a separate problem.  And sysfs idr tags have nothing
-> to do with it.
+On 03-07-08 07:08, Andrew Morton wrote:
 
-> It is most definitely something we need to come back to.  I bet there
-> are some interesting interactions when you have multiple network devices
-> with the same name generating events.
+> But what I am repeatedly seeing is people cheerfully raising 2.6.27 
+> patches against the 2.6.26 tree when we have a nice 2.6.27 tree for 
+> developing against.  Those days are over, guys.
+> 
+> I'm also seeing obvious signs that developers aren't _testing_ their 
+> new code within the context of the 2.6.27 tree.  They're obviously 
+> testing their stuff against 2.6.26 and then hoping and praying, only
+> it doesn't always work out for them.
 
-Indeed, we observed some fun things with one distro (which defines some
-particular udev rules) when a device called eth0 in a namespace comes 
-back to init net :)
+Developing against -next is even worse than developping against an -rc1. 
+You normally want to be running the code you develop meaning you'd very 
+frequently drown in everyone else's bugs without getting to your own if 
+you do. Development needs to happen against something relatively stable 
+really and the last release would generally seem to be the best choice.
 
-Benjamin
+Now ofcourse, _porting_ it to -next before submitting makes lots of 
+sense but positioning -next as THE devel tree a bit less I feel...
 
-> 
-> Eric
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-
-
--- 
-B e n j a m i n   T h e r y  - BULL/DT/Open Software R&D
-
-    http://www.bull.com
+Rene.
