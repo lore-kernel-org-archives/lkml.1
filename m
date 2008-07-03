@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936876AbYGCHPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936098AbYGCHNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936876AbYGCHPU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755406AbYGCG7E
+	id S936098AbYGCHNw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 03:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbYGCG6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:59:04 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:33252 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755392AbYGCGot (ORCPT
+	Thu, 3 Jul 2008 02:58:41 -0400
+Received: from smtp-out-4.talktalk.net ([62.24.128.234]:6933 "EHLO
+	smtp.talktalk.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755222AbYGCGRW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 02:44:49 -0400
-Subject: Re: Multiple MSI
-From: Michael Ellerman <michaele@au1.ibm.com>
-Reply-To: michaele@au1.ibm.com
-To: benh@kernel.crashing.org
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-pci@vger.kernel.org,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>,
-       Dan Williams <dan.j.williams@intel.com>, Martine.Silbermann@hp.com,
-       linux-kernel@vger.kernel.org, Michael Ellerman <michaele@au1.ibm.com>
-In-Reply-To: <1215060119.21182.77.camel@pasglop>
-References: <20080703024445.GA14894@parisc-linux.org>
-	 <1215055469.21182.70.camel@pasglop>
-	 <20080703035910.GB14894@parisc-linux.org>
-	 <1215060119.21182.77.camel@pasglop>
-Content-Type: text/plain
-Date: Thu, 03 Jul 2008 16:44:44 +1000
-Message-Id: <1215067484.17950.35.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Jul 2008 02:17:22 -0400
+X-Path: TTSMTP
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtItAPkLbEhZ8m2EPGdsb2JhbACIQIl6AQEBAS2fHg
+Date: Thu, 3 Jul 2008 07:17:16 +0100 (BST)
+From: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
+X-X-Sender: tigran@ginsburg.homenet
+To: Valdis.Kletnieks@vt.edu
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Intel Microcode loader, tg3 driver, and the -rc8-mmotd New World
+ Order firmware...
+In-Reply-To: <4534.1215048758@turing-police.cc.vt.edu>
+Message-ID: <Pine.LNX.4.61.0807030716030.10434@ginsburg.homenet>
+References: <4534.1215048758@turing-police.cc.vt.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-03 at 14:41 +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2008-07-02 at 21:59 -0600, Matthew Wilcox wrote:
-> > 
-> > 
-> > This is true and worth considering carefully.  Are IRQ numbers a scarce
-> > resource on PowerPC?  They are considerably less scarce than interrupt
-> > vectors are on x86-64.  How hard is it to make IRQ numbers an abundent
-> > resource?  Is it simply a question of increasing NR_IRQS?
-> 
-> Yes, indeed, they aren't really scarce... actually less than the
-> underlying HW vectors in most cases, so it isn't a big issue to add some
-> kind of constraint to the allocator.
+Hi Valdis,
 
-Not scarce, but increasing NR_IRQS makes some static arrays bigger,
-which is not so nice.
+On Wed, 2 Jul 2008 Valdis.Kletnieks@vt.edu wrote:
 
-> > By the way, would people be interested in changing the MSI-X API to get
-> > rid of the msix_entry array?  If allocating consecutive IRQs isn't a
-> > problem, then we could switch the MSI-X code to use consecutive IRQs.
-> 
-> It would make a lot of code simpler...
+> I built the -rc8-mmotd kernel, and built it with 'CONFIG_FIRMWARE_IN_KERNEL=n'.
+> Lo and behold, the microcode.ko was now doing a request_firmware for
+> 'intel-ucode/06-0f-06' (which makes sense, the Core2 Duo in this laptop is
+> family 6, model 15, stepping 6).  However, what I had in /lib/firmware was
+> the Intel-distributed 'microcode.dat' with updates for all the CPUs (which
+> used to work in times past).
+>
+> What's the magic incantation to take the microcode.dat and create something
+> that the firmware driver is willing to use, or is this all borked up and
+> I need to do a major rethink or fix my config?
 
-It's not a pretty API to be sure. I thought drivers needed the
-flexibility of being able to specify non-contiguous ranges. In practice
-it looks like only s2io is doing anything different.
+that's because it expects the Intel-supplied microcode data and you are 
+using the old style microcode.dat data.
 
-cheers
+Kind regards
+Tigran
 
--- 
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-email: michaele@au.ibm.com
-stime: ellerman@au1.ibm.com
-notes: Michael Ellerman/Australia/IBM
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
+>
+> Another minor annoyance - the tg3 driver, when builtin to the kernel, wouldn't
+> load the microcode in this config. It complained it couldn't get 'tigon/tg3_tos.bin',
+> but that's almost certainly an issue with Fedora's 'nash' firmware support and/or
+> my understanding of it - I got *that* part working by dropping the file into
+> /lib/firmware/tigon and building the driver as a module. Fortunately, I don't
+> need the tg3 driver to boot far enough to get a full udev running.
+>
+>
