@@ -1,89 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933272AbYGCHIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933384AbYGCHIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933272AbYGCHIs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbYGCG5y
+	id S933384AbYGCHIz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 03:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbYGCG5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:57:54 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:53075 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754725AbYGCD71 (ORCPT
+	Thu, 3 Jul 2008 02:57:55 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35073 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750707AbYGCECn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 23:59:27 -0400
-Date: Wed, 2 Jul 2008 21:59:10 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-pci@vger.kernel.org,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>,
-       Dan Williams <dan.j.williams@intel.com>, Martine.Silbermann@hp.com,
-       linux-kernel@vger.kernel.org, Michael Ellerman <michaele@au1.ibm.com>
-Subject: Re: Multiple MSI
-Message-ID: <20080703035910.GB14894@parisc-linux.org>
-References: <20080703024445.GA14894@parisc-linux.org> <1215055469.21182.70.camel@pasglop>
+	Thu, 3 Jul 2008 00:02:43 -0400
+Date: Wed, 2 Jul 2008 20:58:07 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Linux 2.6.25.10
+Message-ID: <20080703035807.GA8190@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1215055469.21182.70.camel@pasglop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 03, 2008 at 01:24:29PM +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2008-07-02 at 20:44 -0600, Matthew Wilcox wrote:
-> > At the moment, devices with the MSI-X capability can request multiple
-> > interrupts, but devices with MSI can only request one.  This isn't an
-> > inherent limitation of MSI, it's just the way that Linux currently
-> > implements it.  I intend to lift that restriction, so I'm throwing out
-> > some idea that I've had while looking into it.
-> 
-> Interesting. I've been thinking about that one for some time but
-> back then, the feedback I got left and right is that nobody cares :-)
+We (the -stable team) are announcing the release of the 2.6.25.10
+kernel.
 
-The AHCI spec only includes MSI.  So I have a reason to care.
+It contains a number of assorted bugfixes all over the tree.  And once
+again, any users of the 2.6.25 kernel series are STRONGLY encouraged to
+upgrade to this release.
 
-> I'm adding Michael Ellerman to the CC list, he's done a good part of the
-> PowerPC MSI stuff.
+I'll also be replying to this message with a copy of the patch between
+2.6.25.9 and 2.6.25.10
 
-Doh!  I was sure I added him to the CC list.  Sorry.
+The updated 2.6.25.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.25.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.25.y.git;a=summary
 
-> > Next, MSI requires that you assign a block of interrupts that is a power
-> > of two in size (between 2^0 and 2^5), and aligned to at least that power
-> > of two.  I've looked at the x86 code and I think this is doable there
-> > [1]. I don't know how doable it is on other architectures.  If not, just
-> > ignore all this and continue to have MSI hardware use a single interrupt.
-> 
-> Well, it requires that for HW number. But I don't think it should
-> require that at API level (ie. for driver visible irq numbers). Some
-> architectures can fully remap between HW sources and "linux" visible IRQ
-> numbers and thus wouldn't have that limitation from an API point of
-> view.
+thanks,
 
-This is true and worth considering carefully.  Are IRQ numbers a scarce
-resource on PowerPC?  They are considerably less scarce than interrupt
-vectors are on x86-64.  How hard is it to make IRQ numbers an abundent
-resource?  Is it simply a question of increasing NR_IRQS?
+greg k-h
 
-This cost should be traded off against the cost of allocating something
-like the msix_entry array in each driver that wants to use multiple MSIs,
-passing that array around, using it properly, etc.
+-------------
 
-It would make some sense to pass nr_irqs all the way down to arch code
-and let arch code take care of reserving the block of vectors (aligned
-appropriately).  That would conserve IRQ numbers, though not vectors.
-I think we have to consider excess vectors reserved.  If we don't, we
-could get into the situation where a device uses more interrupts than
-the driver thinks it will and problems ensue.
+ Makefile                                    |    2 
+ arch/x86/kernel/i387.c                      |    4 -
+ arch/x86/kernel/ptrace.c                    |   45 +++++++------
+ arch/x86/kernel/smpboot_64.c                |    1 
+ drivers/char/drm/i915_drv.c                 |    1 
+ drivers/infiniband/hw/mthca/mthca_memfree.c |    6 +
+ drivers/net/hamradio/6pack.c                |    2 
+ drivers/net/hamradio/mkiss.c                |    8 +-
+ drivers/net/irda/irtty-sir.c                |    4 -
+ drivers/net/ppp_async.c                     |    3 
+ drivers/net/ppp_synctty.c                   |    3 
+ drivers/net/slip.c                          |   14 +++-
+ drivers/net/wan/x25_asy.c                   |   10 ++-
+ drivers/net/wireless/strip.c                |    3 
+ include/asm-x86/msr.h                       |    2 
+ kernel/futex.c                              |   93 +++++++++++++++++++++-------
+ kernel/sched.c                              |    1 
+ 17 files changed, 147 insertions(+), 55 deletions(-)
 
 
-By the way, would people be interested in changing the MSI-X API to get
-rid of the msix_entry array?  If allocating consecutive IRQs isn't a
-problem, then we could switch the MSI-X code to use consecutive IRQs.
+Alan Cox (1):
+      TTY: fix for tty operations bugs
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Dmitry Adamushko (1):
+      sched: fix cpu hotplug
+
+Eli Cohen (1):
+      IB/mthca: Clear ICM pages before handing to FW
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.25.10
+
+Jie Luo (1):
+      DRM: enable bus mastering on i915 at resume time
+
+Max Asbock (1):
+      x86: shift bits the right way in native_read_tscp
+
+Roland McGrath (1):
+      x86_64 ptrace: fix sys32_ptrace task_struct leak
+
+TAKADA Yoshihito (1):
+      ptrace GET/SET FPXREGS broken
+
+Thomas Gleixner (1):
+      futexes: fix fault handling in futex_lock_pi
+
+Yanmin Zhang (1):
+      x86: fix cpu hotplug crash
+
