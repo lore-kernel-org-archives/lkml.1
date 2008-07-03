@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbYGCXgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757823AbYGCXhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757623AbYGCXgO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 19:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbYGCXf5
+	id S1757823AbYGCXhJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 19:37:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbYGCXg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 19:35:57 -0400
-Received: from relay03.mail-hub.dodo.com.au ([123.2.6.238]:48192 "EHLO
-	relay03.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756475AbYGCXf4 (ORCPT
+	Thu, 3 Jul 2008 19:36:58 -0400
+Received: from irga4.truemail.co.th ([203.144.173.204]:17252 "EHLO
+	irga4.truemail.co.th" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756794AbYGCXg5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 19:35:56 -0400
-From: Grant Coady <grant_lkml@dodo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: 2.6.26-rc8-mm1--No e100 :( logs say missing formware
-Date: Fri, 04 Jul 2008 09:35:43 +1000
-Organization: http://bugsplatter.mine.nu/
-Reply-To: Grant Coady <gcoady.lk@gmail.com>
-Message-ID: <29oq64tdu2lqj5pprhk42siri6f3qh4gr2@4ax.com>
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
-In-Reply-To: <20080703020236.adaa51fa.akpm@linux-foundation.org>
-X-Mailer: Forte Agent 2.0/32.652
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Jul 2008 19:36:57 -0400
+X-Greylist: delayed 620 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Jul 2008 19:36:56 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoMAF79bEh8eaGH/2dsb2JhbACBXA+RL55i
+X-IronPort-AV: E=Sophos;i="4.30,299,1212339600"; 
+   d="scan'208";a="46932277"
+Date: Fri, 4 Jul 2008 06:26:26 +0700
+Mime-version: 1.0
+Subject: =?x-mac-thai?B?w9G6ysHRpMOn0rkgUEFSVC1USU1FILfTp9K5t9XouunSueS06TEwMCU=?=
+From: =?x-mac-thai?B?am9iIHBhcnRpbWUgb25saW5l?= <oce@option2money.com>
+To: <linux-kernel@vger.kernel.org>
+Message-Id: <74626.VACTDJFO@option2money.com>
+Reply-To: oce@option2money.com
+Content-type: text/plain; charset="x-mac-thai"; format=flowed
+Content-transfer-encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Jul 2008 02:02:36 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
+งานประชาสัมพันธ์ผ่านสื่อ internet100% ต้องการผู้ร่วมงาน และเจ้าหน้าที่จำนวนมาก
+เพียงใช้เวลา 1-2 ชม.ต่อวัน/ทำงานที่บ้าน  รับรองไม่กระทบการเรียนหรืองานประจำค่ะ
 
->ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc8/2.6.26-rc8-mm1/
+Part-time รายได้ 8,000 บาท ขึ้นไป  (ขึ้นกับความสามารถ) Full-Time รายได้ 30,000 บาท ขึ้นไป (ขึ้นกับความสามารถ)
+คุณสมบัติ - ไม่จำกัดวุฒิ - มีเครื่องมือสื่อสารเป็นของตัวเอง เช่น โทรศัพท์มือถือ คอมพิวเตอร์ - มีความรู้ด้านการใช้อินเตอร์เน็ท(จะพิจารณาเป็นพิเศษ) - อายุ 18 ปีขึ้นไป
+- ไม่จำเป็นต้องมีประสบการณ์ (เรามี job training ไว้สนับสนุน)
+- บริษัทมี VCD ไว้สำหรับเรียนรู้งานด้วยตนเอง และมีการ training online
 
-Hi, it booted up on a Core2Duo box but failed to connect via e100 NIC 
-to localnet.
+สนใจกรอกแบบฟอร์มที่ link website ด้านล่างเพื่อรับรายละเอียดเกี่ยวกับงานเพิ่มเติมและรับ VCD ข้อมูลเกี่ยวกับงานได้ฟรี!!  ไม่มีค่าใช้จ่ายใดๆทั้งสิ้นค่ะ จะมีเจ้าหน้าที่ติดต่อกลับไปค่ะ
 
-/var/log/messages:
+ >>>http://www.newattitudebiz.com/online03/contact.html
 
-Jul  4 09:14:13 pooh kernel: firmware: requesting e100/d102e_ucode.bin
-Jul  4 09:14:13 pooh firmware.sh[1666]: Cannot find  firmware file 'e100/d102e_ucode.bin'
 
-/var/log/syslog:
+**การกรอกแบบฟอร์มยังไม่ใช่การสมัคร เป็นการแจ้งความจำนงขอรับฟังรายละเอียดเท่านั้น  จึงไม่ต้องกังวลใดๆ และไม่มีค่าใช้จ่ายใดๆทั้งสิ้น**
 
-Jul  4 09:14:13 pooh kernel: e100: eth0: e100_request_firmware: Failed to load firmware "e100/d1
-02e_ucode.bin": -2
-Jul  4 09:14:13 pooh kernel: e100: eth0: e100_request_firmware: Failed to load firmware "e100/d1
-02e_ucode.bin": -2
-Jul  4 09:17:17 pooh kernel: e100: eth0: e100_request_firmware: Failed to load firmware "e100/d1
-02e_ucode.bin": -2
-Jul  4 09:17:30 pooh last message repeated 3 times
 
-So where did the firmware go? -- I been using these e100 NICs for years, 
-2.4 & 2.6 kernels, never seen this kind of failure...
 
-Thanks,
-Grant.
+
+
+
+
+
+
+
+
+
+
+
+
