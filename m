@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759282AbYGCMzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759287AbYGCM4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759282AbYGCMzS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755886AbYGCMzB
+	id S1759287AbYGCM4P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:56:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbYGCMz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:55:01 -0400
-Received: from fallback.mail.elte.hu ([157.181.151.13]:60817 "EHLO
+	Thu, 3 Jul 2008 08:55:59 -0400
+Received: from fallback.mail.elte.hu ([157.181.151.13]:60958 "EHLO
 	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753091AbYGCMzA (ORCPT
+	with ESMTP id S1751615AbYGCMz6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:55:00 -0400
-X-Greylist: delayed 2320 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Jul 2008 08:55:00 EDT
-Date: Thu, 3 Jul 2008 10:44:01 +0200
+	Thu, 3 Jul 2008 08:55:58 -0400
+Date: Thu, 3 Jul 2008 11:10:53 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       mm-commits@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask
-	V3
-Message-ID: <20080703084401.GB7873@elte.hu>
-References: <200806090918.m599Ib0G012837@imap1.linux-foundation.org> <19f34abd0806090420r4100241cgb4b828441de3b102@mail.gmail.com> <20080609113547.GA1534@elte.hu> <484D54F2.4070603@sgi.com> <20080626113229.GB29619@elte.hu> <4863C334.2090007@sgi.com> <486452CC.8050502@sgi.com> <48651EF5.5090808@sgi.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Nick Piggin <npiggin@suse.de>, Mark McLoughlin <markmc@redhat.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Eduardo Habkost <ehabkost@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Stephen Tweedie <sct@redhat.com>, x86@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for
+	64-bit Xen support
+Message-ID: <20080703091053.GA1883@elte.hu>
+References: <486539A3.3030102@goop.org> <20080629084318.GA28815@elte.hu> <48684CD4.7040403@goop.org> <20080630082135.GA22844@elte.hu> <20080630092209.GA29815@elte.hu> <48696690.90907@goop.org> <20080701085204.GA23289@elte.hu> <20080701092152.GA18918@elte.hu> <486A57C8.3010008@goop.org> <20080701203123.GG4896@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48651EF5.5090808@sgi.com>
+In-Reply-To: <20080701203123.GG4896@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,24 +41,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Travis <travis@sgi.com> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> Subject: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask V3
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 > 
->   * When CONFIG_DEBUG_PER_CPU_MAPS is set, the node passed to
->     node_to_cpumask and node_to_cpumask_ptr should be validated.
->     If invalid, then a dump_stack is performed and a zero cpumask
->     is returned.
+> > Ingo Molnar wrote:
+> >> Excluding the x86/xen-64bit topic solves the problem.
+> >>
+> >> It triggered on two 64-bit machines so it seems readily reproducible  
+> >> with that config.
+> >>
+> >> i've pushed the failing tree out to tip/tmp.xen-64bit.Tue_Jul__1_10_55
+> >>   
+> >
+> > The patch to fix this is on tip/x86/unify-setup: "x86: setup_arch() && 
+> > early_ioremap_init()".  Logically that patch should probably be in the 
+> > xen64 branch, since it's only meaningful with the early_ioremap 
+> > unification.
 > 
-> Based on "Fri Jun 27 10:06:06 PDT 2008" tip/master...  ;-) 
+> ah, indeed - it was missing from tip/master due to:
 > 
-> Signed-off-by: Mike Travis <travis@sgi.com>
-> ---
-> V2: Slightly different version to remove a compiler warning.
-> V3: Redone to reflect moving setup.c -> setup_percpu.c
+> | commit ac998c259605741efcfbd215533b379970ba1d9f
+> | Author: Ingo Molnar <mingo@elte.hu>
+> | Date:   Mon Jun 30 12:01:31 2008 +0200
+> |
+> |    Revert "x86: setup_arch() && early_ioremap_init()"
+> |
+> |    This reverts commit 181b3601a1a7d2ac3ace6b23cb3204450a4f9a27.
+> 
+> because that change needed the other changes from xen-64bit.
+> 
+> will retry tomorrow.
 
-applied to tip/x86/unify-setup - thanks Mike.
-
-Vegard, can i add your Acked-by too?
+ok, i've re-added x86/xen-64bit and it's looking good in testing so far.
 
 	Ingo
