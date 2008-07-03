@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbYGCRws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754514AbYGCSAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754618AbYGCRws (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 13:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYGCRwk
+	id S1754514AbYGCSAR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 14:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYGCSAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 13:52:40 -0400
-Received: from web30302.mail.mud.yahoo.com ([209.191.69.64]:38635 "HELO
-	web30302.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752262AbYGCRwj convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 13:52:39 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Jul 2008 13:52:39 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=y+++D7iFpP/T2VoxaDotfeau8fSXi3u9ZrGX5uEyhp/usFCkVJ6dxhBD2muVhAOpvGIacsY6I6z84UPp8RgAw8K6DpegbP1vLnP5tE++p5QzJD274BIqrf0I+TRgrx9RO5OAtuURDoEbEPl8MTzHUw0xWNG8TVGDKZwroL/yBvw=;
-X-Mailer: YahooMailWebService/0.7.199
-Date: Thu, 3 Jul 2008 10:45:58 -0700 (PDT)
-From: =?iso-8859-1?Q?Arne_W=F6rner?= <arne_woerner@yahoo.com>
-Subject: ivtv / read() blocks for more than 2s sometimes
-To: linux-kernel@vger.kernel.org
+	Thu, 3 Jul 2008 14:00:05 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:34730 "EHLO
+	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752604AbYGCSAD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 14:00:03 -0400
+X-BigFish: VPS-23(zz98dR7efVzzzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K3FZBH-02-RQ3-01
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <447967.92298.qm@web30302.mail.mud.yahoo.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 3/6] AMD IOMMU: flush domain TLB when there is more than onepage to flush
+Date: Thu, 3 Jul 2008 13:01:21 -0500
+Message-ID: <6453C3CB8E2B3646B0D020C112613273013D91CF@sausexmb4.amd.com>
+In-Reply-To: <1215106511-12915-4-git-send-email-joerg.roedel@amd.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 3/6] AMD IOMMU: flush domain TLB when there is more than onepage to flush
+Thread-Index: AcjdM43RxO4320PASnuxIq1jBk1D0QAAh92A
+References: <1215106511-12915-1-git-send-email-joerg.roedel@amd.com> <1215106511-12915-4-git-send-email-joerg.roedel@amd.com>
+From: "Duran, Leo" <leo.duran@amd.com>
+To: "Roedel, Joerg" <Joerg.Roedel@amd.com>, <mingo@redhat.com>,
+       <tglx@linutronix.de>
+CC: "Richter, Robert" <rrichter@elbe.amd.com>,
+       <iommu@lists.linux-foundation.org>, <linux-kernel@vger.kernel.org>,
+       "Sarathy, Bhavna" <Bhavna.Sarathy@amd.com>
+X-OriginalArrivalTime: 03 Jul 2008 17:59:51.0268 (UTC) FILETIME=[9713AA40:01C8DD36]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thursday, July 03, 2008 12:35 PM, Joerg Roedel wrote:
 
-I use fedora core 8 x86_64 (athlon64 X2 5000+, 2gb ram, asrock mb) and update the packages whenever yum-updatesd notifies me...
+> This patch changes the domain TLB flushing behavior of the driver.
+When
+> there
+> is more than one page to flush it flushes the whole domain TLB instead
+> of every
+> single page. So we send only a single command to the IOMMU in every
+> case which
+> is faster to execute.
+> 
 
-About once a month
-(i reboot about daily and record about 10-15 hrs of tv shows per day
- (mostly from just one tv card at the same time))
-one of my 2 hauppauge pvr 250 cards or their ivtv kernel module refuse to provide a read() call with data.
-Whenever that happens my selfmade recording program closes the device issues "/usr/local/bin/ivtv-tune -t europe-west -d /dev/video0 -c E9" 4 times. Then it tries to read again from it.
-That repeats 5 minutes and then i reboot automatically, so that i loose about 7 minutes each time...
+Joerg,
 
-Is there an easier way?
-Can I reset a single pci device
-(e.g. by detaching the driver of a certain pci device and re-attaching it)?
+Instead of flushing the complete TLB, how about just setting the
+page-size encoding bits so as to cover all of the pages (rounded up to a
+power of 2... which in some cases may flush a few more pages, but not
+the complete TLB). This way other devices don't pay the 'flushing'
+penalty every time you unmap a buffer for a given device.
 
-Thx.
+Leo.
 
-Bye
-Arne
-
-
-      
