@@ -1,57 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935512AbYGCHMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935805AbYGCHN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935512AbYGCHMt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbYGCG63
+	id S935805AbYGCHN0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 03:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYGCG6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:58:29 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:31648 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754875AbYGCFoP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 01:44:15 -0400
-Date: Wed, 02 Jul 2008 23:44:09 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP
- systems
-In-reply-to: <fa.OuKI5CNmq3HqeBQCfWOUtrq4+oA@ifi.uio.no>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-id: <486C6729.4020903@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.OuKI5CNmq3HqeBQCfWOUtrq4+oA@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 3 Jul 2008 02:58:35 -0400
+Received: from mga11.intel.com ([192.55.52.93]:48902 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755001AbYGCFyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 01:54:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,742,1204531200"; 
+   d="scan'208";a="348285187"
+Subject: Re: [problem] raid performance loss with 2.6.26-rc8 on 32-bit x86
+	(bisected)
+From: Dan Williams <dan.j.williams@intel.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, NeilBrown <neilb@suse.de>,
+       babydr@baby-dragons.com, cl@linux-foundation.org,
+       lee.schermerhorn@hp.com, a.beregalov@gmail.com,
+       akpm@linux-foundation.org
+In-Reply-To: <20080703050036.GD14614@csn.ul.ie>
+References: <1214877439.7885.40.camel@dwillia2-linux.ch.intel.com>
+	 <20080701080910.GA10865@csn.ul.ie> <20080701175855.GI32727@shadowen.org>
+	 <20080701190741.GB16501@csn.ul.ie>
+	 <1214944175.26855.18.camel@dwillia2-linux.ch.intel.com>
+	 <20080702051759.GA26338@csn.ul.ie>
+	 <1215049766.2840.43.camel@dwillia2-linux.ch.intel.com>
+	 <20080703042750.GB14614@csn.ul.ie>
+	 <alpine.LFD.1.10.0807022135360.18105@woody.linux-foundation.org>
+	 <20080703050036.GD14614@csn.ul.ie>
+Content-Type: text/plain
+Date: Wed, 02 Jul 2008 22:54:15 -0700
+Message-Id: <1215064455.15797.4.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki wrote:
-> From: Matthew Garrett <mjg59@srcf.ucam.org>
-> 
->  Some HP laptops have a problem with their DSDT reporting as
-> HP/SB400/10000, which includes some code which overrides all temperature
-> trip points to 16C if the INTIN2 input of the I/O APIC is enabled.  This
-> input is incorrectly designated the ISA IRQ 0 via an interrupt source
-> override even though it is wired to the output of the master 8259A and
-> INTIN0 is not connected at all.  So far two models have been identified, 
-> namely nx6125 and nx6325.
-> 
->  Use a knob provided by the I/O APIC interrupt registration code to
-> abandon any attempts to route IRQ 0 through the I/O APIC for these
-> systems.
 
-Just a thought.. has anyone recently looked into using the RTC timer 
-instead of the PIT as the default clockevent source? There still seem to 
-be systems like these seeping through with broken PIT through IOAPIC 
-since Windows apparently doesn't use that config at all. If we could use 
-the RTC instead (which is apparently what Windows does) we could avoid 
-that problem.
+On Wed, 2008-07-02 at 22:00 -0700, Mel Gorman wrote:
 
-The last I read on the subject, the issue was that the RTC timer 
-frequencies didn't match the existing Linux HZ values, but I'm not sure 
-if that's still an issue with the current clockevents infrastructure..
+> Subject: [PATCH] Do not overwrite nr_zones on !NUMA when initialising zlcache_ptr
+> 
+> With the two-zonelist patches on !NUMA machines, there really is only one
+> zonelist as __GFP_THISNODE is meaningless. However, during initialisation, the
+> assumption is made that two zonelists exist when initialising zlcache_ptr. The
+> result is that pgdat->nr_zones is always 0. As kswapd uses this value to
+> determine what reclaim work is necessary, the result is that kswapd never
+> reclaims. This causes processes to stall frequently in low-memory situations
+> as they always direct reclaim.  This patch initialises zlcache_ptr correctly.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> ---
+>  page_alloc.c |    1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.26-rc8-clean/mm/page_alloc.c linux-2.6.26-rc8-fix-kswapd-on-numa/mm/page_alloc.c
+> --- linux-2.6.26-rc8-clean/mm/page_alloc.c      2008-06-24 18:58:20.000000000 -0700
+> +++ linux-2.6.26-rc8-fix-kswapd-on-numa/mm/page_alloc.c 2008-07-02 21:49:09.000000000 -0700
+> @@ -2328,7 +2328,6 @@ static void build_zonelists(pg_data_t *p
+>  static void build_zonelist_cache(pg_data_t *pgdat)
+>  {
+>         pgdat->node_zonelists[0].zlcache_ptr = NULL;
+> -       pgdat->node_zonelists[1].zlcache_ptr = NULL;
+>  }
+> 
+>  #endif /* CONFIG_NUMA */
+> 
+
+Bug squished.
+
+# for i in `seq 1 5`; do dd if=/dev/zero of=/dev/md0 bs=1024k count=2048; done
+2048+0 records in
+2048+0 records out
+2147483648 bytes (2.1 GB) copied, 7.73352 s, 278 MB/s
+2048+0 records in
+2048+0 records out
+2147483648 bytes (2.1 GB) copied, 7.6845 s, 279 MB/s
+2048+0 records in
+2048+0 records out
+2147483648 bytes (2.1 GB) copied, 7.74428 s, 277 MB/s
+2048+0 records in
+2048+0 records out
+2147483648 bytes (2.1 GB) copied, 7.65959 s, 280 MB/s
+2048+0 records in
+2048+0 records out
+2147483648 bytes (2.1 GB) copied, 7.73107 s, 278 MB/s
+
+Tested-by: Dan Williams <dan.j.williams@intel.com>
+
+
+
