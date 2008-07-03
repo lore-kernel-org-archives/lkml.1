@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbYGCNDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbYGCNEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758830AbYGCNDi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 09:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbYGCND3
+	id S1757122AbYGCNEu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 09:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYGCNEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 09:03:29 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:57744 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753616AbYGCND1 (ORCPT
+	Thu, 3 Jul 2008 09:04:39 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:58298 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751848AbYGCNEi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 09:03:27 -0400
-Subject: Re: Intel Microcode loader, tg3 driver, and the -rc8-mmotd New
-	World Order firmware...
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Valdis.Kletnieks@vt.edu, Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       jonathan@jonmasters.org, Shaohua Li <shaohua.li@intel.com>,
-       greg@kroah.com, arjan@infradead.org
-In-Reply-To: <1215089112.10393.544.camel@pmac.infradead.org>
-References: <4534.1215048758@turing-police.cc.vt.edu>
-	 <Pine.LNX.4.61.0807030716030.10434@ginsburg.homenet>
-	 <32146.1215066947@turing-police.cc.vt.edu>
-	 <Pine.LNX.4.61.0807030743230.10608@ginsburg.homenet>
-	 <1215077028.10393.497.camel@pmac.infradead.org>
-	 <65663.1215080245@turing-police.cc.vt.edu>
-	 <1215081029.10393.517.camel@pmac.infradead.org>
-	 <68763.1215084867@turing-police.cc.vt.edu>
-	 <1215087695.10393.538.camel@pmac.infradead.org>
-	 <1215088905.9721.86.camel@linux.site>
-	 <1215089112.10393.544.camel@pmac.infradead.org>
-Content-Type: text/plain
-Date: Thu, 03 Jul 2008 15:03:32 +0200
-Message-Id: <1215090212.9721.91.camel@linux.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+gobTm/iGrIFhzCztyyD44r7Vp1bfjHqo06EM
- BmE9yJ+N/5qj1NKKugTRt/6IhlJi5VLVxvBBBy6Or+bTQs1rOy
- d2sggZXzRoHEoF9h/e4MSl0C4VuFvEN
+	Thu, 3 Jul 2008 09:04:38 -0400
+Date: Thu, 3 Jul 2008 14:04:36 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Jeff Garzik <jeff@garzik.org>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+In-Reply-To: <486CC440.9030909@garzik.org>
+Message-ID: <Pine.LNX.4.64.0807031353030.11033@blonde.site>
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+ <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com> <486CC440.9030909@garzik.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-03 at 13:45 +0100, David Woodhouse wrote:
-> On Thu, 2008-07-03 at 14:41 +0200, Kay Sievers wrote:
-> > Headers are not needed for bootup, firmware might be. :) But /usr
-> > might be on a different partition/disk/storage at the time we need it,
-> > right?
+On Thu, 3 Jul 2008, Jeff Garzik wrote:
+> KOSAKI Motohiro wrote:
+> > Hi Michael,
 > > 
-> > I would say /usr/lib/firmware should not even exist, udev does
-> > intentionally not even look there.
+> > my server output following error message on 2.6.26-rc8-mm1.
+> > Is this a bug?
+> > 
+> > ------------------------------------------------------------------
+> > tg3.c:v3.93 (May 22, 2008)
+> > GSI 72 (level, low) -> CPU 0 (0x0001) vector 51
+> > tg3 0000:06:01.0: PCI INT A -> GSI 72 (level, low) -> IRQ 51
+> > firmware: requesting tigon/tg3_tso.bin
+> > tg3: Failed to load firmware "tigon/tg3_tso.bin"
+> > tg3 0000:06:01.0: PCI INT A disabled
+> > GSI 72 (level, low) -> CPU 0 (0x0001) vector 51 unregistered
+> > tg3: probe of 0000:06:01.0 failed with error -2
+> > GSI 73 (level, low) -> CPU 0 (0x0001) vector 51
+> > tg3 0000:06:01.1: PCI INT B -> GSI 73 (level, low) -> IRQ 52
+> > firmware: requesting tigon/tg3_tso.bin
 > 
-> Not /usr/lib/firmware. Currently, when you run 'make firmware_install',
-> it gets installed to usr/lib/firmware _within_ the kernel build
-> directory. And you're expected to copy it from there (or override with
-> 'make INSTALL_FW_PATH=/lib/firmware firmware_install')
+> This change did not come from the network developers or Broadcom, so someone
+> else broke tg3 in -mm...
 
-Ah, ok. So by default "make modules_install" installs in the rootfs, but
-"make firmware_install" installs in the build directory? Hmm ...
+I think it's a consequence of not choosing CONFIG_FIRMWARE_IN_KERNEL=y.
 
-Thanks,
-Kay
+That caught me out on PowerMac G5 trying mmotm yesterday, it just hung
+for a few minutes in earlyish boot with a message about tg3_tso.bin,
+and then proceeded to boot up but without the network.  I was unclear
+whether I'd been stupid, or the FIRMWARE_IN_KERNEL Kconfigery was poor.
 
+I avoid initrd, and have tigon3 built in, if that's of any relevance.
+
+I wonder if that's Andrew's problem with 2.6.26-rc8-mm1 on his G5:
+mine here boots up fine (now I know to CONFIG_FIRMWARE_IN_KERNEL=y).
+
+Hugh
