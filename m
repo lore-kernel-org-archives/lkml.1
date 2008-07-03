@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbYGCMks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758955AbYGCMlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756832AbYGCMks (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYGCMkk
+	id S1758955AbYGCMlT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754963AbYGCMk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:40:40 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:54267 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbYGCMkk (ORCPT
+	Thu, 3 Jul 2008 08:40:59 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:28738 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753272AbYGCMk6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:40:40 -0400
-Message-ID: <486CA7BD.10206@keyaccess.nl>
-Date: Thu, 03 Jul 2008 12:19:41 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Thu, 3 Jul 2008 08:40:58 -0400
+Message-ID: <19f34abd0807030155x22b0033dj780830bad840216f@mail.gmail.com>
+Date: Thu, 3 Jul 2008 10:55:34 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask V3
+Cc: "Mike Travis" <travis@sgi.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       mm-commits@vger.kernel.org, "Yinghai Lu" <yhlu.kernel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080703084401.GB7873@elte.hu>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: David Brownell <david-b@pacbell.net>, Michael Buesch <mb@bu3sch.de>,
-       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] gpiolib: Allow user-selection
-References: <200807022346.53222.mb@bu3sch.de>	<20080702170431.56d4c929.akpm@linux-foundation.org>	<200807022200.49428.david-b@pacbell.net>	<20080702220842.44364045.akpm@linux-foundation.org>	<486C8F9C.7080507@keyaccess.nl> <20080703020106.fec84f0f.akpm@linux-foundation.org>
-In-Reply-To: <20080703020106.fec84f0f.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+References: <200806090918.m599Ib0G012837@imap1.linux-foundation.org>
+	 <19f34abd0806090420r4100241cgb4b828441de3b102@mail.gmail.com>
+	 <20080609113547.GA1534@elte.hu> <484D54F2.4070603@sgi.com>
+	 <20080626113229.GB29619@elte.hu> <4863C334.2090007@sgi.com>
+	 <486452CC.8050502@sgi.com> <48651EF5.5090808@sgi.com>
+	 <20080703084401.GB7873@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03-07-08 11:01, Andrew Morton wrote:
+On Thu, Jul 3, 2008 at 10:44 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Mike Travis <travis@sgi.com> wrote:
+>
+>> Subject: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask V3
+>>
+>>   * When CONFIG_DEBUG_PER_CPU_MAPS is set, the node passed to
+>>     node_to_cpumask and node_to_cpumask_ptr should be validated.
+>>     If invalid, then a dump_stack is performed and a zero cpumask
+>>     is returned.
+>>
+>> Based on "Fri Jun 27 10:06:06 PDT 2008" tip/master...  ;-)
+>>
+>> Signed-off-by: Mike Travis <travis@sgi.com>
+>> ---
+>> V2: Slightly different version to remove a compiler warning.
+>> V3: Redone to reflect moving setup.c -> setup_percpu.c
+>
+> applied to tip/x86/unify-setup - thanks Mike.
+>
+> Vegard, can i add your Acked-by too?
 
-> On Thu, 03 Jul 2008 10:36:44 +0200 Rene Herman <rene.herman@keyaccess.nl> wrote:
+To be honest, I'd prefer that the function returns a const pointer.
+Mike and I have both reviewed all callers independently and concluded
+that there is no problem in doing this, and that, in fact, this is the
+correct way to deal with it.
 
->> Development needs to happen against something relatively stable 
->> really and the last release would generally seem to be the best
->> choice.
-> 
-> Well one can develop against mainline and port to linux-next and then
-> do a quick test.  But it seems like pointless additional overhead to
-> me.
+So if Mike submits a V4 with this const return type, or another patch
+on top of this one, I'll ack it :-)
 
-Other than developer needing a relatively stable base to develop against 
-and run so as to concentrate on the effects of own code certainly people 
-that said developer wants to test that which is in development want such 
-a base. Fewer testers can/will be testing a particular feature if to do 
-so they need to first drag in megabytes upon megabytes of other changes 
-as well.
 
-Last iteration I looked at and tested PNP patches and was using .25 as 
-base which went smoothly. Then at 26-rc1 I needed to start running that 
-since patches were against that which delayed things for a long time 
-while I needed to find time to deal with that many unrelated changes 
-some of which rather violently broke stuff here (ISA DMA most profoundly).
+Vegard
 
-So should I have caught the ISA DMA breakage before it hit -rc1? Given 
-that I tend to care about sound/isa which is its main user, perhaps. But 
-the point was that I was trying to test ISAPnP, yet another thing that 
-sound/isa is a main user of...
-
-Many users/testers simply do not want to be running bleedin' edge all of 
-the time because they'd be spending way too much time fighting bugs in 
-places that are of no particular interest to them and when features are 
-developed against said edge, you'd have just limited your tester base 
-further to those who either will, or have enough sophistication to take 
-the change in isolation and backport it to their current kernel 
-themselves. And do it again on the next iteration of the feature.
-
-As recently as yesterday I stalled on testing an ALSA patch when I saw 
-it fail against mainline and wished for some other model than always 
-having to run the very latest.
-
-Not to sound overly pompous (I hope) but not everyone can be responsible 
-for all these integration pains. People in corner A tend to care about 
-corner A and might consider corners B, C and D unwelcome distractions 
-mostly. Linux then has people like you and Linus to stand in the middle 
-and make all the corners get along again.
-
-Yes, porting to and checking -next before submission makes perfect sense 
-but developing against it -- please not...
-
-Rene.
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
