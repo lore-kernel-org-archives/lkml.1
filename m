@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758471AbYGCVjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbYGCVjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758471AbYGCVjz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 17:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730AbYGCVgp
+	id S1758260AbYGCVjm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 17:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756702AbYGCVgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 3 Jul 2008 17:36:45 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:50778 "EHLO relay.sgi.com"
+Received: from relay1.sgi.com ([192.48.171.29]:50777 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754607AbYGCVge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754457AbYGCVge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 3 Jul 2008 17:36:34 -0400
-Message-Id: <20080703213633.446972426@attica.americas.sgi.com>
+Message-Id: <20080703213633.224092453@attica.americas.sgi.com>
 References: <20080703213348.489120321@attica.americas.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 03 Jul 2008 16:33:58 -0500
+Date: Thu, 03 Jul 2008 16:33:57 -0500
 From: steiner@sgi.com
 To: akpm@osdl.org, linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com
-Subject: [patch 10/13] GRU Driver V3 -  TLB flushing, MMUOPS callouts
-Content-Disposition: inline; filename=gru_tlbpurge
+Subject: [patch 09/13] GRU Driver V3 -  /proc interfaces
+Content-Disposition: inline; filename=gru_procfs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This file contains the functions for handlinf GRU TLB flushing, This includes
-functions to handle the MMUOPS callouts.
+This file externalizes some GRU state & statistics to the user using the /proc
+file system.
 
 
 Signed-off-by: Jack Steiner <steiner@sgi.com>
 
 ---
- drivers/misc/sgi-gru/grutlbpurge.c |  370 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 370 insertions(+)
+ drivers/misc/sgi-gru/gruprocfs.c |  336 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 336 insertions(+)
 
-Index: linux-2.6.26-rc8/drivers/misc/sgi-gru/grutlbpurge.c
+Index: linux-2.6.26-rc8/drivers/misc/sgi-gru/gruprocfs.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.26-rc8/drivers/misc/sgi-gru/grutlbpurge.c	2008-07-03 16:16:28.000000000 -0500
-@@ -0,0 +1,370 @@
++++ linux-2.6.26-rc8/drivers/misc/sgi-gru/gruprocfs.c	2008-07-03 16:16:28.000000000 -0500
+@@ -0,0 +1,336 @@
 +/*
 + * SN Platform GRU Driver
 + *
-+ * 		MMUOPS callbacks  + TLB flushing
++ *              PROC INTERFACES
 + *
-+ * This file handles emu notifier callbacks from the core kernel. The callbacks
-+ * are used to update the TLB in the GRU as a result of changes in the
-+ * state of a process address space. This file also handles TLB invalidates
-+ * from the GRU driver.
++ * This file supports the /proc interfaces for the GRU driver
 + *
 + *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
 + *
@@ -64,348 +61,317 @@ Index: linux-2.6.26-rc8/drivers/misc/sgi-gru/grutlbpurge.c
 + *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 + */
 +
-+#include <linux/kernel.h>
-+#include <linux/list.h>
-+#include <linux/spinlock.h>
-+#include <linux/mm.h>
-+#include <linux/slab.h>
++#include <linux/proc_fs.h>
 +#include <linux/device.h>
-+#include <linux/hugetlb.h>
-+#include <linux/delay.h>
-+#include <linux/timex.h>
-+#include <linux/delay.h>
-+#include <linux/srcu.h>
-+#include <asm/processor.h>
++#include <linux/seq_file.h>
++#include <linux/uaccess.h>
 +#include "gru.h"
++#include "grulib.h"
 +#include "grutables.h"
-+#include <asm/uv/uv_hub.h>
 +
-+#define gru_random()	get_cycles()
++#define printstat(s, f)		printstat_val(s, &gru_stats.f, #f)
 +
-+/* ---------------------------------- TLB Invalidation functions --------
-+ * get_tgh_handle
-+ *
-+ * Find a TGH to use for issuing a TLB invalidate. For GRUs that are on the
-+ * local blade, use a fixed TGH that is a function of the blade-local cpu
-+ * number. Normally, this TGH is private to the cpu & no contention occurs for
-+ * the TGH. For offblade GRUs, select a random TGH in the range above the
-+ * private TGHs. A spinlock is required to access this TGH & the lock must be
-+ * released when the invalidate is completes. This sucks, but it is the best we
-+ * can do.
-+ *
-+ * Note that the spinlock is IN the TGH handle so locking does not involve
-+ * additional cache lines.
-+ *
-+ */
-+static inline int get_off_blade_tgh(struct gru_state *gru)
++static void printstat_val(struct seq_file *s, atomic_long_t *v, char *id)
 +{
-+	int n;
++	unsigned long val = atomic_long_read(v);
 +
-+	n = GRU_NUM_TGH - gru->gs_tgh_first_remote;
-+	n = gru_random() % n;
-+	n += gru->gs_tgh_first_remote;
-+	return n;
++	if (val)
++		seq_printf(s, "%16lu %s\n", val, id);
 +}
 +
-+static inline int get_on_blade_tgh(struct gru_state *gru)
++static int statistics_show(struct seq_file *s, void *p)
 +{
-+	return uv_blade_processor_id() >> gru->gs_tgh_local_shift;
++	printstat(s, vdata_alloc);
++	printstat(s, vdata_free);
++	printstat(s, gts_alloc);
++	printstat(s, gts_free);
++	printstat(s, vdata_double_alloc);
++	printstat(s, gts_double_allocate);
++	printstat(s, assign_context);
++	printstat(s, assign_context_failed);
++	printstat(s, free_context);
++	printstat(s, load_context);
++	printstat(s, unload_context);
++	printstat(s, steal_context);
++	printstat(s, steal_context_failed);
++	printstat(s, nopfn);
++	printstat(s, break_cow);
++	printstat(s, asid_new);
++	printstat(s, asid_next);
++	printstat(s, asid_wrap);
++	printstat(s, asid_reuse);
++	printstat(s, intr);
++	printstat(s, call_os);
++	printstat(s, call_os_check_for_bug);
++	printstat(s, call_os_wait_queue);
++	printstat(s, user_flush_tlb);
++	printstat(s, user_unload_context);
++	printstat(s, user_exception);
++	printstat(s, set_task_slice);
++	printstat(s, migrate_check);
++	printstat(s, migrated_retarget);
++	printstat(s, migrated_unload);
++	printstat(s, migrated_unload_delay);
++	printstat(s, migrated_nopfn_retarget);
++	printstat(s, migrated_nopfn_unload);
++	printstat(s, tlb_dropin);
++	printstat(s, tlb_dropin_fail_no_asid);
++	printstat(s, tlb_dropin_fail_upm);
++	printstat(s, tlb_dropin_fail_invalid);
++	printstat(s, tlb_dropin_fail_range_active);
++	printstat(s, tlb_dropin_fail_idle);
++	printstat(s, tlb_dropin_fail_fmm);
++	printstat(s, mmu_invalidate_range);
++	printstat(s, mmu_invalidate_page);
++	printstat(s, mmu_clear_flush_young);
++	printstat(s, flush_tlb);
++	printstat(s, flush_tlb_gru);
++	printstat(s, flush_tlb_gru_tgh);
++	printstat(s, flush_tlb_gru_zero_asid);
++	printstat(s, copy_gpa);
++	printstat(s, mesq_receive);
++	printstat(s, mesq_receive_none);
++	printstat(s, mesq_send);
++	printstat(s, mesq_send_failed);
++	printstat(s, mesq_noop);
++	printstat(s, mesq_send_unexpected_error);
++	printstat(s, mesq_send_lb_overflow);
++	printstat(s, mesq_send_qlimit_reached);
++	printstat(s, mesq_send_amo_nacked);
++	printstat(s, mesq_send_put_nacked);
++	printstat(s, mesq_qf_not_full);
++	printstat(s, mesq_qf_locked);
++	printstat(s, mesq_qf_noop_not_full);
++	printstat(s, mesq_qf_switch_head_failed);
++	printstat(s, mesq_qf_unexpected_error);
++	printstat(s, mesq_noop_unexpected_error);
++	printstat(s, mesq_noop_lb_overflow);
++	printstat(s, mesq_noop_qlimit_reached);
++	printstat(s, mesq_noop_amo_nacked);
++	printstat(s, mesq_noop_put_nacked);
++	return 0;
 +}
 +
-+static struct gru_tlb_global_handle *get_lock_tgh_handle(struct gru_state
-+							 *gru)
++static ssize_t statistics_write(struct file *file, const char __user *userbuf,
++				size_t count, loff_t *data)
 +{
-+	struct gru_tlb_global_handle *tgh;
-+	int n;
-+
-+	preempt_disable();
-+	if (uv_numa_blade_id() == gru->gs_blade_id)
-+		n = get_on_blade_tgh(gru);
-+	else
-+		n = get_off_blade_tgh(gru);
-+	tgh = get_tgh_by_index(gru, n);
-+	lock_tgh_handle(tgh);
-+
-+	return tgh;
++	memset(&gru_stats, 0, sizeof(gru_stats));
++	return count;
 +}
 +
-+static void get_unlock_tgh_handle(struct gru_tlb_global_handle *tgh)
++static int options_show(struct seq_file *s, void *p)
 +{
-+	unlock_tgh_handle(tgh);
-+	preempt_enable();
++	seq_printf(s, "0x%lx\n", options);
++	return 0;
 +}
 +
-+/*
-+ * gru_flush_tlb_range
-+ *
-+ * General purpose TLB invalidation function. This function scans every GRU in
-+ * the ENTIRE system (partition) looking for GRUs where the specified MM has
-+ * been accessed by the GRU. For each GRU found, the TLB must be invalidated OR
-+ * the ASID invalidated. Invalidating an ASID causes a new ASID to be assigned
-+ * on the next fault. This effectively flushes the ENTIRE TLB for the MM at the
-+ * cost of (possibly) a large number of future TLBmisses.
-+ *
-+ * The current algorithm is optimized based on the following (somewhat true)
-+ * assumptions:
-+ * 	- GRU contexts are not loaded into a GRU unless a reference is made to
-+ * 	  the data segment or control block (this is true, not an assumption).
-+ * 	  If a DS/CB is referenced, the user will also issue instructions that
-+ * 	  cause TLBmisses. It is not necessary to optimize for the case where
-+ * 	  contexts are loaded but no instructions cause TLB misses. (I know
-+ * 	  this will happen but I'm not optimizing for it).
-+ * 	- GRU instructions to invalidate TLB entries are SLOOOOWWW - normally
-+ * 	  a few usec but in unusual cases, it could be longer. Avoid if
-+ * 	  possible.
-+ * 	- intrablade process migration between cpus is not frequent but is
-+ * 	  common.
-+ * 	- a GRU context is not typically migrated to a different GRU on the
-+ * 	  blade because of intrablade migration
-+ *	- interblade migration is rare. Processes migrate their GRU context to
-+ *	  the new blade.
-+ *	- if interblade migration occurs, migration back to the original blade
-+ *	  is very very rare (ie., no optimization for this case)
-+ *	- most GRU instruction operate on a subset of the user REGIONS. Code
-+ *	  & shared library regions are not likely targets of GRU instructions.
-+ *
-+ * To help improve the efficiency of TLB invalidation, the GMS data
-+ * structure is maintained for EACH address space (MM struct). The GMS is
-+ * also the structure that contains the pointer to the mmu callout
-+ * functions. This structure is linked to the mm_struct for the address space
-+ * using the mmu "register" function. The mmu interfaces are used to
-+ * provide the callbacks for TLB invalidation. The GMS contains:
-+ *
-+ * 	- asid[maxgrus] array. ASIDs are assigned to a GRU when a context is
-+ * 	  loaded into the GRU.
-+ * 	- asidmap[maxgrus]. bitmap to make it easier to find non-zero asids in
-+ * 	  the above array
-+ *	- ctxbitmap[maxgrus]. Indicates the contexts that are currently active
-+ *	  in the GRU for the address space. This bitmap must be passed to the
-+ *	  GRU to do an invalidate.
-+ *
-+ * The current algorithm for invalidating TLBs is:
-+ * 	- scan the asidmap for GRUs where the context has been loaded, ie,
-+ * 	  asid is non-zero.
-+ * 	- for each gru found:
-+ * 		- if the ctxtmap is non-zero, there are active contexts in the
-+ * 		  GRU. TLB invalidate instructions must be issued to the GRU.
-+ *		- if the ctxtmap is zero, no context is active. Set the ASID to
-+ *		  zero to force a full TLB invalidation. This is fast but will
-+ *		  cause a lot of TLB misses if the context is reloaded onto the
-+ *		  GRU
-+ *
-+ */
-+
-+void gru_flush_tlb_range(struct gru_mm_struct *gms, unsigned long start,
-+			 unsigned long len)
++static ssize_t options_write(struct file *file, const char __user *userbuf,
++			     size_t count, loff_t *data)
 +{
-+	struct gru_state *gru;
-+	struct gru_mm_tracker *asids;
-+	struct gru_tlb_global_handle *tgh;
-+	unsigned long num;
-+	int grupagesize, pagesize, pageshift, gid, asid;
++	unsigned long val;
++	char buf[80];
 +
-+	/* ZZZ TODO - handle huge pages */
-+	pageshift = PAGE_SHIFT;
-+	pagesize = (1UL << pageshift);
-+	grupagesize = GRU_PAGESIZE(pageshift);
-+	num = min(((len + pagesize - 1) >> pageshift), GRUMAXINVAL);
++	if (copy_from_user
++	    (buf, userbuf, count < sizeof(buf) ? count : sizeof(buf)))
++		return -EFAULT;
++	if (!strict_strtoul(buf, 10, &val))
++		options = val;
 +
-+	STAT(flush_tlb);
-+	gru_dbg(grudev, "gms %p, start 0x%lx, len 0x%lx, asidmap 0x%lx\n", gms,
-+		start, len, gms->ms_asidmap[0]);
++	return count;
++}
 +
-+	spin_lock(&gms->ms_asid_lock);
-+	for_each_gru_in_bitmap(gid, gms->ms_asidmap) {
-+		STAT(flush_tlb_gru);
-+		gru = GID_TO_GRU(gid);
-+		asids = gms->ms_asids + gid;
-+		asid = asids->mt_asid;
-+		if (asids->mt_ctxbitmap && asid) {
-+			STAT(flush_tlb_gru_tgh);
-+			asid = GRUASID(asid, start);
-+			gru_dbg(grudev,
-+	"  FLUSH gruid %d, asid 0x%x, num %ld, cbmap 0x%x\n",
-+				gid, asid, num, asids->mt_ctxbitmap);
-+			tgh = get_lock_tgh_handle(gru);
-+			tgh_invalidate(tgh, start, 0, asid, grupagesize, 0,
-+				       num - 1, asids->mt_ctxbitmap);
-+			get_unlock_tgh_handle(tgh);
-+		} else {
-+			STAT(flush_tlb_gru_zero_asid);
-+			asids->mt_asid = 0;
-+			__clear_bit(gru->gs_gid, gms->ms_asidmap);
-+			gru_dbg(grudev,
-+	"  CLEARASID gruid %d, asid 0x%x, cbtmap 0x%x, asidmap 0x%lx\n",
-+				gid, asid, asids->mt_ctxbitmap,
-+				gms->ms_asidmap[0]);
++static int cch_seq_show(struct seq_file *file, void *data)
++{
++	long gid = *(long *)data;
++	int i;
++	struct gru_state *gru = GID_TO_GRU(gid);
++	struct gru_thread_state *ts;
++	const char *mode[] = { "??", "UPM", "INTR", "OS_POLL" };
++
++	if (gid == 0)
++		seq_printf(file, "#%5s%5s%6s%9s%6s%8s%8s\n", "gid", "bid",
++			   "ctx#", "pid", "cbrs", "dsbytes", "mode");
++	if (gru)
++		for (i = 0; i < GRU_NUM_CCH; i++) {
++			ts = gru->gs_gts[i];
++			if (!ts)
++				continue;
++			seq_printf(file, " %5d%5d%6d%9d%6d%8d%8s\n",
++				   gru->gs_gid, gru->gs_blade_id, i,
++				   ts->ts_tgid_owner,
++				   ts->ts_cbr_au_count * GRU_CBR_AU_SIZE,
++				   ts->ts_cbr_au_count * GRU_DSR_AU_BYTES,
++				   mode[ts->ts_user_options &
++					GRU_OPT_MISS_MASK]);
 +		}
++
++	return 0;
++}
++
++static int gru_seq_show(struct seq_file *file, void *data)
++{
++	long gid = *(long *)data, ctxfree, cbrfree, dsrfree;
++	struct gru_state *gru = GID_TO_GRU(gid);
++
++	if (gid == 0) {
++		seq_printf(file, "#%5s%5s%7s%6s%6s%8s%6s%6s\n", "gid", "nid",
++			   "ctx", "cbr", "dsr", "ctx", "cbr", "dsr");
++		seq_printf(file, "#%5s%5s%7s%6s%6s%8s%6s%6s\n", "", "", "busy",
++			   "busy", "busy", "free", "free", "free");
 +	}
-+	spin_unlock(&gms->ms_asid_lock);
++	if (gru) {
++		ctxfree = GRU_NUM_CCH - gru->gs_active_contexts;
++		cbrfree = hweight64(gru->gs_cbr_map) * GRU_CBR_AU_SIZE;
++		dsrfree = hweight64(gru->gs_dsr_map) * GRU_DSR_AU_BYTES;
++		seq_printf(file, " %5d%5d%7ld%6ld%6ld%8ld%6ld%6ld\n",
++			   gru->gs_gid, gru->gs_blade_id, GRU_NUM_CCH - ctxfree,
++			   GRU_NUM_CBE - cbrfree, GRU_NUM_DSR_BYTES - dsrfree,
++			   ctxfree, cbrfree, dsrfree);
++	}
++
++	return 0;
 +}
 +
-+/*
-+ * Flush the entire TLB on a chiplet.
-+ */
-+void gru_flush_all_tlb(struct gru_state *gru)
++static void seq_stop(struct seq_file *file, void *data)
 +{
-+	struct gru_tlb_global_handle *tgh;
-+
-+	gru_dbg(grudev, "gru %p, gid %d\n", gru, gru->gs_gid);
-+	tgh = get_lock_tgh_handle(gru);
-+	tgh_invalidate(tgh, 0, ~0, 0, 1, 1, GRUMAXINVAL - 1, 0);
-+	get_unlock_tgh_handle(tgh);
-+	preempt_enable();
 +}
 +
-+/*
-+ * MMUOPS notifier callout functions
-+ */
-+static void gru_invalidate_range_start(struct mmu_notifier *mn,
-+				       struct mm_struct *mm,
-+				       unsigned long start, unsigned long end)
++static void *seq_start(struct seq_file *file, loff_t *gid)
 +{
-+	struct gru_mm_struct *gms = container_of(mn, struct gru_mm_struct,
-+						 ms_notifier);
-+
-+	STAT(mmu_invalidate_range);
-+	atomic_inc(&gms->ms_range_active);
-+	gru_dbg(grudev, "gms %p, start 0x%lx, end 0x%lx, act %d\n", gms,
-+		start, end, atomic_read(&gms->ms_range_active));
-+	gru_flush_tlb_range(gms, start, end - start);
++	if (*gid < GRU_MAX_GRUS)
++		return gid;
++	return NULL;
 +}
 +
-+static void gru_invalidate_range_end(struct mmu_notifier *mn,
-+				     struct mm_struct *mm, unsigned long start,
-+				     unsigned long end)
++static void *seq_next(struct seq_file *file, void *data, loff_t *gid)
 +{
-+	struct gru_mm_struct *gms = container_of(mn, struct gru_mm_struct,
-+						 ms_notifier);
-+
-+	atomic_dec(&gms->ms_range_active);
-+	wake_up_all(&gms->ms_wait_queue);
-+	gru_dbg(grudev, "gms %p, start 0x%lx, end 0x%lx\n", gms, start, end);
++	(*gid)++;
++	if (*gid < GRU_MAX_GRUS)
++		return gid;
++	return NULL;
 +}
 +
-+static void gru_invalidate_page(struct mmu_notifier *mn, struct mm_struct *mm,
-+				unsigned long address)
-+{
-+	struct gru_mm_struct *gms = container_of(mn, struct gru_mm_struct,
-+						 ms_notifier);
-+
-+	STAT(mmu_invalidate_page);
-+	gru_flush_tlb_range(gms, address, PAGE_SIZE);
-+	gru_dbg(grudev, "gms %p, address 0x%lx\n", gms, address);
-+}
-+
-+static void gru_release(struct mmu_notifier *mn, struct mm_struct *mm)
-+{
-+	struct gru_mm_struct *gms = container_of(mn, struct gru_mm_struct,
-+						 ms_notifier);
-+
-+	gms->ms_released = 1;
-+	gru_dbg(grudev, "gms %p\n", gms);
-+}
-+
-+
-+static const struct mmu_notifier_ops gru_mmuops = {
-+	.invalidate_page	= gru_invalidate_page,
-+	.invalidate_range_start	= gru_invalidate_range_start,
-+	.invalidate_range_end	= gru_invalidate_range_end,
-+	.release		= gru_release,
++static const struct seq_operations cch_seq_ops = {
++	.start	= seq_start,
++	.next	= seq_next,
++	.stop	= seq_stop,
++	.show	= cch_seq_show
 +};
 +
-+/* Move this to the basic mmu_notifier file. But for now... */
-+static struct mmu_notifier *mmu_find_ops(struct mm_struct *mm,
-+			const struct mmu_notifier_ops *ops)
-+{
-+	struct mmu_notifier *mn, *gru_mn = NULL;
-+	struct hlist_node *n;
++static const struct seq_operations gru_seq_ops = {
++	.start	= seq_start,
++	.next	= seq_next,
++	.stop	= seq_stop,
++	.show	= gru_seq_show
++};
 +
-+	if (mm->mmu_notifier_mm) {
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(mn, n, &mm->mmu_notifier_mm->list,
-+					 hlist)
-+		    if (mn->ops == ops) {
-+			gru_mn = mn;
-+			break;
-+		}
-+		rcu_read_unlock();
-+	}
-+	return gru_mn;
++static int statistics_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, statistics_show, NULL);
 +}
 +
-+struct gru_mm_struct *gru_register_mmu_notifier(void)
++static int options_open(struct inode *inode, struct file *file)
 +{
-+	struct gru_mm_struct *gms;
-+	struct mmu_notifier *mn;
-+
-+	mn = mmu_find_ops(current->mm, &gru_mmuops);
-+	if (mn) {
-+		gms = container_of(mn, struct gru_mm_struct, ms_notifier);
-+		atomic_inc(&gms->ms_refcnt);
-+	} else {
-+		gms = kzalloc(sizeof(*gms), GFP_KERNEL);
-+		if (gms) {
-+			spin_lock_init(&gms->ms_asid_lock);
-+			gms->ms_notifier.ops = &gru_mmuops;
-+			atomic_set(&gms->ms_refcnt, 1);
-+			init_waitqueue_head(&gms->ms_wait_queue);
-+			__mmu_notifier_register(&gms->ms_notifier, current->mm);
-+		}
-+	}
-+	gru_dbg(grudev, "gms %p, refcnt %d\n", gms,
-+		atomic_read(&gms->ms_refcnt));
-+	return gms;
++	return single_open(file, options_show, NULL);
 +}
 +
-+void gru_drop_mmu_notifier(struct gru_mm_struct *gms)
++static int cch_open(struct inode *inode, struct file *file)
 +{
-+	gru_dbg(grudev, "gms %p, refcnt %d, released %d\n", gms,
-+		atomic_read(&gms->ms_refcnt), gms->ms_released);
-+	if (atomic_dec_return(&gms->ms_refcnt) == 0) {
-+		if (!gms->ms_released)
-+			mmu_notifier_unregister(&gms->ms_notifier, current->mm);
-+		kfree(gms);
++	return seq_open(file, &cch_seq_ops);
++}
++
++static int gru_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &gru_seq_ops);
++}
++
++/* *INDENT-OFF* */
++static const struct file_operations statistics_fops = {
++	.open 		= statistics_open,
++	.read 		= seq_read,
++	.write 		= statistics_write,
++	.llseek 	= seq_lseek,
++	.release 	= single_release,
++};
++
++static const struct file_operations options_fops = {
++	.open 		= options_open,
++	.read 		= seq_read,
++	.write 		= options_write,
++	.llseek 	= seq_lseek,
++	.release 	= single_release,
++};
++
++static const struct file_operations cch_fops = {
++	.open 		= cch_open,
++	.read 		= seq_read,
++	.llseek 	= seq_lseek,
++	.release 	= seq_release,
++};
++static const struct file_operations gru_fops = {
++	.open 		= gru_open,
++	.read 		= seq_read,
++	.llseek 	= seq_lseek,
++	.release 	= seq_release,
++};
++
++static struct proc_entry {
++	char *name;
++	int mode;
++	const struct file_operations *fops;
++	struct proc_dir_entry *entry;
++} proc_files[] = {
++	{"statistics", 0644, &statistics_fops},
++	{"debug_options", 0644, &options_fops},
++	{"cch_status", 0444, &cch_fops},
++	{"gru_status", 0444, &gru_fops},
++	{NULL}
++};
++/* *INDENT-ON* */
++
++static struct proc_dir_entry *proc_gru __read_mostly;
++
++static int create_proc_file(struct proc_entry *p)
++{
++	p->entry = create_proc_entry(p->name, p->mode, proc_gru);
++	if (!p->entry)
++		return -1;
++	p->entry->proc_fops = p->fops;
++	return 0;
++}
++
++static void delete_proc_files(void)
++{
++	struct proc_entry *p;
++
++	if (proc_gru) {
++		for (p = proc_files; p->name; p++)
++			if (p->entry)
++				remove_proc_entry(p->name, proc_gru);
++		remove_proc_entry("gru", NULL);
 +	}
 +}
 +
-+/*
-+ * Setup TGH parameters. There are:
-+ * 	- 24 TGH handles per GRU chiplet
-+ * 	- a portion (MAX_LOCAL_TGH) of the handles are reserved for
-+ * 	  use by blade-local cpus
-+ * 	- the rest are used by off-blade cpus. This usage is
-+ * 	  less frequent than blade-local usage.
-+ *
-+ * For now, use 16 handles for local flushes, 8 for remote flushes. If the blade
-+ * has less tan or equal to 16 cpus, each cpu has a unique handle that it can
-+ * use.
-+ */
-+#define MAX_LOCAL_TGH	16
-+
-+void gru_tgh_flush_init(struct gru_state *gru)
++int gru_proc_init(void)
 +{
-+	int cpus, shift = 0, n;
++	struct proc_entry *p;
 +
-+	cpus = uv_blade_nr_possible_cpus(gru->gs_blade_id);
++	proc_mkdir("sgi_uv", NULL);
++	proc_gru = proc_mkdir("sgi_uv/gru", NULL);
 +
-+	/* n = cpus rounded up to next power of 2 */
-+	if (cpus) {
-+		n = 1 << fls(cpus - 1);
++	for (p = proc_files; p->name; p++)
++		if (create_proc_file(p))
++			goto err;
++	return 0;
 +
-+		/*
-+		 * shift count for converting local cpu# to TGH index
-+		 *      0 if cpus <= MAX_LOCAL_TGH,
-+		 *      1 if cpus <= 2*MAX_LOCAL_TGH,
-+		 *      etc
-+		 */
-+		shift = max(0, fls(n - 1) - fls(MAX_LOCAL_TGH - 1));
-+	}
-+	gru->gs_tgh_local_shift = shift;
++err:
++	delete_proc_files();
++	return -1;
++}
 +
-+	/* first starting TGH index to use for remote purges */
-+	gru->gs_tgh_first_remote = (cpus + (1 << shift) - 1) >> shift;
-+
++void gru_proc_exit(void)
++{
++	delete_proc_files();
 +}
 
 -- 
