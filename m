@@ -1,266 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758297AbYGCMQD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758145AbYGCMOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758297AbYGCMQD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:16:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbYGCMPw
+	id S1758145AbYGCMOg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757971AbYGCMOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:15:52 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:32863 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754404AbYGCMPu (ORCPT
+	Thu, 3 Jul 2008 08:14:07 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:19682 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756619AbYGCMOG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:15:50 -0400
-Message-Id: <20080703121555.386008000@bull.net>
-References: <20080703121515.554681000@bull.net>
-User-Agent: quilt/0.45-1
-Date: Thu, 03 Jul 2008 14:15:16 +0200
-From: Nadia.Derbey@bull.net
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Solofo.Ramangalahy@bull.net,
-       matthltc@us.ibm.com, Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: [PATCH 1/1] IPC - Do not use a negative value to re-enable msgmni automatic recomputing
-Content-Disposition: inline; filename=auto_msgmni_proc_file.patch
+	Thu, 3 Jul 2008 08:14:06 -0400
+Message-ID: <aec7e5c30807030323y51cffd78x6ea1727796e90b62@mail.gmail.com>
+Date: Thu, 3 Jul 2008 19:23:34 +0900
+From: "Magnus Damm" <magnus.damm@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] uio: User IRQ Mode
+Cc: linux-kernel@vger.kernel.org, Uwe.Kleine-Koenig@digi.com, gregkh@suse.de,
+       akpm@linux-foundation.org, hjk@linutronix.de, lethal@linux-sh.org,
+       tglx@linutronix.de
+In-Reply-To: <20080702121153.4d464885@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <20080702105951.22648.2197.sendpatchset@rx1.opensource.se>
+	 <20080702121153.4d464885@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 01/01]
+Hi again Alan,
 
-This patch proposes an alternative to the "magical positive-versus-negative
-number trick" Andrew complained about last week in
-http://lkml.org/lkml/2008/6/24/418
+On Wed, Jul 2, 2008 at 8:11 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> On Wed, 02 Jul 2008 19:59:51 +0900
+> Magnus Damm <magnus.damm@gmail.com> wrote:
+>
+>> From: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+>>
+>> This patch adds a "User IRQ Mode" to UIO. In this mode the user space driver
+>> is responsible for acknowledging and re-enabling the interrupt.
+>> Shared interrupts are not supported by this mode.
+>
+> This doesn't work even for some non shared interrupts.
+>
+> If I take a level triggered interrupt then the IRQ handler code must
+> clear the IRQ before the line can be unmasked.
+>
+> It might work for edge triggered providing you don't get too many edges
+> before you respond (in which case we will decide its a stuck IRQ and turn
+> it off for good).
 
-This had been introduced with the patches that scale msgmni to the amount of
-lowmem. With these patches, msgmni has a registered notification routine
-that recomputes msgmni value upon memory add/remove or ipc namespace creation/
-removal.
+Below is a little description of how this is supposed to work, see
+point 5, 8, 9.
 
-When msgmni is changed from user space (i.e. value written to the proc file),
-that notification routine is unregistered, and the way to make it registered
-back is to write a negative value into the proc file. This is the "magical
-positive-versus-negative number trick".
+--- Regular in-kernel driver approach ---
 
-To fix this, a new proc file is introduced: /proc/sys/kernel/auto_msgmni.
-This file acts as ON/OFF for msgmni automatic recomputing.
+1. hardware device signals the processor
+   -> interrupt signal to interrupt controller gets asserted
 
-With this patch, the process is the following:
-1) kernel boots in "automatic recomputing mode"
-   /proc/sys/kernel/msgmni contains the value that has been computed (depends
-                           on lowmem)
-   /proc/sys/kernel/automatic_msgmni contains "1"
+2. interrupt controller passes through interrupt signal
+   the source is enabled so the interrupt controller does not mask
+   -> interrupt signal to processor gets asserted
 
-2) echo <val> > /proc/sys/kernel/msgmni
-   . sets msg_ctlmni to <val>
-   . de-activates automatic recomputing (i.e. if, say, some memory is added
-     msgmni won't be recomputed anymore)
-   . /proc/sys/kernel/automatic_msgmni now contains "0"
+3. processor saves context and starts executing kernel interrupt code
+   the processor will mask interrupts for this certain interrupt level
 
-3) echo "0" > /proc/sys/kernel/automatic_msgmni
-   . de-activates msgmni automatic recomputing
-     this has the same effect as 2) except that msg_ctlmni's value stays
-     blocked at its current value)
+4. mask_ack_irq()
+   this modifies the state of the interrupt controller
+   -> interrupt signal to processor is no longer asserted
 
-3) echo "1" > /proc/sys/kernel/automatic_msgmni
-   . recomputes msgmni's value based on the current available memory size
-     and number of ipc namespaces
-   . re-activates automatic recomputing for msgmni.
+5. kernel interrupt handler acknowledges interrupt
+   this modifies the state of the hardware device
+   -> interrupt signal to interrupt controller is no longer asserted
 
-This patch applies to 2.6.26-rc5-mm3.
+6. unmask_irq() - unmask interrupt controller
+   this modifies the state of the interrupt controller
+   -> interrupt signal to processor is let through, but is no longer asserted
 
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
+7. processor restores context
+   this will unmask interrupts for the current interrupt level
 
----
- include/linux/ipc_namespace.h |    1 
- ipc/ipc_sysctl.c              |   75 ++++++++++++++++++++++++++++++++++--------
- ipc/ipcns_notifier.c          |   19 ++++++++--
- 3 files changed, 78 insertions(+), 17 deletions(-)
+--- UIO "User IRQ Mode" approach ---
 
-Index: linux-2.6.26-rc5-mm3/ipc/ipc_sysctl.c
-===================================================================
---- linux-2.6.26-rc5-mm3.orig/ipc/ipc_sysctl.c	2008-06-16 09:12:57.000000000 +0200
-+++ linux-2.6.26-rc5-mm3/ipc/ipc_sysctl.c	2008-07-03 13:29:50.000000000 +0200
-@@ -27,15 +27,17 @@ static void *get_ipc(ctl_table *table)
- }
- 
- /*
-- * Routine that is called when a tunable has successfully been changed by
-- * hand and it has a callback routine registered on the ipc namespace notifier
-- * chain: we don't want such tunables to be recomputed anymore upon memory
-- * add/remove or ipc namespace creation/removal.
-- * They can come back to a recomputable state by being set to a <0 value.
-+ * Routine that is called when the file "auto_msgmni" has successfully been
-+ * written.
-+ * Two values are allowed:
-+ * 0: unregister msgmni's callback routine from the ipc namespace notifier
-+ *    chain. This means that msgmni won't be recomputed anymore upon memory
-+ *    add/remove or ipc namespace creation/removal.
-+ * 1: register back the callback routine.
-  */
--static void tunable_set_callback(int val)
-+static void ipc_auto_callback(int val)
- {
--	if (val >= 0)
-+	if (!val)
- 		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
- 	else {
- 		/*
-@@ -71,7 +73,15 @@ static int proc_ipc_callback_dointvec(ct
- 	rc = proc_dointvec(&ipc_table, write, filp, buffer, lenp, ppos);
- 
- 	if (write && !rc && lenp_bef == *lenp)
--		tunable_set_callback(*((int *)(ipc_table.data)));
-+		/*
-+		 * Tunable has successfully been changed by hand and it has a
-+		 * callback routine registered on the ipc namespace notifier
-+		 * chain: we don't want this tunable to be recomputed anymore
-+		 * upon memory add/remove or ipc namespace creation/removal.
-+		 * It can come back to a recomputable state if the
-+		 * corresponding auto_ file is set to 1.
-+		 */
-+		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
- 
- 	return rc;
- }
-@@ -87,10 +97,39 @@ static int proc_ipc_doulongvec_minmax(ct
- 					lenp, ppos);
- }
- 
-+static int proc_ipcauto_dointvec_minmax(ctl_table *table, int write,
-+	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	struct ctl_table ipc_table;
-+	size_t lenp_bef = *lenp;
-+	int oldval;
-+	int rc;
-+
-+	memcpy(&ipc_table, table, sizeof(ipc_table));
-+	ipc_table.data = get_ipc(table);
-+	oldval = *((int *)(ipc_table.data));
-+
-+	rc = proc_dointvec_minmax(&ipc_table, write, filp, buffer, lenp, ppos);
-+
-+	if (write && !rc && lenp_bef == *lenp) {
-+		int newval = *((int *)(ipc_table.data));
-+		/*
-+		 * The file "auto_msgmni" has correctly been set.
-+		 * React by (un)registering the corresponding tunable, if the
-+		 * value has changed.
-+		 */
-+		if (newval != oldval)
-+			ipc_auto_callback(newval);
-+	}
-+
-+	return rc;
-+}
-+
- #else
- #define proc_ipc_doulongvec_minmax NULL
- #define proc_ipc_dointvec	   NULL
- #define proc_ipc_callback_dointvec NULL
-+#define proc_ipcauto_dointvec_minmax NULL
- #endif
- 
- #ifdef CONFIG_SYSCTL_SYSCALL
-@@ -142,14 +181,11 @@ static int sysctl_ipc_registered_data(ct
- 	rc = sysctl_ipc_data(table, name, nlen, oldval, oldlenp, newval,
- 		newlen);
- 
--	if (newval && newlen && rc > 0) {
-+	if (newval && newlen && rc > 0)
- 		/*
- 		 * Tunable has successfully been changed from userland
- 		 */
--		int *data = get_ipc(table);
--
--		tunable_set_callback(*data);
--	}
-+		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
- 
- 	return rc;
- }
-@@ -158,6 +194,9 @@ static int sysctl_ipc_registered_data(ct
- #define sysctl_ipc_registered_data NULL
- #endif
- 
-+static int zero;
-+static int one = 1;
-+
- static struct ctl_table ipc_kern_table[] = {
- 	{
- 		.ctl_name	= KERN_SHMMAX,
-@@ -222,6 +261,16 @@ static struct ctl_table ipc_kern_table[]
- 		.proc_handler	= proc_ipc_dointvec,
- 		.strategy	= sysctl_ipc_data,
- 	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "auto_msgmni",
-+		.data		= &init_ipc_ns.auto_msgmni,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= proc_ipcauto_dointvec_minmax,
-+		.extra1		= &zero,
-+		.extra2		= &one,
-+	},
- 	{}
- };
- 
-Index: linux-2.6.26-rc5-mm3/include/linux/ipc_namespace.h
-===================================================================
---- linux-2.6.26-rc5-mm3.orig/include/linux/ipc_namespace.h	2008-06-16 09:12:03.000000000 +0200
-+++ linux-2.6.26-rc5-mm3/include/linux/ipc_namespace.h	2008-07-03 08:33:56.000000000 +0200
-@@ -36,6 +36,7 @@ struct ipc_namespace {
- 	int		msg_ctlmni;
- 	atomic_t	msg_bytes;
- 	atomic_t	msg_hdrs;
-+	int		auto_msgmni;
- 
- 	size_t		shm_ctlmax;
- 	size_t		shm_ctlall;
-Index: linux-2.6.26-rc5-mm3/ipc/ipcns_notifier.c
-===================================================================
---- linux-2.6.26-rc5-mm3.orig/ipc/ipcns_notifier.c	2008-06-16 09:12:57.000000000 +0200
-+++ linux-2.6.26-rc5-mm3/ipc/ipcns_notifier.c	2008-07-03 11:38:07.000000000 +0200
-@@ -55,25 +55,36 @@ static int ipcns_callback(struct notifie
- 
- int register_ipcns_notifier(struct ipc_namespace *ns)
- {
-+	int rc;
-+
- 	memset(&ns->ipcns_nb, 0, sizeof(ns->ipcns_nb));
- 	ns->ipcns_nb.notifier_call = ipcns_callback;
- 	ns->ipcns_nb.priority = IPCNS_CALLBACK_PRI;
--	return blocking_notifier_chain_register(&ipcns_chain, &ns->ipcns_nb);
-+	rc = blocking_notifier_chain_register(&ipcns_chain, &ns->ipcns_nb);
-+	if (!rc)
-+		ns->auto_msgmni = 1;
-+	return rc;
- }
- 
- int cond_register_ipcns_notifier(struct ipc_namespace *ns)
- {
-+	int rc;
-+
- 	memset(&ns->ipcns_nb, 0, sizeof(ns->ipcns_nb));
- 	ns->ipcns_nb.notifier_call = ipcns_callback;
- 	ns->ipcns_nb.priority = IPCNS_CALLBACK_PRI;
--	return blocking_notifier_chain_cond_register(&ipcns_chain,
-+	rc = blocking_notifier_chain_cond_register(&ipcns_chain,
- 							&ns->ipcns_nb);
-+	if (!rc)
-+		ns->auto_msgmni = 1;
-+	return rc;
- }
- 
- int unregister_ipcns_notifier(struct ipc_namespace *ns)
- {
--	return blocking_notifier_chain_unregister(&ipcns_chain,
--						&ns->ipcns_nb);
-+	blocking_notifier_chain_unregister(&ipcns_chain, &ns->ipcns_nb);
-+	ns->auto_msgmni = 0;
-+	return 0;
- }
- 
- int ipcns_notify(unsigned long val)
+1. hardware device signals the processor
+   -> interrupt signal to interrupt controller gets asserted
 
---
+2. interrupt controller passes through interrupt signal
+   the source is enabled so the interrupt controller does not mask
+   -> interrupt signal to processor gets asserted
+
+3. processor saves context and starts executing kernel interrupt code
+   the processor will mask interrupts for this certain interrupt level
+
+4. mask_ack_irq()
+   this modifies the state of the interrupt controller
+   -> interrupt signal to processor is no longer asserted
+
+5. kernel interrupt handler _disables_ interrupts, notifies user space
+   this may modify the state of the interrupt controller
+   -> interrupt signal from device to interrupt controller is still asserted
+   -> interrupt source is still masked by interrupt controller
+
+6. unmask_irq() - unmask interrupt controller
+   this may modify the sate of the interrupt controller
+   -> interrupt source is still masked by interrupt controller
+
+7. processor restores context
+   this will unmask interrupts for the current interrupt level
+   -> interrupt signal from device to interrupt controller is still asserted
+   -> interrupt source is still masked by interrupt controller
+
+8. user space driver get scheduled, acknowledges interrupt
+   this modifies the state of the hardware device
+   -> interrupt signal from device to interrupt controller gets deasserted
+   -> interrupt source is still masked by interrupt controller
+
+9. user space driver uses write() to re-enable the interrupt
+   this modifies the state of the interrupt controller
+   -> interrupt source is no longer masked by interrupt controller
+
+Hope this clarifies a bit. Thank for your feedback!
+
+/ magnus
