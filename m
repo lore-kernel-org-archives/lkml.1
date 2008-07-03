@@ -1,89 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbYGCQcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbYGCQel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753110AbYGCQcq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 12:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbYGCQci
+	id S1753490AbYGCQel (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 12:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYGCQeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 12:32:38 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:40182 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750855AbYGCQch (ORCPT
+	Thu, 3 Jul 2008 12:34:31 -0400
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:43498 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751222AbYGCQea (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 12:32:37 -0400
-Date: Thu, 3 Jul 2008 22:00:48 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [x86-tip] panic during cpu_up
-Message-ID: <20080703163048.GC4468@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20080702190651.GA13252@linux.vnet.ibm.com> <20080702205544.GB13252@linux.vnet.ibm.com> <20080703070242.GA16379@elte.hu> <20080703080625.GB4065@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080703080625.GB4065@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 3 Jul 2008 12:34:30 -0400
+Subject: Re: [PATCH 001/002] linux-input:  bcm5974-0.31: fixed resource
+	leak, removed work struct, device data struct introduced
+From: Henrik Rydberg <rydberg@euromail.se>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dmitry.torokhov@gmail.com, robfitz@273k.net, jikos@jikos.cz,
+       vojtech@suse.cz, dmonakhov@openvz.org, linux-usb@vger.kernel.org
+In-Reply-To: <20080701155925.a4c00a8e.akpm@linux-foundation.org>
+References: <1214653629.10495.11.camel@alnilam>
+	 <20080701155925.a4c00a8e.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 03 Jul 2008 18:33:40 +0200
+Message-Id: <1215102820.4138.17.camel@alnilam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: 83.248.35.11
+X-Scan-Result: No virus found in message 1KERlN-0005JX-8E.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KERlN-0005JX-8E 57707d73881069e9a4cd2a24542db8d9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 
-> > The other suspect would be acpi idle:
-> > 
-> >         /* Fall back to the default idle loop */
-> >         pm_idle = pm_idle_save;
-> > 
-
-Yep, you are right.
-
-> > Could you try latest tip/master or the debug patch below? It should show 
-> > where the NULL comes from, without crashing.
-> > 
+On Tue, 2008-07-01 at 15:59 -0700, Andrew Morton wrote:
+> > +  }
+> > +
+> > +  button = data[1];
+> > +
+> > +  /* only report button state changes */
+> > +  if (button != dev->bt_state) {
+> > +    input_report_key(dev->input, BTN_LEFT, button);
+> > +    input_sync(dev->input);
+> > +  }
+> > +
+> > +  dev->bt_state = button;
+> > +
+> > + exit:
+> > +  retval = usb_submit_urb(dev->bt_urb, GFP_ATOMIC);
 > 
-> Sure, will give it a run sometime soon.
-> 
+> GFP_ATOMIC is a red flag.  Is this quite unrelaible allocation mode
+> really needed here?
 
-------------[ cut here ]------------
-WARNING: at drivers/acpi/processor_idle.c:1316
-acpi_processor_cst_has_changed+0x64/0xc0()
-Modules linked in:
-Pid: 4433, comm: bash Not tainted 2.6.26-rc8-tip #15
- [<c0127a0a>] warn_on_slowpath+0x41/0x60
- [<c0393a00>] ? __cpufreq_set_policy+0x135/0x1bf
- [<c0141c28>] ? mark_held_locks+0x46/0x61
- [<c0141d7d>] ? trace_hardirqs_on+0xb/0xd
- [<c0141d4a>] ? trace_hardirqs_on_caller+0xe9/0x111
- [<c0141d7d>] ? trace_hardirqs_on+0xb/0xd
- [<c027fc1d>] ? acpi_processor_get_platform_limit+0x9f/0xac
- [<c027f285>] acpi_processor_cst_has_changed+0x64/0xc0
- [<c027cadd>] acpi_cpu_soft_notify+0x2a/0x39
- [<c041193c>] notifier_call_chain+0x32/0x64
- [<c013b87f>] __raw_notifier_call_chain+0xe/0x10
- [<c013b88d>] raw_notifier_call_chain+0xc/0xe
- [<c040cb33>] _cpu_up+0xb3/0xdc
- [<c040cb9e>] cpu_up+0x42/0x52
- [<c03fab35>] store_online+0x39/0x5d
- [<c03faafc>] ? store_online+0x0/0x5d
- [<c02c1e6c>] sysdev_store+0x20/0x25
- [<c01b2190>] flush_write_buffer+0x3e/0x53
- [<c01b21e3>] sysfs_write_file+0x3e/0x5d
- [<c017e281>] vfs_write+0x8d/0x105
- [<c017e394>] sys_write+0x3b/0x60
- [<c0103931>] sysenter_past_esp+0x6a/0xa5
- =======================
----[ end trace 987615de2ae7cfa5 ]---
+Being new to kernel work, I rely a lot on how other drivers work.
+However, doing some reading, these are my observations:
 
-Which corresponds to 
+* The URB works in interrupt mode.
 
-        /* Fall back to the default idle loop */
-        WARN_ON_ONCE(!pm_idle_save);
-        if (pm_idle_save)
-                pm_idle = pm_idle_save;
-        synchronize_sched();    /* Relies on interrupts forcing exit from idle. */
+* The call to usb_submit_urb above is within a completion handler.
+
+* From what I read on kerneltrap (2.6.22), such URBs should be
+resubmitted using the ATOMIC method. Maybe this changed, I could not
+tell.
+
+* Personally, I am starting to worry about concurrency races, with the
+two URBs writing to the same input device. I suppose it depends on
+whether they are issued on the same interrupt or not? Spin locks?
+
+Best regards,
+Henrik Rydberg
 
 
--- 
-regards,
-Dhaval
