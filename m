@@ -1,130 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760569AbYGCMqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760769AbYGCMqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760569AbYGCMqW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754791AbYGCMqL
+	id S1760769AbYGCMqw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760633AbYGCMqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:46:11 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53361 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754783AbYGCMqJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:46:09 -0400
-Subject: Re: Intel Microcode loader, tg3 driver, and the -rc8-mmotd New
-	World Order firmware...
-From: David Woodhouse <dwmw2@infradead.org>
-To: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
-Cc: Valdis.Kletnieks@vt.edu, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, jonathan@jonmasters.org,
-       Shaohua Li <shaohua.li@intel.com>, greg@kroah.com,
-       Kay Sievers <kay.sievers@vrfy.org>
-In-Reply-To: <Pine.LNX.4.61.0807030743230.10608@ginsburg.homenet>
-References: <4534.1215048758@turing-police.cc.vt.edu>
-	 <Pine.LNX.4.61.0807030716030.10434@ginsburg.homenet>
-	 <32146.1215066947@turing-police.cc.vt.edu>
-	 <Pine.LNX.4.61.0807030743230.10608@ginsburg.homenet>
-Content-Type: multipart/mixed; boundary="=-A0xkdqZadf00WslWpfEu"
-Date: Thu, 03 Jul 2008 10:23:48 +0100
-Message-Id: <1215077028.10393.497.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 3 Jul 2008 08:46:34 -0400
+Received: from www.tglx.de ([62.245.132.106]:40278 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760623AbYGCMqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 08:46:32 -0400
+Date: Thu, 3 Jul 2008 14:45:05 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Magnus Damm <magnus.damm@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "lethal@linux-sh.org" <lethal@linux-sh.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [PATCH] uio: User IRQ Mode
+Message-ID: <20080703124505.GB3197@local>
+References: <20080702105951.22648.2197.sendpatchset@rx1.opensource.se> <20080702125400.GC3199@local> <20080703071019.GC12214@digi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080703071019.GC12214@digi.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jul 03, 2008 at 09:10:19AM +0200, Uwe Kleine-König wrote:
+> Hans J. Koch wrote:
+> > On Wed, Jul 02, 2008 at 07:59:51PM +0900, Magnus Damm wrote:
+> > > From: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+> > >
+> > > This patch adds a "User IRQ Mode" to UIO. In this mode the user space driver
+> > > is responsible for acknowledging and re-enabling the interrupt.
+> > 
+> > This can easily be done without your patch.
 
---=-A0xkdqZadf00WslWpfEu
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+BTW, the above wording "the user space driver is responsible for
+acknowledging and re-enabling the interrupt" is misleading. The kernel
+always has to acknowledge/disable/mask the interrupt. Userspace can only
+reenable it, ideally by writing to a chip register. In some cornercases
+for broken hardware we need the newly introduced write function.
 
-On Thu, 2008-07-03 at 07:44 +0100, Tigran Aivazian wrote:
-> On Thu, 3 Jul 2008 Valdis.Kletnieks@vt.edu wrote:
+> > 
+> > > Shared interrupts are not supported by this mode.
+> > >
+> > > Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+> > > Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> > > ---
+> > >
+> > >  Similar code has been posted some time ago as:
+> > >  "[PATCH] uio_pdrv: Unique IRQ Mode"
+> > >  "[PATCH 00/03][RFC] Reusable UIO Platform Driver".
+> > 
+> > Yes, and in that thread I gave detailed explanations why I won't accept
+> > that.
+> I think for all of your concers one of the following is true:
 > 
-> > On Thu, 03 Jul 2008 07:17:16 BST, Tigran Aivazian said:
-> >> Hi Valdis,
-> >>
-> >> On Wed, 2 Jul 2008 Valdis.Kletnieks@vt.edu wrote:
-> >>
-> >>> I built the -rc8-mmotd kernel, and built it with 'CONFIG_FIRMWARE_IN_KERNEL
-> > =n'.
-> >>> Lo and behold, the microcode.ko was now doing a request_firmware for
-> >>> 'intel-ucode/06-0f-06' (which makes sense, the Core2 Duo in this laptop is
-> >>> family 6, model 15, stepping 6).  However, what I had in /lib/firmware was
-> >>> the Intel-distributed 'microcode.dat' with updates for all the CPUs (which
-> >>> used to work in times past).
-> >>>
-> >>> What's the magic incantation to take the microcode.dat and create something
-> >>> that the firmware driver is willing to use, or is this all borked up and
-> >>> I need to do a major rethink or fix my config?
-> >>
-> >> that's because it expects the Intel-supplied microcode data and you are
-> >> using the old style microcode.dat data.
-> >
-> > I fed it the stuff I downloaded today from this URL:
-> >
-> > http://downloadcenter.intel.com/filter_results.aspx?strTypes=all&ProductID=2643&OSFullName=Linux*〈=eng&strOSs=39&submit=Go!
-> >
-> > which gets me a microcode-20080401.dat that does the same thing.  Is there
-> > some *other* Intel-supplied microcode data I should be getting instead?
+>   - they are not valid any more in this version; or
+
+I question the whole concept as such. The concept of having a generic
+irq handler using disable_irq_nosync() makes no sense at all.
+
+Reasons:
+
+- We do not introduce new possibilities. Everything can be done without
+  that patch.
+
+- We offer users an irq handler that shouldn't be used. It is seldom the
+  best solution to call disable_irq_nosync() to disable an interrupt. In
+  almost all cases you should use the irq mask register of the chip your
+  driver handles. What do you want to write into the docs? Here's an irq
+  handler, but please use it only if you're really desperate?
+
+- The only argument in favor of that concept was that it saves a few
+  lines of irq handler code. Given the fact that all the handler has to
+  do is toggle one bit in a hardware register, this is really not much.
+  And you tempt people to delete 5 lines of good code and replace them
+  with a sub-optimal generic irq handler.
+
+- You introduce the need for an irqcontrol function. This was not the
+  intention of that concept. Normal UIO devices don't need a write
+  function, this is only used for broken hardware. If you have normal
+  hardware, and implement a proper 5 lines irq handler, userspace can simply
+  reenable the irq by writing to a hardware register it has mapped
+  anyway. In your concept, it has to use write() on /dev/uioX, which
+  means you have to go all the way through libc, vfs, and the UIO core
+  to finally call your irqcontrol function, which in turn calls
+  enable_irq. As I said, there is broken hardware around where this is
+  the only way, but most chips allow you to do it properly.
+
+>   - I cannot understand it.
 > 
-> Oh, sorry, I assumed that Intel distribute the data in the format that 
-> driver expects.
+> I'll try to list them all below.  Please tell us if the list isn't
+> complete or if my comments doesn't convince you.  You might have to
+> repeat yourself, but for me it's hard to sort your arguments because
+> Magnus' suggestion changed over time.
 
-I think the kernel _does_ manage to extract just the part it wants from
-the data, but it expects the data in binary form. Drop the attached
-files in /lib/udev/microcode.sh and /etc/udev/rules.d/51-microcode.rules
-respectively. (There's probably a better way to handle this kind of
-thing by putting hooks in firmware.sh rather than using a special rule
-which overrides it?)
+OK, the version Magnus sent last is different, so some of my arguments
+are superfluous now.
 
-The recent firmware changes haven't modified this. The important change
-seems to have been here (in 2006):
+Please, to make things simpler, let's only talk about the concept as
+such and not go into implementation details. I deliberately do not review
+that code (although I believe it has more bugs than the one Alan found),
+because as long as the concept doesn't make sense, I don't care how it
+is implemented.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=a30a6a2c
+> 
+> And please, I try to work out the pros and cons in a constructive way
+> and hope there is nothing in it you will take personal.  It's really
+> that I consider the patch valuable and don't understand your concerns.
 
--- 
-dwmw2
+You both keep telling me how valuable that patch is but never answered my
+question what the advantage would be. I cannot see it yet.
 
---=-A0xkdqZadf00WslWpfEu
-Content-Disposition: inline; filename=microcode.sh
-Content-Type: application/x-shellscript; name=microcode.sh
-Content-Transfer-Encoding: 7bit
+> 
+> In the first thread[1] your unique and open concerns (to the best of my
+> knowledge and belief) with my comments are:
+> 
+> 	- "This only works for embedded devices [...]"
+> 
+> 	  OK, this doesn't work with shared IRQs which rules out x86.
+> 	  I don't claim to know all the 23[2] other architectures but
+> 	  IMHO if something is good for 3 archs and doesn't hurt the
+> 	  other 21, you should do it.
+> 
+> 	- "This would save somebody the trouble to add the above 5 lines
+> 	  to the 30 lines of board/platform support code he has to write
+> 	  anyway. That's the only gain, and that is not enough."
+> 
+> 	  IMHO it's worth it.  Because if you add the five lines to a
+> 	  central place you save 5 lines per platform using the driver.
 
-#!/bin/sh -e
+OK, that is one argument in favor. I always admitted that, but said that
+this is not enough to compensate for the disadvantages mentioned above.
 
-FIRMWARE_DIRS="/lib/firmware /usr/local/lib/firmware"
+> 	  Moreover this might prevent some bugs.  (And obviously this
+> 	  function has the potential to have a buggy implementation as
+> 	  the comment by Alan Cox shows.)
 
-err() {
-	echo "$@" >&2
-	logger -t "${0##*/}[$$]" "$@" 2>/dev/null || true
-}
+For me, this shows two things:
 
-if [ ! -e /sys$DEVPATH/loading ]; then
-	err "udev firmware loader misses sysfs directory"
-	exit 1
-fi
+- I never ever had to use disable_irq_nosync() in any UIO driver yet,
+  otherwise I would have noticed.
 
-for DIR in $FIRMWARE_DIRS; do
-	[ -e "$DIR/microcode.dat" ] || continue
-	echo 1 > /sys$DEVPATH/loading
-	/sbin/microcode_ctl -f "$DIR/microcode.dat" -d /sys$DEVPATH/data
-	echo 0 > /sys$DEVPATH/loading
-	exit 0
-done
+- Magnus turned in a patch that he never tested.
 
-echo -1 > /sys$DEVPATH/loading
-err "Cannot find microcode file 'microcode.dat'"
-exit 1
+> 
+> 	- "And if you _know_ that on your platform the irq is not
+> 	  shared, this might really be a one-liner that simply calls
+> 	  irq_disable. That's OK in board specific code, but not in a
+> 	  generic driver."
+> 	  
+> 	  Please note that the patch only introduces a helper that the
+> 	  platform code *can* use.  You still have the freedom not to
+> 	  use it without any overhead.
 
---=-A0xkdqZadf00WslWpfEu
-Content-Disposition: inline; filename=51-microcode.rules
-Content-Type: text/plain; name=51-microcode.rules; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+It's not a good idea to add nonsense code and tell the users to ignore
+it whenever they can...
 
-# firmware requests for intel-ucode/* are satisfied by microcode_ctl
-SUBSYSTEM=="firmware", ENV{FIRMWARE}=="intel-ucode/*", ACTION=="add", RUN="microcode.sh"
+> 
+> 	- "I won't accept anything that changes the current UIO
+> 	  behaviour."
+> 
+> 	  Not valid anymore.  There is no change in behaviour.
 
---=-A0xkdqZadf00WslWpfEu--
+Well, at least the whole stuff would have to be explained in the docs.
+You add an element to struct uio_info, together with a new #define. And
+a whole class of drivers using that stuff would have a write() function
+without needing it.
+
+> 
+> In the second thread[3] I cannot find any open concerns that are not
+> already listed above.
+> 
+> > >  Changes since Uwe's last version:
+> > >   - flags should be unsigned long
+> > >   - simplify uio_userirq_handler()
+> > 
+> > That's nearly nothing. All you do is sending the same stuff three weeks
+> > later in the hope somebody will merge it this time. NAK.
+> I think nobody really is surprised that you're not happy with the new
+> post.  But note that Magnus just did what you told him. ("I'm [not] the
+> big boss who makes the final decision. I can be critized and overridden.
+> If Greg loves your patch and merges it, fine. Try it.")
+> 
+> In the hope not to have kicked off a flame,
+
+Oh, no, stay cool ;-)
+
+Thanks,
+Hans
 
