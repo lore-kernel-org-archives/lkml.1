@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753746AbYGCMWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757110AbYGCMSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753746AbYGCMWZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757323AbYGCMVy
+	id S1757110AbYGCMSW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbYGCMSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:21:54 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48769 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757278AbYGCMVx (ORCPT
+	Thu, 3 Jul 2008 08:18:06 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:54871 "EHLO
+	e28esmtp01.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751481AbYGCMSE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:21:53 -0400
-Subject: Re: Intel Microcode loader, tg3 driver, and the -rc8-mmotd New
-	World Order firmware...
-From: David Woodhouse <dwmw2@infradead.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       jonathan@jonmasters.org, Shaohua Li <shaohua.li@intel.com>,
-       greg@kroah.com, Kay Sievers <kay.sievers@vrfy.org>, arjan@infradead.org
-In-Reply-To: <68763.1215084867@turing-police.cc.vt.edu>
-References: <4534.1215048758@turing-police.cc.vt.edu>
-	 <Pine.LNX.4.61.0807030716030.10434@ginsburg.homenet>
-	 <32146.1215066947@turing-police.cc.vt.edu>
-	 <Pine.LNX.4.61.0807030743230.10608@ginsburg.homenet>
-	 <1215077028.10393.497.camel@pmac.infradead.org>
-	 <65663.1215080245@turing-police.cc.vt.edu>
-	 <1215081029.10393.517.camel@pmac.infradead.org>
-	 <68763.1215084867@turing-police.cc.vt.edu>
-Content-Type: text/plain
-Date: Thu, 03 Jul 2008 13:21:35 +0100
-Message-Id: <1215087695.10393.538.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 3 Jul 2008 08:18:04 -0400
+Date: Thu, 3 Jul 2008 16:52:33 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       kernel-testers@vger.kernel.org, rusty@rustcorp.com.au, apw@shadowen.org
+Subject: [BUILD-FAILURE] 2.6.26-rc8-mm1 - build failure at drivers/char/hvc_rtas.c
+Message-ID: <20080703112233.GA6451@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-03 at 07:34 -0400, Valdis.Kletnieks@vt.edu wrote:
-> Actually, FIRMWARE_IN_KERNEL *did* make a difference - it busticated the tg3
-> driver and while fighting with the 'firmware: requesting tigon/tg3_tso.bin'
-> errors I had just inflicted on myself, 
+Hi Andrew,
 
-Just to confirm: that works either with CONFIG_FIRMWARE_IN_KERNEL=y or
-if you run 'make INSTALL_FW_PATH=/lib/firmware firmware_install', right?
+2.6.26-rc8-mm1 kernel build fail on the powerpc, 
 
-I'm not entirely sure whether we should make 'make firmware_install'
-install to /lib/firmware by default, or to $(O)/usr/lib/firmware as it
-does at the moment.
+In file included from drivers/char/hvc_rtas.c:39:
+drivers/char/hvc_console.h:59: error: field ‘kref’ has incomplete type
+make[2]: *** [drivers/char/hvc_rtas.o] Error 1
+make[1]: *** [drivers/char] Error 2
+make: *** [drivers] Error 2
 
-The former is consistent with 'make modules_install', and the latter is
-consistent with 'make headers_install'. Both of which have good reasons
-for being the way they are.
+this was already fixed by rusty (http://lkml.org/lkml/2008/6/27/21).
 
 -- 
-dwmw2
-
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
