@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbYGCMCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbYGCMCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756573AbYGCMCQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756171AbYGCMB3
+	id S1756709AbYGCMCg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:02:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082AbYGCMCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:01:29 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:44386 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754274AbYGCMB0 (ORCPT
+	Thu, 3 Jul 2008 08:02:24 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:52840 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752522AbYGCMCX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:01:26 -0400
-Date: Thu, 3 Jul 2008 05:34:28 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-pci@vger.kernel.org,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>,
-       Dan Williams <dan.j.williams@intel.com>, Martine.Silbermann@hp.com,
-       linux-kernel@vger.kernel.org, Michael Ellerman <michaele@au1.ibm.com>
-Subject: Re: Multiple MSI
-Message-ID: <20080703113427.GD14894@parisc-linux.org>
-References: <20080703024445.GA14894@parisc-linux.org> <1215055469.21182.70.camel@pasglop> <20080703035910.GB14894@parisc-linux.org> <1215060119.21182.77.camel@pasglop>
+	Thu, 3 Jul 2008 08:02:23 -0400
+Message-ID: <486CA734.1000200@gmail.com>
+Date: Thu, 03 Jul 2008 12:17:24 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1215060119.21182.77.camel@pasglop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Pavel Emelianov <xemul@openvz.org>, LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH -mmotm] res_counter: fix building failure
+References: <486B1D3D.5070805@cn.fujitsu.com> <6599ad830807012345r4f02f9acq3c8e9be633e109e8@mail.gmail.com> <486B250D.3090605@cn.fujitsu.com>
+In-Reply-To: <486B250D.3090605@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 03, 2008 at 02:41:59PM +1000, Benjamin Herrenschmidt wrote:
-> Ok, so I lift my objection there in the sense that allocating a linear
-> array of virtual numbers shouldn't be a problem (somebody remind me to
-> make NR_IRQS a config option one of these days on ppc, or help with just
-> getting rid of irq_desc array alltogether :-)
-
-;-)
-
-> However, do you want to still keep the fact that they are power-of-2
-> aligned up to the API or can I just do a linear block allocation for
-> virtual number sand require drivers to do the appropriate
-> addition/subtraction to get the N'th one ? I will need to allocate
-> appropriately aligned HW numbers but that's done via different
-> mechanisms (and in some case not even under full linux control, ie,
-> hypervisor/firmware does it on pSeries).
-
-Similar situation on x86-64, so I already thought about it ;-)  I think
-the IRQ numbers should be contiguous, but not necessarily aligned.
-They are, after all, virtual.
-
-> > By the way, would people be interested in changing the MSI-X API to get
-> > rid of the msix_entry array?  If allocating consecutive IRQs isn't a
-> > problem, then we could switch the MSI-X code to use consecutive IRQs.
+Li Zefan wrote:
+> Paul Menage wrote:
+>> On Tue, Jul 1, 2008 at 11:16 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+>>> kernel/res_counter.c: In function 'res_counter_memparse_write_strategy':
+>>> kernel/res_counter.c:115: error: implicit declaration of function 'PAGE_ALIGN'
+>>>
+>>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+>> Acked-by: Paul Menage <menage@google.com>
+>>
+>> Thanks - what architecture did it break on?
+>>
 > 
-> It would make a lot of code simpler...
+> On my x86_32.
+> 
+> I guess this break has something to do with:
+> 
+> http://marc.info/?l=linux-mm&m=121389282702302&w=2
+> ([PATCH -mm] PAGE_ALIGN(): correctly handle 64-bit values on 32-bit)
 
-It certainly would!
+Exactly, your fix sounds good to me. Thanks.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+-Andrea
+
+> 
+> You tested the patch before that patch was accepted by Andrew.
+> 
+>> Paul
+>>
+>>> ---
+>>>
+>>> should follow cgroup-files-convert-res_counter_write-to-be-a-cgroups-write_string-handler.patch
+>>>
+>>> --- linux-mm/kernel/res_counter.c.bak   2008-07-02 14:05:37.000000000 +0800
+>>> +++ linux-mm/kernel/res_counter.c       2008-07-02 14:07:36.000000000 +0800
+>>> @@ -13,6 +13,7 @@
+>>>  #include <linux/slab.h>
+>>>  #include <linux/res_counter.h>
+>>>  #include <linux/uaccess.h>
+>>> +#include <linux/mm.h>
+>>>
+>>>  void res_counter_init(struct res_counter *counter)
+>>>  {
+>>>
