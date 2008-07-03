@@ -1,61 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbYGCOEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756456AbYGCOIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757537AbYGCOEa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 10:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbYGCOEU
+	id S1756456AbYGCOIa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 10:08:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbYGCOIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 10:04:20 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56307 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754664AbYGCOET (ORCPT
+	Thu, 3 Jul 2008 10:08:20 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:32947 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752228AbYGCOIT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 10:04:19 -0400
-Date: Thu, 3 Jul 2008 10:04:18 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Zhang Rui <rui.zhang@intel.com>
-cc: linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, <harbour@sfinx.od.ua>
-Subject: Re: [linux-pm] [PATCH 1/2] introduce new interface schedule_work_on
-In-Reply-To: <1215071809.3214.0.camel@rzhang-dt.sh.intel.com>
-Message-ID: <Pine.LNX.4.44L0.0807031001580.2410-100000@iolanthe.rowland.org>
+	Thu, 3 Jul 2008 10:08:19 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [Bug 10868] Oops on loading ipaq module since 2.6.26, prevents use of device
+Date: Thu, 3 Jul 2008 16:08:44 +0200
+User-Agent: KMail/1.9.9
+Cc: Adam Williamson <awilliamson@mandriva.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@redhat.com>, bugme-daemon@bugzilla.kernel.org,
+       Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+       Matthias Geissert <matthias.geissert@web.de>
+References: <RzbtSgMztjP.A.jRD._spXIB@albercik> <200807031005.59691.oliver@neukum.org> <20080703085733.GB11254@cs181140183.pp.htv.fi>
+In-Reply-To: <20080703085733.GB11254@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807031608.46457.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Jul 2008, Zhang Rui wrote:
-
-> This interface allows adding a job on a specific cpu.
+Am Donnerstag 03 Juli 2008 10:57:33 schrieb Adrian Bunk:
+> On Thu, Jul 03, 2008 at 10:05:57AM +0200, Oliver Neukum wrote:
+ 
+> > As far as I can tell somebody changed the ipaq driver in 2.6.26-rc6. I cannot
+> > find the exact patch that did it in Greg's directory. As it causes a regression
+> > here's a reversal.
 > 
-> Although a work struct on a cpu will be scheduled to other cpu if the cpu dies,
-> there is a recursion if a work task tries to offline the cpu it's running on.
-> we need to schedule the task to a specific cpu in this case.
-> http://bugzilla.kernel.org/show_bug.cgi?id=10897
 > 
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> Tested-by: Rus <harbour@sfinx.od.ua>
-> ---
->  include/linux/workqueue.h |    1 +
->  kernel/workqueue.c        |   38 ++++++++++++++++++++++++++++++++++++++
->  2 files changed, 39 insertions(+)
+> It was changed by:
+
+Thanks, did you do git magic?
+
+> commit e1879b19b0abdb387e4aeb0b935a486cc75042fb
+> Author: Matthias Geissert <matthias.geissert@web.de>
+> Date:   Thu Mar 6 22:00:33 2008 +0100
 > 
-> Index: linux-2.6/include/linux/workqueue.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/workqueue.h	2008-07-03 11:13:23.000000000 +0800
-> +++ linux-2.6/include/linux/workqueue.h	2008-07-03 11:13:25.000000000 +0800
-> @@ -188,6 +188,7 @@
->  extern void flush_scheduled_work(void);
->  
->  extern int schedule_work(struct work_struct *work);
-> +extern int schedule_work_on(int cpu, struct work_struct *work);
->  extern int schedule_delayed_work(struct delayed_work *work, unsigned long delay);
->  extern int schedule_delayed_work_on(int cpu, struct delayed_work *work,
->  					unsigned long delay);
+>     USB: ipaq: fix devices having more than one endpoint
+>     
+>     The ipaq module  supports devices with one endpoint only. Some devices,
+>     e.g. Yakumo Delta 300, have more than one endpoint.
+>     
+>     This patch fixes support for devices having up to 2 endpoints which used
+>     to work on older kernel versions.
+>     
+>     Signed-off-by: Matthias Geissert <matthias.geissert@web.de>
+>     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> diff --git a/drivers/usb/serial/ipaq.c b/drivers/usb/serial/ipaq.c
+> index 9b38a08..17f2a53 100644
+> --- a/drivers/usb/serial/ipaq.c
+> +++ b/drivers/usb/serial/ipaq.c
+> @@ -571,9 +571,9 @@ static struct usb_serial_driver ipaq_device = {
+>  	.usb_driver = 		&ipaq_driver,
+>  	.id_table =		ipaq_id_table,
+>  	.num_interrupt_in =	NUM_DONT_CARE,
+> -	.num_bulk_in =		1,
+> -	.num_bulk_out =		1,
+> -	.num_ports =		1,
+> +	.num_bulk_in =		NUM_DONT_CARE,
+> +	.num_bulk_out =		NUM_DONT_CARE,
 
-Is there some reason you don't export queue_work_on?  After all, 
-queue_delayed_work_on is exported.
+This is good.
 
-Alan Stern
+> +	.num_ports =		2,
 
+This is fatal.
+
+The patch I sent reverts only this part, so this issue is solved.
+
+	Regards
+		Oliver
