@@ -1,123 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760100AbYGCHGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760302AbYGCHG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760100AbYGCHGT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbYGCG5g
+	id S1760302AbYGCHG3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 03:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbYGCG5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:57:36 -0400
-Received: from mga02.intel.com ([134.134.136.20]:2925 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753514AbYGCCaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 22:30:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,741,1204531200"; 
-   d="asc'?scan'208";a="302169881"
-Date: Thu, 3 Jul 2008 10:20:34 +0800
-From: Zhenyu Wang <zhenyu.z.wang@intel.com>
-To: Dave Airlie <airlied@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] [AGP] intel_agp: official name for GM45 chipset
-Message-ID: <20080703022034.GA1569@zhen-devel.sh.intel.com>
-Mail-Followup-To: Dave Airlie <airlied@redhat.com>,
-	LKML <linux-kernel@vger.kernel.org>
+	Thu, 3 Jul 2008 02:57:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34042 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753554AbYGCCfT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 22:35:19 -0400
+Date: Wed, 2 Jul 2008 19:35:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] Introduce copy_user_handle_tail routine
+In-Reply-To: <m37ic4jr2w.fsf@gravicappa.englab.brq.redhat.com>
+Message-ID: <alpine.LFD.1.10.0807021930470.18105@woody.linux-foundation.org>
+References: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0806281108240.4371@hp.linux-foundation.org> <m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com> <alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org>
+ <m3fxqsjt22.fsf_-_@gravicappa.englab.brq.redhat.com> <486B8B6C.2050109@firstfloor.org> <m37ic4jr2w.fsf@gravicappa.englab.brq.redhat.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="45Z9DzgjV8m4Oswq"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---45Z9DzgjV8m4Oswq
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
+On Wed, 2 Jul 2008, Vitaly Mayatskikh wrote:
+> 
+> Linus wanted this routine to be extremely dumb.
 
-[AGP] intel_agp: official name for GM45 chipset
+Well, I wanted it simple and dumb, but not dumber than _necessary_.
 
-Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
----
- drivers/char/agp/intel-agp.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+I think
 
-diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-index df70264..6e5816d 100644
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -32,8 +32,8 @@
- #define PCI_DEVICE_ID_INTEL_Q35_IG          0x29B2
- #define PCI_DEVICE_ID_INTEL_Q33_HB          0x29D0
- #define PCI_DEVICE_ID_INTEL_Q33_IG          0x29D2
--#define PCI_DEVICE_ID_INTEL_IGD_HB          0x2A40
--#define PCI_DEVICE_ID_INTEL_IGD_IG          0x2A42
-+#define PCI_DEVICE_ID_INTEL_GM45_HB         0x2A40
-+#define PCI_DEVICE_ID_INTEL_GM45_IG         0x2A42
- #define PCI_DEVICE_ID_INTEL_IGD_E_HB        0x2E00
- #define PCI_DEVICE_ID_INTEL_IGD_E_IG        0x2E02
- #define PCI_DEVICE_ID_INTEL_Q45_HB          0x2E10
-@@ -55,7 +55,7 @@
- 		 agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_82965G_HB || \
- 		 agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_82965GM_HB || \
- 		 agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_82965GME_HB || \
--		 agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_IGD_HB)
-+		 agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_GM45_HB)
-=20
- #define IS_G33 (agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_G33_HB =
-|| \
- 		agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_Q35_HB || \
-@@ -1182,7 +1182,7 @@ static unsigned long intel_i965_mask_memory(struct ag=
-p_bridge_data *bridge,
- static void intel_i965_get_gtt_range(int *gtt_offset, int *gtt_size)
- {
- 	switch (agp_bridge->dev->device) {
--	case PCI_DEVICE_ID_INTEL_IGD_HB:
-+	case PCI_DEVICE_ID_INTEL_GM45_HB:
- 	case PCI_DEVICE_ID_INTEL_IGD_E_HB:
- 	case PCI_DEVICE_ID_INTEL_Q45_HB:
- 	case PCI_DEVICE_ID_INTEL_G45_HB:
-@@ -2117,8 +2117,8 @@ static const struct intel_driver_description {
- 		NULL, &intel_g33_driver },
- 	{ PCI_DEVICE_ID_INTEL_Q33_HB, PCI_DEVICE_ID_INTEL_Q33_IG, 0, "Q33",
- 		NULL, &intel_g33_driver },
--	{ PCI_DEVICE_ID_INTEL_IGD_HB, PCI_DEVICE_ID_INTEL_IGD_IG, 0,
--	    "Intel Integrated Graphics Device", NULL, &intel_i965_driver },
-+	{ PCI_DEVICE_ID_INTEL_GM45_HB, PCI_DEVICE_ID_INTEL_GM45_IG, 0,
-+	    "Mobile Intel=AE GM45 Express", NULL, &intel_i965_driver },
- 	{ PCI_DEVICE_ID_INTEL_IGD_E_HB, PCI_DEVICE_ID_INTEL_IGD_E_IG, 0,
- 	    "Intel Integrated Graphics Device", NULL, &intel_i965_driver },
- 	{ PCI_DEVICE_ID_INTEL_Q45_HB, PCI_DEVICE_ID_INTEL_Q45_IG, 0,
-@@ -2315,7 +2315,7 @@ static struct pci_device_id agp_intel_pci_table[] =3D=
- {
- 	ID(PCI_DEVICE_ID_INTEL_G33_HB),
- 	ID(PCI_DEVICE_ID_INTEL_Q35_HB),
- 	ID(PCI_DEVICE_ID_INTEL_Q33_HB),
--	ID(PCI_DEVICE_ID_INTEL_IGD_HB),
-+	ID(PCI_DEVICE_ID_INTEL_GM45_HB),
- 	ID(PCI_DEVICE_ID_INTEL_IGD_E_HB),
- 	ID(PCI_DEVICE_ID_INTEL_Q45_HB),
- 	ID(PCI_DEVICE_ID_INTEL_G45_HB),
---=20
-1.5.3.1
+	if (cleartail)
+		memset(dst,0,len);
+	return len;
 
---=20
-Open Source Technology Center, Intel ltd.
+is basically what we should have at the end. Simple and sweet.
 
-$gpg --keyserver wwwkeys.pgp.net --recv-keys 4D781827
+Now, the stuff that comes *before* that point is the "try to fix up one 
+byte at a time" thing, which I'd like to be simple and dumb. At least to 
+start with.
 
---45Z9DzgjV8m4Oswq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Of course, I also suspect that *eventually* we might want to make it 
+smarter and more complex. For example, while performance isn't a primary 
+issue, we might want to eventually avoid having to do _two_ faults (once 
+in the fast unrolled or word-at-a-time loop, and once in the byte-for-byte 
+one), by limiting the byte-for-byte one to be within a page, but that 
+would be a "future enhancement" thing.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhsN3IACgkQsQQaM014GCcL/wCfZAozihAkuBmLs9kt+5+7xDrz
-1b4An21yypxD5V5UH9N78efQAm8eDjnq
-=Jazi
------END PGP SIGNATURE-----
-
---45Z9DzgjV8m4Oswq--
+		Linus
