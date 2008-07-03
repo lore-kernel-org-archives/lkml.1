@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbYGCRa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbYGCRdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754821AbYGCRa7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 13:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbYGCRaw
+	id S1754966AbYGCRdU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 13:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbYGCRdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 13:30:52 -0400
-Received: from ns2.suse.de ([195.135.220.15]:46595 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753037AbYGCRav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 13:30:51 -0400
-Date: Thu, 3 Jul 2008 10:29:14 -0700
-From: Greg KH <gregkh@suse.de>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.25.10
-Message-ID: <20080703172914.GA11123@suse.de>
-References: <20080703035807.GA8190@kroah.com> <e2e108260807031008r3de9aad7v8222d41fd750b9da@mail.gmail.com>
+	Thu, 3 Jul 2008 13:33:09 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:48178 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752481AbYGCRdI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 13:33:08 -0400
+Date: Thu, 3 Jul 2008 13:30:40 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+Message-ID: <20080703173040.GB30506@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Jeff Garzik <jeff@garzik.org>, Hugh Dickins <hugh@veritas.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	mchan@broadcom.com, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, netdev@vger.kernel.org
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org> <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com> <486CC440.9030909@garzik.org> <Pine.LNX.4.64.0807031353030.11033@blonde.site> <486CCFED.7010308@garzik.org> <1215091999.10393.556.camel@pmac.infradead.org> <486CD654.4020605@garzik.org> <1215093175.10393.567.camel@pmac.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <e2e108260807031008r3de9aad7v8222d41fd750b9da@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1215093175.10393.567.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 03, 2008 at 07:08:48PM +0200, Bart Van Assche wrote:
-> On Thu, Jul 3, 2008 at 5:58 AM, Greg KH <gregkh@suse.de> wrote:
-> > We (the -stable team) are announcing the release of the 2.6.25.10
-> > kernel.
-> >
-> > It contains a number of assorted bugfixes all over the tree.  And once
-> > again, any users of the 2.6.25 kernel series are STRONGLY encouraged to
-> > upgrade to this release.
+On Thu, Jul 03, 2008 at 02:52:55PM +0100, David Woodhouse wrote:
 > 
-> Hello Greg,
+> After feedback from a number of people, there is no individual Kconfig
+> option for the various firmwares; there is only one which controls them
+> all -- CONFIG_FIRMWARE_IN_KERNEL. The thing you're whining about isn't
+> even part of the patch which needs review.
 > 
-> Thanks for all the work you and the stable team are doing on the
-> stable series. To me the above message is a little bit cryptic however
-> -- which bugs have been fixed, and what was their impact ? I know it
-> takes time to write down such information, sometimes called release
-> notes. But I think including this information with the announcements
-> of the stable releases would be a great service to the people reading
-> these announcements.
+> > Because of your stubborn refusal on this Kconfig defaults issue, WE 
+> > ALREADY HAVE DRIVER-DOES-NOT-WORK BREAKAGE, JUST AS PREDICTED.
+> 
+> I strongly disagree that CONFIG_FIRMWARE_IN_KERNEL=y should be the
+> default. But if I add this patch elsewhere in the kernel, will you quit
+> your whining and actually review the patch you were asked to review? ...
 
-The release notes are there in the shortlog in the email announcement
-and full Changelog on the kernel.org site for exactly what specifically
-was fixed:
-	http://www.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.25.10
+I don't think it's whining.  If your patch introduces changes which
+cause people .config to break by default after upgrading to a newer
+kernel and doing "make oldconfig" --- then that's a problem with your
+patch, and the missing hunk to enable CONFIG_FIRMWARE_IN_KERNEL=y is
+critically important.
 
-If you have any specific questions about any of the individual changes,
-please let us, and the developers who made those fixes know.
+Linus has ruled this way in the past, when he's gotten screwed by this
+sort of issue in the past, and he was justifiably annoyed.  We should
+treat the users who are willing to test and provide feedback on the
+latest kernel.org kernels with the same amount of regard.  And if
+there are licensing religious fundamentalists who feel strongly about
+the firmware issue, then fine, they can change the .config.  But the
+default should be to avoid users from having broken kernels, and a
+number of (quite clueful) users have already demonstrated that without
+setting CONFIG_FIRMWARE_IN_KERNEL=y as the default, your patches cause
+breakage.
 
-thanks,
+Regards,
 
-greg k-h
+						- Ted
