@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757103AbYGCMjH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbYGCMj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757103AbYGCMjH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:39:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbYGCMiz
+	id S1758527AbYGCMj0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756022AbYGCMjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:38:55 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:50148 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751069AbYGCMiy (ORCPT
+	Thu, 3 Jul 2008 08:39:14 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:5294 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757228AbYGCMjL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:38:54 -0400
-Message-ID: <486C8F9C.7080507@keyaccess.nl>
-Date: Thu, 03 Jul 2008 10:36:44 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Thu, 3 Jul 2008 08:39:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=DcP+mreNVzKjxmKQ2X+FBOh0/qA5It7dZZtEyylK/IopS2byIy2KVtG1GZBCq+S0xB
+         O0NH4qWEp231+cB/UtK9BXO7hDp/tcKQ7hMTXd1urZq6Y7wee/kpTU5DGzHt1xvzndRk
+         B/LY2n4Fk/hLwBJceRYRltSckni7vnm3/Qijc=
+Date: Thu, 3 Jul 2008 08:38:28 -0400
+From: Joseph Fannin <jfannin@gmail.com>
+To: Lennert Buytenhek <buytenh@wantstofly.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: inux-next 0701 mv643xx_eth powerpc build failure
+Message-ID: <20080703123828.GA1631@nineveh.local>
+Mail-Followup-To: Lennert Buytenhek <buytenh@wantstofly.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>
+References: <20080702011434.6fb403d5.sfr@canb.auug.org.au> <20080702031111.GA26752@nineveh.local> <20080702082117.GA18989@xi.wantstofly.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: David Brownell <david-b@pacbell.net>, Michael Buesch <mb@bu3sch.de>,
-       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] gpiolib: Allow user-selection
-References: <200807022346.53222.mb@bu3sch.de>	<20080702170431.56d4c929.akpm@linux-foundation.org>	<200807022200.49428.david-b@pacbell.net> <20080702220842.44364045.akpm@linux-foundation.org>
-In-Reply-To: <20080702220842.44364045.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080702082117.GA18989@xi.wantstofly.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03-07-08 07:08, Andrew Morton wrote:
+On Wed, Jul 02, 2008 at 10:21:18AM +0200, Lennert Buytenhek wrote:
+> On Tue, Jul 01, 2008 at 11:11:12PM -0400, Joseph Fannin wrote:
+>
+> > I'm getting a build failure on 32bit powerpc in -next, but not in mainline:
+> >
+> > drivers/net/mv643xx_eth.c: In function 'mv643xx_eth_netpoll':
+> > drivers/net/mv643xx_eth.c:2115: error: 'INT_CAUSE_EXT' undeclared
+> > (first use in this function)
+> > drivers/net/mv643xx_eth.c:2115: error: (Each undeclared identifier is
+> > reported only once
+> > drivers/net/mv643xx_eth.c:2115: error: for each function it appears in.)
+>
+> Does this fix it for you?
 
-> But what I am repeatedly seeing is people cheerfully raising 2.6.27 
-> patches against the 2.6.26 tree when we have a nice 2.6.27 tree for 
-> developing against.  Those days are over, guys.
-> 
-> I'm also seeing obvious signs that developers aren't _testing_ their 
-> new code within the context of the 2.6.27 tree.  They're obviously 
-> testing their stuff against 2.6.26 and then hoping and praying, only
-> it doesn't always work out for them.
+  Yes, it builds fine.  Thanks.
 
-Developing against -next is even worse than developping against an -rc1. 
-You normally want to be running the code you develop meaning you'd very 
-frequently drown in everyone else's bugs without getting to your own if 
-you do. Development needs to happen against something relatively stable 
-really and the last release would generally seem to be the best choice.
+>
+> Index: linux-2.6.26-rc8/drivers/net/mv643xx_eth.c
+> ===================================================================
+> --- linux-2.6.26-rc8.orig/drivers/net/mv643xx_eth.c
+> +++ linux-2.6.26-rc8/drivers/net/mv643xx_eth.c
+> @@ -2184,7 +2184,7 @@ static void mv643xx_eth_netpoll(struct n
+>
+>  	mv643xx_eth_irq(dev->irq, dev);
+>
+> -	wrl(mp, INT_MASK(mp->port_num), INT_TX_END | INT_RX | INT_CAUSE_EXT);
+> +	wrl(mp, INT_MASK(mp->port_num), INT_TX_END | INT_RX | INT_EXT);
+>  }
+>  #endif
+>
+>
+>
+> > I haven't investigated any further than a quick check if this hardware
+> > even makes sense on 32bit powerpc -- it seems it does.
+>
+> It does -- it is used on ARM, PPC and MIPS.
 
-Now ofcourse, _porting_ it to -next before submitting makes lots of 
-sense but positioning -next as THE devel tree a bit less I feel...
+--
+Joseph Fannin
+jfannin@gmail.com
 
-Rene.
