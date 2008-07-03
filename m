@@ -1,57 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755887AbYGCTns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbYGCTt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755887AbYGCTns (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 15:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbYGCTnk
+	id S1755945AbYGCTt0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 15:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbYGCTtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 15:43:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49254 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751979AbYGCTnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 15:43:39 -0400
-Message-ID: <486D2BC4.7000603@sandeen.net>
-Date: Thu, 03 Jul 2008 14:43:00 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: xfs-masters@oss.sgi.com
-CC: Christoph Hellwig <hch@infradead.org>, Dave Chinner <david@fromorbit.com>,
-       Elias Oltmanns <eo@nebensachen.de>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [xfs-masters] Re: freeze vs freezer
-References: <4744FD87.7010301@goop.org> <200806300122.48204.rjw@sisk.pl> <20080630061149.GA352@infradead.org> <200806302234.23887.rjw@sisk.pl>
-In-Reply-To: <200806302234.23887.rjw@sisk.pl>
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 3 Jul 2008 15:49:14 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36331 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753696AbYGCTtN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 15:49:13 -0400
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+From: David Woodhouse <dwmw2@infradead.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: Theodore Tso <tytso@mit.edu>, Jeff Garzik <jeff@garzik.org>,
+       Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+In-Reply-To: <92840.1215113467@turing-police.cc.vt.edu>
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+	 <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <486CC440.9030909@garzik.org>
+	 <Pine.LNX.4.64.0807031353030.11033@blonde.site>
+	 <486CCFED.7010308@garzik.org>
+	 <1215091999.10393.556.camel@pmac.infradead.org>
+	 <486CD654.4020605@garzik.org>
+	 <1215093175.10393.567.camel@pmac.infradead.org>
+	 <20080703173040.GB30506@mit.edu>
+	 <1215111362.10393.651.camel@pmac.infradead.org>
+	 <92840.1215113467@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Thu, 03 Jul 2008 20:49:00 +0100
+Message-Id: <1215114540.10393.659.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-
->>> I talked with Jens about it on a very general level, but it seems doable at
->>> first sight.
->> Why would you hack the blok layer when we already have a perfectly fine
->> facility to archive what you want?  freeze_bdev is there exactly for the
->> purpose to make the filesystem consistant on disk and then freeze all
->> I/O.
+On Thu, 2008-07-03 at 15:31 -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Thu, 03 Jul 2008 19:56:02 BST, David Woodhouse said:
 > 
-> We tried that in the past and it didn't work very well due to some bad
-> interactions with the md layer that we wanted to stay functional while we
-> were saving the image.
+> > They had to 'make oldconfig' and then actually _choose_ to say 'no' to
+> > an option which is fairly clearly documented, that they are the
+> > relatively unusual position of wanting to have said 'yes' to. You're
+> > getting into Aunt Tillie territory, when you complain about that.
+> 
+> Note that some of us chose 'no' because we *thought* that we already *had*
+> everything in /lib/firmware that we needed (in my case, the iwl3945 wireless
+> firmware and the Intel cpu microcode).  The first that I realized that
+> the tg3 *had* firmware was when I saw the failure message, because before
+> that, the binary blob was inside the kernel.  And then, it wasn't trivially
+> obvious how to get firmware loaded if the tg3 driver was builtin rather
+> than a module.
+> 
+> And based on some of the other people who apparently got bit by this same
+> exact behavior change on this same exact "builtin but no firmware in kernel"
+> config with this same exact driver, it's obvious that one of two things is true:
+> 
+> 1) Several of the highest-up maintainers are Aunt Tillies.
+> or
+> 2) This is sufficiently subtle and complicated that far more experienced
+> people than Aunt Tillie will Get It Very Wrong.
 
-Hm, details or a link?
+Not really. It's just a transitional thing. As you said, you know
+perfectly well that modern Linux drivers like iwl3945 handle their
+firmware separately through request_firmware() rather than including it
+in unswappable memory in the static kernel. We're just updating some of
+the older drivers to match.
 
-> Also, do all of the supported filesystems implement this feature?
+I've often managed to configure a kernel which doesn't boot, when I've
+updated and not paid attention to the questions which 'oldconfig' asks
+me. It's fairly easy to do. But I don't advocate that 'allyesconfig'
+should be the default, just in case someone needs one of the options...
 
+But as I said, I'm content to let Linus make that decision. In the
+meantime, I'd prefer to get back to the simple business of updating
+drivers to use request_firmware() as they should, and have maintainers
+actually respond to the _patches_ rather than refusing to even look at
+the code changes because they disagree with the default setting for the
+CONFIG_FIRMWARE_IN_KERNEL option.
 
-ext3, ext4, gfs2, jfs, reiserfs, xfs, all provide a write_super_lockfs
-op, which is what freeze_bdev uses.  I think that the rest is generic,
-for simpler filesystems.
+-- 
+dwmw2
 
--Eric
