@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbYGCPRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYGCPTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755254AbYGCPRw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 11:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbYGCPRl
+	id S1753900AbYGCPTR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 11:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbYGCPTB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 11:17:41 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:22430 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752253AbYGCPRk (ORCPT
+	Thu, 3 Jul 2008 11:19:01 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:34719 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751615AbYGCPTA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 11:17:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=N4U+wWMYfc9gOegnj8t/VaQEUSR9Th7pzOUBSPO2fxjog0BOUP2y4LGcLYH+7F12P5
-         Osc8LXp0p4xrlVsSajtB7YW/z8ow9W73GqDj/XnibeByv3PCrP18dKPW2zj5w1T9WWww
-         DdUqP8/6SFu7gZPX4t6LrH7vxYXEdJsqUVR3U=
-Message-ID: <a4e6962a0807030817u65ba06ddw48456e514184c2b8@mail.gmail.com>
-Date: Thu, 3 Jul 2008 10:17:38 -0500
-From: "Eric Van Hensbergen" <ericvh@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] 9p bug fix
+	Thu, 3 Jul 2008 11:19:00 -0400
+Date: Thu, 3 Jul 2008 17:18:44 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Greg KH <greg@kroah.com>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, schwidefsky@de.ibm.com,
+       linux390@de.ibm.com, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/04] s390: bus_id -> dev_name conversions
+Message-ID: <20080703151844.GA2157@osiris.boeblingen.de.ibm.com>
+References: <20080702154630.GA31083@kroah.com> <20080702182832.1a087e8d@gondolin.boeblingen.de.ibm.com> <20080702184943.GA20938@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080702184943.GA20938@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a relatively minor bug fix for the folks inter-operating with
-Plan 9 systems and applications.  I know this is coming pretty late in
-the game, if its easier for you, go ahead and hold off on this one
-until the merge window.
+On Wed, Jul 02, 2008 at 11:49:43AM -0700, Greg KH wrote:
+> On Wed, Jul 02, 2008 at 06:28:32PM +0200, Cornelia Huck wrote:
+> > On Wed, 2 Jul 2008 08:46:30 -0700,
+> > Greg KH <greg@kroah.com> wrote:
+> > 
+> > > @@ -529,7 +529,7 @@ cio_validate_subchannel (struct subchann
+> > >  	}
+> > >  	mutex_init(&sch->reg_mutex);
+> > >  	/* Set a name for the subchannel */
+> > > -	snprintf (sch->dev.bus_id, BUS_ID_SIZE, "0.%x.%04x", schid.ssid,
+> > > +	snprintf (dev_name(&sch->dev), BUS_ID_SIZE, "0.%x.%04x", schid.ssid,
+> > >  		  schid.sch_no);
+> > > 
+> > >  	/*
+> > 
+> > This hunk does not make much sense. Better just leave it alone until
+> > the dev_set_name()/init_name conversion later.
+> 
+> You are right.
+> 
+> 390 maintainers, can you drop this hunk, or do you want me to respin it
+> and the other 3 patches (if needed)?
 
-The following changes since commit 2e4bef41a0f7df31be140ef354b9c12f2299016a:
-  Eric Van Hensbergen (1):
-        9p: fix O_APPEND in legacy mode
+Please resend, since patch 2 needs to be changed as well, right?
 
-are available in the git repository at:
-
-ssh://master.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git for-linus
-
- v9fs_vfs.h  |    2 +-
- vfs_file.c  |    4 +++-
- vfs_inode.c |   18 ++++++++++--------
- 3 files changed, 14 insertions(+), 10 deletions(-)
+Thanks! :)
