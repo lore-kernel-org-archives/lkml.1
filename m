@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbYGCPxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbYGCPyP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754053AbYGCPxS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 11:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbYGCPxF
+	id S1754801AbYGCPyP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 11:54:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYGCPyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 11:53:05 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:48475 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751955AbYGCPxD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 11:53:03 -0400
-Date: Thu, 03 Jul 2008 08:53:00 -0700
-From: Adam Williamson <awilliamson@mandriva.com>
-Subject: Re: [Bug #10868] Oops on loading ipaq module since 2.6.26,
-	prevents use of device
-In-reply-to: <200807031005.59691.oliver@neukum.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@redhat.com>, bugme-daemon@bugzilla.kernel.org,
-       Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org
-Message-id: <1215100380.6054.210.camel@lenovo.local.net>
-Organization: Mandriva
-MIME-version: 1.0
-X-Mailer: Evolution 2.22.2-3mdv2009.0
-Content-type: text/plain
-Content-transfer-encoding: 7bit
-References: <RzbtSgMztjP.A.jRD._spXIB@albercik>
- <200807022333.25275.oliver@neukum.org>
- <1215034900.6054.204.camel@lenovo.local.net>
- <200807031005.59691.oliver@neukum.org>
+	Thu, 3 Jul 2008 11:54:00 -0400
+Received: from gw.goop.org ([64.81.55.164]:51438 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752173AbYGCPx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 11:53:59 -0400
+Message-ID: <486CF610.7000905@goop.org>
+Date: Thu, 03 Jul 2008 08:53:52 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Mike Frysinger <vapier.adi@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: 1ea0704e (ptep_modify_prot transaction abstraction)
+ breaks no-mmu
+References: <8bd0f97a0807030638g5eb8f0eavd740e990b1cdf1c5@mail.gmail.com>
+In-Reply-To: <8bd0f97a0807030638g5eb8f0eavd740e990b1cdf1c5@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-03 at 10:05 +0200, Oliver Neukum wrote:
-> Am Mittwoch 02 Juli 2008 23:41:40 schrieb Adam Williamson:
-> > On Wed, 2008-07-02 at 23:33 +0200, Oliver Neukum wrote:
-> > 
-> > > This is odd. Your device shows one interface with one endpoint bulk and
-> > > bulk out respectively. Yet two ports are created. Odd.
-> > 
-> > OK. If you mean /dev/ttyUSB0 and /dev/ttyUSB1 are always both created
-> > when the device is plugged in - yep. This is the case in the working
-> 
-> Now this is very hard to explain. From the code in 2.6.25 it is clear that
-> only ttyUSB0 will be created. Please verify that indeed you get ttyUSB0
-> and ttyUSB1 with the kernel working for you.
+Mike Frysinger wrote:
+> the functions added to asm-generic/pgtable.h are only used by
+> mm/mprotect.c (a MMU-only file), but they were not added inside of the
+> CONFIG_MMU ifdef block.  since the functions rely on things inside of
+> CONFIG_MMU (the lines just above in pgtable.h), we get build failure
+> on all no-mmu setups:
+>   CC      init/main.o
+> In file included from include/asm/pgtable.h:94,
+>                  from include/linux/mm.h:39,
+>                  from include/asm/dma.h:39,
+>                  from include/linux/bootmem.h:8,
+>                  from init/main.c:27:
+> include/asm-generic/pgtable.h: In function '__ptep_modify_prot_start':
+> include/asm-generic/pgtable.h:210: error: implicit declaration of
+> function 'ptep_get_and_clear'
+> include/asm-generic/pgtable.h:210: error: incompatible types in return
+> make[1]: *** [init/main.o] Error 1
+> make: *** [init/main.o] Error 2
+> -mike
+>   
 
-It is possible I'm misremembering on that front. I will check.
--- 
-adamw
+Uh, OK.  What does mprotect do on a nommu system?  Would it be 
+sufficient to move the definitions of __ptep_modify_prot_start/commit 
+out of a CONFIG_MMU block, or provide separate no-op versions?
+
+    J
 
