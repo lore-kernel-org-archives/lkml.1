@@ -1,80 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759438AbYGCVmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759067AbYGCVlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759438AbYGCVmW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 17:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758541AbYGCVkL
+	id S1759067AbYGCVlf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 17:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757053AbYGCVhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 17:40:11 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44155 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758042AbYGCVkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 17:40:09 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-Date: Thu, 3 Jul 2008 23:42:00 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Jeff Garzik <jeff@garzik.org>, Theodore Tso <tytso@mit.edu>,
-       Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org> <486D3E88.9090900@garzik.org> <486D4596.60005@infradead.org>
-In-Reply-To: <486D4596.60005@infradead.org>
+	Thu, 3 Jul 2008 17:37:10 -0400
+Received: from lsg.lsg.lab.novell.com ([151.155.230.1]:1100 "EHLO
+	lsg.lsg.lab.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757267AbYGCVhI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 17:37:08 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 0/2] sched: misc fixes for stable-25.y and 25-rt
+To: stable@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       rostedt@goodmis.org, mingo@elte.hu
+Cc: peterz@infradead.org, ghaskins@novell.com, linux-kernel@vger.kernel.org
+Date: Thu, 03 Jul 2008 15:37:06 -0600
+Message-ID: <20080703212939.1275.27072.stgit@lsg.lsg.lab.novell.com>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807032342.01292.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 3 of July 2008, David Woodhouse wrote:
-> Jeff Garzik wrote:
-> > David Woodhouse wrote:
-> >> Although it does make me wonder if it was better the way I had it
-> >> originally, with individual options like TIGON3_FIRMWARE_IN_KERNEL
-> >> attached to each driver, rather than a single FIRMWARE_IN_KERNEL option
-> >> which controls them all.
-> > 
-> > IMO, individual options would be better.
-> 
-> They had individual options for a long time, but the consensus was that 
-> I should remove them -- a consensus which was probably right. It was 
-> moderately inconvenient going back through it all and recommitting it 
-> without that, but it was worth it to get it right...
-> 
-> > Plus, unless I am misunderstanding, the firmware is getting built into 
-> > the kernel image not the tg3 module?
-> 
-> That's right, although it doesn't really matter when they're both in the 
-> vmlinux.
-> 
-> When it's actually a module, there really is no good reason not to let 
-> request_firmware() get satisfied from userspace. If you can load 
-> modules, then you can load firmware too -- the required udev stuff has 
-> been there as standard for a _long_ time, as most modern drivers 
-> _require_ it without even giving you the built-in-firmware option at all.
-> 
-> It makes no more sense to object to that than it does to object to the 
-> module depending on _other_ modules. Both those other modules, and the 
-> required firmware, are _installed_ by the kernel Makefiles, after all.
-> 
-> It wouldn't be _impossible_ to put firmware blobs into the foo.ko files 
-> themselves and find them there. The firmware blobs in the kernel are 
-> done in a separate section (like initcalls, exceptions tables, pci 
-> fixups, and a bunch of other stuff). It'd just take some work in 
-> module.c to link them into a global list, and some locking shenanigans 
-> in the lookups (and lifetime issues to think about). But it just isn't 
-> worth the added complexity, given that userspace is known to be alive 
-> and working. It's pointless not to just use request_firmware() normally, 
-> from a module.
+Hi Ingo, Steven, Peter,
+  I found a few minor issues w.r.t. the CFS load values during a few
+  dequeue/enqueue operations in the 2.6.25 kernel.  I found these via
+  code review as opposed to observing a bug in the field.  I believe
+  at least the first issue is already fixed in 26-rcx.  I have
+  confirmed that the issue is present in both 25.8-rt7 as well as
+  stable-2.6.25.10.  These patches are against 25.8-rt7, though they
+  should apply trivially to stable as well.  Please consider for
+  inclusion in the next -rt if the -stable team does not pick them up
+  immediately.
 
-Still, maybe we can add some kbuild magic to build the blobs along with
-their modules and to install them under /lib/firmware (by default) when the
-modules are installed in /lib/modules/... ?
+Stable team,
+  Please consider these patches for 25.11 (assuming the appropriate acks
+  from Ingo et. al. are recieved) though I do not believe they are
+  considered significant risks and are therefore not urgent.
 
-Rafael
+Feedback welcome..
+
+Thanks!
+-Greg
