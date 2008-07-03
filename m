@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbYGCMA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753745AbYGCMBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755787AbYGCMA3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755320AbYGCL7V
+	id S1753745AbYGCMBJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbYGCL7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 07:59:21 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:34584 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755273AbYGCL7T (ORCPT
+	Thu, 3 Jul 2008 07:59:54 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46235 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755556AbYGCL7x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 07:59:19 -0400
-Message-ID: <486C975B.2030702@linux.vnet.ibm.com>
-Date: Thu, 03 Jul 2008 14:39:47 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Thu, 3 Jul 2008 07:59:53 -0400
+Date: Thu, 03 Jul 2008 20:59:36 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: mchan@broadcom.com
+Subject: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       netdev@vger.kernel.org
+In-Reply-To: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+Message-Id: <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Paul Menage <menage@google.com>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Andrea Righi <righi.andrea@gmail.com>
-Subject: Re: [PATCH -mmotm] res_counter: fix building failure
-References: <486B1D3D.5070805@cn.fujitsu.com> <6599ad830807012345r4f02f9acq3c8e9be633e109e8@mail.gmail.com> <486B250D.3090605@cn.fujitsu.com>
-In-Reply-To: <486B250D.3090605@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> Paul Menage wrote:
->> On Tue, Jul 1, 2008 at 11:16 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
->>> kernel/res_counter.c: In function 'res_counter_memparse_write_strategy':
->>> kernel/res_counter.c:115: error: implicit declaration of function 'PAGE_ALIGN'
->>>
->>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->> Acked-by: Paul Menage <menage@google.com>
->>
->> Thanks - what architecture did it break on?
+Hi Michael,
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+my server output following error message on 2.6.26-rc8-mm1.
+Is this a bug?
 
-CC'ing Andre as well
+------------------------------------------------------------------
+tg3.c:v3.93 (May 22, 2008)
+GSI 72 (level, low) -> CPU 0 (0x0001) vector 51
+tg3 0000:06:01.0: PCI INT A -> GSI 72 (level, low) -> IRQ 51
+firmware: requesting tigon/tg3_tso.bin
+tg3: Failed to load firmware "tigon/tg3_tso.bin"
+tg3 0000:06:01.0: PCI INT A disabled
+GSI 72 (level, low) -> CPU 0 (0x0001) vector 51 unregistered
+tg3: probe of 0000:06:01.0 failed with error -2
+GSI 73 (level, low) -> CPU 0 (0x0001) vector 51
+tg3 0000:06:01.1: PCI INT B -> GSI 73 (level, low) -> IRQ 52
+firmware: requesting tigon/tg3_tso.bin
 
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+
