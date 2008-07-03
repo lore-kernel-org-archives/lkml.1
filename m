@@ -1,68 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbYGCRYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbYGCRZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754086AbYGCRYV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 13:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYGCRYN
+	id S1754694AbYGCRZr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 13:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYGCRZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 13:24:13 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:47248 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752478AbYGCRYM (ORCPT
+	Thu, 3 Jul 2008 13:25:39 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:49461 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752597AbYGCRZi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 13:24:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:sender;
-        b=QGpB2tYvGGgZwyyZ+q0enUU5xnaGt1/ibOJ3kEnvM7+xwnI37qTNnUToTYrhgUcu56
-         2IiLfBao42rWqxfXXi+W3IpSHND6AanEIKIQ9HnH5oeSznzO48nhDY7xNX0tEa9S/YAg
-         oZSnreysd2efUVRk9qQ9sNdOA9hHDZAsPTCI4=
-Date: Thu, 3 Jul 2008 22:52:57 +0530
-From: Rabin Vincent <rabin@rab.in>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: trivial@kernel.org, Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [PATCH] doc: remove incorrect config option location
-Message-ID: <20080703172257.GA1498@debian>
+	Thu, 3 Jul 2008 13:25:38 -0400
+Date: Thu, 3 Jul 2008 18:25:25 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Li Zefan <lizf@cn.fujitsu.com>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, npiggin@suse.de,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Rik Van Riel <riel@redhat.com>
+Subject: Re: [-mm] BUG: sleeping function called from invalid context at
+ include/linux/pagemap.h:290
+In-Reply-To: <486C9FBD.9000800@cn.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0807031747470.14783@blonde.site>
+References: <486C74B1.3000007@cn.fujitsu.com> <20080703183913.D6DF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+ <486C9FBD.9000800@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CONFIG_INITRAMFS_SOURCE is no longer under Devices->Block Devices, but
-is now in General Setup.  The correct location is easily found using
-menuconfig's search, so remove the mention of the incorrect location
-from the docs.
+On Thu, 3 Jul 2008, Li Zefan wrote:
+> KOSAKI Motohiro wrote:
+> >> Seems the problematic patch is :
+> >> mmap-handle-mlocked-pages-during-map-remap-unmap.patch
+> >>
+> >> I'm using mmotm uploaded yesterday by Andrew, so I guess this bug
+> >> has not been fixed ?
+> >>
+> >> BUG: sleeping function called from invalid context at include/linux/pagemap.h:290
+> >> in_atomic():1, irqs_disabled():0
+> >> no locks held by gpg-agent/2134.
+> > 
+> > Li-san, I tested 2.6.26-rc8-mm1 on x86_64.
+> > but I can't reproduce it.
+> > 
+> > Could you explain detail of reproduce way?
+> > 
+> 
+> Nothing special. I booted the system up, and entered KDE, and opened xterm,
+> and typed "dmesg".
+> 
+> .config attached.
 
-Signed-off-by: Rabin Vincent <rabin@rab.in>
----
- .../filesystems/ramfs-rootfs-initramfs.txt         |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+The reason you're seeing it and others not is because your
+CONFIG_HIGHPTE=y
+is making the issue visible.
 
-diff --git a/Documentation/filesystems/ramfs-rootfs-initramfs.txt b/Documentation/filesystems/ramfs-rootfs-initramfs.txt
-index 7be232b..08547cf 100644
---- a/Documentation/filesystems/ramfs-rootfs-initramfs.txt
-+++ b/Documentation/filesystems/ramfs-rootfs-initramfs.txt
-@@ -130,12 +130,11 @@ The 2.6 kernel build process always creates a gzipped cpio format initramfs
- archive and links it into the resulting kernel binary.  By default, this
- archive is empty (consuming 134 bytes on x86).
- 
--The config option CONFIG_INITRAMFS_SOURCE (for some reason buried under
--devices->block devices in menuconfig, and living in usr/Kconfig) can be used
--to specify a source for the initramfs archive, which will automatically be
--incorporated into the resulting binary.  This option can point to an existing
--gzipped cpio archive, a directory containing files to be archived, or a text
--file specification such as the following example:
-+The config option CONFIG_INITRAMFS_SOURCE can be used to specify a source for
-+the initramfs archive, which will automatically be incorporated into the
-+resulting binary.  This option can point to an existing gzipped cpio archive, a
-+directory containing files to be archived, or a text file specification such as
-+the following example:
- 
-   dir /dev 755 0 0
-   nod /dev/console 644 0 0 c 5 1
--- 
-1.5.6
+__munlock_pte_handler is trying to lock_page (or migration_entry_wait)
+while using the per-cpu kmap_atomic from walk_pte_range's pte_offset_map.
+Sleeping functions called from atomic context.
 
+There's quite a lot to worry about there.
+
+That page table walker was originally written to gather some info
+for /proc display, not to act upon the page table contents in any
+serious way.  So it's just doing pte_offset_map when every(?) other
+page table walk would be required to pte_offset_map_lock.  If it
+were doing pte_offset_map_lock, then lots more people would have
+seen the problem sooner.
+
+Does this usage need to pte_offset_map_lock?  I think to the extent
+that it needs to lock_page, it needs to pte_offset_map_lock: both
+are because file truncation (or more commonly reclaim, but without
+looking into it too carefully, I dare say reclaim isn't a problem
+in this context) could interfere with page->mapping and pte at any
+instant.
+
+Conveniently, we have not one but two attempts at a generic page
+walker (sigh!): the other one, apply_to_page_range in mm/memory.c,
+does do the lock; it also allocates a page table if it's not there,
+I guess that aspect wouldn't be a problem on an mlocked area.  Maybe
+using apply_to_page_range would be better here, and sidestep the
+issue of not having CONFIG_PAGE_WALKER.
+
+But if it does pte_offset_map_lock, look, migration_entry_wait does
+so too; well, never mind the lock, it'll kunmap_atomic 
+Obviously that part cries out for refactoring.
+
+And how do you manage the lock_page?  Offhand, I don't know, I'm
+just reporting on the obvious.  Would trylocking be good enough?
+
+(I do dislike "generic page walkers" because they encourage this
+kind of oversight; and I hate to think of the latency problems
+they might be introducing - no sign of a cond_resched in either.)
+
+Hugh
