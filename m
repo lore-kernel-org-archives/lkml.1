@@ -1,51 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbYGCXmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758060AbYGCXmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757939AbYGCXmY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 19:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757717AbYGCXmF
+	id S1758060AbYGCXmq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 19:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756848AbYGCXmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 19:42:05 -0400
-Received: from web52912.mail.re2.yahoo.com ([206.190.49.22]:22191 "HELO
-	web52912.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757464AbYGCXmE convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 19:42:04 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=U9HLZ1oqkKGmEoXy0hY4JP0JSZFMpdls2whczjd8Tsx8u+QODFc7icofR7ASvPGqmAE2lf8xXu/bqI1duADREBoo15WyYkRPRKF7FZ66yKtQZYIc7qsBsRkKIWqgQnFodZ3pU3gIFUGRgrkch5ErEYdHSj+Di0dOCMa/VawmTbs=;
-X-Mailer: YahooMailWebService/0.7.199
-Date: Thu, 3 Jul 2008 16:42:01 -0700 (PDT)
-From: Chris Rankin <rankincj@yahoo.com>
-Reply-To: rankincj@yahoo.com
-Subject: Re: Linux 2.6.25.10
+	Thu, 3 Jul 2008 19:42:36 -0400
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:49549 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756807AbYGCXmf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 19:42:35 -0400
+Date: Thu, 3 Jul 2008 18:42:28 -0500
+From: Nathan Lynch <ntl@pobox.com>
 To: linux-kernel@vger.kernel.org
-Cc: gregkh@suse.de
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       Roland McGrath <roland@redhat.com>
+Subject: [PATCH 2/2] enable AT_BASE_PLATFORM aux vector for powerpc
+Message-ID: <20080703234228.GD9594@localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Message-ID: <555236.75770.qm@web52912.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Pobox-Relay-ID: B59BAC12-4959-11DD-8A60-3113EBD4C077-04752483!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Again, if the above information is somehow insufficient as to what
-> exactly is fixed in the -stable releases, and anyone has questions about
-> how these release announcements are created, please let me know.
+Stash the first platform string matched by identify_cpu() in
+powerpc_base_platform, and supply that to the ELF loader for the value
+of AT_BASE_PLATFORM.
 
-Well, for example:
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
 
-I have only machines with 32 bit CPUS, none of them is hot-pluggable and none has an i915 graphics chip. All my local users are "trusted", nor am I running any multi-threaded Java applications on SMP systems. (I also have no idea what ICM pages are, but they sound jolly impressive!)
+Note: I wasn't sure how to pick the index value for AT_BASE_PLATFORM;
+I simply searched include/ for all AT_ values and added 1 to the
+highest value found.
 
-And what is "native_read_tscp" all about?
+ arch/powerpc/kernel/cputable.c |   11 +++++++++++
+ include/asm-powerpc/auxvec.h   |    3 +++
+ include/asm-powerpc/cputable.h |    2 ++
+ include/asm-powerpc/elf.h      |    8 ++++++++
+ 4 files changed, 24 insertions(+), 0 deletions(-)
 
-So why am I being "STRONGLY encouraged to upgrade to this release"? (Your emphasis.) Is it because otherwise you're going to sneak up and burn my house down?
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index a9c90be..f1eb632 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -23,6 +23,9 @@
+ struct cpu_spec* cur_cpu_spec = NULL;
+ EXPORT_SYMBOL(cur_cpu_spec);
+ 
++/* The platform string corresponding to the real PVR */
++const char *powerpc_base_platform;
++
+ /* NOTE:
+  * Unlike ppc32, ppc64 will only call this once for the boot CPU, it's
+  * the responsibility of the appropriate CPU save/restore functions to
+@@ -1620,6 +1623,14 @@ struct cpu_spec * __init identify_cpu(unsigned long offset, unsigned int pvr)
+ 			} else
+ 				*t = *s;
+ 			*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
++
++			/*
++			 * Set the base platform string once; assumes
++			 * we're called with real pvr first.
++			 */
++			if (powerpc_base_platform == NULL)
++				powerpc_base_platform = t->platform;
++
+ #if defined(CONFIG_PPC64) || defined(CONFIG_BOOKE)
+ 			/* ppc64 and booke expect identify_cpu to also call
+ 			 * setup_cpu for that processor. I will consolidate
+diff --git a/include/asm-powerpc/auxvec.h b/include/asm-powerpc/auxvec.h
+index 19a099b..507f081 100644
+--- a/include/asm-powerpc/auxvec.h
++++ b/include/asm-powerpc/auxvec.h
+@@ -16,4 +16,7 @@
+  */
+ #define AT_SYSINFO_EHDR		33
+ 
++/* The actual hardware platform; may differ from AT_PLATFORM */
++#define AT_BASE_PLATFORM	38
++
+ #endif
+diff --git a/include/asm-powerpc/cputable.h b/include/asm-powerpc/cputable.h
+index a9c1de3..527152f 100644
+--- a/include/asm-powerpc/cputable.h
++++ b/include/asm-powerpc/cputable.h
+@@ -125,6 +125,8 @@ extern struct cpu_spec *identify_cpu(unsigned long offset, unsigned int pvr);
+ extern void do_feature_fixups(unsigned long value, void *fixup_start,
+ 			      void *fixup_end);
+ 
++extern const char *powerpc_base_platform;
++
+ #endif /* __ASSEMBLY__ */
+ 
+ /* CPU kernel features */
+diff --git a/include/asm-powerpc/elf.h b/include/asm-powerpc/elf.h
+index 38a5172..ff0c947 100644
+--- a/include/asm-powerpc/elf.h
++++ b/include/asm-powerpc/elf.h
+@@ -237,6 +237,14 @@ extern int dump_task_altivec(struct task_struct *, elf_vrregset_t *vrregs);
+ 
+ #define ELF_PLATFORM	(cur_cpu_spec->platform)
+ 
++/* While ELF_PLATFORM indicates the ISA supported by the platform, it
++ * may not accurately reflect the underlying behavior of the hardware
++ * (as in the case of running in Power5+ compatibility mode on a
++ * Power6 machine).  ELF_BASE_PLATFORM allows ld.so to load libraries
++ * that are tuned for the real hardware.
++ */
++#define ELF_BASE_PLATFORM (powerpc_base_platform)
++
+ #ifdef __powerpc64__
+ # define ELF_PLAT_INIT(_r, load_addr)	do {	\
+ 	_r->gpr[2] = load_addr; 		\
+-- 
+1.5.5.1
 
-Cheers,
-Chris
-
-
-
-      __________________________________________________________
-Not happy with your email address?.
-Get the one you really want - millions of new email addresses available now at Yahoo! http://uk.docs.yahoo.com/ymail/new.html
