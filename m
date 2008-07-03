@@ -1,74 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbYGCRK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbYGCRQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755185AbYGCRK1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 13:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYGCRKQ
+	id S1753852AbYGCRQZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 13:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYGCRQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 13:10:16 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:50502 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752771AbYGCRKP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 13:10:15 -0400
-Subject: Re: [PATCH 1/2] cleanup e820_setup_gap v2
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, "lenb@kernel.org" <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-In-Reply-To: <20080703130035.GA23060@elte.hu>
-References: <1214333310.27577.26.camel@promb-2n-dhcp368.eng.vmware.com>
-	 <20080625160817.GC24967@elte.hu>
-	 <1214416962.27577.74.camel@promb-2n-dhcp368.eng.vmware.com>
-	 <86802c440806261101k78c5057id8ca0649188bd132@mail.gmail.com>
-	 <20080703125227.GA14082@elte.hu>  <20080703130035.GA23060@elte.hu>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Thu, 03 Jul 2008 10:10:12 -0700
-Message-Id: <1215105012.20655.2.camel@promb-2n-dhcp368.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Jul 2008 13:16:14 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:40368 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751054AbYGCRQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 13:16:13 -0400
+Date: Thu, 3 Jul 2008 18:16:10 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Dan Williams <dan.j.williams@intel.com>,
+       Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, NeilBrown <neilb@suse.de>,
+       babydr@baby-dragons.com, lee.schermerhorn@hp.com, a.beregalov@gmail.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] Do not clobber pgdat->nr_zones during memory initialisation
+Message-ID: <20080703171610.GG18055@csn.ul.ie>
+References: <1214944175.26855.18.camel@dwillia2-linux.ch.intel.com> <20080702051759.GA26338@csn.ul.ie> <1215049766.2840.43.camel@dwillia2-linux.ch.intel.com> <20080703042750.GB14614@csn.ul.ie> <alpine.LFD.1.10.0807022135360.18105@woody.linux-foundation.org> <20080703050036.GD14614@csn.ul.ie> <1215064455.15797.4.camel@dwillia2-linux.ch.intel.com> <486CD623.8030906@linux-foundation.org> <20080703163638.GC18055@csn.ul.ie> <alpine.LFD.1.10.0807030942440.18105@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807030942440.18105@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-03 at 06:00 -0700, Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+On (03/07/08 09:44), Linus Torvalds didst pronounce:
 > 
-> > > > e820_search_gap also take a end_addr parameter to limit search
-> > > > from start_addr to end_addr.
-> > > >
-> > > > Signed-off-by: AloK N Kataria <akataria@vmware.com>
-> > >
-> > > Acked-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> >
-> > applied to tip/x86/unify-setup - thanks!
 > 
-> hm, it doesnt work too well:
+> On Thu, 3 Jul 2008, Mel Gorman wrote:
+> > 
+> > Subject: [PATCH] Do not clobber pgdat->nr_zones during memory initialisation
 > 
->   arch/x86/pci/acpi.c: In function 'search_gap':
->   arch/x86/pci/acpi.c:130: error: too few arguments to function 'e820_search_gap'
+> Heh. I already applied it as ObviouslyCorrect(tm), but did the 
+> simplification I already pointed out (and which your second version 
+> already had) and rewrote your commit message a bit. So it's now committed 
+> as follows..
 > 
-> was i supposed to revert:
-> 
-> | commit 2c0262493239814b06a8aaabd1cf09b2f8fa3519
-> | Author: Alok Kataria <akataria@vmware.com>
-> | Date:   Tue Jun 24 11:48:46 2008 -0700
-> |
-> |    acpi based pci gap caluculation v2
-> 
-> ?
 
-No...I had sent a incremental patch to the above patch..
-http://marc.info/?l=linux-kernel&m=121441818818598&w=2
+Perfect. The log even looks like it was written by a sane person. Thanks
+for that.
 
-Please apply this one too.
-
-Thanks,
-Alok
+> 		Linus
 > 
->         Ingo
+> ---
+> commit 494de90098784b8e2797598cefdd34188884ec2e
+> Author: Mel Gorman <mel@csn.ul.ie>
+> Date:   Thu Jul 3 05:27:51 2008 +0100
+> 
+>     Do not overwrite nr_zones on !NUMA when initialising zlcache_ptr
+>     
+>     The non-NUMA case of build_zonelist_cache() would initialize the
+>     zlcache_ptr for both node_zonelists[] to NULL.
+>     
+>     Which is problematic, since non-NUMA only has a single node_zonelists[]
+>     entry, and trying to zero the non-existent second one just overwrote the
+>     nr_zones field instead.
+>     
+>     As kswapd uses this value to determine what reclaim work is necessary,
+>     the result is that kswapd never reclaims.  This causes processes to
+>     stall frequently in low-memory situations as they always direct reclaim.
+>     This patch initialises zlcache_ptr correctly.
+>     
+>     Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+>     Tested-by: Dan Williams <dan.j.williams@intel.com>
+>     [ Simplified patch a bit ]
+>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> ---
+>  mm/page_alloc.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+> 
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 2f55295..f32fae3 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -2328,7 +2328,6 @@ static void build_zonelists(pg_data_t *pgdat)
+>  static void build_zonelist_cache(pg_data_t *pgdat)
+>  {
+>  	pgdat->node_zonelists[0].zlcache_ptr = NULL;
+> -	pgdat->node_zonelists[1].zlcache_ptr = NULL;
+>  }
+>  
+>  #endif	/* CONFIG_NUMA */
+> 
 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
