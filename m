@@ -1,109 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbYGCXl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbYGCXmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757528AbYGCXl4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 19:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756087AbYGCXlr
+	id S1757939AbYGCXmY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 19:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757717AbYGCXmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 19:41:47 -0400
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:46232 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753748AbYGCXlr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 19:41:47 -0400
-Date: Thu, 3 Jul 2008 18:41:40 -0500
-From: Nathan Lynch <ntl@pobox.com>
+	Thu, 3 Jul 2008 19:42:05 -0400
+Received: from web52912.mail.re2.yahoo.com ([206.190.49.22]:22191 "HELO
+	web52912.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757464AbYGCXmE convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 19:42:04 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=U9HLZ1oqkKGmEoXy0hY4JP0JSZFMpdls2whczjd8Tsx8u+QODFc7icofR7ASvPGqmAE2lf8xXu/bqI1duADREBoo15WyYkRPRKF7FZ66yKtQZYIc7qsBsRkKIWqgQnFodZ3pU3gIFUGRgrkch5ErEYdHSj+Di0dOCMa/VawmTbs=;
+X-Mailer: YahooMailWebService/0.7.199
+Date: Thu, 3 Jul 2008 16:42:01 -0700 (PDT)
+From: Chris Rankin <rankincj@yahoo.com>
+Reply-To: rankincj@yahoo.com
+Subject: Re: Linux 2.6.25.10
 To: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: [PATCH 1/2] elf loader support for auxvec base platform string
-Message-ID: <20080703234140.GC9594@localdomain>
+Cc: gregkh@suse.de
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Pobox-Relay-ID: 9912A6AE-4959-11DD-9C7C-CE28B26B55AE-04752483!a-sasl-fastnet.pobox.com
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Message-ID: <555236.75770.qm@web52912.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some IBM POWER-based platforms have the ability to run in a
-mode which mostly appears to the OS as a different processor from the
-actual hardware.  For example, a Power6 system may appear to be a
-Power5+, which makes the AT_PLATFORM value "power5+".
+> Again, if the above information is somehow insufficient as to what
+> exactly is fixed in the -stable releases, and anyone has questions about
+> how these release announcements are created, please let me know.
 
-However, some applications (virtual machines, optimized libraries) can
-benefit from knowledge of the underlying CPU model.  A new aux vector
-entry, AT_BASE_PLATFORM, will denote the actual hardware.  For
-example, on a Power6 system in Power5+ compatibility mode, AT_PLATFORM
-will be "power5+" and AT_BASE_PLATFORM will be "power6".
+Well, for example:
 
-If the architecture has defined ELF_BASE_PLATFORM, copy that value to
-the user stack in the same manner as ELF_PLATFORM.
+I have only machines with 32 bit CPUS, none of them is hot-pluggable and none has an i915 graphics chip. All my local users are "trusted", nor am I running any multi-threaded Java applications on SMP systems. (I also have no idea what ICM pages are, but they sound jolly impressive!)
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
----
+And what is "native_read_tscp" all about?
 
-Next patch implements ELF/AT_BASE_PLATFORM for powerpc.
+So why am I being "STRONGLY encouraged to upgrade to this release"? (Your emphasis.) Is it because otherwise you're going to sneak up and burn my house down?
 
- fs/binfmt_elf.c |   23 +++++++++++++++++++++++
- 1 files changed, 23 insertions(+), 0 deletions(-)
+Cheers,
+Chris
 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index d48ff5f..834c2c4 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -131,6 +131,10 @@ static int padzero(unsigned long elf_bss)
- #define STACK_ALLOC(sp, len) ({ sp -= len ; sp; })
- #endif
- 
-+#ifndef ELF_BASE_PLATFORM
-+#define ELF_BASE_PLATFORM NULL
-+#endif
-+
- static int
- create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 		unsigned long load_addr, unsigned long interp_load_addr)
-@@ -142,7 +146,9 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 	elf_addr_t __user *envp;
- 	elf_addr_t __user *sp;
- 	elf_addr_t __user *u_platform;
-+	elf_addr_t __user *u_base_platform;
- 	const char *k_platform = ELF_PLATFORM;
-+	const char *k_base_platform = ELF_BASE_PLATFORM;
- 	int items;
- 	elf_addr_t *elf_info;
- 	int ei_index = 0;
-@@ -172,6 +178,19 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 			return -EFAULT;
- 	}
- 
-+	/*
-+	 * If this architecture has a "base" platform capability
-+	 * string, copy it to userspace.
-+	 */
-+	u_base_platform = NULL;
-+	if (k_base_platform) {
-+		size_t len = strlen(k_base_platform) + 1;
-+
-+		u_base_platform = (elf_addr_t __user *)STACK_ALLOC(p, len);
-+		if (__copy_to_user(u_base_platform, k_base_platform, len))
-+			return -EFAULT;
-+	}
-+
- 	/* Create the ELF interpreter info */
- 	elf_info = (elf_addr_t *)current->mm->saved_auxv;
- 	/* update AT_VECTOR_SIZE_BASE if the number of NEW_AUX_ENT() changes */
-@@ -208,6 +227,10 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 		NEW_AUX_ENT(AT_PLATFORM,
- 			    (elf_addr_t)(unsigned long)u_platform);
- 	}
-+	if (k_base_platform) {
-+		NEW_AUX_ENT(AT_BASE_PLATFORM,
-+			    (elf_addr_t)(unsigned long)u_base_platform);
-+	}
- 	if (bprm->interp_flags & BINPRM_FLAGS_EXECFD) {
- 		NEW_AUX_ENT(AT_EXECFD, bprm->interp_data);
- 	}
--- 
-1.5.5.1
 
+
+      __________________________________________________________
+Not happy with your email address?.
+Get the one you really want - millions of new email addresses available now at Yahoo! http://uk.docs.yahoo.com/ymail/new.html
