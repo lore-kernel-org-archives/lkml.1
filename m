@@ -1,57 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbYGCUy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756399AbYGCUzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754950AbYGCUy5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 16:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYGCUyr
+	id S1756399AbYGCUzT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 16:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbYGCUyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 16:54:47 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35489 "EHLO
+	Thu, 3 Jul 2008 16:54:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35498 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752953AbYGCUyq (ORCPT
+	with ESMTP id S1754370AbYGCUyw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 16:54:46 -0400
-Date: Thu, 3 Jul 2008 13:52:05 -0700
-From: Greg KH <greg@kroah.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, davem@davemloft.net
-Subject: Re: [PATCH] PCI: make pci_name use dev_name
-Message-ID: <20080703205205.GA17079@kroah.com>
-References: <20080702153524.GA30318@kroah.com> <200807031237.31063.jbarnes@virtuousgeek.org> <20080703202446.GB528@kroah.com> <200807031333.56892.jbarnes@virtuousgeek.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200807031333.56892.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 3 Jul 2008 16:54:52 -0400
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+From: David Woodhouse <dwmw2@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: jeff@garzik.org, hugh@veritas.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20080703.133428.22854563.davem@davemloft.net>
+References: <486CC440.9030909@garzik.org>
+	 <Pine.LNX.4.64.0807031353030.11033@blonde.site>
+	 <486CCFED.7010308@garzik.org>
+	 <20080703.133428.22854563.davem@davemloft.net>
+Content-Type: text/plain
+Date: Thu, 03 Jul 2008 21:54:36 +0100
+Message-Id: <1215118476.10393.692.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 03, 2008 at 01:33:56PM -0700, Jesse Barnes wrote:
-> On Thursday, July 03, 2008 1:24 pm Greg KH wrote:
-> > On Thu, Jul 03, 2008 at 12:37:30PM -0700, Jesse Barnes wrote:
-> > > On Wednesday, July 02, 2008 1:22 pm Greg KH wrote:
-> > > > On Wed, Jul 02, 2008 at 09:04:22AM -0700, Greg KH wrote:
-> > > > > Well, it's only used in 837 different places, so it might take me a
-> > > > > few hours to ensure I catch all the usages :(
-> > > >
-> > > > Ok, here are 4 patches that fix the few places that this pci change
-> > > > caused problems.
-> > > >
-> > > > Jesse, do you want to add these to your tree?  I can take the single
-> > > > USB one if you want, or you can take all 4, it's fine with me.
-> > >
-> > > I'd rather just take the PCI patch (which I'm doing now).  The other
-> > > stuff can come in through the appropriate tree.
-> >
-> > Fair enough, I'll make sure they don't get dropped.
+On Thu, 2008-07-03 at 13:34 -0700, David Miller wrote:
+> From: Jeff Garzik <jeff@garzik.org>
+> Date: Thu, 03 Jul 2008 09:11:09 -0400
 > 
-> Cool thanks.  I assume you'll only push the pci_name change once all or most 
-> of the compiler warnings have been fixed up?
+> > dwmw2 has been told repeatedly that his changes will cause PRECISELY 
+> > these problems, but he refuses to take the simple steps necessary to 
+> > ensure people can continue to boot their kernels after his changes go in.
+> > 
+> > Presently his tg3 changes have been nak'd, in part, because of this 
+> > obviously, forseeable, work-around-able breakage.
+> 
+> I agree with Jeff, obviously.
+> 
+> We both saw this song and dance coming.  Now the reports are coming in
+> from confused people who are losing their network.  It is no surprise.
+> 
+> And the person who introduced this swath of regressions acts like it's
+> some kind of chore to enforce the obviously correct default behavior.
+> 
+> Why is it such a big deal to make "obviously working" the default?
 
-As there were only 4 patches for the warnings, yes, I can handle that :)
+> In effect, you lied to us, in that you said that by default users
+> wouldn't have to do anything to keep getting a working setup.
 
-thanks,
+No, I didn't lie to you. The conversation, in case you forgot, went like
+this...
 
-greg k-h
+On Wed, 2008-06-18 at 16:23 -0700, David Miller wrote:
+> On Thu, 2008-06-19 at 00:16 +0100, David Woodhouse wrote:
+> > On Wed, 2008-06-18 at 16:05 -0700, David Miller wrote:
+> > > Tell me this, how can I (with the default config option settings)
+> > > netboot properly without an initial ramdisk after these tg3 patches
+> > > and still get the proper firmware?
+> > 
+> > I suppose the facetious answer is that you can't, just as you can't do
+> > it with a default config _before_ these patches -- because neither
+> > CONFIG_TIGON3 nor the various options you need for nfsroot are enabled
+> > by default.
+> > 
+> > But if you _have_ a working nfsroot+tg3 config and you apply these
+> > patches, then all you need to do is say 'y' when you're asked if you
+> > want to include the firmware for it:
+> >         CONFIG_TIGON3_FIRMWARE=y
+> > 
+> > If you are competent enough to get nfsroot working, it isn't really very
+> > credible to claim you lack the wit to say 'y' when asked that question,
+> > surely?
+> > 
+> > Solving that problem was step #1 in the process of converting drivers to
+> > use request_firmware(). You _have_ to be able to build the firmware into
+> > the kernel image, and you _can_.
+> 
+> Fair enough.
+> 
+> I'll step back and let you work out the objections Jeff raised.
+
+Since then, I responded to feedback and changed the individual
+CONFIG_XXX_FIRMWARE options to a single CONFIG_FIRMWARE_IN_KERNEL which
+controls them all, but basically nothing has changed. What you accepted
+then is still true.
+
+On Thu, 2008-07-03 at 13:34 -0700, David Miller wrote:
+So don't be surprised how pissed off some of us are about these
+> changes.  You are inflicting pain on driver maintainers because now
+> they have to sift through these "firmware not found" reports in
+> addition to their normal workload.
+
+It also improves coverage testing, and found a real bug in the failure
+path...
+
+> And David make it seem like it's inconvenient for him to implement the
+> correct default, which in particular pisses me personally off the
+> most.  It's totally irresponsible, and I don't care what the legal or
+> ideological motivation is.
+
+It's not inconvenient at all. It's just the _wrong_ default. But if we
+really can't get past it otherwise, then let's just set it to 'y' for
+now. I've committed the following, which will appear in linux-next
+tomorrow.
+
+Now, can someone _please_ give me a straight response to the allegation
+that the TSO firmware on the tg3 is _optional_ anyway, and that it can
+work without it? If that's true, we should fix the code path where
+request_firmware() fails, so it doesn't abort the initialisation. (And
+most of the whining about the driver being 'broken' is nonsense too.)
+
+----
+>From 400f1b05a9707bd181a044877ca590e87c400749 Mon Sep 17 00:00:00 2001
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Thu, 3 Jul 2008 21:36:11 +0100
+Subject: [PATCH] firmware: default CONFIG_FIRMWARE_IN_KERNEL=y
+
+This is obviously the wrong thing to do in the long (or even medium)
+term -- since the recommended way of handling firmware, as used
+_unconditionally_ by modern drivers, is to rely on request_firmware()
+being satisfied from userspace rather than keeping the firmware in
+unswappable static kernel memory.
+
+But this change preserves the property, for now, that the fixes to make
+older drivers use request_firmware() introduce _no_ "regressions" when
+Aunt Tillie runs 'make oldconfig' and accepts the defaults without
+looking at what she's doing.
+
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+---
+ drivers/base/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
+index 339c148..d47482f 100644
+--- a/drivers/base/Kconfig
++++ b/drivers/base/Kconfig
+@@ -37,6 +37,7 @@ config FW_LOADER
+ config FIRMWARE_IN_KERNEL
+ 	bool "Include in-kernel firmware blobs in kernel binary"
+ 	depends on FW_LOADER
++	default y
+ 	help
+ 	  The kernel source tree includes a number of firmware 'blobs'
+ 	  which are used by various drivers. The recommended way to
+-- 
+1.5.5.1
+
+
+-- 
+dwmw2
+
