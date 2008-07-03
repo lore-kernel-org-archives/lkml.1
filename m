@@ -1,62 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754514AbYGCSAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbYGCSAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754514AbYGCSAR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 14:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYGCSAF
+	id S1755393AbYGCSAw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 14:00:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbYGCSAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 14:00:05 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:34730 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752604AbYGCSAD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 14:00:03 -0400
-X-BigFish: VPS-23(zz98dR7efVzzzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K3FZBH-02-RQ3-01
-x-mimeole: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Thu, 3 Jul 2008 14:00:44 -0400
+Received: from gw.goop.org ([64.81.55.164]:35443 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752985AbYGCSAn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 14:00:43 -0400
+Message-ID: <486D13C3.3000409@goop.org>
+Date: Thu, 03 Jul 2008 11:00:35 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 3/6] AMD IOMMU: flush domain TLB when there is more than onepage to flush
-Date: Thu, 3 Jul 2008 13:01:21 -0500
-Message-ID: <6453C3CB8E2B3646B0D020C112613273013D91CF@sausexmb4.amd.com>
-In-Reply-To: <1215106511-12915-4-git-send-email-joerg.roedel@amd.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 3/6] AMD IOMMU: flush domain TLB when there is more than onepage to flush
-Thread-Index: AcjdM43RxO4320PASnuxIq1jBk1D0QAAh92A
-References: <1215106511-12915-1-git-send-email-joerg.roedel@amd.com> <1215106511-12915-4-git-send-email-joerg.roedel@amd.com>
-From: "Duran, Leo" <leo.duran@amd.com>
-To: "Roedel, Joerg" <Joerg.Roedel@amd.com>, <mingo@redhat.com>,
-       <tglx@linutronix.de>
-CC: "Richter, Robert" <rrichter@elbe.amd.com>,
-       <iommu@lists.linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       "Sarathy, Bhavna" <Bhavna.Sarathy@amd.com>
-X-OriginalArrivalTime: 03 Jul 2008 17:59:51.0268 (UTC) FILETIME=[9713AA40:01C8DD36]
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, apw@shadowen.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [BUILD-FAILURE] 2.6.26-rc8-mm1 - x86 - __ptep_modify_prot_start()
+ missing
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org>	<20080703122943.GB6451@linux.vnet.ibm.com> <20080703104643.04ea2acb.akpm@linux-foundation.org>
+In-Reply-To: <20080703104643.04ea2acb.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, July 03, 2008 12:35 PM, Joerg Roedel wrote:
+Andrew Morton wrote:
+> On Thu, 3 Jul 2008 17:59:43 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+>
+>   
+>> Hi Andrew,
+>>
+>> 2.6.26-rc8-mm1 kernel build fails on the x86
+>>
+>>   CC      arch/x86/kernel/paravirt.o
+>> arch/x86/kernel/paravirt.c:383: error: _____ptep_modify_prot_start___ undeclared here (not in a function)
+>>     
 
-> This patch changes the domain TLB flushing behavior of the driver.
-When
-> there
-> is more than one page to flush it flushes the whole domain TLB instead
-> of every
-> single page. So we send only a single command to the IOMMU in every
-> case which
-> is faster to execute.
-> 
+Where did all those _____underlines___ come from?
 
-Joerg,
+>> make[1]: *** [arch/x86/kernel/paravirt.o] Error 1
+>> make: *** [arch/x86/kernel] Error 2
+>>
+>> linux-next patches has the changes to the adds the function
+>> __ptep_modify_prot_start as inline, the patch s390-build-fixes.patch
+>> is coverting it into macro. Reverting the s390-build-fixes.patch
+>> fixes the build failure.
+>>     
+>
+> grump.  Who did all this stuff?
+>
+> I dunno.  I'll drop s390-build-fixes.patch, add some ccs and stomp off.
+>
+>
+> From: Andrew Morton <akpm@linux-foundation.org>
+>
+> In file included from include/asm/pgtable.h:1087,
+>                  from include/linux/mm.h:39,
+>                  from arch/s390/mm/hugetlbpage.c:8:
+> include/asm-generic/pgtable.h: In function '__ptep_modify_prot_start':
+> include/asm-generic/pgtable.h:209: error: dereferencing pointer to incomplete type
+>   
 
-Instead of flushing the complete TLB, how about just setting the
-page-size encoding bits so as to cover all of the pages (rounded up to a
-power of 2... which in some cases may flush a few more pages, but not
-the complete TLB). This way other devices don't pay the 'flushing'
-penalty every time you unmap a buffer for a given device.
+We can't turn them into macros because we're expecting to be able to 
+take the address of __ptep_modify_prot_start/commit.  What type is not 
+defined on s390 at that point?  Would simply adding an extra include to 
+arch/s390/mm/hugetlbpage.c fix the problem?
 
-Leo.
+In the worst case we could push __ptep_modify_proc_start/commit out of 
+line somewhere appropriate, but that's a bit sad given how simple they are.
+
+    J
+
+> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>
+>  include/asm-generic/pgtable.h |   26 +++++++++-----------------
+>  1 file changed, 9 insertions(+), 17 deletions(-)
+>
+> diff -puN include/asm-generic/pgtable.h~s390-build-fixes include/asm-generic/pgtable.h
+> --- a/include/asm-generic/pgtable.h~s390-build-fixes
+> +++ a/include/asm-generic/pgtable.h
+> @@ -197,17 +197,13 @@ static inline int pmd_none_or_clear_bad(
+>  }
+>  #endif /* CONFIG_MMU */
+>  
+> -static inline pte_t __ptep_modify_prot_start(struct mm_struct *mm,
+> -					     unsigned long addr,
+> -					     pte_t *ptep)
+> -{
+> -	/*
+> -	 * Get the current pte state, but zero it out to make it
+> -	 * non-present, preventing the hardware from asynchronously
+> -	 * updating it.
+> -	 */
+> -	return ptep_get_and_clear(mm, addr, ptep);
+> -}
+> +/*
+> + * Get the current pte state, but zero it out to make it
+> + * non-present, preventing the hardware from asynchronously
+> + * updating it.
+> + */
+> +#define __ptep_modify_prot_start(mm, addr, ptep)	\
+> +	ptep_get_and_clear(mm, addr, ptep)
+>  
+>  static inline void __ptep_modify_prot_commit(struct mm_struct *mm,
+>  					     unsigned long addr,
+> @@ -235,12 +231,8 @@ static inline void __ptep_modify_prot_co
+>   * queue the update to be done at some later time.  The update must be
+>   * actually committed before the pte lock is released, however.
+>   */
+> -static inline pte_t ptep_modify_prot_start(struct mm_struct *mm,
+> -					   unsigned long addr,
+> -					   pte_t *ptep)
+> -{
+> -	return __ptep_modify_prot_start(mm, addr, ptep);
+> -}
+> +#define ptep_modify_prot_start(mm, addr, ptep)		\
+> +	__ptep_modify_prot_start(mm, addr, ptep)
+>  
+>  /*
+>   * Commit an update to a pte, leaving any hardware-controlled bits in
+> _
+>
+>
+>   
 
