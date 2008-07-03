@@ -1,80 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934033AbYGCHJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934342AbYGCHKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934033AbYGCHJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbYGCG6G
+	id S934342AbYGCHKl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 03:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbYGCG6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:58:06 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42252 "EHLO gate.crashing.org"
+	Thu, 3 Jul 2008 02:58:11 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:38870 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751938AbYGCEoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 00:44:54 -0400
-Subject: Re: Multiple MSI
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: linux-pci@vger.kernel.org,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>,
-       Dan Williams <dan.j.williams@intel.com>, Martine.Silbermann@hp.com,
-       linux-kernel@vger.kernel.org, Michael Ellerman <michaele@au1.ibm.com>
-In-Reply-To: <20080703035910.GB14894@parisc-linux.org>
-References: <20080703024445.GA14894@parisc-linux.org>
-	 <1215055469.21182.70.camel@pasglop>
-	 <20080703035910.GB14894@parisc-linux.org>
-Content-Type: text/plain
-Date: Thu, 03 Jul 2008 14:41:59 +1000
-Message-Id: <1215060119.21182.77.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	id S1752732AbYGCFAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 01:00:41 -0400
+Date: Thu, 3 Jul 2008 06:00:36 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dan Williams <dan.j.williams@intel.com>, Andy Whitcroft <apw@shadowen.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       NeilBrown <neilb@suse.de>, babydr@baby-dragons.com,
+       cl@linux-foundation.org, lee.schermerhorn@hp.com, a.beregalov@gmail.com,
+       akpm@linux-foundation.org
+Subject: Re: [problem] raid performance loss with 2.6.26-rc8 on 32-bit x86 (bisected)
+Message-ID: <20080703050036.GD14614@csn.ul.ie>
+References: <1214877439.7885.40.camel@dwillia2-linux.ch.intel.com> <20080701080910.GA10865@csn.ul.ie> <20080701175855.GI32727@shadowen.org> <20080701190741.GB16501@csn.ul.ie> <1214944175.26855.18.camel@dwillia2-linux.ch.intel.com> <20080702051759.GA26338@csn.ul.ie> <1215049766.2840.43.camel@dwillia2-linux.ch.intel.com> <20080703042750.GB14614@csn.ul.ie> <alpine.LFD.1.10.0807022135360.18105@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807022135360.18105@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-07-02 at 21:59 -0600, Matthew Wilcox wrote:
+On (02/07/08 21:43), Linus Torvalds didst pronounce:
 > 
 > 
-> This is true and worth considering carefully.  Are IRQ numbers a scarce
-> resource on PowerPC?  They are considerably less scarce than interrupt
-> vectors are on x86-64.  How hard is it to make IRQ numbers an abundent
-> resource?  Is it simply a question of increasing NR_IRQS?
-
-Yes, indeed, they aren't really scarce... actually less than the
-underlying HW vectors in most cases, so it isn't a big issue to add some
-kind of constraint to the allocator.
-
-> This cost should be traded off against the cost of allocating something
-> like the msix_entry array in each driver that wants to use multiple MSIs,
-> passing that array around, using it properly, etc.
+> On Thu, 3 Jul 2008, Mel Gorman wrote:
 > 
-> It would make some sense to pass nr_irqs all the way down to arch code
-> and let arch code take care of reserving the block of vectors (aligned
-> appropriately).  That would conserve IRQ numbers, though not vectors.
-> I think we have to consider excess vectors reserved.  If we don't, we
-> could get into the situation where a device uses more interrupts than
-> the driver thinks it will and problems ensue.
+> > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.26-rc8-clean/mm/page_alloc.c linux-2.6.26-rc8-fix-kswapd-on-numa/mm/page_alloc.c
+> > --- linux-2.6.26-rc8-clean/mm/page_alloc.c	2008-06-24 18:58:20.000000000 -0700
+> > +++ linux-2.6.26-rc8-fix-kswapd-on-numa/mm/page_alloc.c	2008-07-02 21:14:16.000000000 -0700
+> > @@ -2328,7 +2328,8 @@ static void build_zonelists(pg_data_t *p
+> >  static void build_zonelist_cache(pg_data_t *pgdat)
+> >  {
+> >  	pgdat->node_zonelists[0].zlcache_ptr = NULL;
+> > -	pgdat->node_zonelists[1].zlcache_ptr = NULL;
+> > +	if (NUMA_BUILD)
+> > +		pgdat->node_zonelists[1].zlcache_ptr = NULL;
+> >  }
+> 
+> This makes no sense.
+> 
+> That whole thing is inside a
+> 
+> 	#ifdef CONFIG_NUMA
+> 	... numa code ..
+> 	#else
+> 	... this code ..
+> 	#endif
+> 
+> so CONFIG_NUMA will _not_ be set, and NUMA_BUILD is always 0.
+> 
+> So why do that
+> 
+> 	if (NUMA_BUILD)
+> 		..
+> 
+> at all, when it is known to be false?
+> 
 
-Ok, so I lift my objection there in the sense that allocating a linear
-array of virtual numbers shouldn't be a problem (somebody remind me to
-make NR_IRQS a config option one of these days on ppc, or help with just
-getting rid of irq_desc array alltogether :-)
+Because I'm a muppet and a bit cross-eyed from looking at this until the
+problem would reveal itself. I knew this is needed fixing but choose the
+most stupid way possible to fix it.
 
-However, do you want to still keep the fact that they are power-of-2
-aligned up to the API or can I just do a linear block allocation for
-virtual number sand require drivers to do the appropriate
-addition/subtraction to get the N'th one ? I will need to allocate
-appropriately aligned HW numbers but that's done via different
-mechanisms (and in some case not even under full linux control, ie,
-hypervisor/firmware does it on pSeries).
+> So the patch may be correct, but wouldn't it be better to just remove the 
+> line entirely, instead of moving it into a conditional that cannot be 
+> true?
+> 
 
-> By the way, would people be interested in changing the MSI-X API to get
-> rid of the msix_entry array?  If allocating consecutive IRQs isn't a
-> problem, then we could switch the MSI-X code to use consecutive IRQs.
+Yes, revised patch below. Same fix, more sensible.
 
-It would make a lot of code simpler...
+> Also, I'm not quite seeing why those zonelists should be zeroed out at 
+> all. Shouldn't a non-NUMA setup always aim to have node_zonelists[0] == 
+> node_zonelists[1] == all appropriate zones?
+> 
 
-Ben.
+node_zonelists[1] doesn't exist at all on non-NUMA so there is only
+node_zonelists[0] that is all appropriate zones.
 
+> I have to say, the whole mmzoen thing is confusing. The code makes my eyes 
+> bleed. I can't really follow it.
 
+I'm looking at this too long to comment with anything other than a blank
+stare :/
+
+====
+Subject: [PATCH] Do not overwrite nr_zones on !NUMA when initialising zlcache_ptr
+
+With the two-zonelist patches on !NUMA machines, there really is only one
+zonelist as __GFP_THISNODE is meaningless. However, during initialisation, the
+assumption is made that two zonelists exist when initialising zlcache_ptr. The
+result is that pgdat->nr_zones is always 0. As kswapd uses this value to
+determine what reclaim work is necessary, the result is that kswapd never
+reclaims. This causes processes to stall frequently in low-memory situations
+as they always direct reclaim.  This patch initialises zlcache_ptr correctly.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ page_alloc.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.26-rc8-clean/mm/page_alloc.c linux-2.6.26-rc8-fix-kswapd-on-numa/mm/page_alloc.c
+--- linux-2.6.26-rc8-clean/mm/page_alloc.c	2008-06-24 18:58:20.000000000 -0700
++++ linux-2.6.26-rc8-fix-kswapd-on-numa/mm/page_alloc.c	2008-07-02 21:49:09.000000000 -0700
+@@ -2328,7 +2328,6 @@ static void build_zonelists(pg_data_t *p
+ static void build_zonelist_cache(pg_data_t *pgdat)
+ {
+ 	pgdat->node_zonelists[0].zlcache_ptr = NULL;
+-	pgdat->node_zonelists[1].zlcache_ptr = NULL;
+ }
+ 
+ #endif	/* CONFIG_NUMA */
