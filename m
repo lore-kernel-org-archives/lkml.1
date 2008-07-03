@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760162AbYGCNzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761417AbYGCN4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760162AbYGCNzt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 09:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757399AbYGCNzW
+	id S1761417AbYGCN4H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 09:56:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761250AbYGCNzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 09:55:22 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56304 "EHLO mx2.mail.elte.hu"
+	Thu, 3 Jul 2008 09:55:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43064 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760759AbYGCNzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 09:55:16 -0400
-Date: Thu, 3 Jul 2008 15:54:56 +0200
+	id S1761240AbYGCNzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 09:55:44 -0400
+Date: Thu, 3 Jul 2008 15:55:28 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <yhlu.kernel@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: merge zones_sizes_init for numa and non numa on
-	32bit
-Message-ID: <20080703135456.GC7603@elte.hu>
-References: <200806301834.59156.yhlu.kernel@gmail.com> <200807020031.02945.yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] x86: not printout if not finding setup_data
+Message-ID: <20080703135528.GD7603@elte.hu>
+References: <200806301834.59156.yhlu.kernel@gmail.com> <200807012004.10789.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200807020031.02945.yhlu.kernel@gmail.com>
+In-Reply-To: <200807012004.10789.yhlu.kernel@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,13 +37,20 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> move out e820_register_active_regions from non numa zones_sizes_init() 
-> and remove numa version zones_sizes_init().
-> 
-> and let 32 bit call remove_all_active_ranges in setup_arch directly 
-> like 64 bit
+>  		reserve_early(pa_data, pa_data+sizeof(*data)+data->len, buf);
+>  		e820_update_range(pa_data, sizeof(*data)+data->len,
+>  			 E820_RAM, E820_RESERVED_KERN);
+> +		found = 1;
+>  		pa_data = data->next;
+>  		early_iounmap(data, sizeof(*data));
+>  	}
+> +	if (!found)
+> +		return;
+> +
+>  	sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
+>  	printk(KERN_INFO "extended physical RAM map:\n");
+>  	e820_print_map("reserve setup_data");
 
 applied to tip/x86/unify-setup - thanks,
 
 	Ingo
-
