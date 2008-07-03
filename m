@@ -1,59 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbYGCWsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbYGCWvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757055AbYGCWsK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 18:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbYGCWr5
+	id S1757193AbYGCWvI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 18:51:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755641AbYGCWu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 18:47:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40334 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755438AbYGCWr4 (ORCPT
+	Thu, 3 Jul 2008 18:50:56 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:44297 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754863AbYGCWu4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 18:47:56 -0400
-Date: Thu, 3 Jul 2008 15:47:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, debora@linux.vnet.ibm.com,
-       zohar@linux.vnet.ibm.com
-Subject: Re: [PATCH] Update MAINTAINERS file for the TPM device driver
-Message-Id: <20080703154723.029d2948.akpm@linux-foundation.org>
-In-Reply-To: <1214950956.2381.7.camel@blackbox>
-References: <1214950956.2381.7.camel@blackbox>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 3 Jul 2008 18:50:56 -0400
+Message-ID: <486D577B.5040705@zytor.com>
+Date: Thu, 03 Jul 2008 15:49:31 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Bernhard Walle <bwalle@suse.de>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Ying Huang <ying.huang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: make e820_saved have update from setup_data
+References: <200807031135.37465.yhlu.kernel@gmail.com>	<200807031137.13984.yhlu.kernel@gmail.com> <20080703230108.1dbe68cb@kopernikus.site>
+In-Reply-To: <20080703230108.1dbe68cb@kopernikus.site>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 01 Jul 2008 19:22:36 -0300
-Rajiv Andrade <srajiv@linux.vnet.ibm.com> wrote:
+Bernhard Walle wrote:
+> * Yinghai Lu <yhlu.kernel@gmail.com> [2008-07-03 11:37]:
+>> +	/* update the e820_saved too */
+>> +	e820_reserve_setup_data();
+> 
+> Why do you want to update the e820_saved here? /sys/firmware/memmap
+> should provide the real BIOS-provided memory map, IMO ...
 
-> ___Update MAINTAINERS file for the TPM device driver.
-> 
-> Thanks,
-> Rajiv Andrade
-> IBM LTC Security Development
-> 
-> --
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 8f0ec46..5f72839 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3995,7 +3995,8 @@ W:        http://www.buzzard.org.uk/toshiba/
->  S:     Maintained
-> 
->  TPM DEVICE DRIVER
-> -P:     Kylene Hall
-> +P:     Debora Velarde
-> +P:     Rajiv Andrade
->  M:     tpmdd-devel@lists.sourceforge.net
->  W:     http://tpmdd.sourceforge.net
->  P:     Marcel Selhorst
-> 
+I would concur with that.
 
-Please always include a Signed-off-by: for kernel patches.  It seems
-particularly relevant for patches which transfer maintainership.  Of a
-security-related driver, no less.
-
+	-hpa
