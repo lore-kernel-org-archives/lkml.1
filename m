@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936098AbYGCHNw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935512AbYGCHMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936098AbYGCHNw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:13:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbYGCG6l
+	id S935512AbYGCHMt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 03:12:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbYGCG63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:58:41 -0400
-Received: from smtp-out-4.talktalk.net ([62.24.128.234]:6933 "EHLO
-	smtp.talktalk.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755222AbYGCGRW (ORCPT
+	Thu, 3 Jul 2008 02:58:29 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:31648 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754875AbYGCFoP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 02:17:22 -0400
-X-Path: TTSMTP
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtItAPkLbEhZ8m2EPGdsb2JhbACIQIl6AQEBAS2fHg
-Date: Thu, 3 Jul 2008 07:17:16 +0100 (BST)
-From: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
-X-X-Sender: tigran@ginsburg.homenet
-To: Valdis.Kletnieks@vt.edu
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Intel Microcode loader, tg3 driver, and the -rc8-mmotd New World
- Order firmware...
-In-Reply-To: <4534.1215048758@turing-police.cc.vt.edu>
-Message-ID: <Pine.LNX.4.61.0807030716030.10434@ginsburg.homenet>
-References: <4534.1215048758@turing-police.cc.vt.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 3 Jul 2008 01:44:15 -0400
+Date: Wed, 02 Jul 2008 23:44:09 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP
+ systems
+In-reply-to: <fa.OuKI5CNmq3HqeBQCfWOUtrq4+oA@ifi.uio.no>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-id: <486C6729.4020903@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.OuKI5CNmq3HqeBQCfWOUtrq4+oA@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Valdis,
+Maciej W. Rozycki wrote:
+> From: Matthew Garrett <mjg59@srcf.ucam.org>
+> 
+>  Some HP laptops have a problem with their DSDT reporting as
+> HP/SB400/10000, which includes some code which overrides all temperature
+> trip points to 16C if the INTIN2 input of the I/O APIC is enabled.  This
+> input is incorrectly designated the ISA IRQ 0 via an interrupt source
+> override even though it is wired to the output of the master 8259A and
+> INTIN0 is not connected at all.  So far two models have been identified, 
+> namely nx6125 and nx6325.
+> 
+>  Use a knob provided by the I/O APIC interrupt registration code to
+> abandon any attempts to route IRQ 0 through the I/O APIC for these
+> systems.
 
-On Wed, 2 Jul 2008 Valdis.Kletnieks@vt.edu wrote:
+Just a thought.. has anyone recently looked into using the RTC timer 
+instead of the PIT as the default clockevent source? There still seem to 
+be systems like these seeping through with broken PIT through IOAPIC 
+since Windows apparently doesn't use that config at all. If we could use 
+the RTC instead (which is apparently what Windows does) we could avoid 
+that problem.
 
-> I built the -rc8-mmotd kernel, and built it with 'CONFIG_FIRMWARE_IN_KERNEL=n'.
-> Lo and behold, the microcode.ko was now doing a request_firmware for
-> 'intel-ucode/06-0f-06' (which makes sense, the Core2 Duo in this laptop is
-> family 6, model 15, stepping 6).  However, what I had in /lib/firmware was
-> the Intel-distributed 'microcode.dat' with updates for all the CPUs (which
-> used to work in times past).
->
-> What's the magic incantation to take the microcode.dat and create something
-> that the firmware driver is willing to use, or is this all borked up and
-> I need to do a major rethink or fix my config?
-
-that's because it expects the Intel-supplied microcode data and you are 
-using the old style microcode.dat data.
-
-Kind regards
-Tigran
-
->
-> Another minor annoyance - the tg3 driver, when builtin to the kernel, wouldn't
-> load the microcode in this config. It complained it couldn't get 'tigon/tg3_tos.bin',
-> but that's almost certainly an issue with Fedora's 'nash' firmware support and/or
-> my understanding of it - I got *that* part working by dropping the file into
-> /lib/firmware/tigon and building the driver as a module. Fortunately, I don't
-> need the tg3 driver to boot far enough to get a full udev running.
->
->
+The last I read on the subject, the issue was that the RTC timer 
+frequencies didn't match the existing Linux HZ values, but I'm not sure 
+if that's still an issue with the current clockevents infrastructure..
