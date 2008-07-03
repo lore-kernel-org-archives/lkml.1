@@ -1,138 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759418AbYGCNcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759719AbYGCNdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759418AbYGCNcc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 09:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYGCNcW
+	id S1759719AbYGCNdq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 09:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbYGCNde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 09:32:22 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50542 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752169AbYGCNcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 09:32:21 -0400
-Date: Thu, 3 Jul 2008 15:31:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: next-0703: build failure in x86/entry_64.S
-Message-ID: <20080703133132.GC12102@elte.hu>
-References: <a4423d670807030600y3b1e651end20b9993ca5c8d94@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a4423d670807030600y3b1e651end20b9993ca5c8d94@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 3 Jul 2008 09:33:34 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49881 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753015AbYGCNdc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 09:33:32 -0400
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+From: David Woodhouse <dwmw2@infradead.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+In-Reply-To: <486CCFED.7010308@garzik.org>
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+	 <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <486CC440.9030909@garzik.org>
+	 <Pine.LNX.4.64.0807031353030.11033@blonde.site>
+	 <486CCFED.7010308@garzik.org>
+Content-Type: text/plain
+Date: Thu, 03 Jul 2008 14:33:19 +0100
+Message-Id: <1215091999.10393.556.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-07-03 at 09:11 -0400, Jeff Garzik wrote:
+> Hugh Dickins wrote:
+> > On Thu, 3 Jul 2008, Jeff Garzik wrote:
+> >> KOSAKI Motohiro wrote:
+> >>> Hi Michael,
+> >>>
+> >>> my server output following error message on 2.6.26-rc8-mm1.
+> >>> Is this a bug?
+> >>>
+> >>> ------------------------------------------------------------------
+> >>> tg3.c:v3.93 (May 22, 2008)
+> >>> GSI 72 (level, low) -> CPU 0 (0x0001) vector 51
+> >>> tg3 0000:06:01.0: PCI INT A -> GSI 72 (level, low) -> IRQ 51
+> >>> firmware: requesting tigon/tg3_tso.bin
+> >>> tg3: Failed to load firmware "tigon/tg3_tso.bin"
+> >>> tg3 0000:06:01.0: PCI INT A disabled
+> >>> GSI 72 (level, low) -> CPU 0 (0x0001) vector 51 unregistered
+> >>> tg3: probe of 0000:06:01.0 failed with error -2
+> >>> GSI 73 (level, low) -> CPU 0 (0x0001) vector 51
+> >>> tg3 0000:06:01.1: PCI INT B -> GSI 73 (level, low) -> IRQ 52
+> >>> firmware: requesting tigon/tg3_tso.bin
+> >> This change did not come from the network developers or Broadcom, so someone
+> >> else broke tg3 in -mm...
+> > 
+> > I think it's a consequence of not choosing CONFIG_FIRMWARE_IN_KERNEL=y.
+> > 
+> > That caught me out on PowerMac G5 trying mmotm yesterday, it just hung
+> > for a few minutes in earlyish boot with a message about tg3_tso.bin,
+> > and then proceeded to boot up but without the network.  I was unclear
+> > whether I'd been stupid, or the FIRMWARE_IN_KERNEL Kconfigery was poor.
 
-* Alexander Beregalov <a.beregalov@gmail.com> wrote:
+I shall respectfully refrain from commenting on the likelihood of the
+former. With regard to the latter, here is the help text for the
+FIRMWARE_IN_KERNEL option:
 
-> Hi
+        help
+          The kernel source tree includes a number of firmware 'blobs'
+          which are used by various drivers. The recommended way to
+          use these is to run "make firmware_install" and to copy the
+          resulting binary files created in usr/lib/firmware directory
+          of the kernel tree to the /lib/firmware on your system so
+          that they can be loaded by userspace helpers on request.
+
+          Enabling this option will build each required firmware blob
+          into the kernel directly, where request_firmware() will find
+          them without having to call out to userspace. This may be
+          useful if your root file system requires a device which uses
+          such firmware, and do not wish to use an initrd.
+
+          This single option controls the inclusion of firmware for
+          every driver which usees request_firmare() and ships its
+          firmware in the kernel source tree, to avoid a proliferation
+          of 'Include firmware for xxx device' options.
+
+          Say 'N' and let firmware be loaded from userspace.
+
+If you think you can improve it, please let me have a revised attempt.
+
+> > I avoid initrd, and have tigon3 built in, if that's of any relevance.
+> > 
+> > I wonder if that's Andrew's problem with 2.6.26-rc8-mm1 on his G5:
+> > mine here boots up fine (now I know to CONFIG_FIRMWARE_IN_KERNEL=y).
 > 
->   AS      arch/x86/kernel/entry_64.o
-> arch/x86/kernel/entry_64.S: Assembler messages:
-> arch/x86/kernel/entry_64.S:1200: Error: invalid character '_' in mnemonic
-> arch/x86/kernel/entry_64.S:1204: Error: invalid character '_' in mnemonic
-> arch/x86/kernel/entry_64.S:1208: Error: invalid character '_' in mnemonic
-> arch/x86/kernel/entry_64.S:1212: Error: invalid character '_' in mnemonic
+> 
+> dwmw2 has been told repeatedly that his changes will cause PRECISELY 
+> these problems, but he refuses to take the simple steps necessary to 
+> ensure people can continue to boot their kernels after his changes go in.
 
-hm, cannot reproduce it here with linux-next-0702.
+Complete nonsense. Setting CONFIG_FIRMWARE_IN_KERNEL isn't hard. But
+shouldn't be the _default_, either.
 
-but ... this looks quite similar to an issue triggered by the 
-tip/x86/xen-64bit topic (and fixed by the patch below) - but that's not 
-in linux-next yet.
+> Presently his tg3 changes have been nak'd, in part, because of this 
+> obviously, forseeable, work-around-able breakage.
 
-	Ingo
+They haven't even been reviewed. Nobody seems to have actually looked at
+the real changes (in particular, and commented on whether the device can
+run anyway without the TSO firmware being loaded, as some people seem to
+report). You're just throwing your toys out of the pram because of the
+'default n' on a patch about 30 commits earlier in my tree.
 
-------------->
-commit 6d2a6e57be1582b017a39f52385adf49d7cc4b0f
-Author: Jeremy Fitzhardinge <jeremy@goop.org>
-Date:   Fri Jun 27 12:04:03 2008 -0700
+-- 
+dwmw2
 
-    x86_64: fix non-paravirt compilation
-    
-    Make sure SWAPGS and PARAVIRT_ADJUST_EXCEPTION_FRAME are properly
-    defined when CONFIG_PARAVIRT is off.
-    
-    Fixes Ingo's build failure:
-    arch/x86/kernel/entry_64.S: Assembler messages:
-    arch/x86/kernel/entry_64.S:1201: Error: invalid character '_' in mnemonic
-    arch/x86/kernel/entry_64.S:1205: Error: invalid character '_' in mnemonic
-    arch/x86/kernel/entry_64.S:1209: Error: invalid character '_' in mnemonic
-    arch/x86/kernel/entry_64.S:1213: Error: invalid character '_' in mnemonic
-    
-    Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-    Cc: Nick Piggin <npiggin@suse.de>
-    Cc: Mark McLoughlin <markmc@redhat.com>
-    Cc: xen-devel <xen-devel@lists.xensource.com>
-    Cc: Eduardo Habkost <ehabkost@redhat.com>
-    Cc: Vegard Nossum <vegard.nossum@gmail.com>
-    Cc: Stephen Tweedie <sct@redhat.com>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/include/asm-x86/irqflags.h b/include/asm-x86/irqflags.h
-index 484c74f..754bb3a 100644
---- a/include/asm-x86/irqflags.h
-+++ b/include/asm-x86/irqflags.h
-@@ -167,7 +167,20 @@ static inline unsigned long __raw_local_irq_save(void)
- #define INTERRUPT_RETURN_NMI_SAFE	NATIVE_INTERRUPT_RETURN_NMI_SAFE
- 
- #ifdef CONFIG_X86_64
-+#define SWAPGS	swapgs
-+/*
-+ * Currently paravirt can't handle swapgs nicely when we
-+ * don't have a stack we can rely on (such as a user space
-+ * stack).  So we either find a way around these or just fault
-+ * and emulate if a guest tries to call swapgs directly.
-+ *
-+ * Either way, this is a good way to document that we don't
-+ * have a reliable stack. x86_64 only.
-+ */
- #define SWAPGS_UNSAFE_STACK	swapgs
-+
-+#define PARAVIRT_ADJUST_EXCEPTION_FRAME	/*  */
-+
- #define INTERRUPT_RETURN	iretq
- #define USERGS_SYSRET64				\
- 	swapgs;					\
-@@ -233,15 +246,6 @@ static inline void trace_hardirqs_fixup(void)
- #else
- 
- #ifdef CONFIG_X86_64
--/*
-- * Currently paravirt can't handle swapgs nicely when we
-- * don't have a stack we can rely on (such as a user space
-- * stack).  So we either find a way around these or just fault
-- * and emulate if a guest tries to call swapgs directly.
-- *
-- * Either way, this is a good way to document that we don't
-- * have a reliable stack. x86_64 only.
-- */
- #define ARCH_TRACE_IRQS_ON		call trace_hardirqs_on_thunk
- #define ARCH_TRACE_IRQS_OFF		call trace_hardirqs_off_thunk
- #define ARCH_LOCKDEP_SYS_EXIT		call lockdep_sys_exit_thunk
-diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
-index a935c70..6f5e195 100644
---- a/include/asm-x86/processor.h
-+++ b/include/asm-x86/processor.h
-@@ -535,9 +535,6 @@ static inline void load_sp0(struct tss_struct *tss,
- }
- 
- #define set_iopl_mask native_set_iopl_mask
--#define SWAPGS	swapgs
--
--#define PARAVIRT_ADJUST_EXCEPTION_FRAME	/*  */
- #endif /* CONFIG_PARAVIRT */
- 
- /*
