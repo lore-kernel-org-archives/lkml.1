@@ -1,122 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbYGCSyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbYGCS4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754466AbYGCSyZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 14:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbYGCSyS
+	id S1755714AbYGCS4d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 14:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbYGCS4V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 14:54:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39379 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753722AbYGCSyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 14:54:17 -0400
-Message-ID: <486D1FCC.5040205@redhat.com>
-Date: Thu, 03 Jul 2008 14:51:56 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       "'Alexey Dobriyan'" <adobriyan@gmail.com>,
-       "'Peter Zijlstra'" <peterz@infradead.org>,
-       "'Steven Rostedt'" <rostedt@goodmis.org>,
-       "'Frank Ch. Eigler'" <fche@redhat.com>, "'Ingo Molnar'" <mingo@elte.hu>,
-       "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'systemtap-ml'" <systemtap@sources.redhat.com>,
-       "'Hideo AOKI'" <haoki@redhat.com>
-Subject: Re: [RFC PATCH] Kernel Tracepoints
-References: <007601c8d5ca$18fa0e10$4aee2a30$@css.fujitsu.com> <48611B03.1000003@redhat.com> <20080625011951.D83E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48612879.5090809@redhat.com> <20080625235214.GA14249@Krystal> <486403F0.4020801@redhat.com> <20080627133009.GC13751@Krystal> <48655464.5040000@redhat.com> <20080630154002.GE17388@Krystal> <48693AFB.1020304@redhat.com> <20080703151238.GA3102@Krystal>
-In-Reply-To: <20080703151238.GA3102@Krystal>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 3 Jul 2008 14:56:21 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49428 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752982AbYGCS4T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 14:56:19 -0400
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+From: David Woodhouse <dwmw2@infradead.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Jeff Garzik <jeff@garzik.org>, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20080703173040.GB30506@mit.edu>
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+	 <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <486CC440.9030909@garzik.org>
+	 <Pine.LNX.4.64.0807031353030.11033@blonde.site>
+	 <486CCFED.7010308@garzik.org>
+	 <1215091999.10393.556.camel@pmac.infradead.org>
+	 <486CD654.4020605@garzik.org>
+	 <1215093175.10393.567.camel@pmac.infradead.org>
+	 <20080703173040.GB30506@mit.edu>
+Content-Type: text/plain
+Date: Thu, 03 Jul 2008 19:56:02 +0100
+Message-Id: <1215111362.10393.651.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mathieu,
+On Thu, 2008-07-03 at 13:30 -0400, Theodore Tso wrote:
+> I don't think it's whining.
 
-Mathieu Desnoyers wrote:
-> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
->> Hi Mathieu,
->>
->> Mathieu Desnoyers wrote:
->>> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
->>>> Mathieu Desnoyers wrote:
->>>>> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
->>>>>  >
->>>>>>> Implementation of kernel tracepoints. Inspired from the Linux Kernel Markers.
->>>>>> What would you think redesigning markers on tracepoints? because most of the
->>>>>> logic (scaning sections, multiple probe and activation) seems very similar
->>>>>> to markers.
->>>>>>
->>>>> We could, although markers, because they use var args, allow to put the
->>>>> iteration on the multi probe array out-of-line. Tracepoints cannot
->>>>> afford this and the iteration must be done at the initial call-site.
->>>>>
->>>>> From what I see in your proposal, it's mostly to extract the if() call()
->>>>> code from the inner __trace_mark() macro and to put it in a separate
->>>>> macro, am I correct ? This would make the macro more readable.
->>>> Sure, I think marker and tracepoint can share below functions;
->>>> - definition of static local variables in specific sections
->>> Given that we could want to keep activation of tracepoints and markers
->>> separate (so they don't share the same namespace), declaring the static
->>> variables in separated sections seems to make sense to me.
->> Sorry, I'm not sure what is "separate activation".
->> As far as I can see, both tracepoints and markers are activated
->> when its probe handlers are registered on each tracepoint/marker.
->> Aren't it separated?
->>
-> 
-> Yes, it is separate. This is insured by the fact that markers and
-> tracepoints are declared in different sections. Therefore, even if they
-> have the same "name", they won't be used by each other.
+Neither is it an adequate review of the actual patch which was
+submitted.
 
-I reviewed both marker and tracepoint deeply in these days, and
-recognized what you said. Actually, markers and tracepoint would
-better have separate sections.
+>   If your patch introduces changes which
+> cause people .config to break by default after upgrading to a newer
+> kernel and doing "make oldconfig" 
 
-[...]
->>>> - probe activation code (if() call())
->>>> - multi probe handling
->>> Hrm, the thing here is that because markers allow to do the iteration on
->>> the multiple probe callbacks within an internal wrapper (instead of
->>> doing it on-site as in the tracepoints), it allows to do some further
->>> optimizations (less memory allocation and less pointer dereference in
->>> the single probe case, not having to prepare the va_args in the
->>> MARK_NOARGS case) which are only done because it does not have to add
->>> code to the instrumentation site. However, tracepoints cannot have such
->>> "generic" wrapper and we have to do the iteration on callbacks in the
->>> code added to the instrumented object. Therefore, I keep it as small as
->>> possible in terms of bytes of instructions.
->> OK, I see. So, __tracepoint_block() macro can specify handler function.
->> what would you think about it?
->>
-> 
-> When I originally designed the markers, I tried to make sure there was
-> absolutely no code duplication until I discovered that trying to read a
-> huge amount of nested macros is just a pain starting from a certain
-> level. If we only save a few duplicated lines but end up tying up
-> markers and tracepoints, I am far from certain that it will make the
-> code more readable.
+They had to 'make oldconfig' and then actually _choose_ to say 'no' to
+an option which is fairly clearly documented, that they are the
+relatively unusual position of wanting to have said 'yes' to. You're
+getting into Aunt Tillie territory, when you complain about that.
 
-After reviewing, I knew it is hard to implement markers on tracepoint.
-maybe, I need to find another way or maintenance both codes.
+Although it does make me wonder if it was better the way I had it
+originally, with individual options like TIGON3_FIRMWARE_IN_KERNEL
+attached to each driver, rather than a single FIRMWARE_IN_KERNEL option
+which controls them all.
 
+Perhaps one way to help Aunt Tillie would be to tweak Kbuild to look at
+the MODULE_FIRMWARE() statements for in-kernel drivers, and to print a
+warning when the build finishes: "Your static kernel image may require
+the following firmware files, which are not included: ..."
 
-> I'll post a tracepoint version with the modifications you proposed (it's
-> now placed earlier in the patchset), except the merge with markers.
+It's wrong to change the CONFIG_FIRMWARE_IN_KERNEL default to 'Y',
+because the _normal_ setting for that option _really_ should be 'N'.
+Using request_firmware() satisfied from userspace is best practice these
+days, and almost all recent drivers do it that way _unconditionally_
+anyway.
 
-I see, if it is acceptable for upstream developers, I have no problem.
+What we're doing now is just cleaning up the older drivers which don't
+use request_firmware(), to conform to what is now common practice. And
+while we're retaining the _option_ to continue to build their firmware
+into the static kernel image, it isn't recommended and really shouldn't
+be the default configuration.
 
-Thank you,
+> Linus has ruled this way in the past, when he's gotten screwed by this
+> sort of issue in the past, and he was justifiably annoyed. 
+
+I am content to let Linus decide on what the default for the
+FIRMWARE_IN_KERNEL option will be. I am adamant that it _should_ be 'N',
+but it's easy enough for Linus to overrule me with a one-line change. 
+
+In the meantime, it would be useful if Jeff would quit throwing his toys
+out of the pram on that issue and actually review the _code_ changes. In
+particular, are the reports correct that the device operates just fine
+without the TSO firmware loaded? Should we change the request_firmware()
+error path to just disable TSO and continue with the initialisation?
+
+I can understand why he might not want to answer that if the answer is
+affirmative, I suppose -- it detracts even _further_ from his already
+rather dubious argument about 'breaking' the driver, if it'll actually
+continue to work even when the firmware is completely absent. But it
+would be nice to get an honest and straightforward review of the code
+from _someone_ who actually knows the hardware.
+
+>  And if there are licensing religious fundamentalists who feel
+> strongly about the firmware issue, then fine, they can change
+> the .config. 
+
+Less of the ad hominem, please. Especially when it's so misdirected.
+
+Updating these drivers to remove large blobs of static unswappable data
+from the kernel, and having it provided from userspace on demand as
+modern Linux drivers do, is a perfectly sensible technical goal all on
+its own.
+
+And given the GPL's explicit provisions with regard to collective works
+there are also entirely reasonable, non-"fundamentalist" grounds for
+believing that it _may_ pose a licensing problem, and for wanting to err
+on the side of caution in that respect too.
+
+Fedora is almost certain to ship with CONFIG_FIRMWARE_IN_KERNEL=n, and
+I'd be very surprised if Debian and other major distributions don't
+follow suit. It is the sensible, pragmatic, technically sound choice.
+
+>  But the default should be to avoid users from having broken kernels,
+> and a number of (quite clueful) users have already demonstrated that
+> without setting CONFIG_FIRMWARE_IN_KERNEL=y as the default, your
+> patches cause breakage.
+
+By this argument, shouldn't we include images in the static kernel for
+_all_ drivers which currently use request_firmware()? Otherwise, it's
+possible for the user to 'break' them, right?
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+dwmw2
 
