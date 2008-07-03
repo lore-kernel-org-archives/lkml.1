@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbYGCPAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbYGCPLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757122AbYGCPAk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 11:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbYGCPAb
+	id S1753794AbYGCPLY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 11:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbYGCPLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 11:00:31 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:49950 "EHLO smtp4.pp.htv.fi"
+	Thu, 3 Jul 2008 11:11:16 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47401 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751445AbYGCPAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 11:00:31 -0400
-Date: Thu, 3 Jul 2008 18:00:00 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Adam Williamson <awilliamson@mandriva.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@redhat.com>, bugme-daemon@bugzilla.kernel.org,
-       Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-       Matthias Geissert <matthias.geissert@web.de>
-Subject: Re: [Bug 10868] Oops on loading ipaq module since 2.6.26, prevents
-	use of device
-Message-ID: <20080703150000.GD11254@cs181140183.pp.htv.fi>
-References: <RzbtSgMztjP.A.jRD._spXIB@albercik> <200807031608.46457.oliver@neukum.org> <20080703142025.GC11254@cs181140183.pp.htv.fi> <200807031626.50531.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200807031626.50531.oliver@neukum.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1750852AbYGCPLQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 11:11:16 -0400
+Date: Fri, 4 Jul 2008 01:11:10 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Generic HDLC next tree
+Message-Id: <20080704011110.bcc42858.sfr@canb.auug.org.au>
+In-Reply-To: <m3hcb7njh4.fsf@maximus.localdomain>
+References: <m3hcb7njh4.fsf@maximus.localdomain>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__4_Jul_2008_01_11_10_+1000_nlOX5uabB=WPmUp0"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 03, 2008 at 04:26:48PM +0200, Oliver Neukum wrote:
-> Am Donnerstag 03 Juli 2008 16:20:30 schrieb Adrian Bunk:
-> > On Thu, Jul 03, 2008 at 04:08:44PM +0200, Oliver Neukum wrote:
-> > > Am Donnerstag 03 Juli 2008 10:57:33 schrieb Adrian Bunk:
-> 
-> > > > --- a/drivers/usb/serial/ipaq.c
-> > > > +++ b/drivers/usb/serial/ipaq.c
-> > > > @@ -571,9 +571,9 @@ static struct usb_serial_driver ipaq_device = {
-> > > >  	.usb_driver = 		&ipaq_driver,
-> > > >  	.id_table =		ipaq_id_table,
-> > > >  	.num_interrupt_in =	NUM_DONT_CARE,
-> > > > -	.num_bulk_in =		1,
-> > > > -	.num_bulk_out =		1,
-> > > > -	.num_ports =		1,
-> > > > +	.num_bulk_in =		NUM_DONT_CARE,
-> > > > +	.num_bulk_out =		NUM_DONT_CARE,
-> > > 
-> > > This is good.
-> > 
-> > These fields are removed by a later commit in 2.6.26...  8-)
-> 
-> Well, NUM_DONT_CARE is default, so it makes no difference, but a comment
-> would have been nice.
+--Signature=_Fri__4_Jul_2008_01_11_10_+1000_nlOX5uabB=WPmUp0
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-They were removed from struct usb_serial_driver in 
-include/linux/usb/serial.h since the checks they were used for caused 
-more problems than they solved.
+Hi Krzysztof,
 
-But you are right that the effects of the removal are the same as 
-NUM_DONT_CARE.
+On Thu, 03 Jul 2008 16:13:59 +0200 Krzysztof Halasa <khc@pm.waw.pl> wrote:
+>
+> I've setup a generic HDLC "next" tree (currently for 2.6.27) at
+>=20
+> git://git.kernel.org/pub/scm/linux/kernel/git/chris/linux-2.6.git hdlc-ne=
+xt
+>=20
+> This branch can be rebased or recreated at any time, hope it's ok for
+> "next". Currently based on 2.6.26-rc8.
+>=20
+> Could you please include it in your "next" process?
 
-> 	Regards
-> 		Oliver
+I have added that tree starting from tomorrow.
 
-cu
-Adrian
+Thanks for joining.
 
--- 
+Usual speech I give everybody: changes must be posted somewhere relevant,
+reviewed, unit tested and destined for 2.6.27.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Fri__4_Jul_2008_01_11_10_+1000_nlOX5uabB=WPmUp0
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhs7A4ACgkQjjKRsyhoI8wbKwCgq5UOrhSCOjgwJA8LSKrReBxe
+aQ8AnRHDnRziqA0TQA5aawmRJZkDCg4v
+=7eOQ
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__4_Jul_2008_01_11_10_+1000_nlOX5uabB=WPmUp0--
