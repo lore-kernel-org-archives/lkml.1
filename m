@@ -1,84 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936681AbYGCHOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758237AbYGCIYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936681AbYGCHOz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbYGCG6x
+	id S1758237AbYGCIYp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 04:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbYGCIQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:58:53 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51164 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755381AbYGCGn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 02:43:26 -0400
-Message-ID: <486C74B1.3000007@cn.fujitsu.com>
-Date: Thu, 03 Jul 2008 14:41:53 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, npiggin@suse.de,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Rik Van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: [-mm] BUG: sleeping function called from invalid context at include/linux/pagemap.h:290
-Content-Type: text/plain; charset=UTF-8
+	Thu, 3 Jul 2008 04:16:40 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:49765 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932964AbYGCHIN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 03:08:13 -0400
+Date: Thu, 3 Jul 2008 09:07:22 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg KH <greg@kroah.com>
+Cc: Anton Vorontsov <cbouatmailru@gmail.com>, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, linux390@de.ibm.com,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-s390@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/04] s390: bus_id -> dev_set_name() changes
+Message-ID: <20080703090722.525b3930@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20080702230742.GA708@kroah.com>
+References: <20080702154811.GB31083@kroah.com>
+	<20080702221401.GA15142@zarina>
+	<20080702230742.GA708@kroah.com>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2 Jul 2008 16:07:42 -0700,
+Greg KH <greg@kroah.com> wrote:
 
-Seems the problematic patch is :
-mmap-handle-mlocked-pages-during-map-remap-unmap.patch
+> On Thu, Jul 03, 2008 at 02:14:01AM +0400, Anton Vorontsov wrote:
+> > On Wed, Jul 02, 2008 at 08:48:11AM -0700, Greg KH wrote:
+> > > --- a/drivers/s390/block/dcssblk.c
+> > > +++ b/drivers/s390/block/dcssblk.c
+> > > @@ -349,7 +349,7 @@ dcssblk_add_store(struct device *dev, st
+> > >  	}
+> > >  
+> > >  	strcpy(dev_info->segment_name, local_buf);
+> > > -	strlcpy(dev_info->dev.bus_id, local_buf, BUS_ID_SIZE);
+> > > +	dev_set_name(&dev_info->dev, local_buf);
+> > 
+> > As I see it, dev_set_name accepts printf like string, so this
+> > dev_set_name is quite dangerous (since local_buf is formed
+> > by the module param), no?
+> 
+> So you would rather see:
+> 	dev_set_name(&dev_info->dev, "%s", local_buf);
+> 
+> instead?
 
-I'm using mmotm uploaded yesterday by Andrew, so I guess this bug
-has not been fixed ?
-
-BUG: sleeping function called from invalid context at include/linux/pagemap.h:290
-in_atomic():1, irqs_disabled():0
-no locks held by gpg-agent/2134.
-Pid: 2134, comm: gpg-agent Not tainted 2.6.26-rc8-mm1 #11
- [<c0421d38>] __might_sleep+0xbe/0xc5
- [<c04770a2>] __munlock_pte_handler+0x3c/0x9e
- [<c047c11f>] walk_page_range+0x15b/0x1b4
- [<c0477048>] __munlock_vma_pages_range+0x4e/0x5b
- [<c0476f0c>] ? __munlock_pmd_handler+0x0/0x10
- [<c0477066>] ? __munlock_pte_handler+0x0/0x9e
- [<c0477064>] munlock_vma_pages_range+0xf/0x11
- [<c0477dcb>] exit_mmap+0x32/0xf2
- [<c042ac12>] ? exit_mm+0xc7/0xda
- [<c042732a>] mmput+0x3a/0x8b
- [<c042ac20>] exit_mm+0xd5/0xda
- [<c042bf6a>] do_exit+0x1fb/0x5d5
- [<c045c4df>] ? audit_syscall_exit+0x2aa/0x2c5
- [<c042c3a3>] do_group_exit+0x5f/0x88
- [<c042c3db>] sys_exit_group+0xf/0x11
- [<c0403956>] syscall_call+0x7/0xb
- =======================
-BUG: scheduling while atomic: gpg-agent/2134/0x10000001
-no locks held by gpg-agent/2134.
-Modules linked in: bridge llc dm_mod sg r8169 sata_sis pata_sis ata_generic libata sd_mod scsi_mod ext3 jbd mbcache uhci_hcd ohci_hcd ehci_hcd [last unloaded: scsi_wait_scan]
-Pid: 2134, comm: gpg-agent Not tainted 2.6.26-rc8-mm1 #11
- [<c0424d16>] __schedule_bug+0x5e/0x65
- [<c05fb1d6>] schedule+0x85/0x7f2
- [<c0404955>] ? show_trace_log_lvl+0x20/0x28
- [<c0404ff8>] ? show_trace+0x10/0x14
- [<c040591c>] ? dump_stack+0x5b/0x65
- [<c0424f26>] __cond_resched+0x25/0x3b
- [<c05fb9a6>] _cond_resched+0x24/0x2f
- [<c04770a7>] __munlock_pte_handler+0x41/0x9e
- [<c047c11f>] walk_page_range+0x15b/0x1b4
- [<c0477048>] __munlock_vma_pages_range+0x4e/0x5b
- [<c0476f0c>] ? __munlock_pmd_handler+0x0/0x10
- [<c0477066>] ? __munlock_pte_handler+0x0/0x9e
- [<c0477064>] munlock_vma_pages_range+0xf/0x11
- [<c0477dcb>] exit_mmap+0x32/0xf2
- [<c042ac12>] ? exit_mm+0xc7/0xda
- [<c042732a>] mmput+0x3a/0x8b
- [<c042ac20>] exit_mm+0xd5/0xda
- [<c042bf6a>] do_exit+0x1fb/0x5d5
- [<c045c4df>] ? audit_syscall_exit+0x2aa/0x2c5
- [<c042c3a3>] do_group_exit+0x5f/0x88
- [<c042c3db>] sys_exit_group+0xf/0x11
- [<c0403956>] syscall_call+0x7/0xb
- =======================
+Hm, I thought the string had already been sanitized at that time, but
+looking again it doesn't do many checks... so this looks better.
