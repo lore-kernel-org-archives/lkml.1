@@ -1,87 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbYGCV7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbYGCV75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757529AbYGCV7o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 17:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbYGCV7f
+	id S1758130AbYGCV75 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 17:59:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757511AbYGCV7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 17:59:35 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:26567 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753890AbYGCV7e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 17:59:34 -0400
-Date: Thu, 3 Jul 2008 14:58:56 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <louis.rilling@kerlabs.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [Ocfs2-devel] [BUGFIX][PATCH 1/2] configfs: Prevent userspace
-	from creating new entries under attaching directories
-Message-ID: <20080703215856.GG1502@mail.oracle.com>
-Mail-Followup-To: Louis Rilling <louis.rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <1214503549-15678-1-git-send-email-louis.rilling@kerlabs.com> <1214503549-15678-2-git-send-email-louis.rilling@kerlabs.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1214503549-15678-2-git-send-email-louis.rilling@kerlabs.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 3 Jul 2008 17:59:43 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:35911 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757379AbYGCV7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 17:59:42 -0400
+Subject: Re: Attaching PID 0 to a cgroup
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Andrea Righi <righi.andrea@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>, containers@lists.osdl.org,
+       Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080701215448.GD5893@linux.vnet.ibm.com>
+References: <20080701094545.GD3925@linux.vnet.ibm.com>
+	 <20080701094734.GE3925@linux.vnet.ibm.com>
+	 <486A06B7.7020906@cn.fujitsu.com> <486AA62F.40503@gmail.com>
+	 <20080701215448.GD5893@linux.vnet.ibm.com>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Thu, 03 Jul 2008 14:59:35 -0700
+Message-Id: <1215122375.14808.180.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 08:05:48PM +0200, Louis Rilling wrote:
-> This commit fixes 1/, tagging new directories with CONFIGFS_USET_CREATING before
-> building the inode and instantiating the dentry, and validating the whole
-> group+default groups hierarchy in a second pass by clearing
-> CONFIGFS_USET_CREATING.
 
-	Man, I'm wary of all these in-flight flags.  I hope they are all
-orthogonal :-)
+On Wed, 2008-07-02 at 03:24 +0530, Dhaval Giani wrote:
+> On Tue, Jul 01, 2008 at 11:48:31PM +0200, Andrea Righi wrote:
+> > Li Zefan wrote:
+> >> CC: Paul Jackson <pj@sgi.com>
+> >>
+> >> Dhaval Giani wrote:
+> >>> [put in the wrong alias for containers list correcting it.]
+> >>>
+> >>> On Tue, Jul 01, 2008 at 03:15:45PM +0530, Dhaval Giani wrote:
+> >>>> Hi Paul,
+> >>>>
+> >>>> Attaching PID 0 to a cgroup caused the current task to be attached to
+> >>>> the cgroup. Looking at the code,
+> >>>>
+> >>
+> >> [...]
+> >>
+> >>>> I was wondering, why this was done. It seems to be unexpected behavior.
+> >>>> Wouldn't something like the following be a better response? (I've used
+> >>>> EINVAL, but I can change it to ESRCH if that is better.)
+> >>>>
+> >>
+> >> Why is it unexpected? it follows the behavior of cpuset, so this patch will
+> >> break backward compatibility of cpuset.
+> >>
+> >> But it's better to document this.
+> >>
+> >> -----------------------------------------
+> >>
+> >> Document the following cgroup usage:
+> >>  # echo 0 > /dev/cgroup/tasks
+> >>
+> >> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> >> ---
+> >>  cgroups.txt |    4 ++++
+> >>  1 file changed, 4 insertions(+)
+> >>
+> >> diff --git a/Documentation/cgroups.txt b/Documentation/cgroups.txt
+> >> index 824fc02..213f533 100644
+> >> --- a/Documentation/cgroups.txt
+> >> +++ b/Documentation/cgroups.txt
+> >> @@ -390,6 +390,10 @@ If you have several tasks to attach, you have to do it one after another:
+> >>  	...
+> >>  # /bin/echo PIDn > tasks
+> >>  +You can attach the current task by echoing 0:
+> >> +
+> >> +# /bin/echo 0 > tasks
+> >> +
+> >>  3. Kernel API
+> >>  =============
+> >
+> > Wouldn't be more meaningful to specify the bash's builtin echo here
+> > even if it doesn't opportunely handle write() errors?
+> >
+> > Using /bin/echo would attach /bin/echo itself to the cgroup, that just
+> > exists, so it seems like a kind of noop, isn't it?
+> >
+> 
+> Yes, you are right. this example should use bash's builtin echo.
 
-> 	mkdir(), symlink(), lookup(), and dir_open() simply return -ENOENT if
-> called in (or linking to) a directory tagged with CONFIGFS_USET_CREATING. This
+	IMHO you need to include this point in the docs verbosely rather than
+just switching the docs to bash's builin-in echo. Otherwise it doesn't
+fully resolve the fundamental confusion you correctly identified.
 
-	Why not block until the create is done?
+Or perhaps a snippet of simplified C code will make it clear:
+------------
+	char buffer[16];
+	int fd;
 
-> +	/*
-> +	 * Fake invisibility if dir belongs to a group/default groups hierarchy
-> +	 * being attached
-> +	 *
-> +	 * This forbids userspace to read/write attributes of items which may
-> +	 * not complete their initialization, since the dentries of the
-> +	 * attributes won't be instantiated.
-> +	 */
-int configfs_dirent_is_ready(struct configfs_dirent *sd)
-{
-	int err = 0;
-> +	spin_lock(&configfs_dirent_lock);
-> +	if (parent_sd->s_type & CONFIGFS_USET_CREATING)
-> +		err = -ENOENT;
-> +	spin_unlock(&configfs_dirent_lock);
-	return err;
-}
+	fd = open("/some/cgroup/tasks", O_WRONLY);
 
-	Then use is_ready() in the five places you check it ;-)  Perhaps
-change configfs_validate_dir() to configfs_dir_set_ready().  I do like
-the way validate_dir() is coded.
+	/* 
+	 * These two writes produce the same effect: adding this process
+	 * to /some/cgroup.
+	 */
+	if (the_slightly_shorter_way)
+		write(fd, "0", 2);
+	else {
+		/* The slightly-less-short way */
+		snprintf(buffer, 16, "%u", getpid());
+		write(fd, buffer, strlen(buffer));
+	}
+------------
 
-Joel
+Cheers,
+	-Matt Helsley
 
--- 
-
-"There are only two ways to live your life. One is as though nothing
- is a miracle. The other is as though everything is a miracle."
-        - Albert Einstein
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
