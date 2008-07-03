@@ -1,153 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933712AbYGCHJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933158AbYGCHIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933712AbYGCHJd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbYGCG6A
+	id S933158AbYGCHIh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 03:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbYGCG5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:58:00 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:49431 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751195AbYGCE17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 00:27:59 -0400
-Date: Thu, 3 Jul 2008 05:27:51 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, NeilBrown <neilb@suse.de>,
-       babydr@baby-dragons.com, cl@linux-foundation.org,
-       lee.schermerhorn@hp.com, a.beregalov@gmail.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org
-Subject: Re: [problem] raid performance loss with 2.6.26-rc8 on 32-bit x86 (bisected)
-Message-ID: <20080703042750.GB14614@csn.ul.ie>
-References: <1214877439.7885.40.camel@dwillia2-linux.ch.intel.com> <20080701080910.GA10865@csn.ul.ie> <20080701175855.GI32727@shadowen.org> <20080701190741.GB16501@csn.ul.ie> <1214944175.26855.18.camel@dwillia2-linux.ch.intel.com> <20080702051759.GA26338@csn.ul.ie> <1215049766.2840.43.camel@dwillia2-linux.ch.intel.com>
+	Thu, 3 Jul 2008 02:57:53 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:57734 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754705AbYGCDvw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 23:51:52 -0400
+X-AuditID: 0ac90650-ae48fba0000062df-5c-486c4cd4766c
+Message-ID: <486C4CC5.2060006@hitachi.com>
+Date: Thu, 03 Jul 2008 12:51:33 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1215049766.2840.43.camel@dwillia2-linux.ch.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: Philippe De Muyter <phdm@macqel.be>,
+       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
+       libdc1394-devel@lists.sourceforge.net, stefanr@s5r6.in-berlin.de,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: mmap'ed memory in core files ?
+References: <20080701132149.GA32510@frolo.macqel> 
+    <517f3f820807011116g6ce1b3e1qf166070f7a4c523f@mail.gmail.com> 
+    <20080702105027.GA1111@frolo.macqel> 
+    <cfd18e0f0807020358k317575c6ra0187428098f0160@mail.gmail.com>
+In-Reply-To: <cfd18e0f0807020358k317575c6ra0187428098f0160@mail.gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One-line-summary: kswapd is almost certainly broken on !NUMA and a candidate
-patch is below
+Hi,
 
-On (02/07/08 18:49), Dan Williams didst pronounce:
-> On Tue, 2008-07-01 at 22:18 -0700, Mel Gorman wrote:
-> > > Let us take commit 8b3e6cdc out of the equation and just look at raid0
-> > > performance:
-> > >
-> > > revision   2.6.25.8-fc8 54a6eb5c 54a6eb5c-nohighmem 2.6.26-rc8
-> > >            279          278      273                277
-> > >            281          278      275                277
-> > >            281          113      68.7               66.8
-> > >            279          69.2     277                73.7
-> > >            278          75.6     62.5               80.3
-> > > MB/s (avg) 280          163      191                155
-> > > % change   0%           -42%     -32%               -45%
-> > > result     base         bad      bad                bad
-> > >
-> > 
-> > Ok, based on your other mail, 54a6eb5c here is a bisection point. The good
-> > figures are on par with the "good" kernel with some disasterous runs leading
-> > to a bad average. The thing is, the bad results are way worse than could be
-> > accounted for by two-zonelist alone.  In fact, the figures look suspiciously
-> > like only 1 disk is in use as they are roughly quartered. Can you think of
-> > anything that would explain that?
-> 
-> raid0 in contrast to raid5 is fairly simple it just remaps the bio.
-> Then it is up to the block layer to do some merging before it hits the
-> block device driver.  Not much room for error, especially since single
-> drive performance seems to be unaffected.  The data seems to show that
-> the vm is not queuing pages to be written back fast enough.
-> 
+Michael Kerrisk wrote:
 
-That is exactly the case but I think I know why now.
+> [CC+= hidehiro.kawai.ez@hitachi.com]
+> 
+> On Wed, Jul 2, 2008 at 12:50 PM, Philippe De Muyter <phdm@macqel.be> wrote:
+> 
+>>Hi Michael,
+>>
+>>On Tue, Jul 01, 2008 at 08:16:11PM +0200, Michael Kerrisk wrote:
+>>
+>>>On 7/1/08, Philippe De Muyter <phdm@macqel.be> wrote:
+>>>
+>>>>Hello everybody,
+>>>>
+>>>> I develop video acquisition software using the video1394 interface.
+>>>> The images grabbed by the camera and iee1394 bus are kept in kernel
+>>>> memory and made available to the user program through a mmap call done
+>>>> in the libdc1394 library :
+>>>>
+>>>> dma_ring_buffer= mmap(0, vmmap.nb_buffers * vmmap.buf_size,
+>>>>                PROT_READ|PROT_WRITE,MAP_SHARED, craw->capture.dma_fd, 0);
+>>>>
+>>>> Sometimes, my program crashes and produces a core file :)  It seems to
+>>>> me that the core file does not contain the mmap'ed memory and hence
+>>>> I cannot replay my program with the same image for debugging purpose.
+>>>>
+>>>> Is it possible to configure the kernel through /proc, or through the mmap
+>>>> system call to have that mmapped segment in the core file, or do I need
+>>>> to modify the kernel itself to obtain the behaviour I want ?  If I
+>>>> need to modify the kernel, can some kind soul provide me some pointers ?
+>>>
+>>>
+>>>Have a look at the section "Controlling which mappings are written to
+>>>the core dump" in a recent core.5 man page:
+>>>http://www.kernel.org/doc/man-pages/online/pages/man5/core.5.html
+>>
+>>thanks for the info.  I didn't know about /proc/PID/coredump_filter.
+>>
+>>that part was promising :
+>>
+>>      bit 2  Dump file-backed private mappings.
+>>      bit 3  Dump file-backed shared mappings.
+>>
+>>   The default value of coredump_filter is 0x3; this reflects traditional
+>>   Linux behavior and means that only anonymous memory segments are dumped.
+>>
+>>Unfortunately, the part that applies to me (I have tested it) is the next one :
+>>
+>>   Memory-mapped I/O pages such as frame buffer are never dumped, [...],
+>>   regardless of the coredump_filter value.
+>>
+>>Is that a design decision, or a mere finding of the way it is implemented
+>>now ?
 
-> > Can you also confirm that using a bisection
-> > point before two-zonelist runs steadily and with high performance as expected
-> > please? This is to rule out some other RAID patch being a factor.
-> 
-> The immediately preceeding commit 18ea7e71 always runs with high
-> performance, and raid0 was virtually untouched during the merge window:
-> 
-> $ git shortlog v2.6.25..v2.6.26-rc8 drivers/md/raid0.c
-> Neil Brown (1):
->       Remove blkdev warning triggered by using md
-> 
-> > It would be worth running vmstat during the tests so we can see if IO
-> > rates are dropping from an overall system perspective. If possible,
-> > oprofile data from the same time would be helpful to see does it show up
-> > where we are getting stuck.
-> 
-> I watched /proc/vmstat during a dd run, and in the good case
-> nr_writeback never drops below 21,000.  In the bad case it may briefly
-> break a few hundred pages.
-> 
-> This picture generated by seekwatcher shows that there are gaps in i/o
-> submission:
-> 
-> 	http://userweb.kernel.org/~djbw/md0-bad2.png
-> 
-> Compared to a good run:
-> 
-> 	http://userweb.kernel.org/~djbw/md0-good.png
-> 
-> What is interesting is that I was only able to get this data with the
-> following command:
-> 
-> ./seekwatcher -W -t md0.trace -o md0-bad2.png -p 'dd if=/dev/zero of=/dev/md0 bs=1024k count=2048' -d /dev/md0 -d /dev/sdb
-> 
-> When I tried to watch all four disks, i.e. 5 blktrace tasks running
-> instead of 2:
-> 
-> ./seekwatcher -W -t md0.trace -o md0-bad2.png -p 'dd if=/dev/zero of=/dev/md0 bs=1024k count=2048' -d /dev/md0 -d /dev/sdb -d /dev/sdc -d /dev/sdd -d /dev/sde
-> 
-> ...it always measured good performance, as if having more tasks running
-> stimulates the vm to keep writeback going at a high rate.  Could
-> writeback be getting stalled on one cpu or more cpu's?
-> 
+MMIO pages have been not dumped since a long time ago, and I didn't target
+them for the coredump_filter feature because I thought it was generally
+danger to read MMIO pages.  As for frame buffer we would be able to
+safely access to it, but there is no way to tell it from other MMIO
+mappings, AFAIK.
 
-Yes, we're stalling because the two-zonelist patch is breaking kswapd on
-!NUMA machines. The impact is that kswapd never reclaims and processes always
-directly reclaim. The result is you see large stalls.
+>>So, back to my original question :
+>>
+>>Can some kind soul provide me some pointers to the way I should modify
+>>the kernel to make the inclusion of the video1394 mmapped segment in
+>>core files possible ?
+> 
+> 
+> Perhaps Hidehiro, who wrote the coredump_filter feature, can provide insight.
 
-Alexander, I believe this may also be why lockdep is triggering and you're
-seeing periodic stalls in the XFS tests. The lockdep warning is a red herring
-but the fact it's easier to trigger could be because kswapd is not working
-and direct reclaim triggers the warning easily.
+The following patch may help.  To dump MMIO pages, set bit 5 of
+coredump_filter.
 
-Alexander and Dan, could you test the patch below and let me know if it
-fixes your respective problems please?
+$ echo 0x23 > /proc/<PID>/coredump_filter
 
-===
 
-Subject: [PATCH] Do not overwrite nr_zones on !NUMA when initialising zlcache_ptr
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+---
+This patch is not intended to be merged to the upstream kernel
+because the safeness of reading VM_IO mappings has not been
+proved.
 
-With the two-zonelist patches on !NUMA machines, there really is only one
-zonelist as __GFP_THISNODE is meaningless. However, during initialisation, the
-assumption is made that two zonelists exist when initialising zlcache_ptr. The
-result is that pgdat->nr_zones is always 0. As kswapd uses this value to
-determine what reclaim work is necessary, the result is that kswapd never
-reclaims. This causes processes to stall frequently in low-memory situations
-as they always direct reclaim.  This patch initialises zlcache_ptr correctly.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- page_alloc.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.26-rc8-clean/mm/page_alloc.c linux-2.6.26-rc8-fix-kswapd-on-numa/mm/page_alloc.c
---- linux-2.6.26-rc8-clean/mm/page_alloc.c	2008-06-24 18:58:20.000000000 -0700
-+++ linux-2.6.26-rc8-fix-kswapd-on-numa/mm/page_alloc.c	2008-07-02 21:14:16.000000000 -0700
-@@ -2328,7 +2328,8 @@ static void build_zonelists(pg_data_t *p
- static void build_zonelist_cache(pg_data_t *pgdat)
- {
- 	pgdat->node_zonelists[0].zlcache_ptr = NULL;
--	pgdat->node_zonelists[1].zlcache_ptr = NULL;
-+	if (NUMA_BUILD)
-+		pgdat->node_zonelists[1].zlcache_ptr = NULL;
- }
+Index: linux-2.6.26-rc5-mm3/fs/binfmt_elf.c
+===================================================================
+--- linux-2.6.26-rc5-mm3.orig/fs/binfmt_elf.c
++++ linux-2.6.26-rc5-mm3/fs/binfmt_elf.c
+@@ -1141,11 +1141,18 @@ static unsigned long vma_dump_size(struc
+ 	if (vma->vm_flags & VM_ALWAYSDUMP)
+ 		goto whole;
  
- #endif	/* CONFIG_NUMA */
+-	/* Do not dump I/O mapped devices or special mappings */
+-	if (vma->vm_flags & (VM_IO | VM_RESERVED))
++#define FILTER(type)	(mm_flags & (1UL << MMF_DUMP_##type))
++
++	/* By default, do not dump memory mapped I/O mappings */
++	if (vma->vm_flags & VM_IO) {
++		if (FILTER(MMIO))
++			goto whole;
+ 		return 0;
++	}
+ 
+-#define FILTER(type)	(mm_flags & (1UL << MMF_DUMP_##type))
++	/* Do not dump special mappings */
++	if (vma->vm_flags & VM_RESERVED)
++		return 0;
+ 
+ 	/* By default, dump shared memory if mapped from an anonymous file. */
+ 	if (vma->vm_flags & VM_SHARED) {
+Index: linux-2.6.26-rc5-mm3/include/linux/sched.h
+===================================================================
+--- linux-2.6.26-rc5-mm3.orig/include/linux/sched.h
++++ linux-2.6.26-rc5-mm3/include/linux/sched.h
+@@ -403,8 +403,9 @@ extern int get_dumpable(struct mm_struct
+ #define MMF_DUMP_MAPPED_PRIVATE	4
+ #define MMF_DUMP_MAPPED_SHARED	5
+ #define MMF_DUMP_ELF_HEADERS	6
++#define MMF_DUMP_MMIO		7
+ #define MMF_DUMP_FILTER_SHIFT	MMF_DUMPABLE_BITS
+-#define MMF_DUMP_FILTER_BITS	5
++#define MMF_DUMP_FILTER_BITS	6
+ #define MMF_DUMP_FILTER_MASK \
+ 	(((1 << MMF_DUMP_FILTER_BITS) - 1) << MMF_DUMP_FILTER_SHIFT)
+ #define MMF_DUMP_FILTER_DEFAULT \
+
+
+
+Regards,
+-- 
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
 
