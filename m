@@ -1,516 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933497AbYGCHJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933599AbYGCHJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933497AbYGCHJF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 03:09:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbYGCG56
+	id S933599AbYGCHJX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 03:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbYGCG57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 02:57:58 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35076 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750739AbYGCECq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 00:02:46 -0400
-Date: Wed, 2 Jul 2008 20:58:28 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.25.10
-Message-ID: <20080703035828.GB8190@kroah.com>
-References: <20080703035807.GA8190@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080703035807.GA8190@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 3 Jul 2008 02:57:59 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47146 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751112AbYGCEPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 00:15:55 -0400
+Date: Thu, 3 Jul 2008 14:15:50 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Mike Travis <travis@sgi.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] Introduce new cpu_mask APIs
+Message-Id: <20080703141550.de7f8f22.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index 3eb71f8..e26eb7d 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 25
--EXTRAVERSION = .9
-+EXTRAVERSION = .10
- NAME = Funky Weasel is Jiggy wit it
+In linux-next there is a commit ("x86: Add performance variants of cpumask
+operators") which, as part of the 4096 cpu support work adds some new
+APIs for dealing with cpu masks.  Add thrivial versions of these now
+so that subsystems can update in a timely manner and avoid conflicts in
+linux-next and the next merge window.
+
+Cc: Mike Travis <travis@sgi.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/linux/cpumask.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
+index 5df3db5..c24875b 100644
+--- a/include/linux/cpumask.h
++++ b/include/linux/cpumask.h
+@@ -353,6 +353,10 @@ static inline void __cpus_fold(cpumask_t *dstp, const cpumask_t *origp,
+ 	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
+ #endif /* NR_CPUS */
  
- # *DOCUMENTATION*
-diff --git a/arch/x86/kernel/i387.c b/arch/x86/kernel/i387.c
-index d2e39e6..5f04579 100644
---- a/arch/x86/kernel/i387.c
-+++ b/arch/x86/kernel/i387.c
-@@ -130,7 +130,7 @@ int xfpregs_get(struct task_struct *target, const struct user_regset *regset,
- 		void *kbuf, void __user *ubuf)
- {
- 	if (!cpu_has_fxsr)
--		return -ENODEV;
-+		return -EIO;
- 
- 	init_fpu(target);
- 
-@@ -145,7 +145,7 @@ int xfpregs_set(struct task_struct *target, const struct user_regset *regset,
- 	int ret;
- 
- 	if (!cpu_has_fxsr)
--		return -ENODEV;
-+		return -EIO;
- 
- 	init_fpu(target);
- 	set_stopped_child_used_math(target);
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index 9003e0b..a10ba65 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -1309,42 +1309,49 @@ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
- 		break;
- 
- 	case PTRACE_GETREGS:	/* Get all gp regs from the child. */
--		return copy_regset_to_user(child, &user_x86_32_view,
--					   REGSET_GENERAL,
--					   0, sizeof(struct user_regs_struct32),
--					   datap);
-+		ret = copy_regset_to_user(child, &user_x86_32_view,
-+					  REGSET_GENERAL,
-+					  0, sizeof(struct user_regs_struct32),
-+					  datap);
-+		break;
- 
- 	case PTRACE_SETREGS:	/* Set all gp regs in the child. */
--		return copy_regset_from_user(child, &user_x86_32_view,
--					     REGSET_GENERAL, 0,
--					     sizeof(struct user_regs_struct32),
--					     datap);
-+		ret = copy_regset_from_user(child, &user_x86_32_view,
-+					    REGSET_GENERAL, 0,
-+					    sizeof(struct user_regs_struct32),
-+					    datap);
-+		break;
- 
- 	case PTRACE_GETFPREGS:	/* Get the child FPU state. */
--		return copy_regset_to_user(child, &user_x86_32_view,
--					   REGSET_FP, 0,
--					   sizeof(struct user_i387_ia32_struct),
--					   datap);
-+		ret = copy_regset_to_user(child, &user_x86_32_view,
-+					  REGSET_FP, 0,
-+					  sizeof(struct user_i387_ia32_struct),
-+					  datap);
-+		break;
- 
- 	case PTRACE_SETFPREGS:	/* Set the child FPU state. */
--		return copy_regset_from_user(
-+		ret = copy_regset_from_user(
- 			child, &user_x86_32_view, REGSET_FP,
- 			0, sizeof(struct user_i387_ia32_struct), datap);
-+		break;
- 
- 	case PTRACE_GETFPXREGS:	/* Get the child extended FPU state. */
--		return copy_regset_to_user(child, &user_x86_32_view,
--					   REGSET_XFP, 0,
--					   sizeof(struct user32_fxsr_struct),
--					   datap);
-+		ret = copy_regset_to_user(child, &user_x86_32_view,
-+					  REGSET_XFP, 0,
-+					  sizeof(struct user32_fxsr_struct),
-+					  datap);
-+		break;
- 
- 	case PTRACE_SETFPXREGS:	/* Set the child extended FPU state. */
--		return copy_regset_from_user(child, &user_x86_32_view,
-+		ret = copy_regset_from_user(child, &user_x86_32_view,
- 					     REGSET_XFP, 0,
- 					     sizeof(struct user32_fxsr_struct),
- 					     datap);
-+		break;
- 
- 	default:
--		return compat_ptrace_request(child, request, addr, data);
-+		ret = compat_ptrace_request(child, request, addr, data);
-+		break;
- 	}
- 
-  out:
-diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
-index 0880f2c..7b768e3 100644
---- a/arch/x86/kernel/smpboot_64.c
-+++ b/arch/x86/kernel/smpboot_64.c
-@@ -704,7 +704,6 @@ do_rest:
- 		clear_bit(cpu, (unsigned long *)&cpu_initialized); /* was set by cpu_init() */
- 		clear_node_cpumask(cpu); /* was set by numa_add_cpu */
- 		cpu_clear(cpu, cpu_present_map);
--		cpu_clear(cpu, cpu_possible_map);
- 		per_cpu(x86_cpu_to_apicid, cpu) = BAD_APICID;
- 		return -EIO;
- 	}
-diff --git a/drivers/char/drm/i915_drv.c b/drivers/char/drm/i915_drv.c
-index b2b451d..becab51 100644
---- a/drivers/char/drm/i915_drv.c
-+++ b/drivers/char/drm/i915_drv.c
-@@ -385,6 +385,7 @@ static int i915_resume(struct drm_device *dev)
- 	pci_restore_state(dev->pdev);
- 	if (pci_enable_device(dev->pdev))
- 		return -1;
-+	pci_set_master(dev->pdev);
- 
- 	pci_write_config_byte(dev->pdev, LBB, dev_priv->saveLBB);
- 
-diff --git a/drivers/infiniband/hw/mthca/mthca_memfree.c b/drivers/infiniband/hw/mthca/mthca_memfree.c
-index 252db08..0b92d3e 100644
---- a/drivers/infiniband/hw/mthca/mthca_memfree.c
-+++ b/drivers/infiniband/hw/mthca/mthca_memfree.c
-@@ -109,7 +109,11 @@ static int mthca_alloc_icm_pages(struct scatterlist *mem, int order, gfp_t gfp_m
- {
- 	struct page *page;
- 
--	page = alloc_pages(gfp_mask, order);
-+	/*
-+	 * Use __GFP_ZERO because buggy firmware assumes ICM pages are
-+	 * cleared, and subtle failures are seen if they aren't.
-+	 */
-+	page = alloc_pages(gfp_mask | __GFP_ZERO, order);
- 	if (!page)
- 		return -ENOMEM;
- 
-diff --git a/drivers/net/hamradio/6pack.c b/drivers/net/hamradio/6pack.c
-index 0a9b751..756e1bb 100644
---- a/drivers/net/hamradio/6pack.c
-+++ b/drivers/net/hamradio/6pack.c
-@@ -601,6 +601,8 @@ static int sixpack_open(struct tty_struct *tty)
- 
- 	if (!capable(CAP_NET_ADMIN))
- 		return -EPERM;
-+	if (!tty->driver->write)
-+		return -EOPNOTSUPP;
- 
- 	dev = alloc_netdev(sizeof(struct sixpack), "sp%d", sp_setup);
- 	if (!dev) {
-diff --git a/drivers/net/hamradio/mkiss.c b/drivers/net/hamradio/mkiss.c
-index 30c9b3b..f650da3 100644
---- a/drivers/net/hamradio/mkiss.c
-+++ b/drivers/net/hamradio/mkiss.c
-@@ -529,6 +529,7 @@ static void ax_encaps(struct net_device *dev, unsigned char *icp, int len)
- static int ax_xmit(struct sk_buff *skb, struct net_device *dev)
- {
- 	struct mkiss *ax = netdev_priv(dev);
-+	int cib = 0;
- 
- 	if (!netif_running(dev))  {
- 		printk(KERN_ERR "mkiss: %s: xmit call when iface is down\n", dev->name);
-@@ -544,10 +545,11 @@ static int ax_xmit(struct sk_buff *skb, struct net_device *dev)
- 			/* 20 sec timeout not reached */
- 			return 1;
- 		}
-+		if (ax->tty->driver->chars_in_buffer)
-+			cib = ax->tty->driver->chars_in_buffer(ax->tty);
- 
- 		printk(KERN_ERR "mkiss: %s: transmit timed out, %s?\n", dev->name,
--		       (ax->tty->driver->chars_in_buffer(ax->tty) || ax->xleft) ?
--		       "bad line quality" : "driver error");
-+		     cib || ax->xleft ? "bad line quality" : "driver error");
- 
- 		ax->xleft = 0;
- 		clear_bit(TTY_DO_WRITE_WAKEUP, &ax->tty->flags);
-@@ -736,6 +738,8 @@ static int mkiss_open(struct tty_struct *tty)
- 
- 	if (!capable(CAP_NET_ADMIN))
- 		return -EPERM;
-+	if (!tty->driver->write)
-+		return -EOPNOTSUPP;
- 
- 	dev = alloc_netdev(sizeof(struct mkiss), "ax%d", ax_setup);
- 	if (!dev) {
-diff --git a/drivers/net/irda/irtty-sir.c b/drivers/net/irda/irtty-sir.c
-index fc753d7..df755f5 100644
---- a/drivers/net/irda/irtty-sir.c
-+++ b/drivers/net/irda/irtty-sir.c
-@@ -64,7 +64,9 @@ static int irtty_chars_in_buffer(struct sir_dev *dev)
- 	IRDA_ASSERT(priv != NULL, return -1;);
- 	IRDA_ASSERT(priv->magic == IRTTY_MAGIC, return -1;);
- 
--	return priv->tty->driver->chars_in_buffer(priv->tty);
-+	if (priv->tty->driver->chars_in_buffer)
-+		return priv->tty->driver->chars_in_buffer(priv->tty);
-+	return 0;
- }
- 
- /* Wait (sleep) until underlaying hardware finished transmission
-diff --git a/drivers/net/ppp_async.c b/drivers/net/ppp_async.c
-index f023d5b..098bf44 100644
---- a/drivers/net/ppp_async.c
-+++ b/drivers/net/ppp_async.c
-@@ -158,6 +158,9 @@ ppp_asynctty_open(struct tty_struct *tty)
- 	struct asyncppp *ap;
- 	int err;
- 
-+	if (!tty->driver->write)
-+		return -EOPNOTSUPP;
++#define next_cpu_nr(n, src)		next_cpu(n, src)
++#define cpus_weight_nr(cpumask)		cpus_weight(cpumask)
++#define for_each_cpu_mask_nr(cpu, mask)	for_each_cpu_mask(cpu, mask)
 +
- 	err = -ENOMEM;
- 	ap = kzalloc(sizeof(*ap), GFP_KERNEL);
- 	if (!ap)
-diff --git a/drivers/net/ppp_synctty.c b/drivers/net/ppp_synctty.c
-index 0d80fa5..7372938 100644
---- a/drivers/net/ppp_synctty.c
-+++ b/drivers/net/ppp_synctty.c
-@@ -207,6 +207,9 @@ ppp_sync_open(struct tty_struct *tty)
- 	struct syncppp *ap;
- 	int err;
- 
-+	if (!tty->driver->write)
-+		return -EOPNOTSUPP;
-+
- 	ap = kzalloc(sizeof(*ap), GFP_KERNEL);
- 	err = -ENOMEM;
- 	if (!ap)
-diff --git a/drivers/net/slip.c b/drivers/net/slip.c
-index 5a55ede..9d138bf 100644
---- a/drivers/net/slip.c
-+++ b/drivers/net/slip.c
-@@ -460,10 +460,14 @@ static void sl_tx_timeout(struct net_device *dev)
- 			/* 20 sec timeout not reached */
- 			goto out;
- 		}
--		printk(KERN_WARNING "%s: transmit timed out, %s?\n",
--			dev->name,
--			(sl->tty->driver->chars_in_buffer(sl->tty) || sl->xleft) ?
--				"bad line quality" : "driver error");
-+		{
-+			int cib = 0;
-+			if (sl->tty->driver->chars_in_buffer)
-+				cib = sl->tty->driver->chars_in_buffer(sl->tty);
-+			printk(KERN_WARNING "%s: transmit timed out, %s?\n",
-+				dev->name, (cib || sl->xleft) ?
-+				       "bad line quality" : "driver error");
-+		}
- 		sl->xleft = 0;
- 		sl->tty->flags &= ~(1 << TTY_DO_WRITE_WAKEUP);
- 		sl_unlock(sl);
-@@ -829,6 +833,8 @@ static int slip_open(struct tty_struct *tty)
- 
- 	if (!capable(CAP_NET_ADMIN))
- 		return -EPERM;
-+	if (!tty->driver->write)
-+		return -EOPNOTSUPP;
- 
- 	/* RTnetlink lock is misused here to serialize concurrent
- 	   opens of slip channels. There are better ways, but it is
-diff --git a/drivers/net/wan/x25_asy.c b/drivers/net/wan/x25_asy.c
-index 0f8aca8..f5b9a71 100644
---- a/drivers/net/wan/x25_asy.c
-+++ b/drivers/net/wan/x25_asy.c
-@@ -283,6 +283,10 @@ static void x25_asy_write_wakeup(struct tty_struct *tty)
- static void x25_asy_timeout(struct net_device *dev)
- {
- 	struct x25_asy *sl = (struct x25_asy*)(dev->priv);
-+	int cib = 0;
-+
-+	if (sl->tty->driver->chars_in_buffer)
-+		cib = sl->tty->driver->chars_in_buffer(sl->tty);
- 
- 	spin_lock(&sl->lock);
- 	if (netif_queue_stopped(dev)) {
-@@ -290,8 +294,7 @@ static void x25_asy_timeout(struct net_device *dev)
- 		 *      14 Oct 1994 Dmitry Gorodchanin.
- 		 */
- 		printk(KERN_WARNING "%s: transmit timed out, %s?\n", dev->name,
--		       (sl->tty->driver->chars_in_buffer(sl->tty) || sl->xleft) ?
--		       "bad line quality" : "driver error");
-+		       (cib || sl->xleft) ? "bad line quality" : "driver error");
- 		sl->xleft = 0;
- 		sl->tty->flags &= ~(1 << TTY_DO_WRITE_WAKEUP);
- 		x25_asy_unlock(sl);
-@@ -561,6 +564,9 @@ static int x25_asy_open_tty(struct tty_struct *tty)
- 		return -EEXIST;
- 	}
- 
-+	if (!tty->driver->write)
-+		return -EOPNOTSUPP;
-+
- 	/* OK.  Find a free X.25 channel to use. */
- 	if ((sl = x25_asy_alloc()) == NULL) {
- 		return -ENFILE;
-diff --git a/drivers/net/wireless/strip.c b/drivers/net/wireless/strip.c
-index 88efe1b..5536a94 100644
---- a/drivers/net/wireless/strip.c
-+++ b/drivers/net/wireless/strip.c
-@@ -802,7 +802,8 @@ static void set_baud(struct tty_struct *tty, unsigned int baudcode)
- 	struct ktermios old_termios = *(tty->termios);
- 	tty->termios->c_cflag &= ~CBAUD;	/* Clear the old baud setting */
- 	tty->termios->c_cflag |= baudcode;	/* Set the new baud setting */
--	tty->driver->set_termios(tty, &old_termios);
-+	if (tty->driver->set_termios)
-+		tty->driver->set_termios(tty, &old_termios);
- }
- 
  /*
-diff --git a/include/asm-x86/msr.h b/include/asm-x86/msr.h
-index 3ca29eb..84a15b6 100644
---- a/include/asm-x86/msr.h
-+++ b/include/asm-x86/msr.h
-@@ -18,7 +18,7 @@ static inline unsigned long long native_read_tscp(unsigned int *aux)
- 	unsigned long low, high;
- 	asm volatile (".byte 0x0f,0x01,0xf9"
- 		      : "=a" (low), "=d" (high), "=c" (*aux));
--	return low | ((u64)high >> 32);
-+	return low | ((u64)high << 32);
- }
- 
- /*
-diff --git a/kernel/futex.c b/kernel/futex.c
-index e43945e..cc6fd0d 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -1118,21 +1118,64 @@ static void unqueue_me_pi(struct futex_q *q)
-  * private futexes.
-  */
- static int fixup_pi_state_owner(u32 __user *uaddr, struct futex_q *q,
--				struct task_struct *newowner)
-+				struct task_struct *newowner,
-+				struct rw_semaphore *fshared)
- {
- 	u32 newtid = task_pid_vnr(newowner) | FUTEX_WAITERS;
- 	struct futex_pi_state *pi_state = q->pi_state;
-+	struct task_struct *oldowner = pi_state->owner;
- 	u32 uval, curval, newval;
--	int ret;
-+	int ret, attempt = 0;
- 
- 	/* Owner died? */
-+	if (!pi_state->owner)
-+		newtid |= FUTEX_OWNER_DIED;
-+
-+	/*
-+	 * We are here either because we stole the rtmutex from the
-+	 * pending owner or we are the pending owner which failed to
-+	 * get the rtmutex. We have to replace the pending owner TID
-+	 * in the user space variable. This must be atomic as we have
-+	 * to preserve the owner died bit here.
-+	 *
-+	 * Note: We write the user space value _before_ changing the
-+	 * pi_state because we can fault here. Imagine swapped out
-+	 * pages or a fork, which was running right before we acquired
-+	 * mmap_sem, that marked all the anonymous memory readonly for
-+	 * cow.
-+	 *
-+	 * Modifying pi_state _before_ the user space value would
-+	 * leave the pi_state in an inconsistent state when we fault
-+	 * here, because we need to drop the hash bucket lock to
-+	 * handle the fault. This might be observed in the PID check
-+	 * in lookup_pi_state.
-+	 */
-+retry:
-+	if (get_futex_value_locked(&uval, uaddr))
-+		goto handle_fault;
-+
-+	while (1) {
-+		newval = (uval & FUTEX_OWNER_DIED) | newtid;
-+
-+		curval = cmpxchg_futex_value_locked(uaddr, uval, newval);
-+
-+		if (curval == -EFAULT)
-+			goto handle_fault;
-+		if (curval == uval)
-+			break;
-+		uval = curval;
-+	}
-+
-+	/*
-+	 * We fixed up user space. Now we need to fix the pi_state
-+	 * itself.
-+	 */
- 	if (pi_state->owner != NULL) {
- 		spin_lock_irq(&pi_state->owner->pi_lock);
- 		WARN_ON(list_empty(&pi_state->list));
- 		list_del_init(&pi_state->list);
- 		spin_unlock_irq(&pi_state->owner->pi_lock);
--	} else
--		newtid |= FUTEX_OWNER_DIED;
-+	}
- 
- 	pi_state->owner = newowner;
- 
-@@ -1140,26 +1183,35 @@ static int fixup_pi_state_owner(u32 __user *uaddr, struct futex_q *q,
- 	WARN_ON(!list_empty(&pi_state->list));
- 	list_add(&pi_state->list, &newowner->pi_state_list);
- 	spin_unlock_irq(&newowner->pi_lock);
-+	return 0;
- 
- 	/*
--	 * We own it, so we have to replace the pending owner
--	 * TID. This must be atomic as we have preserve the
--	 * owner died bit here.
-+	 * To handle the page fault we need to drop the hash bucket
-+	 * lock here. That gives the other task (either the pending
-+	 * owner itself or the task which stole the rtmutex) the
-+	 * chance to try the fixup of the pi_state. So once we are
-+	 * back from handling the fault we need to check the pi_state
-+	 * after reacquiring the hash bucket lock and before trying to
-+	 * do another fixup. When the fixup has been done already we
-+	 * simply return.
- 	 */
--	ret = get_futex_value_locked(&uval, uaddr);
-+handle_fault:
-+	spin_unlock(q->lock_ptr);
- 
--	while (!ret) {
--		newval = (uval & FUTEX_OWNER_DIED) | newtid;
-+	ret = futex_handle_fault((unsigned long)uaddr, fshared, attempt++);
- 
--		curval = cmpxchg_futex_value_locked(uaddr, uval, newval);
-+	spin_lock(q->lock_ptr);
- 
--		if (curval == -EFAULT)
--			ret = -EFAULT;
--		if (curval == uval)
--			break;
--		uval = curval;
--	}
--	return ret;
-+	/*
-+	 * Check if someone else fixed it for us:
-+	 */
-+	if (pi_state->owner != oldowner)
-+		return 0;
-+
-+	if (ret)
-+		return ret;
-+
-+	goto retry;
- }
- 
- /*
-@@ -1524,7 +1576,7 @@ static int futex_lock_pi(u32 __user *uaddr, struct rw_semaphore *fshared,
- 		 * that case:
- 		 */
- 		if (q.pi_state->owner != curr)
--			ret = fixup_pi_state_owner(uaddr, &q, curr);
-+			ret = fixup_pi_state_owner(uaddr, &q, curr, fshared);
- 	} else {
- 		/*
- 		 * Catch the rare case, where the lock was released
-@@ -1556,7 +1608,8 @@ static int futex_lock_pi(u32 __user *uaddr, struct rw_semaphore *fshared,
- 				int res;
- 
- 				owner = rt_mutex_owner(&q.pi_state->pi_mutex);
--				res = fixup_pi_state_owner(uaddr, &q, owner);
-+				res = fixup_pi_state_owner(uaddr, &q, owner,
-+							   fshared);
- 
- 				/* propagate -EFAULT, if the fixup failed */
- 				if (res)
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 1e4596c..c54077c 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5728,6 +5728,7 @@ static void migrate_dead_tasks(unsigned int dead_cpu)
- 		next = pick_next_task(rq, rq->curr);
- 		if (!next)
- 			break;
-+		next->sched_class->put_prev_task(rq, next);
- 		migrate_dead(dead_cpu, next);
- 
- 	}
+  * The following particular system cpumasks and operations manage
+  * possible, present and online cpus.  Each of them is a fixed size
+-- 
+1.5.6
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
