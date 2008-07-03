@@ -1,43 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbYGCOTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757230AbYGCOUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756203AbYGCOTQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 10:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbYGCOS7
+	id S1757230AbYGCOUm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 10:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758875AbYGCOT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 10:18:59 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:7509 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753392AbYGCOS6 (ORCPT
+	Thu, 3 Jul 2008 10:19:58 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:55002 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758807AbYGCOT4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 10:18:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=b9FSnbah0VUHgbjPaOjIGnlkvqp6iuBUv8rx1hSq1OznULN+auIvzUy9VYOyol8Bdl
-         iyadx2n8HO8cxs4SBABN3LCXMg1UTkKec0HvIfOBqasGY7Ekp2yvC2DqBGaYeUrW+jlJ
-         E04e2083ILpYpuRix4579v+AmOur4YTxO2pxw=
-Message-ID: <a4423d670807030718g6a643702n2eba875b7fbc49cb@mail.gmail.com>
-Date: Thu, 3 Jul 2008 18:18:55 +0400
-From: "Alexander Beregalov" <a.beregalov@gmail.com>
-To: "Andi Kleen" <ak@linux.intel.com>
-Subject: Re: next-0702: ACPI Error (nseval-0159): Insufficient arguments
-Cc: lenb@kernel.org, linux-acpi@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org, akpm@osdl.org
-In-Reply-To: <a4423d670807030659p53e3c0a9ofd848ffa4e46e181@mail.gmail.com>
+	Thu, 3 Jul 2008 10:19:56 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [PATCH 1/3] ehea: fix might sleep problem
+Date: Thu, 3 Jul 2008 15:18:45 +0100
+User-Agent: KMail/1.8.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <a4423d670807030607s28bc7205l3bf46b49cff4176d@mail.gmail.com>
-	 <486CD8C3.7030007@linux.intel.com>
-	 <a4423d670807030659p53e3c0a9ofd848ffa4e46e181@mail.gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>, kamalesh@linux.vnet.ibm.com,
+       hering2@de.ibm.com
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200807031618.46087.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/3 Alexander Beregalov <a.beregalov@gmail.com>:
->> Can you please file a full report in http://bugzilla.kernel.org?
-http://bugzilla.kernel.org/show_bug.cgi?id=11032
+A mutex has to be replaced by spinlocks as it can be called from
+a context which does not allow sleeping.
+The kzalloc flag GFP_KERNEL has to be replaced by GFP_ATOMIC
+for the same reason.
+
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+
+---
+
+diff -Nurp -X dontdiff linux-2.6.26-rc8/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
+--- linux-2.6.26-rc8/drivers/net/ehea/ehea.h	2008-06-25 03:58:20.000000000 +0200
++++ patched_kernel/drivers/net/ehea/ehea.h	2008-07-02 12:38:05.000000000 +0200
+@@ -452,7 +452,7 @@ struct ehea_bcmc_reg_entry {
+ struct ehea_bcmc_reg_array {
+ 	struct ehea_bcmc_reg_entry *arr;
+ 	int num_entries;
+-	struct mutex lock;
++	spinlock_t lock;
+ };
+ 
+ #define EHEA_PORT_UP 1
+diff -Nurp -X dontdiff linux-2.6.26-rc8/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
+--- linux-2.6.26-rc8/drivers/net/ehea/ehea_main.c	2008-06-25 03:58:20.000000000 +0200
++++ patched_kernel/drivers/net/ehea/ehea_main.c	2008-07-02 12:38:05.000000000 +0200
+@@ -241,7 +241,7 @@ static void ehea_update_bcmc_registratio
+ 		}
+ 
+ 	if (num_registrations) {
+-		arr = kzalloc(num_registrations * sizeof(*arr), GFP_KERNEL);
++		arr = kzalloc(num_registrations * sizeof(*arr), GFP_ATOMIC);
+ 		if (!arr)
+ 			return;  /* Keep the existing array */
+ 	} else
+@@ -301,7 +301,7 @@ static struct net_device_stats *ehea_get
+ 
+ 	memset(stats, 0, sizeof(*stats));
+ 
+-	cb2 = kzalloc(PAGE_SIZE, GFP_KERNEL);
++	cb2 = kzalloc(PAGE_SIZE, GFP_ATOMIC);
+ 	if (!cb2) {
+ 		ehea_error("no mem for cb2");
+ 		goto out;
+@@ -1763,7 +1763,7 @@ static int ehea_set_mac_addr(struct net_
+ 
+ 	memcpy(dev->dev_addr, mac_addr->sa_data, dev->addr_len);
+ 
+-	mutex_lock(&ehea_bcmc_regs.lock);
++	spin_lock(&ehea_bcmc_regs.lock);
+ 
+ 	/* Deregister old MAC in pHYP */
+ 	if (port->state == EHEA_PORT_UP) {
+@@ -1785,7 +1785,7 @@ static int ehea_set_mac_addr(struct net_
+ 
+ out_upregs:
+ 	ehea_update_bcmc_registrations();
+-	mutex_unlock(&ehea_bcmc_regs.lock);
++	spin_unlock(&ehea_bcmc_regs.lock);
+ out_free:
+ 	kfree(cb0);
+ out:
+@@ -1947,7 +1947,7 @@ static void ehea_set_multicast_list(stru
+ 	}
+ 	ehea_promiscuous(dev, 0);
+ 
+-	mutex_lock(&ehea_bcmc_regs.lock);
++	spin_lock(&ehea_bcmc_regs.lock);
+ 
+ 	if (dev->flags & IFF_ALLMULTI) {
+ 		ehea_allmulti(dev, 1);
+@@ -1978,7 +1978,7 @@ static void ehea_set_multicast_list(stru
+ 	}
+ out:
+ 	ehea_update_bcmc_registrations();
+-	mutex_unlock(&ehea_bcmc_regs.lock);
++	spin_unlock(&ehea_bcmc_regs.lock);
+ 	return;
+ }
+ 
+@@ -2497,7 +2497,7 @@ static int ehea_up(struct net_device *de
+ 		}
+ 	}
+ 
+-	mutex_lock(&ehea_bcmc_regs.lock);
++	spin_lock(&ehea_bcmc_regs.lock);
+ 
+ 	ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
+ 	if (ret) {
+@@ -2520,7 +2520,7 @@ out:
+ 		ehea_info("Failed starting %s. ret=%i", dev->name, ret);
+ 
+ 	ehea_update_bcmc_registrations();
+-	mutex_unlock(&ehea_bcmc_regs.lock);
++	spin_unlock(&ehea_bcmc_regs.lock);
+ 
+ 	ehea_update_firmware_handles();
+ 	mutex_unlock(&ehea_fw_handles.lock);
+@@ -2575,7 +2575,7 @@ static int ehea_down(struct net_device *
+ 
+ 	mutex_lock(&ehea_fw_handles.lock);
+ 
+-	mutex_lock(&ehea_bcmc_regs.lock);
++	spin_lock(&ehea_bcmc_regs.lock);
+ 	ehea_drop_multicast_list(dev);
+ 	ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
+ 
+@@ -2584,7 +2584,7 @@ static int ehea_down(struct net_device *
+ 	port->state = EHEA_PORT_DOWN;
+ 
+ 	ehea_update_bcmc_registrations();
+-	mutex_unlock(&ehea_bcmc_regs.lock);
++	spin_unlock(&ehea_bcmc_regs.lock);
+ 
+ 	ret = ehea_clean_all_portres(port);
+ 	if (ret)
+@@ -3590,7 +3590,7 @@ int __init ehea_module_init(void)
+ 	memset(&ehea_bcmc_regs, 0, sizeof(ehea_bcmc_regs));
+ 
+ 	mutex_init(&ehea_fw_handles.lock);
+-	mutex_init(&ehea_bcmc_regs.lock);
++	spin_lock_init(&ehea_bcmc_regs.lock);
+ 
+ 	ret = check_module_parm();
+ 	if (ret)
