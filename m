@@ -1,321 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751865AbYGCNIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762316AbYGCNJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751865AbYGCNIl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 09:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759598AbYGCNGf
+	id S1762316AbYGCNJT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 09:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762047AbYGCNIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 09:06:35 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33992 "EHLO hera.kernel.org"
+	Thu, 3 Jul 2008 09:08:20 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:49383 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759523AbYGCNGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 09:06:09 -0400
-From: Tejun Heo <tj@kernel.org>
-To: jeff@garzik.org, linux-ide@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, bharrosh@panasas.com,
-       greg.freemyer@gmail.com, linux-scsi@vger.kernel.org,
-       brking@linux.vnet.ibm.com, liml@rtr.ca, jens.axboe@oracle.com,
-       viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org, device@lanana.org
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 3/6] block: implement extended minors
-Date: Thu,  3 Jul 2008 17:33:03 +0900
-Message-Id: <1215073986-4709-4-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1215073986-4709-1-git-send-email-tj@kernel.org>
-References: <1215073986-4709-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (hera.kernel.org [127.0.0.1]); Thu, 03 Jul 2008 08:33:37 +0000 (UTC)
+	id S1762042AbYGCNIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 09:08:18 -0400
+Date: Thu, 3 Jul 2008 11:57:33 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Adam Williamson <awilliamson@mandriva.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@redhat.com>, bugme-daemon@bugzilla.kernel.org,
+       Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+       Matthias Geissert <matthias.geissert@web.de>
+Subject: Re: [Bug 10868] Oops on loading ipaq module since 2.6.26, prevents
+	use of device
+Message-ID: <20080703085733.GB11254@cs181140183.pp.htv.fi>
+References: <RzbtSgMztjP.A.jRD._spXIB@albercik> <200807022333.25275.oliver@neukum.org> <1215034900.6054.204.camel@lenovo.local.net> <200807031005.59691.oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200807031005.59691.oliver@neukum.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement extended minors.  A block driver can tell block layer that
-it wants to use extended minors.  After the usual minor space is used
-up, block layer automatically allocates devt from EXT_BLOCK_MAJOR.
+On Thu, Jul 03, 2008 at 10:05:57AM +0200, Oliver Neukum wrote:
+> Am Mittwoch 02 Juli 2008 23:41:40 schrieb Adam Williamson:
+> > On Wed, 2008-07-02 at 23:33 +0200, Oliver Neukum wrote:
+> > 
+> > > This is odd. Your device shows one interface with one endpoint bulk and
+> > > bulk out respectively. Yet two ports are created. Odd.
+> > 
+> > OK. If you mean /dev/ttyUSB0 and /dev/ttyUSB1 are always both created
+> > when the device is plugged in - yep. This is the case in the working
+> 
+> Now this is very hard to explain. From the code in 2.6.25 it is clear that
+> only ttyUSB0 will be created. Please verify that indeed you get ttyUSB0
+> and ttyUSB1 with the kernel working for you.
+> 
+> > kernel too. From what I've seen in howtos and the like, this seems to be
+> > the case for most such devices. Well, let me know what else you need
+> > from me. :)
+> 
+> As far as I can tell somebody changed the ipaq driver in 2.6.26-rc6. I cannot
+> find the exact patch that did it in Greg's directory. As it causes a regression
+> here's a reversal.
 
-Currently only one major number is allocated for this but as the
-allocation is on-demand so ~1mil minor space under it should suffice
-for most cases.
 
-For internal implementation simplicity, the first partition can't be
-allocated on the extended area.  In other words, genhd->minors should
-at least be 1.  Lifting this restriction shouldn't be too difficult.
+It was changed by:
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
- block/genhd.c         |  118 +++++++++++++++++++++++++++++++++++++++++++++++--
- fs/partitions/check.c |   11 +++++
- include/linux/genhd.h |    8 +++-
- include/linux/major.h |    2 +
- 4 files changed, 134 insertions(+), 5 deletions(-)
 
-diff --git a/block/genhd.c b/block/genhd.c
-index e7310ba..97cc5e4 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -16,6 +16,7 @@
- #include <linux/kobj_map.h>
- #include <linux/buffer_head.h>
- #include <linux/mutex.h>
-+#include <linux/idr.h>
- 
- #include "blk.h"
- 
-@@ -24,6 +25,10 @@ static DEFINE_MUTEX(block_class_lock);
- struct kobject *block_depr;
- #endif
- 
-+/* for extended dynamic devt allocation, currently only one major is used */
-+#define MAX_EXT_DEVT		(1 << MINORBITS)
-+static DEFINE_IDR(ext_devt_idr);
-+
- static struct device_type disk_type;
- 
- /*
-@@ -136,6 +141,65 @@ EXPORT_SYMBOL(unregister_blkdev);
- 
- static struct kobj_map *bdev_map;
- 
-+/**
-+ * blk_alloc_devt - allocate a dev_t for a partition
-+ * @part: partition to allocate dev_t for
-+ * @gfp_mask: memory allocation flag
-+ * @devt: out parameter for resulting dev_t
-+ *
-+ * Allocate a dev_t for block device.
-+ *
-+ * RETURNS:
-+ * 0 on success, allocated dev_t is returned in *@devt.  -errno on
-+ * failure.
-+ *
-+ * CONTEXT:
-+ * Determined by @gfp_mask.
-+ */
-+int blk_alloc_devt(struct hd_struct *part, gfp_t gfp_mask, dev_t *devt)
-+{
-+	int idx, rc;
-+
-+	if (part->partno < part->disk->minors) {
-+		*devt = MKDEV(part->disk->major, part->partno);
-+		return 0;
-+	}
-+
-+	while (true) {
-+		if (!idr_pre_get(&ext_devt_idr, gfp_mask))
-+			return -ENOMEM;
-+
-+		rc = idr_get_new(&ext_devt_idr, part, &idx);
-+		if (rc == 0)
-+			break;
-+		if (rc && rc != -EAGAIN)
-+			return rc;
-+	}
-+
-+	if (idx > MAX_EXT_DEVT) {
-+		idr_remove(&ext_devt_idr, idx);
-+		return -EBUSY;
-+	}
-+
-+	*devt = MKDEV(EXT_BLOCK_MAJOR, idx);
-+	return 0;
-+}
-+
-+/**
-+ * blk_free_devt - free a dev_t
-+ * @devt: dev_t to free
-+ *
-+ * Free @devt which was allocated using blk_alloc_devt().
-+ *
-+ * CONTEXT:
-+ * Don't care.
-+ */
-+void blk_free_devt(dev_t devt)
-+{
-+	if (MAJOR(devt) == EXT_BLOCK_MAJOR)
-+		idr_remove(&ext_devt_idr, MINOR(devt));
-+}
-+
- /*
-  * Register device numbers dev..(dev+range-1)
-  * range must be nonzero
-@@ -368,12 +432,43 @@ static struct kobject *base_probe(dev_t devt, int *part, void *data)
- 	return NULL;
- }
- 
-+static struct kobject *ext_probe(dev_t devt, int *idx, void *data)
-+{
-+	struct hd_struct *part;
-+
-+	part = idr_find(&ext_devt_idr, MINOR(devt));
-+	if (unlikely(!part))
-+		return NULL;
-+
-+	*idx = part->partno;
-+	return &part->disk->dev.kobj;
-+}
-+
-+static int ext_lock(dev_t devt, void *data)
-+{
-+	struct hd_struct *part;
-+
-+	part = idr_find(&ext_devt_idr, MINOR(devt));
-+	if (likely(part && get_disk(part->disk)))
-+		return 0;
-+	return -1;
-+}
-+
- static int __init genhd_device_init(void)
- {
--	int error = class_register(&block_class);
-+	int error;
-+
-+	error = class_register(&block_class);
- 	if (unlikely(error))
- 		return error;
-+
- 	bdev_map = kobj_map_init(base_probe, &block_class_lock);
-+	if (!bdev_map)
-+		return -ENOMEM;
-+
-+	blk_register_region(MKDEV(EXT_BLOCK_MAJOR, 0), 1 << MINORBITS, NULL,
-+			    ext_probe, ext_lock, NULL);
-+
- 	blk_dev_init();
- 
- #ifndef CONFIG_SYSFS_DEPRECATED
-@@ -691,22 +786,34 @@ EXPORT_SYMBOL(blk_lookup_devt);
- 
- struct gendisk *alloc_disk(int minors)
- {
--	return alloc_disk_node(minors, -1);
-+	return alloc_disk_ext(minors, 0);
- }
- 
- struct gendisk *alloc_disk_node(int minors, int node_id)
- {
-+	return alloc_disk_ext_node(minors, 0, node_id);
-+}
-+
-+struct gendisk *alloc_disk_ext(int minors, int ext_minors)
-+{
-+	return alloc_disk_ext_node(minors, ext_minors, -1);
-+}
-+
-+struct gendisk *alloc_disk_ext_node(int minors, int ext_minors, int node_id)
-+{
- 	struct gendisk *disk;
- 
- 	disk = kmalloc_node(sizeof(struct gendisk),
- 				GFP_KERNEL | __GFP_ZERO, node_id);
- 	if (disk) {
-+		int tot_minors = minors + ext_minors;
-+
- 		if (!init_disk_stats(disk)) {
- 			kfree(disk);
- 			return NULL;
- 		}
--		if (minors > 1) {
--			int size = (minors - 1) * sizeof(struct hd_struct *);
-+		if (tot_minors > 1) {
-+			int size = (tot_minors - 1) * sizeof(struct hd_struct *);
- 			disk->part = kmalloc_node(size,
- 				GFP_KERNEL | __GFP_ZERO, node_id);
- 			if (!disk->part) {
-@@ -716,6 +823,7 @@ struct gendisk *alloc_disk_node(int minors, int node_id)
- 			}
- 		}
- 		disk->minors = minors;
-+		disk->ext_minors = ext_minors;
- 		rand_initialize_disk(disk);
- 		disk->dev.class = &block_class;
- 		disk->dev.type = &disk_type;
-@@ -728,6 +836,8 @@ struct gendisk *alloc_disk_node(int minors, int node_id)
- 
- EXPORT_SYMBOL(alloc_disk);
- EXPORT_SYMBOL(alloc_disk_node);
-+EXPORT_SYMBOL(alloc_disk_ext);
-+EXPORT_SYMBOL(alloc_disk_ext_node);
- 
- struct kobject *get_disk(struct gendisk *disk)
- {
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 994a621..15d231f 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -331,6 +331,7 @@ void delete_partition(struct gendisk *disk, int part)
- 		return;
- 	if (!p->nr_sects)
- 		return;
-+	blk_free_devt(p->dev.devt);
- 	disk->part[part-1] = NULL;
- 	p->start_sect = 0;
- 	p->nr_sects = 0;
-@@ -386,6 +387,16 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
- 	p->dev.class = &block_class;
- 	p->dev.type = &part_type;
- 	p->dev.parent = &disk->dev;
-+
-+	err = blk_alloc_devt(p, GFP_KERNEL, &p->dev.devt);
-+	if (err) {
-+		printk(KERN_WARNING "%s: failed to to allocate MAJOR:MINOR "
-+		       "(part=%d, err=%d)\n", name, part, err);
-+		free_part_stats(p);
-+		kfree(p);
-+		return;
-+	}
-+
- 	disk->part[part-1] = p;
- 
- 	/* delay uevent until 'holders' subdir is created */
-diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index 1db5740..a1843e6 100644
---- a/include/linux/genhd.h
-+++ b/include/linux/genhd.h
-@@ -117,6 +117,7 @@ struct gendisk {
- 	int first_minor;
- 	int minors;                     /* maximum number of minors, =1 for
-                                          * disks that can't be partitioned. */
-+	int ext_minors;			/* number of extended dynamic minors */
- 	char disk_name[32];		/* name of major driver */
- 	struct hd_struct **part;	/* [indexed by minor - 1] */
- 	struct block_device_operations *fops;
-@@ -146,7 +147,7 @@ struct gendisk {
- 
- static inline int disk_max_parts(struct gendisk *disk)
- {
--	return disk->minors - 1;
-+	return disk->minors + disk->ext_minors - 1;
- }
- 
- static inline int disk_major(struct gendisk *disk)
-@@ -551,6 +552,8 @@ struct unixware_disklabel {
- #define ADDPART_FLAG_RAID	1
- #define ADDPART_FLAG_WHOLEDISK	2
- 
-+extern int blk_alloc_devt(struct hd_struct *part, gfp_t gfp_mask, dev_t *devt);
-+extern void blk_free_devt(dev_t devt);
- extern dev_t blk_lookup_devt(const char *name, int part);
- extern char *disk_name (struct gendisk *hd, int part, char *buf);
- 
-@@ -561,6 +564,9 @@ extern void printk_all_partitions(void);
- 
- extern struct gendisk *alloc_disk_node(int minors, int node_id);
- extern struct gendisk *alloc_disk(int minors);
-+extern struct gendisk *alloc_disk_ext_node(int minors, int ext_minrs,
-+					   int node_id);
-+extern struct gendisk *alloc_disk_ext(int minors, int ext_minors);
- extern struct kobject *get_disk(struct gendisk *disk);
- extern void put_disk(struct gendisk *disk);
- extern void blk_register_region(dev_t devt, unsigned long range,
-diff --git a/include/linux/major.h b/include/linux/major.h
-index 0cb9805..e7fa573 100644
---- a/include/linux/major.h
-+++ b/include/linux/major.h
-@@ -170,4 +170,6 @@
- 
- #define VIOTAPE_MAJOR		230
- 
-+#define EXT_BLOCK_MAJOR		259
-+
- #endif
+commit e1879b19b0abdb387e4aeb0b935a486cc75042fb
+Author: Matthias Geissert <matthias.geissert@web.de>
+Date:   Thu Mar 6 22:00:33 2008 +0100
+
+    USB: ipaq: fix devices having more than one endpoint
+    
+    The ipaq module  supports devices with one endpoint only. Some devices,
+    e.g. Yakumo Delta 300, have more than one endpoint.
+    
+    This patch fixes support for devices having up to 2 endpoints which used
+    to work on older kernel versions.
+    
+    Signed-off-by: Matthias Geissert <matthias.geissert@web.de>
+    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+diff --git a/drivers/usb/serial/ipaq.c b/drivers/usb/serial/ipaq.c
+index 9b38a08..17f2a53 100644
+--- a/drivers/usb/serial/ipaq.c
++++ b/drivers/usb/serial/ipaq.c
+@@ -571,9 +571,9 @@ static struct usb_serial_driver ipaq_device = {
+ 	.usb_driver = 		&ipaq_driver,
+ 	.id_table =		ipaq_id_table,
+ 	.num_interrupt_in =	NUM_DONT_CARE,
+-	.num_bulk_in =		1,
+-	.num_bulk_out =		1,
+-	.num_ports =		1,
++	.num_bulk_in =		NUM_DONT_CARE,
++	.num_bulk_out =		NUM_DONT_CARE,
++	.num_ports =		2,
+ 	.open =			ipaq_open,
+ 	.close =		ipaq_close,
+ 	.attach =		ipaq_startup,
+
+
+> 	Regards
+> 		Oliver
+> 
+> Signed-off-by: Oliver Neukum <oneukum@suse.de>
+> 
+> ---
+> 
+> --- linux-2.6.26-greg/drivers/usb/serial/ipaq.alt.c	2008-07-03 09:01:37.000000000 +0200
+> +++ linux-2.6.26-greg/drivers/usb/serial/ipaq.c	2008-07-03 09:01:47.000000000 +0200
+> @@ -570,7 +570,7 @@ static struct usb_serial_driver ipaq_dev
+>  	.description =		"PocketPC PDA",
+>  	.usb_driver = 		&ipaq_driver,
+>  	.id_table =		ipaq_id_table,
+> -	.num_ports =		2,
+> +	.num_ports =		1,
+>  	.open =			ipaq_open,
+>  	.close =		ipaq_close,
+>  	.attach =		ipaq_startup,
+> 
+
+cu
+Adrian
+
 -- 
-1.5.4.5
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
