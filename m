@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758237AbYGCIYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758744AbYGCIZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758237AbYGCIYp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 04:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbYGCIQk
+	id S1758744AbYGCIZu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 04:25:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYGCIQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 04:16:40 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:49765 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932964AbYGCHIN (ORCPT
+	Thu, 3 Jul 2008 04:16:43 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:59480 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933964AbYGCHJx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 03:08:13 -0400
-Date: Thu, 3 Jul 2008 09:07:22 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: Anton Vorontsov <cbouatmailru@gmail.com>, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, linux390@de.ibm.com,
-       Kay Sievers <kay.sievers@vrfy.org>, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/04] s390: bus_id -> dev_set_name() changes
-Message-ID: <20080703090722.525b3930@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20080702230742.GA708@kroah.com>
-References: <20080702154811.GB31083@kroah.com>
-	<20080702221401.GA15142@zarina>
-	<20080702230742.GA708@kroah.com>
-Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.10; i486-pc-linux-gnu)
+	Thu, 3 Jul 2008 03:09:53 -0400
+Date: Thu, 3 Jul 2008 16:09:52 +0900
+From: Isaku Yamahata <yamahata@valinux.co.jp>
+To: jeremy@goop.org
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, xen-ia64-devel@lists.xensource.com,
+       linux-ia64@vger.kernel.org
+Subject: [PATCH] xen: compilation fix for ia64 support.
+Message-ID: <20080703070952.GB15683%yamahata@valinux.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Jul 2008 16:07:42 -0700,
-Greg KH <greg@kroah.com> wrote:
+don't include asm/pvclock-abi.h directly, but asm/xen/pvclock-abi.h
+At this moment linux ia64 won't accept asm/pvclock-abi.h because
+there's no user of it. Instead make it include asm/xen/pvclock-abi.h
+and create asm-x86/xen/pvclock-abi.h which includes asm-x86/pvclock-abi.h.
 
-> On Thu, Jul 03, 2008 at 02:14:01AM +0400, Anton Vorontsov wrote:
-> > On Wed, Jul 02, 2008 at 08:48:11AM -0700, Greg KH wrote:
-> > > --- a/drivers/s390/block/dcssblk.c
-> > > +++ b/drivers/s390/block/dcssblk.c
-> > > @@ -349,7 +349,7 @@ dcssblk_add_store(struct device *dev, st
-> > >  	}
-> > >  
-> > >  	strcpy(dev_info->segment_name, local_buf);
-> > > -	strlcpy(dev_info->dev.bus_id, local_buf, BUS_ID_SIZE);
-> > > +	dev_set_name(&dev_info->dev, local_buf);
-> > 
-> > As I see it, dev_set_name accepts printf like string, so this
-> > dev_set_name is quite dangerous (since local_buf is formed
-> > by the module param), no?
-> 
-> So you would rather see:
-> 	dev_set_name(&dev_info->dev, "%s", local_buf);
-> 
-> instead?
+Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
+---
+ include/asm-x86/xen/pvclock-abi.h |    6 ++++++
+ include/xen/interface/xen.h       |    2 +-
+ 2 files changed, 7 insertions(+), 1 deletions(-)
+ create mode 100644 include/asm-x86/xen/pvclock-abi.h
 
-Hm, I thought the string had already been sanitized at that time, but
-looking again it doesn't do many checks... so this looks better.
+diff --git a/include/asm-x86/xen/pvclock-abi.h b/include/asm-x86/xen/pvclock-abi.h
+new file mode 100644
+index 0000000..a4476db
+--- /dev/null
++++ b/include/asm-x86/xen/pvclock-abi.h
+@@ -0,0 +1,6 @@
++#ifndef __XEN_PVCLOCK_ABI_H
++#define __XEN_PVCLOCK_ABI_H
++
++#include <asm-x86/pvclock-abi.h>
++
++#endif /* __XEN_PVCLOCK_ABI_H */
+diff --git a/include/xen/interface/xen.h b/include/xen/interface/xen.h
+index 2befa3e..c36888b 100644
+--- a/include/xen/interface/xen.h
++++ b/include/xen/interface/xen.h
+@@ -10,7 +10,7 @@
+ #define __XEN_PUBLIC_XEN_H__
+ 
+ #include <asm/xen/interface.h>
+-#include <asm/pvclock-abi.h>
++#include <asm/xen/pvclock-abi.h>
+ 
+ /*
+  * XEN "SYSTEM CALLS" (a.k.a. HYPERCALLS).
+-- 
+1.5.3
+
