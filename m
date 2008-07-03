@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbYGCXsH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757719AbYGCXw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757442AbYGCXsH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 19:48:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYGCXr4
+	id S1757719AbYGCXw1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 19:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbYGCXwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 19:47:56 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:62646 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753748AbYGCXrz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 19:47:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=r8/4BonaiENGfLNAa2M5KtCxW23dVANmytj6In2YP1Vq206SQlpo7/etmgxBcaLwPL
-         bki6mC2ATBgq7OKNnHZcjRn5LBdAeVCKXPoDINYccXge9n6BpXqYkBq3LyE6SBl8GVB5
-         Ffa9IxdmULQf/rs/snry8yQ2nuN+RXCuSeDmg=
-Message-ID: <e9c3a7c20807031647n36687828r8d5a7e5e64723bd1@mail.gmail.com>
-Date: Thu, 3 Jul 2008 16:47:48 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
-Subject: Re: [PATCH] dmatest: Simple DMA memcpy test client
-Cc: linux-kernel@vger.kernel.org, "Haavard Skinnemoen" <hskinnemoen@atmel.com>
-In-Reply-To: <1214396359-5776-1-git-send-email-haavard.skinnemoen@atmel.com>
+	Thu, 3 Jul 2008 19:52:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60555 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753188AbYGCXwS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 19:52:18 -0400
+Date: Thu, 3 Jul 2008 19:51:59 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH 1/2] Avoid bio_endio recursion
+In-Reply-To: <20080704000010.08db5daf@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.64.0807031946580.21723@engineering.redhat.com>
+References: <Pine.LNX.4.64.0806240118250.24220@engineering.redhat.com>
+ <20080624080744.GL20851@kernel.dk> <Pine.LNX.4.64.0806241017390.23052@engineering.redhat.com>
+ <20080625082421.GU20851@kernel.dk> <Pine.LNX.4.64.0806252008380.11130@engineering.redhat.com>
+ <20080626070723.GL20851@kernel.dk> <Pine.LNX.4.64.0807020001290.9097@engineering.redhat.com>
+ <20080702082511.GF20055@kernel.dk> <Pine.LNX.4.64.0807031704120.20244@engineering.redhat.com>
+ <20080703220449.20688451@lxorguk.ukuu.org.uk>
+ <Pine.LNX.4.64.0807031843480.10463@engineering.redhat.com>
+ <20080704000010.08db5daf@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1214396359-5776-1-git-send-email-haavard.skinnemoen@atmel.com>
-X-Google-Sender-Auth: b6a3a5c8d1178ba7
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 5:19 AM, Haavard Skinnemoen
-<haavard.skinnemoen@atmel.com> wrote:
-> From: Haavard Skinnemoen <hskinnemoen@atmel.com>
->
-> This client tests DMA memcpy using various lengths and various offsets
-> into the source and destination buffers. It will initialize both
-> buffers with a repeatable pattern and verify that the DMA engine copies
-> the requested region and nothing more. It will also verify that the
-> bytes aren't swapped around, and that the source buffer isn't modified.
->
-> The dmatest module can be configured to test a specific device, a
-> specific channel. It can also test multiple channels at the same time,
-> and it can start multiple threads competing for the same channel.
->
-> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
->
+On Fri, 4 Jul 2008, Alan Cox wrote:
 
-Applied, with your fix included.  It is a nice little framework and
-can hopefully grow support for xor and the other operations.
+>> SCSI. Even the NCQ commands are done via IDE registers, not SCSI command
+>> block. It seems like someone wanted to save few weeks of coding by reusing
+>
+> Thats really a trivial question of encoding, in all but actual
+> byte encoding it is SCSI. Once you look at SAS and ATAPI it's all the
+> more clear.
 
-Thanks,
-Dan
+For SAS and ATAPI you're right - that's SCSI.
+
+But not for SATA disks. The only thing SCSI and SATA disk have common is 
+that they may process concurrently more requests. There's nothing else.
+
+Mikulas
