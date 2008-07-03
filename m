@@ -1,94 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbYGCMKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbYGCMJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756641AbYGCMKq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755873AbYGCMKf
+	id S1755378AbYGCMJg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbYGCMJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:10:35 -0400
-Received: from xsmtp1.ethz.ch ([82.130.70.13]:23448 "EHLO xsmtp1.ethz.ch"
+	Thu, 3 Jul 2008 08:09:24 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41852 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752264AbYGCMKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:10:34 -0400
-X-Greylist: delayed 964 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Jul 2008 08:10:34 EDT
-Message-ID: <486C9AD2.6020604@debian.org>
-Date: Thu, 03 Jul 2008 11:24:34 +0200
-From: "Giacomo A. Catenazzi" <cate@debian.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	id S1751865AbYGCMJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 08:09:23 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: 2.6.26-rc5-git2: snd-emu10k1 does not work
+Date: Thu, 3 Jul 2008 13:39:59 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrew Clayton <andrew@digital-domain.net>,
+       Bongani Hlope <bonganilinux@mweb.co.za>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+References: <200806082303.59245.rjw@sisk.pl> <200806301158.47783.rjw@sisk.pl> <s5hzlp3f9o6.wl%tiwai@suse.de>
+In-Reply-To: <s5hzlp3f9o6.wl%tiwai@suse.de>
 MIME-Version: 1.0
-To: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
-CC: Valdis.Kletnieks@vt.edu, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Selbak, Rolla N" <rolla.n.selbak@intel.com>,
-       Shaohua Li <shaohua.li@intel.com>
-Subject: Re: Intel Microcode loader, tg3 driver, and the -rc8-mmotd New World
- Order firmware...
-References: <4534.1215048758@turing-police.cc.vt.edu>            <Pine.LNX.4.61.0807030716030.10434@ginsburg.homenet> <32146.1215066947@turing-police.cc.vt.edu> <Pine.LNX.4.61.0807030743230.10608@ginsburg.homenet>
-In-Reply-To: <Pine.LNX.4.61.0807030743230.10608@ginsburg.homenet>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Jul 2008 09:24:38.0601 (UTC) FILETIME=[9DB10390:01C8DCEE]
+Content-Disposition: inline
+Message-Id: <200807031340.00201.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Added Arjan and the relevant Intel contact]
-
-Tigran Aivazian wrote:
-> On Thu, 3 Jul 2008 Valdis.Kletnieks@vt.edu wrote:
+On Monday, 30 of June 2008, Takashi Iwai wrote:
+> At Mon, 30 Jun 2008 11:58:47 +0200,
+> Rafael J. Wysocki wrote:
+> > 
+> > On Monday, 30 of June 2008, Takashi Iwai wrote:
+> > > At Mon, 30 Jun 2008 11:44:39 +0200,
+> > > Rafael J. Wysocki wrote:
+> > > > 
+> > > > On Monday, 30 of June 2008, Takashi Iwai wrote:
+> > > > > At Sun, 29 Jun 2008 19:46:49 +0200,
+> > > > > Rafael J. Wysocki wrote:
+> > > > > > 
+> > > > > > On Tuesday, 10 of June 2008, Takashi Iwai wrote:
+> > > > > > > At Mon, 9 Jun 2008 22:45:01 +0200,
+> > > > > > > Rafael J. Wysocki wrote:
+> > > > > > > > 
+> > > > > > > > On Monday, 9 of June 2008, Rafael J. Wysocki wrote:
+> > > > > > > > > On Monday, 9 of June 2008, Takashi Iwai wrote:
+> > > > > > > > > > At Sun, 8 Jun 2008 23:03:58 +0200,
+> > > > > > > > > > Rafael J. Wysocki wrote:
+> > > > > > > > > > > 
+> > > > > > > > > > > Hi,
+> > > > > > > > > > > 
+> > > > > > > > > > > snd-emu10k1 doesn't work on one of my test boxes.  The driver apparently loads,
+> > > > > > > > > > > but the card is not visible, for example, to any mixer apps (including the ALSA
+> > > > > > > > > > > mixer).  However, YaST correctly detects and reports the card (the system is
+> > > > > > > > > > > openSUSE 10.3, x86-64).  The openSUSE-made kernel (2.6.22-something) does
+> > > > > > > > > > > correctly work on the same hardware.
+> > > > > > > > > > > 
+> > > > > > > > > > > Is there anything I should pay attention to, like any options related to /proc
+> > > > > > > > > > > or sysfs that could have an effect on the audio adapter?
+> > > > > > > > > > 
+> > > > > > > > > > First off, check /proc/asound/cards whether snd-emu10k1 driver is
+> > > > > > > > > > really loaded on the first slot.  I guess something else occupies the
+> > > > > > > > > > position.
+> > > > > > > > > 
+> > > > > > > > > This is quite possible, as there is an on-board audio in this box too and I'm
+> > > > > > > > > not sure if the setup switch really turns it off.
+> > > > > > > > > 
+> > > > > > > > > > If yes, a simple solution is to add the following option for snd module:
+> > > > > > > > > > 
+> > > > > > > > > > 	options snd slots=snd-emu10k1
+> > > > > > > > > > 
+> > > > > > > > > > then the first slot is reserved for emu10k1.  Note that this option is
+> > > > > > > > > > available for 2.6.25 or later kernel.
+> > > > > > > > > 
+> > > > > > > > > I'll try later today and let you know.
+> > > > > > > > 
+> > > > > > > > No, it didn't work.
+> > > > > > > > 
+> > > > > > > > Here's what I got from /proc/asound/cards:
+> > > > > > > > 
+> > > > > > > >  0 [Audigy         ]: Audigy - Audigy 1 [SB0090]
+> > > > > > > >                       Audigy 1 [SB0090] (rev.3, serial:0x531102) at 0xa000, irq 17
+> > > > > > > >  1 [UART           ]: MPU-401 UART - MPU-401 UART
+> > > > > > > >                       MPU-401 UART at 0x330, irq 10
+> > > > > > > > 
+> > > > > > > > so I think this is correct, and the "options snd slots=snd-emu10k1" thing had
+> > > > > > > > no visible effect.
+> > > > > > > 
+> > > > > > > Then this must be OK.  Then the remaining possible problems are:
+> > > > > > > 
+> > > > > > > - Device files and permissions.
+> > > > > > >   Check whether /dev/snd/* files exist and have proper permissions and
+> > > > > > >   ACL (see "getfacl /dev/snd/*")
+> > > > > > > 
+> > > > > > > - The default ALSA configuration is hijacked, e.g. via pulse plugin.
+> > > > > > >   Try to remove /etc/asound-pulse.conf if present.
+> > > > > > 
+> > > > > > I've just installed openSUSE 11.0 on this box and the distro kernel
+> > > > > > 2.6.25.5-something works, but 2.6.26-rc8 doesn't.  The symptoms are exactly
+> > > > > > the same as described in this thread and the kernel is the only system
+> > > > > > component replaced.
+> > > > > > 
+> > > > > > So this is a regression from 2.6.25, actually.  Do you want me to bisect?
+> > > > > 
+> > > > > Hmm... there is really no visible problematic changes for emu10k1
+> > > > > between 2.6.25 and 2.6.26.  I guess checking /proc/asound/cards and/or
+> > > > > kernel config would save the time of bisect.  At least, check the
+> > > > > following:
+> > > > > 
+> > > > > 1. you have emu10k1 in the first entry (#0) of /proc/asound/cards
+> > > > 
+> > > > Yes.  The contents of /proc/asound/cards are exactly as shown above.
+> > > > 
+> > > > > 2. the mixer states are OK (e.g. "Audigy Analog/Digital Output
+> > > > > Jack" switch is off, "Master" and "PCM" are muted/adjusted, etc)
+> > > > 
+> > > > I can only run alsamixer as root and then it works correctly.  As a normal
+> > > > user it doesn't start due to insufficient access rights.
+> > > > 
+> > > > While kmix can be started as a normal user, it only shows empty window.
+> > > > 
+> > > > > 3. run "aplay -Dhw:0 /usr/share/sounds/alsa/test.wav" for testing
+> > > > 
+> > > > As root it works just fine.  As a normal user I get:
+> > > > 
+> > > > ALSA lib pcm_hw.c:1240:(_snd_pcm_hw_open) Invalid value for card
+> > > > aplay: main:583: audio open error: Permission denied
+> > > 
+> > > Weird.  Could you try to remove ~/.asoundrc and /etc/asound*.conf if
+> > > they exist?
+> > 
+> > I only had /etc/asound-pulse.conf .  Removed that, but it didn't change
+> > anything.
 > 
->> On Thu, 03 Jul 2008 07:17:16 BST, Tigran Aivazian said:
->>> Hi Valdis,
->>>
->>> On Wed, 2 Jul 2008 Valdis.Kletnieks@vt.edu wrote:
->>>
->>>> I built the -rc8-mmotd kernel, and built it with 
->>>> 'CONFIG_FIRMWARE_IN_KERNEL
->> =n'.
->>>> Lo and behold, the microcode.ko was now doing a request_firmware for
->>>> 'intel-ucode/06-0f-06' (which makes sense, the Core2 Duo in this 
->>>> laptop is
->>>> family 6, model 15, stepping 6).  However, what I had in 
->>>> /lib/firmware was
->>>> the Intel-distributed 'microcode.dat' with updates for all the CPUs 
->>>> (which
->>>> used to work in times past).
->>>>
->>>> What's the magic incantation to take the microcode.dat and create 
->>>> something
->>>> that the firmware driver is willing to use, or is this all borked up 
->>>> and
->>>> I need to do a major rethink or fix my config?
->>>
->>> that's because it expects the Intel-supplied microcode data and you are
->>> using the old style microcode.dat data.
->>
->> I fed it the stuff I downloaded today from this URL:
->>
->> http://downloadcenter.intel.com/filter_results.aspx?strTypes=all&ProductID=2643&OSFullName=Linux*&lang=eng&strOSs=39&submit=Go! 
->>
->>
->> which gets me a microcode-20080401.dat that does the same thing.  Is 
->> there
->> some *other* Intel-supplied microcode data I should be getting instead?
-> 
-> Oh, sorry, I assumed that Intel distribute the data in the format that 
-> driver expects.
+> Then I have no idea... Could you bisect?  At least, I'd like to know
+> whether manually built vanilla 2.6.25.x works on your system...
 
-There are two format of Intel CPU microcode and two methods to load it.
-- old: the microcodes are in a big file, which include multiple
-   microcodes (for multiple CPU).  The driver require a char device
-   and a user space loader ("microcode_ctl")
-- new: one microcode per file, using the 'request_firmware'
-   infrastructure. No user space support needed.
+I made it work and the trick was to set CONFIG_TMPFS_POSIX_ACL=y.
 
-Actually Intel provides only the old methods.
-There was talks with Arjan and Intel about the distribution format
-for the new methods. But I don't have any new.
-I think that when the new format is fully specified (directory
-structure, tar, gzip,...) Intel will distribute the microcodes
-in the new form.
+Thanks to Andrew Clayton for the hint.
 
-ciao
-	cate
-
+Rafael
