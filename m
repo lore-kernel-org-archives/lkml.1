@@ -1,97 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757673AbYGCO2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758770AbYGCOdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757673AbYGCO2U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 10:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757670AbYGCO2E
+	id S1758770AbYGCOdi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 10:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbYGCOd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 10:28:04 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:51384 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756439AbYGCO2C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 10:28:02 -0400
-Date: Thu, 3 Jul 2008 09:28:00 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: linux-kernel@vger.kernel.org, sfr@canb.auug.org.au
-Subject: [PATCH] - Fix compile errors in SGI console drivers (linux-next tree)
-Message-ID: <20080703142800.GA18169@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 3 Jul 2008 10:33:28 -0400
+Received: from mx.sjtu.edu.cn ([202.112.26.52]:47912 "EHLO mx2.sjtu.edu.cn"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753129AbYGCOd1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 10:33:27 -0400
+Message-ID: <20080703223323.u3i8r8wg04ww48c8@webmail1.sjtu.edu.cn>
+Date: Thu, 03 Jul 2008 22:33:23 +0800
+From: xialiang <xiaiaxaxi@sjtu.edu.cn>
+To: linux-kernel@vger.kernel.org
+Subject: Why does migration take quite a long time?
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=GB2312;
+	DelSp="Yes";
+	format="flowed"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 8BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix compile errors in SGI console drivers caused by changes to the
-tty_port structures in the linux-next tree.
+Hello,
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+     I've got a problem about the migration_thread. Migration_thread  
+is used to migrate a specific task from one cpu to another. I use it  
+to let one task migrate between cpus.
+     I am working on Intel Duo Core and with Linux 2.6.21. And my  
+problem is that the migration thread sometimes takes short time to  
+finish, but sometimes takes lots of time to finish. Because I can't do  
+another migration through migration thread before the previous  
+migration finishes, I can only wait a long time.
+     My function my_migrate() is called in softirq, just like  
+load_balance() does.
 
+My pseudocode is like following,
+/**********************/
+static int xl_migrate(int this_cpu, struct rq* this_rq)
+{
+	int dest_cpu;
+	static int flag = 0;
+	struct task_struct* curr;
 
----
- drivers/serial/ioc3_serial.c |   14 +++++++-------
- drivers/serial/sn_console.c  |    2 +-
- 2 files changed, 8 insertions(+), 8 deletions(-)
+	/* flag = 1 means code is being run, and migration code is protected.*/
+         if(flag == 1)
+                 return 0;
 
-Index: linux/drivers/serial/ioc3_serial.c
-===================================================================
---- linux.orig/drivers/serial/ioc3_serial.c	2008-07-03 08:23:12.000000000 -0500
-+++ linux/drivers/serial/ioc3_serial.c	2008-07-03 08:40:08.633449253 -0500
-@@ -905,7 +905,7 @@ static void transmit_chars(struct uart_p
- 		return;
- 
- 	info = the_port->info;
--	tty = info->tty;
-+	tty = info->port.tty;
- 
- 	if (uart_circ_empty(&info->xmit) || uart_tx_stopped(the_port)) {
- 		/* Nothing to do or hw stopped */
-@@ -997,14 +997,14 @@ ioc3_change_speed(struct uart_port *the_
- 
- 	the_port->ignore_status_mask = N_ALL_INPUT;
- 
--	info->tty->low_latency = 1;
-+	info->port.tty->low_latency = 1;
- 
--	if (I_IGNPAR(info->tty))
-+	if (I_IGNPAR(info->port.tty))
- 		the_port->ignore_status_mask &= ~(N_PARITY_ERROR
- 						  | N_FRAMING_ERROR);
--	if (I_IGNBRK(info->tty)) {
-+	if (I_IGNBRK(info->port.tty)) {
- 		the_port->ignore_status_mask &= ~N_BREAK;
--		if (I_IGNPAR(info->tty))
-+		if (I_IGNPAR(info->port.tty))
- 			the_port->ignore_status_mask &= ~N_OVERRUN_ERROR;
- 	}
- 	if (!(cflag & CREAD)) {
-@@ -1399,14 +1399,14 @@ static int receive_chars(struct uart_por
- 	/* Make sure all the pointers are "good" ones */
- 	if (!info)
- 		return 0;
--	if (!info->tty)
-+	if (!info->port.tty)
- 		return 0;
- 
- 	if (!(port->ip_flags & INPUT_ENABLE))
- 		return 0;
- 
- 	spin_lock_irqsave(&the_port->lock, pflags);
--	tty = info->tty;
-+	tty = info->port.tty;
- 
- 	read_count = do_read(the_port, ch, MAX_CHARS);
- 	if (read_count > 0) {
-Index: linux/drivers/serial/sn_console.c
-===================================================================
---- linux.orig/drivers/serial/sn_console.c	2008-07-03 08:23:12.000000000 -0500
-+++ linux/drivers/serial/sn_console.c	2008-07-03 08:38:34.097652215 -0500
-@@ -471,7 +471,7 @@ sn_receive_chars(struct sn_cons_port *po
- 
- 	if (port->sc_port.info) {
- 		/* The serial_core stuffs are initilized, use them */
--		tty = port->sc_port.info->tty;
-+		tty = port->sc_port.info->port.tty;
- 	}
- 	else {
- 		/* Not registered yet - can't pass to tty layer.  */
+         if( Currently running is a task I want to migrate... ){
+                 flag = 1;
+                 Set dest_cpu...
+                 sched_migrate_task(curr, mycpu);
+                 printk("%s:migrate to cpu %d\n", today, mycpu);
+                 flag = 0;
+         }
+         return 0;
+}
+/**********************/
+
+      It seems that the printk is showed long after the thread  
+migration is done. I don't know why the completion of migration is so  
+slow. Or any code is wrong? Can anyone help me? Thanks!
+
+Best regards,
+Liang
+
