@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760103AbYGCNyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760910AbYGCNzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760103AbYGCNyp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 09:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYGCNyf
+	id S1760910AbYGCNzA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 09:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760783AbYGCNyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 09:54:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42848 "EHLO mx3.mail.elte.hu"
+	Thu, 3 Jul 2008 09:54:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42882 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753107AbYGCNye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 09:54:34 -0400
-Date: Thu, 3 Jul 2008 15:54:21 +0200
+	id S1753305AbYGCNyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 09:54:49 -0400
+Date: Thu, 3 Jul 2008 15:54:32 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <yhlu.kernel@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: move prefill_possible_map calling early
-Message-ID: <20080703135421.GA7603@elte.hu>
-References: <200806301834.59156.yhlu.kernel@gmail.com> <200807021851.02301.yinghai.lu@sun.com> <200807021854.40729.yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] x86: move init_cpu_to_node after get_smp_config
+Message-ID: <20080703135432.GB7603@elte.hu>
+References: <200806301834.59156.yhlu.kernel@gmail.com> <200807021853.44492.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200807021854.40729.yhlu.kernel@gmail.com>
+In-Reply-To: <200807021853.44492.yhlu.kernel@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,10 +37,14 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> call it right after we done with MADT/mptable handling, instead of 
-> doing that in setup_per_cpu_areas later... so for_possible_cpu could 
-> be used early.
+> when acpi=off, cpu_to_apicid is ready after get_smp_config so need to 
+> move init_cpu_to_node after it.
+> 
+> otherwise, we will get wrong cpu->node mapping. and it will rely on 
+> amd_detect_cmp to correct it. but that is too late. setup_per_cpu_data 
+> is already called before that. we will get per_cpu_data on wrong node.
 
 applied to tip/x86/unify-setup - thanks Yinghai,
 
-	Ingo
+        Ingo
+
