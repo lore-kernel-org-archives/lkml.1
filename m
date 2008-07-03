@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYGCPTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753970AbYGCPXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbYGCPTR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 11:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbYGCPTB
+	id S1753970AbYGCPXc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 11:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbYGCPXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 11:19:01 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:34719 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751615AbYGCPTA (ORCPT
+	Thu, 3 Jul 2008 11:23:24 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46232 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751331AbYGCPXX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 11:19:00 -0400
-Date: Thu, 3 Jul 2008 17:18:44 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, schwidefsky@de.ibm.com,
-       linux390@de.ibm.com, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/04] s390: bus_id -> dev_name conversions
-Message-ID: <20080703151844.GA2157@osiris.boeblingen.de.ibm.com>
-References: <20080702154630.GA31083@kroah.com> <20080702182832.1a087e8d@gondolin.boeblingen.de.ibm.com> <20080702184943.GA20938@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080702184943.GA20938@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 3 Jul 2008 11:23:23 -0400
+Subject: Re: Intel Microcode loader, tg3 driver, and the -rc8-mmotd New
+	World Order firmware...
+From: David Woodhouse <dwmw2@infradead.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       jonathan@jonmasters.org, Shaohua Li <shaohua.li@intel.com>,
+       greg@kroah.com, arjan@infradead.org
+In-Reply-To: <76430.1215093289@turing-police.cc.vt.edu>
+References: <4534.1215048758@turing-police.cc.vt.edu>
+	 <Pine.LNX.4.61.0807030716030.10434@ginsburg.homenet>
+	 <32146.1215066947@turing-police.cc.vt.edu>
+	 <Pine.LNX.4.61.0807030743230.10608@ginsburg.homenet>
+	 <1215077028.10393.497.camel@pmac.infradead.org>
+	 <65663.1215080245@turing-police.cc.vt.edu>
+	 <1215081029.10393.517.camel@pmac.infradead.org>
+	 <68763.1215084867@turing-police.cc.vt.edu>
+	 <1215087695.10393.538.camel@pmac.infradead.org>
+	 <1215088905.9721.86.camel@linux.site>
+	 <1215089112.10393.544.camel@pmac.infradead.org>
+	 <1215090212.9721.91.camel@linux.site>
+	 <76430.1215093289@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Thu, 03 Jul 2008 16:23:09 +0100
+Message-Id: <1215098589.10393.572.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 02, 2008 at 11:49:43AM -0700, Greg KH wrote:
-> On Wed, Jul 02, 2008 at 06:28:32PM +0200, Cornelia Huck wrote:
-> > On Wed, 2 Jul 2008 08:46:30 -0700,
-> > Greg KH <greg@kroah.com> wrote:
-> > 
-> > > @@ -529,7 +529,7 @@ cio_validate_subchannel (struct subchann
-> > >  	}
-> > >  	mutex_init(&sch->reg_mutex);
-> > >  	/* Set a name for the subchannel */
-> > > -	snprintf (sch->dev.bus_id, BUS_ID_SIZE, "0.%x.%04x", schid.ssid,
-> > > +	snprintf (dev_name(&sch->dev), BUS_ID_SIZE, "0.%x.%04x", schid.ssid,
-> > >  		  schid.sch_no);
-> > > 
-> > >  	/*
-> > 
-> > This hunk does not make much sense. Better just leave it alone until
-> > the dev_set_name()/init_name conversion later.
-> 
-> You are right.
-> 
-> 390 maintainers, can you drop this hunk, or do you want me to respin it
-> and the other 3 patches (if needed)?
+On Thu, 2008-07-03 at 09:54 -0400, Valdis.Kletnieks@vt.edu wrote:
+> The *odd* part is that make firmware_install isn't symmetric - it drops it
+> in $O/usr/lib/firmware, but you don't want the final result in /usr/lib,
+> you want it in /lib.  Maybe it should be dropping it in $O/lib/firmware
+> instead?
 
-Please resend, since patch 2 needs to be changed as well, right?
+Not sure that makes sense. $(O)/usr is already used for userspace stuff.
+It doesn't necessarily correspond to /usr.
 
-Thanks! :)
+-- 
+dwmw2
+
