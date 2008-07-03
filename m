@@ -1,44 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbYGCMNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757941AbYGCMNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757602AbYGCMNW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbYGCMM0
+	id S1757941AbYGCMNu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:13:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757544AbYGCMNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:12:26 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43982
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756032AbYGCMMY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:12:24 -0400
-Date: Thu, 03 Jul 2008 03:22:32 -0700 (PDT)
-Message-Id: <20080703.032232.103611092.davem@davemloft.net>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: + net-ipv4-tcpc-needs-linux-scatterlisth.patch added to -mm
- tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200807030317.m633H5Ys017057@imap1.linux-foundation.org>
-References: <200807030317.m633H5Ys017057@imap1.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 3 Jul 2008 08:13:16 -0400
+Received: from mga11.intel.com ([192.55.52.93]:41455 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757539AbYGCMNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 08:13:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,742,1204531200"; 
+   d="scan'208";a="584663125"
+Subject: [RFC PATCH] AHCI: speed up resume
+From: Zhang Rui <rui.zhang@intel.com>
+To: linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: tj@kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain
+Date: Thu, 03 Jul 2008 16:48:02 +0800
+Message-Id: <1215074882.3214.15.camel@rzhang-dt.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: akpm@linux-foundation.org
-Date: Wed, 02 Jul 2008 20:04:57 -0700
+During S3 resume, AHCI driver sleeps 1 second to wait for the HBA reset
+to finish. This is luxurious, :)
 
-> Subject: net/ipv4/tcp.c needs linux/scatterlist.h
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> alpha:
-> 
-> net/ipv4/tcp.c: In function 'tcp_calc_md5_hash':
-> net/ipv4/tcp.c:2479: error: implicit declaration of function 'sg_init_table'    net/ipv4/tcp.c:2482: error: implicit declaration of function 'sg_set_buf'
-> net/ipv4/tcp.c:2507: error: implicit declaration of function 'sg_mark_end'      
-> 
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+According to the AHCI 1.2 spec, We should poll the HOST_CTL register,
+and return error if the host reset is not finished within 1 second.
 
-Applied to net-2.6, thanks Andrew.
+Test results show that the HBA reset can be done quickly(in usecs).
+And this patch may save nearly 1 second during resume.
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+--
+ drivers/ata/ahci.c |   17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/drivers/ata/ahci.c
+===================================================================
+--- linux-2.6.orig/drivers/ata/ahci.c	2007-05-03 11:06:33.000000000 +0800
++++ linux-2.6/drivers/ata/ahci.c	2008-07-02 16:25:54.000000000 +0800
+@@ -1073,18 +1073,29 @@
+ 
+ 	/* global controller reset */
+ 	if (!ahci_skip_host_reset) {
++		int delay = msecs_to_jiffies(1000);
++		int timeout;
++
+ 		tmp = readl(mmio + HOST_CTL);
+ 		if ((tmp & HOST_RESET) == 0) {
+ 			writel(tmp | HOST_RESET, mmio + HOST_CTL);
+ 			readl(mmio + HOST_CTL); /* flush */
+ 		}
+ 
+-		/* reset must complete within 1 second, or
++		/*
++ 		 * to perform host reset, OS should set HOST_RESET
++		 * and poll until this bit is read to be "0"
++ 		 * reset must complete within 1 second, or
+ 		 * the hardware should be considered fried.
+ 		 */
+-		ssleep(1);
++		timeout = jiffies + delay;
++		while (jiffies < timeout) {
++			tmp = readl(mmio + HOST_CTL);
++			if (!(tmp & HOST_RESET))
++				break;
++			cpu_relax();
++		}
+ 
+-		tmp = readl(mmio + HOST_CTL);
+ 		if (tmp & HOST_RESET) {
+ 			dev_printk(KERN_ERR, host->dev,
+ 				   "controller reset failed (0x%x)\n", tmp);
+
+
