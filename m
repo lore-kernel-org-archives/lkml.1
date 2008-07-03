@@ -1,98 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757823AbYGCXWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbYGCXeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757823AbYGCXWM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 19:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756773AbYGCXV6
+	id S1757457AbYGCXeW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 19:34:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbYGCXeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 19:21:58 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44509 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756702AbYGCXV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 19:21:57 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [RFC PATCH] AHCI: speed up resume
-Date: Fri, 4 Jul 2008 01:23:49 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, tj@kernel.org
-References: <1215074882.3214.15.camel@rzhang-dt.sh.intel.com>
-In-Reply-To: <1215074882.3214.15.camel@rzhang-dt.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 3 Jul 2008 19:34:11 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:5296 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756650AbYGCXeK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 19:34:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=BXwIfPi07dy5UMQsZO4PzzeUfs71HoRKxsXA9yKb0BtBcbWr+5zxvfFfFdYBXxU1Dt
+         YS2ZQKkIS/P2BCSf0EsiDFLNJ5ctwT0YvTNUu9/H4NlAMmrwVClWq2hBHCNQ30khJt7S
+         quoWaqF+sJ7PGtW9hgA+9h7WmYTSTgX/nOsNU=
+Subject: [PATCH] olpc: olpc_battery.c sparse endian annotations
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 03 Jul 2008 16:33:38 -0700
+Message-Id: <1215128019.16647.34.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807040123.50337.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 3 of July 2008, Zhang Rui wrote:
-> During S3 resume, AHCI driver sleeps 1 second to wait for the HBA reset
-> to finish. This is luxurious, :)
-> 
-> According to the AHCI 1.2 spec, We should poll the HOST_CTL register,
-> and return error if the host reset is not finished within 1 second.
-> 
-> Test results show that the HBA reset can be done quickly(in usecs).
-> And this patch may save nearly 1 second during resume.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ drivers/power/olpc_battery.c |   20 ++++++++------------
+ 1 files changed, 8 insertions(+), 12 deletions(-)
 
-That's a lot.
-
-How heavily has it been tested?
-
-Rafael
-
-
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> --
->  drivers/ata/ahci.c |   17 ++++++++++++++---
->  1 file changed, 14 insertions(+), 3 deletions(-)
-> 
-> Index: linux-2.6/drivers/ata/ahci.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/ata/ahci.c	2007-05-03 11:06:33.000000000 +0800
-> +++ linux-2.6/drivers/ata/ahci.c	2008-07-02 16:25:54.000000000 +0800
-> @@ -1073,18 +1073,29 @@
->  
->  	/* global controller reset */
->  	if (!ahci_skip_host_reset) {
-> +		int delay = msecs_to_jiffies(1000);
-> +		int timeout;
-> +
->  		tmp = readl(mmio + HOST_CTL);
->  		if ((tmp & HOST_RESET) == 0) {
->  			writel(tmp | HOST_RESET, mmio + HOST_CTL);
->  			readl(mmio + HOST_CTL); /* flush */
->  		}
->  
-> -		/* reset must complete within 1 second, or
-> +		/*
-> + 		 * to perform host reset, OS should set HOST_RESET
-> +		 * and poll until this bit is read to be "0"
-> + 		 * reset must complete within 1 second, or
->  		 * the hardware should be considered fried.
->  		 */
-> -		ssleep(1);
-> +		timeout = jiffies + delay;
-> +		while (jiffies < timeout) {
-> +			tmp = readl(mmio + HOST_CTL);
-> +			if (!(tmp & HOST_RESET))
-> +				break;
-> +			cpu_relax();
-> +		}
->  
-> -		tmp = readl(mmio + HOST_CTL);
->  		if (tmp & HOST_RESET) {
->  			dev_printk(KERN_ERR, host->dev,
->  				   "controller reset failed (0x%x)\n", tmp);
-> 
-> 
-> 
-> 
-
-
-
+diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
+index 32570af..5fbca26 100644
+--- a/drivers/power/olpc_battery.c
++++ b/drivers/power/olpc_battery.c
+@@ -205,9 +205,9 @@ static int olpc_bat_get_property(struct power_supply *psy,
+ 				 union power_supply_propval *val)
+ {
+ 	int ret = 0;
+-	int16_t ec_word;
++	__be16 ec_word;
+ 	uint8_t ec_byte;
+-	uint64_t ser_buf;
++	__be64 ser_buf;
+ 
+ 	ret = olpc_ec_cmd(EC_BAT_STATUS, NULL, 0, &ec_byte, 1);
+ 	if (ret)
+@@ -257,16 +257,14 @@ static int olpc_bat_get_property(struct power_supply *psy,
+ 		if (ret)
+ 			return ret;
+ 
+-		ec_word = be16_to_cpu(ec_word);
+-		val->intval = ec_word * 9760L / 32;
++		val->intval = (int)be16_to_cpu(ec_word) * 9760L / 32;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CURRENT_AVG:
+ 		ret = olpc_ec_cmd(EC_BAT_CURRENT, NULL, 0, (void *)&ec_word, 2);
+ 		if (ret)
+ 			return ret;
+ 
+-		ec_word = be16_to_cpu(ec_word);
+-		val->intval = ec_word * 15625L / 120;
++		val->intval = (int)be16_to_cpu(ec_word) * 15625L / 120;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CAPACITY:
+ 		ret = olpc_ec_cmd(EC_BAT_SOC, NULL, 0, &ec_byte, 1);
+@@ -278,24 +276,22 @@ static int olpc_bat_get_property(struct power_supply *psy,
+ 		ret = olpc_ec_cmd(EC_BAT_TEMP, NULL, 0, (void *)&ec_word, 2);
+ 		if (ret)
+ 			return ret;
+-		ec_word = be16_to_cpu(ec_word);
+-		val->intval = ec_word * 100 / 256;
++
++		val->intval = (int)be16_to_cpu(ec_word) * 100 / 256;
+ 		break;
+ 	case POWER_SUPPLY_PROP_TEMP_AMBIENT:
+ 		ret = olpc_ec_cmd(EC_AMB_TEMP, NULL, 0, (void *)&ec_word, 2);
+ 		if (ret)
+ 			return ret;
+ 
+-		ec_word = be16_to_cpu(ec_word);
+-		val->intval = ec_word * 100 / 256;
++		val->intval = (int)be16_to_cpu(ec_word) * 100 / 256;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
+ 		ret = olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void *)&ec_word, 2);
+ 		if (ret)
+ 			return ret;
+ 
+-		ec_word = be16_to_cpu(ec_word);
+-		val->intval = ec_word * 6250 / 15;
++		val->intval = (int)be16_to_cpu(ec_word) * 6250 / 15;
+ 		break;
+ 	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
+ 		ret = olpc_ec_cmd(EC_BAT_SERIAL, NULL, 0, (void *)&ser_buf, 8);
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+1.5.6.1.281.g1087e
+
+
