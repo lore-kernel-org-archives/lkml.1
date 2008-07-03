@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757110AbYGCMSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbYGCMVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757110AbYGCMSW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 08:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbYGCMSG
+	id S1754798AbYGCMVk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 08:21:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYGCMV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 08:18:06 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:54871 "EHLO
-	e28esmtp01.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751481AbYGCMSE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 08:18:04 -0400
-Date: Thu, 3 Jul 2008 16:52:33 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       kernel-testers@vger.kernel.org, rusty@rustcorp.com.au, apw@shadowen.org
-Subject: [BUILD-FAILURE] 2.6.26-rc8-mm1 - build failure at drivers/char/hvc_rtas.c
-Message-ID: <20080703112233.GA6451@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+	Thu, 3 Jul 2008 08:21:29 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53912 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752645AbYGCMV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 08:21:28 -0400
+Message-ID: <486CC440.9030909@garzik.org>
+Date: Thu, 03 Jul 2008 08:21:20 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080703020236.adaa51fa.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org> <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+KOSAKI Motohiro wrote:
+> Hi Michael,
+> 
+> my server output following error message on 2.6.26-rc8-mm1.
+> Is this a bug?
+> 
+> ------------------------------------------------------------------
+> tg3.c:v3.93 (May 22, 2008)
+> GSI 72 (level, low) -> CPU 0 (0x0001) vector 51
+> tg3 0000:06:01.0: PCI INT A -> GSI 72 (level, low) -> IRQ 51
+> firmware: requesting tigon/tg3_tso.bin
+> tg3: Failed to load firmware "tigon/tg3_tso.bin"
+> tg3 0000:06:01.0: PCI INT A disabled
+> GSI 72 (level, low) -> CPU 0 (0x0001) vector 51 unregistered
+> tg3: probe of 0000:06:01.0 failed with error -2
+> GSI 73 (level, low) -> CPU 0 (0x0001) vector 51
+> tg3 0000:06:01.1: PCI INT B -> GSI 73 (level, low) -> IRQ 52
+> firmware: requesting tigon/tg3_tso.bin
 
-2.6.26-rc8-mm1 kernel build fail on the powerpc, 
+This change did not come from the network developers or Broadcom, so 
+someone else broke tg3 in -mm...
 
-In file included from drivers/char/hvc_rtas.c:39:
-drivers/char/hvc_console.h:59: error: field ‘kref’ has incomplete type
-make[2]: *** [drivers/char/hvc_rtas.o] Error 1
-make[1]: *** [drivers/char] Error 2
-make: *** [drivers] Error 2
+	Jeff
 
-this was already fixed by rusty (http://lkml.org/lkml/2008/6/27/21).
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+
