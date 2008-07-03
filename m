@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbYGCNid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757203AbYGCNjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbYGCNid (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 09:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbYGCNiY
+	id S1757203AbYGCNjV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 09:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755275AbYGCNi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 09:38:24 -0400
-Received: from fallback.mail.elte.hu ([157.181.151.13]:57341 "EHLO
-	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751339AbYGCNiW (ORCPT
+	Thu, 3 Jul 2008 09:38:58 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:3414 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756096AbYGCNiz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 09:38:22 -0400
-Date: Thu, 3 Jul 2008 10:16:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: akpm@linux-foundation.org
-Cc: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: + arch-x86-mm-init_64c-early_memtest-fix-types.patch added to
-	-mm tree
-Message-ID: <20080703081616.GA22246@elte.hu>
-References: <200807030807.m63871VU027421@imap1.linux-foundation.org>
+	Thu, 3 Jul 2008 09:38:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=lIZsoZC9G8Z3+S7ZLnxrBLz8dUKGAU3qzyGKA30qio54/B2mgnHzy7/7c8PXAmJyfH
+         K+5NOTMYx3S5sFN8b24R4aWtfyK4YIUG9XJ+uQEmIDM4EHYzSY2F3wbigthLCDt+mlBj
+         NwvShWYT08E4lFa8zLOa+GHmdZCiK+vlyH0co=
+Message-ID: <8bd0f97a0807030638g5eb8f0eavd740e990b1cdf1c5@mail.gmail.com>
+Date: Thu, 3 Jul 2008 09:38:55 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy.fitzhardinge@citrix.com>
+Subject: linux-next: 1ea0704e (ptep_modify_prot transaction abstraction) breaks no-mmu
+Cc: LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200807030807.m63871VU027421@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0004]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
-
-> Subject: arch/x86/mm/init_64.c: early_memtest(): fix types
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> arch/x86/mm/init_64.c: In function 'early_memtest':
-> arch/x86/mm/init_64.c:524: warning: passing argument 2 of 'find_e820_area_size' from incompatible pointer type
-
-applied to tip/x86/urgent - thanks Andrew,
-
-	Ingo
+the functions added to asm-generic/pgtable.h are only used by
+mm/mprotect.c (a MMU-only file), but they were not added inside of the
+CONFIG_MMU ifdef block.  since the functions rely on things inside of
+CONFIG_MMU (the lines just above in pgtable.h), we get build failure
+on all no-mmu setups:
+  CC      init/main.o
+In file included from include/asm/pgtable.h:94,
+                 from include/linux/mm.h:39,
+                 from include/asm/dma.h:39,
+                 from include/linux/bootmem.h:8,
+                 from init/main.c:27:
+include/asm-generic/pgtable.h: In function '__ptep_modify_prot_start':
+include/asm-generic/pgtable.h:210: error: implicit declaration of
+function 'ptep_get_and_clear'
+include/asm-generic/pgtable.h:210: error: incompatible types in return
+make[1]: *** [init/main.o] Error 1
+make: *** [init/main.o] Error 2
+-mike
