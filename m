@@ -1,601 +1,325 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbYGCSTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbYGCSUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573AbYGCSTN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 14:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYGCSSr
+	id S1755262AbYGCSUw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 14:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbYGCSUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 14:18:47 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:41662 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753145AbYGCSSm (ORCPT
+	Thu, 3 Jul 2008 14:20:44 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:12722 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753255AbYGCSUn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 14:18:42 -0400
+	Thu, 3 Jul 2008 14:20:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references
-         :in-reply-to:mime-version:content-type:message-id;
-        b=s7WrJNgqp9t4fUPx+pcUBKIUq8pmnHzLOGzUL2QGBrZk9k2yphHlsm70KeQpRj4YSf
-         rRpIq1jEwpj/q2i0qu3PV6tvoYNGOiE+PigRQSXtCUuv4ZNtdLPMiGdcrSfPA1v/ZvgR
-         c9v9rf8sz7nYhaCStCVZ5OVIkkbNQ5fb7XEQE=
-From: Marek Vasut <marek.vasut@gmail.com>
-Organization: Hack&Dev
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH] PalmTX initial support
-Date: Thu, 3 Jul 2008 20:19:44 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-References: <200807022232.47294.marek.vasut@gmail.com> <200807031717.06361.marek.vasut@gmail.com> <20080703170128.GU17201@flint.arm.linux.org.uk>
-In-Reply-To: <20080703170128.GU17201@flint.arm.linux.org.uk>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=A/msKH+iAnefaPVdg88M7y0L4u7BaAqvgIxj5hy1g7NRdYSo/dP9Bro8OAjBXIsjkl
+         6/qgez8idJOISFVBU52d3Kfyibu00Gi+PKDqqZyYudZNi25zBSJmDGZ+ablvGjkwL11R
+         HOCJb2s6T+ulEqv0D+oNGIJjIDRydi4GQa5mw=
+Message-ID: <86802c440807031120o6e87459em8c4f239eb1a2507c@mail.gmail.com>
+Date: Thu, 3 Jul 2008 11:20:40 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [Xen-devel] Re: [PATCH 00 of 36] x86/paravirt: groundwork for 64-bit Xen support
+Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>, "Nick Piggin" <npiggin@suse.de>,
+       "Mark McLoughlin" <markmc@redhat.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       "Eduardo Habkost" <ehabkost@redhat.com>,
+       "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Stephen Tweedie" <sct@redhat.com>, x86@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080703091053.GA1883@elte.hu>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_AhRbIhg9Abzkeyf"
-Message-Id: <200807032019.44994.marek.vasut@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <486539A3.3030102@goop.org> <48684CD4.7040403@goop.org>
+	 <20080630082135.GA22844@elte.hu> <20080630092209.GA29815@elte.hu>
+	 <48696690.90907@goop.org> <20080701085204.GA23289@elte.hu>
+	 <20080701092152.GA18918@elte.hu> <486A57C8.3010008@goop.org>
+	 <20080701203123.GG4896@elte.hu> <20080703091053.GA1883@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_AhRbIhg9Abzkeyf
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Dne Thursday 03 of July 2008 19:01:28 Russell King - ARM Linux napsal(a):
-> On Thu, Jul 03, 2008 at 05:17:06PM +0200, Marek Vasut wrote:
-> > Dne Thursday 03 of July 2008 09:45:11 Russell King - ARM Linux napsal(a):
-> > > On Wed, Jul 02, 2008 at 10:32:47PM +0200, Marek Va??ut wrote:
-> > > > the following patch adds initial support for PalmTX handheld
-> > > > computer. It originates from HnD kernel tree (www.hackndev.com), then
-> > > > I pushed it to handhelds.org and now I'd like it to be applied
-> > > > mainline.
-> > >
-> > > There's one other thing that's missing from the patch - an entry for
-> > > MAINTAINERS.
-> >
-> > Ok, I hope it's all properly fixed now. I applied pxa-pwm patch on my
-> > tree and switched to pwm-backlight and used .lcd_conn. Also added to
-> > MAINTAINERS.
+On Thu, Jul 3, 2008 at 2:10 AM, Ingo Molnar <mingo@elte.hu> wrote:
 >
-> I'm getting a headache trying to work out where all this stuff should
-> go.
+> * Ingo Molnar <mingo@elte.hu> wrote:
 >
-> Right, when you were asked to use the pxa-pwm branch, that was right at
-> the time.  However, Dmitry Baryshkov recently submitted and I accepted a
-> patch which sorts out the IrDA support, and your patch misses out on
-> that change.
+>> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>>
+>> > Ingo Molnar wrote:
+>> >> Excluding the x86/xen-64bit topic solves the problem.
+>> >>
+>> >> It triggered on two 64-bit machines so it seems readily reproducible
+>> >> with that config.
+>> >>
+>> >> i've pushed the failing tree out to tip/tmp.xen-64bit.Tue_Jul__1_10_55
+>> >>
+>> >
+>> > The patch to fix this is on tip/x86/unify-setup: "x86: setup_arch() &&
+>> > early_ioremap_init()".  Logically that patch should probably be in the
+>> > xen64 branch, since it's only meaningful with the early_ioremap
+>> > unification.
+>>
+>> ah, indeed - it was missing from tip/master due to:
+>>
+>> | commit ac998c259605741efcfbd215533b379970ba1d9f
+>> | Author: Ingo Molnar <mingo@elte.hu>
+>> | Date:   Mon Jun 30 12:01:31 2008 +0200
+>> |
+>> |    Revert "x86: setup_arch() && early_ioremap_init()"
+>> |
+>> |    This reverts commit 181b3601a1a7d2ac3ace6b23cb3204450a4f9a27.
+>>
+>> because that change needed the other changes from xen-64bit.
+>>
+>> will retry tomorrow.
 >
-> So the right place has changed from the pxa-pwm branch to the pxa branch
-> itself.  Could you regenerate please?
+> ok, i've re-added x86/xen-64bit and it's looking good in testing so far.
 >
-> For the IrDA changes, see 5146/1.
 
-ok, I regenerated against devel branch and added the IrDA change.
+got
+ [ffffe20000000000-ffffe27fffffffff] PGD ->ffff88000128a000 on node 0
+ [ffffe20000000000-ffffe2003fffffff] PUD ->ffff88000128b000 on node 0
+ [ffffe20000000000-ffffe200003fffff] PMD ->
+[ffff880001400000-ffff8800017fffff] on node 0
+ [ffffe20000200000-ffffe200005fffff] PMD ->
+[ffff880001600000-ffff8800019fffff] on node 0
+ [ffffe20000400000-ffffe200007fffff] PMD ->
+[ffff880001800000-ffff880001bfffff] on node 0
+ [ffffe20000600000-ffffe200009fffff] PMD ->
+[ffff880001a00000-ffff880001dfffff] on node 0
+ [ffffe20000800000-ffffe20000bfffff] PMD ->
+[ffff880001c00000-ffff880001ffffff] on node 0
+ [ffffe20000a00000-ffffe20000dfffff] PMD ->
+[ffff880001e00000-ffff8800021fffff] on node 0
+ [ffffe20000c00000-ffffe20000ffffff] PMD ->
+[ffff880002000000-ffff8800023fffff] on node 0
+ [ffffe20000e00000-ffffe200011fffff] PMD ->
+[ffff880002200000-ffff8800025fffff] on node 0
+ [ffffe20001000000-ffffe200013fffff] PMD ->
+[ffff880002400000-ffff8800027fffff] on node 0
+ [ffffe20001200000-ffffe200015fffff] PMD ->
+[ffff880002600000-ffff8800029fffff] on node 0
+ [ffffe20001400000-ffffe200017fffff] PMD ->
+[ffff880002800000-ffff880002bfffff] on node 0
+ [ffffe20001600000-ffffe200019fffff] PMD ->
+[ffff880002a00000-ffff880002dfffff] on node 0
+ [ffffe20001800000-ffffe20001bfffff] PMD ->
+[ffff880002c00000-ffff880002ffffff] on node 0
+ [ffffe20001a00000-ffffe20001dfffff] PMD ->
+[ffff880002e00000-ffff8800031fffff] on node 0
+ [ffffe20001c00000-ffffe20001ffffff] PMD ->
+[ffff880003000000-ffff8800033fffff] on node 0
+ [ffffe20001e00000-ffffe200021fffff] PMD ->
+[ffff880003200000-ffff8800035fffff] on node 0
+ [ffffe20002000000-ffffe200023fffff] PMD ->
+[ffff880003400000-ffff8800037fffff] on node 0
+ [ffffe20002200000-ffffe200025fffff] PMD ->
+[ffff880003600000-ffff8800039fffff] on node 0
+ [ffffe20002400000-ffffe200027fffff] PMD ->
+[ffff880003800000-ffff880003bfffff] on node 0
+ [ffffe20002600000-ffffe200029fffff] PMD ->
+[ffff880003a00000-ffff880003dfffff] on node 0
+ [ffffe20002800000-ffffe20002bfffff] PMD ->
+[ffff880003c00000-ffff880003ffffff] on node 0
+ [ffffe20002a00000-ffffe20002dfffff] PMD ->
+[ffff880003e00000-ffff8800041fffff] on node 0
+ [ffffe20002c00000-ffffe20002ffffff] PMD ->
+[ffff880004000000-ffff8800043fffff] on node 0
+ [ffffe20002e00000-ffffe200039fffff] PMD ->
+[ffff880004200000-ffff8800045fffff] on node 0
+ [ffffe20003800000-ffffe20003bfffff] PMD ->
+[ffff880004400000-ffff8800047fffff] on node 0
+ [ffffe20003a00000-ffffe20003dfffff] PMD ->
+[ffff880004600000-ffff8800049fffff] on node 0
+ [ffffe20003c00000-ffffe20003ffffff] PMD ->
+[ffff880004800000-ffff880004bfffff] on node 0
+ [ffffe20003e00000-ffffe200041fffff] PMD ->
+[ffff880004a00000-ffff880004dfffff] on node 0
+ [ffffe20004000000-ffffe200043fffff] PMD ->
+[ffff880004c00000-ffff880004ffffff] on node 0
+ [ffffe20004200000-ffffe200045fffff] PMD ->
+[ffff880004e00000-ffff8800051fffff] on node 0
+ [ffffe20004400000-ffffe200047fffff] PMD ->
+[ffff880005000000-ffff8800053fffff] on node 0
+ [ffffe20004600000-ffffe200049fffff] PMD ->
+[ffff880005200000-ffff8800055fffff] on node 0
+ [ffffe20004800000-ffffe20004bfffff] PMD ->
+[ffff880005400000-ffff8800057fffff] on node 0
+ [ffffe20004a00000-ffffe20004dfffff] PMD ->
+[ffff880005600000-ffff8800059fffff] on node 0
+ [ffffe20004c00000-ffffe20004ffffff] PMD ->
+[ffff880005800000-ffff880005bfffff] on node 0
+ [ffffe20004e00000-ffffe200051fffff] PMD ->
+[ffff880005a00000-ffff880005dfffff] on node 0
+ [ffffe20005000000-ffffe200053fffff] PMD ->
+[ffff880005c00000-ffff880005ffffff] on node 0
+ [ffffe20005200000-ffffe200055fffff] PMD ->
+[ffff880005e00000-ffff8800061fffff] on node 0
+ [ffffe20005400000-ffffe200057fffff] PMD ->
+[ffff880006000000-ffff8800063fffff] on node 0
+ [ffffe20005600000-ffffe200059fffff] PMD ->
+[ffff880006200000-ffff8800065fffff] on node 0
+ [ffffe20005800000-ffffe20005bfffff] PMD ->
+[ffff880006400000-ffff8800067fffff] on node 0
+ [ffffe20005a00000-ffffe20005dfffff] PMD ->
+[ffff880006600000-ffff8800069fffff] on node 0
+ [ffffe20005c00000-ffffe20005ffffff] PMD ->
+[ffff880006800000-ffff880006bfffff] on node 0
+ [ffffe20005e00000-ffffe200061fffff] PMD ->
+[ffff880006a00000-ffff880006dfffff] on node 0
+ [ffffe20006000000-ffffe200063fffff] PMD ->
+[ffff880006c00000-ffff880006ffffff] on node 0
+ [ffffe20006200000-ffffe200065fffff] PMD ->
+[ffff880006e00000-ffff8800071fffff] on node 0
+ [ffffe20006400000-ffffe200067fffff] PMD ->
+[ffff880007000000-ffff8800073fffff] on node 0
+ [ffffe20006600000-ffffe200069fffff] PMD ->
+[ffff880007200000-ffff8800075fffff] on node 0
+ [ffffe20006800000-ffffe20006bfffff] PMD ->
+[ffff880007400000-ffff8800077fffff] on node 0
+ [ffffe20006a00000-ffffe20006dfffff] PMD ->
+[ffff880007600000-ffff8800079fffff] on node 0
+ [ffffe20006c00000-ffffe20006ffffff] PMD ->
+[ffff880007800000-ffff880007bfffff] on node 0
+ [ffffe20006e00000-ffffe200071fffff] PMD ->
+[ffff880007a00000-ffff880007dfffff] on node 0
+ [ffffe20007000000-ffffe200073fffff] PMD ->
+[ffff880007c00000-ffff880007ffffff] on node 0
+ [ffffe20007200000-ffffe200075fffff] PMD ->
+[ffff880007e00000-ffff8800081fffff] on node 0
+ [ffffe20007400000-ffffe200077fffff] PMD ->
+[ffff880008000000-ffff8800083fffff] on node 0
+ [ffffe20007600000-ffffe200079fffff] PMD ->
+[ffff880008200000-ffff8800085fffff] on node 0
+[ffffe200078c0000-ffffe200079fffff] potential offnode page_structs
+ [ffffe20007800000-ffffe20007bfffff] PMD ->
+[ffff880008400000-ffff8802283fffff] on node 0
+ [ffffe20007a00000-ffffe20007dfffff] PMD ->
+[ffff880228200000-ffff8802285fffff] on node 1
+ [ffffe20007c00000-ffffe20007ffffff] PMD ->
+[ffff880228400000-ffff8802287fffff] on node 1
+ [ffffe20007e00000-ffffe200081fffff] PMD ->
+[ffff880228600000-ffff8802289fffff] on node 1
+ [ffffe20008000000-ffffe200083fffff] PMD ->
+[ffff880228800000-ffff880228bfffff] on node 1
+ [ffffe20008200000-ffffe200085fffff] PMD ->
+[ffff880228a00000-ffff880228dfffff] on node 1
+ [ffffe20008400000-ffffe200087fffff] PMD ->
+[ffff880228c00000-ffff880228ffffff] on node 1
+ [ffffe20008600000-ffffe200089fffff] PMD ->
+[ffff880228e00000-ffff8802291fffff] on node 1
+ [ffffe20008800000-ffffe20008bfffff] PMD ->
+[ffff880229000000-ffff8802293fffff] on node 1
+ [ffffe20008a00000-ffffe20008dfffff] PMD ->
+[ffff880229200000-ffff8802295fffff] on node 1
+ [ffffe20008c00000-ffffe20008ffffff] PMD ->
+[ffff880229400000-ffff8802297fffff] on node 1
+ [ffffe20008e00000-ffffe200091fffff] PMD ->
+[ffff880229600000-ffff8802299fffff] on node 1
+ [ffffe20009000000-ffffe200093fffff] PMD ->
+[ffff880229800000-ffff880229bfffff] on node 1
+ [ffffe20009200000-ffffe200095fffff] PMD ->
+[ffff880229a00000-ffff880229dfffff] on node 1
+ [ffffe20009400000-ffffe200097fffff] PMD ->
+[ffff880229c00000-ffff880229ffffff] on node 1
+ [ffffe20009600000-ffffe200099fffff] PMD ->
+[ffff880229e00000-ffff88022a1fffff] on node 1
+ [ffffe20009800000-ffffe20009bfffff] PMD ->
+[ffff88022a000000-ffff88022a3fffff] on node 1
+ [ffffe20009a00000-ffffe20009dfffff] PMD ->
+[ffff88022a200000-ffff88022a5fffff] on node 1
+ [ffffe20009c00000-ffffe20009ffffff] PMD ->
+[ffff88022a400000-ffff88022a7fffff] on node 1
+ [ffffe20009e00000-ffffe2000a1fffff] PMD ->
+[ffff88022a600000-ffff88022a9fffff] on node 1
+ [ffffe2000a000000-ffffe2000a3fffff] PMD ->
+[ffff88022a800000-ffff88022abfffff] on node 1
+ [ffffe2000a200000-ffffe2000a5fffff] PMD ->
+[ffff88022aa00000-ffff88022adfffff] on node 1
+ [ffffe2000a400000-ffffe2000a7fffff] PMD ->
+[ffff88022ac00000-ffff88022affffff] on node 1
+ [ffffe2000a600000-ffffe2000a9fffff] PMD ->
+[ffff88022ae00000-ffff88022b1fffff] on node 1
+ [ffffe2000a800000-ffffe2000abfffff] PMD ->
+[ffff88022b000000-ffff88022b3fffff] on node 1
+ [ffffe2000aa00000-ffffe2000adfffff] PMD ->
+[ffff88022b200000-ffff88022b5fffff] on node 1
+ [ffffe2000ac00000-ffffe2000affffff] PMD ->
+[ffff88022b400000-ffff88022b7fffff] on node 1
+ [ffffe2000ae00000-ffffe2000b1fffff] PMD ->
+[ffff88022b600000-ffff88022b9fffff] on node 1
+ [ffffe2000b000000-ffffe2000b3fffff] PMD ->
+[ffff88022b800000-ffff88022bbfffff] on node 1
+ [ffffe2000b200000-ffffe2000b5fffff] PMD ->
+[ffff88022ba00000-ffff88022bdfffff] on node 1
+ [ffffe2000b400000-ffffe2000b7fffff] PMD ->
+[ffff88022bc00000-ffff88022bffffff] on node 1
+ [ffffe2000b600000-ffffe2000b9fffff] PMD ->
+[ffff88022be00000-ffff88022c1fffff] on node 1
+ [ffffe2000b800000-ffffe2000bbfffff] PMD ->
+[ffff88022c000000-ffff88022c3fffff] on node 1
+ [ffffe2000ba00000-ffffe2000bdfffff] PMD ->
+[ffff88022c200000-ffff88022c5fffff] on node 1
+ [ffffe2000bc00000-ffffe2000bffffff] PMD ->
+[ffff88022c400000-ffff88022c7fffff] on node 1
+ [ffffe2000be00000-ffffe2000c1fffff] PMD ->
+[ffff88022c600000-ffff88022c9fffff] on node 1
+ [ffffe2000c000000-ffffe2000c3fffff] PMD ->
+[ffff88022c800000-ffff88022cbfffff] on node 1
+ [ffffe2000c200000-ffffe2000c5fffff] PMD ->
+[ffff88022ca00000-ffff88022cdfffff] on node 1
+ [ffffe2000c400000-ffffe2000c7fffff] PMD ->
+[ffff88022cc00000-ffff88022cffffff] on node 1
+ [ffffe2000c600000-ffffe2000c9fffff] PMD ->
+[ffff88022ce00000-ffff88022d1fffff] on node 1
+ [ffffe2000c800000-ffffe2000cbfffff] PMD ->
+[ffff88022d000000-ffff88022d3fffff] on node 1
+ [ffffe2000ca00000-ffffe2000cdfffff] PMD ->
+[ffff88022d200000-ffff88022d5fffff] on node 1
+ [ffffe2000cc00000-ffffe2000cffffff] PMD ->
+[ffff88022d400000-ffff88022d7fffff] on node 1
+ [ffffe2000ce00000-ffffe2000d1fffff] PMD ->
+[ffff88022d600000-ffff88022d9fffff] on node 1
+ [ffffe2000d000000-ffffe2000d3fffff] PMD ->
+[ffff88022d800000-ffff88022dbfffff] on node 1
+ [ffffe2000d200000-ffffe2000d5fffff] PMD ->
+[ffff88022da00000-ffff88022ddfffff] on node 1
+ [ffffe2000d400000-ffffe2000d7fffff] PMD ->
+[ffff88022dc00000-ffff88022dffffff] on node 1
+ [ffffe2000d600000-ffffe2000d9fffff] PMD ->
+[ffff88022de00000-ffff88022e1fffff] on node 1
+ [ffffe2000d800000-ffffe2000dbfffff] PMD ->
+[ffff88022e000000-ffff88022e3fffff] on node 1
+ [ffffe2000da00000-ffffe2000ddfffff] PMD ->
+[ffff88022e200000-ffff88022e5fffff] on node 1
+ [ffffe2000dc00000-ffffe2000dffffff] PMD ->
+[ffff88022e400000-ffff88022e7fffff] on node 1
+ [ffffe2000de00000-ffffe2000e1fffff] PMD ->
+[ffff88022e600000-ffff88022e9fffff] on node 1
+ [ffffe2000e000000-ffffe2000e3fffff] PMD ->
+[ffff88022e800000-ffff88022ebfffff] on node 1
+ [ffffe2000e200000-ffffe2000e5fffff] PMD ->
+[ffff88022ea00000-ffff88022edfffff] on node 1
+ [ffffe2000e400000-ffffe2000e7fffff] PMD ->
+[ffff88022ec00000-ffff88022effffff] on node 1
+ [ffffe2000e600000-ffffe2000e9fffff] PMD ->
+[ffff88022ee00000-ffff88022f1fffff] on node 1
+ [ffffe2000e800000-ffffe2000e9fffff] PMD ->
+[ffff88022f000000-ffff88022f1fffff] on node 1
 
+should have
 
+ [ffffe20000000000-ffffe27fffffffff] PGD ->ffff8100011ce000 on node 0
+ [ffffe20000000000-ffffe2003fffffff] PUD ->ffff8100011cf000 on node 0
+[ffffe200078c0000-ffffe200079fffff] potential offnode page_structs
+ [ffffe20000000000-ffffe200079fffff] PMD ->
+[ffff810001200000-ffff8100083fffff] on node 0
+ [ffffe20007a00000-ffffe2000e9fffff] PMD ->
+[ffff810228200000-ffff81022f1fffff] on node 1
 
---Boundary-00=_AhRbIhg9Abzkeyf
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="palmtx-ml-v4.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="palmtx-ml-v4.patch"
-
-Signed-off-by: Marek Vasut <marek.vasut@gmail.com>
-diff --git a/MAINTAINERS b/MAINTAINERS
-index bb802b1..97a71dd 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -577,6 +577,12 @@ P:	Dirk Opfer
- M:	dirk@opfer-online.de
- S:	Maintained
- 
-+ARM/PALMTX SUPPORT
-+P:	Marek Vasut
-+M:	marek.vasut@gmail.com
-+W:	http://www.hackndev.com
-+S:	Maintained
-+
- ARM/PLEB SUPPORT
- P:	Peter Chubb
- M:	pleb@gelato.unsw.edu.au
-diff --git a/arch/arm/mach-pxa/Kconfig b/arch/arm/mach-pxa/Kconfig
-index 61a131f..306ebe7 100644
---- a/arch/arm/mach-pxa/Kconfig
-+++ b/arch/arm/mach-pxa/Kconfig
-@@ -198,6 +198,20 @@ config MACH_PCM027
- 	select IWMMXT
- 	select PXA_SSP
- 
-+config ARCH_PXA_PALM
-+	bool "PXA based Palm PDAs"
-+	select HAVE_PWM
-+
-+config MACH_XSCALE_PALMTX
-+	bool "Palm T|X"
-+	default y
-+	depends on ARCH_PXA_PALM
-+	select PXA27x
-+	select IWMMXT
-+	help
-+	  Say Y here if you intend to run this kernel on a Palm T|X
-+	  handheld computer.
-+
- config MACH_PCM990_BASEBOARD
- 	bool "PHYTEC PCM-990 development board"
- 	select HAVE_PWM
-diff --git a/arch/arm/mach-pxa/Makefile b/arch/arm/mach-pxa/Makefile
-index e3ff7ac..e32bdb5 100644
---- a/arch/arm/mach-pxa/Makefile
-+++ b/arch/arm/mach-pxa/Makefile
-@@ -37,6 +37,7 @@ obj-$(CONFIG_MACH_TOSA)		+= tosa.o
- obj-$(CONFIG_MACH_EM_X270)	+= em-x270.o
- obj-$(CONFIG_MACH_MAGICIAN)	+= magician.o
- obj-$(CONFIG_ARCH_PXA_ESERIES)	+= eseries.o
-+obj-$(CONFIG_MACH_XSCALE_PALMTX)+= palmtx.o
- 
- ifeq ($(CONFIG_MACH_ZYLONITE),y)
-   obj-y				+= zylonite.o
-diff --git a/arch/arm/mach-pxa/palmtx.c b/arch/arm/mach-pxa/palmtx.c
-new file mode 100644
-index 0000000..daf6891
---- /dev/null
-+++ b/arch/arm/mach-pxa/palmtx.c
-@@ -0,0 +1,323 @@
-+/*
-+ * Hardware definitions for PalmTX
-+ *
-+ * Authors:	Marek Vasut <marek.vasut@gmail.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * (find more info at www.hackndev.com)
-+ *
-+ */
-+
-+#include <linux/platform_device.h>
-+#include <linux/delay.h>
-+#include <linux/irq.h>
-+#include <linux/gpio_keys.h>
-+#include <linux/input.h>
-+#include <linux/pwm_backlight.h>
-+
-+#include <asm/mach-types.h>
-+#include <asm/mach/arch.h>
-+#include <asm/mach/map.h>
-+
-+#include <asm/arch/palmtx-init.h>
-+#include <asm/arch/palmtx-gpio.h>
-+#include <asm/arch/mmc.h>
-+#include <asm/arch/pxafb.h>
-+#include <asm/arch/pxa-regs.h>
-+#include <asm/arch/gpio.h>
-+#include <asm/arch/mfp-pxa27x.h>
-+#include <asm/arch/irda.h>
-+#include <asm/arch/pxa27x_keypad.h>
-+
-+#include "generic.h"
-+#include "devices.h"
-+
-+/******************************************************************************
-+ * SD/MMC card controller
-+ ******************************************************************************/
-+static unsigned long palmtx_pin_config[] = {
-+	/* MMC */
-+	GPIO32_MMC_CLK,
-+	GPIO92_MMC_DAT_0,
-+	GPIO109_MMC_DAT_1,
-+	GPIO110_MMC_DAT_2,
-+	GPIO111_MMC_DAT_3,
-+	GPIO112_MMC_CMD,
-+
-+	/* AC97 */
-+	GPIO28_AC97_BITCLK,
-+	GPIO29_AC97_SDATA_IN_0,
-+	GPIO30_AC97_SDATA_OUT,
-+	GPIO31_AC97_SYNC,
-+
-+	/* IrDA */
-+	GPIO46_FICP_RXD,
-+	GPIO47_FICP_TXD,
-+
-+	/* PWM */
-+	GPIO16_PWM0_OUT,
-+};
-+
-+/******************************************************************************
-+ * SD/MMC card controller
-+ ******************************************************************************/
-+static int palmtx_mci_init(struct device *dev,
-+				irqreturn_t (*palmtx_detect_int)(int, void *),
-+				void *data)
-+{
-+	int err = 0;
-+
-+	/* Setup an interrupt for detecting card insert/remove events */
-+	err = request_irq(IRQ_GPIO_PALMTX_SD_DETECT_N, palmtx_detect_int,
-+			IRQF_DISABLED | IRQF_SAMPLE_RANDOM |
-+			IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING,
-+			"SD/MMC card detect", data);
-+	if (err) {
-+		printk(KERN_ERR "%s: cannot request SD/MMC card detect IRQ\n",
-+				__func__);
-+		return err;
-+	}
-+
-+	printk(KERN_DEBUG "%s: irq registered\n", __func__);
-+
-+	return 0;
-+}
-+
-+static void palmtx_mci_exit(struct device *dev, void *data)
-+{
-+	free_irq(IRQ_GPIO_PALMTX_SD_DETECT_N, data);
-+}
-+
-+static void palmtx_mci_power(struct device *dev, unsigned int vdd)
-+{
-+	struct pxamci_platform_data *p_d = dev->platform_data;
-+	gpio_set_value(GPIO_NR_PALMTX_SD_POWER, !!((1 << vdd) & p_d->ocr_mask));
-+}
-+
-+static int palmtx_mci_get_ro(struct device *dev)
-+{
-+	return gpio_get_value(GPIO_NR_PALMTX_SD_READONLY);
-+}
-+
-+static struct pxamci_platform_data palmtx_mci_platform_data = {
-+	.ocr_mask	= MMC_VDD_32_33 | MMC_VDD_33_34,
-+	.setpower	= palmtx_mci_power,
-+	.get_ro		= palmtx_mci_get_ro,
-+	.init 		= palmtx_mci_init,
-+	.exit		= palmtx_mci_exit,
-+};
-+
-+/******************************************************************************
-+ * GPIO keyboard
-+ ******************************************************************************/
-+static unsigned int palmtx_matrix_keys[] = {
-+	KEY(0, 0, KEY_POWER),
-+	KEY(0, 1, KEY_F1),
-+	KEY(0, 2, KEY_ENTER),
-+
-+	KEY(1, 0, KEY_F2),
-+	KEY(1, 1, KEY_F3),
-+	KEY(1, 2, KEY_F4),
-+
-+	KEY(2, 0, KEY_UP),
-+	KEY(2, 2, KEY_DOWN),
-+
-+	KEY(3, 0, KEY_RIGHT),
-+	KEY(3, 2, KEY_LEFT),
-+
-+};
-+
-+static struct pxa27x_keypad_platform_data palmtx_keypad_platform_data = {
-+	.matrix_key_rows	= 4,
-+	.matrix_key_cols	= 3,
-+	.matrix_key_map		= palmtx_matrix_keys,
-+	.matrix_key_map_size	= ARRAY_SIZE(palmtx_matrix_keys),
-+
-+	.debounce_interval	= 30,
-+};
-+
-+/******************************************************************************
-+ * GPIO keys
-+ ******************************************************************************/
-+static struct gpio_keys_button palmtx_pxa_buttons[] = {
-+	{KEY_F8, GPIO_NR_PALMTX_HOTSYNC_BUTTON_N, 1, "HotSync Button" },
-+};
-+
-+static struct gpio_keys_platform_data palmtx_pxa_keys_data = {
-+	.buttons	= palmtx_pxa_buttons,
-+	.nbuttons	= ARRAY_SIZE(palmtx_pxa_buttons),
-+};
-+
-+static struct platform_device palmtx_pxa_keys = {
-+	.name	= "gpio-keys",
-+	.id	= -1,
-+	.dev	= {
-+		.platform_data = &palmtx_pxa_keys_data,
-+	},
-+};
-+
-+/******************************************************************************
-+ * Backlight
-+ ******************************************************************************/
-+static int palmtx_backlight_init(struct device *dev)
-+{
-+	int ret;
-+
-+	ret = gpio_request(GPIO_NR_PALMTX_BL_POWER, "BL POWER");
-+	if (ret)
-+		goto err;
-+	ret = gpio_request(GPIO_NR_PALMTX_LCD_POWER, "LCD POWER");
-+	if (ret)
-+		goto err2;
-+
-+err2:
-+	gpio_free(GPIO_NR_PALMTX_BL_POWER);
-+err:
-+	return ret;
-+}
-+
-+static int palmtx_backlight_notify(int brightness)
-+{
-+	gpio_set_value(GPIO_NR_PALMTX_BL_POWER, brightness);
-+	gpio_set_value(GPIO_NR_PALMTX_LCD_POWER, brightness);
-+	return brightness;
-+}
-+
-+static void palmtx_backlight_exit(struct device *dev)
-+{
-+	gpio_free(GPIO_NR_PALMTX_BL_POWER);
-+	gpio_free(GPIO_NR_PALMTX_LCD_POWER);
-+}
-+
-+static struct platform_pwm_backlight_data palmtx_backlight_data = {
-+	.pwm_id		= 0,
-+	.max_brightness	= PALMTX_MAX_INTENSITY,
-+	.dft_brightness	= PALMTX_MAX_INTENSITY,
-+	.pwm_period_ns	= PALMTX_PERIOD,
-+	.init		= palmtx_backlight_init,
-+	.notify		= palmtx_backlight_notify,
-+	.exit		= palmtx_backlight_exit,
-+};
-+
-+static struct platform_device palmtx_backlight = {
-+	.name	= "pwm-backlight",
-+	.dev	= {
-+		.parent		= &pxa27x_device_pwm0.dev,
-+		.platform_data	= &palmtx_backlight_data,
-+	},
-+};
-+
-+/******************************************************************************
-+ * IrDA
-+ ******************************************************************************/
-+static void palmtx_irda_transceiver_mode(struct device *dev, int mode)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+
-+	gpio_set_value(GPIO_NR_PALMTX_IR_DISABLE, mode & IR_OFF);
-+	if (!(mode & IR_OFF)) {
-+		gpio_set_value(GPIO47_FICP_TXD, 1);
-+		mdelay(30);
-+		gpio_set_value(GPIO47_FICP_TXD, 0);
-+	}
-+	pxa2xx_transceiver_mode(dev, mode);
-+
-+	local_irq_restore(flags);
-+}
-+
-+static struct pxaficp_platform_data palmtx_ficp_platform_data = {
-+	.transceiver_cap	= IR_SIRMODE | IR_FIRMODE | IR_OFF,
-+	.transceiver_mode	= palmtx_irda_transceiver_mode,
-+};
-+
-+/******************************************************************************
-+ * AC97
-+ ******************************************************************************/
-+static struct platform_device palmtx_ac97 = {
-+	.name	= "pxa2xx-ac97",
-+	.id	= 0,
-+};
-+
-+/******************************************************************************
-+ * Framebuffer
-+ ******************************************************************************/
-+static struct pxafb_mode_info palmtx_lcd_modes[] = {
-+{
-+	.pixclock	= 57692,
-+	.xres		= 320,
-+	.yres		= 480,
-+	.bpp		= 16,
-+
-+	.left_margin	= 32,
-+	.right_margin	= 1,
-+	.upper_margin	= 7,
-+	.lower_margin	= 1,
-+
-+	.hsync_len	= 4,
-+	.vsync_len	= 1,
-+},
-+};
-+
-+static struct pxafb_mach_info palmtx_lcd_screen = {
-+	.modes		= palmtx_lcd_modes,
-+	.num_modes	= ARRAY_SIZE(palmtx_lcd_modes),
-+	.lcd_conn	= LCD_COLOR_TFT_16BPP | LCD_PCLK_EDGE_FALL,
-+};
-+
-+/******************************************************************************
-+ * Machine init
-+ ******************************************************************************/
-+static struct platform_device *devices[] __initdata = {
-+#ifdef CONFIG_KEYBOARD_GPIO
-+	&palmtx_pxa_keys,
-+#endif
-+	&palmtx_ac97,
-+	&palmtx_backlight,
-+};
-+
-+static struct map_desc palmtx_io_desc[] __initdata = {
-+{
-+	.virtual	= PALMTX_PCMCIA_VIRT,
-+	.pfn		= __phys_to_pfn(PALMTX_PCMCIA_PHYS),
-+	.length		= PALMTX_PCMCIA_SIZE,
-+	.type		= MT_DEVICE
-+},
-+};
-+
-+static void __init palmtx_map_io(void)
-+{
-+	pxa_map_io();
-+	iotable_init(palmtx_io_desc, ARRAY_SIZE(palmtx_io_desc));
-+}
-+
-+static void __init palmtx_init(void)
-+{
-+	pxa2xx_mfp_config(ARRAY_AND_SIZE(palmtx_pin_config));
-+
-+	/* disable primary codec interrupt to prevent WM9712 constantly
-+	 * interrupting the CPU and preventing the boot process to complete
-+	 * (Thanx Alex & Shadowmite!) */
-+	GCR &= ~GCR_PRIRDY_IEN;
-+
-+	/* configure AC97's GPIOs */
-+	set_pxa_fb_info(&palmtx_lcd_screen);
-+	pxa_set_mci_info(&palmtx_mci_platform_data);
-+	pxa_set_ficp_info(&palmtx_ficp_platform_data);
-+	pxa_set_keypad_info(&palmtx_keypad_platform_data);
-+	platform_add_devices(devices, ARRAY_SIZE(devices));
-+}
-+
-+MACHINE_START(XSCALE_PALMTX, "Palm T|X")
-+	.phys_io	= PALMTX_PHYS_IO_START,
-+	.io_pg_offst	= io_p2v(0x40000000),
-+	.boot_params	= 0xa0000100,
-+	.map_io		= palmtx_map_io,
-+	.init_irq	= pxa27x_init_irq,
-+	.timer		= &pxa_timer,
-+	.init_machine	= palmtx_init
-+MACHINE_END
-diff --git a/include/asm-arm/arch-pxa/palmtx-gpio.h b/include/asm-arm/arch-pxa/palmtx-gpio.h
-new file mode 100644
-index 0000000..9deeb92
---- /dev/null
-+++ b/include/asm-arm/arch-pxa/palmtx-gpio.h
-@@ -0,0 +1,69 @@
-+/*
-+ * GPIOs and interrupts for Palm T|X Handheld Computer
-+ *
-+ * Based on palmld-gpio.h by Alex Osborne
-+ *
-+ * Authors:	Marek Vasut <marek.vasut@gmail.com>
-+ *		Cristiano P. <cristianop@users.sourceforge.net>
-+ *		Jan Herman <2hp@seznam.cz>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#ifndef _INCLUDE_PALMTX_GPIO_H_
-+#define _INCLUDE_PALMTX_GPIO_H_
-+
-+/* GPIOs */
-+#define GPIO_NR_PALMTX_GPIO_RESET		1
-+
-+#define GPIO_NR_PALMTX_POWER_DETECT		12 /* 90 */
-+#define GPIO_NR_PALMTX_HOTSYNC_BUTTON_N		10
-+#define GPIO_NR_PALMTX_EARPHONE_DETECT		107
-+
-+/* SD/MMC */
-+#define GPIO_NR_PALMTX_SD_DETECT_N		14
-+#define GPIO_NR_PALMTX_SD_POWER			114 /* probably */
-+#define GPIO_NR_PALMTX_SD_READONLY		115 /* probably */
-+
-+/* TOUCHSCREEN */
-+#define GPIO_NR_PALMTX_WM9712_IRQ		27
-+
-+/* IRDA -  disable GPIO connected to SD pin of tranceiver (TFBS4710?) ? */
-+#define GPIO_NR_PALMTX_IR_DISABLE		40
-+
-+/* USB */
-+#define GPIO_NR_PALMTX_USB_DETECT_N		13
-+#define GPIO_NR_PALMTX_USB_POWER		95
-+#define GPIO_NR_PALMTX_USB_PULLUP		93
-+
-+/* LCD/BACKLIGHT */
-+#define GPIO_NR_PALMTX_BL_POWER			84
-+#define GPIO_NR_PALMTX_LCD_POWER		96
-+
-+/* LCD BORDER */
-+#define GPIO_NR_PALMTX_BORDER_SWITCH		98
-+#define GPIO_NR_PALMTX_BORDER_SELECT		22
-+
-+/* BLUETOOTH */
-+#define GPIO_NR_PALMTX_BT_POWER			17
-+#define GPIO_NR_PALMTX_BT_RESET			83
-+
-+/* PCMCIA (WiFi) */
-+#define GPIO_NR_PALMTX_PCMCIA_POWER1		94
-+#define GPIO_NR_PALMTX_PCMCIA_POWER2		108
-+#define GPIO_NR_PALMTX_PCMCIA_RESET		79
-+#define GPIO_NR_PALMTX_PCMCIA_READY		116
-+
-+/* NAND Flash ... this GPIO may be incorrect! */
-+#define GPIO_NR_PALMTX_NAND_BUFFER_DIR		79
-+
-+/* INTERRUPTS */
-+#define IRQ_GPIO_PALMTX_SD_DETECT_N	IRQ_GPIO(GPIO_NR_PALMTX_SD_DETECT_N)
-+#define IRQ_GPIO_PALMTX_WM9712_IRQ	IRQ_GPIO(GPIO_NR_PALMTX_WM9712_IRQ)
-+#define IRQ_GPIO_PALMTX_USB_DETECT	IRQ_GPIO(GPIO_NR_PALMTX_USB_DETECT)
-+#define IRQ_GPIO_PALMTX_GPIO_RESET	IRQ_GPIO(GPIO_NR_PALMTX_GPIO_RESET)
-+
-+#endif
-diff --git a/include/asm-arm/arch-pxa/palmtx-init.h b/include/asm-arm/arch-pxa/palmtx-init.h
-new file mode 100644
-index 0000000..8b70694
---- /dev/null
-+++ b/include/asm-arm/arch-pxa/palmtx-init.h
-@@ -0,0 +1,51 @@
-+/*
-+ * Init values for Palm T|X Handheld Computer
-+ *
-+ * Authors:	Marek Vasut <marek.vasut@gmail.com>
-+ *		Cristiano P. <cristianop@users.sourceforge.net>
-+ *		Jan Herman <2hp@seznam.cz>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#ifndef _INCLUDE_PALMTX_INIT_H_
-+
-+#define _INCLUDE_PALMTX_INIT_H_
-+
-+/* Various addresses  */
-+#define PALMTX_PCMCIA_PHYS	0x28000000
-+#define PALMTX_PCMCIA_VIRT	0xf0000000
-+#define PALMTX_PCMCIA_SIZE	0x100000
-+
-+#define PALMTX_PHYS_RAM_START	0xa0000000
-+#define PALMTX_PHYS_IO_START	0x40000000
-+
-+#define PALMTX_PHYS_FLASH_START	PXA_CS0_PHYS    /* ChipSelect 0 */
-+#define PALMTX_PHYS_NAND_START	PXA_CS1_PHYS    /* ChipSelect 1 */
-+
-+/* TOUCHSCREEN */
-+#define AC97_LINK_FRAME		21
-+
-+
-+/* BATTERY */
-+#define PALMTX_BAT_MAX_VOLTAGE		4000	/* 4.00v current voltage */
-+#define PALMTX_BAT_MIN_VOLTAGE		3550	/* 3.55v critical voltage */
-+#define PALMTX_BAT_MAX_CURRENT		   0	/* unknokn */
-+#define PALMTX_BAT_MIN_CURRENT		   0	/* unknown */
-+#define PALMTX_BAT_MAX_CHARGE		   1	/* unknown */
-+#define PALMTX_BAT_MIN_CHARGE		   1	/* unknown */
-+#define PALMTX_MAX_LIFE_MINS		 360    /* on-life in minutes */
-+
-+#define PALMTX_BAT_MEASURE_DELAY (HZ * 1)
-+
-+/* BACKLIGHT */
-+#define PALMTX_MAX_INTENSITY            0xFE
-+#define PALMTX_DEFAULT_INTENSITY        0x7E
-+#define PALMTX_LIMIT_MASK               0x7F
-+#define PALMTX_PRESCALER                0x3F
-+#define PALMTX_PERIOD                   0x12C
-+
-+#endif
-
---Boundary-00=_AhRbIhg9Abzkeyf--
+YH
