@@ -1,100 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbYGCRZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754514AbYGCR2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbYGCRZr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 13:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYGCRZj
+	id S1754514AbYGCR2T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 13:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbYGCR2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 13:25:39 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:49461 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752597AbYGCRZi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 13:25:38 -0400
-Date: Thu, 3 Jul 2008 18:25:25 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Li Zefan <lizf@cn.fujitsu.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, npiggin@suse.de,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Rik Van Riel <riel@redhat.com>
-Subject: Re: [-mm] BUG: sleeping function called from invalid context at
- include/linux/pagemap.h:290
-In-Reply-To: <486C9FBD.9000800@cn.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0807031747470.14783@blonde.site>
-References: <486C74B1.3000007@cn.fujitsu.com> <20080703183913.D6DF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
- <486C9FBD.9000800@cn.fujitsu.com>
+	Thu, 3 Jul 2008 13:28:05 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46451 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752481AbYGCR2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 13:28:04 -0400
+Date: Thu, 3 Jul 2008 09:49:39 -0700
+From: Greg KH <gregkh@suse.de>
+To: David Miller <davem@davemloft.net>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: kay.sievers@vrfy.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sparc64: fix up bus_id changes in sparc core code
+Message-ID: <20080703164939.GA13326@suse.de>
+References: <20080702153651.GB30318@kroah.com> <20080703.033556.167121752.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080703.033556.167121752.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Jul 2008, Li Zefan wrote:
-> KOSAKI Motohiro wrote:
-> >> Seems the problematic patch is :
-> >> mmap-handle-mlocked-pages-during-map-remap-unmap.patch
-> >>
-> >> I'm using mmotm uploaded yesterday by Andrew, so I guess this bug
-> >> has not been fixed ?
-> >>
-> >> BUG: sleeping function called from invalid context at include/linux/pagemap.h:290
-> >> in_atomic():1, irqs_disabled():0
-> >> no locks held by gpg-agent/2134.
-> > 
-> > Li-san, I tested 2.6.26-rc8-mm1 on x86_64.
-> > but I can't reproduce it.
-> > 
-> > Could you explain detail of reproduce way?
-> > 
+On Thu, Jul 03, 2008 at 03:35:56AM -0700, David Miller wrote:
+> From: Greg Kroah-Hartman <gregkh@suse.de>
+> Date: Wed, 2 Jul 2008 08:36:51 -0700
 > 
-> Nothing special. I booted the system up, and entered KDE, and opened xterm,
-> and typed "dmesg".
+> > --- a/arch/sparc64/kernel/pci.c
+> > +++ b/arch/sparc64/kernel/pci.c
+> > @@ -408,7 +408,7 @@ struct pci_dev *of_create_pci_dev(struct
+> >  	dev->class = class >> 8;
+> >  	dev->revision = class & 0xff;
+> >  
+> > -	sprintf(dev->dev.bus_id, "%04x:%02x:%02x.%d", pci_domain_nr(bus),
+> > +	dev_set_name(&dev->dev, "%04x:%02x:%02x.%d", pci_domain_nr(bus),
+> >  		dev->bus->number, PCI_SLOT(devfn), PCI_FUNC(devfn));
+> >  
+> >  	if (ofpci_verbose)
 > 
-> .config attached.
+> Those lines read:
+> 
+> 	sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(bus),
+> 		dev->bus->number, PCI_SLOT(devfn), PCI_FUNC(devfn));
+> 
+> in Linus's current tree.
+> 
+> What are you patching against?  That first argument is not
+> dev->dev.bus_id in any tree I have sitting here, it's always
+> pci_name() :-)
 
-The reason you're seeing it and others not is because your
-CONFIG_HIGHPTE=y
-is making the issue visible.
+Argh, I'm patching against a previous patch that was only sent to Jesse
+for the PCI core, sorry for the confusion.
 
-__munlock_pte_handler is trying to lock_page (or migration_entry_wait)
-while using the per-cpu kmap_atomic from walk_pte_range's pte_offset_map.
-Sleeping functions called from atomic context.
+The patch for that is below.  It's probably easier for Jesse to take
+both of these in his tree if you like, or I can send you just the Sparc
+one, based on HEAD right now, and then the intermediate step in the PCI
+patch would not be needed.
 
-There's quite a lot to worry about there.
+thanks,
 
-That page table walker was originally written to gather some info
-for /proc display, not to act upon the page table contents in any
-serious way.  So it's just doing pte_offset_map when every(?) other
-page table walk would be required to pte_offset_map_lock.  If it
-were doing pte_offset_map_lock, then lots more people would have
-seen the problem sooner.
+greg k-h
 
-Does this usage need to pte_offset_map_lock?  I think to the extent
-that it needs to lock_page, it needs to pte_offset_map_lock: both
-are because file truncation (or more commonly reclaim, but without
-looking into it too carefully, I dare say reclaim isn't a problem
-in this context) could interfere with page->mapping and pte at any
-instant.
+From: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: PCI: make pci_name use dev_name
 
-Conveniently, we have not one but two attempts at a generic page
-walker (sigh!): the other one, apply_to_page_range in mm/memory.c,
-does do the lock; it also allocates a page table if it's not there,
-I guess that aspect wouldn't be a problem on an mlocked area.  Maybe
-using apply_to_page_range would be better here, and sidestep the
-issue of not having CONFIG_PAGE_WALKER.
+Also fixes up the sparc code that was assuming this is not a constant.
 
-But if it does pte_offset_map_lock, look, migration_entry_wait does
-so too; well, never mind the lock, it'll kunmap_atomic 
-Obviously that part cries out for refactoring.
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-And how do you manage the lock_page?  Offhand, I don't know, I'm
-just reporting on the obvious.  Would trylocking be good enough?
+---
+ arch/sparc64/kernel/pci.c |    2 +-
+ include/linux/pci.h       |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-(I do dislike "generic page walkers" because they encourage this
-kind of oversight; and I hate to think of the latency problems
-they might be introducing - no sign of a cond_resched in either.)
-
-Hugh
+--- a/arch/sparc64/kernel/pci.c
++++ b/arch/sparc64/kernel/pci.c
+@@ -408,7 +408,7 @@ struct pci_dev *of_create_pci_dev(struct
+ 	dev->class = class >> 8;
+ 	dev->revision = class & 0xff;
+ 
+-	sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(bus),
++	sprintf(dev->dev.bus_id, "%04x:%02x:%02x.%d", pci_domain_nr(bus),
+ 		dev->bus->number, PCI_SLOT(devfn), PCI_FUNC(devfn));
+ 
+ 	if (ofpci_verbose)
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -977,9 +977,9 @@ static inline void pci_set_drvdata(struc
+ /* If you want to know what to call your pci_dev, ask this function.
+  * Again, it's a wrapper around the generic device.
+  */
+-static inline char *pci_name(struct pci_dev *pdev)
++static inline const char *pci_name(struct pci_dev *pdev)
+ {
+-	return pdev->dev.bus_id;
++	return dev_name(&pdev->dev);
+ }
+ 
+ 
