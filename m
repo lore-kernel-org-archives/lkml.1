@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbYGCVcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbYGCVd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbYGCVcT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 17:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbYGCVcH
+	id S1756956AbYGCVd7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 17:33:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbYGCVdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 17:32:07 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:6169 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754072AbYGCVcF (ORCPT
+	Thu, 3 Jul 2008 17:33:49 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36056 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754231AbYGCVds (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 17:32:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=kYXNbkuJW5ZeH2WVbU0ZPLqJ2SruqYAmJdHMZxlH/TrAlYIpkEfeL98du1w91ksvBh
-         2KW/LK8jnaXoqH4uZq1vkrKAtpYu52aL+aVHXwmru3aG9q6bxIMtzGlw8SIyiIK8RiG8
-         VqK3ZN+I8Cs4zX0nBKcT4dgcyfxgw73eILHgs=
-Message-ID: <86802c440807031432j6083b930y6e894b62fab041bd@mail.gmail.com>
-Date: Thu, 3 Jul 2008 14:32:02 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Bernhard Walle" <bwalle@suse.de>
-Subject: Re: [PATCH] x86: make e820_saved have update from setup_data
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Ying Huang" <ying.huang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080703230108.1dbe68cb@kopernikus.site>
+	Thu, 3 Jul 2008 17:33:48 -0400
+Message-ID: <486D4596.60005@infradead.org>
+Date: Thu, 03 Jul 2008 22:33:10 +0100
+From: David Woodhouse <dwmw2@infradead.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jeff Garzik <jeff@garzik.org>
+CC: Theodore Tso <tytso@mit.edu>, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org>	 <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>	 <486CC440.9030909@garzik.org>	 <Pine.LNX.4.64.0807031353030.11033@blonde.site>	 <486CCFED.7010308@garzik.org>	 <1215091999.10393.556.camel@pmac.infradead.org>	 <486CD654.4020605@garzik.org>	 <1215093175.10393.567.camel@pmac.infradead.org>	 <20080703173040.GB30506@mit.edu> <1215111362.10393.651.camel@pmac.infradead.org> <486D3E88.9090900@garzik.org>
+In-Reply-To: <486D3E88.9090900@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200807031135.37465.yhlu.kernel@gmail.com>
-	 <200807031137.13984.yhlu.kernel@gmail.com>
-	 <20080703230108.1dbe68cb@kopernikus.site>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 3, 2008 at 2:01 PM, Bernhard Walle <bwalle@suse.de> wrote:
-> * Yinghai Lu <yhlu.kernel@gmail.com> [2008-07-03 11:37]:
->>
->> +     /* update the e820_saved too */
->> +     e820_reserve_setup_data();
->
-> Why do you want to update the e820_saved here? /sys/firmware/memmap
-> should provide the real BIOS-provided memory map, IMO ...
+Jeff Garzik wrote:
+> David Woodhouse wrote:
+>> Although it does make me wonder if it was better the way I had it
+>> originally, with individual options like TIGON3_FIRMWARE_IN_KERNEL
+>> attached to each driver, rather than a single FIRMWARE_IN_KERNEL option
+>> which controls them all.
+> 
+> IMO, individual options would be better.
 
-that setup_data is another half memmap for efi.
+They had individual options for a long time, but the consensus was that 
+I should remove them -- a consensus which was probably right. It was 
+moderately inconvenient going back through it all and recommitting it 
+without that, but it was worth it to get it right...
 
-YH
+> Plus, unless I am misunderstanding, the firmware is getting built into 
+> the kernel image not the tg3 module?
+
+That's right, although it doesn't really matter when they're both in the 
+vmlinux.
+
+When it's actually a module, there really is no good reason not to let 
+request_firmware() get satisfied from userspace. If you can load 
+modules, then you can load firmware too -- the required udev stuff has 
+been there as standard for a _long_ time, as most modern drivers 
+_require_ it without even giving you the built-in-firmware option at all.
+
+It makes no more sense to object to that than it does to object to the 
+module depending on _other_ modules. Both those other modules, and the 
+required firmware, are _installed_ by the kernel Makefiles, after all.
+
+It wouldn't be _impossible_ to put firmware blobs into the foo.ko files 
+themselves and find them there. The firmware blobs in the kernel are 
+done in a separate section (like initcalls, exceptions tables, pci 
+fixups, and a bunch of other stuff). It'd just take some work in 
+module.c to link them into a global list, and some locking shenanigans 
+in the lookups (and lifetime issues to think about). But it just isn't 
+worth the added complexity, given that userspace is known to be alive 
+and working. It's pointless not to just use request_firmware() normally, 
+from a module.
+
+-- 
+dwmw2
