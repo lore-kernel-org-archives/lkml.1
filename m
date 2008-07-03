@@ -1,75 +1,671 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbYGCXO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757481AbYGCXRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757418AbYGCXO5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 19:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756390AbYGCXOp
+	id S1757481AbYGCXRA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 19:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756448AbYGCXQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 19:14:45 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:33364 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756198AbYGCXOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 19:14:44 -0400
-Message-ID: <486D5D4F.9060000@garzik.org>
-Date: Thu, 03 Jul 2008 19:14:23 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 3 Jul 2008 19:16:52 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:6304 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756381AbYGCXQu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 19:16:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=SUwY/bqaRvbphdn+U5BWWH5x6oLYMjulrztJzh20bmUB9WWLxJBp/NWdHM0p2H9V8v
+         9cjLgc/Br3CJFJRCg24emSItOhXH6dslq1cehNxJIMd8Ld8tWp+rNd4eZgvADa8usyqw
+         xhc9qBI+FSwroHmmN22DyoQZ0vFbtQ0UCoWWg=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: remove acpi_srat config
+Date: Thu, 3 Jul 2008 16:17:55 -0700
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <200807031435.36508.yhlu.kernel@gmail.com>
+In-Reply-To: <200807031435.36508.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: David Woodhouse <dwmw2@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org>	<20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>	<486CC440.9030909@garzik.org>	<Pine.LNX.4.64.0807031353030.11033@blonde.site>	<486CCFED.7010308@garzik.org>	<1215091999.10393.556.camel@pmac.infradead.org>	<486CD654.4020605@garzik.org>	<1215093175.10393.567.camel@pmac.infradead.org>	<20080703173040.GB30506@mit.edu>	<1215111362.10393.651.camel@pmac.infradead.org>	<486D3E88.9090900@garzik.org>	<486D4596.60005@infradead.org>	<486D511A.9020405@garzik.org> <20080703232554.7271d645@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080703232554.7271d645@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200807031617.55909.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> Further, all current kernel build and test etc. scripts are unaware of 
->> 'make firmware_install', and it is unfair to everybody to force a 
->> flag-day build process change on people, just to keep their drivers in 
->> the same working state today as it was yesterday.
-> 
-> IMHO we want firmware built in as the default for the moment. If the
-> firmware model makes sense (as I think it does) then the distributions
-> will catch up, turn it on and sort out the default behaviour - exactly as
-> they did all those years ago with modules, more recently with "use an
-> initrd" and so on.
 
-Agreed.
+use ACPI_NUMA directly
 
+and move srat_32.c to mm/
 
->> as "making no sense".  All these are real world examples where users 
->> FOLLOWING THEIR NORMAL, PROSCRIBED KERNEL PROCESSES will produce 
-> 
-> I hope you mean "prescribed" ;)
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-heh, *cough* yes
-
-
->> The only valid assumption here is to assume that the user is /unaware/ 
->> of these new steps they must take in order to continue to have a working 
->> system.
-> 
-> To a large extent not the user but their distro - consider "make install"
-
-Actually, I was tossing that about in my head:
-
-Is it a better idea to eliminate 'make firmware_install' completely, and 
-instead implement it silently via 'make install'?
-
-'make install' is already a big fat distro hook...
-
-	Jeff
-
-
-
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index ebfcf8c..7301dfb 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -460,11 +460,6 @@ config MEMTEST
+ 		memtest=4, mean do 4 test patterns.
+ 	  If you are unsure how to answer this question, answer Y.
+ 
+-config ACPI_SRAT
+-	def_bool y
+-	depends on X86_32 && ACPI && NUMA && X86_GENERICARCH
+-	select ACPI_NUMA
+-
+ config X86_SUMMIT_NUMA
+ 	def_bool y
+ 	depends on X86_32 && NUMA && X86_GENERICARCH
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index 70b9d5c..a927af1 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -73,7 +73,6 @@ obj-$(CONFIG_X86_SUMMIT_NUMA)	+= summit_32.o
+ obj-y				+= vsmp_64.o
+ obj-$(CONFIG_KPROBES)		+= kprobes.o
+ obj-$(CONFIG_MODULES)		+= module_$(BITS).o
+-obj-$(CONFIG_ACPI_SRAT) 	+= srat_32.o
+ obj-$(CONFIG_IMMEDIATE)		+= immediate.o
+ obj-$(CONFIG_EFI) 		+= efi.o efi_$(BITS).o efi_stub_$(BITS).o
+ obj-$(CONFIG_DOUBLEFAULT) 	+= doublefault_32.o
+diff --git a/arch/x86/kernel/srat_32.c b/arch/x86/kernel/srat_32.c
+deleted file mode 100644
+index f41d67f..0000000
+--- a/arch/x86/kernel/srat_32.c
++++ /dev/null
+@@ -1,280 +0,0 @@
+-/*
+- * Some of the code in this file has been gleaned from the 64 bit 
+- * discontigmem support code base.
+- *
+- * Copyright (C) 2002, IBM Corp.
+- *
+- * All rights reserved.          
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
+- * NON INFRINGEMENT.  See the GNU General Public License for more
+- * details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+- *
+- * Send feedback to Pat Gaughen <gone@us.ibm.com>
+- */
+-#include <linux/mm.h>
+-#include <linux/bootmem.h>
+-#include <linux/mmzone.h>
+-#include <linux/acpi.h>
+-#include <linux/nodemask.h>
+-#include <asm/srat.h>
+-#include <asm/topology.h>
+-#include <asm/smp.h>
+-#include <asm/e820.h>
+-
+-/*
+- * proximity macros and definitions
+- */
+-#define NODE_ARRAY_INDEX(x)	((x) / 8)	/* 8 bits/char */
+-#define NODE_ARRAY_OFFSET(x)	((x) % 8)	/* 8 bits/char */
+-#define BMAP_SET(bmap, bit)	((bmap)[NODE_ARRAY_INDEX(bit)] |= 1 << NODE_ARRAY_OFFSET(bit))
+-#define BMAP_TEST(bmap, bit)	((bmap)[NODE_ARRAY_INDEX(bit)] & (1 << NODE_ARRAY_OFFSET(bit)))
+-/* bitmap length; _PXM is at most 255 */
+-#define PXM_BITMAP_LEN (MAX_PXM_DOMAINS / 8) 
+-static u8 __initdata pxm_bitmap[PXM_BITMAP_LEN];	/* bitmap of proximity domains */
+-
+-#define MAX_CHUNKS_PER_NODE	3
+-#define MAXCHUNKS		(MAX_CHUNKS_PER_NODE * MAX_NUMNODES)
+-struct node_memory_chunk_s {
+-	unsigned long	start_pfn;
+-	unsigned long	end_pfn;
+-	u8	pxm;		// proximity domain of node
+-	u8	nid;		// which cnode contains this chunk?
+-	u8	bank;		// which mem bank on this node
+-};
+-static struct node_memory_chunk_s __initdata node_memory_chunk[MAXCHUNKS];
+-
+-static int __initdata num_memory_chunks; /* total number of memory chunks */
+-static u8 __initdata apicid_to_pxm[MAX_APICID];
+-
+-int numa_off __initdata;
+-int acpi_numa __initdata;
+-
+-static __init void bad_srat(void)
+-{
+-        printk(KERN_ERR "SRAT: SRAT not used.\n");
+-        acpi_numa = -1;
+-	num_memory_chunks = 0;
+-}
+-
+-static __init inline int srat_disabled(void)
+-{
+-	return numa_off || acpi_numa < 0;
+-}
+-
+-/* Identify CPU proximity domains */
+-void __init
+-acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *cpu_affinity)
+-{
+-	if (srat_disabled())
+-		return;
+-	if (cpu_affinity->header.length !=
+-	     sizeof(struct acpi_srat_cpu_affinity)) {
+-		bad_srat();
+-		return;
+-	}
+-
+-	if ((cpu_affinity->flags & ACPI_SRAT_CPU_ENABLED) == 0)
+-		return;		/* empty entry */
+-
+-	/* mark this node as "seen" in node bitmap */
+-	BMAP_SET(pxm_bitmap, cpu_affinity->proximity_domain_lo);
+-
+-	apicid_to_pxm[cpu_affinity->apic_id] = cpu_affinity->proximity_domain_lo;
+-
+-	printk(KERN_DEBUG "CPU %02x in proximity domain %02x\n",
+-		cpu_affinity->apic_id, cpu_affinity->proximity_domain_lo);
+-}
+-
+-/*
+- * Identify memory proximity domains and hot-remove capabilities.
+- * Fill node memory chunk list structure.
+- */
+-void __init
+-acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *memory_affinity)
+-{
+-	unsigned long long paddr, size;
+-	unsigned long start_pfn, end_pfn;
+-	u8 pxm;
+-	struct node_memory_chunk_s *p, *q, *pend;
+-
+-	if (srat_disabled())
+-		return;
+-	if (memory_affinity->header.length !=
+-	     sizeof(struct acpi_srat_mem_affinity)) {
+-		bad_srat();
+-		return;
+-	}
+-
+-	if ((memory_affinity->flags & ACPI_SRAT_MEM_ENABLED) == 0)
+-		return;		/* empty entry */
+-
+-	pxm = memory_affinity->proximity_domain & 0xff;
+-
+-	/* mark this node as "seen" in node bitmap */
+-	BMAP_SET(pxm_bitmap, pxm);
+-
+-	/* calculate info for memory chunk structure */
+-	paddr = memory_affinity->base_address;
+-	size = memory_affinity->length;
+-
+-	start_pfn = paddr >> PAGE_SHIFT;
+-	end_pfn = (paddr + size) >> PAGE_SHIFT;
+-
+-
+-	if (num_memory_chunks >= MAXCHUNKS) {
+-		printk(KERN_WARNING "Too many mem chunks in SRAT."
+-			" Ignoring %lld MBytes at %llx\n",
+-			size/(1024*1024), paddr);
+-		return;
+-	}
+-
+-	/* Insertion sort based on base address */
+-	pend = &node_memory_chunk[num_memory_chunks];
+-	for (p = &node_memory_chunk[0]; p < pend; p++) {
+-		if (start_pfn < p->start_pfn)
+-			break;
+-	}
+-	if (p < pend) {
+-		for (q = pend; q >= p; q--)
+-			*(q + 1) = *q;
+-	}
+-	p->start_pfn = start_pfn;
+-	p->end_pfn = end_pfn;
+-	p->pxm = pxm;
+-
+-	num_memory_chunks++;
+-
+-	printk(KERN_DEBUG "Memory range %08lx to %08lx (type %x)"
+-			  " in proximity domain %02x %s\n",
+-		start_pfn, end_pfn,
+-		memory_affinity->memory_type,
+-		pxm,
+-		((memory_affinity->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) ?
+-		 "enabled and removable" : "enabled" ) );
+-}
+-
+-/* Callback for SLIT parsing */
+-void __init acpi_numa_slit_init(struct acpi_table_slit *slit)
+-{
+-}
+-
+-void acpi_numa_arch_fixup(void)
+-{
+-}
+-/*
+- * The SRAT table always lists ascending addresses, so can always
+- * assume that the first "start" address that you see is the real
+- * start of the node, and that the current "end" address is after
+- * the previous one.
+- */
+-static __init void node_read_chunk(int nid, struct node_memory_chunk_s *memory_chunk)
+-{
+-	/*
+-	 * Only add present memory as told by the e820.
+-	 * There is no guarantee from the SRAT that the memory it
+-	 * enumerates is present at boot time because it represents
+-	 * *possible* memory hotplug areas the same as normal RAM.
+-	 */
+-	if (memory_chunk->start_pfn >= max_pfn) {
+-		printk(KERN_INFO "Ignoring SRAT pfns: %08lx - %08lx\n",
+-			memory_chunk->start_pfn, memory_chunk->end_pfn);
+-		return;
+-	}
+-	if (memory_chunk->nid != nid)
+-		return;
+-
+-	if (!node_has_online_mem(nid))
+-		node_start_pfn[nid] = memory_chunk->start_pfn;
+-
+-	if (node_start_pfn[nid] > memory_chunk->start_pfn)
+-		node_start_pfn[nid] = memory_chunk->start_pfn;
+-
+-	if (node_end_pfn[nid] < memory_chunk->end_pfn)
+-		node_end_pfn[nid] = memory_chunk->end_pfn;
+-}
+-
+-int __init get_memcfg_from_srat(void)
+-{
+-	int i, j, nid;
+-
+-
+-	if (srat_disabled())
+-		goto out_fail;
+-
+-	if (num_memory_chunks == 0) {
+-		printk(KERN_WARNING
+-			 "could not finy any ACPI SRAT memory areas.\n");
+-		goto out_fail;
+-	}
+-
+-	/* Calculate total number of nodes in system from PXM bitmap and create
+-	 * a set of sequential node IDs starting at zero.  (ACPI doesn't seem
+-	 * to specify the range of _PXM values.)
+-	 */
+-	/*
+-	 * MCD - we no longer HAVE to number nodes sequentially.  PXM domain
+-	 * numbers could go as high as 256, and MAX_NUMNODES for i386 is typically
+-	 * 32, so we will continue numbering them in this manner until MAX_NUMNODES
+-	 * approaches MAX_PXM_DOMAINS for i386.
+-	 */
+-	nodes_clear(node_online_map);
+-	for (i = 0; i < MAX_PXM_DOMAINS; i++) {
+-		if (BMAP_TEST(pxm_bitmap, i)) {
+-			int nid = acpi_map_pxm_to_node(i);
+-			node_set_online(nid);
+-		}
+-	}
+-	BUG_ON(num_online_nodes() == 0);
+-
+-	/* set cnode id in memory chunk structure */
+-	for (i = 0; i < num_memory_chunks; i++)
+-		node_memory_chunk[i].nid = pxm_to_node(node_memory_chunk[i].pxm);
+-
+-	printk(KERN_DEBUG "pxm bitmap: ");
+-	for (i = 0; i < sizeof(pxm_bitmap); i++) {
+-		printk(KERN_CONT "%02x ", pxm_bitmap[i]);
+-	}
+-	printk(KERN_CONT "\n");
+-	printk(KERN_DEBUG "Number of logical nodes in system = %d\n",
+-			 num_online_nodes());
+-	printk(KERN_DEBUG "Number of memory chunks in system = %d\n",
+-			 num_memory_chunks);
+-
+-	for (i = 0; i < MAX_APICID; i++)
+-		apicid_2_node[i] = pxm_to_node(apicid_to_pxm[i]);
+-
+-	for (j = 0; j < num_memory_chunks; j++){
+-		struct node_memory_chunk_s * chunk = &node_memory_chunk[j];
+-		printk(KERN_DEBUG
+-			"chunk %d nid %d start_pfn %08lx end_pfn %08lx\n",
+-		       j, chunk->nid, chunk->start_pfn, chunk->end_pfn);
+-		node_read_chunk(chunk->nid, chunk);
+-		e820_register_active_regions(chunk->nid, chunk->start_pfn,
+-					     min(chunk->end_pfn, max_pfn));
+-	}
+-
+-	for_each_online_node(nid) {
+-		unsigned long start = node_start_pfn[nid];
+-		unsigned long end = min(node_end_pfn[nid], max_pfn);
+-
+-		memory_present(nid, start, end);
+-		node_remap_size[nid] = node_memmap_size_bytes(nid, start, end);
+-	}
+-	return 1;
+-out_fail:
+-	printk(KERN_ERR "failed to get NUMA memory information from SRAT"
+-			" table\n");
+-	return 0;
+-}
+diff --git a/arch/x86/mm/Makefile b/arch/x86/mm/Makefile
+index d673c82..f413159 100644
+--- a/arch/x86/mm/Makefile
++++ b/arch/x86/mm/Makefile
+@@ -20,5 +20,6 @@ obj-$(CONFIG_NUMA)		+= discontig_32.o
+ else
+ obj-$(CONFIG_NUMA)		+= numa_64.o
+ obj-$(CONFIG_K8_NUMA)		+= k8topology_64.o
+-obj-$(CONFIG_ACPI_NUMA)		+= srat_64.o
+ endif
++obj-$(CONFIG_ACPI_NUMA)		+= srat_$(BITS).o
++
+diff --git a/arch/x86/mm/srat_32.c b/arch/x86/mm/srat_32.c
+new file mode 100644
+index 0000000..f41d67f
+--- /dev/null
++++ b/arch/x86/mm/srat_32.c
+@@ -0,0 +1,280 @@
++/*
++ * Some of the code in this file has been gleaned from the 64 bit 
++ * discontigmem support code base.
++ *
++ * Copyright (C) 2002, IBM Corp.
++ *
++ * All rights reserved.          
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
++ * NON INFRINGEMENT.  See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ * Send feedback to Pat Gaughen <gone@us.ibm.com>
++ */
++#include <linux/mm.h>
++#include <linux/bootmem.h>
++#include <linux/mmzone.h>
++#include <linux/acpi.h>
++#include <linux/nodemask.h>
++#include <asm/srat.h>
++#include <asm/topology.h>
++#include <asm/smp.h>
++#include <asm/e820.h>
++
++/*
++ * proximity macros and definitions
++ */
++#define NODE_ARRAY_INDEX(x)	((x) / 8)	/* 8 bits/char */
++#define NODE_ARRAY_OFFSET(x)	((x) % 8)	/* 8 bits/char */
++#define BMAP_SET(bmap, bit)	((bmap)[NODE_ARRAY_INDEX(bit)] |= 1 << NODE_ARRAY_OFFSET(bit))
++#define BMAP_TEST(bmap, bit)	((bmap)[NODE_ARRAY_INDEX(bit)] & (1 << NODE_ARRAY_OFFSET(bit)))
++/* bitmap length; _PXM is at most 255 */
++#define PXM_BITMAP_LEN (MAX_PXM_DOMAINS / 8) 
++static u8 __initdata pxm_bitmap[PXM_BITMAP_LEN];	/* bitmap of proximity domains */
++
++#define MAX_CHUNKS_PER_NODE	3
++#define MAXCHUNKS		(MAX_CHUNKS_PER_NODE * MAX_NUMNODES)
++struct node_memory_chunk_s {
++	unsigned long	start_pfn;
++	unsigned long	end_pfn;
++	u8	pxm;		// proximity domain of node
++	u8	nid;		// which cnode contains this chunk?
++	u8	bank;		// which mem bank on this node
++};
++static struct node_memory_chunk_s __initdata node_memory_chunk[MAXCHUNKS];
++
++static int __initdata num_memory_chunks; /* total number of memory chunks */
++static u8 __initdata apicid_to_pxm[MAX_APICID];
++
++int numa_off __initdata;
++int acpi_numa __initdata;
++
++static __init void bad_srat(void)
++{
++        printk(KERN_ERR "SRAT: SRAT not used.\n");
++        acpi_numa = -1;
++	num_memory_chunks = 0;
++}
++
++static __init inline int srat_disabled(void)
++{
++	return numa_off || acpi_numa < 0;
++}
++
++/* Identify CPU proximity domains */
++void __init
++acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *cpu_affinity)
++{
++	if (srat_disabled())
++		return;
++	if (cpu_affinity->header.length !=
++	     sizeof(struct acpi_srat_cpu_affinity)) {
++		bad_srat();
++		return;
++	}
++
++	if ((cpu_affinity->flags & ACPI_SRAT_CPU_ENABLED) == 0)
++		return;		/* empty entry */
++
++	/* mark this node as "seen" in node bitmap */
++	BMAP_SET(pxm_bitmap, cpu_affinity->proximity_domain_lo);
++
++	apicid_to_pxm[cpu_affinity->apic_id] = cpu_affinity->proximity_domain_lo;
++
++	printk(KERN_DEBUG "CPU %02x in proximity domain %02x\n",
++		cpu_affinity->apic_id, cpu_affinity->proximity_domain_lo);
++}
++
++/*
++ * Identify memory proximity domains and hot-remove capabilities.
++ * Fill node memory chunk list structure.
++ */
++void __init
++acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *memory_affinity)
++{
++	unsigned long long paddr, size;
++	unsigned long start_pfn, end_pfn;
++	u8 pxm;
++	struct node_memory_chunk_s *p, *q, *pend;
++
++	if (srat_disabled())
++		return;
++	if (memory_affinity->header.length !=
++	     sizeof(struct acpi_srat_mem_affinity)) {
++		bad_srat();
++		return;
++	}
++
++	if ((memory_affinity->flags & ACPI_SRAT_MEM_ENABLED) == 0)
++		return;		/* empty entry */
++
++	pxm = memory_affinity->proximity_domain & 0xff;
++
++	/* mark this node as "seen" in node bitmap */
++	BMAP_SET(pxm_bitmap, pxm);
++
++	/* calculate info for memory chunk structure */
++	paddr = memory_affinity->base_address;
++	size = memory_affinity->length;
++
++	start_pfn = paddr >> PAGE_SHIFT;
++	end_pfn = (paddr + size) >> PAGE_SHIFT;
++
++
++	if (num_memory_chunks >= MAXCHUNKS) {
++		printk(KERN_WARNING "Too many mem chunks in SRAT."
++			" Ignoring %lld MBytes at %llx\n",
++			size/(1024*1024), paddr);
++		return;
++	}
++
++	/* Insertion sort based on base address */
++	pend = &node_memory_chunk[num_memory_chunks];
++	for (p = &node_memory_chunk[0]; p < pend; p++) {
++		if (start_pfn < p->start_pfn)
++			break;
++	}
++	if (p < pend) {
++		for (q = pend; q >= p; q--)
++			*(q + 1) = *q;
++	}
++	p->start_pfn = start_pfn;
++	p->end_pfn = end_pfn;
++	p->pxm = pxm;
++
++	num_memory_chunks++;
++
++	printk(KERN_DEBUG "Memory range %08lx to %08lx (type %x)"
++			  " in proximity domain %02x %s\n",
++		start_pfn, end_pfn,
++		memory_affinity->memory_type,
++		pxm,
++		((memory_affinity->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) ?
++		 "enabled and removable" : "enabled" ) );
++}
++
++/* Callback for SLIT parsing */
++void __init acpi_numa_slit_init(struct acpi_table_slit *slit)
++{
++}
++
++void acpi_numa_arch_fixup(void)
++{
++}
++/*
++ * The SRAT table always lists ascending addresses, so can always
++ * assume that the first "start" address that you see is the real
++ * start of the node, and that the current "end" address is after
++ * the previous one.
++ */
++static __init void node_read_chunk(int nid, struct node_memory_chunk_s *memory_chunk)
++{
++	/*
++	 * Only add present memory as told by the e820.
++	 * There is no guarantee from the SRAT that the memory it
++	 * enumerates is present at boot time because it represents
++	 * *possible* memory hotplug areas the same as normal RAM.
++	 */
++	if (memory_chunk->start_pfn >= max_pfn) {
++		printk(KERN_INFO "Ignoring SRAT pfns: %08lx - %08lx\n",
++			memory_chunk->start_pfn, memory_chunk->end_pfn);
++		return;
++	}
++	if (memory_chunk->nid != nid)
++		return;
++
++	if (!node_has_online_mem(nid))
++		node_start_pfn[nid] = memory_chunk->start_pfn;
++
++	if (node_start_pfn[nid] > memory_chunk->start_pfn)
++		node_start_pfn[nid] = memory_chunk->start_pfn;
++
++	if (node_end_pfn[nid] < memory_chunk->end_pfn)
++		node_end_pfn[nid] = memory_chunk->end_pfn;
++}
++
++int __init get_memcfg_from_srat(void)
++{
++	int i, j, nid;
++
++
++	if (srat_disabled())
++		goto out_fail;
++
++	if (num_memory_chunks == 0) {
++		printk(KERN_WARNING
++			 "could not finy any ACPI SRAT memory areas.\n");
++		goto out_fail;
++	}
++
++	/* Calculate total number of nodes in system from PXM bitmap and create
++	 * a set of sequential node IDs starting at zero.  (ACPI doesn't seem
++	 * to specify the range of _PXM values.)
++	 */
++	/*
++	 * MCD - we no longer HAVE to number nodes sequentially.  PXM domain
++	 * numbers could go as high as 256, and MAX_NUMNODES for i386 is typically
++	 * 32, so we will continue numbering them in this manner until MAX_NUMNODES
++	 * approaches MAX_PXM_DOMAINS for i386.
++	 */
++	nodes_clear(node_online_map);
++	for (i = 0; i < MAX_PXM_DOMAINS; i++) {
++		if (BMAP_TEST(pxm_bitmap, i)) {
++			int nid = acpi_map_pxm_to_node(i);
++			node_set_online(nid);
++		}
++	}
++	BUG_ON(num_online_nodes() == 0);
++
++	/* set cnode id in memory chunk structure */
++	for (i = 0; i < num_memory_chunks; i++)
++		node_memory_chunk[i].nid = pxm_to_node(node_memory_chunk[i].pxm);
++
++	printk(KERN_DEBUG "pxm bitmap: ");
++	for (i = 0; i < sizeof(pxm_bitmap); i++) {
++		printk(KERN_CONT "%02x ", pxm_bitmap[i]);
++	}
++	printk(KERN_CONT "\n");
++	printk(KERN_DEBUG "Number of logical nodes in system = %d\n",
++			 num_online_nodes());
++	printk(KERN_DEBUG "Number of memory chunks in system = %d\n",
++			 num_memory_chunks);
++
++	for (i = 0; i < MAX_APICID; i++)
++		apicid_2_node[i] = pxm_to_node(apicid_to_pxm[i]);
++
++	for (j = 0; j < num_memory_chunks; j++){
++		struct node_memory_chunk_s * chunk = &node_memory_chunk[j];
++		printk(KERN_DEBUG
++			"chunk %d nid %d start_pfn %08lx end_pfn %08lx\n",
++		       j, chunk->nid, chunk->start_pfn, chunk->end_pfn);
++		node_read_chunk(chunk->nid, chunk);
++		e820_register_active_regions(chunk->nid, chunk->start_pfn,
++					     min(chunk->end_pfn, max_pfn));
++	}
++
++	for_each_online_node(nid) {
++		unsigned long start = node_start_pfn[nid];
++		unsigned long end = min(node_end_pfn[nid], max_pfn);
++
++		memory_present(nid, start, end);
++		node_remap_size[nid] = node_memmap_size_bytes(nid, start, end);
++	}
++	return 1;
++out_fail:
++	printk(KERN_ERR "failed to get NUMA memory information from SRAT"
++			" table\n");
++	return 0;
++}
+diff --git a/include/asm-x86/srat.h b/include/asm-x86/srat.h
+index 456fe0b..774c919 100644
+--- a/include/asm-x86/srat.h
++++ b/include/asm-x86/srat.h
+@@ -27,7 +27,7 @@
+ #ifndef _ASM_SRAT_H_
+ #define _ASM_SRAT_H_
+ 
+-#ifdef CONFIG_ACPI_SRAT
++#ifdef CONFIG_ACPI_NUMA
+ extern int get_memcfg_from_srat(void);
+ #else
+ static inline int get_memcfg_from_srat(void)
