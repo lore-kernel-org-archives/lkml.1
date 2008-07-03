@@ -1,53 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753620AbYGCAJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbYGCARg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753620AbYGCAJn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jul 2008 20:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbYGCAJf
+	id S1753272AbYGCARg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jul 2008 20:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYGCAR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jul 2008 20:09:35 -0400
-Received: from ozlabs.org ([203.10.76.45]:56876 "EHLO ozlabs.org"
+	Wed, 2 Jul 2008 20:17:28 -0400
+Received: from ns1.suse.de ([195.135.220.2]:38104 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751623AbYGCAJf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jul 2008 20:09:35 -0400
+	id S1750899AbYGCAR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jul 2008 20:17:28 -0400
+Date: Wed, 2 Jul 2008 17:15:49 -0700
+From: Greg KH <gregkh@suse.de>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Tejun Heo <htejun@gmail.com>, Benjamin Thery <benjamin.thery@bull.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 06/11] sysfs: Implement sysfs tagged directory support.
+Message-ID: <20080703001549.GA18880@suse.de>
+References: <486706C9.9040303@gmail.com> <m18wwmsqdv.fsf@frodo.ebiederm.org> <4869D314.5030403@gmail.com> <m1ej6enep7.fsf@frodo.ebiederm.org> <486A0751.9080602@gmail.com> <m1wsk5hjm0.fsf@frodo.ebiederm.org> <486AF4FA.8020805@gmail.com> <m1ej6d9c2r.fsf@frodo.ebiederm.org> <486B060C.7030607@gmail.com> <m14p78s02q.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18540.6326.714792.742146@cargo.ozlabs.ibm.com>
-Date: Thu, 3 Jul 2008 10:09:26 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-In-Reply-To: <18539.30579.62610.116128@cargo.ozlabs.ibm.com>
-References: <18539.30579.62610.116128@cargo.ozlabs.ibm.com>
-X-Mailer: VM 8.0.9 under Emacs 22.1.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <m14p78s02q.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Wed, Jul 02, 2008 at 09:49:33AM -0700, Eric W. Biederman wrote:
+> Assuming Greg will accept it when he sees reasonable patches.
 
-Grant Likely sent me one more bug-fix for 2.6.26, which I have merged
-into my merge branch at:
+I always accept "reasonable patches" :)
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+thanks,
 
-So when you do the pull from there, you'll get 3 commits as listed
-below.
-
-Thanks,
-Paul.
-
- arch/powerpc/boot/Makefile                |    3 ++-
- arch/powerpc/kernel/legacy_serial.c       |    5 +++++
- arch/powerpc/platforms/52xx/lite5200_pm.c |   14 +++++++++++++-
- 3 files changed, 20 insertions(+), 2 deletions(-)
-
-John Linn (2):
-      powerpc/bootwrapper: update for initrd with simpleImage
-      powerpc/legacy_serial: Bail if reg-offset/shift properties are present
-
-Tim Yamin (1):
-      powerpc/mpc5200: Fix lite5200b suspend/resume
-
+greg k-h
