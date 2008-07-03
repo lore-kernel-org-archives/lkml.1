@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109AbYGCS3E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712AbYGCS3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755109AbYGCS3E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 14:29:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbYGCS2z
+	id S1755712AbYGCS3Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 14:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbYGCS3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 14:28:55 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54215 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753271AbYGCS2y (ORCPT
+	Thu, 3 Jul 2008 14:29:14 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:40559 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755258AbYGCS3N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 14:28:54 -0400
-Date: Thu, 3 Jul 2008 11:27:07 -0700
-From: Greg KH <greg@kroah.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Ksummit-2008-discuss] Current List of Kernel Summit suggested
-	topics from the discuss list
-Message-ID: <20080703182707.GA12215@kroah.com>
-References: <1214577710.3394.14.camel@localhost.localdomain>
+	Thu, 3 Jul 2008 14:29:13 -0400
+Message-ID: <486D1A66.6010006@zytor.com>
+Date: Thu, 03 Jul 2008 11:28:54 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1214577710.3394.14.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Jens-Michael Hoffmann <J.Hoffmann@option.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: tcp/ip connect on demand
+References: <F67862BE33DC784289A6B34E92908FCF393FFE@SRV-SATURNUS.OPTION.local>
+In-Reply-To: <F67862BE33DC784289A6B34E92908FCF393FFE@SRV-SATURNUS.OPTION.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 27, 2008 at 09:41:49AM -0500, James Bottomley wrote:
-> Hi All,
+Jens-Michael Hoffmann wrote:
+> hi,
 > 
-> This is the synopsis of the currently suggested topics so far.  That's
-> not to say this is the list we will be doing, just to say that if
-> there's something you think we should be discussing and it's not on the
-> list, now would be a good time to add it (don't trust the programme
-> committee magically to add it at the last minute ...)
+> what is the right way to implement a "connect on demand" feature?
+> Example: user types url in firefox and presses return. Then
+> the system should set up network devices and proceed as usual.
+> 
+> Is there a hook in the kernel we can use?
 
-Another proposal:
+In the kernel, no.  Nor do you need one; the best place to hook into 
+this is probably the name service system (so you catch it on trying to 
+look up hostnames.)
 
-	Working well with other subsystems - Jean Delvare
+Alternatively, you can set up a bridge device which you can listen to 
+via a tap device; when you see traffic, you bring up the real network 
+and attach it to the bridge.
 
-	There are a number of times where different subsystems in the
-	kernel need to interact with each other in ways that are not
-	always easy or obvious.  This talk will be about some examples
-	of how this has been done well, as well as work to figure out
-	how to handle this better in the future.
-
-thanks,
-
-greg k-h
+	-hpa
