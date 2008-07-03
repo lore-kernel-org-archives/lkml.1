@@ -1,87 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbYGCSQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755132AbYGCSSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754558AbYGCSQT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 14:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbYGCSQI
+	id S1755132AbYGCSSy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 14:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbYGCSSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 14:16:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44214 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753224AbYGCSQG (ORCPT
+	Thu, 3 Jul 2008 14:18:44 -0400
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:38453 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753041AbYGCSSl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 14:16:06 -0400
-Date: Thu, 3 Jul 2008 11:14:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       apw@shadowen.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [BUILD-FAILURE] 2.6.26-rc8-mm1 - x86 -
- __ptep_modify_prot_start() missing
-Message-Id: <20080703111418.19f568ca.akpm@linux-foundation.org>
-In-Reply-To: <486D13C3.3000409@goop.org>
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
-	<20080703122943.GB6451@linux.vnet.ibm.com>
-	<20080703104643.04ea2acb.akpm@linux-foundation.org>
-	<486D13C3.3000409@goop.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 3 Jul 2008 14:18:41 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ap0EAFSvbEhMQWVt/2dsb2JhbACBW7Am
+Date: Thu, 3 Jul 2008 14:18:39 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       "'Alexey Dobriyan'" <adobriyan@gmail.com>,
+       "'Peter Zijlstra'" <peterz@infradead.org>,
+       "'Steven Rostedt'" <rostedt@goodmis.org>,
+       "'Frank Ch. Eigler'" <fche@redhat.com>, "'Ingo Molnar'" <mingo@elte.hu>,
+       "'LKML'" <linux-kernel@vger.kernel.org>,
+       "'systemtap-ml'" <systemtap@sources.redhat.com>,
+       "'Hideo AOKI'" <haoki@redhat.com>
+Subject: Re: [RFC PATCH] Kernel Tracepoints (update)
+Message-ID: <20080703181839.GA10672@Krystal>
+References: <007601c8d5ca$18fa0e10$4aee2a30$@css.fujitsu.com> <48611B03.1000003@redhat.com> <20080625011951.D83E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48612879.5090809@redhat.com> <20080625235214.GA14249@Krystal> <486403F0.4020801@redhat.com> <20080627133622.GA15210@Krystal> <486CEFDB.7070508@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <486CEFDB.7070508@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:17:26 up 28 days, 22:58,  4 users,  load average: 0.20, 0.33,
+	0.46
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 Jul 2008 11:00:35 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Hi Masami,
 
-> Andrew Morton wrote:
-> > On Thu, 3 Jul 2008 17:59:43 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> >
-> >   
-> >> Hi Andrew,
-> >>
-> >> 2.6.26-rc8-mm1 kernel build fails on the x86
-> >>
-> >>   CC      arch/x86/kernel/paravirt.o
-> >> arch/x86/kernel/paravirt.c:383: error: _____ptep_modify_prot_start___ undeclared here (not in a function)
-> >>     
+I am thinking about removing the private_data, because such declaration
+won't work :
+
+DEFINE_TRACE(kernel_irq_exit,
+        TPPROTO(void),
+        TPARGS());
+
+because the arguments become :
+
+(void *private_data, void)
+
+Any better idea ?
+
+Mathieu
+
+* Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> Hi Mathieu,
 > 
-> Where did all those _____underlines___ come from?
-
-gcc idiocy - emitting non-ascii characters from a programming tool. 
-Their survival rate through downstream handling is about 2%.  LANG=C
-helps.
-
-> >> make[1]: *** [arch/x86/kernel/paravirt.o] Error 1
-> >> make: *** [arch/x86/kernel] Error 2
-> >>
-> >> linux-next patches has the changes to the adds the function
-> >> __ptep_modify_prot_start as inline, the patch s390-build-fixes.patch
-> >> is coverting it into macro. Reverting the s390-build-fixes.patch
-> >> fixes the build failure.
-> >>     
-> >
-> > grump.  Who did all this stuff?
-> >
-> > I dunno.  I'll drop s390-build-fixes.patch, add some ccs and stomp off.
-> >
-> >
-> > From: Andrew Morton <akpm@linux-foundation.org>
-> >
-> > In file included from include/asm/pgtable.h:1087,
-> >                  from include/linux/mm.h:39,
-> >                  from arch/s390/mm/hugetlbpage.c:8:
-> > include/asm-generic/pgtable.h: In function '__ptep_modify_prot_start':
-> > include/asm-generic/pgtable.h:209: error: dereferencing pointer to incomplete type
-> >   
+> I found a bug.
+> Mathieu Desnoyers wrote:
+> [...]
 > 
-> We can't turn them into macros because we're expecting to be able to 
-> take the address of __ptep_modify_prot_start/commit.  What type is not 
-> defined on s390 at that point?  Would simply adding an extra include to 
-> arch/s390/mm/hugetlbpage.c fix the problem?
+> > +/*
+> > + * Remove the tracepoint from the tracepoint hash table. Must be called with
+> > + * mutex_lock held.
+> > + */
+> > +static int remove_tracepoint(const char *name)
+> > +{
+> > +	struct hlist_head *head;
+> > +	struct hlist_node *node;
+> > +	struct tracepoint_entry *e;
+> > +	int found = 0;
+> > +	size_t len = strlen(name) + 1;
+> > +	u32 hash = jhash(name, len-1, 0);
+> > +
+> > +	head = &tracepoint_table[hash & ((1 << TRACEPOINT_HASH_BITS)-1)];
+> > +	hlist_for_each_entry(e, node, head, hlist) {
+> > +		if (!strcmp(name, e->name)) {
+> > +			found = 1;
+> > +			break;
+> > +		}
+> > +	}
+> > +	if (!found)
+> > +		return -ENOENT;
 > 
-> In the worst case we could push __ptep_modify_proc_start/commit out of 
-> line somewhere appropriate, but that's a bit sad given how simple they are.
+> before removing, you have to ensure refcount == 0. So,
+> 	if (e->refcount != 0)
+> 		return -EBUSY;
+> 
+> > +	hlist_del(&e->hlist);
+> > +	/* Make sure the call_rcu has been executed */
+> > +	if (e->rcu_pending)
+> > +		rcu_barrier();
+> > +	kfree(e);
+> > +	return 0;
+> > +}
+> 
+> Thank you,
+> 
+> -- 
+> Masami Hiramatsu
+> 
+> Software Engineer
+> Hitachi Computer Products (America) Inc.
+> Software Solutions Division
+> 
+> e-mail: mhiramat@redhat.com
+> 
 
-I think the s390 guys just fixed the original build error.
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
