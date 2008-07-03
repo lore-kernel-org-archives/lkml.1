@@ -1,222 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757586AbYGCViH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbYGCVim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757586AbYGCViH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 17:38:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbYGCVgk
+	id S1757924AbYGCVim (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 17:38:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756366AbYGCVgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 17:36:40 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48214 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754214AbYGCVgd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 17:36:42 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:50761 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754305AbYGCVgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 3 Jul 2008 17:36:33 -0400
-Message-Id: <20080703213631.867574248@attica.americas.sgi.com>
+Message-Id: <20080703213632.539884555@attica.americas.sgi.com>
 References: <20080703213348.489120321@attica.americas.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 03 Jul 2008 16:33:51 -0500
+Date: Thu, 03 Jul 2008 16:33:54 -0500
 From: steiner@sgi.com
 To: akpm@osdl.org, linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com
-Subject: [patch 03/13] GRU Driver V3 -  driver internal header files
-Content-Disposition: inline; filename=gru_driver_headers
+Subject: [patch 06/13] GRU Driver V3 -  page faults & exceptions
+Content-Disposition: inline; filename=gru_fault
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains header files internal to the GRU driver.
+This file contains the functions that manage GRU page faults and exceptions. 
 
 
 Signed-off-by: Jack Steiner <steiner@sgi.com>
 
 ---
- drivers/misc/sgi-gru/gru.h       |   67 ++++
- drivers/misc/sgi-gru/grulib.h    |   97 ++++++
- drivers/misc/sgi-gru/grutables.h |  545 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 709 insertions(+)
+ drivers/misc/sgi-gru/grufault.c |  597 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 597 insertions(+)
 
-Index: linux-2.6.26-rc8/drivers/misc/sgi-gru/gru.h
+Index: linux-2.6.26-rc8/drivers/misc/sgi-gru/grufault.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.26-rc8/drivers/misc/sgi-gru/gru.h	2008-07-03 16:16:28.000000000 -0500
-@@ -0,0 +1,67 @@
-+/*
-+ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU Lesser General Public License as published by
-+ *  the Free Software Foundation; either version 2.1 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU Lesser General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU Lesser General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#ifndef __GRU_H__
-+#define __GRU_H__
-+
-+/*
-+ * GRU architectural definitions
-+ */
-+#define GRU_CACHE_LINE_BYTES		64
-+#define GRU_HANDLE_STRIDE		256
-+#define GRU_CB_BASE			0
-+#define GRU_DS_BASE			0x20000
-+
-+/*
-+ * Size used to map GRU GSeg
-+ */
-+#if defined CONFIG_IA64
-+#define GRU_GSEG_PAGESIZE	(256 * 1024UL)
-+#elif defined CONFIG_X86_64
-+#define GRU_GSEG_PAGESIZE	(256 * 1024UL)		/* ZZZ 2MB ??? */
-+#else
-+#error "Unsupported architecture"
-+#endif
-+
-+/*
-+ * Structure for obtaining GRU resource information
-+ */
-+struct gru_chiplet_info {
-+	int	node;
-+	int	chiplet;
-+	int	blade;
-+	int	total_dsr_bytes;
-+	int	total_cbr;
-+	int	total_user_dsr_bytes;
-+	int	total_user_cbr;
-+	int	free_user_dsr_bytes;
-+	int	free_user_cbr;
-+};
-+
-+/* Flags for GRU options on the gru_create_context() call */
-+/* Select one of the follow 4 options to specify how TLB misses are handled */
-+#define GRU_OPT_MISS_DEFAULT	0x0000	/* Use default mode */
-+#define GRU_OPT_MISS_USER_POLL	0x0001	/* User will poll CB for faults */
-+#define GRU_OPT_MISS_FMM_INTR	0x0002	/* Send interrupt to cpu to
-+					   handle fault */
-+#define GRU_OPT_MISS_FMM_POLL	0x0003	/* Use system polling thread */
-+#define GRU_OPT_MISS_MASK	0x0003	/* Mask for TLB MISS option */
-+
-+
-+
-+#endif		/* __GRU_H__ */
-Index: linux-2.6.26-rc8/drivers/misc/sgi-gru/grulib.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.26-rc8/drivers/misc/sgi-gru/grulib.h	2008-07-03 16:16:28.000000000 -0500
-@@ -0,0 +1,97 @@
-+/*
-+ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU Lesser General Public License as published by
-+ *  the Free Software Foundation; either version 2.1 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU Lesser General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU Lesser General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#ifndef __GRULIB_H__
-+#define __GRULIB_H__
-+
-+#define GRU_BASENAME		"gru"
-+#define GRU_FULLNAME		"/dev/gru"
-+#define GRU_IOCTL_NUM 		 'G'
-+
-+/*
-+ * Maximum number of GRU segments that a user can have open
-+ * ZZZ temp - set high for testing. Revisit.
-+ */
-+#define GRU_MAX_OPEN_CONTEXTS		32
-+
-+/* Set Number of Request Blocks */
-+#define GRU_CREATE_CONTEXT		_IOWR(GRU_IOCTL_NUM, 1, void *)
-+
-+/* Register task as using the slice */
-+#define GRU_SET_TASK_SLICE		_IOWR(GRU_IOCTL_NUM, 5, void *)
-+
-+/* Fetch exception detail */
-+#define GRU_USER_GET_EXCEPTION_DETAIL	_IOWR(GRU_IOCTL_NUM, 6, void *)
-+
-+/* For user call_os handling - normally a TLB fault */
-+#define GRU_USER_CALL_OS		_IOWR(GRU_IOCTL_NUM, 8, void *)
-+
-+/* For user unload context */
-+#define GRU_USER_UNLOAD_CONTEXT		_IOWR(GRU_IOCTL_NUM, 9, void *)
-+
-+/* For fetching GRU chiplet status */
-+#define GRU_GET_CHIPLET_STATUS		_IOWR(GRU_IOCTL_NUM, 10, void *)
-+
-+/* For user TLB flushing (primarily for tests) */
-+#define GRU_USER_FLUSH_TLB		_IOWR(GRU_IOCTL_NUM, 50, void *)
-+
-+/* Get some config options (primarily for tests & emulator) */
-+#define GRU_GET_CONFIG_INFO		_IOWR(GRU_IOCTL_NUM, 51, void *)
-+
-+#define CONTEXT_WINDOW_BYTES(th)        (GRU_GSEG_PAGESIZE * (th))
-+#define THREAD_POINTER(p, th)		(p + GRU_GSEG_PAGESIZE * (th))
-+
-+/*
-+ * Structure used to pass TLB flush parameters to the driver
-+ */
-+struct gru_create_context_req {
-+	unsigned long		gseg;
-+	unsigned int		data_segment_bytes;
-+	unsigned int		control_blocks;
-+	unsigned int		maximum_thread_count;
-+	unsigned int		options;
-+};
-+
-+/*
-+ * Structure used to pass unload context parameters to the driver
-+ */
-+struct gru_unload_context_req {
-+	unsigned long	gseg;
-+};
-+
-+/*
-+ * Structure used to pass TLB flush parameters to the driver
-+ */
-+struct gru_flush_tlb_req {
-+	unsigned long	gseg;
-+	unsigned long	vaddr;
-+	size_t		len;
-+};
-+
-+/*
-+ * GRU configuration info (temp - for testing)
-+ */
-+struct gru_config_info {
-+	int		cpus;
-+	int		blades;
-+	int		nodes;
-+	int		chiplets;
-+	int		fill[16];
-+};
-+
-+#endif /* __GRULIB_H__ */
-Index: linux-2.6.26-rc8/drivers/misc/sgi-gru/grutables.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.26-rc8/drivers/misc/sgi-gru/grutables.h	2008-07-03 16:16:28.000000000 -0500
-@@ -0,0 +1,545 @@
++++ linux-2.6.26-rc8/drivers/misc/sgi-gru/grufault.c	2008-07-03 16:16:27.000000000 -0500
+@@ -0,0 +1,597 @@
 +/*
 + * SN Platform GRU Driver
 + *
-+ *            GRU DRIVER TABLES, MACROS, externs, etc
++ *              FAULT HANDLER FOR GRU DETECTED TLB MISSES
++ *
++ * This file contains code that handles TLB misses within the GRU.
++ * These misses are reported either via interrupts or user polling of
++ * the user CB.
 + *
 + *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
 + *
@@ -235,528 +62,576 @@ Index: linux-2.6.26-rc8/drivers/misc/sgi-gru/grutables.h
 + *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 + */
 +
-+#ifndef __GRUTABLES_H__
-+#define __GRUTABLES_H__
-+
-+/*
-+ * Tables:
-+ *
-+ * 	VDATA-VMA Data		- Holds a few parameters. Head of linked list of
-+ * 				  GTS tables for threads using the GSEG
-+ * 	GTS - Gru Thread State  - contains info for managing a GSEG context. A
-+ * 				  GTS is allocated for each thread accessing a
-+ * 				  GSEG.
-+ *     	GTD - GRU Thread Data   - contains shadow copy of GRU data when GSEG is
-+ *     				  not loaded into a GRU
-+ *	GMS - GRU Memory Struct - Used to manage TLB shootdowns. Tracks GRUs
-+ *				  where a GSEG has been loaded. Similar to
-+ *				  an mm_struct but for GRU.
-+ *
-+ *	GS  - GRU State 	- Used to manage the state of a GRU chiplet
-+ *	BS  - Blade State	- Used to manage state of all GRU chiplets
-+ *				  on a blade
-+ *
-+ *
-+ *  Normal task tables for task using GRU.
-+ *  		- 2 threads in process
-+ *  		- 2 GSEGs open in process
-+ *  		- GSEG1 is being used by both threads
-+ *  		- GSEG2 is used only by thread 2
-+ *
-+ *       task -->|
-+ *       task ---+---> mm ->------ (notifier) -------+-> gms
-+ *                     |                             |
-+ *                     |--> vma -> vdata ---> gts--->|		GSEG1 (thread1)
-+ *                     |                  |          |
-+ *                     |                  +-> gts--->|		GSEG1 (thread2)
-+ *                     |                             |
-+ *                     |--> vma -> vdata ---> gts--->|		GSEG2 (thread2)
-+ *                     .
-+ *                     .
-+ *
-+ *  GSEGs are marked DONTCOPY on fork
-+ *
-+ * At open
-+ * 	file.private_data -> NULL
-+ *
-+ * At mmap,
-+ * 	vma -> vdata
-+ *
-+ * After gseg reference
-+ * 	vma -> vdata ->gts
-+ *
-+ * After fork
-+ *   parent
-+ * 	vma -> vdata -> gts
-+ *   child
-+ * 	(vma is not copied)
-+ *
-+ */
-+
-+#include <linux/rmap.h>
-+#include <linux/interrupt.h>
-+#include <linux/mutex.h>
-+#include <linux/wait.h>
-+#include <linux/mmu_notifier.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/spinlock.h>
++#include <linux/mm.h>
++#include <linux/hugetlb.h>
++#include <linux/device.h>
++#include <linux/io.h>
++#include <linux/uaccess.h>
++#include <asm/pgtable.h>
 +#include "gru.h"
-+#include "gruhandles.h"
-+
-+extern struct gru_stats_s gru_stats;
-+extern struct gru_blade_state *gru_base[];
-+extern unsigned long gru_start_paddr, gru_end_paddr;
-+
-+#define GRU_MAX_BLADES		MAX_NUMNODES
-+#define GRU_MAX_GRUS		(GRU_MAX_BLADES * GRU_CHIPLETS_PER_BLADE)
-+
-+#define GRU_DRIVER_ID_STR	"SGI GRU Device Driver"
-+#define GRU_DRIVER_VERSION_STR	"0.80"
++#include "grutables.h"
++#include "grulib.h"
++#include "gru_instructions.h"
++#include <asm/uv/uv_hub.h>
 +
 +/*
-+ * GRU statistics.
++ * Test if a physical address is a valid GRU GSEG address
 + */
-+struct gru_stats_s {
-+	atomic_long_t vdata_alloc;
-+	atomic_long_t vdata_free;
-+	atomic_long_t gts_alloc;
-+	atomic_long_t gts_free;
-+	atomic_long_t vdata_double_alloc;
-+	atomic_long_t gts_double_allocate;
-+	atomic_long_t assign_context;
-+	atomic_long_t assign_context_failed;
-+	atomic_long_t free_context;
-+	atomic_long_t load_context;
-+	atomic_long_t unload_context;
-+	atomic_long_t steal_context;
-+	atomic_long_t steal_context_failed;
-+	atomic_long_t nopfn;
-+	atomic_long_t break_cow;
-+	atomic_long_t asid_new;
-+	atomic_long_t asid_next;
-+	atomic_long_t asid_wrap;
-+	atomic_long_t asid_reuse;
-+	atomic_long_t intr;
-+	atomic_long_t call_os;
-+	atomic_long_t call_os_check_for_bug;
-+	atomic_long_t call_os_wait_queue;
-+	atomic_long_t user_flush_tlb;
-+	atomic_long_t user_unload_context;
-+	atomic_long_t user_exception;
-+	atomic_long_t set_task_slice;
-+	atomic_long_t migrate_check;
-+	atomic_long_t migrated_retarget;
-+	atomic_long_t migrated_unload;
-+	atomic_long_t migrated_unload_delay;
-+	atomic_long_t migrated_nopfn_retarget;
-+	atomic_long_t migrated_nopfn_unload;
-+	atomic_long_t tlb_dropin;
-+	atomic_long_t tlb_dropin_fail_no_asid;
-+	atomic_long_t tlb_dropin_fail_upm;
-+	atomic_long_t tlb_dropin_fail_invalid;
-+	atomic_long_t tlb_dropin_fail_range_active;
-+	atomic_long_t tlb_dropin_fail_idle;
-+	atomic_long_t tlb_dropin_fail_fmm;
-+	atomic_long_t mmu_invalidate_range;
-+	atomic_long_t mmu_invalidate_page;
-+	atomic_long_t mmu_clear_flush_young;
-+	atomic_long_t flush_tlb;
-+	atomic_long_t flush_tlb_gru;
-+	atomic_long_t flush_tlb_gru_tgh;
-+	atomic_long_t flush_tlb_gru_zero_asid;
-+
-+	atomic_long_t copy_gpa;
-+
-+	atomic_long_t mesq_receive;
-+	atomic_long_t mesq_receive_none;
-+	atomic_long_t mesq_send;
-+	atomic_long_t mesq_send_failed;
-+	atomic_long_t mesq_noop;
-+	atomic_long_t mesq_send_unexpected_error;
-+	atomic_long_t mesq_send_lb_overflow;
-+	atomic_long_t mesq_send_qlimit_reached;
-+	atomic_long_t mesq_send_amo_nacked;
-+	atomic_long_t mesq_send_put_nacked;
-+	atomic_long_t mesq_qf_not_full;
-+	atomic_long_t mesq_qf_locked;
-+	atomic_long_t mesq_qf_noop_not_full;
-+	atomic_long_t mesq_qf_switch_head_failed;
-+	atomic_long_t mesq_qf_unexpected_error;
-+	atomic_long_t mesq_noop_unexpected_error;
-+	atomic_long_t mesq_noop_lb_overflow;
-+	atomic_long_t mesq_noop_qlimit_reached;
-+	atomic_long_t mesq_noop_amo_nacked;
-+	atomic_long_t mesq_noop_put_nacked;
-+
-+};
-+
-+#define OPT_DPRINT	1
-+#define OPT_STATS	2
-+#define GRU_QUICKLOOK	4
-+
-+
-+#define IRQ_GRU			110	/* Starting IRQ number for interrupts */
-+
-+/* Delay in jiffies between attempts to assign a GRU context */
-+#define GRU_ASSIGN_DELAY	((HZ * 20) / 1000)
-+
-+/*
-+ * If a process has it's context stolen, min delay in jiffies before trying to
-+ * steal a context from another process.
-+ */
-+#define GRU_STEAL_DELAY		((HZ * 200) / 1000)
-+
-+#define STAT(id)	do {						\
-+				if (options & OPT_STATS)		\
-+					atomic_long_inc(&gru_stats.id);	\
-+			} while (0)
-+
-+#ifdef CONFIG_SGI_GRU_DEBUG
-+#define gru_dbg(dev, fmt, x...)						\
-+	do {								\
-+		if (options & OPT_DPRINT)				\
-+			dev_dbg(dev, "%s: " fmt, __func__, x);		\
-+	} while (0)
-+#else
-+#define gru_dbg(x...)
-+#endif
-+
-+/*-----------------------------------------------------------------------------
-+ * ASID management
-+ */
-+#define MAX_ASID	0xfffff0
-+#define MIN_ASID	8
-+#define ASID_INC	8	/* number of regions */
-+
-+/* Generate a GRU asid value from a GRU base asid & a virtual address. */
-+#if defined CONFIG_IA64
-+#define VADDR_HI_BIT		64
-+#define GRUREGION(addr)		((addr) >> (VADDR_HI_BIT - 3) & 3)
-+#elif defined __x86_64
-+#define VADDR_HI_BIT		48
-+#define GRUREGION(addr)		(0)		/* ZZZ could do better */
-+#else
-+#error "Unsupported architecture"
-+#endif
-+#define GRUASID(asid, addr)	((asid) + GRUREGION(addr))
-+
-+/*------------------------------------------------------------------------------
-+ *  File & VMS Tables
-+ */
-+
-+struct gru_state;
-+
-+/*
-+ * This structure is pointed to from the mmstruct via the notifier pointer.
-+ * There is one of these per address space.
-+ */
-+struct gru_mm_tracker {
-+	unsigned int		mt_asid_gen;	/* ASID wrap count */
-+	int			mt_asid;	/* current base ASID for gru */
-+	unsigned short		mt_ctxbitmap;	/* bitmap of contexts using
-+						   asid */
-+};
-+
-+struct gru_mm_struct {
-+	struct mmu_notifier	ms_notifier;
-+	atomic_t		ms_refcnt;
-+	spinlock_t		ms_asid_lock;	/* protects ASID assignment */
-+	atomic_t		ms_range_active;/* num range_invals active */
-+	char			ms_released;
-+	wait_queue_head_t	ms_wait_queue;
-+	DECLARE_BITMAP(ms_asidmap, GRU_MAX_GRUS);
-+	struct gru_mm_tracker	ms_asids[GRU_MAX_GRUS];
-+};
-+
-+/*
-+ * One of these structures is allocated when a GSEG is mmaped. The
-+ * structure is pointed to by the vma->vm_private_data field in the vma struct.
-+ */
-+struct gru_vma_data {
-+	spinlock_t		vd_lock;	/* Serialize access to vma */
-+	struct list_head	vd_head;	/* head of linked list of gts */
-+	long			vd_user_options;/* misc user option flags */
-+	int			vd_cbr_au_count;
-+	int			vd_dsr_au_count;
-+};
-+
-+/*
-+ * One of these is allocated for each thread accessing a mmaped GRU. A linked
-+ * list of these structure is hung off the struct gru_vma_data in the mm_struct.
-+ */
-+struct gru_thread_state {
-+	struct list_head	ts_next;	/* list - head at vma-private */
-+	struct mutex		ts_ctxlock;	/* load/unload CTX lock */
-+	struct mm_struct	*ts_mm;		/* mm currently mapped to
-+						   context */
-+	struct vm_area_struct	*ts_vma;	/* vma of GRU context */
-+	struct gru_state	*ts_gru;	/* GRU where the context is
-+						   loaded */
-+	struct gru_mm_struct	*ts_gms;	/* asid & ioproc struct */
-+	unsigned long		ts_cbr_map;	/* map of allocated CBRs */
-+	unsigned long		ts_dsr_map;	/* map of allocated DATA
-+						   resources */
-+	unsigned long		ts_steal_jiffies;/* jiffies when context last
-+						    stolen */
-+	long			ts_user_options;/* misc user option flags */
-+	pid_t			ts_tgid_owner;	/* task that is using the
-+						   context - for migration */
-+	int			ts_tsid;	/* thread that owns the
-+						   structure */
-+	int			ts_tlb_int_select;/* target cpu if interrupts
-+						     enabled */
-+	int			ts_ctxnum;	/* context number where the
-+						   context is loaded */
-+	atomic_t		ts_refcnt;	/* reference count GTS */
-+	unsigned char		ts_dsr_au_count;/* Number of DSR resources
-+						   required for contest */
-+	unsigned char		ts_cbr_au_count;/* Number of CBR resources
-+						   required for contest */
-+	char			ts_force_unload;/* force context to be unloaded
-+						   after migration */
-+	char			ts_cbr_idx[GRU_CBR_AU];/* CBR numbers of each
-+							  allocated CB */
-+	unsigned long		ts_gdata[0];	/* save area for GRU data (CB,
-+						   DS, CBE) */
-+};
-+
-+/*
-+ * Threaded programs actually allocate an array of GSEGs when a context is
-+ * created. Each thread uses a separate GSEG. TSID is the index into the GSEG
-+ * array.
-+ */
-+#define TSID(a, v)		(((a) - (v)->vm_start) / GRU_GSEG_PAGESIZE)
-+#define UGRUADDR(gts)		((gts)->ts_vma->vm_start +		\
-+					(gts)->ts_tsid * GRU_GSEG_PAGESIZE)
-+
-+#define NULLCTX			(-1)	/* if context not loaded into GRU */
-+
-+/*-----------------------------------------------------------------------------
-+ *  GRU State Tables
-+ */
-+
-+/*
-+ * One of these exists for each GRU chiplet.
-+ */
-+struct gru_state {
-+	struct gru_blade_state	*gs_blade;		/* GRU state for entire
-+							   blade */
-+	unsigned long		gs_gru_base_paddr;	/* Physical address of
-+							   gru segments (64) */
-+	void			*gs_gru_base_vaddr;	/* Virtual address of
-+							   gru segments (64) */
-+	unsigned char		gs_gid;			/* unique GRU number */
-+	unsigned char		gs_tgh_local_shift;	/* used to pick TGH for
-+							   local flush */
-+	unsigned char		gs_tgh_first_remote;	/* starting TGH# for
-+							   remote flush */
-+	unsigned short		gs_blade_id;		/* blade of GRU */
-+	spinlock_t		gs_asid_lock;		/* lock used for
-+							   assigning asids */
-+	spinlock_t		gs_lock;		/* lock used for
-+							   assigning contexts */
-+
-+	/* -- the following are protected by the gs_asid_lock spinlock ---- */
-+	unsigned int		gs_asid;		/* Next availe ASID */
-+	unsigned int		gs_asid_limit;		/* Limit of available
-+							   ASIDs */
-+	unsigned int		gs_asid_gen;		/* asid generation.
-+							   Inc on wrap */
-+
-+	/* --- the following fields are protected by the gs_lock spinlock --- */
-+	unsigned long		gs_context_map;		/* bitmap to manage
-+							   contexts in use */
-+	unsigned long		gs_cbr_map;		/* bitmap to manage CB
-+							   resources */
-+	unsigned long		gs_dsr_map;		/* bitmap used to manage
-+							   DATA resources */
-+	unsigned int		gs_reserved_cbrs;	/* Number of kernel-
-+							   reserved cbrs */
-+	unsigned int		gs_reserved_dsr_bytes;	/* Bytes of kernel-
-+							   reserved dsrs */
-+	unsigned short		gs_active_contexts;	/* number of contexts
-+							   in use */
-+	struct gru_thread_state	*gs_gts[GRU_NUM_CCH];	/* GTS currently using
-+							   the context */
-+};
-+
-+/*
-+ * This structure contains the GRU state for all the GRUs on a blade.
-+ */
-+struct gru_blade_state {
-+	void			*kernel_cb;		/* First kernel
-+							   reserved cb */
-+	void			*kernel_dsr;		/* First kernel
-+							   reserved DSR */
-+	/* ---- the following are protected by the bs_lock spinlock ---- */
-+	spinlock_t		bs_lock;		/* lock used for
-+							   stealing contexts */
-+	int			bs_lru_ctxnum;		/* STEAL - last context
-+							   stolen */
-+	struct gru_state	*bs_lru_gru;		/* STEAL - last gru
-+							   stolen */
-+
-+	struct gru_state	bs_grus[GRU_CHIPLETS_PER_BLADE];
-+};
-+
-+/*-----------------------------------------------------------------------------
-+ * Address Primitives
-+ */
-+#define get_tfm_for_cpu(g, c)						\
-+	((struct gru_tlb_fault_map *)get_tfm((g)->gs_gru_base_vaddr, (c)))
-+#define get_tfh_by_index(g, i)						\
-+	((struct gru_tlb_fault_handle *)get_tfh((g)->gs_gru_base_vaddr, (i)))
-+#define get_tgh_by_index(g, i)						\
-+	((struct gru_tlb_global_handle *)get_tgh((g)->gs_gru_base_vaddr, (i)))
-+#define get_cbe_by_index(g, i)						\
-+	((struct gru_control_block_extended *)get_cbe((g)->gs_gru_base_vaddr,\
-+			(i)))
-+
-+/*-----------------------------------------------------------------------------
-+ * Useful Macros
-+ */
-+
-+/* Given a blade# & chiplet#, get a pointer to the GRU */
-+#define get_gru(b, c)		(&gru_base[b]->bs_grus[c])
-+
-+/* Number of bytes to save/restore when unloading/loading GRU contexts */
-+#define DSR_BYTES(dsr)		((dsr) * GRU_DSR_AU_BYTES)
-+#define CBR_BYTES(cbr)		((cbr) * GRU_HANDLE_BYTES * GRU_CBR_AU_SIZE * 2)
-+
-+/* Convert a user CB number to the actual CBRNUM */
-+#define thread_cbr_number(gts, n) ((gts)->ts_cbr_idx[(n) / GRU_CBR_AU_SIZE] \
-+				  * GRU_CBR_AU_SIZE + (n) % GRU_CBR_AU_SIZE)
-+
-+/* Convert a gid to a pointer to the GRU */
-+#define GID_TO_GRU(gid)							\
-+	(gru_base[(gid) / GRU_CHIPLETS_PER_BLADE] ?			\
-+		(&gru_base[(gid) / GRU_CHIPLETS_PER_BLADE]->		\
-+			bs_grus[(gid) % GRU_CHIPLETS_PER_BLADE]) :	\
-+	 NULL)
-+
-+/* Scan all active GRUs in a GRU bitmap */
-+#define for_each_gru_in_bitmap(gid, map)				\
-+	for ((gid) = find_first_bit((map), GRU_MAX_GRUS); (gid) < GRU_MAX_GRUS;\
-+		(gid)++, (gid) = find_next_bit((map), GRU_MAX_GRUS, (gid)))
-+
-+/* Scan all active GRUs on a specific blade */
-+#define for_each_gru_on_blade(gru, nid, i)				\
-+	for ((gru) = gru_base[nid]->bs_grus, (i) = 0;			\
-+			(i) < GRU_CHIPLETS_PER_BLADE;			\
-+			(i)++, (gru)++)
-+
-+/* Scan all active GTSs on a gru. Note: must hold ss_lock to use this macro. */
-+#define for_each_gts_on_gru(gts, gru, ctxnum)				\
-+	for ((ctxnum) = 0; (ctxnum) < GRU_NUM_CCH; (ctxnum)++)		\
-+		if (((gts) = (gru)->gs_gts[ctxnum]))
-+
-+/* Scan each CBR whose bit is set in a TFM (or copy of) */
-+#define for_each_cbr_in_tfm(i, map)					\
-+	for ((i) = find_first_bit(map, GRU_NUM_CBE);			\
-+			(i) < GRU_NUM_CBE;				\
-+			(i)++, (i) = find_next_bit(map, GRU_NUM_CBE, i))
-+
-+/* Scan each CBR in a CBR bitmap. Note: multiple CBRs in an allocation unit */
-+#define for_each_cbr_in_allocation_map(i, map, k)			\
-+	for ((k) = find_first_bit(map, GRU_CBR_AU); (k) < GRU_CBR_AU;	\
-+			(k) = find_next_bit(map, GRU_CBR_AU, (k) + 1)) 	\
-+		for ((i) = (k)*GRU_CBR_AU_SIZE;				\
-+				(i) < ((k) + 1) * GRU_CBR_AU_SIZE; (i)++)
-+
-+/* Scan each DSR in a DSR bitmap. Note: multiple DSRs in an allocation unit */
-+#define for_each_dsr_in_allocation_map(i, map, k)			\
-+	for ((k) = find_first_bit((const unsigned long *)map, GRU_DSR_AU);\
-+			(k) < GRU_DSR_AU;				\
-+			(k) = find_next_bit((const unsigned long *)map,	\
-+					  GRU_DSR_AU, (k) + 1))		\
-+		for ((i) = (k) * GRU_DSR_AU_CL;				\
-+				(i) < ((k) + 1) * GRU_DSR_AU_CL; (i)++)
-+
-+#define gseg_physical_address(gru, ctxnum)				\
-+		((gru)->gs_gru_base_paddr + ctxnum * GRU_GSEG_STRIDE)
-+#define gseg_virtual_address(gru, ctxnum)				\
-+		((gru)->gs_gru_base_vaddr + ctxnum * GRU_GSEG_STRIDE)
-+
-+/*-----------------------------------------------------------------------------
-+ * Lock / Unlock GRU handles
-+ * 	Use the "delresp" bit in the handle as a "lock" bit.
-+ */
-+
-+/* Lock hierarchy checking enabled only in emulator */
-+
-+static inline void __lock_handle(void *h)
++static inline int is_gru_paddr(unsigned long paddr)
 +{
-+	while (test_and_set_bit(1, h))
-+		cpu_relax();
++	return paddr >= gru_start_paddr && paddr < gru_end_paddr;
 +}
 +
-+static inline void __unlock_handle(void *h)
-+{
-+	clear_bit(1, h);
-+}
-+
-+static inline void lock_cch_handle(struct gru_context_configuration_handle *cch)
-+{
-+	__lock_handle(cch);
-+}
-+
-+static inline void unlock_cch_handle(struct gru_context_configuration_handle
-+				     *cch)
-+{
-+	__unlock_handle(cch);
-+}
-+
-+static inline void lock_tgh_handle(struct gru_tlb_global_handle *tgh)
-+{
-+	__lock_handle(tgh);
-+}
-+
-+static inline void unlock_tgh_handle(struct gru_tlb_global_handle *tgh)
-+{
-+	__unlock_handle(tgh);
-+}
-+
-+/*-----------------------------------------------------------------------------
-+ * Function prototypes & externs
++/*
++ * Find the vma of a GRU segment. Caller must hold mmap_sem.
 + */
-+struct gru_unload_context_req;
++struct vm_area_struct *gru_find_vma(unsigned long vaddr)
++{
++	struct vm_area_struct *vma;
 +
-+extern struct vm_operations_struct gru_vm_ops;
-+extern struct device *grudev;
++	vma = find_vma(current->mm, vaddr);
++	if (vma && vma->vm_start <= vaddr && vma->vm_ops == &gru_vm_ops)
++		return vma;
++	return NULL;
++}
 +
-+extern struct gru_vma_data *gru_alloc_vma_data(struct vm_area_struct *vma,
-+				int tsid);
-+extern struct gru_thread_state *gru_find_thread_state(struct vm_area_struct
-+				*vma, int tsid);
-+extern struct gru_thread_state *gru_alloc_thread_state(struct vm_area_struct
-+				*vma, int tsid);
-+extern void gru_unload_context(struct gru_thread_state *gts, int savestate);
-+extern void gts_drop(struct gru_thread_state *gts);
-+extern void gru_tgh_flush_init(struct gru_state *gru);
-+extern int gru_kservices_init(struct gru_state *gru);
-+extern irqreturn_t gru_intr(int irq, void *dev_id);
-+extern int gru_handle_user_call_os(unsigned long address);
-+extern int gru_user_flush_tlb(unsigned long arg);
-+extern int gru_user_unload_context(unsigned long arg);
-+extern int gru_get_exception_detail(unsigned long arg);
-+extern int gru_set_task_slice(long address);
-+extern int gru_cpu_fault_map_id(void);
-+extern struct vm_area_struct *gru_find_vma(unsigned long vaddr);
-+extern void gru_flush_all_tlb(struct gru_state *gru);
-+extern int gru_proc_init(void);
-+extern void gru_proc_exit(void);
++/*
++ * Find and lock the gts that contains the specified user vaddr.
++ *
++ * Returns:
++ * 	- *gts with the mmap_sem locked for read and the GTS locked.
++ *	- NULL if vaddr invalid OR is not a valid GSEG vaddr.
++ */
 +
-+extern unsigned long reserve_gru_cb_resources(struct gru_state *gru,
-+		int cbr_au_count, char *cbmap);
-+extern unsigned long reserve_gru_ds_resources(struct gru_state *gru,
-+		int dsr_au_count, char *dsmap);
-+extern int gru_fault(struct vm_area_struct *, struct vm_fault *vmf);
-+extern struct gru_mm_struct *gru_register_mmu_notifier(void);
-+extern void gru_drop_mmu_notifier(struct gru_mm_struct *gms);
++static struct gru_thread_state *gru_find_lock_gts(unsigned long vaddr)
++{
++	struct mm_struct *mm = current->mm;
++	struct vm_area_struct *vma;
++	struct gru_thread_state *gts = NULL;
 +
-+extern void gru_flush_tlb_range(struct gru_mm_struct *gms, unsigned long start,
-+					unsigned long len);
++	down_read(&mm->mmap_sem);
++	vma = gru_find_vma(vaddr);
++	if (vma)
++		gts = gru_find_thread_state(vma, TSID(vaddr, vma));
++	if (gts)
++		mutex_lock(&gts->ts_ctxlock);
++	else
++		up_read(&mm->mmap_sem);
++	return gts;
++}
 +
-+extern unsigned long options;
++static struct gru_thread_state *gru_alloc_locked_gts(unsigned long vaddr)
++{
++	struct mm_struct *mm = current->mm;
++	struct vm_area_struct *vma;
++	struct gru_thread_state *gts = NULL;
 +
-+#endif /* __GRUTABLES_H__ */
++	down_write(&mm->mmap_sem);
++	vma = gru_find_vma(vaddr);
++	if (vma)
++		gts = gru_alloc_thread_state(vma, TSID(vaddr, vma));
++	if (gts) {
++		mutex_lock(&gts->ts_ctxlock);
++		downgrade_write(&mm->mmap_sem);
++	} else {
++		up_write(&mm->mmap_sem);
++	}
++
++	return gts;
++}
++
++/*
++ * Unlock a GTS that was previously locked with gru_find_lock_gts().
++ */
++static void gru_unlock_gts(struct gru_thread_state *gts)
++{
++	mutex_unlock(&gts->ts_ctxlock);
++	up_read(&current->mm->mmap_sem);
++}
++
++/*
++ * Set a CB.istatus to active using a user virtual address. This must be done
++ * just prior to a TFH RESTART. The new cb.istatus is an in-cache status ONLY.
++ * If the line is evicted, the status may be lost. The in-cache update
++ * is necessary to prevent the user from seeing a stale cb.istatus that will
++ * change as soon as the TFH restart is complete. Races may cause an
++ * occasional failure to clear the cb.istatus, but that is ok.
++ *
++ * If the cb address is not valid (should not happen, but...), nothing
++ * bad will happen.. The get_user()/put_user() will fail but there
++ * are no bad side-effects.
++ */
++static void gru_cb_set_istatus_active(unsigned long __user *cb)
++{
++	union {
++		struct gru_instruction_bits bits;
++		unsigned long dw;
++	} u;
++
++	if (cb) {
++		get_user(u.dw, cb);
++		u.bits.istatus = CBS_ACTIVE;
++		put_user(u.dw, cb);
++	}
++}
++
++/*
++ * Convert a interrupt IRQ to a pointer to the GRU GTS that caused the
++ * interrupt. Interrupts are always sent to a cpu on the blade that contains the
++ * GRU (except for headless blades which are not currently supported). A blade
++ * has N grus; a block of N consecutive IRQs is assigned to the GRUs. The IRQ
++ * number uniquely identifies the GRU chiplet on the local blade that caused the
++ * interrupt. Always called in interrupt context.
++ */
++static inline struct gru_state *irq_to_gru(int irq)
++{
++	return &gru_base[uv_numa_blade_id()]->bs_grus[irq - IRQ_GRU];
++}
++
++/*
++ * Read & clear a TFM
++ *
++ * The GRU has an array of fault maps. A map is private to a cpu
++ * Only one cpu will be accessing a cpu's fault map.
++ *
++ * This function scans the cpu-private fault map & clears all bits that
++ * are set. The function returns a bitmap that indicates the bits that
++ * were cleared. Note that sense the maps may be updated asynchronously by
++ * the GRU, atomic operations must be used to clear bits.
++ */
++static void get_clear_fault_map(struct gru_state *gru,
++				struct gru_tlb_fault_map *map)
++{
++	unsigned long i, k;
++	struct gru_tlb_fault_map *tfm;
++
++	tfm = get_tfm_for_cpu(gru, gru_cpu_fault_map_id());
++	prefetchw(tfm);		/* Helps on hardware, required for emulator */
++	for (i = 0; i < BITS_TO_LONGS(GRU_NUM_CBE); i++) {
++		k = tfm->fault_bits[i];
++		if (k)
++			k = xchg(&tfm->fault_bits[i], 0UL);
++		map->fault_bits[i] = k;
++	}
++
++	/*
++	 * Not functionally required but helps performance. (Required
++	 * on emulator)
++	 */
++	gru_flush_cache(tfm);
++}
++
++/*
++ * Atomic (interrupt context) & non-atomic (user context) functions to
++ * convert a vaddr into a physical address. The size of the page
++ * is returned in pageshift.
++ * 	returns:
++ * 		  0 - successful
++ * 		< 0 - error code
++ * 		  1 - (atomic only) try again in non-atomic context
++ */
++static int non_atomic_pte_lookup(struct vm_area_struct *vma,
++				 unsigned long vaddr, int write,
++				 unsigned long *paddr, int *pageshift)
++{
++	struct page *page;
++
++	/* ZZZ Need to handle HUGE pages */
++	if (is_vm_hugetlb_page(vma))
++		return -EFAULT;
++	*pageshift = PAGE_SHIFT;
++	if (get_user_pages
++	    (current, current->mm, vaddr, 1, write, 0, &page, NULL) <= 0)
++		return -EFAULT;
++	*paddr = page_to_phys(page);
++	put_page(page);
++	return 0;
++}
++
++static int atomic_pte_lookup(struct vm_area_struct *vma, unsigned long vaddr,
++			     int write, unsigned long *paddr, int *pageshift)
++{
++	struct page *page;
++
++	/* ZZZ Need to handle HUGE pages */
++	if (is_vm_hugetlb_page(vma))
++		return -EFAULT;
++	*pageshift = PAGE_SHIFT;
++	page = follow_page(vma, vaddr, (write ? FOLL_WRITE : 0));
++	if (!page)
++		return 1;
++	*paddr = page_to_phys(page);
++	return 0;
++}
++
++/*
++ * Drop a TLB entry into the GRU. The fault is described by info in an TFH.
++ *	Input:
++ *		cb    Address of user CBR. Null if not running in user context
++ * 	Return:
++ * 		  0 = dropin, exception, or switch to UPM successful
++ * 		  1 = range invalidate active
++ * 		< 0 = error code
++ *
++ */
++static int gru_try_dropin(struct gru_thread_state *gts,
++			  struct gru_tlb_fault_handle *tfh,
++			  unsigned long __user *cb)
++{
++	struct mm_struct *mm = gts->ts_mm;
++	struct vm_area_struct *vma;
++	int pageshift, asid, write, ret;
++	unsigned long paddr, gpa, vaddr;
++
++	/*
++	 * NOTE: The GRU contains magic hardware that eliminates races between
++	 * TLB invalidates and TLB dropins. If an invalidate occurs
++	 * in the window between reading the TFH and the subsequent TLB dropin,
++	 * the dropin is ignored. This eliminates the need for additional locks.
++	 */
++
++	/*
++	 * Error if TFH state is IDLE or FMM mode & the user issuing a UPM call.
++	 * Might be a hardware race OR a stupid user. Ignore FMM because FMM
++	 * is a transient state.
++	 */
++	if (tfh->state == TFHSTATE_IDLE)
++		goto failidle;
++	if (tfh->state == TFHSTATE_MISS_FMM && cb)
++		goto failfmm;
++
++	write = (tfh->cause & TFHCAUSE_TLB_MOD) != 0;
++	vaddr = tfh->missvaddr;
++	asid = tfh->missasid;
++	if (asid == 0)
++		goto failnoasid;
++
++	rmb();	/* TFH must be cache resident before reading ms_range_active */
++
++	/*
++	 * TFH is cache resident - at least briefly. Fail the dropin
++	 * if a range invalidate is active.
++	 */
++	if (atomic_read(&gts->ts_gms->ms_range_active))
++		goto failactive;
++
++	vma = find_vma(mm, vaddr);
++	if (!vma)
++		goto failinval;
++
++	/*
++	 * Atomic lookup is faster & usually works even if called in non-atomic
++	 * context.
++	 */
++	ret = atomic_pte_lookup(vma, vaddr, write, &paddr, &pageshift);
++	if (ret) {
++		if (!cb)
++			goto failupm;
++		if (non_atomic_pte_lookup(vma, vaddr, write, &paddr,
++					  &pageshift))
++			goto failinval;
++	}
++	if (is_gru_paddr(paddr))
++		goto failinval;
++
++	paddr = paddr & ~((1UL << pageshift) - 1);
++	gpa = uv_soc_phys_ram_to_gpa(paddr);
++	gru_cb_set_istatus_active(cb);
++	tfh_write_restart(tfh, gpa, GAA_RAM, vaddr, asid, write,
++			  GRU_PAGESIZE(pageshift));
++	STAT(tlb_dropin);
++	gru_dbg(grudev,
++		"%s: tfh 0x%p, vaddr 0x%lx, asid 0x%x, ps %d, gpa 0x%lx\n",
++		ret ? "non-atomic" : "atomic", tfh, vaddr, asid,
++		pageshift, gpa);
++	return 0;
++
++failnoasid:
++	/* No asid (delayed unload). */
++	STAT(tlb_dropin_fail_no_asid);
++	gru_dbg(grudev, "FAILED no_asid tfh: 0x%p, vaddr 0x%lx\n", tfh, vaddr);
++	if (!cb)
++		tfh_user_polling_mode(tfh);
++	else
++		gru_flush_cache(tfh);
++	return -EAGAIN;
++
++failupm:
++	/* Atomic failure switch CBR to UPM */
++	tfh_user_polling_mode(tfh);
++	STAT(tlb_dropin_fail_upm);
++	gru_dbg(grudev, "FAILED upm tfh: 0x%p, vaddr 0x%lx\n", tfh, vaddr);
++	return 1;
++
++failfmm:
++	/* FMM state on UPM call */
++	STAT(tlb_dropin_fail_fmm);
++	gru_dbg(grudev, "FAILED fmm tfh: 0x%p, state %d\n", tfh, tfh->state);
++	return 0;
++
++failidle:
++	/* TFH was idle  - no miss pending */
++	gru_flush_cache(tfh);
++	if (cb)
++		gru_flush_cache(cb);
++	STAT(tlb_dropin_fail_idle);
++	gru_dbg(grudev, "FAILED idle tfh: 0x%p, state %d\n", tfh, tfh->state);
++	return 0;
++
++failinval:
++	/* All errors (atomic & non-atomic) switch CBR to EXCEPTION state */
++	tfh_exception(tfh);
++	STAT(tlb_dropin_fail_invalid);
++	gru_dbg(grudev, "FAILED inval tfh: 0x%p, vaddr 0x%lx\n", tfh, vaddr);
++	return -EFAULT;
++
++failactive:
++	/* Range invalidate active. Switch to UPM iff atomic */
++	if (!cb)
++		tfh_user_polling_mode(tfh);
++	else
++		gru_flush_cache(tfh);
++	STAT(tlb_dropin_fail_range_active);
++	gru_dbg(grudev, "FAILED range active: tfh 0x%p, vaddr 0x%lx\n",
++		tfh, vaddr);
++	return 1;
++}
++
++/*
++ * Process an external interrupt from the GRU. This interrupt is
++ * caused by a TLB miss.
++ * Note that this is the interrupt handler that is registered with linux
++ * interrupt handlers.
++ */
++irqreturn_t gru_intr(int irq, void *dev_id)
++{
++	struct gru_state *gru;
++	struct gru_tlb_fault_map map;
++	struct gru_thread_state *gts;
++	struct gru_tlb_fault_handle *tfh = NULL;
++	int cbrnum, ctxnum;
++
++	STAT(intr);
++
++	gru = irq_to_gru(irq);
++	if (!gru) {
++		dev_err(grudev, "GRU: invalid interrupt: cpu %d, irq %d\n",
++			raw_smp_processor_id(), irq);
++		return IRQ_NONE;
++	}
++	get_clear_fault_map(gru, &map);
++	gru_dbg(grudev, "irq %d, gru %x, map 0x%lx\n", irq, gru->gs_gid,
++		map.fault_bits[0]);
++
++	for_each_cbr_in_tfm(cbrnum, map.fault_bits) {
++		tfh = get_tfh_by_index(gru, cbrnum);
++		prefetchw(tfh);	/* Helps on hdw, required for emulator */
++
++		/*
++		 * When hardware sets a bit in the faultmap, it implicitly
++		 * locks the GRU context so that it cannot be unloaded.
++		 * The gts cannot change until a TFH start/writestart command
++		 * is issued.
++		 */
++		ctxnum = tfh->ctxnum;
++		gts = gru->gs_gts[ctxnum];
++
++		/*
++		 * This is running in interrupt context. Trylock the mmap_sem.
++		 * If it fails, retry the fault in user context.
++		 */
++		if (down_read_trylock(&gts->ts_mm->mmap_sem)) {
++			gru_try_dropin(gts, tfh, NULL);
++			up_read(&gts->ts_mm->mmap_sem);
++		} else {
++			tfh_user_polling_mode(tfh);
++		}
++	}
++	return IRQ_HANDLED;
++}
++
++
++static int gru_user_dropin(struct gru_thread_state *gts,
++			   struct gru_tlb_fault_handle *tfh,
++			   unsigned long __user *cb)
++{
++	struct gru_mm_struct *gms = gts->ts_gms;
++	int ret;
++
++	while (1) {
++		wait_event(gms->ms_wait_queue,
++			   atomic_read(&gms->ms_range_active) == 0);
++		prefetchw(tfh);	/* Helps on hdw, required for emulator */
++		ret = gru_try_dropin(gts, tfh, cb);
++		if (ret <= 0)
++			return ret;
++		STAT(call_os_wait_queue);
++	}
++}
++
++/*
++ * This interface is called as a result of a user detecting a "call OS" bit
++ * in a user CB. Normally means that a TLB fault has occurred.
++ * 	cb - user virtual address of the CB
++ */
++int gru_handle_user_call_os(unsigned long cb)
++{
++	struct gru_tlb_fault_handle *tfh;
++	struct gru_thread_state *gts;
++	unsigned long __user *cbp;
++	int ucbnum, cbrnum, ret = -EINVAL;
++
++	STAT(call_os);
++	gru_dbg(grudev, "address 0x%lx\n", cb);
++
++	/* sanity check the cb pointer */
++	ucbnum = get_cb_number((void *)cb);
++	if ((cb & (GRU_HANDLE_STRIDE - 1)) || ucbnum >= GRU_NUM_CB)
++		return -EINVAL;
++	cbp = (unsigned long *)cb;
++
++	gts = gru_find_lock_gts(cb);
++	if (!gts)
++		return -EINVAL;
++
++	if (ucbnum >= gts->ts_cbr_au_count * GRU_CBR_AU_SIZE) {
++		ret = -EINVAL;
++		goto exit;
++	}
++
++	/*
++	 * If force_unload is set, the UPM TLB fault is phony. The task
++	 * has migrated to another node and the GSEG must be moved. Just
++	 * unload the context. The task will page fault and assign a new
++	 * context.
++	 */
++	ret = -EAGAIN;
++	cbrnum = thread_cbr_number(gts, ucbnum);
++	if (gts->ts_force_unload) {
++		gru_unload_context(gts, 1);
++	} else if (gts->ts_gru) {
++		tfh = get_tfh_by_index(gts->ts_gru, cbrnum);
++		ret = gru_user_dropin(gts, tfh, cbp);
++	}
++exit:
++	gru_unlock_gts(gts);
++	return ret;
++}
++
++/*
++ * Fetch the exception detail information for a CB that terminated with
++ * an exception.
++ */
++int gru_get_exception_detail(unsigned long arg)
++{
++	struct control_block_extended_exc_detail excdet;
++	struct gru_control_block_extended *cbe;
++	struct gru_thread_state *gts;
++	int ucbnum, cbrnum, ret;
++
++	STAT(user_exception);
++	if (copy_from_user(&excdet, (void __user *)arg, sizeof(excdet)))
++		return -EFAULT;
++
++	gru_dbg(grudev, "address 0x%lx\n", excdet.cb);
++	gts = gru_find_lock_gts(excdet.cb);
++	if (!gts)
++		return -EINVAL;
++
++	if (gts->ts_gru) {
++		ucbnum = get_cb_number((void *)excdet.cb);
++		cbrnum = thread_cbr_number(gts, ucbnum);
++		cbe = get_cbe_by_index(gts->ts_gru, cbrnum);
++		excdet.opc = cbe->opccpy;
++		excdet.exopc = cbe->exopccpy;
++		excdet.ecause = cbe->ecause;
++		excdet.exceptdet0 = cbe->idef1upd;
++		excdet.exceptdet1 = cbe->idef3upd;
++		ret = 0;
++	} else {
++		ret = -EAGAIN;
++	}
++	gru_unlock_gts(gts);
++
++	gru_dbg(grudev, "address 0x%lx, ecause 0x%x\n", excdet.cb,
++		excdet.ecause);
++	if (!ret && copy_to_user((void __user *)arg, &excdet, sizeof(excdet)))
++		ret = -EFAULT;
++	return ret;
++}
++
++/*
++ * User request to unload a context. Content is saved for possible reload.
++ */
++int gru_user_unload_context(unsigned long arg)
++{
++	struct gru_thread_state *gts;
++	struct gru_unload_context_req req;
++
++	STAT(user_unload_context);
++	if (copy_from_user(&req, (void __user *)arg, sizeof(req)))
++		return -EFAULT;
++
++	gru_dbg(grudev, "gseg 0x%lx\n", req.gseg);
++
++	gts = gru_find_lock_gts(req.gseg);
++	if (!gts)
++		return -EINVAL;
++
++	if (gts->ts_gru)
++		gru_unload_context(gts, 1);
++	gru_unlock_gts(gts);
++
++	return 0;
++}
++
++/*
++ * User request to flush a range of virtual addresses from the GRU TLB
++ * (Mainly for testing).
++ */
++int gru_user_flush_tlb(unsigned long arg)
++{
++	struct gru_thread_state *gts;
++	struct gru_flush_tlb_req req;
++
++	STAT(user_flush_tlb);
++	if (copy_from_user(&req, (void __user *)arg, sizeof(req)))
++		return -EFAULT;
++
++	gru_dbg(grudev, "gseg 0x%lx, vaddr 0x%lx, len 0x%lx\n", req.gseg,
++		req.vaddr, req.len);
++
++	gts = gru_find_lock_gts(req.gseg);
++	if (!gts)
++		return -EINVAL;
++
++	gru_flush_tlb_range(gts->ts_gms, req.vaddr, req.vaddr + req.len);
++	gru_unlock_gts(gts);
++
++	return 0;
++}
++
++/*
++ * Register the current task as the user of the GSEG slice.
++ * Needed for TLB fault interrupt targeting.
++ */
++int gru_set_task_slice(long address)
++{
++	struct gru_thread_state *gts;
++
++	STAT(set_task_slice);
++	gru_dbg(grudev, "address 0x%lx\n", address);
++	gts = gru_alloc_locked_gts(address);
++	if (!gts)
++		return -EINVAL;
++
++	gts->ts_tgid_owner = current->tgid;
++	gru_unlock_gts(gts);
++
++	return 0;
++}
 
 -- 
