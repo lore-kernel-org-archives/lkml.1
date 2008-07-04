@@ -1,85 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758648AbYGDNke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758833AbYGDNkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758648AbYGDNke (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 09:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758294AbYGDNkT
+	id S1758833AbYGDNkx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 09:40:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbYGDNkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 09:40:19 -0400
-Received: from www.tglx.de ([62.245.132.106]:60060 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753679AbYGDNkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 09:40:18 -0400
-Date: Fri, 4 Jul 2008 15:39:58 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Paul Mundt <lethal@linux-sh.org>,
-       Uwe Kleine-K?nig <Uwe.Kleine-Koenig@digi.com>,
-       Magnus Damm <magnus.damm@gmail.com>, "Hans J. Koch" <hjk@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: Re: [PATCH] uio: User IRQ Mode
-Message-ID: <20080704133958.GD2257@local>
-References: <20080702105951.22648.2197.sendpatchset@rx1.opensource.se> <20080702125400.GC3199@local> <20080703071019.GC12214@digi.com> <20080703124505.GB3197@local> <aec7e5c30807032103p7626dcbdwe06c5fac461372c1@mail.gmail.com> <20080704060108.GA11794@digi.com> <aec7e5c30807040048yd8543d4n2edba43524279b6f@mail.gmail.com> <20080704081125.GA26703@digi.com> <20080704082959.GA9442@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080704082959.GA9442@linux-sh.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 4 Jul 2008 09:40:40 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41961 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754122AbYGDNkj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 09:40:39 -0400
+Date: Fri, 4 Jul 2008 14:23:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for July 4
+Message-ID: <20080704142302.0b536065@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080704231610.98118766.sfr@canb.auug.org.au>
+References: <20080704195529.7f56e768.sfr@canb.auug.org.au>
+	<20080704114648.13374869@lxorguk.ukuu.org.uk>
+	<20080704231610.98118766.sfr@canb.auug.org.au>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 04, 2008 at 05:29:59PM +0900, Paul Mundt wrote:
-> On Fri, Jul 04, 2008 at 10:11:25AM +0200, Uwe Kleine-K?nig wrote:
-> > Magnus Damm wrote:
-> > > > Maybe it's sensible to add the User IRQ Mode functions at least for now
-> > > > into platform code.  Then at a later time if and when there are several
-> > > > copies the discussion to move it to the generic part might be easier.
-> > > 
-> > > Do you mean your uio_pdrv driver?
-> > No, I don't.  I meant arch/whatever/...
-> > 
-> Placing it in arch/ makes no sense, as there is nothing platform or
-> architecture specific about it. It is a generic bit of functionality that
-> various platforms may or may not want to enable, it should be reflected
-> in UIO directly and simply enabled by those that care. Copying it around
-> all over the place to make up for the fact the UIO people don't want to
-> take patches is not a solution.
+> Good.  There are more broken drivers - check out
+> http://kisskb.ellerman.id.au/linux-next
 
-Why don't you make it a driver of it's own? Maybe some uio_pdrv_genirq?
-I'm not really sure if it's a good idea (need to think about it), but
-it's certainly easier to accept.
+Yep
+ 
+> Were you using
+> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git or
+> http://www.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git ?  The
 
-No need to change the UIO core.
+git://
 
-> 
-> > If you want to add it to uio_pdrv you either have to introduce a new
-> > header file or you need to add it to uio_driver.h.  IMHO the first is
-> > ugly and I'm sure Hans will object the latter.
-> > 
-> I'm sure Hans will object to pretty much any UIO patch that adds
-> functionality he didn't envision from the beginning,
-
-Like uio_pdrv?
-
-> but that doesn't
-> justify burying this crap in the architecture code. Likewise, without any
-> serious technical objections to the user IRQ mode, it's also difficult to
-> care. So far all of the technical issues raised in this thread and the
-> ones before it have all been readily addressed, and I'm unaware of any
-> outstanding issues here.
-> 
-> Having said that, it would be nice to respin this encapsulating your
-> rewrite of the commit log so there's less confusion, and then see about
-> having Greg or Andrew merge this. The patch can easily be reworked if
-> anyone else raises any technical concerns about this particular approach.
-
-Please read my other postings in this thread. You cannot ignore
-everything just because it's not important on the SH board in front of
-you.
-
-Thanks,
-Hans
-
-
+Alan
