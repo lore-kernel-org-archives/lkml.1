@@ -1,85 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbYGDO1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759152AbYGDO2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758808AbYGDO1A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 10:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbYGDO0t
+	id S1759152AbYGDO2Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 10:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbYGDO2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 10:26:49 -0400
-Received: from baikonur.stro.at ([213.239.196.228]:35134 "EHLO
-	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752964AbYGDO0s (ORCPT
+	Fri, 4 Jul 2008 10:28:00 -0400
+Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:1413 "EHLO
+	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753526AbYGDO2A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 10:26:48 -0400
-Date: Fri, 4 Jul 2008 16:24:03 +0200
-From: maximilian attems <max@stro.at>
-To: Theodore Tso <tytso@mit.edu>, David Woodhouse <dwmw2@infradead.org>,
-       Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
-       David Miller <davem@davemloft.net>, hugh@veritas.com,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-Message-ID: <20080704142403.GD7212@baikonur.stro.at>
-References: <1215093175.10393.567.camel@pmac.infradead.org> <20080703173040.GB30506@mit.edu> <1215111362.10393.651.camel@pmac.infradead.org> <20080703.162120.206258339.davem@davemloft.net> <486D6DDB.4010205@infradead.org> <87ej6armez.fsf@basil.nowhere.org> <1215177044.10393.743.camel@pmac.infradead.org> <486E2260.5050503@garzik.org> <1215178035.10393.763.camel@pmac.infradead.org> <20080704141014.GA23215@mit.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 4 Jul 2008 10:28:00 -0400
+Date: Fri, 4 Jul 2008 16:27:47 +0200
+From: Erik Mouw <mouw@nl.linux.org>
+To: zhp <zhpsub@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Is there any way to download all email archive of linux
+	kernel, and then import to Gmail for search?
+Message-ID: <20080704142743.GB3447@arthur.home>
+References: <337eb86f0807030721n1ab86217j2eb9a43d526ebf5f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="AhhlLboLdkugWU4S"
 Content-Disposition: inline
-In-Reply-To: <20080704141014.GA23215@mit.edu>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <337eb86f0807030721n1ab86217j2eb9a43d526ebf5f@mail.gmail.com>
+Organization: Eric Conspiracy Secret Labs
+X-Eric-Conspiracy: There is no conspiracy!
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 04, 2008 at 10:10:14AM -0400, Theodore Tso wrote:
-> On Fri, Jul 04, 2008 at 02:27:15PM +0100, David Woodhouse wrote:
-> > 
-> > That's the way it has been for a _long_ time anyway, for any modern
-> > driver which uses request_firmware(). The whole point about modules is
-> > _modularity_. Yes, that means that sometimes they depend on _other_
-> > modules, or on firmware. 
-> > 
-> > The scripts which handle that kind of thing have handled inter-module
-> > dependencies, and MODULE_FIRMWARE(), for a long time now.
-> 
-> FYI, at least Ubuntu Hardy's initramfs does not seem to deal with
-> firmware for modules correctly.  
-> 
-> https://bugs.launchpad.net/ubuntu/+source/initramfs-tools/+bug/180544
-> 
-> And remember, kernel/userspace interfaces are things which are far
-> more careful about than kernel ABI interfaces....
-> 
-> You can flame about Ubuntu being broken (and I predict you will :-),
-> but there are a large number of users who do use Ubuntu.  And so
-> adding more breakages when it is *known* the distro's aren't moving as
-> quickly as you think is reasonable for quote, modern, unquote, drivers
-> is something you can flame about, but at the end of the day, *you* are
-> the one introducing changes that is causing more breakages.  
 
-yes i'd call them severly broken.
-as it is quite easy to pick up the modinfo firmware module output.
+--AhhlLboLdkugWU4S
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-their trouble is that they sync initramfs-tools from Debian only
-once every 2 years or so.
- 
-> Userspace interfaces (and this includes things like
-> mkinitramfs/mkinitrd, since we made the design decision --- in my
-> opinion a very bad decision --- to make initrd/initramfs creation it a
-> distro-specific thing instead of somethign where the kernel supplies
-> the scripts) by their very nature move much more slowly than things
-> which are inside the "shipped by the kernel" boundary.
+On Thu, Jul 03, 2008 at 10:21:42PM +0800, zhp wrote:
+> I have found that there is some methods for me to migrate local
+> existing emails to Gmail for search.
+>=20
+> * Gmail Loader
+> see http://www.linux.com/articles/60733
+>=20
+> * imapsync,
+> see http://freshmeat.net/projects/imapsync/
+>=20
+> However, the problem is where can I get all of the old mails to my
+> local computer?
+> Has anyone done such things sucessfully?
 
-hpa is working to provide a lot of what is needed in klibc.
-it isn't yet there as it misses mdadm, lvm2 and cryptsetup support,
-but it is getting much better due to our Debian/Ubuntu exposure.
-we added several features to klibc and fixed bugs. similar to the
-early opensuse exposure which unfortunately got dropped.
+I don't think so, the full linux-kernel is too large for a single gmail
+account (FY: last month was 91 MB of traffic, that's about 1.1 GB per
+year). However, you can use standard Google search on the various
+linux-kernel archives. Here is your message:
 
-although kinit strived for a very monolithic way that doesn't fit
-the modular needs of a distribution. klibc and klibc-utils are
-the base of our initramfs.
+http://www.google.com/search?q=3Dimapsync+site:lkml.org
+http://www.google.com/search?q=3Dimapsync+linux-kernel+site:gmane.org
 
-best regards
 
--- 
-maks
+Erik
+
+--=20
+Erik Mouw -- mouw@nl.linux.org
+
+--AhhlLboLdkugWU4S
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIbjNf/PlVHJtIto0RAtoLAJ4yC+70epcok7D/rNcChPi4XRNuZgCfXqrB
+Qd0Y9G7bLUdyFd6dz0vKdDI=
+=5Jf6
+-----END PGP SIGNATURE-----
+
+--AhhlLboLdkugWU4S--
