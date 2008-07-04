@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbYGDJSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbYGDJrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757706AbYGDJSy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 05:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbYGDJSp
+	id S1756109AbYGDJrf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 05:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbYGDJrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 05:18:45 -0400
-Received: from smtp.wifcom.cz ([89.185.251.8]:43221 "EHLO wifcom.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752156AbYGDJSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 05:18:45 -0400
-X-Greylist: delayed 2099 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Jul 2008 05:18:45 EDT
-Date: Fri, 4 Jul 2008 10:44:24 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Paul Mundt <lethal@linux-sh.org>,
-       pHilipp Zabel <philipp.zabel@gmail.com>, tony@atomide.com,
-       paul@pwsan.com, David Brownell <david-b@pacbell.net>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>, ian <spyro@f2s.com>
-Subject: Re: [PATCH 1/3] Clocklib: add generic framework for managing
-	clocks.
-Message-ID: <20080704084424.GA4531@elf.ucw.cz>
-References: <20080626125033.GA7093@doriath.ww600.siemens.net> <20080626125138.GA12415@doriath.ww600.siemens.net> <20080703203157.GB24620@fluff.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080703203157.GB24620@fluff.org.uk>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-Antivirus-Scanner: Clean mail though you should still use an Antivirus
+	Fri, 4 Jul 2008 05:47:25 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37000 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751493AbYGDJrZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 05:47:25 -0400
+Subject: Re: [PATCH] edgeport: use request_firmware
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: Greg KH <greg@kroah.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       kernelnewbies <kernelnewbies@nl.linux.org>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080703193107.GA14194@kroah.com>
+References: <1215085813.24938.5.camel@jaswinder.satnam>
+	 <20080703193107.GA14194@kroah.com>
+Content-Type: text/plain
+Date: Fri, 04 Jul 2008 15:10:26 +0530
+Message-Id: <1215164426.3249.2.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-07-03 21:31:57, Ben Dooks wrote:
-> On Thu, Jun 26, 2008 at 04:51:38PM +0400, Dmitry Baryshkov wrote:
-> > Provide a generic framework that platform may choose
-> > to support clocks api. In particular this provides
-> > platform-independant struct clk definition, a full
-> > implementation of clocks api and a set of functions
-> > for registering and unregistering clocks in a safe way.
-> > 
-> > Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
-> > ---
-> >  include/linux/clocklib.h |   58 ++++++++
-> >  lib/Kconfig              |    3 +
-> >  lib/Makefile             |    1 +
-> >  lib/clocklib.c           |  353 ++++++++++++++++++++++++++++++++++++++++++++++
-> 
-> why under lib? drivers/clk might be a better place for this.
+On Thu, 2008-07-03 at 12:31 -0700, Greg KH wrote:
+> This should go through David's tree, right? 
 
-This does not belong into lib/, really. drivers/clk seems ok.
-									Pavel
+yes.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thank you,
+
+Jaswinder Singh.
+
