@@ -1,99 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbYGDHIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbYGDHic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756695AbYGDHIg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 03:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYGDHI2
+	id S1756251AbYGDHic (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 03:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYGDHiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 03:08:28 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:50873 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753249AbYGDHI1 (ORCPT
+	Fri, 4 Jul 2008 03:38:24 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:2891 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbYGDHiY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 03:08:27 -0400
-Message-ID: <486DCC4E.3030203@linux.vnet.ibm.com>
-Date: Fri, 04 Jul 2008 12:37:58 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Fri, 4 Jul 2008 03:38:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=VT4cqwz1TpzQIMSz+6C+fTZUleKesVkzOwW9Elegt7FmqE6haB7yWOia25IJe7Q5z0
+         M8cMB3MiGULC9wkbSdVl/akpAlyZemdEZCGhrB8WGbmqN4rLBVAXhPlwoU2nagnUnkZO
+         OL6zjAAWrBrHhEZvEQwlaLFB8RnDXB24MdbZs=
+Message-ID: <84144f020807040038u7a713d5ana608a7c79ee00eea@mail.gmail.com>
+Date: Fri, 4 Jul 2008 10:38:23 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Yoichi Yuasa" <yoichi_yuasa@tripeaks.co.jp>
+Subject: Re: slub: Do not use 192 byte sized cache if minimum alignment is 128 byte
+Cc: "Christoph Lameter" <cl@linux-foundation.org>,
+       "Matt Mackall" <mpm@selenic.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <200807040027.m640RQSx006004@po-mbox300.hop.2iij.net>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 2.6.26-rc8-mm1] memrlimit: fix mmap_sem deadlock
-References: <Pine.LNX.4.64.0807032143110.10641@blonde.site> <20080703160117.b3781463.akpm@linux-foundation.org> <486D81B9.9030704@linux.vnet.ibm.com> <20080703190123.1d72e9d1.akpm@linux-foundation.org> <486D970F.2000607@linux.vnet.ibm.com> <20080703212707.e0f6bbda.akpm@linux-foundation.org>
-In-Reply-To: <20080703212707.e0f6bbda.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <486CDEC2.5030803@linux-foundation.org>
+	 <84144f020807030837k213e1880vf2d01bcf77e6886c@mail.gmail.com>
+	 <200807040027.m640RQSx006004@po-mbox300.hop.2iij.net>
+X-Google-Sender-Auth: ea580c3ebed23d48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 04 Jul 2008 08:50:47 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->>> I was referring to the below (which is where the conversation ended).
+Hi Yoichi,
+
+On Thu, Jul 3, 2008 at 5:14 PM, Christoph Lameter
+<cl@linux-foundation.org> wrote:
+>>> The 192 byte cache is not necessary if we have a basic alignment of 128
+>>> byte. If it would be used then the 192 would be aligned to the next 128 byte
+>>> boundary which would result in another 256 byte cache. Two 256 kmalloc caches
+>>> cause sysfs to complain about a duplicate entry.
 >>>
->>> It questions the basis of the whole feature.
+>>> MIPS needs 128 byte aligned kmalloc caches and spits out warnings on boot without
+>>> this patch.
 >>>
->> In the email below, I referred to Hugh's comment on tracking total_vm as a more
->> achievable target and it gives a rough approximation of something worth
->> limiting. I agree with him on those points and mentioned my motivation for the
->> memrlimit patchset. We also look forward to enhancing memrlimit to control
->> mlock'ed pages (as it provides the generic infrastructure to control RLIMIT'ed
->> resources). Given Hugh's comment, I looked at it from the more positive side
->> rather the pessimistic angle. I've had discussions along these lines with Paul
->> Menage and Kamezawa. In the past we've discussed and there are cases where
->> memrlimit is not useful (large VM allocations with sparse usage), but there are
->> cases as mentioned below in the motivation for memrlimits as to why and where
->> they are useful.
->>
->> If there are suggestions to help improve the feature or provide similar
->> functionality without the noise; I am all ears
-> 
-> Well I've never reeeeeeealy understood what the whole feature is for.
-> 
-> +Advantages of providing this feature
-> +
-> +1. Control over virtual address space allows for a cgroup to fail gracefully
-> +   i.e., via a malloc or mmap failure as compared to OOM kill when no
-> +   pages can be reclaimed.
-> +2. It provides better control over how many pages can be swapped out when
-> +   the cgroup goes over its limit. A badly setup cgroup can cause excessive
-> +   swapping. Providing control over the address space allocations ensures
-> +   that the system administrator has control over the total swapping that
-> +   can take place.
-> 
-> umm, OK.  I'm not sure _why_ someone would want to do that.  Perhaps
-> some use-cases would help motivate us.  Perhaps desriptions of
-> real-world operational problems would would be improved or solved were
-> this feature available to the operator.
+>>> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
-I can go over the use cases and some of the motivation
+On Thu, 3 Jul 2008 18:37:52 +0300
+"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
+>> Looks good to me. Yoichi, did you have the chance to test this?
 
-0. Provide the basic infrastructure for rlimit control for cgroups (mlock comes
-to mind right away)
-1. Similar to the goals of over commit accounting (although not that granular),
-we would like to be able to decide on a per cgroup node, how much to overcommit
-the system by
-2. With the memory controller in place, a cgroup that exceeds it's limit is sent
-to the reclaimer. We swap out pages or OOM the heaviest task in the cgroup. The
-swap controller will help, but we want a gentler way of saying "No more virtual
-RSS+swap space is available", so I am failing this allocation. The application
-can then decide if it can free up some memory now or if it has to fail.
+On Fri, Jul 4, 2008 at 3:28 AM, Yoichi Yuasa
+<yoichi_yuasa@tripeaks.co.jp> wrote:
+> I've already done.
+> It has no problem.
 
-As far as real examples are concerned, I was told (via private communication -
-discussion), by a user that scientific jobs can sometimes cause a havoc on
-shared systems. They don't have control over how much virtual memory the set of
-jobs consume. They would ideally like to be able to provide feedback to the
-application about the maximum RSS + Swap that it can consume (case 1). With a
-memrlimit address space controller in place, a failed allocation would tell the
-jobs to use lesser memory (and potentially take longer) to finish the job,
-instead of causing large amounts of swapping or OOM on the system.
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Thank you for testing!
