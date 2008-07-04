@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbYGDE1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751162AbYGDEgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753691AbYGDE1j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 00:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbYGDE1a
+	id S1751162AbYGDEgA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 00:36:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbYGDEfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 00:27:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54541 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750711AbYGDE13 (ORCPT
+	Fri, 4 Jul 2008 00:35:50 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:24959 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750911AbYGDEft (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 00:27:29 -0400
-Date: Thu, 3 Jul 2008 21:27:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: balbir@linux.vnet.ibm.com
-Cc: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 2.6.26-rc8-mm1] memrlimit: fix mmap_sem deadlock
-Message-Id: <20080703212707.e0f6bbda.akpm@linux-foundation.org>
-In-Reply-To: <486D970F.2000607@linux.vnet.ibm.com>
-References: <Pine.LNX.4.64.0807032143110.10641@blonde.site>
-	<20080703160117.b3781463.akpm@linux-foundation.org>
-	<486D81B9.9030704@linux.vnet.ibm.com>
-	<20080703190123.1d72e9d1.akpm@linux-foundation.org>
-	<486D970F.2000607@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Jul 2008 00:35:49 -0400
+Date: Thu, 03 Jul 2008 22:35:43 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Veliciraptor HDD 3.0gbps but UDMA/100 on PCI-e controller?
+In-reply-to: <fa.Rv78KGguIBjNqcR6d0heXxceZEM@ifi.uio.no>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-id: <486DA89F.9010505@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.Rv78KGguIBjNqcR6d0heXxceZEM@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 04 Jul 2008 08:50:47 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> > I was referring to the below (which is where the conversation ended).
-> > 
-> > It questions the basis of the whole feature.
-> > 
+Justin Piszcz wrote:
+> On the motherboard itself (all drives configured for AHCI)
 > 
-> In the email below, I referred to Hugh's comment on tracking total_vm as a more
-> achievable target and it gives a rough approximation of something worth
-> limiting. I agree with him on those points and mentioned my motivation for the
-> memrlimit patchset. We also look forward to enhancing memrlimit to control
-> mlock'ed pages (as it provides the generic infrastructure to control RLIMIT'ed
-> resources). Given Hugh's comment, I looked at it from the more positive side
-> rather the pessimistic angle. I've had discussions along these lines with Paul
-> Menage and Kamezawa. In the past we've discussed and there are cases where
-> memrlimit is not useful (large VM allocations with sparse usage), but there are
-> cases as mentioned below in the motivation for memrlimits as to why and where
-> they are useful.
+> [    2.360648] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+> [    2.678244] ata1.00: ATA-8: WDC WD3000GLFS-01F8U0, 03.03V01, max 
+> UDMA/133
+> [    2.678594] ata1.00: 586072368 sectors, multi 0: LBA48 NCQ (depth 31/32)
+> [    2.684566] ata1.00: configured for UDMA/133
 > 
-> If there are suggestions to help improve the feature or provide similar
-> functionality without the noise; I am all ears
+> On the PCI-e cards:
+> 
+> [   16.136568] ata11: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
+> [   16.155682] ata11.00: ATA-8: WDC WD3000GLFS-01F8U0, 03.03V01, max 
+> UDMA/133
+> [   16.156545] ata11.00: 586072368 sectors, multi 16: LBA48 NCQ (depth 
+> 31/32)
+> [   16.162949] ata11.00: configured for UDMA/100
+> 
+> How come the PCI-e card configured the drive for UDMA/100 and not UDMA/133?
+> 
+> Perhaps the PCI-e card/driver does not configure/have AHCI 
+> functionality, or?
+> 
+> The mobo: Intel DG965WH
+> The card: 03:00.0 RAID bus controller: Silicon Image, Inc. SiI 3132 
+> Serial ATA Raid II Controller (rev 01)
+> 
+> The hard drives are the same make/model.
 
-Well I've never reeeeeeealy understood what the whole feature is for.
+Not sure exactly why that is (could be an artificial driver difference), 
+but for SATA I don't think the UDMA mode selection matters at all as far 
+as throughput. SATA uses its own flow control mechanism, and the UDMA 
+rate has no real meaning.
 
-+Advantages of providing this feature
-+
-+1. Control over virtual address space allows for a cgroup to fail gracefully
-+   i.e., via a malloc or mmap failure as compared to OOM kill when no
-+   pages can be reclaimed.
-+2. It provides better control over how many pages can be swapped out when
-+   the cgroup goes over its limit. A badly setup cgroup can cause excessive
-+   swapping. Providing control over the address space allocations ensures
-+   that the system administrator has control over the total swapping that
-+   can take place.
-
-umm, OK.  I'm not sure _why_ someone would want to do that.  Perhaps
-some use-cases would help motivate us.  Perhaps desriptions of
-real-world operational problems would would be improved or solved were
-this feature available to the operator.
-
+And no, the card is not AHCI, it's Silicon Image's own interface, which 
+has most of the same features. (I'm not aware of any AHCI add-in cards, 
+though they may exist..)
