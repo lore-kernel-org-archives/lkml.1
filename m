@@ -1,72 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbYGDO5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758526AbYGDO7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759784AbYGDO5n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 10:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758992AbYGDO5Y
+	id S1758526AbYGDO7c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 10:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602AbYGDO7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 10:57:24 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39888 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758483AbYGDO5W (ORCPT
+	Fri, 4 Jul 2008 10:59:24 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:19321 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753526AbYGDO7X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 10:57:22 -0400
-Date: Fri, 4 Jul 2008 15:38:22 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       David Miller <davem@davemloft.net>, tytso@mit.edu, hugh@veritas.com,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-Message-ID: <20080704153822.4db2f325@lxorguk.ukuu.org.uk>
-In-Reply-To: <486E2E9B.20200@garzik.org>
-References: <1215093175.10393.567.camel@pmac.infradead.org>
-	<20080703173040.GB30506@mit.edu>
-	<1215111362.10393.651.camel@pmac.infradead.org>
-	<20080703.162120.206258339.davem@davemloft.net>
-	<486D6DDB.4010205@infradead.org>
-	<87ej6armez.fsf@basil.nowhere.org>
-	<1215177044.10393.743.camel@pmac.infradead.org>
-	<486E2260.5050503@garzik.org>
-	<1215178035.10393.763.camel@pmac.infradead.org>
-	<486E2818.1060003@garzik.org>
-	<1215179161.10393.773.camel@pmac.infradead.org>
-	<486E2E9B.20200@garzik.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 4 Jul 2008 10:59:23 -0400
+Subject: [PATCH] Make CONFIG_MIGRATION available for s390
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
+Content-Type: text/plain
+Date: Fri, 04 Jul 2008 16:58:59 +0200
+Message-Id: <1215183539.4834.12.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 04 Jul 2008 10:07:23 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+Subject: [PATCH] Make CONFIG_MIGRATION available for s390
 
-> David Woodhouse wrote:
-> > On Fri, 2008-07-04 at 09:39 -0400, Jeff Garzik wrote:
-> >> You have been told repeatedly that cp(1) and scp(1) are commonly used
-> >> to transport the module David and I care about -- tg3.  It's been a
-> >> single file module since birth, and people take advantage of that
-> >> fact.
-> > 
-> > And you can _continue_ to do that. You'd need to install the firmware
-> > just once, and that's all. It's a non-issue, and it isn't _worth_ the
-> > added complexity of building the firmware into the module.
-> 
-> We can stop there.  Real-world examples are apparently non-issues not 
-> worth your time.
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 
-Jeff - real world issues and gains are measured on a scale across the
-userbase not "Jeff's having a tantrum because his specific usage case
-requires one extra copy once"
+We'd like to support CONFIG_MEMORY_HOTREMOVE on s390, which depends on
+CONFIG_MIGRATION. So far, CONFIG_MIGRATION is only available with NUMA
+support.
 
-And we had the same argument over ten years ago about those evil module
-things which stopped you just using scp to copy the kernel in one go.
-Fortunately the nay sayers lost so we have modules.
+This patch makes CONFIG_MIGRATION selectable for s390. When MIGRATION
+is enabled w/o NUMA, the kernel won't compile because of a missing
+"migrate" member in vm_operations_struct and a missing "policy_zone"
+definition. To avoid this, those are moved from an "#ifdef CONFIG_NUMA"
+section to "#ifdef CONFIG_MIGRATION".
 
-Alan
+Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+---
+
+ include/linux/mempolicy.h |    6 ++++--
+ include/linux/mm.h        |    2 ++
+ mm/Kconfig                |    2 +-
+ 3 files changed, 7 insertions(+), 3 deletions(-)
+
+Index: mylinux-git/include/linux/mempolicy.h
+===================================================================
+--- mylinux-git.orig/include/linux/mempolicy.h
++++ mylinux-git/include/linux/mempolicy.h
+@@ -62,6 +62,10 @@ enum {
+ 
+ struct mm_struct;
+ 
++#ifdef CONFIG_MIGRATION
++extern enum zone_type policy_zone;
++#endif
++
+ #ifdef CONFIG_NUMA
+ 
+ /*
+@@ -202,8 +206,6 @@ extern struct zonelist *huge_zonelist(st
+ 				struct mempolicy **mpol, nodemask_t **nodemask);
+ extern unsigned slab_node(struct mempolicy *policy);
+ 
+-extern enum zone_type policy_zone;
+-
+ static inline void check_highest_zone(enum zone_type k)
+ {
+ 	if (k > policy_zone && k != ZONE_MOVABLE)
+Index: mylinux-git/include/linux/mm.h
+===================================================================
+--- mylinux-git.orig/include/linux/mm.h
++++ mylinux-git/include/linux/mm.h
+@@ -193,6 +193,8 @@ struct vm_operations_struct {
+ 	 */
+ 	struct mempolicy *(*get_policy)(struct vm_area_struct *vma,
+ 					unsigned long addr);
++#endif
++#ifdef CONFIG_MIGRATION
+ 	int (*migrate)(struct vm_area_struct *vma, const nodemask_t *from,
+ 		const nodemask_t *to, unsigned long flags);
+ #endif
+Index: mylinux-git/mm/Kconfig
+===================================================================
+--- mylinux-git.orig/mm/Kconfig
++++ mylinux-git/mm/Kconfig
+@@ -174,7 +174,7 @@ config SPLIT_PTLOCK_CPUS
+ config MIGRATION
+ 	bool "Page migration"
+ 	def_bool y
+-	depends on NUMA
++	depends on NUMA || S390
+ 	help
+ 	  Allows the migration of the physical location of pages of processes
+ 	  while the virtual addresses are not changed. This is useful for
+
+
