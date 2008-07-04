@@ -1,81 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbYGDKxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbYGDKyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755297AbYGDKxk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 06:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbYGDKxc
+	id S1756953AbYGDKyU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 06:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbYGDKyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 06:53:32 -0400
-Received: from sacred.ru ([62.205.161.221]:41662 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751784AbYGDKxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 06:53:31 -0400
-Message-ID: <486DFCCF.3070500@openvz.org>
-Date: Fri, 04 Jul 2008 14:34:55 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Fri, 4 Jul 2008 06:54:10 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:50856 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751714AbYGDKyJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 06:54:09 -0400
+Date: Fri, 4 Jul 2008 11:54:07 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Kconfig question - multiple entries touching one integer
+Message-ID: <20080704105407.GD24620@fluff.org.uk>
+References: <20080704100829.GC24620@fluff.org.uk>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "menage@google.com" <menage@google.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
-Subject: Re: [PATCH 1/2] res_counter : check limit change
-References: <20080704181204.44070413.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080704181204.44070413.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 04 Jul 2008 14:37:19 +0400 (MSD)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080704100829.GC24620@fluff.org.uk>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> Add an interface to set limit. This is necessary to memory resource controller
-> because it shrinks usage at set limit.
+On Fri, Jul 04, 2008 at 11:08:29AM +0100, Ben Dooks wrote:
+> I'm trying to produce a Kconfig to deal with allocating
+> extra resources depending on what is selected. I'd like
+> to have an integer which specifies the 
 > 
-> (*) Other controller may not need this interface to shrink usage because
->     shrinking is not necessary or impossible in it.
+> ie:
 > 
-> Changelog:
->   - fixed white space bug.
+> config ARCH_EXTRA_RESOURCES
+> 	int
+> 	default 0
+> 	help
+> 	  Extra resources depending on the board selected
 > 
-> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ...
+> 
+> config BOARD_A
+> 	set ARCH_EXTRA_RESOURCES 32
+> 
+> config BOARD_B
+> 	set ARCH_EXTRA_RESOURCES 64
+> 
+> in this example, if board A is selected, then ARCH_EXTRA_RESOURCES
+> would be 32, if BOARD_B is selected then it would be 64.
+> 
+> doing
+> 
+> 	config ARCH_EXTRA_RESOURCES
+> 	int
+> 	default 0
+> 	default 32 if BOARD_A
+> 	default 64 if BOARD_B
+> 
+> doesn't work, and involves changing this part of the Kconfig
+> every time a new board is added.
+> 
+> Is there any current way of doing this, would there be any
+> objections to having some form of 'set' clause in a config
+> statememt?
 
-Acked-by: Pavel Emelyanov <xemul@openvz.org>
+Currently, the rather crufty approach is to do:
 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> 
->  include/linux/res_counter.h |   15 +++++++++++++++
->  1 file changed, 15 insertions(+)
-> 
-> Index: test-2.6.26-rc8-mm1/include/linux/res_counter.h
-> ===================================================================
-> --- test-2.6.26-rc8-mm1.orig/include/linux/res_counter.h
-> +++ test-2.6.26-rc8-mm1/include/linux/res_counter.h
-> @@ -176,4 +176,19 @@ static inline bool res_counter_can_add(s
->  	return ret;
->  }
->  
-> +static inline int res_counter_set_limit(struct res_counter *cnt,
-> +	unsigned long long limit)
-> +{
-> +	unsigned long flags;
-> +	int ret = -EBUSY;
-> +
-> +	spin_lock_irqsave(&cnt->lock, flags);
-> +	if (cnt->usage < limit) {
-> +		cnt->limit = limit;
-> +		ret = 0;
-> +	}
-> +	spin_unlock_irqrestore(&cnt->lock, flags);
-> +	return ret;
-> +}
-> +
->  #endif
-> 
-> 
+config ARCH_EXTRA_RESOURCES_32
+	bool
 
+config ARCH_EXTRA_RESOURCES_64
+	bool
+
+config BOARD_A
+	select ARCH_EXTRA_RESOURCES_32
+
+config BOARD_B
+	select ARCH_EXTRA_RESOURCES_64
+
+and have the following in the header file:
+
+#ifdef ARCH_EXTRA_RESOURCES_64
+#define ARCH_EXTRA_RESOURCES 64
+#elif defined(ARCH_EXTRA_RESOURCES_32)
+#define ARCH_EXTRA_RESOURCES 32
+#else
+#define ARCH_EXTRA_RESOURCES 0
+#endif
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
