@@ -1,65 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbYGDG5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbYGDHIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756833AbYGDG5g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 02:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYGDG51
+	id S1756695AbYGDHIg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 03:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYGDHI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 02:57:27 -0400
-Received: from mail29.messagelabs.com ([216.82.249.147]:61339 "EHLO
-	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753042AbYGDG51 (ORCPT
+	Fri, 4 Jul 2008 03:08:28 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:50873 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753249AbYGDHI1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 02:57:27 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-13.tower-29.messagelabs.com!1215154646!18038111!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.14]
-Date: Fri, 4 Jul 2008 08:57:22 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Oliver Neukum <oliver@neukum.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: alphabetic ordering of MAINTAINERS
-Message-ID: <20080704065722.GA22420@digi.com>
-References: <20080704063455.GA13999@digi.com> <200807040852.27809.oliver@neukum.org>
+	Fri, 4 Jul 2008 03:08:27 -0400
+Message-ID: <486DCC4E.3030203@linux.vnet.ibm.com>
+Date: Fri, 04 Jul 2008 12:37:58 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200807040852.27809.oliver@neukum.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 04 Jul 2008 06:57:22.0504 (UTC) FILETIME=[35615C80:01C8DDA3]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 2.6.26-rc8-mm1] memrlimit: fix mmap_sem deadlock
+References: <Pine.LNX.4.64.0807032143110.10641@blonde.site> <20080703160117.b3781463.akpm@linux-foundation.org> <486D81B9.9030704@linux.vnet.ibm.com> <20080703190123.1d72e9d1.akpm@linux-foundation.org> <486D970F.2000607@linux.vnet.ibm.com> <20080703212707.e0f6bbda.akpm@linux-foundation.org>
+In-Reply-To: <20080703212707.e0f6bbda.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Oliver,
-
-Oliver Neukum wrote:
-> Am Freitag 04 Juli 2008 08:34:55 schrieb Uwe Kleine-König:
-> > Hello,
-> >
-> > I wanted to add an entry to MAINTAINERS and while doing it I saw that in
-> > the corresponding region the alphabetic ordering is broken.  Then I
-> > inteded to fix that up for a trivial patch.  Next was to check the rest
-> > of the file and there are so much misorderings that it's not sensible to
-> > choose the trivial path anymore as there are currently 114 entries out
-> > of order[1].
+Andrew Morton wrote:
+> On Fri, 04 Jul 2008 08:50:47 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> What good does alphabetic ordering? You'll grep it anyway.
-This is fine for me, too.  Then I suggest to remove the section
+>>> I was referring to the below (which is where the conversation ended).
+>>>
+>>> It questions the basis of the whole feature.
+>>>
+>> In the email below, I referred to Hugh's comment on tracking total_vm as a more
+>> achievable target and it gives a rough approximation of something worth
+>> limiting. I agree with him on those points and mentioned my motivation for the
+>> memrlimit patchset. We also look forward to enhancing memrlimit to control
+>> mlock'ed pages (as it provides the generic infrastructure to control RLIMIT'ed
+>> resources). Given Hugh's comment, I looked at it from the more positive side
+>> rather the pessimistic angle. I've had discussions along these lines with Paul
+>> Menage and Kamezawa. In the past we've discussed and there are cases where
+>> memrlimit is not useful (large VM allocations with sparse usage), but there are
+>> cases as mentioned below in the motivation for memrlimits as to why and where
+>> they are useful.
+>>
+>> If there are suggestions to help improve the feature or provide similar
+>> functionality without the noise; I am all ears
+> 
+> Well I've never reeeeeeealy understood what the whole feature is for.
+> 
+> +Advantages of providing this feature
+> +
+> +1. Control over virtual address space allows for a cgroup to fail gracefully
+> +   i.e., via a malloc or mmap failure as compared to OOM kill when no
+> +   pages can be reclaimed.
+> +2. It provides better control over how many pages can be swapped out when
+> +   the cgroup goes over its limit. A badly setup cgroup can cause excessive
+> +   swapping. Providing control over the address space allocations ensures
+> +   that the system administrator has control over the total swapping that
+> +   can take place.
+> 
+> umm, OK.  I'm not sure _why_ someone would want to do that.  Perhaps
+> some use-cases would help motivate us.  Perhaps desriptions of
+> real-world operational problems would would be improved or solved were
+> this feature available to the operator.
 
-	Note: For the hard of thinking, this list is meant to remain in alphabetical
-	order. If you could add yourselves to it in alphabetical order that would be
-	so much easier [Ed]
+I can go over the use cases and some of the motivation
 
-.  That's why I posted before spending time on writing a clever script.
+0. Provide the basic infrastructure for rlimit control for cgroups (mlock comes
+to mind right away)
+1. Similar to the goals of over commit accounting (although not that granular),
+we would like to be able to decide on a per cgroup node, how much to overcommit
+the system by
+2. With the memory controller in place, a cgroup that exceeds it's limit is sent
+to the reclaimer. We swap out pages or OOM the heaviest task in the cgroup. The
+swap controller will help, but we want a gentler way of saying "No more virtual
+RSS+swap space is available", so I am failing this allocation. The application
+can then decide if it can free up some memory now or if it has to fail.
 
-Best regards
-Uwe
+As far as real examples are concerned, I was told (via private communication -
+discussion), by a user that scientific jobs can sometimes cause a havoc on
+shared systems. They don't have control over how much virtual memory the set of
+jobs consume. They would ideally like to be able to provide feedback to the
+application about the maximum RSS + Swap that it can consume (case 1). With a
+memrlimit address space controller in place, a failed allocation would tell the
+jobs to use lesser memory (and potentially take longer) to finish the job,
+instead of causing large amounts of swapping or OOM on the system.
+
 
 -- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
