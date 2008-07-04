@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbYGDQ7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760786AbYGDQ7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756551AbYGDQ7Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 12:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759541AbYGDQwT
+	id S1760786AbYGDQ7d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 12:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759598AbYGDQwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 12:52:19 -0400
-Received: from saeurebad.de ([85.214.36.134]:38583 "EHLO saeurebad.de"
+	Fri, 4 Jul 2008 12:52:23 -0400
+Received: from saeurebad.de ([85.214.36.134]:38587 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759901AbYGDQwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 12:52:17 -0400
+	id S1755095AbYGDQwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 12:52:21 -0400
 X-Mailbox-Line: From hannes@saeurebad.de Fri Jul  4 18:14:58 2008
-Message-Id: <20080704161457.953788873@saeurebad.de>
+Message-Id: <20080704161458.252875138@saeurebad.de>
 References: <20080704160737.750988999@saeurebad.de>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Jul 2008 18:07:56 +0200
+Date: Fri, 04 Jul 2008 18:07:57 +0200
 From: Johannes Weiner <hannes@saeurebad.de>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       David Howells <dhowells@redhat.com>
-Subject: [PATCH 19/20] frv: use generic show_mem()
-Content-Disposition: inline; filename=frv-use-generic-show_mem.patch
+       Mikael Starvik <starvik@axis.com>
+Subject: [PATCH 20/20] cris: use generic show_mem()
+Content-Disposition: inline; filename=cris-use-generic-show_mem.patch
 X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,55 +30,56 @@ Remove arch-specific show_mem() in favor of the generic version.
 This also removes the following redundant information display:
 
 	- free pages, printed by show_free_areas()
+	- pages in swapcache, printed by show_swap_cache_info()
 
-where show_mem() calls show_free_areas().
+where show_mem() calls show_free_areas(), which calls
+show_swap_cache_info().
 
 Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-Acked-by: David Howells <dhowells@redhat.com>
+Acked-by: Mikael Starvik <starvik@axis.com>
 ---
- arch/frv/mm/init.c |   31 -------------------------------
- 1 file changed, 31 deletions(-)
+ arch/cris/mm/init.c |   30 ------------------------------
+ 1 file changed, 30 deletions(-)
 
---- a/arch/frv/mm/init.c
-+++ b/arch/frv/mm/init.c
-@@ -63,37 +63,6 @@ EXPORT_SYMBOL(empty_zero_page);
+--- a/arch/cris/mm/init.c
++++ b/arch/cris/mm/init.c
+@@ -19,36 +19,6 @@ unsigned long empty_zero_page;
+ extern char _stext, _edata, _etext; /* From linkerscript */
+ extern char __init_begin, __init_end;
  
- /*****************************************************************************/
- /*
-- *
-- */
--void show_mem(void)
+-void 
+-show_mem(void)
 -{
--	unsigned long i;
--	int free = 0, total = 0, reserved = 0, shared = 0;
+-	int i,free = 0,total = 0,cached = 0, reserved = 0, nonshared = 0;
+-	int shared = 0;
 -
 -	printk("\nMem-info:\n");
 -	show_free_areas();
 -	i = max_mapnr;
 -	while (i-- > 0) {
--		struct page *page = &mem_map[i];
--
 -		total++;
--		if (PageReserved(page))
+-		if (PageReserved(mem_map+i))
 -			reserved++;
--		else if (!page_count(page))
+-		else if (PageSwapCache(mem_map+i))
+-			cached++;
+-		else if (!page_count(mem_map+i))
 -			free++;
+-		else if (page_count(mem_map+i) == 1)
+-			nonshared++;
 -		else
--			shared += page_count(page) - 1;
+-			shared += page_count(mem_map+i) - 1;
 -	}
--
 -	printk("%d pages of RAM\n",total);
 -	printk("%d free pages\n",free);
 -	printk("%d reserved pages\n",reserved);
+-	printk("%d pages nonshared\n",nonshared);
 -	printk("%d pages shared\n",shared);
+-	printk("%d pages swap cached\n",cached);
+-}
 -
--} /* end show_mem() */
--
--/*****************************************************************************/
--/*
-  * paging_init() continues the virtual memory environment setup which
-  * was begun by the code in arch/head.S.
-  * The parameters are pointers to where to stick the starting and ending
+ void __init
+ mem_init(void)
+ {
 
 -- 
 
