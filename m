@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758362AbYGDOHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756540AbYGDOIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758362AbYGDOHs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 10:07:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbYGDOHi
+	id S1756540AbYGDOIl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 10:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbYGDOId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 10:07:38 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42629 "EHLO mail.dvmed.net"
+	Fri, 4 Jul 2008 10:08:33 -0400
+Received: from khc.piap.pl ([195.187.100.11]:40573 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751746AbYGDOHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 10:07:37 -0400
-Message-ID: <486E2E9B.20200@garzik.org>
-Date: Fri, 04 Jul 2008 10:07:23 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1753478AbYGDOIc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 10:08:32 -0400
+To: Uwe =?iso-8859-2?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+Cc: Oliver Neukum <oliver@neukum.org>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [RFC] MAINTAINERS service, was: Re: alphabetic ordering of MAINTAINERS
+References: <20080704063455.GA13999@digi.com>
+	<200807040852.27809.oliver@neukum.org>
+	<m3k5g1zv3u.fsf_-_@maximus.localdomain>
+	<20080704134426.GA32700@digi.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 04 Jul 2008 16:08:30 +0200
+In-Reply-To: <20080704134426.GA32700@digi.com> ("Uwe =?iso-8859-2?Q?Kleine?=
+ =?iso-8859-2?Q?-K=F6nig=22's?= message of "Fri\, 4 Jul 2008 15\:44\:26
+ +0200")
+Message-ID: <m37ic1zqqp.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       tytso@mit.edu, hugh@veritas.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-References: <1215093175.10393.567.camel@pmac.infradead.org>	 <20080703173040.GB30506@mit.edu>	 <1215111362.10393.651.camel@pmac.infradead.org>	 <20080703.162120.206258339.davem@davemloft.net>	 <486D6DDB.4010205@infradead.org>  <87ej6armez.fsf@basil.nowhere.org>	 <1215177044.10393.743.camel@pmac.infradead.org>	 <486E2260.5050503@garzik.org>	 <1215178035.10393.763.camel@pmac.infradead.org>	 <486E2818.1060003@garzik.org> <1215179161.10393.773.camel@pmac.infradead.org>
-In-Reply-To: <1215179161.10393.773.camel@pmac.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Fri, 2008-07-04 at 09:39 -0400, Jeff Garzik wrote:
->> You have been told repeatedly that cp(1) and scp(1) are commonly used
->> to transport the module David and I care about -- tg3.  It's been a
->> single file module since birth, and people take advantage of that
->> fact.
-> 
-> And you can _continue_ to do that. You'd need to install the firmware
-> just once, and that's all. It's a non-issue, and it isn't _worth_ the
-> added complexity of building the firmware into the module.
+Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com> writes:
 
-We can stop there.  Real-world examples are apparently non-issues not 
-worth your time.
+> Why not make that a script that parses MAINTAINERS and lives in scripts/
+> and that can be used as --cc-cmd to git-send-email?  Then no service
+> needs to be maintained, you don't get the observers functionality
+> though.  (But that's what mailing lists are good for.)
+>
+> Of course MAINTAINERS needs to be modified to have the path specifiers.
 
-	Jeff
+Because then:
+- the action is not effective immediately but sometimes after few
+  months, not counting people still working with 2.6.12 or so.
+- IMHO adding Cc: patch-service is a bit easier than using a script
+- I think the "observers" thing is worth the effort. Now I only see
+  changes to certain areas I'm interested in when they are accepted
+  upstream.
+- maintaining the script is probably more work than maintaining the
+  database :-)
 
-
-
+And with a service you can:
+- maintain a patch archive
+- be sure nobody tries to be "creative"
+- perhaps other things I haven't thought about.
+-- 
+Krzysztof Halasa
