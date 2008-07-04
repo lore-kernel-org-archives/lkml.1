@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbYGDQfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758056AbYGDQiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757531AbYGDQfM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 12:35:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbYGDQfA
+	id S1758056AbYGDQiR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 12:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbYGDQiC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 12:35:00 -0400
-Received: from irga4.truemail.co.th ([203.144.173.204]:33914 "EHLO
-	irga4.truemail.co.th" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753725AbYGDQe7 convert rfc822-to-8bit (ORCPT
+	Fri, 4 Jul 2008 12:38:02 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:32544 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753900AbYGDQiA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 12:34:59 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmcKAJztbUh8eaAR/2dsb2JhbACBXA+RO50Q
-X-IronPort-AV: E=Sophos;i="4.30,302,1212339600"; 
-   d="scan'208";a="47370583"
-Date: Fri, 4 Jul 2008 23:34:56 +0700
-Mime-version: 1.0
-Subject: =?x-mac-thai?B?w9G6ysHRpMOn0rkgUEFSVC1USU1FILfTp9K5t9XouunSueS06TEwMCU=?=
-From: =?x-mac-thai?B?am9iIHBhcnRpbWUgb25saW5l?= <oce@option2money.com>
-To: <linux-kernel@vger.kernel.org>
-Message-Id: <742334.JLTTINBD@option2money.com>
-Reply-To: oce@option2money.com
-Content-type: text/plain; charset="x-mac-thai"; format=flowed
-Content-transfer-encoding: 8BIT
+	Fri, 4 Jul 2008 12:38:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=R5w6uBEjOktdAmJ5zlB5TnblgFwVo68lS/MlHulXdSMKP6qtvMoK1xkJa+rG+laZYB
+         5NECHGT5xLR0t9eSPz1IKw8yJOnmfFcyhr5mrg8J6u3rL1nohLBQ1ykCpXWAnNVxOcfK
+         G2UwSaW1fEJADgpjqLJ2pX9gLiA8IuDtLo0eg=
+Subject: Re: [PATCH 4/5] byteorder: fix direct byteswap includes
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <27042.1215185863@redhat.com>
+References: <1215144734.16647.70.camel@brick>  <27042.1215185863@redhat.com>
+Content-Type: text/plain
+Date: Fri, 04 Jul 2008 09:37:53 -0700
+Message-Id: <1215189473.16647.80.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-งานประชาสัมพันธ์ผ่านสื่อ internet100% ต้องการผู้ร่วมงาน และเจ้าหน้าที่จำนวนมาก
-เพียงใช้เวลา 1-2 ชม.ต่อวัน/ทำงานที่บ้าน  รับรองไม่กระทบการเรียนหรืองานประจำค่ะ
+On Fri, 2008-07-04 at 16:37 +0100, David Howells wrote:
+> Harvey Harrison <harvey.harrison@gmail.com> wrote:
+> 
+> > +#include <asm/byteorder.h>
+> 
+> Please use <linux/byteorder.h> rather than <asm/byteorder.h> when including
+> stuff from .c files outside the include and arch directories.
 
-Part-time รายได้ 8,000 บาท ขึ้นไป  (ขึ้นกับความสามารถ) Full-Time รายได้ 30,000 บาท ขึ้นไป (ขึ้นกับความสามารถ)
-คุณสมบัติ - ไม่จำกัดวุฒิ - มีเครื่องมือสื่อสารเป็นของตัวเอง เช่น โทรศัพท์มือถือ คอมพิวเตอร์ - มีความรู้ด้านการใช้อินเตอร์เน็ท(จะพิจารณาเป็นพิเศษ) - อายุ 18 ปีขึ้นไป
-- ไม่จำเป็นต้องมีประสบการณ์ (เรามี job training ไว้สนับสนุน)
-- บริษัทมี VCD ไว้สำหรับเรียนรู้งานด้วยตนเอง และมีการ training online
+asm/byteorder.h is the file included everywhere else, and before my
+patches, linux/byteorder.h didn't even exist.  Thus, when preparing my
+patches I made sure that including asm/byteorder.h continued to be the
+way to get this functionality.
 
-สนใจกรอกแบบฟอร์มที่ link website ด้านล่างเพื่อรับรายละเอียดเกี่ยวกับงานเพิ่มเติมและรับ VCD ข้อมูลเกี่ยวกับงานได้ฟรี!!  ไม่มีค่าใช้จ่ายใดๆทั้งสิ้นค่ะ จะมีเจ้าหน้าที่ติดต่อกลับไปค่ะ
+I could add another patch  on top that makes linux/byteorder the one we
+want included and search/replace the existing asm includes, but I thought
+that was a bit too big to do in one go.
 
- >>>http://www.newattitudebiz.com/online03/contact.html
+If people think this is the way to go, I'll prepare a patch to change the
+includes.
 
+> And whilst you're at it, Documentation/byteorder.txt is yours for the
+> creation:-)
 
-**การกรอกแบบฟอร์มยังไม่ใช่การสมัคร เป็นการแจ้งความจำนงขอรับฟังรายละเอียดเท่านั้น  จึงไม่ต้องกังวลใดๆ และไม่มีค่าใช้จ่ายใดๆทั้งสิ้น**
+Already working on an update to unaligned_access.txt, I'll get to
+byteorder next.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+Harvey
 
