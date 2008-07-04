@@ -1,110 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757759AbYGDP11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758381AbYGDP3B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757759AbYGDP11 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 11:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbYGDP1S
+	id S1758381AbYGDP3B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 11:29:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYGDP2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 11:27:18 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:65075 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751922AbYGDP1R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 11:27:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Geoyx7+tW3ODA538+cgM1EKqPR4EOeAVBPzp0gOlIM1dBSbo1gG16KrqFaNOAwc2zU
-         r1L37spQsduf8j6anCg4pgCdzzascR2CjNKvw3UA2Pi9rbniUB+I7bO7SbLf4jAKh1IA
-         uD55gANdcvzruXKkdNNbZKHUyDF4tNdqQX9yY=
-Date: Fri, 4 Jul 2008 19:27:08 +0400
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Brownell <david-b@pacbell.net>, linux-next@vger.kernel.org,
+	Fri, 4 Jul 2008 11:28:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48164 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751922AbYGDP2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 11:28:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Roman Mindalev <lists@r000n.net>
+Subject: Re: System hangs on 2.6.26-rc8
+Date: Fri, 4 Jul 2008 17:30:31 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: kernel-testers@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fix build error of driver/mfd/tc6393xb.c
-Message-ID: <20080704152708.GA12382@doriath.ww600.siemens.net>
-References: <s5hiqvlc2ut.wl%tiwai@suse.de> <20080704114755.GA21747@doriath.ww600.siemens.net> <s5hej69c0tt.wl%tiwai@suse.de> <20080704124256.GB21747@doriath.ww600.siemens.net> <s5hk5g1ls9l.wl%tiwai@suse.de> <20080704132234.GA4576@doriath.ww600.siemens.net> <s5hd4ltlpgl.wl%tiwai@suse.de> <20080704142208.GB4576@doriath.ww600.siemens.net> <s5hwsk1k6yj.wl%tiwai@suse.de>
+References: <48637DCC.3070301@r000n.net> <200807021625.05721.rjw@sisk.pl> <486CD31F.3020303@r000n.net>
+In-Reply-To: <486CD31F.3020303@r000n.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <s5hwsk1k6yj.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200807041730.32192.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 04, 2008 at 05:24:52PM +0200, Takashi Iwai wrote:
-> At Fri, 4 Jul 2008 18:22:08 +0400,
-> Dmitry Baryshkov wrote:
+On Thursday, 3 of July 2008, Roman Mindalev wrote:
+> Rafael J. Wysocki wrote:
+> > On Thursday, 26 of June 2008, Roman Mindalev wrote:
+> >> I walking in web with Firefox when my system began freezing.
+> >> 1. After pressing "KMenu" menu not showing
+> >> 2. Yakuake's terminals not usable: when I try typing "dmesg | tail" or
+> >> even "ls" system not answering. I can typing anything (including
+> >> pressing Ctrl+C or Ctrl+Z), but reaction = 0
+> >> 3. Consoles (Alt + F1 and other) not usable too. I can't even log-in -
+> >> after typing username and pressing "Enter" password field not available,
+> >> and I can typing any text like:
+> >> ----------------------
+> >> login: r000n
+> >> grt
+> >> rthtr
+> >> y
+> >> trht
+> >> ----------------------
+> >> 4. Switching back to to X from text console not works: I see only black
+> >> screen
+> >> 5. Ctrl + Alt + Del not works, I can restart system only with hardware Reset
+> >>
+> >> These strange things was 2 times for last day.
+> >> Logs empty, last strings from syslog:
+> >> ------- 1-st time --------------------
+> >> Jun 26 10:37:16 desktop smartd[4967]: Device: /dev/sdb, SMART Usage
+> >> Attribute: 190 Airflow_Temperature_Cel changed from 59 to 58
+> >> Jun 26 10:37:16 desktop smartd[4967]: Device: /dev/sdb, SMART Usage
+> >> Attribute: 194 Temperature_Celsius changed from 115 to 112
+> >> Jun 26 10:39:01 desktop /USR/SBIN/CRON[14210]: (root) CMD (  [ -x
+> >> /usr/lib/php5/maxlifetime ] && [ -d /var/lib/php5 ] && find
+> >> /var/lib/php5/ -type f -cmin +$(/usr/lib/php5/maxlifetime) -print0 |
+> >> xargs -n 200 -r -0 rm)
+> >> Jun 26 10:41:43 desktop ntpd[5006]: synchronized to 204.9.136.253, stratum 2
+> >> Jun 26 10:42:51 desktop ntpd[5006]: synchronized to 89.108.124.4, stratum 2
+> >> Jun 26 10:49:00 desktop syslogd 1.5.0#5: restart.
+> >> --------------------------------------
+> >> ------- 2-st time --------------------
+> >> Jun 26 14:32:37 desktop ntpd[5002]: synchronized to 212.57.153.17, stratum 2
+> >> Jun 26 14:39:01 desktop /USR/SBIN/CRON[5624]: (root) CMD (  [ -x
+> >> /usr/lib/php5/maxlifetime ] && [ -d /var/lib/php5 ] && find
+> >> /var/lib/php5/ -type f -cmin +$(/usr/lib/php5/maxlifetime) -print0 |
+> >> xargs -n 200 -r -0 rm)
+> >> Jun 26 14:44:36 desktop syslogd 1.5.0#5: restart.
+> >> Jun 26 14:44:36 desktop kernel: klogd 1.5.0#5, log source = /proc/kmsg
+> >> started.
+> >> Jun 26 14:44:36 desktop kernel: /tty/ttyr5'
+> >> --------------------------------------
+> >> Firefox 3 from svn, updated ~3 days ago.
+> >> System - Debian sid (updated yesterday).
+> >> Kernel - 2.6.26-rc8
+> >>
+> >> If need more information, tell me, where I should take it)
 > > 
-> > On Fri, Jul 04, 2008 at 03:59:54PM +0200, Takashi Iwai wrote:
-> > > At Fri, 4 Jul 2008 17:22:35 +0400,
-> > > Dmitry Baryshkov wrote:
-> > > > 
-> > > > On Fri, Jul 04, 2008 at 02:59:18PM +0200, Takashi Iwai wrote:
-> > > > > At Fri, 4 Jul 2008 16:42:56 +0400,
-> > > > > Dmitry Baryshkov wrote:
-> > > > > > 
-> > > > > > On Fri, Jul 04, 2008 at 02:04:30PM +0200, Takashi Iwai wrote:
-> > > > > > > At Fri, 4 Jul 2008 15:47:55 +0400,
-> > > > > > > Dmitry Baryshkov wrote:
-> > > > > > > > 
-> > > > > > > > On Fri, Jul 04, 2008 at 01:20:42PM +0200, Takashi Iwai wrote:
-> > > > > > > > > Fix the build of tc6393xb  due to missing definition of struct
-> > > > > > > > > gpio_chip.
-> > > > > > > > > 
-> > > > > > > > > Signed-off-by: Takashi Iwai <tiwai@suse.de>
-> > > > > > > > > 
-> > > > > > > > > ---
-> > > > > > > > > diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-> > > > > > > > > index 9f93c29..2981da4 100644
-> > > > > > > > > --- a/drivers/mfd/Kconfig
-> > > > > > > > > +++ b/drivers/mfd/Kconfig
-> > > > > > > > > @@ -44,7 +44,7 @@ config HTC_PASIC3
-> > > > > > > > >  
-> > > > > > > > >  config MFD_TC6393XB
-> > > > > > > > >  	bool "Support Toshiba TC6393XB"
-> > > > > > > > > -	depends on HAVE_GPIO_LIB
-> > > > > > > > > +	depends on HAVE_GPIO_LIB && GENERIC_GPIO
-> > > > > > > > >  	select MFD_CORE
-> > > > > > > > >  	help
-> > > > > > > > >  	  Support for Toshiba Mobile IO Controller TC6393XB
-> > > > > > > > 
-> > > > > > > > Which configuration does provide HAVE_GPIO_LIB but not GENERIC_GPIO?
-> > > > > > > 
-> > > > > > > The below is the config with which I got the error.
-> > > > > > 
-> > > > > > The proper fix probably is to make PPC_MPC5200_GPIO also select
-> > > > > > GENERIC_GPIO. I don't think that building GPIO_LIB w/o GENERIC_GPIO
-> > > > > > should be supported.
-> > > > > 
-> > > > > [Added David to Cc]
-> > > > > 
-> > > > > Then HAVE_GPIO_LIB should depend on GENERIC_GPIO.
-> > > > > Or, linux/gpio.h should be fixed so that the code can be built
-> > > > > properly without GENERIC_GPIO.
-> > > > 
-> > > > IIRC selected symbols don't propagate their depends.
-> > > 
-> > > Then HAVE_GPIO_LIB selects GENERIC_GPIO.  Right now, it's a missing
-> > > dependency.
+> > Did anything like that happen to you with any previous kernel versions?
 > > 
-> > Please submit a patch where HAVE_GPIO_LIB selects GENERIC_GPIO.
-> 
-> Hmm... just checking again, I found GENERIC_GPIO isn't defined in
-> drivers/gpio/Kconfig but in each arch Kconfig.  So we can't select it
-> unconditionally.
-> 
-> I'm not sure whether it's a better fix at this moment.
+> > Rafael
+> > 
+> No. 2.6.26-rcX was very clear line for me.
+> But 2.6.26-rc8 - first kernel, which I compiled with timer 300 Hz
+> (instead 250). I can compile 2.6.26-rc7 with 300 Hz and 2.6.26-rc8 with
+> 250 Hz if need.
+> Frequency of timer almost exclusive thing, which changed in my config
+> since 2.6.26-rc7
 
-Then we probably should move GENERIC_GPIO to drivers/gpio/Kconfig, allow
-it to be selected from arch code which doesn't know anything about
-gpiolib and allow it to be selected by HAVE_GPIO_LIB?
+Please do that and please do keep the CC list in your replies.
 
+For now, we will assume this is a regression from -rc7.
 
--- 
-With best wishes
-Dmitry
-
+Thanks,
+Rafael
