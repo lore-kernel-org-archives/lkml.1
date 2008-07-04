@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbYGDMWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbYGDMZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755428AbYGDMWS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 08:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbYGDMWH
+	id S1755925AbYGDMZb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 08:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYGDMZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 08:22:07 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:55446 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752145AbYGDMWG (ORCPT
+	Fri, 4 Jul 2008 08:25:21 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35973 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753178AbYGDMZU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 08:22:06 -0400
-Message-ID: <486E15E8.5040303@firstfloor.org>
-Date: Fri, 04 Jul 2008 14:22:00 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Alexander Beregalov <a.beregalov@gmail.com>
-CC: "David S. Miller" <davem@davemloft.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>, sparclinux@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org
-Subject: Re: next-0704: sparc64: build failure at arch/sparc64/kernel/sysfs.c
-References: <a4423d670807040520v7604782crd209d64aad9343ff@mail.gmail.com>
-In-Reply-To: <a4423d670807040520v7604782crd209d64aad9343ff@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 4 Jul 2008 08:25:20 -0400
+Date: Fri, 4 Jul 2008 13:07:37 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <Uwe.Kleine-Koenig@digi.com>
+Cc: Paul Mundt <lethal@linux-sh.org>, Oliver Neukum <oliver@neukum.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: alphabetic ordering of MAINTAINERS
+Message-ID: <20080704130737.525507a5@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080704091023.GA9783@digi.com>
+References: <20080704063455.GA13999@digi.com>
+	<200807040852.27809.oliver@neukum.org>
+	<20080704065722.GA22420@digi.com>
+	<20080704085910.GA9671@linux-sh.org>
+	<20080704091023.GA9783@digi.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander Beregalov wrote:
-> Hi
+
+> > I always interpreted this to mean that the _entries_ are alphabetically
+> > sorted, not the maintainers under each entry. IIRC, Alan has already
+> > cleaned up most of the ordering of the entries through recent patches.
+> That's how I interpret it, too. :-)
 > 
-> cc1: warnings being treated as errors
-> arch/sparc64/kernel/sysfs.c:160: error: initialization from
-> incompatible pointer type
-> arch/sparc64/kernel/sysfs.c:160: error: initialization from
-> incompatible pointer type
-> arch/sparc64/kernel/sysfs.c:205: error: initialization from
-> incompatible pointer type
-> arch/sparc64/kernel/sysfs.c:206: error: initialization from
-> incompatible pointer type
-> arch/sparc64/kernel/sysfs.c:207: error: initialization from
-> incompatible pointer type
-> arch/sparc64/kernel/sysfs.c:208: error: initialization from
-> incompatible pointer type
-> arch/sparc64/kernel/sysfs.c:209: error: initialization from
-> incompatible pointer type
-> arch/sparc64/kernel/sysfs.c:210: error: initialization from
-> incompatible pointer type
-> arch/sparc64/kernel/sysfs.c:211: error: initialization from
-> incompatible pointer type
+> Look at
 > 
-> I think it is connected to
-
-Thanks. Looks good. sparc64 was one of the architectures i wasn't able
-to compile test. Greg, can you just fold the patch in please?
-
--Andi
+> 	http://www.modarm9.com/git/people/ukleinek/linux-2.6.git?a=commitdiff;h=62110fbc73a9d3a4c7d39706b648b554b517f154#patch1
 
 
+Nice but you've chopped off the Linus entry at the end. It would be good
+to get the others fixed and the script in the scripts dir
+
+BTW - I suspect your script needs to force a locale.
+
+Alan
