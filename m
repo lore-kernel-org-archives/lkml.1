@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759421AbYGDROn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758953AbYGDRRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759421AbYGDROn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 13:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbYGDROf
+	id S1758953AbYGDRRr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 13:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYGDRRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 13:14:35 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:39117 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750709AbYGDROf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 13:14:35 -0400
-Date: Fri, 4 Jul 2008 19:14:28 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Tomas Winkler <tomas.winkler@intel.com>
-Cc: linux-kernel@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>
-Subject: Re: [PATCH 2/3] mmc: wbsd.c fix shadowing of 'dma' variable
-Message-ID: <20080704191428.2d78261d@mjolnir.drzeus.cx>
-In-Reply-To: <1214812224-32267-2-git-send-email-tomas.winkler@intel.com>
-References: <1214812224-32267-1-git-send-email-tomas.winkler@intel.com>
-	<1214812224-32267-2-git-send-email-tomas.winkler@intel.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+	Fri, 4 Jul 2008 13:17:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50836 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750879AbYGDRRg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 13:17:36 -0400
+Date: Fri, 4 Jul 2008 10:17:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+Cc: <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v2] handle failure of irqchip->set_type in setup_irq
+Message-Id: <20080704101717.28f6a771.akpm@linux-foundation.org>
+In-Reply-To: <20080704104634.GA31634@digi.com>
+References: <20080625131101.GA6205@digi.com>
+	<20080704104634.GA31634@digi.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-386-1215190986-0001-2"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Fri, 4 Jul 2008 12:46:34 +0200 Uwe Kleine-K__nig <Uwe.Kleine-Koenig@digi.com> wrote:
 
---=_freyr.drzeus.cx-386-1215190986-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+> set_type returns an int indicating success or failure, but up to now
+> setup_irq ignores that.
+> 
+> In my case this resulted in a machine hang:
+> gpio-keys requested IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, but
+> arm/ns9xxx can only trigger on one direction so set_type didn't touch
+> the configuration which happens do default to a level sensitiveness and
+> returned -EINVAL.  setup_irq ignored that and unmasked the irq.  This
+> resulted in an endless triggering of the gpio-key interrupt service
+> routine which effectively killed the machine.
+> 
+> With this patch applied setup_irq propagates the error to the caller.
+> 
+> Note that before in the case 
+> 
+> 	chip && !chip->set_type && !chip->name
+> 
+> a NULL pointer was feed to printk.  This is fixed, too.
+> 
 
-On Mon, 30 Jun 2008 10:50:23 +0300
-Tomas Winkler <tomas.winkler@intel.com> wrote:
+hm, OK.  Do I recall there being some urgency to this?
 
-> This patch fix warning :shadowing dma variable
->=20
-> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-> ---
+> +	if (ret) {
+> +		char buf[100];
+> +
+> +		snprintf(buf, sizeof(buf), KERN_ERR
+> +				"setting flow type for irq %u failed (%%s)\n",
+> +				irq);
+> +		print_fn_descriptor_symbol(buf, chip->set_type);
+> +	}
 
-Looks ok. Applied.
+eww.  We really mucked up that interface.  I wonder if we can do better.
+Let me think about that.
 
---=20
-     -- Pierre Ossman
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-386-1215190986-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkhuWnkACgkQ7b8eESbyJLiO/gCgirE+TbE1DL7rjAP9jy7zKKZS
-azIAn2YPaezMps1wbwe377zWwwFbvBdy
-=vlAG
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-386-1215190986-0001-2--
