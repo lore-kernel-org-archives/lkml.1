@@ -1,171 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbYGDFl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756977AbYGDFuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756385AbYGDFl4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 01:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbYGDFls
+	id S1756977AbYGDFuo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 01:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbYGDFuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 01:41:48 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:43447 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751423AbYGDFlr (ORCPT
+	Fri, 4 Jul 2008 01:50:35 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:59512 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751502AbYGDFue (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 01:41:47 -0400
-Date: Fri, 04 Jul 2008 14:40:29 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Hugh Dickins <hugh@veritas.com>
-Subject: Re: [-mm] BUG: sleeping function called from invalid context at include/linux/pagemap.h:290
-Cc: kosaki.motohiro@jp.fujitsu.com, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, npiggin@suse.de,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Rik Van Riel <riel@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0807031747470.14783@blonde.site>
-References: <486C9FBD.9000800@cn.fujitsu.com> <Pine.LNX.4.64.0807031747470.14783@blonde.site>
-Message-Id: <20080704091349.BAA2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Fri, 4 Jul 2008 01:50:34 -0400
+X-AuditID: 0ac90650-ab28aba0000062df-89-486dba27903c
+Message-ID: <486DBA21.3080106@hitachi.com>
+Date: Fri, 04 Jul 2008 14:50:25 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Philippe De Muyter <phdm@macqel.be>
+Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
+       libdc1394-devel@lists.sourceforge.net, stefanr@s5r6.in-berlin.de,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: mmap'ed memory in core files ?
+References: <20080701132149.GA32510@frolo.macqel> 
+    <517f3f820807011116g6ce1b3e1qf166070f7a4c523f@mail.gmail.com> 
+    <20080702105027.GA1111@frolo.macqel> 
+    <cfd18e0f0807020358k317575c6ra0187428098f0160@mail.gmail.com> 
+    <486C4CC5.2060006@hitachi.com> <20080703092247.GA13430@frolo.macqel>
+In-Reply-To: <20080703092247.GA13430@frolo.macqel>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Could you explain detail of reproduce way?
-> > 
-> > Nothing special. I booted the system up, and entered KDE, and opened xterm,
-> > and typed "dmesg".
-> > 
-> > .config attached.
+Hello,
+
+Philippe De Muyter wrote:
+
+> Hello Hidehiro,
 > 
-> The reason you're seeing it and others not is because your
-> CONFIG_HIGHPTE=y
-> is making the issue visible.
+> On Thu, Jul 03, 2008 at 12:51:33PM +0900, Hidehiro Kawai wrote:
 > 
-> __munlock_pte_handler is trying to lock_page (or migration_entry_wait)
-> while using the per-cpu kmap_atomic from walk_pte_range's pte_offset_map.
-> Sleeping functions called from atomic context.
+>>Hi,
+>>
+>>Michael Kerrisk wrote:
+>>
+>>
+>>>[CC+= hidehiro.kawai.ez@hitachi.com]
+>>>
+>>>On Wed, Jul 2, 2008 at 12:50 PM, Philippe De Muyter <phdm@macqel.be> wrote:
+>>>
+>>>
+>>>>Hi Michael,
+>>>>
+>>>>On Tue, Jul 01, 2008 at 08:16:11PM +0200, Michael Kerrisk wrote:
+>>>>
+>>>>
+>>>>>On 7/1/08, Philippe De Muyter <phdm@macqel.be> wrote:
+>>>>>
+>>>>>
+>>>>>>Hello everybody,
+>>>>>>
+>>>>>>I develop video acquisition software using the video1394 interface.
+>>>>>>The images grabbed by the camera and iee1394 bus are kept in kernel
+>>>>>>memory and made available to the user program through a mmap call done
+>>>>>>in the libdc1394 library :
+>>>>>>
+>>>>>>dma_ring_buffer= mmap(0, vmmap.nb_buffers * vmmap.buf_size,
+>>>>>>               PROT_READ|PROT_WRITE,MAP_SHARED, craw->capture.dma_fd, 0);
+>>>>>>
+>>>>>>Sometimes, my program crashes and produces a core file :)  It seems to
+>>>>>>me that the core file does not contain the mmap'ed memory and hence
+>>>>>>I cannot replay my program with the same image for debugging purpose.
+>>>>>>
+>>>>>>Is it possible to configure the kernel through /proc, or through the mmap
+>>>>>>system call to have that mmapped segment in the core file, or do I need
+>>>>>>to modify the kernel itself to obtain the behaviour I want ?  If I
+>>>>>>need to modify the kernel, can some kind soul provide me some pointers ?
+>>>>>
+>>>>>
+>>>>>Have a look at the section "Controlling which mappings are written to
+>>>>>the core dump" in a recent core.5 man page:
+>>>>>http://www.kernel.org/doc/man-pages/online/pages/man5/core.5.html
+>>>>
+>>>>thanks for the info.  I didn't know about /proc/PID/coredump_filter.
+>>>>
+>>>>that part was promising :
+>>>>
+>>>>     bit 2  Dump file-backed private mappings.
+>>>>     bit 3  Dump file-backed shared mappings.
+>>>>
+>>>>  The default value of coredump_filter is 0x3; this reflects traditional
+>>>>  Linux behavior and means that only anonymous memory segments are dumped.
+>>>>
+>>>>Unfortunately, the part that applies to me (I have tested it) is the next one :
+>>>>
+>>>>  Memory-mapped I/O pages such as frame buffer are never dumped, [...],
+>>>>  regardless of the coredump_filter value.
+>>>>
+>>>>Is that a design decision, or a mere finding of the way it is implemented
+>>>>now ?
+>>
+>>MMIO pages have been not dumped since a long time ago, and I didn't target
+>>them for the coredump_filter feature because I thought it was generally
+>>danger to read MMIO pages.  As for frame buffer we would be able to
+>>safely access to it, but there is no way to tell it from other MMIO
+>>mappings, AFAIK.
+>>
+>>
+>>>>So, back to my original question :
+>>>>
+>>>>Can some kind soul provide me some pointers to the way I should modify
+>>>>the kernel to make the inclusion of the video1394 mmapped segment in
+>>>>core files possible ?
+>>>
+>>>
+>>>Perhaps Hidehiro, who wrote the coredump_filter feature, can provide insight.
+>>
+>>The following patch may help.  To dump MMIO pages, set bit 5 of
+>>coredump_filter.
+>>
+>>$ echo 0x23 > /proc/<PID>/coredump_filter
+>>
+>>
+>>Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+>>---
+>>This patch is not intended to be merged to the upstream kernel
+>>because the safeness of reading VM_IO mappings has not been
+>>proved.
+>>
+>>Index: linux-2.6.26-rc5-mm3/fs/binfmt_elf.c
+>>===================================================================
+>>--- linux-2.6.26-rc5-mm3.orig/fs/binfmt_elf.c
+>>+++ linux-2.6.26-rc5-mm3/fs/binfmt_elf.c
+>>@@ -1141,11 +1141,18 @@ static unsigned long vma_dump_size(struc
+>> 	if (vma->vm_flags & VM_ALWAYSDUMP)
+>> 		goto whole;
+>> 
+>>-	/* Do not dump I/O mapped devices or special mappings */
+>>-	if (vma->vm_flags & (VM_IO | VM_RESERVED))
+>>+#define FILTER(type)	(mm_flags & (1UL << MMF_DUMP_##type))
+>>+
+>>+	/* By default, do not dump memory mapped I/O mappings */
+>>+	if (vma->vm_flags & VM_IO) {
+>>+		if (FILTER(MMIO))
+>>+			goto whole;
+>> 		return 0;
+>>+	}
+>> 
+>>-#define FILTER(type)	(mm_flags & (1UL << MMF_DUMP_##type))
+>>+	/* Do not dump special mappings */
+>>+	if (vma->vm_flags & VM_RESERVED)
+>>+		return 0;
+>> 
+>> 	/* By default, dump shared memory if mapped from an anonymous file. */
+>> 	if (vma->vm_flags & VM_SHARED) {
+>>Index: linux-2.6.26-rc5-mm3/include/linux/sched.h
+>>===================================================================
+>>--- linux-2.6.26-rc5-mm3.orig/include/linux/sched.h
+>>+++ linux-2.6.26-rc5-mm3/include/linux/sched.h
+>>@@ -403,8 +403,9 @@ extern int get_dumpable(struct mm_struct
+>> #define MMF_DUMP_MAPPED_PRIVATE	4
+>> #define MMF_DUMP_MAPPED_SHARED	5
+>> #define MMF_DUMP_ELF_HEADERS	6
+>>+#define MMF_DUMP_MMIO		7
+>> #define MMF_DUMP_FILTER_SHIFT	MMF_DUMPABLE_BITS
+>>-#define MMF_DUMP_FILTER_BITS	5
+>>+#define MMF_DUMP_FILTER_BITS	6
+>> #define MMF_DUMP_FILTER_MASK \
+>> 	(((1 << MMF_DUMP_FILTER_BITS) - 1) << MMF_DUMP_FILTER_SHIFT)
+>> #define MMF_DUMP_FILTER_DEFAULT \
+>>
+>>
+>>
+>>Regards,
 > 
-> There's quite a lot to worry about there.
-
-Wow, this is obiously bug ;-)
-IMHO, CONFIG_UNEVICTABLE was developed aiming at 64bit. (had depend on 64BIT ago)
-So, noboy tested it long time on 32bit.
-
-Yes, it is definitly bad.
-I'll fix soon (hopefully).
-
-
-> That page table walker was originally written to gather some info
-> for /proc display, not to act upon the page table contents in any
-> serious way.  So it's just doing pte_offset_map when every(?) other
-> page table walk would be required to pte_offset_map_lock.  If it
-> were doing pte_offset_map_lock, then lots more people would have
-> seen the problem sooner.
 > 
-> Does this usage need to pte_offset_map_lock?  I think to the extent
-> that it needs to lock_page, it needs to pte_offset_map_lock: both
-> are because file truncation (or more commonly reclaim, but without
-> looking into it too carefully, I dare say reclaim isn't a problem
-> in this context) could interfere with page->mapping and pte at any
-> instant.
+> Thanks for your patch, but it will not help here. Before applying it blindly
+> I asked myself if the mmapped region was tagged VM_IO, because it is actually
+> a simple ram zone, not an I/O zone, and the answer is it is not a VM_IO zone.
+> Details :
 > 
-> Conveniently, we have not one but two attempts at a generic page
-> walker (sigh!): the other one, apply_to_page_range in mm/memory.c,
-> does do the lock; it also allocates a page table if it's not there,
-> I guess that aspect wouldn't be a problem on an mlocked area.  Maybe
-> using apply_to_page_range would be better here, and sidestep the
-> issue of not having CONFIG_PAGE_WALKER.
+> drivers/ieee1394/video1394.c:
+>     static int video1394_mmap(struct file *file, struct vm_area_struct *vma)
+>     {
+>     [...]
+>     return dma_region_mmap(&ctx->current_ctx->dma, file, vma);
+>     }
 > 
-> But if it does pte_offset_map_lock, look, migration_entry_wait does
-> so too; well, never mind the lock, it'll kunmap_atomic 
-> Obviously that part cries out for refactoring.
+> drivers/ieee1394/dma.c:
+>     int dma_region_mmap(struct dma_region *dma, struct file *file,
+> 			struct vm_area_struct *vma)
+>     {
+>     [...]
+>     vma->vm_ops = &dma_region_vm_ops;
+>     vma->vm_private_data = dma;
+>     vma->vm_file = file;
+>     vma->vm_flags |= VM_RESERVED;
 > 
-> And how do you manage the lock_page?  Offhand, I don't know, I'm
-> just reporting on the obvious.  Would trylocking be good enough?
+>     return 0;
+>     }
 > 
-> (I do dislike "generic page walkers" because they encourage this
-> kind of oversight; and I hate to think of the latency problems
-> they might be introducing - no sign of a cond_resched in either.)
+> So, actually the zone I would like to get dumped in the core file is tagged
+> VM_RESERVED.
+> 
+> I see the following ways to solve my problem :
+>     - do not tag the zone as VM_RESERVED in ieee1394::dma_region_mmap
+>     - tag the zone as VM_ALWAYSDUMP in ieee1394::dma_region_mmap
+>     - add a bit in coredump_filter to dump the VM_RESERVED zones.
+> 
+> As I don't know the real meaning of VM_RESERVED, I do not know which choice
+> is the best one for the official kernel tree, but locally I'll go for
+> adding VM_ALWAYSDUMP in ieee1394::dma_region_mmap.
 
-Thank you great explain.
-but we can't use trylock because munlock should turn off PAGE_MLOCK at that time.
+I'm afraid I don't know real usages of VM_RESERVED and VM_IO, either.
+Allowing everyone to choose whether dump the dma region or not,
+perhaps we need to introduce a new VM flag (e.g. VM_DUMPABLE) and
+a coredump_filter bit which controls (VM_IO | VM_RESERVED) &&
+VM_DUMPABLE area, for example.
 
-__munlock_pte_handler introduced for avoid PROT_NONE problem.
-(get_user_pages() can't get PROT_NONE page, old implementation can't munlock PROT_NONE page)
+I think it is also OK to just add VM_ALWAYSDUMP flag to the dma
+region if the device driver knows the region is safely readable
+and small enough.
 
-So, We had 2 choice
-  1. enhance get_use_pages()
-  2. use pagewalk
-
-current implementation select 2.
-Unfortunately this is problematic choice.
-Now, We have problem on CONFIG_HIGHPTE and !CONFIG_MMU environment.
-
-So, I am gradually charmed by choice 1.
-my fix plan is below
-
-1. CONFIG_UNEVICTABLE depend on 64BIT (just temporary hotfix)
-2. add vm_flags ignoring option to get_user_pages()
-3. rewrite __munlock_vma_pages_range by new get_user_pages()
-4. revert 1
-5. revert pagewalker's Kconfig change (someone dislike "select" expression)
-
-
-and Step1 patch is attached below.
-this patch solve this problem temporary.
-
-Li-san, Could you try to below patch on your environment?
-
-
-----------------------
-pagewalk use pte_offset_map().
-pte_offset_map() use kmap_atomic().
-__munlock_pte_handler() use lock_page().
-
-So, in CONFIG_HIGHPTE=y, following error happend.
-
-
-BUG: sleeping function called from invalid context at include/linux/pagemap.h:290
-in_atomic():1, irqs_disabled():0
-no locks held by gpg-agent/2134.
-Pid: 2134, comm: gpg-agent Not tainted 2.6.26-rc8-mm1 #11
- [<c0421d38>] __might_sleep+0xbe/0xc5
- [<c04770a2>] __munlock_pte_handler+0x3c/0x9e
- [<c047c11f>] walk_page_range+0x15b/0x1b4
- [<c0477048>] __munlock_vma_pages_range+0x4e/0x5b
- [<c0476f0c>] ? __munlock_pmd_handler+0x0/0x10
- [<c0477066>] ? __munlock_pte_handler+0x0/0x9e
- [<c0477064>] munlock_vma_pages_range+0xf/0x11
- [<c0477dcb>] exit_mmap+0x32/0xf2
- [<c042ac12>] ? exit_mm+0xc7/0xda
- [<c042732a>] mmput+0x3a/0x8b
- [<c042ac20>] exit_mm+0xd5/0xda
- [<c042bf6a>] do_exit+0x1fb/0x5d5
- [<c045c4df>] ? audit_syscall_exit+0x2aa/0x2c5
- [<c042c3a3>] do_group_exit+0x5f/0x88
- [<c042c3db>] sys_exit_group+0xf/0x11
- [<c0403956>] syscall_call+0x7/0xb
-
-then, this feature should be disabled on 32BIT until fixed above problem.
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-
----
- mm/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: b/mm/Kconfig
-===================================================================
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -216,6 +216,7 @@ config PAGE_WALKER
- config UNEVICTABLE_LRU
- 	bool "Add LRU list to track non-evictable pages"
- 	default y
-+	depends on 64BIT
- 	select PAGE_WALKER
- 	help
- 	  Keeps unevictable pages off of the active and inactive pageout
-
+Regards,
+-- 
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
 
