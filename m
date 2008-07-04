@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761316AbYGDQ7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760838AbYGDRAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761316AbYGDQ7v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 12:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760061AbYGDQxO
+	id S1760838AbYGDRAO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 13:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760001AbYGDQyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 12:53:14 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:55112 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758992AbYGDQxM (ORCPT
+	Fri, 4 Jul 2008 12:54:38 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:31448 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760273AbYGDQyg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 12:53:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=s54ecxjdWfBpXSS5B+kL3HU2qc2rBQMWjij1p5U4CVwr26U7UJHoj0VjJdeZwA0XDC
-         15F6sE2l63EihL5Dxu6ZXSYpRPsmxa2CiRB+yToNv7JYFe1gVN0xdoFmnvW34iyRbtxR
-         QXxU3hiQFytuT9+TccGTITTLHYBy7BShVMeOs=
-Date: Sat, 5 Jul 2008 01:53:06 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Andrew Vasquez <linux-driver@qlogic.com>,
-       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Seokmann Ju <seokmann.ju@qlogic.com>
-Subject: [PATCH -mm] fix qla2xxx-use-memory_read_from_buffer.patch
-Message-ID: <20080704165305.GC22477@localhost.localdomain>
-References: <200807040647.m646lXpN017508@imap1.linux-foundation.org> <1215182555.5413.8.camel@localhost.localdomain> <20080704163942.GA15214@localhost.localdomain>
+	Fri, 4 Jul 2008 12:54:36 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=NBW+s+PJ/Pa1IjqkRli417+zO2cjykIxL/MuB7MlUW8aDdwlbUvrpFHiOnGGGTCI/S8XvTdkXdqmw6eab63RU/8EGjQKOKkHAGYJwfeM4Ty9oWbmLlVWVXrrNgC5FydV2e7pV+cXNvK6ODPJFd42yyE2SiwhTRp3XSssK9qr/04=  ;
+X-YMail-OSG: Ew0mvCEVM1ld961XiPB_.8__e8oTZnugE4XxzVoobJ6NQvAPbjqcndJYz6y9EHLBzQBEpRa5BBd7AEuPOCv2.k3RF0yioIk8p61kv3vEFQ--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [PATCH] fix build error of driver/mfd/tc6393xb.c
+Date: Fri, 4 Jul 2008 09:54:34 -0700
+User-Agent: KMail/1.9.9
+Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+References: <s5hiqvlc2ut.wl%tiwai@suse.de> <20080704142208.GB4576@doriath.ww600.siemens.net> <s5hwsk1k6yj.wl%tiwai@suse.de>
+In-Reply-To: <s5hwsk1k6yj.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <20080704163942.GA15214@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200807040954.34838.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now memory_read_from_buffer() belongs in string.h
+On Friday 04 July 2008, Takashi Iwai wrote:
+> 
+> > Please submit a patch where HAVE_GPIO_LIB selects GENERIC_GPIO.
+> 
+> Hmm... just checking again, I found GENERIC_GPIO isn't defined in
+> drivers/gpio/Kconfig but in each arch Kconfig.  So we can't select it
+> unconditionally.
+> 
+> I'm not sure whether it's a better fix at this moment.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Andrew Vasquez <linux-driver@qlogic.com>
-Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Cc: Seokmann Ju <seokmann.ju@qlogic.com>
----
- drivers/scsi/qla2xxx/qla_attr.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Which platform is it which is trying to declare that it has
+an implementation (HAVE_GPIO_LIB) of an interface that it
+doesn't support (GENERIC_GPIO unset) ??
 
-Index: 2.6-mm/drivers/scsi/qla2xxx/qla_attr.c
-===================================================================
---- 2.6-mm.orig/drivers/scsi/qla2xxx/qla_attr.c
-+++ 2.6-mm/drivers/scsi/qla2xxx/qla_attr.c
-@@ -8,7 +8,7 @@
- 
- #include <linux/kthread.h>
- #include <linux/vmalloc.h>
--#include <linux/fs.h>
-+#include <linux/string.h>
- 
- static int qla24xx_vport_disable(struct fc_vport *, bool);
- 
+
