@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753078AbYGDTk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753638AbYGDTmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753078AbYGDTk2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 15:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYGDTkP
+	id S1753638AbYGDTmQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 15:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbYGDTmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 15:40:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41253 "EHLO mx1.redhat.com"
+	Fri, 4 Jul 2008 15:42:01 -0400
+Received: from vena.lwn.net ([206.168.112.25]:58732 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751331AbYGDTkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 15:40:14 -0400
-Date: Fri, 4 Jul 2008 15:33:23 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: linux-usb@vger.kernel.org, gregkh@suse.de
-Subject: usb-storage: quirk around v1.11 firmware on Nikon D4
-Message-ID: <20080704193323.GA19712@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	linux-usb@vger.kernel.org, gregkh@suse.de
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751021AbYGDTmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 15:42:00 -0400
+Date: Fri, 4 Jul 2008 13:41:59 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] documentation: update CodingStyle tips for Emacs
+ users
+Message-ID: <20080704134159.4dd9f74e@bike.lwn.net>
+In-Reply-To: <87tzf5tu3z.fsf@skyscraper.fehenstaub.lan>
+References: <87tzf5tu3z.fsf@skyscraper.fehenstaub.lan>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-usb-storage: quirk around v1.11 firmware on Nikon D40
+On Fri, 04 Jul 2008 19:52:16 +0200
+Johannes Weiner <hannes@saeurebad.de> wrote:
 
-https://bugzilla.redhat.com/show_bug.cgi?id=454028
-Just as in earlier firmware versions, we need to perform this
-quirk for the latest version too.
+> +(add-hook 'c-mode-hook
+> +          (lambda ()
+> +            (let ((filename (buffer-file-name)))
+> +              ;; Enable kernel mode for the appropriate files
+> +              (when (and file
+> +                         (string-match "/usr/src/linux" filename))
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+Shouldn't that be "(and filename ..." rather than "file"?
 
-diff --git a/drivers/usb/storage/unusual_devs.h b/drivers/usb/storage/unusual_devs.h
-index 45fe366..cf03af1 100644
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -364,6 +364,13 @@ UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0110,
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_CAPACITY),
- 
-+/* Reported by https://bugzilla.redhat.com/show_bug.cgi?id=454028 */
-+UNUSUAL_DEV(  0x04b0, 0x0413, 0x0110, 0x0111,
-+		"NIKON",
-+		"NIKON DSC D40",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		US_FL_FIX_CAPACITY),
-+
- /* Reported by Ortwin Glueck <odi@odi.ch> */
- UNUSUAL_DEV(  0x04b0, 0x0413, 0x0110, 0x0110,
- 		"NIKON",
+A test for /usr/src/linux seems misplaced, though; I don't think a
+whole lot of people keep their kernel trees there anymore.  There must
+be a better heuristic one can use to figure out whether a kernel source
+file is being edited.
 
-
--- 
-http://www.codemonkey.org.uk
+jon
