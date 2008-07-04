@@ -1,464 +1,324 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753950AbYGDFDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbYGDF2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753950AbYGDFDv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 01:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbYGDFDm
+	id S1754540AbYGDF2d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 01:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYGDF2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 01:03:42 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:30108 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751199AbYGDFDk (ORCPT
+	Fri, 4 Jul 2008 01:28:25 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:42438 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751378AbYGDF2Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 01:03:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=Q54kaioP6ZcvFKNUMKBAB0EB5AfsX+8mL1Y3x//t2LGWz2sexGLW470dnVhNDmGt/p
-         82Hg4uVyYwQE21I34uFfQf9UsNWcNBZPCGwO2ZpWrED+8pFTGPI35PvT5mdZ1nEKqsbU
-         jtTMONEDT5D5iBiqwjAefrvC9Z6bhu8w3nPuU=
-Subject: [PATCH 6/5] byteorder: depend on asm/byteorder.h defining the
-	machine endianness
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 03 Jul 2008 22:02:39 -0700
-Message-Id: <1215147759.16647.75.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Fri, 4 Jul 2008 01:28:24 -0400
+Message-ID: <486DB511.2090905@bull.net>
+Date: Fri, 04 Jul 2008 07:28:49 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Solofo.Ramangalahy@bull.net
+Subject: Re: [PATCH 1/1] IPC - Do not use a negative value to re-enable	msgmni
+ automatic recomputing
+References: <20080703121515.554681000@bull.net>	 <20080703121555.386008000@bull.net> <1215120021.14808.176.camel@localhost.localdomain>
+In-Reply-To: <1215120021.14808.176.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the definition of the unaligned helpers into generic.h and test
-the endianness from asm/byteorder.h, remove it from each asm/unaligned.h
+Matt Helsley wrote:
+> On Thu, 2008-07-03 at 14:15 +0200, Nadia.Derbey@bull.net wrote:
+> 
+>>plain text document attachment (auto_msgmni_proc_file.patch)
+>>[PATCH 01/01]
+>>
+>>This patch proposes an alternative to the "magical positive-versus-negative
+>>number trick" Andrew complained about last week in
+>>http://lkml.org/lkml/2008/6/24/418
+>>
+>>This had been introduced with the patches that scale msgmni to the amount of
+>>lowmem. With these patches, msgmni has a registered notification routine
+>>that recomputes msgmni value upon memory add/remove or ipc namespace creation/
+>>removal.
+>>
+>>When msgmni is changed from user space (i.e. value written to the proc file),
+>>that notification routine is unregistered, and the way to make it registered
+>>back is to write a negative value into the proc file. This is the "magical
+>>positive-versus-negative number trick".
+>>
+>>To fix this, a new proc file is introduced: /proc/sys/kernel/auto_msgmni.
+>>This file acts as ON/OFF for msgmni automatic recomputing.
+>>
+>>With this patch, the process is the following:
+>>1) kernel boots in "automatic recomputing mode"
+>>   /proc/sys/kernel/msgmni contains the value that has been computed (depends
+>>                           on lowmem)
+>>   /proc/sys/kernel/automatic_msgmni contains "1"
+>>
+>>2) echo <val> > /proc/sys/kernel/msgmni
+>>   . sets msg_ctlmni to <val>
+>>   . de-activates automatic recomputing (i.e. if, say, some memory is added
+>>     msgmni won't be recomputed anymore)
+>>   . /proc/sys/kernel/automatic_msgmni now contains "0"
+>>
+>>3) echo "0" > /proc/sys/kernel/automatic_msgmni
+>>   . de-activates msgmni automatic recomputing
+>>     this has the same effect as 2) except that msg_ctlmni's value stays
+>>     blocked at its current value)
+>>
+>>3) echo "1" > /proc/sys/kernel/automatic_msgmni
+>>   . recomputes msgmni's value based on the current available memory size
+>>     and number of ipc namespaces
+>>   . re-activates automatic recomputing for msgmni.
+>>
+>>This patch applies to 2.6.26-rc5-mm3.
+> 
+> 
+> This makes sense to me.
+> 
+> 
+>>Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
+>>
+>>---
+>> include/linux/ipc_namespace.h |    1 
+>> ipc/ipc_sysctl.c              |   75 ++++++++++++++++++++++++++++++++++--------
+>> ipc/ipcns_notifier.c          |   19 ++++++++--
+>> 3 files changed, 78 insertions(+), 17 deletions(-)
+>>
+>>Index: linux-2.6.26-rc5-mm3/ipc/ipc_sysctl.c
+>>===================================================================
+>>--- linux-2.6.26-rc5-mm3.orig/ipc/ipc_sysctl.c	2008-06-16 09:12:57.000000000 +0200
+>>+++ linux-2.6.26-rc5-mm3/ipc/ipc_sysctl.c	2008-07-03 13:29:50.000000000 +0200
+>>@@ -27,15 +27,17 @@ static void *get_ipc(ctl_table *table)
+>> }
+>>
+>> /*
+>>- * Routine that is called when a tunable has successfully been changed by
+>>- * hand and it has a callback routine registered on the ipc namespace notifier
+>>- * chain: we don't want such tunables to be recomputed anymore upon memory
+>>- * add/remove or ipc namespace creation/removal.
+>>- * They can come back to a recomputable state by being set to a <0 value.
+>>+ * Routine that is called when the file "auto_msgmni" has successfully been
+>>+ * written.
+>>+ * Two values are allowed:
+>>+ * 0: unregister msgmni's callback routine from the ipc namespace notifier
+>>+ *    chain. This means that msgmni won't be recomputed anymore upon memory
+>>+ *    add/remove or ipc namespace creation/removal.
+>>+ * 1: register back the callback routine.
+>>  */
+>>-static void tunable_set_callback(int val)
+>>+static void ipc_auto_callback(int val)
+>> {
+>>-	if (val >= 0)
+>>+	if (!val)
+>> 		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
+>> 	else {
+>> 		/*
+>>@@ -71,7 +73,15 @@ static int proc_ipc_callback_dointvec(ct
+>> 	rc = proc_dointvec(&ipc_table, write, filp, buffer, lenp, ppos);
+>>
+>> 	if (write && !rc && lenp_bef == *lenp)
+>>-		tunable_set_callback(*((int *)(ipc_table.data)));
+>>+		/*
+>>+		 * Tunable has successfully been changed by hand and it has a
+>>+		 * callback routine registered on the ipc namespace notifier
+>>+		 * chain: we don't want this tunable to be recomputed anymore
+>>+		 * upon memory add/remove or ipc namespace creation/removal.
+>>+		 * It can come back to a recomputable state if the
+>>+		 * corresponding auto_ file is set to 1.
+>>+		 */
+> 
+> 
+> The register_ipcns_notifier() code tells us what will trigger the
+> recalculation. If that code gets changed you'd need to update this
+> comment. Also your comment at the top of the function describes what 0/1
+> mean when written to this file. So I think this comment could be greatly
+> simplified:
+> 
+> /*
+>  * Disabling automatic adjustment of msgmni simply requires
+>  * unregistering the notifiers that trigger recalculation.
+>  */
+> 
+> 
+>>+		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
+>>
+>> 	return rc;
+>> }
+>>@@ -87,10 +97,39 @@ static int proc_ipc_doulongvec_minmax(ct
+>> 					lenp, ppos);
+>> }
+>>
+>>+static int proc_ipcauto_dointvec_minmax(ctl_table *table, int write,
+>>+	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
+>>+{
+>>+	struct ctl_table ipc_table;
+>>+	size_t lenp_bef = *lenp;
+>>+	int oldval;
+>>+	int rc;
+>>+
+>>+	memcpy(&ipc_table, table, sizeof(ipc_table));
+>>+	ipc_table.data = get_ipc(table);
+>>+	oldval = *((int *)(ipc_table.data));
+>>+
+>>+	rc = proc_dointvec_minmax(&ipc_table, write, filp, buffer, lenp, ppos);
+>>+
+>>+	if (write && !rc && lenp_bef == *lenp) {
+>>+		int newval = *((int *)(ipc_table.data));
+>>+		/*
+>>+		 * The file "auto_msgmni" has correctly been set.
+>>+		 * React by (un)registering the corresponding tunable, if the
+>>+		 * value has changed.
+>>+		 */
+>>+		if (newval != oldval)
+>>+			ipc_auto_callback(newval);
+>>+	}
+>>+
+>>+	return rc;
+>>+}
+>>+
+>> #else
+>> #define proc_ipc_doulongvec_minmax NULL
+>> #define proc_ipc_dointvec	   NULL
+>> #define proc_ipc_callback_dointvec NULL
+>>+#define proc_ipcauto_dointvec_minmax NULL
+>> #endif
+>>
+>> #ifdef CONFIG_SYSCTL_SYSCALL
+>>@@ -142,14 +181,11 @@ static int sysctl_ipc_registered_data(ct
+>> 	rc = sysctl_ipc_data(table, name, nlen, oldval, oldlenp, newval,
+>> 		newlen);
+>>
+>>-	if (newval && newlen && rc > 0) {
+>>+	if (newval && newlen && rc > 0)
+>> 		/*
+>> 		 * Tunable has successfully been changed from userland
+>> 		 */
+>>-		int *data = get_ipc(table);
+>>-
+>>-		tunable_set_callback(*data);
+>>-	}
+>>+		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
+>>
+>> 	return rc;
+>> }
+>>@@ -158,6 +194,9 @@ static int sysctl_ipc_registered_data(ct
+>> #define sysctl_ipc_registered_data NULL
+>> #endif
+>>
+>>+static int zero;
+>>+static int one = 1;
+>>+
+>> static struct ctl_table ipc_kern_table[] = {
+>> 	{
+>> 		.ctl_name	= KERN_SHMMAX,
+>>@@ -222,6 +261,16 @@ static struct ctl_table ipc_kern_table[]
+>> 		.proc_handler	= proc_ipc_dointvec,
+>> 		.strategy	= sysctl_ipc_data,
+>> 	},
+>>+	{
+>>+		.ctl_name	= CTL_UNNUMBERED,
+>>+		.procname	= "auto_msgmni",
+>>+		.data		= &init_ipc_ns.auto_msgmni,
+>>+		.maxlen		= sizeof(int),
+>>+		.mode		= 0644,
+>>+		.proc_handler	= proc_ipcauto_dointvec_minmax,
+>>+		.extra1		= &zero,
+>>+		.extra2		= &one,
+>>+	},
+>> 	{}
+>> };
+>>
+>>Index: linux-2.6.26-rc5-mm3/include/linux/ipc_namespace.h
+>>===================================================================
+>>--- linux-2.6.26-rc5-mm3.orig/include/linux/ipc_namespace.h	2008-06-16 09:12:03.000000000 +0200
+>>+++ linux-2.6.26-rc5-mm3/include/linux/ipc_namespace.h	2008-07-03 08:33:56.000000000 +0200
+>>@@ -36,6 +36,7 @@ struct ipc_namespace {
+>> 	int		msg_ctlmni;
+>> 	atomic_t	msg_bytes;
+>> 	atomic_t	msg_hdrs;
+>>+	int		auto_msgmni;
+>>
+>> 	size_t		shm_ctlmax;
+>> 	size_t		shm_ctlall;
+>>Index: linux-2.6.26-rc5-mm3/ipc/ipcns_notifier.c
+>>===================================================================
+>>--- linux-2.6.26-rc5-mm3.orig/ipc/ipcns_notifier.c	2008-06-16 09:12:57.000000000 +0200
+>>+++ linux-2.6.26-rc5-mm3/ipc/ipcns_notifier.c	2008-07-03 11:38:07.000000000 +0200
+>>@@ -55,25 +55,36 @@ static int ipcns_callback(struct notifie
+>>
+>> int register_ipcns_notifier(struct ipc_namespace *ns)
+>> {
+>>+	int rc;
+>>+
+>> 	memset(&ns->ipcns_nb, 0, sizeof(ns->ipcns_nb));
+>> 	ns->ipcns_nb.notifier_call = ipcns_callback;
+>> 	ns->ipcns_nb.priority = IPCNS_CALLBACK_PRI;
+>>-	return blocking_notifier_chain_register(&ipcns_chain, &ns->ipcns_nb);
+>>+	rc = blocking_notifier_chain_register(&ipcns_chain, &ns->ipcns_nb);
+>>+	if (!rc)
+>>+		ns->auto_msgmni = 1;
+>>+	return rc;
+>> }
+>>
+>> int cond_register_ipcns_notifier(struct ipc_namespace *ns)
+>> {
+>>+	int rc;
+>>+
+>> 	memset(&ns->ipcns_nb, 0, sizeof(ns->ipcns_nb));
+>> 	ns->ipcns_nb.notifier_call = ipcns_callback;
+>> 	ns->ipcns_nb.priority = IPCNS_CALLBACK_PRI;
+>>-	return blocking_notifier_chain_cond_register(&ipcns_chain,
+>>+	rc = blocking_notifier_chain_cond_register(&ipcns_chain,
+>> 							&ns->ipcns_nb);
+>>+	if (!rc)
+>>+		ns->auto_msgmni = 1;
+>>+	return rc;
+>> }
+>>
+>> int unregister_ipcns_notifier(struct ipc_namespace *ns)
+>> {
+>>-	return blocking_notifier_chain_unregister(&ipcns_chain,
+>>-						&ns->ipcns_nb);
+>>+	blocking_notifier_chain_unregister(&ipcns_chain, &ns->ipcns_nb);
+>>+	ns->auto_msgmni = 0;
+>>+	return 0;
+>> }
+> 
+> 
+> This looks odd -- we're no longer returning the return code from
+> blocking_notifier_chain_unregister().
+> From what I can see in the patch,
+> the return value is unused. Perhaps it ought to be removed? Otherwise it
+> might make sense to do the same as you did with "register":
+> 
+>         rc = blocking_notifier_chain_unregister(&ipcns_chain, &ns->ipcns_nb);
+>         if (!rc)
+>         	ns->auto_msgmni = 0;
+>         return rc;
+> 
+> Cheers,
+> 	-Matt Helsley
+> 
+> 
+> 
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Andrew, this applies on top of the series reworking the byteorder helpers now
-that we can rely on them setting the machine endianness.
+Well, I thought that the registration routines might evolve in the 
+future, even though they are now unconditionally returning 0. That's why 
+I'm setting the flag to 1 only if 
+blocking_notifier_chain_cond_register() succeeded.
+Now, talking about unregister: it acutally returns a ENOENT, but there's 
+no need to test the return code, since even in that case the flag should 
+be set to 0.
+I'll change unregister_ipcns_notifier() into a void.
 
- include/asm-alpha/unaligned.h     |    3 ---
- include/asm-arm/unaligned.h       |   11 -----------
- include/asm-avr32/unaligned.h     |    3 ---
- include/asm-blackfin/unaligned.h  |    3 ---
- include/asm-cris/unaligned.h      |    3 ---
- include/asm-frv/unaligned.h       |    3 ---
- include/asm-h8300/unaligned.h     |    3 ---
- include/asm-ia64/unaligned.h      |    3 ---
- include/asm-m32r/unaligned.h      |   12 +++++-------
- include/asm-m68k/unaligned.h      |    3 ---
- include/asm-m68knommu/unaligned.h |   11 ++---------
- include/asm-mips/unaligned.h      |   16 ++++++----------
- include/asm-mn10300/unaligned.h   |    3 ---
- include/asm-parisc/unaligned.h    |    2 --
- include/asm-powerpc/unaligned.h   |    3 ---
- include/asm-s390/unaligned.h      |    3 ---
- include/asm-sh/unaligned.h        |   12 +++++-------
- include/asm-sparc/unaligned.h     |    2 --
- include/asm-sparc64/unaligned.h   |    2 --
- include/asm-v850/unaligned.h      |    3 ---
- include/asm-x86/unaligned.h       |    4 ----
- include/asm-xtensa/unaligned.h    |   16 ++++++----------
- include/linux/unaligned/generic.h |   10 ++++++++++
- 23 files changed, 34 insertions(+), 100 deletions(-)
+Thanks for the review, Matt!
 
-diff --git a/include/asm-alpha/unaligned.h b/include/asm-alpha/unaligned.h
-index 3787c60..84b08e0 100644
---- a/include/asm-alpha/unaligned.h
-+++ b/include/asm-alpha/unaligned.h
-@@ -5,7 +5,4 @@
- #include <linux/unaligned/be_byteshift.h>
- #include <linux/unaligned/generic.h>
- 
--#define get_unaligned __get_unaligned_le
--#define put_unaligned __put_unaligned_le
--
- #endif /* _ASM_ALPHA_UNALIGNED_H */
-diff --git a/include/asm-arm/unaligned.h b/include/asm-arm/unaligned.h
-index 44593a8..70088d3 100644
---- a/include/asm-arm/unaligned.h
-+++ b/include/asm-arm/unaligned.h
-@@ -5,15 +5,4 @@
- #include <linux/unaligned/be_byteshift.h>
- #include <linux/unaligned/generic.h>
- 
--/*
-- * Select endianness
-- */
--#ifndef __ARMEB__
--#define get_unaligned	__get_unaligned_le
--#define put_unaligned	__put_unaligned_le
--#else
--#define get_unaligned	__get_unaligned_be
--#define put_unaligned	__put_unaligned_be
--#endif
--
- #endif /* _ASM_ARM_UNALIGNED_H */
-diff --git a/include/asm-avr32/unaligned.h b/include/asm-avr32/unaligned.h
-index 0418772..a350f4a 100644
---- a/include/asm-avr32/unaligned.h
-+++ b/include/asm-avr32/unaligned.h
-@@ -15,7 +15,4 @@
- #include <linux/unaligned/le_byteshift.h>
- #include <linux/unaligned/generic.h>
- 
--#define get_unaligned	__get_unaligned_be
--#define put_unaligned	__put_unaligned_be
--
- #endif /* _ASM_AVR32_UNALIGNED_H */
-diff --git a/include/asm-blackfin/unaligned.h b/include/asm-blackfin/unaligned.h
-index fd8a1d6..0653195 100644
---- a/include/asm-blackfin/unaligned.h
-+++ b/include/asm-blackfin/unaligned.h
-@@ -5,7 +5,4 @@
- #include <linux/unaligned/be_byteshift.h>
- #include <linux/unaligned/generic.h>
- 
--#define get_unaligned	__get_unaligned_le
--#define put_unaligned	__put_unaligned_le
--
- #endif /* _ASM_BLACKFIN_UNALIGNED_H */
-diff --git a/include/asm-cris/unaligned.h b/include/asm-cris/unaligned.h
-index 7b3f3fe..a518cef 100644
---- a/include/asm-cris/unaligned.h
-+++ b/include/asm-cris/unaligned.h
-@@ -7,7 +7,4 @@
- #include <linux/unaligned/access_ok.h>
- #include <linux/unaligned/generic.h>
- 
--#define get_unaligned	__get_unaligned_le
--#define put_unaligned	__put_unaligned_le
--
- #endif /* _ASM_CRIS_UNALIGNED_H */
-diff --git a/include/asm-frv/unaligned.h b/include/asm-frv/unaligned.h
-index 839a2fb..3774d1e 100644
---- a/include/asm-frv/unaligned.h
-+++ b/include/asm-frv/unaligned.h
-@@ -16,7 +16,4 @@
- #include <linux/unaligned/be_byteshift.h>
- #include <linux/unaligned/generic.h>
- 
--#define get_unaligned	__get_unaligned_be
--#define put_unaligned	__put_unaligned_be
--
- #endif /* _ASM_UNALIGNED_H */
-diff --git a/include/asm-h8300/unaligned.h b/include/asm-h8300/unaligned.h
-index b8d06c7..2f0c281 100644
---- a/include/asm-h8300/unaligned.h
-+++ b/include/asm-h8300/unaligned.h
-@@ -5,7 +5,4 @@
- #include <linux/unaligned/le_byteshift.h>
- #include <linux/unaligned/generic.h>
- 
--#define get_unaligned	__get_unaligned_be
--#define put_unaligned	__put_unaligned_be
--
- #endif /* _ASM_H8300_UNALIGNED_H */
-diff --git a/include/asm-ia64/unaligned.h b/include/asm-ia64/unaligned.h
-index 7bddc7f..3ad9366 100644
---- a/include/asm-ia64/unaligned.h
-+++ b/include/asm-ia64/unaligned.h
-@@ -5,7 +5,4 @@
- #include <linux/unaligned/be_byteshift.h>
- #include <linux/unaligned/generic.h>
- 
--#define get_unaligned	__get_unaligned_le
--#define put_unaligned	__put_unaligned_le
--
- #endif /* _ASM_IA64_UNALIGNED_H */
-diff --git a/include/asm-m32r/unaligned.h b/include/asm-m32r/unaligned.h
-index 377eb20..04d4138 100644
---- a/include/asm-m32r/unaligned.h
-+++ b/include/asm-m32r/unaligned.h
-@@ -1,18 +1,16 @@
- #ifndef _ASM_M32R_UNALIGNED_H
- #define _ASM_M32R_UNALIGNED_H
- 
--#if defined(__LITTLE_ENDIAN__)
-+#include <asm/byteorder.h>
-+
-+#ifdef __LITTLE_ENDIAN
- # include <linux/unaligned/le_memmove.h>
- # include <linux/unaligned/be_byteshift.h>
--# include <linux/unaligned/generic.h>
--# define get_unaligned	__get_unaligned_le
--# define put_unaligned	__put_unaligned_le
- #else
- # include <linux/unaligned/be_memmove.h>
- # include <linux/unaligned/le_byteshift.h>
--# include <linux/unaligned/generic.h>
--# define get_unaligned	__get_unaligned_be
--# define put_unaligned	__put_unaligned_be
- #endif
- 
-+#include <linux/unaligned/generic.h>
-+
- #endif /* _ASM_M32R_UNALIGNED_H */
-diff --git a/include/asm-m68k/unaligned.h b/include/asm-m68k/unaligned.h
-index 77698f2..1b909e8 100644
---- a/include/asm-m68k/unaligned.h
-+++ b/include/asm-m68k/unaligned.h
-@@ -7,7 +7,4 @@
- #include <linux/unaligned/access_ok.h>
- #include <linux/unaligned/generic.h>
- 
--#define get_unaligned	__get_unaligned_be
--#define put_unaligned	__put_unaligned_be
--
- #endif /* _ASM_M68K_UNALIGNED_H */
-diff --git a/include/asm-m68knommu/unaligned.h b/include/asm-m68knommu/unaligned.h
-index eb1ea4c..965b640 100644
---- a/include/asm-m68knommu/unaligned.h
-+++ b/include/asm-m68knommu/unaligned.h
-@@ -5,21 +5,14 @@
- #ifdef CONFIG_COLDFIRE
- #include <linux/unaligned/be_struct.h>
- #include <linux/unaligned/le_byteshift.h>
--#include <linux/unaligned/generic.h>
--
--#define get_unaligned	__get_unaligned_be
--#define put_unaligned	__put_unaligned_be
- 
- #else
- /*
-  * The m68k can do unaligned accesses itself. 
-  */
- #include <linux/unaligned/access_ok.h>
--#include <linux/unaligned/generic.h>
--
--#define get_unaligned	__get_unaligned_be
--#define put_unaligned	__put_unaligned_be
--
- #endif
- 
-+#include <linux/unaligned/generic.h>
-+
- #endif /* _ASM_M68KNOMMU_UNALIGNED_H */
-diff --git a/include/asm-mips/unaligned.h b/include/asm-mips/unaligned.h
-index 7924049..28412fc 100644
---- a/include/asm-mips/unaligned.h
-+++ b/include/asm-mips/unaligned.h
-@@ -9,20 +9,16 @@
- #define _ASM_MIPS_UNALIGNED_H
- 
- #include <linux/compiler.h>
--#if defined(__MIPSEB__)
-+#include <asm/byteorder.h>
-+
-+#ifdef __BIG_ENDIAN
- # include <linux/unaligned/be_struct.h>
- # include <linux/unaligned/le_byteshift.h>
--# include <linux/unaligned/generic.h>
--# define get_unaligned	__get_unaligned_be
--# define put_unaligned	__put_unaligned_be
--#elif defined(__MIPSEL__)
-+#else
- # include <linux/unaligned/le_struct.h>
- # include <linux/unaligned/be_byteshift.h>
--# include <linux/unaligned/generic.h>
--# define get_unaligned	__get_unaligned_le
--# define put_unaligned	__put_unaligned_le
--#else
--#  error "MIPS, but neither __MIPSEB__, nor __MIPSEL__???"
- #endif
- 
-+#include <linux/unaligned/generic.h>
-+
- #endif /* _ASM_MIPS_UNALIGNED_H */
-diff --git a/include/asm-mn10300/unaligned.h b/include/asm-mn10300/unaligned.h
-index 0df6713..d0cf9b4 100644
---- a/include/asm-mn10300/unaligned.h
-+++ b/include/asm-mn10300/unaligned.h
-@@ -14,7 +14,4 @@
- #include <linux/unaligned/access_ok.h>
- #include <linux/unaligned/generic.h>
- 
--#define get_unaligned	__get_unaligned_le
--#define put_unaligned	__put_unaligned_le
--
- #endif /* _ASM_MN10300_UNALIGNED_H */
-diff --git a/include/asm-parisc/unaligned.h b/include/asm-parisc/unaligned.h
-index dfc5d33..3239de9 100644
---- a/include/asm-parisc/unaligned.h
-+++ b/include/asm-parisc/unaligned.h
-@@ -4,8 +4,6 @@
- #include <linux/unaligned/be_struct.h>
- #include <linux/unaligned/le_byteshift.h>
- #include <linux/unaligned/generic.h>
--#define get_unaligned	__get_unaligned_be
--#define put_unaligned	__put_unaligned_be
- 
- #ifdef __KERNEL__
- struct pt_regs;
-diff --git a/include/asm-powerpc/unaligned.h b/include/asm-powerpc/unaligned.h
-index 5f1b1e3..4ba95d5 100644
---- a/include/asm-powerpc/unaligned.h
-+++ b/include/asm-powerpc/unaligned.h
-@@ -9,8 +9,5 @@
- #include <linux/unaligned/access_ok.h>
- #include <linux/unaligned/generic.h>
- 
--#define get_unaligned	__get_unaligned_be
--#define put_unaligned	__put_unaligned_be
--
- #endif	/* __KERNEL__ */
- #endif	/* _ASM_POWERPC_UNALIGNED_H */
-diff --git a/include/asm-s390/unaligned.h b/include/asm-s390/unaligned.h
-index da9627a..75d37cb 100644
---- a/include/asm-s390/unaligned.h
-+++ b/include/asm-s390/unaligned.h
-@@ -7,7 +7,4 @@
- #include <linux/unaligned/access_ok.h>
- #include <linux/unaligned/generic.h>
- 
--#define get_unaligned	__get_unaligned_be
--#define put_unaligned	__put_unaligned_be
--
- #endif /* _ASM_S390_UNALIGNED_H */
-diff --git a/include/asm-sh/unaligned.h b/include/asm-sh/unaligned.h
-index c1641a0..6a15824 100644
---- a/include/asm-sh/unaligned.h
-+++ b/include/asm-sh/unaligned.h
-@@ -1,19 +1,17 @@
- #ifndef _ASM_SH_UNALIGNED_H
- #define _ASM_SH_UNALIGNED_H
- 
-+#include <asm/byteorder.h>
-+
- /* SH can't handle unaligned accesses. */
--#ifdef __LITTLE_ENDIAN__
-+#ifdef __LITTLE_ENDIAN
- # include <linux/unaligned/le_struct.h>
- # include <linux/unaligned/be_byteshift.h>
--# include <linux/unaligned/generic.h>
--# define get_unaligned	__get_unaligned_le
--# define put_unaligned	__put_unaligned_le
- #else
- # include <linux/unaligned/be_struct.h>
- # include <linux/unaligned/le_byteshift.h>
--# include <linux/unaligned/generic.h>
--# define get_unaligned	__get_unaligned_be
--# define put_unaligned	__put_unaligned_be
- #endif
- 
-+#include <linux/unaligned/generic.h>
-+
- #endif /* _ASM_SH_UNALIGNED_H */
-diff --git a/include/asm-sparc/unaligned.h b/include/asm-sparc/unaligned.h
-index 11d2d5f..77c7cac 100644
---- a/include/asm-sparc/unaligned.h
-+++ b/include/asm-sparc/unaligned.h
-@@ -4,7 +4,5 @@
- #include <linux/unaligned/be_struct.h>
- #include <linux/unaligned/le_byteshift.h>
- #include <linux/unaligned/generic.h>
--#define get_unaligned	__get_unaligned_be
--#define put_unaligned	__put_unaligned_be
- 
- #endif /* _ASM_SPARC_UNALIGNED_H */
-diff --git a/include/asm-sparc64/unaligned.h b/include/asm-sparc64/unaligned.h
-index edcebb0..8196716 100644
---- a/include/asm-sparc64/unaligned.h
-+++ b/include/asm-sparc64/unaligned.h
-@@ -4,7 +4,5 @@
- #include <linux/unaligned/be_struct.h>
- #include <linux/unaligned/le_byteshift.h>
- #include <linux/unaligned/generic.h>
--#define get_unaligned	__get_unaligned_be
--#define put_unaligned	__put_unaligned_be
- 
- #endif /* _ASM_SPARC64_UNALIGNED_H */
-diff --git a/include/asm-v850/unaligned.h b/include/asm-v850/unaligned.h
-index 53122b2..6e6f4d2 100644
---- a/include/asm-v850/unaligned.h
-+++ b/include/asm-v850/unaligned.h
-@@ -16,7 +16,4 @@
- #include <linux/unaligned/le_byteshift.h>
- #include <linux/unaligned/generic.h>
- 
--#define get_unaligned	__get_unaligned_le
--#define put_unaligned	__put_unaligned_le
--
- #endif /* _ASM_V850_UNALIGNED_H */
-diff --git a/include/asm-x86/unaligned.h b/include/asm-x86/unaligned.h
-index a7bd416..4c3fe16 100644
---- a/include/asm-x86/unaligned.h
-+++ b/include/asm-x86/unaligned.h
-@@ -4,11 +4,7 @@
- /*
-  * The x86 can do unaligned accesses itself.
-  */
--
- #include <linux/unaligned/access_ok.h>
- #include <linux/unaligned/generic.h>
- 
--#define get_unaligned __get_unaligned_le
--#define put_unaligned __put_unaligned_le
--
- #endif /* _ASM_X86_UNALIGNED_H */
-diff --git a/include/asm-xtensa/unaligned.h b/include/asm-xtensa/unaligned.h
-index 8f3424f..13ae4bb 100644
---- a/include/asm-xtensa/unaligned.h
-+++ b/include/asm-xtensa/unaligned.h
-@@ -10,20 +10,16 @@
- #ifndef _ASM_XTENSA_UNALIGNED_H
- #define _ASM_XTENSA_UNALIGNED_H
- 
--#ifdef __XTENSA_EL__
-+#include <asm/byteorder.h>
-+
-+#ifdef __LITTLE_ENDIAN
- # include <linux/unaligned/le_memmove.h>
- # include <linux/unaligned/be_byteshift.h>
--# include <linux/unaligned/generic.h>
--# define get_unaligned	__get_unaligned_le
--# define put_unaligned	__put_unaligned_le
--#elif defined(__XTENSA_EB__)
-+#else
- # include <linux/unaligned/be_memmove.h>
- # include <linux/unaligned/le_byteshift.h>
--# include <linux/unaligned/generic.h>
--# define get_unaligned	__get_unaligned_be
--# define put_unaligned	__put_unaligned_be
--#else
--# error processor byte order undefined!
- #endif
- 
-+#include <linux/unaligned/generic.h>
-+
- #endif	/* _ASM_XTENSA_UNALIGNED_H */
-diff --git a/include/linux/unaligned/generic.h b/include/linux/unaligned/generic.h
-index 02d97ff..bd4c6c9 100644
---- a/include/linux/unaligned/generic.h
-+++ b/include/linux/unaligned/generic.h
-@@ -1,6 +1,8 @@
- #ifndef _LINUX_UNALIGNED_GENERIC_H
- #define _LINUX_UNALIGNED_GENERIC_H
- 
-+#include <asm/byteorder.h>
-+
- /*
-  * Cause a link-time error if we try an unaligned access other than
-  * 1,2,4 or 8 bytes long
-@@ -65,4 +67,12 @@ extern void __bad_unaligned_access_size(void);
- 	}								\
- 	(void)0; })
- 
-+#ifdef __LITTLE_ENDIAN
-+# define get_unaligned __get_unaligned_le
-+# define put_unaligned __put_unaligned_le
-+#else
-+# define get_unaligned __get_unaligned_be
-+# define put_unaligned __put_unaligned_be
-+#endif
-+
- #endif /* _LINUX_UNALIGNED_GENERIC_H */
--- 
-1.5.6.1.281.g1087e
-
+Regards,
+Nadia
 
 
