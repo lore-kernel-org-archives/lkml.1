@@ -1,60 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759917AbYGDQzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760553AbYGDQ4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759917AbYGDQzo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 12:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759798AbYGDQvo
+	id S1760553AbYGDQ4H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 12:56:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759727AbYGDQvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 4 Jul 2008 12:51:45 -0400
+Received: from saeurebad.de ([85.214.36.134]:38555 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755582AbYGDQvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Jul 2008 12:51:44 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:28184 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759772AbYGDQvm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 12:51:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=oisZbKURNGN2+pzItM/Ee+KR4c5X/Ggdm5OP9K00nrosgyp8p06mKNY/pzcVJH1JJh
-         lKbaxlNRPxtz3u3jCsRBBjaXLkwVGsDLFEkgoPYp6hOOkDho7mSOW3m/JlI5gErp42yi
-         IDPrrFEjkMcjB2PFaar3GlU3qKD75dgcRRXi8=
-Date: Sat, 5 Jul 2008 01:51:37 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-Subject: [PATCH -mm] fix s390-cio-use-memory_read_from_buffer.patch
-Message-ID: <20080704165136.GB22477@localhost.localdomain>
-References: <200807040647.m646lXpN017508@imap1.linux-foundation.org> <1215182555.5413.8.camel@localhost.localdomain> <20080704163942.GA15214@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Disposition: inline
-In-Reply-To: <20080704163942.GA15214@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Mailbox-Line: From hannes@saeurebad.de Fri Jul  4 18:14:55 2008
+Message-Id: <20080704161455.557529499@saeurebad.de>
+References: <20080704160737.750988999@saeurebad.de>
+User-Agent: quilt/0.46-1
+Date: Fri, 04 Jul 2008 18:07:48 +0200
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [PATCH 11/20] s390: use generic show_mem()
+Content-Disposition: inline; filename=s390-use-generic-show_mem.patch
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now memory_read_from_buffer() belongs in string.h
+Remove arch-specific show_mem() in favor of the generic version.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+This also removes the following redundant information display:
+
+	- pages in swapcache, printed by show_swap_cache_info()
+
+where show_mem() calls show_free_areas(), which calls
+show_swap_cache_info().
+
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 ---
- drivers/s390/cio/chp.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/s390/mm/init.c |   32 --------------------------------
+ 1 file changed, 32 deletions(-)
 
-Index: 2.6-mm/drivers/s390/cio/chp.c
-===================================================================
---- 2.6-mm.orig/drivers/s390/cio/chp.c
-+++ 2.6-mm/drivers/s390/cio/chp.c
-@@ -15,7 +15,7 @@
- #include <linux/wait.h>
- #include <linux/mutex.h>
- #include <linux/errno.h>
--#include <linux/fs.h>
-+#include <linux/string.h>
- #include <asm/chpid.h>
- #include <asm/sclp.h>
+--- a/arch/s390/mm/init.c
++++ b/arch/s390/mm/init.c
+@@ -42,38 +42,6 @@ DEFINE_PER_CPU(struct mmu_gather, mmu_ga
+ pgd_t swapper_pg_dir[PTRS_PER_PGD] __attribute__((__aligned__(PAGE_SIZE)));
+ char  empty_zero_page[PAGE_SIZE] __attribute__((__aligned__(PAGE_SIZE)));
  
+-void show_mem(void)
+-{
+-	unsigned long i, total = 0, reserved = 0;
+-	unsigned long shared = 0, cached = 0;
+-	unsigned long flags;
+-	struct page *page;
+-	pg_data_t *pgdat;
+-
+-	printk("Mem-info:\n");
+-	show_free_areas();
+-	for_each_online_pgdat(pgdat) {
+-		pgdat_resize_lock(pgdat, &flags);
+-		for (i = 0; i < pgdat->node_spanned_pages; i++) {
+-			if (!pfn_valid(pgdat->node_start_pfn + i))
+-				continue;
+-			page = pfn_to_page(pgdat->node_start_pfn + i);
+-			total++;
+-			if (PageReserved(page))
+-				reserved++;
+-			else if (PageSwapCache(page))
+-				cached++;
+-			else if (page_count(page))
+-				shared += page_count(page) - 1;
+-		}
+-		pgdat_resize_unlock(pgdat, &flags);
+-	}
+-	printk("%ld pages of RAM\n", total);
+-	printk("%ld reserved pages\n", reserved);
+-	printk("%ld pages shared\n", shared);
+-	printk("%ld pages swap cached\n", cached);
+-}
+-
+ /*
+  * paging_init() sets up the page tables
+  */
+
+-- 
+
