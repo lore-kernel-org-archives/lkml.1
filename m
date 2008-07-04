@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757172AbYGDIed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbYGDIu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757172AbYGDIed (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 04:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYGDIeZ
+	id S1756109AbYGDIu3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 04:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbYGDIuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 04:34:25 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44707 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752630AbYGDIeY (ORCPT
+	Fri, 4 Jul 2008 04:50:20 -0400
+Received: from mail164.messagelabs.com ([216.82.253.131]:17198 "EHLO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753314AbYGDIuT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 04:34:24 -0400
-Date: Fri, 4 Jul 2008 09:16:29 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <Uwe.Kleine-Koenig@digi.com>
-Cc: Magnus Damm <magnus.damm@gmail.com>, "Hans J. Koch" <hjk@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "lethal@linux-sh.org" <lethal@linux-sh.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: Re: [PATCH] uio: User IRQ Mode
-Message-ID: <20080704091629.66576eb7@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080704060108.GA11794@digi.com>
-References: <20080702105951.22648.2197.sendpatchset@rx1.opensource.se>
-	<20080702125400.GC3199@local>
-	<20080703071019.GC12214@digi.com>
-	<20080703124505.GB3197@local>
-	<aec7e5c30807032103p7626dcbdwe06c5fac461372c1@mail.gmail.com>
-	<20080704060108.GA11794@digi.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Jul 2008 04:50:19 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-8.tower-164.messagelabs.com!1215161418!13400274!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.14]
+Date: Fri, 4 Jul 2008 10:50:14 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: <linux-kernel@vger.kernel.org>
+CC: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: alphabetic ordering of MAINTAINERS
+Message-ID: <20080704085014.GA678@digi.com>
+References: <20080704063455.GA13999@digi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080704063455.GA13999@digi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 04 Jul 2008 08:50:15.0051 (UTC) FILETIME=[FA2205B0:01C8DDB2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 	Note that this implies that the interrupt might be disabled for
-> 	long periods, so this isn't usable for shared interrupt lines.
+Hello,
 
-It isn't usable for shared lines anyway - because you would have deadlocks
+now I scripted a bit and the result is at
+
+	http://www.modarm9.com/git/people/ukleinek/linux-2.6.git?a=shortlog;h=refs/heads/maintainers
+
+and
+
+	git://www.modarm9.com/gitsrc/pub/people/ukleinek/linux-2.6.git maintainers
+
+.  Shortlog and diffstat are below.
+
+Best regards
+Uwe
+
+Uwe Kleine-König (3):
+      MAINTAINERS: fix format
+      MAINTAINERS: fix alphabetic ordering
+      MAINTAINERS: merge P: and M: fields to ease copy'n'paste
+
+
+ MAINTAINERS | 3144 ++++++++++++++++++++++-------------------------------------
+ 1 files changed, 1189 insertions(+), 1955 deletions(-)
+		
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
