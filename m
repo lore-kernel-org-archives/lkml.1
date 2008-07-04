@@ -1,83 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbYGDNkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758648AbYGDNke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757065AbYGDNkL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 09:40:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbYGDNj4
+	id S1758648AbYGDNke (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 09:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758294AbYGDNkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 09:39:56 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:48921 "EHLO mail.dvmed.net"
+	Fri, 4 Jul 2008 09:40:19 -0400
+Received: from www.tglx.de ([62.245.132.106]:60060 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753516AbYGDNjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 09:39:55 -0400
-Message-ID: <486E2818.1060003@garzik.org>
-Date: Fri, 04 Jul 2008 09:39:36 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1753679AbYGDNkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 09:40:18 -0400
+Date: Fri, 4 Jul 2008 15:39:58 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Paul Mundt <lethal@linux-sh.org>,
+       Uwe Kleine-K?nig <Uwe.Kleine-Koenig@digi.com>,
+       Magnus Damm <magnus.damm@gmail.com>, "Hans J. Koch" <hjk@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [PATCH] uio: User IRQ Mode
+Message-ID: <20080704133958.GD2257@local>
+References: <20080702105951.22648.2197.sendpatchset@rx1.opensource.se> <20080702125400.GC3199@local> <20080703071019.GC12214@digi.com> <20080703124505.GB3197@local> <aec7e5c30807032103p7626dcbdwe06c5fac461372c1@mail.gmail.com> <20080704060108.GA11794@digi.com> <aec7e5c30807040048yd8543d4n2edba43524279b6f@mail.gmail.com> <20080704081125.GA26703@digi.com> <20080704082959.GA9442@linux-sh.org>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       tytso@mit.edu, hugh@veritas.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-References: <1215093175.10393.567.camel@pmac.infradead.org>	 <20080703173040.GB30506@mit.edu>	 <1215111362.10393.651.camel@pmac.infradead.org>	 <20080703.162120.206258339.davem@davemloft.net>	 <486D6DDB.4010205@infradead.org>  <87ej6armez.fsf@basil.nowhere.org>	 <1215177044.10393.743.camel@pmac.infradead.org>	 <486E2260.5050503@garzik.org> <1215178035.10393.763.camel@pmac.infradead.org>
-In-Reply-To: <1215178035.10393.763.camel@pmac.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080704082959.GA9442@linux-sh.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Fri, 2008-07-04 at 09:15 -0400, Jeff Garzik wrote:
->> However, there is still a broken element to the system:  the firmware no 
->> longer rides along in the module's .ko file.  That introduces new 
->> problems for any user and script that copies modules around.
->>
->> The compiled-in firmware should be in the same place where it was before 
->> your changes -- in the driver's kernel module.
+On Fri, Jul 04, 2008 at 05:29:59PM +0900, Paul Mundt wrote:
+> On Fri, Jul 04, 2008 at 10:11:25AM +0200, Uwe Kleine-K?nig wrote:
+> > Magnus Damm wrote:
+> > > > Maybe it's sensible to add the User IRQ Mode functions at least for now
+> > > > into platform code.  Then at a later time if and when there are several
+> > > > copies the discussion to move it to the generic part might be easier.
+> > > 
+> > > Do you mean your uio_pdrv driver?
+> > No, I don't.  I meant arch/whatever/...
+> > 
+> Placing it in arch/ makes no sense, as there is nothing platform or
+> architecture specific about it. It is a generic bit of functionality that
+> various platforms may or may not want to enable, it should be reflected
+> in UIO directly and simply enabled by those that care. Copying it around
+> all over the place to make up for the fact the UIO people don't want to
+> take patches is not a solution.
+
+Why don't you make it a driver of it's own? Maybe some uio_pdrv_genirq?
+I'm not really sure if it's a good idea (need to think about it), but
+it's certainly easier to accept.
+
+No need to change the UIO core.
+
 > 
-> No, Jeff. That is neither new, nor a real problem. You're just
-> posturing.
+> > If you want to add it to uio_pdrv you either have to introduce a new
+> > header file or you need to add it to uio_driver.h.  IMHO the first is
+> > ugly and I'm sure Hans will object the latter.
+> > 
+> I'm sure Hans will object to pretty much any UIO patch that adds
+> functionality he didn't envision from the beginning,
+
+Like uio_pdrv?
+
+> but that doesn't
+> justify burying this crap in the architecture code. Likewise, without any
+> serious technical objections to the user IRQ mode, it's also difficult to
+> care. So far all of the technical issues raised in this thread and the
+> ones before it have all been readily addressed, and I'm unaware of any
+> outstanding issues here.
 > 
-> That's the way it has been for a _long_ time anyway, for any modern
-> driver which uses request_firmware(). The whole point about modules is
-> _modularity_. Yes, that means that sometimes they depend on _other_
-> modules, or on firmware. 
-> 
-> The scripts which handle that kind of thing have handled inter-module
-> dependencies, and MODULE_FIRMWARE(), for a long time now.
+> Having said that, it would be nice to respin this encapsulating your
+> rewrite of the commit log so there's less confusion, and then see about
+> having Greg or Andrew merge this. The patch can easily be reworked if
+> anyone else raises any technical concerns about this particular approach.
 
-You have been told repeatedly that cp(1) and scp(1) are commonly used to 
-transport the module David and I care about -- tg3.  It's been a single 
-file module since birth, and people take advantage of that fact.
+Please read my other postings in this thread. You cannot ignore
+everything just because it's not important on the SH board in front of
+you.
 
-Therefore, logically, you have introduced additional dependencies and 
-regressions into what was once a single-file copy.
-
-If you wish to hand-wave away what developers and users do today as 
-posturing, that's up to you...
-
-How difficult is it to see that you must create a system that LET'S 
-PEOPLE CHOOSE whether or not they like your stuff.
-
-Why are you so hell-bent on removing choice?
-
-Why is it so difficult to see the value of KEEPING STUFF WORKING AS IT 
-WORKS TODAY?
-
-Doing so (a) keeps developers happy, (b) GUARANTEES no regressions, and 
-(c) in no way excludes /lib/firmware, moving firmware to userspace.
-
-Sheesh.
-
-Let developers, users, and distros endorse your plan on their own 
-schedule.  Stop forcing your choices down our throats.
-
-	Jeff
+Thanks,
+Hans
 
 
