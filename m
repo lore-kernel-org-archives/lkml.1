@@ -1,91 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbYGDGuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbYGDGwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757584AbYGDGuy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 02:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbYGDGur
+	id S1757977AbYGDGwA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 02:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbYGDGvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 02:50:47 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:49026 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752061AbYGDGuq (ORCPT
+	Fri, 4 Jul 2008 02:51:52 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:59899 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752713AbYGDGvv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 02:50:46 -0400
-Date: Fri, 4 Jul 2008 09:50:44 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: torvalds@linux-foundation.org
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org, yoichi_yuasa@tripeaks.co.jp, mpm@selenic.com
-Subject: [GIT PULL] SLUB fixes for 2.6.26
-Message-ID: <Pine.LNX.4.64.0807040950180.14520@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Jul 2008 02:51:51 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" <Uwe.Kleine-Koenig@digi.com>
+Subject: Re: alphabetic ordering of MAINTAINERS
+Date: Fri, 4 Jul 2008 08:52:27 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
+References: <20080704063455.GA13999@digi.com>
+In-Reply-To: <20080704063455.GA13999@digi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200807040852.27809.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Am Freitag 04 Juli 2008 08:34:55 schrieb Uwe Kleine-König:
+> Hello,
+> 
+> I wanted to add an entry to MAINTAINERS and while doing it I saw that in
+> the corresponding region the alphabetic ordering is broken.  Then I
+> inteded to fix that up for a trivial patch.  Next was to check the rest
+> of the file and there are so much misorderings that it's not sensible to
+> choose the trivial path anymore as there are currently 114 entries out
+> of order[1].
 
-Please pull the latest SLAB git tree from:
+What good does alphabetic ordering? You'll grep it anyway.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git for-linus
+	Regards
+		Oliver
 
-The tree has just one changeset that fixes SLUB boot-time warnings on MIPS as
-reported by Yoichi Yuasa.
-
-                Pekka
-
-Christoph Lameter (1):
-      slub: Do not use 192 byte sized cache if minimum alignment is 128 byte
-
- include/linux/slub_def.h |    2 ++
- mm/slub.c                |   12 ++++++++++--
- 2 files changed, 12 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
-index 71e43a1..cef6f8f 100644
---- a/include/linux/slub_def.h
-+++ b/include/linux/slub_def.h
-@@ -137,10 +137,12 @@ static __always_inline int kmalloc_index(size_t size)
- 	if (size <= KMALLOC_MIN_SIZE)
- 		return KMALLOC_SHIFT_LOW;
- 
-+#if KMALLOC_MIN_SIZE <= 64
- 	if (size > 64 && size <= 96)
- 		return 1;
- 	if (size > 128 && size <= 192)
- 		return 2;
-+#endif
- 	if (size <=          8) return 3;
- 	if (size <=         16) return 4;
- 	if (size <=         32) return 5;
-diff --git a/mm/slub.c b/mm/slub.c
-index 0987d1c..2c9a62d 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2995,8 +2995,6 @@ void __init kmem_cache_init(void)
- 		create_kmalloc_cache(&kmalloc_caches[1],
- 				"kmalloc-96", 96, GFP_KERNEL);
- 		caches++;
--	}
--	if (KMALLOC_MIN_SIZE <= 128) {
- 		create_kmalloc_cache(&kmalloc_caches[2],
- 				"kmalloc-192", 192, GFP_KERNEL);
- 		caches++;
-@@ -3026,6 +3024,16 @@ void __init kmem_cache_init(void)
- 	for (i = 8; i < KMALLOC_MIN_SIZE; i += 8)
- 		size_index[(i - 1) / 8] = KMALLOC_SHIFT_LOW;
- 
-+	if (KMALLOC_MIN_SIZE == 128) {
-+		/*
-+		 * The 192 byte sized cache is not used if the alignment
-+		 * is 128 byte. Redirect kmalloc to use the 256 byte cache
-+		 * instead.
-+		 */
-+		for (i = 128 + 8; i <= 192; i += 8)
-+			size_index[(i - 1) / 8] = 8;
-+	}
-+
- 	slab_state = UP;
- 
- 	/* Provide the correct kmalloc names now that the caches are up */
