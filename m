@@ -1,122 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757114AbYGDLMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757061AbYGDLNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757114AbYGDLMl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 07:12:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbYGDLMc
+	id S1757061AbYGDLNc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 07:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYGDLNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 07:12:32 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:49006 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752043AbYGDLMb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 07:12:31 -0400
-Date: Fri, 4 Jul 2008 13:12:29 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Joel Becker <Joel.Becker@oracle.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [Ocfs2-devel] [BUGFIX][PATCH 1/2] configfs: Prevent userspace
-	from creating new entries under attaching directories
-Message-ID: <20080704111229.GG30545@hawkmoon.kerlabs.com>
-Reply-To: Louis.Rilling@kerlabs.com
-References: <1214503549-15678-1-git-send-email-louis.rilling@kerlabs.com> <1214503549-15678-2-git-send-email-louis.rilling@kerlabs.com> <20080703215856.GG1502@mail.oracle.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-5271-1215169849-0001-2"
+	Fri, 4 Jul 2008 07:13:24 -0400
+Received: from mail.macqel.be ([194.78.208.39]:22208 "EHLO mail.macqel.be"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752043AbYGDLNX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 07:13:23 -0400
+Date: Fri, 4 Jul 2008 13:13:18 +0200
+From: Philippe De Muyter <phdm@macqel.be>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
+       libdc1394-devel@lists.sourceforge.net, stefanr@s5r6.in-berlin.de,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: mmap'ed memory in core files ?
+Message-ID: <20080704111318.GA28377@frolo.macqel>
+References: <20080701132149.GA32510@frolo.macqel> <517f3f820807011116g6ce1b3e1qf166070f7a4c523f@mail.gmail.com> <20080702105027.GA1111@frolo.macqel> <cfd18e0f0807020358k317575c6ra0187428098f0160@mail.gmail.com> <486C4CC5.2060006@hitachi.com> <20080703092247.GA13430@frolo.macqel> <486DBA21.3080106@hitachi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080703215856.GG1502@mail.oracle.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <486DBA21.3080106@hitachi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Hi Hidehiro,
+On Fri, Jul 04, 2008 at 02:50:25PM +0900, Hidehiro Kawai wrote:
+[...]
+> > I see the following ways to solve my problem :
+> >     - do not tag the zone as VM_RESERVED in ieee1394::dma_region_mmap
+> >     - tag the zone as VM_ALWAYSDUMP in ieee1394::dma_region_mmap
+> >     - add a bit in coredump_filter to dump the VM_RESERVED zones.
+> > 
+> > As I don't know the real meaning of VM_RESERVED, I do not know which choice
+> > is the best one for the official kernel tree, but locally I'll go for
+> > adding VM_ALWAYSDUMP in ieee1394::dma_region_mmap.
+> 
+> I'm afraid I don't know real usages of VM_RESERVED and VM_IO, either.
+> Allowing everyone to choose whether dump the dma region or not,
+> perhaps we need to introduce a new VM flag (e.g. VM_DUMPABLE) and
+> a coredump_filter bit which controls (VM_IO | VM_RESERVED) &&
+> VM_DUMPABLE area, for example.
+> 
+> I think it is also OK to just add VM_ALWAYSDUMP flag to the dma
+> region if the device driver knows the region is safely readable
+> and small enough.
 
---=_bohort-5271-1215169849-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I have just submitted a patch doing that for ieee1394 dma regions:
 
-On Thu, Jul 03, 2008 at 02:58:56PM -0700, Joel Becker wrote:
-> On Thu, Jun 26, 2008 at 08:05:48PM +0200, Louis Rilling wrote:
-> > This commit fixes 1/, tagging new directories with CONFIGFS_USET_CREATI=
-NG before
-> > building the inode and instantiating the dentry, and validating the who=
-le
-> > group+default groups hierarchy in a second pass by clearing
-> > CONFIGFS_USET_CREATING.
->=20
-> 	Man, I'm wary of all these in-flight flags.  I hope they are all
-> orthogonal :-)
+http://marc.info/?l=linux-kernel&m=121510404729225&w=2
 
-Yes they are :)
+Thanks for your help
 
->=20
-> > 	mkdir(), symlink(), lookup(), and dir_open() simply return -ENOENT if
-> > called in (or linking to) a directory tagged with CONFIGFS_USET_CREATIN=
-G. This
->=20
-> 	Why not block until the create is done?
-
-Hm, I think that we can't without risking deadlocks.
-
-- mkdir(): we can only hit CONFIGFS_USET_CREATING when called inside a defa=
-ult
-  group A/.../B of a new group A being attached. We hold B's i_mutex from
-  sys_mkdirat(). We must not block because this could deadlock with
-  detach_groups() in case the new group A fails to attach all its default
-  groups.
-- symlink(): same issue as mkdir(), plus the fact that it is not possible to
-  block on the target of symlink(), because of potential deadlocks with
-  lock_rename().
-- lookup(): same issue as mkdir().
-- dir_open(): same issue as mkdir().
-
->=20
-> > +	/*
-> > +	 * Fake invisibility if dir belongs to a group/default groups hierarc=
-hy
-> > +	 * being attached
-> > +	 *
-> > +	 * This forbids userspace to read/write attributes of items which may
-> > +	 * not complete their initialization, since the dentries of the
-> > +	 * attributes won't be instantiated.
-> > +	 */
-> int configfs_dirent_is_ready(struct configfs_dirent *sd)
-> {
-> 	int err =3D 0;
-> > +	spin_lock(&configfs_dirent_lock);
-> > +	if (parent_sd->s_type & CONFIGFS_USET_CREATING)
-> > +		err =3D -ENOENT;
-> > +	spin_unlock(&configfs_dirent_lock);
-> 	return err;
-> }
->=20
-> 	Then use is_ready() in the five places you check it ;-)  Perhaps
-> change configfs_validate_dir() to configfs_dir_set_ready().  I do like
-> the way validate_dir() is coded.
-
-Ok. I'll resend the patchset with this change.
-
-Louis
-
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
-
---=_bohort-5271-1215169849-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIbgWdVKcRuvQ9Q1QRAo41AKCgxm0VytUj6+k+UG8XM+H6R1tjQgCfepKN
-crcG2mCzQxgHTt/ZzAhd2gs=
-=aLZy
------END PGP SIGNATURE-----
-
---=_bohort-5271-1215169849-0001-2--
+Philippe
