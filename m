@@ -1,53 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbYGDMGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbYGDMJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755550AbYGDMGU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 08:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYGDMGI
+	id S1755848AbYGDMJW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 08:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbYGDMJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 08:06:08 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:35590 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752924AbYGDMGH convert rfc822-to-8bit (ORCPT
+	Fri, 4 Jul 2008 08:09:09 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:34168 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752982AbYGDMJH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 08:06:07 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: Bernd Petrovitsch <bernd@firmix.at>
-Subject: Re: alphabetic ordering of MAINTAINERS
-Date: Fri, 4 Jul 2008 14:06:41 +0200
-User-Agent: KMail/1.9.9
-Cc: "Uwe =?utf-8?q?Kleine-K=C3=B6nig?=" <Uwe.Kleine-Koenig@digi.com>,
-       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
-References: <20080704063455.GA13999@digi.com> <200807040852.27809.oliver@neukum.org> <1215172969.25343.32.camel@tara.firmix.at>
-In-Reply-To: <1215172969.25343.32.camel@tara.firmix.at>
+	Fri, 4 Jul 2008 08:09:07 -0400
+Message-Id: <B7BFE816D02640B8A5EFDD83E9C23FB9@nsl.ad.nec.co.jp>
+From: "Takashi Sato" <t-sato@yk.jp.nec.com>
+To: "Eric Sandeen" <sandeen@redhat.com>, "Alasdair G Kergon" <agk@redhat.com>,
+       "Dave Chinner" <david@fromorbit.com>
+Cc: <dm-devel@redhat.com>, <linux-fsdevel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>, <viro@ZenIV.linux.org.uk>,
+       <linux-ext4@vger.kernel.org>, <xfs@oss.sgi.com>,
+       "Christoph Hellwig" <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
+       <axboe@kernel.dk>, <mtk.manpages@googlemail.com>
+References: <20080630212450t-sato@mail.jp.nec.com> <20080701081026.GB16691@infradead.org> <20080701105251.GC22522@agk.fab.redhat.com> <9942A69CB65D4A41B39F36AF8EEF6F22@nsl.ad.nec.co.jp> <20080703124709.GI22522@agk.fab.redhat.com> <20080703221133.GA29319@disturbed>
+In-Reply-To: <20080703221133.GA29319@disturbed>
+Subject: Re: [dm-devel] Re: [PATCH 3/3] Add timeout feature
+Date: Fri, 4 Jul 2008 21:08:09 +0900
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200807041406.41801.oliver@neukum.org>
+	format=flowed;
+	charset="ISO-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Windows Mail 6.0.6000.16480
+X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6000.16545
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 04 Juli 2008 14:02:49 schrieb Bernd Petrovitsch:
-> On Fre, 2008-07-04 at 08:52 +0200, Oliver Neukum wrote:
-> > Am Freitag 04 Juli 2008 08:34:55 schrieb Uwe Kleine-König:
-> [...]
-> > > I wanted to add an entry to MAINTAINERS and while doing it I saw that in
-> > > the corresponding region the alphabetic ordering is broken.  Then I
-> > > inteded to fix that up for a trivial patch.  Next was to check the rest
-> > > of the file and there are so much misorderings that it's not sensible to
-> > > choose the trivial path anymore as there are currently 114 entries out
-> > > of order[1].
-> > 
-> > What good does alphabetic ordering? You'll grep it anyway.
-> 
-> If two (or more) people submit patches to add a maintainer entry, is is
-> less likely to conflict.
-> And duplicates are more easily detected (without tools).
+Hi Alasdair, Eric and Dave,
 
-If you can come up with a rule for naming a driver, yes.
+> On Thu, Jul 03, 2008 at 01:47:10PM +0100, Alasdair G Kergon wrote:
+>> On Thu, Jul 03, 2008 at 09:11:05PM +0900, Takashi Sato wrote:
+>> > If the freezer accesses the frozen filesystem and causes a deadlock,
+>> > the above ideas can't solve it
+>>
+>> But you could also say that if the 'freezer' process accesses the frozen
+>> filesystem and deadlocks then that's just a bug and that userspace code
+>> should be fixed and there's no need to introduce the complexity of a
+>> timeout parameter.
+>
+> Seconded - that was also my primary objection to the timeout code.
 
-	Regards
-		Oliver
+I will consider removing the timeout.
+
+>> The point I'm trying to make here is:
+>>   Under what real-world circumstances might multiple concurrent freezing
+>>   attempts occur, and which of A, B or C (or other variations) would be
+>>   the most appropriate way of handling such situations?
+>>
+>> A common example is people running xfs_freeze followed by an lvm command
+>> which also attempts to freeze the filesystem.
+>
+> Yes, I've seen that reported a number of times.
+>
+>> I can see a case for B or C, but personally I prefer A:
+>>
+>> > > 1 succeeds, freezes
+>> > > 2 succeeds, remains frozen
+>> > > 3 succeeds, remains frozen
+>> > > 4 succeeds, thaws
+>
+> Agreed, though I'd modify the definition of that case to be "remain
+> frozen until the last thaw occurs". That has the advantage that
+> it's relatively simple to implement with just a counter...
+
+I agree this idea.
+But I have one concern. When device-mapper's freeze follows FIFREEZE,
+can device-mapper freeze only device-mapper's part correctly?
+And when device-mapper's thaw follows FITHAW,
+can device-mapper thaw only device-mapper's part?
+
+Cheers, Takashi 
