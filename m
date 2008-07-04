@@ -1,69 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYGDSMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753950AbYGDS3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbYGDSMc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 14:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbYGDSMX
+	id S1753950AbYGDS3c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 14:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYGDS3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 14:12:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37573 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbYGDSMX (ORCPT
+	Fri, 4 Jul 2008 14:29:23 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:17482 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750848AbYGDS3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 14:12:23 -0400
-Date: Fri, 4 Jul 2008 11:12:24 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: How to alloc highmem page below 4GB on i386?
-Message-ID: <20080704111224.68266afc@infradead.org>
-In-Reply-To: <20080704195800.4ef6e00a@mjolnir.drzeus.cx>
-References: <20080630200323.2a5992cd@mjolnir.drzeus.cx>
-	<20080704195800.4ef6e00a@mjolnir.drzeus.cx>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 4 Jul 2008 14:29:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=quaUaDdD1Le6/Fkyg+YKYTx1fj4NyDeQhp4aGaywigsPRQnJEJT58YpiD26UE22Gcy
+         bR7Mo1dRlGzSrul7Qimf77Oe5snvHwSzFiFMhziYW5aAYjawdSY10AhKUFcLMXEEoVaV
+         DvYZSbdQGmii0nMVKoiXBuTbAdxufdtMO7Lcw=
+Date: Fri, 4 Jul 2008 14:29:10 -0400
+From: Joseph Fannin <jfannin@gmail.com>
+To: Alan Cox <alan@redhat.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next-0703 -- more ppc serial fixes
+Message-ID: <20080704182909.GB1631@nineveh.local>
+Mail-Followup-To: Alan Cox <alan@redhat.com>, linux-next@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
+References: <20080703190948.8e7bceca.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080703190948.8e7bceca.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Jul 2008 19:58:00 +0200
-Pierre Ossman <drzeus-list@drzeus.cx> wrote:
+On Thu, Jul 03, 2008 at 07:09:48PM +1000, Stephen Rothwell wrote:
 
-> On Mon, 30 Jun 2008 20:03:23 +0200
-> Pierre Ossman <drzeus-list@drzeus.cx> wrote:
-> 
-> > Simple question. How do I allocate a page from highmem, that's still
-> > within 32 bits? x86_64 has the DMA32 zone, but i386 has just
-> > HIGHMEM. As most devices can't DMA above 32 bit, I have 3 GB of
-> > memory that's not getting decent usage (or results in needless
-> > bouncing). What to do?
-> > 
-> > I tried just enabling CONFIG_DMA32 for i386, but there is some guard
-> > against too many memory zones. I'm assuming this is there for a good
-> > reason?
-> > 
-> 
-> Anyone?
-> 
+[next-0703]
 
-well... the assumption sort of is that all high-perf devices are 64 bit
-capable. For the rest... well you get what you get. There's IOMMU's in
-modern systems from Intel (and soon AMD) that help you avoid the bounce
-if you really care. 
+> $ git quiltimport --author "Alan Cox <alan@lxorguk.ukuu.org.uk>" --patches "../quilt/ttydev"
 
-The second assumption sort of is that you don't have 'too much' above
-4Gb; once you're over 16Gb or so people assume you will run the 64 bit
-kernel instead...
-(you're hard pressed to find any system nowadays that can support > 4Gb
-but cannot support 64 bit... a few years ago that was different but 64
-bit has been with us for many years now)
+More fixes for ppc serial drivers seem to be needed since next-0701 (exclusive):
 
+drivers/serial/mpc52xx_uart.c: In function 'mpc52xx_uart_int_rx_chars':
+drivers/serial/mpc52xx_uart.c:735: error: 'struct uart_info' has no member named 'tty'
+drivers/serial/mpc52xx_uart.c: In function 'mpc52xx_uart_of_probe':
+drivers/serial/mpc52xx_uart.c:1277: warning: cast to pointer from integer of different size
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+[...]
+
+drivers/serial/uartlite.c: In function 'ulite_receive':
+drivers/serial/uartlite.c:78: error: 'struct uart_info' has no member named 'tty'
+drivers/serial/uartlite.c: In function 'ulite_isr':
+drivers/serial/uartlite.c:165: error: 'struct uart_info' has no member named 'tty'
+
+The following patch just fixes the build errors gcc emitted; if more
+is needed to make the drivers actually work, it's wasn't blatently
+obvious.
+
+The patch is against next-0703, but I don't think it will matter.
+
+FWIW --
+Signed-Off-By: Joseph Fannin <jfannin@gmail.com>
+
+---
+
+diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+index e673008..d456cda 100644
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -732,7 +732,7 @@ static struct uart_ops mpc52xx_uart_ops = {
+ static inline int
+ mpc52xx_uart_int_rx_chars(struct uart_port *port)
+ {
+-	struct tty_struct *tty = port->info->tty;
++	struct tty_struct *tty = port->info->port.tty;
+ 	unsigned char ch, flag;
+ 	unsigned short status;
+ 
+diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
+index b51c242..6a3f8fb 100644
+--- a/drivers/serial/uartlite.c
++++ b/drivers/serial/uartlite.c
+@@ -75,7 +75,7 @@ static struct uart_port ulite_ports[ULITE_NR_UARTS];
+ 
+ static int ulite_receive(struct uart_port *port, int stat)
+ {
+-	struct tty_struct *tty = port->info->tty;
++	struct tty_struct *tty = port->info->port.tty;
+ 	unsigned char ch = 0;
+ 	char flag = TTY_NORMAL;
+ 
+@@ -162,7 +162,7 @@ static irqreturn_t ulite_isr(int irq, void *dev_id)
+ 		busy |= ulite_transmit(port, stat);
+ 	} while (busy);
+ 
+-	tty_flip_buffer_push(port->info->tty);
++	tty_flip_buffer_push(port->info->port.tty);
+ 
+ 	return IRQ_HANDLED;
+ }
+
+--
+Joseph Fannin
+jfannin@gmail.com
