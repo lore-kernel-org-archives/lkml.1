@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbYGDMJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbYGDMOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755848AbYGDMJW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 08:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbYGDMJJ
+	id S1755479AbYGDMOV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 08:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbYGDMOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 08:09:09 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:34168 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752982AbYGDMJH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 08:09:07 -0400
-Message-Id: <B7BFE816D02640B8A5EFDD83E9C23FB9@nsl.ad.nec.co.jp>
-From: "Takashi Sato" <t-sato@yk.jp.nec.com>
-To: "Eric Sandeen" <sandeen@redhat.com>, "Alasdair G Kergon" <agk@redhat.com>,
-       "Dave Chinner" <david@fromorbit.com>
-Cc: <dm-devel@redhat.com>, <linux-fsdevel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, <viro@ZenIV.linux.org.uk>,
-       <linux-ext4@vger.kernel.org>, <xfs@oss.sgi.com>,
-       "Christoph Hellwig" <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
-       <axboe@kernel.dk>, <mtk.manpages@googlemail.com>
-References: <20080630212450t-sato@mail.jp.nec.com> <20080701081026.GB16691@infradead.org> <20080701105251.GC22522@agk.fab.redhat.com> <9942A69CB65D4A41B39F36AF8EEF6F22@nsl.ad.nec.co.jp> <20080703124709.GI22522@agk.fab.redhat.com> <20080703221133.GA29319@disturbed>
-In-Reply-To: <20080703221133.GA29319@disturbed>
-Subject: Re: [dm-devel] Re: [PATCH 3/3] Add timeout feature
-Date: Fri, 4 Jul 2008 21:08:09 +0900
+	Fri, 4 Jul 2008 08:14:04 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:48099 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752743AbYGDMOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 08:14:03 -0400
+Message-ID: <486E1404.8090704@garzik.org>
+Date: Fri, 04 Jul 2008 08:13:56 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="ISO-8859-1";
-	reply-type=original
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add missing skb->dev assignment in Frame Relay RX code
+References: <m3wsk8aupw.fsf@maximus.localdomain>
+In-Reply-To: <m3wsk8aupw.fsf@maximus.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Windows Mail 6.0.6000.16480
-X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6000.16545
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alasdair, Eric and Dave,
+Krzysztof Halasa wrote:
+> Hi,
+> 
+> Commit 4c13eb6657fe9ef7b4dc8f1a405c902e9e5234e0 ([ETH]: Make
+> eth_type_trans set skb->dev like the other *_type_trans) removed
+> skb->dev assignment from hdlc_fr.c:fr_rx(). Unfortunately it was also
+> needed for cases other than eth_type_trans().
+> 
+> Adding it back.
+> 
+> It's quite serious and may be a security risk as it causes a wrong
+> input interface indication (the physical hdlcX instead of logical
+> pvcX). Probably -stable class fix.
+> 
+> Signed-off-by: Krzysztof Halasa <khc@pm.waw.pl>
+> 
+> diff --git a/drivers/net/wan/hdlc_fr.c b/drivers/net/wan/hdlc_fr.c
+> index c4ab032..3a86e64 100644
+> --- a/drivers/net/wan/hdlc_fr.c
+> +++ b/drivers/net/wan/hdlc_fr.c
+> @@ -1008,6 +1008,7 @@ static int fr_rx(struct sk_buff *skb)
+>  		stats->rx_bytes += skb->len;
+>  		if (pvc->state.becn)
+>  			stats->rx_compressed++;
+> +		skb->dev = dev;
+>  		netif_rx(skb);
+>  		return NET_RX_SUCCESS;
+>  	} else {
 
-> On Thu, Jul 03, 2008 at 01:47:10PM +0100, Alasdair G Kergon wrote:
->> On Thu, Jul 03, 2008 at 09:11:05PM +0900, Takashi Sato wrote:
->> > If the freezer accesses the frozen filesystem and causes a deadlock,
->> > the above ideas can't solve it
->>
->> But you could also say that if the 'freezer' process accesses the frozen
->> filesystem and deadlocks then that's just a bug and that userspace code
->> should be fixed and there's no need to introduce the complexity of a
->> timeout parameter.
->
-> Seconded - that was also my primary objection to the timeout code.
+applied
 
-I will consider removing the timeout.
 
->> The point I'm trying to make here is:
->>   Under what real-world circumstances might multiple concurrent freezing
->>   attempts occur, and which of A, B or C (or other variations) would be
->>   the most appropriate way of handling such situations?
->>
->> A common example is people running xfs_freeze followed by an lvm command
->> which also attempts to freeze the filesystem.
->
-> Yes, I've seen that reported a number of times.
->
->> I can see a case for B or C, but personally I prefer A:
->>
->> > > 1 succeeds, freezes
->> > > 2 succeeds, remains frozen
->> > > 3 succeeds, remains frozen
->> > > 4 succeeds, thaws
->
-> Agreed, though I'd modify the definition of that case to be "remain
-> frozen until the last thaw occurs". That has the advantage that
-> it's relatively simple to implement with just a counter...
-
-I agree this idea.
-But I have one concern. When device-mapper's freeze follows FIFREEZE,
-can device-mapper freeze only device-mapper's part correctly?
-And when device-mapper's thaw follows FITHAW,
-can device-mapper thaw only device-mapper's part?
-
-Cheers, Takashi 
