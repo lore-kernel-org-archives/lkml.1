@@ -1,41 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756520AbYGDWJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756836AbYGDWJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756520AbYGDWJi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 18:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbYGDWJ2
+	id S1756836AbYGDWJw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 18:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbYGDWJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 18:09:28 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2203 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752729AbYGDWJ2 (ORCPT
+	Fri, 4 Jul 2008 18:09:29 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45986 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752774AbYGDWJ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Jul 2008 18:09:28 -0400
-Date: Fri, 4 Jul 2008 18:09:25 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Dave Jones <davej@redhat.com>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>,
-       <gregkh@suse.de>
-Subject: Re: usb-storage: quirk around v1.11 firmware on Nikon D4
-In-Reply-To: <20080704195940.GA17510@redhat.com>
-Message-ID: <Pine.LNX.4.44L0.0807041808100.17654-100000@netrider.rowland.org>
+Message-ID: <486E9F91.6010701@firstfloor.org>
+Date: Sat, 05 Jul 2008 00:09:21 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Joe Peterson <joe@skyrush.com>, Elias Oltmanns <eo@nebensachen.de>,
+       =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Ctrl+C doesn't interrupt process waiting for I/O
+References: <48661488.10304@gmail.com>	<87fxqurqpz.fsf@denkblock.local>	<486E83C3.1040509@skyrush.com>	<20080704212335.4ffc8230@lxorguk.ukuu.org.uk>	<871w29s5u2.fsf@basil.nowhere.org>	<20080704221457.1f147225@lxorguk.ukuu.org.uk>	<486E97F2.8020605@firstfloor.org> <20080704224441.63204bc4@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080704224441.63204bc4@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Jul 2008, Dave Jones wrote:
+Alan Cox wrote:
+>>> I'm not going to look further into it without real serious data from
+>>> people seeing it.
+>> So you're saying multiple independent people suffer from some kind of
+>> hallucination?
+> 
+> I'm saying provide some data.
 
-> usb-storage: quirk around v1.11 firmware on Nikon D40
-...
-> -UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0110,
-> +UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0111,
->  		"NIKON",
->  		"NIKON DSC D80",
+It sounds more like the ostrich approach to bug handling to me.
 
-You updated the entry for the D80, not the D40.  Maybe they both need 
-to be updated?
+So what kind of data do you want? Someone watching a wallclock while
+comparing Ctrl-Z+kill versus Ctrl-C on a IO intensive process?
 
-Alan Stern
+-Andi
+
 
