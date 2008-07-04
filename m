@@ -1,65 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbYGDWaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbYGDWgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756255AbYGDWaw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 18:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbYGDWak
+	id S1755411AbYGDWgr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 18:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbYGDWgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 18:30:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57961 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753184AbYGDWaj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 18:30:39 -0400
-Date: Fri, 4 Jul 2008 18:23:41 -0400
-From: Dave Jones <davej@redhat.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linville@redhat.com
-Subject: Re: Oops/Warning report of the week of July 4th 2008
-Message-ID: <20080704222341.GB9792@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Arjan van de Ven <arjan@linux.intel.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	NetDev <netdev@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, linville@redhat.com
-References: <486EA0D6.2040504@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <486EA0D6.2040504@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 4 Jul 2008 18:36:39 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:55161 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753211AbYGDWgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 18:36:38 -0400
+Subject: Re: [PATCH] OProfile kernel maintainership changes
+From: Richard Purdie <rpurdie@openedhand.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Robert Richter <robert.richter@amd.com>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>, Philippe Elie <phil.el@wanadoo.fr>,
+       John Levon <levon@movementarian.org>,
+       Maynard Johnson <maynardj@us.ibm.com>,
+       Daniel Hansel <daniel.hansel@linux.vnet.ibm.com>,
+       Jason Yeh <jason.yeh@amd.com>
+In-Reply-To: <20080704120942.ed671ce2.akpm@linux-foundation.org>
+References: <1215197619-28982-1-git-send-email-robert.richter@amd.com>
+	 <20080704120942.ed671ce2.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 04 Jul 2008 23:36:34 +0100
+Message-Id: <1215210995.8410.29.camel@dax.rpnet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 04, 2008 at 03:14:46PM -0700, Arjan van de Ven wrote:
- 
- > The stats look very similar to last week; Fedora released a 2.6.25.9 based
- > kernel upgrade, which led to a new sighting (at rank 12): the rt25xx wireless
- > driver is calling flush_workqueue() with a NULL parameter in some cases.
- > There has been a lot of thrash about the last report with regard to inclusion of wireless.git
- > into the Fedora kernel rpms. As an observer I can say that it's both a blessing and a bog.
- > It's a blessing in that this allows bugs to show up early before wireless.git hits mainline
- > (as an example: this is the third or fourth fedora rpm upgrade in a row that showed new and exciting
- > oopses/warnings due to rt25xx... as a result of very active development). It's a bog in that
- > it may expose users to not-quite-ready code. So far it seems the Fedora kernel maintainers are happy
- > enough with the overall balance that they continue the practice.
+On Fri, 2008-07-04 at 12:09 -0700, Andrew Morton wrote:
+> On Fri, 4 Jul 2008 20:53:39 +0200 Robert Richter <robert.richter@amd.com> wrote:
+> 
+> > Cc: Philippe Elie <phil.el@wanadoo.fr>
+> > Cc: John Levon <levon@movementarian.org>
+> > Cc: Maynard Johnson <maynardj@us.ibm.com>
+> > Cc: Richard Purdie <rpurdie@openedhand.com>
+> > Cc: Daniel Hansel <daniel.hansel@linux.vnet.ibm.com>
+> > Cc: Jason Yeh <jason.yeh@amd.com>
+> > Cc: Andrew Morton <akpm@linux-foundation.org>
+> > Signed-off-by: Robert Richter <robert.richter@amd.com>
+> > ---
+> >  MAINTAINERS |    4 ++--
+> >  1 files changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index e6c06fa..85a7e4a 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -3080,8 +3080,8 @@ L:	linux-scsi@vger.kernel.org
+> >  S:	Maintained
+> >  
+> >  OPROFILE
+> > -P:	Philippe Elie
+> > -M:	phil.el@wanadoo.fr
+> > +P:	Robert Richter
+> > +M:	robert.richter@amd.com
+> >  L:	oprofile-list@lists.sf.net
+> >  S:	Maintained
+> 
+> Well that's interesting - please tell us more?
+> 
+> Will you also have a role in oprofile userspace maintenance?
 
-I actually think we need to scale things back a notch wrt pushing
-wireless.git bits to users of released distros.  The recent disaster
-in wireless caused a shitstorm in bugzilla that we never even saw
-in rawhide.  A clear sign that we're pushing things too fast to users.
+OProfile maintainership is undergoing some transitions as announced by
+John on the oprofile list earlier today. 
 
-It's great that we're getting this stuff tested, but at the same time,
-it doesn't give a great impression, and makes users reluctant to always
-apply the latest updates if the last time around they have to deal with
-this kind of fallout.
+In summary, Maynard is taking over the overall control of oprofile
+userspace with Daniel advising on the JIT stuff and me taking on
+responsibility for the arm kernel+userspace bits and the userspace GUI
+bits. Robert has volunteered to take a role of looking after the kernel
+side of things alongside or replacing Philippe depending on how he feels
+about this - I'm not 100% clear on Philippe's position on things. John
+will still be around to keep an eye on us all :).
 
-	Dave
+Cheers,
 
--- 
-http://www.codemonkey.org.uk
+Richard
+
+
