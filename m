@@ -1,63 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759320AbYGDOCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757444AbYGDOGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759320AbYGDOCy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 10:02:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755240AbYGDOCq
+	id S1757444AbYGDOGx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 10:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbYGDOGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 10:02:46 -0400
-Received: from mail51.messagelabs.com ([216.82.244.179]:45711 "EHLO
-	mail51.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754679AbYGDOCq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 10:02:46 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-13.tower-51.messagelabs.com!1215180164!5045658!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.14]
-Date: Fri, 4 Jul 2008 16:02:40 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Paul Mundt <lethal@linux-sh.org>, Oliver Neukum <oliver@neukum.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: alphabetic ordering of MAINTAINERS
-Message-ID: <20080704140240.GB32700@digi.com>
-References: <20080704063455.GA13999@digi.com> <200807040852.27809.oliver@neukum.org> <20080704065722.GA22420@digi.com> <20080704085910.GA9671@linux-sh.org> <20080704091023.GA9783@digi.com> <20080704130737.525507a5@lxorguk.ukuu.org.uk>
+	Fri, 4 Jul 2008 10:06:41 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:42604 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750974AbYGDOGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 10:06:40 -0400
+Message-ID: <486E2E5B.8030801@garzik.org>
+Date: Fri, 04 Jul 2008 10:06:19 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080704130737.525507a5@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 04 Jul 2008 14:02:40.0919 (UTC) FILETIME=[9F8A7A70:01C8DDDE]
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       David Miller <davem@davemloft.net>, tytso@mit.edu, hugh@veritas.com,
+       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+References: <1215093175.10393.567.camel@pmac.infradead.org>	<20080703173040.GB30506@mit.edu>	<1215111362.10393.651.camel@pmac.infradead.org>	<20080703.162120.206258339.davem@davemloft.net>	<486D6DDB.4010205@infradead.org>	<87ej6armez.fsf@basil.nowhere.org>	<1215177044.10393.743.camel@pmac.infradead.org>	<486E2260.5050503@garzik.org>	<1215178035.10393.763.camel@pmac.infradead.org>	<486E2818.1060003@garzik.org> <20080704142753.27848ff8@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080704142753.27848ff8@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
 Alan Cox wrote:
-> > > I always interpreted this to mean that the _entries_ are alphabetically
-> > > sorted, not the maintainers under each entry. IIRC, Alan has already
-> > > cleaned up most of the ordering of the entries through recent patches.
-> > That's how I interpret it, too. :-)
-> >
-> > Look at
-> >
-> >       http://www.modarm9.com/git/people/ukleinek/linux-2.6.git?a=commitdiff;h=62110fbc73a9d3a4c7d39706b648b554b517f154#patch1
+>> Why is it so difficult to see the value of KEEPING STUFF WORKING AS IT 
+>> WORKS TODAY?
 > 
+> Sure Jeff. Lets delete libata, that caused all sorts of problems when it
+> was being added. We could freeze on linux 1.2.13-lmp, that was a good
+> release - why break it ?
 > 
-> Nice but you've chopped off the Linus entry at the end. It would be good
-> to get the others fixed and the script in the scripts dir
-fixed and branch updated.
+> There are good sound reasons for having a firmware tree, the fact tg3 is
+> a bit of dinosaur in this area doesn't make it wrong.
 
-> BTW - I suspect your script needs to force a locale.
-Right.  At least if it gets a wider audience.  Done and Thanks.
+I never said it was wrong.
 
-Uwe
+I have said repeatedly that separating out the firmware is the right 
+thing to do.
 
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+But...  you don't need to force the switchover.  You don't need to break 
+things that work today, in order to accomplish this.
+
+It is quite feasible to do both -- keep things working as they work 
+today, _and_ add /lib/firmware infrastructure.  Then we can work to 
+switch distros over to the new system.
+
+Further, it is not only feasible, but the only "nice" thing to do to 
+other developers, users, and distros:  permit them to choose when to 
+stop the decades-old practice of building firmware into some drivers.
+
+Perform the transition in a sane, staged, planned manner that doesn't 
+result in tons of non-working drivers.  I have already provided many 
+real world examples where people, doing the same things they do today, 
+will be greeted with non-working drivers upon the next boot.  Without 
+any warning or error messages along the way, hinting that something 
+might be wrong.
+
+Or, for the cheap seats:
+
+	End goal: good
+
+	dwmw2's current path:  very easy to produce dead driver
+
+	Needed resolution:  first step should /not/ produce regressions;
+
+			    current evidence demonstrates current
+			    implementation is full of regressions
+			    that seasoned kernel hackers are hitting
+
+It /is/ possible to add /lib/firmware gadgetry while avoiding the 
+obvious low-hanging-fruit regressions and flag-day conversions that have 
+been pointed out here.
+
+Just say no to flag-day changes like this.  It is possible for each 
+distro and boot image script to have their own flag-day.  Give them that 
+choice.
+
+	Jeff
+
