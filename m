@@ -1,53 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758534AbYGDGqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbYGDGuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758534AbYGDGqY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 02:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbYGDGqK
+	id S1757584AbYGDGuy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 02:50:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbYGDGur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 02:46:10 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:6347 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751633AbYGDGqI (ORCPT
+	Fri, 4 Jul 2008 02:50:47 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:49026 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752061AbYGDGuq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 02:46:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=WxZzxB0MNVWtKij6M2XP5CdP4PKMtwOwc6BWcuaGNPnKb7hOPQQv8hkEujERreCdTZ
-         waRVl4SOQTk+jB6X11ITOjgnwfpIEjfpPUgsiMDQ5MTxlfSCJRq+/AcmTt+QKAEnkImV
-         dKm+40iyWQU9IyQ64xDkpaBOMjYUz2XDanURQ=
-Message-ID: <486DC6EB.5050901@gmail.com>
-Date: Fri, 04 Jul 2008 15:44:59 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>,
-       Benjamin Thery <benjamin.thery@bull.net>, netdev@vger.kernel.org
-Subject: Re: [PATCH 08/15] sysfs: Make sysfs_mount static once again.
-References: <20080618170729.808539948@theryb.frec.bull.fr>	<m1ej6enep7.fsf@frodo.ebiederm.org> <486A0751.9080602@gmail.com>	<m1wsk5hjm0.fsf@frodo.ebiederm.org> <486AF4FA.8020805@gmail.com>	<m1ej6d9c2r.fsf@frodo.ebiederm.org> <486B060C.7030607@gmail.com>	<m14p78s02q.fsf@frodo.ebiederm.org> <486C4515.1070007@gmail.com>	<m1hcb7o8lv.fsf@frodo.ebiederm.org> <486CB051.5000507@fr.ibm.com>	<m14p77m9uy.fsf@frodo.ebiederm.org> <486CF71F.5090405@gmail.com>	<m1y74iiidz.fsf_-_@frodo.ebiederm.org>	<m1tzf6ihlz.fsf_-_@frodo.ebiederm.org>	<m1prpuihjb.fsf_-_@frodo.ebiederm.org>	<m1lk0iihhp.fsf_-_@frodo.ebiederm.org>	<m1hcb6ihfz.fsf_-_@frodo.ebiederm.org>	<m1d4luihea.fsf_-_@frodo.ebiederm.org>	<m18wwiihbn.fsf_-_@frodo.ebiederm.org>	<m14p76ih9a.fsf_-_@frodo.ebiederm.org> <m1zloyh2mb.fsf_-_@frodo.ebiederm.org>
-In-Reply-To: <m1zloyh2mb.fsf_-_@frodo.ebiederm.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 4 Jul 2008 02:50:46 -0400
+Date: Fri, 4 Jul 2008 09:50:44 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: torvalds@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cl@linux-foundation.org, yoichi_yuasa@tripeaks.co.jp, mpm@selenic.com
+Subject: [GIT PULL] SLUB fixes for 2.6.26
+Message-ID: <Pine.LNX.4.64.0807040950180.14520@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Accessing the internal sysfs_mount is error prone in the context
-> of multiple super blocks, and nothing needs it.  Not even the
-> sysfs crash debugging patch (although it did in an earlier version).
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Hi Linus,
 
-Acked-by: Tejun Heo <tj@kernel.org>
+Please pull the latest SLAB git tree from:
 
--- 
-tejun
+  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git for-linus
+
+The tree has just one changeset that fixes SLUB boot-time warnings on MIPS as
+reported by Yoichi Yuasa.
+
+                Pekka
+
+Christoph Lameter (1):
+      slub: Do not use 192 byte sized cache if minimum alignment is 128 byte
+
+ include/linux/slub_def.h |    2 ++
+ mm/slub.c                |   12 ++++++++++--
+ 2 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+index 71e43a1..cef6f8f 100644
+--- a/include/linux/slub_def.h
++++ b/include/linux/slub_def.h
+@@ -137,10 +137,12 @@ static __always_inline int kmalloc_index(size_t size)
+ 	if (size <= KMALLOC_MIN_SIZE)
+ 		return KMALLOC_SHIFT_LOW;
+ 
++#if KMALLOC_MIN_SIZE <= 64
+ 	if (size > 64 && size <= 96)
+ 		return 1;
+ 	if (size > 128 && size <= 192)
+ 		return 2;
++#endif
+ 	if (size <=          8) return 3;
+ 	if (size <=         16) return 4;
+ 	if (size <=         32) return 5;
+diff --git a/mm/slub.c b/mm/slub.c
+index 0987d1c..2c9a62d 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2995,8 +2995,6 @@ void __init kmem_cache_init(void)
+ 		create_kmalloc_cache(&kmalloc_caches[1],
+ 				"kmalloc-96", 96, GFP_KERNEL);
+ 		caches++;
+-	}
+-	if (KMALLOC_MIN_SIZE <= 128) {
+ 		create_kmalloc_cache(&kmalloc_caches[2],
+ 				"kmalloc-192", 192, GFP_KERNEL);
+ 		caches++;
+@@ -3026,6 +3024,16 @@ void __init kmem_cache_init(void)
+ 	for (i = 8; i < KMALLOC_MIN_SIZE; i += 8)
+ 		size_index[(i - 1) / 8] = KMALLOC_SHIFT_LOW;
+ 
++	if (KMALLOC_MIN_SIZE == 128) {
++		/*
++		 * The 192 byte sized cache is not used if the alignment
++		 * is 128 byte. Redirect kmalloc to use the 256 byte cache
++		 * instead.
++		 */
++		for (i = 128 + 8; i <= 192; i += 8)
++			size_index[(i - 1) / 8] = 8;
++	}
++
+ 	slab_state = UP;
+ 
+ 	/* Provide the correct kmalloc names now that the caches are up */
