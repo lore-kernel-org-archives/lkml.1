@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756921AbYGDHvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbYGDILq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756921AbYGDHvv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 03:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbYGDHvk
+	id S1755827AbYGDILq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 04:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbYGDILb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 03:51:40 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:12070 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751679AbYGDHvj (ORCPT
+	Fri, 4 Jul 2008 04:11:31 -0400
+Received: from mail37.messagelabs.com ([216.82.244.163]:53994 "EHLO
+	mail37.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751725AbYGDILa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 03:51:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=SCtTEJBcTsX2rzoB35o6CnR+ZK/0ITAWGJ3VkEmis1yF0U9uSrow4vp13Enmp28wn2
-         HaQE/3wix8Yv3BE/PXHhaDcRhyX5TnUeOPwaYAsZJ1vMYDMRLAhmhXuEmVbqHMOca8kE
-         do1qqEcOplJh8gzsO3+bJognIcOrN0guvpY2c=
-Message-ID: <486DD650.3000804@gmail.com>
-Date: Fri, 04 Jul 2008 16:50:40 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Fri, 4 Jul 2008 04:11:30 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-10.tower-37.messagelabs.com!1215159088!4391636!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Date: Fri, 4 Jul 2008 10:11:25 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Magnus Damm <magnus.damm@gmail.com>
+CC: "Hans J. Koch" <hjk@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "lethal@linux-sh.org" <lethal@linux-sh.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [PATCH] uio: User IRQ Mode
+Message-ID: <20080704081125.GA26703@digi.com>
+References: <20080702105951.22648.2197.sendpatchset@rx1.opensource.se> <20080702125400.GC3199@local> <20080703071019.GC12214@digi.com> <20080703124505.GB3197@local> <aec7e5c30807032103p7626dcbdwe06c5fac461372c1@mail.gmail.com> <20080704060108.GA11794@digi.com> <aec7e5c30807040048yd8543d4n2edba43524279b6f@mail.gmail.com>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>,
-       Benjamin Thery <benjamin.thery@bull.net>, netdev@vger.kernel.org
-Subject: Re: [PATCH 12/15] driver core: Implement tagged directory support
- for device classes.
-References: <20080618170729.808539948@theryb.frec.bull.fr>	<m1ej6d9c2r.fsf@frodo.ebiederm.org> <486B060C.7030607@gmail.com>	<m14p78s02q.fsf@frodo.ebiederm.org> <486C4515.1070007@gmail.com>	<m1hcb7o8lv.fsf@frodo.ebiederm.org> <486CB051.5000507@fr.ibm.com>	<m14p77m9uy.fsf@frodo.ebiederm.org> <486CF71F.5090405@gmail.com>	<m1y74iiidz.fsf_-_@frodo.ebiederm.org>	<m1tzf6ihlz.fsf_-_@frodo.ebiederm.org>	<m1prpuihjb.fsf_-_@frodo.ebiederm.org>	<m1lk0iihhp.fsf_-_@frodo.ebiederm.org>	<m1hcb6ihfz.fsf_-_@frodo.ebiederm.org>	<m1d4luihea.fsf_-_@frodo.ebiederm.org>	<m18wwiihbn.fsf_-_@frodo.ebiederm.org>	<m14p76ih9a.fsf_-_@frodo.ebiederm.org>	<m1zloyh2mb.fsf_-_@frodo.ebiederm.org>	<m1vdzmh2jr.fsf_-_@frodo.ebiederm.org>	<m1r6aah2hh.fsf_-_@frodo.ebiederm.org>	<m1mykyh2fu.fsf_-_@frodo.ebiederm.org> <m1hcb6h2d2.fsf_-_@frodo.ebiederm.org>
-In-Reply-To: <m1hcb6h2d2.fsf_-_@frodo.ebiederm.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <aec7e5c30807040048yd8543d4n2edba43524279b6f@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 04 Jul 2008 08:11:25.0785 (UTC) FILETIME=[8DC83C90:01C8DDAD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> This patch enables tagging on every class directory if struct class
-> has a tag_type.
+Hello Magnus,
+
+Magnus Damm wrote:
+> > Maybe it's sensible to add the User IRQ Mode functions at least for now
+> > into platform code.  Then at a later time if and when there are several
+> > copies the discussion to move it to the generic part might be easier.
 > 
-> In addition device_del and device_rename were modified to uses
-> sysfs_delete_link and sysfs_rename_link respectively to ensure
-> when these operations happen on devices whose classes have
-> tag_ops that they work properly.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> Signed-off-by: Benjamin Thery <benjamin.thery@bull.net>
+> Do you mean your uio_pdrv driver?
+No, I don't.  I meant arch/whatever/...
 
-Okay, I went through the users this time but I still think
-determine-tags-by-callbacks is a bad idea.  Please just add const void
-*tag to kobject and set it during initialization.  If you want to move a
-device from one tag to another, implement kobject_rename_tagged(kobj,
-new_name, new_tag).
+If you want to add it to uio_pdrv you either have to introduce a new
+header file or you need to add it to uio_driver.h.  IMHO the first is
+ugly and I'm sure Hans will object the latter.
 
-The determine-tag-by-callback basically multiplexes basic functions to
-do tag-specific things which are determined by ktype callback called
-back from down the layer.  It's simply a bad interface.  Those
-operations become something else depending on how those callbacks
-behave.  That's unnecessarily subtle.  Advertising what it's gonna do in
-the function name and as arguments is way more straight forward and it's
-not like determining or renaming tags should be done asynchronously.
-
-I personally think it would be better to make tags explicit in the mount
-interface too but if extracting ns information from the mounting process
-is what's currently being done, well...
-
-I'm sorry but Nacked-by: Tejun Heo <tj@kernel.org>
-
-Thanks.
+Best regards
+Uwe
 
 -- 
-tejun
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
