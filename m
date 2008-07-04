@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbYGDNQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758215AbYGDNSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758156AbYGDNQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 09:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbYGDNQU
+	id S1758215AbYGDNSU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 09:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbYGDNSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 09:16:20 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:44739 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753162AbYGDNQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 09:16:19 -0400
-Date: Fri, 4 Jul 2008 23:16:10 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for July 4
-Message-Id: <20080704231610.98118766.sfr@canb.auug.org.au>
-In-Reply-To: <20080704114648.13374869@lxorguk.ukuu.org.uk>
-References: <20080704195529.7f56e768.sfr@canb.auug.org.au>
-	<20080704114648.13374869@lxorguk.ukuu.org.uk>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.10; i486-pc-linux-gnu)
+	Fri, 4 Jul 2008 09:18:07 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58466 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754096AbYGDNSG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 09:18:06 -0400
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+From: David Woodhouse <dwmw2@infradead.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Hugh Dickins <hugh@veritas.com>, Jeff Garzik <jeff@garzik.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org
+In-Reply-To: <s5hmykxc3ja.wl%tiwai@suse.de>
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+	 <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <486CC440.9030909@garzik.org>
+	 <Pine.LNX.4.64.0807031353030.11033@blonde.site>
+	 <s5hmykxc3ja.wl%tiwai@suse.de>
+Content-Type: text/plain
+Date: Fri, 04 Jul 2008 14:17:51 +0100
+Message-Id: <1215177471.10393.753.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__4_Jul_2008_23_16_10_+1000_zmKBVlk2iI=6L89l"
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__4_Jul_2008_23_16_10_+1000_zmKBVlk2iI=6L89l
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2008-07-04 at 13:06 +0200, Takashi Iwai wrote:
+> Hmm, I got this error even with CONFIG_FIRMWARE_IN_KERNEL=y.
+> 
+> Through a quick look at the code, the firmwares are not built indeed.
+> I guess the fix like the following needed for building firmwares for
+> modules.  Now trying to build the kernel again to check this...
 
-On Fri, 4 Jul 2008 11:46:48 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->
-> > 	ttydev: fix pamc_zilog for tty pointer move
-> > 	ttydev: sparc fix for tty move
-> > 	ttydev: sparc32 fix for tty move
-> > 	atmel_serial: Fix tty_port breakage
->=20
-> Got these
+For modules, you just need run
+	'make INSTALL_FW_PATH=/lib/firmare firmware_install'.
 
-Good.  There are more broken drivers - check out
-http://kisskb.ellerman.id.au/linux-next
+I should...
 
-> > http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-> > are tracking the linux-next tree using git, you should not use "git pul=
-l"
-> > to do so as that will try to merge the new linux-next release with the
-> > old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-> > (see below).
->=20
-> bash-3.2$ git fetch linux-next
-> remote: error: refs/heads/history does not point to a valid object!
-> remote: error: refs/heads/master does not point to a valid object!
-> remote: error: refs/tags/next-20080704 does not point to a valid object!
->=20
-> (on top of a clean current Linus git pull)
+1. Change the default to /lib/firmware so that you don't have to set
+   INSTALL_FW_PATH.
+2. Add that to the 'make help' text.
+3. Look at making 'make modules_install' installl the firmware required
+   by the modules it's installing, so you don't even need to do
+   _anything_ new.
 
-Were you using
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git or
-http://www.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git ?  The
-git one works for me and the http does as well now that I have updated
-the server info (though I neglected to try it before doing the update).
+-- 
+dwmw2
 
-Thanks for the heads up.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__4_Jul_2008_23_16_10_+1000_zmKBVlk2iI=6L89l
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhuIpoACgkQjjKRsyhoI8wEFwCfZ6XFUCILr1J3sh63g4Dh1ocA
-SOAAn2mXYfhECTnxvnDgjI4y2QMMCT34
-=FxeX
------END PGP SIGNATURE-----
-
---Signature=_Fri__4_Jul_2008_23_16_10_+1000_zmKBVlk2iI=6L89l--
