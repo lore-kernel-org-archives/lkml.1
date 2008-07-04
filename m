@@ -1,80 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759152AbYGDO2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbYGDO3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759152AbYGDO2Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 10:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbYGDO2A
+	id S1759230AbYGDO3s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 10:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbYGDO3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 10:28:00 -0400
-Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:1413 "EHLO
-	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753526AbYGDO2A (ORCPT
+	Fri, 4 Jul 2008 10:29:40 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:51457 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754305AbYGDO3j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 10:28:00 -0400
-Date: Fri, 4 Jul 2008 16:27:47 +0200
-From: Erik Mouw <mouw@nl.linux.org>
-To: zhp <zhpsub@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Is there any way to download all email archive of linux
-	kernel, and then import to Gmail for search?
-Message-ID: <20080704142743.GB3447@arthur.home>
-References: <337eb86f0807030721n1ab86217j2eb9a43d526ebf5f@mail.gmail.com>
+	Fri, 4 Jul 2008 10:29:39 -0400
+Date: Fri, 4 Jul 2008 15:29:36 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+       Philippe De Muyter <phdm@macqel.be>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
+       libdc1394-devel@lists.sourceforge.net,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: mmap'ed memory in core files ?
+In-Reply-To: <486DC42A.2080105@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0807041459130.2674@blonde.site>
+References: <20080701132149.GA32510@frolo.macqel>    
+ <517f3f820807011116g6ce1b3e1qf166070f7a4c523f@mail.gmail.com>    
+ <20080702105027.GA1111@frolo.macqel>     <cfd18e0f0807020358k317575c6ra0187428098f0160@mail.gmail.com>
+     <486C4CC5.2060006@hitachi.com> <20080703092247.GA13430@frolo.macqel>
+ <486DBA21.3080106@hitachi.com> <486DC42A.2080105@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="AhhlLboLdkugWU4S"
-Content-Disposition: inline
-In-Reply-To: <337eb86f0807030721n1ab86217j2eb9a43d526ebf5f@mail.gmail.com>
-Organization: Eric Conspiracy Secret Labs
-X-Eric-Conspiracy: There is no conspiracy!
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 4 Jul 2008, Stefan Richter wrote:
+> Hidehiro Kawai wrote:
+> > Philippe De Muyter wrote:
+> > >
+> > > As I don't know the real meaning of VM_RESERVED, I do not know which
+> > > choice
+> > > is the best one for the official kernel tree,
+> 
+> I don't know these things either.  But among else, VM_RESERVED prevents a vma
+> from being swapped out.  Makes kind of sense, given that besides the CPUs also
+> the FireWire controller writes to this memory.
+> 
+> > > but locally I'll go for
+> > > adding VM_ALWAYSDUMP in ieee1394::dma_region_mmap.
+> > 
+> > I'm afraid I don't know real usages of VM_RESERVED and VM_IO, either.
 
---AhhlLboLdkugWU4S
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+They're rather an embarrassment, nobody can say quite what VM_RESERVED
+and VM_IO really mean, beyond not-your-ordinary-vma: VM_VOODOO, beware.
+They both say "count me as reserved_vm", which means /proc/<pid>/status
+leaves them out of VmSize.
 
-On Thu, Jul 03, 2008 at 10:21:42PM +0800, zhp wrote:
-> I have found that there is some methods for me to migrate local
-> existing emails to Gmail for search.
->=20
-> * Gmail Loader
-> see http://www.linux.com/articles/60733
->=20
-> * imapsync,
-> see http://freshmeat.net/projects/imapsync/
->=20
-> However, the problem is where can I get all of the old mails to my
-> local computer?
-> Has anyone done such things sucessfully?
+Certainly VM_IO hints at special I/O memory, but in most cases there's
+nothing very special about either: just memory preallocated by a driver.
 
-I don't think so, the full linux-kernel is too large for a single gmail
-account (FY: last month was 91 MB of traffic, that's about 1.1 GB per
-year). However, you can use standard Google search on the various
-linux-kernel archives. Here is your message:
+In 2.4 VM_RESERVED indeed prevented swapout from looking at the pages
+of that vma.  We probably ought to have killed it as part of the 2.5
+switch to rmap.  In 2.6 the pages of a VM_RESERVED vma wouldn't be
+considered for swapout, because they're not put on any LRU for that.
+I think I promised (ah, that's a shameful phrase!) to get rid of it
+a few years ago, but never quite got around to it.
 
-http://www.google.com/search?q=3Dimapsync+site:lkml.org
-http://www.google.com/search?q=3Dimapsync+linux-kernel+site:gmane.org
+VM_RESERVED and VM_IO are treated as equivalent in most tests, but
+there's just a few places, e.g. get_user_pages, where we're scared
+off by VM_IO but don't mind VM_RESERVED.
 
+VM_ALWAYSDUMP: marvellous, a flag with an understandable name and
+a clear purpose.
 
-Erik
-
---=20
-Erik Mouw -- mouw@nl.linux.org
-
---AhhlLboLdkugWU4S
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIbjNf/PlVHJtIto0RAtoLAJ4yC+70epcok7D/rNcChPi4XRNuZgCfXqrB
-Qd0Y9G7bLUdyFd6dz0vKdDI=
-=5Jf6
------END PGP SIGNATURE-----
-
---AhhlLboLdkugWU4S--
+Hugh
