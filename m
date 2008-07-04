@@ -1,112 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758554AbYGDQcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbYGDQfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758554AbYGDQcw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 12:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbYGDQcn
+	id S1757531AbYGDQfM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 12:35:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbYGDQfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 12:32:43 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:52795 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754070AbYGDQcm (ORCPT
+	Fri, 4 Jul 2008 12:35:00 -0400
+Received: from irga4.truemail.co.th ([203.144.173.204]:33914 "EHLO
+	irga4.truemail.co.th" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753725AbYGDQe7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 12:32:42 -0400
-Date: Fri, 4 Jul 2008 18:32:40 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Joel Becker <Joel.Becker@oracle.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [BUGFIX][PATCH v2 0/2] configfs: Fix cleanup after mkdir()
-	failure
-Message-ID: <20080704163240.GQ30545@hawkmoon.kerlabs.com>
-Reply-To: Louis.Rilling@kerlabs.com
-References: <1215183366-17479-1-git-send-email-louis.rilling@kerlabs.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-9550-1215189060-0001-2"
-Content-Disposition: inline
-In-Reply-To: <1215183366-17479-1-git-send-email-louis.rilling@kerlabs.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 4 Jul 2008 12:34:59 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmcKAJztbUh8eaAR/2dsb2JhbACBXA+RO50Q
+X-IronPort-AV: E=Sophos;i="4.30,302,1212339600"; 
+   d="scan'208";a="47370583"
+Date: Fri, 4 Jul 2008 23:34:56 +0700
+Mime-version: 1.0
+Subject: =?x-mac-thai?B?w9G6ysHRpMOn0rkgUEFSVC1USU1FILfTp9K5t9XouunSueS06TEwMCU=?=
+From: =?x-mac-thai?B?am9iIHBhcnRpbWUgb25saW5l?= <oce@option2money.com>
+To: <linux-kernel@vger.kernel.org>
+Message-Id: <742334.JLTTINBD@option2money.com>
+Reply-To: oce@option2money.com
+Content-type: text/plain; charset="x-mac-thai"; format=flowed
+Content-transfer-encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+งานประชาสัมพันธ์ผ่านสื่อ internet100% ต้องการผู้ร่วมงาน และเจ้าหน้าที่จำนวนมาก
+เพียงใช้เวลา 1-2 ชม.ต่อวัน/ทำงานที่บ้าน  รับรองไม่กระทบการเรียนหรืองานประจำค่ะ
 
---=_bohort-9550-1215189060-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Part-time รายได้ 8,000 บาท ขึ้นไป  (ขึ้นกับความสามารถ) Full-Time รายได้ 30,000 บาท ขึ้นไป (ขึ้นกับความสามารถ)
+คุณสมบัติ - ไม่จำกัดวุฒิ - มีเครื่องมือสื่อสารเป็นของตัวเอง เช่น โทรศัพท์มือถือ คอมพิวเตอร์ - มีความรู้ด้านการใช้อินเตอร์เน็ท(จะพิจารณาเป็นพิเศษ) - อายุ 18 ปีขึ้นไป
+- ไม่จำเป็นต้องมีประสบการณ์ (เรามี job training ไว้สนับสนุน)
+- บริษัทมี VCD ไว้สำหรับเรียนรู้งานด้วยตนเอง และมีการ training online
 
-Joel,
+สนใจกรอกแบบฟอร์มที่ link website ด้านล่างเพื่อรับรายละเอียดเกี่ยวกับงานเพิ่มเติมและรับ VCD ข้อมูลเกี่ยวกับงานได้ฟรี!!  ไม่มีค่าใช้จ่ายใดๆทั้งสิ้นค่ะ จะมีเจ้าหน้าที่ติดต่อกลับไปค่ะ
 
-Sorry for posting to a wrong address (really fun to see you working at Kerl=
-abs
-;)). I've just discovered that git-send-email is case-sensitive with email
-aliases while mutt is not...
+ >>>http://www.newattitudebiz.com/online03/contact.html
 
-Cheers,
 
-Louis
+**การกรอกแบบฟอร์มยังไม่ใช่การสมัคร เป็นการแจ้งความจำนงขอรับฟังรายละเอียดเท่านั้น  จึงไม่ต้องกังวลใดๆ และไม่มีค่าใช้จ่ายใดๆทั้งสิ้น**
 
-On Fri, Jul 04, 2008 at 04:56:04PM +0200, Louis Rilling wrote:
->  [ applies on top of http://lkml.org/lkml/2008/6/23/145 aka symlink() fix=
-es ]
->=20
-> Hi,
->=20
-> This patchset fixes two kinds of bugs happening when
-> configfs_attach_group()/configfs_attach_item() fail and userspace races w=
-ith
-> mkdir() or symlink().
->=20
-> Please read the first patch header for a detailed scenario explaining the=
- bugs.
->=20
-> Louis
->=20
-> Changelog:
->   - Few code reworks as requested by Joel (details in patch headers)
->=20
-> Summary (2):
->   configfs: Prevent userspace from creating new entries under attaching
->     directories
->   configfs: Lock new directory inodes before removing on cleanup after
->     failure
->=20
->  fs/configfs/configfs_internal.h |    2 +
->  fs/configfs/dir.c               |  141 ++++++++++++++++++++++++++++++++-=
-------
->  fs/configfs/symlink.c           |   15 ++++
->  3 files changed, 133 insertions(+), 25 deletions(-)
->=20
-> --=20
-> Dr Louis Rilling			Kerlabs
-> Skype: louis.rilling			Batiment Germanium
-> Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-> http://www.kerlabs.com/			35700 Rennes
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
 
---=_bohort-9550-1215189060-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFIblCoVKcRuvQ9Q1QRAtTZAKDGqDjmxrVLK85W9cZwBrGltJzJtACg0eCc
-gt+3Hy5cu9JBrFWoFkXJxvE=
-=/y9I
------END PGP SIGNATURE-----
 
---=_bohort-9550-1215189060-0001-2--
+
+
+
+
+
+
+
+
+
