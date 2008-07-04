@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759649AbYGDRS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758510AbYGDRNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759649AbYGDRS6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 13:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYGDRSu
+	id S1758510AbYGDRNg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 13:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbYGDRN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 13:18:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:45367 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752169AbYGDRSu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 13:18:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=oJD5A3sKu/m/hdd4pDrCSiOpRlNzDBuQoLFEKVTIHLBQ3NzJj+Fgxccw4XUfxjIgvU
-         fhP3ncfAVJoYZ1EU7zXK7sJ8/oGYrDFJZ+B4Z2ubNHuG/yMeetDMN/6boN+cOib60rgz
-         ntJq1QVoGWFyTrRLTqGrbazX0TZVMDRwXR0FE=
-Message-ID: <961aa3350807041018p437a2d60ka5936758bf7573d5@mail.gmail.com>
-Date: Sat, 5 Jul 2008 02:18:49 +0900
-From: "Akinobu Mita" <akinobu.mita@gmail.com>
-To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH -mm] fix ipr-use-memory_read_from_buffer.patch
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Brian King" <brking@us.ibm.com>
-In-Reply-To: <1215191136.5413.13.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200807040647.m646lXpN017508@imap1.linux-foundation.org>
-	 <1215182555.5413.8.camel@localhost.localdomain>
-	 <20080704163942.GA15214@localhost.localdomain>
-	 <20080704165438.GD22477@localhost.localdomain>
-	 <1215191136.5413.13.camel@localhost.localdomain>
+	Fri, 4 Jul 2008 13:13:28 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:39157 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751739AbYGDRN1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 13:13:27 -0400
+Date: Fri, 4 Jul 2008 19:13:20 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Tomas Winkler <tomas.winkler@intel.com>
+Cc: linux-kernel@vger.kernel.org, Benzi Zbit <Benzi.Zbit@intel.com>
+Subject: Re: [PATCH 1/3] mmc_core: fix the use of hard coded timeout value.
+Message-ID: <20080704191320.245fa2e6@mjolnir.drzeus.cx>
+In-Reply-To: <1214812224-32267-1-git-send-email-tomas.winkler@intel.com>
+References: <1214812224-32267-1-git-send-email-tomas.winkler@intel.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-367-1215190918-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> --- 2.6-mm.orig/drivers/scsi/ipr.c
->> +++ 2.6-mm/drivers/scsi/ipr.c
->> @@ -71,6 +71,7 @@
->>  #include <linux/module.h>
->>  #include <linux/moduleparam.h>
->>  #include <linux/libata.h>
->> +#include <linux/string.h>
->>  #include <asm/io.h>
->>  #include <asm/irq.h>
->>  #include <asm/processor.h>
->
-> This isn't really necessary, is it?  As you can see from the file being
-> stuffed full of memcpy directives, it's already getting an implicit
-> include of string.h from somewhere (like the rest of the SCSI drivers).
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Indeed. This is not necessary.
+--=_freyr.drzeus.cx-367-1215190918-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 30 Jun 2008 10:50:22 +0300
+Tomas Winkler <tomas.winkler@intel.com> wrote:
+
+> From: Benzi Zbit <Benzi.Zbit@intel.com>
+>=20
+> Signed-off-by: Benzi Zbit <Benzi.Zbit@intel.com>
+> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+> ---
+
+A nice addition, but I'm afraid that field is not present on all cards
+(it was added in version 1.1). Could you make sure you have the proper
+guards and a fallback?
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-367-1215190918-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkhuWjUACgkQ7b8eESbyJLh9KACgjFtsirL9L1mFqbAbVWLgB3nU
+pXwAoK2DQ923/jNjUjq2j3tOsKpWjkkX
+=3JiA
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-367-1215190918-0001-2--
