@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760496AbYGDRFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759421AbYGDROn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760496AbYGDRFu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 13:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756772AbYGDRFl
+	id S1759421AbYGDROn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 13:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbYGDROf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 13:05:41 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:45523 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754362AbYGDRFk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 13:05:40 -0400
-Subject: Re: [PATCH -mm] fix ipr-use-memory_read_from_buffer.patch
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Brian King <brking@us.ibm.com>
-In-Reply-To: <20080704165438.GD22477@localhost.localdomain>
-References: <200807040647.m646lXpN017508@imap1.linux-foundation.org>
-	 <1215182555.5413.8.camel@localhost.localdomain>
-	 <20080704163942.GA15214@localhost.localdomain>
-	 <20080704165438.GD22477@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 04 Jul 2008 12:05:36 -0500
-Message-Id: <1215191136.5413.13.camel@localhost.localdomain>
+	Fri, 4 Jul 2008 13:14:35 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:39117 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750709AbYGDROf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 13:14:35 -0400
+Date: Fri, 4 Jul 2008 19:14:28 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Tomas Winkler <tomas.winkler@intel.com>
+Cc: linux-kernel@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>
+Subject: Re: [PATCH 2/3] mmc: wbsd.c fix shadowing of 'dma' variable
+Message-ID: <20080704191428.2d78261d@mjolnir.drzeus.cx>
+In-Reply-To: <1214812224-32267-2-git-send-email-tomas.winkler@intel.com>
+References: <1214812224-32267-1-git-send-email-tomas.winkler@intel.com>
+	<1214812224-32267-2-git-send-email-tomas.winkler@intel.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-386-1215190986-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-07-05 at 01:54 +0900, Akinobu Mita wrote:
-> Now memory_read_from_buffer() belongs in string.h
-> 
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> Cc: Brian King <brking@us.ibm.com>
-> Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
+
+--=_freyr.drzeus.cx-386-1215190986-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 30 Jun 2008 10:50:23 +0300
+Tomas Winkler <tomas.winkler@intel.com> wrote:
+
+> This patch fix warning :shadowing dma variable
+>=20
+> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
 > ---
->  drivers/scsi/ipr.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> Index: 2.6-mm/drivers/scsi/ipr.c
-> ===================================================================
-> --- 2.6-mm.orig/drivers/scsi/ipr.c
-> +++ 2.6-mm/drivers/scsi/ipr.c
-> @@ -71,6 +71,7 @@
->  #include <linux/module.h>
->  #include <linux/moduleparam.h>
->  #include <linux/libata.h>
-> +#include <linux/string.h>
->  #include <asm/io.h>
->  #include <asm/irq.h>
->  #include <asm/processor.h>
 
-This isn't really necessary, is it?  As you can see from the file being
-stuffed full of memcpy directives, it's already getting an implicit
-include of string.h from somewhere (like the rest of the SCSI drivers).
+Looks ok. Applied.
 
-James
+--=20
+     -- Pierre Ossman
 
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-386-1215190986-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkhuWnkACgkQ7b8eESbyJLiO/gCgirE+TbE1DL7rjAP9jy7zKKZS
+azIAn2YPaezMps1wbwe377zWwwFbvBdy
+=vlAG
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-386-1215190986-0001-2--
