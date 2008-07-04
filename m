@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbYGDJO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbYGDJSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757977AbYGDJO3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 05:14:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754502AbYGDJOT
+	id S1757706AbYGDJSy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 05:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbYGDJSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 05:14:19 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:60138 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754485AbYGDJOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 05:14:18 -0400
-Date: Fri, 4 Jul 2008 11:12:24 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Russell King <rmk+lkml@arm.linux.org.uk>,
+	Fri, 4 Jul 2008 05:18:45 -0400
+Received: from smtp.wifcom.cz ([89.185.251.8]:43221 "EHLO wifcom.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752156AbYGDJSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 05:18:45 -0400
+X-Greylist: delayed 2099 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Jul 2008 05:18:45 EDT
+Date: Fri, 4 Jul 2008 10:44:24 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
        Paul Mundt <lethal@linux-sh.org>,
-       pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       tony@atomide.com, paul@pwsan.com, David Brownell <david-b@pacbell.net>,
+       pHilipp Zabel <philipp.zabel@gmail.com>, tony@atomide.com,
+       paul@pwsan.com, David Brownell <david-b@pacbell.net>,
        Mark Brown <broonie@opensource.wolfsonmicro.com>, ian <spyro@f2s.com>
 Subject: Re: [PATCH 1/3] Clocklib: add generic framework for managing
- clocks.
-Message-ID: <20080704111224.54961b66@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <20080704090446.GA6848@doriath.ww600.siemens.net>
-References: <20080626125033.GA7093@doriath.ww600.siemens.net>
-	<20080626125138.GA12415@doriath.ww600.siemens.net>
-	<20080703203157.GB24620@fluff.org.uk>
-	<20080704090446.GA6848@doriath.ww600.siemens.net>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Jul 2008 09:12:32.0989 (UTC) FILETIME=[179B28D0:01C8DDB6]
+	clocks.
+Message-ID: <20080704084424.GA4531@elf.ucw.cz>
+References: <20080626125033.GA7093@doriath.ww600.siemens.net> <20080626125138.GA12415@doriath.ww600.siemens.net> <20080703203157.GB24620@fluff.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080703203157.GB24620@fluff.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Antivirus-Scanner: Clean mail though you should still use an Antivirus
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
-> > > +#ifdef CONFIG_DEBUG_FS
-> > > +	struct dentry *dir;
-> > > +	struct dentry *info;
-> > > +#endif  
+On Thu 2008-07-03 21:31:57, Ben Dooks wrote:
+> On Thu, Jun 26, 2008 at 04:51:38PM +0400, Dmitry Baryshkov wrote:
+> > Provide a generic framework that platform may choose
+> > to support clocks api. In particular this provides
+> > platform-independant struct clk definition, a full
+> > implementation of clocks api and a set of functions
+> > for registering and unregistering clocks in a safe way.
 > > 
-> > Can't you hide this in the code, say by wrappering the
-> > struct with something else when it is registered?  
+> > Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+> > ---
+> >  include/linux/clocklib.h |   58 ++++++++
+> >  lib/Kconfig              |    3 +
+> >  lib/Makefile             |    1 +
+> >  lib/clocklib.c           |  353 ++++++++++++++++++++++++++++++++++++++++++++++
 > 
-> It is allocated dynamically by drivers. I can move this to
-> struct clk_private to specify that it's private, but it should be
-> visible outside
+> why under lib? drivers/clk might be a better place for this.
 
-Actually, I don't think it _should_ be private. Low-level clock drivers
-might want to provide debugfs nodes on their own, and those nodes
-naturally belong in the same directory as the clklib ones. So the
-debugfs root node must be exposed somehow.
+This does not belong into lib/, really. drivers/clk seems ok.
+									Pavel
 
-You can get rid of the "info" field if you apply this patch:
-
-http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/driver-core/debugfs-implement-debugfs_remove_recursive.patch
-
-Haavard
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
