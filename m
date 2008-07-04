@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbYGDX4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbYGDX4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756531AbYGDX4W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 19:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYGDXzO
+	id S1756713AbYGDX4h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 19:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbYGDXzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 19:55:14 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:42505 "EHLO smtp.polymtl.ca"
+	Fri, 4 Jul 2008 19:55:16 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:42507 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752194AbYGDXzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 19:55:10 -0400
-Message-Id: <20080704235425.294187583@polymtl.ca>
+	id S1752533AbYGDXzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 19:55:11 -0400
+Message-Id: <20080704235424.308866651@polymtl.ca>
 References: <20080704235207.147809973@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Jul 2008 19:52:11 -0400
+Date: Fri, 04 Jul 2008 19:52:09 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
        "Frank Ch. Eigler" <fche@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Hideo AOKI <haoki@redhat.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>, Hideo AOKI <haoki@redhat.com>,
        Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
        Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [RFC patch 04/12] LTTng instrumentation kernel
-Content-Disposition: inline; filename=lttng-instrumentation-kernel.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri,  4 Jul 2008 23:54:25 +0000
+Subject: [RFC patch 02/12] LTTng tracepoint instrumentation fs
+Content-Disposition: inline; filename=lttng-instrumentation-fs.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri,  4 Jul 2008 23:54:24 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Core kernel events.
+Core filesystem tracepoints.
 
-*not* present in this patch because they are architecture specific :
-- syscall entry/exit
-- traps
-- kernel thread creation
+Tracepoints added :
 
-Added markers :
-
-kernel_irq_entry
-kernel_irq_exit
-kernel_kthread_stop
-kernel_kthread_stop_ret
-kernel_module_free
-kernel_module_load
-kernel_printk
-kernel_process_exit
-kernel_process_fork
-kernel_process_free
-kernel_process_wait
-kernel_sched_migrate_task
-kernel_sched_schedule
-kernel_sched_try_wakeup
-kernel_sched_wait_task
-kernel_sched_wakeup_new_task
-kernel_send_signal
-kernel_softirq_entry
-kernel_softirq_exit
-kernel_softirq_raise
-kernel_tasklet_high_entry
-kernel_tasklet_high_exit
-kernel_tasklet_low_entry
-kernel_tasklet_low_exit
-kernel_timer_itimer_expired
-kernel_timer_itimer_set
-kernel_timer_set
-kernel_timer_timeout
-kernel_timer_update_time
-kernel_vprintk
+fs_buffer_wait_end
+fs_buffer_wait_start
+fs_close
+fs_exec
+fs_ioctl
+fs_llseek
+fs_lseek
+fs_open
+fs_poll
+fs_pread64
+fs_pwrite64
+fs_read
+fs_readv
+fs_select
+fs_write
+fs_writev
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Alexander Viro <viro@zeniv.linux.org.uk>
 CC: 'Peter Zijlstra' <peterz@infradead.org>
 CC: "Frank Ch. Eigler" <fche@redhat.com>
 CC: 'Ingo Molnar' <mingo@elte.hu>
@@ -78,509 +60,312 @@ CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
 CC: 'Steven Rostedt' <rostedt@goodmis.org>
 CC: Masami Hiramatsu <mhiramat@redhat.com>
 ---
- kernel/exit.c         |    6 ++
- kernel/fork.c         |    3 +
- kernel/irq/handle.c   |    6 ++
- kernel/itimer.c       |    5 ++
- kernel/kernel-trace.h |  106 ++++++++++++++++++++++++++++++++++++++++++++++++++
- kernel/kthread.c      |    5 ++
- kernel/module.c       |    5 ++
- kernel/printk.c       |    5 ++
- kernel/sched.c        |    6 ++
- kernel/signal.c       |    3 +
- kernel/softirq.c      |    8 +++
- kernel/timer.c        |    8 +++
- 12 files changed, 165 insertions(+), 1 deletion(-)
+ fs/buffer.c     |    3 ++
+ fs/compat.c     |    2 +
+ fs/exec.c       |    2 +
+ fs/fs-trace.h   |   65 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/ioctl.c      |    3 ++
+ fs/open.c       |    3 ++
+ fs/read_write.c |   19 ++++++++++++++--
+ fs/select.c     |    3 ++
+ 8 files changed, 98 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-lttng/kernel/irq/handle.c
+Index: linux-2.6-lttng/fs/buffer.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/irq/handle.c	2008-07-04 16:59:29.000000000 -0400
-+++ linux-2.6-lttng/kernel/irq/handle.c	2008-07-04 17:38:16.000000000 -0400
-@@ -15,6 +15,7 @@
- #include <linux/random.h>
- #include <linux/interrupt.h>
- #include <linux/kernel_stat.h>
-+#include "../kernel-trace.h"
+--- linux-2.6-lttng.orig/fs/buffer.c	2008-07-04 18:49:23.000000000 -0400
++++ linux-2.6-lttng/fs/buffer.c	2008-07-04 18:49:33.000000000 -0400
+@@ -41,6 +41,7 @@
+ #include <linux/bitops.h>
+ #include <linux/mpage.h>
+ #include <linux/bit_spinlock.h>
++#include "fs-trace.h"
  
- #include "internals.h"
+ static int fsync_buffers_list(spinlock_t *lock, struct list_head *list);
  
-@@ -130,6 +131,9 @@ irqreturn_t handle_IRQ_event(unsigned in
- {
- 	irqreturn_t ret, retval = IRQ_NONE;
- 	unsigned int status = 0;
-+	struct pt_regs *regs = get_irq_regs();
-+
-+	trace_kernel_irq_entry(irq, regs);
- 
- 	handle_dynamic_tick(action);
- 
-@@ -148,6 +152,8 @@ irqreturn_t handle_IRQ_event(unsigned in
- 		add_interrupt_randomness(irq);
- 	local_irq_disable();
- 
-+	trace_kernel_irq_exit();
-+
- 	return retval;
- }
- 
-Index: linux-2.6-lttng/kernel/itimer.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/itimer.c	2008-07-04 16:59:29.000000000 -0400
-+++ linux-2.6-lttng/kernel/itimer.c	2008-07-04 17:38:16.000000000 -0400
-@@ -12,6 +12,7 @@
- #include <linux/time.h>
- #include <linux/posix-timers.h>
- #include <linux/hrtimer.h>
-+#include "kernel-trace.h"
- 
- #include <asm/uaccess.h>
- 
-@@ -132,6 +133,8 @@ enum hrtimer_restart it_real_fn(struct h
- 	struct signal_struct *sig =
- 		container_of(timer, struct signal_struct, real_timer);
- 
-+	trace_kernel_timer_itimer_expired(sig);
-+
- 	kill_pid_info(SIGALRM, SEND_SIG_PRIV, sig->leader_pid);
- 
- 	return HRTIMER_NORESTART;
-@@ -157,6 +160,8 @@ int do_setitimer(int which, struct itime
- 	    !timeval_valid(&value->it_interval))
- 		return -EINVAL;
- 
-+	trace_kernel_timer_itimer_set(which, value);
-+
- 	switch (which) {
- 	case ITIMER_REAL:
- again:
-Index: linux-2.6-lttng/kernel/kthread.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/kthread.c	2008-07-04 16:59:29.000000000 -0400
-+++ linux-2.6-lttng/kernel/kthread.c	2008-07-04 17:38:16.000000000 -0400
-@@ -13,6 +13,7 @@
- #include <linux/file.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-+#include "kernel-trace.h"
- 
- #define KTHREAD_NICE_LEVEL (-5)
- 
-@@ -205,6 +206,8 @@ int kthread_stop(struct task_struct *k)
- 	/* It could exit after stop_info.k set, but before wake_up_process. */
- 	get_task_struct(k);
- 
-+	trace_kernel_kthread_stop(k);
-+
- 	/* Must init completion *before* thread sees kthread_stop_info.k */
- 	init_completion(&kthread_stop_info.done);
- 	smp_wmb();
-@@ -220,6 +223,8 @@ int kthread_stop(struct task_struct *k)
- 	ret = kthread_stop_info.err;
- 	mutex_unlock(&kthread_stop_lock);
- 
-+	trace_kernel_kthread_stop_ret(ret);
-+
- 	return ret;
- }
- EXPORT_SYMBOL(kthread_stop);
-Index: linux-2.6-lttng/kernel/printk.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/printk.c	2008-07-04 16:59:29.000000000 -0400
-+++ linux-2.6-lttng/kernel/printk.c	2008-07-04 17:38:16.000000000 -0400
-@@ -32,6 +32,7 @@
- #include <linux/security.h>
- #include <linux/bootmem.h>
- #include <linux/syscalls.h>
-+#include "kernel-trace.h"
- 
- #include <asm/uaccess.h>
- 
-@@ -610,6 +611,7 @@ asmlinkage int printk(const char *fmt, .
- 	int r;
- 
- 	va_start(args, fmt);
-+	trace_kernel_printk(__builtin_return_address(0));
- 	r = vprintk(fmt, args);
- 	va_end(args);
- 
-@@ -687,6 +689,9 @@ asmlinkage int vprintk(const char *fmt, 
- 	raw_local_irq_save(flags);
- 	this_cpu = smp_processor_id();
- 
-+	trace_kernel_vprintk(__builtin_return_address(0),
-+		printk_buf, printed_len);
-+
- 	/*
- 	 * Ouch, printk recursed into itself!
- 	 */
-Index: linux-2.6-lttng/kernel/sched.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/sched.c	2008-07-04 16:59:29.000000000 -0400
-+++ linux-2.6-lttng/kernel/sched.c	2008-07-04 17:38:16.000000000 -0400
-@@ -70,6 +70,7 @@
- #include <linux/bootmem.h>
- #include <linux/debugfs.h>
- #include <linux/ctype.h>
-+#include "kernel-trace.h"
- 
- #include <asm/tlb.h>
- #include <asm/irq_regs.h>
-@@ -1806,6 +1807,7 @@ void wait_task_inactive(struct task_stru
- 		 * just go back and repeat.
- 		 */
- 		rq = task_rq_lock(p, &flags);
-+		trace_kernel_sched_wait_task(p);
- 		running = task_running(rq, p);
- 		on_rq = p->se.on_rq;
- 		task_rq_unlock(rq, &flags);
-@@ -2087,6 +2089,7 @@ static int try_to_wake_up(struct task_st
- 
- 	smp_wmb();
- 	rq = task_rq_lock(p, &flags);
-+	trace_kernel_sched_try_wakeup(p);
- 	old_state = p->state;
- 	if (!(old_state & state))
- 		goto out;
-@@ -2264,6 +2267,7 @@ void wake_up_new_task(struct task_struct
- 	struct rq *rq;
- 
- 	rq = task_rq_lock(p, &flags);
-+	trace_kernel_sched_wakeup_new_task(p);
- 	BUG_ON(p->state != TASK_RUNNING);
- 	update_rq_clock(rq);
- 
-@@ -2451,6 +2455,7 @@ context_switch(struct rq *rq, struct tas
- 	struct mm_struct *mm, *oldmm;
- 
- 	prepare_task_switch(rq, prev, next);
-+	trace_kernel_sched_schedule(prev, next);
- 	mm = next->mm;
- 	oldmm = prev->active_mm;
- 	/*
-@@ -2683,6 +2688,7 @@ static void sched_migrate_task(struct ta
- 	    || unlikely(cpu_is_offline(dest_cpu)))
- 		goto out;
- 
-+	trace_kernel_sched_migrate_task(p, dest_cpu);
- 	/* force the process onto the specified CPU */
- 	if (migrate_task(p, dest_cpu, &req)) {
- 		/* Need to wait for migration thread (might exit: take ref). */
-Index: linux-2.6-lttng/kernel/signal.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/signal.c	2008-07-04 16:59:29.000000000 -0400
-+++ linux-2.6-lttng/kernel/signal.c	2008-07-04 17:38:16.000000000 -0400
-@@ -26,6 +26,7 @@
- #include <linux/freezer.h>
- #include <linux/pid_namespace.h>
- #include <linux/nsproxy.h>
-+#include "kernel-trace.h"
- 
- #include <asm/param.h>
- #include <asm/uaccess.h>
-@@ -807,6 +808,8 @@ static int send_signal(int sig, struct s
- 	struct sigpending *pending;
- 	struct sigqueue *q;
- 
-+	trace_kernel_signal_send(sig, t);
-+
- 	assert_spin_locked(&t->sighand->siglock);
- 	if (!prepare_signal(sig, t))
- 		return 0;
-Index: linux-2.6-lttng/kernel/softirq.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/softirq.c	2008-07-04 16:59:29.000000000 -0400
-+++ linux-2.6-lttng/kernel/softirq.c	2008-07-04 17:38:16.000000000 -0400
-@@ -21,6 +21,7 @@
- #include <linux/rcupdate.h>
- #include <linux/smp.h>
- #include <linux/tick.h>
-+#include "kernel-trace.h"
- 
- #include <asm/irq.h>
- /*
-@@ -231,7 +232,9 @@ restart:
- 
- 	do {
- 		if (pending & 1) {
-+			trace_kernel_softirq_entry(h, softirq_vec);
- 			h->action(h);
-+			trace_kernel_softirq_exit(h, softirq_vec);
- 			rcu_bh_qsctr_inc(cpu);
- 		}
- 		h++;
-@@ -323,6 +326,7 @@ void irq_exit(void)
+@@ -89,7 +90,9 @@ void unlock_buffer(struct buffer_head *b
   */
- inline void raise_softirq_irqoff(unsigned int nr)
+ void __wait_on_buffer(struct buffer_head * bh)
  {
-+	trace_kernel_softirq_raise(nr);
- 	__raise_softirq_irqoff(nr);
++	trace_fs_buffer_wait_start(bh);
+ 	wait_on_bit(&bh->b_state, BH_Lock, sync_buffer, TASK_UNINTERRUPTIBLE);
++	trace_fs_buffer_wait_end(bh);
+ }
  
- 	/*
-@@ -412,7 +416,9 @@ static void tasklet_action(struct softir
- 			if (!atomic_read(&t->count)) {
- 				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
- 					BUG();
-+				trace_kernel_tasklet_low_entry(t);
- 				t->func(t->data);
-+				trace_kernel_tasklet_low_exit(t);
- 				tasklet_unlock(t);
- 				continue;
- 			}
-@@ -447,7 +453,9 @@ static void tasklet_hi_action(struct sof
- 			if (!atomic_read(&t->count)) {
- 				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
- 					BUG();
-+				trace_kernel_tasklet_high_entry(t);
- 				t->func(t->data);
-+				trace_kernel_tasklet_high_exit(t);
- 				tasklet_unlock(t);
- 				continue;
- 			}
-Index: linux-2.6-lttng/kernel/timer.c
+ static void
+Index: linux-2.6-lttng/fs/compat.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/timer.c	2008-07-04 16:59:29.000000000 -0400
-+++ linux-2.6-lttng/kernel/timer.c	2008-07-04 17:38:16.000000000 -0400
-@@ -37,12 +37,14 @@
- #include <linux/delay.h>
- #include <linux/tick.h>
- #include <linux/kallsyms.h>
-+#include "kernel-trace.h"
+--- linux-2.6-lttng.orig/fs/compat.c	2008-07-04 18:49:23.000000000 -0400
++++ linux-2.6-lttng/fs/compat.c	2008-07-04 18:49:33.000000000 -0400
+@@ -51,6 +51,7 @@
+ #include <linux/poll.h>
+ #include <linux/mm.h>
+ #include <linux/eventpoll.h>
++#include "fs-trace.h"
  
  #include <asm/uaccess.h>
- #include <asm/unistd.h>
- #include <asm/div64.h>
- #include <asm/timex.h>
- #include <asm/io.h>
-+#include <asm/irq_regs.h>
+ #include <asm/mmu_context.h>
+@@ -1402,6 +1403,7 @@ int compat_do_execve(char * filename,
  
- u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
+ 	retval = search_binary_handler(bprm, regs);
+ 	if (retval >= 0) {
++		trace_fs_exec(filename);
+ 		/* execve success */
+ 		security_bprm_free(bprm);
+ 		acct_update_integrals(current);
+Index: linux-2.6-lttng/fs/ioctl.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/ioctl.c	2008-07-04 18:49:23.000000000 -0400
++++ linux-2.6-lttng/fs/ioctl.c	2008-07-04 18:49:33.000000000 -0400
+@@ -13,6 +13,7 @@
+ #include <linux/security.h>
+ #include <linux/module.h>
+ #include <linux/uaccess.h>
++#include "fs-trace.h"
  
-@@ -288,6 +290,7 @@ static void internal_add_timer(struct tv
- 		i = (expires >> (TVR_BITS + 3 * TVN_BITS)) & TVN_MASK;
- 		vec = base->tv5.vec + i;
+ #include <asm/ioctls.h>
+ 
+@@ -201,6 +202,8 @@ asmlinkage long sys_ioctl(unsigned int f
+ 	if (!filp)
+ 		goto out;
+ 
++	trace_fs_ioctl(fd, cmd, arg);
++
+ 	error = security_file_ioctl(filp, cmd, arg);
+ 	if (error)
+ 		goto out_fput;
+Index: linux-2.6-lttng/fs/open.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/open.c	2008-07-04 18:49:23.000000000 -0400
++++ linux-2.6-lttng/fs/open.c	2008-07-04 18:49:33.000000000 -0400
+@@ -28,6 +28,7 @@
+ #include <linux/rcupdate.h>
+ #include <linux/audit.h>
+ #include <linux/falloc.h>
++#include "fs-trace.h"
+ 
+ int vfs_statfs(struct dentry *dentry, struct kstatfs *buf)
+ {
+@@ -1090,6 +1091,7 @@ long do_sys_open(int dfd, const char __u
+ 				fsnotify_open(f->f_path.dentry);
+ 				fd_install(fd, f);
+ 			}
++			trace_fs_open(fd, tmp);
+ 		}
+ 		putname(tmp);
  	}
-+	trace_kernel_timer_set(timer);
- 	/*
- 	 * Timers are FIFO:
- 	 */
-@@ -1074,6 +1077,7 @@ void do_timer(unsigned long ticks)
- {
- 	jiffies_64 += ticks;
- 	update_times(ticks);
-+	trace_kernel_timer_update_time();
- }
- 
- #ifdef __ARCH_WANT_SYS_ALARM
-@@ -1155,7 +1159,9 @@ asmlinkage long sys_getegid(void)
- 
- static void process_timeout(unsigned long __data)
- {
--	wake_up_process((struct task_struct *)__data);
-+	struct task_struct *task = (struct task_struct *)__data;
-+	trace_kernel_timer_timeout(task);
-+	wake_up_process(task);
- }
- 
- /**
-Index: linux-2.6-lttng/kernel/exit.c
+@@ -1179,6 +1181,7 @@ asmlinkage long sys_close(unsigned int f
+ 	filp = fdt->fd[fd];
+ 	if (!filp)
+ 		goto out_unlock;
++	trace_fs_close(fd);
+ 	rcu_assign_pointer(fdt->fd[fd], NULL);
+ 	FD_CLR(fd, fdt->close_on_exec);
+ 	__put_unused_fd(files, fd);
+Index: linux-2.6-lttng/fs/read_write.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/exit.c	2008-07-04 16:59:29.000000000 -0400
-+++ linux-2.6-lttng/kernel/exit.c	2008-07-04 17:38:16.000000000 -0400
-@@ -45,6 +45,7 @@
- #include <linux/resource.h>
- #include <linux/blkdev.h>
- #include <linux/task_io_accounting_ops.h>
-+#include "kernel-trace.h"
+--- linux-2.6-lttng.orig/fs/read_write.c	2008-07-04 18:49:23.000000000 -0400
++++ linux-2.6-lttng/fs/read_write.c	2008-07-04 18:57:11.000000000 -0400
+@@ -16,6 +16,7 @@
+ #include <linux/syscalls.h>
+ #include <linux/pagemap.h>
+ #include <linux/splice.h>
++#include "fs-trace.h"
+ #include "read_write.h"
  
  #include <asm/uaccess.h>
- #include <asm/unistd.h>
-@@ -148,6 +149,7 @@ static void __exit_signal(struct task_st
- 
- static void delayed_put_task_struct(struct rcu_head *rhp)
- {
-+	trace_kernel_process_free(container_of(rhp, struct task_struct, rcu));
- 	put_task_struct(container_of(rhp, struct task_struct, rcu));
- }
- 
-@@ -1042,6 +1044,8 @@ NORET_TYPE void do_exit(long code)
- 
- 	if (group_dead)
- 		acct_process();
-+	trace_kernel_process_exit(tsk);
+@@ -146,6 +147,9 @@ asmlinkage off_t sys_lseek(unsigned int 
+ 		if (res != (loff_t)retval)
+ 			retval = -EOVERFLOW;	/* LFS: should only happen on 32 bit platforms */
+ 	}
 +
- 	exit_sem(tsk);
- 	exit_files(tsk);
- 	exit_fs(tsk);
-@@ -1526,6 +1530,8 @@ static long do_wait(enum pid_type type, 
- 	struct task_struct *tsk;
- 	int flag, retval;
- 
-+	trace_kernel_process_wait(pid);
++	trace_fs_lseek(fd, offset, origin);
 +
- 	add_wait_queue(&current->signal->wait_chldexit,&wait);
- repeat:
- 	/* If there is nothing that can match our critier just get out */
-Index: linux-2.6-lttng/kernel/fork.c
+ 	fput_light(file, fput_needed);
+ bad:
+ 	return retval;
+@@ -173,6 +177,8 @@ asmlinkage long sys_llseek(unsigned int 
+ 	offset = vfs_llseek(file, ((loff_t) offset_high << 32) | offset_low,
+ 			origin);
+ 
++	trace_fs_llseek(fd, offset, origin);
++
+ 	retval = (int)offset;
+ 	if (offset >= 0) {
+ 		retval = -EFAULT;
+@@ -360,6 +366,7 @@ asmlinkage ssize_t sys_read(unsigned int
+ 	if (file) {
+ 		loff_t pos = file_pos_read(file);
+ 		ret = vfs_read(file, buf, count, &pos);
++		trace_fs_read(fd, buf, count, ret);
+ 		file_pos_write(file, pos);
+ 		fput_light(file, fput_needed);
+ 	}
+@@ -377,6 +384,7 @@ asmlinkage ssize_t sys_write(unsigned in
+ 	if (file) {
+ 		loff_t pos = file_pos_read(file);
+ 		ret = vfs_write(file, buf, count, &pos);
++		trace_fs_write(fd, buf, count, ret);
+ 		file_pos_write(file, pos);
+ 		fput_light(file, fput_needed);
+ 	}
+@@ -397,8 +405,11 @@ asmlinkage ssize_t sys_pread64(unsigned 
+ 	file = fget_light(fd, &fput_needed);
+ 	if (file) {
+ 		ret = -ESPIPE;
+-		if (file->f_mode & FMODE_PREAD)
++		if (file->f_mode & FMODE_PREAD) {
+ 			ret = vfs_read(file, buf, count, &pos);
++			trace_fs_pread64(fd, buf, count, pos, ret);
++		}
++
+ 		fput_light(file, fput_needed);
+ 	}
+ 
+@@ -418,8 +429,10 @@ asmlinkage ssize_t sys_pwrite64(unsigned
+ 	file = fget_light(fd, &fput_needed);
+ 	if (file) {
+ 		ret = -ESPIPE;
+-		if (file->f_mode & FMODE_PWRITE)  
++		if (file->f_mode & FMODE_PWRITE) {
+ 			ret = vfs_write(file, buf, count, &pos);
++			trace_fs_pwrite64(fd, buf, count, pos, ret);
++		}
+ 		fput_light(file, fput_needed);
+ 	}
+ 
+@@ -664,6 +677,7 @@ sys_readv(unsigned long fd, const struct
+ 	if (file) {
+ 		loff_t pos = file_pos_read(file);
+ 		ret = vfs_readv(file, vec, vlen, &pos);
++		trace_fs_readv(fd, vec, vlen, ret);
+ 		file_pos_write(file, pos);
+ 		fput_light(file, fput_needed);
+ 	}
+@@ -685,6 +699,7 @@ sys_writev(unsigned long fd, const struc
+ 	if (file) {
+ 		loff_t pos = file_pos_read(file);
+ 		ret = vfs_writev(file, vec, vlen, &pos);
++		trace_fs_writev(fd, vec, vlen, ret);
+ 		file_pos_write(file, pos);
+ 		fput_light(file, fput_needed);
+ 	}
+Index: linux-2.6-lttng/fs/select.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/fork.c	2008-07-04 16:59:29.000000000 -0400
-+++ linux-2.6-lttng/kernel/fork.c	2008-07-04 17:38:16.000000000 -0400
-@@ -54,6 +54,7 @@
- #include <linux/tty.h>
- #include <linux/proc_fs.h>
- #include <linux/blkdev.h>
-+#include "kernel-trace.h"
+--- linux-2.6-lttng.orig/fs/select.c	2008-07-04 18:49:23.000000000 -0400
++++ linux-2.6-lttng/fs/select.c	2008-07-04 18:49:33.000000000 -0400
+@@ -24,6 +24,7 @@
+ #include <linux/fdtable.h>
+ #include <linux/fs.h>
+ #include <linux/rcupdate.h>
++#include "fs-trace.h"
  
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
-@@ -1356,6 +1357,8 @@ long do_fork(unsigned long clone_flags,
- 	if (!IS_ERR(p)) {
- 		struct completion vfork;
+ #include <asm/uaccess.h>
  
-+		trace_kernel_process_fork(current, p);
-+
- 		nr = task_pid_vnr(p);
- 
- 		if (clone_flags & CLONE_PARENT_SETTID)
-Index: linux-2.6-lttng/kernel/module.c
+@@ -232,6 +233,7 @@ int do_select(int n, fd_set_bits *fds, s
+ 				file = fget_light(i, &fput_needed);
+ 				if (file) {
+ 					f_op = file->f_op;
++					trace_fs_select(i, *timeout);
+ 					mask = DEFAULT_POLLMASK;
+ 					if (f_op && f_op->poll)
+ 						mask = (*f_op->poll)(file, retval ? NULL : wait);
+@@ -560,6 +562,7 @@ static inline unsigned int do_pollfd(str
+ 		file = fget_light(fd, &fput_needed);
+ 		mask = POLLNVAL;
+ 		if (file != NULL) {
++			trace_fs_poll(fd);
+ 			mask = DEFAULT_POLLMASK;
+ 			if (file->f_op && file->f_op->poll)
+ 				mask = file->f_op->poll(file, pwait);
+Index: linux-2.6-lttng/fs/exec.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/module.c	2008-07-04 16:59:29.000000000 -0400
-+++ linux-2.6-lttng/kernel/module.c	2008-07-04 17:38:16.000000000 -0400
-@@ -47,6 +47,7 @@
- #include <linux/license.h>
- #include <asm/sections.h>
- #include <linux/tracepoint.h>
-+#include "kernel-trace.h"
+--- linux-2.6-lttng.orig/fs/exec.c	2008-07-04 18:49:23.000000000 -0400
++++ linux-2.6-lttng/fs/exec.c	2008-07-04 18:49:33.000000000 -0400
+@@ -51,6 +51,7 @@
+ #include <linux/tsacct_kern.h>
+ #include <linux/cn_proc.h>
+ #include <linux/audit.h>
++#include "fs-trace.h"
  
- #if 0
- #define DEBUGP printk
-@@ -1386,6 +1387,8 @@ static int __unlink_module(void *_mod)
- /* Free a module, remove from lists, etc (must hold module_mutex). */
- static void free_module(struct module *mod)
- {
-+	trace_kernel_module_free(mod);
-+
- 	/* Delete from various lists */
- 	stop_machine_run(__unlink_module, mod, NR_CPUS);
- 	remove_notes_attrs(mod);
-@@ -2176,6 +2179,8 @@ static struct module *load_module(void _
- 	/* Get rid of temporary copy */
- 	vfree(hdr);
+ #include <asm/uaccess.h>
+ #include <asm/mmu_context.h>
+@@ -1330,6 +1331,7 @@ int do_execve(char * filename,
  
-+	trace_kernel_module_load(mod);
-+
- 	/* Done! */
- 	return mod;
- 
-Index: linux-2.6-lttng/kernel/kernel-trace.h
+ 	retval = search_binary_handler(bprm,regs);
+ 	if (retval >= 0) {
++		trace_fs_exec(filename);
+ 		/* execve success */
+ 		security_bprm_free(bprm);
+ 		acct_update_integrals(current);
+Index: linux-2.6-lttng/fs/fs-trace.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/kernel/kernel-trace.h	2008-07-04 17:38:16.000000000 -0400
-@@ -0,0 +1,106 @@
-+#ifndef _KERNEL_TRACE_H
-+#define _KERNEL_TRACE_H
++++ linux-2.6-lttng/fs/fs-trace.h	2008-07-04 18:56:19.000000000 -0400
+@@ -0,0 +1,65 @@
++#ifndef _FS_TRACE_H
++#define _FS_TRACE_H
 +
-+#include <linux/kdebug.h>
-+#include <linux/interrupt.h>
++#include <linux/buffer_head.h>
 +#include <linux/tracepoint.h>
 +
-+DEFINE_TRACE(kernel_irq_entry,
-+	TPPROTO(unsigned int id, struct pt_regs *regs),
-+	TPARGS(id, regs));
-+DEFINE_TRACE(kernel_irq_exit,
-+	TPPROTO(void),
-+	TPARGS());
-+DEFINE_TRACE(kernel_timer_itimer_expired,
-+	TPPROTO(struct signal_struct *sig),
-+	TPARGS(sig));
-+DEFINE_TRACE(kernel_timer_itimer_set,
-+	TPPROTO(int which, struct itimerval *value),
-+	TPARGS(which, value));
-+DEFINE_TRACE(kernel_kthread_stop,
-+	TPPROTO(struct task_struct *t),
-+	TPARGS(t));
-+DEFINE_TRACE(kernel_kthread_stop_ret,
-+	TPPROTO(int ret),
-+	TPARGS(ret));
-+DEFINE_TRACE(kernel_printk,
-+	TPPROTO(void *retaddr),
-+	TPARGS(retaddr));
-+DEFINE_TRACE(kernel_vprintk,
-+	TPPROTO(void *retaddr, char *buf, int len),
-+	TPARGS(retaddr, buf, len));
++DEFINE_TRACE(fs_buffer_wait_start,
++	TPPROTO(struct buffer_head *bh),
++	TPARGS(bh));
++DEFINE_TRACE(fs_buffer_wait_end,
++	TPPROTO(struct buffer_head *bh),
++	TPARGS(bh));
++DEFINE_TRACE(fs_exec,
++	TPPROTO(char *filename),
++	TPARGS(filename));
++DEFINE_TRACE(fs_ioctl,
++	TPPROTO(unsigned int fd, unsigned int cmd, unsigned long arg),
++	TPARGS(fd, cmd, arg));
++DEFINE_TRACE(fs_open,
++	TPPROTO(int fd, char *filename),
++	TPARGS(fd, filename));
++DEFINE_TRACE(fs_close,
++	TPPROTO(unsigned int fd),
++	TPARGS(fd));
++DEFINE_TRACE(fs_lseek,
++	TPPROTO(unsigned int fd, long offset, unsigned int origin),
++	TPARGS(fd, offset, origin));
++DEFINE_TRACE(fs_llseek,
++	TPPROTO(unsigned int fd, loff_t offset, unsigned int origin),
++	TPARGS(fd, offset, origin));
 +
 +/*
-+ * Scheduler trace points.
++ * Probes must be aware that __user * may be modified by concurrent userspace
++ * or kernel threads.
 + */
-+DEFINE_TRACE(kernel_sched_wait_task,
-+	TPPROTO(struct task_struct *p),
-+	TPARGS(p));
-+DEFINE_TRACE(kernel_sched_try_wakeup,
-+	TPPROTO(struct task_struct *p),
-+	TPARGS(p));
-+DEFINE_TRACE(kernel_sched_wakeup_new_task,
-+	TPPROTO(struct task_struct *p),
-+	TPARGS(p));
-+DEFINE_TRACE(kernel_sched_schedule,
-+	TPPROTO(struct task_struct *prev, struct task_struct *next),
-+	TPARGS(prev, next));
-+DEFINE_TRACE(kernel_sched_migrate_task,
-+	TPPROTO(struct task_struct *p, int dest_cpu),
-+	TPARGS(p, dest_cpu));
-+
-+DEFINE_TRACE(kernel_signal_send,
-+	TPPROTO(int sig, struct task_struct *p),
-+	TPARGS(sig, p));
-+DEFINE_TRACE(kernel_softirq_entry,
-+	TPPROTO(struct softirq_action *h, struct softirq_action *softirq_vec),
-+	TPARGS(h, softirq_vec));
-+DEFINE_TRACE(kernel_softirq_exit,
-+	TPPROTO(struct softirq_action *h, struct softirq_action *softirq_vec),
-+	TPARGS(h, softirq_vec));
-+DEFINE_TRACE(kernel_softirq_raise,
-+	TPPROTO(unsigned int nr),
-+	TPARGS(nr));
-+DEFINE_TRACE(kernel_tasklet_low_entry,
-+	TPPROTO(struct tasklet_struct *t),
-+	TPARGS(t));
-+DEFINE_TRACE(kernel_tasklet_low_exit,
-+	TPPROTO(struct tasklet_struct *t),
-+	TPARGS(t));
-+DEFINE_TRACE(kernel_tasklet_high_entry,
-+	TPPROTO(struct tasklet_struct *t),
-+	TPARGS(t));
-+DEFINE_TRACE(kernel_tasklet_high_exit,
-+	TPPROTO(struct tasklet_struct *t),
-+	TPARGS(t));
-+DEFINE_TRACE(kernel_timer_set,
-+	TPPROTO(struct timer_list *timer),
-+	TPARGS(timer));
-+/*
-+ * xtime_lock is taken when kernel_timer_update_time tracepoint is reached.
-+ */
-+DEFINE_TRACE(kernel_timer_update_time,
-+	TPPROTO(void),
-+	TPARGS());
-+DEFINE_TRACE(kernel_timer_timeout,
-+	TPPROTO(struct task_struct *p),
-+	TPARGS(p));
-+DEFINE_TRACE(kernel_process_free,
-+	TPPROTO(struct task_struct *p),
-+	TPARGS(p));
-+DEFINE_TRACE(kernel_process_exit,
-+	TPPROTO(struct task_struct *p),
-+	TPARGS(p));
-+DEFINE_TRACE(kernel_process_wait,
-+	TPPROTO(struct pid *pid),
-+	TPARGS(pid));
-+DEFINE_TRACE(kernel_process_fork,
-+	TPPROTO(struct task_struct *parent, struct task_struct *child),
-+	TPARGS(parent, child));
-+DEFINE_TRACE(kernel_module_free,
-+	TPPROTO(struct module *mod),
-+	TPARGS(mod));
-+DEFINE_TRACE(kernel_module_load,
-+	TPPROTO(struct module *mod),
-+	TPARGS(mod));
++DEFINE_TRACE(fs_read,
++	TPPROTO(unsigned int fd, char __user *buf, size_t count, ssize_t ret),
++	TPARGS(fd, buf, count, ret));
++DEFINE_TRACE(fs_write,
++	TPPROTO(unsigned int fd, const char __user *buf, size_t count,
++		ssize_t ret),
++	TPARGS(fd, buf, count, ret));
++DEFINE_TRACE(fs_pread64,
++	TPPROTO(unsigned int fd, char __user *buf, size_t count, loff_t pos,
++		ssize_t ret),
++	TPARGS(fd, buf, count, pos, ret));
++DEFINE_TRACE(fs_pwrite64,
++	TPPROTO(unsigned int fd, const char __user *buf, size_t count,
++		loff_t pos, ssize_t ret),
++	TPARGS(fd, buf, count, pos, ret));
++DEFINE_TRACE(fs_readv,
++	TPPROTO(unsigned long fd, const struct iovec __user *vec,
++		unsigned long vlen, ssize_t ret),
++	TPARGS(fd, vec, vlen, ret));
++DEFINE_TRACE(fs_writev,
++	TPPROTO(unsigned long fd, const struct iovec __user *vec,
++		unsigned long vlen, ssize_t ret),
++	TPARGS(fd, vec, vlen, ret));
++DEFINE_TRACE(fs_select,
++	TPPROTO(int fd, s64 timeout),
++	TPARGS(fd, timeout));
++DEFINE_TRACE(fs_poll,
++	TPPROTO(int fd),
++	TPARGS(fd));
 +#endif
 
 -- 
