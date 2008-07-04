@@ -1,64 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbYGDWrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYGDWtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754609AbYGDWrN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 18:47:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYGDWq7
+	id S1755609AbYGDWtp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 18:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbYGDWtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 18:46:59 -0400
-Received: from roath.org ([87.106.182.47]:35360 "EHLO mail.roath.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750919AbYGDWq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 18:46:58 -0400
-X-Greylist: delayed 1685 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Jul 2008 18:46:58 EDT
-Date: Sat, 5 Jul 2008 00:18:48 +0200
-To: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.25.10
-Message-ID: <20080704221847.GA3761@master.roath.intern>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <555236.75770.qm@web52912.mail.re2.yahoo.com>
+	Fri, 4 Jul 2008 18:49:36 -0400
+Received: from orion.ambsoft.pl ([212.109.144.130]:48679 "EHLO
+	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750961AbYGDWtg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 18:49:36 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Andrew Morton <akpm@linux-foundation.org>, kernel-testers@vger.kernel.org
+Subject: Re: 2.6.26-rc8-mm1: unable to mount nfs shares
+Date: Sat, 5 Jul 2008 00:49:33 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+In-Reply-To: <20080703020236.adaa51fa.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <555236.75770.qm@web52912.mail.re2.yahoo.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: sroas@roath.org (Stefan Roas)
+Message-Id: <200807050049.33287.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu Jul 03, 2008 at 16:42:01, Chris Rankin wrote:
-> > Again, if the above information is somehow insufficient as to what
-> > exactly is fixed in the -stable releases, and anyone has questions about
-> > how these release announcements are created, please let me know.
-> 
-> Well, for example:
-> 
-> I have only machines with 32 bit CPUS, none of them is hot-pluggable and none has an i915 graphics chip. All my local users are "trusted", nor am I running any multi-threaded Java applications on SMP systems. (I also have no idea what ICM pages are, but they sound jolly impressive!)
-> 
-> And what is "native_read_tscp" all about?
+$ mount some/nfs/share
+mount.nfs: Input/output error
 
-To some degree I can understand that you are not sure of whether you are
-affected or not. On the other hand you should probably be, when running
-your own kernels on a productive system. After all there seems to be a
-general agreement that distribution vendors take care of the stabilization
-and bug fixing of their particular kernels. As far as I am
-concerned, I'm grateful that there are these stable releases at all and I very
-much consider it additional work for everyone in the release team. To that
-end it should be your task to check whether the update affects you or not.
+dmesg says: RPC: transport (0) not supported
 
-After all the releases are publicly announced on probably the busiest
-mailing list on earth. That offers anyone the chance to add additional
-information to the releases (there has been a discussion recently about
-security implications that weren't mentioned in the announcement. Just
-replying to the announcement will add the needed information, and as the
-discussion showed, people actually do add information).
+but I guess it's known issue http://lkml.org/lkml/2008/7/1/438 ?
 
-To sum all the above up: IMHO the announcements are great, the work of the
-stable team is great and I wouldn't really want to push more work on the
-people that voluntarily spend their time on this branch by explaining every
-detail of every patch.
-
-Just my 2 cents.
-
-Best regards,
-  Stefan
+	Mariusz
