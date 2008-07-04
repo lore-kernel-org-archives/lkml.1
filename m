@@ -1,69 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbYGDKeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbYGDKqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754046AbYGDKeP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 06:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbYGDKd7
+	id S1753856AbYGDKqw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 06:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbYGDKqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 06:33:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57394 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751058AbYGDKd6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 06:33:58 -0400
-Date: Fri, 4 Jul 2008 12:33:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
-       Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [PATCH 0 of 8] x86/xen: updated physical mapping patches, and
-	_PAGE_GLOBAL cleanup
-Message-ID: <20080704103335.GA29615@elte.hu>
-References: <patchbomb.1214955989@localhost>
+	Fri, 4 Jul 2008 06:46:44 -0400
+Received: from mail164.messagelabs.com ([216.82.253.131]:38354 "EHLO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbYGDKqn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 06:46:43 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-12.tower-164.messagelabs.com!1215168401!22426905!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Date: Fri, 4 Jul 2008 12:46:34 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH v2] handle failure of irqchip->set_type in setup_irq
+Message-ID: <20080704104634.GA31634@digi.com>
+References: <20080625131101.GA6205@digi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <patchbomb.1214955989@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080625131101.GA6205@digi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 04 Jul 2008 10:46:37.0538 (UTC) FILETIME=[3C04FC20:01C8DDC3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+set_type returns an int indicating success or failure, but up to now
+setup_irq ignores that.
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+In my case this resulted in a machine hang:
+gpio-keys requested IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, but
+arm/ns9xxx can only trigger on one direction so set_type didn't touch
+the configuration which happens do default to a level sensitiveness and
+returned -EINVAL.  setup_irq ignored that and unmasked the irq.  This
+resulted in an endless triggering of the gpio-key interrupt service
+routine which effectively killed the machine.
 
-> Hi Ingo,
-> 
-> Here's a revised series of the Xen-64 groundwork patches relating to 
-> creating the physical memory mapping.  The first few patches are the 
-> necessary changes to make it work without triggering CPA warnings, and 
-> the last couple are cleanups of _PAGE_GLOBAL in the _PAGE_KERNEL 
-> flags, and could probably happily live in another topic branch 
-> (they're not at all Xen-specific or required for Xen to work).
+With this patch applied setup_irq propagates the error to the caller.
 
-well there are context dependencies so i've put them into x86/xen-64bit.
+Note that before in the case 
 
-i picked up these four and merged them into tip/master:
+	chip && !chip->set_type && !chip->name
 
-Jeremy Fitzhardinge (4):
-      x86_64/setup: unconditionally populate the pgd
-      x86: always set _PAGE_GLOBAL in _PAGE_KERNEL* flags
-      x86_32: remove __PAGE_KERNEL(_EXEC)
-      x86/cpa: use an undefined PTE bit for testing CPA
+a NULL pointer was feed to printk.  This is fixed, too.
 
-the others were either already applied or didnt apply.
+Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+---
+Hello,
 
-i'm still testing tip/master but i've pushed out these updates to 
-x86/xen-64bit - you should be able to get the tree i'm testing by doing:
+Changes since initial post:
 
-   git-checkout tip/master
-   git-merge tip/x86/xen-64bit
+ - improve commit log (hopefully)
+ - move code to a dedicated function to improve readability and code
+   line length.
+ - include the symbolic name of the failing callback in the error
+   message.
 
-	Ingo
+Best regards
+Uwe
+
+ kernel/irq/manage.c |   72 ++++++++++++++++++++++++++++++++++----------------
+ 1 files changed, 49 insertions(+), 23 deletions(-)
+
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 46d6611..178b966 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -270,6 +270,35 @@ void compat_irq_chip_set_default_handler(struct irq_desc *desc)
+ 		desc->handle_irq = NULL;
+ }
+ 
++static int __irq_set_trigger(struct irq_chip *chip, unsigned int irq,
++		unsigned long flags)
++{
++	int ret;
++
++	if (!chip || !chip->set_type) {
++		/*
++		 * IRQF_TRIGGER_* but the PIC does not support multiple
++		 * flow-types?
++		 */
++		pr_warning("No set_type function for IRQ %d (%s)\n", irq,
++				chip ? (chip->name ? : "unknown") : "unknown");
++		return 0;
++	}
++
++	ret = chip->set_type(irq, flags & IRQF_TRIGGER_MASK);
++
++	if (ret) {
++		char buf[100];
++
++		snprintf(buf, sizeof(buf), KERN_ERR
++				"setting flow type for irq %u failed (%%s)\n",
++				irq);
++		print_fn_descriptor_symbol(buf, chip->set_type);
++	}
++
++	return ret;
++}
++
+ /*
+  * Internal function to register an irqaction - typically used to
+  * allocate special interrupts that are part of the architecture.
+@@ -281,6 +310,7 @@ int setup_irq(unsigned int irq, struct irqaction *new)
+ 	const char *old_name = NULL;
+ 	unsigned long flags;
+ 	int shared = 0;
++	int ret;
+ 
+ 	if (irq >= NR_IRQS)
+ 		return -EINVAL;
+@@ -338,37 +368,26 @@ int setup_irq(unsigned int irq, struct irqaction *new)
+ 		shared = 1;
+ 	}
+ 
+-	*p = new;
+-
+-	/* Exclude IRQ from balancing */
+-	if (new->flags & IRQF_NOBALANCING)
+-		desc->status |= IRQ_NO_BALANCING;
+-
+ 	if (!shared) {
+ 		irq_chip_set_defaults(desc->chip);
+ 
+-#if defined(CONFIG_IRQ_PER_CPU)
+-		if (new->flags & IRQF_PERCPU)
+-			desc->status |= IRQ_PER_CPU;
+-#endif
+-
+ 		/* Setup the type (level, edge polarity) if configured: */
+ 		if (new->flags & IRQF_TRIGGER_MASK) {
+-			if (desc->chip && desc->chip->set_type)
+-				desc->chip->set_type(irq,
+-						new->flags & IRQF_TRIGGER_MASK);
+-			else
+-				/*
+-				 * IRQF_TRIGGER_* but the PIC does not support
+-				 * multiple flow-types?
+-				 */
+-				printk(KERN_WARNING "No IRQF_TRIGGER set_type "
+-				       "function for IRQ %d (%s)\n", irq,
+-				       desc->chip ? desc->chip->name :
+-				       "unknown");
++			ret = __irq_set_trigger(desc->chip, irq, new->flags);
++
++			if (ret) {
++				spin_unlock_irqrestore(&desc->lock, flags);
++				return ret;
++			}
++
+ 		} else
+ 			compat_irq_chip_set_default_handler(desc);
+ 
++#if defined(CONFIG_IRQ_PER_CPU)
++		if (new->flags & IRQF_PERCPU)
++			desc->status |= IRQ_PER_CPU;
++#endif
++
+ 		desc->status &= ~(IRQ_AUTODETECT | IRQ_WAITING |
+ 				  IRQ_INPROGRESS | IRQ_SPURIOUS_DISABLED);
+ 
+@@ -383,6 +402,13 @@ int setup_irq(unsigned int irq, struct irqaction *new)
+ 			/* Undo nested disables: */
+ 			desc->depth = 1;
+ 	}
++
++	*p = new;
++
++	/* Exclude IRQ from balancing */
++	if (new->flags & IRQF_NOBALANCING)
++		desc->status |= IRQ_NO_BALANCING;
++
+ 	/* Reset broken irq detection when installing new handler */
+ 	desc->irq_count = 0;
+ 	desc->irqs_unhandled = 0;
+-- 
+1.5.6
+
