@@ -1,49 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757105AbYGDX6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbYGDX6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757105AbYGDX6S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 19:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755403AbYGDXzo
+	id S1757273AbYGDX6i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 19:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755406AbYGDXzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 19:55:44 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:42563 "EHLO smtp.polymtl.ca"
+	Fri, 4 Jul 2008 19:55:46 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:42565 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755263AbYGDXzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 19:55:42 -0400
-Message-Id: <20080704235426.289204789@polymtl.ca>
+	id S1755361AbYGDXzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 19:55:43 -0400
+Message-Id: <20080704235427.330418022@polymtl.ca>
 References: <20080704235207.147809973@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Jul 2008 19:52:13 -0400
+Date: Fri, 04 Jul 2008 19:52:15 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
        "Frank Ch. Eigler" <fche@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, netdev@vger.kernel.org,
-       Hideo AOKI <haoki@redhat.com>,
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Alexander Viro <viro@zeniv.linux.org.uk>, Hideo AOKI <haoki@redhat.com>,
        Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
        Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [RFC patch 06/12] LTTng instrumentation net
-Content-Disposition: inline; filename=lttng-instrumentation-net.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri,  4 Jul 2008 23:54:26 +0000
+Subject: [RFC patch 08/12] LTTng instrumentation FS tracepoint probes
+Content-Disposition: inline; filename=lttng-instrumentation-fs-tracepoints-probes.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri,  4 Jul 2008 23:54:27 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Network core events.
-
-Added tracepoints :
-
-net_del_ifa_ipv4
-net_dev_receive
-net_dev_xmit
-net_insert_ifa_ipv4
-net_socket_call
-net_socket_create
-net_socket_recvmsg
-net_socket_sendmsg
+Create a module which declares FS tracepoint probes, using markers.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: netdev@vger.kernel.org
+CC: Alexander Viro <viro@zeniv.linux.org.uk>
 CC: 'Peter Zijlstra' <peterz@infradead.org>
 CC: "Frank Ch. Eigler" <fche@redhat.com>
 CC: 'Ingo Molnar' <mingo@elte.hu>
@@ -52,164 +41,194 @@ CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
 CC: 'Steven Rostedt' <rostedt@goodmis.org>
 CC: Masami Hiramatsu <mhiramat@redhat.com>
 ---
- net/core/dev.c     |    4 ++++
- net/ipv4/devinet.c |    3 +++
- net/net-trace.h    |   40 ++++++++++++++++++++++++++++++++++++++++
- net/socket.c       |    7 +++++++
- 4 files changed, 54 insertions(+)
+ fs/Makefile   |    1 
+ fs/fs-trace.c |  167 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 168 insertions(+)
 
-Index: linux-2.6-lttng/net/core/dev.c
-===================================================================
---- linux-2.6-lttng.orig/net/core/dev.c	2008-07-04 18:43:16.000000000 -0400
-+++ linux-2.6-lttng/net/core/dev.c	2008-07-04 19:21:13.000000000 -0400
-@@ -121,6 +121,7 @@
- #include <linux/if_arp.h>
- #include <linux/if_vlan.h>
- 
-+#include "../net-trace.h"
- #include "net-sysfs.h"
- 
- /*
-@@ -1669,6 +1670,8 @@ int dev_queue_xmit(struct sk_buff *skb)
- 	}
- 
- gso:
-+	trace_net_dev_xmit(skb);
-+
- 	spin_lock_prefetch(&dev->queue_lock);
- 
- 	/* Disable soft irqs for various locks below. Also
-@@ -2069,6 +2072,7 @@ int netif_receive_skb(struct sk_buff *sk
- 
- 	__get_cpu_var(netdev_rx_stat).total++;
- 
-+	trace_net_dev_receive(skb);
- 	skb_reset_network_header(skb);
- 	skb_reset_transport_header(skb);
- 	skb->mac_len = skb->network_header - skb->mac_header;
-Index: linux-2.6-lttng/net/ipv4/devinet.c
-===================================================================
---- linux-2.6-lttng.orig/net/ipv4/devinet.c	2008-07-04 18:43:16.000000000 -0400
-+++ linux-2.6-lttng/net/ipv4/devinet.c	2008-07-04 19:21:13.000000000 -0400
-@@ -63,6 +63,7 @@
- #include <net/ip_fib.h>
- #include <net/rtnetlink.h>
- #include <net/net_namespace.h>
-+#include "../net-trace.h"
- 
- static struct ipv4_devconf ipv4_devconf = {
- 	.data = {
-@@ -257,6 +258,7 @@ static void __inet_del_ifa(struct in_dev
- 		struct in_ifaddr **ifap1 = &ifa1->ifa_next;
- 
- 		while ((ifa = *ifap1) != NULL) {
-+			trace_net_del_ifa_ipv4(ifa);
- 			if (!(ifa->ifa_flags & IFA_F_SECONDARY) &&
- 			    ifa1->ifa_scope <= ifa->ifa_scope)
- 				last_prim = ifa;
-@@ -363,6 +365,7 @@ static int __inet_insert_ifa(struct in_i
- 			}
- 			ifa->ifa_flags |= IFA_F_SECONDARY;
- 		}
-+		trace_net_insert_ifa_ipv4(ifa);
- 	}
- 
- 	if (!(ifa->ifa_flags & IFA_F_SECONDARY)) {
-Index: linux-2.6-lttng/net/socket.c
-===================================================================
---- linux-2.6-lttng.orig/net/socket.c	2008-07-04 18:43:16.000000000 -0400
-+++ linux-2.6-lttng/net/socket.c	2008-07-04 19:21:13.000000000 -0400
-@@ -93,6 +93,7 @@
- 
- #include <net/sock.h>
- #include <linux/netfilter.h>
-+#include "net-trace.h"
- 
- static int sock_no_open(struct inode *irrelevant, struct file *dontcare);
- static ssize_t sock_aio_read(struct kiocb *iocb, const struct iovec *iov,
-@@ -572,6 +573,7 @@ int sock_sendmsg(struct socket *sock, st
- 	ret = __sock_sendmsg(&iocb, sock, msg, size);
- 	if (-EIOCBQUEUED == ret)
- 		ret = wait_on_sync_kiocb(&iocb);
-+	trace_net_socket_sendmsg(sock, msg, size, ret);
- 	return ret;
- }
- 
-@@ -651,10 +653,12 @@ int sock_recvmsg(struct socket *sock, st
- 	int ret;
- 
- 	init_sync_kiocb(&iocb, NULL);
-+
- 	iocb.private = &siocb;
- 	ret = __sock_recvmsg(&iocb, sock, msg, size, flags);
- 	if (-EIOCBQUEUED == ret)
- 		ret = wait_on_sync_kiocb(&iocb);
-+	trace_net_socket_recvmsg(sock, msg, size, flags, ret);
- 	return ret;
- }
- 
-@@ -1226,6 +1230,7 @@ asmlinkage long sys_socket(int family, i
- 	if (retval < 0)
- 		goto out_release;
- 
-+	trace_net_socket_create(sock, retval);
- out:
- 	/* It may be already another descriptor 8) Not kernel problem. */
- 	return retval;
-@@ -2024,6 +2029,8 @@ asmlinkage long sys_socketcall(int call,
- 	a0 = a[0];
- 	a1 = a[1];
- 
-+	trace_net_socket_call(call, a0);
-+
- 	switch (call) {
- 	case SYS_SOCKET:
- 		err = sys_socket(a0, a1, a[2]);
-Index: linux-2.6-lttng/net/net-trace.h
+Index: linux-2.6-lttng/fs/fs-trace.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/net/net-trace.h	2008-07-04 19:21:13.000000000 -0400
-@@ -0,0 +1,40 @@
-+#ifndef _NET_TRACE_H
-+#define _NET_TRACE_H
-+
-+#include <linux/net.h>
-+#include <linux/inetdevice.h>
-+#include <net/sock.h>
-+#include <linux/tracepoint.h>
-+
-+DEFINE_TRACE(net_dev_xmit,
-+	TPPROTO(struct sk_buff *skb),
-+	TPARGS(skb));
-+DEFINE_TRACE(net_dev_receive,
-+	TPPROTO(struct sk_buff *skb),
-+	TPARGS(skb));
-+DEFINE_TRACE(net_del_ifa_ipv4,
-+	TPPROTO(struct in_ifaddr *ifa),
-+	TPARGS(ifa));
-+DEFINE_TRACE(net_insert_ifa_ipv4,
-+	TPPROTO(struct in_ifaddr *ifa),
-+	TPARGS(ifa));
-+DEFINE_TRACE(net_socket_sendmsg,
-+	TPPROTO(struct socket *sock, struct msghdr *msg, size_t size, int ret),
-+	TPARGS(sock, msg, size, ret));
-+DEFINE_TRACE(net_socket_recvmsg,
-+	TPPROTO(struct socket *sock, struct msghdr *msg, size_t size, int flags,
-+		int ret),
-+	TPARGS(sock, msg, size, flags, ret));
-+DEFINE_TRACE(net_socket_create,
-+	TPPROTO(struct socket *sock, int fd),
-+	TPARGS(sock, fd));
++++ linux-2.6-lttng/fs/fs-trace.c	2008-07-04 19:30:42.000000000 -0400
+@@ -0,0 +1,167 @@
 +/*
-+ * net_socket_call
++ * fs/fs-trace.c
 + *
-+ * TODO : This tracepoint should be expanded to cover each element of the
-+ * switch in sys_socketcall().
++ * FS tracepoint probes.
 + */
-+DEFINE_TRACE(net_socket_call,
-+	TPPROTO(int call, unsigned long a0),
-+	TPARGS(call, a0));
-+#endif
++
++#include <linux/module.h>
++#include <linux/buffer_head.h>
++#include "fs-trace.h"
++
++static void probe_fs_buffer_wait_start(struct buffer_head *bh)
++{
++	trace_mark(fs_buffer_wait_start, "bh %p", bh);
++}
++
++static void probe_fs_buffer_wait_end(struct buffer_head *bh)
++{
++	trace_mark(fs_buffer_wait_end, "bh %p", bh);
++}
++
++static void probe_fs_exec(char *filename)
++{
++	trace_mark(fs_exec, "filename %s", filename);
++}
++
++static void probe_fs_ioctl(unsigned int fd, unsigned int cmd, unsigned long arg)
++{
++	trace_mark(fs_ioctl, "fd %u cmd %u arg %lu", fd, cmd, arg);
++}
++
++static void probe_fs_open(int fd, char *filename)
++{
++	trace_mark(fs_open, "fd %d filename %s", fd, filename);
++}
++
++static void probe_fs_close(unsigned int fd)
++{
++	trace_mark(fs_close, "fd %u", fd);
++}
++
++static void probe_fs_lseek(unsigned int fd, long offset, unsigned int origin)
++{
++	trace_mark(fs_lseek, "fd %u offset %ld origin %u", fd, offset, origin);
++}
++
++static void probe_fs_llseek(unsigned int fd, loff_t offset, unsigned int origin)
++{
++	trace_mark(fs_llseek, "fd %u offset %lld origin %u", fd,
++			(long long)offset, origin);
++}
++
++static void probe_fs_read(unsigned int fd, char __user *buf, size_t count,
++		ssize_t ret)
++{
++	trace_mark(fs_read, "fd %u count %zu", fd, count);
++}
++
++static void probe_fs_write(unsigned int fd, const char __user *buf,
++		size_t count, ssize_t ret)
++{
++	trace_mark(fs_write, "fd %u count %zu", fd, count);
++}
++
++static void probe_fs_pread64(unsigned int fd, char __user *buf, size_t count,
++		loff_t pos, ssize_t ret)
++{
++	trace_mark(fs_pread64, "fd %u count %zu pos %llu",
++			fd, count, (unsigned long long)pos);
++}
++
++static void probe_fs_pwrite64(unsigned int fd, const char __user *buf,
++		size_t count, loff_t pos, ssize_t ret)
++{
++	trace_mark(fs_pwrite64, "fd %u count %zu pos %llu",
++			fd, count, (unsigned long long)pos);
++}
++
++static void probe_fs_readv(unsigned long fd, const struct iovec __user *vec,
++		unsigned long vlen, ssize_t ret)
++{
++	trace_mark(fs_readv, "fd %lu vlen %lu", fd, vlen);
++}
++
++static void probe_fs_writev(unsigned long fd, const struct iovec __user *vec,
++		unsigned long vlen, ssize_t ret)
++{
++	trace_mark(fs_writev, "fd %lu vlen %lu", fd, vlen);
++}
++
++static void probe_fs_select(int fd, s64 timeout)
++{
++	trace_mark(fs_select, "fd %d timeout #8d%lld", fd, (long long)timeout);
++}
++
++static void probe_fs_poll(int fd)
++{
++	trace_mark(fs_pollfd, "fd %d", fd);
++}
++
++
++int __init fs_trace_init(void)
++{
++	int ret;
++
++	ret = register_trace_fs_buffer_wait_start(probe_fs_buffer_wait_start);
++	WARN_ON(ret);
++	ret = register_trace_fs_buffer_wait_end(probe_fs_buffer_wait_end);
++	WARN_ON(ret);
++	ret = register_trace_fs_exec(probe_fs_exec);
++	WARN_ON(ret);
++	ret = register_trace_fs_ioctl(probe_fs_ioctl);
++	WARN_ON(ret);
++	ret = register_trace_fs_open(probe_fs_open);
++	WARN_ON(ret);
++	ret = register_trace_fs_close(probe_fs_close);
++	WARN_ON(ret);
++	ret = register_trace_fs_lseek(probe_fs_lseek);
++	WARN_ON(ret);
++	ret = register_trace_fs_llseek(probe_fs_llseek);
++	WARN_ON(ret);
++	ret = register_trace_fs_read(probe_fs_read);
++	WARN_ON(ret);
++	ret = register_trace_fs_write(probe_fs_write);
++	WARN_ON(ret);
++	ret = register_trace_fs_pread64(probe_fs_pread64);
++	WARN_ON(ret);
++	ret = register_trace_fs_pwrite64(probe_fs_pwrite64);
++	WARN_ON(ret);
++	ret = register_trace_fs_readv(probe_fs_readv);
++	WARN_ON(ret);
++	ret = register_trace_fs_writev(probe_fs_writev);
++	WARN_ON(ret);
++	ret = register_trace_fs_select(probe_fs_select);
++	WARN_ON(ret);
++	ret = register_trace_fs_poll(probe_fs_poll);
++	WARN_ON(ret);
++
++	return 0;
++}
++
++module_init(fs_trace_init);
++
++void __exit fs_trace_exit(void)
++{
++	unregister_trace_fs_poll(probe_fs_poll);
++	unregister_trace_fs_select(probe_fs_select);
++	unregister_trace_fs_writev(probe_fs_writev);
++	unregister_trace_fs_readv(probe_fs_readv);
++	unregister_trace_fs_pwrite64(probe_fs_pwrite64);
++	unregister_trace_fs_pread64(probe_fs_pread64);
++	unregister_trace_fs_write(probe_fs_write);
++	unregister_trace_fs_read(probe_fs_read);
++	unregister_trace_fs_llseek(probe_fs_llseek);
++	unregister_trace_fs_lseek(probe_fs_lseek);
++	unregister_trace_fs_close(probe_fs_close);
++	unregister_trace_fs_open(probe_fs_open);
++	unregister_trace_fs_ioctl(probe_fs_ioctl);
++	unregister_trace_fs_exec(probe_fs_exec);
++	unregister_trace_fs_buffer_wait_end(probe_fs_buffer_wait_end);
++	unregister_trace_fs_buffer_wait_start(probe_fs_buffer_wait_start);
++}
++
++module_exit(fs_trace_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("FS Tracepoint Probes");
+Index: linux-2.6-lttng/fs/Makefile
+===================================================================
+--- linux-2.6-lttng.orig/fs/Makefile	2008-07-04 19:21:32.000000000 -0400
++++ linux-2.6-lttng/fs/Makefile	2008-07-04 19:26:08.000000000 -0400
+@@ -63,6 +63,7 @@ obj-$(CONFIG_CONFIGFS_FS)	+= configfs/
+ obj-y				+= devpts/
+ 
+ obj-$(CONFIG_PROFILING)		+= dcookies.o
++obj-$(CONFIG_TRACEPROBES)	+= fs-trace.o
+ obj-$(CONFIG_DLM)		+= dlm/
+  
+ # Do not add any filesystems before this line
 
 -- 
 Mathieu Desnoyers
