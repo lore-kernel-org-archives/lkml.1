@@ -1,156 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbYGDBs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbYGDBsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757952AbYGDBs0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 21:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbYGDBsO
+	id S1756501AbYGDBsl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 21:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756072AbYGDBsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 21:48:14 -0400
-Received: from mga01.intel.com ([192.55.52.88]:39232 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754047AbYGDBsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 21:48:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,300,1212390000"; 
-   d="scan'208";a="584966890"
-Subject: Re: [RFC PATCH] AHCI: speed up resume
-From: Zhang Rui <rui.zhang@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, tj@kernel.org
-In-Reply-To: <200807040123.50337.rjw@sisk.pl>
-References: <1215074882.3214.15.camel@rzhang-dt.sh.intel.com>
-	 <200807040123.50337.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Fri, 04 Jul 2008 09:48:07 +0800
-Message-Id: <1215136087.3068.7.camel@rzhang-dt.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Jul 2008 21:48:17 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:57179 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755092AbYGDBsQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 21:48:16 -0400
+Date: Thu, 3 Jul 2008 21:47:05 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: David Miller <davem@davemloft.net>, jeff@garzik.org, hugh@veritas.com,
+       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+Message-ID: <20080704014705.GM30506@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	David Woodhouse <dwmw2@infradead.org>,
+	David Miller <davem@davemloft.net>, jeff@garzik.org,
+	hugh@veritas.com, akpm@linux-foundation.org,
+	kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	netdev@vger.kernel.org
+References: <1215093175.10393.567.camel@pmac.infradead.org> <20080703173040.GB30506@mit.edu> <1215111362.10393.651.camel@pmac.infradead.org> <20080703.162120.206258339.davem@davemloft.net> <20080704001855.GJ30506@mit.edu> <486D783B.6040904@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <486D783B.6040904@infradead.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jul 04, 2008 at 02:09:15AM +0100, David Woodhouse wrote:
+> But there's no need to do it _now_. It can wait until the basic stuff is  
+> in Linus' tree and it can automatically derive from that. There's no  
+> particular rush, is there?
 
-On Fri, 2008-07-04 at 07:23 +0800, Rafael J. Wysocki wrote:
-> On Thursday, 3 of July 2008, Zhang Rui wrote:
-> > During S3 resume, AHCI driver sleeps 1 second to wait for the HBA
-> reset
-> > to finish. This is luxurious, :)
-> >
-> > According to the AHCI 1.2 spec, We should poll the HOST_CTL
-> register,
-> > and return error if the host reset is not finished within 1 second.
-> >
-> > Test results show that the HBA reset can be done quickly(in usecs).
-> > And this patch may save nearly 1 second during resume.
-> 
-> That's a lot.
-> 
-> How heavily has it been tested?
+The only rush if the main agenda is to extirpate all firmware from the
+mainline kernel sources.  I don't think we can start the timer for
+doing that until the firmware tarball is created and it starts being
+used as the default way of delivering firmware for what you call
+"legacy" drivers.  If there's no particular rush to finally rm the
+firmware for trivers such as tg3 from the source tree (and I
+personally don't think there should be any rush), or any rush to
+change the default for CONFIG_FIRMWARE_IN_KERNEL to "no", then I don't
+see any rush in creating the firmware tarball.  
 
-I only tested it on a SantaRosa laptop.
+If *you* think there is a rush in making CONFIG_FIRMWARE_IN_KERNEL
+default to "no", then you might want to decide to create the firmware
+tarball sooner, and get distro's everywhere to start using it, and to
+get everyone to understand that they should start including it in
+their systems.  (Remember, not everyone uses the popular distributions
+like Fedora, Debian, Ubuntu, Open SuSE, etc.)
 
-w/o the patch,
-[  469.923186] ahci_pci_device_resume
-[  469.936105] PM: Writing back config space on device 0000:00:1f.2 at
-offset f (was 200, writing 20a)
-[  469.936145] PM: Writing back config space on device 0000:00:1f.2 at
-offset 1 (was 2b00007, writing 2b00407)
-[  469.936220] PCI: Setting latency timer of device 0000:00:1f.2 to 64
-[  470.092053] ata4.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
-[  470.092053] ata4.00: ACPI cmd ef/03:42:00:00:00:a0 filtered out
-[  470.107675] ata4.00: configured for UDMA/33
-[  470.942195] ahci_pci_device_resume done
+But heck, that's up to you.  :-)
 
-w/ the patch applied, run S3 for more than ten times in a row,
-[  571.150339] ahci_pci_device_resume
-[  571.163193] ahci_pci_device_resume done
-[  578.560382] ahci_pci_device_resume
-[  578.576410] ahci_pci_device_resume done
-[  586.065037] ahci_pci_device_resume
-[  586.080806] ahci_pci_device_resume done
-[  770.231756] ahci_pci_device_resume
-[  770.244431] ahci_pci_device_resume done
-[  777.537985] ahci_pci_device_resume
-[  777.553709] ahci_pci_device_resume done
-[  784.805554] ahci_pci_device_resume
-[  784.819660] ahci_pci_device_resume done
-[  791.888451] ahci_pci_device_resume
-[  791.905222] ahci_pci_device_resume done
-[  798.943719] ahci_pci_device_resume
-[  798.959437] ahci_pci_device_resume done
-[  806.438784] ahci_pci_device_resume
-[  806.452070] ahci_pci_device_resume done
-[  813.890609] ahci_pci_device_resume
-[  813.903247] ahci_pci_device_resume done
-[  821.265956] ahci_pci_device_resume
-[  821.278714] ahci_pci_device_resume done
-[  828.609051] ahci_pci_device_resume
-[  828.621795] ahci_pci_device_resume done
-[  835.731528] ahci_pci_device_resume
-[  835.744210] ahci_pci_device_resume done
+>> and for a while (read: at least 9-18 months) we can distribute firmware
+> > both in the kernel source tarball as well as separately
+>
+> That makes a certain amount of sense.
 
-I don't know if this ssleep(1) is required for some platform specific
-problems, but this patch does work well for me. :)
-Hmm, we'd better get some comments from Tejun Heo first.
+Glad we agree.
 
-thanks,
-rui
-> 
-> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> > --
-> >  drivers/ata/ahci.c |   17 ++++++++++++++---
-> >  1 file changed, 14 insertions(+), 3 deletions(-)
-> >
-> > Index: linux-2.6/drivers/ata/ahci.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/ata/ahci.c 2007-05-03 11:06:33.000000000
-> +0800
-> > +++ linux-2.6/drivers/ata/ahci.c      2008-07-02 16:25:54.000000000
-> +0800
-> > @@ -1073,18 +1073,29 @@
-> > 
-> >       /* global controller reset */
-> >       if (!ahci_skip_host_reset) {
-> > +             int delay = msecs_to_jiffies(1000);
-> > +             int timeout;
-> > +
-> >               tmp = readl(mmio + HOST_CTL);
-> >               if ((tmp & HOST_RESET) == 0) {
-> >                       writel(tmp | HOST_RESET, mmio + HOST_CTL);
-> >                       readl(mmio + HOST_CTL); /* flush */
-> >               }
-> > 
-> > -             /* reset must complete within 1 second, or
-> > +             /*
-> > +              * to perform host reset, OS should set HOST_RESET
-> > +              * and poll until this bit is read to be "0"
-> > +              * reset must complete within 1 second, or
-> >                * the hardware should be considered fried.
-> >                */
-> > -             ssleep(1);
-> > +             timeout = jiffies + delay;
-> > +             while (jiffies < timeout) {
-> > +                     tmp = readl(mmio + HOST_CTL);
-> > +                     if (!(tmp & HOST_RESET))
-> > +                             break;
-> > +                     cpu_relax();
-> > +             }
-> > 
-> > -             tmp = readl(mmio + HOST_CTL);
-> >               if (tmp & HOST_RESET) {
-> >                       dev_printk(KERN_ERR, host->dev,
-> >                                  "controller reset failed (0x%x)\n",
-> tmp);
-> >
-> >
-> >
-> >
-> 
-> 
-> 
-> --
-> "Premature optimization is the root of all evil." - Donald Knuth
-> 
-> 
+>> in the licensing-religion-firmware tarball. 
+>
+> Please don't be gratuitously offensive, Ted. It's not polite, and it's  
+> not a particularly good debating technique either. I expect better from 
+> you.
 
+Well, I think it's offensive to break users who have happily been
+using drivers that have been including firmware for a long, long, LONG
+time, and I expected better of you.
+
+So there.  :-)
+
+						- Ted
