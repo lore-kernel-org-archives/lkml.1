@@ -1,100 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbYGDBGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbYGDBKB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757428AbYGDBGq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 21:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbYGDBGg
+	id S1756170AbYGDBKB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 21:10:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbYGDBJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 21:06:36 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:31981 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753710AbYGDBGf (ORCPT
+	Thu, 3 Jul 2008 21:09:50 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60704 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751969AbYGDBJt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 21:06:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=iZFp17nfGfuEqOnq62oQny1hpJoiwku1cHF6XoA9YeNnhW95lVkMAOUN7ekr4W5h49
-         sGSCaVcTpRcwOP1rzAT4MAVSFQRjIC2mwIZ5CFBpYkGbC/qMZVdMaxjquY8dYFYWO3Sq
-         SS37pYmCdwPxd7/MzkCsVuwakgkWzl0Lgt+s4=
-Message-ID: <e9c3a7c20807031806u23304279p33ed3467ba0e5a7f@mail.gmail.com>
-Date: Thu, 3 Jul 2008 18:06:27 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
-Subject: Re: [PATCH v4 0/6] dmaengine/mmc: DMA slave interface and two new drivers
-Cc: "Pierre Ossman" <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, kernel@avr32linux.org,
-       shannon.nelson@intel.com, "David Brownell" <david-b@pacbell.net>
-In-Reply-To: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com>
+	Thu, 3 Jul 2008 21:09:49 -0400
+Message-ID: <486D783B.6040904@infradead.org>
+Date: Fri, 04 Jul 2008 02:09:15 +0100
+From: David Woodhouse <dwmw2@infradead.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Theodore Tso <tytso@mit.edu>, David Miller <davem@davemloft.net>,
+       dwmw2@infradead.org, jeff@garzik.org, hugh@veritas.com,
+       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+References: <1215093175.10393.567.camel@pmac.infradead.org> <20080703173040.GB30506@mit.edu> <1215111362.10393.651.camel@pmac.infradead.org> <20080703.162120.206258339.davem@davemloft.net> <20080704001855.GJ30506@mit.edu>
+In-Reply-To: <20080704001855.GJ30506@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1214486603-23655-1-git-send-email-haavard.skinnemoen@atmel.com>
-X-Google-Sender-Auth: c19edfd49c1683da
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 26, 2008 at 6:23 AM, Haavard Skinnemoen
-<haavard.skinnemoen@atmel.com> wrote:
-> First of all, I'm sorry it went so much time between v3 and v4 of this
-> patchset. I was hoping to finish this stuff up before all kinds of
-> other tasks started demanding my attention, but I didn't, so I had to
-> put it on hold for a while. Let's try again...
->
-> This patchset extends the DMA engine API to allow drivers to offer DMA
-> to and from I/O registers with hardware handshaking, aka slave DMA.
-> Such functionality is very common in DMA controllers integrated on SoC
-> devices, and it's typically used to do DMA transfers to/from other
-> on-SoC peripherals, but it can often do DMA transfers to/from
-> externally connected devices as well (e.g. IDE hard drives).
->
-> The main differences from v3 of this patchset are:
->  * A DMA descriptor can hold a whole scatterlist. This means that
->    clients using slave DMA can submit large requests in a single call
->    to the driver, and they only need to keep track of a single
->    descriptor.
->  * The dma_slave_descriptor struct is gone since clients no longer
->    need to keep track of multiple descriptors.
->  * The drivers perform better and are more stable.
->
-> The dw_dmac driver depends on this patch:
->
->        http://lkml.org/lkml/2008/6/25/148
->
-> and the atmel-mci driver depends on this series:
->
->        http://lkml.org/lkml/2008/6/26/158
->
-> as well as all preceding patches in this series, of course.
->
-> Comments are welcome, as usual! Shortlog and diffstat follow.
->
-> Haavard Skinnemoen (6):
->      dmaengine: Add dma_client parameter to device_alloc_chan_resources
+Theodore Tso wrote:
+> On Thu, Jul 03, 2008 at 04:21:20PM -0700, David Miller wrote:
+>> You want to choose a default based upon your legal agenda.
+> 
+> Yep, legal agenda.  As I suspected, licensing religious fundamentalism.  :-)
 
-Applied.  I fixed it up for fsldma and mv_xor.
+You are mistaken, and you're responding some words that someone _else_ 
+put in my mouth.
 
->      dmaengine: Add dma_chan_is_in_use() function
+> The staged approach means that if you really want to do this ASAP,
+> then start assembling the firmware tarball *now*,
 
-I applied the chan->client_count patch that we talked about.
+That's easy enough. We can automatically generate a tree _from_ Linus' 
+tree, with a scripted transform so that it includes only the firmware 
+files (much like the kernel-headers tree automatically follows each 
+commit in Linus' tree, but includes only the exported headers).
 
->      dmaengine: Add slave DMA interface
+And there are some hardware manufacturers who are willing to have their 
+firmware included in such a firmware tarball, but who will _not_ give 
+their permission to have it included in the Linux kernel because of the 
+legal concerns you're so dismissive of. But that's OK -- we can pull 
+from the automatically generated tree into a 'real' linux-firmware.git 
+tree, which includes those extra firmware files.
 
-There were some comments to the change log and other fixes, so I'll
-wait for v5 of this patch.
+But there's no need to do it _now_. It can wait until the basic stuff is 
+in Linus' tree and it can automatically derive from that. There's no 
+particular rush, is there?
 
->      dmaengine: Make DMA Engine menu visible for AVR32 users
+> and for a while (read: at least 9-18 months) we can distribute firmware
+ > both in the kernel source tarball as well as separately
 
-Applied the "remove arch dependency in drivers/dma/Kconfig" instead.
+That makes a certain amount of sense.
 
->      dmaengine: Driver for the Synopsys DesignWare DMA controller
->      Atmel MCI: Driver for Atmel on-chip MMC controllers
+> in the licensing-religion-firmware tarball. 
 
-I will wait for v5 on these as well for the chan->client_count fixups
-and a response to the dma_unmap situation.
+Please don't be gratuitously offensive, Ted. It's not polite, and it's 
+not a particularly good debating technique either. I expect better from you.
 
-Thanks,
-Dan
+> See if you can get distros willing to ship it by default in most
+> user's  systems, and give people plenty of time to understand that we
+ > are trying to decouple firmware from the kernel sources.
+
+The distros are certainly willing (and keen) to do it. The Fedora 
+Engineering Steering Committee has already stated that it wants to do 
+so, and the specfile changes to spit out a 'kernel-firmware' sub-package 
+with the kernel build are ready to go right now.
+
+Fedora already modifies tarballs, for example 'openssh-5.0p1-noacss'. I 
+think it's quite likely they'd end up using a 'linux-2.6.27-nofirmware' 
+tarball too, and build the firmware package from the separate tree.
+
+Some other distributions have been doing that kind of thing _already_, 
+even when it meant just ripping out certain drivers completely. That 
+seems excessive to me; I prefer not to actually _break_ anything.
+
+> If we need to institute better versioning regimes between the drivers
+ > and firmware release levels, that will also give people a chance to
+ > get that all right.  Then 6-9 months later, we can turn the default
+> to 'no', and then maybe another 6-9 months after that, we can talk 
+ > about removing the firmware modules.
+> But it seems to me that you are skipping a few steps by arguing that
+> the default should be changed here-and-now.
+
+I disagree that the _default_ is such an issue -- largely because the 
+normal case for modern drivers is not to include the firmware _anyway_, 
+and the tools like 'mkinitrd' already cope with it just fine.
+
+But I've changed the default to 'y' now, as I already said.
+
+-- 
+dwmw2
