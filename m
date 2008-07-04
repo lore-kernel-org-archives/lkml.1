@@ -1,98 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYGDCmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbYGDCnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758729AbYGDCmV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 22:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755742AbYGDCmJ
+	id S1758877AbYGDCnP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 22:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbYGDCnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 22:42:09 -0400
-Received: from mail.lang.hm ([64.81.33.126]:32990 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755454AbYGDCmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 22:42:07 -0400
-Date: Thu, 3 Jul 2008 19:42:12 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: David Woodhouse <dwmw2@infradead.org>
-cc: David Miller <davem@davemloft.net>, tytso@mit.edu, jeff@garzik.org,
-       hugh@veritas.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-In-Reply-To: <486D6DDB.4010205@infradead.org>
-Message-ID: <alpine.DEB.1.10.0807031938260.7820@asgard.lang.hm>
-References: <1215093175.10393.567.camel@pmac.infradead.org> <20080703173040.GB30506@mit.edu> <1215111362.10393.651.camel@pmac.infradead.org> <20080703.162120.206258339.davem@davemloft.net> <486D6DDB.4010205@infradead.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 3 Jul 2008 22:43:00 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47146 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754104AbYGDCm7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 22:42:59 -0400
+Date: Fri, 4 Jul 2008 11:48:04 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "riel@redhat.com" <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Question: split-lur // Re: 2.6.26-rc8-mm1
+Message-Id: <20080704114804.081a850a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Jul 2008, David Woodhouse wrote:
 
-> David Miller wrote:
->> From: David Woodhouse <dwmw2@infradead.org>
->> Date: Thu, 03 Jul 2008 19:56:02 +0100
->> 
->>> It's wrong to change the CONFIG_FIRMWARE_IN_KERNEL default to 'Y',
->>> because the _normal_ setting for that option _really_ should be 'N'.
->> 
->> On what basis?  From a "obviously works" basis, the default should be
->> 'y'.
->
-> I already changed it to 'y'.
->
->>> What we're doing now is just cleaning up the older drivers which don't
->>> use request_firmware(), to conform to what is now common practice.
->> 
->> You say "conform" I say "break".
->
-> You mean...
-> 	"What we're doing now is just cleaning up the older drivers
-> 	 which don't use request_firmware(), to break to what is now
-> 	 common practice."
-> ?
->
-> Doesn't really scan, does it?
->
-> Common practice in modern Linux drivers is to use request_firmware(). I'm 
-> just going through and fixing up the older ones to do that too.
->
-> (After making it possible to build that firmware _into_ the kernel so that we 
-> aren't forcing people to use an initrd where they didn't before, of course.)
+In split-lru, zone->prev_priority seems not to be used.
+(just remembers....)
+Is this obsolete parameter ? 
 
-has this taken place yet? (and if so, what kernel version first included 
-this fix)
+I'm sorry if I miss something.
 
->> If it was purely technical, you wouldn't be choosing defaults that
->> break things for users by default.
->
-> Actually, the beauty of Linux is that we _can_ change things where a minor 
-> short-term inconvenience leads to a better situation in the long term.
+Thanks,
+-Kame
 
-but doing so should not be a easy and quick decision, and it needs to be 
-made very clear exactly what breakage is going to take place and why 
-(along with the explination of why the breakage couldn't be avoided)
-
->> Jeff and I warned you about this from day one, you did not listen, and
->> now we have at least 10 reports just today of people with broken
->> networking.
->
-> Out of interest... of those, what proportion would be 'fixed' if they'd just 
-> paid attention when running 'make oldconfig', which is now addressed because 
-> I've changed the FIRMWARE_IN_KERNEL default to 'y'?
->
-> And how many would be 'fixed' if someone had given me a straight answer when 
-> I asked about the TSO firmware, and that failure path no longer aborted the 
-> driver initialisation but instead just fell back to non-TSO?
->
-> I'll look at making the requirement for 'make firmware_install' more obvious, 
-> or even making it happen automatically as part of 'modules_install'.
-
-I won't mind this as long as I can get a working kernel without doing make 
-firmware_install or make modules_install (I almost never use modules, my 
-laptop is one of the few exceptions, and even there it's mostly becouse of 
-the intel wireless driver needing userspace for firmware)
-
-David Lang
