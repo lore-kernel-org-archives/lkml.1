@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbYGDVcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbYGDVfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754699AbYGDVcw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 17:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYGDVco
+	id S1755284AbYGDVfv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 17:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbYGDVfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 17:32:44 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38390 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751714AbYGDVcn (ORCPT
+	Fri, 4 Jul 2008 17:35:40 -0400
+Received: from relay04.mail-hub.dodo.com.au ([123.2.6.239]:48680 "EHLO
+	relay04.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751781AbYGDVfj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 17:32:43 -0400
-Date: Fri, 4 Jul 2008 22:14:57 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Joe Peterson <joe@skyrush.com>, Elias Oltmanns <eo@nebensachen.de>,
-       =?UTF-8?B?VMO2csO2aw==?= Edwin <edwintorok@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Ctrl+C doesn't interrupt process waiting for I/O
-Message-ID: <20080704221457.1f147225@lxorguk.ukuu.org.uk>
-In-Reply-To: <871w29s5u2.fsf@basil.nowhere.org>
-References: <48661488.10304@gmail.com>
-	<87fxqurqpz.fsf@denkblock.local>
-	<486E83C3.1040509@skyrush.com>
-	<20080704212335.4ffc8230@lxorguk.ukuu.org.uk>
-	<871w29s5u2.fsf@basil.nowhere.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 4 Jul 2008 17:35:39 -0400
+From: Grant Coady <grant_lkml@dodo.com.au>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Hannes Reinecke <hare@suse.de>, Takashi Iwai <tiwai@suse.de>,
+       Theodore Tso <tytso@mit.edu>, Jeff Garzik <jeff@garzik.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       hugh@veritas.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+Date: Sat, 05 Jul 2008 07:34:16 +1000
+Organization: http://bugsplatter.mine.nu/
+Reply-To: Grant Coady <gcoady.lk@gmail.com>
+Message-ID: <9l5t64tlov332uf2vfqvop9hh6ctvh067v@4ax.com>
+References: <20080703173040.GB30506@mit.edu> <1215111362.10393.651.camel@pmac.infradead.org> <20080703.162120.206258339.davem@davemloft.net> <486D6DDB.4010205@infradead.org>	<87ej6armez.fsf@basil.nowhere.org> <1215177044.10393.743.camel@pmac.infradead.org> <486E2260.5050503@garzik.org> <1215178035.10393.763.camel@pmac.infradead.org> <20080704141014.GA23215@mit.edu> <s5habgxloct.wl%tiwai@suse.de> <486E3622.1000900@suse.de> <1215182557.10393.808.camel@pmac.infradead.org>
+In-Reply-To: <1215182557.10393.808.camel@pmac.infradead.org>
+X-Mailer: Forte Agent 2.0/32.652
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Doesn't make sense to me. And yes I see this here regularly and it started
-> at some point.
+On Fri, 04 Jul 2008 15:42:37 +0100, David Woodhouse <dwmw2@infradead.org> wrote:
 
-Lets have some profiles and TSC numbers then. I'm happy to believe some
-specific combination of hardware/timing shows up a real problem but
-looking at the tiny amount of code involved I can see no sane explanation
-as to why at this point.
+>On Fri, 2008-07-04 at 16:39 +0200, Hannes Reinecke wrote:
+>> Firmware loading is just a matter of copying the file at the correct
+>> location (ie /lib/firmware) and with the name the fw loader expects.
+>> mkinitrd should do it correctly.
+>> But I wasn't aware that the tg3 has external firmware, so I doubt
+>> we have any rpm for it.
+>
+>It doesn't yet; that patch is in linux-next. The firmware is shipped as
+>part of the kernel source tree, and you currently need to run 'make
+>firmware_install' to put it in /lib/firmware, although we're looking at
+>making that easier because apparently having to run 'make
+>firmware_install' is too hard...
 
-I'm not going to look further into it without real serious data from
-people seeing it.
+Oh come on now -- not a case of too hard, it's a case of breaking _all_ 
+existing kernel build scripts.
+
+Grant.
