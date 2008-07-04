@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756952AbYGDKIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756437AbYGDKLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756952AbYGDKIp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 06:08:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbYGDKIf
+	id S1756437AbYGDKLU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 06:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbYGDKLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 06:08:35 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:50255 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752246AbYGDKIf (ORCPT
+	Fri, 4 Jul 2008 06:11:06 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:15146 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751926AbYGDKLF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 06:08:35 -0400
-Date: Fri, 4 Jul 2008 11:08:29 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: linux-kernel@vger.kernel.org
-Subject: Kconfig question - multiple entries touching one integer
-Message-ID: <20080704100829.GC24620@fluff.org.uk>
+	Fri, 4 Jul 2008 06:11:05 -0400
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: David Miller <davem@davemloft.net>, tytso@mit.edu, jeff@garzik.org,
+       hugh@veritas.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+From: Andi Kleen <andi@firstfloor.org>
+References: <1215093175.10393.567.camel@pmac.infradead.org>
+	<20080703173040.GB30506@mit.edu>
+	<1215111362.10393.651.camel@pmac.infradead.org>
+	<20080703.162120.206258339.davem@davemloft.net>
+	<486D6DDB.4010205@infradead.org>
+Date: Fri, 04 Jul 2008 12:09:08 +0200
+In-Reply-To: <486D6DDB.4010205@infradead.org> (David Woodhouse's message of "Fri, 04 Jul 2008 01:24:59 +0100")
+Message-ID: <87ej6armez.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 04 Jul 2008 10:01:47.0096 (UTC) FILETIME=[F8641D80:01C8DDBC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm trying to produce a Kconfig to deal with allocating
-extra resources depending on what is selected. I'd like
-to have an integer which specifies the 
+David Woodhouse <dwmw2@infradead.org> writes:
+>
+> I'll look at making the requirement for 'make firmware_install' more
+> obvious, or even making it happen automatically as part of
+> 'modules_install'.
 
-ie:
+Perhaps I didn't pay enough attention, but how are "only 
+boot bzImage without initrd or modules" setups supposed to work now
+for those drivers? My testing setup relies on that heavily.
 
-config ARCH_EXTRA_RESOURCES
-	int
-	default 0
-	help
-	  Extra resources depending on the board selected
+Will the firmware automatically end up in initramfs and be included
+in the bzImage and loaded at the right point?
 
-...
+I hope we won't let lawyers decide technical topics here.
 
-config BOARD_A
-	set ARCH_EXTRA_RESOURCES 32
-
-config BOARD_B
-	set ARCH_EXTRA_RESOURCES 64
-
-in this example, if board A is selected, then ARCH_EXTRA_RESOURCES
-would be 32, if BOARD_B is selected then it would be 64.
-
-doing
-
-	config ARCH_EXTRA_RESOURCES
-	int
-	default 0
-	default 32 if BOARD_A
-	default 64 if BOARD_B
-
-doesn't work, and involves changing this part of the Kconfig
-every time a new board is added.
-
-Is there any current way of doing this, would there be any
-objections to having some form of 'set' clause in a config
-statememt?
-
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+-Andi
