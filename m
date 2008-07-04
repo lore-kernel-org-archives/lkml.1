@@ -1,99 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbYGDVjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbYGDVpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756033AbYGDVjU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 17:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbYGDVjK
+	id S1754654AbYGDVpo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 17:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbYGDVpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 17:39:10 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:48320 "EHLO mail.atlantis.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751950AbYGDVjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 17:39:09 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: pata_it821x completely broken
-Date: Fri, 4 Jul 2008 23:39:00 +0200
-User-Agent: KMail/1.9.9
-Cc: alan@redhat.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-References: <200807042153.56644.linux@rainbow-software.org> <20080704212204.7c94ca7c@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080704212204.7c94ca7c@lxorguk.ukuu.org.uk>
+	Fri, 4 Jul 2008 17:45:34 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:56304 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752222AbYGDVpd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 17:45:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=eX8eTvrUAnJf4nOkY20N7Ajc8qJhB19v4SpWcQzGijTI0Gio3otb2jrCG0BLILMmYT
+         8oNEE/zeashvVYNpClD10qsvtwa2wGoC6Bsrl0i2dJYf2yY6ovK0ofhorJZmmhtnRbnM
+         6lc+6FHzMwlyXGA4BVRiD88ntx50B1+q3QNNA=
+Message-ID: <dd18b0c30807041445t2ffe1b80k7d33ca6233207f42@mail.gmail.com>
+Date: Fri, 4 Jul 2008 21:45:29 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Alexey Starikovskiy" <aystarik@gmail.com>
+Subject: Re: dsdt buggy acpi
+Cc: "Matthew Garrett" <mjg59@srcf.ucam.org>,
+       "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "ACPI Devel Maling List" <linux-acpi@vger.kernel.org>
+In-Reply-To: <dd18b0c30807040923v37e2d8c3id680d76b9cf494bf@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807042339.02444.linux@rainbow-software.org>
+References: <dd18b0c30806302339q7b3effybf8a7f619b009262@mail.gmail.com>
+	 <20080702082555.0959ef2b@linux360.ro>
+	 <20080702100935.GA699@srcf.ucam.org>
+	 <20080702144820.29f7d43d@linux360.ro>
+	 <20080702115527.GA3396@srcf.ucam.org>
+	 <dd18b0c30807020930u43405fd5v2e328b6b76b833b0@mail.gmail.com>
+	 <20080702163510.GA8912@srcf.ucam.org>
+	 <dd18b0c30807021037g3faffa6kd1ef26f888f36d11@mail.gmail.com>
+	 <486E0A64.5020903@gmail.com>
+	 <dd18b0c30807040923v37e2d8c3id680d76b9cf494bf@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 04 July 2008 22:22:04 Alan Cox wrote:
-> > When I don't have any RAID array created, both drives are detected but it
-> > appears to work only in MWDMA2 mode:
+On Fri, Jul 4, 2008 at 4:23 PM, Justin Mattock <justinmattock@gmail.com> wrote:
+> On Fri, Jul 4, 2008 at 11:32 AM, Alexey Starikovskiy <aystarik@gmail.com> wrote:
+>> Justin Mattock wrote:
+>>>
+>>> On Wed, Jul 2, 2008 at 4:35 PM, Matthew Garrett <mjg59@srcf.ucam.org>
+>>> wrote:
+>>>
+>>>>
+>>>> On Wed, Jul 02, 2008 at 04:30:11PM +0000, Justin Mattock wrote:
+>>>>
+>>>>
+>>>>>
+>>>>> Hello; what info is supplied with EFI i.g. I'm using a macbook pro.
+>>>>> After looking at:
+>>>>> http://acpi.sourceforge.net/dsdt/view.php I was unable to locate
+>>>>> anything with apple, or at least
+>>>>> couldn't find the manufacture number.
+>>>>> If somebody has already done this, I was wondering if it would be O.K.
+>>>>> if I can attached my dsdt.dsl with the errors,
+>>>>> and my explanation of what I changed, just so If I did something
+>>>>> completely wrong
+>>>>>
+>>>>
+>>>> iasl will complain about code that the Linux interpreter will happily
+>>>> accept. If the only reason you've made changes is that iasl complains,
+>>>> then it's unlikely that there's any functional difference as a result.
+>>>> Otherwise, work out which changes fix which Linux bugs and file a bug
+>>>> at bugzilla.kernel.org against acpi.
+>>>>
+>>>> --
+>>>> Matthew Garrett | mjg59@srcf.ucam.org
+>>>>
+>>>>
+>>>
+>>> Hello; I modified dsdt because iasl was complaining, As a result like
+>>> what you said
+>>> "then it's unlikely that there's any functional difference as a
+>>> result" is probably
+>>> what I'm seeing. As for a bug report I already have one filed. As to
+>>> why I'm messing with
+>>> the dsdt, just trying to isolate the problem with the bug I have
+>>> already filed., or at least
+>>> get a better idea of what is happening. Anyways thanks for the info.
+>>> regards;
+>>>
+>>>
+>>
+>> For difference, you should look for "Darwin", this is how MacOS X identifies
+>> itself to hardware.
+>>
+>>
+>> Regards,
+>> Alex.
+>>
 >
-> The speed is meaningless in hardware RAID mode. Its also btw usually
-> faster (except for some cases of RAID1 with high PCI bus utilisation like
-> video capture boxes) in non RAID mode ;)
+> Hello;
+> So adding acpi_osi=Darwin will work for boot parameter. Also I wanted
+> to apologize If I pissed you off,
+> I didn't quite understand what was really happening, and now after
+> looking into the scenario, I think I need to find out
+> what is going on with my GPE's, this way you're detector(ec.c) won't
+> be going off so frequently.
+> regards;
 >
-> > ata3: PATA max MWDMA2 cmd 0x6800 ctl 0x6c00 bmdma 0x7800 irq 11
-> > ata4: PATA max MWDMA2 cmd 0x7000 ctl 0x7400 bmdma 0x7808 irq 11
+> --
+> Justin P. Mattock
 >
-> I'll have a poke at that, see if I can make it lie more meaningfully
->
-> > ata4.00: configured for DMA
->
-> as it does here.
 
-OK, so it's not a bug, it's a (missing) feature.
+Hmm I like this option(never new it existed), the only problem I'm seeing right
+now is no battery info in /proc/acpi, "but there is no gpe storm which
+makes me happy".
+After searching I'm looking at the same as this:
+http://lists.opensuse.org/opensuse-bugs/2007-08/msg09525.html
+Overall the outcome of using sbs is bad with the Darwin option, system
+sticks after loading
+the module during boot. even under different proceedures
+i.g. with
+sbs=only (no a/c and battery modules)
+sbs+ac(module)
+sbs+ac+battery(modules)
 
->
-> > Also I get some errors about HPA when rebooting but haven't captured them
-> > yet.
->
-> IT821x does not support the HPA in 'raid' mode, only in non RAID mode so
-> it would complain about the HPA.
-
-It complains pretty loudly - something like 3 screens (with framebuffer at 
-1024x768) of errors like this:
-
-sd 3:0:0:0: [sdc] Synchronizing SCSI cache
-ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
-ata4.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         res 50/00:01:01:00:00/00:00:00:00:00/00 Emask 0x1 (device error)
-ata4.00: status: { DRDY }
-ata4.00: failed to read native max address (err_mask=0x1)
-ata4.00: HPA support seems broken, skipping HPA handling
-ata4.00: revalidation failed (errno=-5)
-ata4: failed to recover some devices, retrying in 5 secs
-
-Maybe it should just not do anything with HPA if it's not supported (but I 
-don't know libata internals).
-
->
-> > But the more interesting thing is that once I create a RAID1 array (and
-> > run background rebuild), the driver does not work anymore:
->
-> Ok that is a bug I've not met. What firmware revision is this and does it
-> work after the rebuild is done ?
-
-It's BIOS v1.7.1.94, firmware 02093030. Haven't tried waiting for the rebuild 
-to complete. It will probably take ages for 400GB drives. I'll try with some 
-much smaller drives (something <1GB).
-
->
-> > ata3.00: failed to IDENTIFY (INIT_DEV_PARAMS failed, err_masl=0x80)
-> > ata3: failed to recover some devices, retrying in 5 secs
-> > ata3.00: failed to IDENTIFY (INIT_DEV_PARAMS failed, err_masl=0x80)
-> > ata3: failed to recover some devices, retrying in 5 secs
-> > ata3.00: failed to IDENTIFY (INIT_DEV_PARAMS failed, err_masl=0x80)
-> > ata3: failed to recover some devices, retrying in 5 secs
->
-> It seems to have decided to be indefinitely busy from that.
->
-> Alan
-
+regards;
 
 
 -- 
-Ondrej Zary
+Justin P. Mattock
