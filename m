@@ -1,81 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbYGDRqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbYGDRx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757334AbYGDRqS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 13:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbYGDRqG
+	id S1754874AbYGDRx6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 13:53:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbYGDRxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 13:46:06 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:40815 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752260AbYGDRqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 13:46:04 -0400
-Date: Fri, 4 Jul 2008 19:45:56 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: Re: [PATCH v2 2/4] mmc: Export internal host state through debugfs
-Message-ID: <20080704194556.73061a08@mjolnir.drzeus.cx>
-In-Reply-To: <1214918094-26758-2-git-send-email-haavard.skinnemoen@atmel.com>
-References: <1214843703-13199-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214918094-26758-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1214918094-26758-2-git-send-email-haavard.skinnemoen@atmel.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-494-1215192874-0001-2"
+	Fri, 4 Jul 2008 13:53:50 -0400
+Received: from saeurebad.de ([85.214.36.134]:39227 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752051AbYGDRxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 13:53:49 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mm] documentation: update CodingStyle tips for Emacs users
+CC: linux-kernel@vger.kernel.org
+Date: Fri, 04 Jul 2008 19:52:16 +0200
+Message-ID: <87tzf5tu3z.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Describe a setup that integrates better with Emacs' cc-mode and also
+fixes up the alignment of continuation lines to really only use tabs.
 
---=_freyr.drzeus.cx-494-1215192874-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+---
 
-On Tue,  1 Jul 2008 15:14:52 +0200
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+Sorry, forgot linux-kernel on first send.
 
-> When CONFIG_DEBUG_FS is set, create a few files under /sys/kernel/debug
-> containing information about an mmc host's internal state. Currently,
-> just a single file is created, "ios", which contains information about
-> the current operating parameters for the bus (clock speed, bus width,
-> etc.)
->=20
-> Host drivers can add additional files and directories under the host's
-> root directory by passing the debugfs_root field in struct mmc_host as
-> the 'parent' parameter to debugfs_create_*.
->=20
-> Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
->=20
-
-I see that this version has no ifdef:s at all. Doesn't that mean a lot
-of useless code if DEBUG_FS is not enabled? You embedded guys are
-usually rather sensitive about such things. :)
-
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-494-1215192874-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkhuYdkACgkQ7b8eESbyJLiJQgCeKY+O4Foo9c/MbPNWx69lkmhi
-AT4AnifBs9Tu9WqryaQYjdkg7Q1VBgOZ
-=A6Rv
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-494-1215192874-0001-2--
+diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
+index 6caa146..4148e9f 100644
+--- a/Documentation/CodingStyle
++++ b/Documentation/CodingStyle
+@@ -474,25 +474,29 @@ make a good program).
+ So, you can either get rid of GNU emacs, or change it to use saner
+ values.  To do the latter, you can stick the following in your .emacs file:
+ 
+-(defun linux-c-mode ()
+-  "C mode with adjusted defaults for use with the Linux kernel."
+-  (interactive)
+-  (c-mode)
+-  (c-set-style "K&R")
+-  (setq tab-width 8)
+-  (setq indent-tabs-mode t)
+-  (setq c-basic-offset 8))
+-
+-This will define the M-x linux-c-mode command.  When hacking on a
+-module, if you put the string -*- linux-c -*- somewhere on the first
+-two lines, this mode will be automatically invoked. Also, you may want
+-to add
+-
+-(setq auto-mode-alist (cons '("/usr/src/linux.*/.*\\.[ch]$" . linux-c-mode)
+-			auto-mode-alist))
+-
+-to your .emacs file if you want to have linux-c-mode switched on
+-automagically when you edit source files under /usr/src/linux.
++(defun c-lineup-arglist-tabs-only (ignored)
++  "Line up argument lists by tabs, not spaces"
++  (let* ((anchor (c-langelem-pos c-syntactic-element))
++	 (column (c-langelem-2nd-pos c-syntactic-element))
++	 (offset (- (1+ column) anchor))
++	 (steps (floor offset c-basic-offset)))
++    (* (max steps 1)
++       c-basic-offset)))
++
++(add-hook 'c-mode-hook
++          (lambda ()
++            (let ((filename (buffer-file-name)))
++              ;; Enable kernel mode for the appropriate files
++              (when (and file
++                         (string-match "/usr/src/linux" filename))
++                (setq indent-tabs-mode t)
++                (c-set-style "linux")
++                (c-set-offset 'arglist-cont-nonempty
++                              '(c-lineup-gcc-asm-reg
++                                c-lineup-arglist-tabs-only))))))
++
++This will make emacs go better with the kernel coding style for C
++files in /usr/src/linux.
+ 
+ But even if you fail in getting emacs to do sane formatting, not
+ everything is lost: use "indent".
