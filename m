@@ -1,68 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759289AbYGDObV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759438AbYGDObg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759289AbYGDObV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 10:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbYGDObF
+	id S1759438AbYGDObg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 10:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758478AbYGDObR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 10:31:05 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:54817 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754056AbYGDObD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 10:31:03 -0400
-Date: Sat, 5 Jul 2008 00:30:48 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Alexander Beregalov" <a.beregalov@gmail.com>
-Cc: linux-next@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
-Subject: Re: next-0704: x86_64 panics on booting
-Message-Id: <20080705003048.30dcb64a.sfr@canb.auug.org.au>
-In-Reply-To: <a4423d670807040720o3e8e350ds5c13dfca8e8adc58@mail.gmail.com>
-References: <a4423d670807040720o3e8e350ds5c13dfca8e8adc58@mail.gmail.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__5_Jul_2008_00_30_48_+1000_2G8V07Jy5Vertgew"
+	Fri, 4 Jul 2008 10:31:17 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:36420 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758101AbYGDObP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 10:31:15 -0400
+Date: Fri, 4 Jul 2008 10:30:58 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       David Miller <davem@davemloft.net>, hugh@veritas.com,
+       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+Message-ID: <20080704143058.GB23215@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jeff Garzik <jeff@garzik.org>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Andi Kleen <andi@firstfloor.org>,
+	David Miller <davem@davemloft.net>, hugh@veritas.com,
+	akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+	mchan@broadcom.com, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, netdev@vger.kernel.org
+References: <1215093175.10393.567.camel@pmac.infradead.org> <20080703173040.GB30506@mit.edu> <1215111362.10393.651.camel@pmac.infradead.org> <20080703.162120.206258339.davem@davemloft.net> <486D6DDB.4010205@infradead.org> <87ej6armez.fsf@basil.nowhere.org> <1215177044.10393.743.camel@pmac.infradead.org> <486E2260.5050503@garzik.org> <1215178035.10393.763.camel@pmac.infradead.org> <486E2818.1060003@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <486E2818.1060003@garzik.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__5_Jul_2008_00_30_48_+1000_2G8V07Jy5Vertgew
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Jul 04, 2008 at 09:39:36AM -0400, Jeff Garzik wrote:
+> You have been told repeatedly that cp(1) and scp(1) are commonly used to  
+> transport the module David and I care about -- tg3.  It's been a single  
+> file module since birth, and people take advantage of that fact.
 
-Hi Alexander,
+Here, I think I'll have to respectly disagree with you and say that
+you are taking things too far.  I don't think scp'ing individual
+modules around counts as an "exported user interface" the same way,
+say "make install; make modules_install" is a commonly understand and
+used interface by users and scripts (i.e., such as Debian's make-kpkg,
+which does NOT know about "make firmware_install", BTW).
 
-On Fri, 4 Jul 2008 18:20:47 +0400 "Alexander Beregalov" <a.beregalov@gmail.=
-com> wrote:
->
-> Booting the kernel.
->=20
-> Kernel alive
-> Kernel really alive
-> PANIC: early exception 0e rip 10:ffffffff80604f47 error 2 cr2 ffffffffff3=
-00000
->=20
-> It is x86_64 SMP (opteron).
+Asking developers that they need to scp an additional module doesn't
+seem terribly onerous to me --- especially if the firmware module is
+much more likely to be static, and probably doesn't need to be changed
+after each compile/edit/debug cycle.
 
-Config?
+So on this point I'd side with David, and say that folding "make
+firmware_install" into "make modules_install" goes a long way towards
+healing this particular breakage.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+HOWEVER, as I mentioned in another message, it looks like not all
+forms of mkinitd and/or mkinitramfs scripts deal with /lib/firmware
+correctly, including the one used by the latest version of Ubuntu.
+That to me is a strong argument for either (a) leaving drivers the way
+they are now, or (b) making the new request_firmware() framework be
+able to place the firemware in either the original driver module, or
+in another tg3_firmware.ko module --- which could be unloaded
+afterwards, if people really cared about the non-swappable kernel
+memory being used up.)
 
---Signature=_Sat__5_Jul_2008_00_30_48_+1000_2G8V07Jy5Vertgew
-Content-Type: application/pgp-signature
+And this is where we pay the price for not having a standard initrd
+generation (with appropriate hooks so that distros could drop in their
+own enhancements) as part of the kernel build process.  If we did, it
+would be a lot easier to make sure all distro's learn about new
+requirements that we have imposed on the initrd.  Because we haven't,
+initrd's are effectively part of the "exported interface" where we
+have to move slowly enough so that distro's can catch up depending on
+their release schedule.  (It also makes it much harder to run a
+bleeding-edge kernel on a release distro system, at least without
+tieing our hands with respect to changes involving the initrd.)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhuNBgACgkQjjKRsyhoI8zRtACghXdW3sn8BrCYg6Bg/wadXk55
-NYAAn1wsLceH20asMFM4pdADZDrMzpFb
-=3GxG
------END PGP SIGNATURE-----
-
---Signature=_Sat__5_Jul_2008_00_30_48_+1000_2G8V07Jy5Vertgew--
+       	   	      	      	 	 	       - Ted
