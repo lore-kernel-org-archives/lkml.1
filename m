@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbYGDMmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757158AbYGDMnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756094AbYGDMmm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 08:42:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYGDMmb
+	id S1757158AbYGDMnY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 08:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbYGDMnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 08:42:31 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:54560 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751979AbYGDMma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 08:42:30 -0400
-Message-ID: <486E1AB1.30902@garzik.org>
-Date: Fri, 04 Jul 2008 08:42:25 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 4 Jul 2008 08:43:12 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:53594 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753389AbYGDMnK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 08:43:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=RM5vO6s9RVUnHTeG+fn/Eyp2AdLaqowR3rY5ju83If6L1418DMm3hVL6pJEC1YUOjC
+         7hYYbDuBpZYS4TSoB2nKA8h2DQh+3OPTYi1mUY0fPztW5pj+eGbCVACme80jBaFlSdOT
+         mmHQb21xB0p8pEPArkXIRwpSSr1Rt7peHVrc0=
+Date: Fri, 4 Jul 2008 16:42:56 +0400
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix build error of driver/mfd/tc6393xb.c
+Message-ID: <20080704124256.GB21747@doriath.ww600.siemens.net>
+References: <s5hiqvlc2ut.wl%tiwai@suse.de> <20080704114755.GA21747@doriath.ww600.siemens.net> <s5hej69c0tt.wl%tiwai@suse.de>
 MIME-Version: 1.0
-To: davem@davemloft.net
-CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
-Subject: Re: [NET-NEXT PATCH 17/18] net: add netif_napi_del function to allow
- for	removal of napistructs
-References: <20080627175921.22428.52767.stgit@localhost.localdomain> <20080627180200.22428.70787.stgit@localhost.localdomain>
-In-Reply-To: <20080627180200.22428.70787.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5hej69c0tt.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Kirsher wrote:
-> From: Alexander Duyck <alexander.h.duyck@intel.com>
+On Fri, Jul 04, 2008 at 02:04:30PM +0200, Takashi Iwai wrote:
+> At Fri, 4 Jul 2008 15:47:55 +0400,
+> Dmitry Baryshkov wrote:
+> > 
+> > On Fri, Jul 04, 2008 at 01:20:42PM +0200, Takashi Iwai wrote:
+> > > Fix the build of tc6393xb  due to missing definition of struct
+> > > gpio_chip.
+> > > 
+> > > Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> > > 
+> > > ---
+> > > diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> > > index 9f93c29..2981da4 100644
+> > > --- a/drivers/mfd/Kconfig
+> > > +++ b/drivers/mfd/Kconfig
+> > > @@ -44,7 +44,7 @@ config HTC_PASIC3
+> > >  
+> > >  config MFD_TC6393XB
+> > >  	bool "Support Toshiba TC6393XB"
+> > > -	depends on HAVE_GPIO_LIB
+> > > +	depends on HAVE_GPIO_LIB && GENERIC_GPIO
+> > >  	select MFD_CORE
+> > >  	help
+> > >  	  Support for Toshiba Mobile IO Controller TC6393XB
+> > 
+> > Which configuration does provide HAVE_GPIO_LIB but not GENERIC_GPIO?
 > 
-> Adds netif_napi_del function which is used to remove the napi struct from
-> the netdev napi_list in cases where CONFIG_NETPOLL was enabled.
-> The motivation for adding this is to handle the case in which the number of
-> queues on a device changes due to a configuration change.  Previously the
-> napi structs for each queue would be left in the list until the netdev was
-> freed.
-> 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> ---
-> 
->  include/linux/netdevice.h |   13 +++++++++++++
->  1 files changed, 13 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-> index 1304ad2..42fc98e 100644
-> --- a/include/linux/netdevice.h
-> +++ b/include/linux/netdevice.h
-> @@ -826,6 +826,19 @@ static inline void netif_napi_add(struct net_device *dev,
->  	set_bit(NAPI_STATE_SCHED, &napi->state);
->  }
->  
-> +/**
-> + *  netif_napi_del - remove a napi context
-> + *  @napi: napi context
-> + *
-> + *  netif_napi_del() removes a napi context from the network device napi list
-> + */
-> +static inline void netif_napi_del(struct napi_struct *napi)
-> +{
-> +#ifdef CONFIG_NETPOLL
-> +	list_del(&napi->dev_list);
-> +#endif
-> +}
-> +
+> The below is the config with which I got the error.
 
-David - ACK?
+The proper fix probably is to make PPC_MPC5200_GPIO also select
+GENERIC_GPIO. I don't think that building GPIO_LIB w/o GENERIC_GPIO
+should be supported.
 
-I would prefer to throw this in with the 18-patch igb pile, if that's OK 
-with you.
+-- 
+With best wishes
+Dmitry
 
