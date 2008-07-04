@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbYGDX5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755718AbYGDX5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756511AbYGDX5N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 19:57:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbYGDXzS
+	id S1755718AbYGDX5g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 19:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754226AbYGDXzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 19:55:18 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:42512 "EHLO smtp.polymtl.ca"
+	Fri, 4 Jul 2008 19:55:19 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:42517 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752023AbYGDXzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 19:55:12 -0400
-Message-Id: <20080704235429.484402197@polymtl.ca>
+	id S1752716AbYGDXzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 19:55:13 -0400
+Message-Id: <20080704235428.930802653@polymtl.ca>
 References: <20080704235207.147809973@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Jul 2008 19:52:19 -0400
+Date: Fri, 04 Jul 2008 19:52:18 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
@@ -22,14 +22,14 @@ Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Alexander Viro <viro@zeniv.linux.org.uk>, Hideo AOKI <haoki@redhat.com>,
        Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
        Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [RFC patch 12/12] LTTng instrumentation net tracepoint probes
-Content-Disposition: inline; filename=lttng-instrumentation-net-tracepoints-probes.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri,  4 Jul 2008 23:54:30 +0000
+Subject: [RFC patch 11/12] LTTng instrumentation mm tracepoint probes
+Content-Disposition: inline; filename=lttng-instrumentation-mm-tracepoints-probes.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri,  4 Jul 2008 23:54:29 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create a module which declares net tracepoint probes, using markers.
+Create a module which declares mm tracepoint probes, using markers.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: Alexander Viro <viro@zeniv.linux.org.uk>
@@ -41,134 +41,195 @@ CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
 CC: 'Steven Rostedt' <rostedt@goodmis.org>
 CC: Masami Hiramatsu <mhiramat@redhat.com>
 ---
- net/Makefile    |    3 +
- net/net-trace.c |  105 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 108 insertions(+)
+ include/linux/swapops.h |    8 ++
+ mm/Makefile             |    1 
+ mm/mm-trace.c           |  150 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 159 insertions(+)
 
-Index: linux-2.6-lttng/net/Makefile
+Index: linux-2.6-lttng/mm/Makefile
 ===================================================================
---- linux-2.6-lttng.orig/net/Makefile	2008-07-04 19:16:42.000000000 -0400
-+++ linux-2.6-lttng/net/Makefile	2008-07-04 19:16:44.000000000 -0400
-@@ -11,6 +11,9 @@ obj-$(CONFIG_NET)		:= socket.o core/
+--- linux-2.6-lttng.orig/mm/Makefile	2008-07-04 18:26:42.000000000 -0400
++++ linux-2.6-lttng/mm/Makefile	2008-07-04 18:27:00.000000000 -0400
+@@ -33,4 +33,5 @@ obj-$(CONFIG_MIGRATION) += migrate.o
+ obj-$(CONFIG_SMP) += allocpercpu.o
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+ obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o
++obj-$(CONFIG_TRACEPROBES) += mm-trace.o
  
- tmp-$(CONFIG_COMPAT) 		:= compat.o
- obj-$(CONFIG_NET)		+= $(tmp-y)
-+ifeq ($(CONFIG_NET),y)
-+obj-$(CONFIG_TRACEPROBES)	+= net-trace.o
-+endif
- 
- # LLC has to be linked before the files in net/802/
- obj-$(CONFIG_LLC)		+= llc/
-Index: linux-2.6-lttng/net/net-trace.c
+Index: linux-2.6-lttng/mm/mm-trace.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/net/net-trace.c	2008-07-04 19:19:04.000000000 -0400
-@@ -0,0 +1,105 @@
++++ linux-2.6-lttng/mm/mm-trace.c	2008-07-04 18:27:00.000000000 -0400
+@@ -0,0 +1,150 @@
 +/*
-+ * net/net-trace.c
++ * mm/mm-trace.c
 + *
-+ * Net tracepoint probes.
++ * MM tracepoint probes.
 + */
 +
 +#include <linux/module.h>
-+#include "net-trace.h"
++#include <linux/mm.h>
++#include <linux/swap.h>
 +
-+static void probe_net_dev_xmit(struct sk_buff *skb)
++#include <asm/pgtable.h>
++#include <asm/tlbflush.h>
++#include <linux/swapops.h>
++#include "mm-trace.h"
++
++static void probe_mm_filemap_wait_start(struct page *page, int bit_nr)
 +{
-+	trace_mark(net_dev_xmit, "skb %p protocol #2u%hu", skb, skb->protocol);
++	trace_mark(mm_filemap_wait_start, "pfn %lu bit_nr %d",
++		page_to_pfn(page), bit_nr);
 +}
 +
-+static void probe_net_dev_receive(struct sk_buff *skb)
++static void probe_mm_filemap_wait_end(struct page *page, int bit_nr)
 +{
-+	trace_mark(net_dev_receive, "skb %p protocol #2u%hu",
-+		skb, skb->protocol);
++	trace_mark(mm_filemap_wait_end, "pfn %lu bit_nr %d",
++		page_to_pfn(page), bit_nr);
 +}
 +
-+static void probe_net_del_ifa_ipv4(struct in_ifaddr *ifa)
++static void probe_mm_huge_page_free(struct page *page)
 +{
-+	trace_mark(net_del_ifa_ipv4, "label %s", ifa->ifa_label);
++	trace_mark(mm_huge_page_free, "pfn %lu", page_to_pfn(page));
 +}
 +
-+static void probe_net_insert_ifa_ipv4(struct in_ifaddr *ifa)
++static void probe_mm_huge_page_alloc(struct page *page)
 +{
-+	trace_mark(net_insert_ifa_ipv4, "label %s address #4u%lu",
-+		ifa->ifa_label, (unsigned long)ifa->ifa_address);
++	trace_mark(mm_huge_page_alloc, "pfn %lu", page_to_pfn(page));
 +}
 +
-+static void probe_net_socket_sendmsg(struct socket *sock, struct msghdr *msg,
-+		size_t size, int ret)
++#ifdef CONFIG_SWAP
++static void probe_mm_swap_in(struct page *page, swp_entry_t entry)
 +{
-+	trace_mark(net_socket_sendmsg,
-+		"sock %p family %d type %d protocol %d size %zu",
-+		sock, sock->sk->sk_family, sock->sk->sk_type,
-+		sock->sk->sk_protocol, size);
++	trace_mark(mm_swap_in, "pfn %lu filp %p offset %lu",
++		page_to_pfn(page),
++		get_swap_info_struct(swp_type(entry))->swap_file,
++		swp_offset(entry));
++}
++#endif
++
++static void probe_mm_handle_fault_entry(unsigned long address, int write_access)
++{
++	trace_mark(mm_handle_fault_entry,
++		"address %lu ip #p%ld write_access %d",
++		address, KSTK_EIP(current), write_access);
 +}
 +
-+static void probe_net_socket_recvmsg(struct socket *sock, struct msghdr *msg,
-+		size_t size, int flags, int ret)
++static void probe_mm_handle_fault_exit(void)
 +{
-+	trace_mark(net_socket_recvmsg,
-+		"sock %p family %d type %d protocol %d size %zu",
-+		sock, sock->sk->sk_family, sock->sk->sk_type,
-+		sock->sk->sk_protocol, size);
++	trace_mark(mm_handle_fault_exit, MARK_NOARGS);
 +}
 +
-+static void probe_net_socket_create(struct socket *sock, int fd)
++static void probe_mm_page_free(struct page *page, unsigned int order)
 +{
-+	trace_mark(net_socket_create,
-+		"sock %p family %d type %d protocol %d fd %d",
-+		sock, sock->sk->sk_family, sock->sk->sk_type,
-+		sock->sk->sk_protocol, fd);
++	trace_mark(mm_page_free, "order %u pfn %lu", order, page_to_pfn(page));
 +}
 +
-+static void probe_net_socket_call(int call, unsigned long a0)
++static void probe_mm_page_alloc(struct page *page, unsigned int order)
 +{
-+	trace_mark(net_socket_call, "call %d a0 %lu", call, a0);
++	if (page)
++		trace_mark(mm_page_alloc, "order %u pfn %lu", order,
++			page_to_pfn(page));
 +}
 +
-+int __init net_trace_init(void)
++static void probe_mm_swap_out(struct page *page)
++{
++	trace_mark(mm_swap_out, "pfn %lu filp %p offset %lu",
++		page_to_pfn(page),
++		get_swap_info_struct(swp_type(
++			page_swp_entry(page)))->swap_file,
++		swp_offset(page_swp_entry(page)));
++}
++
++static void probe_mm_swap_file_close(struct file *file)
++{
++	trace_mark(mm_swap_file_close, "filp %p", file);
++}
++
++static void probe_mm_swap_file_open(struct file *file, char *filename)
++{
++	trace_mark(mm_swap_file_open, "filp %p filename %s",
++		file, filename);
++}
++
++int __init mm_trace_init(void)
 +{
 +	int ret;
 +
-+	ret = register_trace_net_dev_xmit(probe_net_dev_xmit);
++	ret = register_trace_mm_filemap_wait_start(probe_mm_filemap_wait_start);
 +	WARN_ON(ret);
-+	ret = register_trace_net_dev_receive(probe_net_dev_receive);
++	ret = register_trace_mm_filemap_wait_end(probe_mm_filemap_wait_end);
 +	WARN_ON(ret);
-+	ret = register_trace_net_del_ifa_ipv4(probe_net_del_ifa_ipv4);
++	ret = register_trace_mm_huge_page_free(probe_mm_huge_page_free);
 +	WARN_ON(ret);
-+	ret = register_trace_net_insert_ifa_ipv4(probe_net_insert_ifa_ipv4);
++	ret = register_trace_mm_huge_page_alloc(probe_mm_huge_page_alloc);
 +	WARN_ON(ret);
-+	ret = register_trace_net_socket_sendmsg(probe_net_socket_sendmsg);
++#ifdef CONFIG_SWAP
++	ret = register_trace_mm_swap_in(probe_mm_swap_in);
 +	WARN_ON(ret);
-+	ret = register_trace_net_socket_recvmsg(probe_net_socket_recvmsg);
++#endif
++	ret = register_trace_mm_handle_fault_entry(probe_mm_handle_fault_entry);
 +	WARN_ON(ret);
-+	ret = register_trace_net_socket_create(probe_net_socket_create);
++	ret = register_trace_mm_handle_fault_exit(probe_mm_handle_fault_exit);
 +	WARN_ON(ret);
-+	ret = register_trace_net_socket_call(probe_net_socket_call);
++	ret = register_trace_mm_page_free(probe_mm_page_free);
++	WARN_ON(ret);
++	ret = register_trace_mm_page_alloc(probe_mm_page_alloc);
++	WARN_ON(ret);
++	ret = register_trace_mm_swap_out(probe_mm_swap_out);
++	WARN_ON(ret);
++	ret = register_trace_mm_swap_file_close(probe_mm_swap_file_close);
++	WARN_ON(ret);
++	ret = register_trace_mm_swap_file_open(probe_mm_swap_file_open);
 +	WARN_ON(ret);
 +
 +	return 0;
 +}
 +
-+module_init(net_trace_init);
++module_init(mm_trace_init);
 +
-+void __exit net_trace_exit(void)
++void __exit mm_trace_exit(void)
 +{
-+	unregister_trace_net_socket_call(probe_net_socket_call);
-+	unregister_trace_net_socket_create(probe_net_socket_create);
-+	unregister_trace_net_socket_recvmsg(probe_net_socket_recvmsg);
-+	unregister_trace_net_socket_sendmsg(probe_net_socket_sendmsg);
-+	unregister_trace_net_insert_ifa_ipv4(probe_net_insert_ifa_ipv4);
-+	unregister_trace_net_del_ifa_ipv4(probe_net_del_ifa_ipv4);
-+	unregister_trace_net_dev_receive(probe_net_dev_receive);
-+	unregister_trace_net_dev_xmit(probe_net_dev_xmit);
++	unregister_trace_mm_swap_file_open(probe_mm_swap_file_open);
++	unregister_trace_mm_swap_file_close(probe_mm_swap_file_close);
++	unregister_trace_mm_swap_out(probe_mm_swap_out);
++	unregister_trace_mm_page_alloc(probe_mm_page_alloc);
++	unregister_trace_mm_page_free(probe_mm_page_free);
++	unregister_trace_mm_handle_fault_exit(probe_mm_handle_fault_exit);
++	unregister_trace_mm_handle_fault_entry(probe_mm_handle_fault_entry);
++#ifdef CONFIG_SWAP
++	unregister_trace_mm_swap_in(probe_mm_swap_in);
++#endif
++	unregister_trace_mm_huge_page_alloc(probe_mm_huge_page_alloc);
++	unregister_trace_mm_huge_page_free(probe_mm_huge_page_free);
++	unregister_trace_mm_filemap_wait_end(probe_mm_filemap_wait_end);
++	unregister_trace_mm_filemap_wait_start(probe_mm_filemap_wait_start);
 +}
 +
-+module_exit(net_trace_exit);
++module_exit(mm_trace_exit);
 +
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Mathieu Desnoyers");
-+MODULE_DESCRIPTION("Net Tracepoint Probes");
++MODULE_DESCRIPTION("MM Tracepoint Probes");
+Index: linux-2.6-lttng/include/linux/swapops.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/swapops.h	2008-07-04 18:26:02.000000000 -0400
++++ linux-2.6-lttng/include/linux/swapops.h	2008-07-04 18:27:00.000000000 -0400
+@@ -76,6 +76,14 @@ static inline pte_t swp_entry_to_pte(swp
+ 	return __swp_entry_to_pte(arch_entry);
+ }
+ 
++static inline swp_entry_t page_swp_entry(struct page *page)
++{
++	swp_entry_t entry;
++	VM_BUG_ON(!PageSwapCache(page));
++	entry.val = page_private(page);
++	return entry;
++}
++
+ #ifdef CONFIG_MIGRATION
+ static inline swp_entry_t make_migration_entry(struct page *page, int write)
+ {
 
 -- 
 Mathieu Desnoyers
