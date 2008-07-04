@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbYGDXu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbYGDXzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbYGDXu0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 19:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYGDXuS
+	id S1754413AbYGDXzV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 19:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYGDXzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 19:50:18 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:9552 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751645AbYGDXuR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 19:50:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=QRCN+EdAzyH2oskh99bcZDhCCFcwiCFh3P7PrxgYL6ubRvcZv9DRlnMa/9NUMR2uVH
-         WEEeFhTKNePth3NUgtHLdhBAM/IZl4ZLUp4Rs+Npnur3Ly74LrJciKo/iU9hnGMjrw2V
-         DaHQGqy+3blI05uV4P1pXFh++Zom9e0wrbndg=
-Subject: [PATCH] markers: fix sparse integer as NULL pointer warning
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 04 Jul 2008 16:50:13 -0700
-Message-Id: <1215215413.27271.4.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Jul 2008 19:55:07 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:42497 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751757AbYGDXzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 19:55:06 -0400
+Message-Id: <20080704235207.147809973@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Fri, 04 Jul 2008 19:52:07 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [RFC patch 00/12] Tracepoints v2
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri,  4 Jul 2008 23:54:23 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel/trace/trace_sysprof.c:164:20: warning: Using plain integer as NULL pointer
+Hi,
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- kernel/trace/trace_sysprof.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Here is the second release of kernel tracepoints, including the architecture
+independent instrumentation taken from LTTng. I submit this for another round of
+comments.
 
-diff --git a/kernel/trace/trace_sysprof.c b/kernel/trace/trace_sysprof.c
-index 2301e1e..bb948e5 100644
---- a/kernel/trace/trace_sysprof.c
-+++ b/kernel/trace/trace_sysprof.c
-@@ -161,7 +161,7 @@ static void timer_notify(struct pt_regs *regs, int cpu)
- 		__trace_special(tr, data, 2, regs->ip, 0);
- 
- 		while (i < sample_max_depth) {
--			frame.next_fp = 0;
-+			frame.next_fp = NULL;
- 			frame.return_address = 0;
- 			if (!copy_stack_frame(fp, &frame))
- 				break;
+The patchset applies on 2.6.26-rc8 in this order :
+
+# Instrumentation
+tracepoints.patch
+lttng-instrumentation-fs.patch
+lttng-instrumentation-ipc.patch
+lttng-instrumentation-kernel.patch
+lttng-instrumentation-mm.patch
+lttng-instrumentation-net.patch
+
+# LTTng probes, using markers
+traceprobes.patch
+lttng-instrumentation-fs-tracepoints-probes.patch
+lttng-instrumentation-ipc-tracepoints-probes.patch
+lttng-instrumentation-kernel-tracepoints-probes.patch
+lttng-instrumentation-mm-tracepoints-probes.patch
+lttng-instrumentation-net-tracepoints-probes.patch
+
+Mathieu
+
 -- 
-1.5.6.1.322.ge904b
-
-
-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
