@@ -1,68 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbYGDJCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbYGDJDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756983AbYGDJCQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 05:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYGDJCB
+	id S1757422AbYGDJDi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 05:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbYGDJDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 05:02:01 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:42573 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752859AbYGDJCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 05:02:00 -0400
-Date: Fri, 4 Jul 2008 17:59:10 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Uwe Kleine-K?nig <Uwe.Kleine-Koenig@digi.com>
-Cc: Oliver Neukum <oliver@neukum.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: alphabetic ordering of MAINTAINERS
-Message-ID: <20080704085910.GA9671@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Uwe Kleine-K?nig <Uwe.Kleine-Koenig@digi.com>,
-	Oliver Neukum <oliver@neukum.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	David Woodhouse <dwmw2@infradead.org>
-References: <20080704063455.GA13999@digi.com> <200807040852.27809.oliver@neukum.org> <20080704065722.GA22420@digi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080704065722.GA22420@digi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 4 Jul 2008 05:03:30 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52301 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753507AbYGDJD2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 05:03:28 -0400
+Date: Fri, 4 Jul 2008 18:09:13 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
+Subject: [PATCH] memcg: handle shmem's swap cache (Was 2.6.26-rc8-mm1
+Message-Id: <20080704180913.bb1a3fc6.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 04, 2008 at 08:57:22AM +0200, Uwe Kleine-K?nig wrote:
-> Oliver Neukum wrote:
-> > Am Freitag 04 Juli 2008 08:34:55 schrieb Uwe Kleine-K?nig:
-> > > Hello,
-> > >
-> > > I wanted to add an entry to MAINTAINERS and while doing it I saw that in
-> > > the corresponding region the alphabetic ordering is broken.  Then I
-> > > inteded to fix that up for a trivial patch.  Next was to check the rest
-> > > of the file and there are so much misorderings that it's not sensible to
-> > > choose the trivial path anymore as there are currently 114 entries out
-> > > of order[1].
-> > 
-> > What good does alphabetic ordering? You'll grep it anyway.
-> This is fine for me, too.  Then I suggest to remove the section
-> 
-> 	Note: For the hard of thinking, this list is meant to remain in alphabetical
-> 	order. If you could add yourselves to it in alphabetical order that would be
-> 	so much easier [Ed]
-> 
-> .  That's why I posted before spending time on writing a clever script.
-> 
-I always interpreted this to mean that the _entries_ are alphabetically
-sorted, not the maintainers under each entry. IIRC, Alan has already
-cleaned up most of the ordering of the entries through recent patches.
+My swapcache accounting under memcg patch failed to catch tmpfs(shmem)'s one.
+Can I test this under -mm tree ?
+(If -mm is busy, I'm not in hurry.)
+This patch works well in my box.
+=
+SwapCache handling fix.
 
-Historically the entries with multiple people listed have been in
-decreasing order. Thus, the primary maintainer for a given entry is
-listed first, with deputy maintainers following afterwards. Most places
-where there are co-maintainers, there is still a single person who is the
-main interface in to mainline, and it makes sense to have them listed
-first. Re-ordering here would simply lead to confusion, or a lot of "send
-this to xxx" mail. On the other hand, other entries with co-maintainers
-tend to be more ad-hoc, so there doesn't seem to really be a good rule in
-general. NETWORKING and KPROBES demonstrate both cases, as an example.
+shmem's swapcache behavior is a little different from anonymous's one and
+memcg failed to handle it. This patch tries to fix it.
+
+After this:
+
+Any page marked as SwapCache is not uncharged. (delelte_from_swap_cache()
+delete the SwapCache flag.)
+
+To check a shmem-page-cache is alive or not we use
+ page->mapping && !PageAnon(page) instead of
+ pc->flags & PAGE_CGROUP_FLAG_CACHE.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+Index: test-2.6.26-rc8-mm1/mm/memcontrol.c
+===================================================================
+--- test-2.6.26-rc8-mm1.orig/mm/memcontrol.c
++++ test-2.6.26-rc8-mm1/mm/memcontrol.c
+@@ -687,11 +687,45 @@ __mem_cgroup_uncharge_common(struct page
+ 
+ 	VM_BUG_ON(pc->page != page);
+ 
+-	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+-	    && ((pc->flags & PAGE_CGROUP_FLAG_CACHE)
+-		|| page_mapped(page)
+-		|| PageSwapCache(page)))
++	/*
++	 * File Cache
++	 * If called with MEM_CGROUP_CHARGE_TYPE_MAPPED, check page->mapping.
++	 * add_to_page_cache() .... charged before inserting radix-tree.
++	 * remove_from_page_cache() .... uncharged at removing from radix-tree.
++	 * page->mapping && !PageAnon(page) catches file cache.
++	 *
++	 * Anon/Shmem.....We check PageSwapCache(page).
++	 * Anon .... charged before mapped.
++	 * Shmem .... charged at add_to_page_cache() as usual File Cache.
++	 *
++	 * This page will be finally uncharged when removed from swap-cache
++	 *
++	 * we treat 2 cases here.
++	 * A. anonymous page  B. shmem.
++	 * We never uncharge if page is marked as SwapCache.
++	 * add_to_swap_cache() have nothing to do with charge/uncharge.
++	 * SwapCache flag is deleted before delete_from_swap_cache() calls this
++	 *
++	 * shmem's behavior is following. (see shmem.c/swap_state.c also)
++	 * at swap-out:
++	 * 	0. add_to_page_cache()//charged at page creation.
++	 * 	1. add_to_swap_cache() (marked as SwapCache)
++	 *	2. remove_from_page_cache().  (calls this.)
++	 *	(finally) delete_from_swap_cache(). (calls this.)
++	 * at swap-in:
++	 * 	3. add_to_swap_cache() (no charge here.)
++	 * 	4. add_to_page_cache() (charged here.)
++	 * 	5. delete_from_swap_cache() (calls this.)
++	 * PageSwapCache(page) catches "2".
++	 * page->mapping && !PageAnon() catches "5" and avoid uncharging.
++	 */
++	if (PageSwapCache(page))
+ 		goto unlock;
++	/* called from unmap or delete_from_swap_cache() */
++	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
++		&& (page_mapped(page)
++		    || (page->mapping && !PageAnon(page))))/* alive cache ? */
++			goto unlock;
+ 
+ 	mz = page_cgroup_zoneinfo(pc);
+ 	spin_lock_irqsave(&mz->lru_lock, flags);
+
