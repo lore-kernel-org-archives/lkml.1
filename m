@@ -1,104 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbYGDBKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbYGDBKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756170AbYGDBKB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 21:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbYGDBJu
+	id S1758046AbYGDBKr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 21:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbYGDBKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 21:09:50 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60704 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751969AbYGDBJt (ORCPT
+	Thu, 3 Jul 2008 21:10:36 -0400
+Received: from shards.monkeyblade.net ([198.137.202.13]:57021 "EHLO
+	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752941AbYGDBKf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 21:09:49 -0400
-Message-ID: <486D783B.6040904@infradead.org>
-Date: Fri, 04 Jul 2008 02:09:15 +0100
-From: David Woodhouse <dwmw2@infradead.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 3 Jul 2008 21:10:35 -0400
+Message-ID: <486D787F.2090205@kernel.org>
+Date: Thu, 03 Jul 2008 18:10:23 -0700
+From: "J.H." <warthog9@kernel.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, David Miller <davem@davemloft.net>,
-       dwmw2@infradead.org, jeff@garzik.org, hugh@veritas.com,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-References: <1215093175.10393.567.camel@pmac.infradead.org> <20080703173040.GB30506@mit.edu> <1215111362.10393.651.camel@pmac.infradead.org> <20080703.162120.206258339.davem@davemloft.net> <20080704001855.GJ30506@mit.edu>
-In-Reply-To: <20080704001855.GJ30506@mit.edu>
+To: users@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       support@osuosl.org, git@vger.kernel.org
+Subject: Re: [KORG] Master downtime
+References: <486C0877.4070001@eaglescrag.net> <486D6B70.7080702@kernel.org>
+In-Reply-To: <486D6B70.7080702@kernel.org>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-2.1.12 (shards.monkeyblade.net [198.137.202.13]); Thu, 03 Jul 2008 18:10:30 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Thu, Jul 03, 2008 at 04:21:20PM -0700, David Miller wrote:
->> You want to choose a default based upon your legal agenda.
-> 
-> Yep, legal agenda.  As I suspected, licensing religious fundamentalism.  :-)
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-You are mistaken, and you're responding some words that someone _else_ 
-put in my mouth.
+Hey all,
 
-> The staged approach means that if you really want to do this ASAP,
-> then start assembling the firmware tarball *now*,
+Sorry about the delay grub decided to be 'helpful' which delayed me a
+bit.  Anyway the system is up, it's finishing up grabbing all of the
+updates but it should be in a reasonably usable state.  So if you don't
+mind getting kicked off for 10 minutes more sometime later this evening,
+to reboot into the latest kernel, master is open for business.
 
-That's easy enough. We can automatically generate a tree _from_ Linus' 
-tree, with a scripted transform so that it includes only the firmware 
-files (much like the kernel-headers tree automatically follows each 
-commit in Linus' tree, but includes only the exported headers).
+Git has already been reported as non-functioning and that is being
+looked into.  If you have further problems, report them on the
+kernel.org admin IRC channel, or e-mail ftpadmin.
 
-And there are some hardware manufacturers who are willing to have their 
-firmware included in such a firmware tarball, but who will _not_ give 
-their permission to have it included in the Linux kernel because of the 
-legal concerns you're so dismissive of. But that's OK -- we can pull 
-from the automatically generated tree into a 'real' linux-firmware.git 
-tree, which includes those extra firmware files.
+- - John 'Warthog9' Hawley
+Chief Kernel.org Admin
 
-But there's no need to do it _now_. It can wait until the basic stuff is 
-in Linus' tree and it can automatically derive from that. There's no 
-particular rush, is there?
+J.H. wrote:
+| Just a heads up the downtime is running a hair long, be about another
+| half hour.
+|
+| - John 'Warthog9' Hawley
+| Chief Kernel.org Admin
+|
+| J.H. wrote:
+| | Afternoon everyone,
+| |
+| | Just a quick heads up we are going to be taking master down for hardware
+| | and software upgrades tomorrow, Thursday July 3rd 2008 at 15:00 UTC.
+| | During this time all back-end services, including wiki's, ssh and
+| | userweb to name a few things.
+| |
+| | The hardware portion of the upgrade should be complete within an hour,
+| | and the software upgrades will likely take another hour or two - though
+| | even when master comes back up expect intermittent service for a few
+| | hours after that while we deal with things.  Likely ETA for all work
+| | completed is Friday July 4th 2008 at 00:00 UTC.  If there are
+| | complications, I will kick another e-mail off with updates.
+| |
+| | If you have any questions, comments or concerns please don't hesitate to
+| | get ahold of me.
+| |
+| | - John 'Warthog9' Hawley
+| | Chief Kernel.org Admin
+- --
+To unsubscribe from this list: send the line "unsubscribe git" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
 
-> and for a while (read: at least 9-18 months) we can distribute firmware
- > both in the kernel source tarball as well as separately
-
-That makes a certain amount of sense.
-
-> in the licensing-religion-firmware tarball. 
-
-Please don't be gratuitously offensive, Ted. It's not polite, and it's 
-not a particularly good debating technique either. I expect better from you.
-
-> See if you can get distros willing to ship it by default in most
-> user's  systems, and give people plenty of time to understand that we
- > are trying to decouple firmware from the kernel sources.
-
-The distros are certainly willing (and keen) to do it. The Fedora 
-Engineering Steering Committee has already stated that it wants to do 
-so, and the specfile changes to spit out a 'kernel-firmware' sub-package 
-with the kernel build are ready to go right now.
-
-Fedora already modifies tarballs, for example 'openssh-5.0p1-noacss'. I 
-think it's quite likely they'd end up using a 'linux-2.6.27-nofirmware' 
-tarball too, and build the firmware package from the separate tree.
-
-Some other distributions have been doing that kind of thing _already_, 
-even when it meant just ripping out certain drivers completely. That 
-seems excessive to me; I prefer not to actually _break_ anything.
-
-> If we need to institute better versioning regimes between the drivers
- > and firmware release levels, that will also give people a chance to
- > get that all right.  Then 6-9 months later, we can turn the default
-> to 'no', and then maybe another 6-9 months after that, we can talk 
- > about removing the firmware modules.
-> But it seems to me that you are skipping a few steps by arguing that
-> the default should be changed here-and-now.
-
-I disagree that the _default_ is such an issue -- largely because the 
-normal case for modern drivers is not to include the firmware _anyway_, 
-and the tools like 'mkinitrd' already cope with it just fine.
-
-But I've changed the default to 'y' now, as I already said.
-
--- 
-dwmw2
+iD8DBQFIbXh+/E3kyWU9dicRAlaMAJ9YO+iMq+lGJwfAUXAjF1aQ47OsDACeMRp4
+1/DT/k4BjXKgqNwpNy36ZRY=
+=PL28
+-----END PGP SIGNATURE-----
