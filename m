@@ -1,91 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756688AbYGDClf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYGDCmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756688AbYGDClf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 22:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756855AbYGDClM
+	id S1758729AbYGDCmV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 22:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755742AbYGDCmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 22:41:12 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:48059 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756682AbYGDClK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 22:41:10 -0400
-Date: Fri, 4 Jul 2008 11:41:09 +0900
-From: Isaku Yamahata <yamahata@valinux.co.jp>
-To: Jeremy Fitzhardinge <jeremy@goop.org>, "Luck, Tony" <tony.luck@intel.com>
-Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, xen-ia64-devel@lists.xensource.com,
-       linux-ia64@vger.kernel.org
-Subject: Re: [PATCH] xen: compilation fix for ia64 support.
-Message-ID: <20080704024109.GE17895%yamahata@valinux.co.jp>
-References: <20080703070952.GB15683%yamahata@valinux.co.jp> <486D49C7.5070702@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <486D49C7.5070702@goop.org>
-User-Agent: Mutt/1.5.6i
+	Thu, 3 Jul 2008 22:42:09 -0400
+Received: from mail.lang.hm ([64.81.33.126]:32990 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755454AbYGDCmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jul 2008 22:42:07 -0400
+Date: Thu, 3 Jul 2008 19:42:12 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: David Woodhouse <dwmw2@infradead.org>
+cc: David Miller <davem@davemloft.net>, tytso@mit.edu, jeff@garzik.org,
+       hugh@veritas.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+In-Reply-To: <486D6DDB.4010205@infradead.org>
+Message-ID: <alpine.DEB.1.10.0807031938260.7820@asgard.lang.hm>
+References: <1215093175.10393.567.camel@pmac.infradead.org> <20080703173040.GB30506@mit.edu> <1215111362.10393.651.camel@pmac.infradead.org> <20080703.162120.206258339.davem@davemloft.net> <486D6DDB.4010205@infradead.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 03, 2008 at 02:51:03PM -0700, Jeremy Fitzhardinge wrote:
-> Isaku Yamahata wrote:
-> >don't include asm/pvclock-abi.h directly, but asm/xen/pvclock-abi.h
-> >At this moment linux ia64 won't accept asm/pvclock-abi.h because
-> >there's no user of it.
-> 
-> Huh?  Is this a ia64 maintainer policy?  Aren't you about to start using it?
+On Fri, 4 Jul 2008, David Woodhouse wrote:
 
-Ah sorry, that was only what I expected. I haven't asked the maintainer yet.
-I'm asking now.
+> David Miller wrote:
+>> From: David Woodhouse <dwmw2@infradead.org>
+>> Date: Thu, 03 Jul 2008 19:56:02 +0100
+>> 
+>>> It's wrong to change the CONFIG_FIRMWARE_IN_KERNEL default to 'Y',
+>>> because the _normal_ setting for that option _really_ should be 'N'.
+>> 
+>> On what basis?  From a "obviously works" basis, the default should be
+>> 'y'.
+>
+> I already changed it to 'y'.
+>
+>>> What we're doing now is just cleaning up the older drivers which don't
+>>> use request_firmware(), to conform to what is now common practice.
+>> 
+>> You say "conform" I say "break".
+>
+> You mean...
+> 	"What we're doing now is just cleaning up the older drivers
+> 	 which don't use request_firmware(), to break to what is now
+> 	 common practice."
+> ?
+>
+> Doesn't really scan, does it?
+>
+> Common practice in modern Linux drivers is to use request_firmware(). I'm 
+> just going through and fixing up the older ones to do that too.
+>
+> (After making it possible to build that firmware _into_ the kernel so that we 
+> aren't forcing people to use an initrd where they didn't before, of course.)
 
+has this taken place yet? (and if so, what kernel version first included 
+this fix)
 
-> > Instead make it include asm/xen/pvclock-abi.h
-> >and create asm-x86/xen/pvclock-abi.h which includes asm-x86/pvclock-abi.h.
-> >  
-> 
-> I'm not very keen on crufting up asm-x86/xen/ for the ia64 code.  
-> Couldn't you have an asm-ia64/xen/pvclock-abi.h which includes 
-> <asm-x86/pvclock-abi.h>?
+>> If it was purely technical, you wouldn't be choosing defaults that
+>> break things for users by default.
+>
+> Actually, the beauty of Linux is that we _can_ change things where a minor 
+> short-term inconvenience leads to a better situation in the long term.
 
-I'm file with that. In fact I don't have strong opinion here
-as long as the linux ia64 maintainer, Tony, is fine.
+but doing so should not be a easy and quick decision, and it needs to be 
+made very clear exactly what breakage is going to take place and why 
+(along with the explination of why the breakage couldn't be avoided)
 
-Tony, what do you think about the following patch?
-- path
-  asm-ia64/pvclock-abi.h versus asm-ia64/xen/pvclock-abi.h
-- including asm-x86/pvclock-abi.h
+>> Jeff and I warned you about this from day one, you did not listen, and
+>> now we have at least 10 reports just today of people with broken
+>> networking.
+>
+> Out of interest... of those, what proportion would be 'fixed' if they'd just 
+> paid attention when running 'make oldconfig', which is now addressed because 
+> I've changed the FIRMWARE_IN_KERNEL default to 'y'?
+>
+> And how many would be 'fixed' if someone had given me a straight answer when 
+> I asked about the TSO firmware, and that failure path no longer aborted the 
+> driver initialisation but instead just fell back to non-TSO?
+>
+> I'll look at making the requirement for 'make firmware_install' more obvious, 
+> or even making it happen automatically as part of 'modules_install'.
 
->From fa958c98713f193eeab2cbe9bab1676059b850a3 Mon Sep 17 00:00:00 2001
-From: Isaku Yamahata <yamahata@valinux.co.jp>
-Date: Fri, 4 Jul 2008 11:29:33 +0900
-Subject: [PATCH] ia64/xen: add a neccessary header file to copmle include/xen/interface/xen.h
+I won't mind this as long as I can get a working kernel without doing make 
+firmware_install or make modules_install (I almost never use modules, my 
+laptop is one of the few exceptions, and even there it's mostly becouse of 
+the intel wireless driver needing userspace for firmware)
 
-Create include/asm-ia64/pvclock-abi.h to compile which includes
-include/asm-x86/pvclock-abi.h because ia64/xen uses same struture.
-Hopefully include/asm-x86/pvclock-abi.h would be moved to somewhere
-more generic.
-
-Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
----
- include/asm-ia64/pvclock-abi.h |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-ia64/pvclock-abi.h
-
-diff --git a/include/asm-ia64/pvclock-abi.h b/include/asm-ia64/pvclock-abi.h
-new file mode 100644
-index 0000000..1c34d11
---- /dev/null
-+++ b/include/asm-ia64/pvclock-abi.h
-@@ -0,0 +1,5 @@
-+/*
-+ * use same streucute to x86's
-+ * Hopefully asm-x86/pvclock-abi.h would be moved to somewhere more generic.
-+ */
-+#include <asm-x86/pvclock-abi.h>
--- 
-1.5.3
-
-
--- 
-yamahata
+David Lang
