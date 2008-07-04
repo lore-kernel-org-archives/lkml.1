@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753889AbYGDXm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbYGDXu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753889AbYGDXm4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 19:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbYGDXms
+	id S1754112AbYGDXu0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 19:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYGDXuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 19:42:48 -0400
-Received: from ag-out-0708.google.com ([72.14.246.247]:22733 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751487AbYGDXms (ORCPT
+	Fri, 4 Jul 2008 19:50:18 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:9552 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751645AbYGDXuR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 19:42:48 -0400
-Message-ID: <fa686aa40807041642m1ecd1f8fr33382076ca5c11fa@mail.gmail.com>
-Date: Fri, 4 Jul 2008 17:42:46 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2 3/5] of-bindings: Add binding documentation for SPI busses and devices
-Cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
-       david-b@pacbell.net, linuxppc-dev@ozlabs.org,
-       fabrizio.garetto@gmail.com
-In-Reply-To: <1694b01b1b41f244e565298b430f021c@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 4 Jul 2008 19:50:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=QRCN+EdAzyH2oskh99bcZDhCCFcwiCFh3P7PrxgYL6ubRvcZv9DRlnMa/9NUMR2uVH
+         WEEeFhTKNePth3NUgtHLdhBAM/IZl4ZLUp4Rs+Npnur3Ly74LrJciKo/iU9hnGMjrw2V
+         DaHQGqy+3blI05uV4P1pXFh++Zom9e0wrbndg=
+Subject: [PATCH] markers: fix sparse integer as NULL pointer warning
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 04 Jul 2008 16:50:13 -0700
+Message-Id: <1215215413.27271.4.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080703005749.26187.71719.stgit@trillian.secretlab.ca>
-	 <20080703010308.26187.23037.stgit@trillian.secretlab.ca>
-	 <1694b01b1b41f244e565298b430f021c@kernel.crashing.org>
-X-Google-Sender-Auth: c36a184eaaeb550d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 4, 2008 at 5:36 PM, Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
->> +    The SPI master node requires the following properties:
->> +    - #address-cells  - number of cells required to define a chip select
->> +                       address on the SPI bus.
->
-> Hrm.  Should this (and "reg" in the child node) be required for SPI
-> masters that have only one chip select?
+kernel/trace/trace_sysprof.c:164:20: warning: Using plain integer as NULL pointer
 
-I suppose it could be skipped, but I'd rather have it there for consistency
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ kernel/trace/trace_sysprof.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
->
->> +    - max-speed       - (required) Maximum SPI clocking speed of device
->> in Hz
->
-> The property name should include something "SPI", it's way too generic
-> otherwise.
-
-Good point; I'll change this to 'spi-max-speed'
-
->> +    - spi,cpol        - (optional) Device requires inverse clock polarity
->> +    - spi,cpha        - (optional) Device requires shifted clock phase
->
-> Don't abbr the property names, there's nothing wrong with longer names.
-> The names shouldn't start with "spi," either, "spi" isn't a vendor;
-> how about "spi-inverse-clock-polarity" or similar?
-
-Okay, but cpol and cpha are common abbreviations w.r.t. SPI devices.
-
->> +    - linux,modalias  - (optional, Linux specific) Force binding of SPI
->> device
->> +                       to a particular spi_device driver.  Useful for
->> changing
->> +                       driver binding between spidev and a kernel SPI
->> driver.
->
-> This is a temporary workaround I hope?
-
-Yeah, I'm kind of ashamed of this one.  I'll drop it.
-
-g.
-
+diff --git a/kernel/trace/trace_sysprof.c b/kernel/trace/trace_sysprof.c
+index 2301e1e..bb948e5 100644
+--- a/kernel/trace/trace_sysprof.c
++++ b/kernel/trace/trace_sysprof.c
+@@ -161,7 +161,7 @@ static void timer_notify(struct pt_regs *regs, int cpu)
+ 		__trace_special(tr, data, 2, regs->ip, 0);
+ 
+ 		while (i < sample_max_depth) {
+-			frame.next_fp = 0;
++			frame.next_fp = NULL;
+ 			frame.return_address = 0;
+ 			if (!copy_stack_frame(fp, &frame))
+ 				break;
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+1.5.6.1.322.ge904b
+
+
+
