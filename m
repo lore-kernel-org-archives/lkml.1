@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758466AbYGDN2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758685AbYGDN3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758466AbYGDN2y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 09:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYGDN2m
+	id S1758685AbYGDN3R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 09:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758335AbYGDN2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 09:28:42 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37652 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752571AbYGDN2l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 09:28:41 -0400
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-From: David Woodhouse <dwmw2@infradead.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Hugh Dickins <hugh@veritas.com>, Jeff Garzik <jeff@garzik.org>,
+	Fri, 4 Jul 2008 09:28:51 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:45133 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758135AbYGDN2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 09:28:50 -0400
+Message-ID: <486E2589.8090304@garzik.org>
+Date: Fri, 04 Jul 2008 09:28:41 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: David Woodhouse <dwmw2@infradead.org>
+CC: Takashi Iwai <tiwai@suse.de>, Hugh Dickins <hugh@veritas.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org
-In-Reply-To: <s5hej69lqzk.wl%tiwai@suse.de>
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
-	 <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <486CC440.9030909@garzik.org>
-	 <Pine.LNX.4.64.0807031353030.11033@blonde.site>
-	 <s5hmykxc3ja.wl%tiwai@suse.de>
-	 <1215177471.10393.753.camel@pmac.infradead.org>
-	 <s5hej69lqzk.wl%tiwai@suse.de>
-Content-Type: text/plain
-Date: Fri, 04 Jul 2008 14:28:32 +0100
-Message-Id: <1215178112.10393.765.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+References: <20080703020236.adaa51fa.akpm@linux-foundation.org>	 <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>	 <486CC440.9030909@garzik.org>	 <Pine.LNX.4.64.0807031353030.11033@blonde.site>	 <s5hmykxc3ja.wl%tiwai@suse.de> <1215177471.10393.753.camel@pmac.infradead.org>
+In-Reply-To: <1215177471.10393.753.camel@pmac.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-04 at 15:26 +0200, Takashi Iwai wrote:
-> Ah I see.  I thought you implemented the built-in firmware even for
-> modules, but apparently it's not.
+David Woodhouse wrote:
+> 3. Look at making 'make modules_install' installl the firmware required
+>    by the modules it's installing, so you don't even need to do
+>    _anything_ new.
 
-It isn't really necessary. If you can load modules, then you have
-userspace. And if you have userspace, you can load firmware too.
 
-> Is mkinitrd clever enough to put all needed firmware files to initrd
-> automatically?  Otherwise this can still break the existing setup...
+Anything that works with existing build processes would be a positive 
+step, preventing loads of build&test regressions.
 
-Yes, it's had to be clever enough for that for a long time anyway --
-most modern drivers have _only_ the 'request_firmware()' option and
-never gave you the choice of building it in. I'm just updating some of
-the older drivers to catch up.
+This does not change the need, of course, to default this firmware 
+install stuff to 'off', and allow distros to turn it on when they're 
+ready (as Alan, Ted, and others have suggested in this thread).
 
--- 
-dwmw2
+	Jeff
+
+
 
