@@ -1,65 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758056AbYGDQiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758534AbYGDQkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758056AbYGDQiR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 12:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbYGDQiC
+	id S1758534AbYGDQkJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 12:40:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbYGDQj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 12:38:02 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:32544 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753900AbYGDQiA (ORCPT
+	Fri, 4 Jul 2008 12:39:56 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:35468 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753992AbYGDQj4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 12:38:00 -0400
+	Fri, 4 Jul 2008 12:39:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=R5w6uBEjOktdAmJ5zlB5TnblgFwVo68lS/MlHulXdSMKP6qtvMoK1xkJa+rG+laZYB
-         5NECHGT5xLR0t9eSPz1IKw8yJOnmfFcyhr5mrg8J6u3rL1nohLBQ1ykCpXWAnNVxOcfK
-         G2UwSaW1fEJADgpjqLJ2pX9gLiA8IuDtLo0eg=
-Subject: Re: [PATCH 4/5] byteorder: fix direct byteswap includes
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <27042.1215185863@redhat.com>
-References: <1215144734.16647.70.camel@brick>  <27042.1215185863@redhat.com>
-Content-Type: text/plain
-Date: Fri, 04 Jul 2008 09:37:53 -0700
-Message-Id: <1215189473.16647.80.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Z89O6aELftPay/s8fLJxgjeATfwVL+MR8vPSbNG02Fc13vI9kD41fSKALtQKT3nOsy
+         tirrPvYsJjPiUj0uhkP1vzQQDfCMJSTt+nmLqfwl+OcwUuQ1BPE3atzA4gBwK1TZrL8h
+         nJgnQ1OSJuPNPU7K6vHvjgu8oo084pBGNaFuk=
+Date: Sat, 5 Jul 2008 01:39:43 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
+       andrew.vasquez@qlogic.com, linux-driver@qlogic.com,
+       seokmann.ju@qlogic.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] move memory_read_from_buffer() from fs.h to string.h
+Message-ID: <20080704163942.GA15214@localhost.localdomain>
+References: <200807040647.m646lXpN017508@imap1.linux-foundation.org> <1215182555.5413.8.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-2022-jp
+Content-Disposition: inline
+In-Reply-To: <1215182555.5413.8.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-04 at 16:37 +0100, David Howells wrote:
-> Harvey Harrison <harvey.harrison@gmail.com> wrote:
+On Fri, Jul 04, 2008 at 09:42:35AM -0500, James Bottomley wrote:
+> For such a micro optimisation, this is a pretty big price to pay.
 > 
-> > +#include <asm/byteorder.h>
-> 
-> Please use <linux/byteorder.h> rather than <asm/byteorder.h> when including
-> stuff from .c files outside the include and arch directories.
+> Inclusion of linux/fs.h in a low level driver was always a danger signal
+> usually it meant the driver was trying to access files or something at
+> the very least it was a warning of a potential layering violation.  Now
+> you're trying to make it standard practice ... I really don't like that.
+> Surely a function that does memory to memory copies belongs either in
+> string.h with the rest of our memory copies ... or in another header
+> that would be a usual include for the potential users.
 
-asm/byteorder.h is the file included everywhere else, and before my
-patches, linux/byteorder.h didn't even exist.  Thus, when preparing my
-patches I made sure that including asm/byteorder.h continued to be the
-way to get this functionality.
+OK, I'll move it to linux/string.h
 
-I could add another patch  on top that makes linux/byteorder the one we
-want included and search/replace the existing asm includes, but I thought
-that was a bit too big to do in one go.
+From: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: [PATCH] move memory_read_from_buffer() from fs.h to string.h
 
-If people think this is the way to go, I'll prepare a patch to change the
-includes.
+James Bottomley warns that inclusion of linux/fs.h in a low level driver
+was always a danger signal. This patch moves memory_read_from_buffer()
+from fs.h to string.h and fixes includes in existing memory_read_from_buffer()
+users.
 
-> And whilst you're at it, Documentation/byteorder.txt is yours for the
-> creation:-)
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Bob Moore <robert.moore@intel.com>
+Cc: Thomas Renninger <trenn@suse.de>
+Cc: Len Brown <lenb@kernel.org>
+---
+ drivers/acpi/system.c       |    1 +
+ drivers/zorro/zorro-sysfs.c |    1 -
+ include/linux/fs.h          |    2 --
+ include/linux/string.h      |    3 +++
+ 4 files changed, 4 insertions(+), 3 deletions(-)
 
-Already working on an update to unaligned_access.txt, I'll get to
-byteorder next.
-
-Harvey
-
+Index: 2.6-mm/include/linux/fs.h
+===================================================================
+--- 2.6-mm.orig/include/linux/fs.h
++++ 2.6-mm/include/linux/fs.h
+@@ -2026,8 +2026,6 @@ extern void simple_release_fs(struct vfs
+ 
+ extern ssize_t simple_read_from_buffer(void __user *to, size_t count,
+ 			loff_t *ppos, const void *from, size_t available);
+-extern ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
+-			const void *from, size_t available);
+ 
+ #ifdef CONFIG_MIGRATION
+ extern int buffer_migrate_page(struct address_space *,
+Index: 2.6-mm/include/linux/string.h
+===================================================================
+--- 2.6-mm.orig/include/linux/string.h
++++ 2.6-mm/include/linux/string.h
+@@ -111,5 +111,8 @@ extern void argv_free(char **argv);
+ 
+ extern bool sysfs_streq(const char *s1, const char *s2);
+ 
++extern ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
++			const void *from, size_t available);
++
+ #endif
+ #endif /* _LINUX_STRING_H_ */
+Index: 2.6-mm/drivers/acpi/system.c
+===================================================================
+--- 2.6-mm.orig/drivers/acpi/system.c
++++ 2.6-mm/drivers/acpi/system.c
+@@ -26,6 +26,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/init.h>
++#include <linux/string.h>
+ #include <asm/uaccess.h>
+ 
+ #include <acpi/acpi_drivers.h>
+Index: 2.6-mm/drivers/zorro/zorro-sysfs.c
+===================================================================
+--- 2.6-mm.orig/drivers/zorro/zorro-sysfs.c
++++ 2.6-mm/drivers/zorro/zorro-sysfs.c
+@@ -15,7 +15,6 @@
+ #include <linux/zorro.h>
+ #include <linux/stat.h>
+ #include <linux/string.h>
+-#include <linux/fs.h>
+ 
+ #include "zorro.h"
+ 
