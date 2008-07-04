@@ -1,77 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbYGDRYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741AbYGDRcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756918AbYGDRYS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 13:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbYGDRYF
+	id S1755741AbYGDRcl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 13:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbYGDRcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 13:24:05 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:13172 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750879AbYGDRYC (ORCPT
+	Fri, 4 Jul 2008 13:32:33 -0400
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:44594 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750879AbYGDRcc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 13:24:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=DhZgbsxa6nIkqDNtbLn9HU5OLgvahEvSiHJi61y9LfioIC1ciywrg+75O25m4DkPm8
-         cWsMIJWEPyXQm0z06LYU/KyX9MypMvljDb1FOELBoWnkqSm7KU1KI/+VpLXSlZlxg5yz
-         Ed3GmQ9rSt7ei4i1dfUy00XoUOoVG8onD+iQI=
-Subject: Re: [PATCH 3/5] byteorder: wire up arches to use new headers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1215144733.16647.69.camel@brick>
-References: <1215144733.16647.69.camel@brick>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 04 Jul 2008 10:23:59 -0700
-Message-Id: <1215192239.16647.84.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 8bit
+	Fri, 4 Jul 2008 13:32:32 -0400
+To: rankincj@yahoo.com
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
+Subject: Re: Linux 2.6.25.10
+References: <555236.75770.qm@web52912.mail.re2.yahoo.com>
+From: Nix <nix@esperi.org.uk>
+Emacs: resistance is futile; you will be assimilated and byte-compiled.
+Date: Fri, 04 Jul 2008 18:32:26 +0100
+In-Reply-To: <555236.75770.qm@web52912.mail.re2.yahoo.com> (Chris Rankin's message of "4 Jul 2008 00:42:42 +0100")
+Message-ID: <87vdzlv9lh.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-DCC-INFN-TO-Metrics: hades 1233; Body=3 Fuz1=3 Fuz2=3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-﻿Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-rebasing to today's next, noticed a conflict in m68knommu, here's a revised part
-of the arch hook-up.
+On 4 Jul 2008, Chris Rankin stated:
+> I have only machines with 32 bit CPUS, none of them is hot-pluggable
+> and none has an i915 graphics chip. All my local users are "trusted",
+> nor am I running any multi-threaded Java applications on SMP
+> systems. (I also have no idea what ICM pages are, but they sound jolly
+> impressive!)
 
-diff --git a/include/asm-m68knommu/byteorder.h b/include/asm-m68knommu/byteorder.h
-index 20bb442..8a68b3c 100644
---- a/include/asm-m68knommu/byteorder.h
-+++ b/include/asm-m68knommu/byteorder.h
-@@ -3,13 +3,11 @@
- 
- #include <linux/types.h>
- 
--#if defined(__GNUC__) && !defined(__STRICT_ANSI__) || defined(__KERNEL__)
--#  define __BYTEORDER_HAS_U64__
--#  define __SWAB_64_THRU_32__
--#endif
-+#define __BIG_ENDIAN
-+#define __SWAB_64_THRU_32__
- 
- #if defined (__mcfisaaplus__) || defined (__mcfisac__)
--static inline __attribute_const__ __u32 ___arch__swab32(__u32 val)
-+static inline __attribute_const__ __u32 __arch_swab32(__u32 val)
- {
- 	asm(
- 			"byterev %0"
-@@ -18,10 +16,9 @@ static inline __attribute_const__ __u32 ___arch__swab32(__u32 val)
- 	   );
- 	return val;
- }
--
--#define __arch__swab32(x) ___arch__swab32(x)
-+#define HAVE_ARCH_SWAB32
- #endif
- 
--#include <linux/byteorder/big_endian.h>
-+#include <linux/byteorder.h>
- 
- #endif /* _M68KNOMMU_BYTEORDER_H */
+A good clue here is to look at the subdirectories that were touched.
+The ICM stuff says in the commit log
 
+    IB/mthca: Clear ICM pages before handing to FW
 
+and touches only files under drivers/infiniband/hw/mthca.
+
+So if you don't use the InfiniBand driver, you're almost certainly safe
+(and from what I understand of InfiniBand, if you're not running a huge
+corporate SAN or something you're highly unlikely to be using it).
+
+> And what is "native_read_tscp" all about?
+
+>From the name I would have assumed something about networking with some
+strangely-named protocol, but from the file being touched,
+include/asm-x86/msr.h, it's something to do with x86 model-specific
+registers. One function in that header calls it: `rdtscp()'. A grep -R
+for `rdtscp' under arch/x86 indicates that there is a word in
+/proc/cpuinfo devoted to indicating whether your CPU has this
+feature. If it doesn't, the bug doesn't affect you.
+
+>From the other hit, rdtscp()'s one call site, it seems to be some way to
+get the current CPU fast on SMP x86-64 boxes.  So perhaps you should
+upgrade if you have one of those.
+
+Generally a bit of grepping and matching on pathnames like this is
+enough to comprehensively rule most changes in or out as things that
+affect you, and of course if there are changes to mm code or something
+like that it's generally a good idea to upgrade anyway, because you
+can't very well avoid using said code.
+
+> (Your emphasis.) Is it because otherwise you're going to sneak up and
+> burn my house down?
+
+Greg would never do a thing like that without forewarning.
