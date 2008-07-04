@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757936AbYGDGl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbYGDGln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757936AbYGDGl2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 02:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbYGDGlP
+	id S1758489AbYGDGln (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 02:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758020AbYGDGlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 02:41:15 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:61536 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752968AbYGDGlN (ORCPT
+	Fri, 4 Jul 2008 02:41:31 -0400
+Received: from mail164.messagelabs.com ([216.82.253.131]:54563 "EHLO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757944AbYGDGl3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 02:41:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=ZNnBEWf8mtR71Rn6u1QwXMS6VjKrob7rhSPtcHUs+z3TUkwJfUBmzHPPg3UgjCBiaS
-         fGZ0UAmjzjNRJ0WzxUROLM60mLxy4KHnbZnbuGDBigrjqV61T6HzQJzcid5qmOykTY+8
-         IBCdtNIwfXf0fJFYisnWhXTpsGVmG4W4HBWA0=
-Message-ID: <486DC5D3.5050201@gmail.com>
-Date: Fri, 04 Jul 2008 15:40:19 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Fri, 4 Jul 2008 02:41:29 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-7.tower-164.messagelabs.com!1215153687!3124529!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Date: Fri, 4 Jul 2008 08:41:22 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: alphabetic ordering of MAINTAINERS
+Message-ID: <20080704064122.GA14806@digi.com>
+References: <20080704063455.GA13999@digi.com> <20080704063938.GA12894@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>,
-       Benjamin Thery <benjamin.thery@bull.net>, netdev@vger.kernel.org
-Subject: Re: [PATCH 06/15] Introduce sysfs_sd_setattr and fix sysfs_chmod
-References: <20080618170729.808539948@theryb.frec.bull.fr>	<m18wwmsqdv.fsf@frodo.ebiederm.org> <4869D314.5030403@gmail.com>	<m1ej6enep7.fsf@frodo.ebiederm.org> <486A0751.9080602@gmail.com>	<m1wsk5hjm0.fsf@frodo.ebiederm.org> <486AF4FA.8020805@gmail.com>	<m1ej6d9c2r.fsf@frodo.ebiederm.org> <486B060C.7030607@gmail.com>	<m14p78s02q.fsf@frodo.ebiederm.org> <486C4515.1070007@gmail.com>	<m1hcb7o8lv.fsf@frodo.ebiederm.org> <486CB051.5000507@fr.ibm.com>	<m14p77m9uy.fsf@frodo.ebiederm.org> <486CF71F.5090405@gmail.com>	<m1y74iiidz.fsf_-_@frodo.ebiederm.org>	<m1tzf6ihlz.fsf_-_@frodo.ebiederm.org>	<m1prpuihjb.fsf_-_@frodo.ebiederm.org>	<m1lk0iihhp.fsf_-_@frodo.ebiederm.org>	<m1hcb6ihfz.fsf_-_@frodo.ebiederm.org>	<m1d4luihea.fsf_-_@frodo.ebiederm.org> <m18wwiihbn.fsf_-_@frodo.ebiederm.org>
-In-Reply-To: <m18wwiihbn.fsf_-_@frodo.ebiederm.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080704063938.GA12894@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 04 Jul 2008 06:41:23.0191 (UTC) FILETIME=[F995D070:01C8DDA0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Currently sysfs_chmod calls sys_setattr which in turn calls
-> inode_change_ok which checks to see if it is ok for the current user
-> space process to change tha attributes. Since sysfs_chmod_file has
-> only kernel mode clients denying them permission if user space is the
-> problem is completely inappropriate.
+Sam Ravnborg wrote:
+> On Fri, Jul 04, 2008 at 08:34:55AM +0200, Uwe Kleine-König wrote:
+> > Hello,
+> >
+> > I wanted to add an entry to MAINTAINERS and while doing it I saw that in
+> > the corresponding region the alphabetic ordering is broken.  Then I
+> > inteded to fix that up for a trivial patch.  Next was to check the rest
+> > of the file and there are so much misorderings that it's not sensible to
+> > choose the trivial path anymore as there are currently 114 entries out
+> > of order[1].
+> >
+> > Below is a script that shows the misorderings after applying the
+> > following patch:
+> >
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index e6c06fa..e9e36f8 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -1585,7 +1585,7 @@ S:      Supported
+> >  EMBEDDED LINUX
+> >  P:   Paul Gortmaker
+> >  M:   paul.gortmaker@windriver.com
+> > -P    David Woodhouse
+> > +P:   David Woodhouse
+> >  M:   dwmw2@infradead.org
+> >  L:   linux-embedded@vger.kernel.org
+> >  S:   Maintained
+> >
+> > IMHO there are two good ways to continue:
+> >  - just ignore the misorderings; or
+> >  - write a more clever script that not only shows the misorderings but
+> >    fixes them and optimally let Linus directly apply it.
+> >
+> > I will try to come up with a script to prepare the second way.
 > 
-> Therefore factor out sysfs_sd_setattr which does not call
-> inode_change_ok and modify sysfs_chmod_file to call it.
+> If you succeed doing so it would be very good to fix up
+> all mail entries to read:
 > 
-> In addition setting victim_sd->s_mode explicitly in sysfs_chmod_file
-> is redundant so remove that as well.
+> M: Paul Gortmaker <paul.gortmaker@windriver.com>
 > 
-> Thanks to Tejun Heo <htejun@gmail.com>, and
-> Daniel Lezcano <dlezcano@fr.ibm.com> for working on this
-> and spotting this case.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> so they are copy'n'paste friendly.
+IMHO this would be a second step, but I like it.
 
-Acked-by: Tejun Heo <tj@kernel.org>
+Best regards
+Uwe
 
 -- 
-tejun
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
