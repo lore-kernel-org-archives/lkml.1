@@ -1,85 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbYGDESr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbYGDE1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754549AbYGDESr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 00:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012AbYGDESi
+	id S1753691AbYGDE1j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 00:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbYGDE1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 00:18:38 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:1554 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750911AbYGDESh (ORCPT
+	Fri, 4 Jul 2008 00:27:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54541 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750711AbYGDE13 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 00:18:37 -0400
-Date: Thu, 3 Jul 2008 22:17:58 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Chen Gong <G.Chen@freescale.com>
-Cc: david-b@pacbell.net, fabrizio.garetto@gmail.com, linuxppc-dev@ozlabs.org,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 4/5] spi: Add OF binding support for SPI busses
-Message-ID: <20080704041758.GH12945@secretlab.ca>
-References: <20080703005749.26187.71719.stgit@trillian.secretlab.ca> <20080703010313.26187.99119.stgit@trillian.secretlab.ca> <58A20A281BAF1047B4EAE68DE5C0BDC2010121B7@zch01exm21.fsl.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <58A20A281BAF1047B4EAE68DE5C0BDC2010121B7@zch01exm21.fsl.freescale.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 4 Jul 2008 00:27:29 -0400
+Date: Thu, 3 Jul 2008 21:27:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: balbir@linux.vnet.ibm.com
+Cc: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 2.6.26-rc8-mm1] memrlimit: fix mmap_sem deadlock
+Message-Id: <20080703212707.e0f6bbda.akpm@linux-foundation.org>
+In-Reply-To: <486D970F.2000607@linux.vnet.ibm.com>
+References: <Pine.LNX.4.64.0807032143110.10641@blonde.site>
+	<20080703160117.b3781463.akpm@linux-foundation.org>
+	<486D81B9.9030704@linux.vnet.ibm.com>
+	<20080703190123.1d72e9d1.akpm@linux-foundation.org>
+	<486D970F.2000607@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 04, 2008 at 11:54:57AM +0800, Chen Gong wrote:
-> Grant Likely wrote:
-> > +		/* Mode (clock phase/polarity/etc.) */
-> > +		if (of_find_property(nc, "spi,cpha", NULL))
-> > +			spi->mode |= SPI_CPHA;
-> > +		if (of_find_property(nc, "spi,cpol", NULL))
-> > +			spi->mode |= SPI_CPOL;
+On Fri, 04 Jul 2008 08:50:47 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+
+> > I was referring to the below (which is where the conversation ended).
+> > 
+> > It questions the basis of the whole feature.
+> > 
 > 
-> so becuase in function spi_alloc_deive, spi is allocated by kzalloc,
-> how about writing as follows:
-> 		/* Mode (clock phase/polarity/etc.) */
-> 		prop = of_get_property(nc, "spi,cpha", NULL))
->                         if (prop)
-> 			spi->mode |= *prop;
-> 		prop = of_get_property(nc, "spi,cpol", NULL))
->                         if (prop)
-> 			spi->mode |= *prop;
-
-spi,cpha and spi,cpol are defined as empty properties.  The presence of
-the property in the node means I need to set the flag in the spi_device.
-
-> > +		/* Select device driver */
-> > +		sprop = of_get_property(nc, "linux,modalias", &len);
-> > +		if (sprop && len > 0)
-> > +			strncpy(spi->modalias, sprop, KOBJ_NAME_LEN);
-> > +		else
-> > +			strncpy(spi->modalias, "spidev", KOBJ_NAME_LEN);
-> > +
->  how about writing as follows:
+> In the email below, I referred to Hugh's comment on tracking total_vm as a more
+> achievable target and it gives a rough approximation of something worth
+> limiting. I agree with him on those points and mentioned my motivation for the
+> memrlimit patchset. We also look forward to enhancing memrlimit to control
+> mlock'ed pages (as it provides the generic infrastructure to control RLIMIT'ed
+> resources). Given Hugh's comment, I looked at it from the more positive side
+> rather the pessimistic angle. I've had discussions along these lines with Paul
+> Menage and Kamezawa. In the past we've discussed and there are cases where
+> memrlimit is not useful (large VM allocations with sparse usage), but there are
+> cases as mentioned below in the motivation for memrlimits as to why and where
+> they are useful.
 > 
-> 		if (sprop && len > 0)
-> 			strncpy(spi->modalias, sprop, KOBJ_NAME_LEN -
-> 1);
-> 		else
-> 			strncpy(spi->modalias, "spidev", KOBJ_NAME_LEN -
-> 1);
+> If there are suggestions to help improve the feature or provide similar
+> functionality without the noise; I am all ears
 
-Actually, neither are very good.  What it should really be is:
+Well I've never reeeeeeealy understood what the whole feature is for.
 
-	if (sprop && len > 0)
-		strlcpy(spi->modalias, sprop, sizeof (spi->modalias));
-	else
-		strlcpy(spi->modalias, "spidev", sizeof (spi->modalias));
++Advantages of providing this feature
++
++1. Control over virtual address space allows for a cgroup to fail gracefully
++   i.e., via a malloc or mmap failure as compared to OOM kill when no
++   pages can be reclaimed.
++2. It provides better control over how many pages can be swapped out when
++   the cgroup goes over its limit. A badly setup cgroup can cause excessive
++   swapping. Providing control over the address space allocations ensures
++   that the system administrator has control over the total swapping that
++   can take place.
 
-This ensures that the string is always null terminated and always the
-right size.
+umm, OK.  I'm not sure _why_ someone would want to do that.  Perhaps
+some use-cases would help motivate us.  Perhaps desriptions of
+real-world operational problems would would be improved or solved were
+this feature available to the operator.
 
-... But the whole argument is a bit moot.  The fact that I even defined
-a "linux,modalias" property is a great big hairy hack that I would
-never want my mother to see.  Instead, I need a method to bind to an SPI
-driver based on the compatible list.  Jon Smirl has done some work
-in this regard for i2c, but I haven't looked at it very deeply, and so
-do not at all understand it (yet).
-
-Thanks for the comments.
-g.
