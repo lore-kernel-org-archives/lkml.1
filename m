@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbYGDDe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756939AbYGDDkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758781AbYGDDe0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 23:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756271AbYGDDeR
+	id S1756939AbYGDDkr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 23:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbYGDDkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 23:34:17 -0400
-Received: from rrcs-96-10-117-168.se.biz.rr.com ([96.10.117.168]:45652 "EHLO
-	lap75545.ornl.gov" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755568AbYGDDeQ (ORCPT
+	Thu, 3 Jul 2008 23:40:39 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:56199 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755050AbYGDDki (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 23:34:16 -0400
-X-Greylist: delayed 1003 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Jul 2008 23:34:15 EDT
-Subject: Re: Higher than expected disk write(2) latency
-From: David Dillow <dave@thedillows.org>
-To: Martin Sustrik <sustrik@fastmq.com>
-Cc: Jeff Moyer <jmoyer@redhat.com>, Roger Heflin <rogerheflin@gmail.com>,
-       Martin Lucina <mato@kotelna.sk>, linux-kernel@vger.kernel.org
-In-Reply-To: <486BC6F7.2090709@fastmq.com>
-References: <20080628121131.GA14181@nodbug.moloch.sk>
-	 <48663873.5010200@gmail.com> <486921AD.8060308@fastmq.com>
-	 <48692DC0.6060904@gmail.com> <486BB14D.5060609@fastmq.com>
-	 <x49abh0p2y1.fsf@segfault.boston.devel.redhat.com>
-	 <486BC6F7.2090709@fastmq.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 03 Jul 2008 23:16:24 -0400
-Message-Id: <1215141384.2284.4.camel@lap75545.ornl.gov>
+	Thu, 3 Jul 2008 23:40:38 -0400
+Date: Fri, 04 Jul 2008 12:40:38 +0900 (JST)
+Message-Id: <20080704.124038.193696173.ryov@valinux.co.jp>
+To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Cc: agk@sourceware.org
+Subject: [PATCH 0/2] dm-ioband: I/O bandwidth controller v1.2.0:
+ Introduction
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi everyone,
 
-On Wed, 2008-07-02 at 20:20 +0200, Martin Sustrik wrote:
-> We are using librt, queueing 10240 writes, 512 bytes each.
-> 
-> We'll retry with libaio. Thanks for advice.
+This is the dm-ioband version 1.2.0 release.
 
-I've gotten good results going direct to the Linux AIO calls, but before
-you go too far from your existing code base, are you using a single file
-descriptor with the librt aio_*() routines? If so, that may be part of
-your problem, as the library will serialize requests to the same fd. I
-just pre-dup()'d the descriptor for each of the (max 32) requests I'd
-have in flight for a toy stress-tester I wrote. With 10240 requests,
-that may be a bit excessive, but it'd point out if that was part of the
-problem fairly quickly.
+Dm-ioband is an I/O bandwidth controller implemented as a device-mapper
+driver, which gives specified bandwidth to each job running on the same
+physical device.
+
+- Can be applied to the kernel 2.6.26-rc5-mm3.
+- Changes from 1.1.0 (posted on June 2, 2008):
+  - Dynamic policy switching
+    A user can change the bandwidth control policy while the dm-ioband
+    device is active. It is useful when the dm-ioband device is used
+    as a root device.
+  - I/O smoothing take #1
+    This feature makes I/O requests of each group issued smoothly.
+    Once a certain group has used up its tokens, all I/O requests to
+    the group will be blocked until all the other groups used up theirs.
+    This feature is to minimize this blocking time.
+    We are now testing on the 2nd step and we will release it soon,
+    which will improve the smoothness significantly.
+  - Replace simple_strtol() with strict_strtol().
+  - Fix I/O errors encountered after "dmsetup resume."
+
+Thanks,
+Ryo Tsuruta
+Linux Block I/O Bandwidth Control Project
+http://people.valinux.co.jp/~ryov/bwctl/
