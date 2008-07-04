@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbYGDQLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756238AbYGDQV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757931AbYGDQLe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 12:11:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757017AbYGDQLX
+	id S1756238AbYGDQV4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 12:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbYGDQVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 12:11:23 -0400
-Received: from main.gmane.org ([80.91.229.2]:47087 "EHLO ciao.gmane.org"
+	Fri, 4 Jul 2008 12:21:44 -0400
+Received: from ns2.suse.de ([195.135.220.15]:55619 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757004AbYGDQLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 12:11:23 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH] PalmTX initial support
-Date: Fri, 4 Jul 2008 16:11:10 +0000 (UTC)
-Message-ID: <g4li2u$l3c$1@ger.gmane.org>
-References: <200807022232.47294.marek.vasut@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: iap-pxy-mow1.siemens.ru
-User-Agent: Pan/0.132 (Waxed in Black)
-Cc: linux-arm-kernel@lists.arm.linux.org.uk
+	id S1752924AbYGDQVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 12:21:43 -0400
+Date: Fri, 4 Jul 2008 09:12:00 -0700
+From: Greg KH <gregkh@suse.de>
+To: Tejun Heo <htejun@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>,
+       Benjamin Thery <benjamin.thery@bull.net>, netdev@vger.kernel.org
+Subject: Re: [PATCH 12/15] driver core: Implement tagged directory support
+	for device classes.
+Message-ID: <20080704161200.GA1440@suse.de>
+References: <m18wwiihbn.fsf_-_@frodo.ebiederm.org> <m14p76ih9a.fsf_-_@frodo.ebiederm.org> <m1zloyh2mb.fsf_-_@frodo.ebiederm.org> <m1vdzmh2jr.fsf_-_@frodo.ebiederm.org> <m1r6aah2hh.fsf_-_@frodo.ebiederm.org> <m1mykyh2fu.fsf_-_@frodo.ebiederm.org> <m1hcb6h2d2.fsf_-_@frodo.ebiederm.org> <486DD650.3000804@gmail.com> <m1tzf593ny.fsf@frodo.ebiederm.org> <486E2C3B.6020603@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <486E2C3B.6020603@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marek Vašut wrote:
-
-> Hi,
-> the following patch adds initial support for PalmTX handheld computer.
-> It originates from HnD kernel tree (www.hackndev.com), then I pushed it
-> to handhelds.org and now I'd like it to be applied mainline.
+On Fri, Jul 04, 2008 at 10:57:15PM +0900, Tejun Heo wrote:
+> Hello, Eric.
 > 
-> PalmTX is pxa27x based handheld computer.
+> Eric W. Biederman wrote:
+> > Thank you for your opinion.
+> > 
+> > Incremental patches to make things more beautiful are welcome.
+> > 
+> > Please remember we are not building lisp.  The goal is code that works today.
+> > 
+> > Since we are not talking about correctness of the code.  Since we are not
+> > talking about interfaces with user space.  Since we are talking something
+> > that is currently about 100 lines of code, and so will be easy to change
+> > even after it is merged.   I don't understand how discussing this further
+> > is useful.  Especially when I get a NAK  based on the feel that the code
+> > is ugly.
 > 
-> Currently supported - mmc, gpio keys, pxa matrix keypad, irda,
-> framebuffer, ac97 port (for touchscreen).
+> I'm sorry if I gave you the impression of being draconian.  Explanations
+> below.
 > 
-> Signed-off-by: Marek Vasut <marek.vasut@gmail.com>
+> > As for your main objection.  Adding a accessor method to an object versus
+> > adding a data field that contain the same thing.  The two are effectively
+> > identical.  With the practical difference in my eyes that an accessor method
+> > prevents data duplication which reduces maintenance and reduces skew problems,
+> > and it keeps the size of struct kobject small.  Since you think methods are
+> > horrible I must respectfully disagree with you.
+> 
+> Yeah, it seems we should agree to disagree here.  I think using callback
+> for static values is a really bad idea.  It obfuscates the code and
+> opens up a big hole for awful misuses.  Greg, what do you think?
 
-Please consider switching ac97 driver to ASoC-based one.
+Sorry, Greg is walking out the door in 30 minutes for a much needed week
+long vacation and can't look into this right now :(
 
--- 
-With best wishes
-Dmitry
+I'll be able to review it next weekend, sorry for the delay.
 
-
+greg k-h
