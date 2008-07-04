@@ -1,137 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866AbYGDO52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbYGDO5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756866AbYGDO52 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 10:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755142AbYGDO5Q
+	id S1759784AbYGDO5n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 10:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758992AbYGDO5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 10:57:16 -0400
-Received: from qb-out-0506.google.com ([72.14.204.227]:16543 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753745AbYGDO5P (ORCPT
+	Fri, 4 Jul 2008 10:57:24 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39888 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758483AbYGDO5W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 10:57:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=H+9LJxuDESEj4BDEzKGInkT1vWWHeEKbDFfF83LJIhSwS1EL7GlsATxIrGFQcwrH31
-         3tbgn3uN0FpCNOhPilk2RZBuZcbPPGaNjQJOpvojZ9IJp672pfoBDDdU/Rf6HHX4vVvh
-         Hd0up402kKFPieW08qPdpinvGzVaP2yDfz32I=
-Message-ID: <486E3A46.4000206@gmail.com>
-Date: Fri, 04 Jul 2008 16:57:10 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: Tomas Smetana <t.smetana@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fs/proc: Per thread I/O accounting
-References: <20080629160446.07eef194@saiph.smetana.name>
-In-Reply-To: <20080629160446.07eef194@saiph.smetana.name>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+	Fri, 4 Jul 2008 10:57:22 -0400
+Date: Fri, 4 Jul 2008 15:38:22 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       David Miller <davem@davemloft.net>, tytso@mit.edu, hugh@veritas.com,
+       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+Message-ID: <20080704153822.4db2f325@lxorguk.ukuu.org.uk>
+In-Reply-To: <486E2E9B.20200@garzik.org>
+References: <1215093175.10393.567.camel@pmac.infradead.org>
+	<20080703173040.GB30506@mit.edu>
+	<1215111362.10393.651.camel@pmac.infradead.org>
+	<20080703.162120.206258339.davem@davemloft.net>
+	<486D6DDB.4010205@infradead.org>
+	<87ej6armez.fsf@basil.nowhere.org>
+	<1215177044.10393.743.camel@pmac.infradead.org>
+	<486E2260.5050503@garzik.org>
+	<1215178035.10393.763.camel@pmac.infradead.org>
+	<486E2818.1060003@garzik.org>
+	<1215179161.10393.773.camel@pmac.infradead.org>
+	<486E2E9B.20200@garzik.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomas Smetana wrote:
-> Hello,
->   here's an attempt to fix the bug #10702: The /proc/#/io doesn't aggregate
-> I/O statistics of all the process' threads -- just the main one. The patch
-> fixes this and also adds /proc/#/task/#/io file for per-thread accounting
-> which should make I/O accounting consistent with CPU stats.
+On Fri, 04 Jul 2008 10:07:23 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
+
+> David Woodhouse wrote:
+> > On Fri, 2008-07-04 at 09:39 -0400, Jeff Garzik wrote:
+> >> You have been told repeatedly that cp(1) and scp(1) are commonly used
+> >> to transport the module David and I care about -- tg3.  It's been a
+> >> single file module since birth, and people take advantage of that
+> >> fact.
+> > 
+> > And you can _continue_ to do that. You'd need to install the firmware
+> > just once, and that's all. It's a non-issue, and it isn't _worth_ the
+> > added complexity of building the firmware into the module.
 > 
-> Reference: http://bugzilla.kernel.org/show_bug.cgi?id=10702
-> 
-> Please cc: me in the answers.
+> We can stop there.  Real-world examples are apparently non-issues not 
+> worth your time.
 
-Hi Tomas,
+Jeff - real world issues and gains are measured on a scale across the
+userbase not "Jeff's having a tantrum because his specific usage case
+requires one extra copy once"
 
-have a look at distinct-tgid-tid-i-o-statistics.patch in -mm (also
-available here http://lwn.net/Articles/283937/).
+And we had the same argument over ten years ago about those evil module
+things which stopped you just using scp to copy the kernel in one go.
+Fortunately the nay sayers lost so we have modules.
 
-Your patch seems ok (except the rcu locking, see below), but it doesn't
-account the i/o activity of a task if it creates a lot of short-lived
-children doing i/o.
-
-> 
-> 
-> Signed-off-by: Tomas Smetana <t.smetana@gmail.com>
-> ---
->  fs/proc/base.c |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 48 insertions(+), 0 deletions(-)
-> 
-> diff --git a/fs/proc/base.c b/fs/proc/base.c
-> index 3b45537..5437ae3 100644
-> --- a/fs/proc/base.c
-> +++ b/fs/proc/base.c
-> @@ -2377,6 +2377,51 @@ static int proc_base_fill_cache(struct file *filp, void *dirent,
->  #ifdef CONFIG_TASK_IO_ACCOUNTING
->  static int proc_pid_io_accounting(struct task_struct *task, char *buffer)
->  {
-> +#ifdef CONFIG_TASK_XACCT
-> +	unsigned long long rchar = 0, wchar = 0;
-> +	unsigned long long syscr = 0, syscw = 0;
-> +#endif
-> +	unsigned long long read_bytes = 0, write_bytes = 0;
-> +	unsigned long long cancelled_write_bytes = 0;
-> +	struct task_struct *t = task;
-> +
-
-rcu_read_lock();
-
-> +	do {
-> +#ifdef CONFIG_TASK_XACCT
-> +		rchar += (unsigned long long)t->rchar;
-> +		wchar += (unsigned long long)t->wchar;
-> +		syscr += (unsigned long long)t->syscr;
-> +		syscw += (unsigned long long)t->syscw;
-> +#endif
-> +		read_bytes += (unsigned long long)t->ioac.read_bytes;
-> +		write_bytes += (unsigned long long)t->ioac.write_bytes;
-> +		cancelled_write_bytes +=
-> +		    (unsigned long long)t->ioac.cancelled_write_bytes;
-> +		t = next_thread(t);
-> +	} while (t != task);
-
-rcu_read_unlock();
-
-> +
-> +	return sprintf(buffer,
-> +#ifdef CONFIG_TASK_XACCT
-> +			"rchar: %llu\n"
-> +			"wchar: %llu\n"
-> +			"syscr: %llu\n"
-> +			"syscw: %llu\n"
-> +#endif
-> +			"read_bytes: %llu\n"
-> +			"write_bytes: %llu\n"
-> +			"cancelled_write_bytes: %llu\n",
-> +#ifdef CONFIG_TASK_XACCT
-> +			rchar,
-> +			wchar,
-> +			syscr,
-> +			syscw,
-> +#endif
-> +			read_bytes,
-> +			write_bytes,
-> +			cancelled_write_bytes);
-> +}
-> +
-> +static int proc_tid_io_accounting(struct task_struct *task, char *buffer)
-> +{
->  	return sprintf(buffer,
->  #ifdef CONFIG_TASK_XACCT
->  			"rchar: %llu\n"
-> @@ -2796,6 +2841,9 @@ static const struct pid_entry tid_base_stuff[] = {
->  #ifdef CONFIG_FAULT_INJECTION
->  	REG("make-it-fail", S_IRUGO|S_IWUSR, fault_inject),
->  #endif
-> +#ifdef CONFIG_TASK_IO_ACCOUNTING
-> +	INF("io",	S_IRUGO, tid_io_accounting)
-> +#endif
->  };
->  
->  static int proc_tid_base_readdir(struct file * filp,
-
--Andrea
+Alan
