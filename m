@@ -1,120 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756967AbYGDAZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbYGDAaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756967AbYGDAZt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 20:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbYGDAZh
+	id S1757259AbYGDAaB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 20:30:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbYGDA3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 20:25:37 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44511 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753794AbYGDAZg (ORCPT
+	Thu, 3 Jul 2008 20:29:53 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58793 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753665AbYGDA3w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 20:25:36 -0400
-Message-ID: <486D6DDB.4010205@infradead.org>
-Date: Fri, 04 Jul 2008 01:24:59 +0100
-From: David Woodhouse <dwmw2@infradead.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: tytso@mit.edu, jeff@garzik.org, hugh@veritas.com,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-References: <1215093175.10393.567.camel@pmac.infradead.org>	<20080703173040.GB30506@mit.edu>	<1215111362.10393.651.camel@pmac.infradead.org> <20080703.162120.206258339.davem@davemloft.net>
-In-Reply-To: <20080703.162120.206258339.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 3 Jul 2008 20:29:52 -0400
+Date: Fri, 4 Jul 2008 09:34:16 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Libcg Devel Mailing List <libcg-devel@lists.sourceforge.net>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Paul Menage <menage@google.com>, Peter Zijlstra <pzijlstr@redhat.com>,
+       Kazunaga Ikeno <k-ikeno@ak.jp.nec.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Graf <tgraf@redhat.com>, Rik Van Riel <riel@redhat.com>
+Subject: Re: [RFC] How to handle the rules engine for cgroups
+Message-Id: <20080704093416.ed3d1951.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080703155446.GB9275@redhat.com>
+References: <20080701191126.GA17376@redhat.com>
+	<20080703101957.b3856904.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080703155446.GB9275@redhat.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: David Woodhouse <dwmw2@infradead.org>
-> Date: Thu, 03 Jul 2008 19:56:02 +0100
+On Thu, 3 Jul 2008 11:54:46 -0400
+Vivek Goyal <vgoyal@redhat.com> wrote:
+
+> On Thu, Jul 03, 2008 at 10:19:57AM +0900, KAMEZAWA Hiroyuki wrote:
+> > On Tue, 1 Jul 2008 15:11:26 -0400
+> > Vivek Goyal <vgoyal@redhat.com> wrote:
+> > > - How to handle delays in rule exectuion?
+> > > 	- For example, if an "exec" happens and by the time process is moved to
+> > > 	 right group, it might have forked off few more processes or might
+> > > 	 have done quite some amount of memory allocation which will be
+> > >    	 charged to the wring group. Or, newly exec process might get
+> > >  	 killed in existing cgroup because of lack of memory (despite the
+> > > 	 fact that destination cgroup has sufficient memory).
+> > > 
+> > Hmm, can't we rework the process event connector to use some reliable
+> > fast interface besides netlink ? (I mean an interface like eventpoll.)
+> > (Or enhance netlink ? ;)
 > 
->> It's wrong to change the CONFIG_FIRMWARE_IN_KERNEL default to 'Y',
->> because the _normal_ setting for that option _really_ should be 'N'.
+> I see following text in netlink man page.
 > 
-> On what basis?  From a "obviously works" basis, the default should be
-> 'y'.
-
-I already changed it to 'y'.
-
->> What we're doing now is just cleaning up the older drivers which don't
->> use request_firmware(), to conform to what is now common practice.
+> "However, reliable transmissions from kernel to user are impossible in
+>  any case. The kernel can’t send a netlink message if the socket buffer
+>  is full: the message will be dropped and the kernel and  the userspace
+>  process will no longer have the same view of kernel state. It is up to
+>  the application to detect when this  happens  (via  the  ENOBUFS error
+>  returned by recvmsg(2)) and resynchronize."
 > 
-> You say "conform" I say "break".
-
-You mean...
-	"What we're doing now is just cleaning up the older drivers
-	 which don't use request_firmware(), to break to what is now
-	 common practice."
-?
-
-Doesn't really scan, does it?
-
-Common practice in modern Linux drivers is to use request_firmware(). 
-I'm just going through and fixing up the older ones to do that too.
-
-(After making it possible to build that firmware _into_ the kernel so 
-that we aren't forcing people to use an initrd where they didn't before, 
-of course.)
-
-The word for that is definitely 'conform'. I know you don't _like_ the 
-modern accepted practice, but that's _your_ windmill to tilt at. I have 
-my own :)
-
->> In the meantime, it would be useful if Jeff would quit throwing his toys
->> out of the pram on that issue and actually review the _code_ changes. In
->> particular, are the reports correct that the device operates just fine
->> without the TSO firmware loaded? Should we change the request_firmware()
->> error path to just disable TSO and continue with the initialisation?
+> So at the end of the day, it looks like unreliability comes from the
+> fact that we can not allocate memory currently so we will discard the
+> packet.
 > 
-> No!
+> Are there alternatives as compared to dropping packets?
 > 
-> The 5701 A0 firmware is necessary to load in order to work around
-> hardware and existing firmware bugs on those cards.  It's an issue of
-> basic functionality, not just optimizations.
+If it's just problem of memory allocation, preallocate socket buffer and
+use it later, like radix_tree_preload().
+==
+   foo() {
+	if (preallocate())
+		return -ENOBUFS;
+
+	.......
+	proc_xxxx_connector();
+   }
+==
+(this means setuid() will return -ENOBUFS, undocumented error code.)
+
+But af_netlink layer have another cause of dropping packets
+ 1. copying skb at broadcast.
+ 2. recv buffer over run..
+
+(2) is not avoidable in the kernel. 
+
+
+> - Let sender cache the packet and retry later. So maybe netlink layer
+>   can return error if packet can not be queued and connector can cache the
+>   event and try sending it later. (Hopefully later memory situation became
+>   better because of OOM or some process exited or something else...).
 > 
-> 5701 A0 tg3 chips cannot operate at all without the firmware being
-> present in the driver.
+>   This looks like a band-aid to handle the temporary congestion kind of
+>   problems. Will not be able to help if consumer is inherently slow and
+>   event generation is faster.
 > 
-> Therefore, if you can't load the firmware, the card is not going to
-> work.
+> This probably can be one possible enhancement to connector, but at the end
+> of the day, any kind of user space daemon will have to accept the fact
+> that packets can be dropped, leading to lost events. Detect that situation
+> (using ENOBUFS) and then let admin know about it (logging). I am not sure
+> what admin is supposed to do after that.
+> 
+I'm not either ;)
 
-Neat avoidance of question there... it was fairly clear that the 5701_A0 
-firmware was going to be mandatory; I was asking about the TSO firmware.
+> I am CCing Thomas Graf. He might have a better idea of netlink limitations
+> and is there a way to overcome these.
+> 
+> > 
+> > Because "a child inherits parent's" rule is very strong, I think the amount
+> > of events we have to check is much less than we get report. Can't we add some
+> > filter/assumption here ?
+> > 
+> 
+> I am not sure if proc connector currently allows filtering of various
+> events like fork, exec, exit etc. In a quick look it looks like it
+> does not. But probably that can be worked out. Even then, it will just
+> help reduce the number of messages queued for user space on that socket
+> but will not take away the fact that messages can be dropped under
+> memory pressure. 
+> 
+agreed.
 
-Does anyone _else_ actually want to give a straight answer to a simple 
-question? Someone who wouldn't have to follow it with an apology because 
-of all their shouting about 'breakage' when the firmware in question is 
-actually optional anyway, perhaps?
+> > BTW, the placement of proc_exec_connector() is not too late ? It seems memory for
+> > creating exec-image is charged to original group...
+> > 
+> 
+> As of today it should happen because newly execed process will run into
+> same cgroup as parent.  But that's what probably we need to avoid.
+I think so. 
 
+> For example, if an admin has created three cgroups "database", "browser"
+> "others" and a user launches "firefox" from shell (assuming shell is running
+> originally in "others" cgroup), then any memory allocation for firefox should
+> come from "browser" cgroup and not from "others".
+> 
+yes.
 
- > If it was purely technical, you wouldn't be choosing defaults that
- > break things for users by default.
+> I am assuming that this will be a requirement for enterprise class
+> systems. Would be good to know the experiences of people who are already
+> doing some kind of work load management.
+> 
 
-Actually, the beauty of Linux is that we _can_ change things where a 
-minor short-term inconvenience leads to a better situation in the long term.
+Thanks,
+-Kame
 
- > Jeff and I warned you about this from day one, you did not listen, and
- > now we have at least 10 reports just today of people with broken
- > networking.
+> Thanks
+> Vivek
+> 
 
-Out of interest... of those, what proportion would be 'fixed' if they'd 
-just paid attention when running 'make oldconfig', which is now 
-addressed because I've changed the FIRMWARE_IN_KERNEL default to 'y'?
-
-And how many would be 'fixed' if someone had given me a straight answer 
-when I asked about the TSO firmware, and that failure path no longer 
-aborted the driver initialisation but instead just fell back to non-TSO?
-
-I'll look at making the requirement for 'make firmware_install' more 
-obvious, or even making it happen automatically as part of 
-'modules_install'.
-
--- 
-dwmw2
