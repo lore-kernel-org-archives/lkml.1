@@ -1,48 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbYGDKu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbYGDKvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbYGDKu5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 06:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbYGDKut
+	id S1756255AbYGDKvi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 06:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbYGDKva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 06:50:49 -0400
-Received: from sacred.ru ([62.205.161.221]:41626 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751630AbYGDKus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 06:50:48 -0400
-Message-ID: <486DFCF7.3010104@openvz.org>
-Date: Fri, 04 Jul 2008 14:35:35 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "menage@google.com" <menage@google.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
-Subject: Re: [PATCH 2/2] memcg: check limit change
-References: <20080704181204.44070413.kamezawa.hiroyu@jp.fujitsu.com> <20080704181606.4e9187e7.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080704181606.4e9187e7.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 04 Jul 2008 14:37:59 +0400 (MSD)
+	Fri, 4 Jul 2008 06:51:30 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:57115 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751630AbYGDKv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 06:51:29 -0400
+Date: Fri, 4 Jul 2008 12:51:20 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Stable branch <stable@kernel.org>
+Subject: [PATCH] mmc: don't use DMA on newer ENE controllers
+Message-ID: <20080704125120.6ccaadf5@mjolnir.drzeus.cx>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-28411-1215168003-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> Shrinking memory usage at limit change.
-> 
-> Changelog: v1 -> v2
->   - adjusted to be based on write_string() patch set
->   fixed pointed out styles (below)
->   - removed backword goto.
->   - removed unneccesary cond_resched().
-> 
-> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Acked-by: Pavel Emelyanov <xemul@openvz.org>
+--=_freyr.drzeus.cx-28411-1215168003-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+From: Pierre Ossman <drzeus@drzeus.cx>
+
+Even the newer ENE controllers have bugs in their DMA engine that make
+it too dangerous to use. Disable it until someone has figured out under
+which conditions it corrupts data.
+
+This has caused problems at least once, and can be found as bug report
+10925 in the kernel bugzilla.
+
+Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+
+--=20
+
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 07c2048..116abf2 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -115,7 +115,8 @@ static const struct pci_device_id pci_ids[] __devinitda=
+ta =3D {
+ 		.subvendor      =3D PCI_ANY_ID,
+ 		.subdevice      =3D PCI_ANY_ID,
+ 		.driver_data    =3D SDHCI_QUIRK_SINGLE_POWER_WRITE |
+-				  SDHCI_QUIRK_RESET_CMD_DATA_ON_IOS,
++				  SDHCI_QUIRK_RESET_CMD_DATA_ON_IOS |
++				  SDHCI_QUIRK_BROKEN_DMA,
+ 	},
+=20
+ 	{
+@@ -124,7 +125,8 @@ static const struct pci_device_id pci_ids[] __devinitda=
+ta =3D {
+ 		.subvendor      =3D PCI_ANY_ID,
+ 		.subdevice      =3D PCI_ANY_ID,
+ 		.driver_data    =3D SDHCI_QUIRK_SINGLE_POWER_WRITE |
+-				  SDHCI_QUIRK_RESET_CMD_DATA_ON_IOS,
++				  SDHCI_QUIRK_RESET_CMD_DATA_ON_IOS |
++				  SDHCI_QUIRK_BROKEN_DMA,
+ 	},
+=20
+ 	{
+
+--=20
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-28411-1215168003-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkhuAK4ACgkQ7b8eESbyJLgRIwCfWJuuCWdLBUYl8m0gqAS+6akP
+FlsAn2FZCI60Be09mRkf8XXfIKvL7cVL
+=Aov5
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-28411-1215168003-0001-2--
