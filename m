@@ -1,98 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbYGDWB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755696AbYGDWDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753451AbYGDWB4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 18:01:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbYGDWBn
+	id S1755696AbYGDWDV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 18:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbYGDWDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 18:01:43 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:40087 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752445AbYGDWBm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 18:01:42 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Tejun Heo <htejun@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>,
-       Benjamin Thery <benjamin.thery@bull.net>, netdev@vger.kernel.org
-References: <20080618170729.808539948@theryb.frec.bull.fr>
-	<m1hcb7o8lv.fsf@frodo.ebiederm.org> <486CB051.5000507@fr.ibm.com>
-	<m14p77m9uy.fsf@frodo.ebiederm.org> <486CF71F.5090405@gmail.com>
-	<m1y74iiidz.fsf_-_@frodo.ebiederm.org>
-	<m1tzf6ihlz.fsf_-_@frodo.ebiederm.org>
-	<m1prpuihjb.fsf_-_@frodo.ebiederm.org>
-	<m1lk0iihhp.fsf_-_@frodo.ebiederm.org>
-	<m1hcb6ihfz.fsf_-_@frodo.ebiederm.org>
-	<m1d4luihea.fsf_-_@frodo.ebiederm.org>
-	<m18wwiihbn.fsf_-_@frodo.ebiederm.org>
-	<m14p76ih9a.fsf_-_@frodo.ebiederm.org>
-	<m1zloyh2mb.fsf_-_@frodo.ebiederm.org>
-	<m1vdzmh2jr.fsf_-_@frodo.ebiederm.org>
-	<m1r6aah2hh.fsf_-_@frodo.ebiederm.org>
-	<m1mykyh2fu.fsf_-_@frodo.ebiederm.org>
-	<m1hcb6h2d2.fsf_-_@frodo.ebiederm.org> <486DD650.3000804@gmail.com>
-	<m1tzf593ny.fsf@frodo.ebiederm.org> <486E2C3B.6020603@gmail.com>
-Date: Fri, 04 Jul 2008 15:00:36 -0700
-In-Reply-To: <486E2C3B.6020603@gmail.com> (Tejun Heo's message of "Fri, 04 Jul
-	2008 22:57:15 +0900")
-Message-ID: <m1od5d71iz.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Tejun Heo <htejun@gmail.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0002]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 12/15] driver core: Implement tagged directory support for device classes.
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+	Fri, 4 Jul 2008 18:03:13 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:60960 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752145AbYGDWDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 18:03:12 -0400
+Date: Sat, 5 Jul 2008 00:02:59 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: How to alloc highmem page below 4GB on i386?
+Message-ID: <20080705000259.3d74c5b6@mjolnir.drzeus.cx>
+In-Reply-To: <20080704133733.278b6458@infradead.org>
+References: <20080630200323.2a5992cd@mjolnir.drzeus.cx>
+	<20080704195800.4ef6e00a@mjolnir.drzeus.cx>
+	<20080704111224.68266afc@infradead.org>
+	<20080704222323.68afbe88@mjolnir.drzeus.cx>
+	<20080704133733.278b6458@infradead.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-3737-1215208990-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <htejun@gmail.com> writes:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> Yeah, it seems we should agree to disagree here.  I think using callback
-> for static values is a really bad idea.  It obfuscates the code and
-> opens up a big hole for awful misuses.  Greg, what do you think?
+--=_freyr.drzeus.cx-3737-1215208990-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-The misuse argument is small because currently all users must be compiled
-into the kernel and must add to the static enumeration.  I'm afraid we
-are making the facility over general for the problem at hand.
+On Fri, 4 Jul 2008 13:37:33 -0700
+Arjan van de Ven <arjan@infradead.org> wrote:
 
-> As we're very close to rc1 window, I think we can work out a solution
-> here.  The reason why I nack'd was because the change wouldn't take too
-> much effort and I thought it could be done before -rc1.  Unless you
-> disagree with making tags static values, I'll try to write up a patch to
-> do so.  If you (and Greg) think the callback interface is better, we can
-> merge the code as-is and update (or not) later.
+> On Fri, 4 Jul 2008 22:23:23 +0200
+> Pierre Ossman <drzeus-list@drzeus.cx> wrote:
+> >=20
+> > I was under the impression that the PCI bus was utterly incapable of
+> > any larger address than 32 bits? But perhaps you only consider PCIE
+> > stuff high-perf. :)
+>=20
+> actually your impression is not correct. There's a difference between
+> how many physical bits the bus has, and the logical data. Specifically,
+> PCI (and PCIE etc) have something that's called "Dual Address Cycle",
+> which is a pci bus transaction that sends the 64 bit address using 2
+> cycles on the bus even if the buswidth is 32 bit (logically).
+>=20
 
-Making a change and pushing down into the patches is much more time intensive
-then I would like.  The last round of changes simple as they were took something
-between 16 and 30 hours, and has left me sapped.  Keeping all of the other
-pieces in flight in all of the other patches so I can't just focus on the
-change at hand is what makes it difficult at this point.
+Ah, I see. I have to admit to only have read the PCI spec briefly. :)
 
-Adding an additional patch on top isn't too bad, but my creativity is sapped on
-this right now.  I agree that a function called device_rename isn't the best
-possible name when we are changing tags, but I can't think of anything that
-seems better.
+Still, the devices I'm poking have 32-bit fields, so the limitation is
+still there for my case.
 
-I know in the users that the tags are already quite static and that I call
-kobject_rename in the one case where they change (which is a significant
-exception).  So that part doesn't concern me as I have not intention of using
-the interface like that.  Ultimately I don't care as long as we have code
-that works.
+> >=20
+> > The strange thing is that I keep getting pages from > 4GB all the
+> > time, even on a loaded system. I would have expected mostly getting
+> > pages below that limit as that's where most of the memory is. Do you
+> > have any insight into which areas tend to fill up first?
+>=20
+> ok this is tricky and goes way deep into buddy allocator internals.
+> On the highest level (2Mb chunks iirc, but it could be a bit or
+> two bigger now) we allocate top down. But once we split such a top level
+> chunk up, inside the chunk we allocate bottom up (so that the scatter
+> gather IOs tend to group nicer).=20
+> In addition, the kernel will prefer allocating userspace/pagecache
+> memory from highmem over lowmem, out of an effort to keep memory
+> pressure in the lowmem zones lower.
+>=20
 
-Eric
+For the test I'm playing with, in does a second order allocation, which
+I suppose has good odds of finding a suitable hole somewhere in the
+upper GB.
+
+Ah well, I suppose this highmem business will eventually blow over. ;)
+
+Thanks
+--=20
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-3737-1215208990-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkhunh0ACgkQ7b8eESbyJLgPZwCggF4dNRT2eN/UDdaS3/eDoX0p
+7/sAoIZW22+C4/Ewm64CFDQWwCbZqmAI
+=WkXH
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-3737-1215208990-0001-2--
