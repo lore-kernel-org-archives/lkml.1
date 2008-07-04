@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbYGDBXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758554AbYGDBWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754938AbYGDBXQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jul 2008 21:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756323AbYGDBV6
+	id S1758554AbYGDBWv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jul 2008 21:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755738AbYGDBVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jul 2008 21:21:58 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:57974 "EHLO
+	Thu, 3 Jul 2008 21:21:55 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:57962 "EHLO
 	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754935AbYGDBVv (ORCPT
+	with ESMTP id S1754699AbYGDBVt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jul 2008 21:21:51 -0400
+	Thu, 3 Jul 2008 21:21:49 -0400
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: Greg Kroah-Hartman <gregkh@suse.de>,
        Andrew Morton <akpm@linux-foundation.org>
@@ -18,25 +18,23 @@ Cc: Tejun Heo <htejun@gmail.com>, Daniel Lezcano <dlezcano@fr.ibm.com>,
        Linux Containers <containers@lists.osdl.org>,
        Benjamin Thery <benjamin.thery@bull.net>, <netdev@vger.kernel.org>
 References: <20080618170729.808539948@theryb.frec.bull.fr>
-	<486AF4FA.8020805@gmail.com> <m1ej6d9c2r.fsf@frodo.ebiederm.org>
-	<486B060C.7030607@gmail.com> <m14p78s02q.fsf@frodo.ebiederm.org>
-	<486C4515.1070007@gmail.com> <m1hcb7o8lv.fsf@frodo.ebiederm.org>
-	<486CB051.5000507@fr.ibm.com> <m14p77m9uy.fsf@frodo.ebiederm.org>
-	<486CF71F.5090405@gmail.com> <m1y74iiidz.fsf_-_@frodo.ebiederm.org>
+	<m18wwmsqdv.fsf@frodo.ebiederm.org> <4869D314.5030403@gmail.com>
+	<m1ej6enep7.fsf@frodo.ebiederm.org> <486A0751.9080602@gmail.com>
+	<m1wsk5hjm0.fsf@frodo.ebiederm.org> <486AF4FA.8020805@gmail.com>
+	<m1ej6d9c2r.fsf@frodo.ebiederm.org> <486B060C.7030607@gmail.com>
+	<m14p78s02q.fsf@frodo.ebiederm.org> <486C4515.1070007@gmail.com>
+	<m1hcb7o8lv.fsf@frodo.ebiederm.org> <486CB051.5000507@fr.ibm.com>
+	<m14p77m9uy.fsf@frodo.ebiederm.org> <486CF71F.5090405@gmail.com>
+	<m1y74iiidz.fsf_-_@frodo.ebiederm.org>
 	<m1tzf6ihlz.fsf_-_@frodo.ebiederm.org>
 	<m1prpuihjb.fsf_-_@frodo.ebiederm.org>
 	<m1lk0iihhp.fsf_-_@frodo.ebiederm.org>
 	<m1hcb6ihfz.fsf_-_@frodo.ebiederm.org>
 	<m1d4luihea.fsf_-_@frodo.ebiederm.org>
-	<m18wwiihbn.fsf_-_@frodo.ebiederm.org>
-	<m14p76ih9a.fsf_-_@frodo.ebiederm.org>
-	<m1zloyh2mb.fsf_-_@frodo.ebiederm.org>
-	<m1vdzmh2jr.fsf_-_@frodo.ebiederm.org>
-	<m1r6aah2hh.fsf_-_@frodo.ebiederm.org>
-Date: Thu, 03 Jul 2008 18:18:29 -0700
-In-Reply-To: <m1r6aah2hh.fsf_-_@frodo.ebiederm.org> (Eric W. Biederman's
-	message of "Thu, 03 Jul 2008 18:17:30 -0700")
-Message-ID: <m1mykyh2fu.fsf_-_@frodo.ebiederm.org>
+Date: Thu, 03 Jul 2008 18:11:40 -0700
+In-Reply-To: <m1d4luihea.fsf_-_@frodo.ebiederm.org> (Eric W. Biederman's
+	message of "Thu, 03 Jul 2008 18:10:05 -0700")
+Message-ID: <m18wwiihbn.fsf_-_@frodo.ebiederm.org>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -47,12 +45,12 @@ X-Spam-Combo: ;Greg Kroah-Hartman <gregkh@suse.de>, Andrew Morton
 	<akpm@linux-foundation.org>
 X-Spam-Relay-Country: 
 X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0033]
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.1135]
 	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
 	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
 	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: [PATCH 11/15] sysfs: Implement sysfs_delete_link and sysfs_rename_link
+Subject: [PATCH 06/15] Introduce sysfs_sd_setattr and fix sysfs_chmod
 X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
 X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -60,115 +58,109 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-When removing a symlink sysfs_remove_link does not provide
-enough information to figure out which tagged directory the symlink
-falls in.  So I need sysfs_delete_link which is passed the target
-of the symlink to delete.
+Currently sysfs_chmod calls sys_setattr which in turn calls
+inode_change_ok which checks to see if it is ok for the current user
+space process to change tha attributes. Since sysfs_chmod_file has
+only kernel mode clients denying them permission if user space is the
+problem is completely inappropriate.
 
-Further half the time when we are removing a symlink the code is
-actually renaming the symlink but not doing so explicitly because
-we don't have a symlink rename method. So I have added sysfs_rename_link
-as well.
+Therefore factor out sysfs_sd_setattr which does not call
+inode_change_ok and modify sysfs_chmod_file to call it.
 
-Both of these functions now have enough information to find a symlink
-in a tagged directory.  The only restriction is that they must be called
-before the target kobject is renamed or deleted.  If they are called
-later I loose track of which tag the target kobject was marked with
-and can no longer find the old symlink to remove it.
+In addition setting victim_sd->s_mode explicitly in sysfs_chmod_file
+is redundant so remove that as well.
+
+Thanks to Tejun Heo <htejun@gmail.com>, and
+Daniel Lezcano <dlezcano@fr.ibm.com> for working on this
+and spotting this case.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: Benjamin Thery <benjamin.thery@bull.net>
-Signed-off-by: Daniel Lezcano <dlezcano@fr.ibm.com>
-Acked-by: Tejun Heo <tj@kernel.org>
 ---
- fs/sysfs/symlink.c    |   31 +++++++++++++++++++++++++++++++
- include/linux/sysfs.h |   17 +++++++++++++++++
- 2 files changed, 48 insertions(+), 0 deletions(-)
+ fs/sysfs/file.c  |    5 +----
+ fs/sysfs/inode.c |   23 ++++++++++++++++-------
+ fs/sysfs/sysfs.h |    1 +
+ 3 files changed, 18 insertions(+), 11 deletions(-)
 
-diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
-index de9a5c0..ed9c52c 100644
---- a/fs/sysfs/symlink.c
-+++ b/fs/sysfs/symlink.c
-@@ -80,6 +80,21 @@ int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index cb5dd3f..1304b3a 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -600,13 +600,10 @@ int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
+ 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+ 	newattrs.ia_ctime = current_fs_time(inode->i_sb);
+-	rc = sysfs_setattr(victim, &newattrs);
++	rc = sysfs_sd_setattr(victim_sd, inode, &newattrs);
+ 
+ 	if (rc == 0) {
+ 		fsnotify_change(victim, newattrs.ia_valid);
+-		mutex_lock(&sysfs_mutex);
+-		victim_sd->s_mode = newattrs.ia_mode;
+-		mutex_unlock(&sysfs_mutex);
+ 	}
+ 
+ 	mutex_unlock(&inode->i_mutex);
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index eb53c63..80f8fd4 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -42,10 +42,9 @@ int __init sysfs_inode_init(void)
+ 	return bdi_init(&sysfs_backing_dev_info);
  }
  
- /**
-+ *	sysfs_delete_link - remove symlink in object's directory.
-+ *	@kobj:	object we're acting for.
-+ *	@targ:	object we're pointing to.
-+ *	@name:	name of the symlink to remove.
-+ *
-+ *	Unlike sysfs_remove_link sysfs_delete_link has enough information
-+ *	to successfully delete symlinks in tagged directories.
-+ */
-+void sysfs_delete_link(struct kobject *kobj, struct kobject *targ,
-+			const char *name)
-+{
-+	sysfs_hash_and_remove(targ, kobj->sd, name);
-+}
-+
-+/**
-  *	sysfs_remove_link - remove symlink in object's directory.
-  *	@kobj:	object we're acting for.
-  *	@name:	name of the symlink to remove.
-@@ -97,6 +112,22 @@ void sysfs_remove_link(struct kobject * kobj, const char * name)
- 	sysfs_hash_and_remove(kobj, parent_sd, name);
+-int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
++int sysfs_sd_setattr(struct sysfs_dirent *sd, struct inode *inode,
++			struct iattr * iattr)
+ {
+-	struct inode * inode = dentry->d_inode;
+-	struct sysfs_dirent * sd = dentry->d_fsdata;
+ 	struct iattr * sd_iattr;
+ 	unsigned int ia_valid = iattr->ia_valid;
+ 	int error;
+@@ -55,10 +54,6 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
+ 
+ 	sd_iattr = sd->s_iattr;
+ 
+-	error = inode_change_ok(inode, iattr);
+-	if (error)
+-		return error;
+-
+ 	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
+ 
+ 	error = inode_setattr(inode, iattr);
+@@ -104,6 +99,20 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
+ 	return error;
  }
  
-+/**
-+ *	sysfs_rename_link - rename symlink in object's directory.
-+ *	@kobj:	object we're acting for.
-+ *	@targ:	object we're pointing to.
-+ *	@old:	previous name of the symlink.
-+ *	@new:	new name of the symlink.
-+ *
-+ *	A helper function for the common rename symlink idiom.
-+ */
-+int sysfs_rename_link(struct kobject *kobj, struct kobject *targ,
-+			const char *old, const char *new)
++int sysfs_setattr(struct dentry *dentry, struct iattr *iattr)
 +{
-+	sysfs_delete_link(kobj, targ, old);
-+	return sysfs_create_link(kobj, targ, new);
++	struct inode * inode = dentry->d_inode;
++	struct sysfs_dirent * sd = dentry->d_fsdata;
++	int error;
++
++	error = inode_change_ok(inode, iattr);
++	if (error)
++		return error;
++
++	return sysfs_sd_setattr(sd, inode, iattr);
 +}
 +
- static int sysfs_get_target_path(struct sysfs_dirent *parent_sd,
- 				 struct sysfs_dirent *target_sd, char *path)
++
+ static inline void set_default_inode_attr(struct inode * inode, mode_t mode)
  {
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 8fa97f0..c3a30ce 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -112,6 +112,12 @@ int __must_check sysfs_create_link(struct kobject *kobj, struct kobject *target,
- 				   const char *name);
- void sysfs_remove_link(struct kobject *kobj, const char *name);
- 
-+int sysfs_rename_link(struct kobject *kobj, struct kobject *target,
-+			const char *old_name, const char *new_name);
-+
-+void sysfs_delete_link(struct kobject *dir, struct kobject *targ,
-+			const char *name);
-+
- int __must_check sysfs_create_group(struct kobject *kobj,
- 				    const struct attribute_group *grp);
- int sysfs_update_group(struct kobject *kobj,
-@@ -198,6 +204,17 @@ static inline void sysfs_remove_link(struct kobject *kobj, const char *name)
- {
- }
- 
-+static inline int sysfs_rename_link(struct kobject *k, struct kobject *t,
-+				    const char *old_name, const char *new_name)
-+{
-+	return 0;
-+}
-+
-+static inline void sysfs_delete_link(struct kobject *k, struct kobject *t,
-+				     const char *name)
-+{
-+}
-+
- static inline int sysfs_create_group(struct kobject *kobj,
- 				     const struct attribute_group *grp)
- {
+ 	inode->i_mode = mode;
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index b1bdc6e..5ee5d0a 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -154,6 +154,7 @@ static inline void sysfs_put(struct sysfs_dirent *sd)
+  * inode.c
+  */
+ struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
++int sysfs_sd_setattr(struct sysfs_dirent *sd, struct inode *inode, struct iattr *iattr);
+ int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
+ int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name);
+ int sysfs_inode_init(void);
 -- 
 1.5.3.rc6.17.g1911
 
