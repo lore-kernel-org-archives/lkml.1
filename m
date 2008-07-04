@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbYGDIMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbYGDI0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757233AbYGDIMK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 04:12:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753630AbYGDILf
+	id S1755491AbYGDI0p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 04:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbYGDI0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 04:11:35 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45971 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753036AbYGDILd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 04:11:33 -0400
-Message-ID: <486DDAF8.6050605@kernel.org>
-Date: Fri, 04 Jul 2008 17:10:32 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Zhang Rui <rui.zhang@intel.com>
-CC: linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC PATCH] AHCI: speed up resume
-References: <1215074882.3214.15.camel@rzhang-dt.sh.intel.com>	 <486D8F88.9000904@kernel.org> <1215149537.3068.18.camel@rzhang-dt.sh.intel.com>
-In-Reply-To: <1215149537.3068.18.camel@rzhang-dt.sh.intel.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 4 Jul 2008 04:26:36 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53864 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751082AbYGDI0f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 04:26:35 -0400
+Date: Fri, 4 Jul 2008 09:08:03 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: michael@ellerman.id.au
+Cc: benh@kernel.crashing.org, Matthew Wilcox <matthew@wil.cx>,
+       Arnd Bergmann <arnd@arndb.de>, linux-pci@vger.kernel.org,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>,
+       Dan Williams <dan.j.williams@intel.com>, Martine.Silbermann@hp.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Multiple MSI
+Message-ID: <20080704090803.545d52be@lxorguk.ukuu.org.uk>
+In-Reply-To: <1215136324.7849.9.camel@localhost>
+References: <20080703024445.GA14894@parisc-linux.org>
+	<1215060119.21182.77.camel@pasglop>
+	<1215067484.17950.35.camel@localhost>
+	<200807031110.30072.arnd@arndb.de>
+	<1215076620.19689.2.camel@pasglop>
+	<20080703113128.GC14894@parisc-linux.org>
+	<1215085266.19689.19.camel@pasglop>
+	<1215136324.7849.9.camel@localhost>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 04 Jul 2008 08:11:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zhang Rui wrote:
-> From: Zhang Rui <rui.zhang@intel.com>
-> 
-> During resume, sleep 1 second to wait for the HBA reset
-> to finish is a waste of time.
-> 
-> According to the AHCI 1.2 spec,
-> We should poll the HOST_CTL register,
-> and return error if the host reset is not
-> finished within 1 second.
-> 
-> Test results show that the HBA reset can be done quickly(in usecs).
-> And this patch may save nearly 1 second during resume.
-> 
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> In most cases that I can see the conversion from irq number to irq_desc
+> is done in the genirq code, so I don't see why you couldn't just put a
+> remapping in there from irq numbers to descs that doesn't use an array. 
+> But maybe I'm missing something.
 
-Acked-by: Tejun Heo <tj@kernel.org>
+There are a pile of drivers you would also need to fix up that use NR_IRQ
+sized tables. There is also the performance concern. The irq->desc
+conversion has to be very fast.
 
--- 
-tejun
+It would be better (IMHO) if dev->irq and irq in general was a pointer
+whose number for end users was irq->num or similar.
