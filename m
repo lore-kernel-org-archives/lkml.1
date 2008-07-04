@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYGDRiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756470AbYGDRld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbYGDRiV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 13:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbYGDRiN
+	id S1756470AbYGDRld (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 13:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbYGDRlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 13:38:13 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:40143 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750879AbYGDRiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 13:38:12 -0400
-Date: Fri, 4 Jul 2008 19:38:05 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Tomas Winkler <tomas.winkler@intel.com>
-Cc: linux-kernel@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>
-Subject: Re: [PATCH 3/3] mmc: fix sdio_io sparse errors
-Message-ID: <20080704193805.54ba8dde@mjolnir.drzeus.cx>
-In-Reply-To: <1214812224-32267-3-git-send-email-tomas.winkler@intel.com>
-References: <1214812224-32267-1-git-send-email-tomas.winkler@intel.com>
-	<1214812224-32267-2-git-send-email-tomas.winkler@intel.com>
-	<1214812224-32267-3-git-send-email-tomas.winkler@intel.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+	Fri, 4 Jul 2008 13:41:24 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:61768 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272AbYGDRlX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 13:41:23 -0400
+Subject: Re: [PATCH -rt] [resend as inlined patch]
+	{queue,schedule}_work_prio() allowing work priorities other than caller's
+	priority
+From: Daniel Walker <dwalker@mvista.com>
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>, leon@sidebranch.com
+In-Reply-To: <486E271E.705@sidebranch.com>
+References: <486E271E.705@sidebranch.com>
+Content-Type: text/plain
+Date: Fri, 04 Jul 2008 10:41:20 -0700
+Message-Id: <1215193280.9513.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-446-1215192403-0001-2"
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_freyr.drzeus.cx-446-1215192403-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2008-07-04 at 15:35 +0200, Leon Woestenberg wrote:
 
-On Mon, 30 Jun 2008 10:50:24 +0300
-Tomas Winkler <tomas.winkler@intel.com> wrote:
+> Index: linux-2.6.24/kernel/workqueue.c
+> ===================================================================
+> --- linux-2.6.24.orig/kernel/workqueue.c    2008-06-30 
+> 17:12:05.000000000 +0200
+> +++ linux-2.6.24/kernel/workqueue.c    2008-06-30 17:25:03.000000000 +0200
+> @@ -163,9 +163,10 @@
+>  }
+>  
+>  /**
+> - * queue_work - queue work on a workqueue
+> + * queue_work_prio - queue work on a workqueue and set work priority
+>   * @wq: workqueue to use
+>   * @work: work to queue
+> + * @prio: priority of work
+>   *
+>   * Returns 0 if @work was already on a queue, non-zero otherwise.
+>   *
+> @@ -174,17 +175,36 @@
+>   *
+>   * Especially no such guarantee on PREEMPT_RT.
+>   */
+> -int fastcall queue_work(struct workqueue_struct *wq, struct work_struct 
+> *work)
+> +int fastcall queue_work_prio(struct workqueue_struct *wq,
+> +  struct work_struct *work, int prio)
 
-> This patch fixes sdio_io sparse errors.
-> This fix changes signature of API functions,
-> changing
-> unsigned char -> u8
-> unsigned short -> u16
-> unsigned long -> u32 - this was probably a bug in 64 bit platforms
->=20
-> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-> ---
+Looks like you patch has line wrapped damage, and white space damage..
+If your cutting an pasting the patches that will usually remove the
+white space (which we don't want), and often mailers will line wrap if
+you don't specify that it's formatted already.
 
-I'm not entirely comfortable with this as the point was to use the same
-types as the "real" read*/write*. But as i386 and x86_64 use different
-types, I don't see much choice.
+Daniel
 
-I've applied the patch.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-446-1215192403-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkhuYAIACgkQ7b8eESbyJLjKuwCdFv5qxs6fjY1CnAdnLBTuHjk+
-6EAAnRhkS3Up4RambH8nxqns4JMPa6+5
-=rFV0
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-446-1215192403-0001-2--
