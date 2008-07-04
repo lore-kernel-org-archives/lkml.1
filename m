@@ -1,114 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbYGDHtH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756921AbYGDHvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756243AbYGDHtH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 03:49:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbYGDHsz
+	id S1756921AbYGDHvv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 03:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbYGDHvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 03:48:55 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:44143 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123AbYGDHsy convert rfc822-to-8bit (ORCPT
+	Fri, 4 Jul 2008 03:51:40 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:12070 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751679AbYGDHvj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 03:48:54 -0400
+	Fri, 4 Jul 2008 03:51:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=qpAeVheDplurVVNN0jfAm+huY5BfqXX4DXUs7wNIuZpFVeWl3grdep9GXOOgMGmiVS
-         dUM/0bDXjrRf4eUDPZkTlPPXK6Knsn7E95MdsJ7hQJgjYX1r0Fzt+Aah2LhCVHQQ0y5k
-         Oa012enWtAtxD4wWDZNg59lsy2yDXTVK2DCRM=
-Message-ID: <aec7e5c30807040048yd8543d4n2edba43524279b6f@mail.gmail.com>
-Date: Fri, 4 Jul 2008 16:48:53 +0900
-From: "Magnus Damm" <magnus.damm@gmail.com>
-To: "=?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?=" <Uwe.Kleine-Koenig@digi.com>
-Subject: Re: [PATCH] uio: User IRQ Mode
-Cc: "Hans J. Koch" <hjk@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "lethal@linux-sh.org" <lethal@linux-sh.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-In-Reply-To: <20080704060108.GA11794@digi.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=SCtTEJBcTsX2rzoB35o6CnR+ZK/0ITAWGJ3VkEmis1yF0U9uSrow4vp13Enmp28wn2
+         HaQE/3wix8Yv3BE/PXHhaDcRhyX5TnUeOPwaYAsZJ1vMYDMRLAhmhXuEmVbqHMOca8kE
+         do1qqEcOplJh8gzsO3+bJognIcOrN0guvpY2c=
+Message-ID: <486DD650.3000804@gmail.com>
+Date: Fri, 04 Jul 2008 16:50:40 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>,
+       Benjamin Thery <benjamin.thery@bull.net>, netdev@vger.kernel.org
+Subject: Re: [PATCH 12/15] driver core: Implement tagged directory support
+ for device classes.
+References: <20080618170729.808539948@theryb.frec.bull.fr>	<m1ej6d9c2r.fsf@frodo.ebiederm.org> <486B060C.7030607@gmail.com>	<m14p78s02q.fsf@frodo.ebiederm.org> <486C4515.1070007@gmail.com>	<m1hcb7o8lv.fsf@frodo.ebiederm.org> <486CB051.5000507@fr.ibm.com>	<m14p77m9uy.fsf@frodo.ebiederm.org> <486CF71F.5090405@gmail.com>	<m1y74iiidz.fsf_-_@frodo.ebiederm.org>	<m1tzf6ihlz.fsf_-_@frodo.ebiederm.org>	<m1prpuihjb.fsf_-_@frodo.ebiederm.org>	<m1lk0iihhp.fsf_-_@frodo.ebiederm.org>	<m1hcb6ihfz.fsf_-_@frodo.ebiederm.org>	<m1d4luihea.fsf_-_@frodo.ebiederm.org>	<m18wwiihbn.fsf_-_@frodo.ebiederm.org>	<m14p76ih9a.fsf_-_@frodo.ebiederm.org>	<m1zloyh2mb.fsf_-_@frodo.ebiederm.org>	<m1vdzmh2jr.fsf_-_@frodo.ebiederm.org>	<m1r6aah2hh.fsf_-_@frodo.ebiederm.org>	<m1mykyh2fu.fsf_-_@frodo.ebiederm.org> <m1hcb6h2d2.fsf_-_@frodo.ebiederm.org>
+In-Reply-To: <m1hcb6h2d2.fsf_-_@frodo.ebiederm.org>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <20080702105951.22648.2197.sendpatchset@rx1.opensource.se>
-	 <20080702125400.GC3199@local> <20080703071019.GC12214@digi.com>
-	 <20080703124505.GB3197@local>
-	 <aec7e5c30807032103p7626dcbdwe06c5fac461372c1@mail.gmail.com>
-	 <20080704060108.GA11794@digi.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 4, 2008 at 3:01 PM, Uwe Kleine-König
-<Uwe.Kleine-Koenig@digi.com> wrote:
-> Magnus Damm wrote:
->> On Thu, Jul 3, 2008 at 9:45 PM, Hans J. Koch <hjk@linutronix.de> wrote:
->> > On Thu, Jul 03, 2008 at 09:10:19AM +0200, Uwe Kleine-König wrote:
->> >> Hans J. Koch wrote:
->> >> > On Wed, Jul 02, 2008 at 07:59:51PM +0900, Magnus Damm wrote:
->> >> > > From: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
->> >> > >
->> >> > > This patch adds a "User IRQ Mode" to UIO. In this mode the user space driver
->> >> > > is responsible for acknowledging and re-enabling the interrupt.
->> >> >
->> >> > This can easily be done without your patch.
->> >
->> > BTW, the above wording "the user space driver is responsible for
->> > acknowledging and re-enabling the interrupt" is misleading. The kernel
->> > always has to acknowledge/disable/mask the interrupt. Userspace can only
->> > reenable it, ideally by writing to a chip register. In some cornercases
->> > for broken hardware we need the newly introduced write function.
->>
->> You seem to be mixing up masking/acknowledging the interrupt
->> controller and masking/acknowledging the actual hardware device. In
->> User IRQ Mode, the only thing the user space driver is accessing is
->> the hardware device, with the exception of write() to re-enable
->> interrupts which results in a enable_irq() that touches the interrupt
->> controller.
-> But to be honest Hans is right here, the commit log wording is not
-> optimal.  I suggest:
->
->        This patch adds a "User IRQ Mode" to UIO. In this mode the
->        kernel space simply disables the serviced interrupt in the
->        interrupt controller and the user space driver is responsible
->        for acknowledging it in the device and reenabling it.
+Eric W. Biederman wrote:
+> This patch enables tagging on every class directory if struct class
+> has a tag_type.
+> 
+> In addition device_del and device_rename were modified to uses
+> sysfs_delete_link and sysfs_rename_link respectively to ensure
+> when these operations happen on devices whose classes have
+> tag_ops that they work properly.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> Signed-off-by: Benjamin Thery <benjamin.thery@bull.net>
 
-Right, that's better. Thank you.
+Okay, I went through the users this time but I still think
+determine-tags-by-callbacks is a bad idea.  Please just add const void
+*tag to kobject and set it during initialization.  If you want to move a
+device from one tag to another, implement kobject_rename_tagged(kobj,
+new_name, new_tag).
 
->        Note that this implies that the interrupt might be disabled for
->        long periods, so this isn't usable for shared interrupt lines.
+The determine-tag-by-callback basically multiplexes basic functions to
+do tag-specific things which are determined by ktype callback called
+back from down the layer.  It's simply a bad interface.  Those
+operations become something else depending on how those callbacks
+behave.  That's unnecessarily subtle.  Advertising what it's gonna do in
+the function name and as arguments is way more straight forward and it's
+not like determining or renaming tags should be done asynchronously.
 
-While I think it's a good idea to write that the interrupt latency
-will be increased, I wouldn't say the above is clear enough.
+I personally think it would be better to make tags explicit in the mount
+interface too but if extracting ns information from the mounting process
+is what's currently being done, well...
 
-Shared interrupts are not supported by the User IRQ Mode since the
-generic in-kernel interrupt handler will disable the shared interrupt
-line while servicing interrupts. Disabling the shared interrupt line
-will prevent other devices sharing the same interrupt line from being
-serviced properly. This fact makes User IRQ Mode unsuitable for shared
-interrupts.
+I'm sorry but Nacked-by: Tejun Heo <tj@kernel.org>
 
-> Maybe it's sensible to add the User IRQ Mode functions at least for now
-> into platform code.  Then at a later time if and when there are several
-> copies the discussion to move it to the generic part might be easier.
+Thanks.
 
-Do you mean your uio_pdrv driver?
-
-> BTW, I currently have a situation where it IMHO really makes sense to
-> use the User IRQ Mode:  We sell a cpu module to a customer with
-> Linux.  I provide a uio device for some memory mapped periphal on the
-> customers board that I don't know in detail.  With the User IRQ Mode I
-> only need to know the chip select and the irq line, no further
-> information is needed for the device.
-
-Yes, and this is a very similar to our requirements. We want to expose
-various memory mapped devices inside our SoCs to user space, providing
-only device base address and unique interrupt number.
-
-Thank you!
-
-/ magnus
+-- 
+tejun
