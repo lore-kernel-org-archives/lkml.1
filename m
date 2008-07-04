@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741AbYGDRcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYGDRiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755741AbYGDRcl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 13:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbYGDRcd
+	id S1755513AbYGDRiV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 13:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbYGDRiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 13:32:33 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:44594 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750879AbYGDRcc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 13:32:32 -0400
-To: rankincj@yahoo.com
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
-Subject: Re: Linux 2.6.25.10
-References: <555236.75770.qm@web52912.mail.re2.yahoo.com>
-From: Nix <nix@esperi.org.uk>
-Emacs: resistance is futile; you will be assimilated and byte-compiled.
-Date: Fri, 04 Jul 2008 18:32:26 +0100
-In-Reply-To: <555236.75770.qm@web52912.mail.re2.yahoo.com> (Chris Rankin's message of "4 Jul 2008 00:42:42 +0100")
-Message-ID: <87vdzlv9lh.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-INFN-TO-Metrics: hades 1233; Body=3 Fuz1=3 Fuz2=3
+	Fri, 4 Jul 2008 13:38:13 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:40143 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750879AbYGDRiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 13:38:12 -0400
+Date: Fri, 4 Jul 2008 19:38:05 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Tomas Winkler <tomas.winkler@intel.com>
+Cc: linux-kernel@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>
+Subject: Re: [PATCH 3/3] mmc: fix sdio_io sparse errors
+Message-ID: <20080704193805.54ba8dde@mjolnir.drzeus.cx>
+In-Reply-To: <1214812224-32267-3-git-send-email-tomas.winkler@intel.com>
+References: <1214812224-32267-1-git-send-email-tomas.winkler@intel.com>
+	<1214812224-32267-2-git-send-email-tomas.winkler@intel.com>
+	<1214812224-32267-3-git-send-email-tomas.winkler@intel.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-446-1215192403-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4 Jul 2008, Chris Rankin stated:
-> I have only machines with 32 bit CPUS, none of them is hot-pluggable
-> and none has an i915 graphics chip. All my local users are "trusted",
-> nor am I running any multi-threaded Java applications on SMP
-> systems. (I also have no idea what ICM pages are, but they sound jolly
-> impressive!)
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-A good clue here is to look at the subdirectories that were touched.
-The ICM stuff says in the commit log
+--=_freyr.drzeus.cx-446-1215192403-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-    IB/mthca: Clear ICM pages before handing to FW
+On Mon, 30 Jun 2008 10:50:24 +0300
+Tomas Winkler <tomas.winkler@intel.com> wrote:
 
-and touches only files under drivers/infiniband/hw/mthca.
+> This patch fixes sdio_io sparse errors.
+> This fix changes signature of API functions,
+> changing
+> unsigned char -> u8
+> unsigned short -> u16
+> unsigned long -> u32 - this was probably a bug in 64 bit platforms
+>=20
+> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+> ---
 
-So if you don't use the InfiniBand driver, you're almost certainly safe
-(and from what I understand of InfiniBand, if you're not running a huge
-corporate SAN or something you're highly unlikely to be using it).
+I'm not entirely comfortable with this as the point was to use the same
+types as the "real" read*/write*. But as i386 and x86_64 use different
+types, I don't see much choice.
 
-> And what is "native_read_tscp" all about?
+I've applied the patch.
 
->From the name I would have assumed something about networking with some
-strangely-named protocol, but from the file being touched,
-include/asm-x86/msr.h, it's something to do with x86 model-specific
-registers. One function in that header calls it: `rdtscp()'. A grep -R
-for `rdtscp' under arch/x86 indicates that there is a word in
-/proc/cpuinfo devoted to indicating whether your CPU has this
-feature. If it doesn't, the bug doesn't affect you.
+Rgds
+--=20
+     -- Pierre Ossman
 
->From the other hit, rdtscp()'s one call site, it seems to be some way to
-get the current CPU fast on SMP x86-64 boxes.  So perhaps you should
-upgrade if you have one of those.
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-Generally a bit of grepping and matching on pathnames like this is
-enough to comprehensively rule most changes in or out as things that
-affect you, and of course if there are changes to mm code or something
-like that it's generally a good idea to upgrade anyway, because you
-can't very well avoid using said code.
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
 
-> (Your emphasis.) Is it because otherwise you're going to sneak up and
-> burn my house down?
+--=_freyr.drzeus.cx-446-1215192403-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
-Greg would never do a thing like that without forewarning.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkhuYAIACgkQ7b8eESbyJLjKuwCdFv5qxs6fjY1CnAdnLBTuHjk+
+6EAAnRhkS3Up4RambH8nxqns4JMPa6+5
+=rFV0
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-446-1215192403-0001-2--
