@@ -1,38 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYGDWtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYGDWvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755609AbYGDWtp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 18:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbYGDWtg
+	id S1756051AbYGDWvj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 18:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYGDWva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 18:49:36 -0400
-Received: from orion.ambsoft.pl ([212.109.144.130]:48679 "EHLO
-	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750961AbYGDWtg (ORCPT
+	Fri, 4 Jul 2008 18:51:30 -0400
+Received: from fmmailgate04.web.de ([217.72.192.242]:41139 "EHLO
+	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750919AbYGDWva convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 18:49:36 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Andrew Morton <akpm@linux-foundation.org>, kernel-testers@vger.kernel.org
-Subject: Re: 2.6.26-rc8-mm1: unable to mount nfs shares
-Date: Sat, 5 Jul 2008 00:49:33 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
-In-Reply-To: <20080703020236.adaa51fa.akpm@linux-foundation.org>
+	Fri, 4 Jul 2008 18:51:30 -0400
+Date: Sat, 05 Jul 2008 00:51:27 +0200
+Message-Id: <342518340@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807050049.33287.m.kozlowski@tuxland.pl>
+From: devzero@web.de
+To: Enrico Weigelt <weigelt@metux.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: block devices in userland
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1/VRyGf46+XcgGUrL91q4F4XVgydyiq/0QcwDAYGOfYpwDNB
+ wIx9cCQ3bKOxiIIgjyN07GSJNhdRk8dcgb04VVj/6zi+8YwIq8=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-$ mount some/nfs/share
-mount.nfs: Input/output error
+>is there an API for writing block device drivers in userland ?
 
-dmesg says: RPC: transport (0) not supported
+i don`t know if there is some in vanilla, but maybe dm-userspace is worth taking a look at ?
+see http://wiki.xensource.com/xenwiki/DmUserspace
 
-but I guess it's known issue http://lkml.org/lkml/2008/7/1/438 ?
+regards
+roland
 
-	Mariusz
+
+
+
+List:       linux-kernel
+Subject:    block devices in userland
+From:       Enrico Weigelt <weigelt () metux ! de>
+Date:       2008-07-04 22:11:28
+Message-ID: 20080704221127.GA25636 () nibiru ! local
+[Download message RAW]
+
+
+Hi folks,
+
+
+is there an API for writing block device drivers in userland ?
+
+
+thx
+-- 
+---------------------------------------------------------------------
+ Enrico Weigelt    ==   metux IT service - http://www.metux.de/
+---------------------------------------------------------------------
+ Please visit the OpenSource QM Taskforce:
+ 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
+ Patches / Fixes for a lot dozens of packages in dozens of versions:
+	http://patches.metux.de/
+---------------------------------------------------------------------
+
+______________________________________________________________
+Jeden Monat 1 hochkarätiger maxdome-Blockbuster GRATIS!
+Exklusiv für alle WEB.DE Nutzer. http://www.blockbuster.web.de
+
