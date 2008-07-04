@@ -1,54 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757029AbYGDGed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbYGDGfO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757029AbYGDGed (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 02:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbYGDGeW
+	id S1757451AbYGDGfO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 02:35:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYGDGfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 02:34:22 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:25227 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756075AbYGDGeR (ORCPT
+	Fri, 4 Jul 2008 02:35:00 -0400
+Received: from mail28.messagelabs.com ([216.82.249.131]:61084 "EHLO
+	mail28.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751777AbYGDGe7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 02:34:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=lNsmRfOGW46NUE2iOm7M8Tmj0LEgXctSJUAJGsFroZtvTNd579bPsQnFtCOIo+6ma6
-         Gul/OXfSBIs6RVQd5+0B1XrYmEvMj1jLJa7mdKV5iZ0gmhJmZ1jctSgkhMAuwavbdCPK
-         M5fp48GJQ6ZTEXDJqVXwIi5yAQLholNhuwZbg=
-Message-ID: <486DC433.9040200@gmail.com>
-Date: Fri, 04 Jul 2008 15:33:23 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Fri, 4 Jul 2008 02:34:59 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-12.tower-28.messagelabs.com!1215153298!17277768!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Date: Fri, 4 Jul 2008 08:34:55 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: <linux-kernel@vger.kernel.org>
+CC: David Woodhouse <dwmw2@infradead.org>
+Subject: alphabetic ordering of MAINTAINERS
+Message-ID: <20080704063455.GA13999@digi.com>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>,
-       Benjamin Thery <benjamin.thery@bull.net>, netdev@vger.kernel.org
-Subject: Re: [PATCH 01/15] kobject: Cleanup kobject_rename and !CONFIG_SYSFS
-References: <20080618170729.808539948@theryb.frec.bull.fr>	<20080618170731.002784342@theryb.frec.bull.fr>	<485F04E1.70204@gmail.com> <m1y74svtff.fsf@frodo.ebiederm.org>	<486706C9.9040303@gmail.com> <m18wwmsqdv.fsf@frodo.ebiederm.org>	<4869D314.5030403@gmail.com> <m1ej6enep7.fsf@frodo.ebiederm.org>	<486A0751.9080602@gmail.com> <m1wsk5hjm0.fsf@frodo.ebiederm.org>	<486AF4FA.8020805@gmail.com> <m1ej6d9c2r.fsf@frodo.ebiederm.org>	<486B060C.7030607@gmail.com> <m14p78s02q.fsf@frodo.ebiederm.org>	<486C4515.1070007@gmail.com> <m1hcb7o8lv.fsf@frodo.ebiederm.org>	<486CB051.5000507@fr.ibm.com> <m14p77m9uy.fsf@frodo.ebiederm.org>	<486CF71F.5090405@gmail.com> <m1y74iiidz.fsf_-_@frodo.ebiederm.org> <m1tzf6ihlz.fsf_-_@frodo.ebiederm.org>
-In-Reply-To: <m1tzf6ihlz.fsf_-_@frodo.ebiederm.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 04 Jul 2008 06:34:55.0566 (UTC) FILETIME=[128AEEE0:01C8DDA0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> It finally dawned on me what the clean fix to sysfs_rename_dir
-> calling kobject_set_name is.  Move the work into kobject_rename
-> where it belongs.  The callers serialize us anyway so this is
-> safe.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Hello,
 
-Nice clean up.  Acked-by: Tejun Heo <tj@kernel.org>
+I wanted to add an entry to MAINTAINERS and while doing it I saw that in
+the corresponding region the alphabetic ordering is broken.  Then I
+inteded to fix that up for a trivial patch.  Next was to check the rest
+of the file and there are so much misorderings that it's not sensible to
+choose the trivial path anymore as there are currently 114 entries out
+of order[1].
+
+Below is a script that shows the misorderings after applying the
+following patch:
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e6c06fa..e9e36f8 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1585,7 +1585,7 @@ S:	Supported
+ EMBEDDED LINUX
+ P:	Paul Gortmaker
+ M:	paul.gortmaker@windriver.com
+-P	David Woodhouse
++P:	David Woodhouse
+ M:	dwmw2@infradead.org
+ L:	linux-embedded@vger.kernel.org
+ S:	Maintained
+
+IMHO there are two good ways to continue:
+ - just ignore the misorderings; or
+ - write a more clever script that not only shows the misorderings but
+   fixes them and optimally let Linus directly apply it.
+
+I will try to come up with a script to prepare the second way.
+
+Best regards
+Uwe
+
+#! /bin/sh
+
+tempfile="$(mktemp)";
+
+# extract topics from MAINTAINERS
+sed -n -e '1,/^P:/d' -e '/^[0-9a-zA-Z][^:]/p' MAINTAINERS >
+"${tempfile}"
+
+sort "${tempfile}" | diff -u "${tempfile}" -
+
+rm "${tempfile}"
+
+[1] ukleinek@zentaur:~/gsrc/linux-2.6$ order_maintainers | grep ^- | wc -l
+114
 
 -- 
-tejun
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
