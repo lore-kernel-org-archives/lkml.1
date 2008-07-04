@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758930AbYGDQtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757775AbYGDQuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758930AbYGDQtX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 12:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755496AbYGDQtK
+	id S1757775AbYGDQuS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 12:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbYGDQt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 12:49:10 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:49876 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754884AbYGDQtJ (ORCPT
+	Fri, 4 Jul 2008 12:49:58 -0400
+Received: from xi.wantstofly.org ([83.160.184.112]:37453 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754444AbYGDQt5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 12:49:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tfiD6+H7CKgVZic/Z9OA6Dr9qRS3BO1qNcNvpBHa5/KQwqTyyWX8VBpTpaeJeACtTk
-         29X6rstioBPunpazGdLXlHFA2m5lz0NzuCV10ZKse01r8NCMvD9n5xVZKgJ+3fPssHbq
-         AIlAfI86MxdYeQwIrcV/FvZ7nihQQ613BxbrU=
-Date: Sat, 5 Jul 2008 01:48:59 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Michael Holzheu <holzheu@de.ibm.com>
-Subject: [PATCH -mm] fix s390-use-memory_read_from_buffer.patch
-Message-ID: <20080704164858.GA22477@localhost.localdomain>
-References: <200807040647.m646lXpN017508@imap1.linux-foundation.org> <1215182555.5413.8.camel@localhost.localdomain> <20080704163942.GA15214@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
+	Fri, 4 Jul 2008 12:49:57 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=L87xw8CmBu1doWNB5p+/RSGxj9OqIiSftA+mcjG2xOMlKH97U8OVROjULfpWH
+	djwlq4g2MqjOJbQfz+Dey1n/A==
+Date: Fri, 4 Jul 2008 18:49:55 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH next-20080704] Fix compile error in drivers/net/mv643xx_eth.c
+Message-ID: <20080704164954.GA12106@xi.wantstofly.org>
+References: <s5hr6a9k3uk.wl%tiwai@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080704163942.GA15214@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <s5hr6a9k3uk.wl%tiwai@suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now memory_read_from_buffer() belongs in string.h
+On Fri, Jul 04, 2008 at 06:32:03PM +0200, Takashi Iwai wrote:
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Michael Holzheu <holzheu@de.ibm.com>
----
- arch/s390/kernel/ipl.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> drivers/net/mv643xx_eth.c: In function 'mv643xx_eth_netpoll':
+> drivers/net/mv643xx_eth.c:2115: error: 'INT_CAUSE_EXT' undeclared (first use in this function)
+> drivers/net/mv643xx_eth.c:2115: error: (Each undeclared identifier is reported only once
+> drivers/net/mv643xx_eth.c:2115: error: for each function it appears in.
+> 
+> Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> 
+> ---
+> diff --git a/drivers/net/mv643xx_eth.c b/drivers/net/mv643xx_eth.c
+> index 83a877f..cb2c065 100644
+> --- a/drivers/net/mv643xx_eth.c
+> +++ b/drivers/net/mv643xx_eth.c
+> @@ -2112,7 +2112,8 @@ static void mv643xx_eth_netpoll(struct net_device *dev)
+>  
+>  	mv643xx_eth_irq(dev->irq, dev);
+>  
+> -	wrl(mp, INT_MASK(mp->port_num), INT_TX_END | INT_RX | INT_CAUSE_EXT);
+> +	wrl(mp, INT_MASK(mp->port_num),
+> +	    INT_TX_END | INT_RX | INT_CAUSE_EXT(mp->port_num));
 
-Index: 2.6-mm/arch/s390/kernel/ipl.c
-===================================================================
---- 2.6-mm.orig/arch/s390/kernel/ipl.c
-+++ 2.6-mm/arch/s390/kernel/ipl.c
-@@ -14,7 +14,7 @@
- #include <linux/delay.h>
- #include <linux/reboot.h>
- #include <linux/ctype.h>
--#include <linux/fs.h>
-+#include <linux/string.h>
- #include <asm/ipl.h>
- #include <asm/smp.h>
- #include <asm/setup.h>
+You are ORing the _address_ of the interrupt status register into
+the interupt mask register.  How do you expect that to work?
+
+This is the proper fix, which I will re-submit shortly:
+
+	http://marc.info/?l=linux-kernel&m=121498695309851&w=2
