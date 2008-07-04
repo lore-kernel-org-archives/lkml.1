@@ -1,59 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758215AbYGDNSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbYGDNWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758215AbYGDNSU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 09:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbYGDNSH
+	id S1756667AbYGDNWz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 09:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbYGDNWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 09:18:07 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58466 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754096AbYGDNSG (ORCPT
+	Fri, 4 Jul 2008 09:22:47 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:6395 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752571AbYGDNWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 09:18:06 -0400
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-From: David Woodhouse <dwmw2@infradead.org>
+	Fri, 4 Jul 2008 09:22:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=PcmK2ttcfQzoaCd1HvihPPhi2WA4KZPuPmO+a49sbAIIbVanfASs4Cy3N3VD3WeHHO
+         uonT7C701vBlJ07xlm/VTC4REGvHk6pwOpKDVenZMT1mEJJfvgYuyMMrou2Q6c2VPWrZ
+         nAxYsmxY48m5NCUDTkVE3VXdvUnMC1gzoPtaM=
+Date: Fri, 4 Jul 2008 17:22:35 +0400
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
 To: Takashi Iwai <tiwai@suse.de>
-Cc: Hugh Dickins <hugh@veritas.com>, Jeff Garzik <jeff@garzik.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org
-In-Reply-To: <s5hmykxc3ja.wl%tiwai@suse.de>
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
-	 <20080703205548.D6E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <486CC440.9030909@garzik.org>
-	 <Pine.LNX.4.64.0807031353030.11033@blonde.site>
-	 <s5hmykxc3ja.wl%tiwai@suse.de>
-Content-Type: text/plain
-Date: Fri, 04 Jul 2008 14:17:51 +0100
-Message-Id: <1215177471.10393.753.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Brownell <david-b@pacbell.net>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix build error of driver/mfd/tc6393xb.c
+Message-ID: <20080704132234.GA4576@doriath.ww600.siemens.net>
+References: <s5hiqvlc2ut.wl%tiwai@suse.de> <20080704114755.GA21747@doriath.ww600.siemens.net> <s5hej69c0tt.wl%tiwai@suse.de> <20080704124256.GB21747@doriath.ww600.siemens.net> <s5hk5g1ls9l.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5hk5g1ls9l.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-04 at 13:06 +0200, Takashi Iwai wrote:
-> Hmm, I got this error even with CONFIG_FIRMWARE_IN_KERNEL=y.
+On Fri, Jul 04, 2008 at 02:59:18PM +0200, Takashi Iwai wrote:
+> At Fri, 4 Jul 2008 16:42:56 +0400,
+> Dmitry Baryshkov wrote:
+> > 
+> > On Fri, Jul 04, 2008 at 02:04:30PM +0200, Takashi Iwai wrote:
+> > > At Fri, 4 Jul 2008 15:47:55 +0400,
+> > > Dmitry Baryshkov wrote:
+> > > > 
+> > > > On Fri, Jul 04, 2008 at 01:20:42PM +0200, Takashi Iwai wrote:
+> > > > > Fix the build of tc6393xb  due to missing definition of struct
+> > > > > gpio_chip.
+> > > > > 
+> > > > > Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> > > > > 
+> > > > > ---
+> > > > > diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> > > > > index 9f93c29..2981da4 100644
+> > > > > --- a/drivers/mfd/Kconfig
+> > > > > +++ b/drivers/mfd/Kconfig
+> > > > > @@ -44,7 +44,7 @@ config HTC_PASIC3
+> > > > >  
+> > > > >  config MFD_TC6393XB
+> > > > >  	bool "Support Toshiba TC6393XB"
+> > > > > -	depends on HAVE_GPIO_LIB
+> > > > > +	depends on HAVE_GPIO_LIB && GENERIC_GPIO
+> > > > >  	select MFD_CORE
+> > > > >  	help
+> > > > >  	  Support for Toshiba Mobile IO Controller TC6393XB
+> > > > 
+> > > > Which configuration does provide HAVE_GPIO_LIB but not GENERIC_GPIO?
+> > > 
+> > > The below is the config with which I got the error.
+> > 
+> > The proper fix probably is to make PPC_MPC5200_GPIO also select
+> > GENERIC_GPIO. I don't think that building GPIO_LIB w/o GENERIC_GPIO
+> > should be supported.
 > 
-> Through a quick look at the code, the firmwares are not built indeed.
-> I guess the fix like the following needed for building firmwares for
-> modules.  Now trying to build the kernel again to check this...
+> [Added David to Cc]
+> 
+> Then HAVE_GPIO_LIB should depend on GENERIC_GPIO.
+> Or, linux/gpio.h should be fixed so that the code can be built
+> properly without GENERIC_GPIO.
 
-For modules, you just need run
-	'make INSTALL_FW_PATH=/lib/firmare firmware_install'.
-
-I should...
-
-1. Change the default to /lib/firmware so that you don't have to set
-   INSTALL_FW_PATH.
-2. Add that to the 'make help' text.
-3. Look at making 'make modules_install' installl the firmware required
-   by the modules it's installing, so you don't even need to do
-   _anything_ new.
+IIRC selected symbols don't propagate their depends.
+Also linux/gpio.h don't have anything in common with HAVE_GPIO_LIB.
 
 -- 
-dwmw2
+With best wishes
+Dmitry
 
