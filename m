@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbYGERnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758346AbYGERoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758126AbYGERnU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756257AbYGERhL
+	id S1758346AbYGERoS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbYGERhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:37:11 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33049 "EHLO
+	Sat, 5 Jul 2008 13:37:24 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33053 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754797AbYGERga (ORCPT
+	with ESMTP id S1754867AbYGERga (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 5 Jul 2008 13:36:30 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Ext4 Developers List <linux-ext4@vger.kernel.org>,
        Linux Kernel Developers List <linux-kernel@vger.kernel.org>
 Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Mingming Cao <cmm@us.ibm.com>, "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 45/52] mm: Add range_cont mode for writeback
-Date: Sat,  5 Jul 2008 13:36:11 -0400
-Message-Id: <1215279378-30504-46-git-send-email-tytso@mit.edu>
+       "Theodore Ts'o" <tytso@mit.edu>, Mingming Cao <cmm@us.ibm.com>
+Subject: [PATCH 50/52] ext4: Enable delalloc by default.
+Date: Sat,  5 Jul 2008 13:36:16 -0400
+Message-Id: <1215279378-30504-51-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.rc3.1.g36b7.dirty
-In-Reply-To: <1215279378-30504-45-git-send-email-tytso@mit.edu>
+In-Reply-To: <1215279378-30504-50-git-send-email-tytso@mit.edu>
 References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-2-git-send-email-tytso@mit.edu>
  <1215279378-30504-3-git-send-email-tytso@mit.edu>
@@ -65,6 +65,11 @@ References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-43-git-send-email-tytso@mit.edu>
  <1215279378-30504-44-git-send-email-tytso@mit.edu>
  <1215279378-30504-45-git-send-email-tytso@mit.edu>
+ <1215279378-30504-46-git-send-email-tytso@mit.edu>
+ <1215279378-30504-47-git-send-email-tytso@mit.edu>
+ <1215279378-30504-48-git-send-email-tytso@mit.edu>
+ <1215279378-30504-49-git-send-email-tytso@mit.edu>
+ <1215279378-30504-50-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -74,55 +79,90 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Filesystems like ext4 needs to start a new transaction in
-the writepages for block allocation. This happens with delayed
-allocation and there is limit to how many credits we can request
-from the journal layer. So we call write_cache_pages multiple
-times with wbc->nr_to_write set to the maximum possible value
-limitted by the max journal credits available.
+Enable delalloc by default to ensure it gets sufficient testing and
+because it makes the filesystem much more efficient.  Add a nodealalloc
+option to disable delayed allocation, and update ext4_show_options to
+show delayed allocation off if it is disabled.
 
-Add a new mode to writeback that enables us to handle this
-behaviour. In the new mode we update the wbc->range_start
-to point to the new offset to be written. Next call to
-call to write_cache_pages will start writeout from specified
-range_start offset. In the new mode we also limit writing
-to the specified wbc->range_end.
+If the data=journal mount option is used, disable delayed allocation
+since the delalloc code doesn't support data=journal yet.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-Acked-by: Jan Kara <jack@suse.cz>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
 ---
- include/linux/writeback.h |    1 +
- mm/page-writeback.c       |    3 +++
- 2 files changed, 4 insertions(+), 0 deletions(-)
+ fs/ext4/super.c |   23 ++++++++++++++++++++++-
+ 1 files changed, 22 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/writeback.h b/include/linux/writeback.h
-index f462439..0d8573e 100644
---- a/include/linux/writeback.h
-+++ b/include/linux/writeback.h
-@@ -63,6 +63,7 @@ struct writeback_control {
- 	unsigned for_writepages:1;	/* This is a writepages() call */
- 	unsigned range_cyclic:1;	/* range_start is cyclic */
- 	unsigned more_io:1;		/* more io to be dispatched */
-+	unsigned range_cont:1;
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 25e2f24..4e104dd 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -756,6 +756,9 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
+ 		seq_puts(seq, ",nomballoc");
+ 	if (test_opt(sb, I_VERSION))
+ 		seq_puts(seq, ",i_version");
++	if (!test_opt(sb, DELALLOC))
++		seq_puts(seq, ",nodelalloc");
++
+ 
+ 	if (sbi->s_stripe)
+ 		seq_printf(seq, ",stripe=%lu", sbi->s_stripe);
+@@ -903,7 +906,7 @@ enum {
+ 	Opt_jqfmt_vfsold, Opt_jqfmt_vfsv0, Opt_quota, Opt_noquota,
+ 	Opt_ignore, Opt_barrier, Opt_err, Opt_resize, Opt_usrquota,
+ 	Opt_grpquota, Opt_extents, Opt_noextents, Opt_i_version,
+-	Opt_mballoc, Opt_nomballoc, Opt_stripe, Opt_delalloc,
++	Opt_mballoc, Opt_nomballoc, Opt_stripe, Opt_delalloc, Opt_nodelalloc,
  };
  
- /*
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 789b6ad..ded57d5 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -956,6 +956,9 @@ retry:
- 	}
- 	if (wbc->range_cyclic || (range_whole && wbc->nr_to_write > 0))
- 		mapping->writeback_index = index;
+ static match_table_t tokens = {
+@@ -963,6 +966,7 @@ static match_table_t tokens = {
+ 	{Opt_stripe, "stripe=%u"},
+ 	{Opt_resize, "resize"},
+ 	{Opt_delalloc, "delalloc"},
++	{Opt_nodelalloc, "nodelalloc"},
+ 	{Opt_err, NULL},
+ };
+ 
+@@ -1328,6 +1332,9 @@ set_qf_format:
+ 			set_opt(sbi->s_mount_opt, I_VERSION);
+ 			sb->s_flags |= MS_I_VERSION;
+ 			break;
++		case Opt_nodelalloc:
++			clear_opt(sbi->s_mount_opt, DELALLOC);
++			break;
+ 		case Opt_mballoc:
+ 			set_opt(sbi->s_mount_opt, MBALLOC);
+ 			break;
+@@ -1984,6 +1991,13 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
+ 	 */
+ 	set_opt(sbi->s_mount_opt, MBALLOC);
+ 
++	/*
++	 * enable delayed allocation by default
++	 * Use -o nodelalloc to turn it off
++	 */
++	set_opt(sbi->s_mount_opt, DELALLOC);
 +
-+	if (wbc->range_cont)
-+		wbc->range_start = index << PAGE_CACHE_SHIFT;
- 	return ret;
- }
- EXPORT_SYMBOL(write_cache_pages);
++
+ 	if (!parse_options ((char *) data, sb, &journal_inum, &journal_devnum,
+ 			    NULL, 0))
+ 		goto failed_mount;
+@@ -2422,6 +2436,13 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
+ 		test_opt(sb,DATA_FLAGS) == EXT4_MOUNT_ORDERED_DATA ? "ordered":
+ 		"writeback");
+ 
++	if (test_opt(sb, DATA_FLAGS) == EXT4_MOUNT_JOURNAL_DATA) {
++		printk(KERN_WARNING "EXT4-fs: Ignoring delalloc option - "
++				"requested data journaling mode\n");
++		clear_opt(sbi->s_mount_opt, DELALLOC);
++	} else if (test_opt(sb, DELALLOC))
++		printk(KERN_INFO "EXT4-fs: delayed allocation enabled\n");
++
+ 	ext4_ext_init(sb);
+ 	ext4_mb_init(sb, needs_recovery);
+ 
 -- 
 1.5.6.rc3.1.g36b7.dirty
 
