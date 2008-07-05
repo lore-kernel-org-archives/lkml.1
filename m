@@ -1,62 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbYGEUzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbYGEVLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755530AbYGEUzr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 16:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbYGEUzh
+	id S1755115AbYGEVLk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 17:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYGEVLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 16:55:37 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39206 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752744AbYGEUzg (ORCPT
+	Sat, 5 Jul 2008 17:11:31 -0400
+Received: from mail.tor.primus.ca ([216.254.136.21]:54072 "EHLO
+	mail-02.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752982AbYGEVLa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 16:55:36 -0400
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-From: David Woodhouse <dwmw2@infradead.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Olivier Galibert <galibert@pobox.com>,
-       Takashi Iwai <tiwai@suse.de>, Hannes Reinecke <hare@suse.de>,
-       Theodore Tso <tytso@mit.edu>, Jeff Garzik <jeff@garzik.org>,
-       David Miller <davem@davemloft.net>, hugh@veritas.com,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20080705171316.GA3615@infradead.org>
-References: <s5habgxloct.wl%tiwai@suse.de> <486E3622.1000900@suse.de>
-	 <1215182557.10393.808.camel@pmac.infradead.org>
-	 <20080704231322.GA4410@dspnet.fr.eu.org> <s5h4p746am3.wl%tiwai@suse.de>
-	 <20080705105317.GA44773@dspnet.fr.eu.org> <486F596C.8050109@firstfloor.org>
-	 <20080705120221.GC44773@dspnet.fr.eu.org> <486F6494.8020108@firstfloor.org>
-	 <1215260166.10393.816.camel@pmac.infradead.org>
-	 <20080705171316.GA3615@infradead.org>
-Content-Type: text/plain
-Date: Sat, 05 Jul 2008 21:55:11 +0100
-Message-Id: <1215291312.3189.88.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 5 Jul 2008 17:11:30 -0400
+From: Matthew Wilcox <matthew@wil.cx>
+To: linux-pci@vger.kernel.org
+Cc: kaneshige.kenji@jp.fujitsu.com, mingo@elte.hu, tglx@linutronix.de,
+       davem@davemloft.net, dan.j.williams@intel.com,
+       Martine.Silbermann@hp.com, benh@kernel.crashing.org,
+       michael@ellerman.id.au, linux-kernel@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
+Subject: [PATCH 3/4] AHCI: Request multiple MSIs
+Date: Sat,  5 Jul 2008 09:34:14 -0400
+Message-Id: <1215264855-4372-3-git-send-email-matthew@wil.cx>
+X-Mailer: git-send-email 1.5.5.4
+In-Reply-To: <20080705132728.GO14894@parisc-linux.org>
+References: <20080705132728.GO14894@parisc-linux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-07-05 at 13:13 -0400, Christoph Hellwig wrote:
-> On Sat, Jul 05, 2008 at 01:16:06PM +0100, David Woodhouse wrote:
-> > It almost never happens that you have kernel versions which _need_
-> > different firmware installed. In almost all cases, the older driver will
-> > continue to work just fine with the newer firmware (and its bug-fixes).
-> > 
-> > The ABI between driver and firmware rarely changes in such a fashion
-> > that you have to update the driver in lock-step -- and even on the
-> > occasions that it does, it's not hard to simply change the name of the
-> > "new-style" firmware so that it doesn't stomp on the old one (Think of
-> > it like an soname).
-> 
-> That's unfortunately not true.  There are a lot of drivers that rely
-> on specific firmware versions.
+AHCI controllers can support up to 16 interrupts, one per port.  This
+saves us a readl() in the interrupt path to determine which port has
+generated the interrupt.
 
-Do you have examples of such?
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+---
+ drivers/ata/ahci.c |   84 ++++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 79 insertions(+), 5 deletions(-)
 
+diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+index 061817a..4b2f90a 100644
+--- a/drivers/ata/ahci.c
++++ b/drivers/ata/ahci.c
+@@ -102,6 +102,7 @@ enum {
+ 	/* HOST_CTL bits */
+ 	HOST_RESET		= (1 << 0),  /* reset controller; self-clear */
+ 	HOST_IRQ_EN		= (1 << 1),  /* global IRQ enable */
++	HOST_MSI_RSM		= (1 << 2),  /* Revert to Single Message */
+ 	HOST_AHCI_EN		= (1 << 31), /* AHCI enabled */
+ 
+ 	/* HOST_CAP bits */
+@@ -1771,6 +1772,13 @@ static void ahci_port_intr(struct ata_port *ap)
+ 	}
+ }
+ 
++static irqreturn_t ahci_msi_interrupt(int irq, void *dev_instance)
++{
++	struct ata_port *ap = dev_instance;
++	ahci_port_intr(ap);
++	return IRQ_HANDLED;
++}
++
+ static irqreturn_t ahci_interrupt(int irq, void *dev_instance)
+ {
+ 	struct ata_host *host = dev_instance;
+@@ -2210,6 +2218,66 @@ static void ahci_p5wdh_workaround(struct ata_host *host)
+ 	}
+ }
+ 
++static int ahci_request_irqs(struct pci_dev *pdev, struct ata_host *host)
++{
++	int i, n_irqs, rc;
++	struct ahci_host_priv *hpriv = host->private_data;
++
++	if (hpriv->flags & AHCI_HFLAG_NO_MSI) {
++		n_irqs = 1;
++	} else {
++		u16 control;
++		int pos = pci_find_capability(pdev, PCI_CAP_ID_MSI);
++		pci_read_config_word(pdev, pos + PCI_MSI_FLAGS, &control);
++		n_irqs = 1 << ((control & PCI_MSI_FLAGS_QMASK) >> 1);
++
++		for (;;) {
++			rc = pci_enable_msi_block(pdev, n_irqs);
++			if (rc == 0) {
++				void __iomem *mmio = host->iomap[AHCI_PCI_BAR];
++				u32 host_ctl = readl(mmio + HOST_CTL);
++				if ((host_ctl & HOST_MSI_RSM) == 0)
++					break;
++				pci_disable_msi(pdev);
++				n_irqs = 1;
++			} else if (rc < 0) {
++				n_irqs = 1;
++				pci_intx(pdev, 1);
++				break;
++			} else {
++				n_irqs = rc;
++			}
++		}
++	}
++
++	/* FIXME: Add support for CCC */
++	if (n_irqs > host->n_ports) {
++		n_irqs = host->n_ports;
++	} else if (n_irqs < host->n_ports) {
++		n_irqs--;
++		rc = devm_request_irq(host->dev, pdev->irq + n_irqs,
++				ahci_interrupt, IRQF_SHARED,
++				dev_driver_string(host->dev), host);
++		if (rc)
++			goto release_block;
++	}
++
++	for (i = 0; i < n_irqs; i++) {
++		rc = devm_request_irq(host->dev, pdev->irq + i,
++				ahci_msi_interrupt, IRQF_SHARED,
++				dev_driver_string(host->dev), host->ports[i]);
++		if (rc)
++			goto release_block;
++	}
++
++	return 0;
++
++ release_block:
++	pci_disable_msi(pdev);
++	pci_intx(pdev, 1);
++	return rc;
++}
++
+ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ {
+ 	static int printed_version;
+@@ -2268,9 +2336,6 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	    (pdev->revision == 0xa1 || pdev->revision == 0xa2))
+ 		hpriv->flags |= AHCI_HFLAG_NO_MSI;
+ 
+-	if ((hpriv->flags & AHCI_HFLAG_NO_MSI) || pci_enable_msi(pdev))
+-		pci_intx(pdev, 1);
+-
+ 	/* save initial config */
+ 	ahci_save_initial_config(pdev, hpriv);
+ 
+@@ -2325,8 +2390,17 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	ahci_print_info(host);
+ 
+ 	pci_set_master(pdev);
+-	return ata_host_activate(host, pdev->irq, ahci_interrupt, IRQF_SHARED,
+-				 &ahci_sht);
++
++	rc = ata_host_start(host);
++	if (rc)
++		return rc;
++
++	rc = ahci_request_irqs(pdev, host);
++	if (rc)
++		return rc;
++
++	rc = ata_host_register(host, &ahci_sht);
++	return rc;
+ }
+ 
+ static int __init ahci_init(void)
 -- 
-dwmw2
+1.5.5.4
 
