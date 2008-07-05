@@ -1,99 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbYGEPLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702AbYGEPPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753528AbYGEPLW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 11:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750959AbYGEPLK
+	id S1753702AbYGEPPZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 11:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbYGEPPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 11:11:10 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51660 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbYGEPLJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 11:11:09 -0400
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-From: David Woodhouse <dwmw2@infradead.org>
-To: Olivier Galibert <galibert@pobox.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Takashi Iwai <tiwai@suse.de>,
-       Hannes Reinecke <hare@suse.de>, Theodore Tso <tytso@mit.edu>,
-       Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-       hugh@veritas.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20080705144445.GA17319@dspnet.fr.eu.org>
-References: <s5habgxloct.wl%tiwai@suse.de> <486E3622.1000900@suse.de>
-	 <1215182557.10393.808.camel@pmac.infradead.org>
-	 <20080704231322.GA4410@dspnet.fr.eu.org> <s5h4p746am3.wl%tiwai@suse.de>
-	 <20080705105317.GA44773@dspnet.fr.eu.org> <486F596C.8050109@firstfloor.org>
-	 <20080705120221.GC44773@dspnet.fr.eu.org> <486F6494.8020108@firstfloor.org>
-	 <1215260166.10393.816.camel@pmac.infradead.org>
-	 <20080705144445.GA17319@dspnet.fr.eu.org>
-Content-Type: text/plain
-Date: Sat, 05 Jul 2008 16:10:32 +0100
-Message-Id: <1215270632.10393.864.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+	Sat, 5 Jul 2008 11:15:15 -0400
+Received: from mail.ccur.com ([12.192.68.12]:59393 "EHLO mail.ccur.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751134AbYGEPPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 11:15:14 -0400
+Message-ID: <486F9009.5070607@ccur.com>
+Date: Sat, 5 Jul 2008 11:15:21 -0400
+From: John Blackwood <john.blackwood@ccur.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "andi-suse@firstfloor.org" <andi-suse@firstfloor.org>,
+       "Allen, Todd" <todd.allen@ccur.com>,
+       "stable@kernel.org" <stable@kernel.org>
+Subject: Re: [PATCH] node meminfo Active & Inactive pages to Kbytes
+References: <486CE3CD.7090907@ccur.com> <20080703154230.17263a19.akpm@linux-foundation.org>
+In-Reply-To: <20080703154230.17263a19.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-07-05 at 16:44 +0200, Olivier Galibert wrote:
-> On Sat, Jul 05, 2008 at 01:16:06PM +0100, David Woodhouse wrote:
-> > It almost never happens that you have kernel versions which _need_
-> > different firmware installed. In almost all cases, the older driver will
-> > continue to work just fine with the newer firmware (and its bug-fixes).
+Andrew Morton wrote:
+> On Thu, 3 Jul 2008 10:35:57 -0400
+> John Blackwood <john.blackwood@ccur.com> wrote:
 > 
-> I'm not sure which planet you're from, but it's one without ipw2200
-> chips in it.  And in any case, the file names change.
-
-I was speaking of the firmware which is currently in-kernel. ipw2200 is
-a recent driver and uses request_firmware() already, so isn't affected
-at all when I update other, older drivers. As such, it's not
-particularly relevant to this discussion.
-
-The drivers which we're updating to use request_firmware() have _not_
-changed their firmware very often at all -- and even _less_ frequently
-have they done so in an incompatible fashion.
-
-> > The ABI between driver and firmware rarely changes in such a fashion
-> > that you have to update the driver in lock-step -- and even on the
-> > occasions that it does, it's not hard to simply change the name of the
-> > "new-style" firmware so that it doesn't stomp on the old one (Think of
-> > it like an soname).
+>> Hi Andrew and Andi,
+>>
+>> We found a minor bug in the output of
+>> /sys/devices/system/node/node[n]/meminfo
+>> where the Active and Inactive values are in pages instead of Kbytes.
+>>
+>> Looks like this occurred back in 2.6.20 when the code was changed
+>> over to use node_page_state().
+>>
+>> Thanks.
+>>
+>> --- linux.2.6.26-rc8/drivers/base/node.c      2008-07-03 09:26:01.000000000 -0400
+>> +++ new/drivers/base/node.c   2008-07-03 09:25:45.000000000 -0400
+>> @@ -84,8 +84,8 @@ static ssize_t node_read_meminfo(struct
+>>                      nid, K(i.totalram),
+>>                      nid, K(i.freeram),
+>>                      nid, K(i.totalram - i.freeram),
+>> -                    nid, node_page_state(nid, NR_ACTIVE),
+>> -                    nid, node_page_state(nid, NR_INACTIVE),
+>> +                    nid, K(node_page_state(nid, NR_ACTIVE)),
+>> +                    nid, K(node_page_state(nid, NR_INACTIVE)),
+>>   #ifdef CONFIG_HIGHMEM
+>>                      nid, K(i.totalhigh),
+>>                      nid, K(i.freehigh),
 > 
-> Ah, I see, you just didn't read the thread you're replying to.  Let's
-> do it again one more time.
+> ug.  After all that time there might be applications out there which
+> use the existing numbers and work around the kernel bug.  Which we'll
+> break if we fix it.
+
+true.  our tool that looks at these numbers is going to be changed to 
+optionally multiply the values by 4 based on the kernel revision/version 
+number once this change makes it into the main tree.
+
+> otoh, who the heck cares about the per-node active and inactive page
+> counts?
+
+   :-)
+
+
+> I guess we just fix this, backport the fix as far as we can and
+> apologise for any fallout.  Not that there's likely to be any.
 > 
-> The question is, how do you sanely distribute the kernel-tree
-> generated firmware in a binary distribution, knowing that you want to
-> be able to have multiple working kernels installed simultaneously?
+o.k. Thanks.
 
- <...>
+> Please do remember to add a Signed-off-by: for kernel patches.
+> 
 
-> Solution 2: in a package by itself
-
-Probably this one. That package can be seeded from a git repo which is
-automatically derived from the contents of the firmware/ directory in
-Linus' tree, and can add the other firmware blobs which are available in
-various places -- the ones that the owners won't let us include in the
-kernel tree due to the GPL, but _will_ allow us to distribute in a
-separate firmware repository.
-
->  -> You either break compatibility with kernel versions that happened
->     before a firmware change, or you accumulate tons of files over
->     time.  The accumulated form gets hard to create from source.
-
-On the rare occasions that a firmware changes incompatibly, you'd want
-to keep both old and new versions in the firmware tree for a reasonable
-period of time. But since that doesn't happen very often, it isn't a
-particularly difficult issue to handle. I strongly believe that you are
-overestimating the scale of the problem -- and it would only be a
-problem for the person maintaining the firmware repository anyway. I'm
-perfectly content to do that job.
-
--- 
-dwmw2
-
+o.k. Sorry about that.
