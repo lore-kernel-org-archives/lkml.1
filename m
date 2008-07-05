@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbYGEX3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbYGEXbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756196AbYGEX3V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 19:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYGEX3O
+	id S1756183AbYGEXbM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 19:31:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYGEXa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 19:29:14 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:54500 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752537AbYGEX3N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 19:29:13 -0400
-Date: Sun, 6 Jul 2008 02:27:11 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC patch 00/12] Tracepoints v2
-Message-ID: <20080706022711.199401fe@linux360.ro>
-In-Reply-To: <20080704235207.147809973@polymtl.ca>
-References: <20080704235207.147809973@polymtl.ca>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+	Sat, 5 Jul 2008 19:30:58 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:52847 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752460AbYGEXa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 19:30:58 -0400
+Date: Sun, 6 Jul 2008 01:30:51 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Tomas Winkler <tomas.winkler@intel.com>
+Cc: marcel@holtmann.org, linux-kernel@vger.kernel.org,
+       Tomas Winkler <tomas.winkler@intel.com>
+Subject: Re: [PATCH 1/2 V2] MMC: fix spares errors of sdhci.c
+Message-ID: <20080706013051.008c54df@mjolnir.drzeus.cx>
+In-Reply-To: <1215276725-15588-1-git-send-email-tomas.winkler@intel.com>
+References: <1215276725-15588-1-git-send-email-tomas.winkler@intel.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-16148-1215300656-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 04 Jul 2008 19:52:07 -0400
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> Hi,
-> 
-> Here is the second release of kernel tracepoints, including the
-> architecture independent instrumentation taken from LTTng. I submit
-> this for another round of comments.
+--=_freyr.drzeus.cx-16148-1215300656-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Sat,  5 Jul 2008 19:52:04 +0300
+Tomas Winkler <tomas.winkler@intel.com> wrote:
 
-Not using format specifiers sounds pretty nice. Are there any other
-advantages over markers? What about self-modifying code, does it employ
-this technique to eliminate conditional branching (markers did this on
-some arches, IIRC)?
+> 1. sdhci_prepare_data: fix shadowing of count variable
+> 	u8 count
+> 	int count -> sg_cnt;
+> 2.  sdhci_add_host: assignment of integer to pointer
+> 	dma_mask =3D 0 -> dma_mask =3D NULL;
+>=20
+> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+> ---
 
-I'm considering using this for kmemtrace, so please keep me Cc-ed if
-possible.
+Applied, thanks.
 
+--=20
+     -- Pierre Ossman
 
-	Cheers,
-	Eduard
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-P.S.: BTW, the To header is either broken or I screwed it (I'm reading
-this via Gmane's NNTP):
-"Steven Rostedt <ros"
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-16148-1215300656-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkhwBC8ACgkQ7b8eESbyJLj3vACfcg98n8UhmjU7sTVuUCjpnS6G
+v8wAoJePADgFEwzKl1HaeL98ANdfyJpY
+=frXc
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-16148-1215300656-0001-2--
