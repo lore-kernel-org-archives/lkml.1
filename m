@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758346AbYGERoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758659AbYGERot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758346AbYGERoS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbYGERhY
+	id S1758659AbYGERot (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756405AbYGERh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:37:24 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33053 "EHLO
+	Sat, 5 Jul 2008 13:37:29 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33060 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754867AbYGERga (ORCPT
+	with ESMTP id S1753891AbYGERgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 13:36:30 -0400
+	Sat, 5 Jul 2008 13:36:31 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Ext4 Developers List <linux-ext4@vger.kernel.org>,
        Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, Mingming Cao <cmm@us.ibm.com>
-Subject: [PATCH 50/52] ext4: Enable delalloc by default.
-Date: Sat,  5 Jul 2008 13:36:16 -0400
-Message-Id: <1215279378-30504-51-git-send-email-tytso@mit.edu>
+Cc: Mingming Cao <cmm@us.ibm.com>, "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 27/52] ext4: mballoc avoid use root reserved blocks for non root allocation
+Date: Sat,  5 Jul 2008 13:35:53 -0400
+Message-Id: <1215279378-30504-28-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.rc3.1.g36b7.dirty
-In-Reply-To: <1215279378-30504-50-git-send-email-tytso@mit.edu>
+In-Reply-To: <1215279378-30504-27-git-send-email-tytso@mit.edu>
 References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-2-git-send-email-tytso@mit.edu>
  <1215279378-30504-3-git-send-email-tytso@mit.edu>
@@ -47,29 +46,6 @@ References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-25-git-send-email-tytso@mit.edu>
  <1215279378-30504-26-git-send-email-tytso@mit.edu>
  <1215279378-30504-27-git-send-email-tytso@mit.edu>
- <1215279378-30504-28-git-send-email-tytso@mit.edu>
- <1215279378-30504-29-git-send-email-tytso@mit.edu>
- <1215279378-30504-30-git-send-email-tytso@mit.edu>
- <1215279378-30504-31-git-send-email-tytso@mit.edu>
- <1215279378-30504-32-git-send-email-tytso@mit.edu>
- <1215279378-30504-33-git-send-email-tytso@mit.edu>
- <1215279378-30504-34-git-send-email-tytso@mit.edu>
- <1215279378-30504-35-git-send-email-tytso@mit.edu>
- <1215279378-30504-36-git-send-email-tytso@mit.edu>
- <1215279378-30504-37-git-send-email-tytso@mit.edu>
- <1215279378-30504-38-git-send-email-tytso@mit.edu>
- <1215279378-30504-39-git-send-email-tytso@mit.edu>
- <1215279378-30504-40-git-send-email-tytso@mit.edu>
- <1215279378-30504-41-git-send-email-tytso@mit.edu>
- <1215279378-30504-42-git-send-email-tytso@mit.edu>
- <1215279378-30504-43-git-send-email-tytso@mit.edu>
- <1215279378-30504-44-git-send-email-tytso@mit.edu>
- <1215279378-30504-45-git-send-email-tytso@mit.edu>
- <1215279378-30504-46-git-send-email-tytso@mit.edu>
- <1215279378-30504-47-git-send-email-tytso@mit.edu>
- <1215279378-30504-48-git-send-email-tytso@mit.edu>
- <1215279378-30504-49-git-send-email-tytso@mit.edu>
- <1215279378-30504-50-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -77,92 +53,153 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+From: Mingming Cao <cmm@us.ibm.com>
 
-Enable delalloc by default to ensure it gets sufficient testing and
-because it makes the filesystem much more efficient.  Add a nodealalloc
-option to disable delayed allocation, and update ext4_show_options to
-show delayed allocation off if it is disabled.
+mballoc allocation missed check for blocks reserved for root users. Add
+ext4_has_free_blocks() check before allocation. Also modified
+ext4_has_free_blocks() to support multiple block allocation request.
 
-If the data=journal mount option is used, disable delayed allocation
-since the delalloc code doesn't support data=journal yet.
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/super.c |   23 ++++++++++++++++++++++-
- 1 files changed, 22 insertions(+), 1 deletions(-)
+ fs/ext4/balloc.c  |   51 +++++++++++++++++++++++++++++++++------------------
+ fs/ext4/ext4.h    |    2 ++
+ fs/ext4/mballoc.c |    7 ++++++-
+ 3 files changed, 41 insertions(+), 19 deletions(-)
 
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 25e2f24..4e104dd 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -756,6 +756,9 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
- 		seq_puts(seq, ",nomballoc");
- 	if (test_opt(sb, I_VERSION))
- 		seq_puts(seq, ",i_version");
-+	if (!test_opt(sb, DELALLOC))
-+		seq_puts(seq, ",nodelalloc");
+diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
+index 48787e8..25f63d8 100644
+--- a/fs/ext4/balloc.c
++++ b/fs/ext4/balloc.c
+@@ -1599,23 +1599,35 @@ out:
+ 
+ /**
+  * ext4_has_free_blocks()
+- * @sbi:		in-core super block structure.
++ * @sbi:	in-core super block structure.
++ * @nblocks:	number of neeed blocks
+  *
+- * Check if filesystem has at least 1 free block available for allocation.
++ * Check if filesystem has free blocks available for allocation.
++ * Return the number of blocks avaible for allocation for this request
++ * On success, return nblocks
+  */
+-static int ext4_has_free_blocks(struct ext4_sb_info *sbi)
++ext4_fsblk_t ext4_has_free_blocks(struct ext4_sb_info *sbi,
++						ext4_fsblk_t nblocks)
+ {
+-	ext4_fsblk_t free_blocks, root_blocks;
++	ext4_fsblk_t free_blocks;
++	ext4_fsblk_t root_blocks = 0;
+ 
+ 	free_blocks = percpu_counter_read_positive(&sbi->s_freeblocks_counter);
+-	root_blocks = ext4_r_blocks_count(sbi->s_es);
+-	if (free_blocks < root_blocks + 1 && !capable(CAP_SYS_RESOURCE) &&
++
++	if (!capable(CAP_SYS_RESOURCE) &&
+ 		sbi->s_resuid != current->fsuid &&
+-		(sbi->s_resgid == 0 || !in_group_p (sbi->s_resgid))) {
+-		return 0;
+-	}
+-	return 1;
+-}
++		(sbi->s_resgid == 0 || !in_group_p(sbi->s_resgid)))
++		root_blocks = ext4_r_blocks_count(sbi->s_es);
++#ifdef CONFIG_SMP
++	if (free_blocks - root_blocks < FBC_BATCH)
++		free_blocks =
++			percpu_counter_sum_positive(&sbi->s_freeblocks_counter);
++#endif
++	if (free_blocks - root_blocks < nblocks)
++		return free_blocks - root_blocks;
++	return nblocks;
++ }
 +
  
- 	if (sbi->s_stripe)
- 		seq_printf(seq, ",stripe=%lu", sbi->s_stripe);
-@@ -903,7 +906,7 @@ enum {
- 	Opt_jqfmt_vfsold, Opt_jqfmt_vfsv0, Opt_quota, Opt_noquota,
- 	Opt_ignore, Opt_barrier, Opt_err, Opt_resize, Opt_usrquota,
- 	Opt_grpquota, Opt_extents, Opt_noextents, Opt_i_version,
--	Opt_mballoc, Opt_nomballoc, Opt_stripe, Opt_delalloc,
-+	Opt_mballoc, Opt_nomballoc, Opt_stripe, Opt_delalloc, Opt_nodelalloc,
- };
+ /**
+  * ext4_should_retry_alloc()
+@@ -1631,7 +1643,7 @@ static int ext4_has_free_blocks(struct ext4_sb_info *sbi)
+  */
+ int ext4_should_retry_alloc(struct super_block *sb, int *retries)
+ {
+-	if (!ext4_has_free_blocks(EXT4_SB(sb)) || (*retries)++ > 3)
++	if (!ext4_has_free_blocks(EXT4_SB(sb), 1) || (*retries)++ > 3)
+ 		return 0;
  
- static match_table_t tokens = {
-@@ -963,6 +966,7 @@ static match_table_t tokens = {
- 	{Opt_stripe, "stripe=%u"},
- 	{Opt_resize, "resize"},
- 	{Opt_delalloc, "delalloc"},
-+	{Opt_nodelalloc, "nodelalloc"},
- 	{Opt_err, NULL},
- };
+ 	jbd_debug(1, "%s: retrying operation after ENOSPC\n", sb->s_id);
+@@ -1681,13 +1693,21 @@ ext4_fsblk_t ext4_old_new_blocks(handle_t *handle, struct inode *inode,
+ 	ext4_group_t ngroups;
+ 	unsigned long num = *count;
  
-@@ -1328,6 +1332,9 @@ set_qf_format:
- 			set_opt(sbi->s_mount_opt, I_VERSION);
- 			sb->s_flags |= MS_I_VERSION;
- 			break;
-+		case Opt_nodelalloc:
-+			clear_opt(sbi->s_mount_opt, DELALLOC);
-+			break;
- 		case Opt_mballoc:
- 			set_opt(sbi->s_mount_opt, MBALLOC);
- 			break;
-@@ -1984,6 +1991,13 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
+-	*errp = -ENOSPC;
+ 	sb = inode->i_sb;
+ 	if (!sb) {
++		*errp = -ENODEV;
+ 		printk("ext4_new_block: nonexistent device");
+ 		return 0;
+ 	}
+ 
++	sbi = EXT4_SB(sb);
++	*count = ext4_has_free_blocks(sbi, *count);
++	if (*count == 0) {
++		*errp = -ENOSPC;
++		return 0;	/*return with ENOSPC error */
++	}
++	num = *count;
++
+ 	/*
+ 	 * Check quota for allocation of this block.
  	 */
- 	set_opt(sbi->s_mount_opt, MBALLOC);
+@@ -1711,11 +1731,6 @@ ext4_fsblk_t ext4_old_new_blocks(handle_t *handle, struct inode *inode,
+ 	if (block_i && ((windowsz = block_i->rsv_window_node.rsv_goal_size) > 0))
+ 		my_rsv = &block_i->rsv_window_node;
  
-+	/*
-+	 * enable delayed allocation by default
-+	 * Use -o nodelalloc to turn it off
-+	 */
-+	set_opt(sbi->s_mount_opt, DELALLOC);
+-	if (!ext4_has_free_blocks(sbi)) {
+-		*errp = -ENOSPC;
+-		goto out;
+-	}
+-
+ 	/*
+ 	 * First, test whether the goal block is free.
+ 	 */
+diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
+index ed04642..37ce906 100644
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -979,6 +979,8 @@ extern ext4_fsblk_t ext4_new_blocks(handle_t *handle, struct inode *inode,
+ 					unsigned long *count, int *errp);
+ extern ext4_fsblk_t ext4_old_new_blocks(handle_t *handle, struct inode *inode,
+ 			ext4_fsblk_t goal, unsigned long *count, int *errp);
++extern ext4_fsblk_t ext4_has_free_blocks(struct ext4_sb_info *sbi,
++						ext4_fsblk_t nblocks);
+ extern void ext4_free_blocks (handle_t *handle, struct inode *inode,
+ 			ext4_fsblk_t block, unsigned long count, int metadata);
+ extern void ext4_free_blocks_sb (handle_t *handle, struct super_block *sb,
+diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
+index 007b97b..9ffad23 100644
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -4039,6 +4039,12 @@ ext4_fsblk_t ext4_mb_new_blocks(handle_t *handle,
+ 					    &(ar->len), errp);
+ 		return block;
+ 	}
++	ar->len = ext4_has_free_blocks(sbi, ar->len);
 +
-+
- 	if (!parse_options ((char *) data, sb, &journal_inum, &journal_devnum,
- 			    NULL, 0))
- 		goto failed_mount;
-@@ -2422,6 +2436,13 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
- 		test_opt(sb,DATA_FLAGS) == EXT4_MOUNT_ORDERED_DATA ? "ordered":
- 		"writeback");
++	if (ar->len == 0) {
++		*errp = -ENOSPC;
++		return 0;
++	}
  
-+	if (test_opt(sb, DATA_FLAGS) == EXT4_MOUNT_JOURNAL_DATA) {
-+		printk(KERN_WARNING "EXT4-fs: Ignoring delalloc option - "
-+				"requested data journaling mode\n");
-+		clear_opt(sbi->s_mount_opt, DELALLOC);
-+	} else if (test_opt(sb, DELALLOC))
-+		printk(KERN_INFO "EXT4-fs: delayed allocation enabled\n");
-+
- 	ext4_ext_init(sb);
- 	ext4_mb_init(sb, needs_recovery);
+ 	while (ar->len && DQUOT_ALLOC_BLOCK(ar->inode, ar->len)) {
+ 		ar->flags |= EXT4_MB_HINT_NOPREALLOC;
+@@ -4067,7 +4073,6 @@ ext4_fsblk_t ext4_mb_new_blocks(handle_t *handle,
  
+ 	ac->ac_op = EXT4_MB_HISTORY_PREALLOC;
+ 	if (!ext4_mb_use_preallocated(ac)) {
+-
+ 		ac->ac_op = EXT4_MB_HISTORY_ALLOC;
+ 		ext4_mb_normalize_request(ac, ar);
+ repeat:
 -- 
 1.5.6.rc3.1.g36b7.dirty
 
