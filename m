@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbYGEIbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbYGEIfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbYGEIbm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 04:31:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbYGEIbc
+	id S1754360AbYGEIfb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 04:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbYGEIfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 04:31:32 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:13124 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754071AbYGEIbb (ORCPT
+	Sat, 5 Jul 2008 04:35:23 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:2800 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751266AbYGEIfW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 04:31:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=YjLMYDwe+d4pYUxj3l8TtbmRPvFaYXIUC92Q9ulsRxFVo8y2GudoiKBKrcE3Sbu7cs
-         T68rk2036+PygQUoSNw2QyycDXj02kvVa2uezKSIpTJtQQ9JUwuMNE3T5vj9tH5RTEhq
-         cO4rJ4hYMt43ci67xt8EHxZ3PwMfsgaqgv1xc=
-Date: Sat, 5 Jul 2008 12:31:22 +0400
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Takashi Iwai <tiwai@suse.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fix build error of driver/mfd/tc6393xb.c
-Message-ID: <20080705083122.GA7026@doriath.ww600.siemens.net>
-References: <s5hiqvlc2ut.wl%tiwai@suse.de> <20080704142208.GB4576@doriath.ww600.siemens.net> <s5hwsk1k6yj.wl%tiwai@suse.de> <200807040954.34838.david-b@pacbell.net>
+	Sat, 5 Jul 2008 04:35:22 -0400
+Date: Sat, 5 Jul 2008 10:34:45 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH 02/20] lib: generic show_mem()
+Message-ID: <20080705083445.GA5454@osiris.boeblingen.de.ibm.com>
+References: <20080704160737.750988999@saeurebad.de> <20080704161452.730548249@saeurebad.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200807040954.34838.david-b@pacbell.net>
+In-Reply-To: <20080704161452.730548249@saeurebad.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 04, 2008 at 09:54:34AM -0700, David Brownell wrote:
-> On Friday 04 July 2008, Takashi Iwai wrote:
-> > 
-> > > Please submit a patch where HAVE_GPIO_LIB selects GENERIC_GPIO.
-> > 
-> > Hmm... just checking again, I found GENERIC_GPIO isn't defined in
-> > drivers/gpio/Kconfig but in each arch Kconfig.  So we can't select it
-> > unconditionally.
-> > 
-> > I'm not sure whether it's a better fix at this moment.
+On Fri, Jul 04, 2008 at 06:07:39PM +0200, Johannes Weiner wrote:
+> This implements a platform-independent version of show_mem().
 > 
-> Which platform is it which is trying to declare that it has
-> an implementation (HAVE_GPIO_LIB) of an interface that it
-> doesn't support (GENERIC_GPIO unset) ??
+> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+> ---
+>  lib/Makefile   |    2 -
+>  lib/show_mem.c |   63 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 64 insertions(+), 1 deletion(-)
+> 
+> --- a/lib/Makefile
+> +++ b/lib/Makefile
+> @@ -6,7 +6,7 @@ lib-y := ctype.o string.o vsprintf.o cmd
+>  	 rbtree.o radix-tree.o dump_stack.o \
+>  	 idr.o int_sqrt.o extable.o prio_tree.o \
+>  	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
+> -	 proportions.o prio_heap.o ratelimit.o
+> +	 proportions.o prio_heap.o ratelimit.o show_mem.o
+> 
+>  ifdef CONFIG_FTRACE
+>  # Do not profile string.o, since it may be used in early boot or vdso
+> --- /dev/null
+> +++ b/lib/show_mem.c
+> @@ -0,0 +1,63 @@
+> +/*
+> + * Generic show_mem() implementation
+> + *
+> + * Copyright (C) 2008 Johannes Weiner <hannes@saeurebad.de>
+> + * All code subject to the GPL version 2.
+> + */
+> +
+> +#include <linux/mm.h>
+> +#include <linux/nmi.h>
+> +#include <linux/quicklist.h>
+> +
+> +void show_mem(void)
+> +{
 
-the powerpc with PPC_MPC52xx=y, PPC_MPC5200_GPIO=y
+Umh.. I think your 4th patch set was the way to go. This set is not
+bisectable anymore and those architectures which you didn't convert
+to the generic implementation won't build anymore. show_mem is present
+twice there...
 
--- 
-With best wishes
-Dmitry
-
+You might solve this by adding an __attribute__((weak)) but I'm sure
+people will complain again, because it produces dead code for all
+architectures which got converted.
