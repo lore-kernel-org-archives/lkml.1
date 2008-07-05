@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752317AbYGEK0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597AbYGEK2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752317AbYGEK0x (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 06:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbYGEK0m
+	id S1752597AbYGEK2Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 06:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbYGEK2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 06:26:42 -0400
-Received: from baikonur.stro.at ([213.239.196.228]:57722 "EHLO
-	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbYGEK0l (ORCPT
+	Sat, 5 Jul 2008 06:28:05 -0400
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:44884 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750959AbYGEK2E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 06:26:41 -0400
-Date: Sat, 5 Jul 2008 12:26:34 +0200
-From: maximilian attems <max@stro.at>
-To: Theodore Tso <tytso@mit.edu>, David Woodhouse <dwmw2@infradead.org>,
-       Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
-       David Miller <davem@davemloft.net>, hugh@veritas.com,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-Message-ID: <20080705102633.GA21779@stro.at>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	David Woodhouse <dwmw2@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-	Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-	hugh@veritas.com, akpm@linux-foundation.org,
-	kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	netdev@vger.kernel.org
-References: <1215111362.10393.651.camel@pmac.infradead.org> <20080703.162120.206258339.davem@davemloft.net> <486D6DDB.4010205@infradead.org> <87ej6armez.fsf@basil.nowhere.org> <1215177044.10393.743.camel@pmac.infradead.org> <486E2260.5050503@garzik.org> <1215178035.10393.763.camel@pmac.infradead.org> <20080704141014.GA23215@mit.edu> <20080704142403.GD7212@baikonur.stro.at> <20080704143634.GC23215@mit.edu>
-MIME-Version: 1.0
+	Sat, 5 Jul 2008 06:28:04 -0400
+X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Setting system clock... (FREEZE) (2.6.25.5)
+In-reply-to: <alpine.DEB.1.10.0807050430210.14834@p34.internal.lan>
+References: <alpine.DEB.1.10.0806100425570.28343@p34.internal.lan> <alpine.DEB.1.10.0807050430210.14834@p34.internal.lan>
+Comments: In-reply-to Justin Piszcz <jpiszcz@lucidpixels.com>
+   message dated "Sat, 05 Jul 2008 04:31:15 -0400."
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080704143634.GC23215@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Sat, 05 Jul 2008 12:27:22 +0200
+From: Anders Eriksson <aeriksson@fastmail.fm>
+Message-Id: <20080705102723.2B5442C400A@tippex.mynet.homeunix.org>
+X-Originating-IP: 83.252.237.76
+X-Scan-Result: No virus found in message 1KF4zo-0007sj-87.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KF4zo-0007sj-87 655e359dd3a658ae1c9ed23f1b9f7265
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 04 Jul 2008, Theodore Tso wrote:
 
-> On Fri, Jul 04, 2008 at 04:24:03PM +0200, maximilian attems wrote:
-> > yes i'd call them severly broken.
-> > as it is quite easy to pick up the modinfo firmware module output.
-> > 
-> > their trouble is that they sync initramfs-tools from Debian only
-> > once every 2 years or so.
-> 
-> Well, Takashi just mentioned that SuSE's mkinitrd may not handle
-> /lib/firmware correctly either....
+>> 
+>> http://www.linuxquestions.org/questions/linux-general-1/hard-freeze-on-boot-be
+>> tween-setting-clock-and-host-name-625494/ >
+> Setting system clock... (FREEZE) > 
 
-i have good news: in intrepid they synced initramfs-tools,
-so it is fixed for their upcoming release. as it is fixed
-in Debian for Lenny. they went for the /lib/firmware/${version}
-choice.
+I can confirm this as well. hp nc6400 laptop. 
+Tripple booting into w2k, sles 10.1 (kernel 2.6.16.xxx afair), and gentoo 
+(vanilla 2.6.25.x).
 
--- 
-maks
+I see the issue on ever 2-4 boots in gentoo only. I'd be happy to try patches.
+
+/Anders
+
+
