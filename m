@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbYGERng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758326AbYGERnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758232AbYGERng (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756531AbYGERhP
+	id S1758326AbYGERnv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:43:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbYGERhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:37:15 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33051 "EHLO
+	Sat, 5 Jul 2008 13:37:19 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33048 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754757AbYGERga (ORCPT
+	with ESMTP id S1754761AbYGERga (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 5 Jul 2008 13:36:30 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Ext4 Developers List <linux-ext4@vger.kernel.org>,
        Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+Cc: Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
        Mingming Cao <cmm@us.ibm.com>, "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 47/52] ext4: Add ordered mode support for delalloc
-Date: Sat,  5 Jul 2008 13:36:13 -0400
-Message-Id: <1215279378-30504-48-git-send-email-tytso@mit.edu>
+Subject: [PATCH 48/52] ext4: Handle page without buffers in ext4_*_writepage()
+Date: Sat,  5 Jul 2008 13:36:14 -0400
+Message-Id: <1215279378-30504-49-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.rc3.1.g36b7.dirty
-In-Reply-To: <1215279378-30504-47-git-send-email-tytso@mit.edu>
+In-Reply-To: <1215279378-30504-48-git-send-email-tytso@mit.edu>
 References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-2-git-send-email-tytso@mit.edu>
  <1215279378-30504-3-git-send-email-tytso@mit.edu>
@@ -67,6 +67,7 @@ References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-45-git-send-email-tytso@mit.edu>
  <1215279378-30504-46-git-send-email-tytso@mit.edu>
  <1215279378-30504-47-git-send-email-tytso@mit.edu>
+ <1215279378-30504-48-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -74,197 +75,296 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+From: Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>
 
-This provides a new ordered mode implementation which gets rid of using
-buffer heads to enforce the ordering between metadata change with the
-related data chage.  Instead, in the new ordering mode, it keeps track
-of all of the inodes touched by each transaction on a list, and when
-that transaction is committed, it flushes all of the dirty pages for
-those inodes.  In addition, the new ordered mode reverses the lock
-ordering of the page lock and transaction lock, which provides easier
-support for delayed allocation.
+It can happen that buffers are removed from the page before it gets
+marked dirty and then is passed to writepage().  In writepage() we just
+initialize the buffers and check whether they are mapped and non
+delay. If they are mapped and non delay we write the page. Otherwise we
+mark them dirty.  With this change we don't do block allocation at all
+in ext4_*_write_page.
+
+writepage() can get called under many condition and with a locking order
+of journal_start -> lock_page, we should not try to allocate blocks in
+writepage() which get called after taking page lock.  writepage() can
+get called via shrink_page_list even with a journal handle which was
+created for doing inode update.  For example when doing
+ext4_da_write_begin we create a journal handle with credit 1 expecting a
+i_disksize update for the inode. But ext4_da_write_begin can cause
+shrink_page_list via _grab_page_cache. So having a valid handle via
+ext4_journal_current_handle is not a guarantee that we can use the
+handle for block allocation in writepage, since we shouldn't be using
+credits that had been reserved for other updates.  That it could result
+in we running out of credits when we update inodes.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Mingming Cao <cmm@us.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/inode.c  |   30 +++++++++++++++++++++++++-----
- fs/jbd2/commit.c |   38 +++++++++++++++++++++++++++++++++-----
- 2 files changed, 58 insertions(+), 10 deletions(-)
+ fs/ext4/inode.c |  169 ++++++++++++++++++++++++++++++++++++++++---------------
+ 1 files changed, 124 insertions(+), 45 deletions(-)
 
 diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index db5aee8..7d1171a 100644
+index 7d1171a..6aa0ea8 100644
 --- a/fs/ext4/inode.c
 +++ b/fs/ext4/inode.c
-@@ -1636,11 +1636,12 @@ static int ext4_bh_unmapped_or_delay(handle_t *handle, struct buffer_head *bh)
- 	return !buffer_mapped(bh) || buffer_delay(bh);
+@@ -1592,11 +1592,15 @@ static int ext4_da_get_block_write(struct inode *inode, sector_t iblock,
+ 	handle_t *handle = NULL;
+ 
+ 	handle = ext4_journal_current_handle();
+-	BUG_ON(handle == NULL);
+-	BUG_ON(create == 0);
+-
+-	ret = ext4_get_blocks_wrap(handle, inode, iblock, max_blocks,
++	if (!handle) {
++		ret = ext4_get_blocks_wrap(handle, inode, iblock, max_blocks,
++				   bh_result, 0, 0, 0);
++		BUG_ON(!ret);
++	} else {
++		ret = ext4_get_blocks_wrap(handle, inode, iblock, max_blocks,
+ 				   bh_result, create, 0, EXT4_DELALLOC_RSVED);
++	}
++
+ 	if (ret > 0) {
+ 		bh_result->b_size = (ret << inode->i_blkbits);
+ 
+@@ -1633,15 +1637,37 @@ static int ext4_da_get_block_write(struct inode *inode, sector_t iblock,
+ 
+ static int ext4_bh_unmapped_or_delay(handle_t *handle, struct buffer_head *bh)
+ {
+-	return !buffer_mapped(bh) || buffer_delay(bh);
++	/*
++	 * unmapped buffer is possible for holes.
++	 * delay buffer is possible with delayed allocation
++	 */
++	return ((!buffer_mapped(bh) || buffer_delay(bh)) && buffer_dirty(bh));
++}
++
++static int ext4_normal_get_block_write(struct inode *inode, sector_t iblock,
++				   struct buffer_head *bh_result, int create)
++{
++	int ret = 0;
++	unsigned max_blocks = bh_result->b_size >> inode->i_blkbits;
++
++	/*
++	 * we don't want to do block allocation in writepage
++	 * so call get_block_wrap with create = 0
++	 */
++	ret = ext4_get_blocks_wrap(NULL, inode, iblock, max_blocks,
++				   bh_result, 0, 0, 0);
++	if (ret > 0) {
++		bh_result->b_size = (ret << inode->i_blkbits);
++		ret = 0;
++	}
++	return ret;
  }
  
--/* FIXME!! only support data=writeback mode */
  /*
-  * get called vi ext4_da_writepages after taking page lock
-  * We may end up doing block allocation here in case
-  * mpage_da_map_blocks failed to allocate blocks.
-+ *
-+ * We also get called via journal_submit_inode_data_buffers
+- * get called vi ext4_da_writepages after taking page lock
+- * We may end up doing block allocation here in case
+- * mpage_da_map_blocks failed to allocate blocks.
+- *
+- * We also get called via journal_submit_inode_data_buffers
++ * get called vi ext4_da_writepages after taking page lock (have journal handle)
++ * get called via journal_submit_inode_data_buffers (no journal handle)
++ * get called via shrink_page_list via pdflush (no journal handle)
++ * or grab_page_cache when doing write_begin (have journal handle)
   */
  static int ext4_da_writepage(struct page *page,
  				struct writeback_control *wbc)
-@@ -1659,6 +1660,7 @@ static int ext4_da_writepage(struct page *page,
- 		 * ext4_da_writepages() but directly (shrink_page_list).
- 		 * We cannot easily start a transaction here so we just skip
- 		 * writing the page in case we would have to do so.
-+		 * We reach here also via journal_submit_inode_data_buffers
- 		 */
- 		size = i_size_read(inode);
+@@ -1649,37 +1675,61 @@ static int ext4_da_writepage(struct page *page,
+ 	int ret = 0;
+ 	loff_t size;
+ 	unsigned long len;
+-	handle_t *handle = NULL;
+ 	struct buffer_head *page_bufs;
+ 	struct inode *inode = page->mapping->host;
  
-@@ -1674,8 +1676,11 @@ static int ext4_da_writepage(struct page *page,
- 			 * We can't do block allocation under
- 			 * page lock without a handle . So redirty
- 			 * the page and return
-+			 * We may reach here when we do a journal commit
-+			 * via journal_submit_inode_data_buffers.
-+			 * If we don't have mapping block we just ignore
-+			 * them
+-	handle = ext4_journal_current_handle();
+-	if (!handle) {
+-		/*
+-		 * This can happen when we aren't called via
+-		 * ext4_da_writepages() but directly (shrink_page_list).
+-		 * We cannot easily start a transaction here so we just skip
+-		 * writing the page in case we would have to do so.
+-		 * We reach here also via journal_submit_inode_data_buffers
+-		 */
+-		size = i_size_read(inode);
++	size = i_size_read(inode);
++	if (page->index == size >> PAGE_CACHE_SHIFT)
++		len = size & ~PAGE_CACHE_MASK;
++	else
++		len = PAGE_CACHE_SIZE;
+ 
++	if (page_has_buffers(page)) {
+ 		page_bufs = page_buffers(page);
+-		if (page->index == size >> PAGE_CACHE_SHIFT)
+-			len = size & ~PAGE_CACHE_MASK;
+-		else
+-			len = PAGE_CACHE_SIZE;
+-
+-		if (walk_page_buffers(NULL, page_bufs, 0,
+-				len, NULL, ext4_bh_unmapped_or_delay)) {
++		if (walk_page_buffers(NULL, page_bufs, 0, len, NULL,
++					ext4_bh_unmapped_or_delay)) {
+ 			/*
+-			 * We can't do block allocation under
+-			 * page lock without a handle . So redirty
+-			 * the page and return
++			 * We don't want to do  block allocation
++			 * So redirty the page and return
+ 			 * We may reach here when we do a journal commit
+ 			 * via journal_submit_inode_data_buffers.
+ 			 * If we don't have mapping block we just ignore
+-			 * them
++			 * them. We can also reach here via shrink_page_list
++			 */
++			redirty_page_for_writepage(wbc, page);
++			unlock_page(page);
++			return 0;
++		}
++	} else {
++		/*
++		 * The test for page_has_buffers() is subtle:
++		 * We know the page is dirty but it lost buffers. That means
++		 * that at some moment in time after write_begin()/write_end()
++		 * has been called all buffers have been clean and thus they
++		 * must have been written at least once. So they are all
++		 * mapped and we can happily proceed with mapping them
++		 * and writing the page.
++		 *
++		 * Try to initialize the buffer_heads and check whether
++		 * all are mapped and non delay. We don't want to
++		 * do block allocation here.
++		 */
++		ret = block_prepare_write(page, 0, PAGE_CACHE_SIZE,
++						ext4_normal_get_block_write);
++		if (!ret) {
++			page_bufs = page_buffers(page);
++			/* check whether all are mapped and non delay */
++			if (walk_page_buffers(NULL, page_bufs, 0, len, NULL,
++						ext4_bh_unmapped_or_delay)) {
++				redirty_page_for_writepage(wbc, page);
++				unlock_page(page);
++				return 0;
++			}
++		} else {
++			/*
++			 * We can't do block allocation here
++			 * so just redity the page and unlock
++			 * and return
  			 */
--			BUG_ON(wbc->sync_mode != WB_SYNC_NONE);
  			redirty_page_for_writepage(wbc, page);
  			unlock_page(page);
- 			return 0;
-@@ -1690,7 +1695,6 @@ static int ext4_da_writepage(struct page *page,
+@@ -1688,9 +1738,11 @@ static int ext4_da_writepage(struct page *page,
+ 	}
+ 
+ 	if (test_opt(inode->i_sb, NOBH) && ext4_should_writeback_data(inode))
+-		ret = nobh_writepage(page, ext4_da_get_block_write, wbc);
++		ret = nobh_writepage(page, ext4_normal_get_block_write, wbc);
+ 	else
+-		ret = block_write_full_page(page, ext4_da_get_block_write, wbc);
++		ret = block_write_full_page(page,
++						ext4_normal_get_block_write,
++						wbc);
+ 
  	return ret;
+ }
+@@ -2031,12 +2083,14 @@ static int __ext4_normal_writepage(struct page *page,
+ 	struct inode *inode = page->mapping->host;
+ 
+ 	if (test_opt(inode->i_sb, NOBH))
+-		return nobh_writepage(page, ext4_get_block, wbc);
++		return nobh_writepage(page,
++					ext4_normal_get_block_write, wbc);
+ 	else
+-		return block_write_full_page(page, ext4_get_block, wbc);
++		return block_write_full_page(page,
++						ext4_normal_get_block_write,
++						wbc);
  }
  
 -
- /*
-  * For now just follow the DIO way to estimate the max credits
-  * needed to write out EXT4_MAX_WRITEBACK_PAGES.
-@@ -1723,7 +1727,7 @@ static int ext4_da_writepages(struct address_space *mapping,
- 		return 0;
- 
- 	/*
--	 *  Estimate the worse case needed credits to write out
-+	 * Estimate the worse case needed credits to write out
- 	 * EXT4_MAX_BUF_BLOCKS pages
- 	 */
- 	needed_blocks = EXT4_MAX_WRITEBACK_CREDITS;
-@@ -1745,6 +1749,19 @@ static int ext4_da_writepages(struct address_space *mapping,
- 			ret = PTR_ERR(handle);
- 			goto out_writepages;
- 		}
-+		if (ext4_should_order_data(inode)) {
-+			/*
-+			 * With ordered mode we need to add
-+			 * the inode to the journal handle
-+			 * when we do block allocation.
-+			 */
-+			ret = ext4_jbd2_file_inode(handle, inode);
-+			if (ret) {
-+				ext4_journal_stop(handle);
-+				goto out_writepages;
-+			}
-+
-+		}
- 		/*
- 		 * set the max dirty pages could be write at a time
- 		 * to fit into the reserved transaction credits
-@@ -2328,7 +2345,10 @@ static const struct address_space_operations ext4_da_aops = {
- 
- void ext4_set_aops(struct inode *inode)
+ static int ext4_normal_writepage(struct page *page,
+ 				struct writeback_control *wbc)
  {
--	if (ext4_should_order_data(inode))
-+	if (ext4_should_order_data(inode) &&
-+		test_opt(inode->i_sb, DELALLOC))
-+		inode->i_mapping->a_ops = &ext4_da_aops;
-+	else if (ext4_should_order_data(inode))
- 		inode->i_mapping->a_ops = &ext4_ordered_aops;
- 	else if (ext4_should_writeback_data(inode) &&
- 		 test_opt(inode->i_sb, DELALLOC))
-diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
-index 483183d..f8b3be8 100644
---- a/fs/jbd2/commit.c
-+++ b/fs/jbd2/commit.c
-@@ -22,6 +22,8 @@
- #include <linux/pagemap.h>
- #include <linux/jiffies.h>
- #include <linux/crc32.h>
-+#include <linux/writeback.h>
-+#include <linux/backing-dev.h>
+@@ -2045,13 +2099,24 @@ static int ext4_normal_writepage(struct page *page,
+ 	loff_t len;
  
- /*
-  * Default IO end handler for temporary BJ_IO buffer_heads.
-@@ -185,6 +187,27 @@ static int journal_wait_on_commit_record(struct buffer_head *bh)
- }
- 
- /*
-+ * write the filemap data using writepage() address_space_operations.
-+ * We don't do block allocation here even for delalloc. We don't
-+ * use writepages() because with dealyed allocation we may be doing
-+ * block allocation in writepages().
-+ */
-+static int journal_submit_inode_data_buffers(struct address_space *mapping)
-+{
-+	int ret;
-+	struct writeback_control wbc = {
-+		.sync_mode =  WB_SYNC_ALL,
-+		.nr_to_write = mapping->nrpages * 2,
-+		.range_start = 0,
-+		.range_end = i_size_read(mapping->host),
-+		.for_writepages = 1,
-+	};
+ 	J_ASSERT(PageLocked(page));
+-	J_ASSERT(page_has_buffers(page));
+ 	if (page->index == size >> PAGE_CACHE_SHIFT)
+ 		len = size & ~PAGE_CACHE_MASK;
+ 	else
+ 		len = PAGE_CACHE_SIZE;
+-	BUG_ON(walk_page_buffers(NULL, page_buffers(page), 0, len, NULL,
+-				 ext4_bh_unmapped_or_delay));
 +
-+	ret = generic_writepages(mapping, &wbc);
-+	return ret;
-+}
-+
-+/*
-  * Submit all the data buffers of inode associated with the transaction to
-  * disk.
-  *
-@@ -192,7 +215,7 @@ static int journal_wait_on_commit_record(struct buffer_head *bh)
-  * our inode list. We use JI_COMMIT_RUNNING flag to protect inode we currently
-  * operate on from being released while we write out pages.
-  */
--static int journal_submit_inode_data_buffers(journal_t *journal,
-+static int journal_submit_data_buffers(journal_t *journal,
- 		transaction_t *commit_transaction)
- {
- 	struct jbd2_inode *jinode;
-@@ -204,8 +227,13 @@ static int journal_submit_inode_data_buffers(journal_t *journal,
- 		mapping = jinode->i_vfs_inode->i_mapping;
- 		jinode->i_flags |= JI_COMMIT_RUNNING;
- 		spin_unlock(&journal->j_list_lock);
--		err = filemap_fdatawrite_range(mapping, 0,
--					i_size_read(jinode->i_vfs_inode));
-+		/*
-+		 * submit the inode data buffers. We use writepage
-+		 * instead of writepages. Because writepages can do
-+		 * block allocation  with delalloc. We need to write
-+		 * only allocated blocks here.
++	if (page_has_buffers(page)) {
++		/* if page has buffers it should all be mapped
++		 * and allocated. If there are not buffers attached
++		 * to the page we know the page is dirty but it lost
++		 * buffers. That means that at some moment in time
++		 * after write_begin() / write_end() has been called
++		 * all buffers have been clean and thus they must have been
++		 * written at least once. So they are all mapped and we can
++		 * happily proceed with mapping them and writing the page.
 +		 */
-+		err = journal_submit_inode_data_buffers(mapping);
- 		if (!ret)
- 			ret = err;
- 		spin_lock(&journal->j_list_lock);
-@@ -228,7 +256,7 @@ static int journal_finish_inode_data_buffers(journal_t *journal,
- 	struct jbd2_inode *jinode, *next_i;
- 	int err, ret = 0;
++		BUG_ON(walk_page_buffers(NULL, page_buffers(page), 0, len, NULL,
++					ext4_bh_unmapped_or_delay));
++	}
  
--	/* For locking, see the comment in journal_submit_inode_data_buffers() */
-+	/* For locking, see the comment in journal_submit_data_buffers() */
- 	spin_lock(&journal->j_list_lock);
- 	list_for_each_entry(jinode, &commit_transaction->t_inode_list, i_list) {
- 		jinode->i_flags |= JI_COMMIT_RUNNING;
-@@ -431,7 +459,7 @@ void jbd2_journal_commit_transaction(journal_t *journal)
- 	 * Now start flushing things to disk, in the order they appear
- 	 * on the transaction lists.  Data blocks go first.
- 	 */
--	err = journal_submit_inode_data_buffers(journal, commit_transaction);
-+	err = journal_submit_data_buffers(journal, commit_transaction);
- 	if (err)
- 		jbd2_journal_abort(journal, err);
+ 	if (!ext4_journal_current_handle())
+ 		return __ext4_normal_writepage(page, wbc);
+@@ -2071,7 +2136,8 @@ static int __ext4_journalled_writepage(struct page *page,
+ 	int ret = 0;
+ 	int err;
  
+-	ret = block_prepare_write(page, 0, PAGE_CACHE_SIZE, ext4_get_block);
++	ret = block_prepare_write(page, 0, PAGE_CACHE_SIZE,
++					ext4_normal_get_block_write);
+ 	if (ret != 0)
+ 		goto out_unlock;
+ 
+@@ -2118,13 +2184,24 @@ static int ext4_journalled_writepage(struct page *page,
+ 	loff_t len;
+ 
+ 	J_ASSERT(PageLocked(page));
+-	J_ASSERT(page_has_buffers(page));
+ 	if (page->index == size >> PAGE_CACHE_SHIFT)
+ 		len = size & ~PAGE_CACHE_MASK;
+ 	else
+ 		len = PAGE_CACHE_SIZE;
+-	BUG_ON(walk_page_buffers(NULL, page_buffers(page), 0, len, NULL,
+-				 ext4_bh_unmapped_or_delay));
++
++	if (page_has_buffers(page)) {
++		/* if page has buffers it should all be mapped
++		 * and allocated. If there are not buffers attached
++		 * to the page we know the page is dirty but it lost
++		 * buffers. That means that at some moment in time
++		 * after write_begin() / write_end() has been called
++		 * all buffers have been clean and thus they must have been
++		 * written at least once. So they are all mapped and we can
++		 * happily proceed with mapping them and writing the page.
++		 */
++		BUG_ON(walk_page_buffers(NULL, page_buffers(page), 0, len, NULL,
++					ext4_bh_unmapped_or_delay));
++	}
+ 
+ 	if (ext4_journal_current_handle())
+ 		goto no_write;
+@@ -2142,7 +2219,9 @@ static int ext4_journalled_writepage(struct page *page,
+ 		 * really know unless we go poke around in the buffer_heads.
+ 		 * But block_write_full_page will do the right thing.
+ 		 */
+-		return block_write_full_page(page, ext4_get_block, wbc);
++		return block_write_full_page(page,
++						ext4_normal_get_block_write,
++						wbc);
+ 	}
+ no_write:
+ 	redirty_page_for_writepage(wbc, page);
 -- 
 1.5.6.rc3.1.g36b7.dirty
 
