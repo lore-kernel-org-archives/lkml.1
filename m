@@ -1,158 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbYGEM7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbYGENJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756178AbYGEM7n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 08:59:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbYGEM7f
+	id S1755582AbYGENJG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 09:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbYGENIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 08:59:35 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:17877 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752849AbYGEM7e (ORCPT
+	Sat, 5 Jul 2008 09:08:52 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:59917 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752409AbYGENIu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 08:59:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:from:date:message-id;
-        b=R95OQBJT6nxsAey4gV5I92EgE+fEIxK2zkovt1ZWoHMzsksfROZWTsJyXwwN1l/DBw
-         NgQROTb5UVKbd6+GdqlpuDKTGZJJFFMzjIp/1sU43avcajj2KkG/XdF7ZsyitFtrXGJK
-         TaOGcCdpEbwDFDe4HGX70RO8NcLpHgUgwBRfU=
-To: Ingo Molnar <mingo@elte.hu>
-To: Linux Kernel List <linux-kernel@vger.kernel.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linux-RT Kernel List <linux-rt-users@vger.kernel.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-To: Leon Woestenberg <leon@sidebranch.com>
-Subject: [PATCH 2.6.24.7-rt14 v2] rt: {queue,schedule}_work_prio() allowing work priorities other than caller's priority
-From: leon.woestenberg@gmail.com
-Date: Sat, 05 Jul 2008 05:59:30 -0700 (PDT)
-Message-ID: <486f7032.01b6420a.65e1.6a88@mx.google.com>
+	Sat, 5 Jul 2008 09:08:50 -0400
+X-Sasl-enc: 45BDFwIcDlYUPSZPVQAcrbmGg1cKw/kuThLiBjbux7OD 1215263329
+Date: Sat, 5 Jul 2008 10:08:45 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Bill Fink <billfink@mindspring.com>
+Cc: Trent Piepho <tpiepho@freescale.com>,
+       Olivier Galibert <galibert@pobox.com>,
+       David Woodhouse <dwmw2@infradead.org>, Hannes Reinecke <hare@suse.de>,
+       Takashi Iwai <tiwai@suse.de>, Theodore Tso <tytso@mit.edu>,
+       Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
+       David Miller <davem@davemloft.net>, hugh@veritas.com,
+       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+Message-ID: <20080705130845.GA23069@khazad-dum.debian.net>
+References: <1215178035.10393.763.camel@pmac.infradead.org> <20080704141014.GA23215@mit.edu> <s5habgxloct.wl%tiwai@suse.de> <486E3622.1000900@suse.de> <1215182557.10393.808.camel@pmac.infradead.org> <20080704231322.GA4410@dspnet.fr.eu.org> <20080704235839.GA5649@khazad-dum.debian.net> <Pine.LNX.4.64.0807041742500.13075@t2.domain.actdsltmp> <20080705035215.GA15899@khazad-dum.debian.net> <20080705020124.ac73e979.billfink@mindspring.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080705020124.ac73e979.billfink@mindspring.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds schedule_work_prio() and queue_work_prio() so that work can be
-scheduled with a different priority than the caller.
+On Sat, 05 Jul 2008, Bill Fink wrote:
+> On Sat, 5 Jul 2008, Henrique de Moraes Holschuh wrote:
+> > On Fri, 04 Jul 2008, Trent Piepho wrote:
+> > > On Fri, 4 Jul 2008, Henrique de Moraes Holschuh wrote:
+> > > > On Sat, 05 Jul 2008, Olivier Galibert wrote:
+> > > >> Won't that break multiple kernel installs on any binary packaging
+> > > >> system that cares about file collisions?  Multiple kernel rpms
+> > > >> providing the same /lib/firmware files would break things wouldn't
+> > > >> they ?
+> > > >
+> > > > We will probably need per-kernel directories, exactly like what is done for
+> > > > modules.  And since there are (now) both kernel-version-specific, and
+> > > > non-kernel-version-specific firmware, this means the firmware loader should
+> > > > look first on the version-specific directory (say, /lib/firmware/$(uname
+> > > > -r)/), then if not found, on the general directory (/lib/firmware).
+> > > 
+> > > How about /lib/modules/`uname -r`/firmware
+> > 
+> > I am fine with it, it certainly has a few advantages.
+> 
+> Why not put it in the same /lib/modules directory as the foo.ko
+> kernel module itself?  Then those who like to scp kernel modules
+> around (which I've done myself on occasion) just need to learn
+> to scp foo.* instead of foo.ko.  Why replicate a separate
+> /lib/modules/`uname -r`/firmware directory?
 
-Currently under PREEMPT RT, queue_work() and therefore schedule_work() makes
-the work inherit the caller's priority.
+Because a single new directory tree is easier, simpler, and less prone to
+breakage to implement.  This thing is way too complicated already, and
+that's not good for something that must ALWAYS work right.  Also, it doesn't
+assume any sort of mapping between the firmware files and their users (so,
+it won't ADD constraints to the firmware loading API that do not exist right
+now).  And it lets you version or un-version firmware files (if you *want*,
+and in in *every* case), very easily, and without breaking the current ABI
+(/lib/firmware/).
 
-However, if a real-time kernel interrupt handler thread defers work it may want
-the deferred work have lower priority so it does not contend for the CPU with
-succeeding interrupt handling. In the non real-time kernel, this was guaranteed
-because interrupts preempt workqueues.
+If I were to attempt to address your use case properly, I'd do it by
+exporting the firmware dependency information on module metadata, and
+add/modify userspace to tell you about it.  This would let you do "scp
+$(findmoduledeps --include-self themodule) foo:/tmp" and get the module, its
+firmware files, its dependencies, the dependencies' firmware, and so on, so
+that you'd get the entire module stack and all the firmware for the stack.
+Or whatever else you want "findmoduledeps" to do, the required data would be
+there for the tool to be quite versatile.
 
-The faulty case was a non-FIFO serial driver that deferred LED blinking to
-a workqueue using schedule_work(). However, that work used GPIO bitbanged I2C,
-which uses 50 usecs udelay()s. With the work inheriting the serial IRQ priority,
-it easily missed the ~60 usec deadline of 115200 bps communications.
+But I have zero interest on firmware loading, and I am currently taking care
+of more kernel work than what I am confortable with already, so someone else
+would have to do it.  There are probably even better ways than the simple
+one I described above, I bet...
 
-This patch solves the issue by introducing and using schedule_work_prio().
-
-Signed-off-by: Leon Woestenberg <leon@sidebranch.com>
-
-Index: linux-2.6.24/kernel/workqueue.c
-===================================================================
---- linux-2.6.24.orig/kernel/workqueue.c	2008-06-30 17:12:05.000000000 +0200
-+++ linux-2.6.24/kernel/workqueue.c	2008-06-30 17:25:03.000000000 +0200
-@@ -163,9 +163,10 @@
- }
- 
- /**
-- * queue_work - queue work on a workqueue
-+ * queue_work_prio - queue work on a workqueue and set work priority
-  * @wq: workqueue to use
-  * @work: work to queue
-+ * @prio: priority of work
-  *
-  * Returns 0 if @work was already on a queue, non-zero otherwise.
-  *
-@@ -174,17 +175,36 @@
-  *
-  * Especially no such guarantee on PREEMPT_RT.
-  */
--int fastcall queue_work(struct workqueue_struct *wq, struct work_struct *work)
-+int fastcall queue_work_prio(struct workqueue_struct *wq,
-+  struct work_struct *work, int prio)
- {
- 	int ret = 0, cpu = raw_smp_processor_id();
- 
- 	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
- 		BUG_ON(!plist_node_empty(&work->entry));
--		__queue_work(wq_per_cpu(wq, cpu), work, current->normal_prio);
-+		__queue_work(wq_per_cpu(wq, cpu), work, prio);
- 		ret = 1;
- 	}
- 	return ret;
- }
-+EXPORT_SYMBOL_GPL(queue_work_prio);
-+
-+/**
-+ * queue_work - queue work on a workqueue. work inherits caller's prio.
-+ * @wq: workqueue to use
-+ * @work: work to queue
-+ *
-+ * Returns 0 if @work was already on a queue, non-zero otherwise.
-+ *
-+ * We queue the work to the CPU it was submitted, but there is no
-+ * guarantee that it will be processed by that CPU.
-+ *
-+ * Especially no such guarantee on PREEMPT_RT.
-+ */
-+int fastcall queue_work(struct workqueue_struct *wq, struct work_struct *work)
-+{
-+  return queue_work_prio(wq, work, current->normal_prio);
-+}
- EXPORT_SYMBOL_GPL(queue_work);
- 
- void delayed_work_timer_fn(unsigned long __data)
-@@ -627,7 +647,8 @@
-  * schedule_work - put work task in global workqueue
-  * @work: job to be done
-  *
-- * This puts a job in the kernel-global workqueue.
-+ * This puts a job in the kernel-global workqueue. The job inherits the
-+ * caller's priority.
-  */
- int fastcall schedule_work(struct work_struct *work)
- {
-@@ -636,6 +657,19 @@
- EXPORT_SYMBOL(schedule_work);
- 
- /**
-+ * schedule_work_prio - put work task in global workqueue, set work prio
-+ * @work: job to be done
-+ *
-+ * This puts a job in the kernel-global workqueue. The job gets the specified
-+ * priority.
-+ */
-+int fastcall schedule_work_prio(struct work_struct *work, int prio)
-+{
-+	return queue_work_prio(keventd_wq, work, prio);
-+}
-+EXPORT_SYMBOL(schedule_work_prio);
-+
-+/**
-  * schedule_delayed_work - put work task in global workqueue after delay
-  * @dwork: job to be done
-  * @delay: number of jiffies to wait or 0 for immediate execution
-Index: linux-2.6.24/include/linux/workqueue.h
-===================================================================
---- linux-2.6.24.orig/include/linux/workqueue.h	2008-06-30 17:12:57.000000000 +0200
-+++ linux-2.6.24/include/linux/workqueue.h	2008-06-30 17:30:34.000000000 +0200
-@@ -185,6 +185,7 @@
- extern void destroy_workqueue(struct workqueue_struct *wq);
- 
- extern int FASTCALL(queue_work(struct workqueue_struct *wq, struct work_struct *work));
-+extern int FASTCALL(queue_work_prio(struct workqueue_struct *wq, struct work_struct *work, int prio));
- extern int FASTCALL(queue_delayed_work(struct workqueue_struct *wq,
- 			struct delayed_work *work, unsigned long delay));
- extern int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
-@@ -194,6 +195,7 @@
- extern void flush_scheduled_work(void);
- 
- extern int FASTCALL(schedule_work(struct work_struct *work));
-+extern int FASTCALL(schedule_work_prio(struct work_struct *work, int prio));
- extern int FASTCALL(schedule_delayed_work(struct delayed_work *work,
- 					unsigned long delay));
- extern int schedule_delayed_work_on(int cpu, struct delayed_work *work,
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
