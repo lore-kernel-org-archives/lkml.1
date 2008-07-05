@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYGEDTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489AbYGEDwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbYGEDTN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 23:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbYGEDS5
+	id S1753489AbYGEDwb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 23:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbYGEDwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 23:18:57 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40732 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751162AbYGEDS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 23:18:56 -0400
-Message-ID: <486EE804.6020202@kernel.org>
-Date: Sat, 05 Jul 2008 12:18:28 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Fri, 4 Jul 2008 23:52:21 -0400
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:48539 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751107AbYGEDwU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 23:52:20 -0400
+X-Sasl-enc: P14xMniCFThzSnJAlaapJ9egknaIiha5c/mhioOVLYGp 1215229938
+Date: Sat, 5 Jul 2008 00:52:15 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Trent Piepho <tpiepho@freescale.com>
+Cc: Olivier Galibert <galibert@pobox.com>,
+       David Woodhouse <dwmw2@infradead.org>, Hannes Reinecke <hare@suse.de>,
+       Takashi Iwai <tiwai@suse.de>, Theodore Tso <tytso@mit.edu>,
+       Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
+       David Miller <davem@davemloft.net>, hugh@veritas.com,
+       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+Message-ID: <20080705035215.GA15899@khazad-dum.debian.net>
+References: <1215177044.10393.743.camel@pmac.infradead.org> <486E2260.5050503@garzik.org> <1215178035.10393.763.camel@pmac.infradead.org> <20080704141014.GA23215@mit.edu> <s5habgxloct.wl%tiwai@suse.de> <486E3622.1000900@suse.de> <1215182557.10393.808.camel@pmac.infradead.org> <20080704231322.GA4410@dspnet.fr.eu.org> <20080704235839.GA5649@khazad-dum.debian.net> <Pine.LNX.4.64.0807041742500.13075@t2.domain.actdsltmp>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] libata fixes for .26
-References: <20080704131005.GA30768@havoc.gtf.org> <alpine.LFD.1.10.0807040955100.2815@woody.linux-foundation.org> <486EE6CA.2040908@kernel.org>
-In-Reply-To: <486EE6CA.2040908@kernel.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 05 Jul 2008 03:18:50 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0807041742500.13075@t2.domain.actdsltmp>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> so, it basically behaves like level triggered IRQ latch for ports,
-> which also creates an easy-to-miss requirement for MSI implementation
-> where the controller should generate a new MSI message when the driver
-> clears some of the IRQ pending bits but not all.
+On Fri, 04 Jul 2008, Trent Piepho wrote:
+> On Fri, 4 Jul 2008, Henrique de Moraes Holschuh wrote:
+> > On Sat, 05 Jul 2008, Olivier Galibert wrote:
+> >> Won't that break multiple kernel installs on any binary packaging
+> >> system that cares about file collisions?  Multiple kernel rpms
+> >> providing the same /lib/firmware files would break things wouldn't
+> >> they ?
+> >
+> > We will probably need per-kernel directories, exactly like what is done for
+> > modules.  And since there are (now) both kernel-version-specific, and
+> > non-kernel-version-specific firmware, this means the firmware loader should
+> > look first on the version-specific directory (say, /lib/firmware/$(uname
+> > -r)/), then if not found, on the general directory (/lib/firmware).
+> 
+> How about /lib/modules/`uname -r`/firmware
 
-Oops, confused.  The easy-to-miss requirement is the controller needing
-to resend the message if the irq_stat is cleared but port IRQ is still
-pending.  Resending on partial clear is always necessary.
-
-Thanks.
+I am fine with it, it certainly has a few advantages.
 
 -- 
-tejun
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
