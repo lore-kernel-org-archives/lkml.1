@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753586AbYGELAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752959AbYGELKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753586AbYGELAZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 07:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbYGELAQ
+	id S1752959AbYGELKa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 07:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbYGELKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 07:00:16 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60329 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751025AbYGELAP (ORCPT
+	Sat, 5 Jul 2008 07:10:22 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:26876 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751428AbYGELKV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 07:00:15 -0400
-Message-ID: <486F543D.8010409@firstfloor.org>
-Date: Sat, 05 Jul 2008 13:00:13 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Sat, 5 Jul 2008 07:10:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=LqwsD6mE0B/ifLNh888z1EHorsgB/NxT6hztpauO7e4+cFwwMgbPWLNgWoLEijGNSh
+         8s+60AAsv0mtpuqY2Jdt0qEWf2MeVdwvETEYpHs+PO1RT2kHuvQlHQIr4Qzk3PIjWciJ
+         L/yvFBba6D0rsYnw/F2spgbpw9DiFm9TEtiwA=
+Date: Sat, 5 Jul 2008 20:10:10 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-pm@lists.linux-foundation.org
+Subject: [PATCH 1/2] swsusp: simplify memory_bm_find_bit()
+Message-ID: <20080705110946.GA17071@localhost.localdomain>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Joe Peterson <joe@skyrush.com>, Elias Oltmanns <eo@nebensachen.de>,
-       =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Ctrl+C doesn't interrupt process waiting for I/O
-References: <48661488.10304@gmail.com>	<87fxqurqpz.fsf@denkblock.local>	<486E83C3.1040509@skyrush.com>	<20080704212335.4ffc8230@lxorguk.ukuu.org.uk>	<871w29s5u2.fsf@basil.nowhere.org>	<20080704221457.1f147225@lxorguk.ukuu.org.uk>	<486E97F2.8020605@firstfloor.org>	<20080704224441.63204bc4@lxorguk.ukuu.org.uk>	<486E9F91.6010701@firstfloor.org> <20080705113434.41109492@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080705113434.41109492@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-2022-jp
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> So what kind of data do you want? Someone watching a wallclock while
->> comparing Ctrl-Z+kill versus Ctrl-C on a IO intensive process?
-> 
-> Latency traces with timestamps might be quite useful, they'd probably
-> also tell you why it happened.
+The bit obtained by the function memory_bm_find_bit() is represented
+by addr and bit_nr. The callers of memory_bm_find_bit() just use addr
+and bit_nr as the arguments of set_bit/clear_bit/test_bit.
 
-Ok so you're asking someone else to debug it.
+This patch simplifies the representation of the obtained bit without
+using BM_BITS_PER_CHUNK.
 
- I can't reproduce it, nobody has provided
-> numbers so even if I wanted to work on it I couldn't do much.
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Pavel Machek <pavel@suse.cz>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
+---
+ kernel/power/snapshot.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Well we had a patch (although I haven't tried it yet)
-
-http://marc.info/?l=linux-kernel&m=121489861508496&w=2
-
-Is that not concrete enough?
-
-> Instead I have lots of real tty, ATA and other work that needs doing
-> which has quantified data,
-
-All the reporters provided time stamp traces? @)
-
--Andi
+Index: 2.6-git/kernel/power/snapshot.c
+===================================================================
+--- 2.6-git.orig/kernel/power/snapshot.c
++++ 2.6-git/kernel/power/snapshot.c
+@@ -478,8 +478,8 @@ static int memory_bm_find_bit(struct mem
+ 	}
+ 	zone_bm->cur_block = bb;
+ 	pfn -= bb->start_pfn;
+-	*bit_nr = pfn % BM_BITS_PER_CHUNK;
+-	*addr = bb->data + pfn / BM_BITS_PER_CHUNK;
++	*bit_nr = pfn;
++	*addr = bb->data;
+ 	return 0;
+ }
+ 
