@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbYGEFl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYGEF5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753106AbYGEFl4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 01:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYGEFlX
+	id S1754611AbYGEF5U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 01:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbYGEF5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 01:41:23 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:64584 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752775AbYGEFlW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 01:41:22 -0400
-Message-ID: <486F0918.5090707@cn.fujitsu.com>
-Date: Sat, 05 Jul 2008 13:39:36 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: [PATCH 1/2] devcgroup: always show unsigned major/minor num
-Content-Type: text/plain; charset=UTF-8
+	Sat, 5 Jul 2008 01:57:10 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48128 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752192AbYGEF5J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 01:57:09 -0400
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: David Miller <davem@davemloft.net>, dwmw2@infradead.org, jeff@garzik.org,
+       andi@firstfloor.org, tytso@mit.edu, hugh@veritas.com,
+       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Content-Type: text/plain
+Date: Sat, 05 Jul 2008 11:19:18 +0530
+Message-Id: <1215236958.4136.6.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-Bad-Reply: 'Re:' in Subject but no References or In-Reply-To headers
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- # echo "b $((0x7fffffff)):$((0x80000000)) rwm" > devices.allow
- # cat devices.list
- b 214748364:-21474836 rwm
+Respected Sirs,
 
-though a major/minor number of 0x800000000 is meaningless, we
-should not cast it to a negative value.
+On Sat, Jul 5, 2008 at 2:07 AM, David Miller <davem@davemloft.net>
+wrote:
+> From: David Woodhouse <dwmw2@infradead.org>
+> Date: Fri, 04 Jul 2008 14:27:15 +0100
+>
+>> Your argument makes about as much sense as an argument that we should
+>> link b43.ko with mac80211.ko so that the 802.11 core code "rides
+along
+>> in the module's .ko file". It's just silly.
+>
+> I totally disagree with you.  Jeff is right and you are wrong.
+>
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- security/device_cgroup.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Please let me know, if you found the BUG in the tg3 firmare patch :-
+http://git.infradead.org/users/dwmw2/firmware-2.6.git?a=commitdiff;h=be4e9388e35b22d6f8aa104baf39f8339825424e
 
-diff --git a/security/device_cgroup.c b/security/device_cgroup.c
-index fd764a0..1e2e28a 100644
---- a/security/device_cgroup.c
-+++ b/security/device_cgroup.c
-@@ -222,7 +222,7 @@ static void devcgroup_destroy(struct cgroup_subsys *ss,
- #define DEVCG_DENY 2
- #define DEVCG_LIST 3
- 
--#define MAJMINLEN 10
-+#define MAJMINLEN 13
- #define ACCLEN 4
- 
- static void set_access(char *acc, short access)
-@@ -254,7 +254,7 @@ static void set_majmin(char *str, unsigned m)
- 	if (m == ~0)
- 		sprintf(str, "*");
- 	else
--		snprintf(str, MAJMINLEN, "%d", m);
-+		snprintf(str, MAJMINLEN, "%u", m);
- }
- 
- static int devcgroup_seq_read(struct cgroup *cgroup, struct cftype *cft,
--- 
-1.5.4.rc3
+I will try to fix it.
+
+Thank you,
+
+Jaswinder Singh.
+
