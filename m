@@ -1,53 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbYGEKRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752992AbYGEKUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753019AbYGEKRj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 06:17:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbYGEKRb
+	id S1752992AbYGEKUo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 06:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbYGEKUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 06:17:31 -0400
-Received: from wx-out-0506.google.com ([66.249.82.237]:62414 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751310AbYGEKRb (ORCPT
+	Sat, 5 Jul 2008 06:20:35 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:17389 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751675AbYGEKUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 06:17:31 -0400
+	Sat, 5 Jul 2008 06:20:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=T7rp96r/Pe/b7d7fTdrnDmkb1VGE3nQ3W1zAAsD9nRAbmWpaJRYjLjBjwGDboUmWm5
-         ZT6vnwn08sh1QxsvqyeD/lnuH8Pt/BVl9YwM6KTmExGUigN6yr6H3Ojnfxgc3VuWaEtv
-         gyumLWaJqXHCU5utVnh+h8tk+QgPAb8HdNA4w=
-Message-ID: <36ca99e90807050317m7160c3eaj150ceac4440752a1@mail.gmail.com>
-Date: Sat, 5 Jul 2008 12:17:29 +0200
-From: "Bert Wesarg" <bert.wesarg@googlemail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] [9/9] MCE: Use 64bit machine check code on 32bit
-Cc: masbock@linux.vnet.ibm.com, x86@kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <486F44C0.8050003@firstfloor.org>
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=IP9CS33tRopT1hDGQzPuuv1sfAExdBHRq1JgP8DoF5Ws2ryCbtxFHXryOuVu6Pe2fD
+         5ZGAuzQF2/NFY74+z/1M30wliNm8sLyL0/E2y17XZFkv7Po/J75QUmbnqv2BHqftT3XW
+         7mfG9eKlEzU7oKf++p42W3h8PQ5DXOIAKWR+c=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: the printk problem
+Date: Sat, 5 Jul 2008 12:20:25 +0200
+User-Agent: KMail/1.8.2
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Anvin <hpa@zytor.com>, "David S. Miller" <davem@davemloft.net>,
+       linux-ia64@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+References: <20080625131101.GA6205@digi.com> <20080704204252.GM14894@parisc-linux.org> <20080704150100.1f7b8a65.akpm@linux-foundation.org>
+In-Reply-To: <20080704150100.1f7b8a65.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200807041120.678642023@firstfloor.org>
-	 <20080704212033.D40551B431F@basil.firstfloor.org>
-	 <36ca99e90807050250u718fa277t2297d6436fd14c4e@mail.gmail.com>
-	 <486F44C0.8050003@firstfloor.org>
+Message-Id: <200807051220.25418.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 5, 2008 at 11:54, Andi Kleen <andi@firstfloor.org> wrote:
->
->> Is this first "n" a typo?
->
-> No. The legacy machine check code that is going away is definitely
-> supposed to be default n. This is effectively a default y for
-> the new code.
-I didn't mean the "default n", but the "If you're still sure you want it, say n"
+On Saturday 05 July 2008 00:01, Andrew Morton wrote:
+> > > We also jump through hoops to print things like sector_t and
+> > > resource_size_t.  They always need to be cast to `unsiged long long',
+> > > which generates additional stack space and text in some setups.
+> > 
+> > The thing is that GCC checks types.  So it's fine to add "print this
+> > pointer specially", but you can't in general add new printf arguments
+> > without also hacking GCC.  Unless you use -Wno-format, and require
+> > sparse to check special kernel types.
+> 
+> It would be excellent if gcc had an extension system so that you could
+> add new printf control chars and maybe even tell gcc how to check them.
+> But of course, if that were to happen, we couldn't use it for 4-5 years.
+> 
+> What I had initially proposed was to abuse %S, which takes a wchar_t*. 
+> gcc accepts `unsigned long *' for %S.
+> 
+> Then, we put the kernel-specific control char after the S, so we can
+> print an inode (rofl) with
+> 
+> 	struct inode *inode;
+> 
+> 	printk("here is an inode: %Si\n", (unsigned long *)inode);
+> 
+> Downsides are:
+> 
+> - there's a cast, so you could accidentally do
+> 
+> 	printk("here is an inode: %Si\n", (unsigned long *)dentry);
+> 
+> - there's a cast, and they're ugly
+> 
+> - gcc cannot of course check that the arg matches the control string
+> 
+> Unfortunately (and this seems weird), gcc printf checking will not
+> accept a void* for %S: it _has_ to be wchar_t*, and the checker won't
+> permit void* substitution for that.
 
-Bert
->
->
-> -Andi
->
+Repeating myself here...
+We can add an alternative alias to printk:
+
+ asmlinkage int printk(const char * fmt, ...)
+         __attribute__ ((format (printf, 1, 2))) __cold;
++asmlinkage int custom_printk(const char * fmt, ...) __cold asm ("printk");
+
+custom_printk() is actually just printk(), that is,
+we won't need additional function, we need to teach
+*printk* about MAC addresses, NIPQUADs etc;
+
+and then use printk() if you use only standard %fmt (and have it
+checked by gcc), or use custom_printk() if you have non-standard
+%fmt in the format string.
+
+The only downside that in second case, you lose gcc checking.
+No big deal.
+--
+vda
