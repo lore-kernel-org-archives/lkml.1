@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbYGERsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbYGERsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759427AbYGERsr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:48:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYGERiJ
+	id S1759337AbYGERsb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756632AbYGERiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:38:09 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33083 "EHLO
+	Sat, 5 Jul 2008 13:38:07 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33069 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755792AbYGERgc (ORCPT
+	with ESMTP id S1755752AbYGERgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 13:36:32 -0400
+	Sat, 5 Jul 2008 13:36:31 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Ext4 Developers List <linux-ext4@vger.kernel.org>,
        Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 22/52] ext4: Fix sparse warning
-Date: Sat,  5 Jul 2008 13:35:48 -0400
-Message-Id: <1215279378-30504-23-git-send-email-tytso@mit.edu>
+Cc: Jan Kara <jack@suse.cz>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Mingming Cao <cmm@us.ibm.com>, "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 39/52] ext4: Use new framework for data=ordered mode in JBD2
+Date: Sat,  5 Jul 2008 13:36:05 -0400
+Message-Id: <1215279378-30504-40-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.rc3.1.g36b7.dirty
-In-Reply-To: <1215279378-30504-22-git-send-email-tytso@mit.edu>
+In-Reply-To: <1215279378-30504-39-git-send-email-tytso@mit.edu>
 References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-2-git-send-email-tytso@mit.edu>
  <1215279378-30504-3-git-send-email-tytso@mit.edu>
@@ -42,6 +43,23 @@ References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-20-git-send-email-tytso@mit.edu>
  <1215279378-30504-21-git-send-email-tytso@mit.edu>
  <1215279378-30504-22-git-send-email-tytso@mit.edu>
+ <1215279378-30504-23-git-send-email-tytso@mit.edu>
+ <1215279378-30504-24-git-send-email-tytso@mit.edu>
+ <1215279378-30504-25-git-send-email-tytso@mit.edu>
+ <1215279378-30504-26-git-send-email-tytso@mit.edu>
+ <1215279378-30504-27-git-send-email-tytso@mit.edu>
+ <1215279378-30504-28-git-send-email-tytso@mit.edu>
+ <1215279378-30504-29-git-send-email-tytso@mit.edu>
+ <1215279378-30504-30-git-send-email-tytso@mit.edu>
+ <1215279378-30504-31-git-send-email-tytso@mit.edu>
+ <1215279378-30504-32-git-send-email-tytso@mit.edu>
+ <1215279378-30504-33-git-send-email-tytso@mit.edu>
+ <1215279378-30504-34-git-send-email-tytso@mit.edu>
+ <1215279378-30504-35-git-send-email-tytso@mit.edu>
+ <1215279378-30504-36-git-send-email-tytso@mit.edu>
+ <1215279378-30504-37-git-send-email-tytso@mit.edu>
+ <1215279378-30504-38-git-send-email-tytso@mit.edu>
+ <1215279378-30504-39-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -49,43 +67,354 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+From: Jan Kara <jack@suse.cz>
 
+This patch makes ext4 use inode-based implementation of data=ordered mode
+in JBD2. It allows us to unify some data=ordered and data=writeback paths
+(especially writepage since we don't have to start a transaction anymore)
+and remove some buffer walking.
+
+Updated fix from Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+to fix file system hang due to corrupt jinode values.
+
+Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/balloc.c |    2 +-
- fs/ext4/super.c  |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ fs/ext4/ext4_i.h    |    1 +
+ fs/ext4/ext4_jbd2.h |    7 ++-
+ fs/ext4/inode.c     |  158 ++++++++++++++++-----------------------------------
+ fs/ext4/super.c     |    5 +-
+ 4 files changed, 59 insertions(+), 112 deletions(-)
 
-diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
-index 0b2b754..6dcbec9 100644
---- a/fs/ext4/balloc.c
-+++ b/fs/ext4/balloc.c
-@@ -47,7 +47,7 @@ static int ext4_block_in_group(struct super_block *sb, ext4_fsblk_t block,
- 			ext4_group_t block_group)
- {
- 	ext4_group_t actual_group;
--	ext4_get_group_no_and_offset(sb, block, &actual_group, 0);
-+	ext4_get_group_no_and_offset(sb, block, &actual_group, NULL);
- 	if (actual_group == block_group)
- 		return 1;
- 	return 0;
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index b1166a9..c4b9faf 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -1858,8 +1858,8 @@ static unsigned long ext4_get_stripe_size(struct ext4_sb_info *sbi)
+diff --git a/fs/ext4/ext4_i.h b/fs/ext4/ext4_i.h
+index abf2744..c2903ef 100644
+--- a/fs/ext4/ext4_i.h
++++ b/fs/ext4/ext4_i.h
+@@ -150,6 +150,7 @@ struct ext4_inode_info {
+ 	 */
+ 	struct rw_semaphore i_data_sem;
+ 	struct inode vfs_inode;
++	struct jbd2_inode jinode;
+ 
+ 	unsigned long i_ext_generation;
+ 	struct ext4_ext_cache i_cached_extent;
+diff --git a/fs/ext4/ext4_jbd2.h b/fs/ext4/ext4_jbd2.h
+index 9255a7d..bd6e272 100644
+--- a/fs/ext4/ext4_jbd2.h
++++ b/fs/ext4/ext4_jbd2.h
+@@ -154,8 +154,6 @@ int __ext4_journal_dirty_metadata(const char *where,
+ #define ext4_journal_forget(handle, bh) \
+ 	__ext4_journal_forget(__FUNCTION__, (handle), (bh))
+ 
+-int ext4_journal_dirty_data(handle_t *handle, struct buffer_head *bh);
+-
+ handle_t *ext4_journal_start_sb(struct super_block *sb, int nblocks);
+ int __ext4_journal_stop(const char *where, handle_t *handle);
+ 
+@@ -192,6 +190,11 @@ static inline int ext4_journal_force_commit(journal_t *journal)
+ 	return jbd2_journal_force_commit(journal);
  }
  
- static int ext4_fill_super (struct super_block *sb, void *data, int silent)
--				__releases(kernel_sem)
--				__acquires(kernel_sem)
-+				__releases(kernel_lock)
-+				__acquires(kernel_lock)
++static inline int ext4_jbd2_file_inode(handle_t *handle, struct inode *inode)
++{
++	return jbd2_journal_file_inode(handle, &EXT4_I(inode)->jinode);
++}
++
+ /* super.c */
+ int ext4_force_commit(struct super_block *sb);
  
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index d698844..3af9cd7 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -39,6 +39,13 @@
+ #include "xattr.h"
+ #include "acl.h"
+ 
++static inline int ext4_begin_ordered_truncate(struct inode *inode,
++					      loff_t new_size)
++{
++	return jbd2_journal_begin_ordered_truncate(&EXT4_I(inode)->jinode,
++						   new_size);
++}
++
+ /*
+  * Test whether an inode is a fast symlink.
+  */
+@@ -181,6 +188,8 @@ void ext4_delete_inode (struct inode * inode)
  {
- 	struct buffer_head * bh;
+ 	handle_t *handle;
+ 
++	if (ext4_should_order_data(inode))
++		ext4_begin_ordered_truncate(inode, 0);
+ 	truncate_inode_pages(&inode->i_data, 0);
+ 
+ 	if (is_bad_inode(inode))
+@@ -1273,15 +1282,6 @@ out:
+ 	return ret;
+ }
+ 
+-int ext4_journal_dirty_data(handle_t *handle, struct buffer_head *bh)
+-{
+-	int err = jbd2_journal_dirty_data(handle, bh);
+-	if (err)
+-		ext4_journal_abort_handle(__func__, __func__,
+-						bh, handle, err);
+-	return err;
+-}
+-
+ /* For write_end() in data=journal mode */
+ static int write_end_fn(handle_t *handle, struct buffer_head *bh)
+ {
+@@ -1311,8 +1311,7 @@ static int ext4_ordered_write_end(struct file *file,
+ 	from = pos & (PAGE_CACHE_SIZE - 1);
+ 	to = from + len;
+ 
+-	ret = walk_page_buffers(handle, page_buffers(page),
+-		from, to, NULL, ext4_journal_dirty_data);
++	ret = ext4_jbd2_file_inode(handle, inode);
+ 
+ 	if (ret == 0) {
+ 		/*
+@@ -1472,25 +1471,22 @@ static int bput_one(handle_t *handle, struct buffer_head *bh)
+ 	return 0;
+ }
+ 
+-static int jbd2_journal_dirty_data_fn(handle_t *handle, struct buffer_head *bh)
+-{
+-	if (buffer_mapped(bh))
+-		return ext4_journal_dirty_data(handle, bh);
+-	return 0;
+-}
+-
+ static int ext4_bh_unmapped_or_delay(handle_t *handle, struct buffer_head *bh)
+ {
+ 	return !buffer_mapped(bh) || buffer_delay(bh);
+ }
+ 
+ /*
+- * Note that we don't need to start a transaction unless we're journaling
+- * data because we should have holes filled from ext4_page_mkwrite(). If
+- * we are journaling data, we cannot start transaction directly because
+- * transaction start ranks above page lock so we have to do some magic...
++ * Note that we don't need to start a transaction unless we're journaling data
++ * because we should have holes filled from ext4_page_mkwrite(). We even don't
++ * need to file the inode to the transaction's list in ordered mode because if
++ * we are writing back data added by write(), the inode is already there and if
++ * we are writing back data modified via mmap(), noone guarantees in which
++ * transaction the data will hit the disk. In case we are journaling data, we
++ * cannot start transaction directly because transaction start ranks above page
++ * lock so we have to do some magic.
+  *
+- * In all journalling modes block_write_full_page() will start the I/O.
++ * In all journaling modes block_write_full_page() will start the I/O.
+  *
+  * Problem:
+  *
+@@ -1533,86 +1529,7 @@ static int ext4_bh_unmapped_or_delay(handle_t *handle, struct buffer_head *bh)
+  * us.
+  *
+  */
+-static int __ext4_ordered_writepage(struct page *page,
+-				struct writeback_control *wbc)
+-{
+-	struct inode *inode = page->mapping->host;
+-	struct buffer_head *page_bufs;
+-	handle_t *handle = NULL;
+-	int ret = 0;
+-	int err;
+-
+-	if (!page_has_buffers(page)) {
+-		create_empty_buffers(page, inode->i_sb->s_blocksize,
+-				(1 << BH_Dirty)|(1 << BH_Uptodate));
+-	}
+-	page_bufs = page_buffers(page);
+-	walk_page_buffers(handle, page_bufs, 0,
+-			PAGE_CACHE_SIZE, NULL, bget_one);
+-
+-	ret = block_write_full_page(page, ext4_get_block, wbc);
+-
+-	/*
+-	 * The page can become unlocked at any point now, and
+-	 * truncate can then come in and change things.  So we
+-	 * can't touch *page from now on.  But *page_bufs is
+-	 * safe due to elevated refcount.
+-	 */
+-
+-	/*
+-	 * And attach them to the current transaction.  But only if
+-	 * block_write_full_page() succeeded.  Otherwise they are unmapped,
+-	 * and generally junk.
+-	 */
+-	if (ret == 0) {
+-		handle = ext4_journal_start(inode,
+-					ext4_writepage_trans_blocks(inode));
+-		if (IS_ERR(handle)) {
+-			ret = PTR_ERR(handle);
+-			goto out_put;
+-		}
+-
+-		ret = walk_page_buffers(handle, page_bufs, 0, PAGE_CACHE_SIZE,
+-					NULL, jbd2_journal_dirty_data_fn);
+-		err = ext4_journal_stop(handle);
+-		if (!ret)
+-			ret = err;
+-	}
+-out_put:
+-	walk_page_buffers(handle, page_bufs, 0, PAGE_CACHE_SIZE, NULL,
+-			  bput_one);
+-	return ret;
+-}
+-
+-static int ext4_ordered_writepage(struct page *page,
+-				struct writeback_control *wbc)
+-{
+-	struct inode *inode = page->mapping->host;
+-	loff_t size = i_size_read(inode);
+-	loff_t len;
+-
+-	J_ASSERT(PageLocked(page));
+-	J_ASSERT(page_has_buffers(page));
+-	if (page->index == size >> PAGE_CACHE_SHIFT)
+-		len = size & ~PAGE_CACHE_MASK;
+-	else
+-		len = PAGE_CACHE_SIZE;
+-	BUG_ON(walk_page_buffers(NULL, page_buffers(page), 0, len, NULL,
+-				 ext4_bh_unmapped_or_delay));
+-
+-	/*
+-	 * We give up here if we're reentered, because it might be for a
+-	 * different filesystem.
+-	 */
+-	if (!ext4_journal_current_handle())
+-		return __ext4_ordered_writepage(page, wbc);
+-
+-	redirty_page_for_writepage(wbc, page);
+-	unlock_page(page);
+-	return 0;
+-}
+-
+-static int __ext4_writeback_writepage(struct page *page,
++static int __ext4_normal_writepage(struct page *page,
+ 				struct writeback_control *wbc)
+ {
+ 	struct inode *inode = page->mapping->host;
+@@ -1624,7 +1541,7 @@ static int __ext4_writeback_writepage(struct page *page,
+ }
+ 
+ 
+-static int ext4_writeback_writepage(struct page *page,
++static int ext4_normal_writepage(struct page *page,
+ 				struct writeback_control *wbc)
+ {
+ 	struct inode *inode = page->mapping->host;
+@@ -1641,7 +1558,7 @@ static int ext4_writeback_writepage(struct page *page,
+ 				 ext4_bh_unmapped_or_delay));
+ 
+ 	if (!ext4_journal_current_handle())
+-		return __ext4_writeback_writepage(page, wbc);
++		return __ext4_normal_writepage(page, wbc);
+ 
+ 	redirty_page_for_writepage(wbc, page);
+ 	unlock_page(page);
+@@ -1877,7 +1794,7 @@ static int ext4_journalled_set_page_dirty(struct page *page)
+ static const struct address_space_operations ext4_ordered_aops = {
+ 	.readpage	= ext4_readpage,
+ 	.readpages	= ext4_readpages,
+-	.writepage	= ext4_ordered_writepage,
++	.writepage	= ext4_normal_writepage,
+ 	.sync_page	= block_sync_page,
+ 	.write_begin	= ext4_write_begin,
+ 	.write_end	= ext4_ordered_write_end,
+@@ -1891,7 +1808,7 @@ static const struct address_space_operations ext4_ordered_aops = {
+ static const struct address_space_operations ext4_writeback_aops = {
+ 	.readpage	= ext4_readpage,
+ 	.readpages	= ext4_readpages,
+-	.writepage	= ext4_writeback_writepage,
++	.writepage	= ext4_normal_writepage,
+ 	.sync_page	= block_sync_page,
+ 	.write_begin	= ext4_write_begin,
+ 	.write_end	= ext4_writeback_write_end,
+@@ -2019,7 +1936,7 @@ int ext4_block_truncate_page(handle_t *handle,
+ 		err = ext4_journal_dirty_metadata(handle, bh);
+ 	} else {
+ 		if (ext4_should_order_data(inode))
+-			err = ext4_journal_dirty_data(handle, bh);
++			err = ext4_jbd2_file_inode(handle, inode);
+ 		mark_buffer_dirty(bh);
+ 	}
+ 
+@@ -3149,7 +3066,14 @@ int ext4_write_inode(struct inode *inode, int wait)
+  * be freed, so we have a strong guarantee that no future commit will
+  * leave these blocks visible to the user.)
+  *
+- * Called with inode->sem down.
++ * Another thing we have to assure is that if we are in ordered mode
++ * and inode is still attached to the committing transaction, we must
++ * we start writeout of all the dirty pages which are being truncated.
++ * This way we are sure that all the data written in the previous
++ * transaction are already on disk (truncate waits for pages under
++ * writeback).
++ *
++ * Called with inode->i_mutex down.
+  */
+ int ext4_setattr(struct dentry *dentry, struct iattr *attr)
+ {
+@@ -3215,6 +3139,22 @@ int ext4_setattr(struct dentry *dentry, struct iattr *attr)
+ 		if (!error)
+ 			error = rc;
+ 		ext4_journal_stop(handle);
++
++		if (ext4_should_order_data(inode)) {
++			error = ext4_begin_ordered_truncate(inode,
++							    attr->ia_size);
++			if (error) {
++				/* Do as much error cleanup as possible */
++				handle = ext4_journal_start(inode, 3);
++				if (IS_ERR(handle)) {
++					ext4_orphan_del(NULL, inode);
++					goto err_out;
++				}
++				ext4_orphan_del(handle, inode);
++				ext4_journal_stop(handle);
++				goto err_out;
++			}
++		}
+ 	}
+ 
+ 	rc = inode_setattr(inode, attr);
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 1b330cd..629d0fa 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -573,6 +573,7 @@ static struct inode *ext4_alloc_inode(struct super_block *sb)
+ 	memset(&ei->i_cached_extent, 0, sizeof(struct ext4_ext_cache));
+ 	INIT_LIST_HEAD(&ei->i_prealloc_list);
+ 	spin_lock_init(&ei->i_prealloc_lock);
++	jbd2_journal_init_jbd_inode(&ei->jinode, &ei->vfs_inode);
+ 	return &ei->vfs_inode;
+ }
+ 
+@@ -637,6 +638,8 @@ static void ext4_clear_inode(struct inode *inode)
+ 	EXT4_I(inode)->i_block_alloc_info = NULL;
+ 	if (unlikely(rsv))
+ 		kfree(rsv);
++	jbd2_journal_release_jbd_inode(EXT4_SB(inode->i_sb)->s_journal,
++				       &EXT4_I(inode)->jinode);
+ }
+ 
+ static inline void ext4_show_quota_options(struct seq_file *seq, struct super_block *sb)
+@@ -3378,7 +3381,7 @@ static ssize_t ext4_quota_write(struct super_block *sb, int type,
+ 			err = ext4_journal_dirty_metadata(handle, bh);
+ 		else {
+ 			/* Always do at least ordered writes for quotas */
+-			err = ext4_journal_dirty_data(handle, bh);
++			err = ext4_jbd2_file_inode(handle, inode);
+ 			mark_buffer_dirty(bh);
+ 		}
+ 		brelse(bh);
 -- 
 1.5.6.rc3.1.g36b7.dirty
 
