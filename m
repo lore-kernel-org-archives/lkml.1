@@ -1,110 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbYGESfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753581AbYGESic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753270AbYGESfk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 14:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbYGESfd
+	id S1753581AbYGESic (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 14:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYGESiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 14:35:33 -0400
-Received: from saeurebad.de ([85.214.36.134]:51311 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751344AbYGESfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 14:35:32 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH -mm] documentation: update CodingStyle tips for Emacs users v2
-References: <87tzf5tu3z.fsf@skyscraper.fehenstaub.lan>
-	<20080704134159.4dd9f74e@bike.lwn.net> <878wwg4l6b.fsf@saeurebad.de>
-	<20080705083235.4b74fa7e@bike.lwn.net>
-Date: Sat, 05 Jul 2008 18:33:55 +0000
-In-Reply-To: <20080705083235.4b74fa7e@bike.lwn.net> (Jonathan Corbet's message
-	of "Sat, 5 Jul 2008 08:32:35 -0600")
-Message-ID: <8763rkrxik.fsf_-_@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Sat, 5 Jul 2008 14:38:22 -0400
+Received: from gv-out-0910.google.com ([216.239.58.187]:21642 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751633AbYGESiV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 14:38:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:user-agent:cc:mime-version:content-disposition:date
+         :message-id:content-type:content-transfer-encoding;
+        b=v/P7AGQwWVHJ7YooklFSOShzGe4a8O04k118gypA584acqjSy3KzJAAEocl/0+2KFJ
+         zieeLQ7P/YGwOPTTqFi9RVQ4PmNWEGV+Bu5fWp99LHHLOdxCCH3+Wq5YP9DkM+myNrbo
+         R8q+0YYxHhSWHPoFA/kBlTh+H1bbgxtoxRUyM=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git patches] IDE fixes
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Disposition: inline
+Date: Sat, 5 Jul 2008 20:38:23 +0200
+Message-Id: <200807052038.23662.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 Hi,
 
-Jonathan Corbet <corbet@lwn.net> writes:
+Few fixes for code which handles unregistering IDE ports.
 
-> On Sat, 05 Jul 2008 11:36:44 +0000
-> Johannes Weiner <hannes@saeurebad.de> wrote:
->
->> A heuristics seems overkill as this snippet is not distributed code
->> that needs to be portable but it is just a tip for ones .emacs. 
->
-> You're right, it's fine the way it is.
 
-Okay, I fixed the file->filename mistake.  How about the following?
+Linus, please pull from:
 
-	Hannes
+master.kernel.org:/pub/scm/linux/kernel/git/bart/ide-2.6.git/
 
----
-From: Johannes Weiner <hannes@saeurebad.de>
-Subject: documentation: update CodingStyle tips for Emacs users
+to receive the following updates:
 
-Describe a setup that integrates better with Emacs' cc-mode and also
-fixes up the alignment of continuation lines to really only use tabs.
+ drivers/ide/ide-probe.c |    2 --
+ drivers/ide/ide.c       |   24 ++++++++----------------
+ 2 files changed, 8 insertions(+), 18 deletions(-)
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-CC: Jonathan Corbet <corbet@lwn.net>
----
 
-diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
-index 6caa146..1875e50 100644
---- a/Documentation/CodingStyle
-+++ b/Documentation/CodingStyle
-@@ -474,25 +474,29 @@ make a good program).
- So, you can either get rid of GNU emacs, or change it to use saner
- values.  To do the latter, you can stick the following in your .emacs file:
+Bartlomiej Zolnierkiewicz (3):
+      ide: fix hwif->gendev refcounting
+      ide: ide_unregister() warm-plug bugfix
+      ide: ide_unregister() locking bugfix
+
+
+diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
+index 380fa0c..d27061b 100644
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -646,8 +646,6 @@ static int ide_register_port(ide_hwif_t *hwif)
+ 		goto out;
+ 	}
  
--(defun linux-c-mode ()
--  "C mode with adjusted defaults for use with the Linux kernel."
--  (interactive)
--  (c-mode)
--  (c-set-style "K&R")
--  (setq tab-width 8)
--  (setq indent-tabs-mode t)
--  (setq c-basic-offset 8))
+-	get_device(&hwif->gendev);
 -
--This will define the M-x linux-c-mode command.  When hacking on a
--module, if you put the string -*- linux-c -*- somewhere on the first
--two lines, this mode will be automatically invoked. Also, you may want
--to add
--
--(setq auto-mode-alist (cons '("/usr/src/linux.*/.*\\.[ch]$" . linux-c-mode)
--			auto-mode-alist))
--
--to your .emacs file if you want to have linux-c-mode switched on
--automagically when you edit source files under /usr/src/linux.
-+(defun c-lineup-arglist-tabs-only (ignored)
-+  "Line up argument lists by tabs, not spaces"
-+  (let* ((anchor (c-langelem-pos c-syntactic-element))
-+	 (column (c-langelem-2nd-pos c-syntactic-element))
-+	 (offset (- (1+ column) anchor))
-+	 (steps (floor offset c-basic-offset)))
-+    (* (max steps 1)
-+       c-basic-offset)))
-+
-+(add-hook 'c-mode-hook
-+          (lambda ()
-+            (let ((filename (buffer-file-name)))
-+              ;; Enable kernel mode for the appropriate files
-+              (when (and filename
-+                         (string-match "~/src/linux-trees" filename))
-+                (setq indent-tabs-mode t)
-+                (c-set-style "linux")
-+                (c-set-offset 'arglist-cont-nonempty
-+                              '(c-lineup-gcc-asm-reg
-+                                c-lineup-arglist-tabs-only))))))
-+
-+This will make emacs go better with the kernel coding style for C
-+files below ~/src/linux-trees.
+ 	hwif->portdev = device_create_drvdata(ide_port_class, &hwif->gendev,
+ 					      MKDEV(0, 0), hwif, hwif->name);
+ 	if (IS_ERR(hwif->portdev)) {
+diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
+index c758dcb..300431d 100644
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -315,13 +315,14 @@ void ide_unregister(ide_hwif_t *hwif)
  
- But even if you fail in getting emacs to do sane formatting, not
- everything is lost: use "indent".
+ 	BUG_ON(in_interrupt());
+ 	BUG_ON(irqs_disabled());
++
+ 	mutex_lock(&ide_cfg_mtx);
+-	spin_lock_irq(&ide_lock);
+-	if (!hwif->present)
+-		goto abort;
+-	__ide_port_unregister_devices(hwif);
+-	hwif->present = 0;
+ 
++	spin_lock_irq(&ide_lock);
++	if (hwif->present) {
++		__ide_port_unregister_devices(hwif);
++		hwif->present = 0;
++	}
+ 	spin_unlock_irq(&ide_lock);
+ 
+ 	ide_proc_unregister_port(hwif);
+@@ -351,16 +352,15 @@ void ide_unregister(ide_hwif_t *hwif)
+ 	blk_unregister_region(MKDEV(hwif->major, 0), MAX_DRIVES<<PARTN_BITS);
+ 	kfree(hwif->sg_table);
+ 	unregister_blkdev(hwif->major, hwif->name);
+-	spin_lock_irq(&ide_lock);
+ 
+ 	if (hwif->dma_base)
+ 		ide_release_dma_engine(hwif);
+ 
++	spin_lock_irq(&ide_lock);
+ 	/* restore hwif data to pristine status */
+ 	ide_init_port_data(hwif, hwif->index);
+-
+-abort:
+ 	spin_unlock_irq(&ide_lock);
++
+ 	mutex_unlock(&ide_cfg_mtx);
+ }
+ 
+@@ -1094,13 +1094,6 @@ struct bus_type ide_bus_type = {
+ 
+ EXPORT_SYMBOL_GPL(ide_bus_type);
+ 
+-static void ide_port_class_release(struct device *portdev)
+-{
+-	ide_hwif_t *hwif = dev_get_drvdata(portdev);
+-
+-	put_device(&hwif->gendev);
+-}
+-
+ int ide_vlb_clk;
+ EXPORT_SYMBOL_GPL(ide_vlb_clk);
+ 
+@@ -1305,7 +1298,6 @@ static int __init ide_init(void)
+ 		ret = PTR_ERR(ide_port_class);
+ 		goto out_port_class;
+ 	}
+-	ide_port_class->dev_release = ide_port_class_release;
+ 
+ 	init_ide_data();
+ 
