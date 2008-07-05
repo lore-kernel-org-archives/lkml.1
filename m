@@ -1,164 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbYGEVLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbYGEV6K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755115AbYGEVLk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 17:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYGEVLb
+	id S1754508AbYGEV6K (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 17:58:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbYGEV55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 17:11:31 -0400
-Received: from mail.tor.primus.ca ([216.254.136.21]:54072 "EHLO
-	mail-02.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752982AbYGEVLa (ORCPT
+	Sat, 5 Jul 2008 17:57:57 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:12530 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753088AbYGEV54 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 17:11:30 -0400
-From: Matthew Wilcox <matthew@wil.cx>
-To: linux-pci@vger.kernel.org
-Cc: kaneshige.kenji@jp.fujitsu.com, mingo@elte.hu, tglx@linutronix.de,
-       davem@davemloft.net, dan.j.williams@intel.com,
-       Martine.Silbermann@hp.com, benh@kernel.crashing.org,
-       michael@ellerman.id.au, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
-Subject: [PATCH 3/4] AHCI: Request multiple MSIs
-Date: Sat,  5 Jul 2008 09:34:14 -0400
-Message-Id: <1215264855-4372-3-git-send-email-matthew@wil.cx>
-X-Mailer: git-send-email 1.5.5.4
-In-Reply-To: <20080705132728.GO14894@parisc-linux.org>
-References: <20080705132728.GO14894@parisc-linux.org>
+	Sat, 5 Jul 2008 17:57:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:subject:from:content-type:mime-version
+         :content-transfer-encoding:message-id:user-agent:sender;
+        b=piYCRJ9rpGH1chpAEGxJyQiaZVrsIY8GrG1LkdVnX/g49DynKZxRHQBYHzo/3dQtn1
+         Kw2Mtpe537SV/Uk9+PWlpWRmWSwLPqDjsitBWofvYXBKZ7f/zmKHdlL7h76kFLPbLZbQ
+         TKMHy3e+eI+MzNld3r3KvsJre4Fo8ydwCR6bU=
+Date: Sat, 05 Jul 2008 23:55:10 +0200
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] make decrypt messages depend on CONFIG_IEEE80211_DEBUG
+From: "Jonas Karlsson" <jonas@gobolinux.org>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Message-ID: <op.udt9t8avdefb7q@localhost.localdomain>
+User-Agent: Opera Mail/9.51 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-AHCI controllers can support up to 16 interrupts, one per port.  This
-saves us a readl() in the interrupt path to determine which port has
-generated the interrupt.
+Here's a corresponding patch for commit  
+7f3ad8943e2e6336ba229b208be8c7a80730c5d4 but for the old ieee80211 stack,  
+which is still used for, at least, ipw2x00 cards. It will make decrypt and  
+key debug errors depend on CONFIG_IEEE80211_DEBUG. Without this the logs  
+will be filled with debug printouts.
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
----
- drivers/ata/ahci.c |   84 ++++++++++++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 79 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index 061817a..4b2f90a 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -102,6 +102,7 @@ enum {
- 	/* HOST_CTL bits */
- 	HOST_RESET		= (1 << 0),  /* reset controller; self-clear */
- 	HOST_IRQ_EN		= (1 << 1),  /* global IRQ enable */
-+	HOST_MSI_RSM		= (1 << 2),  /* Revert to Single Message */
- 	HOST_AHCI_EN		= (1 << 31), /* AHCI enabled */
- 
- 	/* HOST_CAP bits */
-@@ -1771,6 +1772,13 @@ static void ahci_port_intr(struct ata_port *ap)
- 	}
- }
- 
-+static irqreturn_t ahci_msi_interrupt(int irq, void *dev_instance)
-+{
-+	struct ata_port *ap = dev_instance;
-+	ahci_port_intr(ap);
-+	return IRQ_HANDLED;
-+}
-+
- static irqreturn_t ahci_interrupt(int irq, void *dev_instance)
- {
- 	struct ata_host *host = dev_instance;
-@@ -2210,6 +2218,66 @@ static void ahci_p5wdh_workaround(struct ata_host *host)
- 	}
- }
- 
-+static int ahci_request_irqs(struct pci_dev *pdev, struct ata_host *host)
-+{
-+	int i, n_irqs, rc;
-+	struct ahci_host_priv *hpriv = host->private_data;
-+
-+	if (hpriv->flags & AHCI_HFLAG_NO_MSI) {
-+		n_irqs = 1;
-+	} else {
-+		u16 control;
-+		int pos = pci_find_capability(pdev, PCI_CAP_ID_MSI);
-+		pci_read_config_word(pdev, pos + PCI_MSI_FLAGS, &control);
-+		n_irqs = 1 << ((control & PCI_MSI_FLAGS_QMASK) >> 1);
-+
-+		for (;;) {
-+			rc = pci_enable_msi_block(pdev, n_irqs);
-+			if (rc == 0) {
-+				void __iomem *mmio = host->iomap[AHCI_PCI_BAR];
-+				u32 host_ctl = readl(mmio + HOST_CTL);
-+				if ((host_ctl & HOST_MSI_RSM) == 0)
-+					break;
-+				pci_disable_msi(pdev);
-+				n_irqs = 1;
-+			} else if (rc < 0) {
-+				n_irqs = 1;
-+				pci_intx(pdev, 1);
-+				break;
-+			} else {
-+				n_irqs = rc;
-+			}
-+		}
-+	}
-+
-+	/* FIXME: Add support for CCC */
-+	if (n_irqs > host->n_ports) {
-+		n_irqs = host->n_ports;
-+	} else if (n_irqs < host->n_ports) {
-+		n_irqs--;
-+		rc = devm_request_irq(host->dev, pdev->irq + n_irqs,
-+				ahci_interrupt, IRQF_SHARED,
-+				dev_driver_string(host->dev), host);
-+		if (rc)
-+			goto release_block;
-+	}
-+
-+	for (i = 0; i < n_irqs; i++) {
-+		rc = devm_request_irq(host->dev, pdev->irq + i,
-+				ahci_msi_interrupt, IRQF_SHARED,
-+				dev_driver_string(host->dev), host->ports[i]);
-+		if (rc)
-+			goto release_block;
-+	}
-+
-+	return 0;
-+
-+ release_block:
-+	pci_disable_msi(pdev);
-+	pci_intx(pdev, 1);
-+	return rc;
-+}
-+
- static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- {
- 	static int printed_version;
-@@ -2268,9 +2336,6 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	    (pdev->revision == 0xa1 || pdev->revision == 0xa2))
- 		hpriv->flags |= AHCI_HFLAG_NO_MSI;
- 
--	if ((hpriv->flags & AHCI_HFLAG_NO_MSI) || pci_enable_msi(pdev))
--		pci_intx(pdev, 1);
--
- 	/* save initial config */
- 	ahci_save_initial_config(pdev, hpriv);
- 
-@@ -2325,8 +2390,17 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	ahci_print_info(host);
- 
- 	pci_set_master(pdev);
--	return ata_host_activate(host, pdev->irq, ahci_interrupt, IRQF_SHARED,
--				 &ahci_sht);
-+
-+	rc = ata_host_start(host);
-+	if (rc)
-+		return rc;
-+
-+	rc = ahci_request_irqs(pdev, host);
-+	if (rc)
-+		return rc;
-+
-+	rc = ata_host_register(host, &ahci_sht);
-+	return rc;
- }
- 
- static int __init ahci_init(void)
 -- 
-1.5.5.4
+Jonas Karlsson
+
+(please CC me when replying)
+
+--- linux-2.6.25.10/net/ieee80211/ieee80211_crypt_ccmp.c.old	2008-07-05  
+22:36:45.000000000 +0200
++++ linux-2.6.25.10/net/ieee80211/ieee80211_crypt_ccmp.c	2008-07-05  
+22:38:30.000000000 +0200
+@@ -307,25 +307,31 @@
+  	pos = skb->data + hdr_len;
+  	keyidx = pos[3];
+  	if (!(keyidx & (1 << 5))) {
++#ifdef CONFIG_IEEE80211_DEBUG
+  		if (net_ratelimit()) {
+  			printk(KERN_DEBUG "CCMP: received packet without ExtIV"
+  			       " flag from %s\n", print_mac(mac, hdr->addr2));
+  		}
++#endif
+  		key->dot11RSNAStatsCCMPFormatErrors++;
+  		return -2;
+  	}
+  	keyidx >>= 6;
+  	if (key->key_idx != keyidx) {
++#ifdef CONFIG_IEEE80211_DEBUG
+  		printk(KERN_DEBUG "CCMP: RX tkey->key_idx=%d frame "
+  		       "keyidx=%d priv=%p\n", key->key_idx, keyidx, priv);
++#endif
+  		return -6;
+  	}
+  	if (!key->key_set) {
++#ifdef CONFIG_IEEE80211_DEBUG
+  		if (net_ratelimit()) {
+  			printk(KERN_DEBUG "CCMP: received packet from %s"
+  			       " with keyid=%d that does not have a configured"
+  			       " key\n", print_mac(mac, hdr->addr2), keyidx);
+  		}
++#endif
+  		return -3;
+  	}
+
+@@ -338,6 +344,7 @@
+  	pos += 8;
+
+  	if (ccmp_replay_check(pn, key->rx_pn)) {
++#ifdef CONFIG_IEEE80211_DEBUG
+  		if (ieee80211_ratelimit_debug(IEEE80211_DL_DROP)) {
+  			IEEE80211_DEBUG_DROP("CCMP: replay detected: STA=%s "
+  				 "previous PN %02x%02x%02x%02x%02x%02x "
+@@ -347,6 +354,7 @@
+  				 key->rx_pn[3], key->rx_pn[4], key->rx_pn[5],
+  				 pn[0], pn[1], pn[2], pn[3], pn[4], pn[5]);
+  		}
++#endif
+  		key->dot11RSNAStatsCCMPReplays++;
+  		return -4;
+  	}
+@@ -371,10 +379,12 @@
+  	}
+
+  	if (memcmp(mic, a, CCMP_MIC_LEN) != 0) {
++#ifdef CONFIG_IEEE80211_DEBUG
+  		if (net_ratelimit()) {
+  			printk(KERN_DEBUG "CCMP: decrypt failed: STA="
+  			       "%s\n", print_mac(mac, hdr->addr2));
+  		}
++#endif
+  		key->dot11RSNAStatsCCMPDecryptErrors++;
+  		return -5;
+  	}
+
 
