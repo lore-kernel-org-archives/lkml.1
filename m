@@ -1,135 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbYGEIRB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbYGEIVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755191AbYGEIRB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 04:17:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbYGEIQr
+	id S1755343AbYGEIVw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 04:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbYGEIVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 04:16:47 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43640 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751954AbYGEIQo (ORCPT
+	Sat, 5 Jul 2008 04:21:36 -0400
+Received: from ik-out-1112.google.com ([66.249.90.180]:40324 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043AbYGEIVe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 04:16:44 -0400
-From: kamezawa.hiroyu@jp.fujitsu.com
-Message-ID: <20795958.1215245782985.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Sat, 5 Jul 2008 17:16:22 +0900 (JST)
-To: balbir@linux.vnet.ibm.com
-Subject: Re: Re: [PATCH] memcg: handle shmem's swap cache (Was 2.6.26-rc8-mm1
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, hugh@veritas.com, nishimura@mxp.nes.nec.co.jp,
-       yamamoto@valinux.co.jp
-In-Reply-To: <486F1967.1030207@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
+	Sat, 5 Jul 2008 04:21:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=cUdow+X/hGxl0eVejr+zxJgdykdsQMCkm2oRyLhr80m2TqVHJYMJ85aryfLZIHG0gF
+         z8qAq8owyO97z5zRUnfA3Gi2CXmpGwS6v71GcKbmLNb7nJrhHyfCHInZ01yVTOmraXPc
+         0W9PZl/oe3wfBaMnkJM7ihAF80NSjc+V5Blh0=
+Message-ID: <74d0deb30807050121n38c44dfaoa843fe8a0b581d01@mail.gmail.com>
+Date: Sat, 5 Jul 2008 10:21:31 +0200
+From: "pHilipp Zabel" <philipp.zabel@gmail.com>
+To: "Marek Vasut" <marek.vasut@gmail.com>
+Subject: Re: [PATCH] fix misalignment in pxamci
+Cc: linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx
+In-Reply-To: <200807050219.52218.marek.vasut@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: @nifty Webmail 2.0
-References: <486F1967.1030207@linux.vnet.ibm.com>
- <20080703020236.adaa51fa.akpm@linux-foundation.org> <20080704180913.bb1a3fc6.kamezawa.hiroyu@jp.fujitsu.com> <486F0976.7010104@linux.vnet.ibm.com> <20080705151146.206071a4.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Disposition: inline
+References: <200807050219.52218.marek.vasut@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message -----
->Date: Sat, 05 Jul 2008 12:19:11 +0530
->From: Balbir Singh <balbir@linux.vnet.ibm.com>
->To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
->   linux-mm@kvack.org, "hugh@veritas.com" <hugh@veritas.com>,
->   "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
->   "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
->Subject: Re: [PATCH] memcg: handle shmem's swap cache (Was 2.6.26-rc8-mm1
+On Sat, Jul 5, 2008 at 2:19 AM, Marek Vasut <marek.vasut@gmail.com> wrote:
+> Hi,
+> Philipp Zabel finally made the pxamci issue clear. It turned out, that pxamci
+> needs the DMA destination address to be aligned to 8 bytes. In some cases it
+> happened, that the address was aligned to 4 bytes causing controller to
+> incorrectly transfer data (and resulting into error like "mmc0: unrecognised
+> SCR structure version 1"). The following patch allows to debug this issue and
+> moreover fixes it by moving one 4 byte entry of mmc_card structure, aligning
+> the DMA destination back to 8 bytes.
 >
->
->KAMEZAWA Hiroyuki wrote:
->> On Sat, 05 Jul 2008 11:11:10 +0530
->> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->> 
->>> KAMEZAWA Hiroyuki wrote:
->>>> My swapcache accounting under memcg patch failed to catch tmpfs(shmem)'s 
-one.
->>>> Can I test this under -mm tree ?
->>>> (If -mm is busy, I'm not in hurry.)
->>>> This patch works well in my box.
->>>> =
->>>> SwapCache handling fix.
->>>>
->>>> shmem's swapcache behavior is a little different from anonymous's one and
->>>> memcg failed to handle it. This patch tries to fix it.
->>>>
->>>> After this:
->>>>
->>>> Any page marked as SwapCache is not uncharged. (delelte_from_swap_cache()
->>>> delete the SwapCache flag.)
->>>>
->>>> To check a shmem-page-cache is alive or not we use
->>>>  page->mapping && !PageAnon(page) instead of
->>>>  pc->flags & PAGE_CGROUP_FLAG_CACHE.
->>>>
->>>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>> Though I am not opposed to this, I do sit up and think if keeping the refe
-rence
->>> count around could avoid this complexity and from my point, the maintenanc
-e
->>> overhead of this logic/code (I fear there might be more special cases :( )
->> 
->> yes, to me. but we have to fix..
->> 
->> But I don't like old code's refcnt handling which does
->>    - increment
->>      - does this increment was really neccesary ?
->>        No? ok, decrement it again.
->> 
->> This was much more complex to me than current code.
->> 
-At first, what I have to say is
-"this is a fix against handle-swapcache patch not against remove-refcnt"
+> Signed-off-by: Marek Vasut <marek.vasut@gmail.com>
 
-This complex comes from handle-swapcache. (But it's necessary.)
+We can enable byte aligned transfers on the DMA controller. This is
+what I came up with yesterday:
+(sorry for wrapped lines - the proper patch should probably be a
+combination of both
+warning/DALGN handling and and moving something in mmc_card around).
 
->
->That can be redone -- the moment a page is used by a path, refcnt (increment)
->it. Undo the same when the page is no longer in use.
->
->I expect
->
->rmap path to increment/decrement it on mapping
->radix-tree (cache's) to do the same
->
->
->Using a kref we should be able to get this logic right - no?
->
-no
-What the old code does was
+regards
+Philipp
 
-  - a page is added to rmap (mapcount 0->1) +1
-  - a page is removed from rmap (mapcount ->0) -1
-  - a page is added to radix-tree (+1)
-  - a page is removed from radix-tree (-1)
+---
+Subject: [PATCH] pxamci: fix byte aligned DMA transfers
 
-All information is recorded in struct page because it exists for.
-Then, why duplicates information ? It's usually bad habit.
+The pxa27x DMA controller defaults to 64-bit alignment. This caused
+the SCR reads to fail (and, depending on card type, error out) when
+card->raw_scr was not aligned on a 8-byte boundary.
 
+I think for performance reasons all scatter-gather addresses passed
+to pxamci_request should be aligned on 8-byte boundaries, but right
+now enabling byte aligned DMA transfers in the controller fixes those
+problems.
 
->> And old ones will needs the check at treating swap-cache. (it couldn't but 
-if we want)
->> 
->>> The trade-off is complexity versus the overhead of reference counting.
->>>
->> refcnt was also very complex ;)
->
->I think that is easier to simply, instead of adding the complex checks we hav
-e
->right now. refcnt is easier to prove as working correct than the checks.
+Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
+---
+ drivers/mmc/host/pxamci.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-About swap-cache, refcnt is just obstacle because you can't handle
-add-to-swapcache by refcnt.
+diff --git a/drivers/mmc/host/pxamci.c b/drivers/mmc/host/pxamci.c
+index 65210fc..ba580d3 100644
+--- a/drivers/mmc/host/pxamci.c
++++ b/drivers/mmc/host/pxamci.c
+@@ -114,6 +114,7 @@ static void pxamci_setup_data(struct pxamci_host
+*host, struct mmc_data *data)
+ 	unsigned int nob = data->blocks;
+ 	unsigned long long clks;
+ 	unsigned int timeout;
++	bool dalgn = 0;
+ 	u32 dcmd;
+ 	int i;
 
-If you want to add refcnt (or some code) for "debug", I have no objection.
+@@ -152,6 +153,8 @@ static void pxamci_setup_data(struct pxamci_host
+*host, struct mmc_data *data)
+ 		host->sg_cpu[i].dcmd = dcmd | length;
+ 		if (length & 31 && !(data->flags & MMC_DATA_READ))
+ 			host->sg_cpu[i].dcmd |= DCMD_ENDIRQEN;
++		if (sg_dma_address(&data->sg[i]) & 0x7)
++			dalgn = 1;
+ 		if (data->flags & MMC_DATA_READ) {
+ 			host->sg_cpu[i].dsadr = host->res->start + MMC_RXFIFO;
+ 			host->sg_cpu[i].dtadr = sg_dma_address(&data->sg[i]);
+@@ -165,6 +168,11 @@ static void pxamci_setup_data(struct pxamci_host
+*host, struct mmc_data *data)
+ 	host->sg_cpu[host->dma_len - 1].ddadr = DDADR_STOP;
+ 	wmb();
 
-Thanks,
--Kame
-
-
++	if (dalgn) {
++		pr_warning("PXAMCI: byte aligned DMA transfer\n");
++		DALGN |= (1 << host->dma);
++	} else
++		DALGN &= (1 << host->dma);
+ 	DDADR(host->dma) = host->sg_dma;
+ 	DCSR(host->dma) = DCSR_RUN;
+ }
+-- 
+1.5.6
