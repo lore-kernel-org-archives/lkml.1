@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbYGEIbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbYGEIbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753478AbYGEIbX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 04:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbYGEIbR
+	id S1755575AbYGEIbm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 04:31:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbYGEIbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 04:31:17 -0400
-Received: from lucidpixels.com ([75.144.35.66]:45702 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751029AbYGEIbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 04:31:16 -0400
-Date: Sat, 5 Jul 2008 04:31:15 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Setting system clock... (FREEZE) (2.6.25.5)
-In-Reply-To: <alpine.DEB.1.10.0806100425570.28343@p34.internal.lan>
-Message-ID: <alpine.DEB.1.10.0807050430210.14834@p34.internal.lan>
-References: <alpine.DEB.1.10.0806100425570.28343@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sat, 5 Jul 2008 04:31:32 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:13124 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754071AbYGEIbb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 04:31:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=YjLMYDwe+d4pYUxj3l8TtbmRPvFaYXIUC92Q9ulsRxFVo8y2GudoiKBKrcE3Sbu7cs
+         T68rk2036+PygQUoSNw2QyycDXj02kvVa2uezKSIpTJtQQ9JUwuMNE3T5vj9tH5RTEhq
+         cO4rJ4hYMt43ci67xt8EHxZ3PwMfsgaqgv1xc=
+Date: Sat, 5 Jul 2008 12:31:22 +0400
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Takashi Iwai <tiwai@suse.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix build error of driver/mfd/tc6393xb.c
+Message-ID: <20080705083122.GA7026@doriath.ww600.siemens.net>
+References: <s5hiqvlc2ut.wl%tiwai@suse.de> <20080704142208.GB4576@doriath.ww600.siemens.net> <s5hwsk1k6yj.wl%tiwai@suse.de> <200807040954.34838.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200807040954.34838.david-b@pacbell.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jul 04, 2008 at 09:54:34AM -0700, David Brownell wrote:
+> On Friday 04 July 2008, Takashi Iwai wrote:
+> > 
+> > > Please submit a patch where HAVE_GPIO_LIB selects GENERIC_GPIO.
+> > 
+> > Hmm... just checking again, I found GENERIC_GPIO isn't defined in
+> > drivers/gpio/Kconfig but in each arch Kconfig.  So we can't select it
+> > unconditionally.
+> > 
+> > I'm not sure whether it's a better fix at this moment.
+> 
+> Which platform is it which is trying to declare that it has
+> an implementation (HAVE_GPIO_LIB) of an interface that it
+> doesn't support (GENERIC_GPIO unset) ??
 
+the powerpc with PPC_MPC52xx=y, PPC_MPC5200_GPIO=y
 
-On Tue, 10 Jun 2008, Justin Piszcz wrote:
+-- 
+With best wishes
+Dmitry
 
-> http://www.linuxquestions.org/questions/linux-general-1/hard-freeze-on-boot-between-setting-clock-and-host-name-625494/
->
-> Setting system clock... (FREEZE)
->
-> Then, I power cycle the host and it comes up OK, per the above will disable 
-> network console support and stop using it, hopefully this solves the problem.
->
-> I am not using it elsewhere and have not seen this issue.
->
-> At the moment, using: 2.6.25.5 (Debian Testing)
->
-> Going to 2.6.25.6 w/network logging disabled.
->
-> Was curious though if anyone on the list has seen something similar to this 
-> and can confirm if it is indeed the network console logging?
->
-> Thanks,
->
-> Justin.
->
-
-Apparently it affects other HW platforms as well:
-https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.15/+bug/8375
-
-I will try using acpi=off/etc in the future to see if it resolves the 
-issue, but being so wide-spread could this be a kernel issue since it 
-affects many HW types or are there many BIOS implementations that are 
-really buggy?
-
-Justin.
