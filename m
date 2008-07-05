@@ -1,42 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbYGEOdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418AbYGEOo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755486AbYGEOdg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 10:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYGEOd2
+	id S1753418AbYGEOo7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 10:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYGEOos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 10:33:28 -0400
-Received: from ihemail4.lucent.com ([135.245.0.39]:62477 "EHLO
-	ihemail4.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbYGEOd2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 10:33:28 -0400
-X-Greylist: delayed 757 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Jul 2008 10:33:28 EDT
-Message-ID: <008101c8deaa$52cf19d0$01fca8c0@microsof60b8d6>
-From: "Gavin Shan" <gshan@alcatel-lucent.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: Tough Issue: kernel instruction corruption
-Date: Sat, 5 Jul 2008 22:20:46 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+	Sat, 5 Jul 2008 10:44:48 -0400
+Received: from dspnet.fr.eu.org ([213.186.44.138]:4178 "EHLO dspnet.fr.eu.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751182AbYGEOor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 10:44:47 -0400
+Date: Sat, 5 Jul 2008 16:44:45 +0200
+From: Olivier Galibert <galibert@pobox.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Takashi Iwai <tiwai@suse.de>,
+       Hannes Reinecke <hare@suse.de>, Theodore Tso <tytso@mit.edu>,
+       Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
+       hugh@veritas.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+Message-ID: <20080705144445.GA17319@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Andi Kleen <andi@firstfloor.org>, Takashi Iwai <tiwai@suse.de>,
+	Hannes Reinecke <hare@suse.de>, Theodore Tso <tytso@mit.edu>,
+	Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
+	hugh@veritas.com, akpm@linux-foundation.org,
+	kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	netdev@vger.kernel.org
+References: <s5habgxloct.wl%tiwai@suse.de> <486E3622.1000900@suse.de> <1215182557.10393.808.camel@pmac.infradead.org> <20080704231322.GA4410@dspnet.fr.eu.org> <s5h4p746am3.wl%tiwai@suse.de> <20080705105317.GA44773@dspnet.fr.eu.org> <486F596C.8050109@firstfloor.org> <20080705120221.GC44773@dspnet.fr.eu.org> <486F6494.8020108@firstfloor.org> <1215260166.10393.816.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1215260166.10393.816.camel@pmac.infradead.org>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m65EXefq027954
 
-Hello, I'm faced a tough issue recently: instructions of kernel
-were corrupted. There has 2 PCI buses on my board and lots
-of PCI devices with DMA capabality involved. I'm suspecting
-the kernel instructions were corrupted by DMA operations driving
-by those PCI devices with DMA capabality. 
+On Sat, Jul 05, 2008 at 01:16:06PM +0100, David Woodhouse wrote:
+> It almost never happens that you have kernel versions which _need_
+> different firmware installed. In almost all cases, the older driver will
+> continue to work just fine with the newer firmware (and its bug-fixes).
 
-Anybody have tried to protect kernel instructions from this case
-or have any ideas to protect kernel text section?
+I'm not sure which planet you're from, but it's one without ipw2200
+chips in it.  And in any case, the file names change.
 
-Thanks in advance,
-Gavinÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+
+> The ABI between driver and firmware rarely changes in such a fashion
+> that you have to update the driver in lock-step -- and even on the
+> occasions that it does, it's not hard to simply change the name of the
+> "new-style" firmware so that it doesn't stomp on the old one (Think of
+> it like an soname).
+
+Ah, I see, you just didn't read the thread you're replying to.  Let's
+do it again one more time.
+
+The question is, how do you sanely distribute the kernel-tree
+generated firmware in a binary distribution, knowing that you want to
+be able to have multiple working kernels installed simultaneously?
+
+Solution 1: in the kernel package
+ -> You get file conflicts on the firmware files that do not change
+    between kernel versions
+
+Solution 2: in a package by itself
+ -> You either break compatibility with kernel versions that happened
+    before a firmware change, or you accumulate tons of files over
+    time.  The accumulated form gets hard to create from source.
+
+Solution 3: in the kernel package or in a kernel-specific package, but
+  the files are in a kernel version-specific directory
+  (/lib/firmware/`uname -r`, /lib/modules/`uname -r`/firmware)
+ -> Incompatible with current userspace
+
+Solution 4: in one package per firmware file, with appropriate
+  dependencies on the kernel package
+ -> A number of kernel package maintainers just took a hit on you
+
+
+Any other solution you can see?
+
+  OG.
+
