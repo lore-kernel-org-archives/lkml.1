@@ -1,95 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbYGEMuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbYGEMvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755342AbYGEMuR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 08:50:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbYGEMuF
+	id S1755527AbYGEMvV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 08:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbYGEMvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 08:50:05 -0400
-Received: from nebensachen.de ([195.34.83.29]:47455 "EHLO mail.nebensachen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752129AbYGEMuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 08:50:03 -0400
-X-Hashcash: 1:20:080705:andi@firstfloor.org::MTXkBJ70EPgW6ks4:0000000000000000000000000000000000000000005pCT
-X-Hashcash: 1:20:080705:alan@lxorguk.ukuu.org.uk::culeb3sn6eFW7xWy:00000000000000000000000000000000000000n0F
-X-Hashcash: 1:20:080705:joe@skyrush.com::PiPAOpJ2u9B30ny9:002bqB
-X-Hashcash: 1:20:080705:edwintorok@gmail.com::ysq1KECi/fCJs0FC:000000000000000000000000000000000000000000rPk
-X-Hashcash: 1:20:080705:linux-kernel@vger.kernel.org::+evG1WgVa+P/LiSz:0000000000000000000000000000000005O+6
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Joe Peterson <joe@skyrush.com>,
-       =?iso-8859-1?Q?T=F6r=F6k?= Edwin <edwintorok@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Ctrl+C doesn't interrupt process waiting for I/O
-References: <48661488.10304@gmail.com> <87fxqurqpz.fsf@denkblock.local>
-	<486E83C3.1040509@skyrush.com>
-	<20080704212335.4ffc8230@lxorguk.ukuu.org.uk>
-	<871w29s5u2.fsf@basil.nowhere.org>
-	<20080704221457.1f147225@lxorguk.ukuu.org.uk>
-	<486E97F2.8020605@firstfloor.org>
-	<20080704224441.63204bc4@lxorguk.ukuu.org.uk>
-	<486E9F91.6010701@firstfloor.org>
-	<20080705113434.41109492@lxorguk.ukuu.org.uk>
-	<486F543D.8010409@firstfloor.org>
-Date: Sat, 05 Jul 2008 14:49:47 +0200
-In-Reply-To: <486F543D.8010409@firstfloor.org> (Andi Kleen's message of "Sat,
-	05 Jul 2008 13:00:13 +0200")
-Message-ID: <87y74gpkb8.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
+	Sat, 5 Jul 2008 08:51:09 -0400
+Received: from gv-out-0910.google.com ([216.239.58.189]:10928 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752409AbYGEMvH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 08:51:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=f6Vilxs6hoWh9ZSZq9/21bJqk/mPAU3I/2TFewmSohJzf8ewClMOsPeg/A0YS9Zzkx
+         CtkAbJHvyocdc8YxDeqbDcAD1gzUS+hPn1W8B1n4D1gNqNSEY37BCLbFmZTv97/XkkFT
+         37cN66iP1OBNfmYvpKIzQyZuwvRloD6luYUqo=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: [regression] Re: 2.6.26-rc6: pcmcia stopped working
+Date: Sat, 5 Jul 2008 14:48:40 +0200
+User-Agent: KMail/1.9.9
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pcmcia@lists.infradead.org,
+       linux-ide@vger.kernel.org, Greg KH <greg@kroah.com>
+References: <20080622224022.GA2066@elf.ucw.cz> <20080625220946.GA1587@elf.ucw.cz> <20080625221529.GA1600@elf.ucw.cz>
+In-Reply-To: <20080625221529.GA1600@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Message-Id: <200807051448.40466.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The discussion seems to have become a little heated, so allow me to step
-in here ...
 
-Andi Kleen <andi@firstfloor.org> wrote:
-> Alan Cox wrote:
+Hi,
+
+On Thursday 26 June 2008, Pavel Machek wrote:
+> Hi!
+> 
+> > > Hmm, hitting sysrq-w produces no blocked task until I eject pcmcia
+> > > card. Backtrace there is:
+> > > 
+> > > Greg, I believe some traces lead to sysfs, can you help here?
+> > 
+> > ide_unregister() does not complete :-(.
+> > 
+> >         device_unregister(&hwif->gendev);
+> > +       printk("ide_unregister: waiting for rel_comp\n");
+> >         wait_for_completion(&hwif->gendev_rel_comp);
+> > 
+> > ...that wait_for_completion never returns.
+
 [...]
->  I can't reproduce it, nobody has provided
->> numbers so even if I wanted to work on it I couldn't do much.
->
-> Well we had a patch (although I haven't tried it yet)
->
-> http://marc.info/?l=linux-kernel&m=121489861508496&w=2
->
-> Is that not concrete enough?
 
-Actually, I'm not to sure whether this really fixes the root cause of
-the problem -- I never have been and I meant to indicate as much in my
-email. It's been the first time I looked at the tty code and the patch
-was mainly guess work; all it does is reverting parts of a previous
-patch. My hope was to direct other people's (read: those who no the tty
-code) attention to a change that seemed to cause the problem. Perhaps I
-didn't make it clear enough at the time that I didn't really know *why*
-this change should cause any problem in the first place.
+Thanks for narrowing it down to wait_for_completion() call,
+it was an useful hint.
 
-Now, the situation has become even more delicate. Joe has reported that
-my patch breaks echoing in the xterm and, rather to my embarrassment, I
-have to report that it doesn't even fix the issue I claumed it would.
-All it apparently does is making the problem slightly harder to
-reproduce which is why it didn't occur in my tests at the time.
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] ide: fix hwif->gendev refcounting
 
-Since I have been concentrating on other things over the last days, it's
-been only today that I discovered this. Moreover, some more testing lead
-me to believe that the root issue has been present in mainline at least
-since 2.6.19 and Joe's change in 2.6.25 only made it visible because you
-now occasionally get something like
-^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z^Z
+class->dev_release is called by device_release() iff dev->release
+is not present so ide_port_class_release() is never called and the
+last hwif->gendev reference is not dropped.
 
-on your screen when you keep pressing Ctrl+Z until the prompt appears;
-in 2.6.24, for instance, there would just be a short delay but no
-irritating output on the screen that makes you wonder.
+Fix it by removing ide_port_class_release() and get_device() call
+from ide_register_port() (device_create_drvdata() takes a hwif->gendev
+reference anyway).
 
-Quite frankly, I'm a bit at a loss as to how I should go about debugging
-this and what kind of data might be useful to others to do so. In
-another email Alan talked about latency traces which is something new to
-me. Since the OP talked about latencytop, I hope that this tool provides
-the data Alan requires and will install and make use of it accordingly
-(expect some results later today or tomorrow). Of course, I'm always
-open to other / additional suggestions.
+This patch fixes hang on wait_for_completion(&hwif->gendev_rel_comp)
+in ide_unregister() reported by Pavel Machek.
 
-Regards,
+Cc: Pavel Machek <pavel@suse.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <greg@kroah.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide-probe.c |    2 --
+ drivers/ide/ide.c       |    8 --------
+ 2 files changed, 10 deletions(-)
 
-Elias
+Index: b/drivers/ide/ide-probe.c
+===================================================================
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -646,8 +646,6 @@ static int ide_register_port(ide_hwif_t 
+ 		goto out;
+ 	}
+ 
+-	get_device(&hwif->gendev);
+-
+ 	hwif->portdev = device_create_drvdata(ide_port_class, &hwif->gendev,
+ 					      MKDEV(0, 0), hwif, hwif->name);
+ 	if (IS_ERR(hwif->portdev)) {
+Index: b/drivers/ide/ide.c
+===================================================================
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -1094,13 +1094,6 @@ struct bus_type ide_bus_type = {
+ 
+ EXPORT_SYMBOL_GPL(ide_bus_type);
+ 
+-static void ide_port_class_release(struct device *portdev)
+-{
+-	ide_hwif_t *hwif = dev_get_drvdata(portdev);
+-
+-	put_device(&hwif->gendev);
+-}
+-
+ int ide_vlb_clk;
+ EXPORT_SYMBOL_GPL(ide_vlb_clk);
+ 
+@@ -1305,7 +1298,6 @@ static int __init ide_init(void)
+ 		ret = PTR_ERR(ide_port_class);
+ 		goto out_port_class;
+ 	}
+-	ide_port_class->dev_release = ide_port_class_release;
+ 
+ 	init_ide_data();
+ 
