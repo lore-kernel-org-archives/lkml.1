@@ -1,40 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbYGEOcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbYGEOdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753507AbYGEOcq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 10:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbYGEOci
+	id S1755486AbYGEOdg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 10:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYGEOd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 10:32:38 -0400
-Received: from vena.lwn.net ([206.168.112.25]:43875 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750722AbYGEOch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 10:32:37 -0400
-Date: Sat, 5 Jul 2008 08:32:35 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] documentation: update CodingStyle tips for Emacs
- users
-Message-ID: <20080705083235.4b74fa7e@bike.lwn.net>
-In-Reply-To: <878wwg4l6b.fsf@saeurebad.de>
-References: <87tzf5tu3z.fsf@skyscraper.fehenstaub.lan>
-	<20080704134159.4dd9f74e@bike.lwn.net>
-	<878wwg4l6b.fsf@saeurebad.de>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 5 Jul 2008 10:33:28 -0400
+Received: from ihemail4.lucent.com ([135.245.0.39]:62477 "EHLO
+	ihemail4.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750793AbYGEOd2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 10:33:28 -0400
+X-Greylist: delayed 757 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Jul 2008 10:33:28 EDT
+Message-ID: <008101c8deaa$52cf19d0$01fca8c0@microsof60b8d6>
+From: "Gavin Shan" <gshan@alcatel-lucent.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: Tough Issue: kernel instruction corruption
+Date: Sat, 5 Jul 2008 22:20:46 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m65EXefq027954
 
-On Sat, 05 Jul 2008 11:36:44 +0000
-Johannes Weiner <hannes@saeurebad.de> wrote:
+Hello, I'm faced a tough issue recently: instructions of kernel
+were corrupted. There has 2 PCI buses on my board and lots
+of PCI devices with DMA capabality involved. I'm suspecting
+the kernel instructions were corrupted by DMA operations driving
+by those PCI devices with DMA capabality. 
 
-> A heuristics seems overkill as this snippet is not distributed code
-> that needs to be portable but it is just a tip for ones .emacs. 
+Anybody have tried to protect kernel instructions from this case
+or have any ideas to protect kernel text section?
 
-You're right, it's fine the way it is.
-
-jon
+Thanks in advance,
+Gavinÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
