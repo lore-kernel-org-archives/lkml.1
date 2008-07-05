@@ -1,40 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbYGEKzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753586AbYGELAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753544AbYGEKzi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 06:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbYGEKza
+	id S1753586AbYGELAZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 07:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbYGELAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 06:55:30 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52217 "EHLO
+	Sat, 5 Jul 2008 07:00:16 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60329 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751342AbYGEKza (ORCPT
+	with ESMTP id S1751025AbYGELAP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 06:55:30 -0400
-Message-ID: <486F531E.6030303@firstfloor.org>
-Date: Sat, 05 Jul 2008 12:55:26 +0200
+	Sat, 5 Jul 2008 07:00:15 -0400
+Message-ID: <486F543D.8010409@firstfloor.org>
+Date: Sat, 05 Jul 2008 13:00:13 +0200
 From: Andi Kleen <andi@firstfloor.org>
 User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-To: Bert Wesarg <bert.wesarg@googlemail.com>
-CC: masbock@linux.vnet.ibm.com, x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [9/9] MCE: Use 64bit machine check code on 32bit
-References: <200807041120.678642023@firstfloor.org>	 <20080704212033.D40551B431F@basil.firstfloor.org>	 <36ca99e90807050250u718fa277t2297d6436fd14c4e@mail.gmail.com>	 <486F44C0.8050003@firstfloor.org> <36ca99e90807050317m7160c3eaj150ceac4440752a1@mail.gmail.com>
-In-Reply-To: <36ca99e90807050317m7160c3eaj150ceac4440752a1@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Joe Peterson <joe@skyrush.com>, Elias Oltmanns <eo@nebensachen.de>,
+       =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Ctrl+C doesn't interrupt process waiting for I/O
+References: <48661488.10304@gmail.com>	<87fxqurqpz.fsf@denkblock.local>	<486E83C3.1040509@skyrush.com>	<20080704212335.4ffc8230@lxorguk.ukuu.org.uk>	<871w29s5u2.fsf@basil.nowhere.org>	<20080704221457.1f147225@lxorguk.ukuu.org.uk>	<486E97F2.8020605@firstfloor.org>	<20080704224441.63204bc4@lxorguk.ukuu.org.uk>	<486E9F91.6010701@firstfloor.org> <20080705113434.41109492@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080705113434.41109492@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bert Wesarg wrote:
-> On Sat, Jul 5, 2008 at 11:54, Andi Kleen <andi@firstfloor.org> wrote:
->>> Is this first "n" a typo?
->> No. The legacy machine check code that is going away is definitely
->> supposed to be default n. This is effectively a default y for
->> the new code.
-> I didn't mean the "default n", but the "If you're still sure you want it, say n"
+Alan Cox wrote:
+>> So what kind of data do you want? Someone watching a wallclock while
+>> comparing Ctrl-Z+kill versus Ctrl-C on a IO intensive process?
+> 
+> Latency traces with timestamps might be quite useful, they'd probably
+> also tell you why it happened.
 
-Ah that's indeed not correct. Thanks.
+Ok so you're asking someone else to debug it.
+
+ I can't reproduce it, nobody has provided
+> numbers so even if I wanted to work on it I couldn't do much.
+
+Well we had a patch (although I haven't tried it yet)
+
+http://marc.info/?l=linux-kernel&m=121489861508496&w=2
+
+Is that not concrete enough?
+
+> Instead I have lots of real tty, ATA and other work that needs doing
+> which has quantified data,
+
+All the reporters provided time stamp traces? @)
 
 -Andi
-
