@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbYGEFl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbYGEFlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753880AbYGEFl0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 01:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbYGEFlS
+	id S1752600AbYGEFlk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 01:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbYGEFlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 01:41:18 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:52018 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752088AbYGEFlR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 01:41:17 -0400
-Message-ID: <486F0976.7010104@linux.vnet.ibm.com>
-Date: Sat, 05 Jul 2008 11:11:10 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080515)
+	Sat, 5 Jul 2008 01:41:22 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63433 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752684AbYGEFlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 01:41:21 -0400
+Message-ID: <486F091C.8050803@cn.fujitsu.com>
+Date: Sat, 05 Jul 2008 13:39:40 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, "hugh@veritas.com" <hugh@veritas.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
-Subject: Re: [PATCH] memcg: handle shmem's swap cache (Was 2.6.26-rc8-mm1
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org> <20080704180913.bb1a3fc6.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080704180913.bb1a3fc6.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>
+Subject: [PATCH 2/2] devcgroup: fix permission check when adding entry to
+ child cgroup
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> My swapcache accounting under memcg patch failed to catch tmpfs(shmem)'s one.
-> Can I test this under -mm tree ?
-> (If -mm is busy, I'm not in hurry.)
-> This patch works well in my box.
-> =
-> SwapCache handling fix.
-> 
-> shmem's swapcache behavior is a little different from anonymous's one and
-> memcg failed to handle it. This patch tries to fix it.
-> 
-> After this:
-> 
-> Any page marked as SwapCache is not uncharged. (delelte_from_swap_cache()
-> delete the SwapCache flag.)
-> 
-> To check a shmem-page-cache is alive or not we use
->  page->mapping && !PageAnon(page) instead of
->  pc->flags & PAGE_CGROUP_FLAG_CACHE.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+ # cat devices.list
+ c 1:3 r
+ # echo 'c 1:3 w' > sub/devices.allow
+ # cat sub/devices.list
+ c 1:3 w
 
-Though I am not opposed to this, I do sit up and think if keeping the reference
-count around could avoid this complexity and from my point, the maintenance
-overhead of this logic/code (I fear there might be more special cases :( )
+As illustrated, the parent group has no write permission to /dev/null,
+so its child should not be allowed to add this write permission,
+which is documented in Documentation/controllers/devices.txt.
 
-The trade-off is complexity versus the overhead of reference counting.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ security/device_cgroup.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/security/device_cgroup.c b/security/device_cgroup.c
+index 1e2e28a..ddd92ce 100644
+--- a/security/device_cgroup.c
++++ b/security/device_cgroup.c
+@@ -300,7 +300,7 @@ static int may_access_whitelist(struct dev_cgroup *c,
+ 			continue;
+ 		if (whitem->minor != ~0 && whitem->minor != refwh->minor)
+ 			continue;
+-		if (refwh->access & (~(whitem->access | ACC_MASK)))
++		if (refwh->access & (~whitem->access))
+ 			continue;
+ 		return 1;
+ 	}
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+1.5.4.rc3
