@@ -1,68 +1,691 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755717AbYGESzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbYGETKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755717AbYGESzU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 14:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYGESzJ
+	id S1753302AbYGETKt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 15:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYGETKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 14:55:09 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:28378 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751619AbYGESzH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 14:55:07 -0400
-Date: Sat, 5 Jul 2008 20:54:55 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Cc: Hans Verkuil <hverkuil@xs4all.nl>, LKML <linux-kernel@vger.kernel.org>
-Subject: device/driver binding notification
-Message-ID: <20080705205455.7e6579ea@hyperion.delvare>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 5 Jul 2008 15:10:41 -0400
+Received: from mout2.freenet.de ([195.4.92.92]:48076 "EHLO mout2.freenet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751619AbYGETKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 15:10:39 -0400
+From: Sascha Sommer <saschasommer@freenet.de>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Subject: Re: Status of Ricoh Bay1Controller driver?
+Date: Sat, 5 Jul 2008 21:11:49 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: sdricohcs-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <20080705115039.77bf7e1c@mjolnir.drzeus.cx>
+In-Reply-To: <20080705115039.77bf7e1c@mjolnir.drzeus.cx>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_1d8bI8GqHzXg+bn"
+Message-Id: <200807052111.49807.saschasommer@freenet.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg, hi Kay,
+--Boundary-00=_1d8bI8GqHzXg+bn
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-In the course of finally making the i2c subsystem comply with the Linux
-2.6 device driver model, I am facing an issue which affects many v4l
-drivers. I'm curious if the core device driver code has something to
-offer to solve it.
+Hi,
 
-Basically, a v4l driver creates an i2c bus, instantiates i2c devices on
-that bus, and needs i2c chip drivers for these devices. In the past, i2c
-devices were always bound to a driver by the time the v4l driver knew
-they existed, so they were directly usable. But now that we follow the
-device driver model, this is no longer the case. The sequence of events
-is as follows:
+On Samstag, 5. Juli 2008, Pierre Ossman wrote:
+> Hi Sascha,
+>
+> How are things going with the driver? I was hoping we could get it into
+> the kernel for 2.6.27 at least.
+>
 
-1* v4l driver creates i2c bus.
+Ok here we go again:
 
-2* v4l driver declares i2c devices in that bus.
-   At this point, the v4l driver can't be used yet.
+Based on the feedback from your last review I did the following changes:
+- the driver should now be able to transfer data blocks with sizes smaller
+  than 512 mb
+- the endian problems in the block/io function should be gone
+- the YENTA dependency has been removed
+- the cmd specific includes have been removed
+- set_ios() has been fixed to set the bus width correctly
+- the busy check has been removed as per your suggestion
 
-3* Later on, the drivers for these devices in question are loaded
-   (typically thanks to udev), and they bind to the i2c devices.
+Apart from that the following problems remain:
 
-4* Now the v4l driver can complete its initialization and users can make
-   use of the device.
+There is still some hack for ACMDs. I know you won't like that but I did not  
+get the SD_APP_SEND_SCR command to work without it.
 
-For now, between steps 2 and 3, I made the v4l driver sleep and
-repeatedly check whether i2c_client.driver is set or not. It works but
-it's pretty ugly. I am curious if there's a way to be notified when a
-driver is finally bound to a given device? That's what I would need.
+MMC_SEND_EXT_CSD does not work (also not with that ACMD hack) and prints out 
+something like:
 
-This also raises another question on reference counting. Ideally, the
-i2c chip drivers shouldn't be allowed to be removed before the v4l
-driver itself is (without the i2c chip drivers, the v4l drivers cannot
-work properly.) So I would like to increase the reference count to the
-i2c chip drivers when they bind to my chips, and decrease it when I
-quit. Should I just do a try_module_get(i2c_driver.driver.owner) at a
-random time and just hope for the best? Or is there a cleaner way to
-express that kind of dependency between drivers?
+sdricoh_cs 0.0: query_status: timeout waiting for 1000000
+sdricoh_cs 0.0: sdricoh_request: cmd 8 block transfer failed
+sdricoh_cs 0.0: query_status: timeout waiting for 4
+sdricoh_cs 0.0: sdricoh_request: transfer end error
+mmc0: unable to read EXT_CSD, performance might suffer.
 
-Thanks,
--- 
-Jean Delvare
+The card works without problems after this message.
+
+Regards
+
+Sascha
+
+
+
+--Boundary-00=_1d8bI8GqHzXg+bn
+Content-Type: text/x-diff;
+  charset="iso-8859-15";
+  name="sdricoh_cs_try3.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="sdricoh_cs_try3.patch"
+
+MMC/SD host driver for Ricoh Bay1Controllers
+
+Signed-off-by: Sascha Sommer <saschasommer@freenet.de>
+
+--- drivers/mmc/host.org/Kconfig	2008-04-27 14:35:31.000000000 +0200
++++ drivers/mmc/host/Kconfig	2008-07-05 19:37:13.000000000 +0200
+@@ -130,3 +130,13 @@
+ 
+ 	  If unsure, or if your system has no SPI master driver, say N.
+ 
++config MMC_SDRICOH_CS
++	tristate "MMC/SD driver for Ricoh Bay1Controllers (EXPERIMENTAL)"
++	depends on EXPERIMENTAL && MMC && PCI && PCMCIA
++	help
++	  Say Y here if your Notebook reports a Ricoh Bay1Controller PCMCIA
++	  card whenever you insert a MMC or SD card into the card slot.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called sdricoh_cs.
++
+--- drivers/mmc/host.org/Makefile	2008-04-27 14:35:31.000000000 +0200
++++ drivers/mmc/host/Makefile	2008-04-27 14:37:13.000000000 +0200
+@@ -17,4 +17,5 @@
+ obj-$(CONFIG_MMC_AT91)		+= at91_mci.o
+ obj-$(CONFIG_MMC_TIFM_SD)	+= tifm_sd.o
+ obj-$(CONFIG_MMC_SPI)		+= mmc_spi.o
++obj-$(CONFIG_MMC_SDRICOH_CS)	+= sdricoh_cs.o
+ 
+--- /dev/null	2007-09-21 23:50:58.000000000 +0200
++++ drivers/mmc/host/sdricoh_cs.c	2008-07-05 20:20:33.000000000 +0200
+@@ -0,0 +1,575 @@
++/*
++ *  sdricoh_cs.c - driver for Ricoh Secure Digital Card Readers that can be
++ *     found on some Ricoh RL5c476 II cardbus bridge
++ *
++ *  Copyright (C) 2006 - 2008 Sascha Sommer <saschasommer@freenet.de>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ */
++
++/*
++#define DEBUG
++#define VERBOSE_DEBUG
++*/
++#include <linux/delay.h>
++#include <linux/highmem.h>
++#include <linux/pci.h>
++#include <linux/ioport.h>
++#include <linux/scatterlist.h>
++#include <linux/version.h>
++
++#include <pcmcia/cs_types.h>
++#include <pcmcia/cs.h>
++#include <pcmcia/cistpl.h>
++#include <pcmcia/ds.h>
++#include <linux/io.h>
++
++#include <linux/mmc/host.h>
++
++#define DRIVER_NAME "sdricoh_cs"
++
++static unsigned int switchlocked;
++
++/* i/o region */
++#define SDRICOH_PCI_REGION 0
++#define SDRICOH_PCI_REGION_SIZE 0x1000
++
++/* registers */
++#define R104_VERSION     0x104
++#define R200_CMD         0x200
++#define R204_CMD_ARG     0x204
++#define R208_DATAIO      0x208
++#define R20C_RESP        0x20c
++#define R21C_STATUS      0x21c
++#define R2E0_INIT        0x2e0
++#define R2E4_STATUS_RESP 0x2e4
++#define R2F0_RESET       0x2f0
++#define R224_MODE        0x224
++#define R226_BLOCKSIZE   0x226
++#define R228_POWER       0x228
++#define R230_DATA        0x230
++
++/* flags for the R21C_STATUS register */
++#define STATUS_CMD_FINISHED      0x00000001
++#define STATUS_TRANSFER_FINISHED 0x00000004
++#define STATUS_CARD_INSERTED     0x00000020
++#define STATUS_CARD_LOCKED       0x00000080
++#define STATUS_CMD_TIMEOUT       0x00400000
++#define STATUS_READY_TO_READ     0x01000000
++#define STATUS_READY_TO_WRITE    0x02000000
++#define STATUS_BUSY              0x40000000
++
++/* timeouts */
++#define INIT_TIMEOUT      100
++#define CMD_TIMEOUT       100000
++#define TRANSFER_TIMEOUT  100000
++#define BUSY_TIMEOUT      32767
++
++/* list of supported pcmcia devices */
++static struct pcmcia_device_id pcmcia_ids[] = {
++	/* vendor and device strings followed by their crc32 hashes */
++	PCMCIA_DEVICE_PROD_ID12("RICOH", "Bay1Controller", 0xd9f522ed,
++				0xc3901202),
++	PCMCIA_DEVICE_NULL,
++};
++
++MODULE_DEVICE_TABLE(pcmcia, pcmcia_ids);
++
++/* mmc privdata */
++struct sdricoh_host {
++	struct device *dev;
++	struct mmc_host *mmc;	/* MMC structure */
++	unsigned char __iomem *iobase;
++	struct pci_dev *pci_dev;
++	int app_cmd;
++};
++
++/***************** register i/o helper functions *****************************/
++
++static inline unsigned int sdricoh_readl(struct sdricoh_host *host,
++					 unsigned int reg)
++{
++	unsigned int value = readl(host->iobase + reg);
++	dev_vdbg(host->dev, "rl %x 0x%x\n", reg, value);
++	return value;
++}
++
++static inline void sdricoh_writel(struct sdricoh_host *host, unsigned int reg,
++				  unsigned int value)
++{
++	writel(value, host->iobase + reg);
++	dev_vdbg(host->dev, "wl %x 0x%x\n", reg, value);
++
++}
++
++static inline unsigned int sdricoh_readw(struct sdricoh_host *host,
++					 unsigned int reg)
++{
++	unsigned int value = readw(host->iobase + reg);
++	dev_vdbg(host->dev, "rb %x 0x%x\n", reg, value);
++	return value;
++}
++
++static inline void sdricoh_writew(struct sdricoh_host *host, unsigned int reg,
++					 unsigned short value)
++{
++	writew(value, host->iobase + reg);
++	dev_vdbg(host->dev, "ww %x 0x%x\n", reg, value);
++}
++
++static inline unsigned int sdricoh_readb(struct sdricoh_host *host,
++					 unsigned int reg)
++{
++	unsigned int value = readb(host->iobase + reg);
++	dev_vdbg(host->dev, "rb %x 0x%x\n", reg, value);
++	return value;
++}
++
++static int sdricoh_query_status(struct sdricoh_host *host, unsigned int wanted,
++				unsigned int timeout){
++	unsigned int loop;
++	unsigned int status = 0;
++	struct device *dev = host->dev;
++	for (loop = 0; loop < timeout; loop++) {
++		status = sdricoh_readl(host, R21C_STATUS);
++		sdricoh_writel(host, R2E4_STATUS_RESP, status);
++		if (status & wanted)
++			break;
++	}
++
++	if (loop == timeout) {
++		dev_err(dev, "query_status: timeout waiting for %x\n", wanted);
++		return -ETIMEDOUT;
++	}
++
++	/* do not do this check in the loop as some commands fail otherwise */
++	if (status & 0x7F0000) {
++		dev_err(dev, "waiting for status bit %x failed\n", wanted);
++		return -EINVAL;
++	}
++	return 0;
++
++}
++
++static int sdricoh_mmc_cmd(struct sdricoh_host *host, unsigned char opcode,
++			   unsigned int arg)
++{
++	unsigned int status;
++	int result = 0;
++	unsigned int loop = 0;
++	/* reset status reg? */
++	sdricoh_writel(host, R21C_STATUS, 0x18);
++	/* fill parameters */
++	sdricoh_writel(host, R204_CMD_ARG, arg);
++	sdricoh_writel(host, R200_CMD, (0x10000 << 8) | opcode);
++	/* wait for command completion */
++	if (opcode) {
++		for (loop = 0; loop < CMD_TIMEOUT; loop++) {
++			status = sdricoh_readl(host, R21C_STATUS);
++			sdricoh_writel(host, R2E4_STATUS_RESP, status);
++			if (status  & STATUS_CMD_FINISHED)
++				break;
++		}
++		/* don't check for timeout in the loop it is not always
++		   reset correctly
++		*/
++		if (loop == CMD_TIMEOUT || status & STATUS_CMD_TIMEOUT)
++			result = -ETIMEDOUT;
++
++	}
++
++	return result;
++
++}
++
++static int sdricoh_reset(struct sdricoh_host *host)
++{
++	dev_dbg(host->dev, "reset\n");
++	sdricoh_writel(host, R2F0_RESET, 0x10001);
++	sdricoh_writel(host, R2E0_INIT, 0x10000);
++	if (sdricoh_readl(host, R2E0_INIT) != 0x10000)
++		return -EIO;
++	sdricoh_writel(host, R2E0_INIT, 0x10007);
++
++	sdricoh_writel(host, R224_MODE, 0x2000000);
++	sdricoh_writel(host, R228_POWER, 0xe0);
++
++
++	/* status register ? */
++	sdricoh_writel(host, R21C_STATUS, 0x18);
++
++	return 0;
++}
++
++static int sdricoh_blockio(struct sdricoh_host *host, int read,
++				u8 *buf, int len)
++{
++	int size;
++	u32 data = 0;
++	/* wait until the data is available */
++	if (read) {
++		if (sdricoh_query_status(host, STATUS_READY_TO_READ,
++						TRANSFER_TIMEOUT))
++			return -ETIMEDOUT;
++		sdricoh_writel(host, R21C_STATUS, 0x18);
++		/* read data */
++		while (len) {
++			data = sdricoh_readl(host, R230_DATA);
++			size = min(len, 4);
++			len -= size;
++			while (size) {
++				*buf = data & 0xFF;
++				buf++;
++				data >>= 8;
++				size--;
++			}
++		}
++	} else {
++		if (sdricoh_query_status(host, STATUS_READY_TO_WRITE,
++						TRANSFER_TIMEOUT))
++			return -ETIMEDOUT;
++		sdricoh_writel(host, R21C_STATUS, 0x18);
++		/* write data */
++		while (len) {
++			size = min(len, 4);
++			len -= size;
++			while (size) {
++				data >>= 8;
++				data |= (u32)*buf << 24;
++				buf++;
++				size--;
++			}
++			sdricoh_writel(host, R230_DATA, data);
++		}
++	}
++
++	if (len)
++		return -EIO;
++
++	return 0;
++}
++
++static void sdricoh_request(struct mmc_host *mmc, struct mmc_request *mrq)
++{
++	struct sdricoh_host *host = mmc_priv(mmc);
++	struct mmc_command *cmd = mrq->cmd;
++	struct mmc_data *data = cmd->data;
++	struct device *dev = host->dev;
++	unsigned char opcode = cmd->opcode;
++	int i;
++
++	dev_dbg(dev, "=============================\n");
++	dev_dbg(dev, "sdricoh_request opcode=%i\n", opcode);
++
++	sdricoh_writel(host, R21C_STATUS, 0x18);
++
++	/* MMC_APP_CMDs need some special handling */
++	if (host->app_cmd) {
++		opcode |= 64;
++		host->app_cmd = 0;
++	} else if (opcode == 55)
++		host->app_cmd = 1;
++
++	/* read/write commands seem to require this */
++	if (data) {
++		sdricoh_writew(host, R226_BLOCKSIZE, data->blksz);
++		sdricoh_writel(host, R208_DATAIO, 0);
++	}
++
++	cmd->error = sdricoh_mmc_cmd(host, opcode, cmd->arg);
++
++	/* read response buffer */
++	if (cmd->flags & MMC_RSP_PRESENT) {
++		if (cmd->flags & MMC_RSP_136) {
++			/* CRC is stripped so we need to do some shifting. */
++			for (i = 0; i < 4; i++) {
++				cmd->resp[i] =
++				    sdricoh_readl(host,
++						  R20C_RESP + (3 - i) * 4) << 8;
++				if (i != 3)
++					cmd->resp[i] |=
++					    sdricoh_readb(host, R20C_RESP +
++							  (3 - i) * 4 - 1);
++			}
++		} else
++			cmd->resp[0] = sdricoh_readl(host, R20C_RESP);
++	}
++
++	/* transfer data */
++	if (data && cmd->error == 0) {
++		dev_dbg(dev, "transfer: blksz %i blocks %i sg_len %i "
++			"sg length %i\n", data->blksz, data->blocks,
++			data->sg_len, data->sg->length);
++
++		/* enter data reading mode */
++		sdricoh_writel(host, R21C_STATUS, 0x837f031e);
++		for (i = 0; i < data->blocks; i++) {
++			size_t len = data->blksz;
++			u8 *buf;
++			struct page *page;
++			int result;
++			page = sg_page(data->sg);
++
++			buf = kmap(page) + data->sg->offset + (len * i);
++			result =
++				sdricoh_blockio(host,
++					data->flags & MMC_DATA_READ, buf, len);
++			kunmap(page);
++			flush_dcache_page(page);
++			if (result) {
++				dev_err(dev, "sdricoh_request: cmd %i "
++					"block transfer failed\n", cmd->opcode);
++				cmd->error = result;
++				break;
++			} else
++				data->bytes_xfered += len;
++		}
++
++		sdricoh_writel(host, R208_DATAIO, 1);
++
++		if (sdricoh_query_status(host, STATUS_TRANSFER_FINISHED,
++					TRANSFER_TIMEOUT)) {
++			dev_err(dev, "sdricoh_request: transfer end error\n");
++			cmd->error = -EINVAL;
++		}
++	}
++	/* FIXME check busy flag */
++
++	mmc_request_done(mmc, mrq);
++	dev_dbg(dev, "=============================\n");
++}
++
++static void sdricoh_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
++{
++	struct sdricoh_host *host = mmc_priv(mmc);
++	dev_dbg(host->dev, "set_ios\n");
++
++	if (ios->power_mode == MMC_POWER_ON) {
++		sdricoh_writel(host, R228_POWER, 0xc0e0);
++
++		if (ios->bus_width == MMC_BUS_WIDTH_4) {
++			sdricoh_writel(host, R224_MODE, 0x2000300);
++			sdricoh_writel(host, R228_POWER, 0x40e0);
++		} else {
++			sdricoh_writel(host, R224_MODE, 0x2000340);
++		}
++
++	} else if (ios->power_mode == MMC_POWER_UP) {
++		sdricoh_writel(host, R224_MODE, 0x2000320);
++		sdricoh_writel(host, R228_POWER, 0xe0);
++	}
++}
++
++static int sdricoh_get_ro(struct mmc_host *mmc)
++{
++	struct sdricoh_host *host = mmc_priv(mmc);
++	unsigned int status;
++
++	status = sdricoh_readl(host, R21C_STATUS);
++	sdricoh_writel(host, R2E4_STATUS_RESP, status);
++
++	/* some notebooks seem to have the locked flag switched */
++	if (switchlocked)
++		return !(status & STATUS_CARD_LOCKED);
++
++	return (status & STATUS_CARD_LOCKED);
++}
++
++static struct mmc_host_ops sdricoh_ops = {
++	.request = sdricoh_request,
++	.set_ios = sdricoh_set_ios,
++	.get_ro = sdricoh_get_ro,
++};
++
++/* initialize the control and register it to the mmc framework */
++static int sdricoh_init_mmc(struct pci_dev *pci_dev,
++			    struct pcmcia_device *pcmcia_dev)
++{
++	int result = 0;
++	void __iomem *iobase = NULL;
++	struct mmc_host *mmc = NULL;
++	struct sdricoh_host *host = NULL;
++	struct device *dev = &pcmcia_dev->dev;
++	/* map iomem */
++	if (pci_resource_len(pci_dev, SDRICOH_PCI_REGION) !=
++	    SDRICOH_PCI_REGION_SIZE) {
++		dev_dbg(dev, "unexpected pci resource len\n");
++		return -ENODEV;
++	}
++	iobase =
++	    pci_iomap(pci_dev, SDRICOH_PCI_REGION, SDRICOH_PCI_REGION_SIZE);
++	if (!iobase) {
++		dev_err(dev, "unable to map iobase\n");
++		return -ENODEV;
++	}
++	/* check version? */
++	if (readl(iobase + R104_VERSION) != 0x4000) {
++		dev_dbg(dev, "no supported mmc controller found\n");
++		result = -ENODEV;
++		goto err;
++	}
++	/* allocate privdata */
++	mmc = pcmcia_dev->priv =
++	    mmc_alloc_host(sizeof(struct sdricoh_host), &pcmcia_dev->dev);
++	if (!mmc) {
++		dev_err(dev, "mmc_alloc_host failed\n");
++		result = -ENOMEM;
++		goto err;
++	}
++	host = mmc_priv(mmc);
++
++	host->iobase = iobase;
++	host->dev = dev;
++	host->pci_dev = pci_dev;
++
++	mmc->ops = &sdricoh_ops;
++
++	/* FIXME: frequency and voltage handling is done by the controller
++	 */
++	mmc->f_min = 450000;
++	mmc->f_max = 24000000;
++	mmc->ocr_avail = MMC_VDD_32_33 | MMC_VDD_33_34;
++	mmc->caps |= MMC_CAP_4_BIT_DATA;
++
++	mmc->max_seg_size = 1024 * 512;
++	mmc->max_blk_size = 512;
++
++	/* reset the controler */
++	if (sdricoh_reset(host)) {
++		dev_dbg(dev, "could not reset\n");
++		result = -EIO;
++		goto err;
++
++	}
++
++	result = mmc_add_host(mmc);
++
++	if (!result) {
++		dev_dbg(dev, "mmc host registered\n");
++		return 0;
++	}
++
++err:
++	if (iobase)
++		iounmap(iobase);
++	if (mmc)
++		mmc_free_host(mmc);
++
++	return result;
++}
++
++/* search for supported mmc controllers */
++static int sdricoh_pcmcia_probe(struct pcmcia_device *pcmcia_dev)
++{
++	struct pci_dev *pci_dev = NULL;
++
++	dev_info(&pcmcia_dev->dev, "Searching MMC controller for pcmcia device"
++		" %s %s ...\n", pcmcia_dev->prod_id[0], pcmcia_dev->prod_id[1]);
++
++	/* search pci cardbus bridge that contains the mmc controler */
++	/* the io region is already claimed by yenta_socket... */
++	while ((pci_dev =
++		pci_get_device(PCI_VENDOR_ID_RICOH, PCI_DEVICE_ID_RICOH_RL5C476,
++			       pci_dev))) {
++		/* try to init the device */
++		if (!sdricoh_init_mmc(pci_dev, pcmcia_dev)) {
++			dev_info(&pcmcia_dev->dev, "MMC controller found\n");
++			return 0;
++		}
++
++	}
++	dev_err(&pcmcia_dev->dev, "No MMC controller was found.\n");
++	return -ENODEV;
++}
++
++static void sdricoh_pcmcia_detach(struct pcmcia_device *link)
++{
++	struct mmc_host *mmc = link->priv;
++
++	dev_dbg(&link->dev, "detach\n");
++
++	/* remove mmc host */
++	if (mmc) {
++		struct sdricoh_host *host = mmc_priv(mmc);
++		mmc_remove_host(mmc);
++		pci_iounmap(host->pci_dev, host->iobase);
++		pci_dev_put(host->pci_dev);
++		mmc_free_host(mmc);
++	}
++	pcmcia_disable_device(link);
++
++}
++
++#ifdef CONFIG_PM
++static int sdricoh_pcmcia_suspend(struct pcmcia_device *link)
++{
++	struct mmc_host *mmc = link->priv;
++	dev_dbg(&link->dev, "suspend\n");
++	mmc_suspend_host(mmc, PMSG_SUSPEND);
++	return 0;
++}
++
++static int sdricoh_pcmcia_resume(struct pcmcia_device *link)
++{
++	struct mmc_host *mmc = link->priv;
++	dev_dbg(&link->dev, "resume\n");
++	sdricoh_reset(mmc_priv(mmc));
++	mmc_resume_host(mmc);
++	return 0;
++}
++#else
++#define sdricoh_pcmcia_suspend NULL
++#define sdricoh_pcmcia_resume NULL
++#endif
++
++static struct pcmcia_driver sdricoh_driver = {
++	.drv = {
++		.name = DRIVER_NAME,
++		},
++	.probe = sdricoh_pcmcia_probe,
++	.remove = sdricoh_pcmcia_detach,
++	.id_table = pcmcia_ids,
++	.suspend = sdricoh_pcmcia_suspend,
++	.resume = sdricoh_pcmcia_resume,
++};
++
++/*****************************************************************************\
++ *                                                                           *
++ * Driver init/exit                                                          *
++ *                                                                           *
++\*****************************************************************************/
++
++static int __init sdricoh_drv_init(void)
++{
++	return pcmcia_register_driver(&sdricoh_driver);
++}
++
++static void __exit sdricoh_drv_exit(void)
++{
++	pcmcia_unregister_driver(&sdricoh_driver);
++}
++
++module_init(sdricoh_drv_init);
++module_exit(sdricoh_drv_exit);
++
++module_param(switchlocked, uint, 0444);
++
++MODULE_AUTHOR("Sascha Sommer <saschasommer@freenet.de>");
++MODULE_DESCRIPTION("Ricoh PCMCIA Secure Digital Interface driver");
++MODULE_LICENSE("GPL");
++
++MODULE_PARM_DESC(switchlocked, "Switch the cards locked status."
++		"Use this when unlocked cards are shown readonly (default 0)");
+
+--Boundary-00=_1d8bI8GqHzXg+bn--
