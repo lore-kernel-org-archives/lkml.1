@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758659AbYGERot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbYGERod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758659AbYGERot (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756405AbYGERh3
+	id S1758561AbYGERod (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:44:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbYGERh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:37:29 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33060 "EHLO
+	Sat, 5 Jul 2008 13:37:26 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33062 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753891AbYGERgb (ORCPT
+	with ESMTP id S1755511AbYGERgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 5 Jul 2008 13:36:31 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Ext4 Developers List <linux-ext4@vger.kernel.org>,
        Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Cc: Mingming Cao <cmm@us.ibm.com>, "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 27/52] ext4: mballoc avoid use root reserved blocks for non root allocation
-Date: Sat,  5 Jul 2008 13:35:53 -0400
-Message-Id: <1215279378-30504-28-git-send-email-tytso@mit.edu>
+Cc: Jan Kara <jack@suse.cz>, "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 28/52] ext4: Set journal pointer to NULL when journal is released
+Date: Sat,  5 Jul 2008 13:35:54 -0400
+Message-Id: <1215279378-30504-29-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.rc3.1.g36b7.dirty
-In-Reply-To: <1215279378-30504-27-git-send-email-tytso@mit.edu>
+In-Reply-To: <1215279378-30504-28-git-send-email-tytso@mit.edu>
 References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-2-git-send-email-tytso@mit.edu>
  <1215279378-30504-3-git-send-email-tytso@mit.edu>
@@ -46,6 +46,7 @@ References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-25-git-send-email-tytso@mit.edu>
  <1215279378-30504-26-git-send-email-tytso@mit.edu>
  <1215279378-30504-27-git-send-email-tytso@mit.edu>
+ <1215279378-30504-28-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -53,153 +54,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mingming Cao <cmm@us.ibm.com>
+From: Jan Kara <jack@suse.cz>
 
-mballoc allocation missed check for blocks reserved for root users. Add
-ext4_has_free_blocks() check before allocation. Also modified
-ext4_has_free_blocks() to support multiple block allocation request.
+Set sbi->s_journal to NULL after we call journal_destroy(). This
+will be later needed because after journal_destroy() is called,
+ext4_clear_inode() can still be called for some inodes (e.g. root
+inode) and we'll need to detect there that journal doesn't exists
+anymore.
 
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/balloc.c  |   51 +++++++++++++++++++++++++++++++++------------------
- fs/ext4/ext4.h    |    2 ++
- fs/ext4/mballoc.c |    7 ++++++-
- 3 files changed, 41 insertions(+), 19 deletions(-)
+ fs/ext4/super.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
-index 48787e8..25f63d8 100644
---- a/fs/ext4/balloc.c
-+++ b/fs/ext4/balloc.c
-@@ -1599,23 +1599,35 @@ out:
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index c4b9faf..e239af3 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -506,6 +506,7 @@ static void ext4_put_super (struct super_block * sb)
+ 	ext4_ext_release(sb);
+ 	ext4_xattr_put_super(sb);
+ 	jbd2_journal_destroy(sbi->s_journal);
++	sbi->s_journal = NULL;
+ 	if (!(sb->s_flags & MS_RDONLY)) {
+ 		EXT4_CLEAR_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
+ 		es->s_state = cpu_to_le16(sbi->s_mount_state);
+@@ -2423,6 +2424,7 @@ cantfind_ext4:
  
- /**
-  * ext4_has_free_blocks()
-- * @sbi:		in-core super block structure.
-+ * @sbi:	in-core super block structure.
-+ * @nblocks:	number of neeed blocks
-  *
-- * Check if filesystem has at least 1 free block available for allocation.
-+ * Check if filesystem has free blocks available for allocation.
-+ * Return the number of blocks avaible for allocation for this request
-+ * On success, return nblocks
-  */
--static int ext4_has_free_blocks(struct ext4_sb_info *sbi)
-+ext4_fsblk_t ext4_has_free_blocks(struct ext4_sb_info *sbi,
-+						ext4_fsblk_t nblocks)
- {
--	ext4_fsblk_t free_blocks, root_blocks;
-+	ext4_fsblk_t free_blocks;
-+	ext4_fsblk_t root_blocks = 0;
- 
- 	free_blocks = percpu_counter_read_positive(&sbi->s_freeblocks_counter);
--	root_blocks = ext4_r_blocks_count(sbi->s_es);
--	if (free_blocks < root_blocks + 1 && !capable(CAP_SYS_RESOURCE) &&
-+
-+	if (!capable(CAP_SYS_RESOURCE) &&
- 		sbi->s_resuid != current->fsuid &&
--		(sbi->s_resgid == 0 || !in_group_p (sbi->s_resgid))) {
--		return 0;
--	}
--	return 1;
--}
-+		(sbi->s_resgid == 0 || !in_group_p(sbi->s_resgid)))
-+		root_blocks = ext4_r_blocks_count(sbi->s_es);
-+#ifdef CONFIG_SMP
-+	if (free_blocks - root_blocks < FBC_BATCH)
-+		free_blocks =
-+			percpu_counter_sum_positive(&sbi->s_freeblocks_counter);
-+#endif
-+	if (free_blocks - root_blocks < nblocks)
-+		return free_blocks - root_blocks;
-+	return nblocks;
-+ }
-+
- 
- /**
-  * ext4_should_retry_alloc()
-@@ -1631,7 +1643,7 @@ static int ext4_has_free_blocks(struct ext4_sb_info *sbi)
-  */
- int ext4_should_retry_alloc(struct super_block *sb, int *retries)
- {
--	if (!ext4_has_free_blocks(EXT4_SB(sb)) || (*retries)++ > 3)
-+	if (!ext4_has_free_blocks(EXT4_SB(sb), 1) || (*retries)++ > 3)
- 		return 0;
- 
- 	jbd_debug(1, "%s: retrying operation after ENOSPC\n", sb->s_id);
-@@ -1681,13 +1693,21 @@ ext4_fsblk_t ext4_old_new_blocks(handle_t *handle, struct inode *inode,
- 	ext4_group_t ngroups;
- 	unsigned long num = *count;
- 
--	*errp = -ENOSPC;
- 	sb = inode->i_sb;
- 	if (!sb) {
-+		*errp = -ENODEV;
- 		printk("ext4_new_block: nonexistent device");
- 		return 0;
- 	}
- 
-+	sbi = EXT4_SB(sb);
-+	*count = ext4_has_free_blocks(sbi, *count);
-+	if (*count == 0) {
-+		*errp = -ENOSPC;
-+		return 0;	/*return with ENOSPC error */
-+	}
-+	num = *count;
-+
- 	/*
- 	 * Check quota for allocation of this block.
- 	 */
-@@ -1711,11 +1731,6 @@ ext4_fsblk_t ext4_old_new_blocks(handle_t *handle, struct inode *inode,
- 	if (block_i && ((windowsz = block_i->rsv_window_node.rsv_goal_size) > 0))
- 		my_rsv = &block_i->rsv_window_node;
- 
--	if (!ext4_has_free_blocks(sbi)) {
--		*errp = -ENOSPC;
--		goto out;
--	}
--
- 	/*
- 	 * First, test whether the goal block is free.
- 	 */
-diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index ed04642..37ce906 100644
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -979,6 +979,8 @@ extern ext4_fsblk_t ext4_new_blocks(handle_t *handle, struct inode *inode,
- 					unsigned long *count, int *errp);
- extern ext4_fsblk_t ext4_old_new_blocks(handle_t *handle, struct inode *inode,
- 			ext4_fsblk_t goal, unsigned long *count, int *errp);
-+extern ext4_fsblk_t ext4_has_free_blocks(struct ext4_sb_info *sbi,
-+						ext4_fsblk_t nblocks);
- extern void ext4_free_blocks (handle_t *handle, struct inode *inode,
- 			ext4_fsblk_t block, unsigned long count, int metadata);
- extern void ext4_free_blocks_sb (handle_t *handle, struct super_block *sb,
-diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-index 007b97b..9ffad23 100644
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -4039,6 +4039,12 @@ ext4_fsblk_t ext4_mb_new_blocks(handle_t *handle,
- 					    &(ar->len), errp);
- 		return block;
- 	}
-+	ar->len = ext4_has_free_blocks(sbi, ar->len);
-+
-+	if (ar->len == 0) {
-+		*errp = -ENOSPC;
-+		return 0;
-+	}
- 
- 	while (ar->len && DQUOT_ALLOC_BLOCK(ar->inode, ar->len)) {
- 		ar->flags |= EXT4_MB_HINT_NOPREALLOC;
-@@ -4067,7 +4073,6 @@ ext4_fsblk_t ext4_mb_new_blocks(handle_t *handle,
- 
- 	ac->ac_op = EXT4_MB_HISTORY_PREALLOC;
- 	if (!ext4_mb_use_preallocated(ac)) {
--
- 		ac->ac_op = EXT4_MB_HISTORY_ALLOC;
- 		ext4_mb_normalize_request(ac, ar);
- repeat:
+ failed_mount4:
+ 	jbd2_journal_destroy(sbi->s_journal);
++	sbi->s_journal = NULL;
+ failed_mount3:
+ 	percpu_counter_destroy(&sbi->s_freeblocks_counter);
+ 	percpu_counter_destroy(&sbi->s_freeinodes_counter);
 -- 
 1.5.6.rc3.1.g36b7.dirty
 
