@@ -1,106 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbYGENYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbYGEN1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756156AbYGENYS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 09:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbYGENYJ
+	id S1755350AbYGEN1j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 09:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbYGEN1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 09:24:09 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:51091 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753129AbYGENYG (ORCPT
+	Sat, 5 Jul 2008 09:27:31 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:58916 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752409AbYGEN1a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 09:24:06 -0400
-Date: Sat, 5 Jul 2008 15:24:04 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Anvin <hpa@zytor.com>, "David S. Miller" <davem@davemloft.net>,
-       linux-ia64@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: the printk problem
-In-Reply-To: <20080705125230.GA20166@damson.getinternet.no>
-Message-ID: <alpine.LNX.1.10.0807051518500.28765@fbirervta.pbzchgretzou.qr>
-References: <20080705125230.GA20166@damson.getinternet.no>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Sat, 5 Jul 2008 09:27:30 -0400
+Date: Sat, 5 Jul 2008 07:27:28 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: linux-pci@vger.kernel.org
+Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>,
+       Dan Williams <dan.j.williams@intel.com>, Martine.Silbermann@hp.com,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: Multiple MSI
+Message-ID: <20080705132728.GO14894@parisc-linux.org>
+References: <20080703024445.GA14894@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080703024445.GA14894@parisc-linux.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 02, 2008 at 08:44:46PM -0600, Matthew Wilcox wrote:
+> At the moment, devices with the MSI-X capability can request multiple
+> interrupts, but devices with MSI can only request one.  This isn't an
+> inherent limitation of MSI, it's just the way that Linux currently
+> implements it.  I intend to lift that restriction, so I'm throwing out
+> some ideas that I've had while looking into it.
 
-On Saturday 2008-07-05 14:52, Vegard Nossum wrote:
->> On Saturday 2008-07-05 00:01, Andrew Morton wrote:
->>>
->>>We don't know how much interest there would be in churning NIPQUAD from
->>>the net guys.  Interestingly, there's also %C (wint_t) which is a
->>>32-bit quantity.  So we could just go and say "%C prints an ipv4
->>>address" and be done with it.  But there's no way of doing that for
->>>ipv6 addresses so things would become asymmetrical there.
->>
->>        struct in6_addr src;
->>        printk("Source address: %p{ipv6}\n", &src);
->>
->> How about %p{feature}?
->
->Something like this?
->
->+static char *custom_format(char *buf, char *end,
->+	const char *fmt, unsigned int fmtlen, void *arg)
+Here's some code.  It's four patches, the first two are to the PCI MSI
+code, the third is for the AHCI driver and the fourth is for the x86-64
+interrupt code.
 
-I'd use const void *arg here, so nobody gets the idea
-that you could modify the argument while printing :)
+It's had some light testing; no performance testing yet.  I'd value some
+review.
 
->+{
->+	if (!strncmp(fmt, "sym", fmtlen)) {
->+		char name[KSYM_SYMBOL_LEN];
->+		int len;
->+		int i;
->+
->+		len = sprint_symbol(name, (unsigned long) arg);
->+		if (len < 0)
->+			return buf;
->+
->+		i = 0;
->+		while (i < len) {
->+			if (buf < end)
->+				*buf = name[i];
->+			++buf;
->+			++i;
->+		}
->+	}
-
-And I assume it's then as simple as
-
-	} else if (strncmp(fmt, "nip6", fmtlen) == 0) {
-		snprintf(buf, end - buf (+1?), NIP6_FMT in expanded form,
-		         NIP6 in expanded form(arg));
-	}
-
-Hm, that's going to get a big function when everyone adds their
-fmttypes.
-
->+
->+	return buf;
->+}
->+
-> static char *number(char *buf, char *end, unsigned long long num, int base, int size, int precision, int type)
-> {
-> 	/* we are called with base 8, 10 or 16, only, thus don't need "G..."  */
->@@ -648,6 +673,25 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
-> 				continue;
-> 
-> 			case 'p':
->+				if (fmt[1] == '{') {
->+					const char *cfmt;
->+
->+					/* Skip the '%{' */
->+					++fmt;
->+					++fmt;
->+
-
-Not this?
-
-	/* Skip the '%p{' */
-	fmt += 3;
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
