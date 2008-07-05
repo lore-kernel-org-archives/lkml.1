@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbYGEXbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbYGEXhK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756183AbYGEXbM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 19:31:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYGEXa6
+	id S1756108AbYGEXhK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 19:37:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbYGEXg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 19:30:58 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:52847 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752460AbYGEXa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 19:30:58 -0400
-Date: Sun, 6 Jul 2008 01:30:51 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Tomas Winkler <tomas.winkler@intel.com>
-Cc: marcel@holtmann.org, linux-kernel@vger.kernel.org,
-       Tomas Winkler <tomas.winkler@intel.com>
-Subject: Re: [PATCH 1/2 V2] MMC: fix spares errors of sdhci.c
-Message-ID: <20080706013051.008c54df@mjolnir.drzeus.cx>
-In-Reply-To: <1215276725-15588-1-git-send-email-tomas.winkler@intel.com>
-References: <1215276725-15588-1-git-send-email-tomas.winkler@intel.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-16148-1215300656-0001-2"
+	Sat, 5 Jul 2008 19:36:59 -0400
+Received: from relay03.mail-hub.dodo.com.au ([123.2.6.238]:41650 "EHLO
+	relay03.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753270AbYGEXg6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 19:36:58 -0400
+From: Grant Coady <grant_lkml@dodo.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.26-rc9
+Date: Sun, 06 Jul 2008 09:36:30 +1000
+Organization: http://bugsplatter.mine.nu/
+Reply-To: Grant Coady <gcoady.lk@gmail.com>
+Message-ID: <f31074112h7jusi98q1a7ln3g2nhi6k5ko@4ax.com>
+References: <alpine.LFD.1.10.0807051557500.3016@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807051557500.3016@woody.linux-foundation.org>
+X-Mailer: Forte Agent 2.0/32.652
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Sat, 5 Jul 2008 16:15:14 -0700 (PDT), Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
---=_freyr.drzeus.cx-16148-1215300656-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+>
+>Ok, the last -rc obviously wasn't the last one after all, since here's a 
+>new one. Enough changes that we needed another -rc, and the regression 
+>list isn't emptying fast enough either (probably because a number of 
+>people, including reporters, are vacationing).
 
-On Sat,  5 Jul 2008 19:52:04 +0300
-Tomas Winkler <tomas.winkler@intel.com> wrote:
+Noticed the stale LATEST-IS-* entries no longer being removed at:
+  http://www.kernel.org/pub/linux/kernel/v2.6/testing/?C=N;O=A
+...
+ChangeLog-2.6.26-rc8          25-Jun-2008 02:14   56K  
+LATEST-IS-2.6.26-rc3          18-May-2008 21:46    0   
+LATEST-IS-2.6.26-rc4          26-May-2008 18:17    0   
+LATEST-IS-2.6.26-rc5          05-Jun-2008 03:17    0   
+LATEST-IS-2.6.26-rc6          12-Jun-2008 21:45    0   
+LATEST-IS-2.6.26-rc7          20-Jun-2008 23:44    0   
+LATEST-IS-2.6.26-rc8          25-Jun-2008 02:14    0   
+linux-2.6.26-rc1.tar.bz2      03-May-2008 19:40   47M  
+...
 
-> 1. sdhci_prepare_data: fix shadowing of count variable
-> 	u8 count
-> 	int count -> sg_cnt;
-> 2.  sdhci_add_host: assignment of integer to pointer
-> 	dma_mask =3D 0 -> dma_mask =3D NULL;
->=20
-> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-> ---
-
-Applied, thanks.
-
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-16148-1215300656-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkhwBC8ACgkQ7b8eESbyJLj3vACfcg98n8UhmjU7sTVuUCjpnS6G
-v8wAoJePADgFEwzKl1HaeL98ANdfyJpY
-=frXc
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-16148-1215300656-0001-2--
+Grant.
