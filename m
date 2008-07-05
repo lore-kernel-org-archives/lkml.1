@@ -1,100 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbYGEASV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbYGEAxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754823AbYGEASV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 20:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbYGEASO
+	id S1753990AbYGEAxq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 20:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbYGEAxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 20:18:14 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:61588 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752156AbYGEASN (ORCPT
+	Fri, 4 Jul 2008 20:53:36 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:62594 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750721AbYGEAxf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 20:18:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:mime-version
-         :content-type:message-id;
-        b=Wpo9WqD+gENNgsuXpDETigUZZFZVWGOY7510zIUYOGuvozg8Linv8KJuXLj5ESJ8b1
-         YVfHmsvlUxDfXZpQqf+rpHnWri5YVJXEJD5izMDzGBjGqwp5rU3X4ubQJgrJH83YaQKu
-         NlSBNX9RMJaQhoORtv3bpFEvk97bHaNcQfAlA=
-From: Marek Vasut <marek.vasut@gmail.com>
-Organization: Hack&Dev
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] fix misalignment in pxamci
-Date: Sat, 5 Jul 2008 02:19:52 +0200
-User-Agent: KMail/1.9.9
-Cc: drzeus-mmc@drzeus.cx
+	Fri, 4 Jul 2008 20:53:35 -0400
+Date: Fri, 4 Jul 2008 17:51:18 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+X-X-Sender: xyzzy@t2.domain.actdsltmp
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+cc: Olivier Galibert <galibert@pobox.com>,
+       David Woodhouse <dwmw2@infradead.org>, Hannes Reinecke <hare@suse.de>,
+       Takashi Iwai <tiwai@suse.de>, Theodore Tso <tytso@mit.edu>,
+       Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
+       David Miller <davem@davemloft.net>, hugh@veritas.com,
+       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+In-Reply-To: <20080704235839.GA5649@khazad-dum.debian.net>
+Message-ID: <Pine.LNX.4.64.0807041742500.13075@t2.domain.actdsltmp>
+References: <486D6DDB.4010205@infradead.org> <87ej6armez.fsf@basil.nowhere.org>
+ <1215177044.10393.743.camel@pmac.infradead.org> <486E2260.5050503@garzik.org>
+ <1215178035.10393.763.camel@pmac.infradead.org> <20080704141014.GA23215@mit.edu>
+ <s5habgxloct.wl%tiwai@suse.de> <486E3622.1000900@suse.de>
+ <1215182557.10393.808.camel@pmac.infradead.org> <20080704231322.GA4410@dspnet.fr.eu.org>
+ <20080704235839.GA5649@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_o4rbIEEDDOD0/xe"
-Message-Id: <200807050219.52218.marek.vasut@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_o4rbIEEDDOD0/xe
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Fri, 4 Jul 2008, Henrique de Moraes Holschuh wrote:
+> On Sat, 05 Jul 2008, Olivier Galibert wrote:
+>> Won't that break multiple kernel installs on any binary packaging
+>> system that cares about file collisions?  Multiple kernel rpms
+>> providing the same /lib/firmware files would break things wouldn't
+>> they ?
+>
+> We will probably need per-kernel directories, exactly like what is done for
+> modules.  And since there are (now) both kernel-version-specific, and
+> non-kernel-version-specific firmware, this means the firmware loader should
+> look first on the version-specific directory (say, /lib/firmware/$(uname
+> -r)/), then if not found, on the general directory (/lib/firmware).
 
-Hi,
-Philipp Zabel finally made the pxamci issue clear. It turned out, that pxamci 
-needs the DMA destination address to be aligned to 8 bytes. In some cases it 
-happened, that the address was aligned to 4 bytes causing controller to 
-incorrectly transfer data (and resulting into error like "mmc0: unrecognised 
-SCR structure version 1"). The following patch allows to debug this issue and 
-moreover fixes it by moving one 4 byte entry of mmc_card structure, aligning 
-the DMA destination back to 8 bytes.
+How about /lib/modules/`uname -r`/firmware
 
-Signed-off-by: Marek Vasut <marek.vasut@gmail.com>
-
---Boundary-00=_o4rbIEEDDOD0/xe
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="pxamci-lkml.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="pxamci-lkml.patch"
-
-Signed-off-by: Marek Vasut <marek.vasut@gmail.com>
-diff --git a/drivers/mmc/host/pxamci.c b/drivers/mmc/host/pxamci.c
-index 65210fc..75b2810 100644
---- a/drivers/mmc/host/pxamci.c
-+++ b/drivers/mmc/host/pxamci.c
-@@ -153,6 +153,13 @@ static void pxamci_setup_data(struct pxamci_host *host, struct mmc_data *data)
- 		if (length & 31 && !(data->flags & MMC_DATA_READ))
- 			host->sg_cpu[i].dcmd |= DCMD_ENDIRQEN;
- 		if (data->flags & MMC_DATA_READ) {
-+#ifdef CONFIG_MMC_DEBUG
-+			/* we need destination address to be aligned to 8 bytes
-+			   here, if it isn't, we have serious problem */
-+			if (sg_dma_address(&data->sg[i]) % 8)
-+				pr_debug("%s:%i Misaligned DMA destination\n",
-+					__FILE__, __LINE__);
-+#endif
- 			host->sg_cpu[i].dsadr = host->res->start + MMC_RXFIFO;
- 			host->sg_cpu[i].dtadr = sg_dma_address(&data->sg[i]);
- 		} else {
-diff --git a/include/linux/mmc/card.h b/include/linux/mmc/card.h
-index 0d508ac..cb76462 100644
---- a/include/linux/mmc/card.h
-+++ b/include/linux/mmc/card.h
-@@ -89,6 +89,7 @@ struct mmc_card {
- #define MMC_TYPE_MMC		0		/* MMC card */
- #define MMC_TYPE_SD		1		/* SD card */
- #define MMC_TYPE_SDIO		2		/* SDIO card */
-+	unsigned int		sdio_funcs;	/* number of SDIO functions */
- 	unsigned int		state;		/* (our) card state */
- #define MMC_STATE_PRESENT	(1<<0)		/* present in sysfs */
- #define MMC_STATE_READONLY	(1<<1)		/* card is read-only */
-@@ -104,7 +105,6 @@ struct mmc_card {
- 	struct sd_scr		scr;		/* extra SD information */
- 	struct sd_switch_caps	sw_caps;	/* switch (CMD6) caps */
- 
--	unsigned int		sdio_funcs;	/* number of SDIO functions */
- 	struct sdio_cccr	cccr;		/* common card info */
- 	struct sdio_cis		cis;		/* common tuple info */
- 	struct sdio_func	*sdio_func[SDIO_MAX_FUNCS]; /* SDIO functions (devices) */
-
---Boundary-00=_o4rbIEEDDOD0/xe--
+Keeps all the stuff for a given kernel together in one directory.  Easier to
+delete, e.g. when getting ride of an old kernel or when wiping a broken kernel
+install clean.  The non-kernel-specific directory could be for firmwares that
+don't come with the kernel and aren't specific to the driver version.  That
+avoids the complexity of providing kernel version specific packages when it's
+not necessary.
