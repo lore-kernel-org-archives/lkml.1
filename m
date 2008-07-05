@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753417AbYGEKxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbYGEKzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753417AbYGEKxf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 06:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbYGEKxY
+	id S1753544AbYGEKzi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 06:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbYGEKza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 06:53:24 -0400
-Received: from dspnet.fr.eu.org ([213.186.44.138]:2861 "EHLO dspnet.fr.eu.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750959AbYGEKxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 06:53:23 -0400
-Date: Sat, 5 Jul 2008 12:53:17 +0200
-From: Olivier Galibert <galibert@pobox.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: David Woodhouse <dwmw2@infradead.org>, Hannes Reinecke <hare@suse.de>,
-       Theodore Tso <tytso@mit.edu>, Jeff Garzik <jeff@garzik.org>,
-       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       hugh@veritas.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-Message-ID: <20080705105317.GA44773@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	Takashi Iwai <tiwai@suse.de>, David Woodhouse <dwmw2@infradead.org>,
-	Hannes Reinecke <hare@suse.de>, Theodore Tso <tytso@mit.edu>,
-	Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
-	David Miller <davem@davemloft.net>, hugh@veritas.com,
-	akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-	mchan@broadcom.com, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, netdev@vger.kernel.org
-References: <87ej6armez.fsf@basil.nowhere.org> <1215177044.10393.743.camel@pmac.infradead.org> <486E2260.5050503@garzik.org> <1215178035.10393.763.camel@pmac.infradead.org> <20080704141014.GA23215@mit.edu> <s5habgxloct.wl%tiwai@suse.de> <486E3622.1000900@suse.de> <1215182557.10393.808.camel@pmac.infradead.org> <20080704231322.GA4410@dspnet.fr.eu.org> <s5h4p746am3.wl%tiwai@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5h4p746am3.wl%tiwai@suse.de>
-User-Agent: Mutt/1.4.2.3i
+	Sat, 5 Jul 2008 06:55:30 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:52217 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751342AbYGEKza (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 06:55:30 -0400
+Message-ID: <486F531E.6030303@firstfloor.org>
+Date: Sat, 05 Jul 2008 12:55:26 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Bert Wesarg <bert.wesarg@googlemail.com>
+CC: masbock@linux.vnet.ibm.com, x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [9/9] MCE: Use 64bit machine check code on 32bit
+References: <200807041120.678642023@firstfloor.org>	 <20080704212033.D40551B431F@basil.firstfloor.org>	 <36ca99e90807050250u718fa277t2297d6436fd14c4e@mail.gmail.com>	 <486F44C0.8050003@firstfloor.org> <36ca99e90807050317m7160c3eaj150ceac4440752a1@mail.gmail.com>
+In-Reply-To: <36ca99e90807050317m7160c3eaj150ceac4440752a1@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 05, 2008 at 09:41:56AM +0200, Takashi Iwai wrote:
-> Yes, it will, if the firmware blobs are packed into the kernel
-> package.  In a long term, we can put firmware files into a separate, 
-> architecture independent noarch package, though.  This will save the
-> total package size, too.
+Bert Wesarg wrote:
+> On Sat, Jul 5, 2008 at 11:54, Andi Kleen <andi@firstfloor.org> wrote:
+>>> Is this first "n" a typo?
+>> No. The legacy machine check code that is going away is definitely
+>> supposed to be default n. This is effectively a default y for
+>> the new code.
+> I didn't mean the "default n", but the "If you're still sure you want it, say n"
 
-That could be interestingly hard, actually.  Right now the kernel
-package is one of these packages designed so that multiple versions
-can be installed together.  When the version of one of the firmwares
-changes, the firmware package will have to be updated.  But will it
-keep the previous version?  If it doesn't, the possibly still
-installed older kernels won't work anymore.  If it does, it will
-accumulate a lot of files over time...
+Ah that's indeed not correct. Thanks.
 
-  OG.
+-Andi
 
