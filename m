@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbYGENoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755647AbYGENow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754728AbYGENoO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 09:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbYGENn7
+	id S1755647AbYGENow (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 09:44:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbYGENoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 09:43:59 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:38301 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbYGENn7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 09:43:59 -0400
-Date: Sat, 5 Jul 2008 07:43:42 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: linux-pci@vger.kernel.org
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>,
-       Dan Williams <dan.j.williams@intel.com>, Martine.Silbermann@hp.com,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: Multiple MSI
-Message-ID: <20080705134342.GP14894@parisc-linux.org>
-References: <20080703024445.GA14894@parisc-linux.org> <20080705132728.GO14894@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080705132728.GO14894@parisc-linux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 5 Jul 2008 09:44:44 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:36405 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752043AbYGENon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 09:44:43 -0400
+Date: Sat, 5 Jul 2008 15:44:36 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 2/4] mmc: Export internal host state through debugfs
+Message-ID: <20080705154436.27830440@siona.local>
+In-Reply-To: <20080704194556.73061a08@mjolnir.drzeus.cx>
+References: <1214843703-13199-1-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214918094-26758-1-git-send-email-haavard.skinnemoen@atmel.com>
+	<1214918094-26758-2-git-send-email-haavard.skinnemoen@atmel.com>
+	<20080704194556.73061a08@mjolnir.drzeus.cx>
+Organization: Atmel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Jul 2008 13:44:38.0458 (UTC) FILETIME=[44C1C9A0:01C8DEA5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 05, 2008 at 07:27:28AM -0600, Matthew Wilcox wrote:
-> Here's some code.  It's four patches, the first two are to the PCI MSI
-> code, the third is for the AHCI driver and the fourth is for the x86-64
-> interrupt code.
-> 
-> It's had some light testing; no performance testing yet.  I'd value some
-> review.
+On Fri, 4 Jul 2008 19:45:56 +0200
+Pierre Ossman <drzeus-list@drzeus.cx> wrote:
 
-It's taking a while to come through ... patches are also at:
+> I see that this version has no ifdef:s at all. Doesn't that mean a lot
+> of useless code if DEBUG_FS is not enabled? You embedded guys are
+> usually rather sensitive about such things. :)
 
-http://www.parisc-linux.org/~willy/multiple-msi/
+Hmm...looks like gcc does a pretty poor job of eliminating unreachable
+code, so we end up with about 1k of dead code in debugfs.o.
 
-I'll put up the git tree if there's demand.
+I guess we'll have to throw in a couple of #ifdefs then...
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Haavard
