@@ -1,95 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYGEUEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754396AbYGEULp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754611AbYGEUEq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 16:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYGEUEj
+	id S1754396AbYGEULp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 16:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbYGEULh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 16:04:39 -0400
-Received: from mail.gmx.net ([213.165.64.20]:52115 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752356AbYGEUEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 16:04:38 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX18oPP1Bw5wobNTb55/pgCX1hfDk8r07woHMNyMdme
-	MGq2JBJl69whrB
-Date: Sat, 5 Jul 2008 22:04:34 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Pavel Machek <pavel@suse.cz>, auke-jan.h.kok@intel.com,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       len.brown@intel.com, cpufreq@lists.linux.org.uk,
-       davej@codemonkey.org.uk
-Subject: Re: bug? acpi p-state + ondemand keeps dropping max freq
-Message-ID: <20080705200434.GA13278@atjola.homenet>
-References: <20080606140846.GA9580@ucw.cz> <20080607213918.GC1746@elf.ucw.cz> <20080607145435.4afc9812@infradead.org> <20080616104159.GA28659@elf.ucw.cz> <20080616074337.46d6f411@infradead.org> <20080705194908.GA13149@atjola.homenet>
+	Sat, 5 Jul 2008 16:11:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:52480 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752167AbYGEULf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 16:11:35 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Alexander Beregalov" <a.beregalov@gmail.com>
+Subject: Re: 2.6.26-rc: host can not shutdown: ata problem
+Date: Sat, 5 Jul 2008 22:13:01 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>
+References: <a4423d670807031443v73def4d2g97c9d6acc4b4e941@mail.gmail.com>
+In-Reply-To: <a4423d670807031443v73def4d2g97c9d6acc4b4e941@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080705194908.GA13149@atjola.homenet>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+Message-Id: <200807052213.02098.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008.07.05 21:49:08 +0200, Björn Steinbrink wrote:
-> On 2008.06.16 07:43:37 -0700, Arjan van de Ven wrote:
-> > On Mon, 16 Jun 2008 12:42:00 +0200
-> > Pavel Machek <pavel@suse.cz> wrote:
-> > 
-> > > On Sat 2008-06-07 14:54:35, Arjan van de Ven wrote:
-> > > > On Sat, 7 Jun 2008 23:39:18 +0200
-> > > > Pavel Machek <pavel@suse.cz> wrote:
-> > > > 
-> > > > > > # echo 1866000 > scaling_max_freq ; cat scaling_max_freq
-> > > > > > 800000
-> > > > > > # echo 1866000 > scaling_max_freq ; cat scaling_max_freq
-> > > > > > 800000
-> > > > > > 
-> > > > > > 
-> > > > > > This renders my Dothan to utterly poor speeds. (standard T43)
-> > > > > > 
-> > > > > > performance cpufreq governor makes no difference - I still can't
-> > > > > > change the frequency upper/lower values.
-> > > > > 
-> > > > > Hmm, I have similar problem in Novell bugzilla, on very different
-> > > > > hw:
-> > > > > 
-> > > > > https://bugzilla.novell.com/show_bug.cgi?id=396311
-> > > 
-> > > > are either of you running gnome-power-manager or kpowersaved ?
-> > > > sometimes these programs (and more likely, the patches added by a
-> > > > distro maintainer who doesn't fully realize how power works) tend to
-> > > > muck with kernel settings around CPU frequency that they have
-> > > > absolutely no business touching...
-> > > 
-> > > In novel bugzilla case ignore_ppc=1 helped, so it seems to be BIOS
-> > > problem, not userland's...
-> > 
-> > well as long as the user doesn't use this for production use... the
-> > BIOS often reduces frequencies available to deal with thermal
-> > situations, so it's not a good idea to ignore that.
-> 
-> Yep, seems to be a thermal thing. I managed to find some time to play
-> around with it a bit, and running a cpu hog for a short period of time,
-> while watching temperature and scaling_max_freq showed this:
-> 
-[snip]
-> 
-> 
-> So upon reaching 54°C some throttling kicks in and only when going back
-> to less then 50°C, that limit is lifted again. Too bad that with Linux,
-> this T43 already runs at about 47°C when idle, so as soon as there's any
-> load on the cpu, it will scale up for a few seconds and then get
-> throttled :-(
+[Adding CCs.]
 
-OK, a stop at thinkwiki[1] later, I know what's happening now. The BIOS
-has a few settings regarding CPU speed on AC/battery. One is about
-balancing power and noise. The above throttling does no longer kick in
-if that option is set to "Maximum Power".
+On Thursday, 3 of July 2008, Alexander Beregalov wrote:
+> Hi
+> 
+> A host does not go down.
+> I also tried it with `irqpoll` with the same result.
+> 
+> 
+> Remaining filesystems read-only ...
+>  / ...
+> irq 18: nobody cared (try booting with the "irqpoll" option)
+> Pid: 0, comm: swapper Not tainted 2.6.26-rc8 #2
+>  [<c0141678>] __report_bad_irq+0x2e/0x6f
+>  [<c014187f>] note_interrupt+0x1c6/0x21f
+>  [<c0140fee>] ? handle_IRQ_event+0x3e/0x46
+>  [<c0141e11>] handle_fasteoi_irq+0x86/0xab
+>  [<c0141d8b>] ? handle_fasteoi_irq+0x0/0xab
+>  [<c0104c54>] do_IRQ+0xb6/0xe2
+>  [<c0101daf>] ? default_idle+0x0/0x55
+>  [<c0101daf>] ? default_idle+0x0/0x55
+>  [<c010372e>] common_interrupt+0x2e/0x34
+>  [<c0101daf>] ? default_idle+0x0/0x55
+>  [<c0101daf>] ? default_idle+0x0/0x55
+>  [<c0101de4>] ? default_idle+0x35/0x55
+>  [<c0101d7a>] cpu_idle+0x62/0x97
+>  [<c0353270>] rest_init+0x5c/0x5e
+>  =======================
+> handlers:
+> [<c02df1df>] (ata_sff_interrupt+0x0/0xab)
+> Disabling IRQ #18
+> atkbd serio0: shutdown
+> i8042 i8042: shutdown
+> sd 3:0:1:0: shutdown
+> sd 3:0:1:0: [sdd] Synchronizing SCSI cache
+> ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+> ata4.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> ata4.00: status: { DRDY }
+> ata4: soft resetting link
+> ata4.00: configured for UDMA/100
+> ata4: EH complete
+> ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+> ata4.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> ata4.00: status: { DRDY }
+> ata4: soft resetting link
+> ata4.00: configured for UDMA/100
+> ata4: EH complete
+> ata4.00: limiting speed to UDMA/66:PIO4
+> 
+> and so on ..
+> 
+> 
+> Controller is
+> Promise Technology, Inc. PDC20270 (FastTrak100 LP/TX2/TX4) (rev 02)
+> 
+> pata_pdc2027x 0000:01:0a.0: PLL input clock 16692 kHz
+> scsi2 : pata_pdc2027x
+> scsi3 : pata_pdc2027x
+> ata3: PATA max UDMA/100 mmio m65536@0xed040000 cmd 0xed0417c0 irq 18
+> ata4: PATA max UDMA/100 mmio m65536@0xed040000 cmd 0xed0415c0 irq 18
+> ata3.00: ATA-7: ST3250823A, 3.03, max UDMA/100
+> ata3.00: 488397168 sectors, multi 16: LBA48
+> ata3.00: configured for UDMA/100
+> ata4.01: HPA detected: current 488395055, native 488397168
+> ata4.01: ATA-7: ST3250824A, 3.AAD, max UDMA/100
+> ata4.01: 488395055 sectors, multi 16: LBA48
+> ata4.01: configured for UDMA/100
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-Björn
 
-[1] http://www.thinkwiki.org/wiki/How_to_make_use_of_Dynamic_Frequency_Scaling#Troubleshooting
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
