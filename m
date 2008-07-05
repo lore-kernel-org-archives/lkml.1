@@ -1,76 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbYGEPob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753890AbYGEPwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753790AbYGEPob (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 11:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbYGEPoX
+	id S1753890AbYGEPwU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 11:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYGEPwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 11:44:23 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:34148 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbYGEPoW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 11:44:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=wE0Vzz+8UOBKvsiL6Ril4Pw+nnFHShjreRLAZt9B7VjBRbg6NEs+rI4X7xyxB+fMEn
-         xv1sly/BbCrvZxTofkgS3kecsz+bV1sG4wLthCGGSbQA3o04jVIDrH65krfolyTNf7WG
-         u4wXrmMTmofLiNepmCYIefHRYSnDUVrv/wyfY=
-Message-ID: <31e679430807050844r30ff74fby7e15641573b42d82@mail.gmail.com>
-Date: Sat, 5 Jul 2008 18:44:21 +0300
-From: "Felipe Balbi" <felipebalbi@users.sourceforge.net>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: Battery life difference
-Cc: "Kernel development list" <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <20080705082352.4b6be669@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 5 Jul 2008 11:52:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59161 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751532AbYGEPwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 11:52:08 -0400
+Date: Sat, 5 Jul 2008 11:49:51 -0400
+From: Alan Cox <alan@redhat.com>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, alan@redhat.com,
+       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: pata_it821x completely broken
+Message-ID: <20080705154951.GC20937@devserv.devel.redhat.com>
+References: <200807042153.56644.linux@rainbow-software.org> <200807042339.02444.linux@rainbow-software.org> <20080704224636.352e4a7b@lxorguk.ukuu.org.uk> <200807051242.00545.linux@rainbow-software.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <31e679430807050617u3fc706fasee9bb43a151c501f@mail.gmail.com>
-	 <20080705082352.4b6be669@infradead.org>
-X-Google-Sender-Auth: fb225c1f0fd1349c
+In-Reply-To: <200807051242.00545.linux@rainbow-software.org>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Jul 05, 2008 at 12:41:58PM +0200, Ondrej Zary wrote:
+> Samsungs). Seems like any drive that can't do UDMA fails (looks like MWDMA is 
+> broken). The controller BIOS creates the array fine but it doesn't work in 
 
-On Sat, Jul 5, 2008 at 6:23 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> Which wireless is this? Same for graphics
+I've no idea if the BIOS firmware mode can do MWDMA to the drives. The actual
+interface between the card and the kernel has no mode stuff at all.
 
-intel iwl4965 and intel mobile bm965/GL960 (graphics)
+> When I force the pass-through mode, it oopses (haven't captured it yet as it's > too long). Forcing pass-through mode works fine with UDMA-capable drives:
 
-> these don't give you all that much nowadays
+Interesting and definitely sounds like a bug.
 
-hmm... interesting :-)
-where should i look for more info ? Any pointers would be nice
+> 
+> Then I created RAID 1 from the Seagate and Quantum drives. No matter if the 
+> rebuild process is running or not, the result is the same - the drives that 
+> form RAID aren't accessible, the other drives work:
 
-> There's a few things you can do to help stuff along; make sure you're
-> using AHCI.
+I would imagine the controller fakes a hotplug event when the rebuild finishes
+but that is guessing. The firmware mode is pretty minimally documented.
 
-not loaded. Thanks
 
-> Also take a look at
-> http://kerneltrap.org/mailarchive/linux-kernel/2008/5/8/1771024 because
-> these patches save like 0.75W in our lab.
-
-cool, is it merged upstream ?
-I'll build current git kernel and reply again with new linux results.
-It could be that ubuntu 2.6.24 is broken somehow...
-
-> To be honest, I'm surprised at your results; in our testing (with a
-> different distro though) we don't see such a difference and Linux is
-> doing rather well.
-
-can you get powertop results in a 2.6.24 distro kernel and current git
-kernel ?
-
--- 
-Best Regards,
-
-Felipe Balbi
-felipebalbi@users.sourceforge.net
