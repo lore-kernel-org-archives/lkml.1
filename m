@@ -1,46 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756494AbYGEXv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbYGEXzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756494AbYGEXv6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 19:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYGEXvv
+	id S1756232AbYGEXzV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 19:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYGEXzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 19:51:51 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35318 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753099AbYGEXvu (ORCPT
+	Sat, 5 Jul 2008 19:55:09 -0400
+Received: from mga02.intel.com ([134.134.136.20]:10858 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753031AbYGEXzI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 19:51:50 -0400
-Date: Sun, 6 Jul 2008 00:51:48 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Frans Pop <elendil@planet.nl>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] parport/ppdev: fix registration of sysctl entries
-Message-ID: <20080705235148.GW28946@ZenIV.linux.org.uk>
-References: <20080705131924.GA2083@joi>
+	Sat, 5 Jul 2008 19:55:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,308,1212390000"; 
+   d="scan'208";a="405677556"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080705131924.GA2083@joi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Subject: RE: [PATCH 2/2 V2] MMC: cleanup endianity conversions and style problems
+Date: Sun, 6 Jul 2008 02:54:56 +0300
+Message-ID: <C07C4589BE74A34981C3C3525EE1F80104198D56@hasmsx412.ger.corp.intel.com>
+In-Reply-To: <20080706012631.5e43624c@mjolnir.drzeus.cx>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2/2 V2] MMC: cleanup endianity conversions and style problems
+Thread-Index: Acje9paKC4xe14pRQ86VCvUqQHcrZgAAVQSg
+References: <1215276725-15588-1-git-send-email-tomas.winkler@intel.com><1215276725-15588-2-git-send-email-tomas.winkler@intel.com> <20080706012631.5e43624c@mjolnir.drzeus.cx>
+From: "Winkler, Tomas" <tomas.winkler@intel.com>
+To: "Pierre Ossman" <drzeus-list@drzeus.cx>
+Cc: <marcel@holtmann.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 05 Jul 2008 23:55:05.0827 (UTC) FILETIME=[8C5EC330:01C8DEFA]
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 05, 2008 at 03:21:06PM +0200, Marcin Slusarz wrote:
-> ppdev (which provides support for user-space parallel port device drivers)
-> is slightly different from other parallel port drivers. It allows to open
-> the device by more than one process, but locks the device on ioctl (PPCLAIM).
-> Unfortunately registration of sysctl entries were done before locking
-> the device, so 2 processes could open it and try to register sysctl
-> (it ignored error on registration, so it didn't block access to port).
-> 
-> So move registration of sysctl after locking (parport_claim_or_block).
 
-I don't believe that it's right.  Note that if you *do* race there, you
-are fucked regardless of sysctls - ppdev.c::register_device() racing
-with itself will do tons of fun things all by itself (starting with two
-threads allocating different pdev and both setting pp->pdev).
 
-IOW, *if* that's what we are hitting here, you've only papered over the
-visible symptom.
+
+>-----Original Message-----
+>From: Pierre Ossman [mailto:drzeus-list@drzeus.cx]
+>Sent: Sunday, July 06, 2008 2:27 AM
+>To: Winkler, Tomas
+>Cc: marcel@holtmann.org; linux-kernel@vger.kernel.org; Winkler, Tomas
+>Subject: Re: [PATCH 2/2 V2] MMC: cleanup endianity conversions and
+style
+>problems
+>
+>On Sat,  5 Jul 2008 19:52:05 +0300
+>Tomas Winkler <tomas.winkler@intel.com> wrote:
+>
+>> This patch cleans up endianity conversions im mmc core
+>> and style errors in the 'for' statements
+>>
+>> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+>> ---
+>
+>NAK in its current form. The data needs to be DMA:able, which means
+>that the stack cannot be used.
+>
+I see, anyway only the last hunk is problematic in this matter.
+ 
+So we need to define raw_src as __be32 and translate it in
+mmc_decode_src 
+I will get to the MMC spec only tomorrow but it sound strange that SDIO
+registers are in little endian and these are in big.
+Thanks
+Tomas
+
+
+
+---------------------------------------------------------------------
+Intel Israel (74) Limited
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
