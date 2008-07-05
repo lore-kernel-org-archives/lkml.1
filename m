@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757729AbYGERmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbYGERm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757729AbYGERmk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756501AbYGERg7
+	id S1757496AbYGERm5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbYGERhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:36:59 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33040 "EHLO
+	Sat, 5 Jul 2008 13:37:06 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33046 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754487AbYGERg3 (ORCPT
+	with ESMTP id S1753178AbYGERga (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 13:36:29 -0400
+	Sat, 5 Jul 2008 13:36:30 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Ext4 Developers List <linux-ext4@vger.kernel.org>,
        Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Mingming Cao <cmm@us.ibm.com>, "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 33/52] ext4: Use page_mkwrite vma_operations to get mmap write notification.
-Date: Sat,  5 Jul 2008 13:35:59 -0400
-Message-Id: <1215279378-30504-34-git-send-email-tytso@mit.edu>
+Cc: Frederic Bohe <frederic.bohe@bull.net>, Mingming Cao <cmm@us.ibm.com>
+Subject: [PATCH 31/52] ext4: fix online resize with mballoc
+Date: Sat,  5 Jul 2008 13:35:57 -0400
+Message-Id: <1215279378-30504-32-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.rc3.1.g36b7.dirty
-In-Reply-To: <1215279378-30504-33-git-send-email-tytso@mit.edu>
+In-Reply-To: <1215279378-30504-31-git-send-email-tytso@mit.edu>
 References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-2-git-send-email-tytso@mit.edu>
  <1215279378-30504-3-git-send-email-tytso@mit.edu>
@@ -51,8 +50,6 @@ References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-29-git-send-email-tytso@mit.edu>
  <1215279378-30504-30-git-send-email-tytso@mit.edu>
  <1215279378-30504-31-git-send-email-tytso@mit.edu>
- <1215279378-30504-32-git-send-email-tytso@mit.edu>
- <1215279378-30504-33-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -60,143 +57,388 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+From: Frederic Bohe <frederic.bohe@bull.net>
 
-We would like to get notified when we are doing a write on mmap section.
-This is needed with respect to preallocated area. We split the preallocated
-area into initialzed extent and uninitialzed extent in the call back. This
-let us handle ENOSPC better. Otherwise we get ENOSPC in the writepage and
-that would result in data loss. The changes are also needed to handle ENOSPC
-when writing to an mmap section of files with holes.
+Update group infos when updating a group's descriptor.
+Add group infos when adding a group's descriptor.
+Refresh cache pages used by mb_alloc when changes occur.
+This will probably need modifications when META_BG resizing will be allowed.
 
-Acked-by: Jan Kara <jack@suse.cz>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Frederic Bohe <frederic.bohe@bull.net>
 Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/ext4.h  |    1 +
- fs/ext4/file.c  |   19 ++++++++++++++++-
- fs/ext4/inode.c |   61 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 80 insertions(+), 1 deletions(-)
+ fs/ext4/ext4.h    |    4 +
+ fs/ext4/mballoc.c |  234 ++++++++++++++++++++++++++++++++++++++++-------------
+ fs/ext4/resize.c  |   52 ++++++++++++-
+ 3 files changed, 234 insertions(+), 56 deletions(-)
 
 diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index b8b0ae7..16c5e3a 100644
+index 37ce906..b8b0ae7 100644
 --- a/fs/ext4/ext4.h
 +++ b/fs/ext4/ext4.h
-@@ -1067,6 +1067,7 @@ extern void ext4_set_aops(struct inode *inode);
- extern int ext4_writepage_trans_blocks(struct inode *);
- extern int ext4_block_truncate_page(handle_t *handle, struct page *page,
- 		struct address_space *mapping, loff_t from);
-+extern int ext4_page_mkwrite(struct vm_area_struct *vma, struct page *page);
+@@ -1033,6 +1033,10 @@ extern int __init init_ext4_mballoc(void);
+ extern void exit_ext4_mballoc(void);
+ extern void ext4_mb_free_blocks(handle_t *, struct inode *,
+ 		unsigned long, unsigned long, int, unsigned long *);
++extern int ext4_mb_add_more_groupinfo(struct super_block *sb,
++		ext4_group_t i, struct ext4_group_desc *desc);
++extern void ext4_mb_update_group_info(struct ext4_group_info *grp,
++		ext4_grpblk_t add);
  
- /* ioctl.c */
- extern long ext4_ioctl(struct file *, unsigned int, unsigned long);
-diff --git a/fs/ext4/file.c b/fs/ext4/file.c
-index 4159be6..b9510ba 100644
---- a/fs/ext4/file.c
-+++ b/fs/ext4/file.c
-@@ -123,6 +123,23 @@ force_commit:
- 	return ret;
- }
  
-+static struct vm_operations_struct ext4_file_vm_ops = {
-+	.fault		= filemap_fault,
-+	.page_mkwrite   = ext4_page_mkwrite,
-+};
+ /* inode.c */
+diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
+index 9ffad23..a1349b3 100644
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -2231,21 +2231,192 @@ ext4_mb_store_history(struct ext4_allocation_context *ac)
+ #define ext4_mb_history_init(sb)
+ #endif
+ 
 +
-+static int ext4_file_mmap(struct file *file, struct vm_area_struct *vma)
++/* Create and initialize ext4_group_info data for the given group. */
++int ext4_mb_add_groupinfo(struct super_block *sb, ext4_group_t group,
++			  struct ext4_group_desc *desc)
 +{
-+	struct address_space *mapping = file->f_mapping;
++	int i, len;
++	int metalen = 0;
++	struct ext4_sb_info *sbi = EXT4_SB(sb);
++	struct ext4_group_info **meta_group_info;
 +
-+	if (!mapping->a_ops->readpage)
-+		return -ENOEXEC;
-+	file_accessed(file);
-+	vma->vm_ops = &ext4_file_vm_ops;
-+	vma->vm_flags |= VM_CAN_NONLINEAR;
++	/*
++	 * First check if this group is the first of a reserved block.
++	 * If it's true, we have to allocate a new table of pointers
++	 * to ext4_group_info structures
++	 */
++	if (group % EXT4_DESC_PER_BLOCK(sb) == 0) {
++		metalen = sizeof(*meta_group_info) <<
++			EXT4_DESC_PER_BLOCK_BITS(sb);
++		meta_group_info = kmalloc(metalen, GFP_KERNEL);
++		if (meta_group_info == NULL) {
++			printk(KERN_ERR "EXT4-fs: can't allocate mem for a "
++			       "buddy group\n");
++			goto exit_meta_group_info;
++		}
++		sbi->s_group_info[group >> EXT4_DESC_PER_BLOCK_BITS(sb)] =
++			meta_group_info;
++	}
++
++	/*
++	 * calculate needed size. if change bb_counters size,
++	 * don't forget about ext4_mb_generate_buddy()
++	 */
++	len = offsetof(typeof(**meta_group_info),
++		       bb_counters[sb->s_blocksize_bits + 2]);
++
++	meta_group_info =
++		sbi->s_group_info[group >> EXT4_DESC_PER_BLOCK_BITS(sb)];
++	i = group & (EXT4_DESC_PER_BLOCK(sb) - 1);
++
++	meta_group_info[i] = kzalloc(len, GFP_KERNEL);
++	if (meta_group_info[i] == NULL) {
++		printk(KERN_ERR "EXT4-fs: can't allocate buddy mem\n");
++		goto exit_group_info;
++	}
++	set_bit(EXT4_GROUP_INFO_NEED_INIT_BIT,
++		&(meta_group_info[i]->bb_state));
++
++	/*
++	 * initialize bb_free to be able to skip
++	 * empty groups without initialization
++	 */
++	if (desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)) {
++		meta_group_info[i]->bb_free =
++			ext4_free_blocks_after_init(sb, group, desc);
++	} else {
++		meta_group_info[i]->bb_free =
++			le16_to_cpu(desc->bg_free_blocks_count);
++	}
++
++	INIT_LIST_HEAD(&meta_group_info[i]->bb_prealloc_list);
++
++#ifdef DOUBLE_CHECK
++	{
++		struct buffer_head *bh;
++		meta_group_info[i]->bb_bitmap =
++			kmalloc(sb->s_blocksize, GFP_KERNEL);
++		BUG_ON(meta_group_info[i]->bb_bitmap == NULL);
++		bh = ext4_read_block_bitmap(sb, group);
++		BUG_ON(bh == NULL);
++		memcpy(meta_group_info[i]->bb_bitmap, bh->b_data,
++			sb->s_blocksize);
++		put_bh(bh);
++	}
++#endif
++
++	return 0;
++
++exit_group_info:
++	/* If a meta_group_info table has been allocated, release it now */
++	if (group % EXT4_DESC_PER_BLOCK(sb) == 0)
++		kfree(sbi->s_group_info[group >> EXT4_DESC_PER_BLOCK_BITS(sb)]);
++exit_meta_group_info:
++	return -ENOMEM;
++} /* ext4_mb_add_groupinfo */
++
++/*
++ * Add a group to the existing groups.
++ * This function is used for online resize
++ */
++int ext4_mb_add_more_groupinfo(struct super_block *sb, ext4_group_t group,
++			       struct ext4_group_desc *desc)
++{
++	struct ext4_sb_info *sbi = EXT4_SB(sb);
++	struct inode *inode = sbi->s_buddy_cache;
++	int blocks_per_page;
++	int block;
++	int pnum;
++	struct page *page;
++	int err;
++
++	/* Add group based on group descriptor*/
++	err = ext4_mb_add_groupinfo(sb, group, desc);
++	if (err)
++		return err;
++
++	/*
++	 * Cache pages containing dynamic mb_alloc datas (buddy and bitmap
++	 * datas) are set not up to date so that they will be re-initilaized
++	 * during the next call to ext4_mb_load_buddy
++	 */
++
++	/* Set buddy page as not up to date */
++	blocks_per_page = PAGE_CACHE_SIZE / sb->s_blocksize;
++	block = group * 2;
++	pnum = block / blocks_per_page;
++	page = find_get_page(inode->i_mapping, pnum);
++	if (page != NULL) {
++		ClearPageUptodate(page);
++		page_cache_release(page);
++	}
++
++	/* Set bitmap page as not up to date */
++	block++;
++	pnum = block / blocks_per_page;
++	page = find_get_page(inode->i_mapping, pnum);
++	if (page != NULL) {
++		ClearPageUptodate(page);
++		page_cache_release(page);
++	}
++
 +	return 0;
 +}
 +
- const struct file_operations ext4_file_operations = {
- 	.llseek		= generic_file_llseek,
- 	.read		= do_sync_read,
-@@ -133,7 +150,7 @@ const struct file_operations ext4_file_operations = {
- #ifdef CONFIG_COMPAT
- 	.compat_ioctl	= ext4_compat_ioctl,
- #endif
--	.mmap		= generic_file_mmap,
-+	.mmap		= ext4_file_mmap,
- 	.open		= generic_file_open,
- 	.release	= ext4_release_file,
- 	.fsync		= ext4_sync_file,
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index 884cf89..19f2d57 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -3542,3 +3542,64 @@ int ext4_change_inode_journal_flag(struct inode *inode, int val)
++/*
++ * Update an existing group.
++ * This function is used for online resize
++ */
++void ext4_mb_update_group_info(struct ext4_group_info *grp, ext4_grpblk_t add)
++{
++	grp->bb_free += add;
++}
++
+ static int ext4_mb_init_backend(struct super_block *sb)
+ {
+ 	ext4_group_t i;
+-	int j, len, metalen;
++	int metalen;
+ 	struct ext4_sb_info *sbi = EXT4_SB(sb);
+-	int num_meta_group_infos =
+-		(sbi->s_groups_count + EXT4_DESC_PER_BLOCK(sb) - 1) >>
+-			EXT4_DESC_PER_BLOCK_BITS(sb);
++	struct ext4_super_block *es = sbi->s_es;
++	int num_meta_group_infos;
++	int num_meta_group_infos_max;
++	int array_size;
+ 	struct ext4_group_info **meta_group_info;
++	struct ext4_group_desc *desc;
++
++	/* This is the number of blocks used by GDT */
++	num_meta_group_infos = (sbi->s_groups_count + EXT4_DESC_PER_BLOCK(sb) -
++				1) >> EXT4_DESC_PER_BLOCK_BITS(sb);
  
- 	return err;
- }
-+
-+static int ext4_bh_unmapped(handle_t *handle, struct buffer_head *bh)
-+{
-+	return !buffer_mapped(bh);
-+}
-+
-+int ext4_page_mkwrite(struct vm_area_struct *vma, struct page *page)
-+{
-+	loff_t size;
-+	unsigned long len;
-+	int ret = -EINVAL;
-+	struct file *file = vma->vm_file;
-+	struct inode *inode = file->f_path.dentry->d_inode;
-+	struct address_space *mapping = inode->i_mapping;
++	/*
++	 * This is the total number of blocks used by GDT including
++	 * the number of reserved blocks for GDT.
++	 * The s_group_info array is allocated with this value
++	 * to allow a clean online resize without a complex
++	 * manipulation of pointer.
++	 * The drawback is the unused memory when no resize
++	 * occurs but it's very low in terms of pages
++	 * (see comments below)
++	 * Need to handle this properly when META_BG resizing is allowed
++	 */
++	num_meta_group_infos_max = num_meta_group_infos +
++				le16_to_cpu(es->s_reserved_gdt_blocks);
 +
 +	/*
-+	 * Get i_alloc_sem to stop truncates messing with the inode. We cannot
-+	 * get i_mutex because we are already holding mmap_sem.
++	 * array_size is the size of s_group_info array. We round it
++	 * to the next power of two because this approximation is done
++	 * internally by kmalloc so we can have some more memory
++	 * for free here (e.g. may be used for META_BG resize).
 +	 */
-+	down_read(&inode->i_alloc_sem);
-+	size = i_size_read(inode);
-+	if (page->mapping != mapping || size <= page_offset(page)
-+	    || !PageUptodate(page)) {
-+		/* page got truncated from under us? */
-+		goto out_unlock;
-+	}
-+	ret = 0;
-+	if (PageMappedToDisk(page))
-+		goto out_unlock;
-+
-+	if (page->index == size >> PAGE_CACHE_SHIFT)
-+		len = size & ~PAGE_CACHE_MASK;
-+	else
-+		len = PAGE_CACHE_SIZE;
-+
-+	if (page_has_buffers(page)) {
-+		/* return if we have all the buffers mapped */
-+		if (!walk_page_buffers(NULL, page_buffers(page), 0, len, NULL,
-+				       ext4_bh_unmapped))
-+			goto out_unlock;
++	array_size = 1;
++	while (array_size < sizeof(*sbi->s_group_info) *
++	       num_meta_group_infos_max)
++		array_size = array_size << 1;
+ 	/* An 8TB filesystem with 64-bit pointers requires a 4096 byte
+ 	 * kmalloc. A 128kb malloc should suffice for a 256TB filesystem.
+ 	 * So a two level scheme suffices for now. */
+-	sbi->s_group_info = kmalloc(sizeof(*sbi->s_group_info) *
+-				    num_meta_group_infos, GFP_KERNEL);
++	sbi->s_group_info = kmalloc(array_size, GFP_KERNEL);
+ 	if (sbi->s_group_info == NULL) {
+ 		printk(KERN_ERR "EXT4-fs: can't allocate buddy meta group\n");
+ 		return -ENOMEM;
+@@ -2272,62 +2443,15 @@ static int ext4_mb_init_backend(struct super_block *sb)
+ 		sbi->s_group_info[i] = meta_group_info;
+ 	}
+ 
+-	/*
+-	 * calculate needed size. if change bb_counters size,
+-	 * don't forget about ext4_mb_generate_buddy()
+-	 */
+-	len = sizeof(struct ext4_group_info);
+-	len += sizeof(unsigned short) * (sb->s_blocksize_bits + 2);
+ 	for (i = 0; i < sbi->s_groups_count; i++) {
+-		struct ext4_group_desc *desc;
+-
+-		meta_group_info =
+-			sbi->s_group_info[i >> EXT4_DESC_PER_BLOCK_BITS(sb)];
+-		j = i & (EXT4_DESC_PER_BLOCK(sb) - 1);
+-
+-		meta_group_info[j] = kzalloc(len, GFP_KERNEL);
+-		if (meta_group_info[j] == NULL) {
+-			printk(KERN_ERR "EXT4-fs: can't allocate buddy mem\n");
+-			goto err_freebuddy;
+-		}
+ 		desc = ext4_get_group_desc(sb, i, NULL);
+ 		if (desc == NULL) {
+ 			printk(KERN_ERR
+ 				"EXT4-fs: can't read descriptor %lu\n", i);
+-			i++;
+ 			goto err_freebuddy;
+ 		}
+-		set_bit(EXT4_GROUP_INFO_NEED_INIT_BIT,
+-			&(meta_group_info[j]->bb_state));
+-
+-		/*
+-		 * initialize bb_free to be able to skip
+-		 * empty groups without initialization
+-		 */
+-		if (desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)) {
+-			meta_group_info[j]->bb_free =
+-				ext4_free_blocks_after_init(sb, i, desc);
+-		} else {
+-			meta_group_info[j]->bb_free =
+-				le16_to_cpu(desc->bg_free_blocks_count);
+-		}
+-
+-		INIT_LIST_HEAD(&meta_group_info[j]->bb_prealloc_list);
+-
+-#ifdef DOUBLE_CHECK
+-		{
+-			struct buffer_head *bh;
+-			meta_group_info[j]->bb_bitmap =
+-				kmalloc(sb->s_blocksize, GFP_KERNEL);
+-			BUG_ON(meta_group_info[j]->bb_bitmap == NULL);
+-			bh = ext4_read_block_bitmap(sb, i);
+-			BUG_ON(bh == NULL);
+-			memcpy(meta_group_info[j]->bb_bitmap, bh->b_data,
+-					sb->s_blocksize);
+-			put_bh(bh);
+-		}
+-#endif
+-
++		if (ext4_mb_add_groupinfo(sb, i, desc) != 0)
++			goto err_freebuddy;
+ 	}
+ 
+ 	return 0;
+diff --git a/fs/ext4/resize.c b/fs/ext4/resize.c
+index 9ff7b1c..f000fbe 100644
+--- a/fs/ext4/resize.c
++++ b/fs/ext4/resize.c
+@@ -866,6 +866,15 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
+ 	gdp->bg_checksum = ext4_group_desc_csum(sbi, input->group, gdp);
+ 
+ 	/*
++	 * We can allocate memory for mb_alloc based on the new group
++	 * descriptor
++	 */
++	if (test_opt(sb, MBALLOC)) {
++		err = ext4_mb_add_more_groupinfo(sb, input->group, gdp);
++		if (err)
++			goto exit_journal;
 +	}
 +	/*
-+	 * OK, we need to fill the hole... Do write_begin write_end
-+	 * to do block allocation/reservation.We are not holding
-+	 * inode.i__mutex here. That allow * parallel write_begin,
-+	 * write_end call. lock_page prevent this from happening
-+	 * on the same page though
+ 	 * Make the new blocks and inodes valid next.  We do this before
+ 	 * increasing the group count so that once the group is enabled,
+ 	 * all of its blocks and inodes are already valid.
+@@ -957,6 +966,8 @@ int ext4_group_extend(struct super_block *sb, struct ext4_super_block *es,
+ 	handle_t *handle;
+ 	int err;
+ 	unsigned long freed_blocks;
++	ext4_group_t group;
++	struct ext4_group_info *grp;
+ 
+ 	/* We don't need to worry about locking wrt other resizers just
+ 	 * yet: we're going to revalidate es->s_blocks_count after
+@@ -988,7 +999,7 @@ int ext4_group_extend(struct super_block *sb, struct ext4_super_block *es,
+ 	}
+ 
+ 	/* Handle the remaining blocks in the last group only. */
+-	ext4_get_group_no_and_offset(sb, o_blocks_count, NULL, &last);
++	ext4_get_group_no_and_offset(sb, o_blocks_count, &group, &last);
+ 
+ 	if (last == 0) {
+ 		ext4_warning(sb, __func__,
+@@ -1060,6 +1071,45 @@ int ext4_group_extend(struct super_block *sb, struct ext4_super_block *es,
+ 		   o_blocks_count + add);
+ 	if ((err = ext4_journal_stop(handle)))
+ 		goto exit_put;
++
++	/*
++	 * Mark mballoc pages as not up to date so that they will be updated
++	 * next time they are loaded by ext4_mb_load_buddy.
 +	 */
-+	ret = mapping->a_ops->write_begin(file, mapping, page_offset(page),
-+			len, AOP_FLAG_UNINTERRUPTIBLE, &page, NULL);
-+	if (ret < 0)
-+		goto out_unlock;
-+	ret = mapping->a_ops->write_end(file, mapping, page_offset(page),
-+			len, len, page, NULL);
-+	if (ret < 0)
-+		goto out_unlock;
-+	ret = 0;
-+out_unlock:
-+	up_read(&inode->i_alloc_sem);
-+	return ret;
-+}
++	if (test_opt(sb, MBALLOC)) {
++		struct ext4_sb_info *sbi = EXT4_SB(sb);
++		struct inode *inode = sbi->s_buddy_cache;
++		int blocks_per_page;
++		int block;
++		int pnum;
++		struct page *page;
++
++		/* Set buddy page as not up to date */
++		blocks_per_page = PAGE_CACHE_SIZE / sb->s_blocksize;
++		block = group * 2;
++		pnum = block / blocks_per_page;
++		page = find_get_page(inode->i_mapping, pnum);
++		if (page != NULL) {
++			ClearPageUptodate(page);
++			page_cache_release(page);
++		}
++
++		/* Set bitmap page as not up to date */
++		block++;
++		pnum = block / blocks_per_page;
++		page = find_get_page(inode->i_mapping, pnum);
++		if (page != NULL) {
++			ClearPageUptodate(page);
++			page_cache_release(page);
++		}
++
++		/* Get the info on the last group */
++		grp = ext4_get_group_info(sb, group);
++
++		/* Update free blocks in group info */
++		ext4_mb_update_group_info(grp, add);
++	}
++
+ 	if (test_opt(sb, DEBUG))
+ 		printk(KERN_DEBUG "EXT4-fs: extended group to %llu blocks\n",
+ 		       ext4_blocks_count(es));
 -- 
 1.5.6.rc3.1.g36b7.dirty
 
