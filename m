@@ -1,99 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752992AbYGEKUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752317AbYGEK0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752992AbYGEKUo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 06:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbYGEKUf
+	id S1752317AbYGEK0x (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 06:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbYGEK0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 06:20:35 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:17389 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751675AbYGEKUe (ORCPT
+	Sat, 5 Jul 2008 06:26:42 -0400
+Received: from baikonur.stro.at ([213.239.196.228]:57722 "EHLO
+	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750793AbYGEK0l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 06:20:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=IP9CS33tRopT1hDGQzPuuv1sfAExdBHRq1JgP8DoF5Ws2ryCbtxFHXryOuVu6Pe2fD
-         5ZGAuzQF2/NFY74+z/1M30wliNm8sLyL0/E2y17XZFkv7Po/J75QUmbnqv2BHqftT3XW
-         7mfG9eKlEzU7oKf++p42W3h8PQ5DXOIAKWR+c=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: the printk problem
-Date: Sat, 5 Jul 2008 12:20:25 +0200
-User-Agent: KMail/1.8.2
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Anvin <hpa@zytor.com>, "David S. Miller" <davem@davemloft.net>,
-       linux-ia64@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-References: <20080625131101.GA6205@digi.com> <20080704204252.GM14894@parisc-linux.org> <20080704150100.1f7b8a65.akpm@linux-foundation.org>
-In-Reply-To: <20080704150100.1f7b8a65.akpm@linux-foundation.org>
+	Sat, 5 Jul 2008 06:26:41 -0400
+Date: Sat, 5 Jul 2008 12:26:34 +0200
+From: maximilian attems <max@stro.at>
+To: Theodore Tso <tytso@mit.edu>, David Woodhouse <dwmw2@infradead.org>,
+       Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
+       David Miller <davem@davemloft.net>, hugh@veritas.com,
+       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+Message-ID: <20080705102633.GA21779@stro.at>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	David Woodhouse <dwmw2@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+	Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+	hugh@veritas.com, akpm@linux-foundation.org,
+	kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	netdev@vger.kernel.org
+References: <1215111362.10393.651.camel@pmac.infradead.org> <20080703.162120.206258339.davem@davemloft.net> <486D6DDB.4010205@infradead.org> <87ej6armez.fsf@basil.nowhere.org> <1215177044.10393.743.camel@pmac.infradead.org> <486E2260.5050503@garzik.org> <1215178035.10393.763.camel@pmac.infradead.org> <20080704141014.GA23215@mit.edu> <20080704142403.GD7212@baikonur.stro.at> <20080704143634.GC23215@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807051220.25418.vda.linux@googlemail.com>
+In-Reply-To: <20080704143634.GC23215@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 05 July 2008 00:01, Andrew Morton wrote:
-> > > We also jump through hoops to print things like sector_t and
-> > > resource_size_t.  They always need to be cast to `unsiged long long',
-> > > which generates additional stack space and text in some setups.
+On Fri, 04 Jul 2008, Theodore Tso wrote:
+
+> On Fri, Jul 04, 2008 at 04:24:03PM +0200, maximilian attems wrote:
+> > yes i'd call them severly broken.
+> > as it is quite easy to pick up the modinfo firmware module output.
 > > 
-> > The thing is that GCC checks types.  So it's fine to add "print this
-> > pointer specially", but you can't in general add new printf arguments
-> > without also hacking GCC.  Unless you use -Wno-format, and require
-> > sparse to check special kernel types.
+> > their trouble is that they sync initramfs-tools from Debian only
+> > once every 2 years or so.
 > 
-> It would be excellent if gcc had an extension system so that you could
-> add new printf control chars and maybe even tell gcc how to check them.
-> But of course, if that were to happen, we couldn't use it for 4-5 years.
-> 
-> What I had initially proposed was to abuse %S, which takes a wchar_t*. 
-> gcc accepts `unsigned long *' for %S.
-> 
-> Then, we put the kernel-specific control char after the S, so we can
-> print an inode (rofl) with
-> 
-> 	struct inode *inode;
-> 
-> 	printk("here is an inode: %Si\n", (unsigned long *)inode);
-> 
-> Downsides are:
-> 
-> - there's a cast, so you could accidentally do
-> 
-> 	printk("here is an inode: %Si\n", (unsigned long *)dentry);
-> 
-> - there's a cast, and they're ugly
-> 
-> - gcc cannot of course check that the arg matches the control string
-> 
-> Unfortunately (and this seems weird), gcc printf checking will not
-> accept a void* for %S: it _has_ to be wchar_t*, and the checker won't
-> permit void* substitution for that.
+> Well, Takashi just mentioned that SuSE's mkinitrd may not handle
+> /lib/firmware correctly either....
 
-Repeating myself here...
-We can add an alternative alias to printk:
+i have good news: in intrepid they synced initramfs-tools,
+so it is fixed for their upcoming release. as it is fixed
+in Debian for Lenny. they went for the /lib/firmware/${version}
+choice.
 
- asmlinkage int printk(const char * fmt, ...)
-         __attribute__ ((format (printf, 1, 2))) __cold;
-+asmlinkage int custom_printk(const char * fmt, ...) __cold asm ("printk");
-
-custom_printk() is actually just printk(), that is,
-we won't need additional function, we need to teach
-*printk* about MAC addresses, NIPQUADs etc;
-
-and then use printk() if you use only standard %fmt (and have it
-checked by gcc), or use custom_printk() if you have non-standard
-%fmt in the format string.
-
-The only downside that in second case, you lose gcc checking.
-No big deal.
---
-vda
+-- 
+maks
