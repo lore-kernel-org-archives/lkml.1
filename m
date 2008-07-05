@@ -1,22 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756372AbYGERhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbYGERiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756372AbYGERhW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYGERgY
+	id S1756652AbYGERiN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbYGERg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:36:24 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33011 "EHLO
+	Sat, 5 Jul 2008 13:36:28 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33015 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753088AbYGERgX (ORCPT
+	with ESMTP id S1753088AbYGERgZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 13:36:23 -0400
+	Sat, 5 Jul 2008 13:36:25 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Ext4 Developers List <linux-ext4@vger.kernel.org>,
        Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Subject: Ext4 patches for the next merge window
-Date: Sat,  5 Jul 2008 13:35:26 -0400
-Message-Id: <1215279378-30504-1-git-send-email-tytso@mit.edu>
+Cc: "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 10/52] ext4: Rename read_block_bitmap() to ext4_read_block_bitmap()
+Date: Sat,  5 Jul 2008 13:35:36 -0400
+Message-Id: <1215279378-30504-11-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.rc3.1.g36b7.dirty
+In-Reply-To: <1215279378-30504-10-git-send-email-tytso@mit.edu>
+References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
+ <1215279378-30504-2-git-send-email-tytso@mit.edu>
+ <1215279378-30504-3-git-send-email-tytso@mit.edu>
+ <1215279378-30504-4-git-send-email-tytso@mit.edu>
+ <1215279378-30504-5-git-send-email-tytso@mit.edu>
+ <1215279378-30504-6-git-send-email-tytso@mit.edu>
+ <1215279378-30504-7-git-send-email-tytso@mit.edu>
+ <1215279378-30504-8-git-send-email-tytso@mit.edu>
+ <1215279378-30504-9-git-send-email-tytso@mit.edu>
+ <1215279378-30504-10-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -24,13 +36,150 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following set of patches are being prepared for pushing to Linus
-during the next patch window.  Aside from a large number of cleanups
-the big new feature in this patchset is delayed allocation support.
+Since this a non-static function, make it be ext4 specific to avoid
+conflicts with potentially other filesystems.
 
-I've been running this patch series on my laptop for the past couple
-of days in production, and it's been working quite well for me.
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+---
+ fs/ext4/balloc.c  |   12 ++++++------
+ fs/ext4/group.h   |    2 +-
+ fs/ext4/ialloc.c  |    2 +-
+ fs/ext4/mballoc.c |   10 +++++-----
+ 4 files changed, 13 insertions(+), 13 deletions(-)
 
-   	   	       	   	     - Ted
-
+diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
+index c29d774..ba41123 100644
+--- a/fs/ext4/balloc.c
++++ b/fs/ext4/balloc.c
+@@ -295,7 +295,7 @@ err_out:
+ 	return 0;
+ }
+ /**
+- * read_block_bitmap()
++ * ext4_read_block_bitmap()
+  * @sb:			super block
+  * @block_group:	given block group
+  *
+@@ -305,7 +305,7 @@ err_out:
+  * Return buffer_head on success or NULL in case of failure.
+  */
+ struct buffer_head *
+-read_block_bitmap(struct super_block *sb, ext4_group_t block_group)
++ext4_read_block_bitmap(struct super_block *sb, ext4_group_t block_group)
+ {
+ 	struct ext4_group_desc * desc;
+ 	struct buffer_head * bh = NULL;
+@@ -693,7 +693,7 @@ do_more:
+ 		count -= overflow;
+ 	}
+ 	brelse(bitmap_bh);
+-	bitmap_bh = read_block_bitmap(sb, block_group);
++	bitmap_bh = ext4_read_block_bitmap(sb, block_group);
+ 	if (!bitmap_bh)
+ 		goto error_return;
+ 	desc = ext4_get_group_desc (sb, block_group, &gd_bh);
+@@ -1733,7 +1733,7 @@ retry_alloc:
+ 		my_rsv = NULL;
+ 
+ 	if (free_blocks > 0) {
+-		bitmap_bh = read_block_bitmap(sb, group_no);
++		bitmap_bh = ext4_read_block_bitmap(sb, group_no);
+ 		if (!bitmap_bh)
+ 			goto io_error;
+ 		grp_alloc_blk = ext4_try_to_allocate_with_rsv(sb, handle,
+@@ -1769,7 +1769,7 @@ retry_alloc:
+ 			continue;
+ 
+ 		brelse(bitmap_bh);
+-		bitmap_bh = read_block_bitmap(sb, group_no);
++		bitmap_bh = ext4_read_block_bitmap(sb, group_no);
+ 		if (!bitmap_bh)
+ 			goto io_error;
+ 		/*
+@@ -1985,7 +1985,7 @@ ext4_fsblk_t ext4_count_free_blocks(struct super_block *sb)
+ 			continue;
+ 		desc_count += le16_to_cpu(gdp->bg_free_blocks_count);
+ 		brelse(bitmap_bh);
+-		bitmap_bh = read_block_bitmap(sb, i);
++		bitmap_bh = ext4_read_block_bitmap(sb, i);
+ 		if (bitmap_bh == NULL)
+ 			continue;
+ 
+diff --git a/fs/ext4/group.h b/fs/ext4/group.h
+index 7eb0604..c2c0a8d 100644
+--- a/fs/ext4/group.h
++++ b/fs/ext4/group.h
+@@ -13,7 +13,7 @@ extern __le16 ext4_group_desc_csum(struct ext4_sb_info *sbi, __u32 group,
+ 				   struct ext4_group_desc *gdp);
+ extern int ext4_group_desc_csum_verify(struct ext4_sb_info *sbi, __u32 group,
+ 				       struct ext4_group_desc *gdp);
+-struct buffer_head *read_block_bitmap(struct super_block *sb,
++struct buffer_head *ext4_read_block_bitmap(struct super_block *sb,
+ 				      ext4_group_t block_group);
+ extern unsigned ext4_init_block_bitmap(struct super_block *sb,
+ 				       struct buffer_head *bh,
+diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
+index c6efbab..d1fc8c3 100644
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -600,7 +600,7 @@ got:
+ 	/* We may have to initialize the block bitmap if it isn't already */
+ 	if (EXT4_HAS_RO_COMPAT_FEATURE(sb, EXT4_FEATURE_RO_COMPAT_GDT_CSUM) &&
+ 	    gdp->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)) {
+-		struct buffer_head *block_bh = read_block_bitmap(sb, group);
++		struct buffer_head *block_bh = ext4_read_block_bitmap(sb, group);
+ 
+ 		BUFFER_TRACE(block_bh, "get block bitmap access");
+ 		err = ext4_journal_get_write_access(handle, block_bh);
+diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
+index 37ac13d..676fd6c 100644
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -2320,7 +2320,7 @@ static int ext4_mb_init_backend(struct super_block *sb)
+ 			meta_group_info[j]->bb_bitmap =
+ 				kmalloc(sb->s_blocksize, GFP_KERNEL);
+ 			BUG_ON(meta_group_info[j]->bb_bitmap == NULL);
+-			bh = read_block_bitmap(sb, i);
++			bh = ext4_read_block_bitmap(sb, i);
+ 			BUG_ON(bh == NULL);
+ 			memcpy(meta_group_info[j]->bb_bitmap, bh->b_data,
+ 					sb->s_blocksize);
+@@ -2763,7 +2763,7 @@ ext4_mb_mark_diskspace_used(struct ext4_allocation_context *ac,
+ 
+ 
+ 	err = -EIO;
+-	bitmap_bh = read_block_bitmap(sb, ac->ac_b_ex.fe_group);
++	bitmap_bh = ext4_read_block_bitmap(sb, ac->ac_b_ex.fe_group);
+ 	if (!bitmap_bh)
+ 		goto out_err;
+ 
+@@ -3585,7 +3585,7 @@ ext4_mb_discard_group_preallocations(struct super_block *sb,
+ 	if (list_empty(&grp->bb_prealloc_list))
+ 		return 0;
+ 
+-	bitmap_bh = read_block_bitmap(sb, group);
++	bitmap_bh = ext4_read_block_bitmap(sb, group);
+ 	if (bitmap_bh == NULL) {
+ 		/* error handling here */
+ 		ext4_mb_release_desc(&e4b);
+@@ -3759,7 +3759,7 @@ repeat:
+ 		err = ext4_mb_load_buddy(sb, group, &e4b);
+ 		BUG_ON(err != 0); /* error handling here */
+ 
+-		bitmap_bh = read_block_bitmap(sb, group);
++		bitmap_bh = ext4_read_block_bitmap(sb, group);
+ 		if (bitmap_bh == NULL) {
+ 			/* error handling here */
+ 			ext4_mb_release_desc(&e4b);
+@@ -4258,7 +4258,7 @@ do_more:
+ 		overflow = bit + count - EXT4_BLOCKS_PER_GROUP(sb);
+ 		count -= overflow;
+ 	}
+-	bitmap_bh = read_block_bitmap(sb, block_group);
++	bitmap_bh = ext4_read_block_bitmap(sb, block_group);
+ 	if (!bitmap_bh)
+ 		goto error_return;
+ 	gdp = ext4_get_group_desc(sb, block_group, &gd_bh);
+-- 
+1.5.6.rc3.1.g36b7.dirty
 
