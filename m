@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753059AbYGELVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbYGELWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753059AbYGELVc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 07:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbYGELVY
+	id S1753985AbYGELWg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 07:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbYGELWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 07:21:24 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:38939 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751570AbYGELVX (ORCPT
+	Sat, 5 Jul 2008 07:22:24 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:47297 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751496AbYGELWY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 07:21:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=kWI5bJMREiKAupwXWtBlloG+1QfK0tgmLz6dqS1uEmwf8XOoYuXn5vRhqhS+hRxaSk
-         ZqgbMDy/86VrEItKeBSwBufPHg+FGaWhy9GsoV2s84dx/DudbiYK9Wx+GW8xTtfygAl7
-         GBRDFa+9lN2l8Dk7HwOzqn4WKf8Ge01lwgbWg=
-Date: Sat, 5 Jul 2008 20:21:17 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Miguel Ojeda Sandonis <maxextreme@gmail.com>
-Subject: [PATCH] auxdisplay: small cleanups
-Message-ID: <20080705112116.GC17071@localhost.localdomain>
+	Sat, 5 Jul 2008 07:22:24 -0400
+Message-ID: <486F596C.8050109@firstfloor.org>
+Date: Sat, 05 Jul 2008 13:22:20 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Olivier Galibert <galibert@pobox.com>, Takashi Iwai <tiwai@suse.de>,
+       David Woodhouse <dwmw2@infradead.org>, Hannes Reinecke <hare@suse.de>,
+       Theodore Tso <tytso@mit.edu>, Jeff Garzik <jeff@garzik.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       hugh@veritas.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+References: <87ej6armez.fsf@basil.nowhere.org> <1215177044.10393.743.camel@pmac.infradead.org> <486E2260.5050503@garzik.org> <1215178035.10393.763.camel@pmac.infradead.org> <20080704141014.GA23215@mit.edu> <s5habgxloct.wl%tiwai@suse.de> <486E3622.1000900@suse.de> <1215182557.10393.808.camel@pmac.infradead.org> <20080704231322.GA4410@dspnet.fr.eu.org> <s5h4p746am3.wl%tiwai@suse.de> <20080705105317.GA44773@dspnet.fr.eu.org>
+In-Reply-To: <20080705105317.GA44773@dspnet.fr.eu.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- Use BUILD_BUG_ON for CFAG12864B_SIZE instead of runtime-check
+Olivier Galibert wrote:
+> On Sat, Jul 05, 2008 at 09:41:56AM +0200, Takashi Iwai wrote:
+>> Yes, it will, if the firmware blobs are packed into the kernel
+>> package.  In a long term, we can put firmware files into a separate, 
+>> architecture independent noarch package, though.  This will save the
+>> total package size, too.
+> 
+> That could be interestingly hard, actually.  Right now the kernel
+> package is one of these packages designed so that multiple versions
+> can be installed together.  When the version of one of the firmwares
+> changes, the firmware package will have to be updated.  But will it
+> keep the previous version?  If it doesn't, the possibly still
+> installed older kernels won't work anymore.  If it does, it will
+> accumulate a lot of files over time...
 
-- Use get_zeroed_page()
+Many distribution have some way for separate kernel module packages.
+It's essentially the same problem so it should be already solved
+in some way. Also there are already drivers who rely on separate
+firmware so they already should have this problem (and hopefully
+a solution). Of course these existing solutions might not be good
+enough. And a lot of people ignored them because they didn't use
+these external packages and drivers with those requirements.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Miguel Ojeda Sandonis <maxextreme@gmail.com>
----
- drivers/auxdisplay/cfag12864b.c |   13 ++-----------
- 1 file changed, 2 insertions(+), 11 deletions(-)
+I agree with you that doing this for more drivers will be a further complication
+and the rationale why this complication is needed for drivers like tg3 or
+e100 so far didn't  sound very convincing to me. If I read it correctly it
+was "some other drivers do it this way so let's complicate everybody and
+put them on the same level". Perhaps I'm dense, but I failed
+to see the convincing reason in that.
 
-Index: 2.6-git/drivers/auxdisplay/cfag12864b.c
-===================================================================
---- 2.6-git.orig/drivers/auxdisplay/cfag12864b.c
-+++ 2.6-git/drivers/auxdisplay/cfag12864b.c
-@@ -336,16 +336,9 @@ static int __init cfag12864b_init(void)
- 			"ks0108 is not initialized\n");
- 		goto none;
- 	}
-+	BUILD_BUG_ON(PAGE_SIZE < CFAG12864B_SIZE);
- 
--	if (PAGE_SIZE < CFAG12864B_SIZE) {
--		printk(KERN_ERR CFAG12864B_NAME ": ERROR: "
--			"page size (%i) < cfag12864b size (%i)\n",
--			(unsigned int)PAGE_SIZE, CFAG12864B_SIZE);
--		ret = -ENOMEM;
--		goto none;
--	}
--
--	cfag12864b_buffer = (unsigned char *) __get_free_page(GFP_KERNEL);
-+	cfag12864b_buffer = (unsigned char *) get_zeroed_page(GFP_KERNEL);
- 	if (cfag12864b_buffer == NULL) {
- 		printk(KERN_ERR CFAG12864B_NAME ": ERROR: "
- 			"can't get a free page\n");
-@@ -367,8 +360,6 @@ static int __init cfag12864b_init(void)
- 	if (cfag12864b_workqueue == NULL)
- 		goto cachealloced;
- 
--	memset(cfag12864b_buffer, 0, CFAG12864B_SIZE);
--
- 	cfag12864b_clear();
- 	cfag12864b_on();
- 
+On the other hand for my personal use it this change should be
+transparent, at least as long as "make firmware_install"
+will be integrated into "make modules_install" and put the files somewhere where
+they don't conflict with other versions.
+
+-Andi
