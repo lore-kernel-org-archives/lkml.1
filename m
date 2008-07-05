@@ -1,97 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755788AbYGEGcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbYGEGjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755788AbYGEGcp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 02:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755297AbYGEGcf
+	id S1753184AbYGEGjx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 02:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbYGEGjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 02:32:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59768 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752778AbYGEGce (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 02:32:34 -0400
-Date: Fri, 4 Jul 2008 23:32:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: tzanussi@gmail.com, penberg@cs.helsinki.fi, torvalds@linux-foundation.org,
-       compudj@krystal.dyndns.org, vegard.nossum@gmail.com,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 3/3] relay: Add buffer-only channels; useful for early
- logging.
-Message-Id: <20080704233205.5cf6f04b.akpm@linux-foundation.org>
-In-Reply-To: <20080705071401.0fe75d9f@linux360.ro>
-References: <20080623153104.50549291@linux360.ro>
-	<20080702230636.66e484bb.akpm@linux-foundation.org>
-	<20080705071401.0fe75d9f@linux360.ro>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 5 Jul 2008 02:39:42 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50668 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750881AbYGEGjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 02:39:41 -0400
+Date: Sat, 5 Jul 2008 08:39:18 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: Oops/Warning report of the week of July 4th 2008
+Message-ID: <20080705063917.GA11599@elte.hu>
+References: <486EA0D6.2040504@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <486EA0D6.2040504@linux.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 5 Jul 2008 07:14:01 +0300 Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro> wrote:
 
-> On Wed, 2 Jul 2008 23:06:36 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
->  
-> > This breaks on sparc64.
-> > 
-> > > +			err = smp_call_function_single(i,
-> > > +
-> > > __relay_set_buf_dentry,
-> > > +						       &disp, 0,
-> > > 1);
-> > 
-> > Because that ain't implemented.
-> > 
-> > There's a call in net/iucv/iucv.c, but that's s390-only.
-> > 
-> > There's a call in virt/kvm/kvm_main.c.
-> > 
-> > There's a call in kernel/time/tick-broadcast.c, so I assume that the
-> > intersection between CONFIG_GENERIC_CLOCKEVENTS_BROADCAST and
-> > non-smp_call_function_single() architectures is presently empty.
-> 
-> Hi,
-> 
-> I'm not sure what I should do.
+* Arjan van de Ven <arjan@linux.intel.com> wrote:
 
-Nothing, I'd suggest.  I think that all architectures should implement
-smp_call_function_single().  You can have a shot at doing that if you
-like, but the implementations will need to be reviewed and merged by
-the relevant architectures maintainers.  (That's why I snuck linux-arch
-into the cc list last time).
+> Rank 8: tick_broadcast_oneshot_control (softlockup)
+> 	Reported 91 times (634 total reports)
+>
+> 	Some interaction between tickless and systems with an AMD CPU 
+> 	and an ATI chipset (eg only seen on systems that both have an 
+> 	AMD cpu and an ATI chipset) Current suspicion is some kind of 
+> 	time-warp problem that causes the softlockup code to trigger 
+> 	incorrectly
+>
+>       This softlockup was last seen in version 2.6.25.9,
+> 	and first seen in 2.6.24-rc4. More info:
+>
+> 	http://www.kerneloops.org/searchweek.php?search=tick_broadcast_oneshot_control
 
-> Maybe disable relay_late_setup_files()
-> on sparc64, with an empty inline?
->  
-> > I guess all SMP-capable architectures should now implement this,
-> > please.  It is presently defined on all architectures for CONFIG_SMP=n
-> > and it is declared in include/linux/smp.h.
-> 
-> sparc64 seems to have smp_call_function_mask(). If we have the generic
-> kernel/smp.c in linux-next or -mmotm, then this will define
-> smp_call_function_single() to call smp_call_function_mask().
-> 
-> Is there anything I can do regarding this patch? Does it work since
-> kernel/smp.c reappeared?
+ok, so it's a false positive due to bad timer readout, not a real 
+lockup. That probably also explains how it was able to show up in such 
+numbers - the system kept functioning just fine so every system that 
+produced this warning was able to report it to kerneloops.org.
 
-Nope:
+i'll think about extending the softlockup code with time warp detection 
+and reporting - that would be a useful facility in itself as right now 
+there's nothing that warns about time warps in monotonic system time.
 
-y:/usr/src/25> grep USE_GENERIC_SMP_HELPERS arch/*/Kconfig
-arch/alpha/Kconfig:     select USE_GENERIC_SMP_HELPERS
-arch/arm/Kconfig:       select USE_GENERIC_SMP_HELPERS
-arch/ia64/Kconfig:      select USE_GENERIC_SMP_HELPERS
-arch/m32r/Kconfig:      select USE_GENERIC_SMP_HELPERS
-arch/mips/Kconfig:      select USE_GENERIC_SMP_HELPERS
-arch/parisc/Kconfig:    select USE_GENERIC_SMP_HELPERS
-arch/powerpc/Kconfig:   select USE_GENERIC_SMP_HELPERS if SMP
-arch/sh/Kconfig:        select USE_GENERIC_SMP_HELPERS
-arch/x86/Kconfig:       select USE_GENERIC_SMP_HELPERS
-
-It would help if you could check to see which architectures need work
-and then perhaps propose patches.  If not, well, 2.6.27-rc1 will be
-broken on some architectures on some configs and people will have a
-couple of months to unbreak it.  Not a big problem, I expect.
+	Ingo
