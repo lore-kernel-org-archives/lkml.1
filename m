@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbYGEQRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbYGEQ3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754040AbYGEQRM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 12:17:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbYGEQQ4
+	id S1754026AbYGEQ3Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 12:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbYGEQ3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 12:16:56 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:50667 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751532AbYGEQQz (ORCPT
+	Sat, 5 Jul 2008 12:29:17 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:2694 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750959AbYGEQ3Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 12:16:55 -0400
-Date: Sat, 5 Jul 2008 12:16:47 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Manish Katiyar <mkatiyar@gmail.com>
-Cc: linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] ext4 : Remove unused variable journal from
-	ext4_show_options
-Message-ID: <20080705161646.GC20240@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Manish Katiyar <mkatiyar@gmail.com>, linux-ext4@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>,
-	kernel-janitors@vger.kernel.org
-References: <ea11fea30806301155u3daccf0eo2daf690396b5616f@mail.gmail.com>
+	Sat, 5 Jul 2008 12:29:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=NUy/L3IIUF08WVwpo9YfHecch8oK22H/S47pMxG3DcyHOR6QToGp4j/lOgQSAVSUFa
+         7h5Tbzqbp5/vGrHycMhs3AsaVk3cloLsj9hQWeLjOU9W449qAmgqgkLwsPlj5iNBIc+U
+         2Zykl4DTKsDQbv5VTYIQYkeL5NoRyRY1JSuus=
+Date: Sat, 5 Jul 2008 21:59:04 +0530
+From: Rabin Vincent <rabin@rab.in>
+To: Bradley Hanna <brahan.ml@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Creating syscalls: Under an x86_64 arch, where is the syscall
+	table located?
+Message-ID: <20080705162903.GA1861@debian>
+References: <486F8D55.2060506@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ea11fea30806301155u3daccf0eo2daf690396b5616f@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <486F8D55.2060506@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for submitting the patch!  This is already in the ext4 patch
-queue to be pushed at the next merge window.  (I submitted the exact
-same patch to linux-ext4 as a cleanup a month ago.)
+On Sat, Jul 05, 2008 at 11:03:49AM -0400, Bradley Hanna wrote:
+> I am trying to create a syscall for testing purposes.  I have a kernel
+> configured for x86_64 arch and need to know where the syscall table is
+> located.  I believe I have found the unistd.h file that I need under
+> 'include/asm/unistd_64.h' but I cannot find a file containing the
+> 'sys_call_table' that corresponds with that 'unistd_64.h' file.  I can
+> find a file called syscall_table_32.S, but no table for 64.  The table
+> is no longer located in entry.S, so where do I find it?  The
+> '__syscallN' macro is not finding my syscall definition.
 
-     	      		      	      	- Ted
+sys_call_table for x86_64 is defined in arch/x86/kernel/syscall_64.c.
+
+Rabin
