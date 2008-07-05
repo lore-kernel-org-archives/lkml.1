@@ -1,119 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbYGEWok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYGEWqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754581AbYGEWok (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 18:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbYGEWoc
+	id S1755044AbYGEWqT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 18:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbYGEWqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 18:44:32 -0400
-Received: from mail.gmx.net ([213.165.64.20]:51764 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752435AbYGEWob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 18:44:31 -0400
-X-Authenticated: #476490
-X-Provags-ID: V01U2FsdGVkX1/c7wlDUPfcU5fLRgA5IJY5CccrjWWY/Gbgs5dnzW
-	IAD38bWLiKR6MN
-From: Oliver Endriss <o.endriss@gmx.de>
-Organization: ESCAPE GmbH EDV-Loesungen
-To: v4l-dvb-maintainer@linuxtv.org
-Subject: Re: [v4l-dvb-maintainer] build issue #477 for v2.6.26-rc8-290-gb8a0b6c : input_event" [drivers/media/dvb/ttpci/dvb-ttpci.ko] undefined!
-Date: Sun, 6 Jul 2008 00:43:30 +0200
-User-Agent: KMail/1.9.6
-Cc: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>,
-       linux-kernel@vger.kernel.org
-References: <200807051725.04475.toralf.foerster@gmx.de>
-In-Reply-To: <200807051725.04475.toralf.foerster@gmx.de>
+	Sat, 5 Jul 2008 18:46:11 -0400
+Received: from smtp.wifcom.cz ([89.185.251.8]:39679 "EHLO wifcom.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751689AbYGEWqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 18:46:10 -0400
+Date: Sun, 6 Jul 2008 00:46:35 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [regression] Re: 2.6.26-rc6: pcmcia stopped working
+Message-ID: <20080705224631.GA32546@elf.ucw.cz>
+References: <20080622224022.GA2066@elf.ucw.cz> <20080625220946.GA1587@elf.ucw.cz> <20080625221529.GA1600@elf.ucw.cz> <200807051448.40466.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_Tk/bIrHMLJ9y1kC"
-Message-Id: <200807060043.31247@orion.escape-edv.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200807051448.40466.bzolnier@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Antivirus-Scanner: Clean mail though you should still use an Antivirus
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_Tk/bIrHMLJ9y1kC
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi!
 
-Toralf F=F6rster wrote:
-> Hello,
->=20
-> the build (.config attached) failed, make ends with :
-> ...
->   Building modules, stage 2.
->   MODPOST 433 modules
-> ERROR: "input_event" [drivers/media/dvb/ttpci/dvb-ttpci.ko] undefined!
-> ERROR: "input_register_device" [drivers/media/dvb/ttpci/dvb-ttpci.ko] und=
-efined!
-> ERROR: "input_free_device" [drivers/media/dvb/ttpci/dvb-ttpci.ko] undefin=
-ed!
-> ERROR: "input_unregister_device" [drivers/media/dvb/ttpci/dvb-ttpci.ko] u=
-ndefined!
-> ERROR: "input_allocate_device" [drivers/media/dvb/ttpci/dvb-ttpci.ko] und=
-efined!
-> make[1]: *** [__modpost] Error 1
-> make: *** [modules] Error 2
->=20
->=20
-> The build was made with an old .config from kernel 2.6.25-rc9
-> (where the build also failed but probably b/c of a different reason) :
-> $>make oldconfig; make clean; make
->=20
-> Here's the config:
->=20
-> #
-> # Automatically generated make config: don't edit
-> # Linux kernel version: 2.6.26-rc8
-> # Sat Jul  5 13:04:33 2008
-> #
-> ...
-> #
-> # Input device support
-> #
-> # CONFIG_INPUT is not set
-> ...
+> > > > Hmm, hitting sysrq-w produces no blocked task until I eject pcmcia
+> > > > card. Backtrace there is:
+> > > > 
+> > > > Greg, I believe some traces lead to sysfs, can you help here?
+> > > 
+> > > ide_unregister() does not complete :-(.
+> > > 
+> > >         device_unregister(&hwif->gendev);
+> > > +       printk("ide_unregister: waiting for rel_comp\n");
+> > >         wait_for_completion(&hwif->gendev_rel_comp);
+> > > 
+> > > ...that wait_for_completion never returns.
+> 
+> [...]
+> 
+> Thanks for narrowing it down to wait_for_completion() call,
+> it was an useful hint.
 
-Thanks for reporting.
-Does the attached patch fix the problem?
+Thanks for a patch, I'll test it soon. Here are two really trivial
+patches... maybe too trivial?
 
-CU
-Oliver
+---
 
-=2D-=20
-=2D---------------------------------------------------------------
-VDR Remote Plugin 0.4.0: http://www.escape-edv.de/endriss/vdr/
-=2D---------------------------------------------------------------
+Small whitespace fixes for drivers/ide.
 
---Boundary-00=_Tk/bIrHMLJ9y1kC
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="av7110_no_evdev.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="av7110_no_evdev.diff"
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-Do not compile av7110_ir if CONFIG_INPUT_EVDEV is not selected.
-
-Signed-off-by: Oliver Endriss <o.endriss@gmx.de>
-
-diff -r cb91f21a543e linux/drivers/media/dvb/ttpci/Makefile
---- a/linux/drivers/media/dvb/ttpci/Makefile	Mon Jun 23 22:30:42 2008 +0200
-+++ b/linux/drivers/media/dvb/ttpci/Makefile	Sun Jul 06 00:14:15 2008 +0200
-@@ -3,7 +3,11 @@
- # and the AV7110 DVB device driver
- #
+diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
+index 380fa0c..df70d36 100644
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -617,7 +617,7 @@ static inline u8 probe_for_drive (ide_dr
+ 	return drive->present;
+ }
  
--dvb-ttpci-objs := av7110_hw.o av7110_v4l.o av7110_av.o av7110_ca.o av7110.o av7110_ipack.o av7110_ir.o
-+dvb-ttpci-objs := av7110_hw.o av7110_v4l.o av7110_av.o av7110_ca.o av7110.o av7110_ipack.o
-+
-+ifdef CONFIG_INPUT_EVDEV
-+dvb-ttpci-objs += av7110_ir.o
-+endif
+-static void hwif_release_dev (struct device *dev)
++static void hwif_release_dev(struct device *dev)
+ {
+ 	ide_hwif_t *hwif = container_of(dev, ide_hwif_t, gendev);
  
- obj-$(CONFIG_TTPCI_EEPROM) += ttpci-eeprom.o
- obj-$(CONFIG_DVB_BUDGET_CORE) += budget-core.o
+diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
+index c758dcb..846bcfb 100644
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -1,6 +1,6 @@
+ /*
+  *  Copyright (C) 1994-1998	    Linus Torvalds & authors (see below)
+- *  Copyrifht (C) 2003-2005, 2007   Bartlomiej Zolnierkiewicz
++ *  Copyright (C) 2003-2005, 2007   Bartlomiej Zolnierkiewicz
+  */
+ 
+ /*
 
---Boundary-00=_Tk/bIrHMLJ9y1kC--
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
