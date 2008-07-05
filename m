@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758530AbYGERrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759175AbYGERr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758530AbYGERrp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756454AbYGERh7
+	id S1759175AbYGERr0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756620AbYGERhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:37:59 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33074 "EHLO
+	Sat, 5 Jul 2008 13:37:55 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33075 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755890AbYGERgc (ORCPT
+	with ESMTP id S1755896AbYGERgc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 5 Jul 2008 13:36:32 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Ext4 Developers List <linux-ext4@vger.kernel.org>,
        Linux Kernel Developers List <linux-kernel@vger.kernel.org>
 Cc: Mingming Cao <cmm@us.ibm.com>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Jan Kara <jack@suse.cz>, "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 46/52] ext4: Invert lock ordering of page_lock and transaction start in delalloc
-Date: Sat,  5 Jul 2008 13:36:12 -0400
-Message-Id: <1215279378-30504-47-git-send-email-tytso@mit.edu>
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 44/52] ext4: delayed allocation ENOSPC handling
+Date: Sat,  5 Jul 2008 13:36:10 -0400
+Message-Id: <1215279378-30504-45-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.rc3.1.g36b7.dirty
-In-Reply-To: <1215279378-30504-46-git-send-email-tytso@mit.edu>
+In-Reply-To: <1215279378-30504-44-git-send-email-tytso@mit.edu>
 References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-2-git-send-email-tytso@mit.edu>
  <1215279378-30504-3-git-send-email-tytso@mit.edu>
@@ -65,8 +64,6 @@ References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-42-git-send-email-tytso@mit.edu>
  <1215279378-30504-43-git-send-email-tytso@mit.edu>
  <1215279378-30504-44-git-send-email-tytso@mit.edu>
- <1215279378-30504-45-git-send-email-tytso@mit.edu>
- <1215279378-30504-46-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -76,343 +73,607 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Mingming Cao <cmm@us.ibm.com>
 
-With the reverse locking, we need to start a transation before taking
-the page lock, so in ext4_da_writepages() we need to break the write-out
-into chunks, and restart the journal for each chunck to ensure the
-write-out fits in a single transaction.
+This patch does block reservation for delayed
+allocation, to avoid ENOSPC later at page flush time.
 
-Updated patch from Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-which fixes delalloc sync hang with journal lock inversion, and address
-the performance regression issue.
+Blocks(data and metadata) are reserved at da_write_begin()
+time, the freeblocks counter is updated by then, and the number of
+reserved blocks is store in per inode counter.
 
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+At the writepage time, the unused reserved meta blocks are returned
+back. At unlink/truncate time, reserved blocks are properly released.
+
+Updated fix from  Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+to fix the oldallocator block reservation accounting with delalloc, added
+lock to guard the counters and also fix the reservation for meta blocks.
+
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Jan Kara <jack@suse.cz>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
 ---
- fs/ext4/extents.c |   10 ++-
- fs/ext4/inode.c   |  189 +++++++++++++++++++++++++++++++++++++++--------------
- fs/mpage.c        |   12 ++--
- 3 files changed, 152 insertions(+), 59 deletions(-)
+ fs/ext4/balloc.c       |   49 +++++++++-----
+ fs/ext4/dir.c          |    3 +-
+ fs/ext4/ext4.h         |    6 ++-
+ fs/ext4/ext4_extents.h |    1 +
+ fs/ext4/ext4_i.h       |    7 ++
+ fs/ext4/extents.c      |   32 ++++++++-
+ fs/ext4/inode.c        |  178 ++++++++++++++++++++++++++++++++++++++++--------
+ fs/ext4/mballoc.c      |   20 +++++-
+ fs/ext4/super.c        |    5 ++
+ 9 files changed, 251 insertions(+), 50 deletions(-)
 
-diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
-index 88e08a3..f413be9 100644
---- a/fs/ext4/extents.c
-+++ b/fs/ext4/extents.c
-@@ -2565,6 +2565,7 @@ int ext4_ext_get_blocks(handle_t *handle, struct inode *inode,
- 	int err = 0, depth, ret;
- 	unsigned long allocated = 0;
- 	struct ext4_allocation_request ar;
-+	loff_t disksize;
- 
- 	__clear_bit(BH_New, &bh_result->b_state);
- 	ext_debug("blocks %u/%lu requested for inode %u\n",
-@@ -2755,8 +2756,13 @@ int ext4_ext_get_blocks(handle_t *handle, struct inode *inode,
- 	newblock = ext_pblock(&newex);
- 	allocated = ext4_ext_get_actual_len(&newex);
- outnew:
--	if (extend_disksize && inode->i_size > EXT4_I(inode)->i_disksize)
--		EXT4_I(inode)->i_disksize = inode->i_size;
-+	if (extend_disksize) {
-+		disksize = ((loff_t) iblock + ar.len) << inode->i_blkbits;
-+		if (disksize > i_size_read(inode))
-+			disksize = i_size_read(inode);
-+		if (disksize > EXT4_I(inode)->i_disksize)
-+			EXT4_I(inode)->i_disksize = disksize;
-+	}
- 
- 	set_buffer_new(bh_result);
- 
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index 4545542..db5aee8 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -846,6 +846,7 @@ int ext4_get_blocks_handle(handle_t *handle, struct inode *inode,
- 	struct ext4_inode_info *ei = EXT4_I(inode);
- 	int count = 0;
- 	ext4_fsblk_t first_block = 0;
-+	loff_t disksize;
- 
- 
- 	J_ASSERT(!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL));
-@@ -921,8 +922,13 @@ int ext4_get_blocks_handle(handle_t *handle, struct inode *inode,
- 	 * protect it if you're about to implement concurrent
- 	 * ext4_get_block() -bzzz
- 	*/
--	if (!err && extend_disksize && inode->i_size > ei->i_disksize)
--		ei->i_disksize = inode->i_size;
-+	if (!err && extend_disksize) {
-+		disksize = ((loff_t) iblock + count) << inode->i_blkbits;
-+		if (disksize > i_size_read(inode))
-+			disksize = i_size_read(inode);
-+		if (disksize > ei->i_disksize)
-+			ei->i_disksize = disksize;
-+	}
- 	if (err)
- 		goto cleanup;
- 
-@@ -1580,18 +1586,14 @@ static int ext4_da_get_block_prep(struct inode *inode, sector_t iblock,
- static int ext4_da_get_block_write(struct inode *inode, sector_t iblock,
- 				   struct buffer_head *bh_result, int create)
- {
--	int ret, needed_blocks = ext4_writepage_trans_blocks(inode);
-+	int ret;
- 	unsigned max_blocks = bh_result->b_size >> inode->i_blkbits;
- 	loff_t disksize = EXT4_I(inode)->i_disksize;
- 	handle_t *handle = NULL;
- 
--	if (create) {
--		handle = ext4_journal_start(inode, needed_blocks);
--		if (IS_ERR(handle)) {
--			ret = PTR_ERR(handle);
--			goto out;
--		}
--	}
-+	handle = ext4_journal_current_handle();
-+	BUG_ON(handle == NULL);
-+	BUG_ON(create == 0);
- 
- 	ret = ext4_get_blocks_wrap(handle, inode, iblock, max_blocks,
- 				   bh_result, create, 0, EXT4_DELALLOC_RSVED);
-@@ -1620,65 +1622,157 @@ static int ext4_da_get_block_write(struct inode *inode, sector_t iblock,
- 			up_write(&EXT4_I(inode)->i_data_sem);
- 
- 			if (EXT4_I(inode)->i_disksize == disksize) {
--				if (handle == NULL)
--					handle = ext4_journal_start(inode, 1);
--				if (!IS_ERR(handle))
--					ext4_mark_inode_dirty(handle, inode);
-+				ret = ext4_mark_inode_dirty(handle, inode);
-+				return ret;
- 			}
- 		}
--
- 		ret = 0;
- 	}
--
--out:
--	if (handle && !IS_ERR(handle))
--		ext4_journal_stop(handle);
--
- 	return ret;
- }
-+
-+static int ext4_bh_unmapped_or_delay(handle_t *handle, struct buffer_head *bh)
-+{
-+	return !buffer_mapped(bh) || buffer_delay(bh);
-+}
-+
- /* FIXME!! only support data=writeback mode */
-+/*
-+ * get called vi ext4_da_writepages after taking page lock
-+ * We may end up doing block allocation here in case
-+ * mpage_da_map_blocks failed to allocate blocks.
-+ */
- static int ext4_da_writepage(struct page *page,
- 				struct writeback_control *wbc)
- {
--	struct inode *inode = page->mapping->host;
--	handle_t *handle = NULL;
- 	int ret = 0;
--	int err;
-+	loff_t size;
-+	unsigned long len;
-+	handle_t *handle = NULL;
-+	struct buffer_head *page_bufs;
-+	struct inode *inode = page->mapping->host;
- 
--	if (ext4_journal_current_handle())
--		goto out_fail;
-+	handle = ext4_journal_current_handle();
-+	if (!handle) {
-+		/*
-+		 * This can happen when we aren't called via
-+		 * ext4_da_writepages() but directly (shrink_page_list).
-+		 * We cannot easily start a transaction here so we just skip
-+		 * writing the page in case we would have to do so.
-+		 */
-+		size = i_size_read(inode);
- 
--	handle = ext4_journal_start(inode, ext4_writepage_trans_blocks(inode));
--	if (IS_ERR(handle)) {
--		ret = PTR_ERR(handle);
--		goto out_fail;
-+		page_bufs = page_buffers(page);
-+		if (page->index == size >> PAGE_CACHE_SHIFT)
-+			len = size & ~PAGE_CACHE_MASK;
-+		else
-+			len = PAGE_CACHE_SIZE;
-+
-+		if (walk_page_buffers(NULL, page_bufs, 0,
-+				len, NULL, ext4_bh_unmapped_or_delay)) {
-+			/*
-+			 * We can't do block allocation under
-+			 * page lock without a handle . So redirty
-+			 * the page and return
-+			 */
-+			BUG_ON(wbc->sync_mode != WB_SYNC_NONE);
-+			redirty_page_for_writepage(wbc, page);
-+			unlock_page(page);
-+			return 0;
-+		}
+diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
+index 6369bac..495ab21 100644
+--- a/fs/ext4/balloc.c
++++ b/fs/ext4/balloc.c
+@@ -1701,7 +1701,12 @@ ext4_fsblk_t ext4_old_new_blocks(handle_t *handle, struct inode *inode,
  	}
  
- 	if (test_opt(inode->i_sb, NOBH) && ext4_should_writeback_data(inode))
--		ret = nobh_writepage(page, ext4_get_block, wbc);
-+		ret = nobh_writepage(page, ext4_da_get_block_write, wbc);
- 	else
--		ret = block_write_full_page(page, ext4_get_block, wbc);
-+		ret = block_write_full_page(page, ext4_da_get_block_write, wbc);
+ 	sbi = EXT4_SB(sb);
+-	*count = ext4_has_free_blocks(sbi, *count);
++	if (!EXT4_I(inode)->i_delalloc_reserved_flag) {
++		/*
++		 * With delalloc we already reserved the blocks
++		 */
++		*count = ext4_has_free_blocks(sbi, *count);
++	}
+ 	if (*count == 0) {
+ 		*errp = -ENOSPC;
+ 		return 0;	/*return with ENOSPC error */
+@@ -1902,7 +1907,8 @@ allocated:
+ 	le16_add_cpu(&gdp->bg_free_blocks_count, -num);
+ 	gdp->bg_checksum = ext4_group_desc_csum(sbi, group_no, gdp);
+ 	spin_unlock(sb_bgl_lock(sbi, group_no));
+-	percpu_counter_sub(&sbi->s_freeblocks_counter, num);
++	if (!EXT4_I(inode)->i_delalloc_reserved_flag)
++		percpu_counter_sub(&sbi->s_freeblocks_counter, num);
  
--	if (!ret && inode->i_size > EXT4_I(inode)->i_disksize) {
--		EXT4_I(inode)->i_disksize = inode->i_size;
--		ext4_mark_inode_dirty(handle, inode);
--	}
--
--	err = ext4_journal_stop(handle);
--	if (!ret)
--		ret = err;
--	return ret;
--
--out_fail:
--	redirty_page_for_writepage(wbc, page);
--	unlock_page(page);
- 	return ret;
+ 	if (sbi->s_log_groups_per_flex) {
+ 		ext4_group_t flex_group = ext4_flex_group(sbi, group_no);
+@@ -1976,40 +1982,49 @@ static ext4_fsblk_t do_blk_alloc(handle_t *handle, struct inode *inode,
  }
  
-+
-+/*
-+ * For now just follow the DIO way to estimate the max credits
-+ * needed to write out EXT4_MAX_WRITEBACK_PAGES.
-+ * todo: need to calculate the max credits need for
-+ * extent based files, currently the DIO credits is based on
-+ * indirect-blocks mapping way.
-+ *
-+ * Probably should have a generic way to calculate credits
-+ * for DIO, writepages, and truncate
-+ */
-+#define EXT4_MAX_WRITEBACK_PAGES      DIO_MAX_BLOCKS
-+#define EXT4_MAX_WRITEBACK_CREDITS    DIO_CREDITS
-+
- static int ext4_da_writepages(struct address_space *mapping,
- 				struct writeback_control *wbc)
+ /*
+- * ext4_new_meta_block() -- allocate block for meta data (indexing) blocks
++ * ext4_new_meta_blocks() -- allocate block for meta data (indexing) blocks
+  *
+  * @handle:             handle to this transaction
+  * @inode:              file inode
+  * @goal:               given target block(filesystem wide)
++ * @count:		total number of blocks need
+  * @errp:               error code
+  *
+- * Return allocated block number on success
++ * Return 1st allocated block numberon success, *count stores total account
++ * error stores in errp pointer
+  */
+-ext4_fsblk_t ext4_new_meta_block(handle_t *handle, struct inode *inode,
+-		ext4_fsblk_t goal, int *errp)
++ext4_fsblk_t ext4_new_meta_blocks(handle_t *handle, struct inode *inode,
++		ext4_fsblk_t goal, unsigned long *count, int *errp)
  {
--	return mpage_da_writepages(mapping, wbc, ext4_da_get_block_write);
-+	struct inode *inode = mapping->host;
-+	handle_t *handle = NULL;
-+	int needed_blocks;
-+	int ret = 0;
-+	long to_write;
-+	loff_t range_start = 0;
-+
+-	unsigned long count = 1;
+-	return do_blk_alloc(handle, inode, 0, goal,
+-			&count, errp, EXT4_META_BLOCK);
++	ext4_fsblk_t ret;
++	ret = do_blk_alloc(handle, inode, 0, goal,
++				count, errp, EXT4_META_BLOCK);
 +	/*
-+	 * No pages to write? This is mainly a kludge to avoid starting
-+	 * a transaction for special inodes like journal inode on last iput()
-+	 * because that could violate lock ordering on umount
++	 * Account for the allocated meta blocks
 +	 */
-+	if (!mapping->nrpages)
-+		return 0;
-+
-+	/*
-+	 *  Estimate the worse case needed credits to write out
-+	 * EXT4_MAX_BUF_BLOCKS pages
-+	 */
-+	needed_blocks = EXT4_MAX_WRITEBACK_CREDITS;
-+
-+	to_write = wbc->nr_to_write;
-+	if (!wbc->range_cyclic) {
-+		/*
-+		 * If range_cyclic is not set force range_cont
-+		 * and save the old writeback_index
-+		 */
-+		wbc->range_cont = 1;
-+		range_start =  wbc->range_start;
++	if (!(*errp)) {
++		spin_lock(&EXT4_I(inode)->i_block_reservation_lock);
++		EXT4_I(inode)->i_allocated_meta_blocks += *count;
++		spin_unlock(&EXT4_I(inode)->i_block_reservation_lock);
 +	}
-+
-+	while (!ret && to_write) {
-+		/* start a new transaction*/
-+		handle = ext4_journal_start(inode, needed_blocks);
-+		if (IS_ERR(handle)) {
-+			ret = PTR_ERR(handle);
-+			goto out_writepages;
-+		}
-+		/*
-+		 * set the max dirty pages could be write at a time
-+		 * to fit into the reserved transaction credits
-+		 */
-+		if (wbc->nr_to_write > EXT4_MAX_WRITEBACK_PAGES)
-+			wbc->nr_to_write = EXT4_MAX_WRITEBACK_PAGES;
-+
-+		to_write -= wbc->nr_to_write;
-+		ret = mpage_da_writepages(mapping, wbc,
-+						ext4_da_get_block_write);
-+		ext4_journal_stop(handle);
-+		if (wbc->nr_to_write) {
-+			/*
-+			 * There is no more writeout needed
-+			 * or we requested for a noblocking writeout
-+			 * and we found the device congested
-+			 */
-+			to_write += wbc->nr_to_write;
-+			break;
-+		}
-+		wbc->nr_to_write = to_write;
-+	}
-+
-+out_writepages:
-+	wbc->nr_to_write = to_write;
-+	if (range_start)
-+		wbc->range_start = range_start;
 +	return ret;
  }
  
- static int ext4_da_write_begin(struct file *file, struct address_space *mapping,
-@@ -1728,11 +1822,6 @@ out:
+ /*
+- * ext4_new_meta_blocks() -- allocate block for meta data (indexing) blocks
++ * ext4_new_meta_block() -- allocate block for meta data (indexing) blocks
+  *
+  * @handle:             handle to this transaction
+  * @inode:              file inode
+  * @goal:               given target block(filesystem wide)
+- * @count:		total number of blocks need
+  * @errp:               error code
+  *
+- * Return 1st allocated block numberon success, *count stores total account
+- * error stores in errp pointer
++ * Return allocated block number on success
+  */
+-ext4_fsblk_t ext4_new_meta_blocks(handle_t *handle, struct inode *inode,
+-		ext4_fsblk_t goal, unsigned long *count, int *errp)
++ext4_fsblk_t ext4_new_meta_block(handle_t *handle, struct inode *inode,
++		ext4_fsblk_t goal, int *errp)
+ {
+-	return do_blk_alloc(handle, inode, 0, goal,
+-			count, errp, EXT4_META_BLOCK);
++	unsigned long count = 1;
++	return ext4_new_meta_blocks(handle, inode, goal, &count, errp);
+ }
+ 
+ /*
+diff --git a/fs/ext4/dir.c b/fs/ext4/dir.c
+index 5ed5108..d3d23d7 100644
+--- a/fs/ext4/dir.c
++++ b/fs/ext4/dir.c
+@@ -129,7 +129,8 @@ static int ext4_readdir(struct file * filp,
+ 		struct buffer_head *bh = NULL;
+ 
+ 		map_bh.b_state = 0;
+-		err = ext4_get_blocks_wrap(NULL, inode, blk, 1, &map_bh, 0, 0);
++		err = ext4_get_blocks_wrap(NULL, inode, blk, 1, &map_bh,
++						0, 0, 0);
+ 		if (err > 0) {
+ 			pgoff_t index = map_bh.b_blocknr >>
+ 					(PAGE_CACHE_SHIFT - inode->i_blkbits);
+diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
+index 0307d53..bce77ab 100644
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -74,6 +74,9 @@
+ #define EXT4_MB_HINT_GOAL_ONLY		256
+ /* goal is meaningful */
+ #define EXT4_MB_HINT_TRY_GOAL		512
++/* blocks already pre-reserved by delayed allocation */
++#define EXT4_MB_DELALLOC_RESERVED      1024
++
+ 
+ struct ext4_allocation_request {
+ 	/* target inode for block we're allocating */
+@@ -1041,6 +1044,7 @@ extern void ext4_mb_update_group_info(struct ext4_group_info *grp,
+ 
+ 
+ /* inode.c */
++void ext4_da_release_space(struct inode *inode, int used, int to_free);
+ int ext4_forget(handle_t *handle, int is_metadata, struct inode *inode,
+ 		struct buffer_head *bh, ext4_fsblk_t blocknr);
+ struct buffer_head *ext4_getblk(handle_t *, struct inode *,
+@@ -1233,7 +1237,7 @@ extern long ext4_fallocate(struct inode *inode, int mode, loff_t offset,
+ extern int ext4_get_blocks_wrap(handle_t *handle, struct inode *inode,
+ 			sector_t block, unsigned long max_blocks,
+ 			struct buffer_head *bh, int create,
+-			int extend_disksize);
++			int extend_disksize, int flag);
+ #endif	/* __KERNEL__ */
+ 
+ #endif	/* _EXT4_H */
+diff --git a/fs/ext4/ext4_extents.h b/fs/ext4/ext4_extents.h
+index 75333b5..6c166c0 100644
+--- a/fs/ext4/ext4_extents.h
++++ b/fs/ext4/ext4_extents.h
+@@ -212,6 +212,7 @@ static inline int ext4_ext_get_actual_len(struct ext4_extent *ext)
+ 		(le16_to_cpu(ext->ee_len) - EXT_INIT_MAX_LEN));
+ }
+ 
++extern int ext4_ext_calc_metadata_amount(struct inode *inode, int blocks);
+ extern ext4_fsblk_t idx_pblock(struct ext4_extent_idx *);
+ extern void ext4_ext_store_pblock(struct ext4_extent *, ext4_fsblk_t);
+ extern int ext4_extent_tree_init(handle_t *, struct inode *);
+diff --git a/fs/ext4/ext4_i.h b/fs/ext4/ext4_i.h
+index c2903ef..ef7409f 100644
+--- a/fs/ext4/ext4_i.h
++++ b/fs/ext4/ext4_i.h
+@@ -163,6 +163,13 @@ struct ext4_inode_info {
+ 	/* mballoc */
+ 	struct list_head i_prealloc_list;
+ 	spinlock_t i_prealloc_lock;
++
++	/* allocation reservation info for delalloc */
++	unsigned long i_reserved_data_blocks;
++	unsigned long i_reserved_meta_blocks;
++	unsigned long i_allocated_meta_blocks;
++	unsigned short i_delalloc_reserved_flag;
++	spinlock_t i_block_reservation_lock;
+ };
+ 
+ #endif	/* _EXT4_I */
+diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
+index 9e8ec60..88e08a3 100644
+--- a/fs/ext4/extents.c
++++ b/fs/ext4/extents.c
+@@ -248,6 +248,36 @@ static int ext4_ext_space_root_idx(struct inode *inode)
+ 	return size;
+ }
+ 
++/*
++ * Calculate the number of metadata blocks needed
++ * to allocate @blocks
++ * Worse case is one block per extent
++ */
++int ext4_ext_calc_metadata_amount(struct inode *inode, int blocks)
++{
++	int lcap, icap, rcap, leafs, idxs, num;
++	int newextents = blocks;
++
++	rcap = ext4_ext_space_root_idx(inode);
++	lcap = ext4_ext_space_block(inode);
++	icap = ext4_ext_space_block_idx(inode);
++
++	/* number of new leaf blocks needed */
++	num = leafs = (newextents + lcap - 1) / lcap;
++
++	/*
++	 * Worse case, we need separate index block(s)
++	 * to link all new leaf blocks
++	 */
++	idxs = (leafs + icap - 1) / icap;
++	do {
++		num += idxs;
++		idxs = (idxs + icap - 1) / icap;
++	} while (idxs > rcap);
++
++	return num;
++}
++
+ static int
+ ext4_ext_max_entries(struct inode *inode, int depth)
+ {
+@@ -2910,7 +2940,7 @@ retry:
+ 		}
+ 		ret = ext4_get_blocks_wrap(handle, inode, block,
+ 					  max_blocks, &map_bh,
+-					  EXT4_CREATE_UNINITIALIZED_EXT, 0);
++					  EXT4_CREATE_UNINITIALIZED_EXT, 0, 0);
+ 		if (ret <= 0) {
+ #ifdef EXT4FS_DEBUG
+ 			WARN_ON(ret <= 0);
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index 2857ef3..4545542 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -38,6 +38,7 @@
+ #include "ext4_jbd2.h"
+ #include "xattr.h"
+ #include "acl.h"
++#include "ext4_extents.h"
+ 
+ static inline int ext4_begin_ordered_truncate(struct inode *inode,
+ 					      loff_t new_size)
+@@ -981,7 +982,7 @@ out:
+  */
+ int ext4_get_blocks_wrap(handle_t *handle, struct inode *inode, sector_t block,
+ 			unsigned long max_blocks, struct buffer_head *bh,
+-			int create, int extend_disksize)
++			int create, int extend_disksize, int flag)
+ {
+ 	int retval;
+ 
+@@ -1022,6 +1023,15 @@ int ext4_get_blocks_wrap(handle_t *handle, struct inode *inode, sector_t block,
+ 	 * with create == 1 flag.
+ 	 */
+ 	down_write((&EXT4_I(inode)->i_data_sem));
++
++	/*
++	 * if the caller is from delayed allocation writeout path
++	 * we have already reserved fs blocks for allocation
++	 * let the underlying get_block() function know to
++	 * avoid double accounting
++	 */
++	if (flag)
++		EXT4_I(inode)->i_delalloc_reserved_flag = 1;
+ 	/*
+ 	 * We need to check for EXT4 here because migrate
+ 	 * could have changed the inode type in between
+@@ -1043,6 +1053,8 @@ int ext4_get_blocks_wrap(handle_t *handle, struct inode *inode, sector_t block,
+ 							~EXT4_EXT_MIGRATE;
+ 		}
+ 	}
++	if (flag)
++		EXT4_I(inode)->i_delalloc_reserved_flag = 0;
+ 	up_write((&EXT4_I(inode)->i_data_sem));
+ 	return retval;
+ }
+@@ -1068,7 +1080,7 @@ static int ext4_get_block(struct inode *inode, sector_t iblock,
+ 	}
+ 
+ 	ret = ext4_get_blocks_wrap(handle, inode, iblock,
+-					max_blocks, bh_result, create, 0);
++					max_blocks, bh_result, create, 0, 0);
+ 	if (ret > 0) {
+ 		bh_result->b_size = (ret << inode->i_blkbits);
+ 		ret = 0;
+@@ -1094,7 +1106,7 @@ struct buffer_head *ext4_getblk(handle_t *handle, struct inode *inode,
+ 	dummy.b_blocknr = -1000;
+ 	buffer_trace_init(&dummy.b_history);
+ 	err = ext4_get_blocks_wrap(handle, inode, block, 1,
+-					&dummy, create, 1);
++					&dummy, create, 1, 0);
+ 	/*
+ 	 * ext4_get_blocks_handle() returns number of blocks
+ 	 * mapped. 0 in case of a HOLE.
+@@ -1408,6 +1420,122 @@ static int ext4_journalled_write_end(struct file *file,
+ 
+ 	return ret ? ret : copied;
+ }
++/*
++ * Calculate the number of metadata blocks need to reserve
++ * to allocate @blocks for non extent file based file
++ */
++static int ext4_indirect_calc_metadata_amount(struct inode *inode, int blocks)
++{
++	int icap = EXT4_ADDR_PER_BLOCK(inode->i_sb);
++	int ind_blks, dind_blks, tind_blks;
++
++	/* number of new indirect blocks needed */
++	ind_blks = (blocks + icap - 1) / icap;
++
++	dind_blks = (ind_blks + icap - 1) / icap;
++
++	tind_blks = 1;
++
++	return ind_blks + dind_blks + tind_blks;
++}
++
++/*
++ * Calculate the number of metadata blocks need to reserve
++ * to allocate given number of blocks
++ */
++static int ext4_calc_metadata_amount(struct inode *inode, int blocks)
++{
++	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL)
++		return ext4_ext_calc_metadata_amount(inode, blocks);
++
++	return ext4_indirect_calc_metadata_amount(inode, blocks);
++}
++
++static int ext4_da_reserve_space(struct inode *inode, int nrblocks)
++{
++       struct ext4_sb_info *sbi = EXT4_SB(inode->i_sb);
++       unsigned long md_needed, mdblocks, total = 0;
++
++	/*
++	 * recalculate the amount of metadata blocks to reserve
++	 * in order to allocate nrblocks
++	 * worse case is one extent per block
++	 */
++	spin_lock(&EXT4_I(inode)->i_block_reservation_lock);
++	total = EXT4_I(inode)->i_reserved_data_blocks + nrblocks;
++	mdblocks = ext4_calc_metadata_amount(inode, total);
++	BUG_ON(mdblocks < EXT4_I(inode)->i_reserved_meta_blocks);
++
++	md_needed = mdblocks - EXT4_I(inode)->i_reserved_meta_blocks;
++	total = md_needed + nrblocks;
++
++	if (ext4_has_free_blocks(sbi, total) < total) {
++		spin_unlock(&EXT4_I(inode)->i_block_reservation_lock);
++		return -ENOSPC;
++	}
++
++	/* reduce fs free blocks counter */
++	percpu_counter_sub(&sbi->s_freeblocks_counter, total);
++
++	EXT4_I(inode)->i_reserved_data_blocks += nrblocks;
++	EXT4_I(inode)->i_reserved_meta_blocks = mdblocks;
++
++	spin_unlock(&EXT4_I(inode)->i_block_reservation_lock);
++	return 0;       /* success */
++}
++
++void ext4_da_release_space(struct inode *inode, int used, int to_free)
++{
++	struct ext4_sb_info *sbi = EXT4_SB(inode->i_sb);
++	int total, mdb, mdb_free, release;
++
++	spin_lock(&EXT4_I(inode)->i_block_reservation_lock);
++	/* recalculate the number of metablocks still need to be reserved */
++	total = EXT4_I(inode)->i_reserved_data_blocks - used - to_free;
++	mdb = ext4_calc_metadata_amount(inode, total);
++
++	/* figure out how many metablocks to release */
++	BUG_ON(mdb > EXT4_I(inode)->i_reserved_meta_blocks);
++	mdb_free = EXT4_I(inode)->i_reserved_meta_blocks - mdb;
++
++	/* Account for allocated meta_blocks */
++	mdb_free -= EXT4_I(inode)->i_allocated_meta_blocks;
++
++	release = to_free + mdb_free;
++
++	/* update fs free blocks counter for truncate case */
++	percpu_counter_add(&sbi->s_freeblocks_counter, release);
++
++	/* update per-inode reservations */
++	BUG_ON(used + to_free > EXT4_I(inode)->i_reserved_data_blocks);
++	EXT4_I(inode)->i_reserved_data_blocks -= (used + to_free);
++
++	BUG_ON(mdb > EXT4_I(inode)->i_reserved_meta_blocks);
++	EXT4_I(inode)->i_reserved_meta_blocks = mdb;
++	EXT4_I(inode)->i_allocated_meta_blocks = 0;
++	spin_unlock(&EXT4_I(inode)->i_block_reservation_lock);
++}
++
++static void ext4_da_page_release_reservation(struct page *page,
++						unsigned long offset)
++{
++	int to_release = 0;
++	struct buffer_head *head, *bh;
++	unsigned int curr_off = 0;
++
++	head = page_buffers(page);
++	bh = head;
++	do {
++		unsigned int next_off = curr_off + bh->b_size;
++
++		if ((offset <= curr_off) && (buffer_delay(bh))) {
++			to_release++;
++			clear_buffer_delay(bh);
++		}
++		curr_off = next_off;
++	} while ((bh = bh->b_this_page) != head);
++	ext4_da_release_space(page->mapping->host, 0, to_release);
++}
+ 
+ /*
+  * this is a special callback for ->write_begin() only
+@@ -1426,14 +1554,18 @@ static int ext4_da_get_block_prep(struct inode *inode, sector_t iblock,
+ 	 * preallocated blocks are unmapped but should treated
+ 	 * the same as allocated blocks.
+ 	 */
+-	ret = ext4_get_blocks_wrap(NULL, inode, iblock, 1,  bh_result, 0, 0);
+-	if (ret == 0) {
+-		/* the block isn't allocated yet, let's reserve space */
+-		/* XXX: call reservation here */
++	ret = ext4_get_blocks_wrap(NULL, inode, iblock, 1,  bh_result, 0, 0, 0);
++	if ((ret == 0) && !buffer_delay(bh_result)) {
++		/* the block isn't (pre)allocated yet, let's reserve space */
+ 		/*
+ 		 * XXX: __block_prepare_write() unmaps passed block,
+ 		 * is it OK?
+ 		 */
++		ret = ext4_da_reserve_space(inode, 1);
++		if (ret)
++			/* not enough space to reserve */
++			return ret;
++
+ 		map_bh(bh_result, inode->i_sb, 0);
+ 		set_buffer_new(bh_result);
+ 		set_buffer_delay(bh_result);
+@@ -1444,7 +1576,7 @@ static int ext4_da_get_block_prep(struct inode *inode, sector_t iblock,
+ 
  	return ret;
  }
- 
--static int ext4_bh_unmapped_or_delay(handle_t *handle, struct buffer_head *bh)
--{
--	return !buffer_mapped(bh) || buffer_delay(bh);
--}
 -
- static int ext4_da_write_end(struct file *file,
- 				struct address_space *mapping,
- 				loff_t pos, unsigned len, unsigned copied,
-diff --git a/fs/mpage.c b/fs/mpage.c
-index cde7f11..c4376ec 100644
---- a/fs/mpage.c
-+++ b/fs/mpage.c
-@@ -849,13 +849,11 @@ static void mpage_put_bnr_to_bhs(struct mpage_da_data *mpd, sector_t logical,
- 			do {
- 				if (cur_logical >= logical + blocks)
- 					break;
++#define		EXT4_DELALLOC_RSVED	1
+ static int ext4_da_get_block_write(struct inode *inode, sector_t iblock,
+ 				   struct buffer_head *bh_result, int create)
+ {
+@@ -1462,10 +1594,14 @@ static int ext4_da_get_block_write(struct inode *inode, sector_t iblock,
+ 	}
+ 
+ 	ret = ext4_get_blocks_wrap(handle, inode, iblock, max_blocks,
+-				   bh_result, create, 0);
++				   bh_result, create, 0, EXT4_DELALLOC_RSVED);
+ 	if (ret > 0) {
+ 		bh_result->b_size = (ret << inode->i_blkbits);
+ 
++		/* release reserved-but-unused meta blocks */
++		if (buffer_delay(bh_result))
++			ext4_da_release_space(inode, ret, 0);
++
+ 		/*
+ 		 * Update on-disk size along with block allocation
+ 		 * we don't use 'extend_disksize' as size may change
+@@ -1549,7 +1685,7 @@ static int ext4_da_write_begin(struct file *file, struct address_space *mapping,
+ 				loff_t pos, unsigned len, unsigned flags,
+ 				struct page **pagep, void **fsdata)
+ {
+-	int ret;
++	int ret, retries = 0;
+ 	struct page *page;
+ 	pgoff_t index;
+ 	unsigned from, to;
+@@ -1560,6 +1696,7 @@ static int ext4_da_write_begin(struct file *file, struct address_space *mapping,
+ 	from = pos & (PAGE_CACHE_SIZE - 1);
+ 	to = from + len;
+ 
++retry:
+ 	/*
+ 	 * With delayed allocation, we don't log the i_disksize update
+ 	 * if there is delayed block allocation. But we still need
+@@ -1585,6 +1722,8 @@ static int ext4_da_write_begin(struct file *file, struct address_space *mapping,
+ 		page_cache_release(page);
+ 	}
+ 
++	if (ret == -ENOSPC && ext4_should_retry_alloc(inode->i_sb, &retries))
++		goto retry;
+ out:
+ 	return ret;
+ }
+@@ -1637,9 +1776,6 @@ static int ext4_da_write_end(struct file *file,
+ 
+ static void ext4_da_invalidatepage(struct page *page, unsigned long offset)
+ {
+-	struct buffer_head *head, *bh;
+-	unsigned int curr_off = 0;
 -
- 				if (buffer_delay(bh)) {
- 					bh->b_blocknr = pblock;
- 					clear_buffer_delay(bh);
--				} else if (buffer_mapped(bh)) {
-+				} else if (buffer_mapped(bh))
- 					BUG_ON(bh->b_blocknr != pblock);
--				}
+ 	/*
+ 	 * Drop reserved blocks
+ 	 */
+@@ -1647,21 +1783,7 @@ static void ext4_da_invalidatepage(struct page *page, unsigned long offset)
+ 	if (!page_has_buffers(page))
+ 		goto out;
  
- 				cur_logical++;
- 				pblock++;
-@@ -930,10 +928,10 @@ static void mpage_da_map_blocks(struct mpage_da_data *mpd)
- 		if (buffer_delay(lbh))
- 			mpage_put_bnr_to_bhs(mpd, next, &new);
- 
--			/* go for the remaining blocks */
--			next += new.b_size >> mpd->inode->i_blkbits;
--			remain -= new.b_size;
+-	head = page_buffers(page);
+-	bh = head;
+-	do {
+-		unsigned int next_off = curr_off + bh->b_size;
+-
+-		/*
+-		 * is this block fully invalidated?
+-		 */
+-		if (offset <= curr_off && buffer_delay(bh)) {
+-			clear_buffer_delay(bh);
+-			/* XXX: add real stuff here */
 -		}
-+		/* go for the remaining blocks */
-+		next += new.b_size >> mpd->inode->i_blkbits;
-+		remain -= new.b_size;
+-		curr_off = next_off;
+-		bh = bh->b_this_page;
+-	} while (bh != head);
++	ext4_da_page_release_reservation(page, offset);
+ 
+ out:
+ 	ext4_invalidatepage(page, offset);
+diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
+index a1349b3..48f4c29 100644
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -2956,7 +2956,15 @@ ext4_mb_mark_diskspace_used(struct ext4_allocation_context *ac,
+ 	le16_add_cpu(&gdp->bg_free_blocks_count, -ac->ac_b_ex.fe_len);
+ 	gdp->bg_checksum = ext4_group_desc_csum(sbi, ac->ac_b_ex.fe_group, gdp);
+ 	spin_unlock(sb_bgl_lock(sbi, ac->ac_b_ex.fe_group));
+-	percpu_counter_sub(&sbi->s_freeblocks_counter, ac->ac_b_ex.fe_len);
++
++	/*
++	 * free blocks account has already be reduced/reserved
++	 * at write_begin() time for delayed allocation
++	 * do not double accounting
++	 */
++	if (!(ac->ac_flags & EXT4_MB_DELALLOC_RESERVED))
++		percpu_counter_sub(&sbi->s_freeblocks_counter,
++					ac->ac_b_ex.fe_len);
+ 
+ 	if (sbi->s_log_groups_per_flex) {
+ 		ext4_group_t flex_group = ext4_flex_group(sbi,
+@@ -4163,7 +4171,12 @@ ext4_fsblk_t ext4_mb_new_blocks(handle_t *handle,
+ 					    &(ar->len), errp);
+ 		return block;
+ 	}
+-	ar->len = ext4_has_free_blocks(sbi, ar->len);
++	if (!EXT4_I(ar->inode)->i_delalloc_reserved_flag) {
++		/*
++		 * With delalloc we already reserved the blocks
++		 */
++		ar->len = ext4_has_free_blocks(sbi, ar->len);
 +	}
+ 
+ 	if (ar->len == 0) {
+ 		*errp = -ENOSPC;
+@@ -4180,6 +4193,9 @@ ext4_fsblk_t ext4_mb_new_blocks(handle_t *handle,
+ 	}
+ 	inquota = ar->len;
+ 
++	if (EXT4_I(ar->inode)->i_delalloc_reserved_flag)
++		ar->flags |= EXT4_MB_DELALLOC_RESERVED;
++
+ 	ac = kmem_cache_alloc(ext4_ac_cachep, GFP_NOFS);
+ 	if (!ac) {
+ 		ar->len = 0;
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index de9d3d0..25e2f24 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -574,6 +574,11 @@ static struct inode *ext4_alloc_inode(struct super_block *sb)
+ 	INIT_LIST_HEAD(&ei->i_prealloc_list);
+ 	spin_lock_init(&ei->i_prealloc_lock);
+ 	jbd2_journal_init_jbd_inode(&ei->jinode, &ei->vfs_inode);
++	ei->i_reserved_data_blocks = 0;
++	ei->i_reserved_meta_blocks = 0;
++	ei->i_allocated_meta_blocks = 0;
++	ei->i_delalloc_reserved_flag = 0;
++	spin_lock_init(&(ei->i_block_reservation_lock));
+ 	return &ei->vfs_inode;
  }
  
- #define BH_FLAGS ((1 << BH_Uptodate) | (1 << BH_Mapped) | (1 << BH_Delay))
 -- 
 1.5.6.rc3.1.g36b7.dirty
 
