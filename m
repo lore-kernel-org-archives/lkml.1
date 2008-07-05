@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbYGDX7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbYGEAHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757710AbYGDX7h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 19:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757484AbYGDX6r
+	id S1755047AbYGEAHE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 20:07:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbYGEAGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 19:58:47 -0400
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:56972 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757474AbYGDX6q (ORCPT
+	Fri, 4 Jul 2008 20:06:54 -0400
+Received: from vms173001pub.verizon.net ([206.46.173.1]:34419 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752090AbYGEAGy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 19:58:46 -0400
-X-Sasl-enc: EZXJHpXhdwcWRzhlKRl6Kv5GTaGCYdmUyZIq4CazinV6 1215215924
-Date: Fri, 4 Jul 2008 20:58:39 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Olivier Galibert <galibert@pobox.com>,
-       David Woodhouse <dwmw2@infradead.org>, Hannes Reinecke <hare@suse.de>,
-       Takashi Iwai <tiwai@suse.de>, Theodore Tso <tytso@mit.edu>,
-       Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
-       David Miller <davem@davemloft.net>, hugh@veritas.com,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
+	Fri, 4 Jul 2008 20:06:54 -0400
+Date: Fri, 04 Jul 2008 20:06:48 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
 Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-Message-ID: <20080704235839.GA5649@khazad-dum.debian.net>
-References: <486D6DDB.4010205@infradead.org> <87ej6armez.fsf@basil.nowhere.org> <1215177044.10393.743.camel@pmac.infradead.org> <486E2260.5050503@garzik.org> <1215178035.10393.763.camel@pmac.infradead.org> <20080704141014.GA23215@mit.edu> <s5habgxloct.wl%tiwai@suse.de> <486E3622.1000900@suse.de> <1215182557.10393.808.camel@pmac.infradead.org> <20080704231322.GA4410@dspnet.fr.eu.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080704231322.GA4410@dspnet.fr.eu.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-reply-to: <9l5t64tlov332uf2vfqvop9hh6ctvh067v@4ax.com>
+To: linux-kernel@vger.kernel.org
+Message-id: <200807042006.48545.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <20080703173040.GB30506@mit.edu>
+ <1215182557.10393.808.camel@pmac.infradead.org>
+ <9l5t64tlov332uf2vfqvop9hh6ctvh067v@4ax.com>
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 05 Jul 2008, Olivier Galibert wrote:
-> On Fri, Jul 04, 2008 at 03:42:37PM +0100, David Woodhouse wrote:
-> > It doesn't yet; that patch is in linux-next. The firmware is shipped as
-> > part of the kernel source tree, and you currently need to run 'make
-> > firmware_install' to put it in /lib/firmware, although we're looking at
-> > making that easier because apparently having to run 'make
-> > firmware_install' is too hard...
-> 
-> Won't that break multiple kernel installs on any binary packaging
-> system that cares about file collisions?  Multiple kernel rpms
-> providing the same /lib/firmware files would break things wouldn't
-> they ?
+On Friday 04 July 2008, Grant Coady wrote:
+>On Fri, 04 Jul 2008 15:42:37 +0100, David Woodhouse <dwmw2@infradead.org> 
+wrote:
+>>On Fri, 2008-07-04 at 16:39 +0200, Hannes Reinecke wrote:
+>>> Firmware loading is just a matter of copying the file at the correct
+>>> location (ie /lib/firmware) and with the name the fw loader expects.
+>>> mkinitrd should do it correctly.
+>>> But I wasn't aware that the tg3 has external firmware, so I doubt
+>>> we have any rpm for it.
+>>
+>>It doesn't yet; that patch is in linux-next. The firmware is shipped as
+>>part of the kernel source tree, and you currently need to run 'make
+>>firmware_install' to put it in /lib/firmware, although we're looking at
+>>making that easier because apparently having to run 'make
+>>firmware_install' is too hard...
+>
+>Oh come on now -- not a case of too hard, it's a case of breaking _all_
+>existing kernel build scripts.
+>
+1. Something in the header of this email is preventing me from replying to the 
+list, all I can get is your personal address if I try, Grant.  However, kmail 
+can edit the to: and cc: lists so its fixed.
 
-Correct.
+2. I am intimately familiar with my own build script, and I have a handy copy of 
+vim, so if the info to do the edit is available, this excuse won't hold enough 
+water to measure.
 
-We will probably need per-kernel directories, exactly like what is done for
-modules.  And since there are (now) both kernel-version-specific, and
-non-kernel-version-specific firmware, this means the firmware loader should
-look first on the version-specific directory (say, /lib/firmware/$(uname
--r)/), then if not found, on the general directory (/lib/firmware).
+>Grant.
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
 
-Nothing too dificult to pull off, but something that needs to be done before
-this entire thing gets deployed on unsuspecting users.  It is bad enough
-that it created such a commotion when deployed on unsuspecting developers...
+
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Solipsists of the World... you are already united.
+		-- Kayvan Sylvan
