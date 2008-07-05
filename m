@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760485AbYGERyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760556AbYGERyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760485AbYGERyW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756564AbYGERim
+	id S1760556AbYGERyi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756181AbYGERin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:38:42 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33109 "EHLO
+	Sat, 5 Jul 2008 13:38:43 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33106 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755963AbYGERge (ORCPT
+	with ESMTP id S1755112AbYGERge (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 5 Jul 2008 13:36:34 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
@@ -15,11 +15,11 @@ To: Ext4 Developers List <linux-ext4@vger.kernel.org>,
        Linux Kernel Developers List <linux-kernel@vger.kernel.org>
 Cc: Shen Feng <shen@cn.fujitsu.com>, Mingming Cao <cmm@us.ibm.com>,
        "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 09/52] ext4: remove double definitions of xattr macros
-Date: Sat,  5 Jul 2008 13:35:35 -0400
-Message-Id: <1215279378-30504-10-git-send-email-tytso@mit.edu>
+Subject: [PATCH 07/52] ext4: add error processing when calling ext4_mb_init_cache in mballoc
+Date: Sat,  5 Jul 2008 13:35:33 -0400
+Message-Id: <1215279378-30504-8-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.rc3.1.g36b7.dirty
-In-Reply-To: <1215279378-30504-9-git-send-email-tytso@mit.edu>
+In-Reply-To: <1215279378-30504-7-git-send-email-tytso@mit.edu>
 References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-2-git-send-email-tytso@mit.edu>
  <1215279378-30504-3-git-send-email-tytso@mit.edu>
@@ -27,8 +27,6 @@ References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-5-git-send-email-tytso@mit.edu>
  <1215279378-30504-6-git-send-email-tytso@mit.edu>
  <1215279378-30504-7-git-send-email-tytso@mit.edu>
- <1215279378-30504-8-git-send-email-tytso@mit.edu>
- <1215279378-30504-9-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -38,55 +36,87 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Shen Feng <shen@cn.fujitsu.com>
 
-remove the definitions of macros XATTR_TRUSTED_PREFIX and XATTR_USER_PREFIX
-since they are defined in linux/xattr.h
+Add error processing for ext4_mb_load_buddy when it calls
+ext4_mb_init_cache.
 
 Signed-off-by: Shen Feng <shen@cn.fujitsu.com>
+Reviewed-by:   Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Mingming Cao <cmm@us.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/xattr_trusted.c |    4 +---
- fs/ext4/xattr_user.c    |    4 +---
- 2 files changed, 2 insertions(+), 6 deletions(-)
+ fs/ext4/mballoc.c |   27 ++++++++++++++++++++-------
+ 1 files changed, 20 insertions(+), 7 deletions(-)
 
-diff --git a/fs/ext4/xattr_trusted.c b/fs/ext4/xattr_trusted.c
-index fff3338..ac1a52c 100644
---- a/fs/ext4/xattr_trusted.c
-+++ b/fs/ext4/xattr_trusted.c
-@@ -13,13 +13,11 @@
- #include "ext4.h"
- #include "xattr.h"
+diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
+index 27498bf..49c1d1c 100644
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -884,6 +884,7 @@ ext4_mb_load_buddy(struct super_block *sb, ext4_group_t group,
+ 	int pnum;
+ 	int poff;
+ 	struct page *page;
++	int ret;
  
--#define XATTR_TRUSTED_PREFIX "trusted."
+ 	mb_debug("load group %lu\n", group);
+ 
+@@ -915,15 +916,21 @@ ext4_mb_load_buddy(struct super_block *sb, ext4_group_t group,
+ 		if (page) {
+ 			BUG_ON(page->mapping != inode->i_mapping);
+ 			if (!PageUptodate(page)) {
+-				ext4_mb_init_cache(page, NULL);
++				ret = ext4_mb_init_cache(page, NULL);
++				if (ret) {
++					unlock_page(page);
++					goto err;
++				}
+ 				mb_cmp_bitmaps(e4b, page_address(page) +
+ 					       (poff * sb->s_blocksize));
+ 			}
+ 			unlock_page(page);
+ 		}
+ 	}
+-	if (page == NULL || !PageUptodate(page))
++	if (page == NULL || !PageUptodate(page)) {
++		ret = -EIO;
+ 		goto err;
++	}
+ 	e4b->bd_bitmap_page = page;
+ 	e4b->bd_bitmap = page_address(page) + (poff * sb->s_blocksize);
+ 	mark_page_accessed(page);
+@@ -939,14 +946,20 @@ ext4_mb_load_buddy(struct super_block *sb, ext4_group_t group,
+ 		page = find_or_create_page(inode->i_mapping, pnum, GFP_NOFS);
+ 		if (page) {
+ 			BUG_ON(page->mapping != inode->i_mapping);
+-			if (!PageUptodate(page))
+-				ext4_mb_init_cache(page, e4b->bd_bitmap);
 -
- static size_t
- ext4_xattr_trusted_list(struct inode *inode, char *list, size_t list_size,
- 			const char *name, size_t name_len)
- {
--	const size_t prefix_len = sizeof(XATTR_TRUSTED_PREFIX)-1;
-+	const size_t prefix_len = XATTR_TRUSTED_PREFIX_LEN;
- 	const size_t total_len = prefix_len + name_len + 1;
++			if (!PageUptodate(page)) {
++				ret = ext4_mb_init_cache(page, e4b->bd_bitmap);
++				if (ret) {
++					unlock_page(page);
++					goto err;
++				}
++			}
+ 			unlock_page(page);
+ 		}
+ 	}
+-	if (page == NULL || !PageUptodate(page))
++	if (page == NULL || !PageUptodate(page)) {
++		ret = -EIO;
+ 		goto err;
++	}
+ 	e4b->bd_buddy_page = page;
+ 	e4b->bd_buddy = page_address(page) + (poff * sb->s_blocksize);
+ 	mark_page_accessed(page);
+@@ -963,7 +976,7 @@ err:
+ 		page_cache_release(e4b->bd_buddy_page);
+ 	e4b->bd_buddy = NULL;
+ 	e4b->bd_bitmap = NULL;
+-	return -EIO;
++	return ret;
+ }
  
- 	if (!capable(CAP_SYS_ADMIN))
-diff --git a/fs/ext4/xattr_user.c b/fs/ext4/xattr_user.c
-index 67be723..d91aa61 100644
---- a/fs/ext4/xattr_user.c
-+++ b/fs/ext4/xattr_user.c
-@@ -12,13 +12,11 @@
- #include "ext4.h"
- #include "xattr.h"
- 
--#define XATTR_USER_PREFIX "user."
--
- static size_t
- ext4_xattr_user_list(struct inode *inode, char *list, size_t list_size,
- 		     const char *name, size_t name_len)
- {
--	const size_t prefix_len = sizeof(XATTR_USER_PREFIX)-1;
-+	const size_t prefix_len = XATTR_USER_PREFIX_LEN;
- 	const size_t total_len = prefix_len + name_len + 1;
- 
- 	if (!test_opt(inode->i_sb, XATTR_USER))
+ static void ext4_mb_release_desc(struct ext4_buddy *e4b)
 -- 
 1.5.6.rc3.1.g36b7.dirty
 
