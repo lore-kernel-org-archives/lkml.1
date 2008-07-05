@@ -1,110 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbYGEEVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbYGEEgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754305AbYGEEVS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 00:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbYGEEVK
+	id S1753924AbYGEEgX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 00:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbYGEEgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 00:21:10 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:36311 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbYGEEVJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 00:21:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:subject;
-        b=EE6PurmcSuXov/iwsthmg8Hmat6sRD1woD25ykvzVGbX8qQ2YT/Uw4XGBQL1/v+gHE
-         xu8aK8fwnJ/micDUOYZV8J9mseQ2JJMrJeyqo9Jmu97n9SDwexhpQ8meDyfSKrdt+Hef
-         afABjCIy9F6pPguXKtRI+JmgFdIikJvUUvv2o=
-From: Magnus Damm <magnus.damm@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Uwe.Kleine-Koenig@digi.com, gregkh@suse.de, akpm@linux-foundation.org,
-       hjk@linutronix.de, lethal@linux-sh.org,
-       Magnus Damm <magnus.damm@gmail.com>, tglx@linutronix.de,
-       alan@lxorguk.ukuu.org.uk
-Date: Sat, 05 Jul 2008 13:21:21 +0900
-Message-Id: <20080705042121.4647.29429.sendpatchset@rx1.opensource.se>
-Subject: [PATCH] uio: User IRQ Mode V2
+	Sat, 5 Jul 2008 00:36:14 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51614 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750959AbYGEEgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 00:36:13 -0400
+Message-ID: <486EFA28.9040105@garzik.org>
+Date: Sat, 05 Jul 2008 00:35:52 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>, David Woodhouse <dwmw2@infradead.org>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       hugh@veritas.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+References: <1215093175.10393.567.camel@pmac.infradead.org> <20080703173040.GB30506@mit.edu> <1215111362.10393.651.camel@pmac.infradead.org> <20080703.162120.206258339.davem@davemloft.net> <486D6DDB.4010205@infradead.org> <87ej6armez.fsf@basil.nowhere.org> <1215177044.10393.743.camel@pmac.infradead.org> <486E2260.5050503@garzik.org> <1215178035.10393.763.camel@pmac.infradead.org> <486E2818.1060003@garzik.org> <20080704143058.GB23215@mit.edu>
+In-Reply-To: <20080704143058.GB23215@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is V2 of the UIO "User IRQ Mode" patch.
+Theodore Tso wrote:
+> On Fri, Jul 04, 2008 at 09:39:36AM -0400, Jeff Garzik wrote:
+>> You have been told repeatedly that cp(1) and scp(1) are commonly used to  
+>> transport the module David and I care about -- tg3.  It's been a single  
+>> file module since birth, and people take advantage of that fact.
+> 
+> Here, I think I'll have to respectly disagree with you and say that
+> you are taking things too far.  I don't think scp'ing individual
+> modules around counts as an "exported user interface" the same way,
+> say "make install; make modules_install" is a commonly understand and
+> used interface by users and scripts (i.e., such as Debian's make-kpkg,
+> which does NOT know about "make firmware_install", BTW).
 
-In User IRQ Mode the kernel space interrupt handler simply disables
-the serviced interrupt in the interrupt controller and makes the
-user space driver responsible for acknowledging the interrupt in
-the device and reenabling the interrupt in the interrupt controller.
+It's not just netdev developers that use that method, root (notably 
+router) image and driver disk build scripts use it too.  They've been 
+able to skate around module dependencies because network drivers rarely 
+have module dependencies or require big multi-module systems.
 
-Shared interrupts are not supported by the User IRQ Mode since the
-generic in-kernel interrupt handler will disable the shared interrupt
-in the interrupt controller, and in a shared interrupt configuration
-this will stop other devices from delivering interrupts.
+Example -- the driver disk kit that RH informally gave out, which was 
+widely used, but does not use normal kernel build processes:
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
-Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
----
+	http://people.redhat.com/dledford/mod_devel_kit.tgz
 
- Changes since V1
-  - use disable_irq_nosync() in interrupt handler, thanks Alan!
+Even if one modifies 'make modules_install' as discussed[1], kits like 
+these will report "100% success! driver disk created", yet ship a dead 
+driver disk.
 
- Changes since Uwe's last version:
-  - flags should be unsigned long
-  - simplify uio_userirq_handler()
+That is why putting the firmware in the kernel image, as dwmw2 has done, 
+does not fix regressions here:  driver disk authors do not necessarily 
+have the luxury of updating the kernel.
 
- Similar code has been posted some time ago as:
- "[PATCH] uio_pdrv: Unique IRQ Mode"
- "[PATCH 00/03][RFC] Reusable UIO Platform Driver".
+Conclusion - we should not build a system today that /excludes/ the 
+possibility of building drivers as they are built today -- with the 
+firmware inside the module [if CONFIG_FOO=m] or kernel image [if 
+CONFIG_FOO=y].
 
- Needs "[PATCH 0/1] UIO: Add a write() function to enable/disable interrupts"
+That is the only path that gives everyone a chance to deal with this 
+transition.
 
- include/linux/uio_driver.h |   26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+	Jeff
 
---- 0001/include/linux/uio_driver.h
-+++ work/include/linux/uio_driver.h	2008-07-05 12:46:09.000000000 +0900
-@@ -17,6 +17,7 @@
- #include <linux/module.h>
- #include <linux/fs.h>
- #include <linux/interrupt.h>
-+#include <linux/bitops.h>
- 
- struct uio_map;
- 
-@@ -63,6 +64,7 @@ struct uio_info {
- 	long			irq;
- 	unsigned long		irq_flags;
- 	void			*priv;
-+	unsigned long		flags;
- 	irqreturn_t (*handler)(int irq, struct uio_info *dev_info);
- 	int (*mmap)(struct uio_info *info, struct vm_area_struct *vma);
- 	int (*open)(struct uio_info *info, struct inode *inode);
-@@ -92,4 +94,28 @@ extern void uio_event_notify(struct uio_
- #define UIO_MEM_LOGICAL	2
- #define UIO_MEM_VIRTUAL 3
- 
-+/* defines for uio_info->flags */
-+#define UIO_FLAGS_IRQDISABLED 0
-+
-+static inline irqreturn_t uio_userirq_handler(int irq, struct uio_info *info)
-+{
-+	if (!test_and_set_bit(UIO_FLAGS_IRQDISABLED, &info->flags))
-+		disable_irq_nosync(info->irq);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static inline int uio_userirq_irqcontrol(struct uio_info *info, s32 irq_on)
-+{
-+	if (irq_on) {
-+		if (test_and_clear_bit(UIO_FLAGS_IRQDISABLED, &info->flags))
-+			enable_irq(info->irq);
-+	} else {
-+		if (!test_and_set_bit(UIO_FLAGS_IRQDISABLED, &info->flags))
-+			disable_irq(info->irq);
-+	}
-+
-+	return 0;
-+}
-+
- #endif /* _LINUX_UIO_DRIVER_H_ */
+
+
+
+
+[1] a laudable and useful thing to do, and it sounds like it is being 
+accomplished.  great!
+
