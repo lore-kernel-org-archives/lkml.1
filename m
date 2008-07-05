@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbYGERNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbYGERNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755381AbYGERNU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbYGERNN
+	id S1755923AbYGERNz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYGERNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:13:13 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:30595 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752007AbYGERNM (ORCPT
+	Sat, 5 Jul 2008 13:13:45 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49542 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751913AbYGERNo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 13:13:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=XiV4jT6LSJCY/Nqcbv2KU2qAfW1RnMF7pXx6f4xxN0OZwMP2B2sU7Y6XtcbAp4pikb1XJnj0/wNRTgAKX15AQ6mVzaDwPnYrAaKuDUF7OOsA0EvJNWXCwu0JfPzM7vR50I4FPnzLo3e5JlIsJyhQEMLbboiS67Zdj2WzwJZobbs=  ;
-X-YMail-OSG: TSkwzL4VM1k2TsJSBEOH_AOBHHVGHkciUQiAGmuA8Ok0LGyE8TmL93tgci2CYxEiWyFvVO_ujg.mA48o34yRpE4CITFFbENUTojfbF_e1A--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH] fix build error of driver/mfd/tc6393xb.c
-Date: Sat, 5 Jul 2008 10:13:09 -0700
-User-Agent: KMail/1.9.9
-Cc: Takashi Iwai <tiwai@suse.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <s5hiqvlc2ut.wl%tiwai@suse.de> <200807040954.34838.david-b@pacbell.net> <20080705083122.GA7026@doriath.ww600.siemens.net>
-In-Reply-To: <20080705083122.GA7026@doriath.ww600.siemens.net>
+	Sat, 5 Jul 2008 13:13:44 -0400
+Date: Sat, 5 Jul 2008 13:13:16 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Olivier Galibert <galibert@pobox.com>,
+       Takashi Iwai <tiwai@suse.de>, Hannes Reinecke <hare@suse.de>,
+       Theodore Tso <tytso@mit.edu>, Jeff Garzik <jeff@garzik.org>,
+       David Miller <davem@davemloft.net>, hugh@veritas.com,
+       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+Message-ID: <20080705171316.GA3615@infradead.org>
+References: <s5habgxloct.wl%tiwai@suse.de> <486E3622.1000900@suse.de> <1215182557.10393.808.camel@pmac.infradead.org> <20080704231322.GA4410@dspnet.fr.eu.org> <s5h4p746am3.wl%tiwai@suse.de> <20080705105317.GA44773@dspnet.fr.eu.org> <486F596C.8050109@firstfloor.org> <20080705120221.GC44773@dspnet.fr.eu.org> <486F6494.8020108@firstfloor.org> <1215260166.10393.816.camel@pmac.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807051013.10078.david-b@pacbell.net>
+In-Reply-To: <1215260166.10393.816.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 05 July 2008, Dmitry Baryshkov wrote:
+On Sat, Jul 05, 2008 at 01:16:06PM +0100, David Woodhouse wrote:
+> It almost never happens that you have kernel versions which _need_
+> different firmware installed. In almost all cases, the older driver will
+> continue to work just fine with the newer firmware (and its bug-fixes).
 > 
-> > > I'm not sure whether it's a better fix at this moment.
-> > 
-> > Which platform is it which is trying to declare that it has
-> > an implementation (HAVE_GPIO_LIB) of an interface that it
-> > doesn't support (GENERIC_GPIO unset) ??
-> 
-> the powerpc with PPC_MPC52xx=y, PPC_MPC5200_GPIO=y
+> The ABI between driver and firmware rarely changes in such a fashion
+> that you have to update the driver in lock-step -- and even on the
+> occasions that it does, it's not hard to simply change the name of the
+> "new-style" firmware so that it doesn't stomp on the old one (Think of
+> it like an soname).
 
-The most natural fix is to have the Kconfig for PPC_MPC52xx
-select both GENERIC_GPIO and HAVE_GPIO_LIB.
+That's unfortunately not true.  There are a lot of drivers that rely
+on specific firmware versions.
 
-- Dave
