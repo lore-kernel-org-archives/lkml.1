@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbYGERod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbYGERpI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758561AbYGERod (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbYGERh0
+	id S1758018AbYGERpI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:45:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756231AbYGERhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:37:26 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33062 "EHLO
+	Sat, 5 Jul 2008 13:37:33 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33071 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755511AbYGERgb (ORCPT
+	with ESMTP id S1755696AbYGERgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 5 Jul 2008 13:36:31 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Ext4 Developers List <linux-ext4@vger.kernel.org>,
        Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Cc: Jan Kara <jack@suse.cz>, "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 28/52] ext4: Set journal pointer to NULL when journal is released
-Date: Sat,  5 Jul 2008 13:35:54 -0400
-Message-Id: <1215279378-30504-29-git-send-email-tytso@mit.edu>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Mingming Cao <cmm@us.ibm.com>, "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 51/52] ext4: Don't allow nonextenst mount option for large filesystem
+Date: Sat,  5 Jul 2008 13:36:17 -0400
+Message-Id: <1215279378-30504-52-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.rc3.1.g36b7.dirty
-In-Reply-To: <1215279378-30504-28-git-send-email-tytso@mit.edu>
+In-Reply-To: <1215279378-30504-51-git-send-email-tytso@mit.edu>
 References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-2-git-send-email-tytso@mit.edu>
  <1215279378-30504-3-git-send-email-tytso@mit.edu>
@@ -47,6 +48,29 @@ References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-26-git-send-email-tytso@mit.edu>
  <1215279378-30504-27-git-send-email-tytso@mit.edu>
  <1215279378-30504-28-git-send-email-tytso@mit.edu>
+ <1215279378-30504-29-git-send-email-tytso@mit.edu>
+ <1215279378-30504-30-git-send-email-tytso@mit.edu>
+ <1215279378-30504-31-git-send-email-tytso@mit.edu>
+ <1215279378-30504-32-git-send-email-tytso@mit.edu>
+ <1215279378-30504-33-git-send-email-tytso@mit.edu>
+ <1215279378-30504-34-git-send-email-tytso@mit.edu>
+ <1215279378-30504-35-git-send-email-tytso@mit.edu>
+ <1215279378-30504-36-git-send-email-tytso@mit.edu>
+ <1215279378-30504-37-git-send-email-tytso@mit.edu>
+ <1215279378-30504-38-git-send-email-tytso@mit.edu>
+ <1215279378-30504-39-git-send-email-tytso@mit.edu>
+ <1215279378-30504-40-git-send-email-tytso@mit.edu>
+ <1215279378-30504-41-git-send-email-tytso@mit.edu>
+ <1215279378-30504-42-git-send-email-tytso@mit.edu>
+ <1215279378-30504-43-git-send-email-tytso@mit.edu>
+ <1215279378-30504-44-git-send-email-tytso@mit.edu>
+ <1215279378-30504-45-git-send-email-tytso@mit.edu>
+ <1215279378-30504-46-git-send-email-tytso@mit.edu>
+ <1215279378-30504-47-git-send-email-tytso@mit.edu>
+ <1215279378-30504-48-git-send-email-tytso@mit.edu>
+ <1215279378-30504-49-git-send-email-tytso@mit.edu>
+ <1215279378-30504-50-git-send-email-tytso@mit.edu>
+ <1215279378-30504-51-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -54,40 +78,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Kara <jack@suse.cz>
+From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Set sbi->s_journal to NULL after we call journal_destroy(). This
-will be later needed because after journal_destroy() is called,
-ext4_clear_inode() can still be called for some inodes (e.g. root
-inode) and we'll need to detect there that journal doesn't exists
-anymore.
+The block mapped inode format can address only blocks within 2**32. This
+causes a number of issues, the biggest of which is that the block
+allocator needs to be taught that certain inodes can not utilize block
+numbers > 2**32.  So until this is fixed, it is simplest to fail
+mounting of file systems with more than 2**32 blocks if the -o noextents
+option is given.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/super.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ fs/ext4/super.c |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index c4b9faf..e239af3 100644
+index 4e104dd..2bf9cdd 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -506,6 +506,7 @@ static void ext4_put_super (struct super_block * sb)
- 	ext4_ext_release(sb);
- 	ext4_xattr_put_super(sb);
- 	jbd2_journal_destroy(sbi->s_journal);
-+	sbi->s_journal = NULL;
- 	if (!(sb->s_flags & MS_RDONLY)) {
- 		EXT4_CLEAR_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
- 		es->s_state = cpu_to_le16(sbi->s_mount_state);
-@@ -2423,6 +2424,7 @@ cantfind_ext4:
+@@ -1004,6 +1004,7 @@ static int parse_options (char *options, struct super_block *sb,
+ 	int qtype, qfmt;
+ 	char *qname;
+ #endif
++	ext4_fsblk_t last_block;
  
- failed_mount4:
- 	jbd2_journal_destroy(sbi->s_journal);
-+	sbi->s_journal = NULL;
- failed_mount3:
- 	percpu_counter_destroy(&sbi->s_freeblocks_counter);
- 	percpu_counter_destroy(&sbi->s_freeinodes_counter);
+ 	if (!options)
+ 		return 1;
+@@ -1326,6 +1327,20 @@ set_qf_format:
+ 			set_opt (sbi->s_mount_opt, EXTENTS);
+ 			break;
+ 		case Opt_noextents:
++			/*
++			 * When e2fsprogs support resizing an already existing
++			 * ext3 file system to greater than 2**32 we need to
++			 * add support to block allocator to handle growing
++			 * already existing block  mapped inode so that blocks
++			 * allocated for them fall within 2**32
++			 */
++			last_block = ext4_blocks_count(sbi->s_es) - 1;
++			if (last_block  > 0xffffffffULL) {
++				printk(KERN_ERR "EXT4-fs: Filesystem too "
++						"large to mount with "
++						"-o noextents options\n");
++				return 0;
++			}
+ 			clear_opt (sbi->s_mount_opt, EXTENTS);
+ 			break;
+ 		case Opt_i_version:
 -- 
 1.5.6.rc3.1.g36b7.dirty
 
