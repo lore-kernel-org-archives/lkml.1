@@ -1,33 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbYGENyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755700AbYGEN5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755278AbYGENyq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 09:54:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbYGENyj
+	id S1755700AbYGEN5b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 09:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYGEN5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 09:54:39 -0400
-Received: from mx0.cs.man.ac.uk ([130.88.193.5]:44069 "EHLO mx0.cs.man.ac.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752193AbYGENyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 09:54:38 -0400
-Message-ID: <486F7D05.4000403@brej.org>
-Date: Sat, 05 Jul 2008 14:54:13 +0100
-From: Charlie Brej <linux-kernel@brej.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Sat, 5 Jul 2008 09:57:21 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43602 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752409AbYGEN5T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 09:57:19 -0400
+Message-ID: <486F7DB8.4070509@firstfloor.org>
+Date: Sat, 05 Jul 2008 15:57:12 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] pcspkr/vt_ioctl: PC speaker volume control
-References: <486A98EC.1090502@brej.org>
-In-Reply-To: <486A98EC.1090502@brej.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: David Woodhouse <dwmw2@infradead.org>
+CC: Olivier Galibert <galibert@pobox.com>, Takashi Iwai <tiwai@suse.de>,
+       Hannes Reinecke <hare@suse.de>, Theodore Tso <tytso@mit.edu>,
+       Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
+       hugh@veritas.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+References: <486E2260.5050503@garzik.org>	 <1215178035.10393.763.camel@pmac.infradead.org>	 <20080704141014.GA23215@mit.edu> <s5habgxloct.wl%tiwai@suse.de>	 <486E3622.1000900@suse.de> <1215182557.10393.808.camel@pmac.infradead.org>	 <20080704231322.GA4410@dspnet.fr.eu.org> <s5h4p746am3.wl%tiwai@suse.de>	 <20080705105317.GA44773@dspnet.fr.eu.org> <486F596C.8050109@firstfloor.org>	 <20080705120221.GC44773@dspnet.fr.eu.org> <486F6494.8020108@firstfloor.org>	 <1215260166.10393.816.camel@pmac.infradead.org>	 <486F67B7.9040304@firstfloor.org> <1215261779.10393.829.camel@pmac.infradead.org>
+In-Reply-To: <1215261779.10393.829.camel@pmac.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (mx0.cs.man.ac.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Charlie Brej wrote:
-> The attached patch allows the system to control the volume of the system 
-> bell.
+David Woodhouse wrote:
+> On Sat, 2008-07-05 at 14:23 +0200, Andi Kleen wrote:
+>> That's a lot of "should" and "in most cases" and "in a ideal world".
+> 
+> OK, let's phrase it differently:
+> 
+> It almost never happens, and it's trivial to handle it safely in the
+> extremely rare cases that it does. 
 
-Has anyone looked at this? Should I send it to someone in particular or is
-there no interest in it?
+Ok. I'm not sure how you got to your conclusion (I assume you did significant
+research on this), but please make sure driver writers and reviewers
+are aware of this new requirement.
+
+>>  What happens when the new firmware is buggy for example and prevents
+>> booting of the system?
+> 
+> If the firmware is required for booting the system, 
+
+initramfs is only required for drivers required to
+mount the root file system. But there's a lot more to completely booting
+a system than just mounting root.
+
+-Andi
+
