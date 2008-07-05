@@ -1,342 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbYGEOUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbYGEOcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754137AbYGEOUO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 10:20:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYGEOUA
+	id S1753507AbYGEOcq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 10:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbYGEOci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 10:20:00 -0400
-Received: from mail.tor.primus.ca ([216.254.136.21]:47285 "EHLO
-	mail-09.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751107AbYGEOT7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 10:19:59 -0400
-X-Greylist: delayed 2733 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Jul 2008 10:19:59 EDT
-From: Matthew Wilcox <matthew@wil.cx>
-To: linux-pci@vger.kernel.org
-Cc: kaneshige.kenji@jp.fujitsu.com, mingo@elte.hu, tglx@linutronix.de,
-       davem@davemloft.net, dan.j.williams@intel.com,
-       Martine.Silbermann@hp.com, benh@kernel.crashing.org,
-       michael@ellerman.id.au, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
-Subject: [PATCH 4/4] x86-64: Support for multiple MSIs
-Date: Sat,  5 Jul 2008 09:34:15 -0400
-Message-Id: <1215264855-4372-4-git-send-email-matthew@wil.cx>
-X-Mailer: git-send-email 1.5.5.4
-In-Reply-To: <20080705132728.GO14894@parisc-linux.org>
-References: <20080705132728.GO14894@parisc-linux.org>
+	Sat, 5 Jul 2008 10:32:38 -0400
+Received: from vena.lwn.net ([206.168.112.25]:43875 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750722AbYGEOch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 10:32:37 -0400
+Date: Sat, 5 Jul 2008 08:32:35 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] documentation: update CodingStyle tips for Emacs
+ users
+Message-ID: <20080705083235.4b74fa7e@bike.lwn.net>
+In-Reply-To: <878wwg4l6b.fsf@saeurebad.de>
+References: <87tzf5tu3z.fsf@skyscraper.fehenstaub.lan>
+	<20080704134159.4dd9f74e@bike.lwn.net>
+	<878wwg4l6b.fsf@saeurebad.de>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement the arch_setup_msi_block() interface.  Rewrite create_irq()
-into create_irq_block() and call create_irq_block() from create_irq().
-Implement __assign_irq_vector_block() based closely on __assign_irq_vector().
+On Sat, 05 Jul 2008 11:36:44 +0000
+Johannes Weiner <hannes@saeurebad.de> wrote:
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
----
- arch/x86/kernel/io_apic_64.c |  199 ++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 183 insertions(+), 16 deletions(-)
+> A heuristics seems overkill as this snippet is not distributed code
+> that needs to be portable but it is just a tip for ones .emacs. 
 
-diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
-index ef1a8df..44e942a 100644
---- a/arch/x86/kernel/io_apic_64.c
-+++ b/arch/x86/kernel/io_apic_64.c
-@@ -683,6 +683,8 @@ static int pin_2_irq(int idx, int apic, int pin)
- 	return irq;
- }
- 
-+static int current_vector = FIRST_DEVICE_VECTOR;
-+
- static int __assign_irq_vector(int irq, cpumask_t mask)
- {
- 	/*
-@@ -696,7 +698,7 @@ static int __assign_irq_vector(int irq, cpumask_t mask)
- 	 * Also, we've got to be careful not to trash gate
- 	 * 0x80, because int 0x80 is hm, kind of importantish. ;)
- 	 */
--	static int current_vector = FIRST_DEVICE_VECTOR, current_offset = 0;
-+	static int current_offset = 0;
- 	unsigned int old_vector;
- 	int cpu;
- 	struct irq_cfg *cfg;
-@@ -769,6 +771,97 @@ static int assign_irq_vector(int irq, cpumask_t mask)
- 	return err;
- }
- 
-+static int __assign_irq_vector_block(int irq, int count, cpumask_t mask)
-+{
-+	unsigned int old_vector;
-+	int i, cpu;
-+	struct irq_cfg *cfg;
-+
-+	/*
-+	 * We've got to be careful not to trash gate 0x80,
-+	 * because int 0x80 is hm, kind of importantish. ;)
-+	 */
-+	BUG_ON((unsigned)irq + count > NR_IRQS);
-+
-+	/* Only try and allocate irqs on cpus that are present */
-+	cpus_and(mask, mask, cpu_online_map);
-+
-+	for (i = 0; i < count; i++) {
-+		cfg = &irq_cfg[irq + i];
-+		if ((cfg->move_in_progress) || cfg->move_cleanup_count)
-+			return -EBUSY;
-+	}
-+
-+	cfg = &irq_cfg[irq];
-+	old_vector = cfg->vector;
-+	if (old_vector) {
-+		cpumask_t tmp;
-+		cpus_and(tmp, cfg->domain, mask);
-+		if (!cpus_empty(tmp))
-+			return 0;
-+	}
-+
-+	for_each_cpu_mask(cpu, mask) {
-+		cpumask_t domain, new_mask;
-+		int new_cpu;
-+		int vector;
-+
-+		domain = vector_allocation_domain(cpu);
-+		cpus_and(new_mask, domain, cpu_online_map);
-+
-+		vector = current_vector & ~(count - 1);
-+ next:
-+		vector += count;
-+		if (vector + count >= FIRST_SYSTEM_VECTOR) {
-+			vector = FIRST_DEVICE_VECTOR & ~(count - 1);
-+			if (vector < FIRST_DEVICE_VECTOR)
-+				vector += count;
-+		}
-+		if (unlikely(vector == (current_vector & ~(count - 1))))
-+			continue;
-+		if ((IA32_SYSCALL_VECTOR >= vector) &&
-+		    (IA32_SYSCALL_VECTOR < vector + count))
-+			goto next;
-+		for_each_cpu_mask(new_cpu, new_mask) {
-+			for (i = 0; i < count; i++) {
-+				if (per_cpu(vector_irq, new_cpu)[vector + i]
-+									!= -1)
-+					goto next;
-+			}
-+		}
-+		/* Found one! */
-+		current_vector = vector + count - 1;
-+		for (i = 0; i < count; i++) {
-+			cfg = &irq_cfg[irq + i];
-+			if (old_vector) {
-+				cfg->move_in_progress = 1;
-+				cfg->old_domain = cfg->domain;
-+			}
-+			for_each_cpu_mask(new_cpu, new_mask) {
-+				per_cpu(vector_irq, new_cpu)[vector + i] =
-+					irq + i;
-+			}
-+			cfg->vector = vector;
-+			cfg->domain = domain;
-+		}
-+		return 0;
-+	}
-+	return -ENOSPC;
-+}
-+
-+/* Assumes that count is a power of two and aligns to that power of two */
-+static int assign_irq_vector_block(int irq, int count, cpumask_t mask)
-+{
-+	int result;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&vector_lock, flags);
-+	result = __assign_irq_vector_block(irq, count, mask);
-+	spin_unlock_irqrestore(&vector_lock, flags);
-+
-+	return result;
-+}
-+
- static void __clear_irq_vector(int irq)
- {
- 	struct irq_cfg *cfg;
-@@ -788,6 +881,14 @@ static void __clear_irq_vector(int irq)
- 	cpus_clear(cfg->domain);
- }
- 
-+static void __clear_irq_vector_block(int irq, int count)
-+{
-+	while (count > 0) {
-+		count--;
-+		__clear_irq_vector(irq + count);
-+	}
-+}
-+
- void __setup_vector_irq(int cpu)
- {
- 	/* Initialize vector_irq on a new cpu */
-@@ -1895,30 +1996,56 @@ device_initcall(ioapic_init_sysfs);
- /*
-  * Dynamic irq allocate and deallocation
-  */
--int create_irq(void)
-+
-+/*
-+ * On success, returns the interrupt number of the lowest numbered irq
-+ * in the block.  If it can't find a block of the right size, it returns
-+ * -1 - (length of the longest run).
-+ */
-+static int create_irq_block(int count)
- {
--	/* Allocate an unused irq */
--	int irq;
--	int new;
-+	/* Allocate 'count' consecutive unused irqs */
-+	int i, new, longest;
- 	unsigned long flags;
- 
--	irq = -ENOSPC;
-+	longest = 0;
- 	spin_lock_irqsave(&vector_lock, flags);
- 	for (new = (NR_IRQS - 1); new >= 0; new--) {
- 		if (platform_legacy_irq(new))
--			continue;
-+			goto clear;
- 		if (irq_cfg[new].vector != 0)
-+			goto clear;
-+		longest++;
-+		if (longest < count)
- 			continue;
--		if (__assign_irq_vector(new, TARGET_CPUS) == 0)
--			irq = new;
-+
-+		while (__assign_irq_vector_block(new, longest, TARGET_CPUS))
-+			longest /= 2;
-+		if (longest < count)
-+			__clear_irq_vector_block(new, longest);
- 		break;
-+ clear:
-+		__clear_irq_vector_block(new + 1, longest);
-+		longest = 0;
- 	}
- 	spin_unlock_irqrestore(&vector_lock, flags);
- 
--	if (irq >= 0) {
--		dynamic_irq_init(irq);
-+	if (longest < count)
-+		return -1 - longest;
-+
-+	for (i = 0; i < count; i++) {
-+		dynamic_irq_init(new + i);
- 	}
--	return irq;
-+
-+	return new;
-+}
-+
-+int create_irq(void)
-+{
-+	int ret = create_irq_block(1);
-+	if (ret < 0)
-+		return -ENOSPC;
-+	return ret;
- }
- 
- void destroy_irq(unsigned int irq)
-@@ -1936,7 +2063,8 @@ void destroy_irq(unsigned int irq)
-  * MSI message composition
-  */
- #ifdef CONFIG_PCI_MSI
--static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_msg *msg)
-+static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq,
-+				unsigned int count, struct msi_msg *msg)
- {
- 	struct irq_cfg *cfg = irq_cfg + irq;
- 	int err;
-@@ -1944,7 +2072,10 @@ static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_ms
- 	cpumask_t tmp;
- 
- 	tmp = TARGET_CPUS;
--	err = assign_irq_vector(irq, tmp);
-+	if (count == 1)
-+		err = assign_irq_vector(irq, tmp);
-+	else
-+		err = assign_irq_vector_block(irq, count, tmp);
- 	if (!err) {
- 		cpus_and(tmp, cfg->domain, tmp);
- 		dest = cpu_mask_to_apicid(tmp);
-@@ -1975,6 +2106,7 @@ static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_ms
- static void set_msi_irq_affinity(unsigned int irq, cpumask_t mask)
- {
- 	struct irq_cfg *cfg = irq_cfg + irq;
-+	struct msi_desc *desc = get_irq_msi(irq);
- 	struct msi_msg msg;
- 	unsigned int dest;
- 	cpumask_t tmp;
-@@ -1983,6 +2115,10 @@ static void set_msi_irq_affinity(unsigned int irq, cpumask_t mask)
- 	if (cpus_empty(tmp))
- 		return;
- 
-+	/* XXX: Figure out how to do CPU affinity for multiple MSIs */
-+	if (desc->msi_attrib.multiple)
-+		return;
-+
- 	if (assign_irq_vector(irq, mask))
- 		return;
- 
-@@ -2024,7 +2160,7 @@ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
- 	if (irq < 0)
- 		return irq;
- 
--	ret = msi_compose_msg(dev, irq, &msg);
-+	ret = msi_compose_msg(dev, irq, 1, &msg);
- 	if (ret < 0) {
- 		destroy_irq(irq);
- 		return ret;
-@@ -2038,6 +2174,37 @@ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
- 	return 0;
- }
- 
-+int arch_setup_msi_block(struct pci_dev *pdev, struct msi_desc *desc, int count)
-+{
-+	struct msi_msg msg;
-+	int i, ret, base_irq, alloc;
-+
-+	/* MSI can only allocate a power-of-two */
-+	alloc = roundup_pow_of_two(count);
-+
-+	base_irq = create_irq_block(alloc);
-+	if (base_irq < 0)
-+		return rounddown_pow_of_two(-base_irq - 1);
-+
-+	ret = msi_compose_msg(pdev, base_irq, alloc, &msg);
-+	if (ret)
-+		return ret;
-+
-+	desc->msi_attrib.multiple = order_base_2(alloc);
-+
-+	/* Do loop in reverse so set_irq_msi ends up setting
-+	 * desc->irq to base_irq
-+	 */
-+	for (i = count - 1; i >= 0; i--) {
-+		set_irq_msi(base_irq + i, desc);
-+		set_irq_chip_and_handler_name(base_irq + i, &msi_chip,
-+						handle_edge_irq, "edge");
-+	}
-+	write_msi_msg(base_irq, &msg);
-+
-+	return 0;
-+}
-+
- void arch_teardown_msi_irq(unsigned int irq)
- {
- 	destroy_irq(irq);
-@@ -2090,7 +2257,7 @@ int arch_setup_dmar_msi(unsigned int irq)
- 	int ret;
- 	struct msi_msg msg;
- 
--	ret = msi_compose_msg(NULL, irq, &msg);
-+	ret = msi_compose_msg(NULL, irq, 1, &msg);
- 	if (ret < 0)
- 		return ret;
- 	dmar_msi_write(irq, &msg);
--- 
-1.5.5.4
+You're right, it's fine the way it is.
 
+jon
