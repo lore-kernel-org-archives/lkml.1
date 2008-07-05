@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbYGEDzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753008AbYGEEDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008AbYGEDzF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 23:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYGEDyz
+	id S1753008AbYGEEDQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 00:03:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbYGEEDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 23:54:55 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40680 "EHLO
+	Sat, 5 Jul 2008 00:03:01 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40802 "EHLO
 	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751723AbYGEDyy (ORCPT
+	with ESMTP id S1750762AbYGEEDA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 23:54:54 -0400
-Date: Sat, 5 Jul 2008 12:59:45 +0900
+	Sat, 5 Jul 2008 00:03:00 -0400
+Date: Sat, 5 Jul 2008 13:02:03 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: memcg: lru scan fix (Was: 2.6.26-rc8-mm1
-Message-Id: <20080705125945.39c40e0a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080704122459.c309ae1c.akpm@linux-foundation.org>
-References: <20080703020236.adaa51fa.akpm@linux-foundation.org>
-	<20080704180226.46436432.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080704151656.7745bfab@bree.surriel.com>
-	<20080704122459.c309ae1c.akpm@linux-foundation.org>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH] Make CONFIG_MIGRATION available for s390
+Message-Id: <20080705130203.e7df168c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1215183539.4834.12.camel@localhost.localdomain>
+References: <1215183539.4834.12.camel@localhost.localdomain>
 Organization: Fujitsu
 X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -32,39 +30,92 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Jul 2008 12:24:59 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Fri, 04 Jul 2008 16:58:59 +0200
+Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
 
-> On Fri, 4 Jul 2008 15:16:56 -0400 Rik van Riel <riel@redhat.com> wrote:
+> Subject: [PATCH] Make CONFIG_MIGRATION available for s390
 > 
-> > On Fri, 4 Jul 2008 18:02:26 +0900
-> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > 
-> > > Index: test-2.6.26-rc8-mm1/mm/vmscan.c
-> > > ===================================================================
-> > > --- test-2.6.26-rc8-mm1.orig/mm/vmscan.c
-> > > +++ test-2.6.26-rc8-mm1/mm/vmscan.c
-> > > @@ -1501,6 +1501,8 @@ static unsigned long shrink_zone(int pri
-> > >  	 */
-> > >  	if (scan_global_lru(sc) && inactive_anon_is_low(zone))
-> > >  		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
-> > > +	else if (!scan_global_lru(sc))
-> > > +		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
-> > 
-> > Makes sense.
-> > 
-> > Acked-by: Rik van Riel <riel@redhat.com>
-> > 
+> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 > 
-> Thanks.  Poor old me needs to work out which patch this patch fixes. 
-> It's always appreciated if others tell me :)
+> We'd like to support CONFIG_MEMORY_HOTREMOVE on s390, which depends on
+> CONFIG_MIGRATION. So far, CONFIG_MIGRATION is only available with NUMA
+> support.
 > 
+> This patch makes CONFIG_MIGRATION selectable for s390. When MIGRATION
+> is enabled w/o NUMA, the kernel won't compile because of a missing
+> "migrate" member in vm_operations_struct and a missing "policy_zone"
+> definition. To avoid this, those are moved from an "#ifdef CONFIG_NUMA"
+> section to "#ifdef CONFIG_MIGRATION".
+> 
+> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> ---
 
-Maybe mine is against this one.
-http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc8/2.6.26-rc8-mm1/broken-out/vmscan-second-chance-replacement-for-anonymous-pages.patch
+Maybe make sense
 
-This adds inactive_anon_is_low() logic.
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Thanks,
--Kame
+> 
+>  include/linux/mempolicy.h |    6 ++++--
+>  include/linux/mm.h        |    2 ++
+>  mm/Kconfig                |    2 +-
+>  3 files changed, 7 insertions(+), 3 deletions(-)
+> 
+> Index: mylinux-git/include/linux/mempolicy.h
+> ===================================================================
+> --- mylinux-git.orig/include/linux/mempolicy.h
+> +++ mylinux-git/include/linux/mempolicy.h
+> @@ -62,6 +62,10 @@ enum {
+>  
+>  struct mm_struct;
+>  
+> +#ifdef CONFIG_MIGRATION
+> +extern enum zone_type policy_zone;
+> +#endif
+> +
+>  #ifdef CONFIG_NUMA
+>  
+>  /*
+> @@ -202,8 +206,6 @@ extern struct zonelist *huge_zonelist(st
+>  				struct mempolicy **mpol, nodemask_t **nodemask);
+>  extern unsigned slab_node(struct mempolicy *policy);
+>  
+> -extern enum zone_type policy_zone;
+> -
+>  static inline void check_highest_zone(enum zone_type k)
+>  {
+>  	if (k > policy_zone && k != ZONE_MOVABLE)
+> Index: mylinux-git/include/linux/mm.h
+> ===================================================================
+> --- mylinux-git.orig/include/linux/mm.h
+> +++ mylinux-git/include/linux/mm.h
+> @@ -193,6 +193,8 @@ struct vm_operations_struct {
+>  	 */
+>  	struct mempolicy *(*get_policy)(struct vm_area_struct *vma,
+>  					unsigned long addr);
+> +#endif
+> +#ifdef CONFIG_MIGRATION
+>  	int (*migrate)(struct vm_area_struct *vma, const nodemask_t *from,
+>  		const nodemask_t *to, unsigned long flags);
+>  #endif
+> Index: mylinux-git/mm/Kconfig
+> ===================================================================
+> --- mylinux-git.orig/mm/Kconfig
+> +++ mylinux-git/mm/Kconfig
+> @@ -174,7 +174,7 @@ config SPLIT_PTLOCK_CPUS
+>  config MIGRATION
+>  	bool "Page migration"
+>  	def_bool y
+> -	depends on NUMA
+> +	depends on NUMA || S390
+>  	help
+>  	  Allows the migration of the physical location of pages of processes
+>  	  while the virtual addresses are not changed. This is useful for
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
