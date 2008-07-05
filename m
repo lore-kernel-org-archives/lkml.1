@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbYGELWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbYGELWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753985AbYGELWg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 07:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbYGELWY
+	id S1754625AbYGELWs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 07:22:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYGELW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 07:22:24 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:47297 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751496AbYGELWY (ORCPT
+	Sat, 5 Jul 2008 07:22:27 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:39849 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751619AbYGELWY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 5 Jul 2008 07:22:24 -0400
-Message-ID: <486F596C.8050109@firstfloor.org>
-Date: Sat, 05 Jul 2008 13:22:20 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=uSsOBOusHX0xuc9V5fEW3hUzykSvc3L35AQyZXNxCTnW5+zHiQHsy/7GLvl71lSZjx
+         yCf7TgILFae1OxutTeN5cdcNLY5Ea3HkeqSiZEorioSKJVQ1mDfA27ZZFf0ugcHq5s4i
+         Sz/UiasxcSQV8r9rFWTROBiBXd2Ve043lI44A=
+Date: Sat, 5 Jul 2008 20:22:18 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Roman Zippel <zippel@linux-m68k.org>, linux-m68k@vger.kernel.org
+Subject: [PATCH] dio: use dio_match_device()
+Message-ID: <20080705112217.GD17071@localhost.localdomain>
 MIME-Version: 1.0
-To: Olivier Galibert <galibert@pobox.com>, Takashi Iwai <tiwai@suse.de>,
-       David Woodhouse <dwmw2@infradead.org>, Hannes Reinecke <hare@suse.de>,
-       Theodore Tso <tytso@mit.edu>, Jeff Garzik <jeff@garzik.org>,
-       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       hugh@veritas.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-References: <87ej6armez.fsf@basil.nowhere.org> <1215177044.10393.743.camel@pmac.infradead.org> <486E2260.5050503@garzik.org> <1215178035.10393.763.camel@pmac.infradead.org> <20080704141014.GA23215@mit.edu> <s5habgxloct.wl%tiwai@suse.de> <486E3622.1000900@suse.de> <1215182557.10393.808.camel@pmac.infradead.org> <20080704231322.GA4410@dspnet.fr.eu.org> <s5h4p746am3.wl%tiwai@suse.de> <20080705105317.GA44773@dspnet.fr.eu.org>
-In-Reply-To: <20080705105317.GA44773@dspnet.fr.eu.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-2022-jp
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olivier Galibert wrote:
-> On Sat, Jul 05, 2008 at 09:41:56AM +0200, Takashi Iwai wrote:
->> Yes, it will, if the firmware blobs are packed into the kernel
->> package.  In a long term, we can put firmware files into a separate, 
->> architecture independent noarch package, though.  This will save the
->> total package size, too.
-> 
-> That could be interestingly hard, actually.  Right now the kernel
-> package is one of these packages designed so that multiple versions
-> can be installed together.  When the version of one of the firmwares
-> changes, the firmware package will have to be updated.  But will it
-> keep the previous version?  If it doesn't, the possibly still
-> installed older kernels won't work anymore.  If it does, it will
-> accumulate a lot of files over time...
+dio_bus_match() can use dio_match_device().
 
-Many distribution have some way for separate kernel module packages.
-It's essentially the same problem so it should be already solved
-in some way. Also there are already drivers who rely on separate
-firmware so they already should have this problem (and hopefully
-a solution). Of course these existing solutions might not be good
-enough. And a lot of people ignored them because they didn't use
-these external packages and drivers with those requirements.
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-m68k@lists.linux-m68k.org
+---
+ drivers/dio/dio-driver.c |   14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
 
-I agree with you that doing this for more drivers will be a further complication
-and the rationale why this complication is needed for drivers like tg3 or
-e100 so far didn't  sound very convincing to me. If I read it correctly it
-was "some other drivers do it this way so let's complicate everybody and
-put them on the same level". Perhaps I'm dense, but I failed
-to see the convincing reason in that.
-
-On the other hand for my personal use it this change should be
-transparent, at least as long as "make firmware_install"
-will be integrated into "make modules_install" and put the files somewhere where
-they don't conflict with other versions.
-
--Andi
+Index: 2.6-git/drivers/dio/dio-driver.c
+===================================================================
+--- 2.6-git.orig/drivers/dio/dio-driver.c
++++ 2.6-git/drivers/dio/dio-driver.c
+@@ -119,19 +119,7 @@ static int dio_bus_match(struct device *
+ 	if (!ids)
+ 		return 0;
+ 
+-	while (ids->id) {
+-		if (ids->id == DIO_WILDCARD)
+-			return 1;
+-		if (DIO_NEEDSSECID(ids->id & 0xff)) {
+-			if (ids->id == d->id)
+-				return 1;
+-		} else {
+-			if ((ids->id & 0xff) == (d->id & 0xff))
+-				return 1;
+-		}
+-		ids++;
+-	}
+-	return 0;
++	return dio_match_device(ids, d) ? 1 : 0;
+ }
+ 
+ 
