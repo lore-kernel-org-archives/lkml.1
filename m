@@ -1,93 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbYGENJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755717AbYGENPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755582AbYGENJG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 09:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbYGENIw
+	id S1755717AbYGENPV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 09:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbYGENPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 09:08:52 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:59917 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752409AbYGENIu (ORCPT
+	Sat, 5 Jul 2008 09:15:09 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:49774 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752409AbYGENPH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 09:08:50 -0400
-X-Sasl-enc: 45BDFwIcDlYUPSZPVQAcrbmGg1cKw/kuThLiBjbux7OD 1215263329
-Date: Sat, 5 Jul 2008 10:08:45 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Bill Fink <billfink@mindspring.com>
-Cc: Trent Piepho <tpiepho@freescale.com>,
-       Olivier Galibert <galibert@pobox.com>,
-       David Woodhouse <dwmw2@infradead.org>, Hannes Reinecke <hare@suse.de>,
-       Takashi Iwai <tiwai@suse.de>, Theodore Tso <tytso@mit.edu>,
-       Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
-       David Miller <davem@davemloft.net>, hugh@veritas.com,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-Message-ID: <20080705130845.GA23069@khazad-dum.debian.net>
-References: <1215178035.10393.763.camel@pmac.infradead.org> <20080704141014.GA23215@mit.edu> <s5habgxloct.wl%tiwai@suse.de> <486E3622.1000900@suse.de> <1215182557.10393.808.camel@pmac.infradead.org> <20080704231322.GA4410@dspnet.fr.eu.org> <20080704235839.GA5649@khazad-dum.debian.net> <Pine.LNX.4.64.0807041742500.13075@t2.domain.actdsltmp> <20080705035215.GA15899@khazad-dum.debian.net> <20080705020124.ac73e979.billfink@mindspring.com>
+	Sat, 5 Jul 2008 09:15:07 -0400
+Date: Sat, 5 Jul 2008 15:15:06 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Ben Dooks <ben-linux@fluff.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Kconfig question - multiple entries touching one integer
+In-Reply-To: <20080704100829.GC24620@fluff.org.uk>
+Message-ID: <alpine.LNX.1.10.0807051514220.28765@fbirervta.pbzchgretzou.qr>
+References: <20080704100829.GC24620@fluff.org.uk>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080705020124.ac73e979.billfink@mindspring.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 05 Jul 2008, Bill Fink wrote:
-> On Sat, 5 Jul 2008, Henrique de Moraes Holschuh wrote:
-> > On Fri, 04 Jul 2008, Trent Piepho wrote:
-> > > On Fri, 4 Jul 2008, Henrique de Moraes Holschuh wrote:
-> > > > On Sat, 05 Jul 2008, Olivier Galibert wrote:
-> > > >> Won't that break multiple kernel installs on any binary packaging
-> > > >> system that cares about file collisions?  Multiple kernel rpms
-> > > >> providing the same /lib/firmware files would break things wouldn't
-> > > >> they ?
-> > > >
-> > > > We will probably need per-kernel directories, exactly like what is done for
-> > > > modules.  And since there are (now) both kernel-version-specific, and
-> > > > non-kernel-version-specific firmware, this means the firmware loader should
-> > > > look first on the version-specific directory (say, /lib/firmware/$(uname
-> > > > -r)/), then if not found, on the general directory (/lib/firmware).
-> > > 
-> > > How about /lib/modules/`uname -r`/firmware
-> > 
-> > I am fine with it, it certainly has a few advantages.
-> 
-> Why not put it in the same /lib/modules directory as the foo.ko
-> kernel module itself?  Then those who like to scp kernel modules
-> around (which I've done myself on occasion) just need to learn
-> to scp foo.* instead of foo.ko.  Why replicate a separate
-> /lib/modules/`uname -r`/firmware directory?
 
-Because a single new directory tree is easier, simpler, and less prone to
-breakage to implement.  This thing is way too complicated already, and
-that's not good for something that must ALWAYS work right.  Also, it doesn't
-assume any sort of mapping between the firmware files and their users (so,
-it won't ADD constraints to the firmware loading API that do not exist right
-now).  And it lets you version or un-version firmware files (if you *want*,
-and in in *every* case), very easily, and without breaking the current ABI
-(/lib/firmware/).
+On Friday 2008-07-04 12:08, Ben Dooks wrote:
+>
+>doing
+>
+>	config ARCH_EXTRA_RESOURCES
+>	int
+>	default 0
+>	default 32 if BOARD_A
+>	default 64 if BOARD_B
+>
+>doesn't work
 
-If I were to attempt to address your use case properly, I'd do it by
-exporting the firmware dependency information on module metadata, and
-add/modify userspace to tell you about it.  This would let you do "scp
-$(findmoduledeps --include-self themodule) foo:/tmp" and get the module, its
-firmware files, its dependencies, the dependencies' firmware, and so on, so
-that you'd get the entire module stack and all the firmware for the stack.
-Or whatever else you want "findmoduledeps" to do, the required data would be
-there for the tool to be quite versatile.
-
-But I have zero interest on firmware loading, and I am currently taking care
-of more kernel work than what I am confortable with already, so someone else
-would have to do it.  There are probably even better ways than the simple
-one I described above, I bet...
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+The construct does work, config PAGE_OFFSET in arch/x86/Kconfig
+uses it, though the order is different (the base default is last).
