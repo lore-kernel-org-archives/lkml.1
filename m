@@ -1,28 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbYGERgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756372AbYGERhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756397AbYGERgs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:36:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbYGERgX
+	id S1756372AbYGERhW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYGERgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:36:23 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33009 "EHLO
+	Sat, 5 Jul 2008 13:36:24 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33011 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752746AbYGERgW (ORCPT
+	with ESMTP id S1753088AbYGERgX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 13:36:22 -0400
+	Sat, 5 Jul 2008 13:36:23 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Ext4 Developers List <linux-ext4@vger.kernel.org>,
        Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Cc: Julia Lawall <julia@diku.dk>, Andrew Morton <akpm@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 03/52] ext4: Use BUG_ON() instead of BUG()
-Date: Sat,  5 Jul 2008 13:35:29 -0400
-Message-Id: <1215279378-30504-4-git-send-email-tytso@mit.edu>
+Subject: Ext4 patches for the next merge window
+Date: Sat,  5 Jul 2008 13:35:26 -0400
+Message-Id: <1215279378-30504-1-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.rc3.1.g36b7.dirty
-In-Reply-To: <1215279378-30504-3-git-send-email-tytso@mit.edu>
-References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
- <1215279378-30504-2-git-send-email-tytso@mit.edu>
- <1215279378-30504-3-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -30,55 +24,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+The following set of patches are being prepared for pushing to Linus
+during the next patch window.  Aside from a large number of cleanups
+the big new feature in this patchset is delayed allocation support.
 
-if (...) BUG(); should be replaced with BUG_ON(...) when the test has no
-side-effects to allow a definition of BUG_ON that drops the code completely.
+I've been running this patch series on my laptop for the past couple
+of days in production, and it's been working quite well for me.
 
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+   	   	       	   	     - Ted
 
-// <smpl>
-@ disable unlikely @ expression E,f; @@
-
-(
-  if (<... f(...) ...>) { BUG(); }
-|
-- if (unlikely(E)) { BUG(); }
-+ BUG_ON(E);
-)
-
-@@ expression E,f; @@
-
-(
-  if (<... f(...) ...>) { BUG(); }
-|
-- if (E) { BUG(); }
-+ BUG_ON(E);
-)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
----
- fs/ext4/balloc.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
-index 9cc80b9..c29d774 100644
---- a/fs/ext4/balloc.c
-+++ b/fs/ext4/balloc.c
-@@ -409,8 +409,7 @@ restart:
- 		prev = rsv;
- 	}
- 	printk("Window map complete.\n");
--	if (bad)
--		BUG();
-+	BUG_ON(bad);
- }
- #define rsv_window_dump(root, verbose) \
- 	__rsv_window_dump((root), (verbose), __func__)
--- 
-1.5.6.rc3.1.g36b7.dirty
 
