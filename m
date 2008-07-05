@@ -1,112 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754396AbYGEULp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbYGEUQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754396AbYGEULp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 16:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbYGEULh
+	id S1755485AbYGEUQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 16:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYGEUQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 16:11:37 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52480 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752167AbYGEULf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 16:11:35 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Alexander Beregalov" <a.beregalov@gmail.com>
-Subject: Re: 2.6.26-rc: host can not shutdown: ata problem
-Date: Sat, 5 Jul 2008 22:13:01 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>
-References: <a4423d670807031443v73def4d2g97c9d6acc4b4e941@mail.gmail.com>
-In-Reply-To: <a4423d670807031443v73def4d2g97c9d6acc4b4e941@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Sat, 5 Jul 2008 16:16:51 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:31044 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752647AbYGEUQu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 16:16:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=ls9YxmGJbBOYEBEi0rxY9zEZ/fHjHGyuytwYjW0W76Wn5N+obUpjySmxyHXU52FJlP
+         id+89wdlrqOpZAV6439f8MZSyvvZHKth9BYtrK8x/6N7mJnf5RPAB9rAcS0CxRkXMfWt
+         /POlyijsuhjUHrkSHMXJjsq4RZGtIOGCYRKR8=
+Subject: [PATCH] mfd: remove DS1WM register definitions from asic3.h
+From: Philipp Zabel <philipp.zabel@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Samuel Ortiz <sameo@openedhand.com>
+Content-Type: text/plain
+Date: Sat, 05 Jul 2008 22:16:45 +0200
+Message-Id: <1215289005.23398.36.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807052213.02098.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Adding CCs.]
+There is a dedicated ds1wm driver, no need to duplicate this
+information here.
 
-On Thursday, 3 of July 2008, Alexander Beregalov wrote:
-> Hi
-> 
-> A host does not go down.
-> I also tried it with `irqpoll` with the same result.
-> 
-> 
-> Remaining filesystems read-only ...
->  / ...
-> irq 18: nobody cared (try booting with the "irqpoll" option)
-> Pid: 0, comm: swapper Not tainted 2.6.26-rc8 #2
->  [<c0141678>] __report_bad_irq+0x2e/0x6f
->  [<c014187f>] note_interrupt+0x1c6/0x21f
->  [<c0140fee>] ? handle_IRQ_event+0x3e/0x46
->  [<c0141e11>] handle_fasteoi_irq+0x86/0xab
->  [<c0141d8b>] ? handle_fasteoi_irq+0x0/0xab
->  [<c0104c54>] do_IRQ+0xb6/0xe2
->  [<c0101daf>] ? default_idle+0x0/0x55
->  [<c0101daf>] ? default_idle+0x0/0x55
->  [<c010372e>] common_interrupt+0x2e/0x34
->  [<c0101daf>] ? default_idle+0x0/0x55
->  [<c0101daf>] ? default_idle+0x0/0x55
->  [<c0101de4>] ? default_idle+0x35/0x55
->  [<c0101d7a>] cpu_idle+0x62/0x97
->  [<c0353270>] rest_init+0x5c/0x5e
->  =======================
-> handlers:
-> [<c02df1df>] (ata_sff_interrupt+0x0/0xab)
-> Disabling IRQ #18
-> atkbd serio0: shutdown
-> i8042 i8042: shutdown
-> sd 3:0:1:0: shutdown
-> sd 3:0:1:0: [sdd] Synchronizing SCSI cache
-> ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-> ata4.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> ata4.00: status: { DRDY }
-> ata4: soft resetting link
-> ata4.00: configured for UDMA/100
-> ata4: EH complete
-> ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-> ata4.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> ata4.00: status: { DRDY }
-> ata4: soft resetting link
-> ata4.00: configured for UDMA/100
-> ata4: EH complete
-> ata4.00: limiting speed to UDMA/66:PIO4
-> 
-> and so on ..
-> 
-> 
-> Controller is
-> Promise Technology, Inc. PDC20270 (FastTrak100 LP/TX2/TX4) (rev 02)
-> 
-> pata_pdc2027x 0000:01:0a.0: PLL input clock 16692 kHz
-> scsi2 : pata_pdc2027x
-> scsi3 : pata_pdc2027x
-> ata3: PATA max UDMA/100 mmio m65536@0xed040000 cmd 0xed0417c0 irq 18
-> ata4: PATA max UDMA/100 mmio m65536@0xed040000 cmd 0xed0415c0 irq 18
-> ata3.00: ATA-7: ST3250823A, 3.03, max UDMA/100
-> ata3.00: 488397168 sectors, multi 16: LBA48
-> ata3.00: configured for UDMA/100
-> ata4.01: HPA detected: current 488395055, native 488397168
-> ata4.01: ATA-7: ST3250824A, 3.AAD, max UDMA/100
-> ata4.01: 488395055 sectors, multi 16: LBA48
-> ata4.01: configured for UDMA/100
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
+---
+ include/linux/mfd/asic3.h |   38 +++-----------------------------------
+ 1 files changed, 3 insertions(+), 35 deletions(-)
 
-
-
+diff --git a/include/linux/mfd/asic3.h b/include/linux/mfd/asic3.h
+index 0eae308..8f8c46c 100644
+--- a/include/linux/mfd/asic3.h
++++ b/include/linux/mfd/asic3.h
+@@ -265,44 +265,12 @@ struct asic3_platform_data {
+ #define ASIC3_EXTCF_CF_SLEEP             (1 << 15) /* CF sleep mode control */
+ 
+ /*********************************************
+- *  The Onewire interface registers
+- *
+- *  OWM_CMD
+- *  OWM_DAT
+- *  OWM_INTR
+- *  OWM_INTEN
+- *  OWM_CLKDIV
++ *  The Onewire interface (DS1WM) is handled
++ *  by the ds1wm driver.
+  *
+  *********************************************/
+ 
+-#define ASIC3_OWM_Base		0xC00
+-
+-#define ASIC3_OWM_CMD         0x00
+-#define ASIC3_OWM_DAT         0x04
+-#define ASIC3_OWM_INTR        0x08
+-#define ASIC3_OWM_INTEN       0x0C
+-#define ASIC3_OWM_CLKDIV      0x10
+-
+-#define ASIC3_OWM_CMD_ONEWR         (1 << 0)
+-#define ASIC3_OWM_CMD_SRA           (1 << 1)
+-#define ASIC3_OWM_CMD_DQO           (1 << 2)
+-#define ASIC3_OWM_CMD_DQI           (1 << 3)
+-
+-#define ASIC3_OWM_INTR_PD          (1 << 0)
+-#define ASIC3_OWM_INTR_PDR         (1 << 1)
+-#define ASIC3_OWM_INTR_TBE         (1 << 2)
+-#define ASIC3_OWM_INTR_TEMP        (1 << 3)
+-#define ASIC3_OWM_INTR_RBF         (1 << 4)
+-
+-#define ASIC3_OWM_INTEN_EPD        (1 << 0)
+-#define ASIC3_OWM_INTEN_IAS        (1 << 1)
+-#define ASIC3_OWM_INTEN_ETBE       (1 << 2)
+-#define ASIC3_OWM_INTEN_ETMT       (1 << 3)
+-#define ASIC3_OWM_INTEN_ERBF       (1 << 4)
+-
+-#define ASIC3_OWM_CLKDIV_PRE       (3 << 0) /* two bits wide at bit 0 */
+-#define ASIC3_OWM_CLKDIV_DIV       (7 << 2) /* 3 bits wide at bit 2 */
+-
++#define ASIC3_OWM_BASE		0xC00
+ 
+ /*****************************************************************************
+  *  The SD configuration registers are at a completely different location
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+1.5.6
+
+
