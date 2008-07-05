@@ -1,789 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbYGECgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbYGEDN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754226AbYGECgv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jul 2008 22:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbYGECgm
+	id S1753493AbYGEDN4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jul 2008 23:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbYGEDNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jul 2008 22:36:42 -0400
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:37627 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752481AbYGECgj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jul 2008 22:36:39 -0400
-Subject: [PATCH] linux-input: bcm5974-0.5: conformity, urb scrutinized
-From: Henrik Rydberg <rydberg@euromail.se>
-To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dmitry.torokhov@gmail.com, robfitz@273k.net, akpm@osdl.org,
-       jikos@jikos.cz, vojtech@suse.cz, dmonakhov@openvz.org
-Content-Type: text/plain
-Date: Sat, 05 Jul 2008 04:31:07 +0200
-Message-Id: <1215225067.2556.0.camel@alnilam>
-X-Mailer: Evolution 2.22.2 
+	Fri, 4 Jul 2008 23:13:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53123 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751107AbYGEDNr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jul 2008 23:13:47 -0400
+Message-ID: <486EE6CA.2040908@kernel.org>
+Date: Sat, 05 Jul 2008 12:13:14 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata fixes for .26
+References: <20080704131005.GA30768@havoc.gtf.org> <alpine.LFD.1.10.0807040955100.2815@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807040955100.2815@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0
-X-Originating-IP: 83.248.35.11
-X-Scan-Result: No virus found in message 1KExdc-0003CS-7q.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KExdc-0003CS-7q 5d3096f3bcb2d9bc80196349b1d8b637
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 05 Jul 2008 03:13:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Henrik Rydberg <rydberg@euromail.se>
+Hello, Linus.
 
-BCM5974: This driver adds support for the multitouch trackpad on the new
-Apple Macbook Air and Macbook Pro Penryn laptops. It replaces the
-appletouch driver on those computers, and integrates well with the
-synaptics driver of the Xorg system. 
+Linus Torvalds wrote:
+> Looking at the AHCI change, I think it's still potentially buggy.
+> 
+> I think it is potentially buggy for two separate reasons:
+> 
+>  - if the interrupt happens because of some port that we don't handle, we 
+>    should still ACK it, in order to get rid of it. I don't think Tejun's 
+>    patch fixed anything at all, since it still did a binary 'and' with 
+>    hpriv->port_map on the bits, so it would never ACK anything that didn't 
+>    have a bit set, and the (bogus) interrupt would keep screaming.
 
-Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
----
+Strange.  Yeah, the AND should go.  The original patch was...
 
-This is version bcm5974-0.5, which is a light rewrite adressing the
-comments of Andrew Morton. Regarding the GFP_ATOMIC, it is still present
-in irq_button, irq_trackpad, and atp_open, based on the reasons given
-in the previous post.
+http://htj.dyndns.org/export/testing/head-x86_64-bug390937_dbg0/0001-ahci-interrupt-debug.patch
 
-The driver hooks have been extended with reset_resume, pre_reset and post_reset.
+And the reporter verified debug option 2 (the posted patch) and 3
+(always write 0xffffffff) fixed the problem.  The report was complete
+w/ boot log showing which debug option was active.  Ah... weird.  The
+debug option 2 shouldn't have made any difference.  :-(
 
-diff --git a/drivers/input/mouse/Kconfig b/drivers/input/mouse/Kconfig
-index 7bbea09..956cc4f 100644
---- a/drivers/input/mouse/Kconfig
-+++ b/drivers/input/mouse/Kconfig
-@@ -130,6 +130,29 @@ config MOUSE_APPLETOUCH
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called appletouch.
- 
-+config MOUSE_BCM5974
-+	tristate "Apple USB BCM5974 Multitouch trackpad support"
-+	depends on USB_ARCH_HAS_HCD
-+	depends on USB
-+	help
-+	  Say Y here if you have an Apple USB BCM5974 Multitouch
-+	  trackpad.
-+	  
-+	  The BCM5974 is the multitouch trackpad found in the Macbook
-+	  Air (JAN2008) and Macbook Pro Penryn (FEB2008) laptops.
-+	  
-+	  It is also found in the IPhone (2007) and Ipod Touch (2008).
-+	  
-+	  This driver provides multitouch functionality together with
-+	  the synaptics X11 driver.
-+	  
-+	  The interface is currently identical to the appletouch interface,
-+	  for further information, see
-+	  <file:Documentation/input/appletouch.txt>.
-+	  
-+	  To compile this driver as a module, choose M here: the 
-+	  module will be called bcm5974.
-+
- config MOUSE_INPORT
- 	tristate "InPort/MS/ATIXL busmouse"
- 	depends on ISA
-diff --git a/drivers/input/mouse/Makefile b/drivers/input/mouse/Makefile
-index 9e6e363..d4d2025 100644
---- a/drivers/input/mouse/Makefile
-+++ b/drivers/input/mouse/Makefile
-@@ -6,6 +6,7 @@
- 
- obj-$(CONFIG_MOUSE_AMIGA)	+= amimouse.o
- obj-$(CONFIG_MOUSE_APPLETOUCH)	+= appletouch.o
-+obj-$(CONFIG_MOUSE_BCM5974)	+= bcm5974.o
- obj-$(CONFIG_MOUSE_ATARI)	+= atarimouse.o
- obj-$(CONFIG_MOUSE_RISCPC)	+= rpcmouse.o
- obj-$(CONFIG_MOUSE_INPORT)	+= inport.o
-diff --git a/drivers/input/mouse/bcm5974.c b/drivers/input/mouse/bcm5974.c
-new file mode 100644
-index 0000000..a7f070f
---- /dev/null
-+++ b/drivers/input/mouse/bcm5974.c
-@@ -0,0 +1,690 @@
-+/*
-+ * Apple USB BCM5974 (Macbook Air and Penryn Macbook Pro) multitouch driver
-+ *
-+ * Copyright (C) 2008	   Henrik Rydberg (rydberg@euromail.se)
-+ *
-+ * The USB initialization and package decoding was made by
-+ * Scott Shawcroft as part of the touchd user-space driver project:
-+ * Copyright (C) 2008	   Scott Shawcroft (scott.shawcroft@gmail.com)
-+ *
-+ * The BCM5974 driver is based on the appletouch driver:
-+ * Copyright (C) 2001-2004 Greg Kroah-Hartman (greg@kroah.com)
-+ * Copyright (C) 2005      Johannes Berg (johannes@sipsolutions.net)
-+ * Copyright (C) 2005	   Stelian Pop (stelian@popies.net)
-+ * Copyright (C) 2005	   Frank Arnold (frank@scirocco-5v-turbo.de)
-+ * Copyright (C) 2005	   Peter Osterlund (petero2@telia.com)
-+ * Copyright (C) 2005	   Michael Hanselmann (linux-kernel@hansmi.ch)
-+ * Copyright (C) 2006	   Nicolas Boichat (nicolas@boichat.ch)
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
-+#include <linux/slab.h>
-+#include <linux/module.h>
-+#include <linux/usb/input.h>
-+#include <linux/hid.h>
-+
-+#define APPLE_VENDOR_ID		0x05AC
-+
-+/* MacbookAir, aka wellspring */
-+#define ATP_WELLSPRING_ANSI	0x0223
-+#define ATP_WELLSPRING_ISO	0x0224
-+#define ATP_WELLSPRING_JIS	0x0225
-+/* MacbookProPenryn, aka wellspring2 */
-+#define ATP_WELLSPRING2_ANSI	0x0230
-+#define ATP_WELLSPRING2_ISO	0x0231
-+#define ATP_WELLSPRING2_JIS	0x0232
-+
-+#define ATP_DEVICE(prod) {					\
-+	.match_flags = (USB_DEVICE_ID_MATCH_DEVICE |		\
-+			USB_DEVICE_ID_MATCH_INT_CLASS |		\
-+			USB_DEVICE_ID_MATCH_INT_PROTOCOL),	\
-+	.idVendor = APPLE_VENDOR_ID,				\
-+	.idProduct = (prod),					\
-+	.bInterfaceClass = USB_INTERFACE_CLASS_HID,		\
-+	.bInterfaceProtocol = USB_INTERFACE_PROTOCOL_MOUSE	\
-+}
-+
-+/* table of devices that work with this driver */
-+static const struct usb_device_id atp_table [] = {
-+	/* MacbookAir1.1 */
-+	ATP_DEVICE(ATP_WELLSPRING_ANSI),
-+	ATP_DEVICE(ATP_WELLSPRING_ISO),
-+	ATP_DEVICE(ATP_WELLSPRING_JIS),
-+	/* MacbookProPenryn */
-+	ATP_DEVICE(ATP_WELLSPRING2_ANSI),
-+	ATP_DEVICE(ATP_WELLSPRING2_ISO),
-+	ATP_DEVICE(ATP_WELLSPRING2_JIS),
-+	/* Terminating entry */
-+	{}
-+};
-+MODULE_DEVICE_TABLE(usb, atp_table);
-+
-+MODULE_AUTHOR("Henrik Rydberg");
-+MODULE_DESCRIPTION("Apple USB BCM5974 multitouch driver");
-+MODULE_LICENSE("GPL");
-+
-+#define dprintk(level, format, a...)\
-+	{ if (debug >= level) printk(KERN_DEBUG format, ##a); }
-+
-+static int debug = 1;
-+module_param(debug, int, 0644);
-+MODULE_PARM_DESC(debug, "Activate debugging output");
-+
-+/* button data structure */
-+struct bt_data {
-+	u8 unknown1;		/* constant */
-+	u8 button;		/* left button */
-+	u8 rel_x;		/* relative x coordinate */
-+	u8 rel_y;		/* relative y coordinate */
-+};
-+
-+/* trackpad header structure */
-+struct tp_header {
-+	u8 unknown1[16];	/* constants, timers, etc */
-+	u8 fingers;		/* number of fingers on trackpad */
-+	u8 unknown2[9];		/* constants, timers, etc */
-+};
-+
-+/* trackpad finger structure */
-+struct tp_finger {
-+	__le16 origin;		/* left/right origin? */
-+	__le16 abs_x;		/* absolute x coodinate */
-+	__le16 abs_y;		/* absolute y coodinate */
-+	__le16 rel_x;		/* relative x coodinate */
-+	__le16 rel_y;		/* relative y coodinate */
-+	__le16 size_major;	/* finger size, major axis? */
-+	__le16 size_minor;	/* finger size, minor axis? */
-+	__le16 orientation;	/* 16384 when point, else 15 bit angle */
-+	__le16 force_major;	/* trackpad force, major axis? */
-+	__le16 force_minor;	/* trackpad force, minor axis? */
-+	__le16 unused[3];	/* zeros */
-+	__le16 multi;		/* one finger: varies, more fingers: constant */
-+};
-+
-+/* trackpad data structure, empirically at least ten fingers */
-+struct tp_data {
-+	struct tp_header header;
-+	struct tp_finger finger[16];
-+};
-+
-+/* device-specific parameters */
-+struct atp_params {
-+	int dim;		/* logical dimension */
-+	int devmin;		/* device minimum reading */
-+	int devmax;		/* device maximum reading */
-+};
-+
-+/* device-specific configuration */
-+struct atp_config {
-+	int ansi, iso, jis;	/* the product id of this device */
-+	int bt_ep;		/* the endpoint of the button interface */
-+	int bt_datalen;		/* data length of the button interface */
-+	int tp_ep;		/* the endpoint of the trackpad interface */
-+	int tp_datalen;		/* data length of the trackpad interface */
-+	struct atp_params p;	/* finger pressure limits */
-+	struct atp_params w;	/* finger width limits */
-+	struct atp_params x;	/* horizontal limits */
-+	struct atp_params y;	/* vertical limits */
-+};
-+
-+/* logical trackpad state */
-+struct tp_state {
-+	int pressure;		/* finger pressure value */
-+	int width;		/* finger width value */
-+	int abs_x;		/* absolute x coordinate */
-+	int abs_y;		/* absolute y coordinate */
-+	int fingers;		/* number of fingers on trackpad */
-+};
-+
-+/* logical device structure */
-+struct atp {
-+	char phys[64];
-+	struct usb_device *udev;	/* usb device */
-+	struct input_dev *input;	/* input dev */
-+	struct atp_config cfg;		/* device configuration */
-+	int open;			/* >0: open, else closed */
-+	int suspended;			/* >0: suspended, else open */
-+	struct urb *bt_urb;		/* button usb request block */
-+	struct bt_data *bt_data;	/* button transferred data */
-+	unsigned bt_prev_state;		/* logical button previous state */
-+	unsigned bt_state;		/* logical button state */
-+	struct urb *tp_urb;		/* trackpad usb request block */
-+	struct tp_data *tp_data;	/* trackpad transferred data */
-+	struct tp_state tp_state;	/* logical trackpad state */
-+	unsigned tp_valid;		/* trackpad sensors valid */
-+};
-+
-+/* logical dimensions */
-+#define DIM_PRESSURE	256		/* maximum finger pressure */
-+#define DIM_WIDTH	16		/* maximum finger width */
-+#define DIM_X		1280		/* maximum trackpad x value */
-+#define DIM_Y		800		/* maximum trackpad y value */
-+#define SNRATIO		50		/* signal to noise ratio */
-+
-+/* device constants */
-+static const struct atp_config atp_config_table[] = {
-+	{
-+		ATP_WELLSPRING_ANSI,
-+		ATP_WELLSPRING_ISO,
-+		ATP_WELLSPRING_JIS,
-+		0x84, sizeof(struct bt_data),
-+		0x81, sizeof(struct tp_data),
-+		{ DIM_PRESSURE, 0, 256 },
-+		{ DIM_WIDTH, 0, 2048 },
-+		{ DIM_X, -4824, 5342 },
-+		{ DIM_Y, -172, 5820 }
-+	},
-+	{
-+		ATP_WELLSPRING2_ANSI,
-+		ATP_WELLSPRING2_ISO,
-+		ATP_WELLSPRING2_JIS,
-+		0x84, sizeof(struct bt_data),
-+		0x81, sizeof(struct tp_data),
-+		{ DIM_PRESSURE, 0, 256 },
-+		{ DIM_WIDTH, 0, 2048 },
-+		{ DIM_X, -4824, 5342 },
-+		{ DIM_Y, -172, 5820 }
-+	},
-+	{}
-+};
-+
-+/* return the device-specific configuration by device */
-+static const struct atp_config *atp_product_config(struct usb_device *udev)
-+{
-+	u16 id = le16_to_cpu(udev->descriptor.idProduct);
-+	const struct atp_config *config;
-+	for (config = atp_config_table; config->ansi; ++config)
-+		if (config->ansi == id || config->iso == id ||
-+				config->jis == id)
-+			return config;
-+	return atp_config_table;
-+}
-+
-+/* convert 16-bit little endian to signed integer */
-+static inline int raw2int(__le16 x)
-+{
-+	return (signed short)le16_to_cpu(x);
-+}
-+
-+/* scale device data to logical dimensions (asserts devmin < devmax) */
-+static inline int int2scale(const struct atp_params *p, int x)
-+{
-+	return x * p->dim / (p->devmax - p->devmin);
-+}
-+
-+/* all logical value ranges are [0,dim). */
-+static inline int int2bound(const struct atp_params *p, int x)
-+{
-+	int s = int2scale(p, x);
-+	return s < 0 ? 0 : s >= p->dim ? p->dim - 1 : s;
-+}
-+
-+/* convert button data to logical button state */
-+static int compute_bt_state(struct atp *dev, int size)
-+{
-+	if (size != sizeof(struct bt_data))
-+		return -EIO;
-+
-+	dev->bt_prev_state = dev->bt_state;
-+	dev->bt_state = dev->bt_data->button;
-+
-+	return 0;
-+}
-+
-+/* convert trackpad data to logical trackpad state */
-+static int compute_tp_state(struct atp *dev, int size)
-+{
-+	const struct atp_config *c = &dev->cfg;
-+	const struct tp_finger *f = dev->tp_data->finger;
-+	const int fingers = (size - 26) / 28;
-+	struct tp_state *s = &dev->tp_state;
-+
-+	if (size < 26 || (size - 26) % 28 != 0)
-+		return -EIO;
-+
-+	if (!fingers) {
-+		s->pressure = 0;
-+		s->fingers = 0;
-+		return 0;
-+	}
-+
-+	dprintk(9, "bcm5974: p: %+05d w: %+05d x: %+05d y: %+05d f: %d\n",
-+		raw2int(f->force_major), raw2int(f->size_major),
-+		raw2int(f->abs_x), raw2int(f->abs_y), fingers);
-+
-+	s->pressure = int2bound(&c->p, raw2int(f->force_major));
-+	s->width = int2bound(&c->w, raw2int(f->size_major));
-+	s->abs_x = int2bound(&c->x, raw2int(f->abs_x) - c->x.devmin);
-+	s->abs_y = int2bound(&c->y, c->y.devmax - raw2int(f->abs_y));
-+	s->fingers = s->pressure > 0 ? fingers : 0;
-+
-+	return 0;
-+}
-+
-+/* Wellspring initialization constants */
-+#define ATP_WELLSPRING_MODE_READ_REQUEST_ID	1
-+#define ATP_WELLSPRING_MODE_WRITE_REQUEST_ID	9
-+#define ATP_WELLSPRING_MODE_REQUEST_VALUE	0x300
-+#define ATP_WELLSPRING_MODE_REQUEST_INDEX	0
-+#define ATP_WELLSPRING_MODE_VENDOR_VALUE_1	0x01
-+#define ATP_WELLSPRING_MODE_VENDOR_VALUE_2	0x05
-+
-+static int atp_wellspring_init(struct atp *dev)
-+{
-+	char *data = kmalloc(8, GFP_KERNEL);
-+	int error = 0, size;
-+
-+	if (!data) {
-+		err("bcm5974: out of memory");
-+		error = -ENOMEM;
-+		goto error;
-+	}
-+
-+	/* reset button endpoint */
-+	if (usb_control_msg(dev->udev, usb_rcvctrlpipe(dev->udev, 0),
-+			USB_REQ_CLEAR_FEATURE, USB_RECIP_ENDPOINT,
-+			0, dev->cfg.bt_ep, NULL, 0, 5000)) {
-+		err("bcm5974: could not reset button endpoint");
-+		error = -EIO;
-+		goto error;
-+	}
-+
-+	/* reset trackpad endpoint */
-+	if (usb_control_msg(dev->udev, usb_rcvctrlpipe(dev->udev, 0),
-+			USB_REQ_CLEAR_FEATURE, USB_RECIP_ENDPOINT,
-+			0, dev->cfg.tp_ep, NULL, 0, 5000)) {
-+		err("bcm5974: could not reset trackpad endpoint");
-+		error = -EIO;
-+		goto error;
-+	}
-+
-+	/* read configuration */
-+	size = usb_control_msg(dev->udev, usb_rcvctrlpipe(dev->udev, 0),
-+		ATP_WELLSPRING_MODE_READ_REQUEST_ID,
-+		USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
-+		ATP_WELLSPRING_MODE_REQUEST_VALUE,
-+		ATP_WELLSPRING_MODE_REQUEST_INDEX, data, 8, 5000);
-+
-+	if (size != 8) {
-+		err("bcm5974: could not read from device");
-+		error = -EIO;
-+		goto error;
-+	}
-+
-+	/* apply the mode switch */
-+	data[0] = ATP_WELLSPRING_MODE_VENDOR_VALUE_1;
-+	data[1] = ATP_WELLSPRING_MODE_VENDOR_VALUE_2;
-+
-+	/* write configuration */
-+	size = usb_control_msg(dev->udev, usb_sndctrlpipe(dev->udev, 0),
-+		ATP_WELLSPRING_MODE_WRITE_REQUEST_ID,
-+		USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
-+		ATP_WELLSPRING_MODE_REQUEST_VALUE,
-+		ATP_WELLSPRING_MODE_REQUEST_INDEX, data, 8, 5000);
-+
-+	if (size != 8) {
-+		err("bcm5974: could not write to device");
-+		error = -EIO;
-+		goto error;
-+	}
-+
-+	dev->tp_valid = 0;
-+
-+	printk(KERN_INFO "bcm5974: Wellspring mode initialized.\n");
-+
-+	kfree(data);
-+	return 0;
-+
-+error:
-+	kfree(data);
-+	return error;
-+}
-+
-+static void irq_button(struct urb *urb)
-+{
-+	struct atp *dev = urb->context;
-+	int error;
-+
-+	switch (urb->status) {
-+	case 0:
-+		break;
-+	case -EOVERFLOW:
-+	case -ECONNRESET:
-+	case -ENOENT:
-+	case -ESHUTDOWN:
-+		dbg("bcm5974: button urb shutting down: %d", urb->status);
-+		return;
-+	default:
-+		dbg("bcm5974: button urb status: %d", urb->status);
-+		goto exit;
-+	}
-+
-+	if (compute_bt_state(dev, dev->bt_urb->actual_length)) {
-+		dprintk(1, "bcm5974: bad button package, length: %d)\n",
-+			dev->bt_urb->actual_length);
-+		goto exit;
-+	}
-+
-+	/* only report button state changes */
-+	if (dev->bt_state != dev->bt_prev_state) {
-+		input_report_key(dev->input, BTN_LEFT, dev->bt_data->button);
-+		input_sync(dev->input);
-+	}
-+
-+exit:
-+	error = usb_submit_urb(dev->bt_urb, GFP_ATOMIC);
-+	if (error)
-+		err("bcm5974: button urb failed: %d", error);
-+}
-+
-+static void irq_trackpad(struct urb *urb)
-+{
-+	struct atp *dev = urb->context;
-+	struct tp_state *state = &dev->tp_state;
-+	int error;
-+
-+	switch (urb->status) {
-+	case 0:
-+		break;
-+	case -EOVERFLOW:
-+	case -ECONNRESET:
-+	case -ENOENT:
-+	case -ESHUTDOWN:
-+		dbg("bcm5974: trackpad urb shutting down: %d", urb->status);
-+		return;
-+	default:
-+		dbg("bcm5974: trackpad urb status: %d", urb->status);
-+		goto exit;
-+	}
-+
-+	/* first sample data ignored */
-+	if (!dev->tp_valid) {
-+		dev->tp_valid = 1;
-+		goto exit;
-+	}
-+
-+	if (compute_tp_state(dev, dev->tp_urb->actual_length)) {
-+		dprintk(1, "bcm5974: bad trackpad package, length: %d)\n",
-+			dev->tp_urb->actual_length);
-+		goto exit;
-+	}
-+
-+	input_report_abs(dev->input, ABS_PRESSURE, state->pressure);
-+	input_report_abs(dev->input, ABS_TOOL_WIDTH, state->width);
-+	input_report_abs(dev->input, ABS_X, state->abs_x);
-+	input_report_abs(dev->input, ABS_Y, state->abs_y);
-+	input_report_key(dev->input, BTN_TOOL_FINGER, state->fingers == 1);
-+	input_report_key(dev->input, BTN_TOOL_DOUBLETAP, state->fingers == 2);
-+	input_report_key(dev->input, BTN_TOOL_TRIPLETAP, state->fingers > 2);
-+	input_sync(dev->input);
-+
-+exit:
-+	error = usb_submit_urb(dev->tp_urb, GFP_ATOMIC);
-+	if (error)
-+		err("bcm5974: trackpad urb failed: %d", error);
-+}
-+
-+static int atp_open(struct input_dev *input)
-+{
-+	struct atp *dev = input_get_drvdata(input);
-+
-+	if (!dev->open) {
-+		if (usb_submit_urb(dev->bt_urb, GFP_ATOMIC))
-+			goto error;
-+		if (usb_submit_urb(dev->tp_urb, GFP_ATOMIC))
-+			goto err_free_bt_urb;
-+	}
-+
-+	dev->open = 1;
-+	dev->suspended = 0;
-+	return 0;
-+
-+err_free_bt_urb:
-+	usb_free_urb(dev->bt_urb);
-+error:
-+	return -EIO;
-+}
-+
-+static void atp_close(struct input_dev *input)
-+{
-+	struct atp *dev = input_get_drvdata(input);
-+
-+	usb_kill_urb(dev->tp_urb);
-+	usb_kill_urb(dev->bt_urb);
-+
-+	dev->open = 0;
-+	dev->suspended = 0;
-+}
-+
-+static int atp_probe(struct usb_interface *iface,
-+		     const struct usb_device_id *id)
-+{
-+	struct usb_device *udev = interface_to_usbdev(iface);
-+	const struct atp_config *cfg;
-+	struct atp *dev;
-+	struct input_dev *input_dev;
-+	int error = 0;
-+
-+	/* find the product index */
-+	cfg = atp_product_config(udev);
-+
-+	/* allocate memory for our device state and initialize it */
-+	dev = kzalloc(sizeof(struct atp), GFP_KERNEL);
-+	input_dev = input_allocate_device();
-+	if (!dev || !input_dev) {
-+		err("bcm5974: out of memory");
-+		error = -ENOMEM;
-+		goto err_free_devs;
-+	}
-+
-+	dev->udev = udev;
-+	dev->input = input_dev;
-+	dev->cfg = *cfg;
-+
-+	/* switch to raw sensor mode */
-+	if (atp_wellspring_init(dev)) {
-+		error = -EIO;
-+		goto err_free_devs;
-+	}
-+
-+	dev->bt_urb = usb_alloc_urb(0, GFP_KERNEL);
-+	if (!dev->bt_urb) {
-+		error = -ENOMEM;
-+		goto err_free_devs;
-+	}
-+
-+	dev->tp_urb = usb_alloc_urb(0, GFP_KERNEL);
-+	if (!dev->tp_urb) {
-+		error = -ENOMEM;
-+		goto err_free_bt_urb;
-+	}
-+
-+	dev->bt_data = usb_buffer_alloc(dev->udev,
-+		dev->cfg.bt_datalen, GFP_KERNEL,
-+		&dev->bt_urb->transfer_dma);
-+	if (!dev->bt_data) {
-+		error = -ENOMEM;
-+		goto err_free_urb;
-+	}
-+
-+	dev->tp_data = usb_buffer_alloc(dev->udev,
-+		dev->cfg.tp_datalen, GFP_KERNEL,
-+		&dev->tp_urb->transfer_dma);
-+	if (!dev->tp_data) {
-+		error = -ENOMEM;
-+		goto err_free_bt_buffer;
-+	}
-+
-+	usb_fill_int_urb(dev->bt_urb, udev,
-+		usb_rcvintpipe(udev, cfg->bt_ep),
-+		dev->bt_data, dev->cfg.bt_datalen,
-+		irq_button, dev, 1);
-+
-+	usb_fill_int_urb(dev->tp_urb, udev,
-+		usb_rcvintpipe(udev, cfg->tp_ep),
-+		dev->tp_data, dev->cfg.tp_datalen,
-+		irq_trackpad, dev, 1);
-+
-+	usb_make_path(udev, dev->phys, sizeof(dev->phys));
-+	strlcat(dev->phys, "/input0", sizeof(dev->phys));
-+
-+	input_dev->name = "bcm5974";
-+	input_dev->phys = dev->phys;
-+	usb_to_input_id(dev->udev, &input_dev->id);
-+	input_dev->dev.parent = &iface->dev;
-+
-+	input_set_drvdata(input_dev, dev);
-+
-+	input_dev->open = atp_open;
-+	input_dev->close = atp_close;
-+
-+	set_bit(EV_ABS, input_dev->evbit);
-+	input_set_abs_params(input_dev, ABS_PRESSURE,
-+		0, cfg->p.dim, cfg->p.dim / SNRATIO, 0);
-+	input_set_abs_params(input_dev, ABS_TOOL_WIDTH,
-+		0, cfg->w.dim, cfg->w.dim / SNRATIO, 0);
-+	input_set_abs_params(input_dev, ABS_X,
-+		0, cfg->x.dim, cfg->x.dim / SNRATIO, 0);
-+	input_set_abs_params(input_dev, ABS_Y,
-+		0, cfg->y.dim, cfg->y.dim / SNRATIO, 0);
-+
-+	set_bit(EV_KEY, input_dev->evbit);
-+	set_bit(BTN_TOOL_FINGER, input_dev->keybit);
-+	set_bit(BTN_TOOL_DOUBLETAP, input_dev->keybit);
-+	set_bit(BTN_TOOL_TRIPLETAP, input_dev->keybit);
-+	set_bit(BTN_LEFT, input_dev->keybit);
-+
-+	error = input_register_device(dev->input);
-+	if (error)
-+		goto err_free_buffer;
-+
-+	/* save our data pointer in this interface device */
-+	usb_set_intfdata(iface, dev);
-+
-+	return 0;
-+
-+err_free_buffer:
-+	usb_buffer_free(dev->udev, dev->cfg.tp_datalen,
-+		dev->tp_data, dev->tp_urb->transfer_dma);
-+err_free_bt_buffer:
-+	usb_buffer_free(dev->udev, dev->cfg.bt_datalen,
-+		dev->bt_data, dev->bt_urb->transfer_dma);
-+err_free_urb:
-+	usb_free_urb(dev->tp_urb);
-+err_free_bt_urb:
-+	usb_free_urb(dev->bt_urb);
-+err_free_devs:
-+	usb_set_intfdata(iface, NULL);
-+	kfree(dev);
-+	input_free_device(input_dev);
-+	return error;
-+}
-+
-+static void atp_disconnect(struct usb_interface *iface)
-+{
-+	struct atp *dev = usb_get_intfdata(iface);
-+
-+	usb_set_intfdata(iface, NULL);
-+
-+	if (dev) {
-+		input_unregister_device(dev->input);
-+		usb_buffer_free(dev->udev, dev->cfg.tp_datalen,
-+			dev->tp_data, dev->tp_urb->transfer_dma);
-+		usb_buffer_free(dev->udev, dev->cfg.bt_datalen,
-+			dev->bt_data, dev->bt_urb->transfer_dma);
-+		usb_free_urb(dev->tp_urb);
-+		usb_free_urb(dev->bt_urb);
-+		kfree(dev);
-+	}
-+
-+	printk(KERN_INFO "bcm5974: disconnected\n");
-+}
-+
-+static int atp_suspend(struct usb_interface *iface, pm_message_t message)
-+{
-+	struct atp *dev = usb_get_intfdata(iface);
-+
-+	if (dev) {
-+		if (!dev->suspended)
-+			atp_close(dev->input);
-+		dev->suspended++;
-+	}
-+
-+	return 0;
-+}
-+
-+static int atp_resume(struct usb_interface *iface)
-+{
-+	struct atp *dev = usb_get_intfdata(iface);
-+	int error = 0;
-+
-+	if (dev && dev->suspended) {
-+		if (!--dev->suspended)
-+			error = atp_open(dev->input);
-+	}
-+
-+	return error;
-+}
-+
-+static int atp_reset_resume(struct usb_interface *iface)
-+{
-+	struct atp *dev = usb_get_intfdata(iface);
-+
-+	if (dev && atp_wellspring_init(dev))
-+		printk(KERN_INFO "bcm5974: warning: reset failed\n");
-+
-+	return atp_resume(iface);
-+}
-+
-+static int atp_pre_reset(struct usb_interface *iface)
-+{
-+	return atp_suspend(iface, PMSG_ON);
-+}
-+
-+static int atp_post_reset(struct usb_interface *iface)
-+{
-+	return atp_reset_resume(iface);
-+}
-+
-+static struct usb_driver atp_driver = {
-+	.name = "bcm5974",
-+	.probe = atp_probe,
-+	.disconnect = atp_disconnect,
-+	.suspend = atp_suspend,
-+	.resume = atp_resume,
-+	.reset_resume = atp_reset_resume,
-+	.pre_reset = atp_pre_reset,
-+	.post_reset = atp_post_reset,
-+	.id_table = atp_table,
-+};
-+
-+static int __init atp_init(void)
-+{
-+	return usb_register(&atp_driver);
-+}
-+
-+static void __exit atp_exit(void)
-+{
-+	usb_deregister(&atp_driver);
-+}
-+
-+module_init(atp_init);
-+module_exit(atp_exit);
-+
+Anyways, will send a patch to drop the AND.
+
+>  - I also wonder if / suspect that the IRQ ACK should happen _before_ we 
+>    handle the source of the interrupt, because otherwise if one port ends 
+>    up having two events in close succession (can this happen? I think so), 
+>    then we end up perhaps getting the irq for the first one, and handle 
+>    that first event, but then the second event happens immediately 
+>    afterwards, and before we do the writel() to ACK it, so now the 
+>    _hardware_ thinks we have handled both of them, even though we never 
+>    actually reacted to the second event.
+> 
+> So I think the appended (TOTALLY UNTESTED!) patch - based on top of the 
+> pull that I already did - might be a good idea.
+> 
+> NOTE! I _really_ didn't test it. I do not know how AHCI works at a low 
+> level, and maybe there is some reason why the IRQ ACK writel() actually 
+> has to happen after you've handled the event (to avoid getting a new 
+> interrupt immediately. But based on other controllers I've worked with, 
+> this is the correct way to not lose irq events.
+> 
+> [ And yes, the race for the irq ack issue is small. And yes, the 
+>   likelihood of a bogus interrupt triggering is probably small too. And 
+>   see above about my lack of specific knowledge about AHCI.
+> 
+>   So I'm sure as heck not going to commit this patch, I'm just sending it 
+>   out as a "Are you sure you shouldn't do it like this?" RFC patch.. ]
+
+The current code is correct.  From 10.6.2.1 of ahci 1.1,
+
+  In order to clear an interrupt, software must first clear the event
+  from the PxIS register, then clear the interrupt event from the IS
+  register. If software clears IS register only, leaving the level of
+  the virtual wire from the PxIS register set, the resulting level of
+  1 shall cause the IS register bit to be re-set.
+
+so, it basically behaves like level triggered IRQ latch for ports,
+which also creates an easy-to-miss requirement for MSI implementation
+where the controller should generate a new MSI message when the driver
+clears some of the IRQ pending bits but not all.
+
+I do agree it's strange.  Whenever I come back to ahci_interrupt()
+after enough time has passed, that clearing code always makes me look
+up the spec.  I guess it's about time to add some comment there.
+
+Thanks.
+
+-- 
+tejun
+
