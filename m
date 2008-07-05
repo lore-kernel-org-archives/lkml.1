@@ -1,52 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbYGER4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757837AbYGER5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759198AbYGER4S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759892AbYGERut
+	id S1757837AbYGER5k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbYGER5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:50:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52070 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759885AbYGERur (ORCPT
+	Sat, 5 Jul 2008 13:57:32 -0400
+Received: from theia.rz.uni-saarland.de ([134.96.7.31]:19245 "EHLO
+	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752664AbYGER5b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 13:50:47 -0400
-Date: Sat, 5 Jul 2008 13:50:47 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: New ext4 patchset 2.6.26-rc8-ext4-1
-Message-ID: <20080705175047.GA11243@infradead.org>
-References: <E1KFBPc-0006yI-Gx@closure.thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 5 Jul 2008 13:57:31 -0400
+Date: Sat, 5 Jul 2008 19:53:46 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: "Ricardo M. Correia" <Ricardo.M.Correia@Sun.COM>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-arch <linux-arch@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       heukelum@fastmail.fm
+Subject: [PATCH] x86: fix description of __fls(): __fls(0) is undefined
+Message-ID: <20080705175345.GA7698@mailshack.com>
+References: <20080315172913.GA21648@mailshack.com> <20080315173236.GC21659@mailshack.com> <1215276997.7167.12.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <E1KFBPc-0006yI-Gx@closure.thunk.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1215276997.7167.12.camel@localhost>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Sat, 05 Jul 2008 19:56:07 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.0.64; VDF: 7.0.5.52; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 05, 2008 at 01:19:04PM -0400, Theodore Ts'o wrote:
-> Alex Tomas (2):
->     * vfs: add basic delayed allocation support
->     * ext4: Add basic delayed allocation support
+Ricardo M. Correia spotted that the use of __fls() in fls64() did
+not seem to make sense. In fact fls64()'s implementation is fine,
+but the description of __fls() was wrong. Fix that.
 
-Strong NACK.  For one thing the code added to mpage.c doesn't belong
-there.  It's far inferior to the existing delalloc code we already have
-and that could be made generic easily, or the next generation code
-developed by Chris mason.  It's an ext4-specific hack and doesn't belong
-into common code.  I'm pretty sure we agreed on not having it in
-common code long ago.
+Reported-by: "Ricardo M. Correia" <Ricardo.M.Correia@Sun.COM>
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
-Also the code still deals with the !buffer_mapped and no buffers on page
-cases all over which isn't needed anymore with ->page_mkwrite implemented.
-Similarly the !get_block case in mpage_da_writepages doesn't make any
-sense - it's never used and if people would want to use
-generic_writepages they could trivially just call it directly.
+---
 
-And please fix up the indentation of the new buffer_delay checks in
-fs/buffer.c, the && belongs on the end of the previous line, and the
-second line of the conditional should not be indented the same amount
-as the code inside the conditional block.
+On Sat, Jul 05, 2008 at 05:56:37PM +0100, Ricardo M. Correia wrote:
+> Hi,
+> 
+> I have a question about fls64() which I hope you or someone else could
+> clarify, please see below.
+> 
+> ﻿On Sáb, 2008-03-15 at 18:32 +0100, Alexander van Heukelum wrote: 
+> > +#elif BITS_PER_LONG == 64
+> > +static inline int fls64(__u64 x)
+> > +{
+> > +	if (x == 0)
+> > +		return 0;
+> > +	return __fls(x) + 1;
+> > +}
+> 
+> It seems fls64() is implemented on top of __fls(), however the __fls()
+> implementation on the x86-64 architecture states that the result is
+> undefined if the argument does not have any zero bits.
+
+You have found a bug. It's not in fls64, though, but a copy/paste
+one in the comment preceding __fls(). __fls() gives an undefined
+result if there are no _set_ bits: only __fls(0) gives an undefined
+result.
+
+The inconsistency is well-spotted, though, thanks.
+
+Patch is against current -tip.
+
+Greetings,
+    Alexander
+
+> So if I understand correctly, the statement "fls64(~0ULL)" would return
+> an undefined result on x64-64 instead of 64 as one would expect.
+> 
+> Wouldn't it make sense to check for ~0ULL in fls64()?
+> 
+> Thanks,
+> Ricardo
+
+---
+
+diff --git a/include/asm-x86/bitops.h b/include/asm-x86/bitops.h
+index 96b1829..cfb2b64 100644
+--- a/include/asm-x86/bitops.h
++++ b/include/asm-x86/bitops.h
+@@ -356,7 +356,7 @@ static inline unsigned long ffz(unsigned long word)
+  * __fls: find last set bit in word
+  * @word: The word to search
+  *
+- * Undefined if no zero exists, so code should check against ~0UL first.
++ * Undefined if no set bit exists, so code should check against 0 first.
+  */
+ static inline unsigned long __fls(unsigned long word)
+ {
