@@ -1,98 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757837AbYGER5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbYGER6M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757837AbYGER5k (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbYGER5c
+	id S1758898AbYGER6M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:58:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755971AbYGER5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:57:32 -0400
-Received: from theia.rz.uni-saarland.de ([134.96.7.31]:19245 "EHLO
-	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752664AbYGER5b (ORCPT
+	Sat, 5 Jul 2008 13:57:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55161 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753417AbYGER5y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 13:57:31 -0400
-Date: Sat, 5 Jul 2008 19:53:46 +0200
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: "Ricardo M. Correia" <Ricardo.M.Correia@Sun.COM>,
-       Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       heukelum@fastmail.fm
-Subject: [PATCH] x86: fix description of __fls(): __fls(0) is undefined
-Message-ID: <20080705175345.GA7698@mailshack.com>
-References: <20080315172913.GA21648@mailshack.com> <20080315173236.GC21659@mailshack.com> <1215276997.7167.12.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1215276997.7167.12.camel@localhost>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Sat, 05 Jul 2008 19:56:07 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.0.64; VDF: 7.0.5.52; host: AntiVir1)
+	Sat, 5 Jul 2008 13:57:54 -0400
+Date: Sat, 5 Jul 2008 10:56:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Jan Engelhardt <jengelh@medozas.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, Peter Anvin <hpa@zytor.com>,
+       "David S. Miller" <davem@davemloft.net>, linux-ia64@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: the printk problem
+In-Reply-To: <20080705125230.GA20166@damson.getinternet.no>
+Message-ID: <alpine.LFD.1.10.0807051045520.2815@woody.linux-foundation.org>
+References: <20080705125230.GA20166@damson.getinternet.no>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ricardo M. Correia spotted that the use of __fls() in fls64() did
-not seem to make sense. In fact fls64()'s implementation is fine,
-but the description of __fls() was wrong. Fix that.
 
-Reported-by: "Ricardo M. Correia" <Ricardo.M.Correia@Sun.COM>
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
----
+On Sat, 5 Jul 2008, Vegard Nossum wrote:
 
-On Sat, Jul 05, 2008 at 05:56:37PM +0100, Ricardo M. Correia wrote:
-> Hi,
-> 
-> I have a question about fls64() which I hope you or someone else could
-> clarify, please see below.
-> 
-> ﻿On Sáb, 2008-03-15 at 18:32 +0100, Alexander van Heukelum wrote: 
-> > +#elif BITS_PER_LONG == 64
-> > +static inline int fls64(__u64 x)
-> > +{
-> > +	if (x == 0)
-> > +		return 0;
-> > +	return __fls(x) + 1;
-> > +}
-> 
-> It seems fls64() is implemented on top of __fls(), however the __fls()
-> implementation on the x86-64 architecture states that the result is
-> undefined if the argument does not have any zero bits.
+> On Sat, Jul 5, 2008 at 1:33 PM, Jan Engelhardt <jengelh@medozas.de> wrote:
+> >
+> > On Saturday 2008-07-05 00:01, Andrew Morton wrote:
+> >>
+> >>We don't know how much interest there would be in churning NIPQUAD from
+> >>the net guys.  Interestingly, there's also %C (wint_t) which is a
+> >>32-bit quantity.  So we could just go and say "%C prints an ipv4
+> >>address" and be done with it.  But there's no way of doing that for
+> >>ipv6 addresses so things would become asymmetrical there.
+> >
+> >        struct in6_addr src;
+> >        printk("Source address: %p{ipv6}\n", &src);
+> >
+> > How about %p{feature}?
 
-You have found a bug. It's not in fls64, though, but a copy/paste
-one in the comment preceding __fls(). __fls() gives an undefined
-result if there are no _set_ bits: only __fls(0) gives an undefined
-result.
+No.
 
-The inconsistency is well-spotted, though, thanks.
+I _expressly_ chose '%p[alphanumeric]*' because it's basically 
+totally insane to have that in a *real* printk() string: the end result 
+would be totally unreadable.
 
-Patch is against current -tip.
+In contrast, '%p[specialchar]' is not unreadable, and in fact we have lots 
+of those already in the kernel. In fact, there are 40 occurrences of '%p{' 
+in the kernel, just grep for it (especially the AFS code seems to be very 
+happy to use that kind of printout in its debug statements).
 
-Greetings,
-    Alexander
+So it makes perfect sense to have a _real_ printk string that says
 
-> So if I understand correctly, the statement "fls64(~0ULL)" would return
-> an undefined result on x64-64 instead of 64 as one would expect.
-> 
-> Wouldn't it make sense to check for ~0ULL in fls64()?
-> 
-> Thanks,
-> Ricardo
+	"BUG: Dentry %p{i=%lx,n=%s}"
 
----
+where we have that '%p{...' sequence: the end result is easily parseable. 
+In contrast, anybody who uses '%pS' or something like that and expects a 
+pointer name to be immediately followed by teh letter 'S' is simply 
+insane, because the end result is an unreadable mess.
 
-diff --git a/include/asm-x86/bitops.h b/include/asm-x86/bitops.h
-index 96b1829..cfb2b64 100644
---- a/include/asm-x86/bitops.h
-+++ b/include/asm-x86/bitops.h
-@@ -356,7 +356,7 @@ static inline unsigned long ffz(unsigned long word)
-  * __fls: find last set bit in word
-  * @word: The word to search
-  *
-- * Undefined if no zero exists, so code should check against ~0UL first.
-+ * Undefined if no set bit exists, so code should check against 0 first.
-  */
- static inline unsigned long __fls(unsigned long word)
- {
+> (It's hard on the stack, yes, I know. We should fix kallsyms.)
+
+Not just that, but it's broken when KALLSYMS is disabled. Look at what 
+sprint_symbol() becomes.
+
+The patch I already sent out is about a million times better, because it 
+avoids all these issues, and knows about subtle issues like the difference 
+between a direct pointer and a pointer to a function descriptor. 
+
+		Linus
