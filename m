@@ -1,56 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbYGEILq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbYGEIRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755147AbYGEILq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 04:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbYGEIL2
+	id S1755191AbYGEIRB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 04:17:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbYGEIQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 04:11:28 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:34339 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752025AbYGEIL0 (ORCPT
+	Sat, 5 Jul 2008 04:16:47 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43640 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751954AbYGEIQo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 04:11:26 -0400
-Date: Sat, 5 Jul 2008 10:11:21 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Johannes Weiner <hannes@saeurebad.de>, Greg Ungerer <gerg@uclinux.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, uClinux list <uclinux-dev@uclinux.org>
-Subject: Re: [PATCH 16/20] m68knommu: use generic show_mem()
-In-Reply-To: <20080704161457.056057813@saeurebad.de>
-Message-ID: <Pine.LNX.4.64.0807051010550.5733@anakin>
-References: <20080704160737.750988999@saeurebad.de> <20080704161457.056057813@saeurebad.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 5 Jul 2008 04:16:44 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <20795958.1215245782985.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Sat, 5 Jul 2008 17:16:22 +0900 (JST)
+To: balbir@linux.vnet.ibm.com
+Subject: Re: Re: [PATCH] memcg: handle shmem's swap cache (Was 2.6.26-rc8-mm1
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, hugh@veritas.com, nishimura@mxp.nes.nec.co.jp,
+       yamamoto@valinux.co.jp
+In-Reply-To: <486F1967.1030207@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <486F1967.1030207@linux.vnet.ibm.com>
+ <20080703020236.adaa51fa.akpm@linux-foundation.org> <20080704180913.bb1a3fc6.kamezawa.hiroyu@jp.fujitsu.com> <486F0976.7010104@linux.vnet.ibm.com> <20080705151146.206071a4.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Jul 2008, Johannes Weiner wrote:
-> Remove arch-specific show_mem() in favor of the generic version.
-> 
-> This also removes the following redundant information display:
-> 
-> 	- free pages, printed by show_free_areas()
-> 	- pages in swapcache, printed by show_swap_cache_info()
-> 
-> where show_mem() calls show_free_areas(), which calls
-> show_swap_cache_info().
-> 
-> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-> CC: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
->  arch/m68knommu/mm/init.c |   27 ---------------------------
+----- Original Message -----
+>Date: Sat, 05 Jul 2008 12:19:11 +0530
+>From: Balbir Singh <balbir@linux.vnet.ibm.com>
+>To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+>   linux-mm@kvack.org, "hugh@veritas.com" <hugh@veritas.com>,
+>   "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+>   "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
+>Subject: Re: [PATCH] memcg: handle shmem's swap cache (Was 2.6.26-rc8-mm1
+>
+>
+>KAMEZAWA Hiroyuki wrote:
+>> On Sat, 05 Jul 2008 11:11:10 +0530
+>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>> 
+>>> KAMEZAWA Hiroyuki wrote:
+>>>> My swapcache accounting under memcg patch failed to catch tmpfs(shmem)'s 
+one.
+>>>> Can I test this under -mm tree ?
+>>>> (If -mm is busy, I'm not in hurry.)
+>>>> This patch works well in my box.
+>>>> =
+>>>> SwapCache handling fix.
+>>>>
+>>>> shmem's swapcache behavior is a little different from anonymous's one and
+>>>> memcg failed to handle it. This patch tries to fix it.
+>>>>
+>>>> After this:
+>>>>
+>>>> Any page marked as SwapCache is not uncharged. (delelte_from_swap_cache()
+>>>> delete the SwapCache flag.)
+>>>>
+>>>> To check a shmem-page-cache is alive or not we use
+>>>>  page->mapping && !PageAnon(page) instead of
+>>>>  pc->flags & PAGE_CGROUP_FLAG_CACHE.
+>>>>
+>>>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>> Though I am not opposed to this, I do sit up and think if keeping the refe
+rence
+>>> count around could avoid this complexity and from my point, the maintenanc
+e
+>>> overhead of this logic/code (I fear there might be more special cases :( )
+>> 
+>> yes, to me. but we have to fix..
+>> 
+>> But I don't like old code's refcnt handling which does
+>>    - increment
+>>      - does this increment was really neccesary ?
+>>        No? ok, decrement it again.
+>> 
+>> This was much more complex to me than current code.
+>> 
+At first, what I have to say is
+"this is a fix against handle-swapcache patch not against remove-refcnt"
 
-m68knommu is uClinux.
+This complex comes from handle-swapcache. (But it's necessary.)
 
-Gr{oetje,eeting}s,
+>
+>That can be redone -- the moment a page is used by a path, refcnt (increment)
+>it. Undo the same when the page is no longer in use.
+>
+>I expect
+>
+>rmap path to increment/decrement it on mapping
+>radix-tree (cache's) to do the same
+>
+>
+>Using a kref we should be able to get this logic right - no?
+>
+no
+What the old code does was
 
-						Geert
+  - a page is added to rmap (mapcount 0->1) +1
+  - a page is removed from rmap (mapcount ->0) -1
+  - a page is added to radix-tree (+1)
+  - a page is removed from radix-tree (-1)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+All information is recorded in struct page because it exists for.
+Then, why duplicates information ? It's usually bad habit.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+
+>> And old ones will needs the check at treating swap-cache. (it couldn't but 
+if we want)
+>> 
+>>> The trade-off is complexity versus the overhead of reference counting.
+>>>
+>> refcnt was also very complex ;)
+>
+>I think that is easier to simply, instead of adding the complex checks we hav
+e
+>right now. refcnt is easier to prove as working correct than the checks.
+
+About swap-cache, refcnt is just obstacle because you can't handle
+add-to-swapcache by refcnt.
+
+If you want to add refcnt (or some code) for "debug", I have no objection.
+
+Thanks,
+-Kame
+
+
