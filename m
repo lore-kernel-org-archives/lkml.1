@@ -1,82 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752849AbYGEIun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752630AbYGEJPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752849AbYGEIun (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 04:50:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbYGEIue
+	id S1752630AbYGEJPO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 05:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYGEJPD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 04:50:34 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45869 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbYGEIud (ORCPT
+	Sat, 5 Jul 2008 05:15:03 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:41531 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbYGEJPB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 04:50:33 -0400
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-From: David Woodhouse <dwmw2@infradead.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Olivier Galibert <galibert@pobox.com>, Hannes Reinecke <hare@suse.de>,
-       Theodore Tso <tytso@mit.edu>, Jeff Garzik <jeff@garzik.org>,
-       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       hugh@veritas.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-In-Reply-To: <s5h4p746am3.wl%tiwai@suse.de>
-References: <20080703.162120.206258339.davem@davemloft.net>
-	 <486D6DDB.4010205@infradead.org> <87ej6armez.fsf@basil.nowhere.org>
-	 <1215177044.10393.743.camel@pmac.infradead.org>
-	 <486E2260.5050503@garzik.org>
-	 <1215178035.10393.763.camel@pmac.infradead.org>
-	 <20080704141014.GA23215@mit.edu> <s5habgxloct.wl%tiwai@suse.de>
-	 <486E3622.1000900@suse.de> <1215182557.10393.808.camel@pmac.infradead.org>
-	 <20080704231322.GA4410@dspnet.fr.eu.org>  <s5h4p746am3.wl%tiwai@suse.de>
-Content-Type: text/plain
-Date: Sat, 05 Jul 2008 09:50:03 +0100
-Message-Id: <1215247803.3189.45.camel@shinybook.infradead.org>
+	Sat, 5 Jul 2008 05:15:01 -0400
+Date: Sat, 5 Jul 2008 12:14:23 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: akpm@linux-foundation.org
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi
+Subject: [PATCH] Move _RET_IP_ and _THIS_IP_ to include/linux/kernel.h
+Message-ID: <20080705121423.3a88d20f@linux360.ro>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-07-05 at 09:41 +0200, Takashi Iwai wrote:
-> At Sat, 5 Jul 2008 01:13:22 +0200,
-> Olivier Galibert wrote:
-> > 
-> > On Fri, Jul 04, 2008 at 03:42:37PM +0100, David Woodhouse wrote:
-> > > It doesn't yet; that patch is in linux-next. The firmware is shipped as
-> > > part of the kernel source tree, and you currently need to run 'make
-> > > firmware_install' to put it in /lib/firmware, although we're looking at
-> > > making that easier because apparently having to run 'make
-> > > firmware_install' is too hard...
-> > 
-> > Won't that break multiple kernel installs on any binary packaging
-> > system that cares about file collisions?  Multiple kernel rpms
-> > providing the same /lib/firmware files would break things wouldn't
-> > they ?
-> 
-> Yes, it will, if the firmware blobs are packed into the kernel
-> package.  In a long term, we can put firmware files into a separate, 
-> architecture independent noarch package, though.  This will save the
-> total package size, too.
+These two macros are useful beyond lock debugging. Moved definitions from
+include/linux/debug_locks.h to include/linux/kernel.h, so code that needs
+them does not have to include the former, which would have been a less
+intuitive choice of a header.
 
-I'm not familiar with the SuSE kernel specfile, but it was a fairly
-minor change to the Fedora kernel to do exactly that 'long term' thing.
-The patch is in the fedora-kernel-list archives.
+Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+---
+ include/linux/debug_locks.h |   10 ++--------
+ include/linux/kernel.h      |    3 +++
+ 2 files changed, 5 insertions(+), 8 deletions(-)
 
-We have to do the same thing with exported headers, anyway -- those are
-built from the kernel too, but again we need to have only one copy
-installed or we'd get conflicts.
-
-> But, right now, it's difficult because the installation and build of
-> firmware files depend on the kernel config.  We'd need a make rule for
-> installing the all firmware files for that purpose.
-
-That's what 'make firmware_install' does. It's config- and arch-
-independent, mostly because it was developed with distributors in mind. 
-
+diff --git a/include/linux/debug_locks.h b/include/linux/debug_locks.h
+index f4a5871..4aaa4af 100644
+--- a/include/linux/debug_locks.h
++++ b/include/linux/debug_locks.h
+@@ -1,6 +1,8 @@
+ #ifndef __LINUX_DEBUG_LOCKING_H
+ #define __LINUX_DEBUG_LOCKING_H
+ 
++#include <linux/kernel.h>
++
+ struct task_struct;
+ 
+ extern int debug_locks;
+@@ -11,14 +13,6 @@ extern int debug_locks_silent;
+  */
+ extern int debug_locks_off(void);
+ 
+-/*
+- * In the debug case we carry the caller's instruction pointer into
+- * other functions, but we dont want the function argument overhead
+- * in the nondebug case - hence these macros:
+- */
+-#define _RET_IP_		(unsigned long)__builtin_return_address(0)
+-#define _THIS_IP_  ({ __label__ __here; __here: (unsigned long)&&__here; })
+-
+ #define DEBUG_LOCKS_WARN_ON(c)						\
+ ({									\
+ 	int __ret = 0;							\
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 792bf0a..2e70006 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -46,6 +46,9 @@ extern const char linux_proc_banner[];
+ #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+ #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+ 
++#define _RET_IP_		(unsigned long)__builtin_return_address(0)
++#define _THIS_IP_  ({ __label__ __here; __here: (unsigned long)&&__here; })
++
+ #ifdef CONFIG_LBD
+ # include <asm/div64.h>
+ # define sector_div(a, b) do_div(a, b)
 -- 
-dwmw2
-
+1.5.5.4
