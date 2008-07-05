@@ -1,46 +1,41 @@
-X-Warning: Original message contained 8-bit characters, however during
-	   the SMTP transport session the receiving system did not announce
-	   capability of receiving 8-bit SMTP (RFC 1651-1653), and as this
-	   message does not have MIME headers (RFC 2045-2049) to enable
-	   encoding change, we had very little choice.
-X-Warning: We ASSUME it is less harmful to add the MIME headers, and
-	   convert the text to Quoted-Printable, than not to do so,
-	   and to strip the message to 7-bits.. (RFC 1428 Appendix A)
-X-Warning: We don't know what character set the user used, thus we had to
-	   write these MIME-headers with our local system default value.
-MIME-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754443AbYGELqN (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 5 Jul 2008 07:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbYGELp5
+	id S1755388AbYGEMpW (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 5 Jul 2008 08:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbYGEMpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 07:45:57 -0400
-Received: from qmta06.westchester.pa.mail.comcast.net ([76.96.62.56]:41135
-	"EHLO QMTA06.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751496AbYGELp5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 07:45:57 -0400
-X-Authority-Analysis: v=1.0 c=1 a=VWY9RJL2iHgTL3pMmfUT0g==:17
- a=pKjTyJk_l2zDzuCPllAA:9 a=iORBXVNbxsFSCpv8w0xS5IlGOZsA:4 a=F94gGDXhSU4A:10
- a=C7YnqLjT7bEA:10 a=6-x43y6uxGMA:10
-From: nokiapromo01169@comcast.net
-Subject: NOKIA CONNECTING PEOPLE.....
-Date: Sat, 05 Jul 2008 11:45:45 +0000
-Message-Id: <070520081145.9585.486F5EE800008A35000025712207021633C7C0CECECF0103019D9F0E07050102@comcast.net>
-X-Mailer: AT&T Message Center Version 1 (Oct 30 2007)
-X-Authenticated-Sender: bm9raWFwcm9tbzAxMTY5QGNvbWNhc3QubmV0
-To: unlisted-recipients:; (no To-header on input)
+	Sat, 5 Jul 2008 08:45:06 -0400
+Received: from tomts24.bellnexxia.net ([209.226.175.187]:52523 "EHLO
+	tomts24-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752129AbYGEMpF convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 08:45:05 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAEMIb0jR4q+H/2dsb2JhbACBOA
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [201.34.32.42]
+From: Bmw Online Promo <laurie.mclean@nf.sympatico.ca>
+Reply-To: bmw.claimsdptt@btinternet.com
+Organization: Bmw Online Promo
+To: <info@bmw.automobilecompany.com>
+Subject: Lucky winner 2008
+Date: Sat, 5 Jul 2008 8:45:02 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Message-Id: <20080705124503.CNMO1580.tomts24-srv.bellnexxia.net@toip38-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754443AbYGELqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755388AbYGEMpW@vger.kernel.org>
 
-Nokia have just awarded you =A3345,000.00 GBP in the on going Nokia Ema=
-il Promo, contact Dr. Anthony Floyd, Email: dr.anthonyfloyd01@ymail.com=
- dr.anthonyfloyd@yahoo.co.uk Tell: +447045764575 HAVE YOU USED A NOKIA =
-PHONE?
+Attn: We are please to inform You won the sum of =A3750,000.00 GBP and =
+BMW 5 Series Car in our Seasonal E-mail Programme Award.Fill the detail=
+s:Full Name,Country,Tel,Sex,Occupation Contact(bmw.claims3@btinternet.c=
+om)for claims
+Regards
+>From Promo Commitee.
+
+
 --
 To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
  in
