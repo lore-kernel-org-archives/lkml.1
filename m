@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbYGEQ3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbYGEQbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754026AbYGEQ3Y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 12:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbYGEQ3R
+	id S1755060AbYGEQbT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 12:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbYGEQbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 12:29:17 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:2694 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750959AbYGEQ3Q (ORCPT
+	Sat, 5 Jul 2008 12:31:05 -0400
+Received: from s15216962.onlinehome-server.info ([217.160.22.205]:50885 "EHLO
+	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751862AbYGEQbE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 12:29:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=NUy/L3IIUF08WVwpo9YfHecch8oK22H/S47pMxG3DcyHOR6QToGp4j/lOgQSAVSUFa
-         7h5Tbzqbp5/vGrHycMhs3AsaVk3cloLsj9hQWeLjOU9W449qAmgqgkLwsPlj5iNBIc+U
-         2Zykl4DTKsDQbv5VTYIQYkeL5NoRyRY1JSuus=
-Date: Sat, 5 Jul 2008 21:59:04 +0530
-From: Rabin Vincent <rabin@rab.in>
-To: Bradley Hanna <brahan.ml@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Creating syscalls: Under an x86_64 arch, where is the syscall
-	table located?
-Message-ID: <20080705162903.GA1861@debian>
-References: <486F8D55.2060506@gmail.com>
-MIME-Version: 1.0
+	Sat, 5 Jul 2008 12:31:04 -0400
+Date: Sat, 5 Jul 2008 18:29:02 +0200
+From: Enrico Weigelt <weigelt@metux.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: block devices in userland
+Message-ID: <20080705162902.GA26789@nibiru.local>
+Reply-To: weigelt@metux.de
+References: <342518340@web.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <486F8D55.2060506@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <342518340@web.de>
+User-Agent: Mutt/1.4.1i
+X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
+X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
+X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
+X-Killer: 23, endloesung, Weltuntergang, 
+X-Doof: wer das liest ist doof
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 05, 2008 at 11:03:49AM -0400, Bradley Hanna wrote:
-> I am trying to create a syscall for testing purposes.  I have a kernel
-> configured for x86_64 arch and need to know where the syscall table is
-> located.  I believe I have found the unistd.h file that I need under
-> 'include/asm/unistd_64.h' but I cannot find a file containing the
-> 'sys_call_table' that corresponds with that 'unistd_64.h' file.  I can
-> find a file called syscall_table_32.S, but no table for 64.  The table
-> is no longer located in entry.S, so where do I find it?  The
-> '__syscallN' macro is not finding my syscall definition.
+* devzero@web.de <devzero@web.de> wrote:
+> >is there an API for writing block device drivers in userland ?
+> 
+> i don`t know if there is some in vanilla, but maybe dm-userspace is worth taking a look at ?
+> see http://wiki.xensource.com/xenwiki/DmUserspace
 
-sys_call_table for x86_64 is defined in arch/x86/kernel/syscall_64.c.
+hmm, doesn't seem to be what I'm looking for - it just leaves the 
+mapping of virtual to physical blocks to userland. 
 
-Rabin
+What I need is passing the whole read/write requests to some userland
+deamon - these blocks won't come from any (in-kernel) block device,
+but an totally different kind of storage (eg. venti).
+
+
+cu
+-- 
+---------------------------------------------------------------------
+ Enrico Weigelt    ==   metux IT service - http://www.metux.de/
+---------------------------------------------------------------------
+ Please visit the OpenSource QM Taskforce:
+ 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
+ Patches / Fixes for a lot dozens of packages in dozens of versions:
+	http://patches.metux.de/
+---------------------------------------------------------------------
