@@ -1,39 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbYGERfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbYGERgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753254AbYGERfz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:35:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755752AbYGERfn
+	id S1756397AbYGERgs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbYGERgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:35:43 -0400
-Received: from wr-out-0506.google.com ([64.233.184.232]:18710 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755696AbYGERfl (ORCPT
+	Sat, 5 Jul 2008 13:36:23 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33009 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752746AbYGERgW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 13:35:41 -0400
-Message-ID: <cccedfc60807051035n943a669q61c01f6f1c05d6fa@mail.gmail.com>
-Date: Sat, 5 Jul 2008 12:35:41 -0500
-From: "Jon Nelson" <jnelson-linux-raid@jamponi.net>
-To: "Justin Piszcz" <jpiszcz@lucidpixels.com>
-Subject: Re: Lots of con-current I/O = resets SATA link? (2.6.25.10)
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux-ide@vger.kernel.org, xfs@oss.sgi.com,
-       "Alan Piszcz" <ap@solarrain.com>
-In-Reply-To: <alpine.DEB.1.10.0807051252200.12562@p34.internal.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.DEB.1.10.0807051252200.12562@p34.internal.lan>
-X-Google-Sender-Auth: 90cacceae9125cc1
+	Sat, 5 Jul 2008 13:36:22 -0400
+From: "Theodore Ts'o" <tytso@mit.edu>
+To: Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>
+Cc: Julia Lawall <julia@diku.dk>, Andrew Morton <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 03/52] ext4: Use BUG_ON() instead of BUG()
+Date: Sat,  5 Jul 2008 13:35:29 -0400
+Message-Id: <1215279378-30504-4-git-send-email-tytso@mit.edu>
+X-Mailer: git-send-email 1.5.6.rc3.1.g36b7.dirty
+In-Reply-To: <1215279378-30504-3-git-send-email-tytso@mit.edu>
+References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
+ <1215279378-30504-2-git-send-email-tytso@mit.edu>
+ <1215279378-30504-3-git-send-email-tytso@mit.edu>
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Try booting with:
+From: Julia Lawall <julia@diku.dk>
 
-nolapic
+if (...) BUG(); should be replaced with BUG_ON(...) when the test has no
+side-effects to allow a definition of BUG_ON that drops the code completely.
 
-That largely fixed my problems on my motherboard (2.6.18+, EPoX MF-570SLI).
-I hope to try 2.6.25+ soon.
+The semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@ disable unlikely @ expression E,f; @@
+
+(
+  if (<... f(...) ...>) { BUG(); }
+|
+- if (unlikely(E)) { BUG(); }
++ BUG_ON(E);
+)
+
+@@ expression E,f; @@
+
+(
+  if (<... f(...) ...>) { BUG(); }
+|
+- if (E) { BUG(); }
++ BUG_ON(E);
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+---
+ fs/ext4/balloc.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
+index 9cc80b9..c29d774 100644
+--- a/fs/ext4/balloc.c
++++ b/fs/ext4/balloc.c
+@@ -409,8 +409,7 @@ restart:
+ 		prev = rsv;
+ 	}
+ 	printk("Window map complete.\n");
+-	if (bad)
+-		BUG();
++	BUG_ON(bad);
+ }
+ #define rsv_window_dump(root, verbose) \
+ 	__rsv_window_dump((root), (verbose), __func__)
 -- 
-Jon
+1.5.6.rc3.1.g36b7.dirty
+
