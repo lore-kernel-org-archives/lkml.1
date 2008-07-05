@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbYGELgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbYGELi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbYGELgq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 07:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYGELgj
+	id S1754682AbYGELi0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 07:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbYGELiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 07:36:39 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:28525 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751570AbYGELgi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 07:36:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=MUXhOwypkQHOp6VdbysXmYMjZth7HmppOipjbVbs+EIsBvAeUr14pfh+dkDNq9FIOS
-         /qDf3sXU4Z+6EMgEF1pOZRwLG8QtgwCniRuf8I6SimOE2KfvQsoAOSw1ctMUIXTmRgqa
-         omJdUWPVAi8hOKt+iArWOityZotkUEwlypihg=
-Message-ID: <84144f020807050436h19b18a4bhe4d15163dc31f1c8@mail.gmail.com>
-Date: Sat, 5 Jul 2008 14:36:38 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>
-Subject: Re: [PATCH] Move _RET_IP_ and _THIS_IP_ to include/linux/kernel.h
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080705121423.3a88d20f@linux360.ro>
+	Sat, 5 Jul 2008 07:38:19 -0400
+Received: from saeurebad.de ([85.214.36.134]:47242 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751727AbYGELiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 07:38:18 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] documentation: update CodingStyle tips for Emacs users
+References: <87tzf5tu3z.fsf@skyscraper.fehenstaub.lan>
+	<20080704134159.4dd9f74e@bike.lwn.net>
+Date: Sat, 05 Jul 2008 11:36:44 +0000
+In-Reply-To: <20080704134159.4dd9f74e@bike.lwn.net> (Jonathan Corbet's message
+	of "Fri, 4 Jul 2008 13:41:59 -0600")
+Message-ID: <878wwg4l6b.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080705121423.3a88d20f@linux360.ro>
-X-Google-Sender-Auth: ac161fbe96a7f8a9
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 5, 2008 at 12:14 PM, Eduard - Gabriel Munteanu
-<eduard.munteanu@linux360.ro> wrote:
-> These two macros are useful beyond lock debugging. Moved definitions from
-> include/linux/debug_locks.h to include/linux/kernel.h, so code that needs
-> them does not have to include the former, which would have been a less
-> intuitive choice of a header.
->
-> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Hi,
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Jonathan Corbet <corbet@lwn.net> writes:
+
+> On Fri, 04 Jul 2008 19:52:16 +0200
+> Johannes Weiner <hannes@saeurebad.de> wrote:
+>
+>> +(add-hook 'c-mode-hook
+>> +          (lambda ()
+>> +            (let ((filename (buffer-file-name)))
+>> +              ;; Enable kernel mode for the appropriate files
+>> +              (when (and file
+>> +                         (string-match "/usr/src/linux" filename))
+>
+> Shouldn't that be "(and filename ..." rather than "file"?
+
+Whoops, you are right.
+
+> A test for /usr/src/linux seems misplaced, though; I don't think a
+> whole lot of people keep their kernel trees there anymore.  There must
+> be a better heuristic one can use to figure out whether a kernel source
+> file is being edited.
+
+Is this really needed?  I think most people have their kernel trees in
+one directory and I used /usr/src/linux explicitely because it is so
+well known and whoever reads this snippet knows what to substitute it
+for.
+
+But perhaps it should be "~/src/linux-trees/" to emphasize that it it
+matches everything descendant from this directory.
+
+A heuristics seems overkill as this snippet is not distributed code that
+needs to be portable but it is just a tip for ones .emacs.  I don't want
+heuristics in my .emacs if I know exactly where my kernel trees are.
+
+But then, we should remove the check for linux-files completely and make
+people use this coding style for every code they write ;)
+
+	Hannes
