@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbYGEL7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbYGEMCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756025AbYGEL7I (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 07:59:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbYGEL5h
+	id S1755248AbYGEMCe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 08:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYGEMCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 07:57:37 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:23988 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752337AbYGEL5f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 07:57:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=references:user-agent:date:from:to:cc:subject:content-disposition
-         :message-id;
-        b=OlpGYi6bazCQEtPp4MCxv5pZ3Y7WT+WHAF/o6G3ISNly5TfKNd1fI9FhFBf3CpAIq/
-         jvSEGLCsLO1O1q7bmCZ1yj4TZUsPPptRWI651aYRgd6+3KESHryPMhbZtDAeRO3PYpbd
-         NBBYv7gkpRaUkpKIwosr5lv1A9UnxTHN6ZZfM=
-References: <20080705115334.892720771@gmail.com>>
-User-Agent: quilt/0.46-1
-Date: Sat, 05 Jul 2008 15:53:39 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: mingo@elte.hu, akpm@linux-foundation.org, hpa@zytor.com,
-       tglx@linutronix.de, andi@firstfloor.org
-Cc: linux-kernel@vger.kernel.org, Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: [patch 5/5] x86: e820 memmap - add checking for NULL early param
-Content-Disposition: inline; filename=ep-memmap
-Message-ID: <486f61ac.2834440a.3f3c.ffffc33a@mx.google.com>
+	Sat, 5 Jul 2008 08:02:24 -0400
+Received: from dspnet.fr.eu.org ([213.186.44.138]:3188 "EHLO dspnet.fr.eu.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751877AbYGEMCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 08:02:23 -0400
+Date: Sat, 5 Jul 2008 14:02:21 +0200
+From: Olivier Galibert <galibert@pobox.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Takashi Iwai <tiwai@suse.de>, David Woodhouse <dwmw2@infradead.org>,
+       Hannes Reinecke <hare@suse.de>, Theodore Tso <tytso@mit.edu>,
+       Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
+       hugh@veritas.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+Message-ID: <20080705120221.GC44773@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	Andi Kleen <andi@firstfloor.org>, Takashi Iwai <tiwai@suse.de>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Hannes Reinecke <hare@suse.de>, Theodore Tso <tytso@mit.edu>,
+	Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
+	hugh@veritas.com, akpm@linux-foundation.org,
+	kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	netdev@vger.kernel.org
+References: <486E2260.5050503@garzik.org> <1215178035.10393.763.camel@pmac.infradead.org> <20080704141014.GA23215@mit.edu> <s5habgxloct.wl%tiwai@suse.de> <486E3622.1000900@suse.de> <1215182557.10393.808.camel@pmac.infradead.org> <20080704231322.GA4410@dspnet.fr.eu.org> <s5h4p746am3.wl%tiwai@suse.de> <20080705105317.GA44773@dspnet.fr.eu.org> <486F596C.8050109@firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <486F596C.8050109@firstfloor.org>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+On Sat, Jul 05, 2008 at 01:22:20PM +0200, Andi Kleen wrote:
+> Many distribution have some way for separate kernel module packages.
+> It's essentially the same problem so it should be already solved
+> in some way.
 
-Index: linux-2.6.git/arch/x86/kernel/e820.c
-====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/e820.c	2008-06-28 21:15:44.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/e820.c	2008-07-05 12:55:55.000000000 +0400
-@@ -1131,6 +1131,9 @@ static int __init parse_memmap_opt(char 
- 	char *oldp;
- 	u64 start_at, mem_size;
- 
-+	if (!p)
-+		return -EINVAL;
-+
- 	if (!strcmp(p, "exactmap")) {
- #ifdef CONFIG_CRASH_DUMP
- 		/*
+Errr, no.  Modules go in /lib/modules/`uname -r`, so no conflict.
 
--- 
+  OG.
