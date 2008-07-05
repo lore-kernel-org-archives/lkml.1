@@ -1,96 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbYGEUQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbYGEUUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755485AbYGEUQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 16:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYGEUQv
+	id S1755665AbYGEUUS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 16:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYGEUUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 16:16:51 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:31044 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752647AbYGEUQu (ORCPT
+	Sat, 5 Jul 2008 16:20:06 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:33753 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752356AbYGEUUE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 16:16:50 -0400
+	Sat, 5 Jul 2008 16:20:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=ls9YxmGJbBOYEBEi0rxY9zEZ/fHjHGyuytwYjW0W76Wn5N+obUpjySmxyHXU52FJlP
-         id+89wdlrqOpZAV6439f8MZSyvvZHKth9BYtrK8x/6N7mJnf5RPAB9rAcS0CxRkXMfWt
-         /POlyijsuhjUHrkSHMXJjsq4RZGtIOGCYRKR8=
-Subject: [PATCH] mfd: remove DS1WM register definitions from asic3.h
+        b=jI5Lhr1/WCYEhhOLYs8a+g8vtpK104MTYYDNypOb79iLgmfcEzf60iaIXju8ebCdZq
+         NCXHxRHJXCD9qfMGJ4RsNTQEVXIxWiea0Js4XzTCQbZbbelm9B5ZYpMnGCWHeYDXp/0W
+         I35kPA4dUsxRd2762UgUfpKMQZ4SXzGIXDnQo=
+Subject: [PATCH] mfd: let asic3 use mem resource instead of bus_shift
 From: Philipp Zabel <philipp.zabel@gmail.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Samuel Ortiz <sameo@openedhand.com>
-Content-Type: text/plain
-Date: Sat, 05 Jul 2008 22:16:45 +0200
-Message-Id: <1215289005.23398.36.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 05 Jul 2008 22:20:00 +0200
+Message-Id: <1215289200.23398.40.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a dedicated ds1wm driver, no need to duplicate this
-information here.
+The bus_shift parameter in platform_data is not needed
+as we can tell the driver with the IOMEM_RESOURCE whether
+the ASIC is located on a 16bit or 32bit memory bus.
+
+bus_shift as a configuration parameter is confusing at best
+because sometimes it means "shift register number left by n bits",
+sometimes it means "shift 32bit register address right by n bits"
+(see asic->bus_shift = 2 - pdata->bus_shift ...).
+
+The htc-egpio driver uses a more descriptive bus_width parameter,
+but for drivers where the register map size is fixed, we don't even
+need this. With this patch, the asic3 driver will calculate its
+bus_shift from the memory resource size (﻿ASIC3_MAP_SIZE_16BIT or
+ASIC3_MAP_SIZE_32BIT).
 
 Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
 ---
- include/linux/mfd/asic3.h |   38 +++-----------------------------------
- 1 files changed, 3 insertions(+), 35 deletions(-)
+ drivers/mfd/asic3.c       |   11 +++++------
+ include/linux/mfd/asic3.h |    3 ++-
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
+diff --git a/drivers/mfd/asic3.c b/drivers/mfd/asic3.c
+index f2fb233..3b870e7 100644
+--- a/drivers/mfd/asic3.c
++++ b/drivers/mfd/asic3.c
+@@ -313,6 +313,7 @@ static int __init asic3_irq_probe(struct platform_device *pdev)
+ 	struct asic3 *asic = platform_get_drvdata(pdev);
+ 	unsigned long clksel = 0;
+ 	unsigned int irq, irq_base;
++	int map_size;
+ 
+ 	asic->irq_nr = platform_get_irq(pdev, 0);
+ 	if (asic->irq_nr < 0)
+@@ -551,8 +552,8 @@ static int __init asic3_probe(struct platform_device *pdev)
+ 		goto out_free;
+ 	}
+ 
+-
+-	asic->mapping = ioremap(mem->start, PAGE_SIZE);
++	map_size = mem->end - mem->start + 1;
++	asic->mapping = ioremap(mem->start, map_size);
+ 	if (!asic->mapping) {
+ 		ret = -ENOMEM;
+ 		dev_err(asic->dev, "Couldn't ioremap\n");
+@@ -561,10 +562,8 @@ static int __init asic3_probe(struct platform_device *pdev)
+ 
+ 	asic->irq_base = pdata->irq_base;
+ 
+-	if (pdata && pdata->bus_shift)
+-		asic->bus_shift = 2 - pdata->bus_shift;
+-	else
+-		asic->bus_shift = 0;
++	/* calculate bus shift from mem resource */
++	asic->bus_shift = 2 - (map_size >> 12);
+ 
+ 	clksel = 0;
+ 	asic3_write_register(asic, ASIC3_OFFSET(CLOCK, SEL), clksel);
 diff --git a/include/linux/mfd/asic3.h b/include/linux/mfd/asic3.h
-index 0eae308..8f8c46c 100644
+index 8f8c46c..2de526a 100644
 --- a/include/linux/mfd/asic3.h
 +++ b/include/linux/mfd/asic3.h
-@@ -265,44 +265,12 @@ struct asic3_platform_data {
- #define ASIC3_EXTCF_CF_SLEEP             (1 << 15) /* CF sleep mode control */
+@@ -498,6 +498,7 @@ struct asic3_platform_data {
+ #define ASIC3_SDIO_CTRL_LEDCtrl              0x7C
+ #define ASIC3_SDIO_CTRL_SoftwareReset        0x1C0
  
- /*********************************************
-- *  The Onewire interface registers
-- *
-- *  OWM_CMD
-- *  OWM_DAT
-- *  OWM_INTR
-- *  OWM_INTEN
-- *  OWM_CLKDIV
-+ *  The Onewire interface (DS1WM) is handled
-+ *  by the ds1wm driver.
-  *
-  *********************************************/
+-#define ASIC3_MAP_SIZE	     		     0x2000
++#define ASIC3_MAP_SIZE_32BIT	0x2000
++#define ASIC3_MAP_SIZE_16BIT	0x1000
  
--#define ASIC3_OWM_Base		0xC00
--
--#define ASIC3_OWM_CMD         0x00
--#define ASIC3_OWM_DAT         0x04
--#define ASIC3_OWM_INTR        0x08
--#define ASIC3_OWM_INTEN       0x0C
--#define ASIC3_OWM_CLKDIV      0x10
--
--#define ASIC3_OWM_CMD_ONEWR         (1 << 0)
--#define ASIC3_OWM_CMD_SRA           (1 << 1)
--#define ASIC3_OWM_CMD_DQO           (1 << 2)
--#define ASIC3_OWM_CMD_DQI           (1 << 3)
--
--#define ASIC3_OWM_INTR_PD          (1 << 0)
--#define ASIC3_OWM_INTR_PDR         (1 << 1)
--#define ASIC3_OWM_INTR_TBE         (1 << 2)
--#define ASIC3_OWM_INTR_TEMP        (1 << 3)
--#define ASIC3_OWM_INTR_RBF         (1 << 4)
--
--#define ASIC3_OWM_INTEN_EPD        (1 << 0)
--#define ASIC3_OWM_INTEN_IAS        (1 << 1)
--#define ASIC3_OWM_INTEN_ETBE       (1 << 2)
--#define ASIC3_OWM_INTEN_ETMT       (1 << 3)
--#define ASIC3_OWM_INTEN_ERBF       (1 << 4)
--
--#define ASIC3_OWM_CLKDIV_PRE       (3 << 0) /* two bits wide at bit 0 */
--#define ASIC3_OWM_CLKDIV_DIV       (7 << 2) /* 3 bits wide at bit 2 */
--
-+#define ASIC3_OWM_BASE		0xC00
- 
- /*****************************************************************************
-  *  The SD configuration registers are at a completely different location
+ #endif /* __ASIC3_H__ */
 -- 
 1.5.6
 
