@@ -1,158 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755699AbYGEQwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbYGEQ4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755699AbYGEQwc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 12:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbYGEQwN
+	id S1755236AbYGEQ4s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 12:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYGEQ4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 12:52:13 -0400
-Received: from mga01.intel.com ([192.55.52.88]:25039 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751877AbYGEQwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 12:52:12 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.30,307,1212390000"; 
-   d="scan'208";a="349123509"
-From: Tomas Winkler <tomas.winkler@intel.com>
-To: drzeus-list@drzeus.cx
-Cc: marcel@holtmann.org, linux-kernel@vger.kernel.org,
-       Tomas Winkler <tomas.winkler@intel.com>
-Subject: [PATCH 2/2 V2] MMC: cleanup endianity conversions and style problems
-Date: Sat,  5 Jul 2008 19:52:05 +0300
-Message-Id: <1215276725-15588-2-git-send-email-tomas.winkler@intel.com>
-X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <1215276725-15588-1-git-send-email-tomas.winkler@intel.com>
-References: <1215276725-15588-1-git-send-email-tomas.winkler@intel.com>
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"
+	Sat, 5 Jul 2008 12:56:41 -0400
+Received: from gmp-eb-inf-2.sun.com ([192.18.6.24]:53970 "EHLO
+	gmp-eb-inf-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752026AbYGEQ4k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 12:56:40 -0400
+X-Greylist: delayed 701 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Jul 2008 12:56:40 EDT
+Date: Sat, 05 Jul 2008 17:56:37 +0100
+From: "Ricardo M. Correia" <Ricardo.M.Correia@Sun.COM>
+Subject: Re: [3/3] Use __fls for fls64 on 64-bit archs
+In-reply-to: <20080315173236.GC21659@mailshack.com>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-arch <linux-arch@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       heukelum@fastmail.fm
+Message-id: <1215276997.7167.12.camel@localhost>
+Organization: Sun Microsystems, Inc.
+MIME-version: 1.0
+X-Mailer: Evolution 2.22.2
+Content-type: text/plain; charset=UTF-8
+Content-transfer-encoding: 8BIT
+References: <20080315172913.GA21648@mailshack.com>
+ <20080315173236.GC21659@mailshack.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch cleans up endianity conversions im mmc core
-and style errors in the 'for' statements
+(Sorry, sending this again as I screwed up the previous mail).
 
-Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
----
- drivers/mmc/card/block.c   |    5 ++---
- drivers/mmc/core/mmc_ops.c |   15 ++++++++-------
- drivers/mmc/core/sd_ops.c  |    7 ++++---
- 3 files changed, 14 insertions(+), 13 deletions(-)
+Hi,
 
-diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
-index 4b0f822..fbee07f 100644
---- a/drivers/mmc/card/block.c
-+++ b/drivers/mmc/card/block.c
-@@ -144,7 +144,7 @@ struct mmc_blk_request {
- static u32 mmc_sd_num_wr_blocks(struct mmc_card *card)
- {
- 	int err;
--	u32 blocks;
-+	__be32 blocks;
- 
- 	struct mmc_request mrq;
- 	struct mmc_command cmd;
-@@ -203,9 +203,8 @@ static u32 mmc_sd_num_wr_blocks(struct mmc_card *card)
- 	if (cmd.error || data.error)
- 		return (u32)-1;
- 
--	blocks = ntohl(blocks);
- 
--	return blocks;
-+	return be32_to_cpu(blocks);
- }
- 
- static int mmc_blk_issue_rq(struct mmc_queue *mq, struct request *req)
-diff --git a/drivers/mmc/core/mmc_ops.c b/drivers/mmc/core/mmc_ops.c
-index 64b05c6..8187aea 100644
---- a/drivers/mmc/core/mmc_ops.c
-+++ b/drivers/mmc/core/mmc_ops.c
-@@ -267,17 +267,18 @@ mmc_send_cxd_data(struct mmc_card *card, struct mmc_host *host,
- int mmc_send_csd(struct mmc_card *card, u32 *csd)
- {
- 	int ret, i;
-+	__be32 csd_buf[4];
- 
- 	if (!mmc_host_is_spi(card->host))
- 		return mmc_send_cxd_native(card->host, card->rca << 16,
- 				csd, MMC_SEND_CSD);
- 
--	ret = mmc_send_cxd_data(card, card->host, MMC_SEND_CSD, csd, 16);
-+	ret = mmc_send_cxd_data(card, card->host, MMC_SEND_CSD, csd_buf, 16);
- 	if (ret)
- 		return ret;
- 
--	for (i = 0;i < 4;i++)
--		csd[i] = be32_to_cpu(csd[i]);
-+	for (i = 0; i < 4; i++)
-+		csd[i] = be32_to_cpu(csd_buf[i]);
- 
- 	return 0;
- }
-@@ -285,7 +286,7 @@ int mmc_send_csd(struct mmc_card *card, u32 *csd)
- int mmc_send_cid(struct mmc_host *host, u32 *cid)
- {
- 	int ret, i;
--
-+	__be32 cid_buf[4];
- 	if (!mmc_host_is_spi(host)) {
- 		if (!host->card)
- 			return -EINVAL;
-@@ -293,12 +294,12 @@ int mmc_send_cid(struct mmc_host *host, u32 *cid)
- 				cid, MMC_SEND_CID);
- 	}
- 
--	ret = mmc_send_cxd_data(NULL, host, MMC_SEND_CID, cid, 16);
-+	ret = mmc_send_cxd_data(NULL, host, MMC_SEND_CID, cid_buf, 16);
- 	if (ret)
- 		return ret;
- 
--	for (i = 0;i < 4;i++)
--		cid[i] = be32_to_cpu(cid[i]);
-+	for (i = 0; i < 4; i++)
-+		cid[i] = be32_to_cpu(cid_buf[i]);
- 
- 	return 0;
- }
-diff --git a/drivers/mmc/core/sd_ops.c b/drivers/mmc/core/sd_ops.c
-index 0d96080..7ef7b6c 100644
---- a/drivers/mmc/core/sd_ops.c
-+++ b/drivers/mmc/core/sd_ops.c
-@@ -254,6 +254,7 @@ int mmc_app_send_scr(struct mmc_card *card, u32 *scr)
- 	struct mmc_command cmd;
- 	struct mmc_data data;
- 	struct scatterlist sg;
-+	__be32 scr_buf[2];
- 
- 	BUG_ON(!card);
- 	BUG_ON(!card->host);
-@@ -282,7 +283,7 @@ int mmc_app_send_scr(struct mmc_card *card, u32 *scr)
- 	data.sg = &sg;
- 	data.sg_len = 1;
- 
--	sg_init_one(&sg, scr, 8);
-+	sg_init_one(&sg, scr_buf, 8);
- 
- 	mmc_set_data_timeout(&data, card);
- 
-@@ -293,8 +294,8 @@ int mmc_app_send_scr(struct mmc_card *card, u32 *scr)
- 	if (data.error)
- 		return data.error;
- 
--	scr[0] = be32_to_cpu(scr[0]);
--	scr[1] = be32_to_cpu(scr[1]);
-+	scr[0] = be32_to_cpu(scr_buf[0]);
-+	scr[1] = be32_to_cpu(scr_buf[1]);
- 
- 	return 0;
- }
--- 
-1.5.4.1
+I have a question about fls64() which I hope you or someone else could
+clarify, please see below.
 
----------------------------------------------------------------------
-Intel Israel (74) Limited
+﻿On Sáb, 2008-03-15 at 18:32 +0100, Alexander van Heukelum wrote: 
+> +#elif BITS_PER_LONG == 64
+> +static inline int fls64(__u64 x)
+> +{
+> +	if (x == 0)
+> +		return 0;
+> +	return __fls(x) + 1;
+> +}
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+It seems fls64() is implemented on top of __fls(), however the __fls()
+implementation on the x86-64 architecture states that the result is
+undefined if the argument does not have any zero bits.
+So if I understand correctly, the statement "fls64(~0ULL)" would return
+an undefined result on x64-64 instead of 64 as one would expect.
+
+Wouldn't it make sense to check for ~0ULL in fls64()?
+
+Thanks,
+Ricardo
+
 
