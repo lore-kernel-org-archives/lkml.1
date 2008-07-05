@@ -1,81 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbYGENRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbYGENXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755942AbYGENRS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 09:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbYGENRF
+	id S1755989AbYGENXL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 09:23:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbYGENW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 09:17:05 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:1956 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752614AbYGENRC (ORCPT
+	Sat, 5 Jul 2008 09:22:57 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:60873 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752409AbYGENWz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 09:17:02 -0400
+	Sat, 5 Jul 2008 09:22:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=GuFhphxbZsUDjFfO8NnWBPNB4SKNxGPzgyEUpGU8Xd9h28MeYreeF8ZxlooRoL03j3
-         xHDUOXnbVdkd4c8HainPckuu0H+9mxkOhRATnUS1+JRJBR4ANPSBZcPagPoht3dxFXa1
-         NQgfj81O6R7TH50kmoeiTRBj3nojb2jCIDEGo=
-Message-ID: <31e679430807050617u3fc706fasee9bb43a151c501f@mail.gmail.com>
-Date: Sat, 5 Jul 2008 16:17:01 +0300
-From: "Felipe Balbi" <felipebalbi@users.sourceforge.net>
-To: "Kernel development list" <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Battery life difference
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=WQNy2g7fSCLG6Gf1em1w8A9OQ+4QnIPlSAZ31KkVyfHD1m+hrPHGtgZht9i4C+CvGO
+         t+BxYosRhcOUceGcpxCz2OFvhyRVI/9QP5Ly6QRk1XxqWIC9/WGV1ChNU+TYIYg70hJl
+         +o/KghMcOtC1J0w6Hl34+qeoD7X1O6r0JDWjY=
+Date: Sat, 5 Jul 2008 15:21:06 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>, Frans Pop <elendil@planet.nl>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [PATCH] parport/ppdev: fix registration of sysctl entries
+Message-ID: <20080705131924.GA2083@joi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Google-Sender-Auth: 8dfc966726a479a8
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+ppdev (which provides support for user-space parallel port device drivers)
+is slightly different from other parallel port drivers. It allows to open
+the device by more than one process, but locks the device on ioctl (PPCLAIM).
+Unfortunately registration of sysctl entries were done before locking
+the device, so 2 processes could open it and try to register sysctl
+(it ignored error on registration, so it didn't block access to port).
 
-I bought two x61s for testing purposes. One of them is running windows XP and
-the other one is running clean ubuntu 8.04 with kernel 2.6.24-19. The problem
-is that on windows that battery lasts around 3h30min and with linux 1h30min.
+So move registration of sysctl after locking (parport_claim_or_block).
 
-2 hours is a huge difference. Here's the scenario:
+Warning:
+ppdev0: registered pardevice
+sysctl table check failed: /dev/parport/parport0/devices/ppdev0/timeslice
+Sysctl already exists
+Pid: 14491, comm: hpijs Not tainted 2.6.24-rc5 #1
 
-. x61s with windows xp
-wifi on but not connected to any network, bluetooth on,
-display is in the less brighten state.
+Call Trace:
+ [<ffffffff8024c0b0>] set_fail+0x3f/0x47
+ [<ffffffff8024c566>] sysctl_check_table+0x4ae/0x4fb
+ [<ffffffff8024c062>] sysctl_check_lookup+0xc1/0xd0
+ [<ffffffff8024c57c>] sysctl_check_table+0x4c4/0x4fb
+ [<ffffffff8024c062>] sysctl_check_lookup+0xc1/0xd0
+ [<ffffffff8024c57c>] sysctl_check_table+0x4c4/0x4fb
+ [<ffffffff8024c062>] sysctl_check_lookup+0xc1/0xd0
+ [<ffffffff8024c57c>] sysctl_check_table+0x4c4/0x4fb
+ [<ffffffff8024c062>] sysctl_check_lookup+0xc1/0xd0
+ [<ffffffff8024c57c>] sysctl_check_table+0x4c4/0x4fb
+ [<ffffffff8024c062>] sysctl_check_lookup+0xc1/0xd0
+ [<ffffffff8024c57c>] sysctl_check_table+0x4c4/0x4fb
+ [<ffffffff8023ca15>] register_sysctl_table+0x52/0x9d
+ [<ffffffff881d97cb>] :parport:parport_device_proc_register+0xc3/0xe3
+ [<ffffffff881d7da7>] :parport:parport_register_device+0x206/0x267
+ [<ffffffff884171ae>] :ppdev:pp_irq+0x0/0x40
+ [<ffffffff8841774f>] :ppdev:pp_ioctl+0x13f/0x77c
+ [<ffffffff80296a11>] do_ioctl+0x55/0x6b
+ [<ffffffff80296c6a>] vfs_ioctl+0x243/0x25c
+ [<ffffffff80296cd4>] sys_ioctl+0x51/0x71
+ [<ffffffff8020beee>] system_call+0x7e/0x83
 
-. x61s with ubuntu 8.04
-all radios off (modules removed and hw switch off),
-display is in the less brighten state.
-powertop runned and I did what it suggested me
-to do. Also did some other stuff from thinkwiki on
-how to reduce power consumption.
+http://lkml.org/lkml/2007/12/16/121
+http://kerneloops.org/guilty.php?guilty=parport_device_proc_register&version=2.6.25-release&start=1671168&end=1703935&class=warn
+https://bugzilla.redhat.com/show_bug.cgi?id=449112
 
-Well, what could still be using the system power so
-much ?
+Reported-by: Frans Pop <elendil@planet.nl>
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+---
+Frans: Could you test it on real hardware?
+---
+ drivers/char/ppdev.c     |    4 +++-
+ drivers/parport/procfs.c |    1 +
+ drivers/parport/share.c  |    6 ++++--
+ include/linux/parport.h  |    1 +
+ 4 files changed, 9 insertions(+), 3 deletions(-)
 
-Are we missing anything on the acpi implementation or
-is it related to acpi integration to bus and device drivers ?
-
-Anything I could help testing and maybe even coding, I
-started reading the acpi specs and some notes on the
-linux-acpi website.
-
-One thing that called my attention is that D2 and D3 states
-would require context save/restore opperations (not always
-true in D2) and I can't see such feature in almost any drivers.
-
-We're starting to plan it for omap drivers though due to omap3's
-pm feature been able to reach off-states, but that's another
-point and has nothing to do with x86.
-
-Anyways, do we reach D2/D3 states anywhere ? I mean without
-context save/restore we can't reach D3 and almost no D2 as well.
-
-Any comments ?
-
+diff --git a/drivers/char/ppdev.c b/drivers/char/ppdev.c
+index 3aab837..e60111a 100644
+--- a/drivers/char/ppdev.c
++++ b/drivers/char/ppdev.c
+@@ -302,7 +302,8 @@ static int register_device (int minor, struct pp_struct *pp)
+ 
+ 	fl = (pp->flags & PP_EXCL) ? PARPORT_FLAG_EXCL : 0;
+ 	pdev = parport_register_device (port, name, NULL,
+-					NULL, pp_irq, fl, pp);
++					NULL, pp_irq,
++					fl | PARPORT_DONT_REG_PROC, pp);
+ 	parport_put_port (port);
+ 
+ 	if (!pdev) {
+@@ -359,6 +360,7 @@ static int pp_ioctl(struct inode *inode, struct file *file,
+ 		ret = parport_claim_or_block (pp->pdev);
+ 		if (ret < 0)
+ 			return ret;
++		parport_device_proc_register(pp->pdev);
+ 
+ 		pp->flags |= PP_CLAIMED;
+ 
+diff --git a/drivers/parport/procfs.c b/drivers/parport/procfs.c
+index d950fc3..5a6ac1d 100644
+--- a/drivers/parport/procfs.c
++++ b/drivers/parport/procfs.c
+@@ -554,6 +554,7 @@ int parport_device_proc_register(struct pardevice *device)
+ 	device->sysctl_table = t;
+ 	return 0;
+ }
++EXPORT_SYMBOL(parport_device_proc_register);
+ 
+ int parport_device_proc_unregister(struct pardevice *device)
+ {
+diff --git a/drivers/parport/share.c b/drivers/parport/share.c
+index a8a62bb..3a777be 100644
+--- a/drivers/parport/share.c
++++ b/drivers/parport/share.c
+@@ -572,7 +572,7 @@ parport_register_device(struct parport *port, const char *name,
+ 	tmp->preempt = pf;
+ 	tmp->wakeup = kf;
+ 	tmp->private = handle;
+-	tmp->flags = flags;
++	tmp->flags = flags & ~PARPORT_DONT_REG_PROC;
+ 	tmp->irq_func = irq_func;
+ 	tmp->waiting = 0;
+ 	tmp->timeout = 5 * HZ;
+@@ -614,7 +614,9 @@ parport_register_device(struct parport *port, const char *name,
+ 	 * pardevice fields. -arca
+ 	 */
+ 	port->ops->init_state(tmp, tmp->state);
+-	parport_device_proc_register(tmp);
++	if (!(flags & PARPORT_DONT_REG_PROC))
++		parport_device_proc_register(tmp);
++
+ 	return tmp;
+ 
+  out_free_all:
+diff --git a/include/linux/parport.h b/include/linux/parport.h
+index dcb9e01..f871031 100644
+--- a/include/linux/parport.h
++++ b/include/linux/parport.h
+@@ -463,6 +463,7 @@ static __inline__ int parport_yield_blocking(struct pardevice *dev)
+ #define PARPORT_DEV_EXCL		(1<<1)	/* Need exclusive access. */
+ 
+ #define PARPORT_FLAG_EXCL		(1<<1)	/* EXCL driver registered. */
++#define PARPORT_DONT_REG_PROC		(1<<2)
+ 
+ /* IEEE1284 functions */
+ extern void parport_ieee1284_interrupt (void *);
 -- 
-Best Regards,
+1.5.4.5
 
-Felipe Balbi
-felipebalbi@users.sourceforge.net
