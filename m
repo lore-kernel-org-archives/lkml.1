@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbYGESop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754316AbYGESoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbYGESop (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 14:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbYGESog
+	id S1754316AbYGESoW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 14:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbYGESoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 14:44:36 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:44550 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751723AbYGESog (ORCPT
+	Sat, 5 Jul 2008 14:44:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38531 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751691AbYGESoO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 14:44:36 -0400
-Date: Sat, 5 Jul 2008 20:44:35 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Andy Whitcroft <apw@shadowen.org>
-cc: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] checkpatch: complex macros need to ignore comments
-In-Reply-To: <1214998278-11767-4-git-send-email-apw@shadowen.org>
-Message-ID: <alpine.LNX.1.10.0807052043210.28765@fbirervta.pbzchgretzou.qr>
-References: <1214998278-11767-1-git-send-email-apw@shadowen.org> <1214998278-11767-4-git-send-email-apw@shadowen.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Sat, 5 Jul 2008 14:44:14 -0400
+Date: Sat, 5 Jul 2008 11:44:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jan Engelhardt <jengelh@medozas.de>
+cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, Peter Anvin <hpa@zytor.com>,
+       "David S. Miller" <davem@davemloft.net>, linux-ia64@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: the printk problem
+In-Reply-To: <alpine.LNX.1.10.0807052039520.28765@fbirervta.pbzchgretzou.qr>
+Message-ID: <alpine.LFD.1.10.0807051142050.2815@woody.linux-foundation.org>
+References: <20080705125230.GA20166@damson.getinternet.no> <alpine.LFD.1.10.0807051045520.2815@woody.linux-foundation.org> <alpine.LNX.1.10.0807052039520.28765@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,18 +30,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wednesday 2008-07-02 13:31, Andy Whitcroft wrote:
 
->Ensure we ignore comments in complex macro detection else we incorrectly
->report this:
->
->	#define PFM_GROUP_PERM_ANY     -1      /* any user/group */
+On Sat, 5 Jul 2008, Jan Engelhardt wrote:
+> 
+> So, and what do you do when you run out of alphanumeric characters?
 
-Does it also catch this ugly piece from dcache.c?
+Did you actually look at my patch?
 
+It's not a single alnum character. It's an arbitrary sequence of alnum 
+characters. IOW, my patch allows
 
-#define DCACHE_NFSFS_RENAMED  0x0002    /* this dentry has been "silly
-                                         * renamed" and has to be
-                                         * deleted on the last dput()
-                                         */
+	%p6N
 
+or something like that for showing a ipv6 "NIP" format string etc. Or you 
+could spell them out even more, although I consider it unlikely that you 
+really want to see too many of these, since gcc won't actually be able to 
+type-check them (so they will always remain _secondary_ formats).
+
+			Linus
