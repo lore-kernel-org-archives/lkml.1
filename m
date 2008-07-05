@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbYGELi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754309AbYGELwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754682AbYGELi0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 07:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbYGELiT
+	id S1754309AbYGELwY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 07:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbYGELwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 07:38:19 -0400
-Received: from saeurebad.de ([85.214.36.134]:47242 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751727AbYGELiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 07:38:18 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] documentation: update CodingStyle tips for Emacs users
-References: <87tzf5tu3z.fsf@skyscraper.fehenstaub.lan>
-	<20080704134159.4dd9f74e@bike.lwn.net>
-Date: Sat, 05 Jul 2008 11:36:44 +0000
-In-Reply-To: <20080704134159.4dd9f74e@bike.lwn.net> (Jonathan Corbet's message
-	of "Fri, 4 Jul 2008 13:41:59 -0600")
-Message-ID: <878wwg4l6b.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Sat, 5 Jul 2008 07:52:16 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53526 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750722AbYGELwP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 07:52:15 -0400
+Date: Sat, 5 Jul 2008 12:34:37 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Joe Peterson <joe@skyrush.com>, Elias Oltmanns <eo@nebensachen.de>,
+       =?UTF-8?B?VMO2csO2aw==?= Edwin <edwintorok@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Ctrl+C doesn't interrupt process waiting for I/O
+Message-ID: <20080705123437.456eaa83@lxorguk.ukuu.org.uk>
+In-Reply-To: <486F543D.8010409@firstfloor.org>
+References: <48661488.10304@gmail.com>
+	<87fxqurqpz.fsf@denkblock.local>
+	<486E83C3.1040509@skyrush.com>
+	<20080704212335.4ffc8230@lxorguk.ukuu.org.uk>
+	<871w29s5u2.fsf@basil.nowhere.org>
+	<20080704221457.1f147225@lxorguk.ukuu.org.uk>
+	<486E97F2.8020605@firstfloor.org>
+	<20080704224441.63204bc4@lxorguk.ukuu.org.uk>
+	<486E9F91.6010701@firstfloor.org>
+	<20080705113434.41109492@lxorguk.ukuu.org.uk>
+	<486F543D.8010409@firstfloor.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> Well we had a patch (although I haven't tried it yet)
+> 
+> http://marc.info/?l=linux-kernel&m=121489861508496&w=2
+> 
+> Is that not concrete enough?
 
-Jonathan Corbet <corbet@lwn.net> writes:
+No. Apply a little engineering to this instead of running around acting
+on random unexplained proposals people don't agree works. Right now you
+look like a politician - mindlessly squawking about things you've not
+tried and proposing anything and everything which might improve matters
+without working out if they would and why.
 
-> On Fri, 04 Jul 2008 19:52:16 +0200
-> Johannes Weiner <hannes@saeurebad.de> wrote:
->
->> +(add-hook 'c-mode-hook
->> +          (lambda ()
->> +            (let ((filename (buffer-file-name)))
->> +              ;; Enable kernel mode for the appropriate files
->> +              (when (and file
->> +                         (string-match "/usr/src/linux" filename))
->
-> Shouldn't that be "(and filename ..." rather than "file"?
+The tty layer is getting improved and fixed by applying proper
+engineering methods not by random flapping.
 
-Whoops, you are right.
+So:
 
-> A test for /usr/src/linux seems misplaced, though; I don't think a
-> whole lot of people keep their kernel trees there anymore.  There must
-> be a better heuristic one can use to figure out whether a kernel source
-> file is being edited.
+observe, and if need be experiment to get further data
+produce a model of the behaviour which explains the data
+make the changes the explanation requires
+test
+repeat
 
-Is this really needed?  I think most people have their kernel trees in
-one directory and I used /usr/src/linux explicitely because it is so
-well known and whoever reads this snippet knows what to substitute it
-for.
+> > Instead I have lots of real tty, ATA and other work that needs doing
+> > which has quantified data,
+> 
+> All the reporters provided time stamp traces? 
 
-But perhaps it should be "~/src/linux-trees/" to emphasize that it it
-matches everything descendant from this directory.
+No they provided relevant data or enough info I can reproduce it here.
 
-A heuristics seems overkill as this snippet is not distributed code that
-needs to be portable but it is just a tip for ones .emacs.  I don't want
-heuristics in my .emacs if I know exactly where my kernel trees are.
-
-But then, we should remove the check for linux-files completely and make
-people use this coding style for every code they write ;)
-
-	Hannes
+Alan
