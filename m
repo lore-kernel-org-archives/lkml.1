@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328AbYGEOJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbYGEOOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756328AbYGEOJT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 10:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYGEOJM
+	id S1752908AbYGEOOu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 10:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750826AbYGEOOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 10:09:12 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:47438 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751134AbYGEOJL (ORCPT
+	Sat, 5 Jul 2008 10:14:43 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:46260 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750848AbYGEOOn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 10:09:11 -0400
-Date: Sat, 5 Jul 2008 16:09:10 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Charlie Brej <linux-kernel@brej.org>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] pcspkr/vt_ioctl: PC speaker volume control
-In-Reply-To: <486F7D05.4000403@brej.org>
-Message-ID: <alpine.LNX.1.10.0807051607480.28765@fbirervta.pbzchgretzou.qr>
-References: <486A98EC.1090502@brej.org> <486F7D05.4000403@brej.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Sat, 5 Jul 2008 10:14:43 -0400
+Date: Sat, 5 Jul 2008 10:13:35 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: akpm@linux-foundation.org, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: PATCH] fix potential latency issues in JBD's journal code
+Message-ID: <20080705141335.GB20240@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Arjan van de Ven <arjan@infradead.org>, akpm@linux-foundation.org,
+	jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+References: <20080704192929.2c4dd4ca@infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080704192929.2c4dd4ca@infradead.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Acked-by: "Theodore Ts'o" <tytso@mit.edu>
 
-On Saturday 2008-07-05 15:54, Charlie Brej wrote:
+I will make the corresponding change for ext4.  Is the "Properly
+notify block layer of sync writes" going to be pushed to mainline?  I
+can't add SWRITE_SYNC to the ext4 tree without growing a dependency to
+this patch.
 
-> Charlie Brej wrote:
->> The attached patch allows the system to control the volume of the system
->> bell.
->
-> Has anyone looked at this? Should I send it to someone in particular or is
-> there no interest in it?
+> This patch modifies two key places that submit IO that then immediately will
+> get waited on. The JBD code is slightly convoluted, but after some chasing of
+> abstraction layers, these instances seem to really be of this pattern.
+> There's one case in checkpoint.c which is another candidate, but I've not
+> been able to get my head around the code enough to verify that that one
+> really is of this pattern as well, so for now I'll leave that one as is.
 
-Well how I should I put it... there is the PC speaker sound driver
-from Stas Sergeev, with which beeps can already be produced in
-varying volume levels -- just feed it the appropriate PCM data. Of
-course, console usually does not play WAV files. :o)
+You mean the ll_rw_block() SWRITE in __flush_patch?  Yep, seems to be
+of the same pattern.
+
+						- Ted
+
