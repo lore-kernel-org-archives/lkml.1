@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbYGERpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbYGERqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757095AbYGERpq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 13:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbYGERhf
+	id S1758225AbYGERqF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 13:46:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755810AbYGERhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 13:37:35 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33068 "EHLO
+	Sat, 5 Jul 2008 13:37:39 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:33059 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755810AbYGERgb (ORCPT
+	with ESMTP id S1755319AbYGERgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 5 Jul 2008 13:36:31 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Ext4 Developers List <linux-ext4@vger.kernel.org>,
        Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Cc: Jan Kara <jack@suse.cz>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+Cc: "Jose R. Santos" <jrs@us.ibm.com>,
+       Valerie Clement <valerie.clement@bull.net>,
        "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 34/52] vfs: Move mark_inode_dirty() from under page lock in generic_write_end()
-Date: Sat,  5 Jul 2008 13:36:00 -0400
-Message-Id: <1215279378-30504-35-git-send-email-tytso@mit.edu>
+Subject: [PATCH 13/52] ext4: New inode allocation for FLEX_BG meta-data groups.
+Date: Sat,  5 Jul 2008 13:35:39 -0400
+Message-Id: <1215279378-30504-14-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.rc3.1.g36b7.dirty
-In-Reply-To: <1215279378-30504-34-git-send-email-tytso@mit.edu>
+In-Reply-To: <1215279378-30504-13-git-send-email-tytso@mit.edu>
 References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-2-git-send-email-tytso@mit.edu>
  <1215279378-30504-3-git-send-email-tytso@mit.edu>
@@ -34,27 +34,6 @@ References: <1215279378-30504-1-git-send-email-tytso@mit.edu>
  <1215279378-30504-11-git-send-email-tytso@mit.edu>
  <1215279378-30504-12-git-send-email-tytso@mit.edu>
  <1215279378-30504-13-git-send-email-tytso@mit.edu>
- <1215279378-30504-14-git-send-email-tytso@mit.edu>
- <1215279378-30504-15-git-send-email-tytso@mit.edu>
- <1215279378-30504-16-git-send-email-tytso@mit.edu>
- <1215279378-30504-17-git-send-email-tytso@mit.edu>
- <1215279378-30504-18-git-send-email-tytso@mit.edu>
- <1215279378-30504-19-git-send-email-tytso@mit.edu>
- <1215279378-30504-20-git-send-email-tytso@mit.edu>
- <1215279378-30504-21-git-send-email-tytso@mit.edu>
- <1215279378-30504-22-git-send-email-tytso@mit.edu>
- <1215279378-30504-23-git-send-email-tytso@mit.edu>
- <1215279378-30504-24-git-send-email-tytso@mit.edu>
- <1215279378-30504-25-git-send-email-tytso@mit.edu>
- <1215279378-30504-26-git-send-email-tytso@mit.edu>
- <1215279378-30504-27-git-send-email-tytso@mit.edu>
- <1215279378-30504-28-git-send-email-tytso@mit.edu>
- <1215279378-30504-29-git-send-email-tytso@mit.edu>
- <1215279378-30504-30-git-send-email-tytso@mit.edu>
- <1215279378-30504-31-git-send-email-tytso@mit.edu>
- <1215279378-30504-32-git-send-email-tytso@mit.edu>
- <1215279378-30504-33-git-send-email-tytso@mit.edu>
- <1215279378-30504-34-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -62,55 +41,397 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Kara <jack@suse.cz>
+From: Jose R. Santos <jrs@us.ibm.com>
 
-There's no need to call mark_inode_dirty() under page lock in
-generic_write_end(). It unnecessarily makes hold time of page lock longer
-and more importantly it forces locking order of page lock and transaction
-start for journaling filesystems.
+This patch mostly controls the way inode are allocated in order to
+make ialloc aware of flex_bg block group grouping.  It achieves this
+by bypassing the Orlov allocator when block group meta-data are packed
+toghether through mke2fs.  Since the impact on the block allocator is
+minimal, this patch should have little or no effect on other block
+allocation algorithms. By controlling the inode allocation, it can
+basically control where the initial search for new block begins and
+thus indirectly manipulate the block allocator.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+This allocator favors data and meta-data locality so the disk will
+gradually be filled from block group zero upward.  This helps improve
+performance by reducing seek time.  Since the group of inode tables
+within one flex_bg are treated as one giant inode table, uninitialized
+block groups would not need to partially initialize as many inode
+table as with Orlov which would help fsck time as the filesystem usage
+goes up.
+
+Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
+Signed-off-by: Valerie Clement <valerie.clement@bull.net>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/buffer.c |   12 +++++++++++-
- 1 files changed, 11 insertions(+), 1 deletions(-)
+ fs/ext4/balloc.c  |   14 ++++++++
+ fs/ext4/ext4.h    |   25 +++++++++++++-
+ fs/ext4/ext4_sb.h |    3 ++
+ fs/ext4/ialloc.c  |   96 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/ext4/mballoc.c |   15 ++++++++
+ fs/ext4/super.c   |   57 +++++++++++++++++++++++++++++++
+ 6 files changed, 209 insertions(+), 1 deletions(-)
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index a073f3f..a413008 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -2061,6 +2061,7 @@ int generic_write_end(struct file *file, struct address_space *mapping,
- 			struct page *page, void *fsdata)
- {
- 	struct inode *inode = mapping->host;
-+	int i_size_changed = 0;
+diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
+index ba41123..0b2b754 100644
+--- a/fs/ext4/balloc.c
++++ b/fs/ext4/balloc.c
+@@ -809,6 +809,13 @@ do_more:
+ 	spin_unlock(sb_bgl_lock(sbi, block_group));
+ 	percpu_counter_add(&sbi->s_freeblocks_counter, count);
  
- 	copied = block_write_end(file, mapping, pos, len, copied, page, fsdata);
- 
-@@ -2073,12 +2074,21 @@ int generic_write_end(struct file *file, struct address_space *mapping,
- 	 */
- 	if (pos+copied > inode->i_size) {
- 		i_size_write(inode, pos+copied);
--		mark_inode_dirty(inode);
-+		i_size_changed = 1;
- 	}
- 
- 	unlock_page(page);
- 	page_cache_release(page);
- 
-+	/*
-+	 * Don't mark the inode dirty under page lock. First, it unnecessarily
-+	 * makes the holding time of page lock longer. Second, it forces lock
-+	 * ordering of page lock and transaction start for journaling
-+	 * filesystems.
-+	 */
-+	if (i_size_changed)
-+		mark_inode_dirty(inode);
++	if (sbi->s_log_groups_per_flex) {
++		ext4_group_t flex_group = ext4_flex_group(sbi, block_group);
++		spin_lock(sb_bgl_lock(sbi, flex_group));
++		sbi->s_flex_groups[flex_group].free_blocks += count;
++		spin_unlock(sb_bgl_lock(sbi, flex_group));
++	}
 +
- 	return copied;
+ 	/* We dirtied the bitmap block */
+ 	BUFFER_TRACE(bitmap_bh, "dirtied bitmap block");
+ 	err = ext4_journal_dirty_metadata(handle, bitmap_bh);
+@@ -1883,6 +1890,13 @@ allocated:
+ 	spin_unlock(sb_bgl_lock(sbi, group_no));
+ 	percpu_counter_sub(&sbi->s_freeblocks_counter, num);
+ 
++	if (sbi->s_log_groups_per_flex) {
++		ext4_group_t flex_group = ext4_flex_group(sbi, group_no);
++		spin_lock(sb_bgl_lock(sbi, flex_group));
++		sbi->s_flex_groups[flex_group].free_blocks -= num;
++		spin_unlock(sb_bgl_lock(sbi, flex_group));
++	}
++
+ 	BUFFER_TRACE(gdp_bh, "journal_dirty_metadata for group descriptor");
+ 	err = ext4_journal_dirty_metadata(handle, gdp_bh);
+ 	if (!fatal)
+diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
+index f8e22e4..c4aa1ce 100644
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -170,6 +170,15 @@ struct ext4_group_desc
+ 	__u32	bg_reserved2[3];
+ };
+ 
++/*
++ * Structure of a flex block group info
++ */
++
++struct flex_groups {
++	__u32 free_inodes;
++	__u32 free_blocks;
++};
++
+ #define EXT4_BG_INODE_UNINIT	0x0001 /* Inode table/bitmap not in use */
+ #define EXT4_BG_BLOCK_UNINIT	0x0002 /* Block bitmap not in use */
+ #define EXT4_BG_INODE_ZEROED	0x0004 /* On-disk itable initialized to zero */
+@@ -647,7 +656,10 @@ struct ext4_super_block {
+ 	__le16  s_mmp_interval;         /* # seconds to wait in MMP checking */
+ 	__le64  s_mmp_block;            /* Block for multi-mount protection */
+ 	__le32  s_raid_stripe_width;    /* blocks on all data disks (N*stride)*/
+-	__u32   s_reserved[163];        /* Padding to the end of the block */
++	__u8	s_log_groups_per_flex;  /* FLEX_BG group size */
++	__u8	s_reserved_char_pad2;
++	__le16  s_reserved_pad;
++	__u32   s_reserved[162];        /* Padding to the end of the block */
+ };
+ 
+ #ifdef __KERNEL__
+@@ -1159,6 +1171,17 @@ struct ext4_group_info *ext4_get_group_info(struct super_block *sb,
  }
- EXPORT_SYMBOL(generic_write_end);
+ 
+ 
++static inline ext4_group_t ext4_flex_group(struct ext4_sb_info *sbi,
++					     ext4_group_t block_group)
++{
++	return block_group >> sbi->s_log_groups_per_flex;
++}
++
++static inline unsigned int ext4_flex_bg_size(struct ext4_sb_info *sbi)
++{
++	return 1 << sbi->s_log_groups_per_flex;
++}
++
+ #define ext4_std_error(sb, errno)				\
+ do {								\
+ 	if ((errno))						\
+diff --git a/fs/ext4/ext4_sb.h b/fs/ext4/ext4_sb.h
+index 4de9a75..6300226 100644
+--- a/fs/ext4/ext4_sb.h
++++ b/fs/ext4/ext4_sb.h
+@@ -143,6 +143,9 @@ struct ext4_sb_info {
+ 
+ 	/* locality groups */
+ 	struct ext4_locality_group *s_locality_groups;
++
++	unsigned int s_log_groups_per_flex;
++	struct flex_groups *s_flex_groups;
+ };
+ 
+ #endif	/* _EXT4_SB */
+diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
+index d1fc8c3..dc8bfc4 100644
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -157,6 +157,7 @@ void ext4_free_inode (handle_t *handle, struct inode * inode)
+ 	struct ext4_super_block * es;
+ 	struct ext4_sb_info *sbi;
+ 	int fatal = 0, err;
++	ext4_group_t flex_group;
+ 
+ 	if (atomic_read(&inode->i_count) > 1) {
+ 		printk ("ext4_free_inode: inode has count=%d\n",
+@@ -232,6 +233,12 @@ void ext4_free_inode (handle_t *handle, struct inode * inode)
+ 			if (is_directory)
+ 				percpu_counter_dec(&sbi->s_dirs_counter);
+ 
++			if (sbi->s_log_groups_per_flex) {
++				flex_group = ext4_flex_group(sbi, block_group);
++				spin_lock(sb_bgl_lock(sbi, flex_group));
++				sbi->s_flex_groups[flex_group].free_inodes++;
++				spin_unlock(sb_bgl_lock(sbi, flex_group));
++			}
+ 		}
+ 		BUFFER_TRACE(bh2, "call ext4_journal_dirty_metadata");
+ 		err = ext4_journal_dirty_metadata(handle, bh2);
+@@ -286,6 +293,80 @@ static int find_group_dir(struct super_block *sb, struct inode *parent,
+ 	return ret;
+ }
+ 
++#define free_block_ratio 10
++
++static int find_group_flex(struct super_block *sb, struct inode *parent,
++			   ext4_group_t *best_group)
++{
++	struct ext4_sb_info *sbi = EXT4_SB(sb);
++	struct ext4_group_desc *desc;
++	struct buffer_head *bh;
++	struct flex_groups *flex_group = sbi->s_flex_groups;
++	ext4_group_t parent_group = EXT4_I(parent)->i_block_group;
++	ext4_group_t parent_fbg_group = ext4_flex_group(sbi, parent_group);
++	ext4_group_t ngroups = sbi->s_groups_count;
++	int flex_size = ext4_flex_bg_size(sbi);
++	ext4_group_t best_flex = parent_fbg_group;
++	int blocks_per_flex = sbi->s_blocks_per_group * flex_size;
++	int flexbg_free_blocks;
++	int flex_freeb_ratio;
++	ext4_group_t n_fbg_groups;
++	ext4_group_t i;
++
++	n_fbg_groups = (sbi->s_groups_count + flex_size - 1) >>
++		sbi->s_log_groups_per_flex;
++
++find_close_to_parent:
++	flexbg_free_blocks = flex_group[best_flex].free_blocks;
++	flex_freeb_ratio = flexbg_free_blocks * 100 / blocks_per_flex;
++	if (flex_group[best_flex].free_inodes &&
++	    flex_freeb_ratio > free_block_ratio)
++		goto found_flexbg;
++
++	if (best_flex && best_flex == parent_fbg_group) {
++		best_flex--;
++		goto find_close_to_parent;
++	}
++
++	for (i = 0; i < n_fbg_groups; i++) {
++		if (i == parent_fbg_group || i == parent_fbg_group - 1)
++			continue;
++
++		flexbg_free_blocks = flex_group[i].free_blocks;
++		flex_freeb_ratio = flexbg_free_blocks * 100 / blocks_per_flex;
++
++		if (flex_freeb_ratio > free_block_ratio &&
++		    flex_group[i].free_inodes) {
++			best_flex = i;
++			goto found_flexbg;
++		}
++
++		if (best_flex < 0 ||
++		    (flex_group[i].free_blocks >
++		     flex_group[best_flex].free_blocks &&
++		     flex_group[i].free_inodes))
++			best_flex = i;
++	}
++
++	if (!flex_group[best_flex].free_inodes ||
++	    !flex_group[best_flex].free_blocks)
++		return -1;
++
++found_flexbg:
++	for (i = best_flex * flex_size; i < ngroups &&
++		     i < (best_flex + 1) * flex_size; i++) {
++		desc = ext4_get_group_desc(sb, i, &bh);
++		if (le16_to_cpu(desc->bg_free_inodes_count)) {
++			*best_group = i;
++			goto out;
++		}
++	}
++
++	return -1;
++out:
++	return 0;
++}
++
+ /*
+  * Orlov's allocator for directories.
+  *
+@@ -501,6 +582,7 @@ struct inode *ext4_new_inode(handle_t *handle, struct inode * dir, int mode)
+ 	struct inode *ret;
+ 	ext4_group_t i;
+ 	int free = 0;
++	ext4_group_t flex_group;
+ 
+ 	/* Cannot create files in a deleted directory */
+ 	if (!dir || !dir->i_nlink)
+@@ -514,6 +596,12 @@ struct inode *ext4_new_inode(handle_t *handle, struct inode * dir, int mode)
+ 
+ 	sbi = EXT4_SB(sb);
+ 	es = sbi->s_es;
++
++	if (sbi->s_log_groups_per_flex) {
++		ret2 = find_group_flex(sb, dir, &group);
++		goto got_group;
++	}
++
+ 	if (S_ISDIR(mode)) {
+ 		if (test_opt (sb, OLDALLOC))
+ 			ret2 = find_group_dir(sb, dir, &group);
+@@ -522,6 +610,7 @@ struct inode *ext4_new_inode(handle_t *handle, struct inode * dir, int mode)
+ 	} else
+ 		ret2 = find_group_other(sb, dir, &group);
+ 
++got_group:
+ 	err = -ENOSPC;
+ 	if (ret2 == -1)
+ 		goto out;
+@@ -676,6 +765,13 @@ got:
+ 		percpu_counter_inc(&sbi->s_dirs_counter);
+ 	sb->s_dirt = 1;
+ 
++	if (sbi->s_log_groups_per_flex) {
++		flex_group = ext4_flex_group(sbi, group);
++		spin_lock(sb_bgl_lock(sbi, flex_group));
++		sbi->s_flex_groups[flex_group].free_inodes--;
++		spin_unlock(sb_bgl_lock(sbi, flex_group));
++	}
++
+ 	inode->i_uid = current->fsuid;
+ 	if (test_opt (sb, GRPID))
+ 		inode->i_gid = dir->i_gid;
+diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
+index 676fd6c..11acfe5 100644
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -2834,6 +2834,14 @@ ext4_mb_mark_diskspace_used(struct ext4_allocation_context *ac,
+ 	spin_unlock(sb_bgl_lock(sbi, ac->ac_b_ex.fe_group));
+ 	percpu_counter_sub(&sbi->s_freeblocks_counter, ac->ac_b_ex.fe_len);
+ 
++	if (sbi->s_log_groups_per_flex) {
++		ext4_group_t flex_group = ext4_flex_group(sbi,
++							  ac->ac_b_ex.fe_group);
++		spin_lock(sb_bgl_lock(sbi, flex_group));
++		sbi->s_flex_groups[flex_group].free_blocks -= ac->ac_b_ex.fe_len;
++		spin_unlock(sb_bgl_lock(sbi, flex_group));
++	}
++
+ 	err = ext4_journal_dirty_metadata(handle, bitmap_bh);
+ 	if (err)
+ 		goto out_err;
+@@ -4337,6 +4345,13 @@ do_more:
+ 	spin_unlock(sb_bgl_lock(sbi, block_group));
+ 	percpu_counter_add(&sbi->s_freeblocks_counter, count);
+ 
++	if (sbi->s_log_groups_per_flex) {
++		ext4_group_t flex_group = ext4_flex_group(sbi, block_group);
++		spin_lock(sb_bgl_lock(sbi, flex_group));
++		sbi->s_flex_groups[flex_group].free_blocks += count;
++		spin_unlock(sb_bgl_lock(sbi, flex_group));
++	}
++
+ 	ext4_mb_release_desc(&e4b);
+ 
+ 	*freed += count;
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index d9d12c1..0d560fc 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -517,6 +517,7 @@ static void ext4_put_super (struct super_block * sb)
+ 	for (i = 0; i < sbi->s_gdb_count; i++)
+ 		brelse(sbi->s_group_desc[i]);
+ 	kfree(sbi->s_group_desc);
++	kfree(sbi->s_flex_groups);
+ 	percpu_counter_destroy(&sbi->s_freeblocks_counter);
+ 	percpu_counter_destroy(&sbi->s_freeinodes_counter);
+ 	percpu_counter_destroy(&sbi->s_dirs_counter);
+@@ -1442,6 +1443,54 @@ static int ext4_setup_super(struct super_block *sb, struct ext4_super_block *es,
+ 	return res;
+ }
+ 
++static int ext4_fill_flex_info(struct super_block *sb)
++{
++	struct ext4_sb_info *sbi = EXT4_SB(sb);
++	struct ext4_group_desc *gdp = NULL;
++	struct buffer_head *bh;
++	ext4_group_t flex_group_count;
++	ext4_group_t flex_group;
++	int groups_per_flex = 0;
++	__u64 block_bitmap = 0;
++	int i;
++
++	if (!sbi->s_es->s_log_groups_per_flex) {
++		sbi->s_log_groups_per_flex = 0;
++		return 1;
++	}
++
++	sbi->s_log_groups_per_flex = sbi->s_es->s_log_groups_per_flex;
++	groups_per_flex = 1 << sbi->s_log_groups_per_flex;
++
++	flex_group_count = (sbi->s_groups_count + groups_per_flex - 1) /
++		groups_per_flex;
++	sbi->s_flex_groups = kmalloc(flex_group_count *
++				     sizeof(struct flex_groups), GFP_KERNEL);
++	if (sbi->s_flex_groups == NULL) {
++		printk(KERN_ERR "EXT4-fs: not enough memory\n");
++		goto failed;
++	}
++	memset(sbi->s_flex_groups, 0, flex_group_count *
++	       sizeof(struct flex_groups));
++
++	gdp = ext4_get_group_desc(sb, 1, &bh);
++	block_bitmap = ext4_block_bitmap(sb, gdp) - 1;
++
++	for (i = 0; i < sbi->s_groups_count; i++) {
++		gdp = ext4_get_group_desc(sb, i, &bh);
++
++		flex_group = ext4_flex_group(sbi, i);
++		sbi->s_flex_groups[flex_group].free_inodes +=
++			le16_to_cpu(gdp->bg_free_inodes_count);
++		sbi->s_flex_groups[flex_group].free_blocks +=
++			le16_to_cpu(gdp->bg_free_blocks_count);
++	}
++
++	return 1;
++failed:
++	return 0;
++}
++
+ __le16 ext4_group_desc_csum(struct ext4_sb_info *sbi, __u32 block_group,
+ 			    struct ext4_group_desc *gdp)
+ {
+@@ -2137,6 +2186,14 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
+ 		printk(KERN_ERR "EXT4-fs: group descriptors corrupted!\n");
+ 		goto failed_mount2;
+ 	}
++	if (EXT4_HAS_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_FLEX_BG))
++		if (!ext4_fill_flex_info(sb)) {
++			printk(KERN_ERR
++			       "EXT4-fs: unable to initialize "
++			       "flex_bg meta info!\n");
++			goto failed_mount2;
++		}
++
+ 	sbi->s_gdb_count = db_count;
+ 	get_random_bytes(&sbi->s_next_generation, sizeof(u32));
+ 	spin_lock_init(&sbi->s_next_gen_lock);
 -- 
 1.5.6.rc3.1.g36b7.dirty
 
