@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbYGEOOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbYGEORH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752908AbYGEOOu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 10:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750826AbYGEOOn
+	id S1753827AbYGEORH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 10:17:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751104AbYGEOQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 10:14:43 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:46260 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750848AbYGEOOn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 10:14:43 -0400
-Date: Sat, 5 Jul 2008 10:13:35 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: akpm@linux-foundation.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: PATCH] fix potential latency issues in JBD's journal code
-Message-ID: <20080705141335.GB20240@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Arjan van de Ven <arjan@infradead.org>, akpm@linux-foundation.org,
-	jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-References: <20080704192929.2c4dd4ca@infradead.org>
+	Sat, 5 Jul 2008 10:16:56 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:21169 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750959AbYGEOQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jul 2008 10:16:55 -0400
+To: linux-kernel@vger.kernel.org
+CC: Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>
+Subject: [PATCH] block: fix bio_add_page for non trivial merge_bvec_fn case(v2)
+From: Dmitri Monakhov <dmonakhov@openvz.org>
+Date: Sat, 05 Jul 2008 18:16:04 +0400
+Message-ID: <m3lk0gh0wr.fsf@dmon-lap.sw.ru>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080704192929.2c4dd4ca@infradead.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: "Theodore Ts'o" <tytso@mit.edu>
+We have to properly decrease bi_size in order to merge_bvec_fn return
+right result.  Otherwise this result in false merge rejects for two
+absolutely valid bio_vecs.  This may cause significant performance penalty
+for example Itanium: page_size ==16k, fs_block_size == 1k and block device
+is raid with small chunk_size.
 
-I will make the corresponding change for ext4.  Is the "Properly
-notify block layer of sync writes" going to be pushed to mainline?  I
-can't add SWRITE_SYNC to the ext4 tree without growing a dependency to
-this patch.
+Changes against v1:
+ According to axboe@ and agk@ we don't have to decrease bi_vcnt and segments
+ counters, so patch now looks like one line fix.
 
-> This patch modifies two key places that submit IO that then immediately will
-> get waited on. The JBD code is slightly convoluted, but after some chasing of
-> abstraction layers, these instances seem to really be of this pattern.
-> There's one case in checkpoint.c which is another candidate, but I've not
-> been able to get my head around the code enough to verify that that one
-> really is of this pattern as well, so for now I'll leave that one as is.
+Signed-off-by: Dmitri Monakhov <dmonakhov@openvz.org>
+---
+ fs/bio.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-You mean the ll_rw_block() SWRITE in __flush_patch?  Yep, seems to be
-of the same pattern.
-
-						- Ted
+diff --git a/fs/bio.c b/fs/bio.c
+index 25f1af0..0e6ed2a 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -330,7 +330,8 @@ static int __bio_add_page(struct request_queue *q, struct bio *bio, struct page
+ 				struct bvec_merge_data bvm = {
+ 					.bi_bdev = bio->bi_bdev,
+ 					.bi_sector = bio->bi_sector,
+-					.bi_size = bio->bi_size,
++					.bi_size = bio->bi_size -
++							(prev->bv_len - len),
+ 					.bi_rw = bio->bi_rw,
+ 				};
+ 
+-- 
+1.5.4.rc4
 
