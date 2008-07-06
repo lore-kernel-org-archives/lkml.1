@@ -1,23 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759395AbYGFXEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759979AbYGFXHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759395AbYGFXEm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 19:04:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754955AbYGFXEe
+	id S1759979AbYGFXHM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 19:07:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbYGFXG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 19:04:34 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:56602 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752637AbYGFXEd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 19:04:33 -0400
-Message-ID: <48714FD0.4090300@keyaccess.nl>
-Date: Mon, 07 Jul 2008 01:05:52 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Sun, 6 Jul 2008 19:06:59 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:52111 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754955AbYGFXG6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 19:06:58 -0400
+Date: Mon, 7 Jul 2008 02:06:10 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Natalie Protasevich <protasnb@gmail.com>,
@@ -28,29 +23,67 @@ CC: Adrian Bunk <bunk@kernel.org>,
        James Bottomley <James.Bottomley@hansenpartnership.com>,
        Domenico Andreoli <cavokz@gmail.com>
 Subject: Re: 2.6.26-rc9: Reported regressions from 2.6.25
-References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <200807062356.47908.rjw@sisk.pl> <487142BA.1080508@keyaccess.nl> <200807070057.51663.rjw@sisk.pl>
-In-Reply-To: <200807070057.51663.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: 0.0 (/)
+Message-ID: <20080706230610.GK21669@cs181140183.pp.htv.fi>
+References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <200807062002.46863.rjw@sisk.pl> <20080706182648.GE21669@cs181140183.pp.htv.fi> <200807062304.07443.rjw@sisk.pl> <20080706213214.GH21669@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0807061443420.3016@woody.linux-foundation.org> <20080706221932.GJ21669@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0807061524510.3016@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807061524510.3016@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07-07-08 00:57, Rafael J. Wysocki wrote:
-
->> Being more explicit about liking a reporter to report "yes, nothing 
->> changed" would probably be good if that IS what's wanted.
+On Sun, Jul 06, 2008 at 03:27:30PM -0700, Linus Torvalds wrote:
 > 
-> Well, I can change it to
 > 
-> "Please verify if it still should be listed and let me know."
+> On Mon, 7 Jul 2008, Adrian Bunk wrote:
+> >
+> > When did you tell me that maintainers should not or cannot be Cc'ed on 
+> > regression reports?
 > 
-> if that's better.
+> That is not what I'm complaining about.
 
-Or even "please verify that it should still be listed, and let me know 
-either way". Simple "yes" replies feel a little silly, to non-frequent 
-posters at least, without that kind of explicit encouragement so it 
-might make for a few more replies.
+That is what I wrote in the part of my email you made this comment on.
 
-Rene.
+> I'm complaining about the fact that you *always* argue against closing 
+> bugreports.
+
+I'm not always against closing bugs, and e.g. during the last years I've
+closed at about 500 bugs in the kernel Bugzilla due to submitters having
+vanished.
+
+> You have argued against it for over a YEAR now. And every single time I 
+> tell you that you are wrong, and exactly *why* you are wrong.
+> 
+> If a reporter doesn't respond to say "it's still open", it needs to be 
+> closed. It doesn't matter one whit whether there has been developer action 
+> on it or not. We cannot keep old reports open - it's a total waste for 
+> developers to even _look_ at anything that is more than roughly a month 
+> old and hasn't been verified to be still be an issue.
+
+We only differ on whether a human should ask this question once before 
+closing a bug or whether regular automated requests are enough.
+
+E.g. although Andrew has't responded to Rafaels emails for nearly a 
+month whether the slab corruption he reported is still present I 
+wouldn't take this as a definitive indication that he won't answer when 
+someone has a question. I'd bet Andrew will answer if a human asks him 
+about the status of this regression.
+
+A developer asking manually "Is this still present?" does cost nearly no 
+time and gives the submitter a much better feeling than only automated 
+emails and then a bug close.
+
+> 			Linus
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
