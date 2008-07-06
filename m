@@ -1,159 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759421AbYGFS1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759297AbYGFS3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759421AbYGFS1o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 14:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756486AbYGFS1e
+	id S1759297AbYGFS3T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 14:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbYGFS3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 14:27:34 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:38454 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755651AbYGFS1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 14:27:33 -0400
-Date: Sun, 6 Jul 2008 21:26:48 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maximilian Engelhardt <maxi@daemonizer.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: 2.6.26-rc9: Reported regressions from 2.6.25
-Message-ID: <20080706182648.GE21669@cs181140183.pp.htv.fi>
-References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <200807061905.50261.rjw@sisk.pl> <20080706174006.GD21669@cs181140183.pp.htv.fi> <200807062002.46863.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200807062002.46863.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 6 Jul 2008 14:29:09 -0400
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:40736 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755200AbYGFS3I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 14:29:08 -0400
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       kernelnewbies <kernelnewbies@nl.linux.org>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Lars Brinkhoff <lars@nocrew.org>,
+       =?ISO-8859-1?Q?Tomas_Sk=E4re?= <tomas@nocrew.org>
+Message-Id: <35647D7D-85D1-4308-B3A1-63CDCC3F14F7@nocrew.org>
+From: Fredrik Noring <noring@nocrew.org>
+To: David Woodhouse <dwmw2@infradead.org>,
+       Jaswinder Singh <jaswinder@infradead.org>
+In-Reply-To: <1215363247.3189.113.camel@shinybook.infradead.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH] dsp56k: use request_firmware
+Date: Sun, 6 Jul 2008 20:29:04 +0200
+References: <1215253496.7816.7.camel@jaswinder.satnam> <A3D470E0-953E-40D6-BF5A-D06B76451154@nocrew.org> <1215357224.2817.2.camel@jaswinder.satnam> <43A34816-3B93-4D05-AE0A-65C0FBF35589@nocrew.org> <1215358732.2817.11.camel@jaswinder.satnam> <1215363247.3189.113.camel@shinybook.infradead.org>
+X-Mailer: Apple Mail (2.926)
+X-Originating-IP: 83.252.213.252
+X-ACL-Warn: Too high rate of unknown addresses received from you
+X-Scan-Result: No virus found in message 1KFYyv-00076E-7j.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KFYyv-00076E-7j 427ca2bc354e32e1364318c52b7119a3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 06, 2008 at 08:02:45PM +0200, Rafael J. Wysocki wrote:
-> On Sunday, 6 of July 2008, Adrian Bunk wrote:
-> > On Sun, Jul 06, 2008 at 07:05:49PM +0200, Rafael J. Wysocki wrote:
-> > > 
-> > > Also, in the next couple of days I'll be closing the bugs the reporters of
-> > > which have been totally unresponsive.
-> > >...
-> > 
-> > If no action by us gets combined with automated weekly emails then
-> > no responses to the latter is not an unexpected event.
-> > 
-> > Such a submitter might be perfectly responsive to actual work on a bug 
-> > while really pissed off by getting the bug closed.
-> > 
-> > Look e.g. at #10865 that had a 1 month gap in submitter responses,
-> > but the actual problem is that noone of us ever bothered to look at
-> > this Oops...
-> > 
-> > I just did a run through all open 2.6.26-rc regressions, and I did not 
-> > find a single one where we seem to be waiting for some time for an 
-> > answer of the submitter. [1]
-> 
-> The following are my candidates:
-> 
-> 10629
+Hi David,
 
-Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10629
-Subject         : 2.6.26-rc1-$sha1: RIP __d_lookup+0x8c/0x160
-Submitter       : Alexey Dobriyan <adobriyan@gmail.com>
-Date            : 2008-05-05 09:59 (63 days old)
-References      : http://lkml.org/lkml/2008/5/5/28
-Handled-By      : Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+6 jul 2008 kl. 18.54 skrev David Woodhouse:
+> I don't think he has it. That's why he suggested a disassembler.
 
+That's right. Sorry I was unclear. However, after some digging on  
+floppy backups from the past, I've found a DSP56k loader routine  
+that's probably close if not identical to the assembled version  
+included with the kernel. Please see below. A disassembly would verify  
+this, but at least it gives you an idea of the inner workings.
 
-See below at #10815.
+All the best,
+Fredrik
 
+; DSP56k loader
 
-> 10786
+; Host Interface
+M_BCR   EQU     $FFFE           ; Port A Bus Control Register
+M_PBC   EQU     $FFE0           ; Port B Control Register
+M_PBDDR EQU     $FFE2           ; Port B Data Direction Register
+M_PBD   EQU     $FFE4           ; Port B Data Register
+M_PCC   EQU     $FFE1           ; Port C Control Register
+M_PCDDR EQU     $FFE3           ; Port C Data Direction Register
+M_PCD   EQU     $FFE5           ; Port C Data Register
 
-Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10786
-Subject         : parisc: 64bit SMP does not boot on J5600
-Submitter       : Domenico Andreoli <cavokz@gmail.com>
-Date            : 2008-05-22 16:14 (46 days old)
-References      : http://marc.info/?l=linux-kernel&m=121147328028081&w=4
+M_HCR   EQU     $FFE8           ; Host Control Register
+M_HSR   EQU     $FFE9           ; Host Status Register
+M_HRX   EQU     $FFEB           ; Host Receive Data Register
+M_HTX   EQU     $FFEB           ; Host Transmit Data Register
 
+; SSI, Synchronous Serial Interface
+M_RX    EQU     $FFEF           ; Serial Receive Data Register
+M_TX    EQU     $FFEF           ; Serial Transmit Data Register
+M_CRA   EQU     $FFEC           ; SSI Control Register A
+M_CRB   EQU     $FFED           ; SSI Control Register B
+M_SR    EQU     $FFEE           ; SSI Status Register
+M_TSR   EQU     $FFEE           ; SSI Time Slot Register
 
-Submitter sent bug report, it seems no kernel developer ever bothered
-to answer.
+; Exception Processing
+M_IPR   EQU     $FFFF           ; Interrupt Priority Register
 
-The unresponsive side is not the submitter.
+	org	P:$0
+start	jmp	<$40
 
+	org	P:$40
+;	; Zero 16384 DSP X and Y words
+;	clr	A #0,r0
+;	clr	B #0,r4
+;	do	#64,<_block1
+;	rep	#256
+;	move	A,X:(r0)+ B,Y:(r4)+
+;_block1	; Zero (32768-512) Program words
+;	clr	A #512,r0
+;	do	#126,<_block2
+;	rep	#256
+;	move	A,P:(r0)+
+;_block2
 
-> 10815
+	; Copy DSP program control
+	move	#real,r0
+	move	#upload,r1
+	do	#upload_end-upload,<_copy
+	move	P:(r0)+,x0
+	move	x0,P:(r1)+
+_copy	movep	#>4,X:<<M_HCR
+	movep	#>$c00,X:<<M_IPR
+	and	#<$fe,mr
+	jmp	upload
 
-Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10815
-Subject         : 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-Submitter       : Alexey Dobriyan <adobriyan@gmail.com>
-Date            : 2008-05-27 09:23 (41 days old)
-References      : http://lkml.org/lkml/2008/5/27/9
-                  http://lkml.org/lkml/2008/6/14/87
-Handled-By      : Oleg Nesterov <oleg@tv-sign.ru>
-                  Linus Torvalds <torvalds@linux-foundation.org>
-                  Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Patch           : http://lkml.org/lkml/2008/5/28/16
+real
+	org	P:$7ea9
+upload
+	movep	#>1,X:<<M_PBC
+	movep	#>0,X:<<M_BCR
 
+next	jclr	#0,X:<<M_HSR,*
+	movep	X:<<M_HRX,A
+	move	#>3,x0
+	cmp	x0,A #>1,x0
+	jeq	<$0
+_get_address
+	jclr	#0,X:<<M_HSR,_get_address
+	movep	X:<<M_HRX,r0
+_get_length
+	jclr	#0,X:<<M_HSR,_get_length
+	movep	X:<<M_HRX,y0
+	cmp	x0,A #>2,x0
+	jeq	load_X
+	cmp	x0,A
+	jeq	load_Y
 
-Linus just restarted discussing this one and #10629.
+load_P	do	y0,_load
+	jclr	#0,X:<<M_HSR,*
+	movep	X:<<M_HRX,P:(r0)+
+_load	jmp	next
+load_X	do	y0,_load
+	jclr	#0,X:<<M_HSR,*
+	movep	X:<<M_HRX,X:(r0)+
+_load	jmp	next
+load_Y	do	y0,_load
+	jclr	#0,X:<<M_HSR,*
+	movep	X:<<M_HRX,Y:(r0)+
+_load	jmp	next
 
-My impression of both bugs is that not that Alexey was unresponsive but 
-that noone else was able to reproduce it.
-
-
-> 10906 (the thread has apparently died)
-
-Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10906
-Subject         : repeatable slab corruption with LTP msgctl08
-Submitter       : Andrew Morton <akpm@linux-foundation.org>
-Date            : 2008-06-12 5:13 (25 days old)
-References      : http://marc.info/?l=linux-kernel&m=121324775927704&w=4
-Handled-By      : Pekka J Enberg <penberg@cs.helsinki.fi>
-                  Christoph Lameter <clameter@sgi.com>
-                  Manfred Spraul <manfred@colorfullife.com>
-                  Andi Kleen <andi@firstfloor.org>
-
-Andrew Morton said [1]:
-  erk.  It'll make me a week to bisect this.  I suppose I can plod away
-  at it in the background, but I won't be able to do that until the end
-  of this month.
-
-
-And "repeatable slab corruption" is not exactly a good regression
-to ignore...
-
-
-> 11009
-
-Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=11009
-Subject         : No console on Riva TNT since 2.6.26-0.rc4
-Submitter       : Quel Qun <kelk1@comcast.net>
-Date            : 2008-06-26 20:04 (11 days old)
-References      : http://marc.info/?l=linux-kernel&m=121451344229718&w=4
-
-
-Submitter sent bug report, it seems no kernel developer ever bothered
-to answer.
-
-The unresponsive side is not the submitter.
-
-
-> Thanks,
-> Rafael
-
-cu
-Adrian
-
-[1] http://lkml.org/lkml/2008/6/13/45
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+upload_end
+	end
 
