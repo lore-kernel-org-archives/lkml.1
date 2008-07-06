@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbYGFJ6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbYGFKCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756667AbYGFJ6e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 05:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbYGFJ6Z
+	id S1756710AbYGFKCw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 06:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbYGFKCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 05:58:25 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45653 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752322AbYGFJ6Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 05:58:24 -0400
-Date: Sun, 6 Jul 2008 05:58:23 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: New ext4 patchset 2.6.26-rc8-ext4-1
-Message-ID: <20080706095823.GA21109@infradead.org>
-References: <E1KFBPc-0006yI-Gx@closure.thunk.org> <20080705175047.GA11243@infradead.org> <20080706024115.GH20240@mit.edu>
+	Sun, 6 Jul 2008 06:02:43 -0400
+Received: from crow.cadsoft.de ([217.86.189.86]:5622 "EHLO raven.cadsoft.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752598AbYGFKCm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 06:02:42 -0400
+X-Greylist: delayed 1851 seconds by postgrey-1.27 at vger.kernel.org; Sun, 06 Jul 2008 06:02:42 EDT
+Message-ID: <48708BBF.9050400@cadsoft.de>
+Date: Sun, 06 Jul 2008 11:09:19 +0200
+From: Klaus Schmidinger <Klaus.Schmidinger@cadsoft.de>
+Organization: CadSoft Computer GmbH
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080706024115.GH20240@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: linux-dvb@linuxtv.org
+CC: kernelnewbies <kernelnewbies@nl.linux.org>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jaswinder Singh <jaswinder@infradead.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [linux-dvb] [PATCH] Remove fdump tool for av7110 firmware
+References: <1214139259.2994.8.camel@jaswinder.satnam> <200807060315.51736@orion.escape-edv.de>
+In-Reply-To: <200807060315.51736@orion.escape-edv.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.0 (raven.cadsoft.de [192.168.1.1]); Sun, 06 Jul 2008 11:09:21 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 05, 2008 at 10:41:15PM -0400, Theodore Tso wrote:
-> On Sat, Jul 05, 2008 at 01:50:47PM -0400, Christoph Hellwig wrote:
-> > Strong NACK.  For one thing the code added to mpage.c doesn't belong
-> > there.  It's far inferior to the existing delalloc code we already have
-> > and that could be made generic easily, or the next generation code
-> > developed by Chris mason.  It's an ext4-specific hack and doesn't belong
-> > into common code.  I'm pretty sure we agreed on not having it in
-> > common code long ago.
+On 07/06/08 03:15, Oliver Endriss wrote:
+> Jaswinder Singh wrote:
+>> There's no point in this, since the user can use the BUILTIN_FIRMWARE
+>> option to include arbitrary firmware files directly in the kernel image.
 > 
-> Looking back at the mailing list history, yes, we did.  I think the
-> reason why we didn't was Andrew had expressed a vague wish that the
-> ext4 and xfs developers would get together and try to hash out a
-> common layer that all filesystems could work with.  But given that
-> nothing has happened in the many months since that discussion, you're
-> absolutely right.
+> NAK! This option allows to compile the firmware into the _driver_,
+> which is very useful if you want to test various driver/firmware
+> combinations. Having the firmware in the _kernel_ does not help!
+
+I strongly support Oliver's request!
+Working with various driver versions is much easier with the
+firmware compiled into the driver!
+
+Klaus
+
+> Well, I am tired to fight for this option in the kernel every other
+> month. :-(
 > 
-> I've reworked the vfs generic patch in the patch series to be much
-> smaller --- mainly what's left is simply exporting some mpage
-> interfaces that would be needed by ext4.  I trust this is much more to
-> your liking?
-
-Yes, this is much better.  But please also add kerneldoc comments for
-the newly exported functions.
-
+> @Mauro:
+> Is there a way to strip this stuff from Kconfig/Makefile/av7110*.[ch]
+> for submission to the kernel? Basically I don't care whether and how
+> they cripple the driver in the kernel. But I would like to keep the code
+> 'as is' in the linuxtv repositories.
+> 
+> CU
+> Oliver
