@@ -1,254 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760163AbYGFRi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760205AbYGFRjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760163AbYGFRi4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 13:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbYGFRfF
+	id S1760205AbYGFRjW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 13:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231AbYGFRfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 13:35:05 -0400
+	Sun, 6 Jul 2008 13:35:08 -0400
 Received: from mu-out-0910.google.com ([209.85.134.186]:6801 "EHLO
 	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757969AbYGFRex (ORCPT
+	with ESMTP id S1757996AbYGFRez (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 13:34:53 -0400
+	Sun, 6 Jul 2008 13:34:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=references:date:from:to:cc:subject:content-disposition:message-id;
-        b=WhLe4fseGfQh/qDQywK0UQWS4YX60U4EZctdUxW86ba4JVj/uysaZv8N2/v0TTaGlM
-         cyBhB799pkXZKOeRSl3dTIrO0VXLEgjshEHV5iYowCi7MvoJJb6wHhGW+4YOGEhIID+B
-         CetySZexhppQnHv7vFdiiH553i9Jz9/POsnF0=
+        b=JaXY5L5TV3nsKNjb1I7dodtXw1JKnPxuuOICOBhizxFWMPwN6urzhb0Vhe/0J8LcPx
+         7GdhIjFAkPU/x3aOZN6IxqNSBfx7eW/0g1HvJV0NJp5zeA2jGTPCmoDvkXCvNu/s3rek
+         9mq7deICHSi+kMWIwAzKA6KIECER5jJDYD+Ks=
 References: <20080706172010.559358957@bzolnier@gmail.com>
-Date: Sun, 06 Jul 2008 19:20:22 +0200
+Date: Sun, 06 Jul 2008 19:20:24 +0200
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 12/50] siimage: convert to use ->host_priv
-Content-Disposition: inline; filename=siimage-convert-to-use-host_priv.patch
-Message-ID: <4871023b.1ade660a.3458.6281@mx.google.com>
+Cc: linux-kernel@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: [PATCH 14/50] tc86c001: remove ->init_chipset method
+Content-Disposition: inline; filename=tc86c001-remove-init_chipset-method.patch
+Message-ID: <4871023e.1ade660a.3458.6288@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Reserve PCI BAR 5 in tc86c001_init_one() and remove no longer needed
+  init_chipset_tc86c001().
+
 While at it:
 
-* Reserve PCI BAR 5 in siimage_init_one() and remove no longer needed
-  setup_mmio_siimage().
+* Add & use DRV_NAME define.
 
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/pci/siimage.c |  114 +++++++++++++++++++++++-----------------------
- 1 file changed, 58 insertions(+), 56 deletions(-)
+ drivers/ide/pci/tc86c001.c |   38 ++++++++++++++++++++++++++------------
+ 1 file changed, 26 insertions(+), 12 deletions(-)
 
-Index: b/drivers/ide/pci/siimage.c
+Index: b/drivers/ide/pci/tc86c001.c
 ===================================================================
---- a/drivers/ide/pci/siimage.c
-+++ b/drivers/ide/pci/siimage.c
-@@ -127,9 +127,10 @@ static inline unsigned long siimage_seld
+--- a/drivers/ide/pci/tc86c001.c
++++ b/drivers/ide/pci/tc86c001.c
+@@ -11,6 +11,8 @@
+ #include <linux/pci.h>
+ #include <linux/ide.h>
  
- static u8 sil_ioread8(struct pci_dev *dev, unsigned long addr)
- {
-+	struct ide_host *host = pci_get_drvdata(dev);
- 	u8 tmp = 0;
- 
--	if (pci_get_drvdata(dev))
-+	if (host->host_priv)
- 		tmp = readb((void __iomem *)addr);
- 	else
- 		pci_read_config_byte(dev, addr, &tmp);
-@@ -139,9 +140,10 @@ static u8 sil_ioread8(struct pci_dev *de
- 
- static u16 sil_ioread16(struct pci_dev *dev, unsigned long addr)
- {
-+	struct ide_host *host = pci_get_drvdata(dev);
- 	u16 tmp = 0;
- 
--	if (pci_get_drvdata(dev))
-+	if (host->host_priv)
- 		tmp = readw((void __iomem *)addr);
- 	else
- 		pci_read_config_word(dev, addr, &tmp);
-@@ -151,7 +153,9 @@ static u16 sil_ioread16(struct pci_dev *
- 
- static void sil_iowrite8(struct pci_dev *dev, u8 val, unsigned long addr)
- {
--	if (pci_get_drvdata(dev))
-+	struct ide_host *host = pci_get_drvdata(dev);
++#define DRV_NAME "TC86C001"
 +
-+	if (host->host_priv)
- 		writeb(val, (void __iomem *)addr);
- 	else
- 		pci_write_config_byte(dev, addr, val);
-@@ -159,7 +163,9 @@ static void sil_iowrite8(struct pci_dev 
- 
- static void sil_iowrite16(struct pci_dev *dev, u16 val, unsigned long addr)
+ static void tc86c001_set_mode(ide_drive_t *drive, const u8 speed)
  {
--	if (pci_get_drvdata(dev))
-+	struct ide_host *host = pci_get_drvdata(dev);
-+
-+	if (host->host_priv)
- 		writew(val, (void __iomem *)addr);
- 	else
- 		pci_write_config_word(dev, addr, val);
-@@ -167,7 +173,9 @@ static void sil_iowrite16(struct pci_dev
- 
- static void sil_iowrite32(struct pci_dev *dev, u32 val, unsigned long addr)
- {
--	if (pci_get_drvdata(dev))
-+	struct ide_host *host = pci_get_drvdata(dev);
-+
-+	if (host->host_priv)
- 		writel(val, (void __iomem *)addr);
- 	else
- 		pci_write_config_dword(dev, addr, val);
-@@ -445,44 +453,6 @@ static void sil_sata_pre_reset(ide_drive
+ 	ide_hwif_t *hwif	= HWIF(drive);
+@@ -173,16 +175,6 @@ static void __devinit init_hwif_tc86c001
+ 	hwif->rqsize	 = 0xffff;
  }
  
- /**
-- *	setup_mmio_siimage	-	switch controller into MMIO mode
-- *	@dev: PCI device we are configuring
-- *	@name: device name
-- *
-- *	Attempt to put the device into MMIO mode. There are some slight
-- *	complications here with certain systems where the MMIO BAR isn't
-- *	mapped, so we have to be sure that we can fall back to I/O.
-- */
--
--static unsigned int setup_mmio_siimage(struct pci_dev *dev, const char *name)
+-static unsigned int __devinit init_chipset_tc86c001(struct pci_dev *dev,
+-							const char *name)
 -{
--	resource_size_t bar5	= pci_resource_start(dev, 5);
--	unsigned long barsize	= pci_resource_len(dev, 5);
--	void __iomem *ioaddr;
+-	int err = pci_request_region(dev, 5, name);
 -
--	/*
--	 *	Drop back to PIO if we can't map the MMIO. Some	systems
--	 *	seem to get terminally confused in the PCI spaces.
--	 */
--	if (!request_mem_region(bar5, barsize, name)) {
--		printk(KERN_WARNING "siimage: IDE controller MMIO ports not "
--				    "available.\n");
--		return 0;
--	}
--
--	ioaddr = ioremap(bar5, barsize);
--	if (ioaddr == NULL) {
--		release_mem_region(bar5, barsize);
--		return 0;
--	}
--
--	pci_set_master(dev);
--	pci_set_drvdata(dev, (void *) ioaddr);
--
--	return 1;
+-	if (err)
+-		printk(KERN_ERR "%s: system control regs already in use", name);
+-	return err;
 -}
 -
--/**
-  *	init_chipset_siimage	-	set up an SI device
-  *	@dev: PCI device
-  *	@name: device name
-@@ -494,17 +464,15 @@ static unsigned int setup_mmio_siimage(s
- static unsigned int __devinit init_chipset_siimage(struct pci_dev *dev,
- 						   const char *name)
+ static const struct ide_port_ops tc86c001_port_ops = {
+ 	.set_pio_mode		= tc86c001_set_pio_mode,
+ 	.set_dma_mode		= tc86c001_set_mode,
+@@ -202,7 +194,6 @@ static const struct ide_dma_ops tc86c001
+ 
+ static const struct ide_port_info tc86c001_chipset __devinitdata = {
+ 	.name		= "TC86C001",
+-	.init_chipset	= init_chipset_tc86c001,
+ 	.init_hwif	= init_hwif_tc86c001,
+ 	.port_ops	= &tc86c001_port_ops,
+ 	.dma_ops	= &tc86c001_dma_ops,
+@@ -215,7 +206,30 @@ static const struct ide_port_info tc86c0
+ static int __devinit tc86c001_init_one(struct pci_dev *dev,
+ 				       const struct pci_device_id *id)
  {
-+	struct ide_host *host = pci_get_drvdata(dev);
-+	void __iomem *ioaddr = host->host_priv;
- 	unsigned long base, scsc_addr;
--	void __iomem *ioaddr = NULL;
--	u8 rev = dev->revision, tmp, BA5_EN;
-+	u8 rev = dev->revision, tmp;
- 
- 	pci_write_config_byte(dev, PCI_CACHE_LINE_SIZE, rev ? 1 : 255);
- 
--	pci_read_config_byte(dev, 0x8A, &BA5_EN);
--
--	if ((BA5_EN & 0x01) || pci_resource_start(dev, 5))
--		if (setup_mmio_siimage(dev, name))
--			ioaddr = pci_get_drvdata(dev);
-+	if (ioaddr)
-+		pci_set_master(dev);
- 
- 	base = (unsigned long)ioaddr;
- 
-@@ -592,7 +560,8 @@ static unsigned int __devinit init_chips
- static void __devinit init_mmio_iops_siimage(ide_hwif_t *hwif)
- {
- 	struct pci_dev *dev	= to_pci_dev(hwif->dev);
--	void *addr		= pci_get_drvdata(dev);
-+	struct ide_host *host	= pci_get_drvdata(dev);
-+	void *addr		= host->host_priv;
- 	u8 ch			= hwif->channel;
- 	struct ide_io_ports *io_ports = &hwif->io_ports;
- 	unsigned long base;
-@@ -691,16 +660,15 @@ static void __devinit sil_quirkproc(ide_
- static void __devinit init_iops_siimage(ide_hwif_t *hwif)
- {
- 	struct pci_dev *dev = to_pci_dev(hwif->dev);
-+	struct ide_host *host = pci_get_drvdata(dev);
- 
- 	hwif->hwif_data = NULL;
- 
- 	/* Pessimal until we finish probing */
- 	hwif->rqsize = 15;
- 
--	if (pci_get_drvdata(dev) == NULL)
--		return;
--
--	init_mmio_iops_siimage(hwif);
-+	if (host->host_priv)
-+		init_mmio_iops_siimage(hwif);
- }
- 
- /**
-@@ -778,8 +746,13 @@ static const struct ide_port_info siimag
- static int __devinit siimage_init_one(struct pci_dev *dev,
- 				      const struct pci_device_id *id)
- {
-+	void __iomem *ioaddr = NULL;
-+	resource_size_t bar5 = pci_resource_start(dev, 5);
-+	unsigned long barsize = pci_resource_len(dev, 5);
+-	return ide_pci_init_one(dev, &tc86c001_chipset, NULL);
 +	int rc;
- 	struct ide_port_info d;
- 	u8 idx = id->driver_data;
-+	u8 BA5_EN;
- 
- 	d = siimage_chipsets[idx];
- 
-@@ -795,7 +768,36 @@ static int __devinit siimage_init_one(st
- 		d.host_flags |= IDE_HFLAG_NO_ATAPI_DMA;
- 	}
- 
--	return ide_pci_init_one(dev, &d, NULL);
++
 +	rc = pci_enable_device(dev);
 +	if (rc)
-+		return rc;
++		goto out;
 +
-+	pci_read_config_byte(dev, 0x8A, &BA5_EN);
-+	if ((BA5_EN & 0x01) || bar5) {
-+		/*
-+		* Drop back to PIO if we can't map the MMIO. Some systems
-+		* seem to get terminally confused in the PCI spaces.
-+		*/
-+		if (!request_mem_region(bar5, barsize, d.name)) {
-+			printk(KERN_WARNING "siimage: IDE controller MMIO "
-+					    "ports not available.\n");
-+		} else {
-+			ioaddr = ioremap(bar5, barsize);
-+			if (ioaddr == NULL)
-+				release_mem_region(bar5, barsize);
-+		}
-+	}
-+
-+	rc = ide_pci_init_one(dev, &d, ioaddr);
++	rc = pci_request_region(dev, 5, DRV_NAME);
 +	if (rc) {
-+		if (ioaddr) {
-+			iounmap(ioaddr);
-+			release_mem_region(bar5, barsize);
-+		}
-+		pci_disable_device(dev);
++		printk(KERN_ERR DRV_NAME ": system control regs already in use");
++		goto out_disable;
 +	}
 +
++	rc = ide_pci_init_one(dev, &tc86c001_chipset, NULL);
++	if (rc)
++		goto out_release;
++
++	goto out;
++
++out_release:
++	pci_release_region(dev, 5);
++out_disable:
++	pci_disable_device(dev);
++out:
 +	return rc;
  }
  
- static const struct pci_device_id siimage_pci_tbl[] = {
+ static const struct pci_device_id tc86c001_pci_tbl[] = {
 
 -- 
 
