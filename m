@@ -1,41 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbYGFAL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbYGFAMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756183AbYGFAL5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 20:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbYGFALu
+	id S1755350AbYGFAMg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 20:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbYGFAM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 20:11:50 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35066 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753083AbYGFALu (ORCPT
+	Sat, 5 Jul 2008 20:12:29 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:52371 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753057AbYGFAM2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 20:11:50 -0400
-Date: Sun, 6 Jul 2008 01:11:48 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Frans Pop <elendil@planet.nl>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] parport/ppdev: fix registration of sysctl entries
-Message-ID: <20080706001148.GX28946@ZenIV.linux.org.uk>
-References: <20080705131924.GA2083@joi> <20080705235148.GW28946@ZenIV.linux.org.uk>
+	Sat, 5 Jul 2008 20:12:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=C8fgG3SO57gmzgc+3y+eh+HTtrusy/3HJNdRHLXDQkM9UoTAZ5qm4APjjcdXaijny1
+         uB0BAGPL3lpF9fuHsqTkL/yHFfsDqXaejnWy4U0Neq+8/BkIfpNwTHs6b4EGrulGZaC2
+         LdmQLPSWr4/wGTRZfDmz1foskw09Wq5vhTQPc=
+Message-ID: <ca2dc2820807051712w3aaa876bn230269369424af1f@mail.gmail.com>
+Date: Sun, 6 Jul 2008 02:12:27 +0200
+From: "Miguel Ojeda" <miguel.ojeda.sandonis@gmail.com>
+To: "Akinobu Mita" <akinobu.mita@gmail.com>
+Subject: Re: [PATCH] auxdisplay: small cleanups
+Cc: linux-kernel@vger.kernel.org,
+       "Miguel Ojeda Sandonis" <maxextreme@gmail.com>
+In-Reply-To: <20080705112116.GC17071@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080705235148.GW28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080705112116.GC17071@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 06, 2008 at 12:51:48AM +0100, Al Viro wrote:
+On Sat, Jul 5, 2008 at 1:21 PM, Akinobu Mita <akinobu.mita@gmail.com> wrote:
+> - Use BUILD_BUG_ON for CFAG12864B_SIZE instead of runtime-check
+>
+> - Use get_zeroed_page()
 
-> I don't believe that it's right.  Note that if you *do* race there, you
-> are fucked regardless of sysctls - ppdev.c::register_device() racing
-> with itself will do tons of fun things all by itself (starting with two
-> threads allocating different pdev and both setting pp->pdev).
-> 
-> IOW, *if* that's what we are hitting here, you've only papered over the
-> visible symptom.
+Thank you very much! I will test it soon (~10th of July). In the meantime:
 
-BTW, with your patch you'll have 100% reproducible double registration if
-you do PPCLAIM/PPRELEASE/PPCLAIN on one file descriptor.
+Signed-off-by: Miguel Ojeda Sandonis <maxextreme@gmail.com>
+
+>
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> Cc: Miguel Ojeda Sandonis <maxextreme@gmail.com>
+> ---
+>  drivers/auxdisplay/cfag12864b.c |   13 ++-----------
+>  1 file changed, 2 insertions(+), 11 deletions(-)
+>
+> Index: 2.6-git/drivers/auxdisplay/cfag12864b.c
+> ===================================================================
+> --- 2.6-git.orig/drivers/auxdisplay/cfag12864b.c
+> +++ 2.6-git/drivers/auxdisplay/cfag12864b.c
+> @@ -336,16 +336,9 @@ static int __init cfag12864b_init(void)
+>                        "ks0108 is not initialized\n");
+>                goto none;
+>        }
+> +       BUILD_BUG_ON(PAGE_SIZE < CFAG12864B_SIZE);
+>
+> -       if (PAGE_SIZE < CFAG12864B_SIZE) {
+> -               printk(KERN_ERR CFAG12864B_NAME ": ERROR: "
+> -                       "page size (%i) < cfag12864b size (%i)\n",
+> -                       (unsigned int)PAGE_SIZE, CFAG12864B_SIZE);
+> -               ret = -ENOMEM;
+> -               goto none;
+> -       }
+> -
+> -       cfag12864b_buffer = (unsigned char *) __get_free_page(GFP_KERNEL);
+> +       cfag12864b_buffer = (unsigned char *) get_zeroed_page(GFP_KERNEL);
+>        if (cfag12864b_buffer == NULL) {
+>                printk(KERN_ERR CFAG12864B_NAME ": ERROR: "
+>                        "can't get a free page\n");
+> @@ -367,8 +360,6 @@ static int __init cfag12864b_init(void)
+>        if (cfag12864b_workqueue == NULL)
+>                goto cachealloced;
+>
+> -       memset(cfag12864b_buffer, 0, CFAG12864B_SIZE);
+> -
+>        cfag12864b_clear();
+>        cfag12864b_on();
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
