@@ -1,63 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbYGFFbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbYGFFek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbYGFFbA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 01:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbYGFFax
+	id S1754917AbYGFFek (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 01:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbYGFFea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 01:30:53 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48492 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751313AbYGFFaw (ORCPT
+	Sun, 6 Jul 2008 01:34:30 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:34699 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751319AbYGFFea convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 01:30:52 -0400
-Date: Sat, 5 Jul 2008 22:30:21 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Theodore Tso <tytso@MIT.EDU>
-Cc: akpm@linux-foundation.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: PATCH] fix potential latency issues in JBD's journal code
-Message-ID: <20080705223021.02735dc0@infradead.org>
-In-Reply-To: <20080706041502.GB21990@mit.edu>
-References: <20080704192929.2c4dd4ca@infradead.org>
-	<20080706041502.GB21990@mit.edu>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 6 Jul 2008 01:34:30 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.6.2
+cc: linux-kernel@vger.kernel.org
+Date: Sat, 05 Jul 2008 22:34:15 -0700
+Message-ID: <7vy74fo9t4.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Pobox-Relay-ID: 33E638D4-4B1D-11DD-9F13-CE28B26B55AE-77302942!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 Jul 2008 00:15:02 -0400
-Theodore Tso <tytso@MIT.EDU> wrote:
+The latest maintenance release GIT 1.5.6.2 are available at the usual
+places:
 
-> On Fri, Jul 04, 2008 at 07:29:29PM -0700, Arjan van de Ven wrote:
-> > @@ -165,7 +165,7 @@ static void journal_do_submit_data(struct
-> > buffer_head **wbuf, int bufs) for (i = 0; i < bufs; i++) {
-> >  		wbuf[i]->b_end_io = end_buffer_write_sync;
-> >  		/* We use-up our safety reference in submit_bh() */
-> > -		submit_bh(WRITE, wbuf[i]);
-> > +		submit_bh(WRITE_SYNC, wbuf[i]);
-> >  	}
-> >  }
-> 
-> So I started looking at this patch more closely when trying to
-> replicate it for ext4.  Don't you want to only use WRITE_SYNC() only
-> for the very last time in the loop?  Otherwise you end up unplugging
-> the queue after each bufferhead, which wouldn't be a good thing,
-> right?
+  http://www.kernel.org/pub/software/scm/git/
 
-it's debatable. Because this submit-bh() will sometimes block... it
-wouldn't get IO started for that case. I think this is where I'd like
-Jens to say what he thinks the rules are; clearly the elevator needs to
-treat all of these guys as sync, but maybe the plugging should be ..
-flexible.
+  git-1.5.6.2.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.5.6.2.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.6.2.tar.{gz,bz2}		(preformatted docs)
 
+The RPM binary packages for a few architectures are also provided as
+courtesy.  As the machine I cut them at kernel.org has been updated to FC9
+recently, their filenames now have .fc9. in them.
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+  RPMS/$arch/git-*-1.5.6.2-1.fc9.$arch.rpm	(RPM)
+
+There still are a handful more fixes queued for 'maint' so we might see
+another maintenance release, 1.5.6.3, not too far in the future.
+
+----------------------------------------------------------------
+
+Changes since v1.5.6.1 are as follows:
+
+Avery Pennarun (1):
+      git-svn: avoid filling up the disk with temp files.
+
+Björn Steinbrink (1):
+      git cat-file: Fix memory leak in batch mode
+
+Eric Wong (1):
+      git-svn: don't sanitize remote names in config
+
+Jeff King (3):
+      fetch: report local storage errors in status table
+      doc/rev-parse: clarify reflog vs --until for specifying revisions
+      fetch: give a hint to the user when local refs fail to update
+
+Jochen Voss (1):
+      avoid off-by-one error in run_upload_archive
+
+Joey Hess (1):
+      fix git config example syntax
+
+Johannes Schindelin (2):
+      clone: respect url.insteadOf setting in global configs
+      clone: respect the settings in $HOME/.gitconfig and /etc/gitconfig
+
+Junio C Hamano (9):
+      Allow "git-reset path" when unambiguous
+      diff --check: do not discard error status upon seeing a good line
+      git-shell: accept "git foo" form
+      GIT 1.5.4.6
+      GIT 1.5.5.5
+      Start draft release notes for 1.5.6.2
+      Work around gcc warnings from curl headers
+      Fix executable bits in t/ scripts
+      GIT 1.5.6.2
+
+Shawn O. Pearce (1):
+      Fix describe --tags --long so it does not segfault
+
+Thomas Rast (1):
+      Fix 'git show' on signed tag of signed tag of commit
+
