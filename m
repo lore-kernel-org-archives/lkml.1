@@ -1,66 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbYGFRcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbYGFRe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757526AbYGFRcG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 13:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753701AbYGFRbv
+	id S1758190AbYGFRe7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 13:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbYGFRek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 13:31:51 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:43550 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752766AbYGFRbu (ORCPT
+	Sun, 6 Jul 2008 13:34:40 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:7197 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753701AbYGFRej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 13:31:50 -0400
+	Sun, 6 Jul 2008 13:34:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=pge8R8eYUygPvyjy9YA87TnhLtMJ1Kre+8O2xFVjj4I8R8A2j2JCv2Yoft0EfkXC4J
-         yv5skzp2rkFX1+A7iOg2ag79V6vVLbE0ZSkXVzbaGh/yLQO5+4QseQvwiXJIj1avW+UB
-         To3E+jo4E4fYGoApKgFlRwdzLBR0aaDWZyjdY=
-Message-ID: <4871017A.8070208@gmail.com>
-Date: Sun, 06 Jul 2008 21:31:38 +0400
-From: Alexander Beregalov <a.beregalov@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080706)
-MIME-Version: 1.0
-To: jgarzik@pobox.com, netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] drivers/net/cs89x0.c: remove unnecessary includes.
-References: <a4423d670807060930p73465b1bj9c2e4eea01fb5b7a@mail.gmail.com>
-In-Reply-To: <a4423d670807060930p73465b1bj9c2e4eea01fb5b7a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id;
+        b=hJ5jFLI+0WMkFVj1AuXOaZNqg5c/UnKD0mZt0mtAZi/FfCUe/GdZNWMg4QH5/Ghwjy
+         Z10TqAQNfDB5R5D4hDZ0FT04dg8ms6XSUbB3kkhgWXgqpB509UR5DTIKiPe36ty6d1TP
+         rUi89RRN+wlWxLm5m2rMbdwEYiGBa9+Imx7kU=
+Date: Sun, 06 Jul 2008 19:20:10 +0200
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 00/50] ide: fix module unloading for host drivers
+Message-ID: <4871022c.1ade660a.3458.6260@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for wrapping lines, resend.
+This patchset (against ide tree) fixes module unloading for majority of host
+drivers.  The ones that still need fixing (because they lack ->remove method
+and/or should be converted to use struct platform_device):
 
-From: Alexander Beregalov <a.beregalov@gmail.com>
+- arch specific: ide_arm, palm_bk3710, ide-h8300, buddha, falconide, gayle,
+  macide, q40ide, swarm, pmac
 
-The patch applies to the linux-next tree.
+  [ These are probably best to be handled by their Maintainers. ]
 
-drivers/net/cs89x0.c: remove unnecessary includes.
-asm/irq.h is already included unconditionally at 151 string.
+- legacy ISA/VLB: ide-generic, ide-4drives, ali14xx, dtc2278, ht6560b, qd65xx,
+  umc8672
 
- 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
+  [ These need to use platform_device_register_simple(). ]
 
-diff --git a/drivers/net/cs89x0.c b/drivers/net/cs89x0.c
-index fba87ab..5a9d118 100644
---- a/drivers/net/cs89x0.c
-+++ b/drivers/net/cs89x0.c
-@@ -182,13 +182,10 @@ static unsigned int cs8900_irq_map[] = {1,0,0,0};
- #elif defined(CONFIG_MACH_IXDP2351)
- static unsigned int netcard_portlist[] __used __initdata = {IXDP2351_VIRT_CS8900_BASE, 0};
- static unsigned int cs8900_irq_map[] = {IRQ_IXDP2351_CS8900, 0, 0, 0};
--#include <asm/irq.h>
- #elif defined(CONFIG_ARCH_IXDP2X01)
--#include <asm/irq.h>
- static unsigned int netcard_portlist[] __used __initdata = {IXDP2X01_CS8900_VIRT_BASE, 0};
- static unsigned int cs8900_irq_map[] = {IRQ_IXDP2X01_CS8900, 0, 0, 0};
- #elif defined(CONFIG_ARCH_PNX010X)
--#include <asm/irq.h>
- #include <asm/arch/gpio.h>
- #define CIRRUS_DEFAULT_BASE    IO_ADDRESS(EXT_STATIC2_s0_BASE + 0x200000)      /* = Physical address 0x48200000 */
- #define CIRRUS_DEFAULT_IRQ     VH_INTC_INT_NUM_CASCADED_INTERRUPT_1 /* Event inputs bank 1 - ID 35/bit 3 */
+- others: cs5520, cmd640
+
+  [ cs5520 should be quick to fix, unlike cmd640. ]
+
+diffstat:
+
+ drivers/ide/arm/icside.c       |    6 +
+ drivers/ide/arm/rapide.c       |    6 +
+ drivers/ide/ide-cd.c           |   12 ++-
+ drivers/ide/ide-disk.c         |   12 ++-
+ drivers/ide/ide-floppy.c       |   12 ++-
+ drivers/ide/ide-probe.c        |    8 ++
+ drivers/ide/ide-tape.c         |   12 ++-
+ drivers/ide/ide.c              |   47 ++++++++++++
+ drivers/ide/pci/aec62xx.c      |   47 +++++++-----
+ drivers/ide/pci/alim15x3.c     |    9 ++
+ drivers/ide/pci/amd74xx.c      |   45 ++++++-----
+ drivers/ide/pci/atiixp.c       |    9 ++
+ drivers/ide/pci/cmd64x.c       |   27 ++----
+ drivers/ide/pci/cs5530.c       |    9 ++
+ drivers/ide/pci/cs5535.c       |    9 ++
+ drivers/ide/pci/cy82c693.c     |   21 ++++-
+ drivers/ide/pci/generic.c      |    9 ++
+ drivers/ide/pci/hpt34x.c       |    9 ++
+ drivers/ide/pci/hpt366.c       |   94 +++++++++++++++---------
+ drivers/ide/pci/it8213.c       |   12 ++-
+ drivers/ide/pci/it821x.c       |   46 +++++++----
+ drivers/ide/pci/jmicron.c      |    9 ++
+ drivers/ide/pci/ns87415.c      |    9 ++
+ drivers/ide/pci/opti621.c      |    9 ++
+ drivers/ide/pci/pdc202xx_new.c |   20 ++++-
+ drivers/ide/pci/pdc202xx_old.c |    9 ++
+ drivers/ide/pci/piix.c         |    9 ++
+ drivers/ide/pci/rz1000.c       |    9 ++
+ drivers/ide/pci/sc1200.c       |   48 ++++++------
+ drivers/ide/pci/serverworks.c  |    9 ++
+ drivers/ide/pci/siimage.c      |  141 +++++++++++++++++++++---------------
+ drivers/ide/pci/sis5513.c      |   15 +++
+ drivers/ide/pci/sl82c105.c     |    9 ++
+ drivers/ide/pci/slc90e66.c     |    9 ++
+ drivers/ide/pci/tc86c001.c     |   57 +++++++++++---
+ drivers/ide/pci/triflex.c      |    9 ++
+ drivers/ide/pci/trm290.c       |    9 ++
+ drivers/ide/pci/via82cxxx.c    |  132 ++++++++++++++++++----------------
+ drivers/ide/setup-pci.c        |  159 ++++++++++++++++++++++++++++-------------
+ drivers/scsi/ide-scsi.c        |    8 +-
+ include/linux/ide.h            |   16 +++-
+ 41 files changed, 813 insertions(+), 343 deletions(-)
+-- 
+
