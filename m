@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757669AbYGFOaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbYGFObE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757669AbYGFOaA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 10:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756736AbYGFO3w
+	id S1757884AbYGFObE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 10:31:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbYGFOay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 10:29:52 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:34225 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756740AbYGFO3v (ORCPT
+	Sun, 6 Jul 2008 10:30:54 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:8065 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756777AbYGFOax (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 10:29:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=hXEBWniBs+9OVzxBIOhC8P19OOkodtqOJU/IDUXl+q9MI0h9MyhCtXyl8wWnsFBV6D
-         3Tq3EEjOVeDxUruKYsFszQIxVizryPLdZeGVNOluvRuj9dCBLsHx8CdIZ2/6ivBg9VGY
-         y/r0xJ1eqLABvx10cllTk0vXRkC52XBWWVIac=
-Message-ID: <412bdbff0807060729o639f98b1s383d146856feb6da@mail.gmail.com>
-Date: Sun, 6 Jul 2008 10:29:48 -0400
-From: "Devin Heitmueller" <devin.heitmueller@gmail.com>
-To: "David Woodhouse" <dwmw2@infradead.org>
-Subject: Re: [linux-dvb] [PATCH] Remove fdump tool for av7110 firmware
-Cc: "Klaus Schmidinger" <Klaus.Schmidinger@cadsoft.de>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Jaswinder Singh" <jaswinder@infradead.org>, linux-dvb@linuxtv.org,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <1215343022.10393.945.camel@pmac.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 6 Jul 2008 10:30:53 -0400
+Subject: Re: [PATCH] Make CONFIG_MIGRATION available for s390
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Reply-To: gerald.schaefer@de.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, Dave Hansen <haveblue@us.ibm.com>,
+       Andy Whitcroft <apw@shadowen.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>
+In-Reply-To: <20080705150659.024F.E1E9C6FF@jp.fujitsu.com>
+References: <1215183539.4834.12.camel@localhost.localdomain>
+	 <20080705130203.e7df168c.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20080705150659.024F.E1E9C6FF@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Sun, 06 Jul 2008 16:30:25 +0200
+Message-Id: <1215354625.9842.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1214139259.2994.8.camel@jaswinder.satnam>
-	 <200807060315.51736@orion.escape-edv.de> <48708BBF.9050400@cadsoft.de>
-	 <1215343022.10393.945.camel@pmac.infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 6, 2008 at 7:17 AM, David Woodhouse <dwmw2@infradead.org> wrote:
-> On Sun, 2008-07-06 at 11:09 +0200, Klaus Schmidinger wrote:
->> On 07/06/08 03:15, Oliver Endriss wrote:
->> > Jaswinder Singh wrote:
->> >> There's no point in this, since the user can use the BUILTIN_FIRMWARE
->> >> option to include arbitrary firmware files directly in the kernel image.
->> >
->> > NAK! This option allows to compile the firmware into the _driver_,
->> > which is very useful if you want to test various driver/firmware
->> > combinations. Having the firmware in the _kernel_ does not help!
->>
->> I strongly support Oliver's request!
->> Working with various driver versions is much easier with the
->> firmware compiled into the driver!
->
-> That's strange; I've found exactly the opposite to be the case.
->
-> If I want to test permutations of driver and firmware, as I've done for
-> the libertas driver a number of times, I find it _much_ better to
-> preserve the modularity. I can build each version of the driver and can
-> test that against various firmware versions without having to rebuild
-> it, and with much less chance of something going wrong so that I'm not
-> actually testing what I think I'm testing.
->
-> Perhaps I'm missing something that would help me work better? Please
-> could you help me understand how you currently work, and I'll attempt to
-> make it easier for you. Can you talk me through an example of a session
-> where you had to do this testing of 'various driver/firmware
-> combinations'?
->
->
-> --
-> dwmw2
->
->
-> _______________________________________________
-> linux-dvb mailing list
-> linux-dvb@linuxtv.org
-> http://www.linuxtv.org/cgi-bin/mailman/listinfo/linux-dvb
->
+On Sat, 2008-07-05 at 15:14 +0900, Yasunori Goto wrote:
+> > >  config MIGRATION
+> > >  	bool "Page migration"
+> > >  	def_bool y
+> > > -	depends on NUMA
+> > > +	depends on NUMA || S390
+> 
+> Hmm. I think ARCH_ENABLE_MEMORY_HOTREMOVE is better than S390.
 
-Correct me if I'm wrong, but doesn't this also affect those
-distributions that consider kernels with binary firmware blobs to not
-be free software?  Those distributions take the stance that the
-firmware must be loadable by userland, in which case the proposed
-patch removes this capability.
+Right, that makes more sense. I also noticed that my patch will produce
+a compile error when CONFIG_NUMA is set but CONFIG_MIGRATION is not,
+because policy_zone is missing in that case. Since policy_zone is only
+used for NUMA, a better solution would be to use an "#ifdef CONFIG_NUMA"
+within vma_migratable(). I will send a new version of the patch.
 
-Is there some downside to leaving this functionality in there?  Are
-there known bugs or maintainability issues with the code as-is?
+Thanks,
+Gerald
 
-Devin
 
--- 
-Devin J. Heitmueller
-http://www.devinheitmueller.com
-AIM: devinheitmueller
