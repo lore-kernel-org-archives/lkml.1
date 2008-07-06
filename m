@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760068AbYGFVNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759524AbYGFVZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760068AbYGFVNA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 17:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757623AbYGFVMx
+	id S1759524AbYGFVZH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 17:25:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757985AbYGFVY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 17:12:53 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:42213 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756685AbYGFVMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 17:12:52 -0400
-Date: Sun, 6 Jul 2008 23:13:40 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Sebastian Siewior <lkml@ml.breakpoint.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: linux fatal: cannot describe <sha1>
-Message-ID: <20080706211340.GB7425@uranus.ravnborg.org>
-References: <alpine.LNX.1.10.0807011817230.20393@fbirervta.pbzchgretzou.qr> <20080701200951.GB10677@uranus.ravnborg.org> <20080701221808.GA26272@Chamillionaire.breakpoint.cc> <alpine.LNX.1.10.0807051454470.28765@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 6 Jul 2008 17:24:56 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:29196 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756916AbYGFVY4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 17:24:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=H9ytGno3dFxN7nBh7qqY7Gz2DNX7T1gRVyPmXh1IfpQDpWeTSftm7gIz7YJUMurO8w
+         lLRj7NU5I8INPTM6Y9NpBDqCtCoKlmNPaa5taXoBwx7sYhrotQcMmC6wZgSgBWaW3DGm
+         hhaZVhuoZKHNwXXZoeYMJrLrzLgyIhQpWwzAY=
+Message-ID: <9871ee5f0807061424o535c6d7eg3071da6e31e0b58e@mail.gmail.com>
+Date: Sun, 6 Jul 2008 17:24:54 -0400
+From: "Timothy Normand Miller" <theosib@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: HELP: Getting unexpected fakeraid behavior. Fix?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080706131937.13065312@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0807051454470.28765@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.4.2.1i
+References: <9871ee5f0807061307ncc55104y477c57be3e91b75f@mail.gmail.com>
+	 <20080706131937.13065312@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 05, 2008 at 02:58:48PM +0200, Jan Engelhardt wrote:
-> On Wednesday 2008-07-02 00:18, Sebastian Siewior wrote:
-> >* Sam Ravnborg | 2008-07-01 22:09:51 [+0200]:
-> >
-> >>> Just a note that when you run git-describe, you should probably quiten it.
-> >>> 
-> >>> fatal: cannot describe 'bd7364a0fd5a4a2878fe4a224be1b142a4e6698e'
-> >>> 
-> >>
-> >>Hi Jan.
-> >>
-> >>Any specific reason why you sent it to me?
-> 
-> You are the buildsystem maintainer :)
-> 
-> >Maybe he was thinking about this (and didn't know that you were moving):
-> 
-> I only took note of that briefly. Should there have been someone
-> else to send it to?
-I just failed to see the connection to kbuild - I had long
-forgotten that we uses git describe in setlocalversion script.
+On Sun, Jul 6, 2008 at 4:19 PM, Arjan van de Ven <arjan@infradead.org> wrote:
 
-	Sam
+> if your application is single threaded this isn't totally unexpected as
+> a result...
+
+Ok, I've rewritten the program to use multiple threads.  There is a
+bzcat process that's sequentially reading a large file, and then
+there's another process with four threads that is reading lots of
+small files with a lot of random access.  All threads are constrained
+by the disk (CPU load is low).
+
+I'm still seeing absolutely NO reads from the second disk.
+
+Any ideas?
+
+Thanks.
+
+
+-- 
+Timothy Normand Miller
+http://www.cse.ohio-state.edu/~millerti
+Open Graphics Project
