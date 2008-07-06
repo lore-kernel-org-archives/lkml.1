@@ -1,116 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761659AbYGFRuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759213AbYGFRu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761659AbYGFRuq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 13:50:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758441AbYGFRfD
+	id S1759213AbYGFRu0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 13:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759305AbYGFRgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 13:35:03 -0400
-Received: from gv-out-0910.google.com ([216.239.58.186]:50837 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757656AbYGFRew (ORCPT
+	Sun, 6 Jul 2008 13:36:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:12326 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756538AbYGFRfv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 13:34:52 -0400
+	Sun, 6 Jul 2008 13:35:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=references:date:from:to:cc:subject:content-disposition:message-id;
-        b=ACn9DvbXaJuvUMH6xYUfAe1ZCt/1e2SUmozuOPx0X+jNm/LwIh3GtdZEytWhsl0GcY
-         8xyMJGPTHnvHsqWeTx3HNH6mLxq7HQqyxw8hDaKMGdKeeXbg9opWjRv4gRS6MqWPLA7K
-         cXrA8kjuT6LtKy4VIcPssExdQuUg/sp063mI0=
-References: <20080706172010.559358957@bzolnier@gmail.com>
-Date: Sun, 06 Jul 2008 19:20:21 +0200
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 11/50] sc1200: convert to use ->host_priv
-Content-Disposition: inline; filename=sc1200-convert-to-use-host_priv.patch
-Message-ID: <4871023a.1ade660a.3458.627f@mx.google.com>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=aoQ9ypYBjJQf/3BGkn4/7Kwgvrda9MhCquuyhiol7fOt4kLKBT8hPoiF5e7iQBfomr
+         fW5YFjRzDi27cKT84Ypz0RmCDxwvXU2RGwTch9YmbSv1Bbx8Ef2Rm4UIg91g9t6Cwsjv
+         hzXBym+/QYiNgPAYUdVGKmhXBy5ruzIslj0FM=
+Date: Sun, 6 Jul 2008 19:35:38 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>,
+       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] workqueues: lockdep annotations for flush_work()
+Message-ID: <20080706173538.GA2500@ami.dom.local>
+References: <20080706162800.GA6443@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080706162800.GA6443@tv-sign.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/pci/sc1200.c |   39 +++++++++++++++++++--------------------
- 1 file changed, 19 insertions(+), 20 deletions(-)
+On Sun, Jul 06, 2008 at 08:28:00PM +0400, Oleg Nesterov wrote:
+> Add lockdep annotations to flush_work() and update the comment.
+> 
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Index: b/drivers/ide/pci/sc1200.c
-===================================================================
---- a/drivers/ide/pci/sc1200.c
-+++ b/drivers/ide/pci/sc1200.c
-@@ -234,21 +234,11 @@ static int sc1200_suspend (struct pci_de
- 	 * we only save state when going from full power to less
- 	 */
- 	if (state.event == PM_EVENT_ON) {
--		struct sc1200_saved_state *ss;
-+		struct ide_host *host = pci_get_drvdata(dev);
-+		struct sc1200_saved_state *ss = host->host_priv;
- 		unsigned int r;
- 
- 		/*
--		 * allocate a permanent save area, if not already allocated
--		 */
--		ss = (struct sc1200_saved_state *)pci_get_drvdata(dev);
--		if (ss == NULL) {
--			ss = kmalloc(sizeof(*ss), GFP_KERNEL);
--			if (ss == NULL)
--				return -ENOMEM;
--			pci_set_drvdata(dev, ss);
--		}
--
--		/*
- 		 * save timing registers
- 		 * (this may be unnecessary if BIOS also does it)
- 		 */
-@@ -263,7 +253,8 @@ static int sc1200_suspend (struct pci_de
- 
- static int sc1200_resume (struct pci_dev *dev)
- {
--	struct sc1200_saved_state *ss;
-+	struct ide_host *host = pci_get_drvdata(dev);
-+	struct sc1200_saved_state *ss = host->host_priv;
- 	unsigned int r;
- 	int i;
- 
-@@ -271,16 +262,12 @@ static int sc1200_resume (struct pci_dev
- 	if (i)
- 		return i;
- 
--	ss = (struct sc1200_saved_state *)pci_get_drvdata(dev);
--
- 	/*
- 	 * restore timing registers
- 	 * (this may be unnecessary if BIOS also does it)
- 	 */
--	if (ss) {
--		for (r = 0; r < 8; r++)
--			pci_write_config_dword(dev, 0x40 + r * 4, ss->regs[r]);
--	}
-+	for (r = 0; r < 8; r++)
-+		pci_write_config_dword(dev, 0x40 + r * 4, ss->regs[r]);
- 
- 	return 0;
- }
-@@ -317,7 +304,19 @@ static const struct ide_port_info sc1200
- 
- static int __devinit sc1200_init_one(struct pci_dev *dev, const struct pci_device_id *id)
- {
--	return ide_pci_init_one(dev, &sc1200_chipset, NULL);
-+	struct sc1200_saved_state *ss = NULL;
-+	int rc;
-+
-+#ifdef CONFIG_PM
-+	ss = kmalloc(sizeof(*ss), GFP_KERNEL);
-+	if (ss == NULL)
-+		return -ENOMEM;
-+#endif
-+	rc = ide_pci_init_one(dev, &sc1200_chipset, ss);
-+	if (rc)
-+		kfree(ss);
-+
-+	return rc;
- }
- 
- static const struct pci_device_id sc1200_pci_tbl[] = {
+Looks OK to me. (But probably the comment on "true" would be easier
+(more precise).)
 
--- 
+Regards,
+Jarek P.
 
+> 
+> --- 26-rc2/kernel/workqueue.c~FW_LOCKDEP	2008-06-29 19:36:27.000000000 +0400
+> +++ 26-rc2/kernel/workqueue.c	2008-07-06 20:15:16.000000000 +0400
+> @@ -403,6 +403,8 @@ EXPORT_SYMBOL_GPL(flush_workqueue);
+>   * flush_work - block until a work_struct's callback has terminated
+>   * @work: the work which is to be flushed
+>   *
+> + * Returns false if @work has already terminated.
+> + *
+>   * It is expected that, prior to calling flush_work(), the caller has
+>   * arranged for the work to not be requeued, otherwise it doesn't make
+>   * sense to use this function.
+> @@ -418,6 +420,9 @@ int flush_work(struct work_struct *work)
+>  	if (!cwq)
+>  		return 0;
+>  
+> +	lock_acquire(&cwq->wq->lockdep_map, 0, 0, 0, 2, _THIS_IP_);
+> +	lock_release(&cwq->wq->lockdep_map, 1, _THIS_IP_);
+> +
+>  	prev = NULL;
+>  	spin_lock_irq(&cwq->lock);
+>  	if (!list_empty(&work->entry)) {
+> 
