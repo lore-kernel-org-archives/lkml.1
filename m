@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761410AbYGFRs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761841AbYGFRsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761410AbYGFRs6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 13:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbYGFRgQ
+	id S1761841AbYGFRsm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 13:48:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759280AbYGFRgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 13:36:16 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:7197 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759126AbYGFRfl (ORCPT
+	Sun, 6 Jul 2008 13:36:14 -0400
+Received: from gv-out-0910.google.com ([216.239.58.187]:49197 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758279AbYGFRfi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 13:35:41 -0400
+	Sun, 6 Jul 2008 13:35:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=references:date:from:to:cc:subject:content-disposition:message-id;
-        b=FLfbelWTVNkFH3i0L7KJ9DJmdGz4KvhHuXboZKjBQTtQbfNgfbuFHNYYUmA8pl2A0S
-         qG8oDxFjnfiwTMZvKX1rQEcXiI+dDNw8vUddWixkAnqFuzI7QBaXq6nB0bzyMrBCd1fl
-         axJEHzGcQcsJiDprJ1ihZbvJrd8FPRUlHqI7c=
+        b=k69IN9ss0nJ5uTIGkayCoZ4uaG54El14OZYgRsiBM0y+SYJQDMIC+S0wIlfBBVIXxX
+         udnXmkZrPJe5RLXHzY7w+ni2QTibLpM4ptAFvtuspx0E2LiC4i5i5pdNKYwWasSrkUua
+         TTJ0xRyzCFQo9MRzuDdoHLJPO5opS5QdxDXR8=
 References: <20080706172010.559358957@bzolnier@gmail.com>
-Date: Sun, 06 Jul 2008 19:20:57 +0200
+Date: Sun, 06 Jul 2008 19:20:54 +0200
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 47/50] trm290: add ->remove method and module_exit()
-Content-Disposition: inline; filename=trm290-add-remove-method-and-module_exit.patch
-Message-ID: <4871026b.1ade660a.3458.62e5@mx.google.com>
+Subject: [PATCH 44/50] slc90e66: add ->remove method and module_exit()
+Content-Disposition: inline; filename=slc90e66-add-remove-method-and-module_exit.patch
+Message-ID: <48710268.1ade660a.3458.62df@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/pci/trm290.c |    7 +++++++
+ drivers/ide/pci/slc90e66.c |    7 +++++++
  1 file changed, 7 insertions(+)
 
-Index: b/drivers/ide/pci/trm290.c
+Index: b/drivers/ide/pci/slc90e66.c
 ===================================================================
---- a/drivers/ide/pci/trm290.c
-+++ b/drivers/ide/pci/trm290.c
-@@ -353,6 +353,7 @@ static struct pci_driver driver = {
- 	.name		= "TRM290_IDE",
- 	.id_table	= trm290_pci_tbl,
- 	.probe		= trm290_init_one,
+--- a/drivers/ide/pci/slc90e66.c
++++ b/drivers/ide/pci/slc90e66.c
+@@ -157,6 +157,7 @@ static struct pci_driver driver = {
+ 	.name		= "SLC90e66_IDE",
+ 	.id_table	= slc90e66_pci_tbl,
+ 	.probe		= slc90e66_init_one,
 +	.remove		= ide_pci_remove,
  };
  
- static int __init trm290_ide_init(void)
-@@ -360,7 +361,13 @@ static int __init trm290_ide_init(void)
+ static int __init slc90e66_ide_init(void)
+@@ -164,7 +165,13 @@ static int __init slc90e66_ide_init(void
  	return ide_pci_register_driver(&driver);
  }
  
-+static void __exit trm290_ide_exit(void)
++static void __exit slc90e66_ide_exit(void)
 +{
 +	pci_unregister_driver(&driver);
 +}
 +
- module_init(trm290_ide_init);
-+module_exit(trm290_ide_exit);
+ module_init(slc90e66_ide_init);
++module_exit(slc90e66_ide_exit);
  
- MODULE_AUTHOR("Mark Lord");
- MODULE_DESCRIPTION("PCI driver module for Tekram TRM290 IDE");
+ MODULE_AUTHOR("Andre Hedrick");
+ MODULE_DESCRIPTION("PCI driver module for SLC90E66 IDE");
 
 -- 
 
