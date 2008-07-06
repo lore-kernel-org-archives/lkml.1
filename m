@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbYGFOvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758301AbYGFOyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbYGFOvU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 10:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756905AbYGFOvI
+	id S1758301AbYGFOyT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 10:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756905AbYGFOyC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 10:51:08 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48815 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757090AbYGFOvH (ORCPT
+	Sun, 6 Jul 2008 10:54:02 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:43878 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756736AbYGFOyA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 10:51:07 -0400
-Subject: Re: [linux-dvb] [PATCH] Remove fdump tool for av7110 firmware
-From: David Woodhouse <dwmw2@infradead.org>
-To: Devin Heitmueller <devin.heitmueller@gmail.com>
-Cc: Klaus Schmidinger <Klaus.Schmidinger@cadsoft.de>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jaswinder Singh <jaswinder@infradead.org>, linux-dvb@linuxtv.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <412bdbff0807060729o639f98b1s383d146856feb6da@mail.gmail.com>
-References: <1214139259.2994.8.camel@jaswinder.satnam>
-	 <200807060315.51736@orion.escape-edv.de> <48708BBF.9050400@cadsoft.de>
-	 <1215343022.10393.945.camel@pmac.infradead.org>
-	 <412bdbff0807060729o639f98b1s383d146856feb6da@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 06 Jul 2008 15:48:02 +0100
-Message-Id: <1215355682.3189.101.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+	Sun, 6 Jul 2008 10:54:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xv13hytG8uwnD4JIJinLYPlmD93Zw09IyQr+wmuJ7g826AlAjLeeal4+gXTWfBIdS9
+         iGHT3Xo0XgGmyGJsJHrSBd+QCGT1nQbH/l+hVWlHtKbGW0aubJ/YjzkEygmDjBx1W0IZ
+         OxarqHoajsh+B92953XEka8CYHBhtqZ6FnhDY=
+Message-ID: <237967ef0807060754t4bf0ab8el7362e69aac4699b5@mail.gmail.com>
+Date: Sun, 6 Jul 2008 16:54:00 +0200
+From: "Mikael Magnusson" <mikachu@gmail.com>
+To: "Jan Engelhardt" <jengelh@medozas.de>
+Subject: Re: [ANNOUNCE] GIT 1.5.6.2
+Cc: "Junio C Hamano" <gitster@pobox.com>, git@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LNX.1.10.0807061444250.28765@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <7vy74fo9t4.fsf@gitster.siamese.dyndns.org>
+	 <alpine.LNX.1.10.0807061444250.28765@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-07-06 at 10:29 -0400, Devin Heitmueller wrote:
-> Correct me if I'm wrong, but doesn't this also affect those
-> distributions that consider kernels with binary firmware blobs to not
-> be free software?  Those distributions take the stance that the
-> firmware must be loadable by userland, in which case the proposed
-> patch removes this capability.
+2008/7/6 Jan Engelhardt <jengelh@medozas.de>:
+>
+> On Sunday 2008-07-06 07:34, Junio C Hamano wrote:
+>>Junio C Hamano (9):
+>>      Allow "git-reset path" when unambiguous
+>>      diff --check: do not discard error status upon seeing a good line
+>>      git-shell: accept "git foo" form
+>>      GIT 1.5.4.6
+>>      GIT 1.5.5.5
+>>      Start draft release notes for 1.5.6.2
+>>      Work around gcc warnings from curl headers
+>>      Fix executable bits in t/ scripts
+>>      GIT 1.5.6.2
+>
+> Three git versions?
 
-No, it doesn't remove that capability.
-
-We're just observing that the trick which fdump.c uses to turn firmware
-into a hex array in C source is obsoleted by the generic ability to
-include firmware blobs into the kernel using CONFIG_EXTRA_FIRMWARE. If
-we just use the generic method, then the conditional code in the driver
-can go away, as can the fdump tool.
-
-Yes, that does mean that it's either in the _kernel_ or in userspace,
-rather than being in the .ko file -- but if you want modularity and are
-already depending on having a functional userspace, it doesn't seem to
-make a lot of sense to have this reimplementation of generic
-functionality, just so that you can keep the two parts in _one_ file.
+I believe this is related to moving to the dash-less form of receive-pack et al.
 
 -- 
-dwmw2
-
+Mikael Magnusson
