@@ -1,68 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbYGFI2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbYGFIrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755350AbYGFI2r (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 04:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbYGFI2j
+	id S1755104AbYGFIrS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 04:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYGFIrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 04:28:39 -0400
-Received: from nebensachen.de ([195.34.83.29]:39519 "EHLO mail.nebensachen.de"
+	Sun, 6 Jul 2008 04:47:05 -0400
+Received: from il.qumranet.com ([212.179.150.194]:11637 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751855AbYGFI2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 04:28:38 -0400
-X-Hashcash: 1:20:080706:joe@skyrush.com::oz+ByS8Va6w+bKjv:005QmL
-X-Hashcash: 1:20:080706:andi@firstfloor.org::wt1ltCGxyAKWIC6M:0000000000000000000000000000000000000000000ejR
-X-Hashcash: 1:20:080706:alan@lxorguk.ukuu.org.uk::Yw50OdlenpiJ6aym:00000000000000000000000000000000000007m3z
-X-Hashcash: 1:20:080706:edwintorok@gmail.com::sVNztjjqgK40d7v6:00000000000000000000000000000000000000000DIHJ
-X-Hashcash: 1:20:080706:linux-kernel@vger.kernel.org::j43T3bSGQHgBUj8A:0000000000000000000000000000000002RLW
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Joe Peterson <joe@skyrush.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       =?iso-8859-1?Q?T=F6r=F6k?= Edwin <edwintorok@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Ctrl+C doesn't interrupt process waiting for I/O
-References: <48661488.10304@gmail.com> <87fxqurqpz.fsf@denkblock.local>
-	<486E83C3.1040509@skyrush.com>
-	<20080704212335.4ffc8230@lxorguk.ukuu.org.uk>
-	<871w29s5u2.fsf@basil.nowhere.org>
-	<20080704221457.1f147225@lxorguk.ukuu.org.uk>
-	<486E97F2.8020605@firstfloor.org>
-	<20080704224441.63204bc4@lxorguk.ukuu.org.uk>
-	<486E9F91.6010701@firstfloor.org>
-	<20080705113434.41109492@lxorguk.ukuu.org.uk>
-	<486F543D.8010409@firstfloor.org> <87y74gpkb8.fsf@denkblock.local>
-	<486FD270.9030209@skyrush.com>
-Date: Sun, 06 Jul 2008 10:28:26 +0200
-In-Reply-To: <486FD270.9030209@skyrush.com> (Joe Peterson's message of "Sat,
-	05 Jul 2008 13:58:40 -0600")
-Message-ID: <87zlovxvpx.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750883AbYGFIrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 04:47:04 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: [GIT PULL] KVM updates for 2.6.26-rc9
+Date: Sun,  6 Jul 2008 11:47:02 +0300
+Message-Id: <1215334022-16553-1-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Peterson <joe@skyrush.com> wrote:
-> Elias Oltmanns wrote:
-[...]
->> Quite frankly, I'm a bit at a loss as to how I should go about debugging
->> this and what kind of data might be useful to others to do so.
->
-> If you can, please try the new patch I attached to the post:
->
-> 	http://marc.info/?l=linux-kernel&m=121520229900676&w=2
+Linus, please pull the kvm fixes from the repo and branch at:
 
-Sorry, I just forgot to mention that I had already done that. It doesn't
-make any difference as far as I can see (not that I'm surprised about
-it).
+  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git kvm-updates-2.6.26
 
-[...]
-> And also, if you can, try doing 'stty noflsh' and then the test case
-> again to see if this alters behavior.  This may be good to know as well,
-> even if the flush is not centrally involved in the issue.
+adding a missing memory clobber to kvm hypercalls, which cause failures
+when running guests compiled with gcc 4.3.0, and fixing ioapic interrupt
+redelivery under certain loads.
 
-No, that didn't make any difference either.
+Shortlog, diffstat, and diff follow.
 
-Regards,
+Anthony Liguori (1):
+      x86: KVM guest: Add memory clobber to hypercalls
 
-Elias
+Mark McLoughlin (1):
+      KVM: IOAPIC: Fix level-triggered irq injection hang
+
+ include/asm-x86/kvm_para.h |   15 ++++++++++-----
+ virt/kvm/ioapic.c          |    2 +-
+ 2 files changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/include/asm-x86/kvm_para.h b/include/asm-x86/kvm_para.h
+index bfd9900..76f3921 100644
+--- a/include/asm-x86/kvm_para.h
++++ b/include/asm-x86/kvm_para.h
+@@ -71,7 +71,8 @@ static inline long kvm_hypercall0(unsigned int nr)
+ 	long ret;
+ 	asm volatile(KVM_HYPERCALL
+ 		     : "=a"(ret)
+-		     : "a"(nr));
++		     : "a"(nr)
++		     : "memory");
+ 	return ret;
+ }
+ 
+@@ -80,7 +81,8 @@ static inline long kvm_hypercall1(unsigned int nr, unsigned long p1)
+ 	long ret;
+ 	asm volatile(KVM_HYPERCALL
+ 		     : "=a"(ret)
+-		     : "a"(nr), "b"(p1));
++		     : "a"(nr), "b"(p1)
++		     : "memory");
+ 	return ret;
+ }
+ 
+@@ -90,7 +92,8 @@ static inline long kvm_hypercall2(unsigned int nr, unsigned long p1,
+ 	long ret;
+ 	asm volatile(KVM_HYPERCALL
+ 		     : "=a"(ret)
+-		     : "a"(nr), "b"(p1), "c"(p2));
++		     : "a"(nr), "b"(p1), "c"(p2)
++		     : "memory");
+ 	return ret;
+ }
+ 
+@@ -100,7 +103,8 @@ static inline long kvm_hypercall3(unsigned int nr, unsigned long p1,
+ 	long ret;
+ 	asm volatile(KVM_HYPERCALL
+ 		     : "=a"(ret)
+-		     : "a"(nr), "b"(p1), "c"(p2), "d"(p3));
++		     : "a"(nr), "b"(p1), "c"(p2), "d"(p3)
++		     : "memory");
+ 	return ret;
+ }
+ 
+@@ -111,7 +115,8 @@ static inline long kvm_hypercall4(unsigned int nr, unsigned long p1,
+ 	long ret;
+ 	asm volatile(KVM_HYPERCALL
+ 		     : "=a"(ret)
+-		     : "a"(nr), "b"(p1), "c"(p2), "d"(p3), "S"(p4));
++		     : "a"(nr), "b"(p1), "c"(p2), "d"(p3), "S"(p4)
++		     : "memory");
+ 	return ret;
+ }
+ 
+diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
+index 1dcf9f3..4458908 100644
+--- a/virt/kvm/ioapic.c
++++ b/virt/kvm/ioapic.c
+@@ -278,7 +278,7 @@ static void __kvm_ioapic_update_eoi(struct kvm_ioapic *ioapic, int gsi)
+ 
+ 	ent->fields.remote_irr = 0;
+ 	if (!ent->fields.mask && (ioapic->irr & (1 << gsi)))
+-		ioapic_deliver(ioapic, gsi);
++		ioapic_service(ioapic, gsi);
+ }
+ 
+ void kvm_ioapic_update_eoi(struct kvm *kvm, int vector)
