@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbYGFVEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759745AbYGFVJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760176AbYGFVEQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 17:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758284AbYGFVD6
+	id S1759745AbYGFVJk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 17:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757623AbYGFVJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 17:03:58 -0400
-Received: from threatwall.zlynx.org ([199.45.143.218]:32871 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758167AbYGFVD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 17:03:57 -0400
-Message-ID: <4871330A.3030400@acm.org>
-Date: Sun, 06 Jul 2008 15:03:06 -0600
-From: Zan Lynx <zlynx@acm.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Ryan Hope <rmh3093@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Lockless/Get_User_Pages_Fast causes Xorg 1.4.99.* to lock
-References: <48f7fe350807032326l1d68c94l531e44c09693b989@mail.gmail.com> <486E4FD8.4010102@acm.org> <Pine.LNX.4.64.0807042112130.16912@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0807042112130.16912@blonde.site>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 6 Jul 2008 17:09:31 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47526 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756916AbYGFVJb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 17:09:31 -0400
+Date: Sun, 6 Jul 2008 21:51:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: Alan Cox <alan@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: pata_it821x completely broken
+Message-ID: <20080706215146.63d9dfd2@lxorguk.ukuu.org.uk>
+In-Reply-To: <200807062303.05994.linux@rainbow-software.org>
+References: <200807042153.56644.linux@rainbow-software.org>
+	<200807051242.00545.linux@rainbow-software.org>
+	<20080705154951.GC20937@devserv.devel.redhat.com>
+	<200807062303.05994.linux@rainbow-software.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Envelope-From: zlynx@acm.org
-X-Spam-Id: 20080706/1KFbOY-0006gm-BO-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> On Fri, 4 Jul 2008, Zan Lynx wrote:
-[cut]
-> Useful info, thank you; even more useful was the Code line in your attachment
+> Maxtor 7270 AV - is detected by firmware but oopses in Linux:
 > 
->> [  269.224557] Code: 00 00 48 b9 00 00 00 00 00 e2 ff ff 48 21 d8 48 c1 e8 0c 48 8d 14 c5 00 00 00 00 48 c1 e0 06 48 29 d0 48 01 c1 0f 84 10 ff ff ff <48> 8b 01 48 89 ca f6 c4 40 74 04 48 8b 51 10 90 ff 42 08 90 ff 
-> 
-> which is enough to identify the oops as in copy_one_pte's get_page(page).
-> Here's a patch I think we need, which I'm hoping will fix both your
-> crashes - please let us know - thanks a lot.
-> 
-> Stop mprotect's pte_modify from wiping out the x86 pte_special bit, which
-> caused oops thereafter when vm_normal_page thought X's abnormal was normal.
-[cut patch]
+> pata_it821x: forcing bypass mode.
+> pata_it821x: controller in pass through mode.
+> ACPI: PCI Interrupt Link [LNKC] enabled at IRQ 11
+> ACPI: PCI Interrupt 0000:00:12.0[A] -> Link [LNKC] -> GSI 11 (level, low) -> 
+> IRQ 11
+> irq 11: nobody cared (try booting with the "irqpoll" option)
+> Pid: 1, comm: swapper Not tainted 2.6.25.3-pentium #5
+>  [<c012f48f>] __report_bad_irq+0x24/0x69
+>  [<c012f496>] __report_bad_irq+0x2b/0x69
 
-I can report that this fixes things for me as well.  Thank you.
+Please file a bug for this - that's upsetting the core libata code
+somewhere, perhaps from a left over floating interrupt.
+
+Alan
