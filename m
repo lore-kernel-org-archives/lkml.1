@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758059AbYGFPxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYGFP6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758059AbYGFPxA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 11:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756314AbYGFPww
+	id S1757983AbYGFP6r (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 11:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818AbYGFP6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 11:52:52 -0400
-Received: from zakalwe.fi ([80.83.5.154]:39321 "EHLO zakalwe.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753440AbYGFPww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 11:52:52 -0400
-Date: Sun, 6 Jul 2008 18:52:45 +0300
-From: Heikki Orsila <shdl@zakalwe.fi>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.26-rc9 load problem
-Message-ID: <20080706155245.GB4379@zakalwe.fi>
-References: <20080706142516.GA4379@zakalwe.fi> <20080706073726.72074a3c@infradead.org>
+	Sun, 6 Jul 2008 11:58:39 -0400
+Received: from wx-out-0506.google.com ([66.249.82.231]:49516 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756786AbYGFP6i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 11:58:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=AphLJ6EIVed3pA/aoGSi5ceR6U9g13tW1IKIZ4tMP5yUI0sqw6/B5VGWzfVy/KMIto
+         f5jbany3mo73ssbcQrlzHJYI5MYfYnckC/OljhWPPDNaVvJ9HHi62lpDCcDDNz+nQEj0
+         Ph565S6nHu3WjxHi1etGzW8E8EMCoEn/X1iq8=
+Message-ID: <a4423d670807060858nf8ec980gcd0475ccdc55b94d@mail.gmail.com>
+Date: Sun, 6 Jul 2008 19:58:36 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: rmk+kernel@arm.linux.org.uk, dbaryshkov@gmail.com,
+       kernel-janitors@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] [ARM] Tosa: remove double inclusion of linux/delay.h
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080706073726.72074a3c@infradead.org>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 06, 2008 at 07:37:26AM -0700, Arjan van de Ven wrote:
-> On Sun, 6 Jul 2008 17:25:16 +0300
-> Heikki Orsila <shdl@zakalwe.fi> wrote:
-> 
-> > Testing 2.6.26-rc9. Doing:
-> > 
-> > 	dd if=/dev/hda of=/dev/null bs=4096
-> > 
-> > causes the operating system to feel very unresponsible.
-> > Even the key repeat interval at tty1 is unpredictable.
-> 
-> Hi,
-> 
-> do you have an idea which version you tried last which didn't show this
-> behavior?
+From: Alexander Beregalov <a.beregalov@gmail.com>
 
-Actually, this was the first vanilla kernel I tried on _this_ 
-workstation. The earlier kernel came from Debian (testing).
+The patch applies to the linux-next tree.
 
-It turns out I screwed up the kernel config which caused this. VIA PATA 
-driver was not used, but a generic IDE chipset driver :/ Probably it 
-didn't use DMA so the system became very sluggish.
+[ARM] Tosa: Remove double inclusion of linux/delay.h
 
-The system is fine now. Thanks for your help, anyway.
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
--- 
-Heikki Orsila
-heikki.orsila@iki.fi
-http://www.iki.fi/shd
+diff --git a/arch/arm/mach-pxa/tosa.c b/arch/arm/mach-pxa/tosa.c
+index 86f1ea5..f4d9d77 100644
+--- a/arch/arm/mach-pxa/tosa.c
++++ b/arch/arm/mach-pxa/tosa.c
+@@ -26,7 +26,6 @@
+ #include <linux/mtd/nand.h>
+ #include <linux/mtd/partitions.h>
+ #include <linux/pm.h>
+-#include <linux/delay.h>
+ #include <linux/gpio_keys.h>
+ #include <linux/input.h>
+ #include <linux/gpio.h>
