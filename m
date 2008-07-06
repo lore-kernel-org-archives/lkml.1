@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760232AbYGFXXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760222AbYGFX0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760232AbYGFXXI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 19:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756987AbYGFXWy
+	id S1760222AbYGFX0c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 19:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756941AbYGFX0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 19:22:54 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58655 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756970AbYGFXWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 19:22:53 -0400
-Message-ID: <487153B3.80002@garzik.org>
-Date: Sun, 06 Jul 2008 19:22:27 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 6 Jul 2008 19:26:25 -0400
+Received: from c-71-205-80-56.hsd1.mi.comcast.net ([71.205.80.56]:45621 "EHLO
+	monolith.glofar.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756921AbYGFX0Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 19:26:24 -0400
+X-Greylist: delayed 4277 seconds by postgrey-1.27 at vger.kernel.org; Sun, 06 Jul 2008 19:26:24 EDT
+Date: Sun, 6 Jul 2008 14:00:22 -0400 (EDT)
+From: George Glover <hyperborean@comcast.net>
+To: linux-kernel@vger.kernel.org
+Subject: Runtime accounting bug?
+Message-ID: <alpine.LNX.1.00.0807061330000.21901@monolith>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: david@lang.hm, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Miller <davem@davemloft.net>, andi@firstfloor.org, tytso@mit.edu,
-       hugh@veritas.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-References: <1215178035.10393.763.camel@pmac.infradead.org>	 <486E2818.1060003@garzik.org> <20080704142753.27848ff8@lxorguk.ukuu.org.uk>	 <20080704.134329.209642254.davem@davemloft.net>	 <20080704220444.011e7e61@lxorguk.ukuu.org.uk>	 <alpine.DEB.1.10.0807061311030.11010@asgard.lang.hm>	 <1215376034.3189.127.camel@shinybook.infradead.org>	 <alpine.DEB.1.10.0807061351040.11010@asgard.lang.hm>	 <1215377814.3189.137.camel@shinybook.infradead.org>	 <48713B73.6030708@garzik.org> <1215382225.3189.174.camel@shinybook.infradead.org>
-In-Reply-To: <1215382225.3189.174.camel@shinybook.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Sun, 2008-07-06 at 17:38 -0400, Jeff Garzik wrote:
->> David Woodhouse wrote:
->>> On Sun, 2008-07-06 at 13:52 -0700, david@lang.hm wrote:
->>>> On Sun, 6 Jul 2008, David Woodhouse wrote:
->>>>
->>>>> On Sun, 2008-07-06 at 13:17 -0700, david@lang.hm wrote:
->>>>>> if David W were to make it possible to not use the load_firmware() call to
->>>>>> userspace and build the firmware into the driver (be it in a monolithic
->>>>>> kernel or the module that contains the driver)
->>>>> You _can_ build the firmware into the kernel.
->>>> right, but not into a module. you have half of the answer in place, but 
->>>> not all of it.
->>> The useful half. If you have userspace to load modules, you have
->>> userspace to load firmware too.
->> Existing examples have already been provided where this logic fails.
-> 
-> I even provided such an example, where your script greps the module for
-> 'request_firmware' and fails if there's a match. I don't think any of
-> the other provided examples were _much_ more sensible than that...
+Hello,
 
-That makes the false presumption that scripts have been updated to avoid 
-the obvious case -- non-working drivers.
+I run two copies (dual processor system) of "mprime" from the GIMPS 
+project. After a while running (weeks?) the cumulative runtime reported by 
+top increments faster than real time, then after a while (unknown how long) 
+the value increments normally again.  Then, maybe something overflows - but 
+runtime accounting stops entirely even though the process is in the run state.
 
-Why is it so difficult to follow a simple principle:
+(mprime is a cpu-bound low priority process like seti@home and friends.)
 
-	Keep things working tomorrow, that work today.
+I presently have a stuck process and a one that should soon start to 
+increment faster than possible.
 
-hmmm?
+I have verified that the "stuck" process is indeed running since it continues
+to generate output.
 
-That's how kernel module support was integrated, so many years ago.
+Here is the "stuck" process:
 
-	Jeff
+cat /proc/4126/stat; sleep 5;  cat /proc/4126/stat
+4126 (mprime) R 2984 4126 2984 34819 4126 4202496 16530 0 4 0 2124505930 661087 0 0 39 19 1 0 8442861 21483520 3733 4294967295 134512640 138881564 3220348480 3220345732 135248565 0 0 0 16386 0 0 0 17 1 0 0 0 0 0
+4126 (mprime) R 2984 4126 2984 34819 4126 4202496 16530 0 4 0 2124505930 661087 0 0 39 19 1 0 8442861 21483520 3733 4294967295 134512640 138881564 3220348480 3220345736 135241038 0 0 0 16386 0 0 0 17 1 0 0 0 0 0
 
 
+Here is the other process started more recently:
+
+cat /proc/18312/stat; sleep 5;  cat /proc/18312/stat
+18312 (mprime) R 2969 18312 2969 34818 18312 4202496 7657 0 1 0 140549087 660363 0 0 39 19 1 0 346388363 35483648 7152 4294967295 134512640 138881564 3221166480 3221163732 135246526 0 0 0 16386 0 0 0 17 1 0 0 0 0 0
+18312 (mprime) R 2969 18312 2969 34818 18312 4202496 7657 0 1 0 140549510 660364 0 0 39 19 1 0 346388363 35483648 7152 4294967295 134512640 138881564 3221166480 3221163740 135280398 0 0 0 16386 0 0 0 17 1 0 0 0 0 0
+
+
+Top output sorted by cpu time:
+
+   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+    TIME COMMAND
+  4126 zed       39  19 20980  14m  968 R    0  0.4 354194:30  5903h mprime
+18312 zed       39  19 34652  27m  952 R   84  0.8  23544:49 392,24 mprime
+
+
+uptime:
+12:50:47 up 60 days, 18:58, 25 users,  load average: 2.20, 2.21, 2.26
+
+cat /proc/version
+Linux version 2.6.25.1 (root@(none)) (gcc version 4.1.2) #3 SMP PREEMPT Tue
+May 6 01:53:17 EDT 2008
+
+The machine is a dual processor 1.2Ghz Athlon MP system.  It's generally 
+problem free with maybe 1 bit error a year reported from the ecc ram.
+
+As the problem takes so long to repeat I do not know how to approach it. 
+It has also been present for the past few kernels, since 2.6.23 if I 
+recall.
+
+Anyone have any thoughts? It seems more cosmetic than critical.
+
+George
 
