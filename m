@@ -1,131 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbYGFNra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757294AbYGFOOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757916AbYGFNra (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 09:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756676AbYGFNrV
+	id S1757294AbYGFOOV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 10:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbYGFOON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 09:47:21 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:22106 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756672AbYGFNrU (ORCPT
+	Sun, 6 Jul 2008 10:14:13 -0400
+Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:15844 "EHLO
+	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755877AbYGFOOM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 09:47:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=sg8Ps2vhCiirVBTIfCzAkehMwe+9+2ivxninqhjw1FRffqpZd6RlP5mYkF0RM8a7Bn
-         7314AX2TaCuQqs6ffozPmPwuzwTbfunMnFAQRWd5JmbEAQmttpVOHqHMtPrN860v9170
-         lNj923voGBB+IguX5e1mnCSyoWMMk2k/5HAZI=
-Message-ID: <19f34abd0807060647k54490088uf8859d8a1646fd41@mail.gmail.com>
-Date: Sun, 6 Jul 2008 15:47:19 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>,
-       "Alexey Starikovskiy" <astarikovskiy@suse.de>,
-       "Thomas Gleixner" <tglx@linutronix.de>, venkatesh.pallipadi@intel.com,
-       "Huang Ying" <ying.huang@intel.com>, "Andi Kleen" <andi@firstfloor.org>
-Subject: v2.6.26-rc9: ACPI PCI irq routing on NUMA? + early_ioremap trouble
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+	Sun, 6 Jul 2008 10:14:12 -0400
+X-Greylist: delayed 304 seconds by postgrey-1.27 at vger.kernel.org; Sun, 06 Jul 2008 10:14:12 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqgEANexXkh5LDuR/2dsb2JhbACBWoldowc
+X-IronPort-AV: E=Sophos;i="4.30,310,1212330600"; 
+   d="scan'208";a="151182161"
+Date: Mon, 7 Jul 2008 00:08:58 +1000 (EST)
+From: Tim Connors <tim.w.connors@gmail.com>
+To: Joe Peterson <joe@skyrush.com>
+cc: Vegard Nossum <vegard.nossum@gmail.com>, Alan Cox <alan@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Newall <davidn@davidnewall.com>, Willy Tarreau <w@1wt.eu>,
+       Harald Dunkel <harald.dunkel@t-online.de>, linux-kernel@vger.kernel.org
+Subject: Re: tty session leader issue (was Re: 2.6.25.3: su gets stuck for
+ root)
+In-Reply-To: <486BC30C.6010705@skyrush.com>
+Message-ID: <alpine.DEB.1.10.0807062353450.30385@scuzzie.rather.puzzling.org>
+References: <48438126.3080308@t-online.de>  <20080604171056.GB17875@devserv.devel.redhat.com>  <4846FBF2.9010206@skyrush.com> <484FDB63.6050504@skyrush.com>  <19f34abd0806120452w433e9763v2ee92e2f278ae988@mail.gmail.com>  <485323C5.4030002@skyrush.com> 
+ <19f34abd0806140045l259bcb93ie4b7bfa2d73bd4d@mail.gmail.com>  <48540343.4010200@skyrush.com>  <19f34abd0806141334w67547e84hf1021c0fd1139b8b@mail.gmail.com>  <48542F75.5070605@skyrush.com> <19f34abd0806141426o7ba13f91h6720db3609146e16@mail.gmail.com>
+ <486BC30C.6010705@skyrush.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2 Jul 2008, Joe Peterson wrote:
 
-I have produced a config which doesn't boot correctly on either of my
-computers with v2.6.26-rc9.
+> I have done some more investigation on this problem, and I am posting
+> here my results in hope that someone can point me in the right direction
+> for further investigation...
+>
+> Summary: during the initialization of a new bash shell, the terminal
+> foreground process group often reverts back to that of the parent of the
+> bash shell (after being set *to* the bash shell pgrp by bash),
+> prohibiting commands like stty from being run by the init scripts.  The
+> result is that the execution of these commands will hang until killed,
+> causing the bash prompt to not appear.  Adding a delay in the script
+> (using sleep) increases the chance of this having time to happen.
+...
+> So here is the question: is there a way/reason the kernel would revert
+> the pgrp of the session leader after bash sets it?  Is there some more
+> instrumenting in the kernel or in bash that might reveal what is going
+> on?  I have heard yet another report of this happening since I added to
+> the thread, and I can get it to happen easily on two different machines
+> (a desktop and a laptop).
 
-The first problem is with my laptop, which hangs on boot, see
-screenshot (sorry for the bad quality, I was in a hurry):
-http://folk.uio.no/vegardno/linux/DSCF3026.JPG
+In fact, in various laptops (Eeeepc, dell inspiron 1520, Dell inspiron
+4000), I've got various tty screwups that have been introduced since
+circa 2.6.19.
 
-I figured there's something wrong with ACPI PCI irq routing as I'm
-missing a message that shows up in my usual configs:
+The 6 year old inspiron 4000 gets stuck at stty erase ^? .  Randomly, but
+most of the time.
 
-calling  ide_scan_pcibus+0x0/0xf0
-ICH8M: IDE controller (0x8086:0x2850 rev 0x03) at  PCI slot 0000:00:1f.1
-    --- HERE: ---
-ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 18 (level, low) -> IRQ 18
-    ----
-ICH8M: not 100% native mode: will probe irqs later
+All of my machines exhibit the ctrl-C being slower than ctrl-Z discussed
+elswhere (I've almost developed a habit of typing ctrl-Z kill %1 <RET>).
+Although even ctrl-Z recently has been reluctant to always work.  I wonder
+if this is the cause of dpkg recently not responding to ctrl-Z's? (debian
+bug #486222).  dpkg does respond to kill -STOP
 
-...and as can be seen in the screenshot, ide-cd "lost interrupt".
-Unfortunately, I don't have a serial line on this machine, so it's
-hard to get the full log. (Maybe I can try netconsole, it seems to be
-up by the time this happens.)
+ctrl-s doesn't always work anymore.  Again, what prompted me to write this
+email, was I couldn't pause dpkg.  It's particularly unreliable at
+stopping scrolling messages at bootup, and if I press it at the wrong time
+at bootup (not a specific place - it can be starting up any number of
+scripts), something deadlocks and won't resume upon a ctrl-q.
+alt-sysrq-k is enough to kill whatever has deadlocked.  I have a feeling,
+but don't want to test on this system right now, that pressing scroll-lock
+as opposed to ctrl-q once unlocked such a stuck display.
 
-(I also tried booting with acpi=off, acpi=noirq, pci=noacpi, to no avail.)
-
-Note that this does not seem to be a regression; I get the same thing
-with -rc8 as well. I'm guessing it's config-induced, here are my
-config changes that triggered it:
-http://folk.uio.no/vegardno/linux/config-diff
-
-I'll make a guess for the NUMA/ACPI stuff. And this is the full
-config: http://folk.uio.no/vegardno/linux/config-bisect
-
-I decided to also try this kernel with my desktop machine. This one
-boots (probably because ACPI is disabled?), but I get the following
-warning:
-
-[    0.000000] Begin SRAT table scan....
-[    0.000000] ------------[ cut here ]------------
-[    0.000000] WARNING: at arch/x86/mm/ioremap.c:553 early_ioremap+0x1c1/0x200()
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.26-rc9 #201
-[    0.000000]  [<c0157d6f>] warn_on_slowpath+0x4f/0x70
-[    0.000000]  [<c01708db>] ? up+0x2b/0x40
-[    0.000000]  [<c01586f1>] ? release_console_sem+0x1c1/0x1f0
-[    0.000000]  [<c05c0132>] ? _spin_unlock_irqrestore+0x32/0x70
-[    0.000000]  [<c05c0143>] ? _spin_unlock_irqrestore+0x43/0x70
-[    0.000000]  [<c0158705>] ? release_console_sem+0x1d5/0x1f0
-[    0.000000]  [<c0158aff>] ? vprintk+0x1cf/0x430
-[    0.000000]  [<c0158b0b>] ? vprintk+0x1db/0x430
-[    0.000000]  [<c07c0b24>] ? __early_set_fixmap+0xb4/0xd0
-[    0.000000]  [<c07c1231>] early_ioremap+0x1c1/0x200
-[    0.000000]  [<c07bd48e>] get_memcfg_from_srat+0x15e/0x6d0
-[    0.000000]  [<c01314be>] ? post_set+0x4e/0x50
-[    0.000000]  [<c01315fa>] ? generic_get_mtrr+0x2a/0x100
-[    0.000000]  [<c07c154d>] setup_memory+0xd/0x280
-[    0.000000]  [<c07b3c7e>] setup_arch+0x2ee/0x4e0
-[    0.000000]  [<c0158d7b>] ? printk+0x1b/0x20
-[    0.000000]  [<c07ab842>] start_kernel+0x82/0x390
-[    0.000000]  [<c07ab028>] i386_start_kernel+0x8/0x10
-[    0.000000]  =======================
-[    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
-[    0.000000] failed to get NUMA memory information from SRAT table
-[    0.000000] NUMA - single node, flat memory mode
-
-What really puzzles me is the line number of the WARN -- it says
-arch/x86/mm/ioremap.c:553. But this line does not contain any WARNs.
-In fact, it's not even the right function. But this is a clean
-v2.6.26-rc9 compile, as can be seen from the kernel version above.
-
-There's also one a bit later:
-
-[    7.746346] please boot with early_ioremap_debug and report the dmesg.
-[    7.746460] ------------[ cut here ]------------
-[    7.746569] WARNING: at arch/x86/mm/ioremap.c:524
-check_early_ioremap_leak+0x3f/0x50()
-
-See full dmesg at: http://folk.uio.no/vegardno/linux/dmesg-2.6.26-rc9
-With early_ioremap_debug enabled:
-http://folk.uio.no/vegardno/linux/dmesg-early_ioremap_debug
-
-My apologies if I got the recipients wrong; I picked them off the
-git-log for relevant files. Please Cc in the right direction if needed
-:-)
-
-Thanks!
-
-
-Vegard
+In summary, something in tty is certainly screwed.  Does anyone see a
+connection between all of these?
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+TimC
+> cat ~/.signature
+Electromagnetic pulse received (core dumped)
