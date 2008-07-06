@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757867AbYGFPUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756928AbYGFPUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757867AbYGFPUJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 11:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756219AbYGFPTb
+	id S1756928AbYGFPUg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 11:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758247AbYGFPTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 11:19:31 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:48097 "EHLO mail.screens.ru"
+	Sun, 6 Jul 2008 11:19:52 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:48117 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757331AbYGFPTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 11:19:30 -0400
-Date: Sun, 6 Jul 2008 19:22:23 +0400
+	id S1758230AbYGFPTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 11:19:50 -0400
+Date: Sun, 6 Jul 2008 19:22:21 +0400
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/4] coredump: turn core_state->nr_threads into atomic_t
-Message-ID: <20080706152223.GA2825@tv-sign.ru>
+Subject: [PATCH 1/4] coredump: turn mm->core_startup_done into the pointer to struct core_state
+Message-ID: <20080706152221.GA2816@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,51 +23,80 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Turn core_state->nr_threads into atomic_t and kill now unneeded
-down_write(&mm->mmap_sem) in exit_mm().
+mm->core_startup_done points to "struct completion startup_done" allocated on
+the coredump_wait()'s stack. Introduce the new structure, core_state, which
+holds this "struct completion". This way we can add more info visible to the
+threads participating in coredump without enlarging mm_struct.
+
+No changes in affected .o files.
 
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
- include/linux/mm_types.h |    2 +-
- kernel/exit.c            |    5 ++---
- fs/exec.c                |    2 +-
- 3 files changed, 4 insertions(+), 5 deletions(-)
+ include/linux/mm_types.h |    7 ++++++-
+ kernel/exit.c            |    2 +-
+ fs/exec.c                |    8 ++++----
+ 3 files changed, 11 insertions(+), 6 deletions(-)
 
---- 26-rc2/include/linux/mm_types.h~4_NR_ATOMIC	2008-06-15 15:26:29.000000000 +0400
-+++ 26-rc2/include/linux/mm_types.h	2008-06-16 18:00:08.000000000 +0400
-@@ -160,7 +160,7 @@ struct vm_area_struct {
+--- 26-rc2/include/linux/mm_types.h~1_MM_COREDUMP	2008-06-14 16:38:07.000000000 +0400
++++ 26-rc2/include/linux/mm_types.h	2008-06-15 14:23:40.000000000 +0400
+@@ -159,6 +159,10 @@ struct vm_area_struct {
+ #endif
  };
  
- struct core_state {
--	int nr_threads;
-+	atomic_t nr_threads;
- 	struct completion startup;
- };
- 
---- 26-rc2/kernel/exit.c~4_NR_ATOMIC	2008-06-15 15:28:21.000000000 +0400
-+++ 26-rc2/kernel/exit.c	2008-07-06 18:10:12.000000000 +0400
-@@ -667,10 +667,9 @@ static void exit_mm(struct task_struct *
- 	down_read(&mm->mmap_sem);
- 	if (mm->core_state) {
- 		up_read(&mm->mmap_sem);
--		down_write(&mm->mmap_sem);
--		if (!--mm->core_state->nr_threads)
++struct core_state {
++	struct completion startup;
++};
 +
-+		if (atomic_dec_and_test(&mm->core_state->nr_threads))
- 			complete(&mm->core_state->startup);
--		up_write(&mm->mmap_sem);
+ struct mm_struct {
+ 	struct vm_area_struct * mmap;		/* list of VMAs */
+ 	struct rb_root mm_rb;
+@@ -220,7 +224,8 @@ struct mm_struct {
+ 	unsigned long flags; /* Must use atomic bitops to access the bits */
+ 
+ 	/* coredumping support */
+-	struct completion *core_startup_done, core_done;
++	struct core_state *core_state;
++	struct completion core_done;
+ 
+ 	/* aio bits */
+ 	rwlock_t		ioctx_list_lock;	/* aio lock */
+--- 26-rc2/kernel/exit.c~1_MM_COREDUMP	2008-05-31 20:08:11.000000000 +0400
++++ 26-rc2/kernel/exit.c	2008-06-15 14:24:35.000000000 +0400
+@@ -669,7 +669,7 @@ static void exit_mm(struct task_struct *
+ 		up_read(&mm->mmap_sem);
+ 		down_write(&mm->mmap_sem);
+ 		if (!--mm->core_waiters)
+-			complete(mm->core_startup_done);
++			complete(&mm->core_state->startup);
+ 		up_write(&mm->mmap_sem);
  
  		wait_for_completion(&mm->core_done);
- 		down_read(&mm->mmap_sem);
---- 26-rc2/fs/exec.c~4_NR_ATOMIC	2008-07-06 17:43:14.000000000 +0400
-+++ 26-rc2/fs/exec.c	2008-07-06 18:12:33.000000000 +0400
-@@ -1586,7 +1586,7 @@ static inline int zap_threads(struct tas
- 	}
- 	rcu_read_unlock();
- done:
--	core_state->nr_threads = nr;
-+	atomic_set(&core_state->nr_threads, nr);
- 	return nr;
- }
+--- 26-rc2/fs/exec.c~1_MM_COREDUMP	2008-06-14 15:57:27.000000000 +0400
++++ 26-rc2/fs/exec.c	2008-06-15 14:25:44.000000000 +0400
+@@ -1592,13 +1592,13 @@ static int coredump_wait(int exit_code)
+ {
+ 	struct task_struct *tsk = current;
+ 	struct mm_struct *mm = tsk->mm;
+-	struct completion startup_done;
++	struct core_state core_state;
+ 	struct completion *vfork_done;
+ 	int core_waiters;
  
+ 	init_completion(&mm->core_done);
+-	init_completion(&startup_done);
+-	mm->core_startup_done = &startup_done;
++	init_completion(&core_state.startup);
++	mm->core_state = &core_state;
+ 
+ 	core_waiters = zap_threads(tsk, mm, exit_code);
+ 	up_write(&mm->mmap_sem);
+@@ -1617,7 +1617,7 @@ static int coredump_wait(int exit_code)
+ 	}
+ 
+ 	if (core_waiters)
+-		wait_for_completion(&startup_done);
++		wait_for_completion(&core_state.startup);
+ fail:
+ 	BUG_ON(mm->core_waiters);
+ 	return core_waiters;
 
