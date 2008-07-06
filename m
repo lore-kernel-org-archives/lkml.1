@@ -1,101 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbYGFOgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbYGFOh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757917AbYGFOgp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 10:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756309AbYGFOgg
+	id S1758085AbYGFOh3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 10:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbYGFOhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 10:36:36 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:62952 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756019AbYGFOgg (ORCPT
+	Sun, 6 Jul 2008 10:37:22 -0400
+Received: from casper.infradead.org ([85.118.1.10]:44599 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756309AbYGFOhV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 10:36:36 -0400
-Subject: [PATCH] Make CONFIG_MIGRATION available for s390
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Reply-To: gerald.schaefer@de.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
-Content-Type: text/plain
-Date: Sun, 06 Jul 2008 16:35:57 +0200
-Message-Id: <1215354957.9842.19.camel@localhost.localdomain>
+	Sun, 6 Jul 2008 10:37:21 -0400
+Date: Sun, 6 Jul 2008 07:37:26 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Heikki Orsila <shdl@zakalwe.fi>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.26-rc9 load problem
+Message-ID: <20080706073726.72074a3c@infradead.org>
+In-Reply-To: <20080706142516.GA4379@zakalwe.fi>
+References: <20080706142516.GA4379@zakalwe.fi>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH] Make CONFIG_MIGRATION available for s390
+On Sun, 6 Jul 2008 17:25:16 +0300
+Heikki Orsila <shdl@zakalwe.fi> wrote:
 
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> Testing 2.6.26-rc9. Doing:
+> 
+> 	dd if=/dev/hda of=/dev/null bs=4096
+> 
+> causes the operating system to feel very unresponsible.
+> Even the key repeat interval at tty1 is unpredictable.
 
-We'd like to support CONFIG_MEMORY_HOTREMOVE on s390, which depends on
-CONFIG_MIGRATION. So far, CONFIG_MIGRATION is only available with NUMA
-support.
+Hi,
 
-This patch makes CONFIG_MIGRATION selectable for architectures that define
-ARCH_ENABLE_MEMORY_HOTREMOVE. When MIGRATION is enabled w/o NUMA, the kernel
-won't compile because of a missing migrate() function in vm_operations_struct
-and a missing policy_zone reference in vma_migratable(). To avoid this,
-"#ifdef CONFIG_NUMA" is added to vma_migratable() and the vm_ops migrate()
-definition is moved from "#ifdef CONFIG_NUMA" to "#ifdef CONFIG_MIGRATION".
+do you have an idea which version you tried last which didn't show this
+behavior?
 
-Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
----
+Also, can you try running latencytop to see if that shows where the
+delays are?
 
- include/linux/migrate.h |    2 ++
- include/linux/mm.h      |    2 ++
- mm/Kconfig              |    2 +-
- 3 files changed, 5 insertions(+), 1 deletion(-)
+(if rc8 was fine, 18ce3751ccd488c78d3827e9f6bf54e6322676fb is the most
+likely suspect patch..
 
-Index: linux-2.6/include/linux/migrate.h
-===================================================================
---- linux-2.6.orig/include/linux/migrate.h
-+++ linux-2.6/include/linux/migrate.h
-@@ -13,6 +13,7 @@ static inline int vma_migratable(struct 
- {
- 	if (vma->vm_flags & (VM_IO|VM_HUGETLB|VM_PFNMAP|VM_RESERVED))
- 		return 0;
-+#ifdef CONFIG_NUMA
- 	/*
- 	 * Migration allocates pages in the highest zone. If we cannot
- 	 * do so then migration (at least from node to node) is not
-@@ -22,6 +23,7 @@ static inline int vma_migratable(struct 
- 		gfp_zone(mapping_gfp_mask(vma->vm_file->f_mapping))
- 								< policy_zone)
- 			return 0;
-+#endif
- 	return 1;
- }
- 
-Index: linux-2.6/include/linux/mm.h
-===================================================================
---- linux-2.6.orig/include/linux/mm.h
-+++ linux-2.6/include/linux/mm.h
-@@ -193,6 +193,8 @@ struct vm_operations_struct {
- 	 */
- 	struct mempolicy *(*get_policy)(struct vm_area_struct *vma,
- 					unsigned long addr);
-+#endif
-+#ifdef CONFIG_MIGRATION
- 	int (*migrate)(struct vm_area_struct *vma, const nodemask_t *from,
- 		const nodemask_t *to, unsigned long flags);
- #endif
-Index: linux-2.6/mm/Kconfig
-===================================================================
---- linux-2.6.orig/mm/Kconfig
-+++ linux-2.6/mm/Kconfig
-@@ -174,7 +174,7 @@ config SPLIT_PTLOCK_CPUS
- config MIGRATION
- 	bool "Page migration"
- 	def_bool y
--	depends on NUMA
-+	depends on NUMA || ARCH_ENABLE_MEMORY_HOTREMOVE
- 	help
- 	  Allows the migration of the physical location of pages of processes
- 	  while the virtual addresses are not changed. This is useful for
+http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=18ce3751ccd488c78d3827e9f6bf54e6322676fb
 
+can you see if reverting this helps?
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
