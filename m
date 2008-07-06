@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759636AbYGFUcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbYGFUfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759636AbYGFUcj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 16:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756385AbYGFUcb
+	id S1759230AbYGFUfW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 16:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757039AbYGFUfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 16:32:31 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:17236 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755889AbYGFUca (ORCPT
+	Sun, 6 Jul 2008 16:35:11 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:38857 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757006AbYGFUfK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 16:32:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Vlu5s0Ke0LAdRYMO6eIF2tVBmrrW0mraI7j4sFYP86gkEyXoSz1hdY7xqe5xuAI3LS
-         zFc4ZcDFXjr01SkeuOMtiGPhP8ns6W+2NypvRclzR/Ucx6nVdgGndLyVnyu3lfNruNMj
-         OH+Y5wFLEruU3705KTqLtM7G+Yhrcv0e5xEfc=
-Message-ID: <a4423d670807061332y62eb0024g396cf21d3549d855@mail.gmail.com>
-Date: Mon, 7 Jul 2008 00:32:29 +0400
-From: "Alexander Beregalov" <a.beregalov@gmail.com>
-To: Dmitry <dbaryshkov@gmail.com>
-Subject: Re: [PATCH] [ARM] Tosa: remove double inclusion of linux/delay.h
-Cc: rmk+kernel@arm.linux.org.uk, kernel-janitors@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <bc64b4640807061226m16f597a8m585ef2101bd6b7a1@mail.gmail.com>
+	Sun, 6 Jul 2008 16:35:10 -0400
+Date: Sun, 6 Jul 2008 21:35:08 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Frans Pop <elendil@planet.nl>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] parport/ppdev: fix registration of sysctl entries
+Message-ID: <20080706203508.GB28946@ZenIV.linux.org.uk>
+References: <20080705131924.GA2083@joi> <20080705235148.GW28946@ZenIV.linux.org.uk> <20080706001148.GX28946@ZenIV.linux.org.uk> <20080706150608.GA5401@joi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a4423d670807060858nf8ec980gcd0475ccdc55b94d@mail.gmail.com>
-	 <bc64b4640807061226m16f597a8m585ef2101bd6b7a1@mail.gmail.com>
+In-Reply-To: <20080706150608.GA5401@joi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/7/6 Dmitry <dbaryshkov@gmail.com>:
-> 2008/7/6 Alexander Beregalov <a.beregalov@gmail.com>:
->> From: Alexander Beregalov <a.beregalov@gmail.com>
->>
->> The patch applies to the linux-next tree.
->>
->> [ARM] Tosa: Remove double inclusion of linux/delay.h
->>
->> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
->
-> Acked-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
->
-> Will you submit to the Russell's patch tracker or shoud I do it?
+On Sun, Jul 06, 2008 at 05:07:02PM +0200, Marcin Slusarz wrote:
+> On Sun, Jul 06, 2008 at 01:11:48AM +0100, Al Viro wrote:
+> > On Sun, Jul 06, 2008 at 12:51:48AM +0100, Al Viro wrote:
+> > 
+> > > I don't believe that it's right.  Note that if you *do* race there, you
+> > > are fucked regardless of sysctls - ppdev.c::register_device() racing
+> > > with itself will do tons of fun things all by itself (starting with two
+> > > threads allocating different pdev and both setting pp->pdev).
+> 
+> I wouldn't call it a race - BKL is protecting multiple ioctl calls, so we
+> won't ever claim the device from two different threads.
 
-I do not know what it is, please do it if you can.
+Yes, we can - register_device() does kmalloc() with GFP_KERNEL, which kills
+any protection from BKL.  BKL is _not_ providing any kind of exclusion while
+you sleep.
