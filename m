@@ -1,762 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760102AbYGFXtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759327AbYGFXza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760102AbYGFXtB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 19:49:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbYGFXsw
+	id S1759327AbYGFXza (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 19:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756988AbYGFXzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 19:48:52 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:61092 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754365AbYGFXsu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 19:48:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=rnL3+yjTe+9MUYQn7l3oNKUDEjOjJVqMXVI5SXkw/xA1CrDQ972tJMlaQpLYa+apan
-         VLEesfYVUsl59QtaAijNc3m7lQvyjFpVWbLDR4p3yrxPu1X/+lSbRiRB17plriPqtAvE
-         UjERk6d9bP0ed2KRkps9R/PbjvC5OapSA/krA=
-Message-ID: <487159DA.708@gmail.com>
-Date: Mon, 07 Jul 2008 03:48:42 +0400
-From: Alexander Beregalov <a.beregalov@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080706)
+	Sun, 6 Jul 2008 19:55:22 -0400
+Received: from saeurebad.de ([85.214.36.134]:33974 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754413AbYGFXzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 19:55:21 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maximilian Engelhardt <maxi@daemonizer.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Domenico Andreoli <cavokz@gmail.com>
+Subject: Re: 2.6.26-rc9: Reported regressions from 2.6.25
+References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik>
+	<200807062002.46863.rjw@sisk.pl>
+	<20080706182648.GE21669@cs181140183.pp.htv.fi>
+	<200807062304.07443.rjw@sisk.pl>
+	<20080706213214.GH21669@cs181140183.pp.htv.fi>
+	<alpine.LFD.1.10.0807061443420.3016@woody.linux-foundation.org>
+	<20080706221932.GJ21669@cs181140183.pp.htv.fi>
+	<alpine.LFD.1.10.0807061524510.3016@woody.linux-foundation.org>
+	<20080706230610.GK21669@cs181140183.pp.htv.fi>
+Date: Mon, 07 Jul 2008 01:55:15 +0200
+In-Reply-To: <20080706230610.GK21669@cs181140183.pp.htv.fi> (Adrian Bunk's
+	message of "Mon, 7 Jul 2008 02:06:10 +0300")
+Message-ID: <87skumr2jg.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org
-Subject: next-0704: WARNING: at kernel/sched.c:4254 add_preempt_count; PANIC
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Hi,
 
-WARNING: at kernel/sched.c:4254 add_preempt_count+0x61/0x63()
-Modules linked in: i2c_nforce2
-Pid: 3620, comm: rtorrent Not tainted 2.6.26-rc8-next-20080704 #5
- [<c038e436>] ? printk+0xf/0x11
- [<c011b681>] warn_on_slowpath+0x41/0x7b
- [<c0157a94>] ? mmap_region+0x1c5/0x414
- [<c0156499>] ? remove_vma+0x50/0x56
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159798>] ? anon_vma_unlink+0x3a/0x3e
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159798>] ? anon_vma_unlink+0x3a/0x3e
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
-BUG: unable to handle kernel paging request at fffef4f1
-IP: [<c0103c53>] dump_trace+0xa5/0xe2
-*pde = 00007067 *pte = 00000000
-Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
-last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:02:00.1/class
-Modules linked in: i2c_nforce2
+Adrian Bunk <bunk@kernel.org> writes:
 
-Pid: 3620, comm: rtorrent Not tainted (2.6.26-rc8-next-20080704 #5)
-EIP: 0060:[<c0103c53>] EFLAGS: 00210097 CPU: 0
-EIP is at dump_trace+0xa5/0xe2
-EAX: fffefffc EBX: fffef4f1 ECX: c0396978 EDX: c0455a08
-ESI: 5a5a5a5a EDI: f4d4c084 EBP: f4d4bf34 ESP: f4d4bf14
- DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-Process rtorrent (pid: 3620, ti=f4d4b000 task=f4cc45c0 task.ti=f4d4c000)
-Stack: fffefffc c0103b6f fffef000 f4d4c084 00000000 00000002 f4d4bf7c
-c0426908
-       f4d4bf48 c01045f5 f4d4bf7c c0396978 c047904c f4d4bf7c c038e33b
-f4d4bf7c
-       c041ff98 00000e24 f4cc48b4 c050a434 c049959a 00000002 c04995db
-c038e436
-Call Trace:
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c01045f5>] ? show_trace+0x15/0x29
- [<c038e33b>] ? dump_stack+0x59/0x63
- [<c038e436>] ? printk+0xf/0x11
- [<c011b681>] ? warn_on_slowpath+0x41/0x7b
- [<c0157a94>] ? mmap_region+0x1c5/0x414
- [<c0156499>] ? remove_vma+0x50/0x56
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159798>] ? anon_vma_unlink+0x3a/0x3e
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159798>] ? anon_vma_unlink+0x3a/0x3e
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
-BUG: unable to handle kernel paging request at fffef4f1
-IP: [<c0103c53>] dump_trace+0xa5/0xe2
-*pde = 00007067 *pte = 00000000
-Oops: 0000 [#2] PREEMPT DEBUG_PAGEALLOC
-last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:02:00.1/class
-Modules linked in: i2c_nforce2
+> On Sun, Jul 06, 2008 at 03:27:30PM -0700, Linus Torvalds wrote:
+>> 
+>> 
+>> On Mon, 7 Jul 2008, Adrian Bunk wrote:
+>> >
+>> > When did you tell me that maintainers should not or cannot be Cc'ed on 
+>> > regression reports?
+>> 
+>> That is not what I'm complaining about.
+>
+> That is what I wrote in the part of my email you made this comment on.
+>
+>> I'm complaining about the fact that you *always* argue against closing 
+>> bugreports.
+>
+> I'm not always against closing bugs, and e.g. during the last years I've
+> closed at about 500 bugs in the kernel Bugzilla due to submitters having
+> vanished.
+>
+>> You have argued against it for over a YEAR now. And every single time I 
+>> tell you that you are wrong, and exactly *why* you are wrong.
+>> 
+>> If a reporter doesn't respond to say "it's still open", it needs to be 
+>> closed. It doesn't matter one whit whether there has been developer action 
+>> on it or not. We cannot keep old reports open - it's a total waste for 
+>> developers to even _look_ at anything that is more than roughly a month 
+>> old and hasn't been verified to be still be an issue.
+>
+> We only differ on whether a human should ask this question once before 
+> closing a bug or whether regular automated requests are enough.
 
-Pid: 3620, comm: rtorrent Not tainted (2.6.26-rc8-next-20080704 #5)
-EIP: 0060:[<c0103c53>] EFLAGS: 00210097 CPU: 0
-EIP is at dump_trace+0xa5/0xe2
-EAX: fffefffc EBX: fffef4f1 ECX: c0396978 EDX: c0455a08
-ESI: 5a5a5a5a EDI: f4d4c084 EBP: f4d4bf34 ESP: f4d4bf14
- DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-Process rtorrent (pid: 3620, ti=f4d4b000 task=f4cc45c0 task.ti=f4d4c000)
-Stack: fffefffc c0103b6f fffef000 f4d4c084 00000000 00000002 f4d4bf7c
-c0426908
-       f4d4bf48 c01045f5 f4d4bf7c c0396978 c047904c f4d4bf7c c038e33b
-f4d4bf7c
-       c041ff98 00000e24 f4cc48b4 c050a434 c049959a 00000002 c04995db
-c038e436
-Call Trace:
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c01045f5>] ? show_trace+0x15/0x29
- [<c038e33b>] ? dump_stack+0x59/0x63
- [<c038e436>] ? printk+0xf/0x11
- [<c011b681>] ? warn_on_slowpath+0x41/0x7b
- [<c0157a94>] ? mmap_region+0x1c5/0x414
- [<c0156499>] ? remove_vma+0x50/0x56
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159798>] ? anon_vma_unlink+0x3a/0x3e
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159798>] ? anon_vma_unlink+0x3a/0x3e
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
-BUG: unable to handle kernel paging request at fffef4f1
-IP: [<c0103c53>] dump_trace+0xa5/0xe2
-*pde = 00007067 *pte = 00000000
-Oops: 0000 [#2] PREEMPT DEBUG_PAGEALLOC
-last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:02:00.1/class
-Modules linked in: i2c_nforce2
+I prefer being bugged regularly as a reporter.  At the moment I have a
+bug at a machine I do not use every day and if I get this email, it
+reminds me to test the latest kernel on that machine (or try to
+reproduce the bug if it happens in situations not common in my usual
+workflow).  Then I report back.
 
-Pid: 3620, comm: rtorrent Not tainted (2.6.26-rc8-next-20080704 #5)
-EIP: 0060:[<c0103c53>] EFLAGS: 00210097 CPU: 0
-EIP is at dump_trace+0xa5/0xe2
-EAX: fffefffc EBX: fffef4f1 ECX: c0396978 EDX: c0455a08
-ESI: 5a5a5a5a EDI: f4d4bd18 EBP: f4d4bd18 ESP: f4d4bcf8
- DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-Process rtorrent (pid: 3620, ti=f4d4b000 task=f4cc45c0 task.ti=f4d4c000)
-Stack: fffefffc c0103b6f fffef000 f4d4bd18 00000018 00000018 f4d4bf77
-00000000
-       f4d4bd48 c0103d1f 00000000 c0396978 c041fab4 c041fbc2 c041fab4
-f4d4bedc
-       f4d4bf14 f4d4bf14 c04258bf f4d4bedc f4d4bd80 c0103dc5 00000000
-c041fab4
-Call Trace:
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c0103d1f>] ? show_stack_log_lvl+0x8f/0xa7
- [<c0103dc5>] ? show_registers+0x8e/0x1bd
- [<c0391720>] ? __die+0x66/0xcb
- [<c0391739>] ? __die+0x7f/0xcb
- [<c0103f7b>] ? die+0x87/0x119
- [<c0392c65>] ? do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c0390020>] ? rt_mutex_slowlock+0x26a/0x446
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] ? error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c01045f5>] ? show_trace+0x15/0x29
- [<c038e33b>] ? dump_stack+0x59/0x63
- [<c038e436>] ? printk+0xf/0x11
- [<c011b681>] ? warn_on_slowpath+0x41/0x7b
- [<c0157a94>] ? mmap_region+0x1c5/0x414
- [<c0156499>] ? remove_vma+0x50/0x56
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159798>] ? anon_vma_unlink+0x3a/0x3e
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159798>] ? anon_vma_unlink+0x3a/0x3e
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
-BUG: unable to handle kernel paging request at fffef4f1
-IP: [<c0103c53>] dump_trace+0xa5/0xe2
-*pde = 00007067 *pte = 00000000
-Recursive die() failure, output suppressed
-Kernel panic - not syncing: Fatal exception in interrupt
-Pid: 3620, comm: rtorrent Tainted: G      D   2.6.26-rc8-next-20080704 #5
- [<c038e436>] ? printk+0xf/0x11
- [<c038e388>] panic+0x43/0xe2
- [<c0103fe6>] die+0xf2/0x119
- [<c0392c65>] do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c0103d1f>] show_stack_log_lvl+0x8f/0xa7
- [<c0103dc5>] show_registers+0x8e/0x1bd
- [<c0391720>] ? __die+0x66/0xcb
- [<c0391739>] __die+0x7f/0xcb
- [<c0103f7b>] die+0x87/0x119
- [<c0392c65>] do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c0103d1f>] show_stack_log_lvl+0x8f/0xa7
- [<c0103dc5>] show_registers+0x8e/0x1bd
- [<c0391720>] ? __die+0x66/0xcb
- [<c0391739>] __die+0x7f/0xcb
- [<c0103f7b>] die+0x87/0x119
- [<c0392c65>] do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c0390020>] ? rt_mutex_slowlock+0x26a/0x446
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c01045f5>] show_trace+0x15/0x29
- [<c038e33b>] dump_stack+0x59/0x63
- [<c038e436>] ? printk+0xf/0x11
- [<c011b681>] warn_on_slowpath+0x41/0x7b
- [<c0157a94>] ? mmap_region+0x1c5/0x414
- [<c0156499>] ? remove_vma+0x50/0x56
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159798>] ? anon_vma_unlink+0x3a/0x3e
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159798>] ? anon_vma_unlink+0x3a/0x3e
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
-BUG: unable to handle kernel paging request at fffef4f1
-IP: [<c0103c53>] dump_trace+0xa5/0xe2
-*pde = 00007067 *pte = 00000000
-Oops: 0000 [#3] PREEMPT DEBUG_PAGEALLOC
-last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:02:00.1/class
-Modules linked in: i2c_nforce2
+If these remainders weren't, it would be possible that I forget about a
+bug and come back to it when it's a real pain to hunt it down by
+change-history or when a possible cause for the bug has left the
+developers mind a long time ago.
 
-Pid: 3620, comm: rtorrent Tainted: G      D   (2.6.26-rc8-next-20080704 #5)
-EIP: 0060:[<c0103c53>] EFLAGS: 00210097 CPU: 0
-EIP is at dump_trace+0xa5/0xe2
-EAX: fffefffc EBX: fffef4f1 ECX: c0396978 EDX: c0455a08
-ESI: 5a5a5a5a EDI: f4d4c084 EBP: f4d4b8f4 ESP: f4d4b8d4
- DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-Process rtorrent (pid: 3620, ti=f4d4b000 task=f4cc45c0 task.ti=f4d4c000)
-Stack: fffefffc c0103b6f fffef000 f4d4c084 00000020 00000002 f4d4b93c
-00000000
-       f4d4b908 c01045f5 f4d4b93c c0396978 c047904c f4d4b93c c038e33b
-f4d4b93c
-       c041ff98 00000e24 f4cc48b4 c050a434 c049959a 00000002 c04995db
-c038e436
-Call Trace:
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c01045f5>] ? show_trace+0x15/0x29
- [<c038e33b>] ? dump_stack+0x59/0x63
- [<c038e436>] ? printk+0xf/0x11
- [<c038e388>] ? panic+0x43/0xe2
- [<c0103fe6>] ? die+0xf2/0x119
- [<c0392c65>] ? do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] ? error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c0103d1f>] ? show_stack_log_lvl+0x8f/0xa7
- [<c0103dc5>] ? show_registers+0x8e/0x1bd
- [<c0391720>] ? __die+0x66/0xcb
- [<c0391739>] ? __die+0x7f/0xcb
- [<c0103f7b>] ? die+0x87/0x119
- [<c0392c65>] ? do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] ? error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c0103d1f>] ? show_stack_log_lvl+0x8f/0xa7
- [<c0103dc5>] ? show_registers+0x8e/0x1bd
- [<c0391720>] ? __die+0x66/0xcb
- [<c0391739>] ? __die+0x7f/0xcb
- [<c0103f7b>] ? die+0x87/0x119
- [<c0392c65>] ? do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c0390020>] ? rt_mutex_slowlock+0x26a/0x446
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] ? error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c01045f5>] ? show_trace+0x15/0x29
- [<c038e33b>] ? dump_stack+0x59/0x63
- [<c038e436>] ? printk+0xf/0x11
- [<c011b681>] ? warn_on_slowpath+0x41/0x7b
- [<c0157a94>] ? mmap_region+0x1c5/0x414
- [<c0156499>] ? remove_vma+0x50/0x56
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159798>] ? anon_vma_unlink+0x3a/0x3e
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159798>] ? anon_vma_unlink+0x3a/0x3e
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
- [<c0159836>] ? anon_vma_prepare+0x52/0xc5
-BUG: unable to handle kernel paging request at fffef4f1
-IP: [<c0103c53>] dump_trace+0xa5/0xe2
-*pde = 00007067 *pte = 00000000
-Oops: 0000 [#4] PREEMPT DEBUG_PAGEALLOC
-last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:02:00.1/class
-Modules linked in: i2c_nforce2
-
-Pid: 3620, comm: rtorrent Tainted: G      D   (2.6.26-rc8-next-20080704 #5)
-EIP: 0060:[<c0103c53>] EFLAGS: 00210097 CPU: 0
-EIP is at dump_trace+0xa5/0xe2
-EAX: fffefffc EBX: fffef4f1 ECX: c0396978 EDX: c0455a08
-ESI: 5a5a5a5a EDI: f4d4b6d8 EBP: f4d4b6d8 ESP: f4d4b6b8
- DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-Process rtorrent (pid: 3620, ti=f4d4b000 task=f4cc45c0 task.ti=f4d4c000)
-Stack: fffefffc c0103b6f fffef000 f4d4b6d8 00000018 00000018 f4d4b937
-00000000
-       f4d4b708 c0103d1f 00000000 c0396978 c041fab4 c041fbc2 c041fab4
-f4d4b89c
-       f4d4b8d4 f4d4b8d4 c04258bf f4d4b89c f4d4b740 c0103dc5 00000000
-c041fab4
-Call Trace:
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c0103d1f>] ? show_stack_log_lvl+0x8f/0xa7
- [<c0103dc5>] ? show_registers+0x8e/0x1bd
- [<c0391720>] ? __die+0x66/0xcb
- [<c0391739>] ? __die+0x7f/0xcb
- [<c0103f7b>] ? die+0x87/0x119
- [<c0392c65>] ? do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c0390020>] ? rt_mutex_slowlock+0x26a/0x446
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] ? error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c01045f5>] ? show_trace+0x15/0x29
- [<c038e33b>] ? dump_stack+0x59/0x63
- [<c038e436>] ? printk+0xf/0x11
- [<c038e388>] ? panic+0x43/0xe2
- [<c0103fe6>] ? die+0xf2/0x119
- [<c0392c65>] ? do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] ? error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c0103d1f>] ? show_stack_log_lvl+0x8f/0xa7
- [<c0103dc5>] ? show_registers+0x8e/0x1bd
- [<c0391720>] ? __die+0x66/0xcb
- [<c0391739>] ? __die+0x7f/0xcb
- [<c0103f7b>] ? die+0x87/0x119
- [<c0392c65>] ? do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] ? error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c0103d1f>] ? show_stack_log_lvl+0x8f/0xa7
- [<c0103dc5>] ? show_registers+0x8e/0x1bd
- [<c0391720>] ? __die+0x66/0xcb
- [<c0391739>] ? __die+0x7f/0xcb
- [<c0103f7b>] ? die+0x87/0x119
- [<c0392c65>] ? do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c0390020>] ? rt_mutex_slowlock+0x26a/0x446
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] ? error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c01045f5>] ? show_trace+0x15/0x29
- [<c038e33b>] ? dump_stack+0x59/0x63
- [<c038e436>] ? printk+0xf/0x11
- [<c011b681>] ? warn_on_slowpath+0x41/0x7b
- [<c0157a94>] ? mmap_region+0x1c5/0x414
- [<c0156499>] ? remove_vma+0x50/0x56
-BUG: unable to handle kernel NULL pointer dereference at 00000008
-IP: [<c0103c53>] dump_trace+0xa5/0xe2
-*pde = 00000000
-Recursive die() failure, output suppressed
-Kernel panic - not syncing: Fatal exception in non-maskable interrupt
-Pid: 3620, comm: rtorrent Tainted: G      D   2.6.26-rc8-next-20080704 #5
- [<c038e436>] ? printk+0xf/0x11
- [<c038e388>] panic+0x43/0xe2
- [<c0103fe6>] die+0xf2/0x119
- [<c0392c65>] do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c0392d81>] ? sub_preempt_count+0x17/0x60
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392d81>] ? sub_preempt_count+0x17/0x60
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c0103d1f>] show_stack_log_lvl+0x8f/0xa7
- [<c0103dc5>] show_registers+0x8e/0x1bd
- [<c0391720>] ? __die+0x66/0xcb
- [<c0391739>] __die+0x7f/0xcb
- [<c0103f7b>] die+0x87/0x119
- [<c0392c65>] do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c0103d1f>] show_stack_log_lvl+0x8f/0xa7
- [<c0103dc5>] show_registers+0x8e/0x1bd
- [<c0391720>] ? __die+0x66/0xcb
- [<c0391739>] __die+0x7f/0xcb
- [<c0103f7b>] die+0x87/0x119
- [<c0392c65>] do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c0390020>] ? rt_mutex_slowlock+0x26a/0x446
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c01045f5>] show_trace+0x15/0x29
- [<c038e33b>] dump_stack+0x59/0x63
- [<c038e436>] ? printk+0xf/0x11
- [<c038e388>] panic+0x43/0xe2
- [<c0103fe6>] die+0xf2/0x119
- [<c0392c65>] do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c0103d1f>] show_stack_log_lvl+0x8f/0xa7
- [<c0103dc5>] show_registers+0x8e/0x1bd
- [<c0391720>] ? __die+0x66/0xcb
- [<c0391739>] __die+0x7f/0xcb
- [<c0103f7b>] die+0x87/0x119
- [<c0392c65>] do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c0103d1f>] show_stack_log_lvl+0x8f/0xa7
- [<c0103dc5>] show_registers+0x8e/0x1bd
- [<c0391720>] ? __die+0x66/0xcb
- [<c0391739>] __die+0x7f/0xcb
- [<c0103f7b>] die+0x87/0x119
- [<c0392c65>] do_page_fault+0x5e0/0x6e5
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0141a1c>] ? __rcu_read_unlock+0x54/0x62
- [<c0392ea3>] ? __atomic_notifier_call_chain+0x2c/0x36
- [<c038e436>] ? printk+0xf/0x11
- [<c013f0fd>] ? __print_symbol+0x21/0x2a
- [<c013506b>] ? trace_hardirqs_off+0xb/0xd
- [<c0390981>] ? _spin_unlock_irqrestore+0x42/0x58
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c011c24a>] ? vprintk+0x327/0x35c
- [<c0390020>] ? rt_mutex_slowlock+0x26a/0x446
- [<c011bd85>] ? release_console_sem+0x197/0x19f
- [<c0392685>] ? do_page_fault+0x0/0x6e5
- [<c039111a>] error_code+0x6a/0x70
- [<c0103c53>] ? dump_trace+0xa5/0xe2
- [<c0103b6f>] ? print_trace_address+0x0/0x3f
- [<c01045f5>] show_trace+0x15/0x29
- [<c038e33b>] dump_stack+0x59/0x63
- [<c038e436>] ? printk+0xf/0x11
- [<c011b681>] warn_on_slowpath+0x41/0x7b
- [<c0157a94>] ? mmap_region+0x1c5/0x414
- [<c0156499>] ? remove_vma+0x50/0x56
-BUG: unable to handle kernel paging request at 5c828b00
-IP: [<c0103c53>] dump_trace+0xa5/0xe2
-*pde = 00000000
-Oops: 0000 [#5] PREEMPT DEBUG_PAGEALLOC
-last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:02:00.1/class
-Modules linked in: i2c_nforce2
-
-
-
-lspci:
-00:00.0 Host bridge [0600]: nVidia Corporation nForce2 AGP (different
-version?) [10de:01e0] (rev c1)
-00:00.1 RAM memory [0500]: nVidia Corporation nForce2 Memory Controller
-1 [10de:01eb] (rev c1)
-00:00.2 RAM memory [0500]: nVidia Corporation nForce2 Memory Controller
-4 [10de:01ee] (rev c1)
-00:00.3 RAM memory [0500]: nVidia Corporation nForce2 Memory Controller
-3 [10de:01ed] (rev c1)
-00:00.4 RAM memory [0500]: nVidia Corporation nForce2 Memory Controller
-2 [10de:01ec] (rev c1)
-00:00.5 RAM memory [0500]: nVidia Corporation nForce2 Memory Controller
-5 [10de:01ef] (rev c1)
-00:01.0 ISA bridge [0601]: nVidia Corporation nForce2 ISA Bridge
-[10de:0060] (rev a4)
-00:01.1 SMBus [0c05]: nVidia Corporation nForce2 SMBus (MCP) [10de:0064]
-(rev a2)
-00:02.0 USB Controller [0c03]: nVidia Corporation nForce2 USB Controller
-[10de:0067] (rev a4)
-00:02.1 USB Controller [0c03]: nVidia Corporation nForce2 USB Controller
-[10de:0067] (rev a4)
-00:02.2 USB Controller [0c03]: nVidia Corporation nForce2 USB Controller
-[10de:0068] (rev a4)
-00:04.0 Ethernet controller [0200]: nVidia Corporation nForce2 Ethernet
-Controller [10de:0066] (rev a1)
-00:08.0 PCI bridge [0604]: nVidia Corporation nForce2 External PCI
-Bridge [10de:006c] (rev a3)
-00:09.0 IDE interface [0101]: nVidia Corporation nForce2 IDE [10de:0065]
-(rev a2)
-00:1e.0 PCI bridge [0604]: nVidia Corporation nForce2 AGP [10de:01e8]
-(rev c1)
-01:06.0 Ethernet controller [0200]: Intel Corporation 82540EM Gigabit
-Ethernet Controller [8086:100e] (rev 02)
-01:0a.0 RAID bus controller [0104]: Promise Technology, Inc. PDC20270
-(FastTrak100 LP/TX2/TX4) [105a:6268] (rev 02)
-02:00.0 VGA compatible controller [0300]: ATI Technologies Inc Radeon
-RV250 If [Radeon 9000] [1002:4966] (rev 01)
-02:00.1 Display controller [0380]: ATI Technologies Inc Radeon RV250
-[Radeon 9000] (Secondary) [1002:496e] (rev 01)
-
-Do you need a config?
+	Hannes
