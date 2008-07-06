@@ -1,19 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbYGFW2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbYGFW4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757524AbYGFW2l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 18:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYGFW2d
+	id S1756588AbYGFW4Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 18:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756238AbYGFW4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 18:28:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49924 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752205AbYGFW2c (ORCPT
+	Sun, 6 Jul 2008 18:56:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56623 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755934AbYGFW4P convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 18:28:32 -0400
-Date: Sun, 6 Jul 2008 15:27:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Sun, 6 Jul 2008 18:56:15 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: 2.6.26-rc9: Reported regressions from 2.6.25
+Date: Mon, 7 Jul 2008 00:57:50 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Natalie Protasevich <protasnb@gmail.com>,
@@ -23,37 +26,48 @@ cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        James Bottomley <James.Bottomley@hansenpartnership.com>,
        Domenico Andreoli <cavokz@gmail.com>
-Subject: Re: 2.6.26-rc9: Reported regressions from 2.6.25
-In-Reply-To: <20080706221932.GJ21669@cs181140183.pp.htv.fi>
-Message-ID: <alpine.LFD.1.10.0807061524510.3016@woody.linux-foundation.org>
-References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <200807062002.46863.rjw@sisk.pl> <20080706182648.GE21669@cs181140183.pp.htv.fi> <200807062304.07443.rjw@sisk.pl> <20080706213214.GH21669@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0807061443420.3016@woody.linux-foundation.org>
- <20080706221932.GJ21669@cs181140183.pp.htv.fi>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <200807062356.47908.rjw@sisk.pl> <487142BA.1080508@keyaccess.nl>
+In-Reply-To: <487142BA.1080508@keyaccess.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200807070057.51663.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday, 7 of July 2008, Rene Herman wrote:
+> On 06-07-08 23:56, Rafael J. Wysocki wrote:
+> 
+> > BTW, the automated emails I'm sending are to let the reporters know
+> > that I'm interested in the current status of the bug.  They are free
+> > not to reply to them, but in that case I assume they don't really
+> > care whether or not I'm tracking the bugs they reported.
+> 
+> I did/do wonder by the way when I get them if I should be replying if 
+> the status is unchanged from my viewpoint...
+> 
+> I believe your automated emails say something like "please verify if 
+> this problem is still relevant" but don't spell out what do after you
+> verified that it is. It's sort of natural to take that as "I need to 
+> reply telling people it's fixed if it is but can remain silent if 
+> nothing changed".
 
+The exact wording is
 
-On Mon, 7 Jul 2008, Adrian Bunk wrote:
->
-> When did you tell me that maintainers should not or cannot be Cc'ed on 
-> regression reports?
+"The following bug entry is on the current list of known regressions
+from 2.6.25.  Please verify if it still should be listed."
 
-That is not what I'm complaining about.
+> Being more explicit about liking a reporter to report "yes, nothing 
+> changed" would probably be good if that IS what's wanted.
 
-I'm complaining about the fact that you *always* argue against closing 
-bugreports.
+Well, I can change it to
 
-You have argued against it for over a YEAR now. And every single time I 
-tell you that you are wrong, and exactly *why* you are wrong.
+"Please verify if it still should be listed and let me know."
 
-If a reporter doesn't respond to say "it's still open", it needs to be 
-closed. It doesn't matter one whit whether there has been developer action 
-on it or not. We cannot keep old reports open - it's a total waste for 
-developers to even _look_ at anything that is more than roughly a month 
-old and hasn't been verified to be still be an issue.
+if that's better.
 
-			Linus
+Thanks,
+Rafael
