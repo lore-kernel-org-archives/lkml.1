@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761982AbYGFRxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762514AbYGFRw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761982AbYGFRxk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 13:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759570AbYGFRsD
+	id S1762514AbYGFRw7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 13:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760626AbYGFRkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 13:48:03 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:9964 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761725AbYGFRsA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 13:48:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=UmbK2RdyXPGSgG2ArY/aYU+vtuzGcLF5P05N88d6auLgO36+17NkbuIXu77MAAZzVt
-         K3D5nF7FmQWdx9tHB2qqsVzXlwl6pIi6r1TL6Aw3DkZI0BKzQGWuZt3GovWsYjn69z2l
-         F2mtqxMLbeJYyhjQjwZssygkWvZRHOGNsiPmA=
-Message-ID: <dd18b0c30807061047m60e4e848v40dc1e8f49127bde@mail.gmail.com>
-Date: Sun, 6 Jul 2008 17:47:57 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
+	Sun, 6 Jul 2008 13:40:53 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:54786 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760617AbYGFRkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 13:40:52 -0400
+Date: Sun, 6 Jul 2008 20:40:07 +0300
+From: Adrian Bunk <bunk@kernel.org>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #10954] hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x011f000c
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>
-In-Reply-To: <uBi7uNfg81L.A.D3B.K0LcIB@albercik>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maximilian Engelhardt <maxi@daemonizer.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: 2.6.26-rc9: Reported regressions from 2.6.25
+Message-ID: <20080706174006.GD21669@cs181140183.pp.htv.fi>
+References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <alpine.LFD.1.10.0807060816070.3016@woody.linux-foundation.org> <20080706155825.GB21669@cs181140183.pp.htv.fi> <200807061905.50261.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik>
-	 <uBi7uNfg81L.A.D3B.K0LcIB@albercik>
+In-Reply-To: <200807061905.50261.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 6, 2008 at 11:45 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10954
-> Subject         : hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x011f000c
-> Submitter       : Justin Mattock <justinmattock@gmail.com>
-> Date            : 2008-06-21 2:05 (16 days old)
-> References      : http://marc.info/?l=linux-kernel&m=121401399622190&w=4
->                  http://marc.info/?t=121416231700010&r=1&w=4
->
->
->
+On Sun, Jul 06, 2008 at 07:05:49PM +0200, Rafael J. Wysocki wrote:
+> 
+> Also, in the next couple of days I'll be closing the bugs the reporters of
+> which have been totally unresponsive.
+>...
 
-yes;
-as an estimate(been busy with another bug), I'm going to say out of
-100 reboots this message will
-appear 2 times in a row, and then disappear.
-regards;
+If no action by us gets combined with automated weekly emails then
+no responses to the latter is not an unexpected event.
+
+Such a submitter might be perfectly responsive to actual work on a bug 
+while really pissed off by getting the bug closed.
+
+Look e.g. at #10865 that had a 1 month gap in submitter responses,
+but the actual problem is that noone of us ever bothered to look at
+this Oops...
+
+I just did a run through all open 2.6.26-rc regressions, and I did not 
+find a single one where we seem to be waiting for some time for an 
+answer of the submitter. [1]
+
+> Thanks,
+> Rafael
+
+cu
+Adrian
+
+[1] unless there was communication not linked from Bugzilla
 
 -- 
-Justin P. Mattock
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
