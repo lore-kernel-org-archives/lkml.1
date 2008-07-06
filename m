@@ -1,71 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760142AbYGFRkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760555AbYGFRkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760142AbYGFRkS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 13:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756008AbYGFRfR
+	id S1760555AbYGFRkl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 13:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758653AbYGFRfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 13:35:17 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:13310 "EHLO
+	Sun, 6 Jul 2008 13:35:20 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:7197 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758106AbYGFRe6 (ORCPT
+	with ESMTP id S1756411AbYGFRe7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 13:34:58 -0400
+	Sun, 6 Jul 2008 13:34:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=references:date:from:to:cc:subject:content-disposition:message-id;
-        b=c0JTw9taf5uZ0VkUi786GpzUxJ7ErKC20RrEeJN0+++pK5jhDIDaatidM65w/pcO+/
-         AL0q0qqAD/Vv2IuJCrwc8du59AvoGBlxfyn6ew1jsazdyTde4qWDvLalSJnvH+1vlwbA
-         0krP0/x3TlyNym5A3iyC3VVbAYJusEXxinfYk=
+        b=mw4pUQJDBKor2Q1K+AFh1D2KpY7GNV7ctJt8YiNg36VV5WmvDNkdsnh/9jP7htvt0K
+         6grW6w51DtWlq3HoGptGtZVtMoCsALtqwDNxqydo6FGvmHgjOjeLCBYTCxm5codvYESJ
+         6vHpVetKTnPIjhrZe2bh7gHdI4S9qtWTi6rxo=
 References: <20080706172010.559358957@bzolnier@gmail.com>
-Date: Sun, 06 Jul 2008 19:20:26 +0200
+Date: Sun, 06 Jul 2008 19:20:27 +0200
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: [PATCH 16/50] cmd64x: cleanup ->init_chipset method
-Content-Disposition: inline; filename=cmd64x-cleanup-init_chipset-method.patch
-Message-ID: <48710240.1ade660a.3458.628d@mx.google.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 17/50] via82cxxx: cleanup ->init_chipset method
+Content-Disposition: inline; filename=via82cxxx-cleanup-init_chipset-method.patch
+Message-ID: <48710241.1ade660a.3458.6290@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove verbose reporting for CMD646 (PCI device revision is always
-logged by IDE PCI layer).
+* Move the boot message and via_clock setup from
+  init_chipset_via82cxxx() to via_init_one().
 
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+* Set vdev->via_config in via_init_one() and cleanup
+  init_chipset_via82cxxx() accordingly.
+
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/pci/cmd64x.c |   18 ------------------
- 1 file changed, 18 deletions(-)
+ drivers/ide/pci/via82cxxx.c |   81 +++++++++++++++++++-------------------------
+ 1 file changed, 35 insertions(+), 46 deletions(-)
 
-Index: b/drivers/ide/pci/cmd64x.c
+Index: b/drivers/ide/pci/via82cxxx.c
 ===================================================================
---- a/drivers/ide/pci/cmd64x.c
-+++ b/drivers/ide/pci/cmd64x.c
-@@ -334,24 +334,6 @@ static unsigned int __devinit init_chips
+--- a/drivers/ide/pci/via82cxxx.c
++++ b/drivers/ide/pci/via82cxxx.c
+@@ -270,22 +270,11 @@ static unsigned int __devinit init_chips
  {
- 	u8 mrdmode = 0;
+ 	struct ide_host *host = pci_get_drvdata(dev);
+ 	struct via82cxxx_dev *vdev = host->host_priv;
+-	struct pci_dev *isa = NULL;
+-	struct via_isa_bridge *via_config;
++	struct via_isa_bridge *via_config = vdev->via_config;
+ 	u8 t, v;
+ 	u32 u;
  
--	if (dev->device == PCI_DEVICE_ID_CMD_646) {
+ 	/*
+-	 * Find the ISA bridge to see how good the IDE is.
+-	 */
+-	vdev->via_config = via_config = via_config_find(&isa);
 -
--		switch (dev->revision) {
--		case 0x07:
--		case 0x05:
--			printk("%s: UltraDMA capable\n", name);
--			break;
--		case 0x03:
--		default:
--			printk("%s: MultiWord DMA force limited\n", name);
--			break;
--		case 0x01:
--			printk("%s: MultiWord DMA limited, "
--			       "IRQ workaround enabled\n", name);
--			break;
--		}
+-	/* We checked this earlier so if it fails here deeep badness
+-	   is involved */
+-
+-	BUG_ON(!via_config->id);
+-
+-	/*
+ 	 * Detect cable and configure Clk66
+ 	 */
+ 	pci_read_config_dword(dev, VIA_UDMA_TIMING, &u);
+@@ -330,39 +319,6 @@ static unsigned int __devinit init_chips
+ 
+ 	pci_write_config_byte(dev, VIA_FIFO_CONFIG, t);
+ 
+-	/*
+-	 * Determine system bus clock.
+-	 */
+-
+-	via_clock = (ide_pci_clk ? ide_pci_clk : 33) * 1000;
+-
+-	switch (via_clock) {
+-		case 33000: via_clock = 33333; break;
+-		case 37000: via_clock = 37500; break;
+-		case 41000: via_clock = 41666; break;
 -	}
 -
- 	/* Set a good latency timer and cache line size value. */
- 	(void) pci_write_config_byte(dev, PCI_LATENCY_TIMER, 64);
- 	/* FIXME: pci_set_master() to ensure a good latency timer value */
+-	if (via_clock < 20000 || via_clock > 50000) {
+-		printk(KERN_WARNING "VP_IDE: User given PCI clock speed "
+-			"impossible (%d), using 33 MHz instead.\n", via_clock);
+-		printk(KERN_WARNING "VP_IDE: Use ide0=ata66 if you want "
+-			"to assume 80-wire cable.\n");
+-		via_clock = 33333;
+-	}
+-
+-	/*
+-	 * Print the boot message.
+-	 */
+-
+-	printk(KERN_INFO "VP_IDE: VIA %s (rev %02x) IDE %sDMA%s "
+-		"controller on pci%s\n",
+-		via_config->name, isa->revision,
+-		via_config->udma_mask ? "U" : "MW",
+-		via_dma[via_config->udma_mask ?
+-			(fls(via_config->udma_mask) - 1) : 0],
+-		pci_name(dev));
+-
+-	pci_dev_put(isa);
+ 	return 0;
+ }
+ 
+@@ -444,12 +400,43 @@ static int __devinit via_init_one(struct
+ 	 * Find the ISA bridge and check we know what it is.
+ 	 */
+ 	via_config = via_config_find(&isa);
+-	pci_dev_put(isa);
+ 	if (!via_config->id) {
+ 		printk(KERN_WARNING "VP_IDE: Unknown VIA SouthBridge, disabling DMA.\n");
+ 		return -ENODEV;
+ 	}
+ 
++	/*
++	 * Print the boot message.
++	 */
++	printk(KERN_INFO "VP_IDE: VIA %s (rev %02x) IDE %sDMA%s "
++		"controller on pci%s\n",
++		via_config->name, isa->revision,
++		via_config->udma_mask ? "U" : "MW",
++		via_dma[via_config->udma_mask ?
++			(fls(via_config->udma_mask) - 1) : 0],
++		pci_name(dev));
++
++	pci_dev_put(isa);
++
++	/*
++	 * Determine system bus clock.
++	 */
++	via_clock = (ide_pci_clk ? ide_pci_clk : 33) * 1000;
++
++	switch (via_clock) {
++	case 33000: via_clock = 33333; break;
++	case 37000: via_clock = 37500; break;
++	case 41000: via_clock = 41666; break;
++	}
++
++	if (via_clock < 20000 || via_clock > 50000) {
++		printk(KERN_WARNING "VP_IDE: User given PCI clock speed "
++			"impossible (%d), using 33 MHz instead.\n", via_clock);
++		printk(KERN_WARNING "VP_IDE: Use ide0=ata66 if you want "
++			"to assume 80-wire cable.\n");
++		via_clock = 33333;
++	}
++
+ 	if (idx == 0)
+ 		d.host_flags |= IDE_HFLAG_NO_AUTODMA;
+ 	else
+@@ -471,6 +458,8 @@ static int __devinit via_init_one(struct
+ 		return -ENOMEM;
+ 	}
+ 
++	vdev->via_config = via_config;
++
+ 	rc = ide_pci_init_one(dev, &d, vdev);
+ 	if (rc)
+ 		kfree(vdev);
 
 -- 
 
