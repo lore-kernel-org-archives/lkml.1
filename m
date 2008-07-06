@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758849AbYGFQW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbYGFQZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758849AbYGFQW4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 12:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757244AbYGFQWs
+	id S1758647AbYGFQZR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 12:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757244AbYGFQZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 12:22:48 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:58827 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1757234AbYGFQWs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 12:22:48 -0400
-Date: Sun, 6 Jul 2008 19:22:33 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Frans Pop <elendil@planet.nl>
-Subject: Re: [PATCH] parport/ppdev: fix registration of sysctl entries
-Message-ID: <20080706192233.5df9c65b@linux360.ro>
-In-Reply-To: <20080706081126.GA28946@ZenIV.linux.org.uk>
-References: <20080705131924.GA2083@joi>
-	<20080705235148.GW28946@ZenIV.linux.org.uk>
-	<20080706001148.GX28946@ZenIV.linux.org.uk>
-	<20080706040519.GZ28946@ZenIV.linux.org.uk>
-	<m1hcb31p8p.fsf@frodo.ebiederm.org>
-	<20080706081126.GA28946@ZenIV.linux.org.uk>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+	Sun, 6 Jul 2008 12:25:06 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:32953 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757010AbYGFQZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 12:25:05 -0400
+Date: Sun, 6 Jul 2008 20:28:00 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jarek Poplawski <jarkao2@o2.pl>, Johannes Berg <johannes@sipsolutions.net>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] workqueues: lockdep annotations for flush_work()
+Message-ID: <20080706162800.GA6443@tv-sign.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 Jul 2008 09:11:26 +0100
-Al Viro <viro@ZenIV.linux.org.uk> wrote:
+Add lockdep annotations to flush_work() and update the comment.
 
-> On Sat, Jul 05, 2008 at 11:49:26PM -0700, Eric W. Biederman wrote:
-> > So our choices appear to be.
-> > - Change the name in sysctl so each parport device always has a
-> > unique name.
-> > - Only allow one opener of ppdev for a given port.
-> 
-> Can't do - it's a legitimate use of ppdev (several userland programs
-> multiplexing the sucker).
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-How in the world would such a thing work?! I imagine one could
-read()/write() there and multiplex data, but isn't the whole point of
-ppdev to allow non-standard communication (manually flipping control
-and data lines)? I've used it for custom hardware.
+--- 26-rc2/kernel/workqueue.c~FW_LOCKDEP	2008-06-29 19:36:27.000000000 +0400
++++ 26-rc2/kernel/workqueue.c	2008-07-06 20:15:16.000000000 +0400
+@@ -403,6 +403,8 @@ EXPORT_SYMBOL_GPL(flush_workqueue);
+  * flush_work - block until a work_struct's callback has terminated
+  * @work: the work which is to be flushed
+  *
++ * Returns false if @work has already terminated.
++ *
+  * It is expected that, prior to calling flush_work(), the caller has
+  * arranged for the work to not be requeued, otherwise it doesn't make
+  * sense to use this function.
+@@ -418,6 +420,9 @@ int flush_work(struct work_struct *work)
+ 	if (!cwq)
+ 		return 0;
+ 
++	lock_acquire(&cwq->wq->lockdep_map, 0, 0, 0, 2, _THIS_IP_);
++	lock_release(&cwq->wq->lockdep_map, 1, _THIS_IP_);
++
+ 	prev = NULL;
+ 	spin_lock_irq(&cwq->lock);
+ 	if (!list_empty(&work->entry)) {
 
-IMHO, there is one reason ppdev exists: allow both _safe_ and _raw_
-access to the parallel port, and a much better alternative to the iopl
-stuff.
-
-
-	Eduard
