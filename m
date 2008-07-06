@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbYGFHJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbYGFILn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756656AbYGFHJk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 03:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbYGFHJd
+	id S1755350AbYGFILn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 04:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYGFILa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 03:09:33 -0400
-Received: from mout2.freenet.de ([195.4.92.92]:52226 "EHLO mout2.freenet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751825AbYGFHJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 03:09:32 -0400
-From: Sascha Sommer <saschasommer@freenet.de>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: Re: Status of Ricoh Bay1Controller driver?
-Date: Sun, 6 Jul 2008 09:09:30 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: sdricohcs-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <20080705115039.77bf7e1c@mjolnir.drzeus.cx> <200807052111.49807.saschasommer@freenet.de> <20080706012435.016358d6@mjolnir.drzeus.cx>
-In-Reply-To: <20080706012435.016358d6@mjolnir.drzeus.cx>
+	Sun, 6 Jul 2008 04:11:30 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40483 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751838AbYGFIL3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 04:11:29 -0400
+Date: Sun, 6 Jul 2008 09:11:26 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Frans Pop <elendil@planet.nl>
+Subject: Re: [PATCH] parport/ppdev: fix registration of sysctl entries
+Message-ID: <20080706081126.GA28946@ZenIV.linux.org.uk>
+References: <20080705131924.GA2083@joi> <20080705235148.GW28946@ZenIV.linux.org.uk> <20080706001148.GX28946@ZenIV.linux.org.uk> <20080706040519.GZ28946@ZenIV.linux.org.uk> <m1hcb31p8p.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200807060909.30563.saschasommer@freenet.de>
+In-Reply-To: <m1hcb31p8p.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Jul 05, 2008 at 11:49:26PM -0700, Eric W. Biederman wrote:
+> So our choices appear to be.
+> - Change the name in sysctl so each parport device always has a unique name.
+> - Only allow one opener of ppdev for a given port.
 
-On Sonntag, 6. Juli 2008, Pierre Ossman wrote:
-> On Sat, 5 Jul 2008 21:11:49 +0200
->
-> Sascha Sommer <saschasommer@freenet.de> wrote:
-> > There is still some hack for ACMDs. I know you won't like that but I did
-> > not get the SD_APP_SEND_SCR command to work without it.
-> >
-> > MMC_SEND_EXT_CSD does not work (also not with that ACMD hack) and prints
-> > out something like:
->
-> The SCR and EXT_CSD are both the only data transfers that are done in
-> 1-bit mode in the respective init paths. Are you sure that hack you
-> have for ACMDs is really for ACMDs and not for 1-bit transfers?
->
-> (And you're right about me not liking that hack, but I can let that one
-> slide as long as you agree it is important to get rid off ;))
->
+Can't do - it's a legitimate use of ppdev (several userland programs
+multiplexing the sucker).
 
-Well I do not like the hacks either ;) However I'm out of ideas when it comes 
-to these two commands. As far as I know the windows driver also does the |=64
-for the SD_APP_OP_COND  and SD_APP_SET_BUS_WIDTH what are the only ACMDs. 
-These aren't data read commands.
+> - Take the approach of the initial patch and export to sysctl when we claim
+>   the port and unexport when we release the port.
 
-When I do not do the |= 64 the SD_APP_SEND_SCR command fails just like the 
-MMC_SEND_EXT_CSD command.
+You do realize that we need exclusion around that lazy registration in
+any case?  sysctl is not the only problem there...
 
-#define MMC_SEND_EXT_CSD          8   /* adtc                    R1  */
-#define MMC_SEND_CSD              9   /* ac   [31:16] RCA        R2  */
-#define SD_APP_SEND_SCR          51   /* adtc                    R1  */
+> - Give up and simply don't register with sysctl for ppdev.
+> 
+> I did a quick google search and I could not find any hits (except for
+> this bug report on devices/ppdev) so I am inclined just to special
+> case ppdev and not even bother registering with sysctl.  I did not
+> see any other fields that would have problems with a duplicate name.
+> 
+> The only other backwards compatible and viable approach appears
+> to be registering ppdev parport devices when they are claimed.
+> 
+> The only reason we would be able to change the name without breakage
+> is if no one uses the /proc interface in which case I don't see a
+> point in continuing to provide it for ppdev.
 
-After the SD_APP_SEND_SCR command worked I tryed to fix the MMC_SEND_EXT_CSD 
-command.
-As you can see they look quite similar from the command description.
-I tryed:
-- different bit combination for what seem to be the command flags
-- or the opcode with  |= 64, if this flag is for data transfers in one 1-bit
-   mode this should have worked, shouldn't it?
-- set the bus width to 4 bit before the read
+Not quite.  /proc/sys/.../timeslice is a generically documented way to
+tune the damn thing when we have several things on the same port.  Note
+that while one of those might be in userland, the rest might be in kernel
+and very different.  In this case the parameter is both relevant *and*
+currently usable.
 
-Nothing worked ;( == The status register simply does not indicate that there 
-is data available that can be read. It doesn't even change. Reading the data 
-register nevertheless returns only zeros.
-
-So to summarize this I agree that it is important to get rid off these 
-hacks ;) but I don't have a better solution available at the moment ;(.
-
-Regards
-
-Sascha
+Frankly, I'd go for IDR and rename in cases when we have additional openers.
+_And_ add a mutex around delayed allocation - that's a separate problem.
