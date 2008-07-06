@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760049AbYGFWKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbYGFWU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760049AbYGFWKx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 18:10:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756673AbYGFWKn
+	id S1757297AbYGFWU2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 18:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbYGFWUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 18:10:43 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41105 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756588AbYGFWKm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 18:10:42 -0400
-Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
-From: David Woodhouse <dwmw2@infradead.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: david@lang.hm, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Miller <davem@davemloft.net>, andi@firstfloor.org, tytso@mit.edu,
-       hugh@veritas.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org
-In-Reply-To: <48713B73.6030708@garzik.org>
-References: <1215178035.10393.763.camel@pmac.infradead.org>
-	 <486E2818.1060003@garzik.org> <20080704142753.27848ff8@lxorguk.ukuu.org.uk>
-	 <20080704.134329.209642254.davem@davemloft.net>
-	 <20080704220444.011e7e61@lxorguk.ukuu.org.uk>
-	 <alpine.DEB.1.10.0807061311030.11010@asgard.lang.hm>
-	 <1215376034.3189.127.camel@shinybook.infradead.org>
-	 <alpine.DEB.1.10.0807061351040.11010@asgard.lang.hm>
-	 <1215377814.3189.137.camel@shinybook.infradead.org>
-	 <48713B73.6030708@garzik.org>
-Content-Type: text/plain
-Date: Sun, 06 Jul 2008 23:10:25 +0100
-Message-Id: <1215382225.3189.174.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 6 Jul 2008 18:20:19 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:51206 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751825AbYGFWUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 18:20:17 -0400
+Date: Mon, 7 Jul 2008 01:19:32 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maximilian Engelhardt <maxi@daemonizer.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Domenico Andreoli <cavokz@gmail.com>
+Subject: Re: 2.6.26-rc9: Reported regressions from 2.6.25
+Message-ID: <20080706221932.GJ21669@cs181140183.pp.htv.fi>
+References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <200807062002.46863.rjw@sisk.pl> <20080706182648.GE21669@cs181140183.pp.htv.fi> <200807062304.07443.rjw@sisk.pl> <20080706213214.GH21669@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0807061443420.3016@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0807061443420.3016@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-07-06 at 17:38 -0400, Jeff Garzik wrote:
-> David Woodhouse wrote:
-> > On Sun, 2008-07-06 at 13:52 -0700, david@lang.hm wrote:
-> >> On Sun, 6 Jul 2008, David Woodhouse wrote:
-> >>
-> >>> On Sun, 2008-07-06 at 13:17 -0700, david@lang.hm wrote:
-> >>>> if David W were to make it possible to not use the load_firmware() call to
-> >>>> userspace and build the firmware into the driver (be it in a monolithic
-> >>>> kernel or the module that contains the driver)
-> >>> You _can_ build the firmware into the kernel.
-> >> right, but not into a module. you have half of the answer in place, but 
-> >> not all of it.
-> > 
-> > The useful half. If you have userspace to load modules, you have
-> > userspace to load firmware too.
+On Sun, Jul 06, 2008 at 02:47:42PM -0700, Linus Torvalds wrote:
+> On Mon, 7 Jul 2008, Adrian Bunk wrote:
+>...
+> > Is there any specific reason why your automated emails only go to the 
+> > submitters but not to the maintainers of the code in question?
 > 
-> Existing examples have already been provided where this logic fails.
+> Is there any specific reason that you have been complaining about this for 
+> A HELL OF A LONG TIME, without ever actually listening to what people like 
+> me tell you, over and over and over again?
+>...
 
-I even provided such an example, where your script greps the module for
-'request_firmware' and fails if there's a match. I don't think any of
-the other provided examples were _much_ more sensible than that...
+When did you tell me that maintainers should not or cannot be Cc'ed on 
+regression reports?
+
+Sorry, but I honestly don't remember this.
+
+You did not complain when I did this when I was doing regression 
+tracking, and if you explained to me why it's now no longer wanted
+I must have completely missed it.
+
+What was the reason?
+
+> Just accept it, Adrian.
+> 
+> 		Linus
+
+cu
+Adrian
 
 -- 
-dwmw2
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
