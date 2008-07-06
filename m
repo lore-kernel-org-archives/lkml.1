@@ -1,330 +1,254 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760094AbYGFRij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760163AbYGFRi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760094AbYGFRij (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 13:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758315AbYGFRfA
+	id S1760163AbYGFRi4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 13:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbYGFRfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 13:35:00 -0400
+	Sun, 6 Jul 2008 13:35:05 -0400
 Received: from mu-out-0910.google.com ([209.85.134.186]:6801 "EHLO
 	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755646AbYGFRer (ORCPT
+	with ESMTP id S1757969AbYGFRex (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 13:34:47 -0400
+	Sun, 6 Jul 2008 13:34:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=references:date:from:to:cc:subject:content-disposition:message-id;
-        b=wiq1sRScrSQfJoPEp+E8Xq4xWYCTrOUaOImswY+NH4t+8Ix38nD6cimIaEGH1jcjDd
-         OdQNrxSBKmf+VRERXSlrUDWdubXgGOmAmadi2FkwP15wldkjZFVwH91JrwA+sTXD+0Mv
-         zAnepF14ox3//Qit5MXbFzmovHAKZrWxEnhG4=
+        b=WhLe4fseGfQh/qDQywK0UQWS4YX60U4EZctdUxW86ba4JVj/uysaZv8N2/v0TTaGlM
+         cyBhB799pkXZKOeRSl3dTIrO0VXLEgjshEHV5iYowCi7MvoJJb6wHhGW+4YOGEhIID+B
+         CetySZexhppQnHv7vFdiiH553i9Jz9/POsnF0=
 References: <20080706172010.559358957@bzolnier@gmail.com>
-Date: Sun, 06 Jul 2008 19:20:17 +0200
+Date: Sun, 06 Jul 2008 19:20:22 +0200
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 07/50] ide: add ide_device_{get,put}() helpers
-Content-Disposition: inline; filename=ide-add-ide_device_get-put-helpers.patch
-Message-ID: <48710235.1ade660a.3458.6277@mx.google.com>
+Subject: [PATCH 12/50] siimage: convert to use ->host_priv
+Content-Disposition: inline; filename=siimage-convert-to-use-host_priv.patch
+Message-ID: <4871023b.1ade660a.3458.6281@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Add 'struct ide_host *host' field to ide_hwif_t and set it
-  in ide_host_alloc_all().
+While at it:
 
-* Add ide_device_{get,put}() helpers loosely based on SCSI's
-  scsi_device_{get,put}() ones.
-
-* Convert IDE device drivers to use ide_device_{get,put}().
+* Reserve PCI BAR 5 in siimage_init_one() and remove no longer needed
+  setup_mmio_siimage().
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-cd.c     |   12 +++++++++---
- drivers/ide/ide-disk.c   |   12 +++++++++---
- drivers/ide/ide-floppy.c |   12 +++++++++---
- drivers/ide/ide-probe.c  |    2 ++
- drivers/ide/ide-tape.c   |   12 +++++++++---
- drivers/ide/ide.c        |   47 +++++++++++++++++++++++++++++++++++++++++++++++
- drivers/scsi/ide-scsi.c  |    8 +++++++-
- include/linux/ide.h      |    7 +++++++
- 8 files changed, 99 insertions(+), 13 deletions(-)
+ drivers/ide/pci/siimage.c |  114 +++++++++++++++++++++++-----------------------
+ 1 file changed, 58 insertions(+), 56 deletions(-)
 
-Index: b/drivers/ide/ide-cd.c
+Index: b/drivers/ide/pci/siimage.c
 ===================================================================
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -57,23 +57,29 @@ static DEFINE_MUTEX(idecd_ref_mutex);
- #define ide_cd_g(disk) \
- 	container_of((disk)->private_data, struct cdrom_info, driver)
+--- a/drivers/ide/pci/siimage.c
++++ b/drivers/ide/pci/siimage.c
+@@ -127,9 +127,10 @@ static inline unsigned long siimage_seld
  
-+static void ide_cd_release(struct kref *);
-+
- static struct cdrom_info *ide_cd_get(struct gendisk *disk)
+ static u8 sil_ioread8(struct pci_dev *dev, unsigned long addr)
  {
- 	struct cdrom_info *cd = NULL;
++	struct ide_host *host = pci_get_drvdata(dev);
+ 	u8 tmp = 0;
  
- 	mutex_lock(&idecd_ref_mutex);
- 	cd = ide_cd_g(disk);
--	if (cd)
-+	if (cd) {
- 		kref_get(&cd->kref);
-+		if (ide_device_get(cd->drive)) {
-+			kref_put(&cd->kref, ide_cd_release);
-+			cd = NULL;
-+		}
-+	}
- 	mutex_unlock(&idecd_ref_mutex);
- 	return cd;
+-	if (pci_get_drvdata(dev))
++	if (host->host_priv)
+ 		tmp = readb((void __iomem *)addr);
+ 	else
+ 		pci_read_config_byte(dev, addr, &tmp);
+@@ -139,9 +140,10 @@ static u8 sil_ioread8(struct pci_dev *de
+ 
+ static u16 sil_ioread16(struct pci_dev *dev, unsigned long addr)
+ {
++	struct ide_host *host = pci_get_drvdata(dev);
+ 	u16 tmp = 0;
+ 
+-	if (pci_get_drvdata(dev))
++	if (host->host_priv)
+ 		tmp = readw((void __iomem *)addr);
+ 	else
+ 		pci_read_config_word(dev, addr, &tmp);
+@@ -151,7 +153,9 @@ static u16 sil_ioread16(struct pci_dev *
+ 
+ static void sil_iowrite8(struct pci_dev *dev, u8 val, unsigned long addr)
+ {
+-	if (pci_get_drvdata(dev))
++	struct ide_host *host = pci_get_drvdata(dev);
++
++	if (host->host_priv)
+ 		writeb(val, (void __iomem *)addr);
+ 	else
+ 		pci_write_config_byte(dev, addr, val);
+@@ -159,7 +163,9 @@ static void sil_iowrite8(struct pci_dev 
+ 
+ static void sil_iowrite16(struct pci_dev *dev, u16 val, unsigned long addr)
+ {
+-	if (pci_get_drvdata(dev))
++	struct ide_host *host = pci_get_drvdata(dev);
++
++	if (host->host_priv)
+ 		writew(val, (void __iomem *)addr);
+ 	else
+ 		pci_write_config_word(dev, addr, val);
+@@ -167,7 +173,9 @@ static void sil_iowrite16(struct pci_dev
+ 
+ static void sil_iowrite32(struct pci_dev *dev, u32 val, unsigned long addr)
+ {
+-	if (pci_get_drvdata(dev))
++	struct ide_host *host = pci_get_drvdata(dev);
++
++	if (host->host_priv)
+ 		writel(val, (void __iomem *)addr);
+ 	else
+ 		pci_write_config_dword(dev, addr, val);
+@@ -445,44 +453,6 @@ static void sil_sata_pre_reset(ide_drive
  }
  
--static void ide_cd_release(struct kref *);
+ /**
+- *	setup_mmio_siimage	-	switch controller into MMIO mode
+- *	@dev: PCI device we are configuring
+- *	@name: device name
+- *
+- *	Attempt to put the device into MMIO mode. There are some slight
+- *	complications here with certain systems where the MMIO BAR isn't
+- *	mapped, so we have to be sure that we can fall back to I/O.
+- */
 -
- static void ide_cd_put(struct cdrom_info *cd)
- {
- 	mutex_lock(&idecd_ref_mutex);
-+	ide_device_put(cd->drive);
- 	kref_put(&cd->kref, ide_cd_release);
- 	mutex_unlock(&idecd_ref_mutex);
- }
-Index: b/drivers/ide/ide-disk.c
-===================================================================
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -56,23 +56,29 @@ static DEFINE_MUTEX(idedisk_ref_mutex);
- #define ide_disk_g(disk) \
- 	container_of((disk)->private_data, struct ide_disk_obj, driver)
- 
-+static void ide_disk_release(struct kref *);
-+
- static struct ide_disk_obj *ide_disk_get(struct gendisk *disk)
- {
- 	struct ide_disk_obj *idkp = NULL;
- 
- 	mutex_lock(&idedisk_ref_mutex);
- 	idkp = ide_disk_g(disk);
--	if (idkp)
-+	if (idkp) {
- 		kref_get(&idkp->kref);
-+		if (ide_device_get(idkp->drive)) {
-+			kref_put(&idkp->kref, ide_disk_release);
-+			idkp = NULL;
-+		}
-+	}
- 	mutex_unlock(&idedisk_ref_mutex);
- 	return idkp;
- }
- 
--static void ide_disk_release(struct kref *);
+-static unsigned int setup_mmio_siimage(struct pci_dev *dev, const char *name)
+-{
+-	resource_size_t bar5	= pci_resource_start(dev, 5);
+-	unsigned long barsize	= pci_resource_len(dev, 5);
+-	void __iomem *ioaddr;
 -
- static void ide_disk_put(struct ide_disk_obj *idkp)
- {
- 	mutex_lock(&idedisk_ref_mutex);
-+	ide_device_put(idkp->drive);
- 	kref_put(&idkp->kref, ide_disk_release);
- 	mutex_unlock(&idedisk_ref_mutex);
- }
-Index: b/drivers/ide/ide-floppy.c
-===================================================================
---- a/drivers/ide/ide-floppy.c
-+++ b/drivers/ide/ide-floppy.c
-@@ -158,23 +158,29 @@ static DEFINE_MUTEX(idefloppy_ref_mutex)
- #define ide_floppy_g(disk) \
- 	container_of((disk)->private_data, struct ide_floppy_obj, driver)
- 
-+static void idefloppy_cleanup_obj(struct kref *);
-+
- static struct ide_floppy_obj *ide_floppy_get(struct gendisk *disk)
- {
- 	struct ide_floppy_obj *floppy = NULL;
- 
- 	mutex_lock(&idefloppy_ref_mutex);
- 	floppy = ide_floppy_g(disk);
--	if (floppy)
-+	if (floppy) {
- 		kref_get(&floppy->kref);
-+		if (ide_device_get(floppy->drive)) {
-+			kref_put(&floppy->kref, idefloppy_cleanup_obj);
-+			floppy = NULL;
-+		}
-+	}
- 	mutex_unlock(&idefloppy_ref_mutex);
- 	return floppy;
- }
- 
--static void idefloppy_cleanup_obj(struct kref *);
+-	/*
+-	 *	Drop back to PIO if we can't map the MMIO. Some	systems
+-	 *	seem to get terminally confused in the PCI spaces.
+-	 */
+-	if (!request_mem_region(bar5, barsize, name)) {
+-		printk(KERN_WARNING "siimage: IDE controller MMIO ports not "
+-				    "available.\n");
+-		return 0;
+-	}
 -
- static void ide_floppy_put(struct ide_floppy_obj *floppy)
+-	ioaddr = ioremap(bar5, barsize);
+-	if (ioaddr == NULL) {
+-		release_mem_region(bar5, barsize);
+-		return 0;
+-	}
+-
+-	pci_set_master(dev);
+-	pci_set_drvdata(dev, (void *) ioaddr);
+-
+-	return 1;
+-}
+-
+-/**
+  *	init_chipset_siimage	-	set up an SI device
+  *	@dev: PCI device
+  *	@name: device name
+@@ -494,17 +464,15 @@ static unsigned int setup_mmio_siimage(s
+ static unsigned int __devinit init_chipset_siimage(struct pci_dev *dev,
+ 						   const char *name)
  {
- 	mutex_lock(&idefloppy_ref_mutex);
-+	ide_device_put(floppy->drive);
- 	kref_put(&floppy->kref, idefloppy_cleanup_obj);
- 	mutex_unlock(&idefloppy_ref_mutex);
++	struct ide_host *host = pci_get_drvdata(dev);
++	void __iomem *ioaddr = host->host_priv;
+ 	unsigned long base, scsc_addr;
+-	void __iomem *ioaddr = NULL;
+-	u8 rev = dev->revision, tmp, BA5_EN;
++	u8 rev = dev->revision, tmp;
+ 
+ 	pci_write_config_byte(dev, PCI_CACHE_LINE_SIZE, rev ? 1 : 255);
+ 
+-	pci_read_config_byte(dev, 0x8A, &BA5_EN);
+-
+-	if ((BA5_EN & 0x01) || pci_resource_start(dev, 5))
+-		if (setup_mmio_siimage(dev, name))
+-			ioaddr = pci_get_drvdata(dev);
++	if (ioaddr)
++		pci_set_master(dev);
+ 
+ 	base = (unsigned long)ioaddr;
+ 
+@@ -592,7 +560,8 @@ static unsigned int __devinit init_chips
+ static void __devinit init_mmio_iops_siimage(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev	= to_pci_dev(hwif->dev);
+-	void *addr		= pci_get_drvdata(dev);
++	struct ide_host *host	= pci_get_drvdata(dev);
++	void *addr		= host->host_priv;
+ 	u8 ch			= hwif->channel;
+ 	struct ide_io_ports *io_ports = &hwif->io_ports;
+ 	unsigned long base;
+@@ -691,16 +660,15 @@ static void __devinit sil_quirkproc(ide_
+ static void __devinit init_iops_siimage(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev = to_pci_dev(hwif->dev);
++	struct ide_host *host = pci_get_drvdata(dev);
+ 
+ 	hwif->hwif_data = NULL;
+ 
+ 	/* Pessimal until we finish probing */
+ 	hwif->rqsize = 15;
+ 
+-	if (pci_get_drvdata(dev) == NULL)
+-		return;
+-
+-	init_mmio_iops_siimage(hwif);
++	if (host->host_priv)
++		init_mmio_iops_siimage(hwif);
  }
-Index: b/drivers/ide/ide-probe.c
-===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1599,6 +1599,8 @@ struct ide_host *ide_host_alloc_all(cons
  
- 		ide_init_port_data(hwif, idx);
+ /**
+@@ -778,8 +746,13 @@ static const struct ide_port_info siimag
+ static int __devinit siimage_init_one(struct pci_dev *dev,
+ 				      const struct pci_device_id *id)
+ {
++	void __iomem *ioaddr = NULL;
++	resource_size_t bar5 = pci_resource_start(dev, 5);
++	unsigned long barsize = pci_resource_len(dev, 5);
++	int rc;
+ 	struct ide_port_info d;
+ 	u8 idx = id->driver_data;
++	u8 BA5_EN;
  
-+		hwif->host = host;
-+
- 		host->ports[i] = hwif;
- 		host->n_ports++;
+ 	d = siimage_chipsets[idx];
+ 
+@@ -795,7 +768,36 @@ static int __devinit siimage_init_one(st
+ 		d.host_flags |= IDE_HFLAG_NO_ATAPI_DMA;
  	}
-Index: b/drivers/ide/ide-tape.c
-===================================================================
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -322,23 +322,29 @@ static struct class *idetape_sysfs_class
- #define ide_tape_g(disk) \
- 	container_of((disk)->private_data, struct ide_tape_obj, driver)
  
-+static void ide_tape_release(struct kref *);
+-	return ide_pci_init_one(dev, &d, NULL);
++	rc = pci_enable_device(dev);
++	if (rc)
++		return rc;
 +
- static struct ide_tape_obj *ide_tape_get(struct gendisk *disk)
- {
- 	struct ide_tape_obj *tape = NULL;
- 
- 	mutex_lock(&idetape_ref_mutex);
- 	tape = ide_tape_g(disk);
--	if (tape)
-+	if (tape) {
- 		kref_get(&tape->kref);
-+		if (ide_device_get(tape->drive)) {
-+			kref_put(&tape->kref, ide_tape_release);
-+			tape = NULL;
++	pci_read_config_byte(dev, 0x8A, &BA5_EN);
++	if ((BA5_EN & 0x01) || bar5) {
++		/*
++		* Drop back to PIO if we can't map the MMIO. Some systems
++		* seem to get terminally confused in the PCI spaces.
++		*/
++		if (!request_mem_region(bar5, barsize, d.name)) {
++			printk(KERN_WARNING "siimage: IDE controller MMIO "
++					    "ports not available.\n");
++		} else {
++			ioaddr = ioremap(bar5, barsize);
++			if (ioaddr == NULL)
++				release_mem_region(bar5, barsize);
 +		}
 +	}
- 	mutex_unlock(&idetape_ref_mutex);
- 	return tape;
- }
- 
--static void ide_tape_release(struct kref *);
--
- static void ide_tape_put(struct ide_tape_obj *tape)
- {
- 	mutex_lock(&idetape_ref_mutex);
-+	ide_device_put(tape->drive);
- 	kref_put(&tape->kref, ide_tape_release);
- 	mutex_unlock(&idetape_ref_mutex);
- }
-Index: b/drivers/ide/ide.c
-===================================================================
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -618,6 +618,53 @@ set_val:
- 
- EXPORT_SYMBOL(generic_ide_ioctl);
- 
-+/**
-+ * ide_device_get	-	get an additional reference to a ide_drive_t
-+ * @drive:	device to get a reference to
-+ *
-+ * Gets a reference to the ide_drive_t and increments the use count of the
-+ * underlying LLDD module.
-+ */
-+int ide_device_get(ide_drive_t *drive)
-+{
-+	struct device *host_dev;
-+	struct module *module;
 +
-+	if (!get_device(&drive->gendev))
-+		return -ENXIO;
-+
-+	host_dev = drive->hwif->host->dev[0];
-+	module = host_dev ? host_dev->driver->owner : NULL;
-+
-+	if (module && !try_module_get(module)) {
-+		put_device(&drive->gendev);
-+		return -ENXIO;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ide_device_get);
-+
-+/**
-+ * ide_device_put	-	release a reference to a ide_drive_t
-+ * @drive:	device to release a reference on
-+ *
-+ * Release a reference to the ide_drive_t and decrements the use count of
-+ * the underlying LLDD module.
-+ */
-+void ide_device_put(ide_drive_t *drive)
-+{
-+#ifdef CONFIG_MODULE_UNLOAD
-+	struct device *host_dev = drive->hwif->host->dev[0];
-+	struct module *module = host_dev ? host_dev->driver->owner : NULL;
-+
-+	if (module)
-+		module_put(module);
-+#endif
-+	put_device(&drive->gendev);
-+}
-+EXPORT_SYMBOL_GPL(ide_device_put);
-+
- static int ide_bus_match(struct device *dev, struct device_driver *drv)
- {
- 	return 1;
-Index: b/drivers/scsi/ide-scsi.c
-===================================================================
---- a/drivers/scsi/ide-scsi.c
-+++ b/drivers/scsi/ide-scsi.c
-@@ -101,8 +101,13 @@ static struct ide_scsi_obj *ide_scsi_get
- 
- 	mutex_lock(&idescsi_ref_mutex);
- 	scsi = ide_scsi_g(disk);
--	if (scsi)
-+	if (scsi) {
- 		scsi_host_get(scsi->host);
-+		if (ide_device_get(scsi->drive)) {
-+			scsi_host_put(scsi->host);
-+			scsi = NULL;
++	rc = ide_pci_init_one(dev, &d, ioaddr);
++	if (rc) {
++		if (ioaddr) {
++			iounmap(ioaddr);
++			release_mem_region(bar5, barsize);
 +		}
++		pci_disable_device(dev);
 +	}
- 	mutex_unlock(&idescsi_ref_mutex);
- 	return scsi;
++
++	return rc;
  }
-@@ -110,6 +115,7 @@ static struct ide_scsi_obj *ide_scsi_get
- static void ide_scsi_put(struct ide_scsi_obj *scsi)
- {
- 	mutex_lock(&idescsi_ref_mutex);
-+	ide_device_put(scsi->drive);
- 	scsi_host_put(scsi->host);
- 	mutex_unlock(&idescsi_ref_mutex);
- }
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -517,12 +517,16 @@ struct ide_dma_ops {
- 	void	(*dma_timeout)(struct ide_drive_s *);
- };
  
-+struct ide_host;
-+
- typedef struct hwif_s {
- 	struct hwif_s *next;		/* for linked-list in ide_hwgroup_t */
- 	struct hwif_s *mate;		/* other hwif from same PCI chip */
- 	struct hwgroup_s *hwgroup;	/* actually (ide_hwgroup_t *) */
- 	struct proc_dir_entry *proc;	/* /proc/ide/ directory entry */
- 
-+	struct ide_host *host;
-+
- 	char name[6];			/* name of interface, eg. "ide0" */
- 
- 	struct ide_io_ports	io_ports;
-@@ -861,6 +865,9 @@ struct ide_driver_s {
- 
- #define to_ide_driver(drv) container_of(drv, ide_driver_t, gen_driver)
- 
-+int ide_device_get(ide_drive_t *);
-+void ide_device_put(ide_drive_t *);
-+
- int generic_ide_ioctl(ide_drive_t *, struct file *, struct block_device *, unsigned, unsigned long);
- 
- extern int ide_vlb_clk;
+ static const struct pci_device_id siimage_pci_tbl[] = {
 
 -- 
 
