@@ -1,89 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754378AbYGGKh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbYGGKkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754378AbYGGKh3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 06:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbYGGKhS
+	id S1753977AbYGGKkX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 06:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbYGGKkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 06:37:18 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:25075 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752205AbYGGKhR (ORCPT
+	Mon, 7 Jul 2008 06:40:10 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:12675 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752545AbYGGKkI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 06:37:17 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=frsOuq7Ic8CxbE+6GsstsAKRvdSQN3gvpmgm1KHl4Tks4g+lIsb8QxtUdMac8glBvZAAka59MWmK/Ic2mJYmlt94yCruPtZj/ufspNJo/QVdlzkHf8DbSCfZL/S66+AVtUGCvYnuUqVyCn5mAKVWO7f/1Tdqf8LqmzXQVyt/5tA=  ;
-X-YMail-OSG: oHBNTosVM1l3ldcHYOUjlNhMaeSHtTTrfo7RPVxRMfgABVLBGeIrQdqmwLRe0N_rXHE7lXzuX8VNA_MOOWBgC5EXGL4XkUJBehmS8H8A6_XQvEblGqLteTXibvP5tDZniY4-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] fix task dirty balancing
-Date: Mon, 7 Jul 2008 20:36:54 +1000
-User-Agent: KMail/1.9.5
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-References: <20080702082644.BA45D5A17@siro.lan> <20080705150401.8bd28b71.kamezawa.hiroyu@jp.fujitsu.com> <1215250202.6320.10.camel@lappy.programming.kicks-ass.net>
-In-Reply-To: <1215250202.6320.10.camel@lappy.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807072036.54553.nickpiggin@yahoo.com.au>
+	Mon, 7 Jul 2008 06:40:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=HIIRAtgkn5SbiJ5eB/cI6ZV6iivyvDvD76wY0R8YXY8LPhimax06+A3zqBpW0THWSj
+         dVw5ix9jfCuFQ4s0du7bB68atLvj/Cadg7No0zC+JdR5x64jlBhno56nsQkCx41XVBnd
+         dg/LyQ2T2ISU+HYnGYkhxqaXLbNpwzXOHZHMM=
+Subject: [PATCH][RE-SEND] drivers/isdn/i4l/isdn_common.c fix small resource
+	leak
+From: "Darren Jenkins\\" <darrenrjenkins@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       kernel Janitors <kernel-janitors@vger.kernel.org>, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 07 Jul 2008 08:52:38 +1000
+Message-Id: <1215384758.11092.23.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 05 July 2008 19:30, Peter Zijlstra wrote:
-> On Sat, 2008-07-05 at 15:04 +0900, KAMEZAWA Hiroyuki wrote:
-
-> > And task-dirty-limit don't have to take care of following 2 case ?
-> >   - __set_page_dirty_nobuffers(struct page *page) (increment
-> > BDI_RECRAIMABLE) - test_set_page_writeback() (increment BDI_RECLAIMABLE)
->
-> Gah - what a mess...
-
-It's not so bad once you get past the funny names and conventions :)
+G'day people,
 
 
-> It's in set_page_dirty() so it wouldn't have to be in all the
-> a_ops->set_page_dirty() functions...
-
-At some point, they have to actually set the page dirty though, in
-which case they would normally call __set_page_dirty_nobuffers or
-similar (ie. rather than SetPageDirty, unless they really know what
-they're doing).
+Coverity CID: 1356 RESOURCE_LEAK
 
 
-> But now it turns out people don't use set_page_dirty() to dirty
-> pages :-(
-
-They do, but they also use other things :) Filesystems of course are
-in complete control of the aops, so they can definitely bypass it.
+I found a very old patch for this that was Acked but did not get applied
+https://lists.linux-foundation.org/pipermail/kernel-janitors/2006-September/016362.html
 
 
-> For the purpose of task_dirty_inc() I guess we might as well pair it
-> with task_io_account_write() for each PAGE_CACHE_SIZE (and ignore the
-> DIO bit, since that doesn't care about the dirty limit anyway).
+There looks to be a small leak in isdn_writebuf_stub() in isdn_common.c,
+when copy_from_user() returns an un-copied data length (length != 0).
+The below patch should be a minimally invasive fix.
 
-Yes, the dirty increment should go in the same places where we increment
-all the dirty statistics... it's the right spot to do it AFAIKS.
+﻿﻿﻿Signed-off-by: Darren Jenkins <darrenrjenkins@gmailcom>
+Acked-by: Karsten Keil <kkeil@suse.de>
 
+diff --git a/drivers/isdn/i4l/isdn_common.c b/drivers/isdn/i4l/isdn_common.c
+index 0f3c66d..8d8c6b7 100644
+--- a/drivers/isdn/i4l/isdn_common.c
++++ b/drivers/isdn/i4l/isdn_common.c
+@@ -1977,8 +1977,10 @@ isdn_writebuf_stub(int drvidx, int chan, const u_char __user * buf, int len)
+ 	if (!skb)
+ 		return -ENOMEM;
+ 	skb_reserve(skb, hl);
+-	if (copy_from_user(skb_put(skb, len), buf, len))
++	if (copy_from_user(skb_put(skb, len), buf, len)) {
++		dev_kfree_skb(skb);
+ 		return -EFAULT;
++	}
+ 	ret = dev->drv[drvidx]->interface->writebuf_skb(drvidx, chan, 1, skb);
+ 	if (ret <= 0)
+ 		dev_kfree_skb(skb);
 
-> Might be my ignorance, but _why_ do we have __set_page_dirty_nobuffers()
-> reimplemented in fs/buffers.c:__set_page_dirty() ? - those two functions
-> look suspiciously similar.
-
-Probably no really good reason. The buffers.c code should probably be
-merged / unified in page-writeback.c.
-
-
-> Also, why was the EXPORT added anyway - fs/buffers.o never ends up in
-> modules?
-
-Definitely it would. Almost every filesystem can be build modularly. Or
-did you mean some other symbol?
 
