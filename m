@@ -1,109 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbYGFIrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbYGFItw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755104AbYGFIrS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 04:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYGFIrF
+	id S1756139AbYGFItw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 04:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYGFItp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 04:47:05 -0400
-Received: from il.qumranet.com ([212.179.150.194]:11637 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750883AbYGFIrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 04:47:04 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: [GIT PULL] KVM updates for 2.6.26-rc9
-Date: Sun,  6 Jul 2008 11:47:02 +0300
-Message-Id: <1215334022-16553-1-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.6.1
+	Sun, 6 Jul 2008 04:49:45 -0400
+Received: from mail.mba-software.de ([62.75.137.201]:35673 "EHLO
+	mail.mba-software.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751908AbYGFIto convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 04:49:44 -0400
+Message-ID: <48708724.6020904@mba-software.de>
+Date: Sun, 06 Jul 2008 10:49:40 +0200
+From: =?ISO-8859-1?Q?Marian_Aldenh=F6vel?= 
+	<marian.aldenhoevel@mba-software.de>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Gilles Espinasse <g.esp@free.fr>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Building a kernel for SiS55-based system.
+References: <4860959E.6020207@mba-software.de> <1214471767.48635e574384b@imp.free.fr>
+In-Reply-To: <1214471767.48635e574384b@imp.free.fr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull the kvm fixes from the repo and branch at:
+Hi,
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git kvm-updates-2.6.26
+> What version of gcc,binutils?
 
-adding a missing memory clobber to kvm hypercalls, which cause failures
-when running guests compiled with gcc 4.3.0, and fixing ioapic interrupt
-redelivery under certain loads.
+Gcc: 4.2.3
+Binutils: 2.18.50.0.3
 
-Shortlog, diffstat, and diff follow.
+> Could you try with distrib images to know if it could be related to your
+> compilation system
 
-Anthony Liguori (1):
-      x86: KVM guest: Add memory clobber to hypercalls
+As I have to boot off CF card, the system does not have a hard disk and does
+not like to boot off my USB-CD-Drive, my choices in prebuilt-Distributions
+are a bit limited.
 
-Mark McLoughlin (1):
-      KVM: IOAPIC: Fix level-triggered irq injection hang
+I found Pyramid-Linux, using a 2.6.19 kernel. That one hangs at the
+"Ok, now booting the kernel" prompt without further messages.
 
- include/asm-x86/kvm_para.h |   15 ++++++++++-----
- virt/kvm/ioapic.c          |    2 +-
- 2 files changed, 11 insertions(+), 6 deletions(-)
+The standard Damn Small Linux kernel fails with "no math coprocessor or no
+math emulation present", but that apparently is using a 2.4 kernel. DSL-n,
+with a 2.6.x kernel hangs at the same time as pyramid-linux.
 
-diff --git a/include/asm-x86/kvm_para.h b/include/asm-x86/kvm_para.h
-index bfd9900..76f3921 100644
---- a/include/asm-x86/kvm_para.h
-+++ b/include/asm-x86/kvm_para.h
-@@ -71,7 +71,8 @@ static inline long kvm_hypercall0(unsigned int nr)
- 	long ret;
- 	asm volatile(KVM_HYPERCALL
- 		     : "=a"(ret)
--		     : "a"(nr));
-+		     : "a"(nr)
-+		     : "memory");
- 	return ret;
- }
- 
-@@ -80,7 +81,8 @@ static inline long kvm_hypercall1(unsigned int nr, unsigned long p1)
- 	long ret;
- 	asm volatile(KVM_HYPERCALL
- 		     : "=a"(ret)
--		     : "a"(nr), "b"(p1));
-+		     : "a"(nr), "b"(p1)
-+		     : "memory");
- 	return ret;
- }
- 
-@@ -90,7 +92,8 @@ static inline long kvm_hypercall2(unsigned int nr, unsigned long p1,
- 	long ret;
- 	asm volatile(KVM_HYPERCALL
- 		     : "=a"(ret)
--		     : "a"(nr), "b"(p1), "c"(p2));
-+		     : "a"(nr), "b"(p1), "c"(p2)
-+		     : "memory");
- 	return ret;
- }
- 
-@@ -100,7 +103,8 @@ static inline long kvm_hypercall3(unsigned int nr, unsigned long p1,
- 	long ret;
- 	asm volatile(KVM_HYPERCALL
- 		     : "=a"(ret)
--		     : "a"(nr), "b"(p1), "c"(p2), "d"(p3));
-+		     : "a"(nr), "b"(p1), "c"(p2), "d"(p3)
-+		     : "memory");
- 	return ret;
- }
- 
-@@ -111,7 +115,8 @@ static inline long kvm_hypercall4(unsigned int nr, unsigned long p1,
- 	long ret;
- 	asm volatile(KVM_HYPERCALL
- 		     : "=a"(ret)
--		     : "a"(nr), "b"(p1), "c"(p2), "d"(p3), "S"(p4));
-+		     : "a"(nr), "b"(p1), "c"(p2), "d"(p3), "S"(p4)
-+		     : "memory");
- 	return ret;
- }
- 
-diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
-index 1dcf9f3..4458908 100644
---- a/virt/kvm/ioapic.c
-+++ b/virt/kvm/ioapic.c
-@@ -278,7 +278,7 @@ static void __kvm_ioapic_update_eoi(struct kvm_ioapic *ioapic, int gsi)
- 
- 	ent->fields.remote_irr = 0;
- 	if (!ent->fields.mask && (ioapic->irr & (1 << gsi)))
--		ioapic_deliver(ioapic, gsi);
-+		ioapic_service(ioapic, gsi);
- }
- 
- void kvm_ioapic_update_eoi(struct kvm *kvm, int vector)
+Any other suggestions?
+
+Ciao, MM
+-- 
+Marian Aldenhövel, Rosenhain 23, 53123 Bonn
+http://www.marian-aldenhoevel.de
+"I ran some quick calculations on it. He's about 80% on the right
+  track.  That leaves him only 20% dead when he crashes." Bob C
+
+
+
+
