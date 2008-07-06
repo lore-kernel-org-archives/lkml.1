@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYGGKDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbYGGKFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754209AbYGGKDs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 06:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbYGGKDk
+	id S1754553AbYGGKFm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 06:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbYGGKFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 06:03:40 -0400
-Received: from cluster-g.mailcontrol.com ([208.87.233.190]:36102 "EHLO
-	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750934AbYGGKDj (ORCPT
+	Mon, 7 Jul 2008 06:05:34 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:59882 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752326AbYGGKFd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 06:03:39 -0400
-Message-ID: <4871E9F0.60608@csr.com>
-Date: Mon, 07 Jul 2008 11:03:28 +0100
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Dropping WUSB/UWB from my patch queue
-References: <20080630180009.GA30833@kroah.com>
-In-Reply-To: <20080630180009.GA30833@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Jul 2008 10:03:28.0764 (UTC) FILETIME=[B43AABC0:01C8E018]
+	Mon, 7 Jul 2008 06:05:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=wqCcuwOH+ayT62l4CExQ48F/mvVxAEUhdMP1hup5PZuCpWAsqKr7oO68GFCggO3VpV
+         1eUUBVvzz6KEKEfl8n4CRJEtsxFumhNlqNrWmTzBvcPAdr7eGBuGPMN+a/dzPvBA0jf4
+         yuvsdUQaNOMKtzFKT92qHfMjME1MdoDly7qI4=
+Subject: [PATCH] drivers/char/pcmcia/ipwireless/hardware.c fix resource leak
+From: "Darren Jenkins\\" <darrenrjenkins@gmail.com>
+To: kernel Janitors <kernel-janitors@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, jkosina@suse.cz, dsterba@suse.cz
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 07 Jul 2008 08:18:10 +1000
+Message-Id: <1215382690.11092.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> Hi David,
-> 
-> In looking further at the WUSB/UWB code, it doesn't look like it is
-> going to make it for the 2.6.27 kernel tree due to the reliance on some
-> contriversial core USB changes as well as a total lack of documentation
-> for the sysfs apis.
+G'day people,
 
-I assume you are referring to the usb_dev_reset_delayed() change here.
-This is only required by the wire adapter code and should not prevent
-the majority of the UWB and WUSB stack from being merged.
+Coverity CID: 2172 RESOURCE_LEAK
 
-You should postpone:
+When pool_allocate() tries to enlarge a packet, if it can not allocate
+enough memory, it returns NULL without first freeing the old packet.
 
-usb-add-usb_dev_reset_delayed.patch
-wusb-add-the-wire-adapter-core.patch
-wusb-add-hwa-hc-wireless-host-controller-driver.patch
-wusb-wa-abort-rpipe-request-type-fix.patch
+This patch just frees the packet first.
 
-I will correct the lack of sysfs API documentation this week.  Please
-advise on where the documentation should go and its style and format.
-Be aware that some of the API is experimental and subject to change. I
-will ensure the documentation is clear on this and that the Kconfig
-entries depend on EXPERIMENTAL.
+﻿﻿﻿Signed-off-by: Darren Jenkins <darrenrjenkins@gmailcom>
 
-Would this be sufficient to reinstate the majority of the UWB and WUSB
-stacks for 2.6.27?
+diff --git a/drivers/char/pcmcia/ipwireless/hardware.c b/drivers/char/pcmcia/ipwireless/hardware.c
+index ba6340a..929101e 100644
+--- a/drivers/char/pcmcia/ipwireless/hardware.c
++++ b/drivers/char/pcmcia/ipwireless/hardware.c
+@@ -590,8 +590,10 @@ static struct ipw_rx_packet *pool_allocate(struct ipw_hardware *hw,
+ 		packet = kmalloc(sizeof(struct ipw_rx_packet) +
+ 				old_packet->length + minimum_free_space,
+ 				GFP_ATOMIC);
+-		if (!packet)
++		if (!packet) {
++			kfree(old_packet);
+ 			return NULL;
++		}
+ 		memcpy(packet, old_packet,
+ 				sizeof(struct ipw_rx_packet)
+ 					+ old_packet->length);
+ 
 
-> Because of this, I've dropped all of the patches from my USB queue, so
-> they will no longer show up in the -next releases anymore.
-
-In future, it would be appreciated if any issues with UWB patches are
-discussed rather than summarily dropping them.
-
-David
--- 
-David Vrabel, Senior Software Engineer, Drivers
-CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
-Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
