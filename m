@@ -1,73 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762681AbYGFRxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759272AbYGFRwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762681AbYGFRxz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 13:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761586AbYGFRuH
+	id S1759272AbYGFRwo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 13:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759462AbYGFRgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 13:50:07 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:54855 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761261AbYGFRuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 13:50:05 -0400
-Date: Sun, 6 Jul 2008 19:49:58 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Sascha Sommer <saschasommer@freenet.de>
-Cc: sdricohcs-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: Status of Ricoh Bay1Controller driver?
-Message-ID: <20080706194958.655056b4@mjolnir.drzeus.cx>
-In-Reply-To: <200807060909.30563.saschasommer@freenet.de>
-References: <20080705115039.77bf7e1c@mjolnir.drzeus.cx>
-	<200807052111.49807.saschasommer@freenet.de>
-	<20080706012435.016358d6@mjolnir.drzeus.cx>
-	<200807060909.30563.saschasommer@freenet.de>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-641-1215366602-0001-2"
+	Sun, 6 Jul 2008 13:36:42 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:13310 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756042AbYGFRev (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 13:34:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=references:date:from:to:cc:subject:content-disposition:message-id;
+        b=PBwBbIcOHTfgU+1zQyhPo+w/aMvfcr77CzDk9FyNqsvFOmYKPPdAZhm70SsW7eCsbu
+         RW05brSSaafCjI7nkiYgHCWfiGIsAruTMApoW1dcHtrJ1di/Y05JX+0KaKvZQlf7UIMT
+         5zQteya42E4c5qZSMb01sHip6t1Gm7pcO+0mw=
+References: <20080706172010.559358957@bzolnier@gmail.com>
+Date: Sun, 06 Jul 2008 19:20:20 +0200
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 10/50] it821x: convert to use ->host_priv
+Content-Disposition: inline; filename=it821x-convert-to-use-host_priv.patch
+Message-ID: <48710239.1ade660a.3458.627e@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+While at it:
 
---=_freyr.drzeus.cx-641-1215366602-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+* Allocate both struct it821x_dev instances at once.
 
-On Sun, 6 Jul 2008 09:09:30 +0200
-Sascha Sommer <saschasommer@freenet.de> wrote:
+* Don't leak itdevs on ide_pci_init_one() failure.
 
->=20
-> So to summarize this I agree that it is important to get rid off these=20
-> hacks ;) but I don't have a better solution available at the moment ;(.
->=20
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/pci/it821x.c |   28 +++++++++++++---------------
+ 1 file changed, 13 insertions(+), 15 deletions(-)
 
-Very odd. Anyway, send an updated patch with a proper entry in
-MAINTAINERS and I'll queue it up.
+Index: b/drivers/ide/pci/it821x.c
+===================================================================
+--- a/drivers/ide/pci/it821x.c
++++ b/drivers/ide/pci/it821x.c
+@@ -528,8 +528,9 @@ static struct ide_dma_ops it821x_pass_th
+ static void __devinit init_hwif_it821x(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev = to_pci_dev(hwif->dev);
+-	struct it821x_dev **itdevs = (struct it821x_dev **)pci_get_drvdata(dev);
+-	struct it821x_dev *idev = itdevs[hwif->channel];
++	struct ide_host *host = pci_get_drvdata(dev);
++	struct it821x_dev *itdevs = host->host_priv;
++	struct it821x_dev *idev = itdevs + hwif->channel;
+ 	u8 conf;
+ 
+ 	ide_set_hwifdata(hwif, idev);
+@@ -642,23 +643,20 @@ static const struct ide_port_info it821x
+ 
+ static int __devinit it821x_init_one(struct pci_dev *dev, const struct pci_device_id *id)
+ {
+-	struct it821x_dev *itdevs[2] = { NULL, NULL} , *itdev;
+-	unsigned int i;
++	struct it821x_dev *itdevs;
++	int rc;
+ 
+-	for (i = 0; i < 2; i++) {
+-		itdev = kzalloc(sizeof(*itdev), GFP_KERNEL);
+-		if (itdev == NULL) {
+-			kfree(itdevs[0]);
+-			printk(KERN_ERR "it821x: out of memory\n");
+-			return -ENOMEM;
+-		}
+-
+-		itdevs[i] = itdev;
++	itdevs = kzalloc(2 * sizeof(*itdevs), GFP_KERNEL);
++	if (itdevs == NULL) {
++		printk(KERN_ERR "it821x: out of memory\n");
++		return -ENOMEM;
+ 	}
+ 
+-	pci_set_drvdata(dev, itdevs);
++	rc = ide_pci_init_one(dev, &it821x_chipsets[id->driver_data], itdevs);
++	if (rc)
++		kfree(itdevs);
+ 
+-	return ide_pci_init_one(dev, &it821x_chipsets[id->driver_data], NULL);
++	return rc;
+ }
+ 
+ static const struct pci_device_id it821x_pci_tbl[] = {
 
-Rgds
---=20
-     -- Pierre Ossman
+-- 
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-641-1215366602-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkhxBcoACgkQ7b8eESbyJLjC3gCgoGdmedUdIQ+SGkQJgRHD4SXc
-yGQAoLVhMWWEZxZWv2KlirzMe78S5B3P
-=A/YO
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-641-1215366602-0001-2--
