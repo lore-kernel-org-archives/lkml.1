@@ -1,18 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759996AbYGFWIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760179AbYGFWJN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759996AbYGFWIU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 18:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755197AbYGFWIK
+	id S1760179AbYGFWJN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 18:09:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbYGFWI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 18:08:10 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:50938 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753644AbYGFWIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 18:08:09 -0400
-Date: Mon, 7 Jul 2008 01:07:23 +0300
-From: Adrian Bunk <bunk@kernel.org>
+	Sun, 6 Jul 2008 18:08:58 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:33434 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754340AbYGFWI5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 18:08:57 -0400
+Message-ID: <487142BA.1080508@keyaccess.nl>
+Date: Mon, 07 Jul 2008 00:10:02 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+CC: Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Natalie Protasevich <protasnb@gmail.com>,
@@ -23,56 +28,34 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        James Bottomley <James.Bottomley@hansenpartnership.com>,
        Domenico Andreoli <cavokz@gmail.com>
 Subject: Re: 2.6.26-rc9: Reported regressions from 2.6.25
-Message-ID: <20080706220723.GI21669@cs181140183.pp.htv.fi>
-References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <200807062304.07443.rjw@sisk.pl> <20080706213214.GH21669@cs181140183.pp.htv.fi> <200807062347.59962.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200807062347.59962.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <20080706213214.GH21669@cs181140183.pp.htv.fi> <200807062347.59962.rjw@sisk.pl> <200807062356.47908.rjw@sisk.pl>
+In-Reply-To: <200807062356.47908.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: 0.0 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 06, 2008 at 11:47:58PM +0200, Rafael J. Wysocki wrote:
-> On Sunday, 6 of July 2008, Adrian Bunk wrote:
->...
-> > Is there any specific reason why your automated emails only go to the 
-> > submitters but not to the maintainers of the code in question?
-> 
-> Yes, there is.  We'd have to add special annotations to bug reports for that
-> and I'm not always sure which list/maintainer combination is appropriate.
+On 06-07-08 23:56, Rafael J. Wysocki wrote:
 
-Then make a wild guess.
+> BTW, the automated emails I'm sending are to let the reporters know
+> that I'm interested in the current status of the bug.  They are free
+> not to reply to them, but in that case I assume they don't really
+> care whether or not I'm tracking the bugs they reported.
 
-Long ago when I was doing regression tracking I sometimes added a dozen 
-addresses from 3 different MAINTAINERS entry for one bug report for 
-getting emails to all involved parties.
+I did/do wonder by the way when I get them if I should be replying if 
+the status is unchanged from my viewpoint...
 
-Not sure whether Bugzilla is the right place for maintaining this 
-information, but even if it takes a few minutes to add it to 
-all regression reports when sending the emails it's in my experience 
-worth it.
+I believe your automated emails say something like "please verify if 
+this problem is still relevant" but don't spell out what do after you
+verified that it is. It's sort of natural to take that as "I need to 
+reply telling people it's fixed if it is but can remain silent if 
+nothing changed".
 
-> > If you had Cc'ed Kyle once during the last 46 days he might have remembered 
-> > that he already fixed this bug...
-> 
-> He might have looked at the regression reports just as well.
+Being more explicit about liking a reporter to report "yes, nothing 
+changed" would probably be good if that IS what's wanted.
 
-There is a huge difference between offering information for maintainers 
-that are actively searching for it and regularly annoying maintainers 
-that there's a regression they have forgotten about they should fix...
+Rene.
 
-> Thanks,
-> Rafael
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
