@@ -1,116 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760205AbYGFRjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760360AbYGFRjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760205AbYGFRjW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 13:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231AbYGFRfI
+	id S1760360AbYGFRjw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 13:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758628AbYGFRfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 13:35:08 -0400
-Received: from mu-out-0910.google.com ([209.85.134.186]:6801 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757996AbYGFRez (ORCPT
+	Sun, 6 Jul 2008 13:35:13 -0400
+Received: from gv-out-0910.google.com ([216.239.58.184]:50363 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758059AbYGFRe5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 13:34:55 -0400
+	Sun, 6 Jul 2008 13:34:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=references:date:from:to:cc:subject:content-disposition:message-id;
-        b=JaXY5L5TV3nsKNjb1I7dodtXw1JKnPxuuOICOBhizxFWMPwN6urzhb0Vhe/0J8LcPx
-         7GdhIjFAkPU/x3aOZN6IxqNSBfx7eW/0g1HvJV0NJp5zeA2jGTPCmoDvkXCvNu/s3rek
-         9mq7deICHSi+kMWIwAzKA6KIECER5jJDYD+Ks=
+        b=HZToswZEESipyCMUCQxumMLsQ0z0sHHyIOrgagZsbwHAnhneqrr+enrOdeKIibafg8
+         /CjbBRBAjnS/EhexmyQ5r0lW0qyGX+Os0sBrqQqa6cxwGItLV5o+WjwGIWgN5TqNxjkZ
+         WIFtk9RiCdwGvWnKtMfl0DlXcNht8kjRaTmLI=
 References: <20080706172010.559358957@bzolnier@gmail.com>
-Date: Sun, 06 Jul 2008 19:20:24 +0200
+Date: Sun, 06 Jul 2008 19:20:25 +0200
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: [PATCH 14/50] tc86c001: remove ->init_chipset method
-Content-Disposition: inline; filename=tc86c001-remove-init_chipset-method.patch
-Message-ID: <4871023e.1ade660a.3458.6288@mx.google.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 15/50] amd74xx: cleanup ->init_chipset method
+Content-Disposition: inline; filename=amd74xx-cleanup-init_chipset-method.patch
+Message-ID: <4871023f.1ade660a.3458.628b@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Reserve PCI BAR 5 in tc86c001_init_one() and remove no longer needed
-  init_chipset_tc86c001().
+Move amd_clock setup from init_chipset_amd74xx() to amd74xx_probe().
 
-While at it:
-
-* Add & use DRV_NAME define.
-
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/pci/tc86c001.c |   38 ++++++++++++++++++++++++++------------
- 1 file changed, 26 insertions(+), 12 deletions(-)
+ drivers/ide/pci/amd74xx.c |   36 ++++++++++++++++++------------------
+ 1 file changed, 18 insertions(+), 18 deletions(-)
 
-Index: b/drivers/ide/pci/tc86c001.c
+Index: b/drivers/ide/pci/amd74xx.c
 ===================================================================
---- a/drivers/ide/pci/tc86c001.c
-+++ b/drivers/ide/pci/tc86c001.c
-@@ -11,6 +11,8 @@
- #include <linux/pci.h>
- #include <linux/ide.h>
+--- a/drivers/ide/pci/amd74xx.c
++++ b/drivers/ide/pci/amd74xx.c
+@@ -173,24 +173,6 @@ static unsigned int __devinit init_chips
+ 		t |= 0xf0;
+ 	pci_write_config_byte(dev, AMD_IDE_CONFIG + offset, t);
  
-+#define DRV_NAME "TC86C001"
-+
- static void tc86c001_set_mode(ide_drive_t *drive, const u8 speed)
- {
- 	ide_hwif_t *hwif	= HWIF(drive);
-@@ -173,16 +175,6 @@ static void __devinit init_hwif_tc86c001
- 	hwif->rqsize	 = 0xffff;
+-/*
+- * Determine the system bus clock.
+- */
+-
+-	amd_clock = (ide_pci_clk ? ide_pci_clk : 33) * 1000;
+-
+-	switch (amd_clock) {
+-		case 33000: amd_clock = 33333; break;
+-		case 37000: amd_clock = 37500; break;
+-		case 41000: amd_clock = 41666; break;
+-	}
+-
+-	if (amd_clock < 20000 || amd_clock > 50000) {
+-		printk(KERN_WARNING "%s: User given PCI clock speed impossible (%d), using 33 MHz instead.\n",
+-				    name, amd_clock);
+-		amd_clock = 33333;
+-	}
+-
+ 	return dev->irq;
  }
  
--static unsigned int __devinit init_chipset_tc86c001(struct pci_dev *dev,
--							const char *name)
--{
--	int err = pci_request_region(dev, 5, name);
--
--	if (err)
--		printk(KERN_ERR "%s: system control regs already in use", name);
--	return err;
--}
--
- static const struct ide_port_ops tc86c001_port_ops = {
- 	.set_pio_mode		= tc86c001_set_pio_mode,
- 	.set_dma_mode		= tc86c001_set_mode,
-@@ -202,7 +194,6 @@ static const struct ide_dma_ops tc86c001
+@@ -302,6 +284,24 @@ static int __devinit amd74xx_probe(struc
+ 			 d.name, pci_name(dev), dev->revision,
+ 			 amd_dma[fls(d.udma_mask) - 1]);
  
- static const struct ide_port_info tc86c001_chipset __devinitdata = {
- 	.name		= "TC86C001",
--	.init_chipset	= init_chipset_tc86c001,
- 	.init_hwif	= init_hwif_tc86c001,
- 	.port_ops	= &tc86c001_port_ops,
- 	.dma_ops	= &tc86c001_dma_ops,
-@@ -215,7 +206,30 @@ static const struct ide_port_info tc86c0
- static int __devinit tc86c001_init_one(struct pci_dev *dev,
- 				       const struct pci_device_id *id)
- {
--	return ide_pci_init_one(dev, &tc86c001_chipset, NULL);
-+	int rc;
++	/*
++	* Determine the system bus clock.
++	*/
++	amd_clock = (ide_pci_clk ? ide_pci_clk : 33) * 1000;
 +
-+	rc = pci_enable_device(dev);
-+	if (rc)
-+		goto out;
-+
-+	rc = pci_request_region(dev, 5, DRV_NAME);
-+	if (rc) {
-+		printk(KERN_ERR DRV_NAME ": system control regs already in use");
-+		goto out_disable;
++	switch (amd_clock) {
++	case 33000: amd_clock = 33333; break;
++	case 37000: amd_clock = 37500; break;
++	case 41000: amd_clock = 41666; break;
 +	}
 +
-+	rc = ide_pci_init_one(dev, &tc86c001_chipset, NULL);
-+	if (rc)
-+		goto out_release;
++	if (amd_clock < 20000 || amd_clock > 50000) {
++		printk(KERN_WARNING "%s: User given PCI clock speed impossible"
++				    " (%d), using 33 MHz instead.\n",
++				    d.name, amd_clock);
++		amd_clock = 33333;
++	}
 +
-+	goto out;
-+
-+out_release:
-+	pci_release_region(dev, 5);
-+out_disable:
-+	pci_disable_device(dev);
-+out:
-+	return rc;
+ 	return ide_pci_init_one(dev, &d, NULL);
  }
  
- static const struct pci_device_id tc86c001_pci_tbl[] = {
 
 -- 
 
