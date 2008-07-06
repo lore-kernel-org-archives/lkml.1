@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758475AbYGFQBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbYGFQDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758475AbYGFQBr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 12:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756988AbYGFQBj
+	id S1758543AbYGFQDY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 12:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756988AbYGFQDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 12:01:39 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36148 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756757AbYGFQBj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 12:01:39 -0400
-Date: Sun, 6 Jul 2008 09:01:38 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>,
-       Frans Pop <elendil@planet.nl>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] parport/ppdev: fix registration of sysctl entries
-Message-ID: <20080706090138.5a71e04f@infradead.org>
-In-Reply-To: <20080706150608.GA5401@joi>
-References: <20080705131924.GA2083@joi>
-	<20080705235148.GW28946@ZenIV.linux.org.uk>
-	<20080706001148.GX28946@ZenIV.linux.org.uk>
-	<20080706150608.GA5401@joi>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 6 Jul 2008 12:03:16 -0400
+Received: from gw.goop.org ([64.81.55.164]:44413 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756607AbYGFQDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 12:03:16 -0400
+Message-ID: <4870ECBA.7050901@goop.org>
+Date: Sun, 06 Jul 2008 09:03:06 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] generic ipi function calls: wait on alloc failure fallback
+References: <4870DBB6.30107@goop.org>
+In-Reply-To: <4870DBB6.30107@goop.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 Jul 2008 17:07:02 +0200
-Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+When a GFP_ATOMIC allocation fails, smp_call_function_mask falls back
+to allocating the data on the stack and converting it to a waiting call.
 
-> On Sun, Jul 06, 2008 at 01:11:48AM +0100, Al Viro wrote:
-> > On Sun, Jul 06, 2008 at 12:51:48AM +0100, Al Viro wrote:
-> > 
-> > > I don't believe that it's right.  Note that if you *do* race
-> > > there, you are fucked regardless of sysctls -
-> > > ppdev.c::register_device() racing with itself will do tons of fun
-> > > things all by itself (starting with two threads allocating
-> > > different pdev and both setting pp->pdev).
-> 
-> I wouldn't call it a race - BKL is protecting multiple ioctl calls,
-> so we won't ever claim the device from two different threads.
+Make sure we actually wait in this case.
 
-eh... there's sleeping functions in there.. the BKL doesn't protect you
-squat ;)(
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ kernel/smp.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+===================================================================
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -312,6 +312,7 @@ int smp_call_function_mask(cpumask_t mas
+ 	if (!data) {
+ 		data = &d;
+ 		data->csd.flags = CSD_FLAG_WAIT;
++		wait = 1;
+ 	}
+ 
+ 	spin_lock_init(&data->lock);
 
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+
