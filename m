@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759095AbYGFQZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758949AbYGFQa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759095AbYGFQZo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 12:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbYGFQZf
+	id S1758949AbYGFQa3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 12:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757461AbYGFQaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 12:25:35 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42657 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757244AbYGFQZe (ORCPT
+	Sun, 6 Jul 2008 12:30:15 -0400
+Received: from wx-out-0506.google.com ([66.249.82.237]:59514 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757417AbYGFQaN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 12:25:34 -0400
-Date: Sun, 6 Jul 2008 17:08:02 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Frans Pop <elendil@planet.nl>
-Subject: Re: [PATCH] parport/ppdev: fix registration of sysctl entries
-Message-ID: <20080706170802.61131618@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080706192233.5df9c65b@linux360.ro>
-References: <20080705131924.GA2083@joi>
-	<20080705235148.GW28946@ZenIV.linux.org.uk>
-	<20080706001148.GX28946@ZenIV.linux.org.uk>
-	<20080706040519.GZ28946@ZenIV.linux.org.uk>
-	<m1hcb31p8p.fsf@frodo.ebiederm.org>
-	<20080706081126.GA28946@ZenIV.linux.org.uk>
-	<20080706192233.5df9c65b@linux360.ro>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 6 Jul 2008 12:30:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=uFEpuJDkhTMoIB2OSv51UK+uI70x0WakcfqqICwGd+EVnce26fGSWjKzXm2AWowqK0
+         u7Eb4VenLv4QvobBZvRt2AN49AhLHyySo0JbWChIueBNp87QZjd8PfBm+VMAJPjZjWPD
+         Nu87StQ+SvRvWOKRPI6r+wZVXvODB6pXINM8Q=
+Message-ID: <a4423d670807060930p73465b1bj9c2e4eea01fb5b7a@mail.gmail.com>
+Date: Sun, 6 Jul 2008 20:30:12 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: jgarzik@pobox.com, netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] drivers/net/cs89x0.c: remove unnecessary includes.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> IMHO, there is one reason ppdev exists: allow both _safe_ and _raw_
-> access to the parallel port, and a much better alternative to the iopl
-> stuff.
+From: Alexander Beregalov <a.beregalov@gmail.com>
 
-And various devices support sharing protocols on the parallel port.
+The patch applies to the linux-next tree.
+
+drivers/net/cs89x0.c: remove unnecessary includes.
+asm/irq.h is already included unconditionally at 151 string.
+
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
+
+diff --git a/drivers/net/cs89x0.c b/drivers/net/cs89x0.c
+index fba87ab..5a9d118 100644
+--- a/drivers/net/cs89x0.c
++++ b/drivers/net/cs89x0.c
+@@ -182,13 +182,10 @@ static unsigned int cs8900_irq_map[] = {1,0,0,0};
+ #elif defined(CONFIG_MACH_IXDP2351)
+ static unsigned int netcard_portlist[] __used __initdata =
+{IXDP2351_VIRT_CS8900_BASE, 0};
+ static unsigned int cs8900_irq_map[] = {IRQ_IXDP2351_CS8900, 0, 0, 0};
+-#include <asm/irq.h>
+ #elif defined(CONFIG_ARCH_IXDP2X01)
+-#include <asm/irq.h>
+ static unsigned int netcard_portlist[] __used __initdata =
+{IXDP2X01_CS8900_VIRT_BASE, 0};
+ static unsigned int cs8900_irq_map[] = {IRQ_IXDP2X01_CS8900, 0, 0, 0};
+ #elif defined(CONFIG_ARCH_PNX010X)
+-#include <asm/irq.h>
+ #include <asm/arch/gpio.h>
+ #define CIRRUS_DEFAULT_BASE    IO_ADDRESS(EXT_STATIC2_s0_BASE +
+0x200000)      /* = Physical address 0x48200000 */
+ #define CIRRUS_DEFAULT_IRQ     VH_INTC_INT_NUM_CASCADED_INTERRUPT_1
+/* Event inputs bank 1 - ID 35/bit 3 */
