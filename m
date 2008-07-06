@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758680AbYGFVrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758945AbYGFVsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758680AbYGFVrT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 17:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbYGFVrI
+	id S1758945AbYGFVsk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 17:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbYGFVsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 17:47:08 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:44200 "EHLO mail.atlantis.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753081AbYGFVrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 17:47:07 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: pata_it821x completely broken
-Date: Sun, 6 Jul 2008 23:46:59 +0200
-User-Agent: KMail/1.9.9
-Cc: Alan Cox <alan@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-References: <200807042153.56644.linux@rainbow-software.org> <200807062303.05994.linux@rainbow-software.org> <20080706215146.63d9dfd2@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080706215146.63d9dfd2@lxorguk.ukuu.org.uk>
+	Sun, 6 Jul 2008 17:48:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47576 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752358AbYGFVsb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 17:48:31 -0400
+Date: Sun, 6 Jul 2008 14:47:42 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maximilian Engelhardt <maxi@daemonizer.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Domenico Andreoli <cavokz@gmail.com>
+Subject: Re: 2.6.26-rc9: Reported regressions from 2.6.25
+In-Reply-To: <20080706213214.GH21669@cs181140183.pp.htv.fi>
+Message-ID: <alpine.LFD.1.10.0807061443420.3016@woody.linux-foundation.org>
+References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <200807062002.46863.rjw@sisk.pl> <20080706182648.GE21669@cs181140183.pp.htv.fi> <200807062304.07443.rjw@sisk.pl> <20080706213214.GH21669@cs181140183.pp.htv.fi>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807062347.01200.linux@rainbow-software.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 06 July 2008 22:51:46 Alan Cox wrote:
-> > Maxtor 7270 AV - is detected by firmware but oopses in Linux:
-> >
-> > pata_it821x: forcing bypass mode.
-> > pata_it821x: controller in pass through mode.
-> > ACPI: PCI Interrupt Link [LNKC] enabled at IRQ 11
-> > ACPI: PCI Interrupt 0000:00:12.0[A] -> Link [LNKC] -> GSI 11 (level, low)
-> > -> IRQ 11
-> > irq 11: nobody cared (try booting with the "irqpoll" option)
-> > Pid: 1, comm: swapper Not tainted 2.6.25.3-pentium #5
-> >  [<c012f48f>] __report_bad_irq+0x24/0x69
-> >  [<c012f496>] __report_bad_irq+0x2b/0x69
->
-> Please file a bug for this - that's upsetting the core libata code
-> somewhere, perhaps from a left over floating interrupt.
-
-Here it is: http://bugzilla.kernel.org/show_bug.cgi?id=11047
-
->
-> Alan
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
 
+On Mon, 7 Jul 2008, Adrian Bunk wrote:
+> 
+> Humans react differently to programs than to humans interacting with 
+> them, and tons of automated mails without any actual efforts by humans 
+> can easily be considered a non-friendly act.
 
--- 
-Ondrej Zary
+Adrian - please just stop this.
+
+*DEVELOPERS* are human too.
+
+And if you cannot accept the fact that developers need feedback as well as 
+reporters - a simple "is it still a problem" report - then why the *hell* 
+do you then talk about reporters being human?
+
+> But for this bug I now found the commit that fixed it back in May.
+
+Exactly. A _lot_ of problems are fixed independently of a specific 
+bug-report, either because others reported the issue too (and people 
+didn't necessarily even realize that it was the same problem), or because 
+a developer found it independently and fixed it.
+
+> Is there any specific reason why your automated emails only go to the 
+> submitters but not to the maintainers of the code in question?
+
+Is there any specific reason that you have been complaining about this for 
+A HELL OF A LONG TIME, without ever actually listening to what people like 
+me tell you, over and over and over again?
+
+And no, this email wasn't autogenerated. But you seem to never react to 
+this.
+
+Bug-reports absolutely *have* to be closed if they don't get minimal 
+feedback, including just a "it's still a problem".
+
+Just accept it, Adrian.
+
+		Linus
