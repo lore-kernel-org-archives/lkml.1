@@ -1,80 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760222AbYGFX0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759800AbYGFXl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760222AbYGFX0c (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 19:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756941AbYGFX0Z
+	id S1759800AbYGFXl1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 19:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbYGFXlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 19:26:25 -0400
-Received: from c-71-205-80-56.hsd1.mi.comcast.net ([71.205.80.56]:45621 "EHLO
-	monolith.glofar.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756921AbYGFX0Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 19:26:24 -0400
-X-Greylist: delayed 4277 seconds by postgrey-1.27 at vger.kernel.org; Sun, 06 Jul 2008 19:26:24 EDT
-Date: Sun, 6 Jul 2008 14:00:22 -0400 (EDT)
-From: George Glover <hyperborean@comcast.net>
-To: linux-kernel@vger.kernel.org
-Subject: Runtime accounting bug?
-Message-ID: <alpine.LNX.1.00.0807061330000.21901@monolith>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+	Sun, 6 Jul 2008 19:41:17 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37382 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754413AbYGFXlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 19:41:16 -0400
+Message-ID: <48715807.8070605@garzik.org>
+Date: Sun, 06 Jul 2008 19:40:55 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       David Miller <davem@davemloft.net>, tytso@mit.edu, hugh@veritas.com,
+       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+References: <1215093175.10393.567.camel@pmac.infradead.org>	<20080703173040.GB30506@mit.edu>	<1215111362.10393.651.camel@pmac.infradead.org>	<20080703.162120.206258339.davem@davemloft.net>	<486D6DDB.4010205@infradead.org>	<87ej6armez.fsf@basil.nowhere.org>	<1215177044.10393.743.camel@pmac.infradead.org>	<486E2260.5050503@garzik.org>	<1215178035.10393.763.camel@pmac.infradead.org>	<486E2818.1060003@garzik.org>	<1215179161.10393.773.camel@pmac.infradead.org>	<486E2E9B.20200@garzik.org> <20080704153822.4db2f325@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080704153822.4db2f325@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Alan Cox wrote:
+> On Fri, 04 Jul 2008 10:07:23 -0400
+> Jeff Garzik <jeff@garzik.org> wrote:
+> 
+>> David Woodhouse wrote:
+>>> On Fri, 2008-07-04 at 09:39 -0400, Jeff Garzik wrote:
+>>>> You have been told repeatedly that cp(1) and scp(1) are commonly used
+>>>> to transport the module David and I care about -- tg3.  It's been a
+>>>> single file module since birth, and people take advantage of that
+>>>> fact.
+>>> And you can _continue_ to do that. You'd need to install the firmware
+>>> just once, and that's all. It's a non-issue, and it isn't _worth_ the
+>>> added complexity of building the firmware into the module.
+>> We can stop there.  Real-world examples are apparently non-issues not 
+>> worth your time.
+> 
+> Jeff - real world issues and gains are measured on a scale across the
+> userbase not "Jeff's having a tantrum because his specific usage case
+> requires one extra copy once"
 
-I run two copies (dual processor system) of "mprime" from the GIMPS 
-project. After a while running (weeks?) the cumulative runtime reported by 
-top increments faster than real time, then after a while (unknown how long) 
-the value increments normally again.  Then, maybe something overflows - but 
-runtime accounting stops entirely even though the process is in the run state.
+Please look at the example as an example of an entire _class_ of usage 
+that dwmw2 wishes to hand-wave away.
 
-(mprime is a cpu-bound low priority process like seti@home and friends.)
+There are many cases where you have the freedom to update the module, 
+but not the kernel itself -- see vendor kernels and driver update disks, 
+or the typical usage of the upstream kernel's out-of-tree-module build 
+support.
 
-I presently have a stuck process and a one that should soon start to 
-increment faster than possible.
+It is trivial to think for five minutes and come up with other examples, 
+because the simple fact is, there is a failure to follow a basic 
+principle of kernel development:  no regressions.
 
-I have verified that the "stuck" process is indeed running since it continues
-to generate output.
+All I'm asking for: what works today, should continue to work tomorrow.
 
-Here is the "stuck" process:
+Why is that so wrong?
 
-cat /proc/4126/stat; sleep 5;  cat /proc/4126/stat
-4126 (mprime) R 2984 4126 2984 34819 4126 4202496 16530 0 4 0 2124505930 661087 0 0 39 19 1 0 8442861 21483520 3733 4294967295 134512640 138881564 3220348480 3220345732 135248565 0 0 0 16386 0 0 0 17 1 0 0 0 0 0
-4126 (mprime) R 2984 4126 2984 34819 4126 4202496 16530 0 4 0 2124505930 661087 0 0 39 19 1 0 8442861 21483520 3733 4294967295 134512640 138881564 3220348480 3220345736 135241038 0 0 0 16386 0 0 0 17 1 0 0 0 0 0
+We applied that principle with libata -- if you did not turn it on, you 
+didn't even have to know it was there.
 
-
-Here is the other process started more recently:
-
-cat /proc/18312/stat; sleep 5;  cat /proc/18312/stat
-18312 (mprime) R 2969 18312 2969 34818 18312 4202496 7657 0 1 0 140549087 660363 0 0 39 19 1 0 346388363 35483648 7152 4294967295 134512640 138881564 3221166480 3221163732 135246526 0 0 0 16386 0 0 0 17 1 0 0 0 0 0
-18312 (mprime) R 2969 18312 2969 34818 18312 4202496 7657 0 1 0 140549510 660364 0 0 39 19 1 0 346388363 35483648 7152 4294967295 134512640 138881564 3221166480 3221163740 135280398 0 0 0 16386 0 0 0 17 1 0 0 0 0 0
+We applied that principle with kernel modules -- if you do not turn them 
+on, you have the static kernel you've always had.
 
 
-Top output sorted by cpu time:
+> And we had the same argument over ten years ago about those evil module
+> things which stopped you just using scp to copy the kernel in one go.
+> Fortunately the nay sayers lost so we have modules.
 
-   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+    TIME COMMAND
-  4126 zed       39  19 20980  14m  968 R    0  0.4 354194:30  5903h mprime
-18312 zed       39  19 34652  27m  952 R   84  0.8  23544:49 392,24 mprime
+Broken analogy.
 
+When modules were added, you were given the option to use them, or not.
 
-uptime:
-12:50:47 up 60 days, 18:58, 25 users,  load average: 2.20, 2.21, 2.26
+dwmw2's conversion is not providing analogous choices.
 
-cat /proc/version
-Linux version 2.6.25.1 (root@(none)) (gcc version 4.1.2) #3 SMP PREEMPT Tue
-May 6 01:53:17 EDT 2008
+	Jeff
 
-The machine is a dual processor 1.2Ghz Athlon MP system.  It's generally 
-problem free with maybe 1 bit error a year reported from the ecc ram.
-
-As the problem takes so long to repeat I do not know how to approach it. 
-It has also been present for the past few kernels, since 2.6.23 if I 
-recall.
-
-Anyone have any thoughts? It seems more cosmetic than critical.
-
-George
 
