@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbYGFWU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbYGFW2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757297AbYGFWU2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 18:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbYGFWUT
+	id S1757524AbYGFW2l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 18:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYGFW2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 18:20:19 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:51206 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751825AbYGFWUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 18:20:17 -0400
-Date: Mon, 7 Jul 2008 01:19:32 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Sun, 6 Jul 2008 18:28:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49924 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752205AbYGFW2c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 18:28:32 -0400
+Date: Sun, 6 Jul 2008 15:27:30 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Natalie Protasevich <protasnb@gmail.com>,
@@ -23,50 +24,36 @@ Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
        James Bottomley <James.Bottomley@hansenpartnership.com>,
        Domenico Andreoli <cavokz@gmail.com>
 Subject: Re: 2.6.26-rc9: Reported regressions from 2.6.25
-Message-ID: <20080706221932.GJ21669@cs181140183.pp.htv.fi>
+In-Reply-To: <20080706221932.GJ21669@cs181140183.pp.htv.fi>
+Message-ID: <alpine.LFD.1.10.0807061524510.3016@woody.linux-foundation.org>
 References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <200807062002.46863.rjw@sisk.pl> <20080706182648.GE21669@cs181140183.pp.htv.fi> <200807062304.07443.rjw@sisk.pl> <20080706213214.GH21669@cs181140183.pp.htv.fi> <alpine.LFD.1.10.0807061443420.3016@woody.linux-foundation.org>
+ <20080706221932.GJ21669@cs181140183.pp.htv.fi>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807061443420.3016@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 06, 2008 at 02:47:42PM -0700, Linus Torvalds wrote:
-> On Mon, 7 Jul 2008, Adrian Bunk wrote:
->...
-> > Is there any specific reason why your automated emails only go to the 
-> > submitters but not to the maintainers of the code in question?
-> 
-> Is there any specific reason that you have been complaining about this for 
-> A HELL OF A LONG TIME, without ever actually listening to what people like 
-> me tell you, over and over and over again?
->...
 
-When did you tell me that maintainers should not or cannot be Cc'ed on 
-regression reports?
 
-Sorry, but I honestly don't remember this.
+On Mon, 7 Jul 2008, Adrian Bunk wrote:
+>
+> When did you tell me that maintainers should not or cannot be Cc'ed on 
+> regression reports?
 
-You did not complain when I did this when I was doing regression 
-tracking, and if you explained to me why it's now no longer wanted
-I must have completely missed it.
+That is not what I'm complaining about.
 
-What was the reason?
+I'm complaining about the fact that you *always* argue against closing 
+bugreports.
 
-> Just accept it, Adrian.
-> 
-> 		Linus
+You have argued against it for over a YEAR now. And every single time I 
+tell you that you are wrong, and exactly *why* you are wrong.
 
-cu
-Adrian
+If a reporter doesn't respond to say "it's still open", it needs to be 
+closed. It doesn't matter one whit whether there has been developer action 
+on it or not. We cannot keep old reports open - it's a total waste for 
+developers to even _look_ at anything that is more than roughly a month 
+old and hasn't been verified to be still be an issue.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+			Linus
