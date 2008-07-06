@@ -1,78 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758809AbYGFRQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756486AbYGFRVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758809AbYGFRQR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 13:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757207AbYGFRQG
+	id S1756486AbYGFRVj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 13:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYGFRV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 13:16:06 -0400
-Received: from liberdade.minaslivre.org ([72.232.18.203]:50375 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756992AbYGFRQF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 13:16:05 -0400
-Date: Sun, 6 Jul 2008 14:15:56 -0300
-From: Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>
-To: linux-kernel@vger.kernel.org
-Cc: tiwai@suse.de
-Subject: [PATCH] Wait for all codecs to be ready if doing a cold reset
-Message-ID: <20080706171548.GA9962@vespa.holoscopio.com>
+	Sun, 6 Jul 2008 13:21:29 -0400
+Received: from gw.goop.org ([64.81.55.164]:40406 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751410AbYGFRV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 13:21:28 -0400
+Message-ID: <4870FF0E.80200@goop.org>
+Date: Sun, 06 Jul 2008 10:21:18 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
+       linux-arch@vger.kernel.org, mingo@elte.hu, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 1/10] Add generic helpers for arch IPI function calls
+References: <1212051504-12561-1-git-send-email-jens.axboe@oracle.com> <1212051504-12561-2-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1212051504-12561-2-git-send-email-jens.axboe@oracle.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If AC97_POWER_SAVE is enabled, intel8x0 does a cold reset when
-initializing the codecs. While resuming, it does not wait for all codecs
-to be active. Sound card does not work after a resume without it,
-however. This patch fixes it.
----
- sound/pci/intel8x0.c |   24 ++++++++++++++----------
- 1 files changed, 14 insertions(+), 10 deletions(-)
+Jens Axboe wrote:
+> +/**
+> + * __smp_call_function_single(): Run a function on another CPU
+> + * @cpu: The CPU to run on.
+> + * @data: Pre-allocated and setup data structure
+> + *
+> + * Like smp_call_function_single(), but allow caller to pass in a pre-allocated
+> + * data structure. Useful for embedding @data inside other structures, for
+> + * instance.
+> + *
+> + */
+> +void __smp_call_function_single(int cpu, struct call_single_data *data)
+>   
 
-diff --git a/sound/pci/intel8x0.c b/sound/pci/intel8x0.c
-index 048d99e..7228a0a 100644
---- a/sound/pci/intel8x0.c
-+++ b/sound/pci/intel8x0.c
-@@ -2335,16 +2335,6 @@ static int snd_intel8x0_ich_chip_init(struct intel8x0 *chip, int probing)
- 				   igetdword(chip, ICHREG(GLOB_STA)));
- 			return -EIO;
- 		}
--
--		/* wait for other codecs ready status. */
--		end_time = jiffies + HZ / 4;
--		while (status != chip->codec_isr_bits &&
--		       time_after_eq(end_time, jiffies)) {
--			schedule_timeout_uninterruptible(1);
--			status |= igetdword(chip, ICHREG(GLOB_STA)) &
--				chip->codec_isr_bits;
--		}
--
- 	} else {
- 		/* resume phase */
- 		int i;
-@@ -2363,6 +2353,20 @@ static int snd_intel8x0_ich_chip_init(struct intel8x0 *chip, int probing)
- 		} while (time_after_eq(end_time, jiffies));
- 	}
- 
-+#ifndef CONFIG_SND_AC97_POWER_SAVE
-+	if (probing)
-+#endif
-+	{
-+		/* wait for other codecs ready status. */
-+		end_time = jiffies + HZ / 4;
-+		while (status != chip->codec_isr_bits &&
-+		       time_after_eq(end_time, jiffies)) {
-+			schedule_timeout_uninterruptible(1);
-+			status |= igetdword(chip, ICHREG(GLOB_STA)) &
-+				chip->codec_isr_bits;
-+		}
-+	}
-+
- 	if (chip->device_type == DEVICE_SIS) {
- 		/* unmute the output on SIS7012 */
- 		iputword(chip, 0x4c, igetword(chip, 0x4c) | 1);
--- 
-1.5.6
+Does this have any users?  Proposed users?
+
+> +{
+> +	/* Can deadlock when called with interrupts disabled */
+> +	WARN_ON((data->flags & CSD_FLAG_WAIT) && irqs_disabled());
+>   
+
+Can it be reasonably be used without FLAG_WAIT set?  If it doesn't have 
+FLAG_WAIT, it must have FLAG_ALLOC set, but it can't have FLAG_ALLOC if 
+the csd structure is embedded in something else.
+
+> +
+> +	generic_exec_single(cpu, data);
+> +}
+> +
+> +/**
+> + * smp_call_function_mask(): Run a function on a set of other CPUs.
+> + * @mask: The set of cpus to run on.
+> + * @func: The function to run. This must be fast and non-blocking.
+> + * @info: An arbitrary pointer to pass to the function.
+> + * @wait: If true, wait (atomically) until function has completed on other CPUs.
+> + *
+> + * Returns 0 on success, else a negative status code.
+> + *
+> + * If @wait is true, then returns once @func has returned.
+> + *
+> + * You must not call this function with disabled interrupts or from a
+> + * hardware interrupt handler or from a bottom half handler.
+> + */
+> +int smp_call_function_mask(cpumask_t mask, void (*func)(void *), void *info,
+> +			   int wait)
+> +{
+> +	struct call_function_data d;
+> +	struct call_function_data *data = NULL;
+> +	cpumask_t allbutself;
+> +	unsigned long flags;
+> +	int cpu, num_cpus;
+> +
+> +	/* Can deadlock when called with interrupts disabled */
+> +	WARN_ON(irqs_disabled());
+> +
+> +	cpu = smp_processor_id();
+>   
+
+What prevents us from changing cpus?  Are all callers supposed to 
+disable preemption?  If so, should we WARN for it?
+
+> +	allbutself = cpu_online_map;
+> +	cpu_clear(cpu, allbutself);
+> +	cpus_and(mask, mask, allbutself);
+> +	num_cpus = cpus_weight(mask);
+>   
+
+Ditto: What prevents the online map changing under our feet?  Is 
+disabling preemption enough?
+
+> +
+> +	/*
+> +	 * If zero CPUs, return. If just a single CPU, turn this request
+> +	 * into a targetted single call instead since it's faster.
+> +	 */
+> +	if (!num_cpus)
+> +		return 0;
+> +	else if (num_cpus == 1) {
+> +		cpu = first_cpu(mask);
+> +		return smp_call_function_single(cpu, func, info, 0, wait);
+> +	}
+>   
+
+It's weirdly inconsistent that smp_call_function_mask will ignore the 
+current cpu if its in the mask, but smp_call_function_single will call 
+the function locally if the specified cpu is the current one.  I know 
+this is a hold-over from the old code, but could we finally fix it now?  
+I guess it's still reasonable for smp_call_function to call on 
+everywhere but current cpu, but it can do its own mask manipulation to 
+sort that out.
+
+> +
+> +	if (!wait) {
+> +		data = kmalloc(sizeof(*data), GFP_ATOMIC);
+> +		if (data)
+> +			data->csd.flags = CSD_FLAG_ALLOC;
+> +	}
+> +	if (!data) {
+> +		data = &d;
+> +		data->csd.flags = CSD_FLAG_WAIT;
+> +	}
+> +
+> +	spin_lock_init(&data->lock);
+> +	data->csd.func = func;
+> +	data->csd.info = info;
+> +	data->refs = num_cpus;
+> +
+> +	/*
+> +	 * need to see above stores before the cpumask is valid for the CPU
+> +	 */
+> +	smp_wmb();
+> +	data->cpumask = mask;
+> +
+> +	spin_lock_irqsave(&call_function_lock, flags);
+> +	list_add_tail_rcu(&data->csd.list, &call_function_queue);
+> +	spin_unlock_irqrestore(&call_function_lock, flags);
+> +
+> +	/* Send a message to all CPUs in the map */
+> +	arch_send_call_function_ipi(mask);
+> +
+> +	/* optionally wait for the CPUs to complete */
+> +	if (wait)
+>   
+Should this test for data->csd.flags & CDS_FLAG_WAIT?  Or should the "if 
+(!data)" path above also set "wait"?
+
+> +		csd_flag_wait(&data->csd);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(smp_call_function_mask);
+> +
+> +/**
+> + * smp_call_function(): Run a function on all other CPUs.
+> + * @func: The function to run. This must be fast and non-blocking.
+> + * @info: An arbitrary pointer to pass to the function.
+> + * @natomic: Unused
+> + * @wait: If true, wait (atomically) until function has completed on other CPUs.
+> + *
+> + * Returns 0 on success, else a negative status code.
+> + *
+> + * If @wait is true, then returns once @func has returned; otherwise
+> + * it returns just before the target cpu calls @func.
+> + *
+> + * You must not call this function with disabled interrupts or from a
+> + * hardware interrupt handler or from a bottom half handler.
+> + */
+> +int smp_call_function(void (*func)(void *), void *info, int natomic, int wait)
+> +{
+> +	int ret;
+> +
+> +	preempt_disable();
+> +	ret = smp_call_function_mask(cpu_online_map, func, info, wait);
+> +	preempt_enable();
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL(smp_call_function);
+>   
+
