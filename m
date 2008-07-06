@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbYGFFLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbYGFFZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbYGFFLm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 01:11:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYGFFLe
+	id S1753876AbYGFFZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 01:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbYGFFZs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 01:11:34 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46657 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751248AbYGFFLd (ORCPT
+	Sun, 6 Jul 2008 01:25:48 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:29774 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbYGFFZr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 01:11:33 -0400
-Subject: Re: [linux-dvb] [PATCH] Remove fdump tool for av7110 firmware
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: Oliver Endriss <o.endriss@gmx.de>
-Cc: linux-dvb@linuxtv.org, LKML <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-In-Reply-To: <200807060315.51736@orion.escape-edv.de>
-References: <1214139259.2994.8.camel@jaswinder.satnam>
-	 <200807060315.51736@orion.escape-edv.de>
-Content-Type: text/plain; charset=utf8
-Date: Sun, 06 Jul 2008 10:34:25 +0530
-Message-Id: <1215320665.2768.15.camel@jaswinder.satnam>
+	Sun, 6 Jul 2008 01:25:47 -0400
+Date: Sat, 5 Jul 2008 22:17:19 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Cc: "Matthew Wilcox" <matthew@wil.cx>,
+       "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Jan Engelhardt" <jengelh@medozas.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Peter Anvin" <hpa@zytor.com>, "David S. Miller" <davem@davemloft.net>,
+       linux-ia64@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: the printk problem
+Message-Id: <20080705221719.949998e5.randy.dunlap@oracle.com>
+In-Reply-To: <84144f020807051702q1fc6275cv358c5e33dc2677fc@mail.gmail.com>
+References: <20080705125230.GA20166@damson.getinternet.no>
+	<alpine.LFD.1.10.0807051045520.2815@woody.linux-foundation.org>
+	<19f34abd0807051141h4ccfd0ar28660199f2bbf81f@mail.gmail.com>
+	<20080705185253.GQ14894@parisc-linux.org>
+	<84144f020807051702q1fc6275cv358c5e33dc2677fc@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Oliver,
+On Sun, 6 Jul 2008 03:02:59 +0300 Pekka Enberg wrote:
 
-On Sun, 2008-07-06 at 03:15 +0200, Oliver Endriss wrote:
-> Jaswinder Singh wrote:
-> > There's no point in this, since the user can use the BUILTIN_FIRMWARE
-> > option to include arbitrary firmware files directly in the kernel image.
+> On Sat, Jul 05, 2008 at 08:41:39PM +0200, Vegard Nossum wrote:
+> >> Single letters are bad because it hurts readability and limits the
+> >> usefulness of the extension.</MHO>
 > 
-> NAK! 
-
-﻿I think you are watching two weeks old patch.
-
-Please check updated patch from :-
-
-http://git.infradead.org/users/dwmw2/firmware-2.6.git?a=commitdiff;h=cf852ae7e54eaf8944e1e734321fa6d5285379f1
-
-And give us your valuable comments.
-
-> This option allows to compile the firmware into the _driver_,
-
-We also compile firmware without fdump.
-
-> which is very useful if you want to test various driver/firmware
-> combinations. ﻿Having the firmware in the _kernel_ does not help!
+> On Sat, Jul 5, 2008 at 9:52 PM, Matthew Wilcox <matthew@wil.cx> wrote:
+> > I think you need a little warning noise that goes off in your head that
+> > means "I might be overdesigning this".  Linus' code is elegant and
+> > solves a problem nicely.
 > 
+> Am I the only one who missed Linus' patch? Did it make it to the list?
 
-For testing purpose kernel/drivers source tree is not suitable.
-Please find some other suitable place.
+No, you are not the only one.  It was on linuxppc-dev for some reason.
+http://ozlabs.org/pipermail/linuxppc-dev/2008-July/059257.html
 
-> Well, I am tired to fight for this option in the kernel every other
-> month. :-(
-> 
-
-yeah I understand, fighting with Truth is not easy ;)
-
-Thank you,
-
-Jaswinder Singh.
-
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
