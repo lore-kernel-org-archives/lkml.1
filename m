@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbYGFUfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758859AbYGFUjJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759230AbYGFUfW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 16:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757039AbYGFUfL
+	id S1758859AbYGFUjJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 16:39:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757051AbYGFUi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 16:35:11 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:38857 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757006AbYGFUfK (ORCPT
+	Sun, 6 Jul 2008 16:38:56 -0400
+Received: from nelson.telenet-ops.be ([195.130.133.66]:33023 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756385AbYGFUiz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 16:35:10 -0400
-Date: Sun, 6 Jul 2008 21:35:08 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Frans Pop <elendil@planet.nl>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] parport/ppdev: fix registration of sysctl entries
-Message-ID: <20080706203508.GB28946@ZenIV.linux.org.uk>
-References: <20080705131924.GA2083@joi> <20080705235148.GW28946@ZenIV.linux.org.uk> <20080706001148.GX28946@ZenIV.linux.org.uk> <20080706150608.GA5401@joi>
+	Sun, 6 Jul 2008 16:38:55 -0400
+Date: Sun, 6 Jul 2008 22:38:51 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for July 4
+In-Reply-To: <20080704195529.7f56e768.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0807062236460.5733@anakin>
+References: <20080704195529.7f56e768.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080706150608.GA5401@joi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 06, 2008 at 05:07:02PM +0200, Marcin Slusarz wrote:
-> On Sun, Jul 06, 2008 at 01:11:48AM +0100, Al Viro wrote:
-> > On Sun, Jul 06, 2008 at 12:51:48AM +0100, Al Viro wrote:
-> > 
-> > > I don't believe that it's right.  Note that if you *do* race there, you
-> > > are fucked regardless of sysctls - ppdev.c::register_device() racing
-> > > with itself will do tons of fun things all by itself (starting with two
-> > > threads allocating different pdev and both setting pp->pdev).
-> 
-> I wouldn't call it a race - BKL is protecting multiple ioctl calls, so we
-> won't ever claim the device from two different threads.
+On Fri, 4 Jul 2008, Stephen Rothwell wrote:
+> There are several outstanding build failures due to structural changes in
+> the ttydev tree (see http://kisskb.ellerman.id.au/linux-next).
 
-Yes, we can - register_device() does kmalloc() with GFP_KERNEL, which kills
-any protection from BKL.  BKL is _not_ providing any kind of exclusion while
-you sleep.
+Do we really want these (obviously unfinished) structural changes in the
+linux-next tree already? They keep on breaking several architectures since
+several days?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
