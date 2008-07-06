@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbYGFOh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbYGFOip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758085AbYGFOh3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 10:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbYGFOhW
+	id S1758078AbYGFOip (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 10:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756856AbYGFOig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 10:37:22 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44599 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756309AbYGFOhV (ORCPT
+	Sun, 6 Jul 2008 10:38:36 -0400
+Received: from qb-out-0506.google.com ([72.14.204.224]:61535 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756817AbYGFOif (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 10:37:21 -0400
-Date: Sun, 6 Jul 2008 07:37:26 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Heikki Orsila <shdl@zakalwe.fi>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.26-rc9 load problem
-Message-ID: <20080706073726.72074a3c@infradead.org>
-In-Reply-To: <20080706142516.GA4379@zakalwe.fi>
-References: <20080706142516.GA4379@zakalwe.fi>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 6 Jul 2008 10:38:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=NEdUHU08fFTpaJGGIaH/QxhSgyQqNIx9XHteCxOOSynU89BDELPZKwrXUsvL2O1O66
+         W8aJzMjpjf1h42fyLpzyyp3EpGMgnnEqhks6HMavFRWb9kQegnkEnlSTUlekv9wAoH66
+         ovHZrZmmNJk1iq08Q84xfk2eocjVIjZFPtf5U=
+Message-ID: <4870D8C7.6080100@gmail.com>
+Date: Sun, 06 Jul 2008 23:37:59 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: jeff@garzik.org, linux-ide@vger.kernel.org,
+       James.Bottomley@HansenPartnership.com, bharrosh@panasas.com,
+       greg.freemyer@gmail.com, linux-scsi@vger.kernel.org,
+       brking@linux.vnet.ibm.com, liml@rtr.ca, jens.axboe@oracle.com,
+       viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org, device@lanana.org
+Subject: Re: [PATCHSET 2.6.26-rc8] block: implement extended devt
+References: <1215073986-4709-1-git-send-email-tj@kernel.org>
+In-Reply-To: <1215073986-4709-1-git-send-email-tj@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 Jul 2008 17:25:16 +0300
-Heikki Orsila <shdl@zakalwe.fi> wrote:
-
-> Testing 2.6.26-rc9. Doing:
+Tejun Heo wrote:
+> Hello, all.
 > 
-> 	dd if=/dev/hda of=/dev/null bs=4096
-> 
-> causes the operating system to feel very unresponsible.
-> Even the key repeat interval at tty1 is unpredictable.
+> This patchset implements extended devt for block devices.  This is
+> mainly to work around sd limitations (16 minors per device) but can
+> easily be used to allow more partitions or more devices.
 
-Hi,
+I'm updating the patchset.  Please standby a bit.
 
-do you have an idea which version you tried last which didn't show this
-behavior?
-
-Also, can you try running latencytop to see if that shows where the
-delays are?
-
-(if rc8 was fine, 18ce3751ccd488c78d3827e9f6bf54e6322676fb is the most
-likely suspect patch..
-
-http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=18ce3751ccd488c78d3827e9f6bf54e6322676fb
-
-can you see if reverting this helps?
+Thanks.
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+tejun
