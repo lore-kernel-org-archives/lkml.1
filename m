@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbYGFW4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758923AbYGFXAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756588AbYGFW4Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 18:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756238AbYGFW4Q
+	id S1758923AbYGFXAj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 19:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756588AbYGFXAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 18:56:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56623 "EHLO ogre.sisk.pl"
+	Sun, 6 Jul 2008 19:00:31 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56638 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755934AbYGFW4P convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 18:56:15 -0400
+	id S1753569AbYGFXAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 19:00:30 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: 2.6.26-rc9: Reported regressions from 2.6.25
-Date: Mon, 7 Jul 2008 00:57:50 +0200
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP systems
+Date: Mon, 7 Jul 2008 01:02:37 +0200
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maximilian Engelhardt <maxi@daemonizer.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Domenico Andreoli <cavokz@gmail.com>
-References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <200807062356.47908.rjw@sisk.pl> <487142BA.1080508@keyaccess.nl>
-In-Reply-To: <487142BA.1080508@keyaccess.nl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>, Len Brown <lenb@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl> <200807012158.34356.rjw@sisk.pl> <20080701202453.GD4896@elte.hu>
+In-Reply-To: <20080701202453.GD4896@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807070057.51663.rjw@sisk.pl>
+Message-Id: <200807070102.38854.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 7 of July 2008, Rene Herman wrote:
-> On 06-07-08 23:56, Rafael J. Wysocki wrote:
+On Tuesday, 1 of July 2008, Ingo Molnar wrote:
 > 
-> > BTW, the automated emails I'm sending are to let the reporters know
-> > that I'm interested in the current status of the bug.  They are free
-> > not to reply to them, but in that case I assume they don't really
-> > care whether or not I'm tracking the bugs they reported.
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> I did/do wonder by the way when I get them if I should be replying if 
-> the status is unchanged from my viewpoint...
+> > On Tuesday, 1 of July 2008, Ingo Molnar wrote:
+> > > 
+> > > * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> > > 
+> > > > Assuming it works for Rafael (still haven't had time to pull my nx6125 
+> > > > out of storage):
+> > > > 
+> > > > Signed-off-by: mjg@redhat.com
+> > > 
+> > > Rafael, could you please try the latest tip/master that i've just pushed 
+> > > out:
+> > > 
+> > >   http://people.redhat.com/mingo/tip.git/README
+> > > 
+> > > it has the final form of these changes integrated - it should in 
+> > > theory work out of box on your system, with no boot parameters or 
+> > > other explicit quirks needed anywhere.
+> > 
+> > I tested patches [1/2] (your version) and [2/2] on top of today's 
+> > linux-next and they work just fine.
 > 
-> I believe your automated emails say something like "please verify if 
-> this problem is still relevant" but don't spell out what do after you
-> verified that it is. It's sort of natural to take that as "I need to 
-> reply telling people it's fixed if it is but can remain silent if 
-> nothing changed".
+> thanks Rafael!
 
-The exact wording is
-
-"The following bug entry is on the current list of known regressions
-from 2.6.25.  Please verify if it still should be listed."
-
-> Being more explicit about liking a reporter to report "yes, nothing 
-> changed" would probably be good if that IS what's wanted.
-
-Well, I can change it to
-
-"Please verify if it still should be listed and let me know."
-
-if that's better.
+Well, I'm afraid that my information wasn't correct.  The patches actually
+don't work, but I had my own additional patch that fixed the problem applied,
+which I've only just discovered.  Sorry for the confusion and the issue is
+still unfixed.
 
 Thanks,
 Rafael
