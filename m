@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761334AbYGFRvF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760171AbYGFRvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761334AbYGFRvF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 13:51:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758448AbYGFRgX
+	id S1760171AbYGFRvo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 13:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759315AbYGFRgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 13:36:23 -0400
-Received: from gv-out-0910.google.com ([216.239.58.185]:55163 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759115AbYGFRfm (ORCPT
+	Sun, 6 Jul 2008 13:36:22 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:9934 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759162AbYGFRfn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 13:35:42 -0400
+	Sun, 6 Jul 2008 13:35:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=references:date:from:to:cc:subject:content-disposition:message-id;
-        b=BYb4lI8v12+w5Ud7+Ye20xgxfOxfgrE7BpjCk3IMK/HRP9wIHdCKwrvaYTsUmndGgd
-         qy8H2HHc+IROmin3RoCrSa5TJ4bBRi/rG6DiF+pijgTRlUsz8u1F4luRka6St2Ro+Ufw
-         Rp9n9tl+uBhYkGGmtSTScUkvPEd3PaAmn8pPY=
+        b=rG/Et9xShHCJjSntyOQhSdEaYKcexHGtBMDEWgA9I5vIHnDh8EEnZbFQfRdvLK4krI
+         xJ/MhvPCCXTzegOgsXtMrmy77Go7wXbGU7ZI3ji22lasBscdMqHaQkLcuTi3enrOXoBl
+         sbu3qxdXHZQfFlsEIYKEsYG40No9ff+cU8UDE=
 References: <20080706172010.559358957@bzolnier@gmail.com>
-Date: Sun, 06 Jul 2008 19:20:58 +0200
+Date: Sun, 06 Jul 2008 19:20:59 +0200
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 48/50] via82cxxx: add ->remove method and module_exit()
-Content-Disposition: inline; filename=via82cxxx-add-remove-method-and-module_exit.patch
-Message-ID: <4871026c.1ade660a.3458.62e7@mx.google.com>
+Cc: linux-kernel@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>
+Subject: [PATCH 49/50] icside: add module_exit()
+Content-Disposition: inline; filename=icside-add-module_exit.patch
+Message-ID: <4871026d.1ade660a.3458.62e9@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Cc: Russell King <rmk@arm.linux.org.uk>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/pci/via82cxxx.c |   16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ drivers/ide/arm/icside.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Index: b/drivers/ide/pci/via82cxxx.c
+Index: b/drivers/ide/arm/icside.c
 ===================================================================
---- a/drivers/ide/pci/via82cxxx.c
-+++ b/drivers/ide/pci/via82cxxx.c
-@@ -467,6 +467,15 @@ static int __devinit via_init_one(struct
- 	return rc;
+--- a/drivers/ide/arm/icside.c
++++ b/drivers/ide/arm/icside.c
+@@ -710,8 +710,14 @@ static int __init icside_init(void)
+ 	return ecard_register_driver(&icside_driver);
  }
  
-+static void __devexit via_remove(struct pci_dev *dev)
++static void __exit icside_exit(void);
 +{
-+	struct ide_host *host = pci_get_drvdata(dev);
-+	struct via82cxxx_dev *vdev = host->host_priv;
-+
-+	ide_pci_remove(dev);
-+	kfree(vdev);
++	ecard_unregister_driver(&icside_driver);
 +}
 +
- static const struct pci_device_id via_pci_tbl[] = {
- 	{ PCI_VDEVICE(VIA, PCI_DEVICE_ID_VIA_82C576_1),  0 },
- 	{ PCI_VDEVICE(VIA, PCI_DEVICE_ID_VIA_82C586_1),  0 },
-@@ -481,6 +490,7 @@ static struct pci_driver driver = {
- 	.name 		= "VIA_IDE",
- 	.id_table 	= via_pci_tbl,
- 	.probe 		= via_init_one,
-+	.remove		= via_remove,
- };
+ MODULE_AUTHOR("Russell King <rmk@arm.linux.org.uk>");
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("ICS IDE driver");
  
- static int __init via_ide_init(void)
-@@ -488,7 +498,13 @@ static int __init via_ide_init(void)
- 	return ide_pci_register_driver(&driver);
- }
- 
-+static void __exit via_ide_exit(void)
-+{
-+	pci_unregister_driver(&driver);
-+}
-+
- module_init(via_ide_init);
-+module_exit(via_ide_exit);
- 
- MODULE_AUTHOR("Vojtech Pavlik, Michel Aubry, Jeff Garzik, Andre Hedrick");
- MODULE_DESCRIPTION("PCI driver module for VIA IDE");
+ module_init(icside_init);
++module_exit(icside_exit);
 
 -- 
 
