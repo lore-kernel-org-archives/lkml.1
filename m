@@ -1,75 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758421AbYGFUH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758167AbYGFUOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758421AbYGFUH2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 16:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755138AbYGFUHR
+	id S1758167AbYGFUOk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 16:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbYGFUOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 16:07:17 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:64904 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754109AbYGFUHQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 16:07:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=b8WZneot6VQWFqqMPvuWyG3c8X3ja/jObxkiqtKkiaJ7f/kE4E3bAsoqt2w1ohDAxK
-         2Nlp6FZ5JKnFPtyzh4fozDeVfzE1d4GYEi6EG1VnUXR96rXQwQshencS7MHqNSlVYXvx
-         wv5NS8S1d8xB4YTRT3VpkQ8HgQaB5lxIP6EiE=
-Message-ID: <9871ee5f0807061307ncc55104y477c57be3e91b75f@mail.gmail.com>
-Date: Sun, 6 Jul 2008 16:07:14 -0400
-From: "Timothy Normand Miller" <theosib@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: HELP: Getting unexpected fakeraid behavior. Fix?
+	Sun, 6 Jul 2008 16:14:32 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:43199 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752533AbYGFUOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 16:14:31 -0400
+Date: Sun, 6 Jul 2008 23:13:46 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH v2] gpiolib: Allow user-selection
+Message-ID: <20080706201346.GG21669@cs181140183.pp.htv.fi>
+References: <200807031233.04229.mb@bu3sch.de> <20080706195212.GF21669@cs181140183.pp.htv.fi> <200807062201.25194.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <200807062201.25194.mb@bu3sch.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I apologize if this is a question that has come up a lot.  I've done a
-fair amount of googling on it, and while I've learned a lot, I have
-not been able to find an answer to my specific question.
+On Sun, Jul 06, 2008 at 10:01:24PM +0200, Michael Buesch wrote:
+> On Sunday 06 July 2008 21:52:12 Adrian Bunk wrote:
+>...
+> So well. I'm not sure what you're talking about. Care to make
+> a better helptext?
 
-I'm running a beta of Gentoo 2008.0, ~amd64, kernel version
-2.6.25-gentoo-r5 (Gentoo's 'genkernel').  The drive controller I'm
-using is built into the Intel ICH9R southbridge.  I used the Intel
-Matrix BIOS tool to configure two SATA-II drives in a RAID1
-configuration.
+Sorry, the problem wasn't the help text but me being blind.
 
-My understanding of fakeraid/dmraid is as follows:
-- There is no real RAID controller, just a regular drive controller chip.
-- The only difference is that there's some BIOS code that allows the
-system BIOS use the array as a boot device.
-- Once the kernel comes up, it's completely in control of the
-individual drives, I/O scheduling, etc. (They look like regular SATA
-devices.)
-- So since fakeraid, as far as Linux is concerned, is just software
-RAID, behavior and performance of fakeraid (dm) and software RAID (md)
-should be identical (via the same drive controller).
+Please ignore my comment.
 
-Since RAID1 is a mirrored configuration, it's possible to distribute
-reads across the drives, improving throughput and latency over a
-single drive on random reads.  I have also come to understand that
-RAID1 systems in general and Linux specifically do in fact take
-advantage of this mirroring to improve read performance.
+> > > --- linux-next.orig/arch/arm/configs/am200epdkit_defconfig	2008-07-03 11:31:05.000000000 +0200
+> > > +++ linux-next/arch/arm/configs/am200epdkit_defconfig	2008-07-03 11:36:14.000000000 +0200
+> > > @@ -668,7 +668,7 @@
+> > >  #
+> > >  # CONFIG_SPI is not set
+> > >  # CONFIG_SPI_MASTER is not set
+> > > -CONFIG_HAVE_GPIO_LIB=y
+> > > +CONFIG_ARCH_REQUIRE_GPIOLIB=y
+> > >...
+> > 
+> > Please don't do this kind of defconfig updates - it doesn't bring any
+> > advantage but can create tons of patch conflicts.
+> > 
+> > The next time a defconfig gets updated it will anyway automatically be
+> > fixed, and for defconfigs that aren't updated it doesn't create any
+> > problems to keep them as they are today until they might one day get
+> > updated.
+> 
+> So will the auto-regenerated defconfig result in CONFIG_ARCH_REQUIRE_GPIOLIB=y
+> or CONFIG_ARCH_REQUIRE_GPIOLIB=n? I thought it would result in =n, as the
+> option defaults to n. So I changed all defconfigs.
+> 
+> (I think these (sub)archs should "select" the option in their Kconfig, but I
+> didn't want to go down that way).
 
-I have written a program that, on start up, reads through thousands of
-small files, and as a result does a great deal of random reads for
-several minutes.  While that was going on, I ran "iostat -d 2".  My
-observation was that any writes that occurred were correctly sent to
-both disks, but all reads were being requested ONLY from the first
-drive.
+A defconfig is just a normal .config and cannot override any dependencies.
 
-This suggests to me that I have some configuration mistake.  Can
-anyone give me any hints on this?
+CONFIG_ARCH_REQUIRE_GPIOLIB is not user visible and defaults to n, so if 
+no option select's it then even using a defconfig that has it enabled 
+will result in a .config that has it disabled.
 
-Thanks!
+> Greetings Michael.
+
+cu
+Adrian
 
 -- 
-Timothy Normand Miller
-http://www.cse.ohio-state.edu/~millerti
-Open Graphics Project
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
