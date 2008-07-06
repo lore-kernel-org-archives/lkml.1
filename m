@@ -1,42 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759299AbYGFUUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759286AbYGFUXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759299AbYGFUUr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 16:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbYGFUUj
+	id S1759286AbYGFUXQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 16:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbYGFUXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 16:20:39 -0400
-Received: from bu3sch.de ([62.75.166.246]:57808 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753133AbYGFUUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 16:20:39 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH v2] gpiolib: Allow user-selection
-Date: Sun, 6 Jul 2008 22:20:05 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-       David Brownell <david-b@pacbell.net>
-References: <200807031233.04229.mb@bu3sch.de> <200807062201.25194.mb@bu3sch.de> <20080706201346.GG21669@cs181140183.pp.htv.fi>
-In-Reply-To: <20080706201346.GG21669@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Sun, 6 Jul 2008 16:23:01 -0400
+Received: from casper.infradead.org ([85.118.1.10]:41526 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756369AbYGFUXA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 16:23:00 -0400
+Date: Sun, 6 Jul 2008 13:23:02 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>
+Cc: akpm@linux-foundation.org
+Subject: Kernel oops (bug) in fs/buffers.c:create_empty_buffers
+Message-ID: <20080706132302.5ca87f4f@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807062220.05527.mb@bu3sch.de>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 06 July 2008 22:13:46 Adrian Bunk wrote:
-> A defconfig is just a normal .config and cannot override any dependencies.
-> 
-> CONFIG_ARCH_REQUIRE_GPIOLIB is not user visible and defaults to n, so if 
-> no option select's it then even using a defconfig that has it enabled 
-> will result in a .config that has it disabled.
+Hi,
 
-Ok, thanks a lot for explaining this to me. :)
+caught this one on kerneloops.org: 
+http://www.kerneloops.org/searchweek.php?search=create_empty_buffers
+
+void create_empty_buffers(struct page *page,
+                        unsigned long blocksize, unsigned long b_state)
+{
+        struct buffer_head *bh, *head, *tail;
+
+        head = alloc_page_buffers(page, blocksize, 1);
+        bh = head;
+        do {
+                bh->b_state |= b_state;
+                tail = bh;
+                bh = bh->b_this_page;
+        } while (bh);
+
+
+turns out, alloc_page_buffers() can fail and return NULL (for AIO for
+example)... yet this code blindly dereferences the result, getting a
+predictable NULL pointer fault.
+
+It's not directly clear what to do about... make this function return
+the failure to the caller?
+
 
 -- 
-Greetings Michael.
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
