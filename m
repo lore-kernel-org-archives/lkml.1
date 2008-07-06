@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758706AbYGFQTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758849AbYGFQW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758706AbYGFQTt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 12:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757028AbYGFQTk
+	id S1758849AbYGFQW4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 12:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757244AbYGFQWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 12:19:40 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:41641 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756928AbYGFQTi (ORCPT
+	Sun, 6 Jul 2008 12:22:48 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:58827 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1757234AbYGFQWs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 12:19:38 -0400
-Subject: Re: [PATCH 14/23] make section names compatible with
-	-ffunction-sections -fdata-sections: parisc
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: linux-arch@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>,
-       David Howells <dhowells@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Lennert Buytenhek <kernel@wantstofly.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Paul Mackerras <paulus@samba.org>,
-       David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tim Bird <tim.bird@am.sony.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Dave Miller <davem@davemloft.net>
-In-Reply-To: <200807061746.02517.vda.linux@googlemail.com>
-References: <200807020239.11410.vda.linux@googlemail.com>
-	 <200807061746.02517.vda.linux@googlemail.com>
-Content-Type: text/plain
-Date: Sun, 06 Jul 2008 11:19:32 -0500
-Message-Id: <1215361172.4197.21.camel@localhost.localdomain>
+	Sun, 6 Jul 2008 12:22:48 -0400
+Date: Sun, 6 Jul 2008 19:22:33 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Marcin Slusarz <marcin.slusarz@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Frans Pop <elendil@planet.nl>
+Subject: Re: [PATCH] parport/ppdev: fix registration of sysctl entries
+Message-ID: <20080706192233.5df9c65b@linux360.ro>
+In-Reply-To: <20080706081126.GA28946@ZenIV.linux.org.uk>
+References: <20080705131924.GA2083@joi>
+	<20080705235148.GW28946@ZenIV.linux.org.uk>
+	<20080706001148.GX28946@ZenIV.linux.org.uk>
+	<20080706040519.GZ28946@ZenIV.linux.org.uk>
+	<m1hcb31p8p.fsf@frodo.ebiederm.org>
+	<20080706081126.GA28946@ZenIV.linux.org.uk>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-07-06 at 17:46 +0200, Denys Vlasenko wrote:
-> The purpose of this patch is to make kernel buildable
-> with "gcc -ffunction-sections -fdata-sections".
-> This patch fixes parisc architecture.
+On Sun, 6 Jul 2008 09:11:26 +0100
+Al Viro <viro@ZenIV.linux.org.uk> wrote:
+
+> On Sat, Jul 05, 2008 at 11:49:26PM -0700, Eric W. Biederman wrote:
+> > So our choices appear to be.
+> > - Change the name in sysctl so each parport device always has a
+> > unique name.
+> > - Only allow one opener of ppdev for a given port.
 > 
-> Updated version - does not try to rename sections
-> which really are expected to be produced by gcc - .text.sys_exit etc.
+> Can't do - it's a legitimate use of ppdev (several userland programs
+> multiplexing the sucker).
 
-Actually, I've thought about it some more and I don't think your
-approach is quite right.  The way gcc works with -ffunction-sections
-makes it clear that it expects the section namespace to be scoped left
-to right. However, by using *.text and *.data, your patch is following a
-reverse convention (putting your most global name to the right).  This
-is setting us up for a clash with future global section names that our
-toolchain might emit in future.
+How in the world would such a thing work?! I imagine one could
+read()/write() there and multiplex data, but isn't the whole point of
+ppdev to allow non-standard communication (manually flipping control
+and data lines)? I've used it for custom hardware.
 
-Since we have to have special handling for your reversed sections in
-every vmlinux.lds, what about introducing our own namespace instead?  So
-we reserve the global section specifier linux and then make everything a
-namespace under this.  So our constructed text and data sections become
-
-linux.text.*
-
-and
-
-linux.data.*
-
-That way we could only ever get a clash if the toolchain decided to use
-a section global name linux (which we can beat them up over).
-
-James
+IMHO, there is one reason ppdev exists: allow both _safe_ and _raw_
+access to the parallel port, and a much better alternative to the iopl
+stuff.
 
 
+	Eduard
