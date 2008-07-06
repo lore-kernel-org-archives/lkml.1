@@ -1,44 +1,41 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755388AbYGEMpW (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 5 Jul 2008 08:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbYGEMpG
+	id S1759035AbYGFQmZ (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 6 Jul 2008 12:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757489AbYGFQmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 08:45:06 -0400
-Received: from tomts24.bellnexxia.net ([209.226.175.187]:52523 "EHLO
-	tomts24-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752129AbYGEMpF convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 08:45:05 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAEMIb0jR4q+H/2dsb2JhbACBOA
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [201.34.32.42]
-From: Bmw Online Promo <laurie.mclean@nf.sympatico.ca>
-Reply-To: bmw.claimsdptt@btinternet.com
-Organization: Bmw Online Promo
-To: <info@bmw.automobilecompany.com>
-Subject: Lucky winner 2008
-Date: Sat, 5 Jul 2008 8:45:02 -0400
+	Sun, 6 Jul 2008 12:42:01 -0400
+Received: from imp.vet.upenn.edu ([128.91.146.20]:58285 "EHLO
+	imp.vet.upenn.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757028AbYGFQl7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 12:41:59 -0400
+X-Greylist: delayed 7602 seconds by postgrey-1.27 at vger.kernel.org; Sun, 06 Jul 2008 12:41:59 EDT
+Message-ID: <1215354817.4870d7c18532f@imp.vet.upenn.edu>
+Date: Sun, 06 Jul 2008 10:33:37 -0400
+From: "Ms. Rebecca Clark" <info@yahoo.com>
+Reply-to: custoservice222@yahoo.com.hk
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Message-Id: <20080705124503.CNMO1580.tomts24-srv.bellnexxia.net@toip38-bus.srvr.bell.ca>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) 3.2.5
+X-Originating-IP: 64.62.138.72
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755388AbYGEMpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759035AbYGFQmZ@vger.kernel.org>
 
-Attn: We are please to inform You won the sum of =A3750,000.00 GBP and =
-BMW 5 Series Car in our Seasonal E-mail Programme Award.Fill the detail=
-s:Full Name,Country,Tel,Sex,Occupation Contact(bmw.claims3@btinternet.c=
-om)for claims
-Regards
->From Promo Commitee.
+Dear Winner
+You are a winner in our first organised online Svenska spel lottri. You are a
+lucky winner of 1 million Euros (1 Million Euros). Your Batch Number is
+73465289-SB/2008, and serial Number 140082630118. Kindly Contact: Mr. MARTINS
+J.E-mail: custoservice222@yahoo.com.hk
+Tel:  +0031-619-100-976
+Yours in service,
+Ms. Rebecca Clark
 
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+
+
+
+
