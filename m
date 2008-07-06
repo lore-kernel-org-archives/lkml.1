@@ -1,99 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbYGFFAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbYGFFLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753245AbYGFFAX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 01:00:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbYGFFAJ
+	id S1754012AbYGFFLm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 01:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYGFFLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 01:00:09 -0400
-Received: from mx33.mail.ru ([194.67.23.194]:9558 "EHLO mx33.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751219AbYGFFAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 01:00:08 -0400
-X-Greylist: delayed 78691 seconds by postgrey-1.27 at vger.kernel.org; Sun, 06 Jul 2008 01:00:08 EDT
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: All 2.6.26-rcX hang immediately after loading ohci_hcd
-Date: Sun, 6 Jul 2008 08:59:54 +0400
-User-Agent: KMail/1.9.9
-Cc: David Brownell <david-b@pacbell.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>
-References: <200807051108.20183.arvidjaar@mail.ru> <200807051704.56141.david-b@pacbell.net> <alpine.LFD.1.10.0807051724090.3016@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807051724090.3016@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart7552758.LXILxhFoQy";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200807060859.58971.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: OK
+	Sun, 6 Jul 2008 01:11:34 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46657 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751248AbYGFFLd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 01:11:33 -0400
+Subject: Re: [linux-dvb] [PATCH] Remove fdump tool for av7110 firmware
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: Oliver Endriss <o.endriss@gmx.de>
+Cc: linux-dvb@linuxtv.org, LKML <linux-kernel@vger.kernel.org>,
+       kernelnewbies <kernelnewbies@nl.linux.org>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+In-Reply-To: <200807060315.51736@orion.escape-edv.de>
+References: <1214139259.2994.8.camel@jaswinder.satnam>
+	 <200807060315.51736@orion.escape-edv.de>
+Content-Type: text/plain; charset=utf8
+Date: Sun, 06 Jul 2008 10:34:25 +0530
+Message-Id: <1215320665.2768.15.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart7552758.LXILxhFoQy
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hello Oliver,
 
-On Sunday 06 July 2008, Linus Torvalds wrote:
->=20
-> On Sat, 5 Jul 2008, David Brownell wrote:
-> >=20
-> > I seem to recall some oddness with RHSC on some platforms,
-> > way back when I had lots of OHCI hardware and did comparative.
-> > testing.  RHSC and RD did not act quite like the docs said ...
-> >=20
-> > Simple experiments:  add "distrust_firmware=3Dy" to the ohci
+On Sun, 2008-07-06 at 03:15 +0200, Oliver Endriss wrote:
+> Jaswinder Singh wrote:
+> > There's no point in this, since the user can use the BUILTIN_FIRMWARE
+> > option to include arbitrary firmware files directly in the kernel image.
+> 
+> NAK! 
 
-no change (it is possible that I screwed up something in a hurry)
+﻿I think you are watching two weeks old patch.
 
-> > module options.  Or:  try a kernel without CONFIG_PM enabled.
->=20
-> I think Andrey said he was leaving for a week, so I don't think he'll be=
-=20
-> testing now.
->=20
-> But Andrey - if you are on-line and have access to the machine, one thing=
-=20
-> to try would be to just do a=20
->=20
-> 	git revert e872154921a6b5
->=20
-> in case it really was that particular commit. It seems to revert cleanly=
-=20
-> (although I didn't actually check if the result then compiled/worked).
->=20
+Please check updated patch from :-
 
-Looks much better; I am writing this now under 2.6.26-rc8 with above
-commit reverted.
+http://git.infradead.org/users/dwmw2/firmware-2.6.git?a=commitdiff;h=cf852ae7e54eaf8944e1e734321fa6d5285379f1
 
-Any more tests will really have to wait till next weekend; sorry.
+And give us your valuable comments.
 
-> And a "git bisect" would obviously be wonderful in case it wasn't.
->=20
-> 			Linus
->=20
->=20
+> This option allows to compile the firmware into the _driver_,
 
+We also compile firmware without fdump.
 
+> which is very useful if you want to test various driver/firmware
+> combinations. ﻿Having the firmware in the _kernel_ does not help!
+> 
 
---nextPart7552758.LXILxhFoQy
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+For testing purpose kernel/drivers source tree is not suitable.
+Please find some other suitable place.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> Well, I am tired to fight for this option in the kernel every other
+> month. :-(
+> 
 
-iEYEABECAAYFAkhwUUwACgkQR6LMutpd94wdRgCgvn2Oigi9/Icg1rZGUzwCdUSr
-ZtsAn0bPijCImGlVgNSXruw07GgXCbDg
-=MVbE
------END PGP SIGNATURE-----
+yeah I understand, fighting with Truth is not easy ;)
 
---nextPart7552758.LXILxhFoQy--
+Thank you,
+
+Jaswinder Singh.
+
