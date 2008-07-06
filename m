@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbYGFJxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbYGFJ6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755910AbYGFJxW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 05:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbYGFJxO
+	id S1756667AbYGFJ6e (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 05:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbYGFJ6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 05:53:14 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49386 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752205AbYGFJxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 05:53:14 -0400
-X-Authenticated: #5108953
-X-Provags-ID: V01U2FsdGVkX1+0amV9hxu0zkzRAs/tqJaxMJ/SSKEi1bLmxQpQvx
-	7g+p3WKdSSc1eg
-From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
-To: Oliver Endriss <o.endriss@gmx.de>
-Subject: Re: [v4l-dvb-maintainer] build issue #477 for v2.6.26-rc8-290-gb8a0b6c : input_event" [drivers/media/dvb/ttpci/dvb-ttpci.ko] undefined!
-Date: Sun, 6 Jul 2008 11:53:07 +0200
-User-Agent: KMail/1.9.9
-Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-References: <200807051725.04475.toralf.foerster@gmx.de> <200807060043.31247@orion.escape-edv.de>
-In-Reply-To: <200807060043.31247@orion.escape-edv.de>
+	Sun, 6 Jul 2008 05:58:25 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45653 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752322AbYGFJ6Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 05:58:24 -0400
+Date: Sun, 6 Jul 2008 05:58:23 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: New ext4 patchset 2.6.26-rc8-ext4-1
+Message-ID: <20080706095823.GA21109@infradead.org>
+References: <E1KFBPc-0006yI-Gx@closure.thunk.org> <20080705175047.GA11243@infradead.org> <20080706024115.GH20240@mit.edu>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3020851.7UBqjiKWlJ";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200807061153.09991.toralf.foerster@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.77
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080706024115.GH20240@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3020851.7UBqjiKWlJ
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sat, Jul 05, 2008 at 10:41:15PM -0400, Theodore Tso wrote:
+> On Sat, Jul 05, 2008 at 01:50:47PM -0400, Christoph Hellwig wrote:
+> > Strong NACK.  For one thing the code added to mpage.c doesn't belong
+> > there.  It's far inferior to the existing delalloc code we already have
+> > and that could be made generic easily, or the next generation code
+> > developed by Chris mason.  It's an ext4-specific hack and doesn't belong
+> > into common code.  I'm pretty sure we agreed on not having it in
+> > common code long ago.
+> 
+> Looking back at the mailing list history, yes, we did.  I think the
+> reason why we didn't was Andrew had expressed a vague wish that the
+> ext4 and xfs developers would get together and try to hash out a
+> common layer that all filesystems could work with.  But given that
+> nothing has happened in the many months since that discussion, you're
+> absolutely right.
+> 
+> I've reworked the vfs generic patch in the patch series to be much
+> smaller --- mainly what's left is simply exporting some mpage
+> interfaces that would be needed by ext4.  I trust this is much more to
+> your liking?
 
-At Sunday 06 July 2008 00:43:30 Oliver Endriss wrote :
-> Thanks for reporting.
-> Does the attached patch fix the problem?
->=20
+Yes, this is much better.  But please also add kerneldoc comments for
+the newly exported functions.
 
-yes :-)
-
-=2D-=20
-MfG/Sincerely
-
-Toralf F=F6rster
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
-
---nextPart3020851.7UBqjiKWlJ
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAkhwlgUACgkQhyrlCH22naOqQgCeIEcwCEz6La0UuWG+0DJ2xgHT
-AC4AoJtzlHRkXsSjnhNhQ9m8abSUfiKN
-=+OdS
------END PGP SIGNATURE-----
-
---nextPart3020851.7UBqjiKWlJ--
