@@ -1,86 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbYGFBnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755066AbYGFClx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755350AbYGFBnc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jul 2008 21:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbYGFBnY
+	id S1755066AbYGFClx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jul 2008 22:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbYGFClo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jul 2008 21:43:24 -0400
-Received: from userg500.nifty.com ([202.248.238.80]:26344 "EHLO
-	userg500.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753144AbYGFBnX (ORCPT
+	Sat, 5 Jul 2008 22:41:44 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:34592 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753302AbYGFCln (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jul 2008 21:43:23 -0400
-DomainKey-Signature: a=rsa-sha1; s=userg500; d=nifty.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:in-reply-to:references:
-	x-mailer:mime-version:content-type:content-transfer-encoding;
-	b=Sb360s/otzZu8hcawq2WaLDIxkGK9AnYy6tPnzKmY0jeazayW2g0uTDQV2WbX7O2s
-	NH/v3KiDrRuxVQUu4wGsQ==
-X-Nifty-SrcIP: [220.145.29.40]
-Date: Sun, 6 Jul 2008 10:37:52 +0900
-From: Komuro <komurojun-mbn@nifty.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       linux-pcmcia <linux-pcmcia@lists.infradead.org>,
-       linux-kernel@vger.kernel.org,
-       Dominik Brodowski <linux@dominikbrodowski.net>,
-       linux-ide@vger.kernel.org,
-       Kristoffer Ericson <kristoffer.ericson@gmail.com>, jgarzik@redhat.com,
-       rjw@sisk.pl
-Subject: Re: [KERNEL 2.6.26-rc4]  bugreport : pata_pcmcia with Sandisk
- Extreme III 8GB
-Message-Id: <20080706103752.13935ffd.komurojun-mbn@nifty.com>
-In-Reply-To: <20080617212345.c452d8c5.komurojun-mbn@nifty.com>
-References: <20080528225049.9a134e0d.Kristoffer.Ericson@Gmail.com>
-	<20080528222740.GB20893@isilmar.linta.de>
-	<20080530135728.be02d3dc.Kristoffer.Ericson@Gmail.com>
-	<20080607223716.7d142072.komurojun-mbn@nifty.com>
-	<20080611072029.GB28692@comet.dominikbrodowski.net>
-	<20080614120055.ad8fbee0.komurojun-mbn@nifty.com>
-	<48537149.4040102@garzik.org>
-	<20080614213612.96873c25.komurojun-mbn@nifty.com>
-	<4855D8E2.10409@gmail.com>
-	<20080616221145.e3b069b9.komurojun-mbn@nifty.com>
-	<485669A0.6000404@gmail.com>
-	<20080617212345.c452d8c5.komurojun-mbn@nifty.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 5 Jul 2008 22:41:43 -0400
+Date: Sat, 5 Jul 2008 22:41:15 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: New ext4 patchset 2.6.26-rc8-ext4-1
+Message-ID: <20080706024115.GH20240@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Christoph Hellwig <hch@infradead.org>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <E1KFBPc-0006yI-Gx@closure.thunk.org> <20080705175047.GA11243@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080705175047.GA11243@infradead.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jul 05, 2008 at 01:50:47PM -0400, Christoph Hellwig wrote:
+> Strong NACK.  For one thing the code added to mpage.c doesn't belong
+> there.  It's far inferior to the existing delalloc code we already have
+> and that could be made generic easily, or the next generation code
+> developed by Chris mason.  It's an ext4-specific hack and doesn't belong
+> into common code.  I'm pretty sure we agreed on not having it in
+> common code long ago.
 
-Hi, Tejun
+Looking back at the mailing list history, yes, we did.  I think the
+reason why we didn't was Andrew had expressed a vague wish that the
+ext4 and xfs developers would get together and try to hash out a
+common layer that all filesystems could work with.  But given that
+nothing has happened in the many months since that discussion, you're
+absolutely right.
 
-The patch below fixes the pata_pcmcia problem.
+I've reworked the vfs generic patch in the patch series to be much
+smaller --- mainly what's left is simply exporting some mpage
+interfaces that would be needed by ext4.  I trust this is much more to
+your liking?
 
-I think the ap->lock points to bogus address.
+						- Ted
 
-Any comment?
+commit 2962918ce8fa666bdab5b189cc4ed4b3d08a33f8
+Author: Alex Tomas <alex@clusterfs.com>
+Date:   Sat Jul 5 21:25:20 2008 -0400
 
---- linux-2.6.26-rc8/drivers/ata/libata-core.c.orig	2008-07-06 10:05:46.000000000 +0900
-+++ linux-2.6.26-rc8/drivers/ata/libata-core.c	2008-07-06 10:09:16.000000000 +0900
-@@ -5304,6 +5304,8 @@ struct ata_host *ata_host_alloc(struct d
- 			goto err_out;
+    vfs: add hooks for ext4's delayed allocation support
+    
+    Export mpage_bio_submit() and __mpage_writepage() for the benefit of
+    ext4's delayed allocation support.   Also change __block_write_full_page
+    so that if buffers that have the BH_Delay flag set it will call
+    get_block() to get the physical block allocated, just as in the
+    !BH_Mapped case.
+    
+    Signed-off-by: Alex Tomas <alex@clusterfs.com>
+    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+
+diff --git a/fs/buffer.c b/fs/buffer.c
+index a413008..d2541a0 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -1691,11 +1691,13 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
+ 			 */
+ 			clear_buffer_dirty(bh);
+ 			set_buffer_uptodate(bh);
+-		} else if (!buffer_mapped(bh) && buffer_dirty(bh)) {
++		} else if ((!buffer_mapped(bh) || buffer_delay(bh)) &&
++			   buffer_dirty(bh)) {
+ 			WARN_ON(bh->b_size != blocksize);
+ 			err = get_block(inode, block, bh, 1);
+ 			if (err)
+ 				goto recover;
++			clear_buffer_delay(bh);
+ 			if (buffer_new(bh)) {
+ 				/* blockdev mappings never come here */
+ 				clear_buffer_new(bh);
+@@ -1774,7 +1776,8 @@ recover:
+ 	bh = head;
+ 	/* Recovery: lock and submit the mapped buffers */
+ 	do {
+-		if (buffer_mapped(bh) && buffer_dirty(bh)) {
++		if (buffer_mapped(bh) && buffer_dirty(bh) &&
++		    !buffer_delay(bh)) {
+ 			lock_buffer(bh);
+ 			mark_buffer_async_write(bh);
+ 		} else {
+diff --git a/fs/mpage.c b/fs/mpage.c
+index 235e4d3..dbcc7af 100644
+--- a/fs/mpage.c
++++ b/fs/mpage.c
+@@ -82,7 +82,7 @@ static void mpage_end_io_write(struct bio *bio, int err)
+ 	bio_put(bio);
+ }
  
- 		ap->port_no = i;
-+		ap->lock = &ap->__lock;
-+		spin_lock_init(ap->lock);
- 		host->ports[i] = ap;
- 	}
+-static struct bio *mpage_bio_submit(int rw, struct bio *bio)
++struct bio *mpage_bio_submit(int rw, struct bio *bio)
+ {
+ 	bio->bi_end_io = mpage_end_io_read;
+ 	if (rw == WRITE)
+@@ -90,6 +90,7 @@ static struct bio *mpage_bio_submit(int rw, struct bio *bio)
+ 	submit_bio(rw, bio);
+ 	return NULL;
+ }
++EXPORT_SYMBOL(mpage_bio_submit);
  
---- linux-2.6.26-rc8/include/linux/libata.h.orig	2008-07-06 10:03:54.000000000 +0900
-+++ linux-2.6.26-rc8/include/linux/libata.h	2008-07-06 10:04:35.000000000 +0900
-@@ -639,6 +639,7 @@ struct ata_port {
- 	struct Scsi_Host	*scsi_host; /* our co-allocated scsi host */
- 	struct ata_port_operations *ops;
- 	spinlock_t		*lock;
-+	spinlock_t		__lock;
- 	unsigned long		flags;	/* ATA_FLAG_xxx */
- 	unsigned int		pflags; /* ATA_PFLAG_xxx */
- 	unsigned int		print_id; /* user visible unique port ID */
-
-Best Regards
-Komuro
-
+ static struct bio *
+ mpage_alloc(struct block_device *bdev,
+@@ -435,15 +436,9 @@ EXPORT_SYMBOL(mpage_readpage);
+  * written, so it can intelligently allocate a suitably-sized BIO.  For now,
+  * just allocate full-size (16-page) BIOs.
+  */
+-struct mpage_data {
+-	struct bio *bio;
+-	sector_t last_block_in_bio;
+-	get_block_t *get_block;
+-	unsigned use_writepage;
+-};
+ 
+-static int __mpage_writepage(struct page *page, struct writeback_control *wbc,
+-			     void *data)
++int __mpage_writepage(struct page *page, struct writeback_control *wbc,
++		      void *data)
+ {
+ 	struct mpage_data *mpd = data;
+ 	struct bio *bio = mpd->bio;
+@@ -651,6 +646,7 @@ out:
+ 	mpd->bio = bio;
+ 	return ret;
+ }
++EXPORT_SYMBOL(__mpage_writepage);
+ 
+ /**
+  * mpage_writepages - walk the list of dirty pages of the given address space & writepage() all of them
+diff --git a/include/linux/mpage.h b/include/linux/mpage.h
+index 068a0c9..5c42821 100644
+--- a/include/linux/mpage.h
++++ b/include/linux/mpage.h
+@@ -11,11 +11,21 @@
+  */
+ #ifdef CONFIG_BLOCK
+ 
++struct mpage_data {
++	struct bio *bio;
++	sector_t last_block_in_bio;
++	get_block_t *get_block;
++	unsigned use_writepage;
++};
++
+ struct writeback_control;
+ 
++struct bio *mpage_bio_submit(int rw, struct bio *bio);
+ int mpage_readpages(struct address_space *mapping, struct list_head *pages,
+ 				unsigned nr_pages, get_block_t get_block);
+ int mpage_readpage(struct page *page, get_block_t get_block);
++int __mpage_writepage(struct page *page, struct writeback_control *wbc,
++		      void *data);
+ int mpage_writepages(struct address_space *mapping,
+ 		struct writeback_control *wbc, get_block_t get_block);
+ int mpage_writepage(struct page *page, get_block_t *get_block,
