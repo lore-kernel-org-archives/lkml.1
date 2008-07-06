@@ -1,280 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbYGFKb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbYGFKxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756704AbYGFKb4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 06:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbYGFKbp
+	id S1756721AbYGFKxI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 06:53:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbYGFKw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 06:31:45 -0400
-Received: from lucidpixels.com ([75.144.35.66]:33498 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753486AbYGFKbn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 06:31:43 -0400
-Date: Sun, 6 Jul 2008 06:31:41 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Robert Hancock <hancockr@shaw.ca>
-cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux-ide@vger.kernel.org, xfs@oss.sgi.com,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: Lots of con-current I/O = resets SATA link? (2.6.25.10)
-In-Reply-To: <alpine.DEB.1.10.0807051923380.23222@p34.internal.lan>
-Message-ID: <alpine.DEB.1.10.0807060447180.5005@p34.internal.lan>
-References: <fa.u8J+BqAcxU1mg8ob9pMBJaAHBPo@ifi.uio.no> <486FBFAB.5050303@shaw.ca> <alpine.DEB.1.10.0807051527210.8002@p34.internal.lan> <48700228.7060904@shaw.ca> <alpine.DEB.1.10.0807051923380.23222@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 6 Jul 2008 06:52:56 -0400
+Received: from postfix1-g20.free.fr ([212.27.60.42]:39545 "EHLO
+	postfix1-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752205AbYGFKwz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 06:52:55 -0400
+X-Greylist: delayed 1372 seconds by postgrey-1.27 at vger.kernel.org; Sun, 06 Jul 2008 06:52:55 EDT
+Message-ID: <25e301c8df53$6a525780$f9b5a8c0@pii350>
+From: "Gilles Espinasse" <g.esp@free.fr>
+To: =?iso-8859-1?Q?Marian_Aldenh=F6vel?= 
+	<marian.aldenhoevel@mba-software.de>
+Cc: <linux-kernel@vger.kernel.org>
+References: <4860959E.6020207@mba-software.de> <1214471767.48635e574384b@imp.free.fr> <48708724.6020904@mba-software.de>
+Subject: Re: Building a kernel for SiS55-based system.
+Date: Sun, 6 Jul 2008 12:31:13 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_25E0_01C8DF64.2D91C270"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1914
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1914
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_25E0_01C8DF64.2D91C270
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 
 
-On Sat, 5 Jul 2008, Justin Piszcz wrote:
+----- Original Message ----- 
+From: "Marian Aldenhövel" <marian.aldenhoevel@mba-software.de>
+To: "Gilles Espinasse" <g.esp@free.fr>
+Cc: <linux-kernel@vger.kernel.org>
+Sent: Sunday, July 06, 2008 10:49 AM
+Subject: Re: Building a kernel for SiS55-based system.
 
+
+>> What version of gcc,binutils?
 >
+> Gcc: 4.2.3
+> Binutils: 2.18.50.0.3
 >
-> On Sat, 5 Jul 2008, Robert Hancock wrote:
+>> Could you try with distrib images to know if it could be related to your
+>> compilation system
 >
->> Justin Piszcz wrote:
->>>> Can you post your dmesg from bootup with the controller/drive detection?
->> 
->> So you've got 6 drives in the machine. Intel chipsets normally seem pretty 
->> robust with AHCI.
->> 
->> Are you certain that your machine has enough power to run all those drives 
->> properly? We've seen in a number of cases that power fluctuations or noise 
->> can cause these kinds of errors.
+> As I have to boot off CF card, the system does not have a hard disk and
+does
+> not like to boot off my USB-CD-Drive, my choices in prebuilt-Distributions
+> are a bit limited.
 >
-> I have a 650watt PSU (nice antec one) and the power draw of the box is 
-> ~148watts w/ veliciraptors, ~250 when fully load all 4 cores + all 12 disks 
-> writing.  I have turned off the irqbalance daemon and I am going to see if 
-> the problem re-occurs.
->
-> Justin.
->
+- usb or classic floppy?
+If you have that, you could try the test images I have made for IPCop
+http://g.esp.free.fr/download/ipcop-1.9.2-boot.img
+http://g.esp.free.fr/download/ipcop-1.9.2-root-1.img
+http://g.esp.free.fr/download/ipcop-1.9.2-root-2.img
 
-With IRQ balance turned off, it did not make any difference.
+6ed40c877c9d47103a498193d65e4fea  ipcop-1.9.2-boot.img
+ea7f81b3cdcfdae3eb42227e5bb9423e  ipcop-1.9.2-root-1.img
+c2b442569c863841571f01eeac1f0882  ipcop-1.9.2-root-2.img
+that's should boot any 486 (even with mmu emulation) or better with 16 MB
+memory.
+You need three floppies without error.
+Corresponding kernel (2.6.24) .config is available at
+http://ipcop.svn.sourceforge.net/viewvc/ipcop/ipcop/trunk/config/kernel/
 
-This time I also left NCQ on (bad idea):
+- or booting from usb key?
+- pxe-boot
+pxe is the easiest way for testing but require some infrastructure.
+You need a tftp server, a dhcp server and a card that support pxe.
 
-And infact this time (w/NCQ enabled), it was so bad it dropped a disk from 
-my RAID: (and later it dropped another disk when it was rebuilding (again, 
-w/NCQ on), words of wisdom? do NOT use NCQ w/raptor disks))
+If your bios does not support pxe with a built-in card, try with an e100
+card.
+All e100 nic cards I have support pxe boot and have a nice prompt at boot
+after bios start.
+You may prefere to update the nic pxe stack, all my e100 cards has been
+updated with proboot.exe v10.3 (boot agent v4.19). I haven't tried more
+recent versions.
 
-md3 : active raid5 sdl1[9] sdk1[8] sdj1[7] sdi1[6] sdh1[5] sdg1[4] sdf1[10](F) sde1[2] sdd1[1] sdc1[0]
-       2637296640 blocks level 5, 1024k chunk, algorithm 2 [10/9] [UUU_UUUUUU]
+Any modified isolinux.cfg could be modified to support pxe boot, you just
+have to adjust the path from tftproot.
+For example with Ubuntu, put the files in place with
+mount -o loop ubuntu-8.04-mini.iso iso-test
+mkdir -p /var/tfpt/ubuntu/x86/8.04 # /var/tfpt is my tftproot, yours may
+vary
+cd iso-test
+cp * /var/tfpt/ubuntu/x86/8.04
 
-p34:~# fdisk -l /dev/sdf
-p34:~#
+Attached is the patch that modify the path in original Ubuntu isolinux.cfg
+to match installed files
 
-[   27.080281] EXT3 FS on md1, internal journal
-[   27.080285] EXT3-fs: mounted filesystem with ordered data mode.
-[   27.080631] Filesystem "md3": Disabling barriers, not supported by the underlying device
-[   27.080762] XFS mounting filesystem md3
-[   27.231444] Ending clean XFS mount for filesystem: md3
-[   30.003809] e1000: eth1: e1000_watchdog: NIC Link is Up 100 Mbps Full Duplex, Flow Control: RX
-[   30.174956] e1000: eth2: e1000_watchdog: NIC Link is Up 100 Mbps Full Duplex, Flow Control: RX
-[   31.619294] eth0: Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[   35.112182] warning: `named' uses 32-bit capabilities (legacy support in use)
-[ 1842.570355] ata12.00: exception Emask 0x2 SAct 0x7 SErr 0x0 action 0x2 frozen
-[ 1842.570361] ata12.00: irq_stat 0x00060002, protocol mismatch
-[ 1842.570367] ata12.00: cmd 60/e0:00:3f:c8:1c/03:00:15:00:00/40 tag 0 ncq 507904 in
-[ 1842.570368]          res 50/00:01:00:00:00/00:00:00:00:00/00 Emask 0x2 (HSM violation)
-[ 1842.570371] ata12.00: status: { DRDY }
-[ 1842.570376] ata12.00: cmd 60/e0:08:1f:cc:1c/03:00:15:00:00/40 tag 1 ncq 507904 in
-[ 1842.570377]          res 50/00:01:00:00:00/00:00:00:00:00/00 Emask 0x2 (HSM violation)
-[ 1842.570380] ata12.00: status: { DRDY }
-[ 1842.570384] ata12.00: cmd 60/40:10:ff:cf:1c/00:00:15:00:00/40 tag 2 ncq 32768 in
-[ 1842.570385]          res 50/00:01:00:00:00/00:00:00:00:00/00 Emask 0x2 (HSM violation)
-[ 1842.570387] ata12.00: status: { DRDY }
-[ 1842.570396] ata12: hard resetting link
-[ 1844.690631] ata12: softreset failed (SRST command error)
-[ 1844.690638] ata12: reset failed (errno=-5), retrying in 8 secs
-[ 1852.568418] ata12: hard resetting link
-[ 1854.700112] ata12: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
-[ 1854.710188] ata12.00: configured for UDMA/100
-[ 1854.710207] ata12: EH complete
-[ 1855.138782] sd 11:0:0:0: [sdl] 586072368 512-byte hardware sectors (300069 MB)
-[ 1855.138799] sd 11:0:0:0: [sdl] Write Protect is off
-[ 1855.138804] sd 11:0:0:0: [sdl] Mode Sense: 00 3a 00 00
-[ 1855.138842] sd 11:0:0:0: [sdl] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-[ 1931.593377] ata6.00: exception Emask 0x2 SAct 0x7fff SErr 0x3000400 action 0x2 frozen
-[ 1931.593386] ata6: SError: { Proto TrStaTrns UnrecFIS }
-[ 1931.593392] ata6.00: cmd 60/e0:00:3f:08:c8/03:00:20:00:00/40 tag 0 ncq 507904 in
-[ 1931.593393]          res 40/00:28:ff:0f:e0/00:00:15:00:00/40 Emask 0x6 (timeout)
-[ 1931.593396] ata6.00: status: { DRDY }
-[ 1931.593400] ata6.00: cmd 60/e0:08:1f:0c:c8/03:00:20:00:00/40 tag 1 ncq 507904 in
-[ 1931.593402]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x6 (timeout)
-[ 1931.593404] ata6.00: status: { DRDY }
-[ 1931.593408] ata6.00: cmd 60/40:10:ff:0f:c8/00:00:20:00:00/40 tag 2 ncq 32768 in
-[ 1931.593409]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x6 (timeout)
-[ 1931.593412] ata6.00: status: { DRDY }
-[ 1931.593416] ata6.00: cmd 60/f8:18:3f:18:c8/00:00:20:00:00/40 tag 3 ncq 126976 in
-[ 1931.593417]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x6 (timeout)
-[ 1931.593420] ata6.00: status: { DRDY }
-[ 1931.593424] ata6.00: cmd 60/e0:20:37:19:c8/03:00:20:00:00/40 tag 4 ncq 507904 in
-[ 1931.593425]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x6 (timeout)
-[ 1931.593427] ata6.00: status: { DRDY }
-[ 1931.593431] ata6.00: cmd 60/28:28:17:1d:c8/03:00:20:00:00/40 tag 5 ncq 413696 in
-[ 1931.593433]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x6 (timeout)
-[ 1931.593437] ata6.00: status: { DRDY }
-[ 1931.593442] ata6.00: cmd 60/e0:30:3f:20:c8/03:00:20:00:00/40 tag 6 ncq 507904 in
-[ 1931.593443]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x6 (timeout)
-[ 1931.593447] ata6.00: status: { DRDY }
-[ 1931.593452] ata6.00: cmd 60/e0:38:1f:24:c8/03:00:20:00:00/40 tag 7 ncq 507904 in
-[ 1931.593453]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x6 (timeout)
-[ 1931.593457] ata6.00: status: { DRDY }
-[ 1931.593463] ata6.00: cmd 60/28:40:ff:27:c8/03:00:20:00:00/40 tag 8 ncq 413696 in
-[ 1931.593464]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x6 (timeout)
-[ 1931.593468] ata6.00: status: { DRDY }
-[ 1931.593473] ata6.00: cmd 60/f8:48:27:2b:c8/00:00:20:00:00/40 tag 9 ncq 126976 in
-[ 1931.593474]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x6 (timeout)
-[ 1931.593478] ata6.00: status: { DRDY }
-[ 1931.593483] ata6.00: cmd 60/e0:50:1f:2c:c8/03:00:20:00:00/40 tag 10 ncq 507904 in
-[ 1931.593485]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x6 (timeout)
-[ 1931.593489] ata6.00: status: { DRDY }
-[ 1931.593494] ata6.00: cmd 60/28:58:ff:2f:c8/03:00:20:00:00/40 tag 11 ncq 413696 in
-[ 1931.593495]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x6 (timeout)
-[ 1931.593499] ata6.00: status: { DRDY }
-[ 1931.593504] ata6.00: cmd 60/e0:60:27:33:c8/03:00:20:00:00/40 tag 12 ncq 507904 in
-[ 1931.593505]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x6 (timeout)
-[ 1931.593509] ata6.00: status: { DRDY }
-[ 1931.593514] ata6.00: cmd 60/f8:68:07:37:c8/00:00:20:00:00/40 tag 13 ncq 126976 in
-[ 1931.593516]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x6 (timeout)
-[ 1931.593520] ata6.00: status: { DRDY }
-[ 1931.593525] ata6.00: cmd 60/40:70:ff:37:c8/00:00:20:00:00/40 tag 14 ncq 32768 in
-[ 1931.593526]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x6 (timeout)
-[ 1931.593530] ata6.00: status: { DRDY }
-[ 1931.896320] ata6: soft resetting link
-[ 1937.097529] ata6: port is slow to respond, please be patient (Status 0xc0)
-[ 1941.941795] ata6: softreset failed (device not ready)
-[ 1941.941802] ata6: hard resetting link
-[ 1947.445957] ata6: port is slow to respond, please be patient (Status 0x80)
-[ 1951.984266] ata6: COMRESET failed (errno=-16)
-[ 1951.984272] ata6: hard resetting link
-[ 1957.488431] ata6: port is slow to respond, please be patient (Status 0x80)
-[ 1987.012943] ata6: COMRESET failed (errno=-16)
-[ 1987.012952] ata6: limiting SATA link speed to 1.5 Gbps
-[ 1987.012955] ata6: hard resetting link
-[ 1992.058175] ata6: COMRESET failed (errno=-16)
-[ 1992.058182] ata6: reset failed, giving up
-[ 1992.058187] ata6.00: disabled
-[ 1992.058240] ata6: EH complete
-[ 1992.058285] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058292] end_request: I/O error, dev sdf, sector 549992447
-[ 1992.058303] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058305] end_request: I/O error, dev sdf, sector 549992199
-[ 1992.058311] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058313] end_request: I/O error, dev sdf, sector 549991207
-[ 1992.058319] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058321] end_request: I/O error, dev sdf, sector 549990399
-[ 1992.058327] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058329] end_request: I/O error, dev sdf, sector 549989407
-[ 1992.058333] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058335] end_request: I/O error, dev sdf, sector 549989159
-[ 1992.058340] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058342] end_request: I/O error, dev sdf, sector 549988351
-[ 1992.058348] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058350] end_request: I/O error, dev sdf, sector 549987359
-[ 1992.058356] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058358] end_request: I/O error, dev sdf, sector 549986367
-[ 1992.058364] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058366] end_request: I/O error, dev sdf, sector 549985559
-[ 1992.058372] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058374] end_request: I/O error, dev sdf, sector 549984567
-[ 1992.058379] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058383] end_request: I/O error, dev sdf, sector 549984319
-[ 1992.058387] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058391] end_request: I/O error, dev sdf, sector 549982207
-[ 1992.058397] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058402] end_request: I/O error, dev sdf, sector 549981215
-[ 1992.058408] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058412] end_request: I/O error, dev sdf, sector 549980223
-[ 1992.058421] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1992.058425] end_request: I/O error, dev sdf, sector 586067135
-[ 1992.058430] end_request: I/O error, dev sdf, sector 586067135
-[ 1992.058434] md: super_written gets error=-5, uptodate=0
-[ 1992.058437] raid5: Disk failure on sdf1, disabling device. Operation continuing on 9 devices
-[ 1991.645896] RAID5 conf printout:
-[ 1991.645903]  --- rd:10 wd:9
-[ 1991.645906]  disk 0, o:1, dev:sdc1
-[ 1991.645908]  disk 1, o:1, dev:sdd1
-[ 1991.645910]  disk 2, o:1, dev:sde1
-[ 1991.645912]  disk 3, o:0, dev:sdf1
-[ 1991.645914]  disk 4, o:1, dev:sdg1
-[ 1991.645916]  disk 5, o:1, dev:sdh1
-[ 1991.645918]  disk 6, o:1, dev:sdi1
-[ 1991.645920]  disk 7, o:1, dev:sdj1
-[ 1991.645922]  disk 8, o:1, dev:sdk1
-[ 1991.645923]  disk 9, o:1, dev:sdl1
-[ 1991.678270] RAID5 conf printout:
-[ 1991.678275]  --- rd:10 wd:9
-[ 1991.678278]  disk 0, o:1, dev:sdc1
-[ 1991.678280]  disk 1, o:1, dev:sdd1
-[ 1991.678282]  disk 2, o:1, dev:sde1
-[ 1991.678284]  disk 4, o:1, dev:sdg1
-[ 1991.678286]  disk 5, o:1, dev:sdh1
-[ 1991.678288]  disk 6, o:1, dev:sdi1
-[ 1991.678290]  disk 7, o:1, dev:sdj1
-[ 1991.678292]  disk 8, o:1, dev:sdk1
-[ 1991.678293]  disk 9, o:1, dev:sdl1
-[ 2053.744827] program smartctl is using a deprecated SCSI ioctl, please convert it to SG_IO
+Add to the dhcp server in dhcp.conf (this is for ISC dhcp)
+host fooname
+{
+ hardware ethernet aa:bb:cc:dd:ee:ff; (set the real MAC address)
+ fixed-address 192.168.<ip to the machine>;
+ next-server 192.168.<ip to tftp server>;
+ filename "pxelinux.0";
+ option host-name "fooname";
+}
 
-Even after rebooting, the port was still 'hung' / having problems, I 
-power cycled the host and it came up just fine, ran SMART tests too, no 
-issues!
+Then set the link for nic MAC address to isolinux.cfg
+cd /var/tftp/pxelinux.cfg
+ln -sf ../ubuntu/x86/8.04/isolinux.cfg 01-aa-bb-cc-dd-ee-ff (lowercase for
+a..f letters, always 01 prefix)
 
-# smartctl -a /dev/sdf
-smartctl version 5.38 [x86_64-unknown-linux-gnu] Copyright (C) 2002-8 Bruce Allen
-Home page is http://smartmontools.sourceforge.net/
+And the machine should be ready to boot from network.
 
-=== START OF INFORMATION SECTION ===
-Device Model:     WDC WD3000GLFS-01F8U0
-Serial Number:    **************
-Firmware Version: 03.03V01
-User Capacity:    300,069,052,416 bytes
-Device is:        Not in smartctl database [for details use: -P showall]
-ATA Version is:   8
-ATA Standard is:  Exact ATA specification draft version not indicated
-Local Time is:    Sun Jul  6 04:58:37 2008 EDT
-SMART support is: Available - device has SMART capability.
-SMART support is: Enabled
+Gilles
 
-.. etc
+------=_NextPart_000_25E0_01C8DF64.2D91C270
+Content-Type: application/octet-stream;
+	name="ubuntu-8.04-x86pxe-isolinux.cfg.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+	filename="ubuntu-8.04-x86pxe-isolinux.cfg.patch"
 
-No Errors Logged
+--- ubuntu/x86/8.04/isolinux.cfg.orig	2008-07-06 10:40:31.000000000 +0200=0A=
++++ ubuntu/x86/8.04/isolinux.cfg	2008-07-06 10:40:49.000000000 +0200=0A=
+@@ -1,39 +1,39 @@=0A=
+ =0A=
+-DISPLAY boot.txt=0A=
++DISPLAY /ubuntu/x86/8.04/boot.txt=0A=
+ =0A=
+-F1 f1.txt=0A=
+-F2 f2.txt=0A=
+-F3 f3.txt=0A=
+-F4 f4.txt=0A=
+-F5 f5.txt=0A=
+-F6 f6.txt=0A=
+-F7 f7.txt=0A=
+-F8 f8.txt=0A=
+-F9 f9.txt=0A=
+-F0 f10.txt=0A=
++F1 /ubuntu/x86/8.04/f1.txt=0A=
++F2 /ubuntu/x86/8.04/f2.txt=0A=
++F3 /ubuntu/x86/8.04/f3.txt=0A=
++F4 /ubuntu/x86/8.04/f4.txt=0A=
++F5 /ubuntu/x86/8.04/f5.txt=0A=
++F6 /ubuntu/x86/8.04/f6.txt=0A=
++F7 /ubuntu/x86/8.04/f7.txt=0A=
++F8 /ubuntu/x86/8.04/f8.txt=0A=
++F9 /ubuntu/x86/8.04/f9.txt=0A=
++F0 /ubuntu/x86/8.04/f10.txt=0A=
+ =0A=
+ DEFAULT install=0A=
+ =0A=
+ LABEL install=0A=
+-	kernel linux=0A=
+-	append vga=3Dnormal initrd=3Dinitrd.gz -- =0A=
++	kernel /ubuntu/x86/8.04/linux=0A=
++	append vga=3Dnormal initrd=3D/ubuntu/x86/8.04/initrd.gz -- =0A=
+ LABEL linux=0A=
+-	kernel linux=0A=
+-	append vga=3Dnormal initrd=3Dinitrd.gz -- =0A=
++	kernel /ubuntu/x86/8.04/linux=0A=
++	append vga=3Dnormal initrd=3D/ubuntu/x86/8.04/initrd.gz -- =0A=
+ LABEL cli=0A=
+-	kernel linux=0A=
+-	append tasks=3Dstandard pkgsel/language-pack-patterns=3D =
+pkgsel/install-language-support=3Dfalse vga=3Dnormal initrd=3Dinitrd.gz =
+-- =0A=
++	kernel /ubuntu/x86/8.04/linux=0A=
++	append tasks=3Dstandard pkgsel/language-pack-patterns=3D =
+pkgsel/install-language-support=3Dfalse vga=3Dnormal =
+initrd=3D/ubuntu/x86/8.04/initrd.gz -- =0A=
+ =0A=
+ LABEL expert=0A=
+-	kernel linux=0A=
+-	append priority=3Dlow vga=3Dnormal initrd=3Dinitrd.gz -- =0A=
++	kernel /ubuntu/x86/8.04/linux=0A=
++	append priority=3Dlow vga=3Dnormal initrd=3D/ubuntu/x86/8.04/initrd.gz =
+-- =0A=
+ LABEL cli-expert=0A=
+-	kernel linux=0A=
+-	append tasks=3Dstandard pkgsel/language-pack-patterns=3D =
+pkgsel/install-language-support=3Dfalse priority=3Dlow vga=3Dnormal =
+initrd=3Dinitrd.gz -- =0A=
++	kernel /ubuntu/x86/8.04/linux=0A=
++	append tasks=3Dstandard pkgsel/language-pack-patterns=3D =
+pkgsel/install-language-support=3Dfalse priority=3Dlow vga=3Dnormal =
+initrd=3D/ubuntu/x86/8.04/initrd.gz -- =0A=
+ =0A=
+ LABEL rescue=0A=
+-	kernel linux=0A=
+-	append vga=3Dnormal initrd=3Dinitrd.gz rescue/enable=3Dtrue -- =0A=
++	kernel /ubuntu/x86/8.04/linux=0A=
++	append vga=3Dnormal initrd=3D/ubuntu/x86/8.04/initrd.gz =
+rescue/enable=3Dtrue -- =0A=
+ =0A=
+ PROMPT 1=0A=
+ TIMEOUT 0=0A=
 
-SMART Self-test log structure revision number 1
-Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA_of_first_error
-# 1  Short offline       Completed without error       00%       705         -
-# 2  Extended offline    Completed without error       00%       702         -
-# 3  Short offline       Completed without error       00%       677         -
-# 4  Short offline       Completed without error       00%       630         -
-# 5  Short offline       Completed without error       00%       271         -
-
-I will try booting with the various options disabling APIC/ACPI/nolapic to see 
-if it is possible to not get these errors/problems under heavy I/O:
-
-$ cat runtest.sh 
-#!/bin/bash
-
-for i in `seq 0 20`
-do
-   cd $i
-   tar xf ../linux-2.6.25.10.tar &
-   cd ..
-done
-
---
-
-In short, utilizing Raptors (especially veliciraptors)+NCQ on the ICH8 
-w/AHCI & other cards in a RAID 5 configuration is a death trap (a good way 
-to lose your data), it appears unsafe to use NCQ w/raptors in a RAID 5
-configuration.  I've defaulted back to disabling it like I always do
-and my RAID5 is rebuilding now.
-
-After the rebuild is completed I will perform more testing.
-
-
-Justin.
-
+------=_NextPart_000_25E0_01C8DF64.2D91C270--
 
