@@ -1,72 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbYGFP7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbYGFQAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758543AbYGFP7V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 11:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756928AbYGFP7M
+	id S1758595AbYGFQAQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 12:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756757AbYGFQAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 11:59:12 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:51280 "EHLO smtp5.pp.htv.fi"
+	Sun, 6 Jul 2008 12:00:04 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:60768 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756818AbYGFP7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 11:59:10 -0400
-Date: Sun, 6 Jul 2008 18:58:25 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maximilian Engelhardt <maxi@daemonizer.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: 2.6.26-rc9: Reported regressions from 2.6.25
-Message-ID: <20080706155825.GB21669@cs181140183.pp.htv.fi>
-References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <alpine.LFD.1.10.0807060816070.3016@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S1756055AbYGFQAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 12:00:03 -0400
+Date: Sun, 6 Jul 2008 20:02:52 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] ptrace: simplify ptrace_stop()->sigkill_pending() path
+Message-ID: <20080706160252.GA4123@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807060816070.3016@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 06, 2008 at 08:46:09AM -0700, Linus Torvalds wrote:
-> On Sun, 6 Jul 2008, Rafael J. Wysocki wrote:
->...
-> Fixed by commit 494de90098784b8e2797598cefdd34188884ec2e: "Do not 
-> overwrite nr_zones on !NUMA when initialising zlcache_ptr" by Mel.
->...
-> This patch got merged: commit 1236edf1c70107a0d31b3fba0b2a8783615d0d24 
-> ("USB: don't lose disconnections during suspend").
->...
-> Ditto: commit 7cd95f56cb61f5348d062527c9d3653196f6e629 ("ide: fix 
-> hwif->gendev refcounting")
->...
-> Fixed in commit 70a3143af87c6ca188107cbd49ab5eec2c86c456 ("sata_uli: 
-> hardreset is broken")
->...
-> Fixed in commit efac41894df57d32b483ac622d03541b5b2692c0 ("x86: fix 
-> NODES_SHIFT Kconfig range").
->...
+1. SIGKILL can't be blocked, remove this check from sigkill_pending().
 
-Thanks, all closed.
+2. When ptrace_stop() sees sigkill_pending() == T, it can just return.
+   Kill "int killed" and simplify the code. This also is more correct,
+   the tracer shouldn't see us in TASK_TRACED if we are not going to
+   stop.
 
-(I do try to close fixed regression bugs immediately after a fix enters
- your tree, but espicially for commits without a reference to a Bugzilla
- entry I sometimes miss it.)
+I strongly believe this code needs further changes. We should do the
+"was this task killed" check unconditionally, currently it depends on
+arch_ptrace_stop_needed(). On the other hand, sigkill_pending() isn't
+very clever. If the task was killed tkill(SIGKILL), the signal can be
+already dequeued if the caller is do_exit().
 
-> 				Linus
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+--- 26-rc2/kernel/signal.c~PT_KILL	2008-06-28 17:06:58.000000000 +0400
++++ 26-rc2/kernel/signal.c	2008-07-06 19:29:27.000000000 +0400
+@@ -1498,9 +1498,8 @@ static inline int may_ptrace_stop(void)
+  */
+ static int sigkill_pending(struct task_struct *tsk)
+ {
+-	return ((sigismember(&tsk->pending.signal, SIGKILL) ||
+-		 sigismember(&tsk->signal->shared_pending.signal, SIGKILL)) &&
+-		!unlikely(sigismember(&tsk->blocked, SIGKILL)));
++	return	sigismember(&tsk->pending.signal, SIGKILL) ||
++		sigismember(&tsk->signal->shared_pending.signal, SIGKILL);
+ }
+ 
+ /*
+@@ -1516,8 +1515,6 @@ static int sigkill_pending(struct task_s
+  */
+ static void ptrace_stop(int exit_code, int clear_code, siginfo_t *info)
+ {
+-	int killed = 0;
+-
+ 	if (arch_ptrace_stop_needed(exit_code, info)) {
+ 		/*
+ 		 * The arch code has something special to do before a
+@@ -1533,7 +1530,8 @@ static void ptrace_stop(int exit_code, i
+ 		spin_unlock_irq(&current->sighand->siglock);
+ 		arch_ptrace_stop(exit_code, info);
+ 		spin_lock_irq(&current->sighand->siglock);
+-		killed = sigkill_pending(current);
++		if (sigkill_pending(current))
++			return;
+ 	}
+ 
+ 	/*
+@@ -1550,7 +1548,7 @@ static void ptrace_stop(int exit_code, i
+ 	__set_current_state(TASK_TRACED);
+ 	spin_unlock_irq(&current->sighand->siglock);
+ 	read_lock(&tasklist_lock);
+-	if (!unlikely(killed) && may_ptrace_stop()) {
++	if (may_ptrace_stop()) {
+ 		do_notify_parent_cldstop(current, CLD_TRAPPED);
+ 		read_unlock(&tasklist_lock);
+ 		schedule();
 
