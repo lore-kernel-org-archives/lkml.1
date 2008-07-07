@@ -1,81 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbYGGSpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbYGGSqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756505AbYGGSpu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 14:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbYGGSpl
+	id S1756799AbYGGSqk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 14:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbYGGSqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 14:45:41 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:35685 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754341AbYGGSpl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 14:45:41 -0400
-X-Greylist: delayed 642 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Jul 2008 14:45:40 EDT
-Subject: Re: [PATCH 1/2] cleanup e820_setup_gap v2
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, "lenb@kernel.org" <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-In-Reply-To: <1215105012.20655.2.camel@promb-2n-dhcp368.eng.vmware.com>
-References: <1214333310.27577.26.camel@promb-2n-dhcp368.eng.vmware.com>
-	 <20080625160817.GC24967@elte.hu>
-	 <1214416962.27577.74.camel@promb-2n-dhcp368.eng.vmware.com>
-	 <86802c440806261101k78c5057id8ca0649188bd132@mail.gmail.com>
-	 <20080703125227.GA14082@elte.hu>  <20080703130035.GA23060@elte.hu>
-	 <1215105012.20655.2.camel@promb-2n-dhcp368.eng.vmware.com>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Mon, 07 Jul 2008 11:34:55 -0700
-Message-Id: <1215455695.32752.2.camel@promb-2n-dhcp368.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Jul 2008 14:46:30 -0400
+Received: from lucidpixels.com ([75.144.35.66]:38105 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754008AbYGGSqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 14:46:30 -0400
+Date: Mon, 7 Jul 2008 14:46:28 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+cc: Alan Piszcz <ap@solarrain.com>
+Subject: Re: 12 Veliciraptors again w/x4 card (1.1gbytes/sec aggregate
+ read)!
+In-Reply-To: <alpine.DEB.1.10.0807071436080.5166@p34.internal.lan>
+Message-ID: <alpine.DEB.1.10.0807071442570.4709@p34.internal.lan>
+References: <alpine.DEB.1.10.0807071424100.4694@p34.internal.lan> <alpine.DEB.1.10.0807071436080.5166@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-03 at 10:10 -0700, Alok Kataria wrote:
-> On Thu, 2008-07-03 at 06:00 -0700, Ingo Molnar wrote:
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > > > e820_search_gap also take a end_addr parameter to limit search
-> > > > > from start_addr to end_addr.
-> > > > >
-> > > > > Signed-off-by: AloK N Kataria <akataria@vmware.com>
-> > > >
-> > > > Acked-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> > >
-> > > applied to tip/x86/unify-setup - thanks!
-> > 
-> > hm, it doesnt work too well:
-> > 
-> >   arch/x86/pci/acpi.c: In function 'search_gap':
-> >   arch/x86/pci/acpi.c:130: error: too few arguments to function 'e820_search_gap'
-> > 
-> > was i supposed to revert:
-> > 
-> > | commit 2c0262493239814b06a8aaabd1cf09b2f8fa3519
-> > | Author: Alok Kataria <akataria@vmware.com>
-> > | Date:   Tue Jun 24 11:48:46 2008 -0700
-> > |
-> > |    acpi based pci gap caluculation v2
-> > 
-> > ?
-> 
-> No...I had sent a incremental patch to the above patch..
-> http://marc.info/?l=linux-kernel&m=121441818818598&w=2
-> 
-> Please apply this one too.
-> 
 
-Hi Ingo, 
 
-Please let me know if you need a single patch instead of this
-incremental patch. 
+On Mon, 7 Jul 2008, Justin Piszcz wrote:
 
-Thanks,
-Alok
+>
+>
+> On Mon, 7 Jul 2008, Justin Piszcz wrote:
+>
+>> Each PCI-e x1 card has 1 veliciraptor on it now.
+>> Got an x4 card wit 4 sata ports:
+>> 
+>> Not quite the > 1 gbyte/sec I was hoping for in regards to the reads
+>> but pretty close!
+>
+> Going to remove one of the drives from the x1 card and put it on the x4
+> card instead, then I will use all 4 SATA ports on the x4 and hopefully get
+> better bw.
+>
 
+Four drives on the x4 card, MAX bandwidth for every disk.
+
+p34:~# dd if=/dev/sdi of=/dev/null bs=1M &
+[1] 4720
+p34:~# dd if=/dev/sdj of=/dev/null bs=1M &
+[2] 4721
+p34:~# dd if=/dev/sdk of=/dev/null bs=1M &
+[3] 4722
+p34:~# dd if=/dev/sdl of=/dev/null bs=1M &
+[4] 4723
+p34:~#
+
+120MiB/s per each one!
+
+Re-running dd test with all 12 disks:
+
+1.1 gigabytes per second read!
+
+  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
+  1  0    120  59104 6632220  52228    0    0     0    40  168  517  0  0 100  0
+  0  0    120  59104 6632220  52228    0    0     0     0   20  291  0  0 100  0
+  3 10    120  43516 6635576  51924    0    0 1051776    62 4221 12301  1 70 11 19
+  6  9    160  44420 6634720  51788    0    0 1117284     0 4435 12308  1 75  5 19
+  6  9    160  47436 6631100  51676    0    0 1110300     0 4449 11438  1 76  3 20
+  2 10    160  46740 6632048  51948    0    0 1137920     0 4447 12251  1 75  8 17
+  9  7    160  45248 6632056  52004    0    8 1127940    45 4559 13259  1 74  9 17
+  3  9    160  44152 6634780  49960    0    0 1132032    12 4471 12962  0 75  8 16
+  4  9    160  44160 6634960  49380    0    0 1129216     8 4430 12545  0 76  7 16
+
+After:
+
+About the same for write:
+$ dd if=/dev/zero of=bigfile.1 bs=1M count=10240
+10240+0 records in
+10240+0 records out
+10737418240 bytes (11 GB) copied, 20.4056 s, 526 MB/s
+
+'nuff said for read :)
+$ dd if=bigfile.1 of=/dev/null bs=1M count=10240
+10240+0 records in
+10240+0 records out
+10737418240 bytes (11 GB) copied, 10.2841 s, 1.0 GB/s
+
+Justin.
