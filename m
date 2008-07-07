@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754409AbYGGJ6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYGGKBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754409AbYGGJ6T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 05:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbYGGJ6H
+	id S1754019AbYGGKBZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 06:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbYGGKBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 05:58:07 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:63685 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751319AbYGGJ6G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 05:58:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=mx6q9osxBSkR/jOKbsJUWzHCVPta4XSbNE9x5UoFovu6FkSiTmQLzNjjuqIdrc2Cwu
-         kF/5e+iSVPnuMnE05I1o/TqevxMqO7UtMeU3Y4CtkyNCI+PiwpkweehxTVevPROZjRJi
-         VM/lHFPq1ysfuDBIcO7bXxeoP8cPZSfUBnMpo=
-Date: Mon, 7 Jul 2008 05:57:48 -0400
-From: Joseph Fannin <jfannin@gmail.com>
-To: Timothy Normand Miller <theosib@gmail.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: HELP: Getting unexpected fakeraid behavior. Fix?
-Message-ID: <20080707095747.GC1631@nineveh.local>
-Mail-Followup-To: Timothy Normand Miller <theosib@gmail.com>,
-	Arjan van de Ven <arjan@infradead.org>,
-	linux-kernel@vger.kernel.org
-References: <9871ee5f0807061307ncc55104y477c57be3e91b75f@mail.gmail.com> <20080706131937.13065312@infradead.org> <9871ee5f0807061424o535c6d7eg3071da6e31e0b58e@mail.gmail.com> <9871ee5f0807061822l2871765bhd92aa177c0d5d55b@mail.gmail.com> <9871ee5f0807061826r101a1aboe266a3432af650a2@mail.gmail.com>
+	Mon, 7 Jul 2008 06:01:17 -0400
+Received: from ns1.suse.de ([195.135.220.2]:38537 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750807AbYGGKBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 06:01:16 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Roland McGrath <roland@redhat.com>
+Cc: benh@kernel.crashing.org, Nathan Lynch <ntl@pobox.com>,
+       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
+References: <20080703234140.GC9594@localdomain>
+	<20080704021929.5E9EF1541F5@magilla.localdomain>
+	<1215409693.8970.79.camel@pasglop>
+	<20080707061811.19989154246@magilla.localdomain>
+	<1215411800.8970.91.camel@pasglop>
+	<20080707063522.5FE55154246@magilla.localdomain>
+	<je8wwet9p6.fsf@sykes.suse.de>
+	<20080707093151.8798A154246@magilla.localdomain>
+X-Yow: I think my CAREER is RUINED!!
+Date: Mon, 07 Jul 2008 12:01:14 +0200
+In-Reply-To: <20080707093151.8798A154246@magilla.localdomain> (Roland
+	McGrath's message of "Mon, 7 Jul 2008 02:31:51 -0700 (PDT)")
+Message-ID: <je63rirp1x.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9871ee5f0807061826r101a1aboe266a3432af650a2@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 06, 2008 at 09:26:35PM -0400, Timothy Normand Miller wrote:
-> I was poking around some more, and I found drivers/md/raid1.c.  This
-> has sophisticated load balancing for reads.  Why isn't this code being
-> used for dm_raid1?  I'm a bit confused as to why this redundant code
-> should be there if dmraid and mdraid are functionally the same.
+Roland McGrath <roland@redhat.com> writes:
 
-I don't think dmraid and mdraid *are* functionally the same.  dmraid
-was written as more or less a compatibilty hack, so people using
-fakeRAID with its Windows-only software drivers could still
-dual-boot.  That could have changed somewhat while I wasn't looking,
-but it doesn't sound like it has changed much.
+> There are 32 bits free now.  One can anticipate that reassigning a bit
+> would come up only after these are exhausted.  With prudent use, this
+> will take a very long time to happen.  Then the oldest CPU type string
+> might be retired to reuse its bit.  It seems unlikely that there will
+> be a single installation (root directory) that really needs to have
+> installed both a kernel optimized for the oldest CPU model known and a
+> kernel optimized for the newest CPU model known.
 
-mdraid is still the only "real" Linux softRAID
-implementation... though LVM also does some very RAID-like things.
+The kernel does not have to come from the same place as the root
+filesystem.  You may want to run a new kernel with an old filesystem, or
+vice-versa.
 
-It would be good if dmraid was better optimized, or more complete --
-possibly by reusing some of md -- but no one has done the work.
+Andreas.
 
-Anyway, the consensus for a long time seems to be that, unless you
-need to dual-boot with a Windows system using fakeRAID drivers, you
-should just put the drive controller in AHCI mode and use mdraid.
-
---
-Joseph Fannin
-jfannin@gmail.com
-
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
