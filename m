@@ -1,92 +1,308 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbYGGCxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbYGGDU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754126AbYGGCxP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 22:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbYGGCw6
+	id S1754777AbYGGDU6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 23:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbYGGDUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 22:52:58 -0400
-Received: from mail.gmx.net ([213.165.64.20]:45470 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752135AbYGGCw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 22:52:57 -0400
-X-Authenticated: #476490
-X-Provags-ID: V01U2FsdGVkX1/l9Bh4HZ3lMHLz/MPS4t4bTIPrMcw6K6RxOZZRuA
-	rIo4f2xSJytDTv
-From: Oliver Endriss <o.endriss@gmx.de>
-Organization: ESCAPE GmbH EDV-Loesungen
-To: linux-dvb@linuxtv.org
-Subject: Re: [linux-dvb] [PATCH] Remove fdump tool for av7110 firmware
-Date: Mon, 7 Jul 2008 04:52:00 +0200
-User-Agent: KMail/1.9.6
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Klaus Schmidinger <Klaus.Schmidinger@cadsoft.de>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jaswinder Singh <jaswinder@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <1214139259.2994.8.camel@jaswinder.satnam> <48708BBF.9050400@cadsoft.de> <1215343022.10393.945.camel@pmac.infradead.org>
-In-Reply-To: <1215343022.10393.945.camel@pmac.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sun, 6 Jul 2008 23:20:48 -0400
+Received: from mga11.intel.com ([192.55.52.93]:12046 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751922AbYGGDUr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 23:20:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,313,1212390000"; 
+   d="scan'208";a="585896703"
+Subject: [PATCH -mm 2/2] kexec jump -v12: save/restore device state
+From: Huang Ying <ying.huang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807070452.02204@orion.escape-edv.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
+Date: Mon, 07 Jul 2008 11:25:24 +0800
+Message-Id: <1215401124.4660.5.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+X-OriginalArrivalTime: 07 Jul 2008 03:20:43.0976 (UTC) FILETIME=[70E4A480:01C8DFE0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Sun, 2008-07-06 at 11:09 +0200, Klaus Schmidinger wrote:
-> > On 07/06/08 03:15, Oliver Endriss wrote:
-> > > Jaswinder Singh wrote:
-> > >> There's no point in this, since the user can use the BUILTIN_FIRMWARE
-> > >> option to include arbitrary firmware files directly in the kernel image.
-> > > 
-> > > NAK! This option allows to compile the firmware into the _driver_,
-> > > which is very useful if you want to test various driver/firmware
-> > > combinations. Having the firmware in the _kernel_ does not help!
-> > 
-> > I strongly support Oliver's request!
-> > Working with various driver versions is much easier with the
-> > firmware compiled into the driver!
-> 
-> That's strange; I've found exactly the opposite to be the case. 
-> 
-> If I want to test permutations of driver and firmware, as I've done for
-> the libertas driver a number of times, I find it _much_ better to
-> preserve the modularity. I can build each version of the driver and can
-> test that against various firmware versions without having to rebuild
-> it, and with much less chance of something going wrong so that I'm not
-> actually testing what I think I'm testing.
-> 
-> Perhaps I'm missing something that would help me work better? Please
-> could you help me understand how you currently work, and I'll attempt to
-> make it easier for you. Can you talk me through an example of a session
-> where you had to do this testing of 'various driver/firmware
-> combinations'?
+This patch implements devices state save/restore before after kexec.
 
-Note that the v4ldvb drivers can be configured and compiled outside the
-kernel tree. Basically I have several directory trees, for example
-- v4l-dvb_head
-- v4l-dvb_31dec2007_fw2622
-- v4l-dvb_31dec2007_fwf12623
-- ...
 
-Within these directories you can simply use "make menuconfig" to
-configure the driver. If you compile the firmware into the driver,
-you can easily freeze a 'known good' or 'known bad' configuration.
+This patch together with features in kexec_jump patch can be used for
+following:
 
-Trying a different driver is as easy as changing directories.
-This simplifies testing.
+- A simple hibernation implementation without ACPI support. You can
+  kexec a hibernating kernel, save the memory image of original system
+  and shutdown the system. When resuming, you restore the memory image
+  of original system via ordinary kexec load then jump back.
 
-CU
-Oliver
+- Kernel/system debug through making system snapshot. You can make
+  system snapshot, jump back, do some thing and make another system
+  snapshot.
 
--- 
-----------------------------------------------------------------
-VDR Remote Plugin 0.4.0: http://www.escape-edv.de/endriss/vdr/
-----------------------------------------------------------------
+- Cooperative multi-kernel/system. With kexec jump, you can switch
+  between several kernels/systems quickly without boot process except
+  the first time. This appears like swap a whole kernel/system out/in.
+
+- A general method to call program in physical mode (paging turning
+  off). This can be used to invoke BIOS code under Linux.
+
+
+The following user-space tools can be used with kexec jump:
+
+- kexec-tools needs to be patched to support kexec jump. The patches
+  and the precompiled kexec can be download from the following URL:
+       source: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec-tools-src_git_kh10.tar.bz2
+       patches: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec-tools-patches_git_kh10.tar.bz2
+       binary: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec_git_kh10
+
+- makedumpfile with patches are used as memory image saving tool, it
+  can exclude free pages from original kernel memory image file. The
+  patches and the precompiled makedumpfile can be download from the
+  following URL:
+       source: http://khibernation.sourceforge.net/download/release_v10/makedumpfile/makedumpfile-src_cvs_kh10.tar.bz2
+       patches: http://khibernation.sourceforge.net/download/release_v10/makedumpfile/makedumpfile-patches_cvs_kh10.tar.bz2
+       binary: http://khibernation.sourceforge.net/download/release_v10/makedumpfile/makedumpfile_cvs_kh10
+
+- An initramfs image can be used as the root file system of kexeced
+  kernel. An initramfs image built with "BuildRoot" can be downloaded
+  from the following URL:
+       initramfs image: http://khibernation.sourceforge.net/download/release_v10/initramfs/rootfs_cvs_kh10.gz
+  All user space tools above are included in the initramfs image.
+
+
+Usage example of simple hibernation:
+
+1. Compile and install patched kernel with following options selected:
+
+CONFIG_X86_32=y
+CONFIG_RELOCATABLE=y
+CONFIG_KEXEC=y
+CONFIG_CRASH_DUMP=y
+CONFIG_PM=y
+CONFIG_HIBERNATION=y
+CONFIG_KEXEC_JUMP=y
+
+2. Build an initramfs image contains kexec-tool and makedumpfile, or
+   download the pre-built initramfs image, called rootfs.gz in
+   following text.
+
+3. Prepare a partition to save memory image of original kernel, called
+   hibernating partition in following text.
+
+4. Boot kernel compiled in step 1 (kernel A).
+
+5. In the kernel A, load kernel compiled in step 1 (kernel B) with
+   /sbin/kexec. The shell command line can be as follow:
+
+   /sbin/kexec --load-preserve-context /boot/bzImage --mem-min=0x100000
+     --mem-max=0xffffff --initrd=rootfs.gz
+
+6. Boot the kernel B with following shell command line:
+
+   /sbin/kexec -e
+
+7. The kernel B will boot as normal kexec. In kernel B the memory
+   image of kernel A can be saved into hibernating partition as
+   follow:
+
+   jump_back_entry=`cat /proc/cmdline | tr ' ' '\n' | grep kexec_jump_back_entry | cut -d '='`
+   echo $jump_back_entry > kexec_jump_back_entry
+   cp /proc/vmcore dump.elf
+
+   Then you can shutdown the machine as normal.
+
+8. Boot kernel compiled in step 1 (kernel C). Use the rootfs.gz as
+   root file system.
+
+9. In kernel C, load the memory image of kernel A as follow:
+
+   /sbin/kexec -l --args-none --entry=`cat kexec_jump_back_entry` dump.elf
+
+10. Jump back to the kernel A as follow:
+
+   /sbin/kexec -e
+
+   Then, kernel A is resumed.
+
+
+Implementation point:
+
+To support jumping between two kernels, before jumping to (executing)
+the new kernel and jumping back to the original kernel, the devices
+are put into quiescent state, and the state of devices and CPU is
+saved. After jumping back from kexeced kernel and jumping to the new
+kernel, the state of devices and CPU are restored accordingly. The
+devices/CPU state save/restore code of software suspend is called to
+implement corresponding function.
+
+
+Known issues:
+
+- Because the segment number supported by sys_kexec_load is limited,
+  hibernation image with many segments may not be load. This is
+  planned to be eliminated by adding a new flag to sys_kexec_load to
+  make a image can be loaded with multiple sys_kexec_load invoking.
+
+
+ChangeLog:
+
+v12:
+
+- Add dependency of HIBERNATION for CONFIG_KEXEC_JUMP to resolve
+  dependency problem.
+
+v11:
+
+- Add disable_IO_APIC() to machine_kexec() to put IO APIC into legacy
+  mode before executing new kernel.
+
+- Base on top of new hibernation/restore device driver callback.
+
+v10:
+
+- Split from original kexec_jump patch.
+
+
+Now, only the i386 architecture is supported. The patchset is based on
+Linux kernel 2.6.26-rc8-mm1, and has been tested on IBM T42 with ACPI
+on and off.
+
+
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+
+---
+ arch/x86/Kconfig                   |    5 ++--
+ arch/x86/kernel/machine_kexec_32.c |   12 +++++++++++
+ include/linux/suspend.h            |    2 +
+ kernel/kexec.c                     |   39 +++++++++++++++++++++++++++++++++++++
+ kernel/power/power.h               |    2 -
+ 5 files changed, 56 insertions(+), 4 deletions(-)
+
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -26,6 +26,10 @@
+ #include <linux/numa.h>
+ #include <linux/suspend.h>
+ #include <linux/device.h>
++#include <linux/freezer.h>
++#include <linux/pm.h>
++#include <linux/cpu.h>
++#include <linux/console.h>
+ 
+ #include <asm/page.h>
+ #include <asm/uaccess.h>
+@@ -1441,7 +1445,31 @@ int kernel_kexec(void)
+ 
+ 	if (kexec_image->preserve_context) {
+ #ifdef CONFIG_KEXEC_JUMP
++		mutex_lock(&pm_mutex);
++		pm_prepare_console();
++		error = freeze_processes();
++		if (error) {
++			error = -EBUSY;
++			goto Restore_console;
++		}
++		suspend_console();
++		error = device_suspend(PMSG_FREEZE);
++		if (error)
++			goto Resume_console;
++		error = disable_nonboot_cpus();
++		if (error)
++			goto Resume_devices;
+ 		local_irq_disable();
++		/* At this point, device_suspend() has been called,
++		 * but *not* device_power_down(). We *must*
++		 * device_power_down() now.  Otherwise, drivers for
++		 * some devices (e.g. interrupt controllers) become
++		 * desynchronized with the actual state of the
++		 * hardware at resume time, and evil weirdness ensues.
++		 */
++		error = device_power_down(PMSG_FREEZE);
++		if (error)
++			goto Enable_irqs;
+ 		save_processor_state();
+ #endif
+ 	} else {
+@@ -1459,7 +1487,18 @@ int kernel_kexec(void)
+ 	if (kexec_image->preserve_context) {
+ #ifdef CONFIG_KEXEC_JUMP
+ 		restore_processor_state();
++		device_power_up(PMSG_RESTORE);
++ Enable_irqs:
+ 		local_irq_enable();
++		enable_nonboot_cpus();
++ Resume_devices:
++		device_resume(PMSG_RESTORE);
++ Resume_console:
++		resume_console();
++		thaw_processes();
++ Restore_console:
++		pm_restore_console();
++		mutex_unlock(&pm_mutex);
+ #endif
+ 	}
+ 
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -53,8 +53,6 @@ extern int hibernation_platform_enter(vo
+ 
+ extern int pfn_is_nosave(unsigned long);
+ 
+-extern struct mutex pm_mutex;
+-
+ #define power_attr(_name) \
+ static struct kobj_attribute _name##_attr = {	\
+ 	.attr	= {				\
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -278,4 +278,6 @@ static inline void register_nosave_regio
+ }
+ #endif
+ 
++extern struct mutex pm_mutex;
++
+ #endif /* _LINUX_SUSPEND_H */
+--- a/arch/x86/kernel/machine_kexec_32.c
++++ b/arch/x86/kernel/machine_kexec_32.c
+@@ -125,6 +125,18 @@ void machine_kexec(struct kimage *image)
+ 	/* Interrupts aren't acceptable while we reboot */
+ 	local_irq_disable();
+ 
++	if (image->preserve_context) {
++#ifdef CONFIG_X86_IO_APIC
++		/* We need to put APICs in legacy mode so that we can
++		 * get timer interrupts in second kernel. kexec/kdump
++		 * paths already have calls to disable_IO_APIC() in
++		 * one form or other. kexec jump path also need
++		 * one.
++		 */
++		disable_IO_APIC();
++#endif
++	}
++
+ 	control_page = page_address(image->control_code_page);
+ 	memcpy(control_page, relocate_kernel, PAGE_SIZE/2);
+ 
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1276,9 +1276,10 @@ config CRASH_DUMP
+ config KEXEC_JUMP
+ 	bool "kexec jump (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+-	depends on KEXEC && PM_SLEEP && X86_32
++	depends on KEXEC && HIBERNATION && X86_32
+ 	help
+-	  Invoke code in physical address mode via KEXEC
++	  Jump between original kernel and kexeced kernel and invoke
++	  code in physical address mode via KEXEC
+ 
+ config PHYSICAL_START
+ 	hex "Physical address where the kernel is loaded" if (EMBEDDED || CRASH_DUMP)
+
