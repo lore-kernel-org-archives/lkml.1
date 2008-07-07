@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756338AbYGGXKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbYGGXKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756338AbYGGXKZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 19:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbYGGXKI
+	id S1755957AbYGGXKl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 19:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbYGGXKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 19:10:08 -0400
+	Mon, 7 Jul 2008 19:10:10 -0400
 Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:20250 "EHLO
 	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754351AbYGGXKH (ORCPT
+	with ESMTP id S1754562AbYGGXKI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 19:10:07 -0400
+	Mon, 7 Jul 2008 19:10:08 -0400
 From: Andi Kleen <andi@firstfloor.org>
-Message-Id: <20080708110.487722491@firstfloor.org>
+References: <20080708110.487722491@firstfloor.org>
+In-Reply-To: <20080708110.487722491@firstfloor.org>
 To: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [0/10] Use 64bit x86 machine check code for 32bit too v2
-Date: Tue,  8 Jul 2008 01:10:02 +0200 (CEST)
-X-OriginalArrivalTime: 07 Jul 2008 23:02:38.0807 (UTC) FILETIME=[8D6D1E70:01C8E085]
+Subject: [PATCH] [2/10] MCE: Implement the PPro bank 0 quirk in the 64bit machine check code
+Message-Id: <20080707231004.8C6AE1B4315@basil.firstfloor.org>
+Date: Tue,  8 Jul 2008 01:10:04 +0200 (CEST)
+X-OriginalArrivalTime: 07 Jul 2008 23:02:40.0448 (UTC) FILETIME=[8E678400:01C8E085]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This patchkit uses the 64bit machine check code which is better in many
-ways on 32bit x86 too. This is also the basis for some future machine
-check work.
+Quoting the comment: 
 
-The 64bit machine check code is in many ways much better than 
-the 32bit machine check code: it is more specification compliant,
-is cleaner, only has a single code base versus one per CPU, 
-has better infrastructure for recovery, has a cleaner way to communicate
-with user space etc. etc.
+* SDM documents that on family 6 bank 0 should not be written
+* because it aliases to another special BIOS controlled
+* register.
+* But it's not aliased anymore on model 0x1a+
+* Don't ignore bank 0 completely because there could be a valid
+* event later, merely don't write CTL0.
 
-It requires testing especially on older systems (on newer
-ones it should be already tested well in 64bit systems). 
+This is mostly a port on the 32bit code, except that 32bit 
+always didn't write it and didn't have the 0x1a heuristic. I checked
+with the CPU designers that the quirk is not required starting with
+this model.
 
-The patchkit contains several parts:
-- It ports over a few needed quirks (for older Intel and older
-AMD CPUs) to the 64bit kernel.
-- It changes the 64bit code to be 32bit clean in its data structures
-(mostly just unsigned long -> u64 where needed) 
-- It drops some unused functionality that cannot be easily implemented on 32bit
-and didn't seem worth ifdefing
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-Tested by doing some software level error injection on a few
-different machines
+---
+ arch/x86/kernel/cpu/mcheck/mce_64.c |   16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
-I request this code is merged into the appropiate tree for linux-next
-for wider testing. It's not .27 ready, but hopefully .28, but it requires
-wider exposure now.
-
-v2: Fix compilation problems noted by hpa in some configurations
-    Fix strict_strtoul() conversion
-
--Andi 
-
+Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c
++++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c
+@@ -433,6 +433,7 @@ static __init int periodic_mcheck_init(v
+ }
+ __initcall(periodic_mcheck_init);
+ 
++static int dont_init_bank0;
+ 
+ /*
+  * Initialize Machine Checks for a CPU.
+@@ -462,7 +463,8 @@ static void mce_init(void *dummy)
+ 		wrmsr(MSR_IA32_MCG_CTL, 0xffffffff, 0xffffffff);
+ 
+ 	for (i = 0; i < banks; i++) {
+-		wrmsrl(MSR_IA32_MC0_CTL+4*i, bank[i]);
++		if (!(i == 0 && dont_init_bank0))
++			wrmsrl(MSR_IA32_MC0_CTL+4*i, bank[i]);
+ 		wrmsrl(MSR_IA32_MC0_STATUS+4*i, 0);
+ 	}
+ }
+@@ -481,6 +483,18 @@ static void __cpuinit mce_cpu_quirks(str
+ 			   by default and leave crap in there. Don't log. */
+ 			mce_bootlog = 0;
+ 	}
++	if (c->x86_vendor == X86_VENDOR_INTEL) {
++		/*
++		 * SDM documents that on family 6 bank 0 should not be written
++		 * because it aliases to another special BIOS controlled
++		 * register.
++		 * But it's not aliased anymore on model 0x1a+
++		 * Don't ignore bank 0 completely because there could be a valid
++		 * event later, merely don't write CTL0.
++		 */
++		if (c->x86 == 6 && c->x86_model < 0x1A)
++			dont_init_bank0 = 1;
++	}
+ 
+ }
+ 
