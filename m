@@ -1,77 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbYGGFJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbYGGFtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754805AbYGGFJn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 01:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbYGGFJe
+	id S1754103AbYGGFtx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 01:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbYGGFtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 01:09:34 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:15455 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751052AbYGGFJd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 01:09:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=snTEJMSGsVsstqkJD0JuQ3eDqTzOgPIkI01pnMqh9urZkdOE5yjBDzP64y5IB93Xcx
-         WSALtHjecvbN8tqWpo318nLLKb+TVukFcAR7+uEtqipnXiUPXyoEFgo4R01oDexBEHci
-         gMo0h3pN+j2xNp3qXSPSUjKV835vIN2fpPpzk=
-Message-ID: <fb82a8210807062209t6cfe3e46m50a11b577f0540e7@mail.gmail.com>
-Date: Mon, 7 Jul 2008 01:09:30 -0400
-From: "Jinkai Gao" <mickeygjk@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Suggestion: LKM should be able to add system call for itself
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 7 Jul 2008 01:49:45 -0400
+Received: from gate.crashing.org ([63.228.1.57]:33263 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751286AbYGGFto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 01:49:44 -0400
+Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Roland McGrath <roland@redhat.com>
+Cc: Nathan Lynch <ntl@pobox.com>, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080704021929.5E9EF1541F5@magilla.localdomain>
+References: <20080703234140.GC9594@localdomain>
+	 <20080704021929.5E9EF1541F5@magilla.localdomain>
+Content-Type: text/plain
+Date: Mon, 07 Jul 2008 15:48:13 +1000
+Message-Id: <1215409693.8970.79.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-LKM(loadable kernel module) was first introduced for drivers. Users
-rarely need to talk to the modules directly. If does, several methods
-are available now, such as /proc file, interruption, etc. However,
-these interfaces are predefined, which makes the communication between
-user space and kernel space quite restricted. Although we can manage
-to deliver the information or commands between them, the
-implementation tends to be ugly.
+On Thu, 2008-07-03 at 19:19 -0700, Roland McGrath wrote:
+> Why not just use ELF_HWCAP for this?  It looks like powerpc only has 3 bits
+> left there (keeping it to 32), but 3 is not 0.  If not that, why not use
+> dsocaps?  That is, some magic in the vDSO, which glibc already supports on
+> all machines where it uses the vDSO.  (For how it works, see the use in
+> arch/x86/vdso/vdso32/note.S for CONFIG_XEN.)
 
-Of course, for driver modules, these mechanisms are enough. But as
-long as it is called Loadable Kernel Module instead of Loadable Kernel
-Driver, I think it should be able to do more than that. For example,
-LSM(linux security module),most of which(selinux, apparmor, etc.) use
-policy files as their core. Users write policy files, LSM make access
-control decision based on the files. Seems like users don't need to
-talk to LSM directly. But what if user want to temporarily disable a
-role or capability he is holding ? Not much he can do, isn't
-it(although nothing is impossible, making a new system call makes much
-more sense).
+Well, we use strings to represent the platforms already (ie, the actual
+CPU microarchitecture). Fitting those into bits would be annoying, it
+makes sense to have AT_BASE_PLATFORM to be the "base" variant of
+AT_PLATFORM.
 
-Above is to demonstrate that LKM is extension to kernel, and the
-system calls should be able to extend as long as the kernel is
-extending. So The LKM should be able to define its own user interface
-by adding new system call for itself. And actually,  it is not hard to
-implement such kind of dynamic system call table as I thought it
-through.
+_However_ there is a bug in that this patch adds an entry without
+bumping the number of entries in the cached array (ie.
+AT_VECTOR_SIZE_BASE needs to be updated).
 
-There was time when people can modify the sys_call_table[],which has
-been forbidden since it was realized as extremly dangrous operation.
-But thing can be implemented in a safe way. Kernel may provide
-registration function like this:
+Ben.
 
-typedef int (*syscall_func_t)(struct pt_regs regs);
-int syscall_register(char* name, syscall_func_t sys_call);
 
-So that modules can add their own system call without affect the
-original sys_call_table[]. And since the system call number will be
-unpredictable, either we let users know the number, or we generate the
-corresponding library function to make users' life easier.
-
-This is my personal opinion, any criticism or correction is welcomed.
-Thanks
-
----
-Syracuse University
-Jinkai Gao
