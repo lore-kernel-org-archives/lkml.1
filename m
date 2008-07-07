@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbYGGRXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbYGGRZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753790AbYGGRXX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 13:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYGGRXP
+	id S1756037AbYGGRZZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 13:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbYGGRZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 13:23:15 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:60953 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753871AbYGGRXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 13:23:14 -0400
-Message-ID: <48725101.40800@sgi.com>
-Date: Mon, 07 Jul 2008 10:23:13 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 7 Jul 2008 13:25:10 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33981 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753704AbYGGRZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 13:25:08 -0400
+Message-ID: <48725155.2040007@garzik.org>
+Date: Mon, 07 Jul 2008 13:24:37 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       mm-commits@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask
- V3
-References: <200806090918.m599Ib0G012837@imap1.linux-foundation.org>	 <19f34abd0806090420r4100241cgb4b828441de3b102@mail.gmail.com>	 <20080609113547.GA1534@elte.hu> <484D54F2.4070603@sgi.com>	 <20080626113229.GB29619@elte.hu> <4863C334.2090007@sgi.com>	 <486452CC.8050502@sgi.com> <48651EF5.5090808@sgi.com>	 <20080703084401.GB7873@elte.hu> <19f34abd0807030155x22b0033dj780830bad840216f@mail.gmail.com>
-In-Reply-To: <19f34abd0807030155x22b0033dj780830bad840216f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       David Miller <davem@davemloft.net>, tytso@mit.edu, hugh@veritas.com,
+       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       mchan@broadcom.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org
+Subject: Re: [bug?] tg3: Failed to load firmware "tigon/tg3_tso.bin"
+References: <1215093175.10393.567.camel@pmac.infradead.org>	<20080703173040.GB30506@mit.edu>	<1215111362.10393.651.camel@pmac.infradead.org>	<20080703.162120.206258339.davem@davemloft.net>	<486D6DDB.4010205@infradead.org>	<87ej6armez.fsf@basil.nowhere.org>	<1215177044.10393.743.camel@pmac.infradead.org>	<486E2260.5050503@garzik.org>	<1215178035.10393.763.camel@pmac.infradead.org>	<486E2818.1060003@garzik.org>	<1215179161.10393.773.camel@pmac.infradead.org>	<486E2E9B.20200@garzik.org>	<20080704153822.4db2f325@lxorguk.ukuu.org.uk>	<48715807.8070605@garzik.org> <20080707165333.6347f564@the-village.bc.nu>
+In-Reply-To: <20080707165333.6347f564@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> On Thu, Jul 3, 2008 at 10:44 AM, Ingo Molnar <mingo@elte.hu> wrote:
->> * Mike Travis <travis@sgi.com> wrote:
+Alan Cox wrote:
+>>> And we had the same argument over ten years ago about those evil module
+>>> things which stopped you just using scp to copy the kernel in one go.
+>>> Fortunately the nay sayers lost so we have modules.
+>> Broken analogy.
 >>
->>> Subject: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask V3
->>>
->>>   * When CONFIG_DEBUG_PER_CPU_MAPS is set, the node passed to
->>>     node_to_cpumask and node_to_cpumask_ptr should be validated.
->>>     If invalid, then a dump_stack is performed and a zero cpumask
->>>     is returned.
->>>
->>> Based on "Fri Jun 27 10:06:06 PDT 2008" tip/master...  ;-)
->>>
->>> Signed-off-by: Mike Travis <travis@sgi.com>
->>> ---
->>> V2: Slightly different version to remove a compiler warning.
->>> V3: Redone to reflect moving setup.c -> setup_percpu.c
->> applied to tip/x86/unify-setup - thanks Mike.
->>
->> Vegard, can i add your Acked-by too?
+>> When modules were added, you were given the option to use them, or not.
 > 
-> To be honest, I'd prefer that the function returns a const pointer.
-> Mike and I have both reviewed all callers independently and concluded
-> that there is no problem in doing this, and that, in fact, this is the
-> correct way to deal with it.
-> 
-> So if Mike submits a V4 with this const return type, or another patch
-> on top of this one, I'll ack it :-)
-> 
-> 
-> Vegard
-> 
+> You can still choose to compile firmware in. Did you read the patches ?
 
-Sure, I can do this...
+You cannot compile the firmware into the modules themselves, which is a 
+regression from current behavior.
 
-Thanks,
-Mike
+Its a problem for cases where you cannot as readily update the kernel 
+image, such as vendor kernel + driver disk situations, or other examples 
+already cited.
+
+When the firmware travels with the module, as it does today in tg3, bnx2 
+and others, is the most reliable system available.  The simplest, the 
+least amount of "parts", the easiest to upgrade, the best method to 
+guarantee driver/firmware version matches.  It works wonderfully today.
+
+Is it difficult to see why someone might want to keep the same attributes?
+
+Compiled-in firmware wastes memory and isn't upgradable -- just like 
+static kernel vs. kernel modules debate -- but it IS far more reliable 
+than any system where the firmware is separated from the kernel module 
+itself.
+
+I'd heartily support David's efforts if it was done in a regression-free 
+manner.  But it is just so easy to build and package a _silently_ 
+non-working driver, simply because the firmware got missed somewhere.
+
+The best path to this new system is to (a) ensure the old system still 
+works, and then (b) make it easy (transparent?) to adopt the new system.
+
+	Jeff
+
+
