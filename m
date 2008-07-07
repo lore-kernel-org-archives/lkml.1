@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbYGGW2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808AbYGGWfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755841AbYGGW2c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 18:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbYGGW2Y
+	id S1755808AbYGGWfH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 18:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbYGGWe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 18:28:24 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35130 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750804AbYGGW2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 18:28:23 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [Bug #11025] [problem] raid performance loss with 2.6.26-rc8 on 32-bit x86 (bisected)
-Date: Tue, 8 Jul 2008 00:30:19 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Dan Williams <dan.j.williams@intel.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <uBi7uNfg81L.A.z4.WzLcIB@albercik> <20080707161620.GA30381@csn.ul.ie>
-In-Reply-To: <20080707161620.GA30381@csn.ul.ie>
+	Mon, 7 Jul 2008 18:34:56 -0400
+Received: from outbound-mail-116.bluehost.com ([69.89.22.16]:60454 "HELO
+	outbound-mail-116.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754021AbYGGWez (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 18:34:55 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: [git pull] PCI fixes
+Date: Mon, 7 Jul 2008 15:34:39 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-pci@vger.kernel.org, Tony Camuso <tcamuso@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200807080030.20347.rjw@sisk.pl>
+Message-Id: <200807071534.39984.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 7 of July 2008, Mel Gorman wrote:
-> On (06/07/08 13:45), Rafael J. Wysocki didst pronounce:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.25.  Please verify if it still should be listed.
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11025
-> > Subject		: [problem] raid performance loss with 2.6.26-rc8 on 32-bit x86 (bisected)
-> > Submitter	: Dan Williams <dan.j.williams@intel.com>
-> > Date		: 2008-07-01 1:57 (6 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=121487749429883&w=4
-> > Handled-By	: Mel Gorman <mel@csn.ul.ie>
-> > 		  Andy Whitcroft <apw@shadowen.org>
-> > 
-> 
-> Fixed by commit 494de90098784b8e2797598cefdd34188884ec2e and should be
-> closed.
+Please pull my for-linus branch:
+git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
 
-Already closed.
+Tony noticed that a PCI fix he sent me was applied by both a PCI pull and an
+x86 pull.  Unfortunately, the patches in each tree weren't identical and the
+double application ended up removing some bfsort quirks for Dell machines.
+Specifically it looks like the one that came in through Ingo & Thomas,
+a1676072558854b95336c8f7db76b0504e909a0a, modified the end of the list, while
+the one that I sent upstream, 8d64c781f0c5fbfdf8016bd1634506ff2ad1376a,
+modified the entry above #ifdef __i386__, and with both applied we lose the
+quirks for DL385 & DL585.
+
+I fixed things up in my for-linus branch by reverting
+a1676072558854b95336c8f7db76b0504e909a0a, matching the shortlog & diff below.
 
 Thanks,
-Rafael
+Jesse
+
+Jesse Barnes (1):
+      Revert "PCI: Correct last two HP entries in the bfsort whitelist"
+
+diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+index 940185e..6e64aaf 100644
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -328,18 +328,18 @@ static struct dmi_system_id __devinitdata pciprobe_dmi_tab
+ #endif
+        {
+                .callback = set_bf_sort,
+-               .ident = "HP ProLiant DL360",
++               .ident = "HP ProLiant DL385 G2",
+                .matches = {
+                        DMI_MATCH(DMI_SYS_VENDOR, "HP"),
+-                       DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL360"),
++                       DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL385 G2"),
+                },
+        },
+        {
+                .callback = set_bf_sort,
+-               .ident = "HP ProLiant DL380",
++               .ident = "HP ProLiant DL585 G2",
+                .matches = {
+                        DMI_MATCH(DMI_SYS_VENDOR, "HP"),
+-                       DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL380"),
++                       DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL585 G2"),
+                },
+        },
+        {}
