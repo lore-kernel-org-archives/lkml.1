@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbYGGLTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbYGGLTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754482AbYGGLTj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 07:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYGGLTa
+	id S1755242AbYGGLTx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 07:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbYGGLTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 07:19:30 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:44917 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752598AbYGGLTa (ORCPT
+	Mon, 7 Jul 2008 07:19:34 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:32658 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753260AbYGGLTd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 07:19:30 -0400
-Message-ID: <4871FBBC.4030004@linux.vnet.ibm.com>
-Date: Mon, 07 Jul 2008 16:49:24 +0530
-From: Nageswara R Sastry <rnsastry@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Mon, 7 Jul 2008 07:19:33 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=hUt5LA04YnB8TAOzDO+Sxq7hMmXn1cAOis/rL9wfYRTXCTDhi4OZsJXmjXONglzOwgl9nkRoU96QFcB8wEHE/otVZb1ep+g8TtIHmDM4+cwkj+uzK3E1P/iNnEv22hReMbNQsg/GKgww4hTiYoEJQM+vBqimlcjGwu3F/x1+Xvc=  ;
+X-YMail-OSG: UQf1_N8VM1k_UTLthY1j3KIp15I.gfauclDmN4ddtZ2wf_RIJNLIjKIKEGqYYQredUiR9F8gdraR2trZAnxYPXLtZ7MtFB523pvIrmhqs3UYNTME90_NESh9xVbWDKUh06I-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: kmap_atomic_pfn for PCI BAR access?
+Date: Mon, 7 Jul 2008 21:19:10 +1000
+User-Agent: KMail/1.9.5
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Dave Airlie <airlied@gmail.com>,
+       Keith Packard <keithp@keithp.com>, Dave Airlie <airlied@linux.ie>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <1214242487.11887.35.camel@koto.keithp.com> <200807071653.55094.nickpiggin@yahoo.com.au> <20080707000528.09518481@infradead.org>
+In-Reply-To: <20080707000528.09518481@infradead.org>
 MIME-Version: 1.0
-To: Johannes Weiner <hannes@saeurebad.de>
-CC: linux-kernel@vger.kernel.org, balbir@linux.vnet.ibm.com,
-       ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
-       davej@codemonkey.org.uk
-Subject: Re: [BUG] While changing the cpufreq governor, kernel hits a bug
- in workqueue.c
-References: <485F8028.1070302@linux.vnet.ibm.com> <87y74w41fp.fsf@skyscraper.fehenstaub.lan> <4860BB8E.2070505@linux.vnet.ibm.com> <87tzfh2t5l.fsf@skyscraper.fehenstaub.lan> <48638906.4090308@linux.vnet.ibm.com> <87y74l4scd.fsf@skyscraper.fehenstaub.lan> <87fxqp7nye.fsf@skyscraper.fehenstaub.lan> <4871E657.3040403@linux.vnet.ibm.com>
-In-Reply-To: <4871E657.3040403@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807072119.10831.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nageswara R Sastry wrote:
-> Hi Johannes,
->>>> =======================================================
->>>> [ INFO: possible circular locking dependency detected ]
->>>> 2.6.25.7.cpufreq_patch #2
->>>> -------------------------------------------------------
-> [...]
->>> Okay, the problem is in cpufreq_conservative.c.  We
->>> cancel_delayed_work_sync() while holding the mutex, but the work itself
->>> tries to grab it and there it deadlocks; lockdep caught that right.
->>>
->>> The hunk for _ondemand is correct, but the one for _conservative is
->>> obviously wrong, sorry :/
->>>
->>> I will whip something up and get back to you.  Thanks a lot for
->>> testing!
->>
->> Could you try the attached patch instead of the one above?
->>
->> Dave, I dropped the mutex-grabbing from the conservative worker function
->> as well as I don't see a reason for it, please correct me if I'm wrong.
->>
->>     Hannes
->>
-> 
-> The script is running now for more than 6 hours successfully, I will 
-> continue this and let you know if there are any failures.
-> 
-> * I am seeing the circular locking dependency with the above patch too.
-> 
+On Monday 07 July 2008 17:05, Arjan van de Ven wrote:
+> On Mon, 7 Jul 2008 16:53:54 +1000
 
-Seeing sysfs hang for second cpu this time while cat file 
-/sys/devices/system/cpu/cpu2/cpufreq/scaling_governor
+> > One thing I still haven't implemented in that patch are CPU-local
+> > mappings (which only require a local flush to flush)... I found that
+> > after the improvements I did implement, they didn't help much for
+> > my workloads, so I suspect you might find the same thing...
+>
+> just to complicate things with ioremap() you have to deal with the
+> various caching-coherency requirements.. making things lazy and per CPU
+> complicates that a ton (and I suspect won't actually make things
+> cheaper)
 
-Just to summarize
-1. Circular locking dependency issue and
-2. sysfs hung for scaling_governor
+Yeah, my vmap rewrite has a vm_unmap_aliases() call, which the
+page attribute code calls.
 
-Thanks!!
-Regards
-R.Nageswara Sastry
+But these flushes are not really any different between the atomic
+kmap area and my vmap lazy flushing: the atomic kmap code still
+has to do a broadcast global TLB flush.
 
+The fact is simply that changing cache attributes is always going
+to be an expensive operation and lazy mappings are not going to
+really change that -- because changing attributes is going to
+require a TLB flush on all CPUs _anyway_, which is the expensive
+thing. All we really have to do with lazy mappings is tear down
+their page tables before CPA's TLB flush -- if there were no lazy
+unmappings in that time, then there will be no extra work to do.
 
+... or, it occurs to me that you might have been referring to
+something else: the problem of simply changing the cache attributes
+on the pages that you wish to ioremap now. That's going to be slow
+sure, but these guys don't seem to need such an attribute change
+anyway because they are using kmap_atomic_pfn (which doesn't change
+attributes)
