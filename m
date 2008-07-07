@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYGGNnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbYGGNqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbYGGNnR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 09:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYGGNnH
+	id S1754068AbYGGNqS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 09:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbYGGNqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 09:43:07 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:35637 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751857AbYGGNnG (ORCPT
+	Mon, 7 Jul 2008 09:46:05 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:48963 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750804AbYGGNqF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 09:43:06 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEAAy2cUhMQWVt/2dsb2JhbACBXKx3
-Date: Mon, 7 Jul 2008 09:43:02 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC patch 00/12] Tracepoints v2
-Message-ID: <20080707134302.GB14704@Krystal>
-References: <20080704235207.147809973@polymtl.ca> <20080706022711.199401fe@linux360.ro>
+	Mon, 7 Jul 2008 09:46:05 -0400
+Subject: Re: [PATCH] aio: avoid using queue_delayed_work in
+	aio_kick_handler to schedule itself
+From: Chris Mason <chris.mason@oracle.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: Jeff Moyer <jmoyer@redhat.com>, linux-aio@kvack.org,
+       linux-kernel@vger.kernel.org, Benjamin LaHaise <bcrl@kvack.org>,
+       Zach Brown <zach.brown@oracle.com>
+In-Reply-To: <200807011421.38532.knikanth@suse.de>
+References: <200806260927.27995.knikanth@suse.de>
+	 <x49prq3t43a.fsf@segfault.boston.devel.redhat.com>
+	 <200806301120.27743.knikanth@suse.de> <200807011421.38532.knikanth@suse.de>
+Content-Type: text/plain
+Date: Mon, 07 Jul 2008 09:44:58 -0400
+Message-Id: <1215438298.24425.9.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080706022711.199401fe@linux360.ro>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:34:04 up 32 days, 18:15,  6 users,  load average: 0.82, 0.91,
-	0.87
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
-> On Fri, 04 Jul 2008 19:52:07 -0400
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+On Tue, 2008-07-01 at 14:21 +0530, Nikanth Karthikesan wrote:
+> On Monday 30 June 2008 11:20:27 Nikanth Karthikesan wrote:
+> > On Friday 27 June 2008 18:41:37 Jeff Moyer wrote:
+> > > Nikanth Karthikesan <knikanth@suse.de> writes:
+> > > > Avoid using queue_delayed_work in aio_kick_handler() to run itself
+> > > > immediately. Instead use aio_run_all_iocbs()
+> > >
+> > > Can you give some rationale for this change?  Also, how did you test it?
+> >
+> > The comment in aio_kick_handler(), "we're in a worker thread already, don't
+> > use queue_delayed_work" triggered me to do this. Ran multiple instances
+> > of Stephen Hemminger's aio cp for basic testing.
+> >
+> > I think this would make it unfair between different kioctx? May be only the
+> > comment should be removed?
+> >
 > 
-> > Hi,
-> > 
-> > Here is the second release of kernel tracepoints, including the
-> > architecture independent instrumentation taken from LTTng. I submit
-> > this for another round of comments.
-> 
-> Hi,
-> 
-> Not using format specifiers sounds pretty nice. Are there any other
-> advantages over markers? What about self-modifying code, does it employ
-> this technique to eliminate conditional branching (markers did this on
-> some arches, IIRC)?
-> 
+> Anyway we are scheduling it again with timeout of 0, so fairness shouldnt be a 
+> problem? If yes, wouldn't this change reduce the overhead of queuing the work 
+> again, and repeated lock/unlock.
 
-The main advantage is to remove the format strings. It also permits to
-declare the tracepoints in a header file instead of only spreading them
-all over the kernel code. It aims at providing an internal kernel
-interface to kernel tracers, compared to markers which are eventually
-meant to export the trace information, along with the format specifiers,
-to userspace. The version I sent here does not use immediate values
-(self-modifying code), but the one I have in my patchset does.
+The main purpose of the delayed queuing was to improve performance with
+workloads where the work was more or less immediately done.  The best
+example is aio pipes.  The delayed queue cut down on the context switch
+rate dramatically and made a large performance improvement for pipe
+workloads (without cutting down on other perf at the time).
 
-> I'm considering using this for kmemtrace, so please keep me Cc-ed if
-> possible.
-> 
+-chris
 
-Sure, I will,
 
-Mathieu
-
-> 
-> 	Cheers,
-> 	Eduard
-> 
-> P.S.: BTW, the To header is either broken or I screwed it (I'm reading
-> this via Gmane's NNTP):
-> "Steven Rostedt <ros"
-
-Ok, will fix in the next post. Thanks.
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
