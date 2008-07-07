@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbYGGHcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbYGGHhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754038AbYGGHcw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 03:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbYGGHcn
+	id S1754229AbYGGHhJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 03:37:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbYGGHg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 03:32:43 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:59993 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750827AbYGGHcn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 03:32:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=rbBIXZPUmgmISWhIhSGdGWSRKhmT+ZDqoMgZ66KHLO4KeMcYC1w1/bWqsue0BGkmx2
-         hCJMyhLjRU2dvrWWWkVRhdpKess+MWu5Yn5b5ToMzFbP/BTGUgUiHKVrqcdkVNxRyNuL
-         CcjohYLlfHgTAqdPpGoPMJA18OtIFllW2WZkE=
-Message-ID: <19f34abd0807070032wb6a2d50s99de5950132016f5@mail.gmail.com>
-Date: Mon, 7 Jul 2008 09:32:41 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Alexander Beregalov" <a.beregalov@gmail.com>
-Subject: Re: next-0704: WARNING: at kernel/sched.c:4254 add_preempt_count; PANIC
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org
-In-Reply-To: <487159DA.708@gmail.com>
+	Mon, 7 Jul 2008 03:36:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59216 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750929AbYGGHgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 03:36:55 -0400
+Date: Mon, 7 Jul 2008 09:36:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>, Len Brown <lenb@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP
+	systems
+Message-ID: <20080707073635.GA22946@elte.hu>
+References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl> <20080701202453.GD4896@elte.hu> <200807070102.38854.rjw@sisk.pl> <200807070319.29470.rjw@sisk.pl> <20080707071706.GA3326@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <487159DA.708@gmail.com>
+In-Reply-To: <20080707071706.GA3326@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 7, 2008 at 1:48 AM, Alexander Beregalov
-<a.beregalov@gmail.com> wrote:
-> Hi
->
-> WARNING: at kernel/sched.c:4254 add_preempt_count+0x61/0x63()
-> Modules linked in: i2c_nforce2
-> Pid: 3620, comm: rtorrent Not tainted 2.6.26-rc8-next-20080704 #5
->  [<c038e436>] ? printk+0xf/0x11
->  [<c011b681>] warn_on_slowpath+0x41/0x7b
->  [<c0157a94>] ? mmap_region+0x1c5/0x414
->  [<c0156499>] ? remove_vma+0x50/0x56
->  [<c0159836>] ? anon_vma_prepare+0x52/0xc5
-...
 
-> BUG: unable to handle kernel paging request at fffef4f1
-> IP: [<c0103c53>] dump_trace+0xa5/0xe2
-> *pde = 00007067 *pte = 00000000
-> Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
-> last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:02:00.1/class
-> Modules linked in: i2c_nforce2
->
-> Pid: 3620, comm: rtorrent Not tainted (2.6.26-rc8-next-20080704 #5)
-> EIP: 0060:[<c0103c53>] EFLAGS: 00210097 CPU: 0
-> EIP is at dump_trace+0xa5/0xe2
-> EAX: fffefffc EBX: fffef4f1 ECX: c0396978 EDX: c0455a08
-> ESI: 5a5a5a5a EDI: f4d4c084 EBP: f4d4bf34 ESP: f4d4bf14
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-^--- POISON_INUSE
+> > Please note two things:
+> > (1) The whole acpi_dmi_table[] thing originally depended on __i386__, so it
+> >     wouldn't work on x86-64 no matter what.  I removed that dependecy, but
+> >     I have no idea why it was there and so I'm not sure if that's correct. 
+> 
+> > (2) The clear_IO_APIC_pin(apic1, pin1) done if 
+> >     disable_irq0_through_ioapic is true is absolutely essential.  The 
+> >     symptoms are 100% reproducible without it.
+> 
+> thanks, applied to tip/x86, to give this some more testing.
 
-But I don't know if this is really significant, given that it's not
-the first error you're getting. It may also be just a remnant of the
-memset() that marks the SLUB objects as such. (Or something like
-that.)
+i know you havent submitted this for inclusion yet, but FYI it wont 
+build on 32-bit with a config like:
 
-Too bad the recursive page fault stops us from getting the Code: line.
+ http://redhat.com/~mingo/misc/config-Mon_Jul__7_09_22_45_CEST_2008.bad
 
-Config would be nice :-)
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+	Ingo
