@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758720AbYGGXD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757760AbYGGXEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758720AbYGGXD0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 19:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbYGGXDT
+	id S1757760AbYGGXEK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 19:04:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbYGGXD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 19:03:19 -0400
-Received: from outbound-mail-116.bluehost.com ([69.89.22.16]:45784 "HELO
-	outbound-mail-116.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754067AbYGGXDS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 19:03:18 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] sparc64: fix up bus_id changes in sparc core code
-Date: Mon, 7 Jul 2008 16:03:11 -0700
-User-Agent: KMail/1.9.9
-Cc: gregkh@suse.de, kay.sievers@vrfy.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20080702153651.GB30318@kroah.com> <20080703164939.GA13326@suse.de> <20080703.134416.115438394.davem@davemloft.net>
-In-Reply-To: <20080703.134416.115438394.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 7 Jul 2008 19:03:57 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55452 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754177AbYGGXD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 19:03:56 -0400
+Subject: Re: [Ksummit-2008-discuss] Delayed interrupt work, thread pools
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Chris Mason <chris.mason@oracle.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Jeremy Kerr <jk@ozlabs.org>
+In-Reply-To: <1215439756.24425.21.camel@think.oraclecorp.com>
+References: <1214916335.20711.141.camel@pasglop>
+	 <486B0298.5030508@linux.intel.com> <1214977447.21182.33.camel@pasglop>
+	 <1215007896.3330.6.camel@localhost.localdomain>
+	 <1215439756.24425.21.camel@think.oraclecorp.com>
+Content-Type: text/plain
+Date: Tue, 08 Jul 2008 09:03:02 +1000
+Message-Id: <1215471782.8970.165.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807071603.11503.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, July 03, 2008 1:44 pm David Miller wrote:
-> From: Greg KH <gregkh@suse.de>
-> Date: Thu, 3 Jul 2008 09:49:39 -0700
->
-> > Argh, I'm patching against a previous patch that was only sent to Jesse
-> > for the PCI core, sorry for the confusion.
-> >
-> > The patch for that is below.  It's probably easier for Jesse to take
-> > both of these in his tree if you like, or I can send you just the Sparc
-> > one, based on HEAD right now, and then the intermediate step in the PCI
-> > patch would not be needed.
->
-> It's easiest if Jesse takes them both, here is my ACK:
->
-> Acked-by: David S. Miller <davem@davemloft.net>
+On Mon, 2008-07-07 at 10:09 -0400, Chris Mason wrote:
+> I have a few different users of the thread pools, and I ended up
+> having
+> to create a number of pools to avoid deadlocks between different types
+> of operations on the same work list.  Ideas like the next activation
+> head really sound cool, but the simplicity of just making dedicated
+> pools to dedicated tasks is much much easier to debug.
+> 
+> If the pools are able to resize themselves sanely, it should perform
+> about the same as the fancy stuff ;)
 
-Applied to my linux-next tree.  Thanks.
+Could be just like workqueues: a "default" common pool and the ability
+to create specialized pools with possibly configurable constraints in
+size etc...
 
-Jesse
+I'm a bit too busy with preparing for the merge window right now along
+with a few other things, so I haven't looked in details at the existing
+implementations yet. I'm in no hurry tho, thus somebody feel free to
+beat me to it, else I'll dig into it later this month or so.
+
+Ben.
+
