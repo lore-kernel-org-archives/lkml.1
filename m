@@ -1,92 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757901AbYGGVff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758202AbYGGVgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757901AbYGGVff (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 17:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755418AbYGGVfY
+	id S1758202AbYGGVgU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 17:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755851AbYGGVgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 17:35:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35801 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755344AbYGGVfX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 17:35:23 -0400
-Date: Mon, 7 Jul 2008 17:34:20 -0400
-From: Bill Nottingham <notting@redhat.com>
-To: Patrick McHardy <kaber@trash.net>
-Cc: bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [RFC PATCH 0/2] Allow full bridge configuration via sysfs
-Message-ID: <20080707213420.GA20089@nostromo.devel.redhat.com>
-Mail-Followup-To: Patrick McHardy <kaber@trash.net>,
-	bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-	Linux Netdev List <netdev@vger.kernel.org>
-References: <cover.1215460681.git.notting@redhat.com> <4872819E.3040604@trash.net> <20080707205342.GA19710@nostromo.devel.redhat.com> <4872838B.1060603@trash.net>
+	Mon, 7 Jul 2008 17:36:09 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:28019 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755418AbYGGVgH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 17:36:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id:from;
+        b=MfzVq+hrEBbgVUUwzQCbR1946p4o/OvgganSkoMTAqWRwPZ3R1v+FK4b2eEvNNNe1n
+         g3WuN4FB9VxNHeIek4xmUYsK6o0f/ZMhGf+dqLYTQ9yPhwBlbng9Y5XWw7LTiCRfjMBl
+         erx4wko209WCQ0DmEdbbsXRw6YZqoovfvjx+M=
+To: rt2400-devel@lists.sourceforge.net
+Subject: Re: [Rt2400-devel] rt2500pci: Failed to initialize hw. But works with ancient rt2500-1.1.0
+Date: Mon, 7 Jul 2008 23:44:07 +0200
+User-Agent: KMail/1.9.9
+Cc: Stefan Bauer <stefan-a-bauer@gmx.net>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200807072253.46295.stefan.bauer@cs.tu-chemnitz.de> <200807072327.17714.stefan-a-bauer@gmx.net>
+In-Reply-To: <200807072327.17714.stefan-a-bauer@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4872838B.1060603@trash.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200807072344.07580.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy (kaber@trash.net) said: 
->> Also, moving bonding configuration to netlink seems
->> like a step backwards.
->
-> Please read up on what the standard interface for network
-> configuration is
+On Monday 07 July 2008, Stefan Bauer wrote:
+> Am Montag, 7. Juli 2008 schrieb Stefan Bauer:
+> 
+> > dmesg 2.6.26-rc9
+> > ACPI: PCI Interrupt 0000:00:0c.0[A] -> GSI 17 (level, low) -> IRQ 17
+> > phy0: Selected rate control algorithm 'pid'
+> > phy0: Failed to initialize wep
+> > phy0 -> rt2x00lib_probe_dev: Error - Failed to initialize hw.
+> > rt2500pci: probe of 0000:00:0c.0 failed with error -12
+> >
+> > .config 2.6.26-rc9
+> > <http://www-user.tu-chemnitz.de/~stefb/rt2500pci/config>
+> >
+> > Next I'm going to test 2.6.24 and 2.6.25 to check whether it's an
+> > regression or not.
+> 
+> Same problem with 2.6.24.7, I'll skip 2.6.25.
 
-OK, let's see.
+What happens when you compile ecb and arc4 into the kernel
+instead as seperate modules?
 
-In the code: Hm, no TODO or FIXME.
-
-In the included documentation:
-
-Documentation/networking/bonding.txt:
-  Module options, modprobe.conf, or 'distro-specific
-  configuration file', ifenslave, or sysfs.
-
-Documentation/networking/ip-sysctl.txt:
-  sysctl, obviously.
-
-Documentation/networking/generic_netlink.txt
-  Hey, here's netlink! Doucmentation points only to a wiki. Referred
-  to by zero other included in-kernel documentation.
-
-Well, that's helpful.
-
-Let's try the OSDL web!
-
-http://www.linuxfoundation.org/en/Net:Bridge
-  brctl (which uses ioctl and sysfs). And /etc/net.
-  
-http://www.linuxfoundation.org/en/Net:Bonding
-  Module parameters only, including the lovely 'load driver multiple times'
-  method. Doesn't even mention sysfs.
-
-http://www.linuxfoundation.org/en/Net:VLAN
-  vconfig
-  
-I could look at wireless network configuration, but I doubt that's going to
-help your argument.
-
-> I'm tired of reiterating this once a week.
-
-Well, if the documentation that described this as the standard existed,
-or wasn't such crap, perhaps you wouldn't have to.
-
-That being said, how is moving from adding a bonding slave from:
-  echo "+eth0" >  /sys/class/net/bond0/bonding/slaves to:
-to:
-  http://www.linuxfoundation.org/en/Net:Generic_Netlink_HOWTO
-
-a worthwhile improvement for the admin? Let's see, a kernel-userspace
-protocol with magic message formats. Hey, we reinvented ioctl!
-
-Why, if netlink is the standard (and it's been around for a long
-damn time), was sysfs configuration for bonding added in 2005? Why
-was bridge configuration added in 2005, and *extended* in 2006 and
-2007? Why were the user-space tools such as brctl ported from ioctl
-to sysfs?
-
-Bill
+Ivo
