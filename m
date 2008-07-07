@@ -1,96 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbYGGLCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbYGGLIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842AbYGGLCc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 07:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbYGGLCX
+	id S1754429AbYGGLIQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 07:08:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYGGLIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 07:02:23 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:47416 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752503AbYGGLCW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 07:02:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=qzDEty6YD3F+EEzPitNMskMcU9nZgSJ5rbI9y42hYPxSaGipOR8q5DZMqSwgZoMvNwzjnv5ShMEsDgQ0ZELQ6UexOAs9bJfufrwUTg2aPxml4P4LVIDenEGjz935mORUs4hpHWYCl4lByDBQbY1wyclwx85G601jwTNZvV+G91s=  ;
-X-YMail-OSG: JxwbGgsVM1ng1_puq8CfcCOJW9awJwC1Ix0ImxX0sjdAlsK5G5u5otW7CzRbcH3HEzy6bDpZ2iHdjrXCyuecttyZ1nfCiKoQzKYeaXF3RucJxRRw_8v7rcVujfSbnetIoZ4-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in invalidate_complete_page2()
-Date: Mon, 7 Jul 2008 21:01:58 +1000
-User-Agent: KMail/1.9.5
-Cc: jamie@shareable.org, torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hugh@veritas.com
-References: <20080625124038.103406301@szeredi.hu> <E1KFmuc-0001VS-RS@pomaz-ex.szeredi.hu> <E1KFniG-0001cS-Rb@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1KFniG-0001cS-Rb@pomaz-ex.szeredi.hu>
+	Mon, 7 Jul 2008 07:08:04 -0400
+Received: from saeurebad.de ([85.214.36.134]:38521 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752503AbYGGLID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 07:08:03 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Nageswara R Sastry <rnsastry@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, balbir@linux.vnet.ibm.com,
+       ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
+       davej@codemonkey.org.uk
+Subject: Re: [BUG] While changing the cpufreq governor, kernel hits a bug in workqueue.c
+References: <485F8028.1070302@linux.vnet.ibm.com>
+	<87y74w41fp.fsf@skyscraper.fehenstaub.lan>
+	<4860BB8E.2070505@linux.vnet.ibm.com>
+	<87tzfh2t5l.fsf@skyscraper.fehenstaub.lan>
+	<48638906.4090308@linux.vnet.ibm.com>
+	<87y74l4scd.fsf@skyscraper.fehenstaub.lan>
+	<87fxqp7nye.fsf@skyscraper.fehenstaub.lan>
+	<4871E657.3040403@linux.vnet.ibm.com>
+Date: Mon, 07 Jul 2008 13:07:55 +0200
+In-Reply-To: <4871E657.3040403@linux.vnet.ibm.com> (Nageswara R. Sastry's
+	message of "Mon, 07 Jul 2008 15:18:07 +0530")
+Message-ID: <87d4lqq7ec.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807072101.58963.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 July 2008 20:12, Miklos Szeredi wrote:
-> On Mon, 07 Jul 2008, Miklos Szeredi wrote:
-> > On Mon, 7 Jul 2008, Nick Piggin wrote:
-> > > I don't know what became of this thread, but I agree with everyone else
-> > > you should not skip clearing PG_uptodate here. If nothing else, it
-> > > weakens some important assertions in the VM. But I agree that splice
-> > > should really try harder to work with it and we should be a little
-> > > careful about just changing things like this.
-> >
-> > Sure, that's why I rfc'ed.
-> >
-> > But I'd still like to know, what *are* those assumptions in the VM
-> > that would be weakened by this?
+Hi,
+
+Nageswara R Sastry <rnsastry@linux.vnet.ibm.com> writes:
+
+> Hi Johannes,
+>>>> =======================================================
+>>>> [ INFO: possible circular locking dependency detected ]
+>>>> 2.6.25.7.cpufreq_patch #2
+>>>> -------------------------------------------------------
+> [...]
+>>> Okay, the problem is in cpufreq_conservative.c.  We
+>>> cancel_delayed_work_sync() while holding the mutex, but the work itself
+>>> tries to grab it and there it deadlocks; lockdep caught that right.
+>>>
+>>> The hunk for _ondemand is correct, but the one for _conservative is
+>>> obviously wrong, sorry :/
+>>>
+>>> I will whip something up and get back to you.  Thanks a lot for
+>>> testing!
+>>
+>> Could you try the attached patch instead of the one above?
+>>
+>> Dave, I dropped the mutex-grabbing from the conservative worker function
+>> as well as I don't see a reason for it, please correct me if I'm wrong.
+>>
+>> 	Hannes
+>>
 >
-> For one, currently some of the generic VM code assumes that after
-> synchronously reading in a page (i.e. ->readpage() then lock_page())
-> !PageUptodate() necessarily means an I/O error:
-
-Yes, the error paths in the vm/fs layer can be pretty crappy.
-
-
-> /**
->  * read_cache_page - read into page cache, fill it if needed
-> ...
->  * If the page does not get brought uptodate, return -EIO.
->  */
+> The script is running now for more than 6 hours successfully, I will
+> continue this and let you know if there are any failures.
 >
-> Which is wrong, the page could be invalidated between being broough
-> uptodate and being examined for being uptodate.  Then we'd be
-> returning EIO, which is definitely wrong.
->
-> AFAICS this could be a real (albeit rare) bug in NFS's readdir().
+> * I am seeing the circular locking dependency with the above patch
+> too.
 
-Actually this bug is known for a long time and exists in the
-generic mapping read code too. And it doesn't even need to be
-invalidated as such, but even truncated. It can be hard to get
-people excited about "theoretical" bugs :(
+Uhm.  Failure or no failure?  A possible dead-lock report _is_ a
+failure.  So, do you get one or not?  And if so, could you send me the
+dmesg parts?
 
+Thanks a lot,
 
-> This is easily fixable in read_cache_page(), but what I'm trying to
-> say is that assumptions about PG_uptodate aren't all that clear to
-> begin with, so it would perhaps be useful to first think about this a
-> bit more.
-
-PG_uptodate should be set if we can return data to userspace
-from it. I wouldn't worry about the error path bugs like this:
-they should all be testing PG_error for -EIOness rather than
-!PageUptodate. However I don't want to skip clearing PG_uptodate
-in invalidate just yet if possible.
-
-It seems to be a documented and known issue from day 0, so if
-we can't see a really easy way to fix it without leave PG_uptodate
-hanging around, can we put the burden on the callers to handle
-the case correctly rather than put it on the VM to handle it?
-(which we will then have to support for T < infinity)
-
-And it isn't just a fuse problem is it? Other places can invalidate
-and truncate pages which might be spliced into a pipe, can't they?
+	Hannes
