@@ -1,56 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756017AbYGGRGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYGGRMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756017AbYGGRGT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 13:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbYGGRGB
+	id S1755205AbYGGRMW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 13:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbYGGRML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 13:06:01 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:1462 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753935AbYGGRGA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 13:06:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:references:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=W9Zrw8deS0k/10x34a4LaR+FyswvMUUzRWn7X0W9IeIlXwyFQg6J8OLdFmrKh65Bvb
-         qU3IlBpwSWz+iXx6eg0nkUztiGJWnW0bnPyqFA081njrw3A+cMwyYMfY8ES1kPYHfKGf
-         u7Hql27Rn1Kxa4OOqum1oSYA7K3m6eU0Mz8PI=
-From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Vitaly Mayatskikh <v.mayatskih@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] Introduce copy_user_handle_tail routine
-References: <m37icazgt0.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0806281108240.4371@hp.linux-foundation.org>
-	<m3lk0ngdo5.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0806300835220.28533@hp.linux-foundation.org>
-	<m3fxqsjt22.fsf_-_@gravicappa.englab.brq.redhat.com>
-	<486B8B6C.2050109@firstfloor.org>
-	<m37ic4jr2w.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0807021930470.18105@woody.linux-foundation.org>
-	<m34p71yjyx.fsf@gravicappa.englab.brq.redhat.com>
-	<alpine.LFD.1.10.0807070901490.11076@woody.linux-foundation.org>
-Date: Mon, 07 Jul 2008 19:05:58 +0200
-In-Reply-To: <alpine.LFD.1.10.0807070901490.11076@woody.linux-foundation.org>
-	(Linus Torvalds's message of "Mon, 7 Jul 2008 09:21:36 -0700 (PDT)")
-Message-ID: <m363rhhbex.fsf@gravicappa.englab.brq.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Mon, 7 Jul 2008 13:12:11 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:64167 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753493AbYGGRMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 13:12:09 -0400
+Date: Mon, 7 Jul 2008 18:10:48 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Ingo Molnar <mingo@elte.hu>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-next@vger.kernel.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP
+ systems
+In-Reply-To: <200807071428.53598.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.55.0807071743280.20615@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl>
+ <20080707071706.GA3326@elte.hu> <Pine.LNX.4.55.0807071224491.16767@cliff.in.clinika.pl>
+ <200807071428.53598.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On Mon, 7 Jul 2008, Rafael J. Wysocki wrote:
 
-> See? We don't actually care about vma boundaries or anything like that. We 
-> just care about the only boundary that matters for faults: the page 
-> boundary.
+> BTW, did you even to look at the code _as_ _is_ in linux-next?
 
-I was thinking about find_vma() for memset, but, yes, it should never
-fail in kernel space (unless bug) and find_vma() is unnecessary.
--- 
-wbr, Vitaly
+ Well, I hope it has not changed too much since my recent work in this 
+area...
+
+> In fact, it is _impossible_ that either apic1 or pin1 are equal to -1 at this
+> point, because of this part:
+
+ With the workaround activated it is virtually certain.
+
+> 	/*
+> 	 * Some BIOS writers are clueless and report the ExtINTA
+> 	 * I/O APIC input from the cascaded 8259A as the timer
+> 	 * interrupt input.  So just in case, if only one pin
+> 	 * was found above, try it both directly and through the
+> 	 * 8259A.
+> 	 */
+> 	if (pin1 == -1) {
+> 		pin1 = pin2;
+> 		apic1 = apic2;
+> 		no_pin1 = 1;
+> 	} else if (pin2 == -1) {
+> 		pin2 = pin1;
+> 		apic2 = apic1;
+> 	}
+> 
+> that originates from your patch.
+
+ And the conclusion is?  If we leave MP-table setups aside as irrelevant
+for this configuration, we can be almost certain apic2 and pin2 are both
+equal to -1 at this point.  This is because (unlike the MP table) ACPI has
+no provisions in its tables for ExtINTA APIC interrupt inputs.  Therefore
+the only case apic2 and pin2 may not be equal -1 here is when the firmware
+had set up one of the inputs as such in the hardware before initiating
+bootstrap which has been subsequently noted by a piece of code in
+enable_IO_APIC() which examines the I/O APIC for such a condition.
+
+ I have taken these circumstances very much into account when preparing
+the workaround, based on the assumption that if the firmware has set up an
+I/O APIC line as an ExtINTA interrupt, then it means it considers it
+suitable to use in such a manner.  This furthermore implies the line
+should be safe to be used in any valid 8259A mode of operation, such as
+one we use to forward IRQ0 transparently through the 8259A (we
+double-check it just in case though, as workarounds for hardware bugs in
+the past made it not always true).  The workaround therefore applies to
+genuine IRQ0 routing as reported by ACPI only and not any possible legacy
+ExtINTA fallback that we may attempt to use.
+
+ Of course, as determined previously, the ExtINTA line is not safe to be
+used on your box, but it has not been set up by the firmware as an ExtINTA
+interrupt either, so the assumption mentioned above remains valid and has
+no negative impact on your system.  At this point all of apic1, apic2,
+pin1 and pin2 should be equal -1, which means the reassignments you quoted
+make no changes to the variables.
+
+> End even without this part apic1 and pin1 are _not_ equal to -1 on this box
+> (apic2 and pin2 are, but that's a different matter).
+
+ Which means the workaround has not triggered and the rest of cosideration 
+is therefore irrelevant.  Please get us these DMI IDs, so that we can see 
+what's wrong with the quirk.
+
+  Maciej
