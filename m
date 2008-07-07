@@ -1,102 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712AbYGGPMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbYGGPM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754712AbYGGPMQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 11:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbYGGPMB
+	id S1755224AbYGGPM7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 11:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbYGGPMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 11:12:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53533 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753493AbYGGPMA (ORCPT
+	Mon, 7 Jul 2008 11:12:49 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:40619 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753556AbYGGPMs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 11:12:00 -0400
-Message-ID: <4872319B.9040809@linux-foundation.org>
-Date: Mon, 07 Jul 2008 10:09:15 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Mon, 7 Jul 2008 11:12:48 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+Date: Mon, 7 Jul 2008 15:12:19 +0000
+Subject: RE: [PATCH 1/1] cciss: read config to obtain max outstanding
+ commands per controller
+Thread-Topic: [PATCH 1/1] cciss: read config to obtain max outstanding
+ commands per controller
+Thread-Index: AcjbwL3zj2dbqNunQbeS7NSl3YWW+gEgTDeg
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A778825963E5E81@GVW0547EXC.americas.hpqcorp.net>
+References: <20080701210247.GA5095@roadking.ldev.net>
+ <20080701142308.4958bc5f.akpm@linux-foundation.org>
+In-Reply-To: <20080701142308.4958bc5f.akpm@linux-foundation.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: gerald.schaefer@de.ibm.com
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH] Make CONFIG_MIGRATION available for s390
-References: <1215354957.9842.19.camel@localhost.localdomain>
-In-Reply-To: <1215354957.9842.19.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerald Schaefer wrote:
-
-> Index: linux-2.6/include/linux/migrate.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/migrate.h
-> +++ linux-2.6/include/linux/migrate.h
-> @@ -13,6 +13,7 @@ static inline int vma_migratable(struct 
->  {
->  	if (vma->vm_flags & (VM_IO|VM_HUGETLB|VM_PFNMAP|VM_RESERVED))
->  		return 0;
-> +#ifdef CONFIG_NUMA
->  	/*
->  	 * Migration allocates pages in the highest zone. If we cannot
->  	 * do so then migration (at least from node to node) is not
-> @@ -22,6 +23,7 @@ static inline int vma_migratable(struct 
->  		gfp_zone(mapping_gfp_mask(vma->vm_file->f_mapping))
->  								< policy_zone)
->  			return 0;
-> +#endif
->  	return 1;
->  }
-
-This will extend the number of pages that are migratable and lead to strange
-semantics in the NUMA case. There suddenly vma_is migratable will forbid hotplug
-to migrate certain pages. 
-
-I think we need two functions:
-
-vma_migratable()	General migratability
-
-vma_policy_migratable()	Migratable under NUMA policies.
 
 
-> Index: linux-2.6/include/linux/mm.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/mm.h
-> +++ linux-2.6/include/linux/mm.h
-> @@ -193,6 +193,8 @@ struct vm_operations_struct {
->  	 */
->  	struct mempolicy *(*get_policy)(struct vm_area_struct *vma,
->  					unsigned long addr);
-> +#endif
-> +#ifdef CONFIG_MIGRATION
->  	int (*migrate)(struct vm_area_struct *vma, const nodemask_t *from,
->  		const nodemask_t *to, unsigned long flags);
->  #endif
+> -----Original Message-----
+> From: Andrew Morton [mailto:akpm@linux-foundation.org]
+> Sent: Tuesday, July 01, 2008 4:23 PM
+> To: Miller, Mike (OS Dev)
+> Cc: jens.axboe@oracle.com; linux-kernel@vger.kernel.org;
+> linux-scsi@vger.kernel.org
+> Subject: Re: [PATCH 1/1] cciss: read config to obtain max
+> outstanding commands per controller
+>
+> On Tue, 1 Jul 2008 16:02:47 -0500
+> Mike Miller <mike.miller@hp.com> wrote:
+>
+> > This patch changes the way we determine the maximum number of
+> > outstanding commands for each controller. Most Smart Array
+> controllers
+> > can support up to 1024 commands, the notable exceptions are
+> the E200 and E200i.
+> > The next generation of controllers which were just added support a
+> > mode of operation called Zero Memory Raid (ZMR).  In this mode they
+> > only support 64 outstanding commands. In Full Function Raid
+> (FFR) mode they support 1024.
+> > We have been setting the queue depth by arbitrarily assigning some
+> > value for each controller. We needed a better way to set the queue
+> > depth to avoid lots of annoying "fifo full" messages. So we
+> made the
+> > driver a little smarter. We now read the config table and
+> subtract 4
+> > from the returned value. The -4 is to allow some room for
+> ioctl calls
+> > which are not tracked the same way as io commands are tracked.
+>
+> What would be the effect of _not_ having this patch upon
+> users of the new hardware?
+>
+> If the answer is "bad" then we should get this change into
+> 2.6.26 and 2.6.25.x, because people will surely be running
+> those kernels on the new hardware.
 
-That wont work since the migrate function takes a nodemask! The point of
-the function is to move memory from node to node which is something that you
-*cannot* do in a non NUMA configuration. So leave this chunk out.
+Sorry for my late reply, I've been out of the office. Not having this patch would be bad. The performance at a queue depth of 64 is not very good anyway. If we hit the "fifo full" condition we spew annoying messages and spin for a bit and try again. This leads to very poor performance.
 
-
-> Index: linux-2.6/mm/Kconfig
-> ===================================================================
-> --- linux-2.6.orig/mm/Kconfig
-> +++ linux-2.6/mm/Kconfig
-> @@ -174,7 +174,7 @@ config SPLIT_PTLOCK_CPUS
->  config MIGRATION
->  	bool "Page migration"
->  	def_bool y
-> -	depends on NUMA
-> +	depends on NUMA || ARCH_ENABLE_MEMORY_HOTREMOVE
->  	help
->  	  Allows the migration of the physical location of pages of processes
->  	  while the virtual addresses are not changed. This is useful for
-
-Hmmm... Okay. I tried to make MIGRATION as independent of CONFIG_NUMA as possible so hopefully this will work.
-
-
-
+Thanks,
+mikem
