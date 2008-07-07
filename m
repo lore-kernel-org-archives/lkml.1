@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758739AbYGGV5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758819AbYGGV50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758739AbYGGV5A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 17:57:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbYGGV4u
+	id S1758819AbYGGV50 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 17:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757409AbYGGV5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 17:56:50 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:41900 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758606AbYGGV4s (ORCPT
+	Mon, 7 Jul 2008 17:57:00 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:60687 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758739AbYGGV47 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 17:56:48 -0400
-Subject: [PATCH 2/5] integrity: TPM internel kernel interface
+	Mon, 7 Jul 2008 17:56:59 -0400
+Subject: [PATCH 3/5] integrity: special fs magic
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, sailer@watson.ibm.com, zohar@us.ibm.com,
-       debora@linux.vnet.ibm.com, srajiv@linux.vnet.ibm.com
+       serue@linux.vnet.ibm.com, sailer@watson.ibm.com, zohar@us.ibm.com
 References: <20080707192529.489789904@linux.vnet.ibm.com>
 Content-Type: text/plain
-Date: Mon, 07 Jul 2008 17:56:45 -0400
-Message-Id: <1215467805.27626.4.camel@localhost.localdomain>
+Date: Mon, 07 Jul 2008 17:56:56 -0400
+Message-Id: <1215467816.27626.5.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
@@ -27,254 +26,74 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resubmitting integrity-tpm-internal-kernel-interface.patch, which
-was previously Signed-off-by Kylene Hall.
-Updated per feedback.
+- Move special fs magic number definitions to magic.h
+- Add magic.h include
 
-Adds the following support: 
-- make internal kernel interface to transmit TPM commands global
-- adds reading a pcr value
-- adds extending a pcr value
-- adds lookup the tpm_chip for given chip number and type
-
-Signed-off-by: Debora Velarde <debora@linux.vnet.ibm.com>
+Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 ---
-Index: linux-2.6.26-rc9-git1/drivers/char/tpm/tpm.c
+Index: linux-2.6.26-rc9-git1/mm/shmem.c
 ===================================================================
---- linux-2.6.26-rc9-git1.orig/drivers/char/tpm/tpm.c
-+++ linux-2.6.26-rc9-git1/drivers/char/tpm/tpm.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2004 IBM Corporation
-+ * Copyright (C) 2004,2007,2008 IBM Corporation
-  *
-  * Authors:
-  * Leendert van Doorn <leendert@watson.ibm.com>
-@@ -27,6 +27,13 @@
- #include <linux/poll.h>
- #include <linux/mutex.h>
- #include <linux/spinlock.h>
-+#include <linux/mm.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
-+#include <linux/crypto.h>
-+#include <linux/fs.h>
-+#include <linux/scatterlist.h>
-+#include <asm/unaligned.h>
+--- linux-2.6.26-rc9-git1.orig/mm/shmem.c
++++ linux-2.6.26-rc9-git1/mm/shmem.c
+@@ -50,14 +50,12 @@
+ #include <linux/migrate.h>
+ #include <linux/highmem.h>
+ #include <linux/seq_file.h>
++#include <linux/magic.h>
  
- #include "tpm.h"
+ #include <asm/uaccess.h>
+ #include <asm/div64.h>
+ #include <asm/pgtable.h>
  
-@@ -50,6 +57,8 @@ enum tpm_duration {
- static LIST_HEAD(tpm_chip_list);
- static DEFINE_SPINLOCK(driver_lock);
- static DECLARE_BITMAP(dev_mask, TPM_NUM_DEVICES);
-+#define TPM_CHIP_NUM_MASK       0x0000ffff
-+#define TPM_CHIP_TYPE_SHIFT     16
- 
- /*
-  * Array with one entry per ordinal defining the maximum amount
-@@ -365,8 +374,7 @@ EXPORT_SYMBOL_GPL(tpm_calc_ordinal_durat
- /*
-  * tpm_transmit - internal kernel interface to transmit TPM commands
-  */
--static ssize_t tpm_transmit(struct tpm_chip *chip, const char *buf,
--			    size_t bufsiz)
-+ssize_t tpm_transmit(struct tpm_chip *chip, char *buf, size_t bufsiz)
- {
- 	ssize_t rc;
- 	u32 count, ordinal;
-@@ -422,6 +430,7 @@ out:
- 	mutex_unlock(&chip->tpm_mutex);
- 	return rc;
- }
-+EXPORT_SYMBOL_GPL(tpm_transmit);
- 
- #define TPM_DIGEST_SIZE 20
- #define TPM_ERROR_SIZE 10
-@@ -727,6 +736,102 @@ out:
- }
- EXPORT_SYMBOL_GPL(tpm_show_pcrs);
- 
-+/*
-+ * tpm_chip_lookup - return tpm_chip for given chip number and type
-+ */
-+static struct tpm_chip *tpm_chip_lookup(int chip_num, int chip_typ)
-+{
-+	struct tpm_chip *pos;
-+
-+	spin_lock(&driver_lock);
-+	list_for_each_entry(pos, &tpm_chip_list, list) {
-+		if ((chip_num == TPM_ANY_NUM || pos->dev_num == chip_num)
-+		    && (chip_typ == TPM_ANY_TYPE)) {
-+			spin_unlock(&driver_lock);
-+			return pos;
-+		}
-+	}
-+
-+	spin_unlock(&driver_lock);
-+	return NULL;
-+}
-+
-+/**
-+ * tpm_pcr_read - read a pcr value
-+ * @chip_id: 	tpm chip identifier
-+ * 		Upper 2 bytes: ANY, HW_ONLY or SW_ONLY
-+ * 		Lower 2 bytes: tpm idx # or AN&
-+ * @pcr_idx:	pcr idx to retrieve
-+ * @res_buf: 	TPM_PCR value
-+ * 		size of res_buf is 20 bytes (or NULL if you don't care)
-+ */
-+int tpm_pcr_read(u32 chip_id, int pcr_idx, u8 *res_buf)
-+{
-+	u8 data[READ_PCR_RESULT_SIZE];
-+	int rc;
-+	__be32 index;
-+	int chip_num = chip_id & TPM_CHIP_NUM_MASK;
-+	struct tpm_chip *chip;
-+
-+	chip = tpm_chip_lookup(chip_num, chip_id >> TPM_CHIP_TYPE_SHIFT);
-+	if (chip == NULL)
-+		return -ENODEV;
-+	BUILD_BUG_ON(sizeof(pcrread) > READ_PCR_RESULT_SIZE);
-+	memcpy(data, pcrread, sizeof(pcrread));
-+	index = cpu_to_be32(pcr_idx);
-+	memcpy(data + 10, &index, 4);
-+	rc = tpm_transmit(chip, data, sizeof(data));
-+	if (rc > 0)
-+		rc = get_unaligned_be32((__be32 *) (data + 6));
-+
-+	if (rc == 0 && res_buf)
-+		memcpy(res_buf, data + 10, TPM_DIGEST_SIZE);
-+
-+	return rc;
-+
-+}
-+EXPORT_SYMBOL_GPL(tpm_pcr_read);
-+
-+#define EXTEND_PCR_SIZE 34
-+static const u8 pcrextend[] = {
-+	0, 193,			/* TPM_TAG_RQU_COMMAND */
-+	0, 0, 0, 34,		/* length */
-+	0, 0, 0, 20,		/* TPM_ORD_Extend */
-+	0, 0, 0, 0		/* PCR index */
-+};
-+
-+/**
-+ * tpm_pcr_extend - extend pcr value with hash
-+ * @chip_id: 	tpm chip identifier
-+ * 		Upper 2 bytes: ANY, HW_ONLY or SW_ONLY
-+ * 		Lower 2 bytes: tpm idx # or AN&
-+ * @pcr_idx:	pcr idx to extend
-+ * @hash: 	hash value used to extend pcr value
-+ */
-+int tpm_pcr_extend(u32 chip_id, int pcr_idx, const u8 *hash)
-+{
-+	u8 data[EXTEND_PCR_SIZE];
-+	int rc;
-+	__be32 index;
-+	int chip_num = chip_id & TPM_CHIP_NUM_MASK;
-+	struct tpm_chip *chip;
-+
-+	chip = tpm_chip_lookup(chip_num, chip_id >> TPM_CHIP_TYPE_SHIFT);
-+	if (chip == NULL)
-+		return -ENODEV;
-+
-+	BUILD_BUG_ON(sizeof(pcrextend) > EXTEND_PCR_SIZE);
-+	memcpy(data, pcrextend, sizeof(pcrextend));
-+	index = cpu_to_be32(pcr_idx);
-+	memcpy(data + 10, &index, 4);
-+	memcpy(data + 14, hash, TPM_DIGEST_SIZE);
-+	rc = tpm_transmit(chip, data, sizeof(data));
-+	if (rc > 0)
-+		rc = get_unaligned_be32((__be32 *) (data + 6));
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(tpm_pcr_extend);
-+
- #define  READ_PUBEK_RESULT_SIZE 314
- static const u8 readpubek[] = {
- 	0, 193,			/* TPM_TAG_RQU_COMMAND */
-Index: linux-2.6.26-rc9-git1/drivers/char/tpm/tpm.h
+-/* This magic number is used in glibc for posix shared memory */
+-#define TMPFS_MAGIC	0x01021994
+-
+ #define ENTRIES_PER_PAGE (PAGE_CACHE_SIZE/sizeof(unsigned long))
+ #define ENTRIES_PER_PAGEPAGE (ENTRIES_PER_PAGE*ENTRIES_PER_PAGE)
+ #define BLOCKS_PER_PAGE  (PAGE_CACHE_SIZE/512)
+Index: linux-2.6.26-rc9-git1/security/inode.c
 ===================================================================
---- linux-2.6.26-rc9-git1.orig/drivers/char/tpm/tpm.h
-+++ linux-2.6.26-rc9-git1/drivers/char/tpm/tpm.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2004 IBM Corporation
-+ * Copyright (C) 2004, 2007 IBM Corporation
-  *
-  * Authors:
-  * Leendert van Doorn <leendert@watson.ibm.com>
-@@ -26,6 +26,7 @@
- #include <linux/miscdevice.h>
- #include <linux/platform_device.h>
- #include <linux/io.h>
-+#include <linux/tpm.h>
+--- linux-2.6.26-rc9-git1.orig/security/inode.c
++++ linux-2.6.26-rc9-git1/security/inode.c
+@@ -20,8 +20,7 @@
+ #include <linux/init.h>
+ #include <linux/namei.h>
+ #include <linux/security.h>
+-
+-#define SECURITYFS_MAGIC	0x73636673
++#include <linux/magic.h>
  
- enum tpm_timeout {
- 	TPM_TIMEOUT = 5,	/* msecs */
-@@ -128,6 +129,7 @@ extern void tpm_get_timeouts(struct tpm_
- extern void tpm_gen_interrupt(struct tpm_chip *);
- extern void tpm_continue_selftest(struct tpm_chip *);
- extern unsigned long tpm_calc_ordinal_duration(struct tpm_chip *, u32);
-+ssize_t tpm_transmit(struct tpm_chip *chip, char *buf, size_t bufsiz);
- extern struct tpm_chip* tpm_register_hardware(struct device *,
- 				 const struct tpm_vendor_specific *);
- extern int tpm_open(struct inode *, struct file *);
-Index: linux-2.6.26-rc9-git1/include/linux/tpm.h
+ static struct vfsmount *mount;
+ static int mount_count;
+Index: linux-2.6.26-rc9-git1/include/linux/magic.h
 ===================================================================
---- /dev/null
-+++ linux-2.6.26-rc9-git1/include/linux/tpm.h
-@@ -0,0 +1,49 @@
-+/*
-+ * Copyright (C) 2004,2007 IBM Corporation
-+ *
-+ * Authors:
-+ * Leendert van Doorn <leendert@watson.ibm.com>
-+ * Dave Safford <safford@watson.ibm.com>
-+ * Reiner Sailer <sailer@watson.ibm.com>
-+ * Kylene Hall <kjhall@us.ibm.com>
-+ * Debora Velarde <dvelarde@us.ibm.com>
-+ *
-+ * Maintained by: <tpmdd_devel@lists.sourceforge.net>
-+ *
-+ * Device driver for TCG/TCPA TPM (trusted platform module).
-+ * Specifications at www.trustedcomputinggroup.org
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ *
-+ */
-+#ifndef __LINUX_TPM_H__
-+#define __LINUX_TPM_H__
-+
-+#define PCI_DEVICE_ID_AMD_8111_LPC    0x7468
-+
-+/*
-+ * Chip type is one of these values in the upper two bytes of chip_id
-+ */
-+enum tpm_chip_type {
-+	TPM_HW_TYPE = 0x0,
-+	TPM_SW_TYPE = 0x1,
-+	TPM_ANY_TYPE = 0xFFFF,
-+};
-+
-+/*
-+ * Chip num is this value or a valid tpm idx in lower two bytes of chip_id
-+ */
-+enum tpm_chip_num {
-+	TPM_ANY_NUM = 0xFFFF,
-+};
-+
-+
-+#if defined(CONFIG_TCG_TPM) || defined(CONFIG_TCG_TPM_MODULE)
-+
-+extern int tpm_pcr_read(u32 chip_id, int pcr_idx, u8 *res_buf);
-+extern int tpm_pcr_extend(u32 chip_id, int pcr_idx, const u8 *hash);
-+#endif
-+#endif
+--- linux-2.6.26-rc9-git1.orig/include/linux/magic.h
++++ linux-2.6.26-rc9-git1/include/linux/magic.h
+@@ -6,6 +6,10 @@
+ #define AFS_SUPER_MAGIC                0x5346414F
+ #define AUTOFS_SUPER_MAGIC	0x0187
+ #define CODA_SUPER_MAGIC	0x73757245
++#define DEBUGFS_MAGIC          0x64626720
++#define SYSFS_MAGIC		0x62656572
++#define SECURITYFS_MAGIC	0x73636673
++#define TMPFS_MAGIC		0x01021994
+ #define EFS_SUPER_MAGIC		0x414A53
+ #define EXT2_SUPER_MAGIC	0xEF53
+ #define EXT3_SUPER_MAGIC	0xEF53
+Index: linux-2.6.26-rc9-git1/fs/debugfs/inode.c
+===================================================================
+--- linux-2.6.26-rc9-git1.orig/fs/debugfs/inode.c
++++ linux-2.6.26-rc9-git1/fs/debugfs/inode.c
+@@ -26,8 +26,7 @@
+ #include <linux/debugfs.h>
+ #include <linux/fsnotify.h>
+ #include <linux/string.h>
+-
+-#define DEBUGFS_MAGIC	0x64626720
++#include <linux/magic.h>
+ 
+ static struct vfsmount *debugfs_mount;
+ static int debugfs_mount_count;
 
 -- 
 
