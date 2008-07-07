@@ -1,88 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbYGGMcD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbYGGMci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbYGGMcD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 08:32:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbYGGMbu
+	id S1755218AbYGGMci (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 08:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbYGGMc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 08:31:50 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:32986 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751714AbYGGMbt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 08:31:49 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>,
-       Benjamin Thery <benjamin.thery@bull.net>, <netdev@vger.kernel.org>
-References: <20080618170729.808539948@theryb.frec.bull.fr>
-	<485F04E1.70204@gmail.com> <m1y74svtff.fsf@frodo.ebiederm.org>
-	<486706C9.9040303@gmail.com> <m18wwmsqdv.fsf@frodo.ebiederm.org>
-	<4869D314.5030403@gmail.com> <m1ej6enep7.fsf@frodo.ebiederm.org>
-	<486A0751.9080602@gmail.com> <m1wsk5hjm0.fsf@frodo.ebiederm.org>
-	<486AF4FA.8020805@gmail.com> <m1ej6d9c2r.fsf@frodo.ebiederm.org>
-	<486B060C.7030607@gmail.com> <m14p78s02q.fsf@frodo.ebiederm.org>
-	<486C4515.1070007@gmail.com> <m1hcb7o8lv.fsf@frodo.ebiederm.org>
-	<486CB051.5000507@fr.ibm.com> <m14p77m9uy.fsf@frodo.ebiederm.org>
-	<486CF71F.5090405@gmail.com> <m1y74iiidz.fsf_-_@frodo.ebiederm.org>
-	<m1tzf339ny.fsf@frodo.ebiederm.org>
-	<20080707134101.518734a9@gondolin.boeblingen.de.ibm.com>
-Date: Mon, 07 Jul 2008 05:22:43 -0700
-In-Reply-To: <20080707134101.518734a9@gondolin.boeblingen.de.ibm.com>
-	(Cornelia Huck's message of "Mon, 7 Jul 2008 13:41:01 +0200")
-Message-ID: <m1od59yjcc.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 7 Jul 2008 08:32:28 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60496 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752628AbYGGMc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 08:32:27 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Zhao Forrest" <forrest.zhao@gmail.com>
+Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP systems
+Date: Mon, 7 Jul 2008 14:34:09 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Matthew Garrett" <mjg59@srcf.ucam.org>, "Len Brown" <lenb@kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>, linux-next@vger.kernel.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl> <ac8af0be0807062054nbced6b0pd378aeda91a3c538@mail.gmail.com>
+In-Reply-To: <ac8af0be0807062054nbced6b0pd378aeda91a3c538@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Cornelia Huck <cornelia.huck@de.ibm.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0020]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 00/15] sysfs support for namespaces
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200807071434.10754.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cornelia Huck <cornelia.huck@de.ibm.com> writes:
+On Monday, 7 of July 2008, Zhao Forrest wrote:
+> > Hello,
+> >
+> >  Matthew, you have not added your sign-off with the original patch, please
+> > do so now.
+> >
+> >  Rafael, please try this change together with
+> > patch-2.6.26-rc1-20080505-mpparse-acpi-noirq0-2 and see if this fixes your
+> > system.
+> >
+> >  I have tried the patches with a wildcard entry added to acpi_dmi_table[]
+> > so that it trips for my system.  The result is as follows:
+> 
+> Since we add a new entry to acpi_dmi_table[], I think it's necessary
+> for this new entry to preserve the semantics of this table, that is
+> "acpi=force overrules DMI blacklist", am I right?
 
-> My impression was that the networking folks didn't want any warnings for
-> renaming failures, not just not for renaming a device to the same name.
+Can you please elaborate?
 
-Which would be reasonable.  Because all of the checks have been done
-before sysfs is called so if sysfs sees a problem it is a sysfs bug.
+What exactly are we supposed to do apart from adding the new entries to the
+table?
 
->> In addition my introduction sysfs_rename_link handles this case
->> cleanly by first removing the old link and then creating the new
->> link.  Preventing false positives when the link names are the same.
->
-> sysfs_rename_link() looks cleaner, I agree.
->
->> 
->> So it should be safe to drop Cornelia patch without a reoccurance
->> of scary errors.
->
-> Hm, the description looks badly worded - I unfortunately left the old
-> text unchanged when I respun the patch :( The patch re-introduces the
-> warning in sysfs_add_one() which had been removed in the meanwhile and
-> makes device_rename() use a non-warning version. I still think we want
-> a warning for the general case since this is usually caused be some
-> problems in the calling code (and the alternative would be to add
-> checks to all callers.)
-
-Right.  We just need to get the sysfs paths clean enough that we don't
-emit false positives.  I think I have accomplished that for rename.
-
-Eric
+Thanks,
+Rafael
