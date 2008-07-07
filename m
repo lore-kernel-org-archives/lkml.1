@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbYGGTSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbYGGTTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756916AbYGGTSx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 15:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756320AbYGGTSn
+	id S1757454AbYGGTTM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 15:19:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757069AbYGGTS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 15:18:43 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:42788 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754873AbYGGTSm (ORCPT
+	Mon, 7 Jul 2008 15:18:57 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:40988 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756492AbYGGTS4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 15:18:42 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: Matthias Geissert <matthias.geissert@web.de>
-Subject: Re: [Bug 10868] Oops on loading ipaq module since 2.6.26, prevents use of device
-Date: Mon, 7 Jul 2008 21:19:17 +0200
-User-Agent: KMail/1.9.9
-Cc: Adrian Bunk <bunk@kernel.org>, Adam Williamson <awilliamson@mandriva.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@redhat.com>, bugme-daemon@bugzilla.kernel.org,
-       Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org
-References: <RzbtSgMztjP.A.jRD._spXIB@albercik> <200807031608.46457.oliver@neukum.org> <200807072016.02979.matthias.geissert@web.de>
-In-Reply-To: <200807072016.02979.matthias.geissert@web.de>
+	Mon, 7 Jul 2008 15:18:56 -0400
+Date: Mon, 7 Jul 2008 15:18:52 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: trivial@kernel.org
+Subject: [PATCH] FS: Label tmpfs Kconfig option with "tmpfs".
+Message-ID: <alpine.LFD.1.10.0807071517090.29975@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807072119.18999.oliver@neukum.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 07 Juli 2008 20:16:02 schrieb Matthias Geissert:
-> Am Donnerstag, 3. Juli 2008 16:08:44 schrieb Oliver Neukum:
-> 
-> 
-> > >  	.num_interrupt_in =	NUM_DONT_CARE,
-> > > -	.num_bulk_in =		1,
-> > > -	.num_bulk_out =		1,
-> > > -	.num_ports =		1,
-> > > +	.num_bulk_in =		NUM_DONT_CARE,
-> > > +	.num_bulk_out =		NUM_DONT_CARE,
-> >
-> > This is good.
-> >
-> > > +	.num_ports =		2,
-> >
-> > This is fatal.
-> 
-> I checked what you said with kernel 2.6.26 rc9.  I set num_ports to 5. It 
-> worked quite well until I tried to connect to a non-existing endpoint. 
-> 
-> However, the problem is that the Yakumo Delta needs to connect to the 2nd 
-> endpoint. You can connect to the first one but you don't get any data. 
-> 
-> Is there any good way to tell the ipaq driver to use the 2nd endpoint? Maybe 
-> one could provide a different struct usb_serial_driver ipaq_device depending 
-> on the usb id or an option which tells the driver to use 2 endpoints.
 
-If only these devices have a second input endpoint, we can detect that
-in attach().
+Make it clear that the Kconfig option refers to "tmpfs".
 
-	Regards
-		Oliver
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+
+---
+
+  if people haven't yet figured out that this used to be shm fs, they
+probably don't need to know.
+
+
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 2694648..9360b69 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -979,7 +979,7 @@ config SYSFS
+ 	Designers of embedded systems may wish to say N here to conserve space.
+
+ config TMPFS
+-	bool "Virtual memory file system support (former shm fs)"
++	bool "tmpfs support (Virtual memory file system)"
+ 	help
+ 	  Tmpfs is a file system which keeps all files in virtual memory.
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
