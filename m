@@ -1,60 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbYGGHhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbYGGHma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754229AbYGGHhJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 03:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbYGGHg4
+	id S1754026AbYGGHma (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 03:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbYGGHmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 03:36:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59216 "EHLO mx3.mail.elte.hu"
+	Mon, 7 Jul 2008 03:42:22 -0400
+Received: from sh.osrg.net ([192.16.179.4]:34174 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750929AbYGGHgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 03:36:55 -0400
-Date: Mon, 7 Jul 2008 09:36:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>, Len Brown <lenb@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 2/2] acpi: Disable IRQ 0 through I/O APIC for some HP
-	systems
-Message-ID: <20080707073635.GA22946@elte.hu>
-References: <Pine.LNX.4.55.0807010055070.30785@cliff.in.clinika.pl> <20080701202453.GD4896@elte.hu> <200807070102.38854.rjw@sisk.pl> <200807070319.29470.rjw@sisk.pl> <20080707071706.GA3326@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080707071706.GA3326@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1750807AbYGGHmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 03:42:21 -0400
+Date: Mon, 7 Jul 2008 16:40:26 +0900
+To: mingo@elte.hu
+Cc: joerg.roedel@amd.com, mingo@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       bhavna.sarathy@amd.com, robert.richter@amd.com, rjw@sisk.pl
+Subject: Re: [PATCH 0/6] AMD IOMMU updates
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080704095213.GB22658@elte.hu>
+References: <1215106511-12915-1-git-send-email-joerg.roedel@amd.com>
+	<20080704095213.GB22658@elte.hu>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080707164023T.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 4 Jul 2008 11:52:13 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > Please note two things:
-> > (1) The whole acpi_dmi_table[] thing originally depended on __i386__, so it
-> >     wouldn't work on x86-64 no matter what.  I removed that dependecy, but
-> >     I have no idea why it was there and so I'm not sure if that's correct. 
 > 
-> > (2) The clear_IO_APIC_pin(apic1, pin1) done if 
-> >     disable_irq0_through_ioapic is true is absolutely essential.  The 
-> >     symptoms are 100% reproducible without it.
+> * Joerg Roedel <joerg.roedel@amd.com> wrote:
 > 
-> thanks, applied to tip/x86, to give this some more testing.
+> > Hi,
+> > 
+> > this series of patches contain some updates to the AMD IOMMU code 
+> > currently in tip/master. The updates address some objections discussed 
+> > on the initial patches and also contain optimization and small code 
+> > cleanup. The code with these updates is tested on real hardware under 
+> > load and showed no problems.
+> 
+> applied to tip/x86/amd-iommu and pushed that topic out, thanks Joerg.
+> 
+> also, i've integrated it into tip/master as well (will push that out
+> after some testing).
+> 
+> The IOMMU driver code seems to be getting into good shape, so i've also 
+> added the topic to auto-x86-next, which means it will go into linux-next 
+> on the next iteration (in 1-2 days). Does anyone see any remaining 
+> problems?
 
-i know you havent submitted this for inclusion yet, but FYI it wont 
-build on 32-bit with a config like:
+Not a showstopper but I like to see the cleanups of the kernel
+parameters, as I said before. The AMD IOMMU has two parameters,
+amd_iommu=isolate and amd_iommu_size=32M|64M|128M|256M|512M|1G
 
- http://redhat.com/~mingo/misc/config-Mon_Jul__7_09_22_45_CEST_2008.bad
+The former might be useful for the VT-d. The latter is useful for most
+of the IOMMU drivers. So I think that it would be better to make them
+common parameters.
 
-	Ingo
+And if we can change the existing kernel parameters, I think that it
+would be better to convert some of the x86 IOMMU parameters to common
+parameters.
+
+
+BTW, "[PATCH 4/6] AMD IOMMU: honor iommu=off instead of amd_iommu=off"
+patch in auto-x86-next needs update the kernel parameter.
+
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] AMD IOMMU: fix kernel parameter
+
+amd_iommu=off was replaced with a common parameter, iommu=off.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ Documentation/kernel-parameters.txt |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index cd98762..1a6bb46 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -274,7 +274,6 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	amd_iommu=	[HW,X86-84]
+ 			Pass parameters to the AMD IOMMU driver in the system.
+ 			Possible values are:
+-			off     - disable the driver for AMD IOMMU
+ 			isolate - enable device isolation (each device, as far
+ 			          as possible, will get its own protection
+ 			          domain)
+-- 
+1.5.5.GIT
+
