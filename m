@@ -1,117 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbYGGHJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbYGGHPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755204AbYGGHJs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 03:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbYGGHJh
+	id S1754797AbYGGHPt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 03:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbYGGHPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 03:09:37 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53837
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751272AbYGGHJg (ORCPT
+	Mon, 7 Jul 2008 03:15:41 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:23819 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272AbYGGHPk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 03:09:36 -0400
-Date: Mon, 07 Jul 2008 00:09:36 -0700 (PDT)
-Message-Id: <20080707.000936.238740419.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 7 Jul 2008 03:15:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=D4OLpqzgHqV53Zq2xkUn+tr94gCeG7P0lJ5SQ6a2sd7OwaMAfjsEX3OfjdBqo8xYdr
+         LN6b8lEHy8Mq5avZaSrtTdHdl/37g53/1kbwrEHnB1wuW2cnKIvunb/UbwmYlrpfnIWn
+         Yg4KgZ5slQxDf+4H9RwzrqCTttqTbz3Xya97w=
+Message-ID: <86802c440807070015qbfdbf08s62ce5c37092d0fb5@mail.gmail.com>
+Date: Mon, 7 Jul 2008 00:15:39 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [Bug #10872] x86_64 boot hang when CONFIG_NUMA=n
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       torvalds <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>
+In-Reply-To: <20080707064227.GA27622@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik>
+	 <uBi7uNfg81L.A.XLC.s0LcIB@albercik>
+	 <20080706111750.a6d77e81.randy.dunlap@oracle.com>
+	 <20080707064227.GA27622@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Jul 6, 2008 at 11:42 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
+>
+>> This still happens with 2.6.26-rc9.  Using CONFIG_NUMA=y boots OK.
+>
+> one thing i dont see you having followed up on is whether tip/master
+> works fine:
+>
+>  http://lkml.org/lkml/2008/6/11/355
 
-A lot of smaller stuff:
+in the response to me, he said tip/master has the same problem
 
-1) Fix a test for impossible negative values in tcp_read_sock().
-   From Octavian Purdila.
-
-2) tcp.c needs scatterlist.h, thanks Andrew.
-
-3) Use after free in bridging code, from Patrick McHardy.
-
-4) CAN protocol code needs some missing sanity checks, from
-   Oliver Hartkopp.
-
-5) Wireless and wired bug fixes via John W. Linville and Jeff
-   Garzik.
-
-Please pull, thanks a lot!
-
-The following changes since commit c461a973118346d5c103aaaddd62e53939fd7c67:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../jbarnes/pci-2.6
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Andrew Morton (1):
-      tcp: net/ipv4/tcp.c needs linux/scatterlist.h
-
-David S. Miller (1):
-      Merge branch 'master' of master.kernel.org:/.../linville/wireless-2.6
-
-Jan-Bernd Themann (3):
-      ehea: fix might sleep problem
-      ehea: add MODULE_DEVICE_TABLE
-      ehea: fix race condition
-
-Krzysztof Halasa (1):
-      Add missing skb->dev assignment in Frame Relay RX code
-
-Laurent Pinchart (1):
-      fs_enet: restore promiscuous and multicast settings in restart()
-
-Octavian Purdila (1):
-      tcp: fix a size_t < 0 comparison in tcp_read_sock
-
-Oliver Hartkopp (1):
-      can: add sanity checks
-
-Patrick McHardy (1):
-      bridge: fix use-after-free in br_cleanup_bridges()
-
-Rick Farrington (1):
-      iwlwifi: fix incorrect 5GHz rates reported in monitor mode
-
-Roland Dreier (2):
-      ehea: Access iph->tot_len with correct endianness
-      pasemi_mac: Access iph->tot_len with correct endianness
-
-Sathya Narayanan (2):
-      ibm_newemac: Fixes kernel crashes when speed of cable connected changes
-      ibm_newemac: Fixes entry of short packets
-
-Tobias Diedrich (1):
-      forcedeth: fix lockdep warning on ethtool -s
-
-Zhu Yi (1):
-      iwlwifi: drop skb silently for Tx request in monitor mode
-
-andrey@cozybit.com (1):
-      libertas: support USB persistence on suspend/resume (resend)
-
- drivers/net/ehea/ehea.h                     |    8 +++--
- drivers/net/ehea/ehea_main.c                |   42 ++++++++++++++++-----------
- drivers/net/forcedeth.c                     |   15 ++++++++-
- drivers/net/fs_enet/mac-fcc.c               |    3 ++
- drivers/net/ibm_newemac/core.c              |    8 +++++
- drivers/net/pasemi_mac.c                    |    2 +-
- drivers/net/wan/hdlc_fr.c                   |    1 +
- drivers/net/wireless/iwlwifi/iwl-3945.c     |    6 +++-
- drivers/net/wireless/iwlwifi/iwl-4965.c     |    6 +++-
- drivers/net/wireless/iwlwifi/iwl3945-base.c |    3 +-
- drivers/net/wireless/iwlwifi/iwl4965-base.c |    3 +-
- drivers/net/wireless/libertas/if_usb.c      |    1 +
- net/bridge/br_if.c                          |   10 ++++--
- net/can/af_can.c                            |   10 ++++++
- net/can/bcm.c                               |   23 ++++++++++++--
- net/can/raw.c                               |    3 ++
- net/ipv4/tcp.c                              |    4 ++-
- 17 files changed, 113 insertions(+), 35 deletions(-)
+YH
