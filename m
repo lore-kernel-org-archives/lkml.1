@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754723AbYGGKIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbYGGKNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754723AbYGGKIv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 06:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYGGKIn
+	id S1754159AbYGGKNT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 06:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbYGGKNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 06:08:43 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53190 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751272AbYGGKIm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 06:08:42 -0400
-From: "Li Xiaodong" <lixd@cn.fujitsu.com>
-To: "'LKML'" <linux-kernel@vger.kernel.org>
-Subject: [PATCH]remove_declaration
-Date: Mon, 7 Jul 2008 18:04:09 +0800
-Message-ID: <AEFD1C75C2D6496EB4B19CE6B33656F2@fujitsulixd>
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_001B_01C8E05B.DAD09E50"
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5512
-Thread-Index: AcjgGMxj5m1NO4MUT267hvPbkWrZ0A==
+	Mon, 7 Jul 2008 06:13:06 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:50825 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752145AbYGGKNE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 06:13:04 -0400
+To: nickpiggin@yahoo.com.au
+CC: miklos@szeredi.hu, jamie@shareable.org, torvalds@linux-foundation.org,
+       jens.axboe@oracle.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hugh@veritas.com
+In-reply-to: <E1KFmuc-0001VS-RS@pomaz-ex.szeredi.hu> (message from Miklos
+	Szeredi on Mon, 07 Jul 2008 11:21:34 +0200)
+Subject: Re: [patch 1/2] mm: dont clear PG_uptodate in invalidate_complete_page2()
+References: <20080625124038.103406301@szeredi.hu> <20080625173837.GA10005@shareable.org> <E1KBZqG-0008OZ-Pw@pomaz-ex.szeredi.hu> <200807071638.32955.nickpiggin@yahoo.com.au> <E1KFmuc-0001VS-RS@pomaz-ex.szeredi.hu>
+Message-Id: <E1KFniG-0001cS-Rb@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 07 Jul 2008 12:12:52 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Mon, 07 Jul 2008, Miklos Szeredi wrote:
+> On Mon, 7 Jul 2008, Nick Piggin wrote:
+> > I don't know what became of this thread, but I agree with everyone else
+> > you should not skip clearing PG_uptodate here. If nothing else, it
+> > weakens some important assertions in the VM. But I agree that splice
+> > should really try harder to work with it and we should be a little
+> > careful about just changing things like this.
+> 
+> Sure, that's why I rfc'ed.
+> 
+> But I'd still like to know, what *are* those assumptions in the VM
+> that would be weakened by this?
 
-------=_NextPart_000_001B_01C8E05B.DAD09E50
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
+For one, currently some of the generic VM code assumes that after
+synchronously reading in a page (i.e. ->readpage() then lock_page())
+!PageUptodate() necessarily means an I/O error:
 
-The implementation of gfs2_inode_attr_in is removed.
-So remove its declaration.
+/**
+ * read_cache_page - read into page cache, fill it if needed
+...
+ * If the page does not get brought uptodate, return -EIO.
+ */
 
-Signed-off-by: Li Xiaodong <lixd@cn.fujitsu.com>
+Which is wrong, the page could be invalidated between being broough
+uptodate and being examined for being uptodate.  Then we'd be
+returning EIO, which is definitely wrong.
 
----
- fs/gfs2/inode.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+AFAICS this could be a real (albeit rare) bug in NFS's readdir().
 
-diff --git a/fs/gfs2/inode.h b/fs/gfs2/inode.h index 580da45..d2ddb84 100644
---- a/fs/gfs2/inode.h
-+++ b/fs/gfs2/inode.h
-@@ -72,7 +72,6 @@ static inline void gfs2_inum_out(const struct gfs2_inode
-*ip,  }
- 
- 
--void gfs2_inode_attr_in(struct gfs2_inode *ip);  void gfs2_set_iop(struct
-inode *inode);  struct inode *gfs2_inode_lookup(struct super_block *sb,
-unsigned type, 
- 				u64 no_addr, u64 no_formal_ino,
---
-1.5.5.1
+This is easily fixable in read_cache_page(), but what I'm trying to
+say is that assumptions about PG_uptodate aren't all that clear to
+begin with, so it would perhaps be useful to first think about this a
+bit more.
 
-------=_NextPart_000_001B_01C8E05B.DAD09E50
-Content-Type: application/octet-stream;
-	name="[PATCH]remove_declaration.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="[PATCH]remove_declaration.patch"
-
---- inode.h.bak	2008-07-08 01:57:04.000000000 +0800=0A=
-+++ inode.h	2008-07-08 01:57:21.000000000 +0800=0A=
-@@ -58,7 +58,6 @@ static inline void gfs2_inum_out(const s=0A=
- }=0A=
- =0A=
- =0A=
--void gfs2_inode_attr_in(struct gfs2_inode *ip);=0A=
- void gfs2_set_iop(struct inode *inode);=0A=
- struct inode *gfs2_inode_lookup(struct super_block *sb, unsigned type,=0A=
- 				u64 no_addr, u64 no_formal_ino,=0A=
-
-------=_NextPart_000_001B_01C8E05B.DAD09E50--
-
-
+Miklos
