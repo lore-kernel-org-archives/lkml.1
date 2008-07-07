@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754457AbYGGRhm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756384AbYGGRiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754457AbYGGRhm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 13:37:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbYGGRhY
+	id S1756384AbYGGRiR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 13:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbYGGRiB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 13:37:24 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59302 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755415AbYGGRhX (ORCPT
+	Mon, 7 Jul 2008 13:38:01 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:31625 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754384AbYGGRiA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 13:37:23 -0400
-Date: Mon, 7 Jul 2008 19:37:08 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maximilian Engelhardt <maxi@daemonizer.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: 2.6.26-rc9: Reported regressions from 2.6.25
-Message-ID: <20080707173708.GA3000@elf.ucw.cz>
-References: <Vu1KV8Wj_GP.A.qW.DzLcIB@albercik> <alpine.LFD.1.10.0807060816070.3016@woody.linux-foundation.org>
+	Mon, 7 Jul 2008 13:38:00 -0400
+From: "Altobelli, David" <david.altobelli@hp.com>
+To: Pavel Machek <pavel@suse.cz>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "greg@kroah.com" <greg@kroah.com>
+Date: Mon, 7 Jul 2008 17:37:18 +0000
+Subject: RE: [PATCH][resubmit] HP iLO driver
+Thread-Topic: [PATCH][resubmit] HP iLO driver
+Thread-Index: AcjgUutmweuI1YwBTvukTdLUQdZhjQAARtIw
+Message-ID: <CF70AA892F109448AEA269483B3A983903BB8CEA25@G1W1215.americas.hpqcorp.net>
+References: <20080623160052.GA7616@ldl.fc.hp.com>
+ <20080627191458.GA10872@ucw.cz>
+ <CF70AA892F109448AEA269483B3A983903BB8CE586@G1W1215.americas.hpqcorp.net>
+ <20080707160658.GB1794@elf.ucw.cz>
+In-Reply-To: <20080707160658.GB1794@elf.ucw.cz>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807060816070.3016@woody.linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Pavel Machek wrote:
+> Hi!
+>
+>>>> A driver for the HP iLO/iLO2 management processor, which allows
+>>>> userspace programs to query the management processor. Programs can
+>>>> open a channel to the device (/dev/hpilo/dXccbN), and use this to
+>>>> send/receive queries.
+>>>
+>>> What kind of queries? Is there documentation somewhere?
+>>
+>> Generally, it can get data out of the management processor - things
+>> like basic iLO configuration (users, nic, etc), handle SNMP traffic,
+>> flashing iLO, and some others.
+>>
+>> Unfortunately, there isn't yet any available documenation.
+>
+> Ok, I guess we should have documentation "what does it do" and "what
+> protocol does it speak" before we can think about merging.
 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10919
-> > Subject		: [regression] display dimming is slow and laggy - Acer Travelmate 661lci
-> > Submitter	: Maximilian Engelhardt <maxi@daemonizer.de>
-> > Date		: 2008-06-14 22:31 (23 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=121348428828320&w=4
-> 
-> I wonder if this one could be related. The 'nr_zones' overwriting bug 
-> would result in kswapd not reclaiming any memory asynchronously, so the 
-> kernel would basically be constantly under a low-memory situation, and 
-> processes would be forced to do synchronous reclaim. 
-> 
-> That, in turn, could easily explain laggy operation, especially if it is 
-> something bigger that needs to allocate new memory (not that I know if X 
-> dimming needs to, but I could imagine that it does some double buffering 
-> or whatever).
+I really hope that isn't the case.
 
-Hmm, but that would mean whole system is slow, right?
+The message packets and documention are owned by hardware teams,
+and they currently do not want to make that documentation public.
 
-I'd bet this is ACPI EC problem...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+However, I do think there is value in merging the driver without docs.
+Having drivers in tree is often stated as a goal, because of the obvious
+security and API/ABI disadvantages to out of tree drivers.
+
+If this can't be merged, then we continue to ship an out of tree driver,
+which no one (us, distros, customers) likes.  We pester our partners to
+support this driver, or include it, or what have you.  We get slowly
+out of date, and bugs creep in, or our package breaks on upstream kernels.
+To me, it seems like merging the driver is the better path.
