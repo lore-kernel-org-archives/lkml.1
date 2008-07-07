@@ -1,43 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756993AbYGGSVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbYGGSXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756993AbYGGSVr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 14:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbYGGSVK
+	id S1757374AbYGGSXr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 14:23:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755155AbYGGSXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 14:21:10 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:51754 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755021AbYGGSVH (ORCPT
+	Mon, 7 Jul 2008 14:23:38 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:54522 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754801AbYGGSXi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 14:21:07 -0400
-Message-Id: <20080707181649.942597764@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Mon, 07 Jul 2008 14:16:49 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/3] sched_clock updates
+	Mon, 7 Jul 2008 14:23:38 -0400
+Date: Mon, 7 Jul 2008 14:23:17 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: James Morris <jmorris@namei.org>
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: SELinux patches for 2.6.26
+Message-ID: <20080707182317.GP31490@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	James Morris <jmorris@namei.org>,
+	linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1215448942-17581-1-git-send-email-jmorris@namei.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1215448942-17581-1-git-send-email-jmorris@namei.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Working with ftrace on linux-tip, I found a few problems with the sched_clock
-code that is suppose to help an unstable TSC keep accurate time. The
-problem I was seeing was on a box with a stable TSC. The time would
-jump around a lot. One would think that code to help unstable TSC keep
-time would not be a problem with a stable TSC.
+On Tue, Jul 08, 2008 at 01:42:02AM +0900, James Morris wrote:
+> 
+> Please review these SELinux patches for the 2.6.26 kernel.
+> 
 
-The main change was the patch that handled the dynamic ticks. That was
-the culprit of bein off by several jiffies.
+You mean 2.6.27 kernel, right? 
 
-With these patches applied, ftrace is quite a bit better with respect to time.
-But there is still jumps that happen that do not happen with sched_clock.
-
-I'm suspecting that the problems that still exist have more to do with
-time updates or a drift between the TSC and the clock used for GTOD.
-
-Anyway, enjoy,
-
--- Steve
-
+							- Ted
