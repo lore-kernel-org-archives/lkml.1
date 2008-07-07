@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757028AbYGGBlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757061AbYGGBr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757028AbYGGBlt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jul 2008 21:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbYGGBlm
+	id S1757061AbYGGBr4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jul 2008 21:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbYGGBrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jul 2008 21:41:42 -0400
-Received: from mail.queued.net ([207.210.101.209]:4280 "EHLO mail.queued.net"
+	Sun, 6 Jul 2008 21:47:47 -0400
+Received: from mga03.intel.com ([143.182.124.21]:53507 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753335AbYGGBll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jul 2008 21:41:41 -0400
-Date: Mon, 7 Jul 2008 01:41:26 +0000
-From: Andres Salomon <dilinger@queued.net>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Cortland Setlow <csetlow@tower-research.com>,
-       corbet@lwn.net, video4linux-list@redhat.com
-Subject: [PATCH] ov7670: clean up ov7670_read semantics
-Message-ID: <20080707014126.0809a5bd@fred>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	id S1752205AbYGGBrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jul 2008 21:47:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.30,312,1212390000"; 
+   d="scan'208";a="7662606"
+Subject: Re: [2.6.26-rc5] iwlwifi 4965 not working - last on 2.6.23
+From: Zhu Yi <yi.zhu@intel.com>
+To: =?UTF-8?Q?Micha=C5=82_Kud=C5=82a?= <michal.kudla@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <200807062244.53787.Michal.Kudla@gmail.com>
+References: <200806060039.48488.m1k0@wp.pl>
+	 <200806240537.08888.Michal.Kudla@gmail.com>
+	 <1214279513.14590.198.camel@debian.sh.intel.com>
+	 <200807062244.53787.Michal.Kudla@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Organization: Intel Corp.
+Date: Mon, 07 Jul 2008 09:45:46 +0800
+Message-Id: <1215395146.14590.710.camel@debian.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2008-07-06 at 22:44 +0200, Michał Kudła wrote:
+> with new build -rc9 iwl4965 still don't work.
+> I don't know, witch distro I should use to check, that current kernel
+> and my WiFi is OK.
+> 
+> I returned to good 2.6.24-gentoo-r8
 
-Cortland Setlow pointed out a bug in ov7670.c where the result from
-ov7670_read() was just being checked for !0, rather than <0.  This
-made me realize that ov7670_read's semantics were rather confusing;
-it both fills in 'value' with the result, and returns it.  This is
-goes against general kernel convention; so rather than fixing callers,
-let's fix the function.
+This is not a regression. The rfkill subsystem changed a lot since then.
+>From what you reported, it looks like a configuration problem since I
+don't see any other report on this. Could you please file a bug on
+bughost.org so we can track it there?
 
-This makes ov7670_read return <0 in the case of an error, and 0 upon
-success. Thus, code like:
+Thanks,
+-yi
 
-res = ov7670_read(...);
-if (!res)
-	goto error;
-
-..will work properly.
-
-Signed-off-by: Cortland Setlow <csetlow@tower-research.com>
-Signed-off-by: Andres Salomon <dilinger@debian.org>
----
- drivers/media/video/ov7670.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/media/video/ov7670.c b/drivers/media/video/ov7670.c
-index 2bc6bdc..d7bfd30 100644
---- a/drivers/media/video/ov7670.c
-+++ b/drivers/media/video/ov7670.c
-@@ -406,8 +406,10 @@ static int ov7670_read(struct i2c_client *c, unsigned char reg,
- 	int ret;
- 
- 	ret = i2c_smbus_read_byte_data(c, reg);
--	if (ret >= 0)
-+	if (ret >= 0) {
- 		*value = (unsigned char) ret;
-+		ret = 0;
-+	}
- 	return ret;
- }
- 
--- 
-1.5.5.3
