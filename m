@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758314AbYGGVXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbYGGV0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758314AbYGGVXX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jul 2008 17:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756371AbYGGVXM
+	id S1758047AbYGGV0n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jul 2008 17:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756305AbYGGV0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jul 2008 17:23:12 -0400
-Received: from lana.hrz.tu-chemnitz.de ([134.109.132.3]:36677 "EHLO
-	lana.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756067AbYGGVXL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jul 2008 17:23:11 -0400
-X-Greylist: delayed 1758 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Jul 2008 17:23:10 EDT
-From: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
-Organization: Chemnitz University of Technology
-To: rt2400-devel@lists.sourceforge.net
-Subject: Re: [Rt2400-devel] rt2500pci: Failed to initialize hw. But works with ancient rt2500-1.1.0
-Date: Mon, 7 Jul 2008 23:23:09 +0200
-User-Agent: KMail/1.9.9
-References: <200807072253.46295.stefan.bauer@cs.tu-chemnitz.de> <200807072308.57529.IvDoorn@gmail.com>
-In-Reply-To: <200807072308.57529.IvDoorn@gmail.com>
-Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 7 Jul 2008 17:26:36 -0400
+Received: from mail.queued.net ([207.210.101.209]:4756 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756246AbYGGV0f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jul 2008 17:26:35 -0400
+Date: Mon, 7 Jul 2008 17:25:56 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: drzeus-sdhci@drzeus.cx
+Cc: sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] mmc: OLPC: update vdd/powerup quirk comment
+Message-ID: <20080707172556.0a504c31@fred>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200807072323.09177.stefan.bauer@cs.tu-chemnitz.de>
-X-Spam-Score: -1.4 (-)
-X-Spam-Report: --- Start der SpamAssassin 3.2.5 Textanalyse (-1.4 Punkte)
-	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
-	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
-	weitergeleitet
-	--- Ende der SpamAssassin Textanalyse
-X-Scan-Signature: 706061e527a23eaab6b0df22823cde1c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 July 2008 23:08:57 you wrote:
-> > dmesg 2.6.26-rc9
-> > ACPI: PCI Interrupt 0000:00:0c.0[A] -> GSI 17 (level, low) -> IRQ 17
-> > phy0: Selected rate control algorithm 'pid'
-> > phy0: Failed to initialize wep
->
-> Check if the arc4 and ecb modules are loaded before loading mac80211 &
-> rt2500pci.
+Hi Pierre,
 
-They weren't, but loading them before doesn't make any difference.
-I've to add that I don't use wep, this WLAN is open.
+Here are patches for two minor things that I had noticed while poking
+around your -next branch.  Thanks for cleaning up that merge mess!
 
-Regards,
-Stefan
+
+
+
+This comment update got lost in the great floo^Wmerge.  As Pierre
+pointed out, no one knows what 'CaFe' is.
+
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+---
+ drivers/mmc/host/sdhci.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index cc11e63..267b0dd 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -978,7 +978,7 @@ static void sdhci_set_power(struct sdhci_host *host, unsigned short power)
+ 	}
+ 
+ 	/*
+-	 * At least the CaFe chip gets confused if we set the voltage
++	 * At least the Marvell CaFe chip gets confused if we set the voltage
+ 	 * and set turn on power at the same time, so set the voltage first.
+ 	 */
+ 	if ((host->quirks & SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER))
+-- 
+1.5.5.3
+
